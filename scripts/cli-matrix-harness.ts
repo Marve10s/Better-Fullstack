@@ -1,38 +1,19 @@
 #!/usr/bin/env bun
-/**
- * CLI Matrix Harness
- *
- * Automated compatibility testing for Better Fullstack CLI generator.
- * Creates 10 projects per cycle with diverse stack combinations,
- * validates structure and health, and produces JSON + Markdown reports.
- *
- * Usage:
- *   bun scripts/cli-matrix-harness.ts              # local mode (uses repo source)
- *   bun scripts/cli-matrix-harness.ts --prod        # prod mode (bun create better-fullstack@latest)
- *   bun scripts/cli-matrix-harness.ts --verbose      # show CLI output
- */
 
 import { execSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
-const TEMP_ROOT = "/tmp/bfs-matrix-runs/current";
 const REPO_ROOT = path.resolve(import.meta.dir, "..");
+const TEMP_ROOT = path.join(os.tmpdir(), "bfs-matrix-runs", "current");
 const REPORTS_DIR = path.join(REPO_ROOT, "reports");
 const CLI_SOURCE = path.join(REPO_ROOT, "apps/cli/src/cli.ts");
 
 const USE_PROD = process.argv.includes("--prod");
 const VERBOSE = process.argv.includes("--verbose");
-const TIMEOUT_CREATE = 120_000; // 2 min per project creation
-const TIMEOUT_INSTALL = 180_000; // 3 min per install
-
-// ============================================================================
-// Types
-// ============================================================================
+const TIMEOUT_CREATE = 120_000;
+const TIMEOUT_INSTALL = 180_000;
 
 interface MatrixEntry {
   name: string;
@@ -73,10 +54,6 @@ interface CycleReport {
   projects: ProjectResult[];
 }
 
-// ============================================================================
-// Matrix Definitions - 10 diverse combinations
-// ============================================================================
-
 const MATRIX: MatrixEntry[] = [
   {
     name: "ts-tanstack-hono-drizzle",
@@ -107,6 +84,7 @@ const MATRIX: MatrixEntry[] = [
       backend: "self",
       database: "postgres",
       orm: "prisma",
+      api: "trpc",
       cssFramework: "tailwind",
       uiLibrary: "shadcn-ui",
       testing: "vitest",
@@ -130,6 +108,7 @@ const MATRIX: MatrixEntry[] = [
       cssFramework: "tailwind",
       uiLibrary: "shadcn-ui",
       testing: "vitest",
+      validation: "zod",
       packageManager: "bun",
     },
     expectedFiles: ["package.json", "tsconfig.json"],
@@ -148,6 +127,8 @@ const MATRIX: MatrixEntry[] = [
       runtime: "bun",
       cssFramework: "tailwind",
       uiLibrary: "daisyui",
+      testing: "vitest",
+      validation: "zod",
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
@@ -166,6 +147,8 @@ const MATRIX: MatrixEntry[] = [
       runtime: "bun",
       cssFramework: "tailwind",
       uiLibrary: "daisyui",
+      testing: "vitest",
+      validation: "zod",
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
@@ -184,6 +167,8 @@ const MATRIX: MatrixEntry[] = [
       runtime: "bun",
       cssFramework: "tailwind",
       uiLibrary: "daisyui",
+      testing: "vitest",
+      validation: "zod",
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
@@ -201,6 +186,8 @@ const MATRIX: MatrixEntry[] = [
       api: "none",
       cssFramework: "tailwind",
       uiLibrary: "daisyui",
+      testing: "vitest",
+      validation: "zod",
       packageManager: "bun",
     },
     expectedFiles: ["package.json"],
@@ -245,9 +232,31 @@ const MATRIX: MatrixEntry[] = [
   },
 ];
 
-// ============================================================================
-// Helpers
-// ============================================================================
+const TS_DEFAULT_FLAGS: Record<string, string> = {
+  auth: "none",
+  payments: "none",
+  email: "none",
+  fileUpload: "none",
+  effect: "none",
+  stateManagement: "none",
+  forms: "none",
+  ai: "none",
+  realtime: "none",
+  jobQueue: "none",
+  animation: "none",
+  logging: "none",
+  observability: "none",
+  analytics: "none",
+  cms: "none",
+  caching: "none",
+  search: "none",
+  fileStorage: "none",
+  addons: "none",
+  examples: "none",
+  webDeploy: "none",
+  serverDeploy: "none",
+  dbSetup: "none",
+};
 
 function log(msg: string) {
   const ts = new Date().toISOString().slice(11, 19);
@@ -261,21 +270,20 @@ function runCommand(
   const start = Date.now();
   try {
     const output = execSync(cmd, {
-      cwd: options.cwd || process.cwd(),
-      timeout: options.timeout || 60_000,
+      cwd: options.cwd ?? process.cwd(),
+      timeout: options.timeout ?? 60_000,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, CI: "1", NO_COLOR: "1" },
     });
-    return { success: true, output: output || "", durationMs: Date.now() - start };
+    return { success: true, output: output ?? "", durationMs: Date.now() - start };
   } catch (error: unknown) {
     const e = error as { stdout?: string; stderr?: string; message?: string };
-    const output = [e.stdout || "", e.stderr || "", e.message || ""].filter(Boolean).join("\n");
+    const output = [e.stdout, e.stderr, e.message].filter(Boolean).join("\n");
     return { success: false, output: output.trim(), durationMs: Date.now() - start };
   }
 }
 
-/** Convert camelCase to kebab-case (e.g. cssFramework -> css-framework) */
 function toKebab(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
@@ -289,50 +297,17 @@ function buildCliCommand(entry: MatrixEntry, projectName: string): string {
     args.push("bun", CLI_SOURCE, projectName);
   }
 
-  // --yes conflicts with explicit stack flags in TS ecosystem, so only use it
-  // for non-TS ecosystems where we don't specify core stack options
   if (entry.ecosystem !== "typescript") {
     args.push("--yes");
   }
-  args.push("--no-git");
-  args.push("--no-install");
-  args.push("--disable-analytics");
+  args.push("--no-git", "--no-install", "--disable-analytics");
   args.push("--directory-conflict", "error");
   args.push("--manual-db");
   args.push("--ecosystem", entry.ecosystem);
-
-  // Add ai-docs none to avoid prompt
   args.push("--ai-docs", "none");
 
-  // For TypeScript ecosystem, set all optional feature flags to "none" to avoid
-  // interactive prompts. Only set them if not already specified in entry.flags.
   if (entry.ecosystem === "typescript") {
-    const tsDefaults: Record<string, string> = {
-      auth: "none",
-      payments: "none",
-      email: "none",
-      fileUpload: "none",
-      effect: "none",
-      stateManagement: "none",
-      forms: "none",
-      ai: "none",
-      realtime: "none",
-      jobQueue: "none",
-      animation: "none",
-      logging: "none",
-      observability: "none",
-      analytics: "none",
-      cms: "none",
-      caching: "none",
-      search: "none",
-      fileStorage: "none",
-      addons: "none",
-      examples: "none",
-      webDeploy: "none",
-      serverDeploy: "none",
-      dbSetup: "none",
-    };
-    for (const [key, def] of Object.entries(tsDefaults)) {
+    for (const [key, def] of Object.entries(TS_DEFAULT_FLAGS)) {
       if (!(key in entry.flags)) {
         args.push(`--${toKebab(key)}`, def);
       }
@@ -367,18 +342,15 @@ function checkProjectStructure(
   }
 
   for (const file of expectedFiles) {
-    const filePath = path.join(projectDir, file);
-    if (fs.existsSync(filePath)) {
+    if (fs.existsSync(path.join(projectDir, file))) {
       foundFiles.push(file);
     } else {
       missingFiles.push(file);
     }
   }
 
-  // Also record what was actually created at root level
   try {
-    const contents = fs.readdirSync(projectDir);
-    for (const item of contents) {
+    for (const item of fs.readdirSync(projectDir)) {
       if (!foundFiles.includes(item)) {
         foundFiles.push(item);
       }
@@ -390,12 +362,8 @@ function checkProjectStructure(
   return { success: missingFiles.length === 0, missingFiles, foundFiles };
 }
 
-// ============================================================================
-// Main Cycle
-// ============================================================================
-
 function ensureWorkspaceBuild(): void {
-  if (USE_PROD) return; // prod mode uses published package, no local build needed
+  if (USE_PROD) return;
 
   log("Ensuring workspace packages are built...");
   const build = runCommand("turbo build --filter=create-better-fullstack", {
@@ -410,6 +378,10 @@ function ensureWorkspaceBuild(): void {
   log(`Build OK (${(build.durationMs / 1000).toFixed(1)}s)`);
 }
 
+function formatDuration(ms: number): string {
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
 async function runCycle(): Promise<CycleReport> {
   const cycleStart = Date.now();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
@@ -419,10 +391,8 @@ async function runCycle(): Promise<CycleReport> {
   log(`Temp root: ${TEMP_ROOT}`);
   log(`Projects: ${MATRIX.length}`);
 
-  // Ensure workspace dependencies are built before running local mode
   ensureWorkspaceBuild();
 
-  // Clean up previous cycle
   if (fs.existsSync(TEMP_ROOT)) {
     log("Cleaning previous cycle folders...");
     fs.rmSync(TEMP_ROOT, { recursive: true, force: true });
@@ -438,24 +408,19 @@ async function runCycle(): Promise<CycleReport> {
     log(`\n--- [${i + 1}/${MATRIX.length}] ${entry.name} ---`);
     log(`  ${entry.description}`);
 
-    // --- Creation ---
     const cmd = buildCliCommand(entry, entry.name);
     if (VERBOSE) log(`  CMD: ${cmd}`);
 
     const creationRun = runCommand(cmd, { cwd: TEMP_ROOT, timeout: TIMEOUT_CREATE });
+    log(
+      `  Create: ${creationRun.success ? "PASS" : "FAIL"} (${formatDuration(creationRun.durationMs)})`,
+    );
 
-    if (creationRun.success) {
-      log(`  Create: PASS (${(creationRun.durationMs / 1000).toFixed(1)}s)`);
-    } else {
-      log(`  Create: FAIL (${(creationRun.durationMs / 1000).toFixed(1)}s)`);
-      if (VERBOSE || !creationRun.success) {
-        // Show last few lines of error
-        const errorLines = creationRun.output.split("\n").slice(-8).join("\n");
-        log(`  Error tail:\n${errorLines}`);
-      }
+    if (!creationRun.success) {
+      const errorLines = creationRun.output.split("\n").slice(-8).join("\n");
+      log(`  Error tail:\n${errorLines}`);
     }
 
-    // --- Structure check ---
     const structure = checkProjectStructure(projectDir, entry.expectedFiles);
     if (structure.success) {
       log(`  Structure: PASS (${structure.foundFiles.length} items found)`);
@@ -463,7 +428,6 @@ async function runCycle(): Promise<CycleReport> {
       log(`  Structure: FAIL (missing: ${structure.missingFiles.join(", ")})`);
     }
 
-    // --- Install ---
     const install: StepResult = { success: false, durationMs: 0, skipped: true };
     if (creationRun.success && structure.success && entry.installCmd) {
       install.skipped = false;
@@ -478,11 +442,10 @@ async function runCycle(): Promise<CycleReport> {
         install.error = installRun.output.slice(-800);
       }
       log(
-        `  Install: ${install.success ? "PASS" : "FAIL"} (${(install.durationMs / 1000).toFixed(1)}s)`,
+        `  Install: ${install.success ? "PASS" : "FAIL"} (${formatDuration(install.durationMs)})`,
       );
     }
 
-    // --- Overall verdict ---
     let overall: "pass" | "fail" | "partial" = "pass";
     if (!creationRun.success || !structure.success) {
       overall = "fail";
@@ -521,10 +484,6 @@ async function runCycle(): Promise<CycleReport> {
   };
 }
 
-// ============================================================================
-// Report Generation
-// ============================================================================
-
 function generateMarkdownReport(report: CycleReport): string {
   const lines: string[] = [];
 
@@ -532,7 +491,7 @@ function generateMarkdownReport(report: CycleReport): string {
   lines.push(``);
   lines.push(`**Timestamp:** ${report.timestamp}`);
   lines.push(`**Mode:** ${report.mode}`);
-  lines.push(`**Duration:** ${(report.durationMs / 1000).toFixed(1)}s`);
+  lines.push(`**Duration:** ${formatDuration(report.durationMs)}`);
   lines.push(`**Temp Root:** \`${report.tempRoot}\``);
   lines.push(``);
   lines.push(`## Summary`);
@@ -573,7 +532,7 @@ function generateMarkdownReport(report: CycleReport): string {
     lines.push(`- **Ecosystem:** ${p.ecosystem}`);
     lines.push(`- **Overall:** ${p.overall.toUpperCase()}`);
     lines.push(
-      `- **Creation:** ${p.creation.success ? "PASS" : "FAIL"} (${(p.creation.durationMs / 1000).toFixed(1)}s)`,
+      `- **Creation:** ${p.creation.success ? "PASS" : "FAIL"} (${formatDuration(p.creation.durationMs)})`,
     );
     lines.push(`- **Structure:** ${p.structure.success ? "PASS" : "FAIL"}`);
 
@@ -586,7 +545,7 @@ function generateMarkdownReport(report: CycleReport): string {
 
     if (!p.install.skipped) {
       lines.push(
-        `- **Install:** ${p.install.success ? "PASS" : "FAIL"} (${(p.install.durationMs / 1000).toFixed(1)}s)`,
+        `- **Install:** ${p.install.success ? "PASS" : "FAIL"} (${formatDuration(p.install.durationMs)})`,
       );
       if (p.install.error) {
         lines.push("  ```");
@@ -602,7 +561,6 @@ function generateMarkdownReport(report: CycleReport): string {
       lines.push("  ```");
     }
 
-    // Show flags for reproducibility
     const flagStr = Object.entries(p.flags)
       .map(([k, v]) => {
         if (Array.isArray(v)) return v.map((x) => `--${k} ${x}`).join(" ");
@@ -620,47 +578,39 @@ function generateMarkdownReport(report: CycleReport): string {
   return lines.join("\n");
 }
 
-// ============================================================================
-// Entry Point
-// ============================================================================
-
 async function main() {
   fs.mkdirSync(REPORTS_DIR, { recursive: true });
 
   const report = await runCycle();
 
-  // Save JSON report
   const jsonPath = path.join(REPORTS_DIR, `cli-matrix-${report.timestamp}.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));
   log(`\nJSON report: ${jsonPath}`);
 
-  // Save Markdown report
   const mdPath = path.join(REPORTS_DIR, `cli-matrix-${report.timestamp}.md`);
   fs.writeFileSync(mdPath, generateMarkdownReport(report));
   log(`Markdown report: ${mdPath}`);
 
-  // Print summary
   log(`\n=== CYCLE SUMMARY ===`);
   log(
     `Total: ${report.totalProjects} | Pass: ${report.passed} | Fail: ${report.failed} | Partial: ${report.partial}`,
   );
-  log(`Duration: ${(report.durationMs / 1000).toFixed(1)}s`);
+  log(`Duration: ${formatDuration(report.durationMs)}`);
 
   if (report.failed > 0) {
     log(`\nFailed projects:`);
     for (const p of report.projects.filter((p) => p.overall === "fail")) {
-      log(`  - ${p.name}: ${p.creation.error?.slice(0, 200) || "structure check failed"}`);
+      log(`  - ${p.name}: ${p.creation.error?.slice(0, 200) ?? "structure check failed"}`);
     }
   }
 
   if (report.partial > 0) {
     log(`\nPartial projects (created but install failed):`);
     for (const p of report.projects.filter((p) => p.overall === "partial")) {
-      log(`  - ${p.name}: ${p.install.error?.slice(0, 200) || "install issue"}`);
+      log(`  - ${p.name}: ${p.install.error?.slice(0, 200) ?? "install issue"}`);
     }
   }
 
-  // Exit with code 1 if any failures, 0 otherwise
   process.exit(report.failed > 0 ? 1 : 0);
 }
 
