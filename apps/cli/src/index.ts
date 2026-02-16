@@ -4,6 +4,13 @@ import pc from "picocolors";
 import { createCli } from "trpc-cli";
 import z from "zod";
 
+import {
+  addCliHandler,
+  addHandler,
+  type AddCommandInput,
+  type AddCommandResult,
+} from "./commands/add";
+import { type AddError, addErrorMessage } from "./commands/add-errors";
 import { updateDepsHandler, showEcosystems } from "./commands/update-deps";
 import { createProjectHandler } from "./helpers/core/command-handlers";
 import {
@@ -247,6 +254,29 @@ export const router = os.router({
         return result;
       }
     }),
+  add: os
+    .meta({ description: "Add addons to an existing Better Fullstack project" })
+    .input(
+      z.object({
+        addons: z
+          .array(AddonsSchema)
+          .optional()
+          .describe("Addons to add (e.g. --addons turborepo biome)"),
+        cwd: z.string().optional().describe("Project directory (defaults to current directory)"),
+        "skip-install": z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Skip dependency installation"),
+      }),
+    )
+    .handler(async ({ input }) => {
+      await addCliHandler({
+        addons: input.addons,
+        cwd: input.cwd,
+        skipInstall: input["skip-install"],
+      });
+    }),
   sponsors: os.meta({ description: "Show Better Fullstack sponsors" }).handler(async () => {
     try {
       renderTitle();
@@ -361,6 +391,35 @@ export async function create(
       relativePath: "",
     };
   }
+}
+
+/**
+ * Programmatic API to add addons to an existing Better Fullstack project.
+ * Returns a Result – callers must check `result.ok` before accessing `.value`.
+ *
+ * @example
+ * ```typescript
+ * import { add } from "create-better-fullstack";
+ *
+ * const result = await add({
+ *   addons: ["turborepo", "biome"],
+ *   cwd: "./my-project",
+ *   skipInstall: false,
+ * });
+ *
+ * if (result.ok) {
+ *   console.log(`Added: ${result.value.addedAddons.join(", ")}`);
+ * } else {
+ *   console.error(result.error);
+ * }
+ * ```
+ */
+export async function add(
+  options: AddCommandInput,
+): Promise<{ ok: true; value: AddCommandResult } | { ok: false; error: string }> {
+  const result = await addHandler({ ...options });
+  if (result.ok) return { ok: true, value: result.value };
+  return { ok: false, error: addErrorMessage(result.error) };
 }
 
 export async function sponsors() {
@@ -505,6 +564,11 @@ export async function createVirtual(
     };
   }
 }
+
+// Re-export Result type and add-command types
+export { type Result, ok, err, isOk, isErr } from "./utils/result";
+export type { AddCommandInput, AddCommandResult } from "./commands/add";
+export type { AddError } from "./commands/add-errors";
 
 export type {
   CreateInput,
