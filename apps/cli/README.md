@@ -57,6 +57,54 @@ npx create-better-fullstack --backend elysia --runtime node
 npx create-better-fullstack --frontend tanstack-router native-bare
 ```
 
+## Add Command
+
+Add addons to an existing Better Fullstack project. The `add` command reads your `bts.jsonc` config, detects the installed stack, and offers compatible addons.
+
+```bash
+# Interactive mode (recommended) - run from your project root
+create-better-fullstack add
+
+# Non-interactive with specific addons
+create-better-fullstack add --addons turborepo biome
+
+# Skip dependency installation (config-only update)
+create-better-fullstack add --addons oxlint --skip-install
+
+# Specify a different project directory
+create-better-fullstack add --cwd ./my-project --addons lefthook
+```
+
+### Supported Addons
+
+| Category      | Addons                                               |
+| ------------- | ---------------------------------------------------- |
+| Tooling       | turborepo, biome, oxlint, ultracite, husky, lefthook |
+| Documentation | starlight, fumadocs                                  |
+| Extensions    | pwa, tauri, opentui, wxt, ruler                      |
+| Testing       | msw, storybook                                       |
+
+### Limitations (MVP)
+
+- Only TypeScript ecosystem projects are supported. Rust, Python, and Go support is planned.
+- The command installs dependencies but does not scaffold configuration files (e.g., `biome.json`, `.storybook/`). Run the addon's init command after adding.
+- Addon compatibility is validated against your frontend framework. Some addons (e.g., PWA, Storybook) require specific frontends.
+
+### Error Handling
+
+The `add` command uses a typed Result pattern internally. The programmatic API returns structured results:
+
+```typescript
+import { add } from "create-better-fullstack";
+
+const result = await add({ addons: ["turborepo"], cwd: "./my-project" });
+if (result.ok) {
+  console.log("Added:", result.value.addedAddons);
+} else {
+  console.error("Error:", result.error);
+}
+```
+
 ## Project Structure
 
 ```
