@@ -60,6 +60,28 @@ const SNAPSHOT_CONFIGS: Array<{
       auth: "none",
     },
   },
+  {
+    name: "svelte-self-fullstack",
+    config: {
+      frontend: ["svelte"],
+      backend: "self",
+      api: "orpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+    },
+  },
+  {
+    name: "solid-start-self-fullstack",
+    config: {
+      frontend: ["solid-start"],
+      backend: "self",
+      api: "orpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+    },
+  },
 
   // === BACKEND VARIATIONS ===
   {

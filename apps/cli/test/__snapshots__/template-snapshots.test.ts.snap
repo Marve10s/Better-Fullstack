@@ -195,6 +195,108 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: svelte-self-fullstack 1`] = `
+[
+  "CLAUDE.md",
+  "README.md",
+  "apps/web/.env",
+  "apps/web/.npmrc",
+  "apps/web/package.json",
+  "apps/web/src/app.css",
+  "apps/web/src/app.d.ts",
+  "apps/web/src/app.html",
+  "apps/web/src/components/Header.svelte",
+  "apps/web/src/components/SignInForm.svelte",
+  "apps/web/src/components/SignUpForm.svelte",
+  "apps/web/src/components/UserMenu.svelte",
+  "apps/web/src/lib/auth-client.ts",
+  "apps/web/src/lib/index.ts",
+  "apps/web/src/lib/orpc.ts",
+  "apps/web/src/routes/+layout.svelte",
+  "apps/web/src/routes/+page.svelte",
+  "apps/web/src/routes/api/auth/[...all]/+server.ts",
+  "apps/web/src/routes/api/rpc/[...rest]/+server.ts",
+  "apps/web/src/routes/dashboard/+page.svelte",
+  "apps/web/src/routes/login/+page.svelte",
+  "apps/web/svelte.config.js",
+  "apps/web/tsconfig.json",
+  "apps/web/vite.config.ts",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/auth/package.json",
+  "packages/auth/src/index.ts",
+  "packages/auth/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/auth.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
+exports[`Template Snapshots File Structure Snapshots file structure: solid-start-self-fullstack 1`] = `
+[
+  "CLAUDE.md",
+  "README.md",
+  "apps/web/.env",
+  "apps/web/app.config.ts",
+  "apps/web/package.json",
+  "apps/web/public/robots.txt",
+  "apps/web/src/app.css",
+  "apps/web/src/app.tsx",
+  "apps/web/src/components/header.tsx",
+  "apps/web/src/components/sign-in-form.tsx",
+  "apps/web/src/components/sign-up-form.tsx",
+  "apps/web/src/components/user-menu.tsx",
+  "apps/web/src/entry-client.tsx",
+  "apps/web/src/entry-server.tsx",
+  "apps/web/src/lib/auth-client.ts",
+  "apps/web/src/lib/orpc.ts",
+  "apps/web/src/routes/api/auth/[...all].ts",
+  "apps/web/src/routes/api/rpc/[...rest].ts",
+  "apps/web/src/routes/dashboard.tsx",
+  "apps/web/src/routes/index.tsx",
+  "apps/web/src/routes/login.tsx",
+  "apps/web/tsconfig.json",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/auth/package.json",
+  "packages/auth/src/index.ts",
+  "packages/auth/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/auth.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
 exports[`Template Snapshots File Structure Snapshots file structure: express-node-trpc 1`] = `
 [
   "CLAUDE.md",
@@ -2818,10 +2920,12 @@ export default defineNuxtConfig({
     "@snapshot-nuxt-standalone/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@tanstack/vue-query": "^5.92.9",
-    "@orpc/tanstack-query": "^1.13.5",
+    "@orpc/server": "catalog:",
     "@orpc/client": "catalog:",
-    "@orpc/server": "catalog:"
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@tanstack/vue-query": "^5.92.9",
+    "@orpc/tanstack-query": "^1.13.5"
   },
   "devDependencies": {
     "tailwindcss": "^4.1.13",
@@ -2893,8 +2997,10 @@ export default defineNuxtConfig({
       "@types/bun": "^1.3.9",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
+      "@orpc/server": "^1.13.5",
       "@orpc/client": "^1.13.5",
-      "@orpc/server": "^1.13.5"
+      "@orpc/openapi": "^1.13.5",
+      "@orpc/zod": "^1.13.5"
     }
   },
   "scripts": {
@@ -2949,8 +3055,8 @@ export default defineNuxtConfig({
     "@snapshot-nuxt-standalone/db": "workspace:*",
     "@orpc/server": "catalog:",
     "@orpc/client": "catalog:",
-    "@orpc/openapi": "^1.13.5",
-    "@orpc/zod": "^1.13.5"
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:"
   }
 }"
 ,
@@ -3193,6 +3299,1535 @@ export const db = drizzle({ client, schema });
       "content": 
 "{
   "extends": "@snapshot-nuxt-standalone/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: svelte-self-fullstack 1`] = `
+{
+  "fileCount": 53,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/.npmrc",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "^5.2.12",
+    "@sveltejs/kit": "^2.31.1",
+    "@sveltejs/vite-plugin-svelte": "^6.1.2",
+    "@tailwindcss/vite": "^4.1.12",
+    "svelte": "^5.38.1",
+    "svelte-check": "^4.3.1",
+    "tailwindcss": "^4.1.12",
+    "vite": "^7.1.2",
+    "typescript": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*",
+    "@tanstack/svelte-query-devtools": "^5.85.3"
+  },
+  "dependencies": {
+    "@tanstack/svelte-form": "^1.19.2",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-svelte-self-fullstack/env": "workspace:*",
+    "@snapshot-svelte-self-fullstack/api": "workspace:*",
+    "@snapshot-svelte-self-fullstack/auth": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@orpc/tanstack-query": "^1.13.5",
+    "@tanstack/svelte-query": "^5.85.3",
+    "better-auth": "catalog:"
+  }
+}"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app.d.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app.html",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/Header.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/SignInForm.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/SignUpForm.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/UserMenu.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/auth-client.ts",
+    },
+    {
+      "content": 
+"// place files you want to import through the \`$lib\` alias in this folder.
+export {};
+"
+,
+      "path": "apps/web/src/lib/index.ts",
+    },
+    {
+      "content": 
+"import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/svelte-query";
+import type { AppRouterClient } from "@snapshot-svelte-self-fullstack/api/routers/index";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.error(\`Error: \${error.message}\`);
+		},
+	}),
+});
+
+export const link = new RPCLink({
+	url: "/api/rpc",
+});
+
+export const client: AppRouterClient = createORPCClient(link);
+
+export const orpc = createTanstackQueryUtils(client);
+"
+,
+      "path": "apps/web/src/lib/orpc.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/+layout.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/+page.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/api/auth/[...all]/+server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/api/rpc/[...rest]/+server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/dashboard/+page.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/login/+page.svelte",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/svelte.config.js",
+    },
+    {
+      "content": 
+"{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler"
+	}
+	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+	//
+	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+	// from the referenced tsconfig.json - TypeScript does not merge them in
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": 
+"import tailwindcss from "@tailwindcss/vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [tailwindcss(), sveltekit()],
+});
+"
+,
+      "path": "apps/web/vite.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-svelte-self-fullstack",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5",
+      "@types/bun": "^1.3.9",
+      "@libsql/client": "^0.17.0",
+      "libsql": "0.5.22",
+      "@orpc/server": "^1.13.5",
+      "@orpc/client": "^1.13.5",
+      "@orpc/openapi": "^1.13.5",
+      "@orpc/zod": "^1.13.5",
+      "better-auth": "^1.4.18"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev",
+    "db:push": "bun run --filter @snapshot-svelte-self-fullstack/db db:push",
+    "db:studio": "bun run --filter @snapshot-svelte-self-fullstack/db db:studio",
+    "db:generate": "bun run --filter @snapshot-svelte-self-fullstack/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-svelte-self-fullstack/db db:migrate",
+    "db:local": "bun run --filter @snapshot-svelte-self-fullstack/db db:local"
+  },
+  "packageManager": "bun@latest",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-svelte-self-fullstack/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*"
+  }
+}"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-svelte-self-fullstack/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-svelte-self-fullstack/env": "workspace:*",
+    "@snapshot-svelte-self-fullstack/auth": "workspace:*",
+    "@snapshot-svelte-self-fullstack/db": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:"
+  }
+}"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { ORPCError, os } from "@orpc/server";
+import type { Context } from "./context";
+
+export const o = os.$context<Context>();
+
+export const publicProcedure = o;
+
+const requireAuth = o.middleware(async ({ context, next }) => {
+  if (!context.session?.user) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  return next({
+    context: {
+      session: context.session,
+    },
+  });
+});
+
+export const protectedProcedure = publicProcedure.use(requireAuth);
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import { protectedProcedure, publicProcedure } from "../index";
+import type { RouterClient } from "@orpc/server";
+
+export const appRouter = {
+  healthCheck: publicProcedure.handler(() => {
+    return "OK";
+  }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
+  }),
+};
+export type AppRouter = typeof appRouter;
+export type AppRouterClient = RouterClient<typeof appRouter>;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-svelte-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-svelte-self-fullstack/auth",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-svelte-self-fullstack/env": "workspace:*",
+    "@snapshot-svelte-self-fullstack/db": "workspace:*",
+    "better-auth": "catalog:"
+  }
+}"
+,
+      "path": "packages/auth/package.json",
+    },
+    {
+      "content": 
+"
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { env } from "@snapshot-svelte-self-fullstack/env/server";
+import { db } from "@snapshot-svelte-self-fullstack/db";
+import * as schema from "@snapshot-svelte-self-fullstack/db/schema/auth";
+
+
+export const auth = betterAuth({
+	database: drizzleAdapter(db, {
+
+provider: "sqlite",
+
+		schema: schema,
+	}),
+	trustedOrigins: [
+		env.CORS_ORIGIN,
+	],
+	emailAndPassword: {
+		enabled: true,
+	},
+	plugins: [
+	],
+});
+
+
+
+"
+,
+      "path": "packages/auth/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-svelte-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/auth/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-svelte-self-fullstack/config",
+  "version": "0.0.0",
+  "private": true
+}"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/web/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-svelte-self-fullstack/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*",
+    "drizzle-kit": "^0.31.9"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-svelte-self-fullstack/env": "workspace:*",
+    "drizzle-orm": "^0.45.1",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-svelte-self-fullstack/env/server";
+import * as schema from "./schema/index.js";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": 
+"import { relations, sql } from "drizzle-orm";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" })
+    .default(false)
+    .notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = sqliteTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = sqliteTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+"
+,
+      "path": "packages/db/src/schema/auth.ts",
+    },
+    {
+      "content": 
+"export * from "./auth.js";
+export {};"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-svelte-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-svelte-self-fullstack/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.10"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-svelte-self-fullstack/config": "workspace:*"
+  }
+}"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-svelte-self-fullstack/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-svelte-self-fullstack/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: solid-start-self-fullstack 1`] = `
+{
+  "fileCount": 50,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/app.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.3",
+    "@solidjs/start": "^1.1.0",
+    "solid-js": "^1.9.9",
+    "vinxi": "^0.5.3",
+    "@tailwindcss/vite": "^4.1.13",
+    "tailwindcss": "^4.1.13",
+    "lucide-solid": "^0.544.0",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-solid-start-self-fullstack/env": "workspace:*",
+    "@snapshot-solid-start-self-fullstack/api": "workspace:*",
+    "@snapshot-solid-start-self-fullstack/auth": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@orpc/tanstack-query": "^1.13.5",
+    "@tanstack/solid-query": "^5.90.23",
+    "better-auth": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "^7.1.5",
+    "typescript": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*"
+  }
+}"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/public/robots.txt",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/header.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/sign-in-form.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/sign-up-form.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/user-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/entry-client.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/entry-server.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/auth-client.ts",
+    },
+    {
+      "content": 
+"import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/solid-query";
+import type { AppRouterClient } from "@snapshot-solid-start-self-fullstack/api/routers/index";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.error(\`Error: \${error.message}\`);
+		},
+	}),
+});
+
+export const link = new RPCLink({
+	url: "/api/rpc",
+});
+
+export const client: AppRouterClient = createORPCClient(link);
+
+export const orpc = createTanstackQueryUtils(client);
+"
+,
+      "path": "apps/web/src/lib/orpc.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/api/auth/[...all].ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/api/rpc/[...rest].ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/dashboard.tsx",
+    },
+    {
+      "content": 
+"import { useQuery } from "@tanstack/solid-query";
+import { orpc } from "../lib/orpc";
+import { Match, Switch } from "solid-js";
+import Header from "../components/header";
+
+const TITLE_TEXT = \`
+ ██████╗ ███████╗████████╗████████╗███████╗██████╗
+ ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
+ ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
+ ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
+ ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
+ ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+ ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
+ ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+    ██║       ███████╗   ██║   ███████║██║     █████╔╝
+    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
+    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
+    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+ \`;
+
+export default function Home() {
+  const healthCheck = useQuery(() => orpc.healthCheck.queryOptions());
+
+  return (
+    <>
+      <Header />
+      <div class="container mx-auto max-w-3xl px-4 py-2">
+        <pre class="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
+        <div class="grid gap-6">
+          <section class="rounded-lg border p-4">
+            <h2 class="mb-2 font-medium">API Status</h2>
+            <Switch>
+              <Match when={healthCheck.isPending}>
+                <div class="flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-gray-500 animate-pulse" />{" "}
+                  <span class="text-sm text-muted-foreground">Checking...</span>
+                </div>
+              </Match>
+              <Match when={healthCheck.isError}>
+                <div class="flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-red-500" />
+                  <span class="text-sm text-muted-foreground">Disconnected</span>
+                </div>
+              </Match>
+              <Match when={healthCheck.isSuccess}>
+                <div class="flex items-center gap-2">
+                  <div
+                    class={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+                  />
+                  <span class="text-sm text-muted-foreground">
+                    {healthCheck.data
+                      ? "Connected"
+                      : "Disconnected"}
+                  </span>
+                </div>
+              </Match>
+            </Switch>
+          </section>
+        </div>
+      </div>
+    </>
+  );
+}
+"
+,
+      "path": "apps/web/src/routes/index.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/login.tsx",
+    },
+    {
+      "content": 
+"{
+  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vinxi/types/client"],
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "rootDirs": ["."],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-solid-start-self-fullstack",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5",
+      "@types/bun": "^1.3.9",
+      "@libsql/client": "^0.17.0",
+      "libsql": "0.5.22",
+      "@orpc/server": "^1.13.5",
+      "@orpc/client": "^1.13.5",
+      "@orpc/openapi": "^1.13.5",
+      "@orpc/zod": "^1.13.5",
+      "better-auth": "^1.4.18"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev",
+    "db:push": "bun run --filter @snapshot-solid-start-self-fullstack/db db:push",
+    "db:studio": "bun run --filter @snapshot-solid-start-self-fullstack/db db:studio",
+    "db:generate": "bun run --filter @snapshot-solid-start-self-fullstack/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-solid-start-self-fullstack/db db:migrate",
+    "db:local": "bun run --filter @snapshot-solid-start-self-fullstack/db db:local"
+  },
+  "packageManager": "bun@latest",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-solid-start-self-fullstack/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*"
+  }
+}"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-solid-start-self-fullstack/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-solid-start-self-fullstack/env": "workspace:*",
+    "@snapshot-solid-start-self-fullstack/auth": "workspace:*",
+    "@snapshot-solid-start-self-fullstack/db": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:"
+  }
+}"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { ORPCError, os } from "@orpc/server";
+import type { Context } from "./context";
+
+export const o = os.$context<Context>();
+
+export const publicProcedure = o;
+
+const requireAuth = o.middleware(async ({ context, next }) => {
+  if (!context.session?.user) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  return next({
+    context: {
+      session: context.session,
+    },
+  });
+});
+
+export const protectedProcedure = publicProcedure.use(requireAuth);
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import { protectedProcedure, publicProcedure } from "../index";
+import type { RouterClient } from "@orpc/server";
+
+export const appRouter = {
+  healthCheck: publicProcedure.handler(() => {
+    return "OK";
+  }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
+  }),
+};
+export type AppRouter = typeof appRouter;
+export type AppRouterClient = RouterClient<typeof appRouter>;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-solid-start-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-solid-start-self-fullstack/auth",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-solid-start-self-fullstack/env": "workspace:*",
+    "@snapshot-solid-start-self-fullstack/db": "workspace:*",
+    "better-auth": "catalog:"
+  }
+}"
+,
+      "path": "packages/auth/package.json",
+    },
+    {
+      "content": 
+"
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { env } from "@snapshot-solid-start-self-fullstack/env/server";
+import { db } from "@snapshot-solid-start-self-fullstack/db";
+import * as schema from "@snapshot-solid-start-self-fullstack/db/schema/auth";
+
+
+export const auth = betterAuth({
+	database: drizzleAdapter(db, {
+
+provider: "sqlite",
+
+		schema: schema,
+	}),
+	trustedOrigins: [
+		env.CORS_ORIGIN,
+	],
+	emailAndPassword: {
+		enabled: true,
+	},
+	plugins: [
+	],
+});
+
+
+
+"
+,
+      "path": "packages/auth/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-solid-start-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/auth/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-solid-start-self-fullstack/config",
+  "version": "0.0.0",
+  "private": true
+}"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/web/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-solid-start-self-fullstack/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*",
+    "drizzle-kit": "^0.31.9"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-solid-start-self-fullstack/env": "workspace:*",
+    "drizzle-orm": "^0.45.1",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-solid-start-self-fullstack/env/server";
+import * as schema from "./schema/index.js";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": 
+"import { relations, sql } from "drizzle-orm";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" })
+    .default(false)
+    .notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = sqliteTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = sqliteTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+"
+,
+      "path": "packages/db/src/schema/auth.ts",
+    },
+    {
+      "content": 
+"export * from "./auth.js";
+export {};"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-solid-start-self-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-solid-start-self-fullstack/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.10"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-solid-start-self-fullstack/config": "workspace:*"
+  }
+}"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-solid-start-self-fullstack/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-solid-start-self-fullstack/config/tsconfig.base.json",
 }
 "
 ,

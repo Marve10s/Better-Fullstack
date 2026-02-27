@@ -95,7 +95,9 @@ const SELF_HOSTED_FRONTENDS: readonly Frontend[] = [
   "next",
   "tanstack-start",
   "astro",
-  // "nuxt", "svelte" - will be added in future update
+  "nuxt",
+  "svelte",
+  "solid-start",
 ];
 
 /**
@@ -108,6 +110,7 @@ const BUILTIN_SERVER_FRONTENDS: readonly Frontend[] = ["qwik", "angular", "redwo
  */
 const CONVEX_INCOMPATIBLE_FRONTENDS: readonly Frontend[] = [
   "solid",
+  "solid-start",
   "astro",
   "qwik",
   "angular",
@@ -147,6 +150,7 @@ const WEB_FRONTENDS: readonly Frontend[] = [
   "nuxt",
   "svelte",
   "solid",
+  "solid-start",
   "astro",
   "qwik",
   "angular",
@@ -157,7 +161,7 @@ const WEB_FRONTENDS: readonly Frontend[] = [
 /**
  * Frontends that only support oRPC (not tRPC/ts-rest/garph)
  */
-const ORPC_ONLY_FRONTENDS: readonly Frontend[] = ["nuxt", "svelte", "solid"];
+const ORPC_ONLY_FRONTENDS: readonly Frontend[] = ["nuxt", "svelte", "solid", "solid-start"];
 
 /**
  * Frontends that have built-in capabilities and don't support external API layers
@@ -342,6 +346,7 @@ const ALL_FRONTENDS: readonly Frontend[] = [
   "nuxt",
   "svelte",
   "solid",
+  "solid-start",
   "astro",
   "qwik",
   "angular",
@@ -557,7 +562,7 @@ export function generateTier3Combinations(options?: MatrixGeneratorOptions): Mat
 
       // Clerk with Convex has limited frontend support
       if (auth === "clerk" && base.backend === "convex") {
-        const incompatible = ["nuxt", "svelte", "solid"];
+        const incompatible = ["nuxt", "svelte", "solid", "solid-start"];
         if (base.frontend.some((f) => incompatible.includes(f))) {
           continue;
         }

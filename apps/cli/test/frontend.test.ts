@@ -15,6 +15,7 @@ describe("Frontend Configurations", () => {
       "native-unistyles",
       "svelte",
       "solid",
+      "solid-start",
       "astro",
       "qwik",
       "angular",
@@ -31,6 +32,7 @@ describe("Frontend Configurations", () => {
       | "native-unistyles"
       | "svelte"
       | "solid"
+      | "solid-start"
       | "astro"
       | "qwik"
       | "angular"
@@ -69,6 +71,19 @@ describe("Frontend Configurations", () => {
           config.orm = "drizzle";
           config.auth = "none";
           config.api = "orpc"; // tRPC not supported with solid
+          config.addons = ["none"];
+          config.examples = ["none"];
+          config.dbSetup = "none";
+          config.webDeploy = "none";
+          config.serverDeploy = "none";
+        } else if (frontend === "solid-start") {
+          // SolidStart with separate backend (not fullstack self mode)
+          config.backend = "hono";
+          config.runtime = "bun";
+          config.database = "sqlite";
+          config.orm = "drizzle";
+          config.auth = "none";
+          config.api = "orpc"; // tRPC not supported with solid-start
           config.addons = ["none"];
           config.examples = ["none"];
           config.dbSetup = "none";
@@ -590,7 +605,28 @@ describe("Frontend Configurations", () => {
       expectError(result, "tRPC API requires React-based frontends");
     });
 
-    const frontends = ["nuxt", "svelte", "solid"] as const;
+    it("should fail with SolidStart + tRPC", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-trpc-fail",
+        frontend: ["solid-start"],
+        api: "trpc",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "tRPC API requires React-based frontends");
+    });
+
+    const frontends = ["nuxt", "svelte", "solid", "solid-start"] as const;
     for (const frontend of frontends) {
       it(`should work with ${frontend} + oRPC`, async () => {
         const result = await runTRPCTest({
@@ -640,6 +676,30 @@ describe("Frontend Configurations", () => {
       );
     });
 
+    it("should fail SolidStart + Convex", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-convex-fail",
+        frontend: ["solid-start"],
+        backend: "convex",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        api: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(
+        result,
+        "The following frontends are not compatible with '--backend convex': solid-start. Please choose a different frontend or backend.",
+      );
+    });
+
     it("should work with React frontends + Convex", async () => {
       const result = await runTRPCTest({
         projectName: "react-convex",
@@ -663,7 +723,7 @@ describe("Frontend Configurations", () => {
   });
 
   describe("Frontend Compatibility with Auth", () => {
-    const incompatibleFrontends = ["nuxt", "svelte", "solid"] as const;
+    const incompatibleFrontends = ["nuxt", "svelte", "solid", "solid-start"] as const;
     for (const frontend of incompatibleFrontends) {
       it(`should fail incompatible ${frontend} with Clerk + Convex`, async () => {
         const result = await runTRPCTest({
@@ -685,7 +745,7 @@ describe("Frontend Configurations", () => {
 
         expectError(
           result,
-          frontend === "solid"
+          frontend === "solid" || frontend === "solid-start"
             ? "not compatible with '--backend convex'"
             : "Clerk + Convex is not compatible",
         );
@@ -872,6 +932,115 @@ describe("Frontend Configurations", () => {
       });
 
       expectSuccess(result);
+    });
+  });
+
+  describe("SvelteKit with Self Backend", () => {
+    it("should work with SvelteKit and self backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "svelte-self-backend",
+        frontend: ["svelte"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        api: "orpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should work with SvelteKit and traditional backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "svelte-traditional-backend",
+        frontend: ["svelte"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+  });
+
+  describe("SolidStart with Self Backend", () => {
+    it("should work with SolidStart and self backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-self-backend",
+        frontend: ["solid-start"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        api: "orpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should work with SolidStart and traditional backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-traditional-backend",
+        frontend: ["solid-start"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should fail SolidStart with self backend and Clerk", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-self-clerk-fail",
+        frontend: ["solid-start"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "clerk",
+        api: "orpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Clerk is not yet supported for SolidStart fullstack");
     });
   });
 
