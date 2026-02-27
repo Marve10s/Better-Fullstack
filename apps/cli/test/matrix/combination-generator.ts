@@ -207,14 +207,15 @@ export function isValidFrontendBackend(frontend: Frontend, backend: Backend): bo
     return backend === "none";
   }
 
-  // Self-hosted frontends work with backend=self or backend=none
-  if (SELF_HOSTED_FRONTENDS.includes(frontend)) {
-    return backend === "self" || backend === "none";
-  }
-
   // Convex has incompatible frontends
   if (backend === "convex" && CONVEX_INCOMPATIBLE_FRONTENDS.includes(frontend)) {
     return false;
+  }
+
+  // Self-hosted frontends support backend=self, backend=none, AND traditional backends
+  // (e.g., next+hono, svelte+express, solid-start+hono all work)
+  if (SELF_HOSTED_FRONTENDS.includes(frontend)) {
+    return true;
   }
 
   // Standard frontends (tanstack-router, react-router) work with any backend except "self"
