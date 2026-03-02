@@ -647,6 +647,25 @@ export function validateUILibraryFrontendCompatibility(
   if (!uiLibrary || uiLibrary === "none") return;
   const compatible = getCompatibleUILibrariesShared(frontends, astroIntegration);
   if (!compatible.includes(uiLibrary)) {
+    const { web } = splitFrontends(frontends);
+    const hasAstroWebFrontend = web.includes("astro");
+    const isAstroNonReact = hasAstroWebFrontend && astroIntegration !== "react";
+    const supportsAstroReact = getCompatibleUILibrariesShared(["astro"], "react").includes(
+      uiLibrary,
+    );
+
+    if (isAstroNonReact && supportsAstroReact) {
+      incompatibilityError({
+        message: `UI library '${uiLibrary}' requires React.`,
+        provided: { "ui-library": uiLibrary, "astro-integration": astroIntegration || "none" },
+        suggestions: [
+          "Use --astro-integration react",
+          "Choose a different UI library (daisyui, ark-ui)",
+        ],
+      });
+      return;
+    }
+
     incompatibilityError({
       message: `UI library '${uiLibrary}' is not compatible with the selected frontend.`,
       provided: { "ui-library": uiLibrary, frontend: frontends },

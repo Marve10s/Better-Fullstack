@@ -38,4 +38,13 @@ export const stackSearchSchema = z.object({
   file: z.string().catch(""),
 });
 
-export type StackSearchParams = z.infer<typeof stackSearchSchema>;
+type StackValueForKey<K extends keyof typeof stackUrlKeys> =
+  (typeof DEFAULT_STACK)[K] extends string[] ? string[] : string;
+type StackSearchParamShape = {
+  [K in keyof typeof stackUrlKeys as (typeof stackUrlKeys)[K]]: StackValueForKey<K>;
+};
+
+export type StackSearchParams = Partial<StackSearchParamShape> & {
+  view?: "command" | "preview";
+  file?: string;
+};

@@ -15,16 +15,16 @@ export function isArrayStackKey(key: keyof StackState): boolean {
 }
 
 function cloneDefaultStack(): StackState {
-  const cloned = {} as StackState;
+  const cloned: Partial<StackState> = {};
 
   for (const key of stackStateKeys) {
     const defaultValue = DEFAULT_STACK[key];
-    cloned[key] = (
-      Array.isArray(defaultValue) ? [...defaultValue] : defaultValue
-    ) as StackState[typeof key];
+    (cloned as Record<string, unknown>)[key] = Array.isArray(defaultValue)
+      ? [...defaultValue]
+      : defaultValue;
   }
 
-  return cloned;
+  return cloned as StackState;
 }
 
 function parseArrayValue(value: QueryValue, defaultValue: string[]): string[] {
@@ -55,7 +55,7 @@ function parseScalarValue(value: QueryValue, defaultValue: string): string {
 }
 
 export function parseStackFromUrlRecord(params: UrlRecord): StackState {
-  const parsed = cloneDefaultStack();
+  const parsed = cloneDefaultStack() as Record<string, unknown>;
 
   for (const stackKey of stackStateKeys) {
     const urlKey = stackUrlKeys[stackKey];
@@ -63,20 +63,14 @@ export function parseStackFromUrlRecord(params: UrlRecord): StackState {
     const defaultValue = DEFAULT_STACK[stackKey];
 
     if (isArrayStackKey(stackKey)) {
-      parsed[stackKey] = parseArrayValue(
-        rawValue,
-        defaultValue as string[],
-      ) as StackState[typeof stackKey];
+      parsed[stackKey] = parseArrayValue(rawValue, defaultValue as string[]);
       continue;
     }
 
-    parsed[stackKey] = parseScalarValue(
-      rawValue,
-      String(defaultValue ?? ""),
-    ) as StackState[typeof stackKey];
+    parsed[stackKey] = parseScalarValue(rawValue, String(defaultValue ?? ""));
   }
 
-  return parsed;
+  return parsed as StackState;
 }
 
 export function parseStackFromSearch(search: Record<string, unknown> | undefined): StackState {
