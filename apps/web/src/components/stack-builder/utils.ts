@@ -840,6 +840,34 @@ export const analyzeStackCompatibility = (stack: StackState): CompatibilityResul
     }
   }
 
+  // Reset shadcn sub-options when uiLibrary is not shadcn-ui
+  if (nextStack.uiLibrary !== "shadcn-ui") {
+    const shadcnDefaults = {
+      shadcnBase: "radix",
+      shadcnStyle: "nova",
+      shadcnIconLibrary: "lucide",
+      shadcnColorTheme: "neutral",
+      shadcnBaseColor: "neutral",
+      shadcnFont: "inter",
+      shadcnRadius: "default",
+    } as const;
+
+    let shadcnChanged = false;
+    for (const [key, defaultVal] of Object.entries(shadcnDefaults)) {
+      if (nextStack[key as keyof StackState] !== defaultVal) {
+        (nextStack as any)[key] = defaultVal;
+        shadcnChanged = true;
+      }
+    }
+    if (shadcnChanged) {
+      changed = true;
+      changes.push({
+        category: "shadcnBase",
+        message: "shadcn/ui options reset to defaults (UI library changed)",
+      });
+    }
+  }
+
   // ============================================
   // APP PLATFORMS CONSTRAINTS
   // ============================================

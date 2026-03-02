@@ -209,6 +209,20 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mantine: { type: "si", slug: "mantine", hex: "339AF0" },
   "base-ui": { type: "si", slug: "mui", hex: "007FFF" },
 
+  // ─── shadcn Base Libraries ───────────────────────────────────────────────────
+  radix: { type: "si", slug: "radixui", hex: "161618" },
+  base: { type: "si", slug: "mui", hex: "007FFF" },
+
+  // ─── shadcn Icon Libraries ─────────────────────────────────────────────────
+  lucide: { type: "si", slug: "lucide", hex: "F56565" },
+  tabler: { type: "local", src: "/icon/tabler.svg", needsInvert: "dark" },
+  phosphor: { type: "si", slug: "phosphoricons", hex: "C4F042" },
+
+  // ─── shadcn Fonts ──────────────────────────────────────────────────────────
+  geist: { type: "si", slug: "vercel", hex: "000000" },
+  "jetbrains-mono": { type: "si", slug: "jetbrains", hex: "000000" },
+  "geist-mono": { type: "si", slug: "vercel", hex: "000000" },
+
   // ─── Package Manager ───────────────────────────────────────────────────────
   npm: { type: "si", slug: "npm", hex: "CB3837" },
   pnpm: { type: "si", slug: "pnpm", hex: "F69220" },

@@ -42,6 +42,7 @@ import {
   RUST_CATEGORY_ORDER,
   TYPESCRIPT_CATEGORY_ORDER,
 } from "@/lib/stack-utils";
+import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
 import { cn } from "@/lib/utils";
 
@@ -651,6 +652,16 @@ const StackBuilder = () => {
 
   // ─── Build the categories to show in sidebar (with astro integration) ──
 
+  const SHADCN_SUB_CATEGORIES = new Set([
+    "shadcnBase",
+    "shadcnStyle",
+    "shadcnIconLibrary",
+    "shadcnColorTheme",
+    "shadcnBaseColor",
+    "shadcnFont",
+    "shadcnRadius",
+  ]);
+
   const sidebarCategories = useMemo(() => {
     const cats: (keyof typeof TECH_OPTIONS)[] = [];
     for (const cat of categoryOrder) {
@@ -658,6 +669,10 @@ const StackBuilder = () => {
         if (stack.webFrontend.includes("astro")) {
           cats.push(cat);
         }
+        continue;
+      }
+      // Skip individual shadcn sub-categories from sidebar — they render as a combined section
+      if (SHADCN_SUB_CATEGORIES.has(cat)) {
         continue;
       }
       cats.push(cat);
@@ -885,6 +900,9 @@ const StackBuilder = () => {
                       // Skip astroIntegration - rendered conditionally after webFrontend
                       if (categoryKey === "astroIntegration") return null;
 
+                      // Skip shadcn sub-categories - rendered conditionally after uiLibrary
+                      if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
+
                       const categoryOptions =
                         TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
                       const categoryDisplayName = getCategoryDisplayName(categoryKey);
@@ -1049,6 +1067,122 @@ const StackBuilder = () => {
                               )}
                             </AnimatePresence>
                           </section>
+
+                          {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
+                          {categoryKey === "uiLibrary" && (
+                            <AnimatePresence>
+                              {stack.uiLibrary === "shadcn-ui" && (
+                                <motion.section
+                                  ref={(el) => {
+                                    sectionRefs.current.shadcnBase = el;
+                                  }}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                >
+                                  <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
+                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                    <h2 className="font-pixel text-foreground text-sm sm:text-base">
+                                      shadcn/ui Configuration
+                                    </h2>
+                                  </div>
+                                  <div className="space-y-4">
+                                    {(
+                                      [
+                                        { key: "shadcnBase" as const, label: "Base Library" },
+                                        { key: "shadcnStyle" as const, label: "Visual Style" },
+                                        {
+                                          key: "shadcnIconLibrary" as const,
+                                          label: "Icon Library",
+                                        },
+                                        { key: "shadcnColorTheme" as const, label: "Color Theme" },
+                                        { key: "shadcnBaseColor" as const, label: "Base Color" },
+                                        { key: "shadcnFont" as const, label: "Font" },
+                                        { key: "shadcnRadius" as const, label: "Border Radius" },
+                                      ] as const
+                                    ).map(({ key, label }) => (
+                                      <div key={key}>
+                                        <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                          {label}
+                                        </h3>
+                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
+                                          {(TECH_OPTIONS[key] || []).map((tech) => {
+                                            const isSelected =
+                                              stack[key as keyof StackState] === tech.id;
+                                            return (
+                                              <motion.div
+                                                key={tech.id}
+                                                className={cn(
+                                                  "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                  isSelected
+                                                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                    : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                )}
+                                                whileHover={{ scale: 1.01 }}
+                                                whileTap={{ scale: 0.99 }}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleTechSelect(key, tech.id);
+                                                }}
+                                              >
+                                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                  <TechResourceButtons
+                                                    category={key}
+                                                    techId={tech.id}
+                                                  />
+                                                  {tech.default && !isSelected && (
+                                                    <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                      Default
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                <div className="flex items-start gap-2.5">
+                                                  {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+                                                    <div
+                                                      className={cn(
+                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+                                                        isSelected
+                                                          ? "bg-primary/10"
+                                                          : "bg-muted/50 group-hover:bg-muted",
+                                                      )}
+                                                    >
+                                                      <TechIcon
+                                                        techId={tech.id}
+                                                        icon={tech.icon}
+                                                        name={tech.name}
+                                                        className="h-4 w-4"
+                                                      />
+                                                    </div>
+                                                  )}
+                                                  <div className="min-w-0 flex-1">
+                                                    <span
+                                                      className={cn(
+                                                        "block font-semibold text-xs sm:text-sm",
+                                                        isSelected
+                                                          ? "text-primary"
+                                                          : "text-foreground",
+                                                      )}
+                                                    >
+                                                      {tech.name}
+                                                    </span>
+                                                    <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                      {tech.description}
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </motion.div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </motion.section>
+                              )}
+                            </AnimatePresence>
+                          )}
 
                           {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
                           {categoryKey === "webFrontend" && (
