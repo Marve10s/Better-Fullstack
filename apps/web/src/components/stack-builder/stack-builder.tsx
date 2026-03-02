@@ -32,7 +32,7 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/constant";
-import { useStackState } from "@/lib/stack-url-state.client";
+import { useStackState } from "@/lib/stack-url-state";
 import {
   CATEGORY_ORDER,
   generateStackCommand,
@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 
 import { ActionButtons } from "./action-buttons";
 import { PresetDropdown } from "./preset-dropdown";
+import { PreviewPanel } from "./preview-panel";
 import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
 import {
@@ -328,7 +329,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilder = () => {
-  const [stack, setStack] = useStackState();
+  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] = useStackState();
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
@@ -858,153 +859,470 @@ const StackBuilder = () => {
               mobileTab === "summary" ? "hidden sm:flex" : "flex",
             )}
           >
-            <div className="relative min-h-0 flex-1">
-              <div className="absolute inset-0">
-                <ScrollArea ref={mainScrollRef} className="h-full">
-                  <div className="p-3 sm:p-4">
-                    {/* Project Name */}
-                    <div className="mb-6">
-                      <label
-                        htmlFor="project-name"
-                        className="mb-1.5 block font-pixel text-[10px] uppercase tracking-wider text-muted-foreground"
-                      >
-                        Project Name
-                      </label>
-                      <Input
-                        id="project-name"
-                        value={stack.projectName || ""}
-                        onChange={(e) => setStack({ projectName: e.target.value })}
-                        placeholder="my-app"
-                        className={cn(
-                          "max-w-sm",
-                          projectNameError
-                            ? "border-destructive bg-destructive/10 text-destructive-foreground"
-                            : "focus-visible:border-primary",
+            <div className="flex items-center gap-2 border-border border-b bg-fd-background px-3 py-2 sm:px-4">
+              <button
+                type="button"
+                onClick={() => setViewMode("command")}
+                className={cn(
+                  "rounded-md px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  viewMode === "command"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                Command
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("preview")}
+                className={cn(
+                  "rounded-md px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  viewMode === "preview"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                Preview
+              </button>
+            </div>
+
+            {viewMode === "command" ? (
+              <div className="relative min-h-0 flex-1">
+                <div className="absolute inset-0">
+                  <ScrollArea ref={mainScrollRef} className="h-full">
+                    <div className="p-3 sm:p-4">
+                      {/* Project Name */}
+                      <div className="mb-6">
+                        <label
+                          htmlFor="project-name"
+                          className="mb-1.5 block font-pixel text-[10px] uppercase tracking-wider text-muted-foreground"
+                        >
+                          Project Name
+                        </label>
+                        <Input
+                          id="project-name"
+                          value={stack.projectName || ""}
+                          onChange={(e) => setStack({ projectName: e.target.value })}
+                          placeholder="my-app"
+                          className={cn(
+                            "max-w-sm",
+                            projectNameError
+                              ? "border-destructive bg-destructive/10 text-destructive-foreground"
+                              : "focus-visible:border-primary",
+                          )}
+                        />
+                        {projectNameError && (
+                          <p className="mt-1 text-destructive text-xs">{projectNameError}</p>
                         )}
-                      />
-                      {projectNameError && (
-                        <p className="mt-1 text-destructive text-xs">{projectNameError}</p>
-                      )}
-                      {(stack.projectName || "my-app").includes(" ") && (
-                        <p className="mt-1 text-muted-foreground text-xs">
-                          Will be saved as:{" "}
-                          <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                            {(stack.projectName || "my-app").replace(/\s+/g, "-")}
-                          </code>
-                        </p>
-                      )}
-                    </div>
+                        {(stack.projectName || "my-app").includes(" ") && (
+                          <p className="mt-1 text-muted-foreground text-xs">
+                            Will be saved as:{" "}
+                            <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                              {(stack.projectName || "my-app").replace(/\s+/g, "-")}
+                            </code>
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Category sections - all options for each category */}
-                    {categoryOrder.map((categoryKey) => {
-                      // Skip astroIntegration - rendered conditionally after webFrontend
-                      if (categoryKey === "astroIntegration") return null;
+                      {/* Category sections - all options for each category */}
+                      {categoryOrder.map((categoryKey) => {
+                        // Skip astroIntegration - rendered conditionally after webFrontend
+                        if (categoryKey === "astroIntegration") return null;
 
-                      // Skip shadcn sub-categories - rendered conditionally after uiLibrary
-                      if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
+                        // Skip shadcn sub-categories - rendered conditionally after uiLibrary
+                        if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
 
-                      const categoryOptions =
-                        TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
-                      const categoryDisplayName = getCategoryDisplayName(categoryKey);
+                        const categoryOptions =
+                          TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
+                        const categoryDisplayName = getCategoryDisplayName(categoryKey);
 
-                      if (categoryOptions.length === 0) return null;
+                        if (categoryOptions.length === 0) return null;
 
-                      const isSectionCollapsed = collapsedSections.has(categoryKey);
-                      const sectionSelectedCount = getSelectedCount(
-                        categoryKey as keyof typeof TECH_OPTIONS,
-                        stack,
-                      );
+                        const isSectionCollapsed = collapsedSections.has(categoryKey);
+                        const sectionSelectedCount = getSelectedCount(
+                          categoryKey as keyof typeof TECH_OPTIONS,
+                          stack,
+                        );
 
-                      return (
-                        <div key={categoryKey}>
-                          <section
-                            ref={(el) => {
-                              sectionRefs.current[categoryKey] = el;
-                            }}
-                            id={`section-${categoryKey}`}
-                            className="mb-6 scroll-mt-4 sm:mb-8"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => toggleSection(categoryKey)}
-                              className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                        return (
+                          <div key={categoryKey}>
+                            <section
+                              ref={(el) => {
+                                sectionRefs.current[categoryKey] = el;
+                              }}
+                              id={`section-${categoryKey}`}
+                              className="mb-6 scroll-mt-4 sm:mb-8"
                             >
-                              <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                              <h2 className="flex-1 font-pixel text-foreground text-sm sm:text-base">
-                                {categoryDisplayName}
-                              </h2>
-                              {compatibilityAnalysis.notes[categoryKey]?.hasIssue && (
-                                <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                              )}
-                              {isSectionCollapsed && sectionSelectedCount > 0 && (
-                                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-                                  {sectionSelectedCount}
-                                </span>
-                              )}
-                              <motion.div
-                                animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
-                                transition={{ duration: 0.2 }}
+                              <button
+                                type="button"
+                                onClick={() => toggleSection(categoryKey)}
+                                className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                               >
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                              </motion.div>
-                            </button>
-                            <AnimatePresence initial={false}>
-                              {!isSectionCollapsed && (
+                                <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                <h2 className="flex-1 font-pixel text-foreground text-sm sm:text-base">
+                                  {categoryDisplayName}
+                                </h2>
+                                {compatibilityAnalysis.notes[categoryKey]?.hasIssue && (
+                                  <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
+                                )}
+                                {isSectionCollapsed && sectionSelectedCount > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
+                                    {sectionSelectedCount}
+                                  </span>
+                                )}
                                 <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                                  className="overflow-hidden"
+                                  animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
+                                  transition={{ duration: 0.2 }}
                                 >
-                                  <CategoryHint categoryKey={categoryKey} />
-                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                    {categoryOptions.map((tech) => {
-                                      const isSelected = isSelectedCheck(
-                                        stack,
-                                        categoryKey,
-                                        tech.id,
-                                      );
-                                      const isDisabled = !isOptionCompatible(
-                                        stack,
-                                        categoryKey as keyof typeof TECH_OPTIONS,
-                                        tech.id,
-                                      );
-                                      const disabledReason = isDisabled
-                                        ? getDisabledReason(
-                                            stack,
-                                            categoryKey as keyof typeof TECH_OPTIONS,
-                                            tech.id,
-                                          )
-                                        : null;
-
-                                      return (
-                                        <motion.div
-                                          key={tech.id}
-                                          className={cn(
-                                            "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                            isSelected
-                                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                              : isDisabled
-                                                ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                          )}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleTechSelect(
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                </motion.div>
+                              </button>
+                              <AnimatePresence initial={false}>
+                                {!isSectionCollapsed && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                                    className="overflow-hidden"
+                                  >
+                                    <CategoryHint categoryKey={categoryKey} />
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                      {categoryOptions.map((tech) => {
+                                        const isSelected = isSelectedCheck(
+                                          stack,
+                                          categoryKey,
+                                          tech.id,
+                                        );
+                                        const isDisabled = !isOptionCompatible(
+                                          stack,
+                                          categoryKey as keyof typeof TECH_OPTIONS,
+                                          tech.id,
+                                        );
+                                        const disabledReason = isDisabled
+                                          ? getDisabledReason(
+                                              stack,
                                               categoryKey as keyof typeof TECH_OPTIONS,
                                               tech.id,
-                                            );
-                                          }}
-                                          title={disabledReason || undefined}
+                                            )
+                                          : null;
+
+                                        return (
+                                          <motion.div
+                                            key={tech.id}
+                                            className={cn(
+                                              "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                              isSelected
+                                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                : isDisabled
+                                                  ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                  : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                            )}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleTechSelect(
+                                                categoryKey as keyof typeof TECH_OPTIONS,
+                                                tech.id,
+                                              );
+                                            }}
+                                            title={disabledReason || undefined}
+                                          >
+                                            <div className="absolute top-2 right-2 flex items-center gap-1">
+                                              <TechResourceButtons
+                                                category={categoryKey}
+                                                techId={tech.id}
+                                              />
+                                              {tech.default && !isSelected && (
+                                                <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                                  Default
+                                                </span>
+                                              )}
+                                              {tech.legacy && (
+                                                <Tooltip>
+                                                  <TooltipTrigger
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="cursor-default"
+                                                  >
+                                                    <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-pixel text-[9px] text-amber-500 dark:text-amber-400">
+                                                      Legacy
+                                                    </span>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>
+                                                    No longer actively maintained
+                                                  </TooltipContent>
+                                                </Tooltip>
+                                              )}
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                              {tech.icon !== "" && (
+                                                <div
+                                                  className={cn(
+                                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+                                                    isSelected
+                                                      ? "bg-primary/10"
+                                                      : "bg-muted/50 group-hover:bg-muted",
+                                                  )}
+                                                >
+                                                  <TechIcon
+                                                    techId={tech.id}
+                                                    icon={tech.icon}
+                                                    name={tech.name}
+                                                    className="h-5 w-5"
+                                                  />
+                                                </div>
+                                              )}
+                                              <div className="min-w-0 flex-1 pt-0.5">
+                                                <span
+                                                  className={cn(
+                                                    "block font-semibold text-sm",
+                                                    isSelected ? "text-primary" : "text-foreground",
+                                                  )}
+                                                >
+                                                  {tech.name}
+                                                </span>
+                                                <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                  {tech.description}
+                                                </p>
+                                                {isDisabled && disabledReason && (
+                                                  <DisabledReasonInline reason={disabledReason} />
+                                                )}
+                                              </div>
+                                            </div>
+                                          </motion.div>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </section>
+
+                            {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
+                            {categoryKey === "uiLibrary" && (
+                              <AnimatePresence>
+                                {stack.uiLibrary === "shadcn-ui" && (
+                                  <motion.section
+                                    ref={(el) => {
+                                      sectionRefs.current.shadcnBase = el;
+                                    }}
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSection("shadcnBase")}
+                                      className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                                    >
+                                      <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                      <h2 className="flex-1 font-pixel text-foreground text-sm sm:text-base">
+                                        shadcn/ui Configuration
+                                      </h2>
+                                      <motion.div
+                                        animate={{
+                                          rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
+                                        }}
+                                        transition={{ duration: 0.2 }}
+                                      >
+                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                      </motion.div>
+                                    </button>
+                                    <AnimatePresence initial={false}>
+                                      {!collapsedSections.has("shadcnBase") && (
+                                        <motion.div
+                                          initial={{ height: 0, opacity: 0 }}
+                                          animate={{ height: "auto", opacity: 1 }}
+                                          exit={{ height: 0, opacity: 0 }}
+                                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                                          className="overflow-hidden"
                                         >
-                                          <div className="absolute top-2 right-2 flex items-center gap-1">
-                                            <TechResourceButtons
-                                              category={categoryKey}
-                                              techId={tech.id}
-                                            />
+                                          <div className="space-y-4">
+                                            {(
+                                              [
+                                                {
+                                                  key: "shadcnBase" as const,
+                                                  label: "Base Library",
+                                                },
+                                                {
+                                                  key: "shadcnStyle" as const,
+                                                  label: "Visual Style",
+                                                },
+                                                {
+                                                  key: "shadcnIconLibrary" as const,
+                                                  label: "Icon Library",
+                                                },
+                                                {
+                                                  key: "shadcnColorTheme" as const,
+                                                  label: "Color Theme",
+                                                },
+                                                {
+                                                  key: "shadcnBaseColor" as const,
+                                                  label: "Base Color",
+                                                },
+                                                { key: "shadcnFont" as const, label: "Font" },
+                                                {
+                                                  key: "shadcnRadius" as const,
+                                                  label: "Border Radius",
+                                                },
+                                              ] as const
+                                            ).map(({ key, label }) => (
+                                              <div key={key}>
+                                                <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                                  {label}
+                                                </h3>
+                                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
+                                                  {(TECH_OPTIONS[key] || []).map((tech) => {
+                                                    const isSelected =
+                                                      stack[key as keyof StackState] === tech.id;
+                                                    return (
+                                                      <motion.div
+                                                        key={tech.id}
+                                                        className={cn(
+                                                          "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                          isSelected
+                                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                        )}
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleTechSelect(key, tech.id);
+                                                        }}
+                                                      >
+                                                        <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                          <TechResourceButtons
+                                                            category={key}
+                                                            techId={tech.id}
+                                                          />
+                                                          {tech.default && !isSelected && (
+                                                            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                              Default
+                                                            </span>
+                                                          )}
+                                                        </div>
+                                                        <div className="flex items-start gap-2.5">
+                                                          {key === "shadcnColorTheme" ||
+                                                          key === "shadcnBaseColor" ? (
+                                                            <div
+                                                              className={cn(
+                                                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+                                                                isSelected
+                                                                  ? "bg-primary/10"
+                                                                  : "bg-muted/50 group-hover:bg-muted",
+                                                              )}
+                                                            >
+                                                              <div
+                                                                className={cn(
+                                                                  "h-4 w-4 rounded-full bg-gradient-to-br",
+                                                                  tech.color,
+                                                                )}
+                                                              />
+                                                            </div>
+                                                          ) : (
+                                                            (tech.icon !== "" ||
+                                                              ICON_REGISTRY[tech.id]) && (
+                                                              <div
+                                                                className={cn(
+                                                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+                                                                  isSelected
+                                                                    ? "bg-primary/10"
+                                                                    : "bg-muted/50 group-hover:bg-muted",
+                                                                )}
+                                                              >
+                                                                <TechIcon
+                                                                  techId={tech.id}
+                                                                  icon={tech.icon}
+                                                                  name={tech.name}
+                                                                  className="h-4 w-4"
+                                                                />
+                                                              </div>
+                                                            )
+                                                          )}
+                                                          <div className="min-w-0 flex-1">
+                                                            <span
+                                                              className={cn(
+                                                                "block font-semibold text-xs sm:text-sm",
+                                                                isSelected
+                                                                  ? "text-primary"
+                                                                  : "text-foreground",
+                                                              )}
+                                                            >
+                                                              {tech.name}
+                                                            </span>
+                                                            <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                              {tech.description}
+                                                            </p>
+                                                          </div>
+                                                        </div>
+                                                      </motion.div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.section>
+                                )}
+                              </AnimatePresence>
+                            )}
+
+                            {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
+                            {categoryKey === "webFrontend" && (
+                              <AnimatePresence>
+                                {stack.webFrontend.includes("astro") && (
+                                  <motion.section
+                                    ref={(el) => {
+                                      sectionRefs.current.astroIntegration = el;
+                                    }}
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                  >
+                                    <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
+                                      <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                      <h2 className="font-pixel text-foreground text-sm sm:text-base">
+                                        Astro Integration
+                                      </h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                      {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
+                                        const isSelected = stack.astroIntegration === tech.id;
+                                        const isDisabled = !isOptionCompatible(
+                                          stack,
+                                          "astroIntegration",
+                                          tech.id,
+                                        );
+                                        const disabledReason = isDisabled
+                                          ? getDisabledReason(stack, "astroIntegration", tech.id)
+                                          : null;
+
+                                        return (
+                                          <motion.div
+                                            key={tech.id}
+                                            className={cn(
+                                              "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                              isSelected
+                                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                : isDisabled
+                                                  ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                  : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                            )}
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.99 }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleTechSelect("astroIntegration", tech.id);
+                                            }}
+                                            title={disabledReason || undefined}
+                                          >
                                             {tech.default && !isSelected && (
-                                              <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                              <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
                                                 Default
                                               </span>
                                             )}
@@ -1012,7 +1330,7 @@ const StackBuilder = () => {
                                               <Tooltip>
                                                 <TooltipTrigger
                                                   onClick={(e) => e.stopPropagation()}
-                                                  className="cursor-default"
+                                                  className="absolute top-2 right-2 cursor-default"
                                                 >
                                                   <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-pixel text-[9px] text-amber-500 dark:text-amber-400">
                                                     Legacy
@@ -1023,344 +1341,67 @@ const StackBuilder = () => {
                                                 </TooltipContent>
                                               </Tooltip>
                                             )}
-                                          </div>
-                                          <div className="flex items-start gap-3">
-                                            {tech.icon !== "" && (
-                                              <div
-                                                className={cn(
-                                                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
-                                                  isSelected
-                                                    ? "bg-primary/10"
-                                                    : "bg-muted/50 group-hover:bg-muted",
-                                                )}
-                                              >
-                                                <TechIcon
-                                                  techId={tech.id}
-                                                  icon={tech.icon}
-                                                  name={tech.name}
-                                                  className="h-5 w-5"
-                                                />
-                                              </div>
-                                            )}
-                                            <div className="min-w-0 flex-1 pt-0.5">
-                                              <span
-                                                className={cn(
-                                                  "block font-semibold text-sm",
-                                                  isSelected ? "text-primary" : "text-foreground",
-                                                )}
-                                              >
-                                                {tech.name}
-                                              </span>
-                                              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                {tech.description}
-                                              </p>
-                                              {isDisabled && disabledReason && (
-                                                <DisabledReasonInline reason={disabledReason} />
+                                            <div className="flex items-start gap-3">
+                                              {tech.icon !== "" && (
+                                                <div
+                                                  className={cn(
+                                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+                                                    isSelected
+                                                      ? "bg-primary/10"
+                                                      : "bg-muted/50 group-hover:bg-muted",
+                                                  )}
+                                                >
+                                                  <TechIcon
+                                                    techId={tech.id}
+                                                    icon={tech.icon}
+                                                    name={tech.name}
+                                                    className="h-5 w-5"
+                                                  />
+                                                </div>
                                               )}
-                                            </div>
-                                          </div>
-                                        </motion.div>
-                                      );
-                                    })}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </section>
-
-                          {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
-                          {categoryKey === "uiLibrary" && (
-                            <AnimatePresence>
-                              {stack.uiLibrary === "shadcn-ui" && (
-                                <motion.section
-                                  ref={(el) => {
-                                    sectionRefs.current.shadcnBase = el;
-                                  }}
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleSection("shadcnBase")}
-                                    className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
-                                  >
-                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                    <h2 className="flex-1 font-pixel text-foreground text-sm sm:text-base">
-                                      shadcn/ui Configuration
-                                    </h2>
-                                    <motion.div
-                                      animate={{
-                                        rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
-                                      }}
-                                      transition={{ duration: 0.2 }}
-                                    >
-                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                    </motion.div>
-                                  </button>
-                                  <AnimatePresence initial={false}>
-                                    {!collapsedSections.has("shadcnBase") && (
-                                      <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.25, ease: "easeInOut" }}
-                                        className="overflow-hidden"
-                                      >
-                                        <div className="space-y-4">
-                                          {(
-                                            [
-                                              { key: "shadcnBase" as const, label: "Base Library" },
-                                              {
-                                                key: "shadcnStyle" as const,
-                                                label: "Visual Style",
-                                              },
-                                              {
-                                                key: "shadcnIconLibrary" as const,
-                                                label: "Icon Library",
-                                              },
-                                              {
-                                                key: "shadcnColorTheme" as const,
-                                                label: "Color Theme",
-                                              },
-                                              {
-                                                key: "shadcnBaseColor" as const,
-                                                label: "Base Color",
-                                              },
-                                              { key: "shadcnFont" as const, label: "Font" },
-                                              {
-                                                key: "shadcnRadius" as const,
-                                                label: "Border Radius",
-                                              },
-                                            ] as const
-                                          ).map(({ key, label }) => (
-                                            <div key={key}>
-                                              <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                                                {label}
-                                              </h3>
-                                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
-                                                {(TECH_OPTIONS[key] || []).map((tech) => {
-                                                  const isSelected =
-                                                    stack[key as keyof StackState] === tech.id;
-                                                  return (
-                                                    <motion.div
-                                                      key={tech.id}
-                                                      className={cn(
-                                                        "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
-                                                        isSelected
-                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                          : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                      )}
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleTechSelect(key, tech.id);
-                                                      }}
-                                                    >
-                                                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-                                                        <TechResourceButtons
-                                                          category={key}
-                                                          techId={tech.id}
-                                                        />
-                                                        {tech.default && !isSelected && (
-                                                          <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
-                                                            Default
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                      <div className="flex items-start gap-2.5">
-                                                        {key === "shadcnColorTheme" ||
-                                                        key === "shadcnBaseColor" ? (
-                                                          <div
-                                                            className={cn(
-                                                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
-                                                              isSelected
-                                                                ? "bg-primary/10"
-                                                                : "bg-muted/50 group-hover:bg-muted",
-                                                            )}
-                                                          >
-                                                            <div
-                                                              className={cn(
-                                                                "h-4 w-4 rounded-full bg-gradient-to-br",
-                                                                tech.color,
-                                                              )}
-                                                            />
-                                                          </div>
-                                                        ) : (
-                                                          (tech.icon !== "" ||
-                                                            ICON_REGISTRY[tech.id]) && (
-                                                            <div
-                                                              className={cn(
-                                                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
-                                                                isSelected
-                                                                  ? "bg-primary/10"
-                                                                  : "bg-muted/50 group-hover:bg-muted",
-                                                              )}
-                                                            >
-                                                              <TechIcon
-                                                                techId={tech.id}
-                                                                icon={tech.icon}
-                                                                name={tech.name}
-                                                                className="h-4 w-4"
-                                                              />
-                                                            </div>
-                                                          )
-                                                        )}
-                                                        <div className="min-w-0 flex-1">
-                                                          <span
-                                                            className={cn(
-                                                              "block font-semibold text-xs sm:text-sm",
-                                                              isSelected
-                                                                ? "text-primary"
-                                                                : "text-foreground",
-                                                            )}
-                                                          >
-                                                            {tech.name}
-                                                          </span>
-                                                          <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
-                                                            {tech.description}
-                                                          </p>
-                                                        </div>
-                                                      </div>
-                                                    </motion.div>
-                                                  );
-                                                })}
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </motion.section>
-                              )}
-                            </AnimatePresence>
-                          )}
-
-                          {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
-                          {categoryKey === "webFrontend" && (
-                            <AnimatePresence>
-                              {stack.webFrontend.includes("astro") && (
-                                <motion.section
-                                  ref={(el) => {
-                                    sectionRefs.current.astroIntegration = el;
-                                  }}
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                                >
-                                  <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
-                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                    <h2 className="font-pixel text-foreground text-sm sm:text-base">
-                                      Astro Integration
-                                    </h2>
-                                  </div>
-                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                    {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
-                                      const isSelected = stack.astroIntegration === tech.id;
-                                      const isDisabled = !isOptionCompatible(
-                                        stack,
-                                        "astroIntegration",
-                                        tech.id,
-                                      );
-                                      const disabledReason = isDisabled
-                                        ? getDisabledReason(stack, "astroIntegration", tech.id)
-                                        : null;
-
-                                      return (
-                                        <motion.div
-                                          key={tech.id}
-                                          className={cn(
-                                            "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                            isSelected
-                                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                              : isDisabled
-                                                ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                          )}
-                                          whileHover={{ scale: 1.01 }}
-                                          whileTap={{ scale: 0.99 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleTechSelect("astroIntegration", tech.id);
-                                          }}
-                                          title={disabledReason || undefined}
-                                        >
-                                          {tech.default && !isSelected && (
-                                            <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                              Default
-                                            </span>
-                                          )}
-                                          {tech.legacy && (
-                                            <Tooltip>
-                                              <TooltipTrigger
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="absolute top-2 right-2 cursor-default"
-                                              >
-                                                <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-pixel text-[9px] text-amber-500 dark:text-amber-400">
-                                                  Legacy
+                                              <div className="min-w-0 flex-1 pt-0.5">
+                                                <span
+                                                  className={cn(
+                                                    "block font-semibold text-sm",
+                                                    isSelected ? "text-primary" : "text-foreground",
+                                                  )}
+                                                >
+                                                  {tech.name}
                                                 </span>
-                                              </TooltipTrigger>
-                                              <TooltipContent>
-                                                No longer actively maintained
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          )}
-                                          <div className="flex items-start gap-3">
-                                            {tech.icon !== "" && (
-                                              <div
-                                                className={cn(
-                                                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
-                                                  isSelected
-                                                    ? "bg-primary/10"
-                                                    : "bg-muted/50 group-hover:bg-muted",
+                                                <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                  {tech.description}
+                                                </p>
+                                                {isDisabled && disabledReason && (
+                                                  <DisabledReasonInline reason={disabledReason} />
                                                 )}
-                                              >
-                                                <TechIcon
-                                                  techId={tech.id}
-                                                  icon={tech.icon}
-                                                  name={tech.name}
-                                                  className="h-5 w-5"
-                                                />
                                               </div>
-                                            )}
-                                            <div className="min-w-0 flex-1 pt-0.5">
-                                              <span
-                                                className={cn(
-                                                  "block font-semibold text-sm",
-                                                  isSelected ? "text-primary" : "text-foreground",
-                                                )}
-                                              >
-                                                {tech.name}
-                                              </span>
-                                              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                {tech.description}
-                                              </p>
-                                              {isDisabled && disabledReason && (
-                                                <DisabledReasonInline reason={disabledReason} />
-                                              )}
                                             </div>
-                                          </div>
-                                        </motion.div>
-                                      );
-                                    })}
-                                  </div>
-                                </motion.section>
-                              )}
-                            </AnimatePresence>
-                          )}
-                        </div>
-                      );
-                    })}
+                                          </motion.div>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.section>
+                                )}
+                              </AnimatePresence>
+                            )}
+                          </div>
+                        );
+                      })}
 
-                    <div className="h-10" />
-                  </div>
-                </ScrollArea>
+                      <div className="h-10" />
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <PreviewPanel
+                  stack={compatibilityAnalysis.adjustedStack || stack}
+                  selectedFilePath={selectedFile || null}
+                  onSelectFile={setSelectedFile}
+                />
+              </div>
+            )}
           </main>
         </div>
       </div>
