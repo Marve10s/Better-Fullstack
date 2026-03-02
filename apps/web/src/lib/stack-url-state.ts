@@ -223,7 +223,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
   if (!search) return DEFAULT_STACK;
 
   return {
-    ecosystem: search.eco ?? DEFAULT_STACK.ecosystem,
+    ecosystem: (search.eco as StackState["ecosystem"] | undefined) ?? DEFAULT_STACK.ecosystem,
     projectName: search.name ?? DEFAULT_STACK.projectName,
     webFrontend: search["fe-w"] ?? DEFAULT_STACK.webFrontend,
     nativeFrontend: search["fe-n"] ?? DEFAULT_STACK.nativeFrontend,

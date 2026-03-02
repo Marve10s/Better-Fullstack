@@ -353,6 +353,10 @@ const StackBuilder = () => {
   const lastAppliedStackString = useRef<string>("");
 
   const compatibilityAnalysis = analyzeStackCompatibility(stack);
+  const adjustedStack = useMemo<StackState | null>(() => {
+    if (!compatibilityAnalysis.adjustedStack) return null;
+    return { ...stack, ...compatibilityAnalysis.adjustedStack };
+  }, [stack, compatibilityAnalysis.adjustedStack]);
   const projectNameError = validateProjectName(stack.projectName || "");
 
   // ─── Derived state ──────────────────────────────────────────────────────
@@ -395,7 +399,7 @@ const StackBuilder = () => {
   // ─── URL & command generation ───────────────────────────────────────────
 
   const getStackUrl = (): string => {
-    const stackToUse = compatibilityAnalysis.adjustedStack || stack;
+    const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
     return generateStackSharingUrl({ ...stackToUse, projectName: formattedProjectName });
@@ -417,8 +421,8 @@ const StackBuilder = () => {
   }, []);
 
   useEffect(() => {
-    if (compatibilityAnalysis.adjustedStack) {
-      const adjustedStackString = JSON.stringify(compatibilityAnalysis.adjustedStack);
+    if (adjustedStack) {
+      const adjustedStackString = JSON.stringify(adjustedStack);
 
       if (lastAppliedStackString.current !== adjustedStackString) {
         startTransition(() => {
@@ -431,22 +435,22 @@ const StackBuilder = () => {
             }
           }
           setLastChanges(compatibilityAnalysis.changes);
-          if (compatibilityAnalysis.adjustedStack) {
-            setStack(compatibilityAnalysis.adjustedStack);
+          if (adjustedStack) {
+            setStack(adjustedStack);
           }
           lastAppliedStackString.current = adjustedStackString;
         });
       }
     }
-  }, [compatibilityAnalysis.adjustedStack, compatibilityAnalysis.changes, setStack]);
+  }, [adjustedStack, compatibilityAnalysis.changes, setStack]);
 
   useEffect(() => {
-    const stackToUse = compatibilityAnalysis.adjustedStack || stack;
+    const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
     const cmd = generateStackCommand({ ...stackToUse, projectName: formattedProjectName });
     setCommand(cmd);
-  }, [stack, compatibilityAnalysis.adjustedStack]);
+  }, [stack, adjustedStack]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -596,7 +600,7 @@ const StackBuilder = () => {
   };
 
   const saveCurrentStack = () => {
-    const stackToUse = compatibilityAnalysis.adjustedStack || stack;
+    const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
     const stackToSave = { ...stackToUse, projectName: formattedProjectName };
@@ -1396,7 +1400,7 @@ const StackBuilder = () => {
             ) : (
               <div className="min-h-0 flex-1 overflow-hidden">
                 <PreviewPanel
-                  stack={compatibilityAnalysis.adjustedStack || stack}
+                  stack={adjustedStack || stack}
                   selectedFilePath={selectedFile || null}
                   onSelectFile={setSelectedFile}
                 />
