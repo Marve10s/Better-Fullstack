@@ -2,6 +2,8 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import { createFileRoute } from "@tanstack/react-router";
 
+import { isStackPreviewEnabledServer } from "@/lib/feature-flags";
+
 // VirtualNode type definition for transformed output
 interface VirtualNode {
   name: string;
@@ -169,12 +171,26 @@ export const Route = createFileRoute("/api/preview")({
           "X-Robots-Tag": "noindex, nofollow, noarchive",
           "Cache-Control": "no-store",
         };
+
+        if (!isStackPreviewEnabledServer()) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "Stack preview is disabled in this environment. Set BFS_ENABLE_STACK_PREVIEW=1 to enable it.",
+            },
+            { status: 501, headers: noIndexHeaders },
+          );
+        }
+
         try {
           const body = (await request.json()) as StackState;
 
-          // Dynamic import to keep this server-only
-          const { generateVirtualProject, EMBEDDED_TEMPLATES } =
-            await import("@better-fullstack/template-generator");
+          // Keep template generator out of the default production build path.
+          const templateGeneratorModule = "@better-fullstack/template-generator";
+          const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import(
+            /* @vite-ignore */ templateGeneratorModule
+          );
 
           const config = stackStateToConfig(body);
 

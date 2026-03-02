@@ -32,6 +32,7 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/constant";
+import { isStackPreviewEnabledClient } from "@/lib/feature-flags";
 import { useStackState } from "@/lib/stack-url-state.client";
 import {
   CATEGORY_ORDER,
@@ -328,6 +329,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
 
 const StackBuilder = () => {
   const [stack, setStack] = useStackState();
+  const isStackPreviewEnabled = isStackPreviewEnabledClient();
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
@@ -847,6 +849,11 @@ const StackBuilder = () => {
               <div className="absolute inset-0">
                 <ScrollArea ref={mainScrollRef} className="h-full">
                   <div className="p-3 sm:p-4">
+                    {!isStackPreviewEnabled && (
+                      <p className="mb-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-muted-foreground text-xs">
+                        Preview is unavailable in this environment.
+                      </p>
+                    )}
                     {/* Project Name */}
                     <div className="mb-6">
                       <label
