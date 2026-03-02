@@ -1,5 +1,5 @@
 import { DEFAULT_STACK, isStackDefault, type StackState, TECH_OPTIONS } from "@/lib/constant";
-import { stackUrlKeys } from "@/lib/stack-url-keys";
+import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
@@ -8,6 +8,13 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "astroIntegration",
   "cssFramework",
   "uiLibrary",
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
   "backend",
   "backendLibraries",
   "runtime",
@@ -203,6 +210,18 @@ export function generateStackCommand(stack: StackState) {
       : []),
     `--css-framework ${stack.cssFramework}`,
     `--ui-library ${stack.uiLibrary}`,
+    // Add shadcn/ui sub-options only when shadcn-ui is selected
+    ...(stack.uiLibrary === "shadcn-ui"
+      ? [
+          `--shadcn-base ${stack.shadcnBase}`,
+          `--shadcn-style ${stack.shadcnStyle}`,
+          `--shadcn-icon-library ${stack.shadcnIconLibrary}`,
+          `--shadcn-color-theme ${stack.shadcnColorTheme}`,
+          `--shadcn-base-color ${stack.shadcnBaseColor}`,
+          `--shadcn-font ${stack.shadcnFont}`,
+          `--shadcn-radius ${stack.shadcnRadius}`,
+        ]
+      : []),
     `--backend ${mapBackendToCli(stack.backend)}`,
     `--runtime ${stack.runtime}`,
     `--api ${stack.api}`,
@@ -401,14 +420,7 @@ function generateGoCommand(stack: StackState, projectName: string) {
 export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
   const origin = baseUrl || "https://better-fullstack-web.vercel.app";
 
-  const stackParams = new URLSearchParams();
-  Object.entries(stackUrlKeys).forEach(([stackKey, urlKey]) => {
-    const value = stack[stackKey as keyof StackState];
-    if (value !== undefined) {
-      stackParams.set(urlKey as string, Array.isArray(value) ? value.join(",") : String(value));
-    }
-  });
-
+  const stackParams = createStackSearchParams(stack, { includeDefaults: true });
   const searchString = stackParams.toString();
   return `${origin}/new${searchString ? `?${searchString}` : ""}`;
 }
@@ -416,14 +428,7 @@ export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
 export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
   const origin = baseUrl || "https://better-fullstack-web.vercel.app";
 
-  const stackParams = new URLSearchParams();
-  Object.entries(stackUrlKeys).forEach(([stackKey, urlKey]) => {
-    const value = stack[stackKey as keyof StackState];
-    if (value !== undefined) {
-      stackParams.set(urlKey as string, Array.isArray(value) ? value.join(",") : String(value));
-    }
-  });
-
+  const stackParams = createStackSearchParams(stack, { includeDefaults: true });
   const searchString = stackParams.toString();
   return `${origin}/stack${searchString ? `?${searchString}` : ""}`;
 }

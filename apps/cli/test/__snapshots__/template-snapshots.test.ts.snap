@@ -848,7 +848,6 @@ export default app;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -863,7 +862,7 @@ export default app;
     "@snapshot-tanstack-router-minimal/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21"
@@ -1156,10 +1155,10 @@ export default defineConfig({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@trpc/server": "^11.10.0",
+      "@trpc/server": "^11.11.0",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
-      "@trpc/client": "^11.10.0"
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -1512,7 +1511,6 @@ export default nextConfig;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.546.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -1528,7 +1526,7 @@ export default nextConfig;
     "@snapshot-next-self-fullstack/auth": "workspace:*",
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@tanstack/react-query": "^5.90.21",
     "better-auth": "catalog:"
   },
@@ -1760,9 +1758,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "next": "^16.1.1",
-      "@trpc/server": "^11.10.0",
-      "@trpc/client": "^11.10.0",
-      "better-auth": "^1.4.19"
+      "@trpc/server": "^11.11.0",
+      "@trpc/client": "^11.11.0",
+      "better-auth": "^1.5.1"
     }
   },
   "scripts": {
@@ -1954,6 +1952,7 @@ provider: "pg",
 
 
 
+
 "
 ,
       "path": "packages/auth/src/index.ts",
@@ -2057,7 +2056,7 @@ export default defineConfig({
     "typescript": "catalog:",
     "@snapshot-next-self-fullstack/config": "workspace:*",
     "drizzle-kit": "^0.31.9",
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.18.0"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -2447,10 +2446,10 @@ export const client = createORPCClient<typeof appRouter>(link);
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/db": "workspace:*",
-    "@orpc/server": "^1.13.5",
-    "@orpc/client": "^1.13.5",
-    "@orpc/openapi": "^1.13.5",
-    "@orpc/zod": "^1.13.5"
+    "@orpc/server": "^1.13.6",
+    "@orpc/client": "^1.13.6",
+    "@orpc/openapi": "^1.13.6",
+    "@orpc/zod": "^1.13.6"
   }
 }"
 ,
@@ -2823,7 +2822,7 @@ export default defineNuxtConfig({
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
     "@tanstack/vue-query": "^5.92.9",
-    "@orpc/tanstack-query": "^1.13.5"
+    "@orpc/tanstack-query": "^1.13.6"
   },
   "devDependencies": {
     "tailwindcss": "^4.1.13",
@@ -2895,10 +2894,10 @@ export default defineNuxtConfig({
       "@types/bun": "^1.3.9",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
-      "@orpc/server": "^1.13.5",
-      "@orpc/client": "^1.13.5",
-      "@orpc/openapi": "^1.13.5",
-      "@orpc/zod": "^1.13.5"
+      "@orpc/server": "^1.13.6",
+      "@orpc/client": "^1.13.6",
+      "@orpc/openapi": "^1.13.6",
+      "@orpc/zod": "^1.13.6"
     }
   },
   "scripts": {
@@ -3341,7 +3340,6 @@ app.listen(3000, () => {
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -3355,7 +3353,7 @@ app.listen(3000, () => {
     "@snapshot-express-node-trpc/env": "workspace:*",
     "@snapshot-express-node-trpc/api": "workspace:*",
     "@prisma/client": "catalog:",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21"
@@ -3647,10 +3645,10 @@ export default defineConfig({
       "zod": "^4.1.13",
       "typescript": "^5",
       "@types/node": "^22.13.14",
-      "@trpc/server": "^11.10.0",
+      "@trpc/server": "^11.11.0",
       "@types/express": "^5.0.6",
-      "@prisma/client": "^7.4.1",
-      "@trpc/client": "^11.10.0"
+      "@prisma/client": "^7.4.2",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -3826,14 +3824,14 @@ export type AppRouter = typeof appRouter;
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "prisma": "^7.4.1",
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.18.0"
   },
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-express-node-trpc/env": "workspace:*",
     "@prisma/client": "catalog:",
-    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/adapter-pg": "^7.4.2",
     "pg": "^8.16.3"
   }
 }"
@@ -4115,7 +4113,6 @@ export default app;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -4130,7 +4127,7 @@ export default app;
     "@snapshot-hono-bun-orpc/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@orpc/tanstack-query": "^1.13.5",
+    "@orpc/tanstack-query": "^1.13.6",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21"
@@ -4419,12 +4416,12 @@ export default defineConfig({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@orpc/server": "^1.13.5",
-      "@orpc/openapi": "^1.13.5",
-      "@orpc/zod": "^1.13.5",
+      "@orpc/server": "^1.13.6",
+      "@orpc/openapi": "^1.13.6",
+      "@orpc/zod": "^1.13.6",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
-      "@orpc/client": "^1.13.5"
+      "@orpc/client": "^1.13.6"
     }
   },
   "scripts": {
@@ -4873,7 +4870,6 @@ export default app;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -4887,7 +4883,7 @@ export default app;
     "@snapshot-better-auth-full/env": "workspace:*",
     "@snapshot-better-auth-full/api": "workspace:*",
     "@snapshot-better-auth-full/auth": "workspace:*",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21",
@@ -5212,9 +5208,9 @@ export default defineConfig({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@trpc/server": "^11.10.0",
-      "better-auth": "^1.4.19",
-      "@trpc/client": "^11.10.0"
+      "@trpc/server": "^11.11.0",
+      "better-auth": "^1.5.1",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -5413,6 +5409,7 @@ provider: "pg",
 
 
 
+
 "
 ,
       "path": "packages/auth/src/index.ts",
@@ -5516,7 +5513,7 @@ export default defineConfig({
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
     "drizzle-kit": "^0.31.9",
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.18.0"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -5756,7 +5753,6 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -5770,7 +5766,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@snapshot-convex-clerk/env": "workspace:*",
     "@snapshot-convex-clerk/backend": "workspace:*",
     "convex": "catalog:",
-    "@clerk/clerk-react": "^5.61.1"
+    "@clerk/clerk-react": "^5.61.3"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.154.3",
@@ -6290,7 +6286,6 @@ export default nextConfig;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.546.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -6307,9 +6302,9 @@ export default nextConfig;
     "libsql": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@tanstack/react-query": "^5.90.21",
-    "@clerk/nextjs": "^6.38.2"
+    "@clerk/nextjs": "^6.39.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
@@ -6515,8 +6510,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "next": "^16.1.1",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
-      "@trpc/server": "^11.10.0",
-      "@trpc/client": "^11.10.0"
+      "@trpc/server": "^11.11.0",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -6849,7 +6844,6 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.525.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.1",
@@ -6874,8 +6868,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@orpc/tanstack-query": "^1.13.5",
-    "@clerk/tanstack-react-start": "^0.29.6",
+    "@orpc/tanstack-query": "^1.13.6",
+    "@clerk/tanstack-react-start": "^0.29.8",
     "srvx": "0.8.15"
   },
   "devDependencies": {
@@ -7188,10 +7182,10 @@ export default defineConfig({
       "@types/bun": "^1.3.9",
       "@libsql/client": "^0.17.0",
       "libsql": "0.5.22",
-      "@orpc/server": "^1.13.5",
-      "@orpc/client": "^1.13.5",
-      "@orpc/openapi": "^1.13.5",
-      "@orpc/zod": "^1.13.5"
+      "@orpc/server": "^1.13.6",
+      "@orpc/client": "^1.13.6",
+      "@orpc/openapi": "^1.13.6",
+      "@orpc/zod": "^1.13.6"
     }
   },
   "scripts": {
@@ -7632,7 +7626,6 @@ export default app;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -7645,7 +7638,7 @@ export default app;
     "zod": "catalog:",
     "@snapshot-mongodb-mongoose/env": "workspace:*",
     "@snapshot-mongodb-mongoose/api": "workspace:*",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21"
@@ -7938,8 +7931,8 @@ export default defineConfig({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@trpc/server": "^11.10.0",
-      "@trpc/client": "^11.10.0"
+      "@trpc/server": "^11.11.0",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -8343,7 +8336,6 @@ export default app;
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -8357,7 +8349,7 @@ export default app;
     "@snapshot-postgres-prisma/env": "workspace:*",
     "@snapshot-postgres-prisma/api": "workspace:*",
     "@prisma/client": "catalog:",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.90.21"
@@ -8650,9 +8642,9 @@ export default defineConfig({
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@trpc/server": "^11.10.0",
-      "@prisma/client": "^7.4.1",
-      "@trpc/client": "^11.10.0"
+      "@trpc/server": "^11.11.0",
+      "@prisma/client": "^7.4.2",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
@@ -8828,14 +8820,14 @@ export type AppRouter = typeof appRouter;
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "prisma": "^7.4.1",
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.18.0"
   },
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-postgres-prisma/env": "workspace:*",
     "@prisma/client": "catalog:",
-    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/adapter-pg": "^7.4.2",
     "pg": "^8.16.3"
   }
 }"
@@ -8973,7 +8965,6 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "@base-ui/react": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.473.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
@@ -9614,7 +9605,7 @@ fontWeight: "bold",
     "zod": "catalog:",
     "@snapshot-native-react-native/env": "workspace:*",
     "@snapshot-native-react-native/api": "workspace:*",
-    "@trpc/tanstack-react-query": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.11.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:"
   },
@@ -9797,8 +9788,8 @@ export default app;
       "typescript": "^5",
       "@types/bun": "^1.3.9",
       "hono": "^4.8.2",
-      "@trpc/server": "^11.10.0",
-      "@trpc/client": "^11.10.0"
+      "@trpc/server": "^11.11.0",
+      "@trpc/client": "^11.11.0"
     }
   },
   "scripts": {
