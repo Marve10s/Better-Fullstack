@@ -750,6 +750,41 @@ const CATEGORY_LINKS: LinkMap = {
     githubUrl: "https://github.com/nicedoc/remixicon",
   },
 
+  // ─── shadcn Color Themes ───────────────────────────────────────────────────
+  "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:stone": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:zinc": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:gray": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:blue": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:violet": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:green": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:red": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:rose": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:orange": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:amber": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:yellow": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:lime": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:emerald": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:teal": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:cyan": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:sky": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:indigo": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:purple": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:fuchsia": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnColorTheme:pink": { docsUrl: "https://ui.shadcn.com/themes" },
+
+  // ─── shadcn Base Colors ──────────────────────────────────────────────────────
+  "shadcnBaseColor:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnBaseColor:stone": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnBaseColor:zinc": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnBaseColor:gray": { docsUrl: "https://ui.shadcn.com/themes" },
+
+  // ─── shadcn Border Radius ────────────────────────────────────────────────────
+  "shadcnRadius:default": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnRadius:small": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnRadius:medium": { docsUrl: "https://ui.shadcn.com/themes" },
+  "shadcnRadius:large": { docsUrl: "https://ui.shadcn.com/themes" },
+
   // ─── shadcn Styles ─────────────────────────────────────────────────────────
   "shadcnStyle:vega": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
   "shadcnStyle:nova": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
