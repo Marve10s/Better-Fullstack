@@ -717,6 +717,59 @@ const CATEGORY_LINKS: LinkMap = {
   "aiDocs:claude-md": { docsUrl: "https://docs.anthropic.com/en/docs/claude-code/memory" },
   "aiDocs:agents-md": { docsUrl: "https://agents.md/" },
   "aiDocs:cursorrules": { docsUrl: "https://docs.cursor.com/context/rules-for-ai" },
+
+  // ─── shadcn Base Libraries ──────────────────────────────────────────────────
+  "shadcnBase:radix": {
+    docsUrl: "https://www.radix-ui.com/primitives/docs/overview/introduction",
+    githubUrl: "https://github.com/radix-ui/primitives",
+  },
+  "shadcnBase:base": {
+    docsUrl: "https://base-ui.com/react/overview/quick-start",
+    githubUrl: "https://github.com/mui/base-ui",
+  },
+
+  // ─── shadcn Icon Libraries ─────────────────────────────────────────────────
+  "shadcnIconLibrary:lucide": {
+    docsUrl: "https://lucide.dev/guide/",
+    githubUrl: "https://github.com/lucide-icons/lucide",
+  },
+  "shadcnIconLibrary:tabler": {
+    docsUrl: "https://tabler.io/icons",
+    githubUrl: "https://github.com/tabler/tabler-icons",
+  },
+  "shadcnIconLibrary:hugeicons": {
+    docsUrl: "https://hugeicons.com/",
+    githubUrl: "https://github.com/hugeicons/hugeicons-react",
+  },
+  "shadcnIconLibrary:phosphor": {
+    docsUrl: "https://phosphoricons.com/",
+    githubUrl: "https://github.com/phosphor-icons/react",
+  },
+  "shadcnIconLibrary:remixicon": {
+    docsUrl: "https://remixicon.com/",
+    githubUrl: "https://github.com/nicedoc/remixicon",
+  },
+
+  // ─── shadcn Styles ─────────────────────────────────────────────────────────
+  "shadcnStyle:vega": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:nova": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:maia": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:lyra": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:mira": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+
+  // ─── shadcn Fonts ──────────────────────────────────────────────────────────
+  "shadcnFont:inter": { docsUrl: "https://rsms.me/inter/" },
+  "shadcnFont:geist": { docsUrl: "https://vercel.com/font" },
+  "shadcnFont:figtree": { docsUrl: "https://fonts.google.com/specimen/Figtree" },
+  "shadcnFont:noto-sans": { docsUrl: "https://fonts.google.com/noto/specimen/Noto+Sans" },
+  "shadcnFont:nunito-sans": { docsUrl: "https://fonts.google.com/specimen/Nunito+Sans" },
+  "shadcnFont:roboto": { docsUrl: "https://fonts.google.com/specimen/Roboto" },
+  "shadcnFont:raleway": { docsUrl: "https://fonts.google.com/specimen/Raleway" },
+  "shadcnFont:dm-sans": { docsUrl: "https://fonts.google.com/specimen/DM+Sans" },
+  "shadcnFont:public-sans": { docsUrl: "https://fonts.google.com/specimen/Public+Sans" },
+  "shadcnFont:outfit": { docsUrl: "https://fonts.google.com/specimen/Outfit" },
+  "shadcnFont:jetbrains-mono": { docsUrl: "https://www.jetbrains.com/lp/mono/" },
+  "shadcnFont:geist-mono": { docsUrl: "https://vercel.com/font" },
 };
 
 export function getTechResourceLinks(category: string, techId: string): TechResourceLinks {

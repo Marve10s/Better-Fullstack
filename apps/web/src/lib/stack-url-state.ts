@@ -39,6 +39,13 @@ export function loadStackParams(
       astroIntegration: getString("astroIntegration", DEFAULT_STACK.astroIntegration),
       cssFramework: getString("cssFramework", DEFAULT_STACK.cssFramework),
       uiLibrary: getString("uiLibrary", DEFAULT_STACK.uiLibrary),
+      shadcnBase: getString("shadcnBase", DEFAULT_STACK.shadcnBase),
+      shadcnStyle: getString("shadcnStyle", DEFAULT_STACK.shadcnStyle),
+      shadcnIconLibrary: getString("shadcnIconLibrary", DEFAULT_STACK.shadcnIconLibrary),
+      shadcnColorTheme: getString("shadcnColorTheme", DEFAULT_STACK.shadcnColorTheme),
+      shadcnBaseColor: getString("shadcnBaseColor", DEFAULT_STACK.shadcnBaseColor),
+      shadcnFont: getString("shadcnFont", DEFAULT_STACK.shadcnFont),
+      shadcnRadius: getString("shadcnRadius", DEFAULT_STACK.shadcnRadius),
       runtime: getString("runtime", DEFAULT_STACK.runtime),
       backend: getString("backend", DEFAULT_STACK.backend),
       api: getString("api", DEFAULT_STACK.api),
@@ -133,6 +140,13 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("astroIntegration", stack.astroIntegration);
   addParam("cssFramework", stack.cssFramework);
   addParam("uiLibrary", stack.uiLibrary);
+  addParam("shadcnBase", stack.shadcnBase);
+  addParam("shadcnStyle", stack.shadcnStyle);
+  addParam("shadcnIconLibrary", stack.shadcnIconLibrary);
+  addParam("shadcnColorTheme", stack.shadcnColorTheme);
+  addParam("shadcnBaseColor", stack.shadcnBaseColor);
+  addParam("shadcnFont", stack.shadcnFont);
+  addParam("shadcnRadius", stack.shadcnRadius);
   addParam("runtime", stack.runtime);
   addParam("backend", stack.backend);
   addParam("api", stack.api);
