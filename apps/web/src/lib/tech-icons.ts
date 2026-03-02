@@ -68,7 +68,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   next: { type: "si", slug: "nextdotjs", hex: "000000" },
   nuxt: { type: "local", src: "/icon/nuxt-js.svg" },
   svelte: { type: "si", slug: "svelte", hex: "FF3E00" },
-  solid: { type: "si", slug: "solid", hex: "2C4F7C" },
+  solid: { type: "local", src: "/icon/solid.svg" },
+  "solid-start": { type: "local", src: "/icon/solid.svg" },
   astro: { type: "local", src: "/icon/astro.svg" },
   qwik: { type: "si", slug: "qwik", hex: "AC7EF4" },
   angular: { type: "si", slug: "angular", hex: "DD0031" },
@@ -105,6 +106,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "self-tanstack-start": { type: "local", src: "/icon/tanstack.png" },
   "self-astro": { type: "local", src: "/icon/astro.svg" },
   "self-nuxt": { type: "local", src: "/icon/nuxt-js.svg" },
+  "self-solid-start": { type: "local", src: "/icon/solid.svg" },
 
   // ─── Database ──────────────────────────────────────────────────────────────
   sqlite: { type: "si", slug: "sqlite", hex: "003B57" },
