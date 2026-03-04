@@ -225,6 +225,7 @@ function Page5() {
               <div className="mt-3 flex justify-end">
                 <Link
                   to="/new"
+                  search={{ view: "command", file: "" }}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/90"
                 >
                   Builder <ArrowRight className="h-3 w-3" />

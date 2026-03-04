@@ -240,6 +240,7 @@ function Page4() {
               </div>
               <Link
                 to="/new"
+                search={{ view: "command", file: "" }}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-foreground px-4 py-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
               >
                 Builder <ArrowRight className="h-3.5 w-3.5" />

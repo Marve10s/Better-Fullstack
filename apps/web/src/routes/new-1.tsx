@@ -205,6 +205,7 @@ function Page1() {
         <div className="flex justify-center py-10">
           <Link
             to="/new"
+            search={{ view: "command", file: "" }}
             className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
           >
             Open Builder <ArrowRight className="h-4 w-4" />

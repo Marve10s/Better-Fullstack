@@ -225,6 +225,7 @@ function Page3() {
 
             <Link
               to="/new"
+              search={{ view: "command", file: "" }}
               className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-foreground px-4 py-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
             >
               Open Builder <ArrowRight className="h-3.5 w-3.5" />

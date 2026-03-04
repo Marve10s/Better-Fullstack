@@ -13,9 +13,6 @@ export default defineConfig({
   build: {
     sourcemap: false,
     minify: "esbuild",
-    rollupOptions: {
-      external: ["@jsonjoy.com/util/lib/buffers/Writer"],
-    },
   },
   plugins: [
     tsconfigPaths({
