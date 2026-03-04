@@ -9,7 +9,7 @@ import { getWebPackagePath } from "../utils/project-paths";
  * Process CSS framework dependencies based on config.cssFramework
  */
 export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { cssFramework, frontend } = config;
+  const { cssFramework, frontend, backend } = config;
 
   const hasWeb = frontend.some((f) =>
     [
@@ -20,6 +20,7 @@ export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectC
       "nuxt",
       "svelte",
       "solid",
+      "solid-start",
       "astro",
       "qwik",
       "angular",
@@ -29,7 +30,7 @@ export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectC
 
   if (!hasWeb) return;
 
-  const webPath = getWebPackagePath(frontend);
+  const webPath = getWebPackagePath(frontend, backend);
   if (!vfs.exists(webPath)) return;
 
   // Add CSS preprocessor dependencies
@@ -54,13 +55,13 @@ export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectC
  * Process UI library dependencies based on config.uiLibrary
  */
 export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { uiLibrary, frontend } = config;
+  const { uiLibrary, frontend, backend } = config;
 
   const hasReactWeb = frontend.some((f) =>
     ["tanstack-router", "react-router", "tanstack-start", "next", "redwood"].includes(f),
   );
   const hasNuxt = frontend.includes("nuxt");
-  const hasSolid = frontend.includes("solid");
+  const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");
   const hasSvelte = frontend.includes("svelte");
 
   // Astro integration detection
@@ -70,15 +71,47 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
   const hasAstroSvelte = hasAstro && config.astroIntegration === "svelte";
   const hasAstroSolid = hasAstro && config.astroIntegration === "solid";
 
-  if (uiLibrary === "none") return;
-
   if (uiLibrary === "shadcn-ui") {
     processShadcnDeps(vfs, config);
     return;
   }
 
-  const webPath = getWebPackagePath(frontend);
+  const webPath = getWebPackagePath(frontend, backend);
   if (!vfs.exists(webPath)) return;
+
+  // React web templates always include iconized UI primitives (mode toggle, loader, etc.),
+  // keyed off shadcnIconLibrary even when uiLibrary is not shadcn-ui.
+  if (hasReactWeb || hasAstroReact) {
+    const iconDeps: AvailableDependencies[] = [];
+    const iconLib = config.shadcnIconLibrary ?? "lucide";
+    switch (iconLib) {
+      case "lucide":
+        iconDeps.push("lucide-react");
+        break;
+      case "tabler":
+        iconDeps.push("@tabler/icons-react");
+        break;
+      case "hugeicons":
+        iconDeps.push("@hugeicons/react", "@hugeicons/core-free-icons");
+        break;
+      case "phosphor":
+        iconDeps.push("@phosphor-icons/react");
+        break;
+      case "remixicon":
+        iconDeps.push("@remixicon/react");
+        break;
+    }
+
+    if (iconDeps.length > 0) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: iconDeps,
+      });
+    }
+  }
+
+  if (uiLibrary === "none") return;
 
   const deps: AvailableDependencies[] = [];
 
@@ -184,8 +217,8 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
  * Process shadcn/ui dependencies based on sub-options (base, icon library, etc.)
  */
 function processShadcnDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { frontend } = config;
-  const webPath = getWebPackagePath(frontend);
+  const { frontend, backend } = config;
+  const webPath = getWebPackagePath(frontend, backend);
   if (!vfs.exists(webPath)) return;
 
   const deps: AvailableDependencies[] = [

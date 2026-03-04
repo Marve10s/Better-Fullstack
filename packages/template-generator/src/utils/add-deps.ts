@@ -16,6 +16,9 @@ export const dependencyVersionMap = {
 
   "better-auth": "^1.5.1",
   "@better-auth/expo": "^1.5.1",
+  "@better-auth/drizzle-adapter": "^1.5.1",
+  "@better-auth/prisma-adapter": "^1.5.1",
+  "@better-auth/mongo-adapter": "^1.5.1",
 
   "@clerk/nextjs": "^6.39.0",
   "@clerk/clerk-react": "^5.61.3",
@@ -355,7 +358,7 @@ export const dependencyVersionMap = {
   "lucide-react": "^0.511.0",
   "@tabler/icons-react": "^3.34.0",
   "@hugeicons/react": "^0.3.0",
-  "@hugeicons/core-free-icons": "^0.3.0",
+  "@hugeicons/core-free-icons": "^3.3.0",
   "@phosphor-icons/react": "^2.1.7",
   "@remixicon/react": "^4.6.0",
 
