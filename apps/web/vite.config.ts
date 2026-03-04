@@ -13,6 +13,12 @@ export default defineConfig({
   build: {
     sourcemap: false,
     minify: "esbuild",
+    rollupOptions: {
+      // ts-morph is only used by template-generator processors in Node.js (CLI).
+      // The browser dynamic imports gracefully catch the failure, so exclude it
+      // from the client bundle entirely (~1.4MB gzip savings).
+      external: ["ts-morph"],
+    },
   },
   plugins: [
     tsconfigPaths({
