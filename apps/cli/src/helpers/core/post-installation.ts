@@ -1,5 +1,6 @@
 import { consola } from "consola";
 import pc from "picocolors";
+import { getLocalWebDevPort } from "@better-fullstack/types";
 
 import type {
   Backend,
@@ -118,10 +119,8 @@ export async function displayPostInstallInstructions(
     packageManager === "bun" && hasNative && hasWeb ? getBunWebNativeWarning() : "";
   const noOrmWarning = !isConvex && database !== "none" && orm === "none" ? getNoOrmWarning() : "";
 
-  const hasReactRouter = frontend?.includes("react-router");
-  const hasSvelte = frontend?.includes("svelte");
   const hasFresh = frontend?.includes("fresh");
-  const webPort = hasReactRouter || hasSvelte ? "5173" : "3001";
+  const webPort = String(getLocalWebDevPort(frontend ?? []));
   const betterAuthConvexInstructions =
     isConvex && config.auth === "better-auth"
       ? getBetterAuthConvexInstructions(hasWeb ?? false, webPort, packageManager)
