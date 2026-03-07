@@ -11,3 +11,4 @@ The role of this file is to describe common mistakes and confusion points that a
 - Even with many non-interactive flags set, CLI may still prompt for AI documentation files unless `--ai-docs none` is provided explicitly.
 - Route-level `validateSearch` on `apps/web/src/routes/new.tsx` can pull `zod` and search-schema code into the main client bundle. Prefer parsing search params inside the lazy-loaded stack builder path to protect homepage performance.
 - After adding or removing files in `apps/web/src/routes`, `apps/web/src/routeTree.gen.ts` may be stale until a route generator run triggered by `vite build` or `vite dev`.
+- Standalone Bun scripts under `apps/web/scripts` may run before workspace packages are built in CI. Avoid runtime imports from `@better-fullstack/types` there if the code path only needs source data; importing the source file directly can prevent `dist` resolution failures.

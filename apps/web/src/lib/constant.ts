@@ -1,4 +1,4 @@
-import { getCapabilityDefinitions } from "@better-fullstack/types";
+import { getCapabilityDefinitions } from "../../../../packages/types/src/capabilities";
 
 import type { Ecosystem, TechCategory } from "./types";
 
