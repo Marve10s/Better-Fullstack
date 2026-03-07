@@ -498,16 +498,16 @@ describe("Frontend Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        install: false,
+        install: true,
       });
 
       expectSuccess(result);
       expect(result.projectDir).toBeDefined();
 
-      const webDir = `${result.projectDir}/apps/web`;
+      const projectDir = result.projectDir!;
 
-      await execa("deno", ["task", "check"], { cwd: webDir });
-      await execa("deno", ["task", "build"], { cwd: webDir });
+      await execa("bun", ["run", "--filter", "web", "check-types"], { cwd: projectDir });
+      await execa("bun", ["run", "--filter", "web", "build"], { cwd: projectDir });
     }, 120000);
 
     it("should fail Fresh with tRPC API", async () => {
