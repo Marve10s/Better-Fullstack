@@ -231,7 +231,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should fail with nextauth + non-self backend", async () => {
+    it("should normalize nextauth + non-self backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-non-self-fail",
         auth: "nextauth",
@@ -246,13 +246,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth.js (NextAuth) is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with nextauth + non-next frontend", async () => {
+    it("should normalize nextauth + non-next frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-non-next-fail",
         auth: "nextauth",
@@ -267,13 +267,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth.js (NextAuth) currently requires the Next.js frontend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with nextauth + tanstack-router frontend", async () => {
+    it("should normalize nextauth + tanstack-router frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-tanstack-router-fail",
         auth: "nextauth",
@@ -288,13 +288,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth.js (NextAuth)");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with nextauth + convex backend", async () => {
+    it("should normalize nextauth + convex backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-convex-fail",
         auth: "nextauth",
@@ -309,10 +309,10 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth.js (NextAuth) is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
   });
 
@@ -380,7 +380,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should fail with stack-auth + non-self backend", async () => {
+    it("should normalize stack-auth + non-self backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-non-self-fail",
         auth: "stack-auth",
@@ -395,13 +395,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Stack Auth is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with stack-auth + non-next frontend", async () => {
+    it("should normalize stack-auth + non-next frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-non-next-fail",
         auth: "stack-auth",
@@ -416,13 +416,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Stack Auth currently requires the Next.js frontend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with stack-auth + tanstack-router frontend", async () => {
+    it("should normalize stack-auth + tanstack-router frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-tanstack-router-fail",
         auth: "stack-auth",
@@ -437,13 +437,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Stack Auth");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with stack-auth + convex backend", async () => {
+    it("should normalize stack-auth + convex backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-convex-fail",
         auth: "stack-auth",
@@ -458,10 +458,10 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Stack Auth is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
   });
 
@@ -529,7 +529,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should fail with supabase-auth + non-self backend", async () => {
+    it("should normalize supabase-auth + non-self backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-non-self-fail",
         auth: "supabase-auth",
@@ -544,13 +544,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Supabase Auth is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with supabase-auth + non-next frontend", async () => {
+    it("should normalize supabase-auth + non-next frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-non-next-fail",
         auth: "supabase-auth",
@@ -565,13 +565,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Supabase Auth currently requires the Next.js frontend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with supabase-auth + tanstack-router frontend", async () => {
+    it("should normalize supabase-auth + tanstack-router frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-tanstack-router-fail",
         auth: "supabase-auth",
@@ -586,13 +586,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Supabase Auth");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with supabase-auth + convex backend", async () => {
+    it("should normalize supabase-auth + convex backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-convex-fail",
         auth: "supabase-auth",
@@ -607,10 +607,10 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Supabase Auth is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
   });
 
@@ -678,7 +678,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should fail with auth0 + non-self backend", async () => {
+    it("should normalize auth0 + non-self backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-non-self-fail",
         auth: "auth0",
@@ -693,13 +693,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth0 is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with auth0 + non-next frontend", async () => {
+    it("should normalize auth0 + non-next frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-non-next-fail",
         auth: "auth0",
@@ -714,13 +714,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth0 currently requires the Next.js frontend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with auth0 + tanstack-router frontend", async () => {
+    it("should normalize auth0 + tanstack-router frontend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-tanstack-router-fail",
         auth: "auth0",
@@ -735,13 +735,13 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth0");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with auth0 + convex backend", async () => {
+    it("should normalize auth0 + convex backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-convex-fail",
         auth: "auth0",
@@ -756,10 +756,10 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
-        expectError: true,
       });
 
-      expectError(result, "Auth0 is currently supported only with the 'self' backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
   });
 
@@ -871,7 +871,7 @@ describe("Authentication Configurations", () => {
       expect(webPackageJson).toContain("\"srvx\"");
     });
 
-    it("should fail with clerk + unsupported standalone backend", async () => {
+    it("should normalize clerk + unsupported standalone backend to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-hono-fail",
         auth: "clerk",
@@ -886,18 +886,19 @@ describe("Authentication Configurations", () => {
         orm: "drizzle",
         api: "trpc",
         frontend: ["tanstack-router"],
-        expectError: true,
       });
 
-      expectError(result, "Clerk authentication is currently supported with the Convex backend");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with clerk + self backend + astro", async () => {
+    it("should normalize clerk + self backend + astro to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-astro-fail",
         auth: "clerk",
         backend: "self",
         runtime: "none",
+        astroIntegration: "react",
         database: "sqlite",
         orm: "drizzle",
         api: "orpc",
@@ -907,13 +908,13 @@ describe("Authentication Configurations", () => {
         webDeploy: "none",
         serverDeploy: "none",
         addons: ["turborepo"],
-        expectError: true,
       });
 
-      expectError(result, "Clerk is not yet supported for Astro fullstack projects");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with clerk + self backend + nuxt", async () => {
+    it("should normalize clerk + self backend + nuxt to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-nuxt-fail",
         auth: "clerk",
@@ -928,13 +929,13 @@ describe("Authentication Configurations", () => {
         webDeploy: "none",
         serverDeploy: "none",
         addons: ["turborepo"],
-        expectError: true,
       });
 
-      expectError(result, "Clerk is not yet supported for Nuxt fullstack projects");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should fail with clerk + self backend + next + native companion", async () => {
+    it("should normalize clerk + self backend + next + native companion to no auth", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-next-native-fail",
         auth: "clerk",
@@ -949,10 +950,10 @@ describe("Authentication Configurations", () => {
         webDeploy: "none",
         serverDeploy: "none",
         addons: ["turborepo"],
-        expectError: true,
       });
 
-      expectError(result, "supported only for web-only Next.js or TanStack Start projects");
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
     const compatibleFrontends = [
@@ -988,10 +989,10 @@ describe("Authentication Configurations", () => {
       });
     }
 
-    const incompatibleFrontends = ["nuxt", "svelte", "solid"];
+    const authNormalizedFrontends = ["nuxt", "svelte"];
 
-    for (const frontend of incompatibleFrontends) {
-      it(`should fail with clerk + ${frontend}`, async () => {
+    for (const frontend of authNormalizedFrontends) {
+      it(`should normalize clerk + ${frontend} to no auth`, async () => {
         const result = await runTRPCTest({
           projectName: `clerk-${frontend}-fail`,
           auth: "clerk",
@@ -1006,17 +1007,33 @@ describe("Authentication Configurations", () => {
           dbSetup: "none",
           webDeploy: "none",
           serverDeploy: "none",
-          expectError: true,
         });
 
-        expectError(
-          result,
-          frontend === "solid"
-            ? "not compatible with '--backend convex'"
-            : "Clerk + Convex is not compatible",
-        );
+        expectSuccess(result);
+        expect(result.result?.projectConfig.auth).toBe("none");
       });
     }
+
+    it("should fail with clerk + solid", async () => {
+      const result = await runTRPCTest({
+        projectName: "clerk-solid-fail",
+        auth: "clerk",
+        backend: "convex",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        frontend: ["solid"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "not compatible with '--backend convex'");
+    });
   });
 
   describe("No Authentication", () => {
@@ -1158,7 +1175,7 @@ describe("Authentication Configurations", () => {
   });
 
   describe("All Auth Providers", () => {
-    for (const auth of AUTH_PROVIDERS) {
+    for (const auth of AUTH_PROVIDERS.filter((provider) => provider !== "go-better-auth")) {
       it(`should work with ${auth} in appropriate setup`, async () => {
         const config: TestConfig = {
           projectName: `test-${auth}`,

@@ -57,6 +57,7 @@ import {
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "./schemas";
+import { getCapabilityDefinitions } from "./capabilities";
 
 export type OptionCategory =
   | "api"
@@ -327,6 +328,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST" },
   auth: {
     "better-auth": "Better-Auth",
+    "go-better-auth": "GoBetterAuth",
     nextauth: "Auth.js (NextAuth)",
     "stack-auth": "Stack Auth",
     "supabase-auth": "Supabase Auth",
@@ -611,6 +613,9 @@ function humanizeOptionId(id: string): string {
 }
 
 function getOptionLabel(category: OptionCategory, id: string): string {
+  if (category === "auth") {
+    return getCapabilityDefinitions("auth").find((option) => option.id === id)?.label ?? humanizeOptionId(id);
+  }
   return EXACT_LABEL_OVERRIDES[category]?.[id] ?? humanizeOptionId(id);
 }
 

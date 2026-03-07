@@ -1,6 +1,79 @@
+import { getCapabilityDefinitions } from "../../../../packages/types/src/capabilities";
+
 import type { Ecosystem, TechCategory } from "./types";
 
 import { DEFAULT_STACK, isStackDefault, type StackState } from "./stack-defaults";
+
+const AUTH_CAPABILITY_LOOKUP = Object.fromEntries(
+  getCapabilityDefinitions("auth").map((option) => [option.id, option]),
+);
+
+const AUTH_TECH_OPTIONS = [
+  {
+    id: "better-auth",
+    name: "Better-Auth",
+    description: AUTH_CAPABILITY_LOOKUP["better-auth"]?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP["better-auth"]?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP["better-auth"]?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP["better-auth"]?.default,
+  },
+  {
+    id: "go-better-auth",
+    name: "GoBetterAuth",
+    description: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.default,
+  },
+  {
+    id: "clerk",
+    name: "Clerk",
+    description: AUTH_CAPABILITY_LOOKUP.clerk?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP.clerk?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP.clerk?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP.clerk?.default,
+  },
+  {
+    id: "nextauth",
+    name: "Auth.js (NextAuth)",
+    description: AUTH_CAPABILITY_LOOKUP.nextauth?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP.nextauth?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP.nextauth?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP.nextauth?.default,
+  },
+  {
+    id: "stack-auth",
+    name: "Stack Auth",
+    description: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.default,
+  },
+  {
+    id: "supabase-auth",
+    name: "Supabase Auth",
+    description: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.default,
+  },
+  {
+    id: "auth0",
+    name: "Auth0",
+    description: AUTH_CAPABILITY_LOOKUP.auth0?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP.auth0?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP.auth0?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP.auth0?.default,
+  },
+  {
+    id: "none",
+    name: "No Auth",
+    description: AUTH_CAPABILITY_LOOKUP.none?.description ?? "",
+    icon: AUTH_CAPABILITY_LOOKUP.none?.icon ?? "",
+    color: AUTH_CAPABILITY_LOOKUP.none?.color ?? "",
+    default: AUTH_CAPABILITY_LOOKUP.none?.default,
+  },
+];
 
 export const TECH_OPTIONS: Record<
   TechCategory,
@@ -678,58 +751,7 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
-  auth: [
-    {
-      id: "better-auth",
-      name: "Better-Auth",
-      description: "The most comprehensive authentication framework for TypeScript",
-      icon: "/icon/better-auth.svg",
-      color: "from-green-400 to-green-600",
-      default: true,
-    },
-    {
-      id: "clerk",
-      name: "Clerk",
-      description: "More than authentication, Complete User Management",
-      icon: "https://cdn.simpleicons.org/clerk/6C47FF",
-      color: "from-blue-400 to-blue-600",
-    },
-    {
-      id: "nextauth",
-      name: "Auth.js (NextAuth)",
-      description: "Open source authentication for Next.js",
-      icon: "/icon/nextauth.png",
-      color: "from-orange-400 to-orange-600",
-    },
-    {
-      id: "stack-auth",
-      name: "Stack Auth",
-      description: "Open-source Auth0/Clerk alternative with user management",
-      icon: "/icon/stack-auth.svg",
-      color: "from-purple-400 to-purple-600",
-    },
-    {
-      id: "supabase-auth",
-      name: "Supabase Auth",
-      description: "Open-source Auth with Supabase platform integration",
-      icon: "https://cdn.simpleicons.org/supabase/3FCF8E",
-      color: "from-emerald-400 to-emerald-600",
-    },
-    {
-      id: "auth0",
-      name: "Auth0",
-      description: "Flexible identity platform for authentication and authorization",
-      icon: "https://cdn.simpleicons.org/auth0/EB5424",
-      color: "from-orange-400 to-orange-600",
-    },
-    {
-      id: "none",
-      name: "No Auth",
-      description: "Skip authentication",
-      icon: "",
-      color: "from-red-400 to-red-600",
-    },
-  ],
+  auth: AUTH_TECH_OPTIONS,
   payments: [
     {
       id: "polar",
