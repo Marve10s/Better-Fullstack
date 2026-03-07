@@ -12,6 +12,7 @@
 
 import {
   ADDONS_VALUES,
+  ANALYTICS_VALUES,
   AI_DOCS_VALUES,
   AI_VALUES,
   ANIMATION_VALUES,
@@ -31,6 +32,7 @@ import {
   EXAMPLES_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
+  FEATURE_FLAGS_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
@@ -43,6 +45,12 @@ import {
   ORM_VALUES,
   PACKAGE_MANAGER_VALUES,
   PAYMENTS_VALUES,
+  PYTHON_AI_VALUES,
+  PYTHON_ORM_VALUES,
+  PYTHON_QUALITY_VALUES,
+  PYTHON_TASK_QUEUE_VALUES,
+  PYTHON_VALIDATION_VALUES,
+  PYTHON_WEB_FRAMEWORK_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -51,76 +59,35 @@ import {
   RUST_LIBRARIES_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
+  SHADCN_BASE_COLOR_VALUES,
+  SHADCN_BASE_VALUES,
+  SHADCN_COLOR_THEME_VALUES,
+  SHADCN_FONT_VALUES,
+  SHADCN_ICON_LIBRARY_VALUES,
+  SHADCN_RADIUS_VALUES,
+  SHADCN_STYLE_VALUES,
   SERVER_DEPLOY_VALUES,
   STATE_MANAGEMENT_VALUES,
   TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
+  getCategoryCliValues,
+  getOptionMetadata,
+  type OptionCategory,
+  OPTION_CATEGORY_METADATA,
 } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Mapping from Builder TECH_OPTIONS category to CLI schema values
-const CLI_SCHEMA_MAP: Record<string, readonly string[]> = {
-  // TypeScript ecosystem
-  api: API_VALUES,
-  webFrontend: FRONTEND_VALUES,
-  nativeFrontend: FRONTEND_VALUES,
-  database: DATABASE_VALUES,
-  orm: ORM_VALUES,
-  backend: BACKEND_VALUES,
-  runtime: RUNTIME_VALUES,
-  auth: AUTH_VALUES,
-  payments: PAYMENTS_VALUES,
-  email: EMAIL_VALUES,
-  stateManagement: STATE_MANAGEMENT_VALUES,
-  forms: FORMS_VALUES,
-  validation: VALIDATION_VALUES,
-  testing: TESTING_VALUES,
-  realtime: REALTIME_VALUES,
-  jobQueue: JOB_QUEUE_VALUES,
-  caching: CACHING_VALUES,
-  search: SEARCH_VALUES,
-  fileStorage: FILE_STORAGE_VALUES,
-  animation: ANIMATION_VALUES,
-  cms: CMS_VALUES,
-  fileUpload: FILE_UPLOAD_VALUES,
-  logging: LOGGING_VALUES,
-  observability: OBSERVABILITY_VALUES,
-  ai: AI_VALUES, // aiSdk in StackState
-  codeQuality: ADDONS_VALUES,
-  documentation: ADDONS_VALUES,
-  appPlatforms: ADDONS_VALUES,
-  examples: EXAMPLES_VALUES,
-  packageManager: PACKAGE_MANAGER_VALUES,
-  dbSetup: DATABASE_SETUP_VALUES,
-  cssFramework: CSS_FRAMEWORK_VALUES,
-  uiLibrary: UI_LIBRARY_VALUES,
-  webDeploy: WEB_DEPLOY_VALUES,
-  serverDeploy: SERVER_DEPLOY_VALUES,
-  astroIntegration: ASTRO_INTEGRATION_VALUES,
-  backendLibraries: EFFECT_VALUES,
-  // Rust ecosystem
-  rustWebFramework: RUST_WEB_FRAMEWORK_VALUES,
-  rustFrontend: RUST_FRONTEND_VALUES,
-  rustOrm: RUST_ORM_VALUES,
-  rustApi: RUST_API_VALUES,
-  rustCli: RUST_CLI_VALUES,
-  rustLibraries: RUST_LIBRARIES_VALUES,
-  // Go ecosystem
-  goWebFramework: GO_WEB_FRAMEWORK_VALUES,
-  goOrm: GO_ORM_VALUES,
-  goApi: GO_API_VALUES,
-  goCli: GO_CLI_VALUES,
-  goLogging: GO_LOGGING_VALUES,
-  // AI Docs
-  aiDocs: AI_DOCS_VALUES,
+type BuilderOption = {
+  id: string;
+  name: string;
 };
 
 // Parse TECH_OPTIONS from the Builder's constant.ts file
-function parseBuilderOptions(): Record<string, string[]> {
+function parseBuilderOptions(): Record<string, BuilderOption[]> {
   // Handle both running from apps/cli and apps/cli/test
   const possiblePaths = [
     join(process.cwd(), "..", "web", "src", "lib", "constant.ts"),
@@ -153,9 +120,27 @@ function parseBuilderOptions(): Record<string, string[]> {
     throw new Error("Could not find TECH_OPTIONS in constant.ts");
   }
 
-  // Find where TECH_OPTIONS ends (next export or end of object)
-  const techOptionsSection = content.slice(techOptionsStart);
-  const result: Record<string, string[]> = {};
+  // Isolate TECH_OPTIONS object body for reliable category parsing
+  const assignmentStart = content.indexOf("= {", techOptionsStart);
+  if (assignmentStart === -1) {
+    throw new Error("Could not find TECH_OPTIONS assignment start");
+  }
+  const objectStart = content.indexOf("{", assignmentStart);
+  if (objectStart === -1) {
+    throw new Error("Could not find TECH_OPTIONS object start");
+  }
+  let braceDepth = 1;
+  let objectEnd = objectStart + 1;
+  for (let i = objectStart + 1; i < content.length && braceDepth > 0; i++) {
+    if (content[i] === "{") braceDepth++;
+    if (content[i] === "}") braceDepth--;
+    objectEnd = i;
+  }
+  if (braceDepth !== 0) {
+    throw new Error("Could not find TECH_OPTIONS object end");
+  }
+  const techOptionsSection = content.slice(objectStart + 1, objectEnd);
+  const result: Record<string, BuilderOption[]> = {};
 
   // Parse each category by finding "categoryName: [" patterns
   // Then extract all id: "value" within that array
@@ -180,17 +165,17 @@ function parseBuilderOptions(): Record<string, string[]> {
     const categoryContent = techOptionsSection.slice(startIndex, endIndex);
 
     // Extract all id values from this category
-    const idRegex = /id:\s*["']([^"']+)["']/g;
-    const ids: string[] = [];
-    let idMatch: RegExpExecArray | null;
+    const optionRegex = /id:\s*["']([^"']+)["'][\s\S]*?name:\s*["']([^"']+)["']/g;
+    const options: BuilderOption[] = [];
+    let optionMatch: RegExpExecArray | null;
 
     // biome-ignore lint/suspicious/noAssignInExpressions: needed for regex iteration
-    while ((idMatch = idRegex.exec(categoryContent)) !== null) {
-      ids.push(idMatch[1]);
+    while ((optionMatch = optionRegex.exec(categoryContent)) !== null) {
+      options.push({ id: optionMatch[1], name: optionMatch[2] });
     }
 
-    if (ids.length > 0) {
-      result[categoryName] = ids;
+    if (options.length > 0) {
+      result[categoryName] = options;
     }
   }
 
@@ -198,14 +183,8 @@ function parseBuilderOptions(): Record<string, string[]> {
 }
 
 describe("CLI and Builder Sync", () => {
-  let builderOptions: Record<string, string[]>;
-
-  try {
-    builderOptions = parseBuilderOptions();
-  } catch {
-    // If we can't parse the file, skip these tests
-    builderOptions = {};
-  }
+  const builderOptions = parseBuilderOptions();
+  const categoryMetadata = OPTION_CATEGORY_METADATA;
 
   it("should have parsed Builder options successfully", () => {
     expect(Object.keys(builderOptions).length).toBeGreaterThan(0);
@@ -213,39 +192,26 @@ describe("CLI and Builder Sync", () => {
   });
 
   // Test each category
-  const categoriesToTest = Object.keys(CLI_SCHEMA_MAP);
+  const categoriesToTest = Object.keys(categoryMetadata);
+  const missingBuilderCategories = categoriesToTest.filter((category) => !builderOptions[category]);
+
+  it("should have all mapped categories present in Builder", () => {
+    expect(missingBuilderCategories).toEqual([]);
+  });
 
   for (const category of categoriesToTest) {
-    const cliValues = CLI_SCHEMA_MAP[category];
-    const builderValues = builderOptions[category];
-
-    // Skip categories that don't exist in Builder (like addons which map to multiple)
-    if (!builderValues) {
-      continue;
-    }
+    const cliValues = getCategoryCliValues(category as OptionCategory);
+    const builderEntries = builderOptions[category];
+    if (!builderEntries) throw new Error(`Missing builder options for category '${category}'`);
+    const builderValues = builderEntries.map((option) => option.id);
 
     describe(`Category: ${category}`, () => {
       it("Builder options should all be valid CLI options", () => {
         const cliSet = new Set(cliValues);
         const missingInCli: string[] = [];
 
-        // Builder-specific options that map to different CLI values
-        const builderToCli: Record<string, Record<string, string>> = {
-          // self-* backends all map to "self" in CLI
-          backend: {
-            "self-next": "self",
-            "self-tanstack-start": "self",
-            "self-astro": "self",
-            "self-nuxt": "self",
-            "self-svelte": "self",
-            "self-solid-start": "self",
-          },
-        };
-
-        const mapping = builderToCli[category] || {};
-
         for (const option of builderValues) {
-          const cliOption = mapping[option] || option;
+          const cliOption = getOptionMetadata(category as OptionCategory, option)?.cliValue ?? option;
           if (!cliSet.has(cliOption)) {
             missingInCli.push(option);
           }
@@ -263,90 +229,16 @@ describe("CLI and Builder Sync", () => {
         expect(missingInCli).toEqual([]);
       });
 
-      it("CLI options should all be in Builder (or intentionally excluded)", () => {
-        const builderSet = new Set(builderValues);
+      it("CLI options should all be represented in Builder", () => {
+        const builderCliValues = new Set(
+          builderValues.map(
+            (option) => getOptionMetadata(category as OptionCategory, option)?.cliValue ?? option,
+          ),
+        );
         const missingInBuilder: string[] = [];
 
-        // Some CLI options are intentionally not shown in Builder UI
-        const intentionallyExcluded: Record<string, string[]> = {
-          // "self" backend is mapped from self-* variants in Builder
-          backend: ["self"],
-          // native frontends are in a separate nativeFrontend category in Builder
-          webFrontend: ["native-bare", "native-uniwind", "native-unistyles"],
-          // nativeFrontend in Builder only shows native options, web options are in webFrontend
-          nativeFrontend: [
-            "tanstack-router",
-            "react-router",
-            "tanstack-start",
-            "next",
-            "nuxt",
-            "svelte",
-            "solid",
-            "solid-start",
-            "astro",
-            "qwik",
-            "angular",
-            "redwood",
-            "fresh",
-            "none",
-          ],
-          // codeQuality, documentation, appPlatforms are subsets of AddonsSchema
-          // Each category only shows relevant addons, not all of them
-          codeQuality: [
-            "pwa",
-            "tauri",
-            "starlight",
-            "turborepo",
-            "fumadocs",
-            "opentui",
-            "wxt",
-            "msw",
-            "storybook",
-            "mcp",
-            "skills",
-            "none",
-          ],
-          documentation: [
-            "pwa",
-            "tauri",
-            "biome",
-            "lefthook",
-            "husky",
-            "ruler",
-            "turborepo",
-            "ultracite",
-            "oxlint",
-            "opentui",
-            "wxt",
-            "msw",
-            "storybook",
-            "mcp",
-            "skills",
-            "none",
-          ],
-          appPlatforms: [
-            "starlight",
-            "biome",
-            "lefthook",
-            "husky",
-            "ruler",
-            "fumadocs",
-            "ultracite",
-            "oxlint",
-            "msw",
-            "storybook",
-            "mcp",
-            "skills",
-            "none",
-          ],
-          // examples category may not show "none" explicitly
-          examples: ["none"],
-        };
-
-        const excluded = intentionallyExcluded[category] || [];
-
         for (const option of cliValues) {
-          if (!builderSet.has(option) && !excluded.includes(option)) {
+          if (!builderCliValues.has(option)) {
             missingInBuilder.push(option);
           }
         }
@@ -362,6 +254,18 @@ describe("CLI and Builder Sync", () => {
 
         expect(missingInBuilder).toEqual([]);
       });
+
+      it("Builder labels should match canonical metadata for aliased options", () => {
+        const aliasedEntries = builderEntries.filter((entry) => {
+          const metadata = getOptionMetadata(category as OptionCategory, entry.id);
+          return Boolean(metadata && metadata.aliases.length > 0);
+        });
+
+        for (const entry of aliasedEntries) {
+          const metadata = getOptionMetadata(category as OptionCategory, entry.id);
+          expect(entry.name).toBe(metadata?.label);
+        }
+      });
     });
   }
 
@@ -370,35 +274,22 @@ describe("CLI and Builder Sync", () => {
     const unmappedCategories: string[] = [];
 
     for (const category of Object.keys(builderOptions)) {
-      if (!CLI_SCHEMA_MAP[category]) {
+      if (!categoryMetadata[category as OptionCategory]) {
         unmappedCategories.push(category);
       }
     }
 
-    if (unmappedCategories.length > 0) {
-      console.warn(
-        `\nBuilder categories without CLI mapping:\n  - ${unmappedCategories.join("\n  - ")}`,
-      );
-      console.warn(`\nYou may need to add these to CLI_SCHEMA_MAP in this test file`);
-    }
-
-    // This is a warning, not a failure - some categories might be Builder-only
-    // Note: Python ecosystem adds 6 categories (pythonWebFramework, pythonOrm, pythonValidation,
-    // pythonAi, pythonTaskQueue, pythonQuality) that will get CLI support in a later task
-    // Go ecosystem is now mapped so shouldn't add any unmapped categories
-    // shadcn/ui adds 7 sub-categories (shadcnBase, shadcnStyle, shadcnIconLibrary,
-    // shadcnColorTheme, shadcnBaseColor, shadcnFont, shadcnRadius) that are Builder-only
-    expect(unmappedCategories.length).toBeLessThanOrEqual(18);
+    expect(unmappedCategories).toEqual([]);
   });
 });
 
 describe("StackState and CLI Input Sync", () => {
   it("should have all StackState fields represented in CLI", () => {
-    // Read the constant.ts to find StackState fields
+    // Read stack-defaults.ts to find StackState fields
     const possiblePaths = [
-      join(process.cwd(), "..", "web", "src", "lib", "constant.ts"),
-      join(process.cwd(), "..", "..", "apps", "web", "src", "lib", "constant.ts"),
-      join(process.cwd(), "apps", "web", "src", "lib", "constant.ts"),
+      join(process.cwd(), "..", "web", "src", "lib", "stack-defaults.ts"),
+      join(process.cwd(), "..", "..", "apps", "web", "src", "lib", "stack-defaults.ts"),
+      join(process.cwd(), "apps", "web", "src", "lib", "stack-defaults.ts"),
     ];
 
     let content = "";
@@ -411,20 +302,13 @@ describe("StackState and CLI Input Sync", () => {
       }
     }
 
-    if (!content) {
-      console.warn("Could not find constant.ts");
-      return;
-    }
+    expect(content.length).toBeGreaterThan(0);
 
     // Extract StackState type fields
     const stackStateMatch = content.match(/export type StackState\s*=\s*\{([^}]+)\}/);
+    expect(stackStateMatch).not.toBeNull();
 
-    if (!stackStateMatch) {
-      console.warn("Could not find StackState type");
-      return;
-    }
-
-    const stackStateContent = stackStateMatch[1];
+    const stackStateContent = stackStateMatch![1];
     const fieldRegex = /(\w+):/g;
     const stackStateFields: string[] = [];
     let match: RegExpExecArray | null;
@@ -454,41 +338,73 @@ describe("StackState and CLI Input Sync", () => {
 
 // Parse CLI prompt files to extract option values
 function parsePromptOptions(promptPath: string, functionName?: string): string[] {
-  try {
-    const content = readFileSync(promptPath, "utf-8");
+  const content = readFileSync(promptPath, "utf-8");
 
-    let searchContent = content;
+  let searchContent = content;
 
-    // If a function name is provided, only search within that function
-    if (functionName) {
-      const funcStart = content.indexOf(`function ${functionName}`);
-      if (funcStart === -1) {
-        return [];
-      }
-      // Find the end of this function (next export or function declaration)
-      const nextFunc = content.indexOf("\nexport", funcStart + 1);
-      const nextAsyncFunc = content.indexOf("\nasync function", funcStart + 50);
-      const endIndex = Math.min(
-        nextFunc > 0 ? nextFunc : content.length,
-        nextAsyncFunc > 0 ? nextAsyncFunc : content.length,
-      );
-      searchContent = content.slice(funcStart, endIndex);
+  // If a function name is provided, only search within that function body.
+  if (functionName) {
+    const functionPattern = new RegExp(`(?:async\\s+)?function\\s+${functionName}\\b`);
+    const functionMatch = functionPattern.exec(content);
+    if (!functionMatch) {
+      throw new Error(`Could not find function '${functionName}' in ${promptPath}`);
     }
 
-    // Extract all value: "xxx" patterns (with or without "as const")
-    const valueRegex = /value:\s*["']([^"']+)["']/g;
-    const values: string[] = [];
-    let match: RegExpExecArray | null;
-
-    // biome-ignore lint/suspicious/noAssignInExpressions: needed for regex iteration
-    while ((match = valueRegex.exec(searchContent)) !== null) {
-      values.push(match[1]);
+    const functionStart = functionMatch.index;
+    const bodyStart = content.indexOf("{", functionStart);
+    if (bodyStart === -1) {
+      throw new Error(`Could not find function body start for '${functionName}' in ${promptPath}`);
     }
 
-    return [...new Set(values)]; // Remove duplicates
-  } catch {
-    return [];
+    let braceDepth = 1;
+    let bodyEnd = bodyStart + 1;
+    for (let i = bodyStart + 1; i < content.length && braceDepth > 0; i++) {
+      if (content[i] === "{") braceDepth++;
+      if (content[i] === "}") braceDepth--;
+      bodyEnd = i;
+    }
+
+    if (braceDepth !== 0) {
+      throw new Error(`Could not find function body end for '${functionName}' in ${promptPath}`);
+    }
+    searchContent = content.slice(functionStart, bodyEnd + 1);
   }
+
+  const values = new Set<string>();
+
+  // Extract value literals in prompt option arrays.
+  const valueRegex = /value:\s*["']([^"']+)["']/g;
+  let match: RegExpExecArray | null;
+  // biome-ignore lint/suspicious/noAssignInExpressions: needed for regex iteration
+  while ((match = valueRegex.exec(searchContent)) !== null) {
+    values.add(match[1]);
+  }
+
+  // Fallback for prompts that derive options from *_OPTIONS record maps.
+  if (values.size === 0) {
+    const optionsRecordStart = searchContent.match(/const\s+\w+_OPTIONS\s*:[^=]*=\s*\{/);
+    if (optionsRecordStart) {
+      const objectStart = optionsRecordStart.index! + optionsRecordStart[0].length - 1;
+      let braceDepth = 1;
+      let objectEnd = objectStart + 1;
+      for (let i = objectStart + 1; i < searchContent.length && braceDepth > 0; i++) {
+        if (searchContent[i] === "{") braceDepth++;
+        if (searchContent[i] === "}") braceDepth--;
+        objectEnd = i;
+      }
+      if (braceDepth === 0) {
+        const objectBody = searchContent.slice(objectStart + 1, objectEnd);
+        const keyRegex = /^\s*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))\s*:\s*\{/gm;
+        let keyMatch: RegExpExecArray | null;
+        // biome-ignore lint/suspicious/noAssignInExpressions: needed for regex iteration
+        while ((keyMatch = keyRegex.exec(objectBody)) !== null) {
+          values.add(keyMatch[1] || keyMatch[2] || keyMatch[3]);
+        }
+      }
+    }
+  }
+
+  return [...values];
 }
 
 // Mapping from prompt file to schema values
@@ -656,6 +572,72 @@ const PROMPT_SCHEMA_MAP: Record<
     name: "RustCliSchema",
     functionName: "getRustCliChoice",
   },
+  pythonWebFramework: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_WEB_FRAMEWORK_VALUES,
+    name: "PythonWebFrameworkSchema",
+    functionName: "getPythonWebFrameworkChoice",
+  },
+  pythonOrm: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_ORM_VALUES,
+    name: "PythonOrmSchema",
+    functionName: "getPythonOrmChoice",
+  },
+  pythonValidation: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_VALIDATION_VALUES,
+    name: "PythonValidationSchema",
+    functionName: "getPythonValidationChoice",
+  },
+  pythonAi: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_AI_VALUES,
+    name: "PythonAiSchema",
+    functionName: "getPythonAiChoice",
+  },
+  pythonTaskQueue: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_TASK_QUEUE_VALUES,
+    name: "PythonTaskQueueSchema",
+    functionName: "getPythonTaskQueueChoice",
+  },
+  pythonQuality: {
+    file: "python-ecosystem.ts",
+    schema: PYTHON_QUALITY_VALUES,
+    name: "PythonQualitySchema",
+    functionName: "getPythonQualityChoice",
+  },
+  goWebFramework: {
+    file: "go-ecosystem.ts",
+    schema: GO_WEB_FRAMEWORK_VALUES,
+    name: "GoWebFrameworkSchema",
+    functionName: "getGoWebFrameworkChoice",
+  },
+  goOrm: {
+    file: "go-ecosystem.ts",
+    schema: GO_ORM_VALUES,
+    name: "GoOrmSchema",
+    functionName: "getGoOrmChoice",
+  },
+  goApi: {
+    file: "go-ecosystem.ts",
+    schema: GO_API_VALUES,
+    name: "GoApiSchema",
+    functionName: "getGoApiChoice",
+  },
+  goCli: {
+    file: "go-ecosystem.ts",
+    schema: GO_CLI_VALUES,
+    name: "GoCliSchema",
+    functionName: "getGoCliChoice",
+  },
+  goLogging: {
+    file: "go-ecosystem.ts",
+    schema: GO_LOGGING_VALUES,
+    name: "GoLoggingSchema",
+    functionName: "getGoLoggingChoice",
+  },
 };
 
 describe("CLI Prompts vs Schemas Sync", () => {
@@ -672,6 +654,8 @@ describe("CLI Prompts vs Schemas Sync", () => {
     orm: ["none"],
     // "none" for runtime is auto-selected when backend is convex/none/self
     runtime: ["none"],
+    // pythonAi is a multiselect where empty selection maps to "none"
+    pythonAi: ["none"],
   };
 
   // Values that appear in prompts but are not schema values
@@ -687,20 +671,27 @@ describe("CLI Prompts vs Schemas Sync", () => {
         join(process.cwd(), "src", "prompts", config.file),
         join(process.cwd(), "..", "cli", "src", "prompts", config.file),
         join(process.cwd(), "..", "..", "apps", "cli", "src", "prompts", config.file),
+        join(process.cwd(), "apps", "cli", "src", "prompts", config.file),
       ];
 
       let promptOptions: string[] = [];
       for (const path of possiblePaths) {
-        promptOptions = parsePromptOptions(path, config.functionName);
-        if (promptOptions.length > 0) break;
+        try {
+          promptOptions = parsePromptOptions(path, config.functionName);
+          if (promptOptions.length > 0) break;
+        } catch {
+          continue;
+        }
       }
 
-      it(`should show all ${config.name} options in the prompt`, () => {
+      it(`should parse ${config.name} options from prompt`, () => {
         if (promptOptions.length === 0) {
-          console.warn(`Could not parse ${config.file} - skipping`);
-          return;
+          throw new Error(`Could not parse ${config.file}`);
         }
+        expect(promptOptions.length).toBeGreaterThan(0);
+      });
 
+      it(`should show all ${config.name} options in the prompt`, () => {
         const promptSet = new Set(promptOptions);
         const excluded = intentionallyExcludedFromPrompts[category] || [];
         const missingFromPrompt: string[] = [];
@@ -722,10 +713,6 @@ describe("CLI Prompts vs Schemas Sync", () => {
       });
 
       it(`should only show valid ${config.name} options`, () => {
-        if (promptOptions.length === 0) {
-          return;
-        }
-
         const schemaSet = new Set(config.schema);
         const nonSchemaValues = nonSchemaPromptValues[category] || [];
         const invalidOptions: string[] = [];
@@ -786,8 +773,20 @@ const SCHEMA_TO_CLI_FLAG: Record<string, string> = {
   FileUploadSchema: "fileUpload",
   LoggingSchema: "logging",
   ObservabilitySchema: "observability",
+  FeatureFlagsSchema: "featureFlags",
+  AnalyticsSchema: "analytics",
   CMSSchema: "cms",
   CachingSchema: "caching",
+  SearchSchema: "search",
+  FileStorageSchema: "fileStorage",
+  AiDocsSchema: "aiDocs",
+  ShadcnBaseSchema: "shadcnBase",
+  ShadcnStyleSchema: "shadcnStyle",
+  ShadcnIconLibrarySchema: "shadcnIconLibrary",
+  ShadcnColorThemeSchema: "shadcnColorTheme",
+  ShadcnBaseColorSchema: "shadcnBaseColor",
+  ShadcnFontSchema: "shadcnFont",
+  ShadcnRadiusSchema: "shadcnRadius",
   // Rust ecosystem
   RustWebFrameworkSchema: "rustWebFramework",
   RustFrontendSchema: "rustFrontend",
@@ -795,6 +794,19 @@ const SCHEMA_TO_CLI_FLAG: Record<string, string> = {
   RustApiSchema: "rustApi",
   RustCliSchema: "rustCli",
   RustLibrariesSchema: "rustLibraries",
+  // Python ecosystem
+  PythonWebFrameworkSchema: "pythonWebFramework",
+  PythonOrmSchema: "pythonOrm",
+  PythonValidationSchema: "pythonValidation",
+  PythonAiSchema: "pythonAi",
+  PythonTaskQueueSchema: "pythonTaskQueue",
+  PythonQualitySchema: "pythonQuality",
+  // Go ecosystem
+  GoWebFrameworkSchema: "goWebFramework",
+  GoOrmSchema: "goOrm",
+  GoApiSchema: "goApi",
+  GoCliSchema: "goCli",
+  GoLoggingSchema: "goLogging",
 };
 
 // Parse CLI router to extract flag names
@@ -803,6 +815,7 @@ function parseCLIRouterFlags(): string[] {
     join(process.cwd(), "src", "index.ts"),
     join(process.cwd(), "..", "cli", "src", "index.ts"),
     join(process.cwd(), "..", "..", "apps", "cli", "src", "index.ts"),
+    join(process.cwd(), "apps", "cli", "src", "index.ts"),
   ];
 
   let content = "";
@@ -836,7 +849,7 @@ function parseCLIRouterFlags(): string[] {
   const schemaContent = content.slice(routerStart, endIndex + 1);
 
   // Extract all flag names (property names before :)
-  const flagRegex = /^\s*(\w+):\s*(?:z\.|[A-Z])/gm;
+  const flagRegex = /^\s*(\w+):\s*(?:z\b|[A-Z])/gm;
   const flags: string[] = [];
   let match: RegExpExecArray | null;
 
