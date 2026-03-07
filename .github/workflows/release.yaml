@@ -77,6 +77,10 @@ jobs:
         if: steps.check-version.outputs.exists == 'false'
         run: bun install --frozen-lockfile
 
+      - name: Run Release Verification
+        if: steps.check-version.outputs.exists == 'false'
+        run: bun run test:release
+
       - name: Create GitHub Release
         if: steps.check-version.outputs.exists == 'false'
         run: |
