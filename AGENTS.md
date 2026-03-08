@@ -34,3 +34,4 @@ Bun is the default package manager and script runner. Use `bun install`, `bun ru
 - After adding/removing files in `apps/web/src/routes`, `apps/web/src/routeTree.gen.ts` may be stale until a route generator run (triggered by `vite build`/`vite dev`). `tsc --noEmit` can fail with route type errors if regeneration hasn't happened yet.
 - `apps/cli/test/cli-builder-sync.test.ts` was historically brittle: it depended on current working directory for file resolution and silently skipped prompt/schema checks when parsing failed. Keep path resolution root-safe (`apps/cli/...` fallback) and fail hard on parse gaps to avoid false-green sync tests.
 - The old CLI/builder sync test intentionally excluded `analytics=umami`, which let the builder drift behind the CLI schema without failing CI. When excluding schema values from parity tests, document the product reason and revisit the exclusion quickly or it will mask real stack-option drift.
+## Load-on-demand guidance

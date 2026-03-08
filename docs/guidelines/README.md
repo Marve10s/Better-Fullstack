@@ -17,3 +17,11 @@ Files:
 - `testing-release-and-upstream.md` - verification commands, release-focused CI, and upstream backport workflow
 - `scripted-cli-runs.md` - non-interactive CLI rules, prompt avoidance, and matrix caveats
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
+This folder holds deeper, task-specific guidance that should not be loaded by default.
+
+Open a guideline file only when the current task clearly matches that area.
+
+## Available guidelines
+
+- `template-generator/gotchas.md`
+  Use when working on template generation, generated README/env output, release verification, or CLI tests that validate generated projects.
