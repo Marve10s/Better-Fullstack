@@ -1,79 +1,17 @@
-import { getCapabilityDefinitions } from "../../../../packages/types/src/capabilities";
+import { getCapabilityDefinitions } from "@better-fullstack/types";
 
 import type { Ecosystem, TechCategory } from "./types";
 
 import { DEFAULT_STACK, isStackDefault, type StackState } from "./stack-defaults";
 
-const AUTH_CAPABILITY_LOOKUP = Object.fromEntries(
-  getCapabilityDefinitions("auth").map((option) => [option.id, option]),
-);
-
-const AUTH_TECH_OPTIONS = [
-  {
-    id: "better-auth",
-    name: "Better-Auth",
-    description: AUTH_CAPABILITY_LOOKUP["better-auth"]?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP["better-auth"]?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP["better-auth"]?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP["better-auth"]?.default,
-  },
-  {
-    id: "go-better-auth",
-    name: "GoBetterAuth",
-    description: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP["go-better-auth"]?.default,
-  },
-  {
-    id: "clerk",
-    name: "Clerk",
-    description: AUTH_CAPABILITY_LOOKUP.clerk?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP.clerk?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP.clerk?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP.clerk?.default,
-  },
-  {
-    id: "nextauth",
-    name: "Auth.js (NextAuth)",
-    description: AUTH_CAPABILITY_LOOKUP.nextauth?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP.nextauth?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP.nextauth?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP.nextauth?.default,
-  },
-  {
-    id: "stack-auth",
-    name: "Stack Auth",
-    description: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP["stack-auth"]?.default,
-  },
-  {
-    id: "supabase-auth",
-    name: "Supabase Auth",
-    description: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP["supabase-auth"]?.default,
-  },
-  {
-    id: "auth0",
-    name: "Auth0",
-    description: AUTH_CAPABILITY_LOOKUP.auth0?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP.auth0?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP.auth0?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP.auth0?.default,
-  },
-  {
-    id: "none",
-    name: "No Auth",
-    description: AUTH_CAPABILITY_LOOKUP.none?.description ?? "",
-    icon: AUTH_CAPABILITY_LOOKUP.none?.icon ?? "",
-    color: AUTH_CAPABILITY_LOOKUP.none?.color ?? "",
-    default: AUTH_CAPABILITY_LOOKUP.none?.default,
-  },
-];
+const AUTH_TECH_OPTIONS = getCapabilityDefinitions("auth").map((cap) => ({
+  id: cap.id,
+  name: cap.label,
+  description: cap.description,
+  icon: cap.icon,
+  color: cap.color,
+  default: cap.default,
+}));
 
 export const TECH_OPTIONS: Record<
   TechCategory,

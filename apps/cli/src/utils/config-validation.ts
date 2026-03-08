@@ -281,7 +281,6 @@ export function validateEcosystemAuthCompatibility(
       ecosystem: config.ecosystem,
       backend: config.backend,
       frontend: config.frontend,
-      auth,
     },
     auth,
   );
@@ -295,7 +294,7 @@ export function validateEcosystemAuthCompatibility(
   if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
     consola.warn(
       pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth none'.`,
+        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
       ),
     );
   }

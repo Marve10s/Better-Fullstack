@@ -174,6 +174,109 @@ describe("Auth capability matrix", () => {
     expect(result.changes.some((adjustment) => adjustment.category === "auth")).toBe(true);
   });
 
+  it("rejects go-better-auth on TypeScript stacks", () => {
+    expect(
+      getCapabilityDisabledReason(
+        "auth",
+        { ecosystem: "typescript", backend: "hono", frontend: ["tanstack-router"] },
+        "go-better-auth",
+      ),
+    ).toBe("GoBetterAuth is available only for Go stacks");
+  });
+
+  it("rejects go-better-auth on Rust and Python stacks", () => {
+    for (const ecosystem of ["rust", "python"] as const) {
+      expect(
+        getCapabilityDisabledReason(
+          "auth",
+          { ecosystem },
+          "go-better-auth",
+        ),
+      ).toBe("GoBetterAuth is available only for Go stacks");
+    }
+  });
+
+  it("normalizes go-better-auth to none on TypeScript stacks", () => {
+    const result = normalizeCapabilitySelection(
+      "auth",
+      { ecosystem: "typescript", backend: "hono", frontend: ["tanstack-router"] },
+      "go-better-auth",
+    );
+
+    expect(result.normalized).toBe(true);
+    expect(result.value).toBe("none");
+    expect(result.reason).toBe("GoBetterAuth is available only for Go stacks");
+  });
+
+  it("passes through valid auth selections unchanged", () => {
+    const result = normalizeCapabilitySelection(
+      "auth",
+      { ecosystem: "typescript", backend: "hono", frontend: ["tanstack-router"] },
+      "better-auth",
+    );
+
+    expect(result.normalized).toBe(false);
+    expect(result.value).toBe("better-auth");
+    expect(result.reason).toBeNull();
+  });
+
+  it("passes through undefined and none inputs without normalization", () => {
+    const noneResult = normalizeCapabilitySelection(
+      "auth",
+      { ecosystem: "typescript", backend: "hono" },
+      "none",
+    );
+    expect(noneResult.normalized).toBe(false);
+    expect(noneResult.value).toBe("none");
+
+    const undefinedResult = normalizeCapabilitySelection(
+      "auth",
+      { ecosystem: "typescript", backend: "hono" },
+      undefined,
+    );
+    expect(undefinedResult.normalized).toBe(false);
+    expect(undefinedResult.value).toBe("none");
+  });
+
+  it("returns 'No backend selected' when backend is none", () => {
+    expect(
+      getCapabilityDisabledReason(
+        "auth",
+        { ecosystem: "typescript", backend: "none", frontend: ["tanstack-router"] },
+        "better-auth",
+      ),
+    ).toBe("No backend selected");
+  });
+
+  it("disables better-auth on Convex with incompatible frontend", () => {
+    expect(
+      getCapabilityDisabledReason(
+        "auth",
+        { ecosystem: "typescript", backend: "convex", frontend: ["svelte"] },
+        "better-auth",
+      ),
+    ).toBe("Better-Auth with Convex requires TanStack Router, TanStack Start, Next.js, or React Native");
+  });
+
+  it("disables Clerk on self backend with unsupported frameworks", () => {
+    const selfCases = [
+      { backend: "self-astro", frontend: ["astro"], match: "Astro" },
+      { backend: "self-nuxt", frontend: ["nuxt"], match: "Nuxt" },
+      { backend: "self-svelte", frontend: ["svelte"], match: "SvelteKit" },
+      { backend: "self-solid-start", frontend: ["solid-start"], match: "SolidStart" },
+    ] as const;
+
+    for (const { backend, frontend, match } of selfCases) {
+      const reason = getCapabilityDisabledReason(
+        "auth",
+        { ecosystem: "typescript", backend, frontend },
+        "clerk",
+      );
+      expect(reason).toContain(match);
+      expect(reason).toContain("not yet supported");
+    }
+  });
+
   it("warns and normalizes explicit unsupported auth flags in CLI validation", () => {
     const config: Partial<ProjectConfig> = {
       ecosystem: "typescript",

@@ -326,14 +326,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST" },
   serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST" },
-  auth: {
-    "better-auth": "Better-Auth",
-    "go-better-auth": "GoBetterAuth",
-    nextauth: "Auth.js (NextAuth)",
-    "stack-auth": "Stack Auth",
-    "supabase-auth": "Supabase Auth",
-    auth0: "Auth0",
-  },
+  auth: {},
   payments: {
     "lemon-squeezy": "Lemon Squeezy",
     dodo: "Dodo Payments",

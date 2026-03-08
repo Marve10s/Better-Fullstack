@@ -1382,7 +1382,7 @@ cp .env.example .env
 Then, install dependencies and run the server:
 
 \`\`\`bash
-go mod download
+go mod tidy
 go run cmd/server/main.go
 \`\`\`
 

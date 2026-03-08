@@ -56,7 +56,6 @@ function getFileContent(node: VirtualNode, path: string): string | undefined {
   return file?.content;
 }
 
-// Extract all Go-related enum values
 const ECOSYSTEMS = extractEnumValues(EcosystemSchema);
 const AUTHS = extractEnumValues(AuthSchema);
 const GO_WEB_FRAMEWORKS = extractEnumValues(GoWebFrameworkSchema);
@@ -231,6 +230,34 @@ describe("Go Language Support", () => {
       const readmeContent = getFileContent(root, "README.md");
       expect(readmeContent).toContain("GoBetterAuth");
       expect(readmeContent).toContain("/api/auth");
+    });
+
+    it("should generate GoBetterAuth files with Echo framework", async () => {
+      const result = await createVirtual({
+        projectName: "go-auth-echo-check",
+        ecosystem: "go",
+        auth: "go-better-auth",
+        goWebFramework: "echo",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "internal/auth/auth.go")).toBe(true);
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toContain("github.com/GoBetterAuth/go-better-auth/v2");
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toContain(`e.Any("/api/auth/*"`);
+      expect(mainContent).toContain("echo.WrapHandler(authApp.Handler())");
+
+      const envContent = getFileContent(root, ".env.example");
+      expect(envContent).toContain("GO_BETTER_AUTH_SECRET=");
     });
 
     it("should start a plain net/http server when GoBetterAuth is enabled without a web framework", async () => {

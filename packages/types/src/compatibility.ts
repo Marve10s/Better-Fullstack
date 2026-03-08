@@ -862,7 +862,6 @@ export const analyzeStackCompatibility = (
       backend: nextStack.backend,
       webFrontend: nextStack.webFrontend,
       nativeFrontend: nextStack.nativeFrontend,
-      auth: nextStack.auth,
     },
     nextStack.auth as Auth,
   );
@@ -1568,7 +1567,6 @@ export const getDisabledReason = (
         backend: currentStack.backend,
         webFrontend: currentStack.webFrontend,
         nativeFrontend: currentStack.nativeFrontend,
-        auth: currentStack.auth,
       },
       optionId as Auth,
     );
@@ -2063,7 +2061,6 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
           ecosystem: "typescript",
           backend,
           frontend: [frontend],
-          auth,
         },
         auth as Auth,
       ) === null

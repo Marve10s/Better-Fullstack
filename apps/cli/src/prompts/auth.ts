@@ -46,7 +46,7 @@ export async function getAuthChoice(
     })),
     initialValue: options.some((option) => option.id === DEFAULT_CONFIG.auth)
       ? DEFAULT_CONFIG.auth
-      : "none",
+      : (options.find((option) => option.id !== "none")?.id ?? "none"),
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

@@ -8,7 +8,6 @@ export type CapabilityStackContext = {
   frontend?: readonly string[];
   webFrontend?: readonly string[];
   nativeFrontend?: readonly string[];
-  auth?: string;
 };
 
 export type CapabilityDefinitionBase = {
@@ -148,7 +147,7 @@ function isSelfBackend(backend?: string): boolean {
   return backend === "self" || backend?.startsWith("self-") === true;
 }
 
-function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "go-better-auth" | "clerk">) {
+function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "go-better-auth" | "clerk">): string {
   switch (optionId) {
     case "nextauth":
       return "Auth.js (NextAuth)";
@@ -158,6 +157,10 @@ function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "
       return "Supabase Auth";
     case "auth0":
       return "Auth0";
+    default: {
+      const _exhaustive: never = optionId;
+      return String(_exhaustive);
+    }
   }
 }
 

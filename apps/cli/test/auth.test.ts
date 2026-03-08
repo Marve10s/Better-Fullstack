@@ -80,7 +80,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should fail with better-auth + no database (non-convex)", async () => {
+    it("should work with better-auth + no database (non-convex)", async () => {
       const result = await runTRPCTest({
         projectName: "better-auth-no-db-fail",
         auth: "better-auth",
@@ -98,8 +98,6 @@ describe("Authentication Configurations", () => {
         install: false,
       });
 
-      // This should actually succeed - better-auth can work without a database
-      // if no examples require one
       expectSuccess(result);
     });
 
@@ -1189,7 +1187,6 @@ describe("Authentication Configurations", () => {
           install: false,
         };
 
-        // Set appropriate setup for each auth provider
         if (auth === "clerk") {
           config.backend = "convex";
           config.runtime = "none";
@@ -1231,7 +1228,6 @@ describe("Authentication Configurations", () => {
           config.orm = "drizzle";
           config.api = "trpc";
         } else {
-          // none
           config.backend = "hono";
           config.runtime = "bun";
           config.database = "sqlite";
@@ -1257,6 +1253,55 @@ describe("Authentication Configurations", () => {
         api: "trpc",
         frontend: ["tanstack-router", "native-bare"],
         addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should work with go-better-auth through the full CLI create path", async () => {
+      const result = await runTRPCTest({
+        projectName: "go-auth-e2e",
+        ecosystem: "go",
+        auth: "go-better-auth",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+        backend: "none",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        frontend: ["none"],
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should normalize go-better-auth to none on TypeScript stacks", async () => {
+      const result = await runTRPCTest({
+        projectName: "go-auth-ts-reject",
+        ecosystem: "typescript",
+        auth: "go-better-auth" as any,
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["tanstack-router"],
+        addons: ["none"],
         examples: ["none"],
         dbSetup: "none",
         webDeploy: "none",

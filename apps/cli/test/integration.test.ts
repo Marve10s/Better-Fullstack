@@ -564,12 +564,13 @@ describe("Integration Tests - Real World Scenarios", () => {
       expectSuccess(result);
     });
 
-    const packageManagers = ["npm", "pnpm", "bun"];
+    const packageManagers = ["npm", "pnpm", "bun"] as const;
 
     for (const packageManager of packageManagers) {
       it(`should handle ${packageManager} package manager`, async () => {
         const result = await runTRPCTest({
           projectName: `pkg-manager-${packageManager}`,
+          packageManager,
           backend: "hono",
           runtime: "bun",
           database: "sqlite",

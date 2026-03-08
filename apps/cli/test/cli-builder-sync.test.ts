@@ -10,6 +10,7 @@
  * 3. Run this test to verify sync: bun test cli-builder-sync
  */
 
+import { getCapabilityDefinitions } from "@better-fullstack/types";
 import {
   ADDONS_VALUES,
   ANALYTICS_VALUES,
@@ -86,10 +87,19 @@ type BuilderOption = {
   name: string;
 };
 
+const CAPABILITY_BACKED_CATEGORIES: Record<string, () => BuilderOption[]> = {
+  AUTH_TECH_OPTIONS: () =>
+    getCapabilityDefinitions("auth").map((cap) => ({ id: cap.id, name: cap.label })),
+};
+
 function parseReferencedOptions(
   content: string,
   identifier: string,
 ): BuilderOption[] {
+  if (CAPABILITY_BACKED_CATEGORIES[identifier]) {
+    return CAPABILITY_BACKED_CATEGORIES[identifier]();
+  }
+
   const identifierPattern = new RegExp(
     `const\\s+${identifier}\\s*=\\s*\\[(?<body>[\\s\\S]*?)\\]\\s*(?:as const)?;`,
   );
