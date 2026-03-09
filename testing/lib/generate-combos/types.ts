@@ -1,4 +1,4 @@
-import type { CLIInput, Ecosystem, ProjectConfig } from "../../../packages/types/src";
+import type { CLIInput, Ecosystem, ProjectConfig } from "@better-fullstack/types";
 
 export type InstallMode = "install" | "no-install";
 

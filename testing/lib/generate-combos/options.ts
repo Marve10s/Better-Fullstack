@@ -1,9 +1,9 @@
 import * as path from "node:path";
 
-import { getDefaultConfig } from "../../../apps/cli/src/constants";
-import { processFlags } from "../../../apps/cli/src/utils/config-processing";
-import { runWithContext } from "../../../apps/cli/src/utils/context";
-import { validateFullConfig } from "../../../apps/cli/src/utils/config-validation";
+import { getDefaultConfig } from "@cli/constants";
+import { processFlags } from "@cli/utils/config-processing";
+import { runWithContext } from "@cli/utils/context";
+import { validateFullConfig } from "@cli/utils/config-validation";
 import {
   ADDONS_VALUES,
   AI_VALUES,
@@ -66,7 +66,7 @@ import {
   type CLIInput,
   type Ecosystem,
   type ProjectConfig,
-} from "../../../packages/types/src";
+} from "@better-fullstack/types";
 
 import { buildHistoryFingerprint, fingerprintToKey } from "./fingerprint";
 import { formatNameFromFingerprint, buildCommand } from "./render";

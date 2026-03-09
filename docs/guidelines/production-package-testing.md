@@ -52,8 +52,10 @@ This is not the default test path for normal feature work. Open these files only
 After fixing a repo bug, do not pretend the published package changed. Record the failure under `@latest`, then separately document the local re-test using the built CLI, typically:
 
 ```bash
-node /Users/ibrahime/Documents/Better-Fullstack/apps/cli/dist/cli.mjs create <name> ...
+node ./apps/cli/dist/cli.mjs create <name> ...
 ```
+
+Run this from the repository root.
 
 If the change affects embedded templates, rebuild template artifacts before re-testing.
 

@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "../../../packages/types/src";
+import type { ProjectConfig } from "@better-fullstack/types";
 
 import type {
   FingerprintValue,

@@ -31,18 +31,29 @@ export function loadHistoricalLedger(): Effect.Effect<HistoricalLedger, Error> {
         catch: (error) => new Error(`Failed to read ${path.basename(filePath)}: ${String(error)}`),
       });
 
-      const parsed = JSON.parse(raw) as unknown;
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        throw new Error(`Invalid JSON in ${path.basename(filePath)}`);
+      }
+
+      if (!parsed || typeof parsed !== "object") {
+        throw new Error(`Expected object in ${path.basename(filePath)}, got ${typeof parsed}`);
+      }
 
       if (filePath === LEGACY_COMBOS_FILE) {
-        if (parsed && typeof parsed === "object") {
-          for (const name of Object.keys(parsed as Record<string, unknown>)) {
-            legacyNames.add(name);
-          }
+        for (const name of Object.keys(parsed as Record<string, unknown>)) {
+          legacyNames.add(name);
         }
         continue;
       }
 
       const document = parsed as LedgerRowDoc;
+      if (document.rows !== undefined && !Array.isArray(document.rows)) {
+        throw new Error(`Expected "rows" to be an array in ${path.basename(filePath)}`);
+      }
+
       for (const row of document.rows ?? []) {
         const fingerprint = parseRowFingerprint(document, row);
         if (fingerprint) {
