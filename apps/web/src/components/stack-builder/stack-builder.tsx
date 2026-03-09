@@ -56,6 +56,7 @@ import {
   analyzeStackCompatibility,
   getCategoryDisplayName,
   getDisabledReason,
+  getVisibleOptions,
   isOptionCompatible,
   validateProjectName,
 } from "./utils";
@@ -189,7 +190,7 @@ function SidebarAccordionItem({
   handleTechSelect: (cat: keyof typeof TECH_OPTIONS, techId: string) => void;
   compatibilityNotes?: { notes: string[]; hasIssue: boolean };
 }) {
-  const options = TECH_OPTIONS[category];
+  const options = getVisibleOptions(stack, category, TECH_OPTIONS[category]);
   if (!options || options.length === 0) return null;
 
   const count = getSelectedCount(category, stack);
@@ -541,7 +542,11 @@ const StackBuilder = () => {
   const getRandomStack = () => {
     const randomStack: Partial<StackState> = {};
     for (const category of CATEGORY_ORDER) {
-      const options = TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] || [];
+      const options = getVisibleOptions(
+        stack,
+        category as keyof typeof TECH_OPTIONS,
+        TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] || [],
+      );
       if (options.length === 0) continue;
       const catKey = category as keyof StackState;
       if (isMultiSelectCategory(category as OptionCategory)) {
@@ -932,8 +937,11 @@ const StackBuilder = () => {
                         // Skip shadcn sub-categories - rendered conditionally after uiLibrary
                         if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
 
-                        const categoryOptions =
-                          TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [];
+                        const categoryOptions = getVisibleOptions(
+                          stack,
+                          categoryKey as keyof typeof TECH_OPTIONS,
+                          TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [],
+                        );
                         const categoryDisplayName = getCategoryDisplayName(categoryKey);
 
                         if (categoryOptions.length === 0) return null;
