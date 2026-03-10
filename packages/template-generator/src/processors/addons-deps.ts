@@ -102,7 +102,7 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
         devDeps.push("@storybook/nextjs");
       } else if (hasReactVite || hasSolid) {
         // Solid can use React Storybook with adapter, but for now use React-Vite
-        devDeps.push("@storybook/react-vite");
+        devDeps.push("@storybook/react-vite", "@storybook/react");
       } else if (hasVue) {
         devDeps.push("@storybook/vue3-vite");
       } else if (hasSvelte) {

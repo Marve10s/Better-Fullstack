@@ -414,7 +414,7 @@ export const analyzeStackCompatibility = (
       changes.push({ category: "backend", message: "Removed Astro (incompatible with Convex)" });
     }
 
-    // Remove AI example if incompatible frontends are selected (Convex AI only supports React-based frontends)
+    // Remove AI example if incompatible frontends are selected (Convex AI supports React-based frontends, including React + Vite)
     if (nextStack.examples.includes("ai")) {
       const hasIncompatibleFrontend = nextStack.webFrontend.some((f) =>
         ["solid", "svelte", "nuxt"].includes(f),
@@ -425,7 +425,8 @@ export const analyzeStackCompatibility = (
         changed = true;
         changes.push({
           category: "examples",
-          message: "AI example removed (Convex AI only supports React-based frontends)",
+          message:
+            "AI example removed (Convex AI only supports React-based frontends including React + Vite)",
         });
       }
     }
@@ -879,12 +880,13 @@ export const analyzeStackCompatibility = (
   // PAYMENTS CONSTRAINTS
   // ============================================
 
-  if (nextStack.payments !== "none" && nextStack.webFrontend.includes("react-vite")) {
+  if (nextStack.payments === "dodo" && nextStack.webFrontend.includes("react-vite")) {
     nextStack.payments = "none";
     changed = true;
     changes.push({
       category: "payments",
-      message: "Payments set to 'None' (React + Vite payments support is not available yet)",
+      message:
+        "Payments set to 'None' (Dodo Payments support is not available for React + Vite yet)",
     });
   }
 
@@ -1065,15 +1067,6 @@ export const analyzeStackCompatibility = (
 
   // AI example constraints
   if (nextStack.examples.includes("ai")) {
-    if (nextStack.webFrontend.includes("react-vite")) {
-      nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
-      if (nextStack.examples.length === 0) nextStack.examples = ["none"];
-      changed = true;
-      changes.push({
-        category: "examples",
-        message: "AI removed (React + Vite example support is not available yet)",
-      });
-    }
     // Solid/SolidStart frontend is incompatible with AI example
     if (nextStack.webFrontend.includes("solid") || nextStack.webFrontend.includes("solid-start")) {
       nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
@@ -1095,7 +1088,8 @@ export const analyzeStackCompatibility = (
         changed = true;
         changes.push({
           category: "examples",
-          message: "AI removed (Convex AI only supports React-based frontends)",
+          message:
+            "AI removed (Convex AI only supports React-based frontends including React + Vite)",
         });
       }
     }
@@ -1286,7 +1280,7 @@ export const getDisabledReason = (
         const frontendName = currentStack.webFrontend.find((f) =>
           ["solid", "svelte", "nuxt"].includes(f),
         );
-        return `Convex AI example only supports React-based frontends (not ${frontendName})`;
+        return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
       }
     }
     if (category === "payments" && optionId === "polar") {
@@ -1609,9 +1603,10 @@ export const getDisabledReason = (
   if (
     category === "payments" &&
     optionId !== "none" &&
-    currentStack.webFrontend.includes("react-vite")
+    currentStack.webFrontend.includes("react-vite") &&
+    optionId === "dodo"
   ) {
-    return "Payments are not yet supported for React + Vite projects";
+    return "Dodo Payments are not yet supported for React + Vite projects";
   }
 
   // ============================================
@@ -1650,9 +1645,6 @@ export const getDisabledReason = (
   // ============================================
   if (category === "examples") {
     if (optionId === "ai") {
-      if (currentStack.webFrontend.includes("react-vite")) {
-        return "AI example is not yet supported for React + Vite projects";
-      }
       if (
         currentStack.webFrontend.includes("solid") ||
         currentStack.webFrontend.includes("solid-start")
@@ -1665,7 +1657,7 @@ export const getDisabledReason = (
         );
         if (hasIncompatibleFrontend) {
           const frontendName = currentStack.webFrontend.find((f) => ["svelte", "nuxt"].includes(f));
-          return `Convex AI example only supports React-based frontends (not ${frontendName})`;
+          return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
         }
       }
     }
@@ -2112,7 +2104,6 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
 }
 
 export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {
-  if (frontends.includes("react-vite")) return false;
   const includesSolid = frontends.includes("solid");
   const includesSolidStart = frontends.includes("solid-start");
   if (includesSolid || includesSolidStart) return false;

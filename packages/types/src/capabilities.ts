@@ -113,8 +113,14 @@ const CAPABILITY_DEFINITIONS: {
 };
 
 const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
-const CONVEX_BETTER_AUTH_WEB = new Set(["tanstack-router", "tanstack-start", "next"]);
-const CONVEX_CLERK_WEB = new Set(["react-router", "tanstack-router", "tanstack-start", "next"]);
+const CONVEX_BETTER_AUTH_WEB = new Set(["react-vite", "tanstack-router", "tanstack-start", "next"]);
+const CONVEX_CLERK_WEB = new Set([
+  "react-router",
+  "react-vite",
+  "tanstack-router",
+  "tanstack-start",
+  "next",
+]);
 
 function capitalizeFirst(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -190,10 +196,6 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return "No backend selected";
   }
 
-  if (webFrontend.includes("react-vite")) {
-    return "In Better-Fullstack, auth integrations are not yet supported for React + Vite projects";
-  }
-
   if (optionId === "better-auth") {
     if (backend === "convex") {
       const hasCompatibleFrontend =
@@ -201,7 +203,7 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
         nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
 
       if (!hasCompatibleFrontend) {
-        return "Better-Auth with Convex requires TanStack Router, TanStack Start, Next.js, or React Native";
+        return "Better-Auth with Convex requires React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
     }
 
@@ -215,7 +217,7 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
         nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
 
       if (!hasCompatibleFrontend) {
-        return "Clerk with Convex requires React Router, TanStack Router, TanStack Start, Next.js, or React Native";
+        return "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
 
       return null;

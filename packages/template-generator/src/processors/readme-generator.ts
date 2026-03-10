@@ -263,7 +263,7 @@ function generateStackDescription(
   const frontendMap: Record<string, string> = {
     "tanstack-router": "React, TanStack Router",
     "react-router": "React, React Router",
-    "react-vite": "React, Vite",
+    "react-vite": "React, Vite SPA",
     next: "Next.js",
     "tanstack-start": "React, TanStack Start",
     svelte: "SvelteKit",
@@ -340,7 +340,7 @@ function generateProjectStructure(
     const frontendTypes: Record<string, string> = {
       "tanstack-router": "React + TanStack Router",
       "react-router": "React + React Router",
-      "react-vite": "React + Vite",
+      "react-vite": "React + Vite SPA",
       next: "Next.js",
       "tanstack-start": "React + TanStack Start",
       svelte: "SvelteKit",
@@ -420,7 +420,7 @@ function generateFeaturesList(
   const frontendFeatures: Record<string, string> = {
     "tanstack-router": "- **TanStack Router** - File-based routing with full type safety",
     "react-router": "- **React Router** - Declarative routing for React",
-    "react-vite": "- **React + Vite** - Lightweight React SPA powered by Vite",
+    "react-vite": "- **React + Vite** - Client-routed React SPA powered by Vite",
     next: "- **Next.js** - Full-stack React framework",
     "tanstack-start": "- **TanStack Start** - SSR framework with TanStack Router",
     svelte: "- **SvelteKit** - Web framework for building Svelte apps",

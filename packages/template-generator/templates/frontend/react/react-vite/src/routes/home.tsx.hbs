@@ -1,27 +1,15 @@
-import Header from "@/components/header";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-{{#if (eq api "orpc")}}
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { orpc, queryClient } from "@/utils/orpc";
-{{/if}}
-{{#if (eq api "trpc")}}
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { queryClient, trpc } from "@/utils/trpc";
-{{/if}}
 {{#if (eq backend "convex")}}
-import { ConvexReactClient } from "convex/react";
-import { ConvexProvider, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
-import { env } from "@{{projectName}}/env/web";
-
-const convex = new ConvexReactClient(env.VITE_CONVEX_URL);
+{{else if (or (eq api "orpc") (eq api "trpc"))}}
+import { useQuery } from "@tanstack/react-query";
+  {{#if (eq api "orpc")}}
+import { orpc } from "@/utils/orpc";
+  {{/if}}
+  {{#if (eq api "trpc")}}
+import { trpc } from "@/utils/trpc";
+  {{/if}}
 {{/if}}
-{{#if (eq uiLibrary "mantine")}}
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-{{/if}}
-import "@/index.css";
 
 const TITLE_TEXT = `
  ██████╗ ███████╗████████╗████████╗███████╗██████╗
@@ -39,15 +27,13 @@ const TITLE_TEXT = `
     ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
  `;
 
-function Home() {
-  {{#if (eq api "orpc")}}
-  const healthCheck = useQuery(orpc.healthCheck.queryOptions());
-  {{/if}}
-  {{#if (eq api "trpc")}}
-  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-  {{/if}}
+export default function Home() {
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
+  {{else if (eq api "orpc")}}
+  const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  {{else if (eq api "trpc")}}
+  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
   {{/if}}
 
   return (
@@ -84,7 +70,7 @@ function Home() {
           </div>
           {{else if (eq api "ts-rest")}}
           <p className="text-sm text-muted-foreground">
-            ts-rest client scaffolded. Add your first query or mutation in <code>src/app.tsx</code>.
+            ts-rest client scaffolded. Add your first query or mutation in <code>src/routes/home.tsx</code>.
           </p>
           {{else}}
           <p className="text-sm text-muted-foreground">No API client selected for this frontend.</p>
@@ -93,47 +79,4 @@ function Home() {
       </div>
     </div>
   );
-}
-
-function AppShell() {
-  return (
-    {{#if (eq uiLibrary "mantine")}}<MantineProvider>{{/if}}
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      disableTransitionOnChange
-      storageKey="vite-ui-theme"
-    >
-      <div className="grid h-svh grid-rows-[auto_1fr]">
-        <Header />
-        <Home />
-      </div>
-      <Toaster richColors />
-    </ThemeProvider>
-    {{#if (eq uiLibrary "mantine")}}</MantineProvider>{{/if}}
-  );
-}
-
-export default function App() {
-  {{#if (eq api "orpc")}}
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppShell />
-    </QueryClientProvider>
-  );
-  {{else if (eq api "trpc")}}
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppShell />
-    </QueryClientProvider>
-  );
-  {{else if (eq backend "convex")}}
-  return (
-    <ConvexProvider client={convex}>
-      <AppShell />
-    </ConvexProvider>
-  );
-  {{else}}
-  return <AppShell />;
-  {{/if}}
 }

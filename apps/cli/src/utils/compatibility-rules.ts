@@ -551,8 +551,8 @@ export function validatePaymentsCompatibility(
 ) {
   if (!payments || payments === "none") return;
 
-  if (frontends.includes("react-vite")) {
-    exitWithError("Payments are not yet supported for React + Vite projects.");
+  if (payments === "dodo" && frontends.includes("react-vite")) {
+    exitWithError("Dodo Payments are not yet supported for React + Vite projects.");
   }
 
   if (payments === "polar") {
@@ -581,10 +581,6 @@ export function validateExamplesCompatibility(
   const examplesArr = examples ?? [];
   if (examplesArr.length === 0 || examplesArr.includes("none")) return;
 
-  if (examplesArr.includes("ai") && (frontend ?? []).includes("react-vite")) {
-    exitWithError("The 'ai' example is not yet supported for React + Vite projects.");
-  }
-
   if (examplesArr.includes("ai") && (frontend ?? []).includes("solid")) {
     exitWithError("The 'ai' example is not compatible with the Solid frontend.");
   }
@@ -600,7 +596,7 @@ export function validateExamplesCompatibility(
     const includesSvelte = frontendArr.includes("svelte");
     if (includesNuxt || includesSvelte) {
       exitWithError(
-        "The 'ai' example with Convex backend only supports React-based frontends (Next.js, TanStack Router, TanStack Start, React Router). Svelte and Nuxt are not supported with Convex AI.",
+        "The 'ai' example with Convex backend only supports React-based frontends (Next.js, TanStack Router, TanStack Start, React Router, React + Vite). Svelte and Nuxt are not supported with Convex AI.",
       );
     }
   }

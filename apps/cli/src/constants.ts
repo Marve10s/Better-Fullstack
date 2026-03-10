@@ -243,6 +243,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
     frontends: [
       "tanstack-router",
       "react-router",
+      "react-vite",
       "tanstack-start",
       "next",
       "nuxt",

@@ -64,7 +64,7 @@ export async function getFrontendChoice(
         {
           value: "react-vite" as const,
           label: "React + Vite",
-          hint: "Unopinionated React app powered by Vite",
+          hint: "Client-routed React SPA powered by Vite",
         },
         {
           value: "next" as const,

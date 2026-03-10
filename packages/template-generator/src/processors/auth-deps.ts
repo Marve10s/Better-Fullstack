@@ -33,6 +33,7 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   const hasViteReact = frontend.some((f) =>
     ["tanstack-router", "react-router", "react-vite"].includes(f),
   );
+  const hasReactWebAuthForms = hasNextJs || hasTanStackStart || hasViteReact;
 
   if (auth === "clerk") {
     if (webExists) {
@@ -85,7 +86,9 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
       addPackageDependency({
         vfs,
         packagePath: webPath,
-        dependencies: ["better-auth", "@convex-dev/better-auth"],
+        dependencies: hasReactWebAuthForms
+          ? ["better-auth", "@convex-dev/better-auth", "@tanstack/react-form"]
+          : ["better-auth", "@convex-dev/better-auth"],
         customDependencies: { "better-auth": "1.4.9" },
       });
     }
@@ -153,11 +156,15 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
     }
 
     if (hasWebFrontend && webExists) {
-      const hasTanstackRouter = frontend.includes("tanstack-router");
+      const hasReactWebAuthForms = frontend.some((f) =>
+        ["react-router", "react-vite", "tanstack-router", "tanstack-start", "next"].includes(f),
+      );
       addPackageDependency({
         vfs,
         packagePath: webPath,
-        dependencies: hasTanstackRouter ? ["better-auth", "@tanstack/react-form"] : ["better-auth"],
+        dependencies: hasReactWebAuthForms
+          ? ["better-auth", "@tanstack/react-form"]
+          : ["better-auth"],
       });
     }
 

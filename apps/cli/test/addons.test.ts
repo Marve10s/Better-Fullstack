@@ -441,6 +441,7 @@ describe("Addon Configurations", () => {
         if (webPackageJson?.content) {
           const pkgJson = JSON.parse(webPackageJson.content);
           expect(pkgJson.devDependencies?.["@storybook/react-vite"]).toBeDefined();
+          expect(pkgJson.devDependencies?.["@storybook/react"]).toBeDefined();
         }
       });
 

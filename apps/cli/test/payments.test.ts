@@ -1,4 +1,5 @@
-import { describe, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import { join } from "node:path";
 
 import { createCustomConfig, expectError, expectSuccess, runTRPCTest } from "./test-utils";
 
@@ -52,16 +53,24 @@ describe("Payments Options", () => {
       expectSuccess(result);
     });
 
-    test("stripe should fail with React + Vite", async () => {
+    test("stripe with React + Vite", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
-          projectName: "stripe-react-vite-fail",
+          projectName: "stripe-react-vite",
           frontend: ["react-vite"],
           payments: "stripe",
-          expectError: true,
         }),
       );
-      expectError(result, "Payments are not yet supported for React + Vite projects");
+      expectSuccess(result);
+      expect(result.projectDir).toBeDefined();
+
+      const router = await Bun.file(join(result.projectDir!, "apps/web/src/router.tsx")).text();
+      const successRoute = await Bun.file(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+      ).text();
+
+      expect(router).toContain('path: "success"');
+      expect(successRoute).toContain('from "react-router"');
     });
   });
 
@@ -171,6 +180,24 @@ describe("Payments Options", () => {
       );
       expectSuccess(result);
     });
+
+    test("polar with React + Vite and Better Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "polar-react-vite",
+          frontend: ["react-vite"],
+          payments: "polar",
+          auth: "better-auth",
+        }),
+      );
+      expectSuccess(result);
+      expect(result.projectDir).toBeDefined();
+
+      const successRoute = await Bun.file(
+        join(result.projectDir!, "apps/web/src/routes/success.tsx"),
+      ).text();
+      expect(successRoute).toContain('from "react-router"');
+    });
   });
 
   describe("Lemon Squeezy with React frontends", () => {
@@ -190,6 +217,17 @@ describe("Payments Options", () => {
         createCustomConfig({
           projectName: "lemonsqueezy-react-router",
           frontend: ["react-router"],
+          payments: "lemon-squeezy",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("lemon-squeezy with React + Vite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "lemonsqueezy-react-vite",
+          frontend: ["react-vite"],
           payments: "lemon-squeezy",
         }),
       );
@@ -334,6 +372,17 @@ describe("Payments Options", () => {
         createCustomConfig({
           projectName: "paddle-react-router",
           frontend: ["react-router"],
+          payments: "paddle",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("paddle with React + Vite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "paddle-react-vite",
+          frontend: ["react-vite"],
           payments: "paddle",
         }),
       );
@@ -508,6 +557,18 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+    });
+
+    test("dodo should fail with React + Vite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "dodo-react-vite-fail",
+          frontend: ["react-vite"],
+          payments: "dodo",
+          expectError: true,
+        }),
+      );
+      expectError(result, "Dodo Payments are not yet supported for React + Vite projects");
     });
   });
 
