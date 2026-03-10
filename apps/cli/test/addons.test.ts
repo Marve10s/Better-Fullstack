@@ -38,7 +38,7 @@ describe("Addon Configurations", () => {
 
   describe("Frontend-Specific Addons", () => {
     describe("PWA Addon", () => {
-      const pwaCompatibleFrontends = ["tanstack-router", "react-router", "solid", "next"];
+      const pwaCompatibleFrontends = ["tanstack-router", "react-router", "react-vite", "solid", "next"];
 
       for (const frontend of pwaCompatibleFrontends) {
         it(`should work with PWA + ${frontend}`, async () => {
@@ -103,10 +103,7 @@ describe("Addon Configurations", () => {
           }
 
           const result = await runTRPCTest(config);
-          expectError(
-            result,
-            "pwa addon requires one of these frontends: tanstack-router, react-router, solid, next",
-          );
+          expectError(result, "pwa addon requires one of these frontends");
         });
       }
     });
