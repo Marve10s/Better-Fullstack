@@ -238,7 +238,7 @@ export function validateApiFrontendCompatibility(
       suggestions: [
         "Use --api orpc (works with all frontends)",
         "Use --api none",
-        "Choose next, react-router, or tanstack-start",
+        "Choose next, react-router, react-vite, or tanstack-start",
       ],
     });
   }
@@ -551,6 +551,10 @@ export function validatePaymentsCompatibility(
 ) {
   if (!payments || payments === "none") return;
 
+  if (frontends.includes("react-vite")) {
+    exitWithError("Payments are not yet supported for React + Vite projects.");
+  }
+
   if (payments === "polar") {
     if (!auth || auth === "none" || auth !== "better-auth") {
       exitWithError(
@@ -577,6 +581,10 @@ export function validateExamplesCompatibility(
   const examplesArr = examples ?? [];
   if (examplesArr.length === 0 || examplesArr.includes("none")) return;
 
+  if (examplesArr.includes("ai") && (frontend ?? []).includes("react-vite")) {
+    exitWithError("The 'ai' example is not yet supported for React + Vite projects.");
+  }
+
   if (examplesArr.includes("ai") && (frontend ?? []).includes("solid")) {
     exitWithError("The 'ai' example is not compatible with the Solid frontend.");
   }
@@ -599,6 +607,10 @@ export function validateExamplesCompatibility(
 
   if (examplesArr.includes("chat-sdk")) {
     const frontendArr = frontend ?? [];
+
+    if (frontendArr.includes("react-vite")) {
+      exitWithError("The 'chat-sdk' example is not yet supported for React + Vite projects.");
+    }
 
     if (!isExampleChatSdkAllowed(backend, frontendArr, runtime)) {
       if (backend === "none") {

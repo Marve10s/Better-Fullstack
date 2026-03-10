@@ -190,6 +190,10 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return "No backend selected";
   }
 
+  if (webFrontend.includes("react-vite")) {
+    return "In Better-Fullstack, auth integrations are not yet supported for React + Vite projects";
+  }
+
   if (optionId === "better-auth") {
     if (backend === "convex") {
       const hasCompatibleFrontend =

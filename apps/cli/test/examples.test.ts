@@ -110,6 +110,27 @@ describe("Example Configurations", () => {
       expectError(result, "The 'ai' example is not compatible with the Solid frontend");
     });
 
+    it("should fail with AI example + React + Vite", async () => {
+      const result = await runTRPCTest({
+        projectName: "ai-react-vite-fail",
+        examples: ["ai"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        frontend: ["react-vite"],
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "The 'ai' example is not yet supported for React + Vite projects");
+    });
+
     it("should work with AI example + Convex + React frontend", async () => {
       const result = await runTRPCTest({
         projectName: "ai-convex-react",
@@ -506,6 +527,31 @@ describe("Example Configurations", () => {
       });
 
       expectError(result, "The 'chat-sdk' example is not supported with the Convex backend in v1");
+    });
+
+    it("should fail with React + Vite", async () => {
+      const result = await runTRPCTest({
+        projectName: "chat-sdk-react-vite-fail",
+        examples: ["chat-sdk"],
+        backend: "hono",
+        runtime: "node",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        frontend: ["react-vite"],
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        ai: "vercel-ai",
+        expectError: true,
+      });
+
+      expectError(
+        result,
+        "The 'chat-sdk' example is not yet supported for React + Vite projects",
+      );
     });
 
     it("should fail with non-vercel-ai on Nuxt/Hono chat-sdk profiles", async () => {

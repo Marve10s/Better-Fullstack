@@ -49,6 +49,12 @@ export default function Header() {
                 {label}
               </NavLink>
             );
+            {{else if (includes frontend "react-vite")}}
+            return (
+              <a key={to} href={to}>
+                {label}
+              </a>
+            );
             {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
             return (
               <Link

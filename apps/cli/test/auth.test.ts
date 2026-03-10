@@ -121,6 +121,28 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
+    it("should normalize better-auth + react-vite to no auth", async () => {
+      const result = await runTRPCTest({
+        projectName: "better-auth-react-vite-normalize",
+        auth: "better-auth",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["react-vite"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
+    });
+
     const compatibleFrontends = [
       "tanstack-router",
       "react-router",

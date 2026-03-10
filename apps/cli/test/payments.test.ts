@@ -1,6 +1,6 @@
 import { describe, test } from "bun:test";
 
-import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
+import { createCustomConfig, expectError, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("Payments Options", () => {
   describe("Stripe with React frontends", () => {
@@ -50,6 +50,18 @@ describe("Payments Options", () => {
         }),
       );
       expectSuccess(result);
+    });
+
+    test("stripe should fail with React + Vite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "stripe-react-vite-fail",
+          frontend: ["react-vite"],
+          payments: "stripe",
+          expectError: true,
+        }),
+      );
+      expectError(result, "Payments are not yet supported for React + Vite projects");
     });
   });
 

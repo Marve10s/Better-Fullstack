@@ -30,7 +30,9 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   );
   const hasNextJs = frontend.includes("next");
   const hasTanStackStart = frontend.includes("tanstack-start");
-  const hasViteReact = frontend.some((f) => ["tanstack-router", "react-router"].includes(f));
+  const hasViteReact = frontend.some((f) =>
+    ["tanstack-router", "react-router", "react-vite"].includes(f),
+  );
 
   if (auth === "clerk") {
     if (webExists) {
@@ -118,6 +120,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
   const hasWebFrontend = frontend.some((f) =>
     [
       "react-router",
+      "react-vite",
       "tanstack-router",
       "tanstack-start",
       "next",
