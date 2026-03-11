@@ -417,7 +417,7 @@ describe("Addon Configurations", () => {
         const result = await runTRPCTest({
           projectName: "storybook-react-vite",
           addons: ["storybook"],
-          frontend: ["tanstack-router"],
+          frontend: ["react-vite"],
           backend: "hono",
           runtime: "bun",
           database: "sqlite",

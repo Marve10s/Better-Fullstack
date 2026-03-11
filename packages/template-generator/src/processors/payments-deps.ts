@@ -1,25 +1,25 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import type { Frontend, ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { addPackageDependency } from "../utils/add-deps";
 import { getWebPackagePath, getServerPackagePath } from "../utils/project-paths";
 
-const REACT_WEB_FRONTENDS = [
+const REACT_WEB_FRONTENDS: Frontend[] = [
   "react-router",
   "react-vite",
   "tanstack-router",
   "tanstack-start",
   "next",
   "redwood",
-] as const;
+];
 
-const CLIENT_CHECKOUT_WEB_FRONTENDS = [
+const CLIENT_CHECKOUT_WEB_FRONTENDS: Frontend[] = [
   ...REACT_WEB_FRONTENDS,
   "nuxt",
   "svelte",
   "solid",
-] as const;
+];
 
 export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { payments, frontend, backend } = config;
