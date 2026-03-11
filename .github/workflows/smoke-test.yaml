@@ -105,7 +105,6 @@ jobs:
           cd ../../apps/cli && bun run build
 
       - name: Run Smoke Tests
-        continue-on-error: true
         env:
           INPUT_SEED: ${{ inputs.seed }}
           FALLBACK_SEED: ${{ github.sha }}

@@ -7,6 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
+{{#if (eq api "ts-rest")}}
+import { tsr } from "@/utils/ts-rest";
+{{/if}}
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
@@ -38,6 +41,9 @@ function HomeComponent() {
   {{/if}}
   {{#if (eq api "trpc")}}
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  {{/if}}
+  {{#if (eq api "ts-rest")}}
+  const healthCheck = tsr.healthCheck.useQuery(["healthCheck"]);
   {{/if}}
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);

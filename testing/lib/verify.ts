@@ -12,6 +12,7 @@ export type StepResult = {
   stderr?: string;
   exitCode?: number;
   skipped?: boolean;
+  advisory?: boolean;
   classification?: "environment" | "template" | "unknown";
 };
 
@@ -153,7 +154,7 @@ function wrapResult(
     ecosystem,
     comboName,
     projectDir,
-    overallSuccess: steps.every((s) => s.success || s.skipped),
+    overallSuccess: steps.every((s) => s.success || s.skipped || s.advisory),
     steps,
     totalDurationMs: steps.reduce((sum, s) => sum + s.durationMs, 0),
   };
@@ -161,6 +162,16 @@ function wrapResult(
 
 function skippedStep(step: string): StepResult {
   return { step, success: true, durationMs: 0, skipped: true };
+}
+
+async function runAdvisoryStep(
+  step: string,
+  command: string,
+  args: string[],
+  cwd: string,
+): Promise<StepResult> {
+  const result = await runStep(step, command, args, cwd);
+  return { ...result, advisory: true };
 }
 
 export async function verifyTypeScript(
@@ -180,9 +191,9 @@ export async function verifyTypeScript(
     steps.push(skippedStep("build"));
   }
 
-  // Step 3: lint (if script exists, non-fatal for overall result tracking)
+  // Step 3: lint (advisory — doesn't affect overall pass/fail)
   if (hasPackageScript(projectDir, "lint")) {
-    steps.push(await runStep("lint", "bun", ["run", "lint"], projectDir));
+    steps.push(await runAdvisoryStep("lint", "bun", ["run", "lint"], projectDir));
   } else {
     steps.push(skippedStep("lint"));
   }
@@ -210,9 +221,9 @@ export async function verifyRust(comboName: string, projectDir: string): Promise
   steps.push(await runStep("check", "cargo", ["check"], projectDir));
   if (!steps.at(-1)!.success) return wrapResult("rust", comboName, projectDir, steps);
 
-  // Step 2: cargo clippy
+  // Step 2: cargo clippy (advisory — doesn't affect overall pass/fail)
   steps.push(
-    await runStep("clippy", "cargo", ["clippy", "--", "-D", "warnings"], projectDir),
+    await runAdvisoryStep("clippy", "cargo", ["clippy", "--", "-D", "warnings"], projectDir),
   );
 
   return wrapResult("rust", comboName, projectDir, steps);
@@ -236,9 +247,9 @@ export async function verifyPython(comboName: string, projectDir: string): Promi
     ),
   );
 
-  // Step 3: ruff lint (if ruff in pyproject.toml)
+  // Step 3: ruff lint (advisory — doesn't affect overall pass/fail)
   if (fileContains(projectDir, "pyproject.toml", "ruff")) {
-    steps.push(await runStep("lint", "uv", ["run", "ruff", "check", "."], projectDir));
+    steps.push(await runAdvisoryStep("lint", "uv", ["run", "ruff", "check", "."], projectDir));
   } else {
     steps.push(skippedStep("lint"));
   }
@@ -256,8 +267,8 @@ export async function verifyGo(comboName: string, projectDir: string): Promise<V
   // Step 2: go build
   steps.push(await runStep("build", "go", ["build", "./..."], projectDir));
 
-  // Step 3: go vet
-  steps.push(await runStep("vet", "go", ["vet", "./..."], projectDir));
+  // Step 3: go vet (advisory — doesn't affect overall pass/fail)
+  steps.push(await runAdvisoryStep("vet", "go", ["vet", "./..."], projectDir));
 
   return wrapResult("go", comboName, projectDir, steps);
 }

@@ -534,12 +534,12 @@ export const dependencyVersionMap = {
   "dodopayments-checkout": "^1.8.0",
 
   // File Upload - UploadThing
-  uploadthing: "^7.8.0",
+  uploadthing: "^7.7.4",
   "@uploadthing/react": "^7.3.3",
   "@uploadthing/svelte": "^7.3.3",
   "@uploadthing/vue": "^7.3.3",
   "@uploadthing/solid": "^7.3.3",
-  "@uploadthing/nuxt": "^7.3.0",
+  "@uploadthing/nuxt": "^7.1.10",
   "@uploadthing/expo": "^7.3.0",
 
   // File Upload - FilePond
