@@ -37,6 +37,9 @@ export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     return;
   }
 
+  // Query/router deps are needed regardless of API choice (e.g. solid-router-devtools)
+  addQueryDeps(vfs, frontend, backend);
+
   if (api === "none") return;
 
   addApiPackageDeps(vfs, api, backend, frontend, auth);
@@ -44,7 +47,6 @@ export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   addSelfBackendWebDeps(vfs, api, backend, frontendType);
   addWebClientDeps(vfs, api, backend, frontendType);
   if (frontendType.hasNative) addNativeDeps(vfs, api, backend);
-  addQueryDeps(vfs, frontend, backend);
 }
 
 function addApiPackageDeps(
