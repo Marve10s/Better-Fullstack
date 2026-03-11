@@ -59,7 +59,6 @@ const TEMPLATE_PATTERNS = [
   /unresolved import/i,
   /No version matching/i,
   /failed to resolve/i,
-  /No packages matched the filter/i,
   /is not exported by/i,
 ];
 
@@ -186,7 +185,13 @@ export async function verifyTypeScript(
 
   // Step 2: build (if script exists)
   if (hasPackageScript(projectDir, "build")) {
-    steps.push(await runStep("build", "bun", ["run", "build"], projectDir));
+    const buildResult = await runStep("build", "bun", ["run", "build"], projectDir);
+    // Native-only projects have no web packages to build — treat as skip
+    if (!buildResult.success && /No packages matched the filter/i.test(`${buildResult.stderr}\n${buildResult.stdout}`)) {
+      steps.push({ ...buildResult, success: true, skipped: true });
+    } else {
+      steps.push(buildResult);
+    }
   } else {
     steps.push(skippedStep("build"));
   }

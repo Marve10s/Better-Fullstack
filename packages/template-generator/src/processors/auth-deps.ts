@@ -150,7 +150,8 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
     }
 
     if (hasWebFrontend && webExists) {
-      const hasTanstackRouter = frontend.includes("tanstack-router");
+      const hasTanstackRouter =
+        frontend.includes("tanstack-router") || frontend.includes("tanstack-start");
       addPackageDependency({
         vfs,
         packagePath: webPath,

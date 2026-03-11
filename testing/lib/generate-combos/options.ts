@@ -193,8 +193,23 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       ? "none"
       : sampleScalar(API_VALUES, 0.2);
 
-  const auth = backend === "none" ? "none" : sampleScalar(AUTH_VALUES, 0.3);
-  const uiLibrary = cssFramework !== "tailwind" ? "none" : sampleScalar(UI_LIBRARY_VALUES, 0.25);
+  let auth = backend === "none" ? "none" : sampleScalar(AUTH_VALUES, 0.3);
+  // better-auth requires a database connection
+  if (auth === "better-auth" && database === "none") auth = "none";
+  const astroIntegration = frontend.includes("astro")
+    ? sampleScalar(ASTRO_INTEGRATION_VALUES, 0.15)
+    : undefined;
+
+  // Most UI libraries are React-only; non-React astro integrations need compatible ones
+  const REACT_ONLY_UI = new Set([
+    "radix-ui", "headless-ui", "chakra-ui", "nextui", "mantine", "base-ui", "react-aria",
+  ]);
+  const needsNonReactUI = astroIntegration && astroIntegration !== "react" && astroIntegration !== "none";
+  let uiLibrary =
+    cssFramework !== "tailwind"
+      ? "none"
+      : sampleScalar(UI_LIBRARY_VALUES, 0.25);
+  if (needsNonReactUI && REACT_ONLY_UI.has(uiLibrary)) uiLibrary = "none";
   const usesShadcn = uiLibrary === "shadcn-ui";
 
   return {
@@ -235,8 +250,7 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       serverDeploy: sampleScalar(SERVER_DEPLOY_VALUES, 0.92),
       addons: sampleArray(ADDONS_VALUES, 0.82, 2),
       examples: sampleArray(EXAMPLES_VALUES, 0.9, 1),
-      astroIntegration:
-        frontend.includes("astro") ? sampleScalar(ASTRO_INTEGRATION_VALUES, 0.15) : undefined,
+      astroIntegration,
       shadcnBase: usesShadcn ? sampleScalar(SHADCN_BASE_VALUES, 0) : undefined,
       shadcnStyle: usesShadcn ? sampleScalar(SHADCN_STYLE_VALUES, 0) : undefined,
       shadcnIconLibrary: usesShadcn ? sampleScalar(SHADCN_ICON_LIBRARY_VALUES, 0) : undefined,
