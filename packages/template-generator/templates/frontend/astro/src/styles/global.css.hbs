@@ -1,3 +1,4 @@
+{{#if (eq cssFramework "tailwind")}}
 @import "tailwindcss";
 @import "tw-animate-css";
 {{#if (eq uiLibrary "shadcn-ui")}}
@@ -88,4 +89,5 @@
   --color-primary: oklch(98.51% 0.001 106.42);
   --color-secondary: oklch(26.96% 0.005 286.03);
 }
+{{/if}}
 {{/if}}

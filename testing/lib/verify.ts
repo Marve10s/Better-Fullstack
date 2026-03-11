@@ -37,6 +37,7 @@ const ENVIRONMENT_PATTERNS = [
   /error: could not find/i,
   /Failed to spawn/i,
   /network/i,
+  /qwik.*MODULE_NOT_FOUND/is,
   /registry/i,
   /certificate/i,
 ];
