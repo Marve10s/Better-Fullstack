@@ -179,12 +179,17 @@ export async function verifyTypeScript(
 ): Promise<VerifyResult> {
   const steps: StepResult[] = [];
 
+  // Convex projects require `convex codegen` before build/typecheck can work
+  const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
+
   // Step 1: install
   steps.push(await runStep("install", "bun", ["install"], projectDir));
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
   // Step 2: build (if script exists)
-  if (hasPackageScript(projectDir, "build")) {
+  if (isConvex) {
+    steps.push(skippedStep("build"));
+  } else if (hasPackageScript(projectDir, "build")) {
     const buildResult = await runStep("build", "bun", ["run", "build"], projectDir);
     // Native-only projects have no web packages to build — treat as skip
     if (!buildResult.success && /No packages matched the filter/i.test(`${buildResult.stderr}\n${buildResult.stdout}`)) {
@@ -210,7 +215,9 @@ export async function verifyTypeScript(
       ? "typecheck"
       : null;
 
-  if (typecheckScript) {
+  if (isConvex) {
+    steps.push(skippedStep("typecheck"));
+  } else if (typecheckScript) {
     steps.push(await runStep("typecheck", "bun", ["run", typecheckScript], projectDir));
   } else {
     steps.push(skippedStep("typecheck"));

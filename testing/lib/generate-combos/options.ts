@@ -247,9 +247,13 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       search: sampleScalar(SEARCH_VALUES, 0.9),
       fileStorage: sampleScalar(FILE_STORAGE_VALUES, 0.84),
       webDeploy: sampleScalar(WEB_DEPLOY_VALUES, 0.92),
-      serverDeploy: sampleScalar(SERVER_DEPLOY_VALUES, 0.92),
+      serverDeploy: backend === "hono"
+        ? sampleScalar(SERVER_DEPLOY_VALUES, 0.92)
+        : sampleScalar(SERVER_DEPLOY_VALUES.filter((v) => v !== "sst"), 0.92),
       addons: sampleArray(ADDONS_VALUES, 0.82, 2),
-      examples: sampleArray(EXAMPLES_VALUES, 0.9, 1),
+      examples: backend === "none"
+        ? sampleArray(EXAMPLES_VALUES.filter((v) => v !== "ai"), 0.9, 1)
+        : sampleArray(EXAMPLES_VALUES, 0.9, 1),
       astroIntegration,
       shadcnBase: usesShadcn ? sampleScalar(SHADCN_BASE_VALUES, 0) : undefined,
       shadcnStyle: usesShadcn ? sampleScalar(SHADCN_STYLE_VALUES, 0) : undefined,
