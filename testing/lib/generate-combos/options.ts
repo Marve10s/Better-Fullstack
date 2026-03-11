@@ -283,6 +283,7 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
     ecosystem: "go",
     options: {
       ...createCommonOptions("go", args),
+      auth: sampleScalar(["go-better-auth", "none"] as const, 0.5),
       goWebFramework: sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18),
       goOrm: sampleScalar(GO_ORM_VALUES, 0.15),
       goApi: sampleScalar(GO_API_VALUES, 0.35),

@@ -258,6 +258,10 @@ for (const combo of combos) {
   for (const step of result.steps) {
     const icon = step.skipped ? "⊘" : step.success ? "✓" : "✗";
     console.log(`  ${icon} ${step.step} (${step.durationMs}ms)${step.classification ? ` [${step.classification}]` : ""}`);
+    if (!step.success && !step.skipped && !step.advisory && step.stderr) {
+      const snippet = step.stderr.trim().split("\n").slice(-10).join("\n");
+      console.log(`    stderr: ${snippet}`);
+    }
   }
   console.log(`  ${result.overallSuccess ? "PASSED" : "FAILED"}`);
 
