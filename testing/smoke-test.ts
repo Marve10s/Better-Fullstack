@@ -258,9 +258,15 @@ for (const combo of combos) {
   for (const step of result.steps) {
     const icon = step.skipped ? "⊘" : step.success ? "✓" : "✗";
     console.log(`  ${icon} ${step.step} (${step.durationMs}ms)${step.classification ? ` [${step.classification}]` : ""}`);
-    if (!step.success && !step.skipped && !step.advisory && step.stderr) {
-      const snippet = step.stderr.trim().split("\n").slice(-10).join("\n");
-      console.log(`    stderr: ${snippet}`);
+    if (!step.success && !step.skipped && !step.advisory) {
+      if (step.stdout) {
+        const snippet = step.stdout.trim().split("\n").slice(-15).join("\n");
+        console.log(`    stdout: ${snippet}`);
+      }
+      if (step.stderr) {
+        const snippet = step.stderr.trim().split("\n").slice(-10).join("\n");
+        console.log(`    stderr: ${snippet}`);
+      }
     }
   }
   console.log(`  ${result.overallSuccess ? "PASSED" : "FAILED"}`);
