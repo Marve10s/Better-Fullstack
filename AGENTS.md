@@ -23,7 +23,6 @@ See `docs/guidelines/` for deeper reference on these topics:
 - For release-sensitive stack or generator changes, run `bun run test:release` from the repo root. That lane covers template snapshots, CLI/builder parity, and preview-config regressions.
 - Surprise worth remembering: `apps/cli/test/cli-builder-sync.test.ts` reads the built `packages/types/dist` output via the workspace package, not just the source files. After changing `packages/types/src/*`, rebuild `packages/types` before trusting that parity test.
 - Surprise worth remembering: `react-vite` originally received auth dependencies from `packages/template-generator/src/processors/auth-deps.ts` without receiving matching auth templates from `packages/template-generator/src/template-handlers/auth.ts`. When expanding `react-vite`, verify both dependency processors and template handlers are updated together.
-- Surprise worth remembering: when `react-vite` reuses React Router auth or payments templates, matching dependency processors must also include `react-vite`. Otherwise generated imports such as `@polar-sh/better-auth` can be emitted without the corresponding `apps/web/package.json` dependency.
 
 ## Bun
 
