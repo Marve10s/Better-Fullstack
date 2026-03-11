@@ -28,6 +28,18 @@ function getFrontendType(frontend: Frontend[]): FrontendType {
   };
 }
 
+function addSolidRouterDevtools(vfs: VirtualFileSystem, frontend: Frontend[]): void {
+  const webPath = "apps/web/package.json";
+  if (!vfs.exists(webPath)) return;
+  const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");
+  if (!hasSolid) return;
+  addPackageDependency({
+    vfs,
+    packagePath: webPath,
+    devDependencies: ["@tanstack/solid-router-devtools"],
+  });
+}
+
 export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { api, backend, frontend, auth } = config;
   const frontendType = getFrontendType(frontend);
@@ -37,8 +49,8 @@ export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     return;
   }
 
-  // Query/router deps are needed regardless of API choice (e.g. solid-router-devtools)
-  addQueryDeps(vfs, frontend, backend);
+  // Solid frontend always needs router devtools regardless of API choice
+  addSolidRouterDevtools(vfs, frontend);
 
   if (api === "none") return;
 
@@ -47,6 +59,7 @@ export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   addSelfBackendWebDeps(vfs, api, backend, frontendType);
   addWebClientDeps(vfs, api, backend, frontendType);
   if (frontendType.hasNative) addNativeDeps(vfs, api, backend);
+  addQueryDeps(vfs, frontend, backend);
 }
 
 function addApiPackageDeps(
