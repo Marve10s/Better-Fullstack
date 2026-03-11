@@ -196,7 +196,14 @@ describe("Payments Options", () => {
       const successRoute = await Bun.file(
         join(result.projectDir!, "apps/web/src/routes/success.tsx"),
       ).text();
+      const webPackageJson = JSON.parse(
+        await Bun.file(join(result.projectDir!, "apps/web/package.json")).text(),
+      ) as {
+        dependencies?: Record<string, string>;
+      };
+
       expect(successRoute).toContain('from "react-router"');
+      expect(webPackageJson.dependencies?.["@polar-sh/better-auth"]).toBeDefined();
     });
   });
 

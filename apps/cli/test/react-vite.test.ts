@@ -177,6 +177,26 @@ describe("React + Vite", () => {
       },
     },
     {
+      name: "polar + better-auth",
+      projectName: "react-vite-polar-build",
+      config: {
+        frontend: ["react-vite"] as const,
+        backend: "hono" as const,
+        runtime: "bun" as const,
+        database: "sqlite" as const,
+        orm: "drizzle" as const,
+        auth: "better-auth" as const,
+        api: "trpc" as const,
+        payments: "polar" as const,
+        addons: ["none"] as const,
+        examples: ["none"] as const,
+        dbSetup: "none" as const,
+        webDeploy: "none" as const,
+        serverDeploy: "none" as const,
+        install: false,
+      },
+    },
+    {
       name: "AI example",
       projectName: "react-vite-ai-build",
       config: {
