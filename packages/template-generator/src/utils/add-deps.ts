@@ -140,6 +140,7 @@ export const dependencyVersionMap = {
   // AdonisJS
   "@adonisjs/core": "^6.20.0",
   "@adonisjs/cors": "^2.2.1",
+  "@adonisjs/assembler": "^8.0.0",
   "@adonisjs/tsconfig": "^1.4.1",
 
   // Nitro
