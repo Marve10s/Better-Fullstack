@@ -591,7 +591,7 @@ export const dependencyVersionMap = {
   "@opentelemetry/exporter-trace-otlp-http": "^0.212.0",
   "@opentelemetry/exporter-metrics-otlp-http": "^0.212.0",
   "@opentelemetry/resources": "^1.30.1",
-  "@opentelemetry/sdk-metrics": "^0.212.0",
+  "@opentelemetry/sdk-metrics": "^2.2.0",
   "@opentelemetry/semantic-conventions": "^1.40.0",
 
   // Sentry
