@@ -90,4 +90,17 @@
   --color-secondary: oklch(26.96% 0.005 286.03);
 }
 {{/if}}
+{{else}}
+/* Base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
 {{/if}}
