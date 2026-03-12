@@ -12,13 +12,15 @@ export const queryClient = new QueryClient({
 	},
 });
 
-const client = initClient(contract, {
+const clientArgs = {
 	baseUrl: "/api/rest",
 	baseHeaders: {},
 {{#if (eq auth "better-auth")}}
-	credentials: "include",
+	credentials: "include" as const,
 {{/if}}
 	api: tsRestFetchApi,
-});
+};
 
-export const tsr = initTsrReactQuery(contract, client);
+const client = initClient(contract, clientArgs);
+
+export const tsr = initTsrReactQuery(contract, clientArgs);
