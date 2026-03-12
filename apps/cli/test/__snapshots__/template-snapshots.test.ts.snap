@@ -1232,7 +1232,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -1841,7 +1841,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     {
       "content": 
 "import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -2485,7 +2485,7 @@ export const client = createORPCClient<typeof appRouter>(link);
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -2995,7 +2995,7 @@ export default defineNuxtConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -3753,7 +3753,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -4537,7 +4537,7 @@ export default defineConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -5332,7 +5332,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -6649,7 +6649,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -7331,7 +7331,7 @@ export default defineConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -8081,7 +8081,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -8805,7 +8805,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -9963,7 +9963,7 @@ export default app;
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
