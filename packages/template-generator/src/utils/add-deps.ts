@@ -594,7 +594,7 @@ export const dependencyVersionMap = {
   "@opentelemetry/auto-instrumentations-node": "^0.70.1",
   "@opentelemetry/exporter-trace-otlp-http": "^0.212.0",
   "@opentelemetry/exporter-metrics-otlp-http": "^0.212.0",
-  "@opentelemetry/resources": "^1.30.1",
+  "@opentelemetry/resources": "^2.0.0",
   "@opentelemetry/sdk-metrics": "^2.2.0",
   "@opentelemetry/semantic-conventions": "^1.40.0",
 
