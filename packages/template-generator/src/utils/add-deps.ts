@@ -279,6 +279,8 @@ export const dependencyVersionMap = {
   resend: "^4.5.1",
   "@react-email/components": "^0.0.36",
   "react-email": "^3.0.6",
+  react: "^19.2.3",
+  "@types/react": "^19.2.7",
   nodemailer: "^6.10.1",
   "@types/nodemailer": "^6.4.17",
   postmark: "^4.0.5",
