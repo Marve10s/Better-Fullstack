@@ -13,6 +13,9 @@ import { orpc } from "@/utils/orpc";
   {{/if}}
 {{else if (eq api "ts-rest")}}
 import { tsr } from "@/utils/ts-rest";
+{{else if (eq api "garph")}}
+import { useQuery } from "@tanstack/react-query";
+import { query, resolved } from "@/utils/garph";
 {{/if}}
 
 export const Route = createFileRoute("/")({
@@ -45,6 +48,11 @@ function HomeComponent() {
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
   {{else if (eq api "ts-rest")}}
   const healthCheck = tsr.healthCheck.useQuery(["healthCheck"]);
+  {{else if (eq api "garph")}}
+  const healthCheck = useQuery({
+    queryKey: ["healthCheck"],
+    queryFn: () => resolved(() => query.health),
+  });
   {{/if}}
 
   return (

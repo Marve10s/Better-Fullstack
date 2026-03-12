@@ -10,6 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 {{#if (eq api "ts-rest")}}
 import { tsr } from "@/utils/ts-rest";
 {{/if}}
+{{#if (eq api "garph")}}
+import { query, resolved } from "@/utils/garph";
+import { useQuery } from "@tanstack/react-query";
+{{/if}}
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
@@ -44,6 +48,12 @@ function HomeComponent() {
   {{/if}}
   {{#if (eq api "ts-rest")}}
   const healthCheck = tsr.healthCheck.useQuery(["healthCheck"]);
+  {{/if}}
+  {{#if (eq api "garph")}}
+  const healthCheck = useQuery({
+    queryKey: ["healthCheck"],
+    queryFn: () => resolved(() => query.health),
+  });
   {{/if}}
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);

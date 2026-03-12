@@ -114,7 +114,7 @@ export async function getDocuments<T extends Record<string, unknown>>(
   options?: { offset?: number; limit?: number; fields?: string[] }
 ): Promise<{ results: T[]; offset: number; limit: number; total: number }> {
   const index = searchClient.index<T>(indexName);
-  return index.getDocuments(options);
+  return index.getDocuments(options as any);
 }
 
 /**
@@ -139,7 +139,7 @@ export async function deleteIndex(indexName: string): Promise<{ taskUid: number 
 /**
  * Get all indexes
  */
-export async function getIndexes(): Promise<{ uid: string; primaryKey: string | null }[]> {
+export async function getIndexes(): Promise<{ uid: string; primaryKey: string | undefined }[]> {
   const { results } = await searchClient.getIndexes();
   return results.map((index) => ({
     uid: index.uid,
