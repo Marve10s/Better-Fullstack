@@ -90,7 +90,7 @@ async function runStep(
       env: process.env,
     });
 
-    const timeoutId = setTimeout(() => proc.kill(), STEP_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => { try { proc.kill(); } catch {} }, STEP_TIMEOUT_MS);
 
     const [stdout, stderr] = await Promise.all([
       new Response(proc.stdout).text(),

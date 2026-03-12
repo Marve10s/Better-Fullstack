@@ -1,22 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-{{#if (eq api "orpc")}}
-import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
-{{/if}}
-{{#if (eq api "trpc")}}
-import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
-{{/if}}
-{{#if (eq api "ts-rest")}}
-import { tsr } from "@/utils/ts-rest";
-{{/if}}
-{{#if (eq api "garph")}}
-import { query, resolved } from "@/utils/garph";
-import { useQuery } from "@tanstack/react-query";
-{{/if}}
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
+{{else if (eq api "orpc")}}
+import { orpc } from "@/utils/orpc";
+import { useQuery } from "@tanstack/react-query";
+{{else if (eq api "trpc")}}
+import { trpc } from "@/utils/trpc";
+import { useQuery } from "@tanstack/react-query";
+{{else if (eq api "ts-rest")}}
+import { tsr } from "@/utils/ts-rest";
+{{else if (eq api "garph")}}
+import { query, resolved } from "@/utils/garph";
+import { useQuery } from "@tanstack/react-query";
 {{/if}}
 
 export const Route = createFileRoute("/")({
@@ -40,23 +36,19 @@ const TITLE_TEXT = `
  `;
 
 function HomeComponent() {
-  {{#if (eq api "orpc")}}
+  {{#if (eq backend "convex")}}
+  const healthCheck = useQuery(api.healthCheck.get);
+  {{else if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
-  {{/if}}
-  {{#if (eq api "trpc")}}
+  {{else if (eq api "trpc")}}
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-  {{/if}}
-  {{#if (eq api "ts-rest")}}
+  {{else if (eq api "ts-rest")}}
   const healthCheck = tsr.healthCheck.useQuery(["healthCheck"]);
-  {{/if}}
-  {{#if (eq api "garph")}}
+  {{else if (eq api "garph")}}
   const healthCheck = useQuery({
     queryKey: ["healthCheck"],
     queryFn: () => resolved(() => query.health),
   });
-  {{/if}}
-  {{#if (eq backend "convex")}}
-  const healthCheck = useQuery(api.healthCheck.get);
   {{/if}}
 
   return (

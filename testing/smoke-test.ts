@@ -130,7 +130,7 @@ async function scaffoldProject(
       },
     });
 
-    const timeoutId = setTimeout(() => proc.kill(), 120_000); // 2 min scaffold timeout
+    const timeoutId = setTimeout(() => { try { proc.kill(); } catch {} }, 120_000); // 2 min scaffold timeout
 
     const [_stdout, stderr] = await Promise.all([
       new Response(proc.stdout).text(),

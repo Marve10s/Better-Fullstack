@@ -468,52 +468,56 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
 
 export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): ComboCandidate[] {
   _rng = args.rng ?? Math.random;
-  const requestedEcosystems = weightedDistribution(args.count, args.ecosystems);
-  const combos: ComboCandidate[] = [];
-  const currentBatchKeys = new Set<string>();
-  let attempts = 0;
-  const maxAttempts = Math.max(args.count * 600, 3000);
+  try {
+    const requestedEcosystems = weightedDistribution(args.count, args.ecosystems);
+    const combos: ComboCandidate[] = [];
+    const currentBatchKeys = new Set<string>();
+    let attempts = 0;
+    const maxAttempts = Math.max(args.count * 600, 3000);
 
-  while (combos.length < args.count && attempts < maxAttempts) {
-    const ecosystem = requestedEcosystems[combos.length] ?? sampleOne(args.ecosystems);
-    attempts += 1;
+    while (combos.length < args.count && attempts < maxAttempts) {
+      const ecosystem = requestedEcosystems[combos.length] ?? sampleOne(args.ecosystems);
+      attempts += 1;
 
-    try {
-      const draft = createDraft(ecosystem, args);
-      const provisionalConfig = validateDraft(draft, "candidate");
-      const provisionalFingerprint = buildHistoryFingerprint(provisionalConfig);
-      const provisionalKey = fingerprintToKey(provisionalFingerprint);
+      try {
+        const draft = createDraft(ecosystem, args);
+        const provisionalConfig = validateDraft(draft, "candidate");
+        const provisionalFingerprint = buildHistoryFingerprint(provisionalConfig);
+        const provisionalKey = fingerprintToKey(provisionalFingerprint);
 
-      if (history.fingerprintKeys.has(provisionalKey) || currentBatchKeys.has(provisionalKey)) {
+        if (history.fingerprintKeys.has(provisionalKey) || currentBatchKeys.has(provisionalKey)) {
+          continue;
+        }
+
+        const name = formatNameFromFingerprint(provisionalFingerprint);
+        if (history.legacyNames.has(name) || combos.some((combo) => combo.name === name)) {
+          continue;
+        }
+
+        const config = validateDraft(draft, name);
+        const fingerprint = buildHistoryFingerprint(config);
+        const fingerprintKey = fingerprintToKey(fingerprint);
+
+        if (history.fingerprintKeys.has(fingerprintKey) || currentBatchKeys.has(fingerprintKey)) {
+          continue;
+        }
+
+        combos.push({
+          ecosystem,
+          name,
+          config,
+          fingerprint,
+          fingerprintKey,
+          command: buildCommand(name, config),
+        });
+        currentBatchKeys.add(fingerprintKey);
+      } catch {
         continue;
       }
-
-      const name = formatNameFromFingerprint(provisionalFingerprint);
-      if (history.legacyNames.has(name) || combos.some((combo) => combo.name === name)) {
-        continue;
-      }
-
-      const config = validateDraft(draft, name);
-      const fingerprint = buildHistoryFingerprint(config);
-      const fingerprintKey = fingerprintToKey(fingerprint);
-
-      if (history.fingerprintKeys.has(fingerprintKey) || currentBatchKeys.has(fingerprintKey)) {
-        continue;
-      }
-
-      combos.push({
-        ecosystem,
-        name,
-        config,
-        fingerprint,
-        fingerprintKey,
-        command: buildCommand(name, config),
-      });
-      currentBatchKeys.add(fingerprintKey);
-    } catch {
-      continue;
     }
-  }
 
-  return combos;
+    return combos;
+  } finally {
+    _rng = Math.random;
+  }
 }
