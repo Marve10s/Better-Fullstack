@@ -49,6 +49,7 @@ import { cn } from "@/lib/utils";
 
 import { ActionButtons } from "./action-buttons";
 import { PresetDropdown } from "./preset-dropdown";
+import { PresetsPanel } from "./presets-panel";
 import { PreviewPanel } from "./preview-panel";
 import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
@@ -889,6 +890,18 @@ const StackBuilder = () => {
               >
                 Preview
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("presets")}
+                className={cn(
+                  "rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  viewMode === "presets"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                Presets
+              </button>
             </div>
 
             {viewMode === "command" ? (
@@ -1401,13 +1414,17 @@ const StackBuilder = () => {
                   </ScrollArea>
                 </div>
               </div>
-            ) : (
+            ) : viewMode === "preview" ? (
               <div className="min-h-0 flex-1 overflow-hidden">
                 <PreviewPanel
                   stack={adjustedStack || stack}
                   selectedFilePath={selectedFile || null}
                   onSelectFile={setSelectedFile}
                 />
+              </div>
+            ) : (
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <PresetsPanel stack={stack} onApplyPreset={applyPreset} />
               </div>
             )}
           </main>
