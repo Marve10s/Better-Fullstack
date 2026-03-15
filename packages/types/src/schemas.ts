@@ -92,7 +92,7 @@ export const ExamplesSchema = z
   .enum(["ai", "chat-sdk", "none"])
   .describe("Example templates to include");
 
-export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun"]).describe("Package manager");
+export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun", "yarn"]).describe("Package manager");
 
 export const DatabaseSetupSchema = z
   .enum([

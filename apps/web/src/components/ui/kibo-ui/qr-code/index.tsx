@@ -1,4 +1,3 @@
-"use client";
 
 import { formatHex, oklch } from "culori";
 import QR from "qrcode";

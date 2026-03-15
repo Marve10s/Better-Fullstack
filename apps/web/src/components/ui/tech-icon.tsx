@@ -1,4 +1,3 @@
-"use client";
 
 import { computeSiUrl, getInvertClass, ICON_REGISTRY } from "@/lib/tech-icons";
 import { useTheme } from "@/lib/theme";

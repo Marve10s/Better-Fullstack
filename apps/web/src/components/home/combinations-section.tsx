@@ -1,9 +1,10 @@
-"use client";
 
-import { Infinity as InfinityIcon, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { combinationsMetrics } from "@/lib/combinations-count";
+
+import { CollapsibleSection } from "./collapsible-section";
 
 const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScientific } =
   combinationsMetrics;
@@ -28,7 +29,6 @@ function GlowingNumber() {
 
   return (
     <div className="text-center">
-      {/* Main number */}
       <div className="flex items-baseline justify-center gap-1">
         <span className="text-5xl font-bold font-mono text-foreground sm:text-7xl">
           {totalScientific.mantissa}
@@ -40,7 +40,6 @@ function GlowingNumber() {
       </div>
       <p className="mt-2 text-sm text-muted-foreground">possible project combinations</p>
 
-      {/* Rotating fun facts */}
       <div className="mt-4 h-6 overflow-hidden">
         <p
           key={factIndex}
@@ -55,43 +54,32 @@ function GlowingNumber() {
 
 export default function CombinationsSection() {
   return (
-    <section className="border-t border-border py-12 sm:py-16">
-      <div className="mx-auto max-w-3xl px-4">
-        {/* Section Header */}
-        <div className="flex items-center gap-2">
-          <InfinityIcon className="h-5 w-5 text-foreground" />
-          <h2 className="font-pixel text-lg font-bold sm:text-xl">Infinite Possibilities</h2>
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          Mix and match frameworks, databases, auth, payments, AI, and more to create your perfect
-          stack.
-        </p>
+    <CollapsibleSection
+      title="Infinite Possibilities"
+      subtitle="Mix and match frameworks, databases, auth, payments, AI, and more to create your perfect stack."
+    >
+      <div data-animate className="py-8 sm:mt-4">
+        <GlowingNumber />
+      </div>
 
-        {/* Big Number Display */}
-        <div className="mt-8 py-8 sm:mt-12">
-          <GlowingNumber />
-        </div>
-
-        {/* Universe comparison */}
-        <div className="mt-8 flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
-          <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
-          <div className="text-sm">
-            <p className="font-medium">How long to test every combination?</p>
-            <p className="mt-1 text-muted-foreground">
-              At 1ms per test:{" "}
-              <span className="font-mono text-foreground">
-                {yearsAtOneMillisecondScientific.mantissa} × 10^
-                {yearsAtOneMillisecondScientific.exponent} years
-              </span>{" "}
-              — that's{" "}
-              <span className="font-medium text-foreground">
-                {universeLifetimesScientific.mantissa} × 10^{universeLifetimesScientific.exponent}{" "}
-                universe lifetimes
-              </span>
-            </p>
-          </div>
+      <div data-animate className="mt-8 flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
+        <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+        <div className="text-sm">
+          <p className="font-medium">How long to test every combination?</p>
+          <p className="mt-1 text-muted-foreground">
+            At 1ms per test:{" "}
+            <span className="font-mono text-foreground">
+              {yearsAtOneMillisecondScientific.mantissa} × 10^
+              {yearsAtOneMillisecondScientific.exponent} years
+            </span>{" "}
+            — that's{" "}
+            <span className="font-medium text-foreground">
+              {universeLifetimesScientific.mantissa} × 10^{universeLifetimesScientific.exponent}{" "}
+              universe lifetimes
+            </span>
+          </p>
         </div>
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }

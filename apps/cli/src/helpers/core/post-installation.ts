@@ -57,7 +57,13 @@ export async function displayPostInstallInstructions(
   const isConvex = backend === "convex";
   const isBackendSelf = backend === "self";
   const runCmd =
-    packageManager === "npm" ? "npm run" : packageManager === "pnpm" ? "pnpm run" : "bun run";
+    packageManager === "npm"
+      ? "npm run"
+      : packageManager === "pnpm"
+        ? "pnpm run"
+        : packageManager === "yarn"
+          ? "yarn"
+          : "bun run";
   const cdCmd = `cd ${relativePath}`;
   const hasHusky = addons?.includes("husky");
   const hasLefthook = addons?.includes("lefthook");
@@ -281,7 +287,8 @@ function getLintingInstructions(runCmd: string) {
 }
 
 function getLefthookInstructions(packageManager: string) {
-  const cmd = packageManager === "npm" ? "npx" : packageManager;
+  const cmd =
+    packageManager === "npm" ? "npx" : packageManager === "yarn" ? "yarn dlx" : packageManager;
   return `${pc.bold("Git hooks with Lefthook:")}\n${pc.cyan(
     "•",
   )} Install hooks: ${cmd} lefthook install\n`;
@@ -428,7 +435,8 @@ function getClerkInstructions(backend: Backend, frontend: Frontend[]) {
 }
 
 function getBetterAuthConvexInstructions(hasWeb: boolean, webPort: string, packageManager: string) {
-  const cmd = packageManager === "npm" ? "npx" : packageManager;
+  const cmd =
+    packageManager === "npm" ? "npx" : packageManager === "yarn" ? "yarn dlx" : packageManager;
   return (
     `${pc.bold("Better Auth + Convex Setup:")}\n` +
     `${pc.cyan("•")} Set environment variables from ${pc.white("packages/backend")}:\n` +

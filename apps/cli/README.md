@@ -1,6 +1,6 @@
-# Better Fullstack CLI
+# Better Fullstack
 
-A CLI-first toolkit for building Full Stack applications. Skip the configuration. Ship the code.
+Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options — the CLI wires everything together.
 
 ## Quick Start
 
@@ -13,75 +13,39 @@ pnpm create better-fullstack@latest
 
 # Using npm
 npx create-better-fullstack@latest
+
+# Using yarn
+yarn create better-fullstack@latest
 ```
 
-## Usage
+## Web Builder
+
+Configure your stack visually — pick every option from a UI, preview your choices, and get a ready-to-run command.
+
+**[Open the App Builder →](https://better-fullstack.dev/new)**
+
+## Features
+
+- **270+ options** — frontend, backend, database, auth, payments, AI, DevOps, and more
+- **4 ecosystems** — TypeScript, Rust, Python, Go
+- **Visual builder** — configure your stack in the browser
+- **Wired for you** — every picked integration is preconfigured and working out of the box
+
+## CLI Flags
 
 ```bash
-Usage: create-better-fullstack [project-directory] [options]
-
-Options:
-  -V, --version                   Output the version number
-  -y, --yes                       Use default configuration
-  --yolo                          Random configuration (experimental)
-  --database <type>               Database type (none, sqlite, postgres, mysql, mongodb)
-  --orm <type>                    ORM type (drizzle, prisma, mongoose, typeorm, kysely, mikroorm, sequelize, none)
-  --auth <type>                   Authentication (better-auth, go-better-auth, clerk, nextauth, stack-auth, supabase-auth, auth0, none)
-  --payments <type>               Payments (polar, stripe, lemon-squeezy, paddle, dodo, none)
-  --frontend <types...>           Frontend types
-  --backend <framework>           Backend framework
-  --runtime <runtime>             Runtime (bun, node, workers, none)
-  --api <type>                    API type (trpc, orpc, ts-rest, garph, none)
-  --addons <types...>             Additional addons
-  --examples <types...>           Examples to include (ai, none)
-  --git / --no-git                Initialize git repository
-  --package-manager <pm>          Package manager (npm, pnpm, bun)
-  --install / --no-install        Install dependencies
-  --db-setup <setup>              Database setup
-  -h, --help                      Display help
+--yes              # Accept all defaults
+--yolo             # Scaffold a random stack — good for exploring
+--template <name>  # Use a preset (t3, mern, pern, uniwind)
+--ecosystem <lang> # Start in rust, python, or go mode
+--no-git           # Skip git initialization
+--no-install       # Skip dependency installation
+--package-manager  # Package manager (bun, pnpm, npm, yarn)
+--verbose          # Show detailed output
 ```
 
-## Examples
+## Links
 
-```bash
-# Default configuration
-npx create-better-fullstack --yes
-
-# With specific options
-npx create-better-fullstack --database postgres --orm drizzle --auth better-auth --addons pwa biome
-
-# Elysia backend with Node.js
-npx create-better-fullstack --backend elysia --runtime node
-
-# Multiple frontends (web + native)
-npx create-better-fullstack --frontend tanstack-router native-bare
-```
-
-## Additional Commands
-
-```bash
-# Add new addons to an existing Better Fullstack project
-npx create-better-fullstack add --addons mcp skills --install
-
-# Show recent project history
-npx create-better-fullstack history --limit 10
-
-# Output history as JSON
-npx create-better-fullstack history --json
-
-# Clear saved history
-npx create-better-fullstack history --clear
-```
-
-## Project Structure
-
-```
-my-app/
-├── apps/
-│   ├── web/          # Frontend application
-│   ├── server/       # Backend API
-│   ├── native/       # (optional) Mobile application
-│   └── docs/         # (optional) Documentation site
-├── packages/         # Shared packages
-└── README.md
-```
+- [Website](https://better-fullstack.dev)
+- [GitHub](https://github.com/Marve10s/Better-Fullstack)
+- [npm](https://www.npmjs.com/package/create-better-fullstack)

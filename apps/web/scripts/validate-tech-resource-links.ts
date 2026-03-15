@@ -11,6 +11,13 @@ type LinkCheckTarget = {
 };
 
 const SKIP_IDS = new Set(["none", "true", "false"]);
+
+const SHARED_DOCS_CATEGORIES = new Set([
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnRadius",
+  "shadcnStyle",
+]);
 const LIVE_MODE = process.argv.includes("--live");
 
 function isValidHttpsUrl(value: string): boolean {
@@ -58,6 +65,10 @@ async function run() {
       const githubUrl = links.githubUrl?.trim();
 
       if (!docsUrl && !githubUrl) {
+        if (SHARED_DOCS_CATEGORIES.has(category)) {
+          linkedCount += 1;
+          continue;
+        }
         errors.push(`${category}:${option.id} is missing both docs and GitHub links`);
         continue;
       }
