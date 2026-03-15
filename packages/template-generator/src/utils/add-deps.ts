@@ -310,8 +310,8 @@ export const dependencyVersionMap = {
 
   // Email
   resend: "^4.5.1",
-  "@react-email/components": "^0.0.36",
-  "react-email": "^3.0.6",
+  "@react-email/components": "^1.0.9",
+  "react-email": "^5.2.9",
   react: "^19.2.3",
   "@types/react": "^19.2.7",
   nodemailer: "^6.10.1",
@@ -423,8 +423,8 @@ export const dependencyVersionMap = {
   daisyui: "^5.0.0",
 
   // Qwik
-  "@builder.io/qwik": "^1.19.0",
-  "@builder.io/qwik-city": "^1.19.0",
+  "@builder.io/qwik": "~1.18.0",
+  "@builder.io/qwik-city": "~1.18.0",
   "@builder.io/qwik-react": "^0.7.0",
 
   // Angular
