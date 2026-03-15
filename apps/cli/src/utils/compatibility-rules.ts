@@ -581,6 +581,16 @@ export function validateExamplesCompatibility(
   const examplesArr = examples ?? [];
   if (examplesArr.length === 0 || examplesArr.includes("none")) return;
 
+  if (examplesArr.includes("tanstack-showcase")) {
+    const showcaseFrontends: Frontend[] = ["tanstack-router", "tanstack-start"];
+    const hasShowcaseFrontend = (frontend ?? []).some((f) => showcaseFrontends.includes(f));
+    if (!hasShowcaseFrontend) {
+      exitWithError(
+        "The 'tanstack-showcase' example requires TanStack Router or TanStack Start frontend.",
+      );
+    }
+  }
+
   if (examplesArr.includes("ai") && (frontend ?? []).includes("solid")) {
     exitWithError("The 'ai' example is not compatible with the Solid frontend.");
   }
@@ -641,6 +651,31 @@ export function validateExamplesCompatibility(
         "The 'chat-sdk' example requires '--ai vercel-ai' for the selected stack in v1 (Nuxt Discord and Hono GitHub profiles).",
       );
     }
+  }
+}
+
+/**
+ * Validates that TanStack AI is only used with compatible frontends (React or Solid).
+ * Server-side @tanstack/ai core works anywhere, but client adapters only exist for React and Solid.
+ */
+export function validateAIFrontendCompatibility(
+  ai: AI | undefined,
+  frontends: Frontend[] = [],
+) {
+  if (!ai || ai !== "tanstack-ai") return;
+
+  const compatibleFrontends: Frontend[] = [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
+    "solid", "solid-start",
+  ];
+
+  const hasCompatible = frontends.some((f) => compatibleFrontends.includes(f));
+
+  if (!hasCompatible) {
+    exitWithError(
+      "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet). " +
+      "Please use a React-based frontend (Next.js, TanStack Router, React Router, etc.) or Solid.",
+    );
   }
 }
 
