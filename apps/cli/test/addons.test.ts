@@ -675,6 +675,11 @@ describe("Addon Configurations", () => {
       "oxlint",
       "msw",
       "storybook",
+      "tanstack-query",
+      "tanstack-table",
+      "tanstack-virtual",
+      "tanstack-db",
+      "tanstack-pacer",
       // Note: starlight, ultracite, ruler, fumadocs are prompt-controlled only
     ];
 
@@ -688,7 +693,6 @@ describe("Addon Configurations", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
-          api: "trpc",
           examples: ["none"],
           dbSetup: "none",
           webDeploy: "none",
@@ -696,18 +700,571 @@ describe("Addon Configurations", () => {
           install: false,
         };
 
-        // Choose compatible frontend for each addon
-        if (["pwa"].includes(addon)) {
-          config.frontend = ["tanstack-router"]; // PWA compatible
-        } else if (["tauri"].includes(addon)) {
-          config.frontend = ["tanstack-router"]; // Tauri compatible
+        // TanStack addons need api=none to avoid conflicts with tanstack-query
+        if (addon.startsWith("tanstack-")) {
+          config.api = "none";
+          config.frontend = ["tanstack-router"];
+          config.backend = "none";
+          config.runtime = "none";
+          config.database = "none";
+          config.orm = "none";
+        } else if (["pwa", "tauri"].includes(addon)) {
+          config.api = "trpc";
+          config.frontend = ["tanstack-router"];
         } else {
-          config.frontend = ["tanstack-router"]; // Universal addons
+          config.api = "trpc";
+          config.frontend = ["tanstack-router"];
         }
 
         const result = await runTRPCTest(config);
         expectSuccess(result);
       });
     }
+  });
+
+  describe("TanStack Addons", () => {
+    describe("TanStack Query Addon", () => {
+      it("should work with React frontend (api=none)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-react",
+          addons: ["tanstack-query"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work alongside api=trpc (query comes from tRPC)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-api-conflict",
+          addons: ["tanstack-query"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Svelte frontend (api=none)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-svelte",
+          addons: ["tanstack-query"],
+          frontend: ["svelte"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Nuxt frontend (api=none)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-nuxt",
+          addons: ["tanstack-query"],
+          frontend: ["nuxt"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("TanStack Table Addon", () => {
+      const compatibleFrontends: { frontend: Frontend; api: "trpc" | "orpc" }[] = [
+        { frontend: "tanstack-router", api: "trpc" },
+        { frontend: "next", api: "trpc" },
+        { frontend: "nuxt", api: "orpc" },
+        { frontend: "svelte", api: "orpc" },
+        { frontend: "solid", api: "orpc" },
+      ];
+
+      for (const { frontend, api } of compatibleFrontends) {
+        it(`should work with ${frontend}`, async () => {
+          const result = await runTRPCTest({
+            projectName: `tt-${frontend}`,
+            addons: ["tanstack-table"],
+            frontend: [frontend],
+            backend: "hono",
+            runtime: "bun",
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api,
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+        });
+      }
+    });
+
+    describe("TanStack Virtual Addon", () => {
+      it("should work with React frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tv-react",
+          addons: ["tanstack-virtual"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Solid frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tv-solid",
+          addons: ["tanstack-virtual"],
+          frontend: ["solid"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("TanStack DB Addon", () => {
+      it("should work with React frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tdb-react",
+          addons: ["tanstack-db"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Svelte frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tdb-svelte",
+          addons: ["tanstack-db"],
+          frontend: ["svelte"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("TanStack Pacer Addon", () => {
+      it("should work with React frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tp-react",
+          addons: ["tanstack-pacer"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Solid frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tp-solid",
+          addons: ["tanstack-pacer"],
+          frontend: ["solid"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with Nuxt frontend (core package)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tp-nuxt",
+          addons: ["tanstack-pacer"],
+          frontend: ["nuxt"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("Multiple TanStack Addons", () => {
+      it("should work with multiple TanStack addons together", async () => {
+        const result = await runTRPCTest({
+          projectName: "tanstack-multi",
+          addons: ["tanstack-table", "tanstack-virtual", "tanstack-pacer"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with all TanStack addons at once (api=none)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tanstack-all",
+          addons: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
+          frontend: ["tanstack-router"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("TanStack addon incompatible frontends", () => {
+      const incompatibleFrontends = ["native-bare", "native-uniwind", "native-unistyles"];
+
+      for (const frontend of incompatibleFrontends) {
+        it(`should fail with tanstack-table + ${frontend}`, async () => {
+          const result = await runTRPCTest({
+            projectName: `tt-${frontend}-fail`,
+            addons: ["tanstack-table"],
+            frontend: [frontend as Frontend],
+            backend: "hono",
+            runtime: "bun",
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            expectError: true,
+          });
+
+          expectError(result, "tanstack-table addon requires one of these frontends");
+        });
+      }
+
+      // TanStack addons should fail with Fresh (Preact-based, no adapters)
+      it("should fail with tanstack-virtual + fresh", async () => {
+        const result = await runTRPCTest({
+          projectName: "tv-fresh-fail",
+          addons: ["tanstack-virtual"],
+          frontend: ["fresh"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-virtual addon requires one of these frontends");
+      });
+
+      // TanStack Query should fail with native frontends (no adapters)
+      it("should fail with tanstack-query + native-bare", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-native-fail",
+          addons: ["tanstack-query"],
+          frontend: ["native-bare" as Frontend],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-query addon requires one of these frontends");
+      });
+
+      // TanStack Query should fail with Fresh (Preact-based, no adapters)
+      it("should fail with tanstack-query + fresh", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-fresh-fail",
+          addons: ["tanstack-query"],
+          frontend: ["fresh"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-query addon requires one of these frontends");
+      });
+
+      // TanStack addons should fail with Qwik (no adapters)
+      it("should fail with tanstack-query + qwik", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-qwik-fail",
+          addons: ["tanstack-query"],
+          frontend: ["qwik"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-query addon requires one of these frontends");
+      });
+
+      // TanStack DB should fail with Angular (no @tanstack/angular-db adapter)
+      it("should fail with tanstack-db + angular", async () => {
+        const result = await runTRPCTest({
+          projectName: "tdb-angular-fail",
+          addons: ["tanstack-db"],
+          frontend: ["angular"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-db addon requires one of these frontends");
+      });
+    });
+
+    describe("TanStack addons with Angular frontend", () => {
+      // Table and Virtual have Angular adapters
+      it("should work with tanstack-table + angular", async () => {
+        const result = await runTRPCTest({
+          projectName: "tt-angular",
+          addons: ["tanstack-table"],
+          frontend: ["angular"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with tanstack-virtual + angular", async () => {
+        const result = await runTRPCTest({
+          projectName: "tv-angular",
+          addons: ["tanstack-virtual"],
+          frontend: ["angular"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("TanStack addons with Astro frontend", () => {
+      it("should work with tanstack-table + astro (react integration)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tt-astro-react",
+          addons: ["tanstack-table"],
+          frontend: ["astro"],
+          astroIntegration: "react",
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with tanstack-virtual + astro (vue integration)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tv-astro-vue",
+          addons: ["tanstack-virtual"],
+          frontend: ["astro"],
+          astroIntegration: "vue",
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
   });
 });

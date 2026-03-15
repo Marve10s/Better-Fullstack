@@ -29,6 +29,10 @@ export async function processExtrasTemplates(
     processTemplatesFromPrefix(vfs, templates, "extras/bunfig.toml", "", config);
   }
 
+  if (config.packageManager === "yarn") {
+    vfs.writeFile(".yarnrc.yml", "nodeLinker: node-modules\n");
+  }
+
   if (config.packageManager === "pnpm" && (hasNative || hasNuxt)) {
     processTemplatesFromPrefix(vfs, templates, "extras/_npmrc", "", config);
   }

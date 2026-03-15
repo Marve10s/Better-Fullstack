@@ -1628,6 +1628,19 @@ export const getDisabledReason = (
     return "Chat SDK example (Nuxt/Hono profile) requires Vercel AI SDK in v1";
   }
 
+  // TanStack AI: React and Solid only (client adapter). Server-side core works anywhere.
+  if (category === "ai" && optionId === "tanstack-ai") {
+    const compatibleFrontends = [
+      "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
+      "solid", "solid-start",
+    ];
+    const hasCompatible = currentStack.webFrontend.some((f) => compatibleFrontends.includes(f));
+
+    if (!hasCompatible) {
+      return "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet)";
+    }
+  }
+
   // ============================================
   // APP PLATFORMS CONSTRAINTS
   // ============================================
@@ -1637,6 +1650,19 @@ export const getDisabledReason = (
     }
     if (optionId === "tauri" && !hasTauriCompatibleFrontend(currentStack.webFrontend)) {
       return "Tauri requires TanStack Router, React Router, Nuxt, Svelte, Solid, Next.js, or Astro";
+    }
+    if (optionId === "tanstack-query" && currentStack.api !== "none") {
+      return "TanStack Query is already included via your API layer";
+    }
+    // TanStack addons with Astro require a UI framework integration
+    const tanstackAddons = ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"];
+    if (
+      tanstackAddons.includes(optionId) &&
+      currentStack.webFrontend.length === 1 &&
+      currentStack.webFrontend[0] === "astro" &&
+      (!currentStack.astroIntegration || currentStack.astroIntegration === "none")
+    ) {
+      return "TanStack libraries with Astro require a UI framework integration (React, Vue, Svelte, or Solid)";
     }
   }
 
@@ -2024,6 +2050,26 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   wxt: [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  "tanstack-query": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-table": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-virtual": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-db": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "astro", "redwood",
+  ],
+  "tanstack-pacer": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
   none: [],
 };
 

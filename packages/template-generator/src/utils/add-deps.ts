@@ -248,6 +248,39 @@ export const dependencyVersionMap = {
   "@tanstack/solid-query-devtools": "^5.91.3",
   "@tanstack/solid-router-devtools": "^1.163.3",
 
+  "@tanstack/angular-query-experimental": "^5.90.0",
+
+  // TanStack Table adapters
+  "@tanstack/react-table": "^8.21.3",
+  "@tanstack/vue-table": "^8.21.3",
+  "@tanstack/svelte-table": "^8.21.3",
+  "@tanstack/solid-table": "^8.21.3",
+  "@tanstack/angular-table": "^8.21.3",
+
+  // TanStack Virtual adapters
+  "@tanstack/react-virtual": "^3.13.22",
+  "@tanstack/vue-virtual": "^3.13.22",
+  "@tanstack/svelte-virtual": "^3.13.22",
+  "@tanstack/solid-virtual": "^3.13.22",
+  "@tanstack/angular-virtual": "^4.0.10",
+
+  // TanStack DB adapters (each adapter has its own versioning)
+  "@tanstack/db": "^0.5.33",
+  "@tanstack/react-db": "^0.1.77",
+  "@tanstack/vue-db": "~0.0.110",
+  "@tanstack/solid-db": "^0.2.13",
+  "@tanstack/svelte-db": "^0.1.76",
+
+  // TanStack Pacer
+  "@tanstack/pacer": "^0.19.0",
+  "@tanstack/react-pacer": "^0.20.0",
+  "@tanstack/solid-pacer": "^0.19.0",
+
+  // TanStack AI
+  "@tanstack/ai": "^0.8.0",
+  "@tanstack/ai-react": "^0.7.1",
+  "@tanstack/ai-solid": "^0.6.6",
+
   wrangler: "^4.54.0",
   "@cloudflare/vite-plugin": "^1.25.6",
   "@opennextjs/cloudflare": "^1.17.1",
@@ -277,8 +310,8 @@ export const dependencyVersionMap = {
 
   // Email
   resend: "^4.5.1",
-  "@react-email/components": "^0.0.36",
-  "react-email": "^3.0.6",
+  "@react-email/components": "^1.0.9",
+  "react-email": "^5.2.9",
   react: "^19.2.3",
   "@types/react": "^19.2.7",
   nodemailer: "^6.10.1",
@@ -390,8 +423,8 @@ export const dependencyVersionMap = {
   daisyui: "^5.0.0",
 
   // Qwik
-  "@builder.io/qwik": "^1.19.0",
-  "@builder.io/qwik-city": "^1.19.0",
+  "@builder.io/qwik": "~1.18.0",
+  "@builder.io/qwik-city": "~1.18.0",
   "@builder.io/qwik-react": "^0.7.0",
 
   // Angular

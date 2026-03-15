@@ -1,4 +1,3 @@
-"use client";
 
 import { ExternalLink, File, Github, Monitor } from "lucide-react";
 

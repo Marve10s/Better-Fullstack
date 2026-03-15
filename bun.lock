@@ -35,7 +35,7 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "1.4.0",
+      "version": "1.4.7",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },

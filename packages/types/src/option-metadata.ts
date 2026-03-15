@@ -208,6 +208,11 @@ const APP_PLATFORM_VALUES = [
   "skills",
   "msw",
   "storybook",
+  "tanstack-query",
+  "tanstack-table",
+  "tanstack-virtual",
+  "tanstack-db",
+  "tanstack-pacer",
 ] as const satisfies readonly string[];
 
 const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
@@ -421,6 +426,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     opentui: "OpenTUI",
     mcp: "MCP",
     msw: "MSW",
+    "tanstack-query": "TanStack Query",
+    "tanstack-table": "TanStack Table",
+    "tanstack-virtual": "TanStack Virtual",
+    "tanstack-db": "TanStack DB",
+    "tanstack-pacer": "TanStack Pacer",
   },
   examples: {
     ai: "AI Example",
@@ -435,6 +445,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     modelfusion: "ModelFusion",
     langchain: "LangChain",
     llamaindex: "LlamaIndex",
+    "tanstack-ai": "TanStack AI",
   },
   aiDocs: {
     "claude-md": "CLAUDE.md",

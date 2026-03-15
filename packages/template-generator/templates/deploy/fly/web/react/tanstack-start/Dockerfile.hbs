@@ -33,6 +33,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+COPY package.json yarn.lock .yarnrc.yml ./
+RUN yarn install --immutable
 {{else}}
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -42,6 +46,8 @@ COPY . .
 
 {{#if (eq packageManager "pnpm")}}
 RUN pnpm run build
+{{else if (eq packageManager "yarn")}}
+RUN yarn build
 {{else}}
 RUN npm run build
 {{/if}}
