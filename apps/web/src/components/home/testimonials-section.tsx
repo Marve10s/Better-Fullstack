@@ -1,15 +1,12 @@
 
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Heart, Quote } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { motion } from "motion/react";
+import { useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "./testimonials-data";
 import type { Testimonial } from "./testimonials-data";
-
-gsap.registerPlugin(ScrollTrigger);
 
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
@@ -51,56 +48,25 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 function MarqueeRow({
   testimonials,
   direction = "left",
-  speed = 40,
+  durationSeconds = 60,
 }: {
   testimonials: Testimonial[];
   direction?: "left" | "right";
-  speed?: number;
+  durationSeconds?: number;
 }) {
-  const rowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const row = rowRef.current;
-    if (!row) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const items = row.children;
-    const totalWidth = Array.from(items)
-      .slice(0, testimonials.length)
-      .reduce((acc, el) => acc + (el as HTMLElement).offsetWidth + 16, 0);
-
-    const duration = totalWidth / speed;
-    const xPercent = direction === "left" ? -50 : 0;
-    const xPercentEnd = direction === "left" ? 0 : -50;
-
-    gsap.set(row, { xPercent });
-
-    const tween = gsap.to(row, {
-      xPercent: xPercentEnd,
-      duration,
-      ease: "none",
-      repeat: -1,
-    });
-
-    const onEnter = () => tween.timeScale(0.2);
-    const onLeave = () => tween.timeScale(1);
-    row.addEventListener("mouseenter", onEnter);
-    row.addEventListener("mouseleave", onLeave);
-
-    return () => {
-      tween.kill();
-      row.removeEventListener("mouseenter", onEnter);
-      row.removeEventListener("mouseleave", onLeave);
-    };
-  }, [testimonials.length, direction, speed]);
-
   const doubled = [...testimonials, ...testimonials];
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="group/marquee relative overflow-hidden">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
-      <div ref={rowRef} className="flex gap-4 py-2">
+      <div
+        className={cn(
+          "flex w-max gap-4 py-2 group-hover/marquee:[animation-play-state:paused]",
+          direction === "left" ? "animate-marquee-left" : "animate-marquee-right",
+        )}
+        style={{ animationDuration: `${durationSeconds}s` }}
+      >
         {doubled.map((t, i) => (
           <TestimonialCard key={`${t.name}-${i}`} testimonial={t} />
         ))}
@@ -110,55 +76,20 @@ function MarqueeRow({
 }
 
 export default function TestimonialsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    const header = headerRef.current;
-    if (!section || !header) return;
-
-    const ctx = gsap.context(() => {
-      gsap.from(header.children, {
-        y: 40,
-        opacity: 0,
-        stagger: 0.15,
-        duration: 0.8,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: header,
-          start: "top 85%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      const likedBy = section.querySelector(".liked-by");
-      if (likedBy) {
-        gsap.from(likedBy.children, {
-          y: 30,
-          opacity: 0,
-          stagger: 0.1,
-          duration: 0.6,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: likedBy,
-            start: "top 90%",
-            toggleActions: "play none none none",
-          },
-        });
-      }
-    }, section);
-
-    return () => ctx.revert();
-  }, []);
+  const ref = useRef(null);
 
   return (
     <section
-      ref={sectionRef}
+      ref={ref}
       className="overflow-hidden border-t border-border py-16"
     >
-      {/* Header */}
-      <div ref={headerRef} className="mx-auto mb-10 max-w-3xl px-4">
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="mx-auto mb-10 max-w-3xl px-4"
+      >
         <h2 className="font-pixel text-xl font-bold">
           People almost love it!
         </h2>
@@ -173,17 +104,21 @@ export default function TestimonialsSection() {
             daily.dev
           </a>
         </p>
-      </div>
+      </motion.div>
 
-      {/* Marquee rows */}
       <div className="space-y-4">
-        <MarqueeRow testimonials={ROW_1} direction="left" speed={30} />
-        <MarqueeRow testimonials={ROW_2} direction="right" speed={25} />
-        <MarqueeRow testimonials={ROW_3} direction="left" speed={35} />
+        <MarqueeRow testimonials={ROW_1} direction="left" durationSeconds={50} />
+        <MarqueeRow testimonials={ROW_2} direction="right" durationSeconds={60} />
+        <MarqueeRow testimonials={ROW_3} direction="left" durationSeconds={45} />
       </div>
 
-      {/* Liked by */}
-      <div className="liked-by mx-auto mt-14 max-w-3xl px-4">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
+        className="liked-by mx-auto mt-14 max-w-3xl px-4"
+      >
         <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
           <Heart className="h-4 w-4 fill-red-500 text-red-500" />
           <span className="font-mono uppercase tracking-wide">
@@ -220,7 +155,7 @@ export default function TestimonialsSection() {
             </a>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

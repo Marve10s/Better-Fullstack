@@ -1,5 +1,5 @@
-import { gsap } from "gsap";
 import { ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -18,11 +18,7 @@ export function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const arrowRef = useRef<SVGSVGElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const hasAnimated = useRef(false);
   const prefersReducedMotion = useRef(false);
 
   useEffect(() => {
@@ -39,83 +35,6 @@ export function CollapsibleSection({
   }, []);
 
   useEffect(() => {
-    const content = contentRef.current;
-    const inner = innerRef.current;
-    const arrow = arrowRef.current;
-    if (!content || !inner || !arrow) return;
-
-    if (prefersReducedMotion.current) {
-      if (isOpen) {
-        gsap.set(content, { height: "auto", opacity: 1 });
-        gsap.set(arrow, { rotation: 90 });
-      } else {
-        gsap.set(content, { height: 0, opacity: 0 });
-        gsap.set(arrow, { rotation: 0 });
-      }
-      return;
-    }
-
-    const ctx = gsap.context(() => {
-      if (!hasAnimated.current) {
-        hasAnimated.current = true;
-        if (isOpen) {
-          gsap.set(content, { height: "auto", opacity: 1 });
-          gsap.set(arrow, { rotation: 90 });
-        } else {
-          gsap.set(content, { height: 0, opacity: 0 });
-          gsap.set(arrow, { rotation: 0 });
-        }
-        return;
-      }
-
-      if (isOpen) {
-        const targetHeight = inner.scrollHeight;
-        gsap.to(content, {
-          height: targetHeight,
-          opacity: 1,
-          duration: 0.5,
-          ease: "power3.out",
-        });
-        gsap.to(arrow, {
-          rotation: 90,
-          duration: 0.35,
-          ease: "back.out(1.7)",
-        });
-
-        const items = inner.querySelectorAll("[data-animate]");
-        if (items.length > 0) {
-          gsap.fromTo(
-            items,
-            { y: 20, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              stagger: 0.04,
-              duration: 0.4,
-              ease: "power2.out",
-              delay: 0.15,
-            },
-          );
-        }
-      } else {
-        gsap.to(content, {
-          height: 0,
-          opacity: 0,
-          duration: 0.4,
-          ease: "power3.inOut",
-        });
-        gsap.to(arrow, {
-          rotation: 0,
-          duration: 0.35,
-          ease: "back.out(1.7)",
-        });
-      }
-    });
-
-    return () => ctx.revert();
-  }, [isOpen]);
-
-  useEffect(() => {
     const glow = glowRef.current;
     if (!glow) return;
     const parent = glow.parentElement;
@@ -123,20 +42,15 @@ export function CollapsibleSection({
 
     const onMove = (e: MouseEvent) => {
       const rect = parent.getBoundingClientRect();
-      gsap.to(glow, {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+      glow.style.transform = `translate(${e.clientX - rect.left - 150}px, ${e.clientY - rect.top - 150}px)`;
     };
 
     const onEnter = () => {
-      gsap.to(glow, { opacity: 1, duration: 0.3 });
+      glow.style.opacity = "1";
     };
 
     const onLeave = () => {
-      gsap.to(glow, { opacity: 0, duration: 0.3 });
+      glow.style.opacity = "0";
     };
 
     parent.addEventListener("mousemove", onMove);
@@ -150,6 +64,8 @@ export function CollapsibleSection({
     };
   }, []);
 
+  const reduced = prefersReducedMotion.current;
+
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-3xl px-4">
@@ -162,7 +78,7 @@ export function CollapsibleSection({
         >
           <div
             ref={glowRef}
-            className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-0"
+            className="pointer-events-none absolute opacity-0 transition-opacity duration-300"
             style={{
               width: 300,
               height: 300,
@@ -171,15 +87,20 @@ export function CollapsibleSection({
             }}
           />
 
-          <ChevronRight
-            ref={arrowRef}
-            className={cn(
-              "relative z-10 h-5 w-5 shrink-0 transition-colors duration-200",
-              isOpen
-                ? "text-primary"
-                : "text-muted-foreground/40 group-hover:text-primary",
-            )}
-          />
+          <motion.div
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 20 }}
+            className="relative z-10"
+          >
+            <ChevronRight
+              className={cn(
+                "h-5 w-5 shrink-0 transition-colors duration-200",
+                isOpen
+                  ? "text-primary"
+                  : "text-muted-foreground/40 group-hover:text-primary",
+              )}
+            />
+          </motion.div>
           <div className="relative z-10 min-w-0 flex-1">
             <h2
               id={headingId}
@@ -200,18 +121,24 @@ export function CollapsibleSection({
           </div>
         </button>
 
-        <div
-          ref={contentRef}
-          id={contentId}
-          role="region"
-          aria-labelledby={headingId}
-          aria-hidden={!isOpen}
-          className="overflow-hidden"
-        >
-          <div ref={innerRef} className="pb-8 sm:pb-12">
-            {children}
-          </div>
-        </div>
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div
+              id={contentId}
+              role="region"
+              aria-labelledby={headingId}
+              initial={reduced ? false : { height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={reduced ? { duration: 0 } : { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="pb-8 sm:pb-12">
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
