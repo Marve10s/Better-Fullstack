@@ -53,6 +53,11 @@ export async function getAIChoice(ai?: AI) {
       hint: "Data framework for LLM applications",
     },
     {
+      value: "tanstack-ai" as const,
+      label: "TanStack AI",
+      hint: "Unified LLM interface for AI-powered apps (Alpha)",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No AI SDK",

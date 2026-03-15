@@ -14,7 +14,7 @@ jobs:
   release-guard:
     name: Release Guard
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,6 +23,16 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -43,17 +53,26 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build Types
-        run: cd packages/types && bun run build
+      - name: Build Core Packages
+        run: |
+          bun run --filter=@better-fullstack/types build
+          bun run --filter=@better-fullstack/template-generator build
 
       - name: Validate Builder Tech Links
         run: bun run --cwd apps/web validate:tech-links
-
-      - name: Build Template Generator
-        run: cd packages/template-generator && bun run build
 
       - name: Run Lint
         run: bun run lint
@@ -76,14 +95,18 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
       - name: Install Dependencies
         run: bun install --frozen-lockfile
-
-      - name: Build Types
-        run: cd packages/types && bun run build
-
-      - name: Build Template Generator
-        run: cd packages/template-generator && bun run build
 
       - name: Run Tests
         run: bun run test
@@ -102,8 +125,26 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
       - name: Install Dependencies
         run: bun install --frozen-lockfile
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
 
       - name: Build Web (Vercel Parity)
         run: bun run build:web

@@ -92,9 +92,14 @@ jobs:
 
       - name: Cache Dependencies
         uses: actions/cache@v4
+        id: cache-deps
         with:
-          path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: smoke-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            smoke-${{ runner.os }}-bun-
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile

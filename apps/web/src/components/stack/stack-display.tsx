@@ -1,4 +1,3 @@
-"use client";
 
 import { Link } from "@tanstack/react-router";
 import { Check, Copy, Edit, Share2, Terminal } from "lucide-react";

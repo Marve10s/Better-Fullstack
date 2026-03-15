@@ -1,7 +1,8 @@
-"use client";
 
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
+
+import { CollapsibleSection } from "./collapsible-section";
 
 const features = [
   {
@@ -56,38 +57,32 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="border-t border-border py-12 sm:py-16">
-      <div className="mx-auto max-w-3xl px-4">
-        {/* Section Header */}
-        <h2 className="font-pixel text-lg font-bold sm:text-xl">What is Better Fullstack?</h2>
-        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from
-          270+ options across 4 ecosystems, frameworks, databases, auth, payments, AI, and more.
-        </p>
+    <CollapsibleSection
+      title="What is Better Fullstack?"
+      subtitle="A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from 270+ options across 4 ecosystems."
+    >
+      <ul className="space-y-3 sm:space-y-4">
+        {features.map((feature) => (
+          <li key={feature.title} data-animate className="flex items-start gap-2 sm:gap-3">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-foreground sm:h-5 sm:w-5" />
+            <div className="text-sm sm:text-base">
+              <span className="font-medium">{feature.title}</span>
+              <span className="text-muted-foreground"> — {feature.description}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
 
-        {/* Features List */}
-        <ul className="mt-6 space-y-3 sm:mt-8 sm:space-y-4">
-          {features.map((feature) => (
-            <li key={feature.title} className="flex items-start gap-2 sm:gap-3">
-              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-foreground sm:h-5 sm:w-5" />
-              <div className="text-sm sm:text-base">
-                <span className="font-medium">{feature.title}</span>
-                <span className="text-muted-foreground"> — {feature.description}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA */}
+      <div data-animate className="mt-6 sm:mt-8">
         <Link
           to="/new"
           search={{ view: "command", file: "" }}
-          className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90 sm:mt-8 sm:gap-2 sm:px-4 sm:text-sm"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90 sm:gap-2 sm:px-4 sm:text-sm"
         >
           Try it now
           <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Link>
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }

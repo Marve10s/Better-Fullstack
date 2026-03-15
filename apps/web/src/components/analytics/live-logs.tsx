@@ -1,4 +1,3 @@
-"use client";
 
 import { api } from "@better-fullstack/backend/convex/_generated/api";
 import { useQuery } from "convex/react";

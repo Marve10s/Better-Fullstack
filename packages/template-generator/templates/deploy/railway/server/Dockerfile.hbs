@@ -56,13 +56,15 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm if needed
+# Install pnpm/yarn if needed
 {{#if (eq packageManager "pnpm")}}
 RUN corepack enable && corepack prepare pnpm@latest --activate
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 {{/if}}
 
 # Copy package files
-COPY package.json {{#if (eq packageManager "pnpm")}}pnpm-lock.yaml{{else}}package-lock.json{{/if}} ./
+COPY package.json {{#if (eq packageManager "pnpm")}}pnpm-lock.yaml{{else if (eq packageManager "yarn")}}yarn.lock .yarnrc.yml{{else}}package-lock.json{{/if}} ./
 {{#if (includes addons "turborepo")}}
 COPY apps/server/package.json ./apps/server/
 COPY packages/db/package.json ./packages/db/
@@ -71,6 +73,8 @@ COPY packages/db/package.json ./packages/db/
 # Install dependencies
 {{#if (eq packageManager "pnpm")}}
 RUN pnpm install --frozen-lockfile
+{{else if (eq packageManager "yarn")}}
+RUN yarn install --immutable
 {{else}}
 RUN npm ci
 {{/if}}
@@ -82,12 +86,16 @@ COPY . .
 {{#if (includes addons "turborepo")}}
 {{#if (eq packageManager "pnpm")}}
 RUN pnpm run build --filter=@{{projectName}}/server
+{{else if (eq packageManager "yarn")}}
+RUN yarn workspace @{{projectName}}/server build
 {{else}}
 RUN npm run build --workspace=apps/server
 {{/if}}
 {{else}}
 {{#if (eq packageManager "pnpm")}}
 RUN pnpm run build
+{{else if (eq packageManager "yarn")}}
+RUN yarn build
 {{else}}
 RUN npm run build
 {{/if}}
@@ -103,6 +111,8 @@ ENV PORT=3000
 
 {{#if (eq packageManager "pnpm")}}
 RUN corepack enable && corepack prepare pnpm@latest --activate
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 {{/if}}
 
 # Copy built application
@@ -117,6 +127,9 @@ COPY --from=builder /app/package.json ./
 # Install production dependencies only
 {{#if (eq packageManager "pnpm")}}
 RUN pnpm install --prod --frozen-lockfile
+{{else if (eq packageManager "yarn")}}
+COPY yarn.lock .yarnrc.yml ./
+RUN yarn install --immutable
 {{else}}
 RUN npm ci --omit=dev
 {{/if}}

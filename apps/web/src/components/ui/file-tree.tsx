@@ -1,4 +1,3 @@
-"use client";
 
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
 import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";

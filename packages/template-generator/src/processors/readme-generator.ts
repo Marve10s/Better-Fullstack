@@ -535,6 +535,13 @@ function generateFeaturesList(
     husky: "- **Husky** - Git hooks for code quality",
     starlight: "- **Starlight** - Documentation site with Astro",
     turborepo: "- **Turborepo** - Optimized monorepo build system",
+    msw: "- **MSW** - Mock Service Worker for API mocking",
+    storybook: "- **Storybook** - Component development and testing",
+    "tanstack-query": "- **TanStack Query** - Async state management & data fetching",
+    "tanstack-table": "- **TanStack Table** - Headless table with sorting, filtering & pagination",
+    "tanstack-virtual": "- **TanStack Virtual** - Virtualized lists & grids for 60fps performance",
+    "tanstack-db": "- **TanStack DB** - Reactive client-first data store",
+    "tanstack-pacer": "- **TanStack Pacer** - Debounce, throttle & rate-limit utilities",
   };
 
   for (const addon of addons) {

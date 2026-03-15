@@ -17,6 +17,8 @@ export function getPackageExecutionCommand(
       return `pnpm dlx ${commandWithArgs}`;
     case "bun":
       return `bunx ${commandWithArgs}`;
+    case "yarn":
+      return `yarn dlx ${commandWithArgs}`;
     default:
       return `npx ${commandWithArgs}`;
   }
@@ -40,6 +42,8 @@ export function getPackageExecutionArgs(
       return ["pnpm", "dlx", ...args];
     case "bun":
       return ["bunx", ...args];
+    case "yarn":
+      return ["yarn", "dlx", ...args];
     default:
       return ["npx", ...args];
   }
@@ -65,6 +69,8 @@ export function getPackageRunnerPrefix(
       return ["pnpm", "dlx"];
     case "bun":
       return ["bunx"];
+    case "yarn":
+      return ["yarn", "dlx"];
     default:
       return ["npx"];
   }

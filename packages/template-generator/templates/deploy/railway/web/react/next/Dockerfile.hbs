@@ -16,6 +16,10 @@ RUN pnpm install --frozen-lockfile
 RUN npm install -g bun
 COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+COPY package.json yarn.lock .yarnrc.yml ./
+RUN yarn install --immutable
 {{else}}
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -29,6 +33,8 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 {{else if (eq packageManager "bun")}}
 RUN npm install -g bun
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 {{/if}}
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -41,6 +47,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm run build
 {{else if (eq packageManager "bun")}}
 RUN bun run build
+{{else if (eq packageManager "yarn")}}
+RUN yarn build
 {{else}}
 RUN npm run build
 {{/if}}

@@ -1,4 +1,7 @@
+
 import { Code2, GitPullRequest, Heart } from "lucide-react";
+
+import { CollapsibleSection } from "./collapsible-section";
 
 type Contributor = {
   username: string;
@@ -43,44 +46,38 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
 
 export default function ContributorsSection() {
   return (
-    <section className="border-t border-border py-16">
-      <div className="mx-auto max-w-3xl px-4">
-        {/* Section Header */}
-        <h2 className="font-pixel text-xl font-bold">QA & Contributing</h2>
-        <p className="mt-2 text-muted-foreground">
-          Special thanks to our contributors who help improve Better Fullstack through testing,
-          feedback, and code contributions.
-        </p>
-
-        {/* Contributors Grid */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {contributors.map((contributor) => (
-            <ContributorCard key={contributor.username} contributor={contributor} />
-          ))}
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a
-            href="https://github.com/Marve10s/Better-Fullstack/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            <GitPullRequest className="h-4 w-4" />
-            Contribute to Better Fullstack
-          </a>
-          <a
-            href="https://www.patreon.com/c/marve10s"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-          >
-            <Heart className="h-4 w-4" />
-            Become a Patron
-          </a>
-        </div>
+    <CollapsibleSection
+      title="QA & Contributing"
+      subtitle="Special thanks to our contributors who help improve Better Fullstack through testing, feedback, and code contributions."
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        {contributors.map((contributor) => (
+          <div key={contributor.username} data-animate>
+            <ContributorCard contributor={contributor} />
+          </div>
+        ))}
       </div>
-    </section>
+
+      <div data-animate className="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href="https://github.com/Marve10s/Better-Fullstack/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <GitPullRequest className="h-4 w-4" />
+          Contribute to Better Fullstack
+        </a>
+        <a
+          href="https://www.patreon.com/c/marve10s"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+        >
+          <Heart className="h-4 w-4" />
+          Become a Patron
+        </a>
+      </div>
+    </CollapsibleSection>
   );
 }
