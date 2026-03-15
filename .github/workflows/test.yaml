@@ -11,27 +11,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release-guard:
-    name: Release Guard
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Run Release Verification
-        run: bun run test:release
-
-  lint:
-    name: Lint
+  # ── Shared setup: install + build core packages once ──────────────────
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -43,17 +25,90 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
       - name: Install Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
-      - name: Build Types
-        run: cd packages/types && bun run build
+      - name: Build Core Packages
+        run: |
+          bun run --filter=@better-fullstack/types build
+          bun run --filter=@better-fullstack/template-generator build
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Upload Workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace
+          path: |
+            node_modules
+            packages/types/dist
+            packages/template-generator/dist
+            packages/template-generator/templates-binary
+            .turbo
+          retention-days: 1
+
+  # ── Parallel jobs: all restore from shared artifact ───────────────────
+  release-guard:
+    name: Release Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: setup
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Download Workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+
+      - name: Run Release Verification
+        run: bun run test:release
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: setup
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Download Workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
 
       - name: Validate Builder Tech Links
         run: bun run --cwd apps/web validate:tech-links
-
-      - name: Build Template Generator
-        run: cd packages/template-generator && bun run build
 
       - name: Run Lint
         run: bun run lint
@@ -62,6 +117,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: setup
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -76,14 +132,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Build Types
-        run: cd packages/types && bun run build
-
-      - name: Build Template Generator
-        run: cd packages/template-generator && bun run build
+      - name: Download Workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
 
       - name: Run Tests
         run: bun run test
@@ -102,8 +154,18 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
+      - name: Download Workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+
+      - name: Restore Turbo Cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
 
       - name: Build Web (Vercel Parity)
         run: bun run build:web
