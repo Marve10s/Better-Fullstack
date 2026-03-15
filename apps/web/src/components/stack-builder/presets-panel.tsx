@@ -1,7 +1,7 @@
-import { Zap, Check } from "lucide-react";
+import { Check, Pencil, Zap } from "lucide-react";
 
 import type { StackState } from "@/lib/constant";
-import { PRESET_TEMPLATES } from "@/lib/constant";
+import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK } from "@/lib/stack-defaults";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { cn } from "@/lib/utils";
@@ -9,68 +9,66 @@ import { cn } from "@/lib/utils";
 interface PresetsPanelProps {
   stack: StackState;
   onApplyPreset: (presetId: string) => void;
+  onCustomizePreset: (presetId: string) => void;
 }
 
-/** Derive a short list of "highlight" tech labels from a preset's stack config. */
+const HIGHLIGHT_SCALAR_KEYS = [
+  "backend",
+  "database",
+  "orm",
+  "api",
+  "auth",
+  "uiLibrary",
+  // Rust
+  "rustWebFramework",
+  "rustFrontend",
+  "rustOrm",
+  "rustApi",
+  "rustCli",
+  // Python
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonAi",
+  "pythonTaskQueue",
+  // Go
+  "goWebFramework",
+  "goOrm",
+  "goApi",
+  "goCli",
+  "goLogging",
+] as const satisfies readonly (keyof StackState)[];
+
 function getPresetHighlights(presetStack: Partial<StackState>): string[] {
   const highlights: string[] = [];
 
-  // Web frontend
-  const frontends = presetStack.webFrontend ?? [];
-  for (const fe of frontends) {
+  for (const fe of presetStack.webFrontend ?? []) {
     if (fe !== "none") highlights.push(fe);
   }
-
-  // Native frontend
-  const native = presetStack.nativeFrontend ?? [];
-  for (const n of native) {
+  for (const n of presetStack.nativeFrontend ?? []) {
     if (n !== "none") highlights.push(n);
   }
-
-  // Backend
-  if (presetStack.backend && presetStack.backend !== "none") {
-    highlights.push(presetStack.backend);
-  }
-
-  // Database
-  if (presetStack.database && presetStack.database !== "none") {
-    highlights.push(presetStack.database);
-  }
-
-  // ORM
-  if (presetStack.orm && presetStack.orm !== "none") {
-    highlights.push(presetStack.orm);
-  }
-
-  // API
-  if (presetStack.api && presetStack.api !== "none") {
-    highlights.push(presetStack.api);
-  }
-
-  // Auth
-  if (presetStack.auth && presetStack.auth !== "none") {
-    highlights.push(presetStack.auth);
-  }
-
-  // UI Library
-  if (presetStack.uiLibrary && presetStack.uiLibrary !== "none") {
-    highlights.push(presetStack.uiLibrary);
+  for (const key of HIGHLIGHT_SCALAR_KEYS) {
+    const val = presetStack[key];
+    if (typeof val === "string" && val !== "none") highlights.push(val);
   }
 
   return highlights;
 }
 
-/** Check if a preset matches the current stack state. */
-function isPresetActive(presetStack: Partial<StackState>, currentStack: StackState): boolean {
-  const fullPresetStack = { ...DEFAULT_STACK, ...presetStack };
+function isPresetActive(
+  presetStack: Partial<StackState>,
+  currentStack: StackState,
+): boolean {
+  const merged = { ...DEFAULT_STACK, ...presetStack };
+
   for (const key of Object.keys(presetStack) as (keyof StackState)[]) {
-    const presetVal = fullPresetStack[key];
+    const presetVal = merged[key];
     const currentVal = currentStack[key];
 
     if (Array.isArray(presetVal) && Array.isArray(currentVal)) {
       if (
         presetVal.length !== currentVal.length ||
-        !presetVal.every((v, i) => v === currentVal[i])
+        presetVal.some((v, i) => v !== currentVal[i])
       ) {
         return false;
       }
@@ -78,10 +76,11 @@ function isPresetActive(presetStack: Partial<StackState>, currentStack: StackSta
       return false;
     }
   }
+
   return true;
 }
 
-export function PresetsPanel({ stack, onApplyPreset }: PresetsPanelProps) {
+export function PresetsPanel({ stack, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-1.5 sm:gap-4">
@@ -93,56 +92,96 @@ export function PresetsPanel({ stack, onApplyPreset }: PresetsPanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {PRESET_TEMPLATES.map((preset) => {
-            const active = isPresetActive(preset.stack, stack);
-            const highlights = getPresetHighlights(preset.stack);
+        <div className="space-y-6">
+          {PRESET_CATEGORIES.map((category) => {
+            const categoryPresets = PRESET_TEMPLATES.filter(
+              (p) => p.category === category.id,
+            );
+            if (categoryPresets.length === 0) return null;
 
             return (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => onApplyPreset(preset.id)}
-                className={cn(
-                  "group relative flex flex-col gap-3 rounded-lg border p-4 text-left transition-all",
-                  active
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                    : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
-                )}
-              >
-                {/* Active indicator */}
-                {active && (
-                  <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-3 w-3" />
-                  </div>
-                )}
-
-                {/* Name + description */}
-                <div className="space-y-1 pr-6">
-                  <h3 className="font-mono text-sm font-medium">{preset.name}</h3>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {preset.description}
-                  </p>
+              <section key={category.id}>
+                <div className="mb-3 flex items-center gap-2">
+                  <TechIcon
+                    techId={category.icon}
+                    name={category.name}
+                    className="h-4 w-4"
+                  />
+                  <h2 className="font-mono text-sm font-medium">{category.name}</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {categoryPresets.length}
+                  </span>
                 </div>
 
-                {/* Tech badges */}
-                <div className="flex flex-wrap gap-1.5">
-                  {highlights.map((tech) => (
-                    <span
-                      key={tech}
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
-                        active
-                          ? "border-primary/20 bg-primary/10 text-primary"
-                          : "border-border bg-muted/50 text-muted-foreground group-hover:border-muted-foreground/20",
-                      )}
-                    >
-                      <TechIcon techId={tech} name={tech} className="h-3 w-3" />
-                      {tech}
-                    </span>
-                  ))}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {categoryPresets.map((preset) => {
+                    const active = isPresetActive(preset.stack, stack);
+                    const highlights = getPresetHighlights(preset.stack);
+
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => onApplyPreset(preset.id)}
+                        className={cn(
+                          "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
+                          active
+                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                            : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
+                        )}
+                      >
+                        <div className="absolute top-3 right-3 flex items-center gap-1">
+                          <button
+                            type="button"
+                            title="Customize preset"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCustomizePreset(preset.id);
+                            }}
+                            className={cn(
+                              "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors",
+                              active
+                                ? "text-primary hover:bg-primary/20"
+                                : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted",
+                            )}
+                          >
+                            <Pencil className="h-2.5 w-2.5" />
+                          </button>
+                          {active && (
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                              <Check className="h-3 w-3" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-1 pr-6">
+                          <h3 className="font-mono text-sm font-medium">{preset.name}</h3>
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            {preset.description}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {highlights.map((tech) => (
+                            <span
+                              key={tech}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
+                                active
+                                  ? "border-primary/20 bg-primary/10 text-primary"
+                                  : "border-border bg-muted/50 text-muted-foreground group-hover:border-muted-foreground/20",
+                              )}
+                            >
+                              <TechIcon techId={tech} name={tech} className="h-3 w-3" />
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              </button>
+              </section>
             );
           })}
         </div>

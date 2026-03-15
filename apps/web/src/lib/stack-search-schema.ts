@@ -36,6 +36,7 @@ export const stackSearchSchema = z.object({
   ...stackSearchShape,
   view: z.enum(["command", "preview", "presets"]).catch("command"),
   file: z.string().catch(""),
+  preset: z.string().catch(""),
 });
 
 type StackValueForKey<K extends keyof typeof stackUrlKeys> =
@@ -47,4 +48,5 @@ type StackSearchParamShape = {
 export type StackSearchParams = Partial<StackSearchParamShape> & {
   view?: "command" | "preview" | "presets";
   file?: string;
+  preset?: string;
 };

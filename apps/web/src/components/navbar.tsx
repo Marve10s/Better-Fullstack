@@ -45,6 +45,13 @@ export function Navbar() {
           >
             Builder
           </Link>
+          <Link
+            to="/new"
+            search={{ view: "presets", file: "" }}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
+          >
+            Presets
+          </Link>
         </div>
 
         {/* Navigation Links */}

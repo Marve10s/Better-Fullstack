@@ -5,11 +5,16 @@ import {
   Check,
   ChevronDown,
   ClipboardCopy,
+  Eye,
   Github,
+  Hammer,
   InfoIcon,
   List,
+  RefreshCw,
   Settings,
+  Shuffle,
   Terminal,
+  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -47,8 +52,6 @@ import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
 import { cn } from "@/lib/utils";
 
-import { ActionButtons } from "./action-buttons";
-import { PresetDropdown } from "./preset-dropdown";
 import { PresetsPanel } from "./presets-panel";
 import { PreviewPanel } from "./preview-panel";
 import { ShareButton } from "./share-button";
@@ -328,7 +331,6 @@ const StackBuilder = () => {
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
-  const [lastSavedStack, setLastSavedStack] = useState<StackState | null>(null);
   const [, setLastChanges] = useState<Array<{ category: string; message: string }>>([]);
   const [mobileTab, setMobileTab] = useState<MobileTab>("configure");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -370,12 +372,16 @@ const StackBuilder = () => {
   }, [stack.ecosystem]);
 
   // Open first category when ecosystem changes
+  const prevCategoryOrder = useRef(categoryOrder);
   useEffect(() => {
-    if (
-      categoryOrder.length > 0 &&
-      !categoryOrder.includes(openCategory as keyof typeof TECH_OPTIONS)
-    ) {
-      setOpenCategory(categoryOrder[0] || null);
+    if (prevCategoryOrder.current !== categoryOrder) {
+      prevCategoryOrder.current = categoryOrder;
+      if (
+        categoryOrder.length > 0 &&
+        !categoryOrder.includes(openCategory as keyof typeof TECH_OPTIONS)
+      ) {
+        setOpenCategory(categoryOrder[0] || null);
+      }
     }
   }, [categoryOrder, openCategory]);
 
@@ -402,18 +408,7 @@ const StackBuilder = () => {
 
   // ─── Side effects ──────────────────────────────────────────────────────
 
-  useEffect(() => {
-    const savedStack = localStorage.getItem("betterFullstackPreference");
-    if (savedStack) {
-      try {
-        const parsedStack = JSON.parse(savedStack) as StackState;
-        setLastSavedStack(parsedStack);
-      } catch (e) {
-        console.error("Failed to parse saved stack", e);
-        localStorage.removeItem("betterFullstackPreference");
-      }
-    }
-  }, []);
+
 
   useEffect(() => {
     if (adjustedStack) {
@@ -582,32 +577,19 @@ const StackBuilder = () => {
     });
   };
 
-  const saveCurrentStack = () => {
-    const stackToUse = adjustedStack || stack;
-    const projectName = stackToUse.projectName || "my-app";
-    const formattedProjectName = formatProjectName(projectName);
-    const stackToSave = { ...stackToUse, projectName: formattedProjectName };
-    localStorage.setItem("betterFullstackPreference", JSON.stringify(stackToSave));
-    setLastSavedStack(stackToSave);
-    toast.success("Your stack configuration has been saved");
-  };
-
-  const loadSavedStack = () => {
-    if (lastSavedStack) {
-      startTransition(() => {
-        setStack(lastSavedStack);
-      });
-      toast.success("Saved configuration loaded");
-    }
-  };
-
   const applyPreset = (presetId: string) => {
     const preset = PRESET_TEMPLATES.find((template) => template.id === presetId);
     if (preset) {
+      const fullStack = { ...DEFAULT_STACK, ...preset.stack } as StackState;
       startTransition(() => {
-        setStack({ ...DEFAULT_STACK, ...preset.stack } as StackState);
+        setStack(fullStack);
       });
-      toast.success(`Applied preset: ${preset.name}`);
+      const cmd = generateStackCommand({
+        ...fullStack,
+        projectName: formatProjectName(fullStack.projectName || "my-app"),
+      });
+      navigator.clipboard.writeText(cmd);
+      toast.success(`${preset.name} — command copied to clipboard`);
     }
   };
 
@@ -819,43 +801,13 @@ const StackBuilder = () => {
                     )}
                   </button>
                 </div>
-                <code className="block break-all text-muted-foreground text-[11px] leading-relaxed max-h-16 overflow-y-auto">
+                <code className="block break-all text-muted-foreground text-[11px] leading-relaxed max-h-32 overflow-y-auto">
                   <span className="select-none text-chart-4">$ </span>
                   {command}
                 </code>
               </div>
             </div>
 
-            {/* Sidebar Footer */}
-            <div className="relative z-10 border-t border-border bg-background p-3 space-y-2">
-              <ActionButtons
-                onReset={resetStack}
-                onRandom={getRandomStack}
-                onSave={saveCurrentStack}
-                onLoad={loadSavedStack}
-                hasSavedStack={!!lastSavedStack}
-              />
-              <div className="flex gap-1">
-                <ShareButton stackUrl={getStackUrl()} />
-                <PresetDropdown onApplyPreset={applyPreset} />
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <button
-                        type="button"
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-fd-background px-2 py-1.5 text-muted-foreground transition-all hover:border-muted-foreground/30 hover:bg-muted hover:text-foreground"
-                      />
-                    }
-                  >
-                    <Settings className="h-3.5 w-3.5" />
-                    <span className="font-mono text-[9px] leading-none">Settings</span>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                    <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
           </aside>
 
           {/* ─── Main Content Area ──────────────────────────────────────────── */}
@@ -870,38 +822,76 @@ const StackBuilder = () => {
                 type="button"
                 onClick={() => setViewMode("command")}
                 className={cn(
-                  "rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
                   viewMode === "command"
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                Command
+                <Hammer className="h-3 w-3" />
+                Builder
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("preview")}
                 className={cn(
-                  "rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
                   viewMode === "preview"
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
+                <Eye className="h-3 w-3" />
                 Preview
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("presets")}
                 className={cn(
-                  "rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
+                  "flex items-center gap-1 rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:text-[11px]",
                   viewMode === "presets"
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
+                <Zap className="h-3 w-3" />
                 Presets
               </button>
+
+              <div className="ml-auto flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={resetStack}
+                  title="Reset to defaults"
+                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={getRandomStack}
+                  title="Generate a random stack"
+                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Shuffle className="h-3.5 w-3.5" />
+                </button>
+                <ShareButton stackUrl={getStackUrl()} />
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      />
+                    }
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                    <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             {viewMode === "command" ? (
@@ -909,7 +899,6 @@ const StackBuilder = () => {
                 <div className="absolute inset-0">
                   <ScrollArea ref={mainScrollRef} className="h-full">
                     <div className="p-3 sm:p-4">
-                      {/* Project Name */}
                       <div className="mb-6">
                         <label
                           htmlFor="project-name"
@@ -1424,7 +1413,14 @@ const StackBuilder = () => {
               </div>
             ) : (
               <div className="min-h-0 flex-1 overflow-hidden">
-                <PresetsPanel stack={stack} onApplyPreset={applyPreset} />
+                <PresetsPanel
+                  stack={adjustedStack || stack}
+                  onApplyPreset={applyPreset}
+                  onCustomizePreset={(presetId) => {
+                    applyPreset(presetId);
+                    setViewMode("command");
+                  }}
+                />
               </div>
             )}
           </main>
