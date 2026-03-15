@@ -200,8 +200,10 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     }
   }
 
-  // TanStack Query (standalone - only when no API layer provides it)
-  if (config.addons.includes("tanstack-query") && config.api === "none") {
+  // TanStack Query (standalone - only when no API layer already bundles it)
+  // tRPC, oRPC, and ts-rest all install @tanstack/*-query internally
+  const apiProvidesQuery = ["trpc", "orpc", "ts-rest"].includes(config.api);
+  if (config.addons.includes("tanstack-query") && !apiProvidesQuery) {
     if (vfs.exists(webPkgPath)) {
       const queryDeps = getTanStackQueryDeps(config);
       if (queryDeps.length > 0) {

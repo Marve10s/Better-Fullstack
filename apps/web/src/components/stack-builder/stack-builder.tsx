@@ -371,10 +371,10 @@ const StackBuilder = () => {
   }, [stack.ecosystem]);
 
   // Open first category when ecosystem changes
-  const prevCategoryOrder = useRef(categoryOrder);
+  const prevEcosystem = useRef(stack.ecosystem);
   useEffect(() => {
-    if (prevCategoryOrder.current !== categoryOrder) {
-      prevCategoryOrder.current = categoryOrder;
+    if (prevEcosystem.current !== stack.ecosystem) {
+      prevEcosystem.current = stack.ecosystem;
       if (
         categoryOrder.length > 0 &&
         !categoryOrder.includes(openCategory as keyof typeof TECH_OPTIONS)
@@ -382,7 +382,7 @@ const StackBuilder = () => {
         setOpenCategory(categoryOrder[0] || null);
       }
     }
-  }, [categoryOrder, openCategory]);
+  }, [stack.ecosystem, categoryOrder, openCategory]);
 
   // Get the main scroll viewport for scrollIntoView
   useEffect(() => {
@@ -583,12 +583,7 @@ const StackBuilder = () => {
       startTransition(() => {
         setStack(fullStack);
       });
-      const cmd = generateStackCommand({
-        ...fullStack,
-        projectName: formatProjectName(fullStack.projectName || "my-app"),
-      });
-      navigator.clipboard.writeText(cmd);
-      toast.success(`${preset.name} — command copied to clipboard`);
+      toast.success(`Applied preset: ${preset.name}`);
     }
   };
 

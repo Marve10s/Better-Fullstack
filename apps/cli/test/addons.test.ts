@@ -1087,6 +1087,50 @@ describe("Addon Configurations", () => {
         expectError(result, "tanstack-virtual addon requires one of these frontends");
       });
 
+      // TanStack Query should fail with native frontends (no adapters)
+      it("should fail with tanstack-query + native-bare", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-native-fail",
+          addons: ["tanstack-query"],
+          frontend: ["native-bare" as Frontend],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-query addon requires one of these frontends");
+      });
+
+      // TanStack Query should fail with Fresh (Preact-based, no adapters)
+      it("should fail with tanstack-query + fresh", async () => {
+        const result = await runTRPCTest({
+          projectName: "tq-fresh-fail",
+          addons: ["tanstack-query"],
+          frontend: ["fresh"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "tanstack-query addon requires one of these frontends");
+      });
+
       // TanStack addons should fail with Qwik (no adapters)
       it("should fail with tanstack-query + qwik", async () => {
         const result = await runTRPCTest({

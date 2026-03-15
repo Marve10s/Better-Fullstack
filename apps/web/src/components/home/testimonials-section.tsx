@@ -54,6 +54,8 @@ function MarqueeRow({
   direction?: "left" | "right";
   durationSeconds?: number;
 }) {
+  if (testimonials.length === 0) return null;
+
   const doubled = [...testimonials, ...testimonials];
 
   return (
