@@ -1,0 +1,205 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+{{#if (eq api "none")}}
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+{{else}}
+import { useQuery } from "@tanstack/react-query";
+{{/if}}
+import { useEffect, useState } from "react";
+
+// ── Mock data ────────────────────────────────────────────────────────
+type User = { id: number; name: string; email: string; role: string };
+
+const MOCK_USERS: User[] = [
+  { id: 1, name: "Alice Johnson", email: "alice@example.com", role: "Admin" },
+  { id: 2, name: "Bob Smith", email: "bob@example.com", role: "Editor" },
+  { id: 3, name: "Carol White", email: "carol@example.com", role: "Viewer" },
+  { id: 4, name: "Dan Brown", email: "dan@example.com", role: "Editor" },
+  { id: 5, name: "Eve Davis", email: "eve@example.com", role: "Admin" },
+];
+
+function fetchUsers(): Promise<User[]> {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve([...MOCK_USERS]), 800),
+  );
+}
+
+export const Route = createFileRoute("/showcase/query")({
+  component: QueryShowcase,
+});
+
+{{#if (eq api "none")}}
+const queryClient = new QueryClient();
+
+function QueryShowcase() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <QueryShowcaseInner />
+    </QueryClientProvider>
+  );
+}
+{{/if}}
+
+// ── Traditional: useEffect + useState ────────────────────────────────
+function TraditionalFetching() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
+
+    fetchUsers()
+      .then((data) => {
+        if (!cancelled) {
+          setUsers(data);
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [refetchKey]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          ~25 lines of boilerplate for one fetch
+        </p>
+        <button
+          onClick={() => setRefetchKey((k) => k + 1)}
+          className="rounded-md border border-border px-3 py-1 text-xs hover:bg-muted"
+        >
+          Refetch
+        </button>
+      </div>
+      {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      {!isLoading && !error && (
+        <ul className="space-y-1.5">
+          {users.map((u) => (
+            <li
+              key={u.id}
+              className="flex justify-between rounded-md border border-border px-3 py-2 text-sm"
+            >
+              <span>{u.name}</span>
+              <span className="text-muted-foreground">{u.role}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ── TanStack Query ───────────────────────────────────────────────────
+function QueryFetching() {
+  const { data: users, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 5_000,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          5 lines — caching, dedup, refetch for free
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-3 py-1 text-xs text-primary hover:bg-primary/10"
+        >
+          Refetch
+          {isFetching && (
+            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+          )}
+        </button>
+      </div>
+      {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+      {error && (
+        <p className="text-sm text-red-500">
+          {error instanceof Error ? error.message : "Error"}
+        </p>
+      )}
+      {users && (
+        <ul className="space-y-1.5">
+          {users.map((u) => (
+            <li
+              key={u.id}
+              className="flex justify-between rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm"
+            >
+              <span>{u.name}</span>
+              <span className="text-primary/70">{u.role}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ── Page layout ──────────────────────────────────────────────────────
+function {{#if (eq api "none")}}QueryShowcaseInner{{else}}QueryShowcase{{/if}}() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-12">
+      <Link
+        to="/showcase"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        ← Back to Showcase
+      </Link>
+      <h1 className="mb-2 text-3xl font-bold">TanStack Query</h1>
+      <p className="mb-8 text-muted-foreground">
+        Declarative data fetching with automatic caching, background refetching,
+        and deduplication — replacing manual useEffect + useState patterns.
+      </p>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section>
+          <div className="mb-3 rounded-t-lg border border-red-500/20 bg-red-500/10 px-4 py-2">
+            <h2 className="text-sm font-semibold text-red-600 dark:text-red-400">
+              Traditional: useEffect + useState
+            </h2>
+          </div>
+          <div className="rounded-b-lg border border-t-0 border-border p-4 opacity-75">
+            <TraditionalFetching />
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-3 rounded-t-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2">
+            <h2 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              TanStack Query
+            </h2>
+          </div>
+          <div className="rounded-b-lg border border-t-0 border-primary/20 p-4">
+            <QueryFetching />
+          </div>
+        </section>
+      </div>
+
+      <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+        <strong className="text-foreground">Why TanStack Query?</strong> Manual
+        useEffect fetching requires ~25 lines of boilerplate per endpoint and
+        misses caching, deduplication, window-focus refetching, retry logic, and
+        stale-while-revalidate. TanStack Query handles all of this in 5 lines
+        with zero configuration.
+      </div>
+    </div>
+  );
+}
