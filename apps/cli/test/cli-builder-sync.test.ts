@@ -10,8 +10,8 @@
  * 3. Run this test to verify sync: bun test cli-builder-sync
  */
 
-import { getCapabilityDefinitions } from "@better-fullstack/types";
 import {
+  getCapabilityDefinitions,
   AI_VALUES,
   ANIMATION_VALUES,
   API_VALUES,

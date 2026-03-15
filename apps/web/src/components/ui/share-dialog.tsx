@@ -191,6 +191,7 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
               <div className="flex items-center justify-center rounded border border-border bg-muted/20 p-4">
                 <div className="flex h-32 w-32 items-center justify-center">
                   {qrCodeDataUrl ? (
+                    // oxlint-disable-next-line nextjs/no-img-element
                     <img
                       src={qrCodeDataUrl}
                       width={128}

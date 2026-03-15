@@ -705,6 +705,7 @@ export const CodeBlockCopyButton = ({
       onCopy?.();
 
       setTimeout(() => setIsCopied(false), timeout);
+      return;
     }, onError);
   };
 

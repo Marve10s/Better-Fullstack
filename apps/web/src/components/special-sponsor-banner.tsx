@@ -31,6 +31,7 @@ export async function SpecialSponsorBanner() {
                   />
                 }
               >
+                {/* oxlint-disable-next-line nextjs/no-img-element */}
                 <img
                   src={entry.avatarUrl}
                   alt={entry.name}
@@ -50,6 +51,7 @@ export async function SpecialSponsorBanner() {
                     </div>
                   </div>
                   <div className="flex gap-3">
+                    {/* oxlint-disable-next-line nextjs/no-img-element */}
                     <img
                       src={entry.avatarUrl}
                       alt={entry.name}

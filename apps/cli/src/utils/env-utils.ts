@@ -30,7 +30,7 @@ export async function addEnvVariablesToFile(
     keysToAdd.set(variable.key, variable.value);
   }
 
-  let foundKeys = new Set<string>();
+  const foundKeys = new Set<string>();
 
   for (const line of existingLines) {
     const trimmedLine = line.trim();

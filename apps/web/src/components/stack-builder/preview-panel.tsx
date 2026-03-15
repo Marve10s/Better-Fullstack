@@ -84,7 +84,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
     } finally {
       setIsLoading(false);
     }
-  }, [stack]);
+  }, [stack, selectedFilePath, onSelectFile]);
 
   // Debounced fetch on stack change
   useEffect(() => {

@@ -59,7 +59,7 @@ async function installTursoCLI(isMac: boolean) {
     if (error instanceof Error && error.message.includes("User force closed")) {
       s.stop("Turso CLI installation cancelled");
       log.warn(pc.yellow("Turso CLI installation cancelled by user"));
-      throw new Error("Installation cancelled");
+      throw new Error("Installation cancelled", { cause: error });
     }
     s.stop(pc.red("Failed to install Turso CLI"));
   }
@@ -134,7 +134,7 @@ async function createTursoDatabase(dbName: string, groupName: string | null) {
   } catch (error) {
     s.stop(pc.red(`Failed to create database "${dbName}"`));
     if (error instanceof Error && error.message.includes("already exists")) {
-      throw new Error("DATABASE_EXISTS");
+      throw new Error("DATABASE_EXISTS", { cause: error });
     }
   }
 

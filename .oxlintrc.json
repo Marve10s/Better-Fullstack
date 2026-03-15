@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "nextjs",
+    "import",
+    "jsx-a11y",
+    "promise",
+    "node"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn",
+    "pedantic": "off",
+    "style": "off",
+    "restriction": "off",
+    "nursery": "off"
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-eval": "error",
+    "no-new-func": "error",
+    "no-caller": "error",
+    "no-alert": "error",
+    "prefer-const": "error",
+    "no-void": "off",
+
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-non-null-assertion": "warn",
+    "typescript/consistent-type-imports": "error",
+    "typescript/no-namespace": "error",
+
+    "react/exhaustive-deps": "error",
+    "react/rules-of-hooks": "error",
+    "react/jsx-key": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-danger": "off",
+    "react/react-in-jsx-scope": "off",
+
+    "no-shadow": "off",
+    "no-unused-vars": "off",
+
+    "import/no-named-as-default": "off",
+    "import/no-unassigned-import": "off",
+
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-array-reverse": "off",
+    "unicorn/consistent-function-scoping": "warn",
+    "unicorn/require-module-specifiers": "off",
+
+    "import/no-cycle": "error",
+    "import/no-self-import": "error",
+    "import/no-duplicates": "error",
+
+    "unicorn/no-instanceof-array": "error",
+    "unicorn/prefer-array-find": "warn",
+
+    "oxc/missing-throw": "error",
+    "oxc/bad-bitwise-operator": "error",
+    "oxc/misrefactored-assign-op": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "typescript/no-non-null-assertion": "off"
+      }
+    },
+    {
+      "files": ["**/scripts/**", "testing/**"],
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    ".next",
+    "*.generated.ts",
+    "tina/__generated__",
+    ".smoke",
+    ".claude",
+    ".agents",
+    "packages/template-generator/templates"
+  ]
+}

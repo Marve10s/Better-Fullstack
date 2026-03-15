@@ -116,6 +116,7 @@ async function withGenerateTemplatesLock<T>(fn: () => Promise<T>): Promise<T> {
       if (Date.now() - startedAt > LOCK_TIMEOUT_MS) {
         throw new Error(
           "Timed out waiting for generate-templates lock. Another build may be stuck.",
+          { cause: error },
         );
       }
 

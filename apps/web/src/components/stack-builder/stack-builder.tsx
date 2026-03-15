@@ -320,6 +320,16 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "appPlatforms",
 ]);
 
+const SHADCN_SUB_CATEGORIES = new Set([
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+]);
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilder = () => {
@@ -638,16 +648,6 @@ const StackBuilder = () => {
   }, []);
 
   // ─── Build the categories to show in sidebar (with astro integration) ──
-
-  const SHADCN_SUB_CATEGORIES = new Set([
-    "shadcnBase",
-    "shadcnStyle",
-    "shadcnIconLibrary",
-    "shadcnColorTheme",
-    "shadcnBaseColor",
-    "shadcnFont",
-    "shadcnRadius",
-  ]);
 
   const sidebarCategories = useMemo(() => {
     const cats: (keyof typeof TECH_OPTIONS)[] = [];

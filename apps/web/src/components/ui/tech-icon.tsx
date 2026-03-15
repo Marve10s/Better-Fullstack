@@ -22,6 +22,7 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
     if (config) {
       if (config.type === "si") {
         return (
+          // oxlint-disable-next-line nextjs/no-img-element
           <img
             src={computeSiUrl(config.slug, config.hex, isDark)}
             alt={`${name} icon`}
@@ -33,6 +34,7 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
       }
       // local
       return (
+        // oxlint-disable-next-line nextjs/no-img-element
         <img
           src={config.src}
           alt={`${name} icon`}
@@ -49,6 +51,7 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
 
   if (icon.startsWith("https://") || icon.startsWith("/")) {
     return (
+      // oxlint-disable-next-line nextjs/no-img-element
       <img
         src={icon}
         alt={`${name} icon`}
