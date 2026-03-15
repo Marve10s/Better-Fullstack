@@ -1,4 +1,3 @@
-"use client";
 
 import { RefreshCw, Shuffle } from "lucide-react";
 

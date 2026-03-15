@@ -1756,6 +1756,13 @@ export const TECH_OPTIONS: Record<
       color: "from-amber-500 to-amber-700",
       default: true,
     },
+    {
+      id: "yarn",
+      name: "yarn",
+      description: "Safe, stable, reproducible",
+      icon: "https://cdn.simpleicons.org/yarn/2C8EBB",
+      color: "from-sky-500 to-sky-700",
+    },
   ],
   codeQuality: [
     {
@@ -2977,19 +2984,19 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
 };
 
 export const PRESET_CATEGORIES = [
-  { id: "next", name: "Next.js", icon: "next" },
-  { id: "react", name: "React", icon: "react-router" },
-  { id: "tanstack", name: "TanStack", icon: "tanstack-start" },
-  { id: "svelte", name: "Svelte", icon: "svelte" },
-  { id: "nuxt", name: "Vue / Nuxt", icon: "nuxt" },
-  { id: "astro", name: "Astro", icon: "astro" },
-  { id: "solid", name: "Solid", icon: "solid" },
-  { id: "angular", name: "Angular", icon: "angular" },
-  { id: "qwik", name: "Qwik", icon: "qwik" },
-  { id: "mobile", name: "Mobile", icon: "native-uniwind" },
-  { id: "rust", name: "Rust", icon: "axum" },
-  { id: "python", name: "Python", icon: "fastapi" },
-  { id: "go", name: "Go", icon: "gin" },
+  { id: "next", name: "Next.js", icon: "next", ecosystem: "typescript" },
+  { id: "react", name: "React", icon: "react-router", ecosystem: "typescript" },
+  { id: "tanstack", name: "TanStack", icon: "tanstack-start", ecosystem: "typescript" },
+  { id: "svelte", name: "Svelte", icon: "svelte", ecosystem: "typescript" },
+  { id: "nuxt", name: "Vue / Nuxt", icon: "nuxt", ecosystem: "typescript" },
+  { id: "astro", name: "Astro", icon: "astro", ecosystem: "typescript" },
+  { id: "solid", name: "Solid", icon: "solid", ecosystem: "typescript" },
+  { id: "angular", name: "Angular", icon: "angular", ecosystem: "typescript" },
+  { id: "qwik", name: "Qwik", icon: "qwik", ecosystem: "typescript" },
+  { id: "mobile", name: "Mobile", icon: "native-uniwind", ecosystem: "typescript" },
+  { id: "rust", name: "Rust", icon: "axum", ecosystem: "rust" },
+  { id: "python", name: "Python", icon: "fastapi", ecosystem: "python" },
+  { id: "go", name: "Go", icon: "gin", ecosystem: "go" },
 ] as const;
 
 export type PresetCategory = (typeof PRESET_CATEGORIES)[number]["id"];

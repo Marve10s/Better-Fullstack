@@ -50,7 +50,7 @@ const PACKAGE_PATHS = [
  * Process dependency catalogs for pnpm/bun
  */
 export function processCatalogs(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  if (config.packageManager === "npm") return;
+  if (config.packageManager === "npm" || config.packageManager === "yarn") return; // yarn v4 doesn't support catalogs
 
   const packagesInfo: PackageInfo[] = [];
 

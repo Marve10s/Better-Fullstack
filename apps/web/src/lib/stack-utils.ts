@@ -2,6 +2,13 @@ import { TECH_OPTIONS } from "@/lib/constant";
 import { DEFAULT_STACK, isStackDefault, type StackState } from "@/lib/stack-defaults";
 import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
+const PACKAGE_MANAGER_COMMANDS = {
+  npm: "npx create-better-fullstack@latest",
+  pnpm: "pnpm create better-fullstack@latest",
+  yarn: "yarn create better-fullstack@latest",
+  default: "bun create better-fullstack@latest",
+};
+
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "webFrontend",
@@ -164,15 +171,9 @@ export function generateStackCommand(stack: StackState) {
   }
 
   // TypeScript ecosystem
-  const packageManagerCommands = {
-    npm: "npx create-better-fullstack@latest",
-    pnpm: "pnpm create better-fullstack@latest",
-    default: "bun create better-fullstack@latest",
-  };
-
   const base =
-    packageManagerCommands[stack.packageManager as keyof typeof packageManagerCommands] ||
-    packageManagerCommands.default;
+    PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
+    PACKAGE_MANAGER_COMMANDS.default;
 
   const isStackDefaultExceptProjectName = Object.entries(DEFAULT_STACK).every(
     ([key]) =>
@@ -291,15 +292,9 @@ export function generateStackCommand(stack: StackState) {
 }
 
 function generateRustCommand(stack: StackState, projectName: string) {
-  const packageManagerCommands = {
-    npm: "npx create-better-fullstack@latest",
-    pnpm: "pnpm create better-fullstack@latest",
-    default: "bun create better-fullstack@latest",
-  };
-
   const base =
-    packageManagerCommands[stack.packageManager as keyof typeof packageManagerCommands] ||
-    packageManagerCommands.default;
+    PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
+    PACKAGE_MANAGER_COMMANDS.default;
 
   const flags: string[] = [`--ecosystem rust`];
 
@@ -335,15 +330,9 @@ function generateRustCommand(stack: StackState, projectName: string) {
 }
 
 function generatePythonCommand(stack: StackState, projectName: string) {
-  const packageManagerCommands = {
-    npm: "npx create-better-fullstack@latest",
-    pnpm: "pnpm create better-fullstack@latest",
-    default: "bun create better-fullstack@latest",
-  };
-
   const base =
-    packageManagerCommands[stack.packageManager as keyof typeof packageManagerCommands] ||
-    packageManagerCommands.default;
+    PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
+    PACKAGE_MANAGER_COMMANDS.default;
 
   const flags: string[] = [`--ecosystem python`];
 
@@ -378,15 +367,9 @@ function generatePythonCommand(stack: StackState, projectName: string) {
 }
 
 function generateGoCommand(stack: StackState, projectName: string) {
-  const packageManagerCommands = {
-    npm: "npx create-better-fullstack@latest",
-    pnpm: "pnpm create better-fullstack@latest",
-    default: "bun create better-fullstack@latest",
-  };
-
   const base =
-    packageManagerCommands[stack.packageManager as keyof typeof packageManagerCommands] ||
-    packageManagerCommands.default;
+    PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
+    PACKAGE_MANAGER_COMMANDS.default;
 
   const flags: string[] = [`--ecosystem go`];
 

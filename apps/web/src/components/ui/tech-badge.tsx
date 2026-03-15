@@ -1,4 +1,3 @@
-"use client";
 
 import { TechIcon } from "@/components/ui/tech-icon";
 import { cn } from "@/lib/utils";

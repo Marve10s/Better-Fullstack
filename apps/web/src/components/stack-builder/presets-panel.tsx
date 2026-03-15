@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface PresetsPanelProps {
   stack: StackState;
+  ecosystem: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
 }
@@ -80,21 +81,26 @@ function isPresetActive(
   return true;
 }
 
-export function PresetsPanel({ stack, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
+export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
+  const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
+  const filteredPresets = PRESET_TEMPLATES.filter((p) =>
+    filteredCategories.some((c) => c.id === p.category),
+  );
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-1.5 sm:gap-4">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Zap className="h-3.5 w-3.5" />
-          <span>{PRESET_TEMPLATES.length} presets</span>
+          <span>{filteredPresets.length} presets</span>
         </div>
         <span className="ml-auto text-xs text-muted-foreground">Click to apply</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
         <div className="space-y-6">
-          {PRESET_CATEGORIES.map((category) => {
-            const categoryPresets = PRESET_TEMPLATES.filter(
+          {filteredCategories.map((category) => {
+            const categoryPresets = filteredPresets.filter(
               (p) => p.category === category.id,
             );
             if (categoryPresets.length === 0) return null;

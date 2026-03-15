@@ -1,4 +1,3 @@
-"use client";
 
 import {
   BookOpen,
@@ -1415,6 +1414,7 @@ const StackBuilder = () => {
               <div className="min-h-0 flex-1 overflow-hidden">
                 <PresetsPanel
                   stack={adjustedStack || stack}
+                  ecosystem={stack.ecosystem}
                   onApplyPreset={applyPreset}
                   onCustomizePreset={(presetId) => {
                     applyPreset(presetId);

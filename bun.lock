@@ -35,7 +35,7 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "1.4.0",
+      "version": "1.4.7",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },
@@ -93,6 +93,7 @@
         "culori": "^4.0.2",
         "date-fns": "^4.1.0",
         "geist": "^1.7.0",
+        "gsap": "^3.14.2",
         "lucide-react": "^0.562.0",
         "motion": "^12.23.26",
         "papaparse": "^5.5.3",
@@ -1235,6 +1236,8 @@
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
 
     "gradient-string": ["gradient-string@3.0.0", "", { "dependencies": { "chalk": "^5.3.0", "tinygradient": "^1.1.5" } }, "sha512-frdKI4Qi8Ihp4C6wZNB565de/THpIaw3DjP5ku87M+N9rNSGmPTjfkq61SdRXB7eCaL8O1hkKDvf6CDMtOzIAg=="],
+
+    "gsap": ["gsap@3.14.2", "", {}, "sha512-P8/mMxVLU7o4+55+1TCnQrPmgjPKnwkzkXOK1asnR9Jg2lna4tEY5qBJjMmAaOBDDZWtlRjBXjLa0w53G/uBLA=="],
 
     "h3": ["h3@2.0.1-rc.2", "", { "dependencies": { "cookie-es": "^2.0.0", "fetchdts": "^0.1.7", "rou3": "^0.7.7", "srvx": "^0.8.15" }, "peerDependencies": { "crossws": "^0.4.1" }, "optionalPeers": ["crossws"] }, "sha512-2vS7OETzPDzGQxmmcs6ttu7p0NW25zAdkPXYOr43dn4GZf81uUljJvupa158mcpUGpsQUqIy4O4THWUQT1yVeA=="],
 

@@ -6,6 +6,8 @@ function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
       return "bun create better-fullstack@latest";
     case "pnpm":
       return "pnpm create better-fullstack@latest";
+    case "yarn":
+      return "yarn create better-fullstack@latest";
     case "npm":
     default:
       return "npx create-better-fullstack@latest";

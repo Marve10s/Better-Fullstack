@@ -23,6 +23,11 @@ export async function getPackageManagerChoice(packageManager?: PackageManager) {
         label: "bun",
         hint: "All-in-one JavaScript runtime & toolkit",
       },
+      {
+        value: "yarn",
+        label: "yarn",
+        hint: "Yarn Berry (v4) with PnP or node_modules",
+      },
     ],
     initialValue: detectedPackageManager,
   });

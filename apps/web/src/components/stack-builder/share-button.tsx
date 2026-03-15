@@ -1,4 +1,3 @@
-"use client";
 
 import { Check, Link } from "lucide-react";
 import { useState } from "react";
