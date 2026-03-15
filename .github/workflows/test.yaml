@@ -53,19 +53,17 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - name: Upload Workspace
+      - name: Upload Build Outputs
         uses: actions/upload-artifact@v4
         with:
-          name: workspace
+          name: build-outputs
           path: |
-            node_modules
             packages/types/dist
             packages/template-generator/dist
             packages/template-generator/templates-binary
-            .turbo
           retention-days: 1
 
-  # ── Parallel jobs: all restore from shared artifact ───────────────────
+  # ── Parallel jobs: restore node_modules from cache, build outputs from artifact ──
   release-guard:
     name: Release Guard
     runs-on: ubuntu-latest
@@ -80,10 +78,20 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Download Workspace
+      - name: Restore Dependencies Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
-          name: workspace
+          name: build-outputs
 
       - name: Run Release Verification
         run: bun run test:release
@@ -102,10 +110,20 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Download Workspace
+      - name: Restore Dependencies Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
-          name: workspace
+          name: build-outputs
 
       - name: Validate Builder Tech Links
         run: bun run --cwd apps/web validate:tech-links
@@ -132,10 +150,20 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Download Workspace
+      - name: Restore Dependencies Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
-          name: workspace
+          name: build-outputs
 
       - name: Run Tests
         run: bun run test
@@ -154,10 +182,20 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Download Workspace
+      - name: Restore Dependencies Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
-          name: workspace
+          name: build-outputs
 
       - name: Restore Turbo Cache
         uses: actions/cache@v4
