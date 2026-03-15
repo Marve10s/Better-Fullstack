@@ -1,11 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/success")({
 	component: SuccessPage,
+	validateSearch: (search) => ({
+		transaction_id: search.transaction_id as string | undefined,
+	}),
 });
 
 function SuccessPage() {
-	const { transaction_id } = Route.useSearch<{ transaction_id?: string }>();
+	const { transaction_id } = useSearch({ from: "/success" });
 
 	return (
 		<div className="container mx-auto px-4 py-8">

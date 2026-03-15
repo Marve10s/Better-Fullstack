@@ -26,10 +26,9 @@ const generatedSchema = createGeneratedSchema(g as any);
 const scalarsEnumsHash = createScalarsEnumsHash(g as any);
 
 // Create type-safe GraphQL client
-export const client = createClient<{
-  query: InferClient<typeof queryType>;
-  mutation: InferClient<typeof mutationType>;
-}>({
+type Schema = InferClient<{ query: typeof queryType; mutation: typeof mutationType }>;
+
+export const client = createClient<Schema>({
   generatedSchema,
   scalarsEnumsHash,
   url: `${API_URL}/graphql`,

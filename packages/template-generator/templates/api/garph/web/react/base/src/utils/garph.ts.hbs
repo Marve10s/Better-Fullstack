@@ -26,13 +26,16 @@ const generatedSchema = createGeneratedSchema(g as any);
 const scalarsEnumsHash = createScalarsEnumsHash(g as any);
 
 // Create type-safe GraphQL client
-export const client = createClient<{
-  query: InferClient<typeof queryType>;
-  mutation: InferClient<typeof mutationType>;
-}>({
+type Schema = InferClient<{ query: typeof queryType; mutation: typeof mutationType }>;
+
+export const client = createClient<Schema>({
   generatedSchema,
   scalarsEnumsHash,
+{{#if (includes frontend "next")}}
+  url: `${env.NEXT_PUBLIC_SERVER_URL}/graphql`,
+{{else}}
   url: `${env.VITE_SERVER_URL}/graphql`,
+{{/if}}
 {{#if (eq auth "better-auth")}}
   credentials: "include",
 {{/if}}

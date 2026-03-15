@@ -35,6 +35,9 @@ import { queryClient } from "./utils/orpc";
     {{#if (eq api "trpc")}}
 import { queryClient } from "./utils/trpc";
     {{/if}}
+    {{#if (eq api "garph")}}
+import { queryClient } from "./utils/garph";
+    {{/if}}
   {{/unless}}
 {{/if}}
 
@@ -133,7 +136,7 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-{{else if (eq api "trpc")}}
+{{else if (or (eq api "trpc") (eq api "garph"))}}
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>

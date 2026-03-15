@@ -79,6 +79,46 @@ export function createContext(req: FastifyRequest{{#if (eq auth "better-auth")}}
 {{/if}}
   };
 }
+{{else if (eq backend "fets")}}
+{{#if (eq auth "better-auth")}}
+import type { Session, User } from "better-auth";
+{{/if}}
+
+export type Context = {
+  req: Request;
+{{#if (eq auth "better-auth")}}
+  session: { user: User; session: Session } | null;
+{{/if}}
+};
+
+export function createContext(req: Request{{#if (eq auth "better-auth")}}, session: { user: User; session: Session } | null{{/if}}): Context {
+  return {
+    req,
+{{#if (eq auth "better-auth")}}
+    session,
+{{/if}}
+  };
+}
+{{else if (eq backend "adonisjs")}}
+{{#if (eq auth "better-auth")}}
+import type { Session, User } from "better-auth";
+{{/if}}
+
+export type Context = {
+  req: Request;
+{{#if (eq auth "better-auth")}}
+  session: { user: User; session: Session } | null;
+{{/if}}
+};
+
+export function createContext(req: Request{{#if (eq auth "better-auth")}}, session: { user: User; session: Session } | null{{/if}}): Context {
+  return {
+    req,
+{{#if (eq auth "better-auth")}}
+    session,
+{{/if}}
+  };
+}
 {{else if (eq backend "self")}}
 {{#if (includes frontend "next")}}
 import type { NextRequest } from "next/server";

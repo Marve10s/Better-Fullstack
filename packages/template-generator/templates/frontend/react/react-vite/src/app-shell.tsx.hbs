@@ -12,6 +12,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "@/utils/trpc";
 {{/if}}
+{{#if (eq api "garph")}}
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "@/utils/garph";
+{{/if}}
 {{#if (eq backend "convex")}}
 import { ConvexReactClient } from "convex/react";
 import { env } from "@{{projectName}}/env/web";
@@ -73,6 +78,13 @@ export default function AppShell() {
     </QueryClientProvider>
   );
   {{else if (eq api "trpc")}}
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RoutedLayout />
+      <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+    </QueryClientProvider>
+  );
+  {{else if (eq api "garph")}}
   return (
     <QueryClientProvider client={queryClient}>
       <RoutedLayout />

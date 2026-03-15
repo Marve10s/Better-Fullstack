@@ -25,6 +25,9 @@ import { queryClient } from "@/utils/orpc";
 {{#if (eq api "trpc")}}
 import { queryClient } from "@/utils/trpc";
 {{/if}}
+{{#if (eq api "garph")}}
+import { queryClient } from "@/utils/garph";
+{{/if}}
 {{/unless}}
 {{/if}}
 {{#if (eq uiLibrary "mantine")}}
@@ -78,12 +81,7 @@ export default function Providers({
       {{else}}
       {{#unless (eq api "none")}}
       <QueryClientProvider client={queryClient}>
-        {{#if (eq api "orpc")}}
         {children}
-        {{/if}}
-        {{#if (eq api "trpc")}}
-        {children}
-        {{/if}}
         <ReactQueryDevtools />
       </QueryClientProvider>
       {{else}}
