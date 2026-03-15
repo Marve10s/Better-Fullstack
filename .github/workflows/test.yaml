@@ -11,9 +11,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Shared setup: install + build core packages once ──────────────────
-  setup:
-    name: Setup
+  release-guard:
+    name: Release Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Release Verification
+        run: bun run test:release
+
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -27,7 +55,6 @@ jobs:
 
       - name: Cache Dependencies
         uses: actions/cache@v4
-        id: cache-deps
         with:
           path: |
             node_modules
@@ -44,92 +71,6 @@ jobs:
           bun run --filter=@better-fullstack/types build
           bun run --filter=@better-fullstack/template-generator build
 
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-
-
-      - name: Upload Build Outputs
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-outputs
-          path: |
-            packages/types/dist
-            packages/template-generator/dist
-            packages/template-generator/templates-binary
-          retention-days: 1
-
-  # ── Parallel jobs: restore node_modules from cache, build outputs from artifact ──
-  release-guard:
-    name: Release Guard
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: setup
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Restore Dependencies Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            ~/.bun/install/cache
-          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            deps-${{ runner.os }}-bun-
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Download Build Outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: build-outputs
-
-      - name: Run Release Verification
-        run: bun run test:release
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: setup
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Restore Dependencies Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            ~/.bun/install/cache
-          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            deps-${{ runner.os }}-bun-
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Download Build Outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: build-outputs
-
       - name: Validate Builder Tech Links
         run: bun run --cwd apps/web validate:tech-links
 
@@ -140,7 +81,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: setup
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -155,8 +95,8 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Restore Dependencies Cache
-        uses: actions/cache/restore@v4
+      - name: Cache Dependencies
+        uses: actions/cache@v4
         with:
           path: |
             node_modules
@@ -167,11 +107,6 @@ jobs:
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
-
-      - name: Download Build Outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: build-outputs
 
       - name: Run Tests
         run: bun run test
@@ -190,8 +125,8 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Restore Dependencies Cache
-        uses: actions/cache/restore@v4
+      - name: Cache Dependencies
+        uses: actions/cache@v4
         with:
           path: |
             node_modules
@@ -203,12 +138,7 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Download Build Outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: build-outputs
-
-      - name: Restore Turbo Cache
+      - name: Cache Turbo
         uses: actions/cache@v4
         with:
           path: .turbo
