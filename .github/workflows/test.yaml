@@ -37,7 +37,6 @@ jobs:
             deps-${{ runner.os }}-bun-
 
       - name: Install Dependencies
-        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
       - name: Build Core Packages
