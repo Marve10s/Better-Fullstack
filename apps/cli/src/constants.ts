@@ -145,6 +145,26 @@ export const ADDON_COMPATIBILITY = {
   wxt: [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  "tanstack-query": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-table": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-virtual": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
+  "tanstack-db": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "astro", "redwood",
+  ],
+  "tanstack-pacer": [
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+  ],
   none: [],
 } as const;
 

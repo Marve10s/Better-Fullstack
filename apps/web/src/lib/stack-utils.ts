@@ -274,6 +274,13 @@ export function generateStackCommand(stack: StackState) {
                 "mcp",
                 "skills",
                 "wxt",
+                "msw",
+                "storybook",
+                "tanstack-query",
+                "tanstack-table",
+                "tanstack-virtual",
+                "tanstack-db",
+                "tanstack-pacer",
               ].includes(addon),
             )
             .join(" ") || "none"

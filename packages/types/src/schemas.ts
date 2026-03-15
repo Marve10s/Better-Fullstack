@@ -79,6 +79,11 @@ export const AddonsSchema = z
     "wxt",
     "msw",
     "storybook",
+    "tanstack-query",
+    "tanstack-table",
+    "tanstack-virtual",
+    "tanstack-db",
+    "tanstack-pacer",
     "none",
   ])
   .describe("Additional addons");
@@ -142,6 +147,7 @@ export const AISchema = z
     "modelfusion",
     "langchain",
     "llamaindex",
+    "tanstack-ai",
     "none",
   ])
   .describe("AI SDK");

@@ -321,6 +321,30 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://tanstack.com/store/latest",
     githubUrl: "https://github.com/TanStack/store",
   },
+  "tanstack-query": {
+    docsUrl: "https://tanstack.com/query/latest",
+    githubUrl: "https://github.com/TanStack/query",
+  },
+  "tanstack-table": {
+    docsUrl: "https://tanstack.com/table/latest",
+    githubUrl: "https://github.com/TanStack/table",
+  },
+  "tanstack-virtual": {
+    docsUrl: "https://tanstack.com/virtual/latest",
+    githubUrl: "https://github.com/TanStack/virtual",
+  },
+  "tanstack-db": {
+    docsUrl: "https://tanstack.com/db/latest",
+    githubUrl: "https://github.com/TanStack/db",
+  },
+  "tanstack-pacer": {
+    docsUrl: "https://tanstack.com/pacer/latest",
+    githubUrl: "https://github.com/TanStack/pacer",
+  },
+  "tanstack-ai": {
+    docsUrl: "https://tanstack.com/ai/latest",
+    githubUrl: "https://github.com/TanStack/ai",
+  },
   "legend-state": {
     docsUrl: "https://legendapp.com/open-source/state/v3/",
     githubUrl: "https://github.com/LegendApp/legend-state",

@@ -75,6 +75,34 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "WXT";
       hint = "Build browser extensions";
       break;
+    case "msw":
+      label = "MSW";
+      hint = "Mock Service Worker for API mocking";
+      break;
+    case "storybook":
+      label = "Storybook";
+      hint = "Component development and testing workshop";
+      break;
+    case "tanstack-query":
+      label = "TanStack Query";
+      hint = "Powerful async state management & data fetching";
+      break;
+    case "tanstack-table":
+      label = "TanStack Table";
+      hint = "Headless table with sorting, filtering & pagination";
+      break;
+    case "tanstack-virtual":
+      label = "TanStack Virtual";
+      hint = "Virtualize large lists & grids for 60fps performance";
+      break;
+    case "tanstack-db":
+      label = "TanStack DB";
+      hint = "Reactive client-first data store with sync backends (Beta)";
+      break;
+    case "tanstack-pacer":
+      label = "TanStack Pacer";
+      hint = "Debounce, throttle, rate-limit & queue utilities (Beta)";
+      break;
     default:
       label = addon;
       hint = `Add ${addon}`;
@@ -86,8 +114,9 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
 const ADDON_GROUPS = {
   Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler"],
+  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "msw", "storybook"],
   "AI Agents": ["mcp", "skills"],
+  TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
 };
 
 export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[], auth?: Auth) {
@@ -99,6 +128,7 @@ export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[],
     Documentation: [],
     Extensions: [],
     "AI Agents": [],
+    TanStack: [],
   };
 
   const frontendsArray = frontends || [];
@@ -118,6 +148,8 @@ export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[],
       groupedOptions.Extensions.push(option);
     } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
       groupedOptions["AI Agents"].push(option);
+    } else if (ADDON_GROUPS.TanStack.includes(addon)) {
+      groupedOptions.TanStack.push(option);
     }
   }
 
@@ -162,6 +194,7 @@ export async function getAddonsToAdd(
     Documentation: [],
     Extensions: [],
     "AI Agents": [],
+    TanStack: [],
   };
 
   const frontendArray = frontend || [];
@@ -185,6 +218,8 @@ export async function getAddonsToAdd(
       groupedOptions.Extensions.push(option);
     } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
       groupedOptions["AI Agents"].push(option);
+    } else if (ADDON_GROUPS.TanStack.includes(addon)) {
+      groupedOptions.TanStack.push(option);
     }
   }
 
