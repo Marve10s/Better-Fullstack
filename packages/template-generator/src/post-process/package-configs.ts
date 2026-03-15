@@ -178,6 +178,10 @@ function getPackageManagerConfig(
         checkTypes: "bun run --if-present --filter '*' check-types",
         filter: (workspace, script) => `bun run --filter ${workspace} ${script}`,
       };
+    default: {
+      const _exhaustive: never = packageManager;
+      throw new Error(`Unknown package manager: ${_exhaustive}`);
+    }
   }
 }
 

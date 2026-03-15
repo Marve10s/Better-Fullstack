@@ -707,6 +707,6 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error(String(error));
+    throw new Error(String(error), { cause: error });
   }
 }

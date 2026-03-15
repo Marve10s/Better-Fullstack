@@ -87,6 +87,7 @@ export function NavbarStats() {
     void fetchNavbarStats()
       .then((data) => {
         if (!cancelled) setStats(data);
+        return;
       })
       .catch(() => {
         // Keep UI resilient; placeholders remain if stats are unavailable.
