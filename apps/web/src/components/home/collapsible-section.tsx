@@ -115,7 +115,6 @@ export function CollapsibleSection({
     return () => ctx.revert();
   }, [isOpen]);
 
-  // Glow follows mouse on hover
   useEffect(() => {
     const glow = glowRef.current;
     if (!glow) return;
@@ -161,7 +160,6 @@ export function CollapsibleSection({
           aria-controls={contentId}
           className="group relative flex w-full cursor-pointer items-center gap-3 overflow-hidden py-6 text-left sm:py-8"
         >
-          {/* Mouse-following glow */}
           <div
             ref={glowRef}
             className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-0"

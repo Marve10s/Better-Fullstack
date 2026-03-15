@@ -427,6 +427,7 @@ const BASE_LINKS: LinkMap = {
   },
   npm: { docsUrl: "https://docs.npmjs.com/", githubUrl: "https://github.com/npm/cli" },
   pnpm: { docsUrl: "https://pnpm.io/", githubUrl: "https://github.com/pnpm/pnpm" },
+  yarn: { docsUrl: "https://yarnpkg.com/", githubUrl: "https://github.com/yarnpkg/berry" },
   biome: {
     docsUrl: "https://biomejs.dev/guides/getting-started/",
     githubUrl: "https://github.com/biomejs/biome",
@@ -762,16 +763,16 @@ const CATEGORY_LINKS: LinkMap = {
     githubUrl: "https://github.com/nicedoc/remixicon",
   },
 
-  // ─── shadcn Color Themes (single doc link on first item) ────────────────────
+  // ─── shadcn Color Themes────────────────────
   "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
 
-  // ─── shadcn Base Colors (single doc link on first item) ────────────────────
+  // ─── shadcn Base Colors────────────────────
   "shadcnBaseColor:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
 
-  // ─── shadcn Border Radius (single doc link on first item) ──────────────────
+  // ─── shadcn Border Radius──────────────────
   "shadcnRadius:default": { docsUrl: "https://ui.shadcn.com/themes" },
 
-  // ─── shadcn Styles (single doc link on first item) ─────────────────────────
+  // ─── shadcn Styles─────────────────────────
   "shadcnStyle:vega": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
 
   // ─── shadcn Fonts ──────────────────────────────────────────────────────────

@@ -13,7 +13,6 @@ export type LikedByPerson = {
   invertDark?: boolean;
 };
 
-// Short reviews — compact rows
 export const ROW_1: Testimonial[] = [
   {
     name: "Franco RATOVOSON",
@@ -64,7 +63,6 @@ export const ROW_1: Testimonial[] = [
   },
 ];
 
-// Tall reviews — long text, GIF, medium-length comments
 export const ROW_2: Testimonial[] = [
   {
     name: "Gabu Rayon Dev",
@@ -101,7 +99,6 @@ export const ROW_2: Testimonial[] = [
   },
 ];
 
-// Short reviews — compact row
 export const ROW_3: Testimonial[] = [
   {
     name: "srmdn",

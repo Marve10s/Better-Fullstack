@@ -119,8 +119,6 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["db:down"] = pmConfig.filter(dbPackageName, "db:down");
   }
 
-  // Note: packageManager version is set by CLI at runtime since it requires running the actual CLI
-  // For preview purposes, we just show the configured package manager
   pkgJson.packageManager =
     packageManager === "yarn" ? "yarn@4.12.0" : `${packageManager}@latest`;
 
