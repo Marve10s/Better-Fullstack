@@ -125,10 +125,17 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                     const highlights = getPresetHighlights(preset.stack);
 
                     return (
-                      <button
+                      <div
                         key={preset.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => onApplyPreset(preset.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onApplyPreset(preset.id);
+                          }
+                        }}
                         className={cn(
                           "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
                           active
@@ -183,7 +190,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                             </span>
                           ))}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

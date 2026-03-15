@@ -15,6 +15,7 @@ import {
   validateUILibraryCSSFrameworkCompatibility,
   validateUILibraryFrontendCompatibility,
   validateWebDeployRequiresWebFrontend,
+  validateAIFrontendCompatibility,
   validateWorkersCompatibility,
 } from "./compatibility-rules";
 import { isSilent } from "./context";
@@ -657,6 +658,8 @@ export function validateFullConfig(
     config.frontend ?? [],
   );
 
+  validateAIFrontendCompatibility(config.ai, config.frontend ?? []);
+
   validateUILibraryFrontendCompatibility(
     config.uiLibrary,
     config.frontend ?? [],
@@ -693,6 +696,8 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
       config.runtime,
       config.ai,
     );
+
+    validateAIFrontendCompatibility(config.ai, config.frontend ?? []);
 
     validateUILibraryFrontendCompatibility(
       config.uiLibrary,
