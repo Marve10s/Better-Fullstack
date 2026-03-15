@@ -87,6 +87,9 @@ jobs:
           restore-keys: |
             deps-${{ runner.os }}-bun-
 
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
       - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
@@ -118,6 +121,9 @@ jobs:
           key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
 
       - name: Download Build Outputs
         uses: actions/download-artifact@v4
@@ -159,6 +165,9 @@ jobs:
           restore-keys: |
             deps-${{ runner.os }}-bun-
 
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
       - name: Download Build Outputs
         uses: actions/download-artifact@v4
         with:
@@ -190,6 +199,9 @@ jobs:
           key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: |
             deps-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
 
       - name: Download Build Outputs
         uses: actions/download-artifact@v4
