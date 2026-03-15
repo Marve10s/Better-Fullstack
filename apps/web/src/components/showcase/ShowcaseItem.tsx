@@ -39,7 +39,6 @@ export default function ShowcaseItem({
       </div>
 
       <div className="relative aspect-video w-full overflow-hidden bg-muted/10">
-        {/* oxlint-disable-next-line nextjs/no-img-element */}
         <img
           src={imageUrl}
           alt={title}

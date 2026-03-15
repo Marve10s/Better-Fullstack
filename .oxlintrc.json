@@ -6,7 +6,7 @@
     "unicorn",
     "oxc",
     "react",
-    "nextjs",
+    "react-perf",
     "import",
     "jsx-a11y",
     "promise",
@@ -41,6 +41,8 @@
     "react/jsx-no-target-blank": "error",
     "react/no-danger": "off",
     "react/react-in-jsx-scope": "off",
+    "nextjs/no-img-element": "off",
+    "nextjs/no-head-element": "off",
 
     "no-shadow": "off",
     "no-unused-vars": "off",
@@ -66,7 +68,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "rules": {
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off"

@@ -114,7 +114,6 @@ function RootComponent() {
 function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="font-sans" suppressHydrationWarning>
-      {/* oxlint-disable-next-line nextjs/no-head-element */}
       <head>
         <HeadContent />
         <script

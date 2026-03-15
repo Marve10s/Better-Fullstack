@@ -200,7 +200,6 @@ export default function HeroSection() {
                     isActive ? "text-white" : "text-white/40 group-hover:text-white/65"
                   }`}
                 >
-                  {/* oxlint-disable-next-line nextjs/no-img-element */}
                   <img
                     src={example.iconUrl}
                     alt={example.title}

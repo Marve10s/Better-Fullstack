@@ -24,7 +24,6 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
       rel="noopener noreferrer"
       className="group flex items-center gap-4 rounded-lg border border-border bg-background p-4 transition-all hover:border-foreground/30 hover:bg-muted/50"
     >
-      {/* oxlint-disable-next-line nextjs/no-img-element */}
       <img
         src={`https://github.com/${contributor.username}.png`}
         alt={contributor.name}
