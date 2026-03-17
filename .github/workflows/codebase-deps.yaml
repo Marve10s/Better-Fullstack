@@ -51,11 +51,69 @@ jobs:
 
       - name: Update Dependencies
         run: |
-          if [ "${{ steps.mode.outputs.mode }}" = "all" ]; then
-            bun update --recursive --latest
-          else
-            bun update --recursive
-          fi
+          bun update --latest
+          for dir in apps/*/package.json packages/*/package.json; do
+            ws="$(dirname "$dir")"
+            if [ -f "$dir" ]; then
+              echo "Updating $ws..."
+              (cd "$ws" && bun update --latest) || true
+            fi
+          done
+
+      - name: Revert Major Bumps (patch-minor mode)
+        if: steps.mode.outputs.mode == 'patch-minor'
+        run: |
+          # Restore any package.json version specifiers that jumped a major
+          # by comparing against the committed versions on this branch.
+          git diff --name-only -- '*/package.json' 'package.json' | while IFS= read -r f; do
+            if [ -f "$f" ]; then
+              node -e "
+                const fs = require('fs');
+                const { execSync } = require('child_process');
+                const current = JSON.parse(fs.readFileSync('$f', 'utf-8'));
+                let original;
+                try {
+                  original = JSON.parse(execSync('git show HEAD:$f', { encoding: 'utf-8' }));
+                } catch { process.exit(0); }
+
+                function parseSemver(v) {
+                  const clean = String(v).replace(/^[\^~>=<]+/, '');
+                  const [core] = clean.split('-');
+                  const [major, minor, patch] = (core || '').split('.').map(Number);
+                  const prerelease = clean.includes('-');
+                  return { major: major || 0, minor: minor || 0, patch: patch || 0, prerelease };
+                }
+
+                function isBreaking(oldV, newV) {
+                  const o = parseSemver(oldV);
+                  const n = parseSemver(newV);
+                  if (n.prerelease) return true;
+                  if (n.major > o.major) return true;
+                  if (o.major === 0 && n.minor > o.minor) return true;
+                  return false;
+                }
+
+                let reverted = false;
+                for (const key of ['dependencies', 'devDependencies']) {
+                  const orig = original[key] || {};
+                  const curr = current[key] || {};
+                  for (const [pkg, oldVer] of Object.entries(orig)) {
+                    const newVer = curr[pkg];
+                    if (!newVer || newVer === oldVer) continue;
+                    if (isBreaking(oldVer, newVer)) {
+                      curr[pkg] = oldVer;
+                      reverted = true;
+                    }
+                  }
+                }
+                if (reverted) {
+                  fs.writeFileSync('$f', JSON.stringify(current, null, 2) + '\n');
+                }
+              "
+            fi
+          done
+          # Re-install to fix lockfile after any reverts
+          bun install
 
       - name: Disable Git Hooks For Automation Commit
         run: git config core.hooksPath /dev/null

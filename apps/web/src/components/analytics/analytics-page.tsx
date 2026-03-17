@@ -1,7 +1,3 @@
-"use client";
-
-"use client";
-
 import { useConvexConnectionState } from "convex/react";
 
 import Footer from "@/components/home/footer";

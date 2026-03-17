@@ -54,7 +54,7 @@ export default $config({
     const web = new sst.aws.StaticSite("Web", {
       path: "apps/web",
       build: {
-        command: "{{#if (eq packageManager "bun")}}bun run generate{{else if (eq packageManager "pnpm")}}pnpm run generate{{else}}npm run generate{{/if}}",
+        command: "{{#if (eq packageManager "bun")}}bun run generate{{else if (eq packageManager "pnpm")}}pnpm run generate{{else if (eq packageManager "yarn")}}yarn run generate{{else}}npm run generate{{/if}}",
         output: ".output/public",
       },
     });
@@ -67,7 +67,7 @@ export default $config({
     const web = new sst.aws.StaticSite("Web", {
       path: "apps/web",
       build: {
-        command: "{{#if (eq packageManager "bun")}}bun run build{{else if (eq packageManager "pnpm")}}pnpm run build{{else}}npm run build{{/if}}",
+        command: "{{#if (eq packageManager "bun")}}bun run build{{else if (eq packageManager "pnpm")}}pnpm run build{{else if (eq packageManager "yarn")}}yarn run build{{else}}npm run build{{/if}}",
         output: "dist",
       },
     });
@@ -115,7 +115,7 @@ export default $config({
     const web = new sst.aws.StaticSite("Web", {
       path: "apps/web",
       build: {
-        command: "{{#if (eq packageManager "bun")}}bun run generate{{else if (eq packageManager "pnpm")}}pnpm run generate{{else}}npm run generate{{/if}}",
+        command: "{{#if (eq packageManager "bun")}}bun run generate{{else if (eq packageManager "pnpm")}}pnpm run generate{{else if (eq packageManager "yarn")}}yarn run generate{{else}}npm run generate{{/if}}",
         output: ".output/public",
       },
     });
@@ -124,7 +124,7 @@ export default $config({
     const web = new sst.aws.StaticSite("Web", {
       path: "apps/web",
       build: {
-        command: "{{#if (eq packageManager "bun")}}bun run build{{else if (eq packageManager "pnpm")}}pnpm run build{{else}}npm run build{{/if}}",
+        command: "{{#if (eq packageManager "bun")}}bun run build{{else if (eq packageManager "pnpm")}}pnpm run build{{else if (eq packageManager "yarn")}}yarn run build{{else}}npm run build{{/if}}",
         output: "dist",
       },
     });

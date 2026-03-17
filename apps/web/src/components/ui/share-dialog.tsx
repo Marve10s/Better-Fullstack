@@ -1,4 +1,3 @@
-"use client";
 
 import { Check, Copy, Terminal, Twitter } from "lucide-react";
 import QRCode from "qrcode";

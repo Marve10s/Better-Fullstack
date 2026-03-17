@@ -99,7 +99,7 @@ export function useFeature(featureKey: string): boolean {
  * }
  */
 export function useFeatureConfig<T>(featureKey: string, defaultValue: T): T {
-  return useFeatureValue(featureKey, defaultValue);
+  return useFeatureValue(featureKey, defaultValue) as T;
 }
 
 /**

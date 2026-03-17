@@ -119,9 +119,8 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["db:down"] = pmConfig.filter(dbPackageName, "db:down");
   }
 
-  // Note: packageManager version is set by CLI at runtime since it requires running the actual CLI
-  // For preview purposes, we just show the configured package manager
-  pkgJson.packageManager = `${packageManager}@latest`;
+  pkgJson.packageManager =
+    packageManager === "yarn" ? "yarn@4.12.0" : `${packageManager}@latest`;
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
@@ -177,6 +176,13 @@ function getPackageManagerConfig(
         build: "bun run --filter '*' build",
         checkTypes: "bun run --if-present --filter '*' check-types",
         filter: (workspace, script) => `bun run --filter ${workspace} ${script}`,
+      };
+    case "yarn":
+      return {
+        dev: "yarn workspaces foreach -Ap run dev",
+        build: "yarn workspaces foreach -Apt run build",
+        checkTypes: "yarn workspaces foreach -Aptv run check-types",
+        filter: (workspace, script) => `yarn workspace ${workspace} ${script}`,
       };
     default: {
       const _exhaustive: never = packageManager;

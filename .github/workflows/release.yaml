@@ -73,6 +73,17 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Dependencies
+        if: steps.check-version.outputs.exists == 'false'
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: release-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            release-${{ runner.os }}-bun-
+
       - name: Install Dependencies
         if: steps.check-version.outputs.exists == 'false'
         run: bun install --frozen-lockfile

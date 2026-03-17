@@ -154,5 +154,36 @@ export function processAIDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
         dependencies: ["llamaindex"],
       });
       break;
+
+    case "tanstack-ai":
+      addPackageDependency({
+        vfs,
+        packagePath: serverPath,
+        dependencies: ["@tanstack/ai"],
+      });
+      if (frontendPath && webFrontend) {
+        const reactFrontends = [
+          "tanstack-router",
+          "react-router",
+          "react-vite",
+          "tanstack-start",
+          "next",
+          "redwood",
+        ];
+        if (reactFrontends.includes(webFrontend)) {
+          addPackageDependency({
+            vfs,
+            packagePath: frontendPath,
+            dependencies: ["@tanstack/ai-react"],
+          });
+        } else if (webFrontend === "solid" || webFrontend === "solid-start") {
+          addPackageDependency({
+            vfs,
+            packagePath: frontendPath,
+            dependencies: ["@tanstack/ai-solid"],
+          });
+        }
+      }
+      break;
   }
 }

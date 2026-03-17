@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { StackSearchParams } from "@/lib/stack-search-schema";
 
+import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
 import { stackUrlKeys } from "@/lib/stack-url-keys";
 
-// Parse search params to StackState (used on server side)
 export function loadStackParams(
   searchParams:
     | Record<string, string | string[] | undefined>
@@ -89,27 +89,23 @@ export function loadStackParams(
       webDeploy: getString("webDeploy", DEFAULT_STACK.webDeploy),
       serverDeploy: getString("serverDeploy", DEFAULT_STACK.serverDeploy),
       yolo: getString("yolo", DEFAULT_STACK.yolo),
-      // Rust ecosystem fields
       rustWebFramework: getString("rustWebFramework", DEFAULT_STACK.rustWebFramework),
       rustFrontend: getString("rustFrontend", DEFAULT_STACK.rustFrontend),
       rustOrm: getString("rustOrm", DEFAULT_STACK.rustOrm),
       rustApi: getString("rustApi", DEFAULT_STACK.rustApi),
       rustCli: getString("rustCli", DEFAULT_STACK.rustCli),
       rustLibraries: getString("rustLibraries", DEFAULT_STACK.rustLibraries),
-      // Python ecosystem fields
       pythonWebFramework: getString("pythonWebFramework", DEFAULT_STACK.pythonWebFramework),
       pythonOrm: getString("pythonOrm", DEFAULT_STACK.pythonOrm),
       pythonValidation: getString("pythonValidation", DEFAULT_STACK.pythonValidation),
       pythonAi: getString("pythonAi", DEFAULT_STACK.pythonAi),
       pythonTaskQueue: getString("pythonTaskQueue", DEFAULT_STACK.pythonTaskQueue),
       pythonQuality: getString("pythonQuality", DEFAULT_STACK.pythonQuality),
-      // Go ecosystem fields
       goWebFramework: getString("goWebFramework", DEFAULT_STACK.goWebFramework),
       goOrm: getString("goOrm", DEFAULT_STACK.goOrm),
       goApi: getString("goApi", DEFAULT_STACK.goApi),
       goCli: getString("goCli", DEFAULT_STACK.goCli),
       goLogging: getString("goLogging", DEFAULT_STACK.goLogging),
-      // AI Docs
       aiDocs: getArray("aiDocs", DEFAULT_STACK.aiDocs),
     });
   };
@@ -120,7 +116,6 @@ export function loadStackParams(
   return parseSync(searchParams);
 }
 
-// Serialize StackState to URL string
 export function serializeStackParams(basePath: string, stack: StackState): string {
   const params = new URLSearchParams();
 
@@ -190,27 +185,23 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("webDeploy", stack.webDeploy);
   addParam("serverDeploy", stack.serverDeploy);
   addParam("yolo", stack.yolo);
-  // Rust ecosystem fields
   addParam("rustWebFramework", stack.rustWebFramework);
   addParam("rustFrontend", stack.rustFrontend);
   addParam("rustOrm", stack.rustOrm);
   addParam("rustApi", stack.rustApi);
   addParam("rustCli", stack.rustCli);
   addParam("rustLibraries", stack.rustLibraries);
-  // Python ecosystem fields
   addParam("pythonWebFramework", stack.pythonWebFramework);
   addParam("pythonOrm", stack.pythonOrm);
   addParam("pythonValidation", stack.pythonValidation);
   addParam("pythonAi", stack.pythonAi);
   addParam("pythonTaskQueue", stack.pythonTaskQueue);
   addParam("pythonQuality", stack.pythonQuality);
-  // Go ecosystem fields
   addParam("goWebFramework", stack.goWebFramework);
   addParam("goOrm", stack.goOrm);
   addParam("goApi", stack.goApi);
   addParam("goCli", stack.goCli);
   addParam("goLogging", stack.goLogging);
-  // AI Docs
   addParam("aiDocs", stack.aiDocs);
 
   const queryString = params.toString();
@@ -219,7 +210,6 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
 
 export type LoadedStackState = StackState;
 
-// Convert from URL search params (short keys) to StackState
 function searchToStack(search: StackSearchParams | undefined): StackState {
   if (!search) return DEFAULT_STACK;
 
@@ -276,21 +266,18 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     webDeploy: search.wd ?? DEFAULT_STACK.webDeploy,
     serverDeploy: search.sd ?? DEFAULT_STACK.serverDeploy,
     yolo: search.yolo ?? DEFAULT_STACK.yolo,
-    // Rust ecosystem fields
     rustWebFramework: search.rwf ?? DEFAULT_STACK.rustWebFramework,
     rustFrontend: search.rfe ?? DEFAULT_STACK.rustFrontend,
     rustOrm: search.rorm ?? DEFAULT_STACK.rustOrm,
     rustApi: search.rapi ?? DEFAULT_STACK.rustApi,
     rustCli: search.rcli ?? DEFAULT_STACK.rustCli,
     rustLibraries: search.rlib ?? DEFAULT_STACK.rustLibraries,
-    // Python ecosystem fields
     pythonWebFramework: search.pwf ?? DEFAULT_STACK.pythonWebFramework,
     pythonOrm: search.porm ?? DEFAULT_STACK.pythonOrm,
     pythonValidation: search.pval ?? DEFAULT_STACK.pythonValidation,
     pythonAi: search.pai ?? DEFAULT_STACK.pythonAi,
     pythonTaskQueue: search.ptq ?? DEFAULT_STACK.pythonTaskQueue,
     pythonQuality: search.pq ?? DEFAULT_STACK.pythonQuality,
-    // Go ecosystem fields
     goWebFramework: search.gwf ?? DEFAULT_STACK.goWebFramework,
     goOrm: search.gorm ?? DEFAULT_STACK.goOrm,
     goApi: search.gapi ?? DEFAULT_STACK.goApi,
@@ -300,26 +287,40 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
 }
 
 export function useStackState() {
-  // Always initialize with DEFAULT_STACK to avoid hydration mismatch.
   const [stack, setStackState] = useState<StackState>(DEFAULT_STACK);
-  const [viewMode, setViewModeState] = useState<"command" | "preview">("command");
+  const [viewMode, setViewModeState] = useState<"command" | "preview" | "presets">("command");
   const [selectedFile, setSelectedFileState] = useState<string>("");
   const initialized = useRef(false);
 
-  // Get search params from the route.
   // @ts-expect-error - route path typing with strict: false
   const search = useSearch({ from: "/new", strict: false }) as StackSearchParams | undefined;
 
-  // Initialize from URL on client mount only (for shared links).
   useEffect(() => {
     if (!initialized.current && search) {
       initialized.current = true;
-      const initialStack = searchToStack(search);
-      setStackState(initialStack);
+
+      const presetId = search.preset;
+      const preset = presetId
+        ? PRESET_TEMPLATES.find((t) => t.id === presetId)
+        : undefined;
+
+      if (preset) {
+        setStackState({ ...DEFAULT_STACK, ...preset.stack } as StackState);
+      } else {
+        setStackState(searchToStack(search));
+      }
+
       setViewModeState(search.view || "command");
       setSelectedFileState(search.file || "");
     }
   }, [search]);
+
+  // Sync view mode when search params change after initial mount (e.g. navbar links)
+  useEffect(() => {
+    if (initialized.current && search?.view) {
+      setViewModeState(search.view);
+    }
+  }, [search?.view]);
 
   const updateStack = useCallback(
     (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => {
@@ -331,7 +332,7 @@ export function useStackState() {
     [],
   );
 
-  const setViewMode = useCallback((mode: "command" | "preview") => {
+  const setViewMode = useCallback((mode: "command" | "preview" | "presets") => {
     setViewModeState(mode);
   }, []);
 

@@ -79,6 +79,11 @@ export const AddonsSchema = z
     "wxt",
     "msw",
     "storybook",
+    "tanstack-query",
+    "tanstack-table",
+    "tanstack-virtual",
+    "tanstack-db",
+    "tanstack-pacer",
     "none",
   ])
   .describe("Additional addons");
@@ -87,7 +92,7 @@ export const ExamplesSchema = z
   .enum(["ai", "chat-sdk", "none"])
   .describe("Example templates to include");
 
-export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun"]).describe("Package manager");
+export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun", "yarn"]).describe("Package manager");
 
 export const DatabaseSetupSchema = z
   .enum([
@@ -142,6 +147,7 @@ export const AISchema = z
     "modelfusion",
     "langchain",
     "llamaindex",
+    "tanstack-ai",
     "none",
   ])
   .describe("AI SDK");
