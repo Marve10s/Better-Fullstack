@@ -24,10 +24,18 @@ export type VersionInfo = {
   source?: string;
 };
 
+export type VersionMismatch = {
+  name: string;
+  mapVersion: string;
+  templateVersion: string;
+  file: string;
+};
+
 export type CheckResult = {
   outdated: VersionInfo[];
   upToDate: VersionInfo[];
   errors: { name: string; error: string }[];
+  versionMismatches?: VersionMismatch[];
 };
 
 export type NpmPackageInfo = {
@@ -236,12 +244,31 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   ],
 };
 
+// Fields that look like deps but aren't
+const SKIP_FIELDS = new Set([
+  "name", "version", "private", "type", "main", "module", "types",
+  "exports", "scripts", "workspaces", "engines", "packageManager",
+  "author", "license", "description", "homepage", "repository",
+  "bugs", "keywords", "files", "sideEffects", "browserslist",
+  "eslintConfig", "prettier", "jest", "babel",
+]);
+
+const DEP_PATTERN = /"(@?[a-z][a-z0-9._-]*(?:\/[a-z][a-z0-9._-]*)?)"\s*:\s*"([~^]?[\d][^"]+)"/g;
+
 /**
  * Scan package.json.hbs template files for hardcoded dependency versions
- * that are NOT already tracked in dependencyVersionMap.
+ * not already tracked in dependencyVersionMap.
+ * Also returns packages that exist in both but with different versions.
  */
-export function scanTemplateVersions(templatesDir: string): Record<string, string> {
-  const templateVersions: Record<string, string> = {};
+export function scanTemplateVersions(templatesDir: string): {
+  /** Packages only in templates (not in version map) */
+  templateOnly: Record<string, string>;
+  /** Packages in both map and templates with different versions */
+  versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[];
+} {
+  const templateOnly: Record<string, string> = {};
+  const versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[] = [];
+  const seenMismatches = new Set<string>();
 
   function walkDir(dir: string) {
     let entries: fs.Dirent[];
@@ -260,44 +287,39 @@ export function scanTemplateVersions(templatesDir: string): Record<string, strin
     }
   }
 
-  // Fields that look like deps but aren't
-  const SKIP_FIELDS = new Set([
-    "name", "version", "private", "type", "main", "module", "types",
-    "exports", "scripts", "workspaces", "engines", "packageManager",
-    "author", "license", "description", "homepage", "repository",
-    "bugs", "keywords", "files", "sideEffects", "browserslist",
-    "eslintConfig", "prettier", "jest", "babel",
-  ]);
-
   function extractVersions(filePath: string) {
     const content = fs.readFileSync(filePath, "utf-8");
+    const relPath = path.relative(templatesDir, filePath);
 
-    // Match "package-name": "version" patterns, including scoped packages
-    // Skip Handlebars template variables like {{projectName}}
-    const depPattern = /"(@?[a-z][a-z0-9._-]*(?:\/[a-z][a-z0-9._-]*)?)"\s*:\s*"([~^]?[\d][^"]+)"/g;
+    DEP_PATTERN.lastIndex = 0;
     let match;
 
-    while ((match = depPattern.exec(content)) !== null) {
+    while ((match = DEP_PATTERN.exec(content)) !== null) {
       const [, pkg, version] = match;
       if (!pkg || !version) continue;
 
       // Skip non-dependency fields
       if (SKIP_FIELDS.has(pkg)) continue;
 
-      // Skip if already in dependencyVersionMap
-      if (pkg in dependencyVersionMap) continue;
-
-      // Track the version; if same package appears in multiple templates,
-      // keep the highest version
-      const existing = templateVersions[pkg];
-      if (!existing || compareVersions(version, existing) > 0) {
-        templateVersions[pkg] = version;
+      if (pkg in dependencyVersionMap) {
+        // Track mismatches between map and template
+        const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
+        if (mapVersion !== version && !seenMismatches.has(`${pkg}|${version}`)) {
+          seenMismatches.add(`${pkg}|${version}`);
+          versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
+        }
+      } else {
+        // Package only in template — track highest version
+        const existing = templateOnly[pkg];
+        if (!existing || compareVersions(version, existing) > 0) {
+          templateOnly[pkg] = version;
+        }
       }
     }
   }
 
   walkDir(templatesDir);
-  return templateVersions;
+  return { templateOnly, versionMismatches };
 }
 
 /**
@@ -810,6 +832,17 @@ export function generateMarkdownReport(result: CheckResult): string {
     }
   }
 
+  // Version mismatches between map and templates
+  if (result.versionMismatches && result.versionMismatches.length > 0) {
+    lines.push("## Version Mismatches (map vs template)\n");
+    lines.push("| Package | Map Version | Template Version | Template File |");
+    lines.push("|---------|-------------|------------------|---------------|");
+    for (const m of result.versionMismatches) {
+      lines.push(`| ${m.name} | ${m.mapVersion} | ${m.templateVersion} | ${m.file} |`);
+    }
+    lines.push("");
+  }
+
   // Errors
   if (result.errors.length > 0) {
     lines.push("## Errors\n");
@@ -889,6 +922,13 @@ export function generateCliReport(result: CheckResult): string {
     }
   }
 
+  if (result.versionMismatches && result.versionMismatches.length > 0) {
+    lines.push("\nVersion Mismatches (map vs template):");
+    for (const m of result.versionMismatches) {
+      lines.push(`  ${m.name.padEnd(45)} map: ${m.mapVersion.padEnd(15)} template: ${m.templateVersion.padEnd(15)} ${m.file}`);
+    }
+  }
+
   if (result.errors.length > 0) {
     lines.push("\nErrors:");
     for (const err of result.errors) {
@@ -896,8 +936,9 @@ export function generateCliReport(result: CheckResult): string {
     }
   }
 
+  const mismatchCount = result.versionMismatches?.length ?? 0;
   lines.push(
-    `\nSummary: ${result.outdated.length} outdated, ${result.upToDate.length} up to date, ${result.errors.length} errors`,
+    `\nSummary: ${result.outdated.length} outdated, ${result.upToDate.length} up to date, ${mismatchCount} mismatches, ${result.errors.length} errors`,
   );
 
   return lines.join("\n");

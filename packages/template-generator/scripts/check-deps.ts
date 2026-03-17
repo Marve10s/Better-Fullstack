@@ -153,17 +153,30 @@ async function main() {
 
   // Scan template files for versions not in dependencyVersionMap
   const templatesDir = path.join(__dirname, "../templates");
-  const templateVersions = scanTemplateVersions(templatesDir);
-  const templateCount = Object.keys(templateVersions).length;
+  const { templateOnly, versionMismatches } = scanTemplateVersions(templatesDir);
+  const templateCount = Object.keys(templateOnly).length;
 
-  if (!structuredOutput && templateCount > 0) {
-    console.log(`Found ${templateCount} additional packages in template files\n`);
-  } else if (templateCount > 0) {
-    console.error(`Found ${templateCount} additional packages in template files`);
+  if (!structuredOutput) {
+    if (templateCount > 0) {
+      console.log(`Found ${templateCount} additional packages in template files`);
+    }
+    if (versionMismatches.length > 0) {
+      console.log(`Found ${versionMismatches.length} version mismatches between map and templates`);
+    }
+    if (templateCount > 0 || versionMismatches.length > 0) {
+      console.log("");
+    }
+  } else {
+    if (templateCount > 0) {
+      console.error(`Found ${templateCount} additional packages in template files`);
+    }
+    if (versionMismatches.length > 0) {
+      console.error(`Found ${versionMismatches.length} version mismatches between map and templates`);
+    }
   }
 
   const result = await checkAllVersions({
-    templateVersions,
+    templateVersions: templateOnly,
     ecosystem: options.ecosystem,
     concurrency: 5,
     delayMs: 100,
@@ -178,6 +191,9 @@ async function main() {
   if (showProgress) {
     process.stderr.write("\r" + " ".repeat(50) + "\r");
   }
+
+  // Attach version mismatches to the result for reporting
+  result.versionMismatches = versionMismatches;
 
   // Output results
   if (options.json) {
