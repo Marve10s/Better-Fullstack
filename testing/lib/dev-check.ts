@@ -12,16 +12,28 @@ const KILL_GRACE_MS = 3_000;
 
 const URL_REGEX = /https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0):(\d+)/g;
 
-function extractUrlFromOutput(text: string): string | null {
+function extractUrlFromOutput(text: string, expectedPort?: number): string | null {
   const matches = [...text.matchAll(URL_REGEX)];
-  const first = matches[0]?.[0];
-  if (!first) return null;
-  return first.replace("0.0.0.0", "localhost").replace("127.0.0.1", "localhost");
+  if (matches.length === 0) return null;
+
+  const normalize = (url: string) =>
+    url.replace("0.0.0.0", "localhost").replace("127.0.0.1", "localhost");
+
+  if (expectedPort) {
+    const preferred = matches.find((m) => m[1] === String(expectedPort));
+    if (preferred) return normalize(preferred[0]);
+    return null;
+  }
+
+  return normalize(matches[0]![0]);
+}
+
+function getExpectedPort(config: ProjectConfig): number {
+  return getLocalWebDevPort(config.frontend);
 }
 
 function getExpectedDevUrl(config: ProjectConfig): string {
-  const port = getLocalWebDevPort(config.frontend);
-  return `http://localhost:${port}`;
+  return `http://localhost:${getExpectedPort(config)}`;
 }
 
 const EXTERNAL_DB_TYPES = new Set([
@@ -57,7 +69,9 @@ const HTML_ERROR_PATTERNS = [
   /Error when evaluating SSR module/i,
   /\[vite\] Internal Server Error/i,
   /ServerError/i,
-  /hydration.*(?:mismatch|error)/i,
+  /Hydration failed/i,
+  /hydration mismatch/i,
+  /There was an error while hydrating/i,
 ];
 
 function validateHtmlResponse(
@@ -224,8 +238,9 @@ export async function runDevCheck(
         };
       }
 
+      const port = getExpectedPort(config);
       serverUrl =
-        extractUrlFromOutput(stdoutBuf) || extractUrlFromOutput(stderrBuf);
+        extractUrlFromOutput(stdoutBuf, port) || extractUrlFromOutput(stderrBuf, port);
     }
 
     if (!serverUrl) {
