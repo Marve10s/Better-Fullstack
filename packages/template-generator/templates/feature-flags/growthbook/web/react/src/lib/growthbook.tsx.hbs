@@ -5,6 +5,7 @@ import {
   useFeatureValue,
   useGrowthBook,
 } from "@growthbook/growthbook-react";
+import type { JSONValue } from "@growthbook/growthbook-react";
 import type { PropsWithChildren } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -98,8 +99,8 @@ export function useFeature(featureKey: string): boolean {
  *   return <button style=\{{ backgroundColor: buttonColor }}>Click me</button>;
  * }
  */
-export function useFeatureConfig<T>(featureKey: string, defaultValue: T): T {
-  return useFeatureValue(featureKey, defaultValue) as T;
+export function useFeatureConfig<T extends JSONValue>(featureKey: string, defaultValue: T) {
+  return useFeatureValue(featureKey, defaultValue);
 }
 
 /**
@@ -115,7 +116,7 @@ export function useFeatureConfig<T>(featureKey: string, defaultValue: T): T {
  *   return <PricingTable variation={variation} />;
  * }
  */
-export function useExperiment<T>(experiment: { key: string; variations: T[] }) {
+export function useExperiment<T>(experiment: { key: string; variations: [T, T, ...T[]] }) {
   const gb = useGrowthBook();
   return useMemo(() => {
     if (!gb) return { value: experiment.variations[0], variationId: 0 };
@@ -142,7 +143,7 @@ export function useTrackEvent() {
 
   return (eventName: string, properties?: Record<string, unknown>) => {
     if (gb) {
-      gb.track(eventName, properties);
+      gb.logEvent(eventName, properties);
     }
   };
 }

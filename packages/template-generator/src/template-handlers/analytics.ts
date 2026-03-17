@@ -4,6 +4,26 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { type TemplateData, processTemplatesFromPrefix } from "./utils";
 
+const REACT_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+]);
+
+const SVELTE_FRONTENDS = new Set(["svelte"]);
+const VUE_FRONTENDS = new Set(["nuxt"]);
+const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);
+
+function getAnalyticsTemplateVariant(frontend: readonly string[]): string | null {
+  if (frontend.some((f) => REACT_FRONTENDS.has(f))) return "react";
+  if (frontend.some((f) => SVELTE_FRONTENDS.has(f))) return "svelte";
+  if (frontend.some((f) => VUE_FRONTENDS.has(f))) return "vue";
+  if (frontend.some((f) => SOLID_FRONTENDS.has(f))) return "solid";
+  return null;
+}
+
 export async function processAnalyticsTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -11,25 +31,14 @@ export async function processAnalyticsTemplates(
 ): Promise<void> {
   if (!config.analytics || config.analytics === "none") return;
 
-  // Check if we have a web frontend (React-based)
-  const hasReactFrontend = config.frontend.some(
-    (f) =>
-      f === "tanstack-router" ||
-      f === "react-router" ||
-      f === "react-vite" ||
-      f === "tanstack-start" ||
-      f === "next",
-  );
+  const variant = getAnalyticsTemplateVariant(config.frontend);
+  if (!variant) return;
 
-  // Process client-side templates for React-based frontends
-  // Plausible is client-only, no server-side SDK
-  if (hasReactFrontend) {
-    processTemplatesFromPrefix(
-      vfs,
-      templates,
-      `analytics/${config.analytics}/web/react`,
-      "apps/web",
-      config,
-    );
-  }
+  processTemplatesFromPrefix(
+    vfs,
+    templates,
+    `analytics/${config.analytics}/web/${variant}`,
+    "apps/web",
+    config,
+  );
 }
