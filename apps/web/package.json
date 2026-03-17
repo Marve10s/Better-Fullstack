@@ -9,7 +9,7 @@
     "build": "vite build",
     "dev": "vite dev --port 3333",
     "start": "node .output/server/index.mjs",
-    "lint": "oxlint . && tsc --noEmit",
+    "lint": "oxlint -c ../../.oxlintrc.json . && tsc --noEmit",
     "test": "bun test ./test/*.test.ts",
     "typecheck": "tsc --noEmit",
     "validate:tech-links": "bun run scripts/validate-tech-resource-links.ts",
