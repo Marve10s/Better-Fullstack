@@ -1,6 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import type * as TsMorphTypes from "ts-morph";
 
 export async function processAuthPlugins(
   vfs: VirtualFileSystem,
@@ -9,7 +10,7 @@ export async function processAuthPlugins(
   const authIndexPath = "packages/auth/src/index.ts";
   if (!vfs.exists(authIndexPath)) return;
 
-  let tsMorph: typeof import("ts-morph");
+  let tsMorph: typeof TsMorphTypes;
   try {
     tsMorph = await import("ts-morph");
   } catch {

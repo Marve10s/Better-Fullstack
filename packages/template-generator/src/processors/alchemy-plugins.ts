@@ -1,8 +1,9 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import type * as TsMorphTypes from "ts-morph";
 
-let tsMorph: typeof import("ts-morph");
+let tsMorph: typeof TsMorphTypes;
 
 async function loadTsMorph(): Promise<boolean> {
   try {

@@ -84,6 +84,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
     } finally {
       setIsLoading(false);
     }
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [stack]);
 
   // Debounced fetch on stack change
