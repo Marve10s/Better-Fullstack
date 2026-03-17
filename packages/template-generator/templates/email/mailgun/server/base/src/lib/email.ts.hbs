@@ -1,4 +1,5 @@
 import Mailgun from "mailgun.js";
+import type { MailgunMessageData } from "mailgun.js";
 import FormData from "form-data";
 
 // Initialize Mailgun client
@@ -53,14 +54,14 @@ export async function sendEmail(options: SendEmailOptions) {
   const toAddresses = Array.isArray(to) ? to.join(",") : to;
 
   try {
-    const messageData: Record<string, unknown> = {
+    const messageData: MailgunMessageData = {
       from: fromAddress,
       to: toAddresses,
       subject,
+      text: text || "",
     };
 
     if (html) messageData.html = html;
-    if (text) messageData.text = text;
     if (replyTo) messageData["h:Reply-To"] = replyTo;
     if (cc) messageData.cc = Array.isArray(cc) ? cc.join(",") : cc;
     if (bcc) messageData.bcc = Array.isArray(bcc) ? bcc.join(",") : bcc;
@@ -120,15 +121,15 @@ export async function sendBatchEmails(
     const firstEmail = emails[0];
     if (!firstEmail) throw new Error("No emails provided");
 
-    const messageData: Record<string, unknown> = {
+    const messageData: MailgunMessageData = {
       from: fromAddress,
       to: recipients,
       subject: firstEmail.subject,
+      text: firstEmail.text || "",
       "recipient-variables": JSON.stringify(recipientVariables),
     };
 
     if (firstEmail.html) messageData.html = firstEmail.html;
-    if (firstEmail.text) messageData.text = firstEmail.text;
     if (commonOptions?.tags) messageData["o:tag"] = commonOptions.tags;
 
     const response = await mg.messages.create(DOMAIN, messageData);
@@ -158,7 +159,7 @@ export async function sendTemplateEmail(options: {
   const toAddresses = Array.isArray(to) ? to.join(",") : to;
 
   try {
-    const messageData: Record<string, unknown> = {
+    const messageData: MailgunMessageData = {
       from: fromAddress,
       to: toAddresses,
       template,
@@ -186,8 +187,10 @@ export async function validateEmail(email: string) {
   try {
     const result = await mg.validate.get(email);
     return {
-      valid: result.is_valid,
-      didYouMean: result.did_you_mean,
+      valid: result.result === "deliverable",
+      result: result.result,
+      risk: result.risk,
+      reason: result.reason,
       isDisposable: result.is_disposable_address,
       isRoleAddress: result.is_role_address,
     };

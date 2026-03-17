@@ -3,13 +3,9 @@
 import type { PropsWithChildren } from "react";
 import { createContext, useContext, useEffect, useMemo, useCallback, useState, useRef } from "react";
 
-// Umami configuration from environment variables
 {{#if (eq frontend.[0] "next")}}
 const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "";
 const umamiScriptUrl = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
-{{else if (eq frontend.[0] "nuxt")}}
-const umamiWebsiteId = process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || "";
-const umamiScriptUrl = process.env.NUXT_PUBLIC_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
 {{else}}
 const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID || "";
 const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
@@ -298,9 +294,6 @@ export function useUmamiStatus() {
 {{#if (eq frontend.[0] "next")}}
  * NEXT_PUBLIC_UMAMI_WEBSITE_ID - Your Umami website ID (required)
  * NEXT_PUBLIC_UMAMI_SCRIPT_URL - Umami script URL (default: https://cloud.umami.is/script.js)
-{{else if (eq frontend.[0] "nuxt")}}
- * NUXT_PUBLIC_UMAMI_WEBSITE_ID - Your Umami website ID (required)
- * NUXT_PUBLIC_UMAMI_SCRIPT_URL - Umami script URL (default: https://cloud.umami.is/script.js)
 {{else}}
  * VITE_UMAMI_WEBSITE_ID - Your Umami website ID (required)
  * VITE_UMAMI_SCRIPT_URL - Umami script URL (default: https://cloud.umami.is/script.js)

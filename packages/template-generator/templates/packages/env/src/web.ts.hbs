@@ -83,25 +83,25 @@ export const env = createEnv({
 {{else if (ne backend "none")}}
 {{#if (includes frontend "next")}}
 	client: {
-		NEXT_PUBLIC_SERVER_URL: z.url(),
+		NEXT_PUBLIC_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
 	runtimeEnv: {
 		NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL,
 	},
 {{else if (includes frontend "nuxt")}}
 	client: {
-		NUXT_PUBLIC_SERVER_URL: z.url(),
+		NUXT_PUBLIC_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
 {{else if (includes frontend "svelte")}}
 	clientPrefix: "PUBLIC_",
 	client: {
-		PUBLIC_SERVER_URL: z.url(),
+		PUBLIC_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
 	runtimeEnv: (import.meta as any).env,
 {{else}}
 	clientPrefix: "VITE_",
 	client: {
-		VITE_SERVER_URL: z.url(),
+		VITE_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
 	runtimeEnv: (import.meta as any).env,
 {{/if}}

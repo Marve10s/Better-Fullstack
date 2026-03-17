@@ -1,0 +1,121 @@
+import { browser } from "$app/environment";
+
+{{#if (eq frontend.[0] "svelte")}}
+const umamiWebsiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID || "";
+const umamiScriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js";
+{{/if}}
+
+declare global {
+  interface Window {
+    umami?: {
+      track: {
+        (): void;
+        (eventName: string): void;
+        (eventName: string, eventData: Record<string, string | number | boolean>): void;
+        (callback: (props: UmamiPayload) => UmamiPayload): void;
+      };
+      identify: {
+        (uniqueId: string): void;
+        (uniqueId: string, data: Record<string, string | number | boolean>): void;
+        (data: Record<string, string | number | boolean>): void;
+      };
+    };
+  }
+}
+
+interface UmamiPayload {
+  hostname: string;
+  language: string;
+  referrer: string;
+  screen: string;
+  title: string;
+  url: string;
+  website: string;
+}
+
+let scriptLoaded = false;
+
+export function initUmami(options?: {
+  autoPageviews?: boolean;
+  domains?: string;
+  doNotTrack?: boolean;
+  tag?: string;
+}) {
+  if (!browser || !umamiWebsiteId || scriptLoaded) return;
+
+  const existingScript = document.querySelector(`script[src="${umamiScriptUrl}"]`);
+  if (existingScript) {
+    scriptLoaded = true;
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = umamiScriptUrl;
+  script.defer = true;
+  script.setAttribute("data-website-id", umamiWebsiteId);
+
+  if (options?.autoPageviews === false) {
+    script.setAttribute("data-auto-track", "false");
+  }
+  if (options?.domains) {
+    script.setAttribute("data-domains", options.domains);
+  }
+  if (options?.doNotTrack) {
+    script.setAttribute("data-do-not-track", "true");
+  }
+  if (options?.tag) {
+    script.setAttribute("data-tag", options.tag);
+  }
+
+  script.onload = () => {
+    scriptLoaded = true;
+  };
+
+  document.head.appendChild(script);
+}
+
+export function trackEvent(
+  eventName: string,
+  eventData?: Record<string, string | number | boolean>,
+) {
+  if (!browser || !window.umami) return;
+  if (eventData) {
+    window.umami.track(eventName, eventData);
+  } else {
+    window.umami.track(eventName);
+  }
+}
+
+export function trackPageview(options?: { url?: string; title?: string; referrer?: string }) {
+  if (!browser || !window.umami) return;
+  if (options) {
+    window.umami.track((props) => ({
+      ...props,
+      ...(options.url && { url: options.url }),
+      ...(options.title && { title: options.title }),
+      ...(options.referrer && { referrer: options.referrer }),
+    }));
+  } else {
+    window.umami.track();
+  }
+}
+
+export function identify(
+  uniqueIdOrData: string | Record<string, string | number | boolean>,
+  data?: Record<string, string | number | boolean>,
+) {
+  if (!browser || !window.umami) return;
+  if (typeof uniqueIdOrData === "string") {
+    if (data) {
+      window.umami.identify(uniqueIdOrData, data);
+    } else {
+      window.umami.identify(uniqueIdOrData);
+    }
+  } else {
+    window.umami.identify(uniqueIdOrData);
+  }
+}
+
+export function isConfigured() {
+  return !!umamiWebsiteId;
+}
