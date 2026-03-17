@@ -25,6 +25,7 @@ import { processFeatureFlagsDeps } from "./feature-flags-deps";
 import { processFileStorageDeps } from "./file-storage-deps";
 import { processFileUploadDeps } from "./file-upload-deps";
 import { processFormsDeps } from "./forms-deps";
+import { processFrontendDeps } from "./frontend-deps";
 import { processInfraDeps } from "./infra-deps";
 import { processJobQueueDeps } from "./job-queue-deps";
 import { processLoggingDeps } from "./logging-deps";
@@ -43,6 +44,7 @@ import { processWorkspaceDeps } from "./workspace-deps";
 
 export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfig): void {
   processWorkspaceDeps(vfs, config);
+  processFrontendDeps(vfs, config);
   processEnvDeps(vfs, config);
   processInfraDeps(vfs, config);
   processDatabaseDeps(vfs, config);
@@ -98,6 +100,7 @@ export {
   processFileUploadDeps,
   processExamplesDeps,
   processFormsDeps,
+  processFrontendDeps,
   processInfraDeps,
   processJobQueueDeps,
   processLoggingDeps,

@@ -1,26 +1,19 @@
 {
-  "name": "web",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "qwik build",
-    "build.client": "vite build",
-    "build.preview": "vite build --ssr src/entry.preview.tsx",
-    "build.types": "tsc --incremental --noEmit",
-    "dev": "vite --mode ssr",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "preview": "qwik build preview && vite preview --open",
-    "start": "vite --open --mode ssr",
-    "qwik": "qwik"
-  },
-  "dependencies": {
-    "@builder.io/qwik": "~1.18.0",
-    "@builder.io/qwik-city": "~1.18.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.14",
-    "typescript": "^5.7.3",
-    "vite": "^6.3.5",
-    "vite-tsconfig-paths": "^5.1.4"
-  }
+	"name": "web",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "qwik build",
+		"build.client": "vite build",
+		"build.preview": "vite build --ssr src/entry.preview.tsx",
+		"build.types": "tsc --incremental --noEmit",
+		"dev": "vite --mode ssr",
+		"dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+		"preview": "qwik build preview && vite preview --open",
+		"start": "vite --open --mode ssr",
+		"qwik": "qwik"
+	},
+	"dependencies": {},
+	"devDependencies": {}
 }

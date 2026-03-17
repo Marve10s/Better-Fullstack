@@ -152,6 +152,16 @@ export const dependencyVersionMap = {
 
   turbo: "^2.6.3",
 
+  // Build tools
+  vite: "^7.2.7",
+  "@vitejs/plugin-react": "^5.0.4",
+  "vite-plugin-solid": "^2.11.8",
+  "vite-tsconfig-paths": "^5.1.4",
+  tailwindcss: "^4.1.18",
+  "@tailwindcss/vite": "^4.1.18",
+  "@tailwindcss/postcss": "^4.1.10",
+  postcss: "^8.5.3",
+
   // Chat SDK (Vercel)
   chat: "^4.14.0",
   "@chat-adapter/slack": "^4.15.0",
@@ -225,6 +235,15 @@ export const dependencyVersionMap = {
 
   next: "^16.1.1",
 
+  // React Router framework
+  "react-router": "^7.10.1",
+  "@react-router/dev": "^7.10.1",
+  "@react-router/fs-routes": "^7.10.1",
+  "@react-router/node": "^7.10.1",
+  "@react-router/serve": "^7.10.1",
+  "react-router-devtools": "^1.1.0",
+  isbot: "^5.1.28",
+
   convex: "^1.31.2",
   "@convex-dev/react-query": "^0.1.0",
   "@convex-dev/agent": "^0.3.2",
@@ -241,11 +260,17 @@ export const dependencyVersionMap = {
 
   "@tanstack/react-query-devtools": "^5.91.3",
   "@tanstack/react-query": "^5.90.21",
+  "@tanstack/react-router": "^1.154.3",
+  "@tanstack/react-router-devtools": "^1.154.3",
+  "@tanstack/react-router-with-query": "^1.130.17",
   "@tanstack/react-router-ssr-query": "^1.163.3",
+  "@tanstack/react-start": "^1.154.3",
+  "@tanstack/router-plugin": "^1.154.3",
   "@tanstack/router-cli": "^1.164.0",
 
   "@tanstack/solid-query": "^5.90.23",
   "@tanstack/solid-query-devtools": "^5.91.3",
+  "@tanstack/solid-router": "^1.154.3",
   "@tanstack/solid-router-devtools": "^1.163.3",
 
   "@tanstack/angular-query-experimental": "^5.90.0",
@@ -313,7 +338,10 @@ export const dependencyVersionMap = {
   "@react-email/components": "^1.0.9",
   "react-email": "^5.2.9",
   react: "^19.2.3",
+  "react-dom": "^19.2.3",
   "@types/react": "^19.2.7",
+  "@types/react-dom": "^19.2.3",
+  "babel-plugin-react-compiler": "^1.0.0",
   nodemailer: "^6.10.1",
   "@types/nodemailer": "^6.4.17",
   postmark: "^4.0.5",
@@ -383,6 +411,7 @@ export const dependencyVersionMap = {
 
   // Base UI
   "@base-ui-components/react": "^1.0.0-rc.0",
+  "@base-ui/react": "^1.0.0",
 
   // shadcn/ui core and unified packages
   shadcn: "^3.6.2",
@@ -420,6 +449,13 @@ export const dependencyVersionMap = {
   // React Aria (Adobe's accessible components for React)
   "react-aria-components": "^1.15.1",
 
+  "next-themes": "^0.4.6",
+  sonner: "^2.0.5",
+  "@hookform/resolvers": "^5.1.1",
+  "web-vitals": "^5.0.3",
+  tslib: "^2.8.1",
+  "zone.js": "^0.15.0",
+
   daisyui: "^5.0.0",
 
   // Qwik
@@ -439,6 +475,82 @@ export const dependencyVersionMap = {
   "@angular-devkit/build-angular": "^19.2.0",
   "@angular/cli": "^19.2.0",
   "@angular/compiler-cli": "^19.2.0",
+
+  // Astro
+  astro: "^5.7.10",
+  "@astrojs/react": "^4.2.1",
+  "@astrojs/vue": "^5.0.6",
+  "@astrojs/svelte": "^7.0.8",
+  "@astrojs/solid-js": "^5.0.6",
+  "@astrojs/node": "^9.1.3",
+  "@astrojs/cloudflare": "^12.3.1",
+
+  // Svelte / SvelteKit
+  svelte: "^5.38.1",
+  "svelte-check": "^4.3.1",
+  "@sveltejs/kit": "^2.31.1",
+  "@sveltejs/vite-plugin-svelte": "^6.1.2",
+  "@sveltejs/adapter-auto": "^6.1.0",
+
+  // Nuxt / Vue
+  nuxt: "^4.1.2",
+  vue: "^3.5.21",
+  "vue-router": "^4.5.1",
+  "@nuxt/ui": "4.2.1",
+  "@nuxt/content": "^3.7.1",
+  "@nuxtjs/mdc": "^0.17.4",
+  "@iconify-json/lucide": "^1.2.57",
+
+  // Solid
+  "solid-js": "^1.9.9",
+  "@solidjs/meta": "^0.29.4",
+  "@solidjs/router": "^0.15.3",
+  "@solidjs/start": "^1.1.0",
+  vinxi: "^0.5.3",
+  "lucide-solid": "^0.544.0",
+
+  // React Native / Expo
+  expo: "^54.0.23",
+  "expo-constants": "~18.0.10",
+  "expo-crypto": "~15.0.6",
+  "expo-dev-client": "~6.0.11",
+  "expo-font": "~14.0.9",
+  "expo-haptics": "^15.0.7",
+  "expo-linking": "~8.0.8",
+  "expo-navigation-bar": "~5.0.8",
+  "expo-network": "~8.0.7",
+  "expo-router": "~6.0.14",
+  "expo-secure-store": "~15.0.7",
+  "expo-splash-screen": "~31.0.8",
+  "expo-status-bar": "~3.0.8",
+  "expo-system-ui": "~6.0.7",
+  "expo-web-browser": "~15.0.6",
+  "@expo/vector-icons": "^15.0.3",
+  "@expo/metro-runtime": "~6.1.2",
+  "react-native": "0.81.5",
+  "react-native-edge-to-edge": "^1.7.0",
+  "react-native-gesture-handler": "^2.28.0",
+  "react-native-keyboard-controller": "1.18.5",
+  "react-native-nitro-modules": "^0.29.4",
+  "react-native-reanimated": "~4.1.1",
+  "react-native-safe-area-context": "~5.6.0",
+  "react-native-screens": "~4.16.0",
+  "react-native-svg": "15.12.1",
+  "react-native-unistyles": "^3.0.12",
+  "react-native-web": "^0.21.0",
+  "react-native-worklets": "0.5.1",
+  "@react-navigation/native": "^7.1.6",
+  "@react-navigation/bottom-tabs": "^7.3.10",
+  "@react-navigation/drawer": "^7.3.9",
+  "@react-navigation/elements": "^2.8.1",
+  "@gorhom/bottom-sheet": "^5",
+  "heroui-native": "^1.0.0-beta.9",
+  uniwind: "^1.2.2",
+  "tailwind-variants": "^3.2.2",
+  "@stardazed/streams-text-encoding": "^1.0.2",
+  "@ungap/structured-clone": "^1.3.0",
+  "@babel/core": "^7.28.0",
+  ajv: "^8.17.1",
 
   // State management
   zustand: "^5.0.5",
@@ -474,6 +586,7 @@ export const dependencyVersionMap = {
   "@modular-forms/qwik": "^0.29.1",
   "@tanstack/react-form": "^1.28.3",
   "@tanstack/solid-form": "^1.28.3",
+  "@tanstack/svelte-form": "^1.19.2",
 
   // Real-time/WebSocket
   "socket.io": "^4.8.3",
