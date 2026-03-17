@@ -75,6 +75,24 @@ jobs:
                 try {
                   original = JSON.parse(execSync('git show HEAD:$f', { encoding: 'utf-8' }));
                 } catch { process.exit(0); }
+
+                function parseSemver(v) {
+                  const clean = String(v).replace(/^[\^~>=<]+/, '');
+                  const [core] = clean.split('-');
+                  const [major, minor, patch] = (core || '').split('.').map(Number);
+                  const prerelease = clean.includes('-');
+                  return { major: major || 0, minor: minor || 0, patch: patch || 0, prerelease };
+                }
+
+                function isBreaking(oldV, newV) {
+                  const o = parseSemver(oldV);
+                  const n = parseSemver(newV);
+                  if (n.prerelease) return true;
+                  if (n.major > o.major) return true;
+                  if (o.major === 0 && n.minor > o.minor) return true;
+                  return false;
+                }
+
                 let reverted = false;
                 for (const key of ['dependencies', 'devDependencies']) {
                   const orig = original[key] || {};
@@ -82,9 +100,7 @@ jobs:
                   for (const [pkg, oldVer] of Object.entries(orig)) {
                     const newVer = curr[pkg];
                     if (!newVer || newVer === oldVer) continue;
-                    const oldMajor = parseInt(String(oldVer).replace(/^[\\^~>=<]+/, ''));
-                    const newMajor = parseInt(String(newVer).replace(/^[\\^~>=<]+/, ''));
-                    if (!isNaN(oldMajor) && !isNaN(newMajor) && newMajor > oldMajor) {
+                    if (isBreaking(oldVer, newVer)) {
                       curr[pkg] = oldVer;
                       reverted = true;
                     }
