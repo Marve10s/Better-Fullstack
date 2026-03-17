@@ -151,7 +151,6 @@ async function main() {
     console.error("Checking dependency versions...");
   }
 
-  // Scan template files for versions not in dependencyVersionMap
   const templatesDir = path.join(__dirname, "../templates");
   const { templateOnly, versionMismatches } = scanTemplateVersions(templatesDir);
   const templateCount = Object.keys(templateOnly).length;
@@ -192,7 +191,6 @@ async function main() {
     process.stderr.write("\r" + " ".repeat(50) + "\r");
   }
 
-  // Attach version mismatches to the result for reporting
   result.versionMismatches = versionMismatches;
 
   // Output results

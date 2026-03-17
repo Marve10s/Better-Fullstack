@@ -1,8 +1,7 @@
 /**
  * Dependency Version Checker
  *
- * Core library for checking and updating dependency versions in add-deps.ts
- * and package.json.hbs template files.
+ * Core library for checking and updating dependency versions.
  * Used by both the CLI command and GitHub Action.
  */
 
@@ -20,7 +19,6 @@ export type VersionInfo = {
   latest: string;
   updateType: UpdateType;
   ecosystem?: string;
-  /** "map" for dependencyVersionMap, or file path for .hbs template */
   source?: string;
 };
 
@@ -244,7 +242,6 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   ],
 };
 
-// Fields that look like deps but aren't
 const SKIP_FIELDS = new Set([
   "name", "version", "private", "type", "main", "module", "types",
   "exports", "scripts", "workspaces", "engines", "packageManager",
@@ -255,15 +252,8 @@ const SKIP_FIELDS = new Set([
 
 const DEP_PATTERN = /"(@?[a-z][a-z0-9._-]*(?:\/[a-z][a-z0-9._-]*)?)"\s*:\s*"([~^]?[\d][^"]+)"/g;
 
-/**
- * Scan package.json.hbs template files for hardcoded dependency versions
- * not already tracked in dependencyVersionMap.
- * Also returns packages that exist in both but with different versions.
- */
 export function scanTemplateVersions(templatesDir: string): {
-  /** Packages only in templates (not in version map) */
   templateOnly: Record<string, string>;
-  /** Packages in both map and templates with different versions */
   versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[];
 } {
   const templateOnly: Record<string, string> = {};
@@ -298,18 +288,15 @@ export function scanTemplateVersions(templatesDir: string): {
       const [, pkg, version] = match;
       if (!pkg || !version) continue;
 
-      // Skip non-dependency fields
       if (SKIP_FIELDS.has(pkg)) continue;
 
       if (pkg in dependencyVersionMap) {
-        // Track mismatches between map and template
         const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
         if (mapVersion !== version && !seenMismatches.has(`${pkg}|${version}`)) {
           seenMismatches.add(`${pkg}|${version}`);
           versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
         }
       } else {
-        // Package only in template — track highest version
         const existing = templateOnly[pkg];
         if (!existing || compareVersions(version, existing) > 0) {
           templateOnly[pkg] = version;
@@ -322,9 +309,6 @@ export function scanTemplateVersions(templatesDir: string): {
   return { templateOnly, versionMismatches };
 }
 
-/**
- * Get all template files containing a specific package version
- */
 export function findTemplateFilesWithPackage(
   templatesDir: string,
   packageName: string,
@@ -618,9 +602,6 @@ export function groupByEcosystem(packages: string[]): Record<string, string[]> {
   return grouped;
 }
 
-/**
- * Check all versions in the dependency map and optionally template files
- */
 export async function checkAllVersions(options: {
   versionMap?: Record<string, string>;
   templateVersions?: Record<string, string>;
@@ -640,7 +621,6 @@ export async function checkAllVersions(options: {
     delayMs = 100,
   } = options;
 
-  // Merge both sources, tracking which source each package comes from
   const allPackages: Record<string, { version: string; source: string }> = {};
   for (const [pkg, version] of Object.entries(versionMap)) {
     allPackages[pkg] = { version, source: "map" };
@@ -832,7 +812,6 @@ export function generateMarkdownReport(result: CheckResult): string {
     }
   }
 
-  // Version mismatches between map and templates
   if (result.versionMismatches && result.versionMismatches.length > 0) {
     lines.push("## Version Mismatches (map vs template)\n");
     lines.push("| Package | Map Version | Template Version | Template File |");
