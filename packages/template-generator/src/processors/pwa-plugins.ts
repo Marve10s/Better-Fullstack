@@ -1,6 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import type * as TsMorphTypes from "ts-morph";
 
 export async function processPwaPlugins(
   vfs: VirtualFileSystem,
@@ -13,7 +14,7 @@ export async function processPwaPlugins(
   const viteConfigPath = "apps/web/vite.config.ts";
   if (!vfs.exists(viteConfigPath)) return;
 
-  let tsMorph: typeof import("ts-morph");
+  let tsMorph: typeof TsMorphTypes;
   try {
     tsMorph = await import("ts-morph");
   } catch {

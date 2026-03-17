@@ -125,17 +125,11 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                     const highlights = getPresetHighlights(preset.stack);
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={preset.id}
-                        role="button"
                         tabIndex={0}
                         onClick={() => onApplyPreset(preset.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onApplyPreset(preset.id);
-                          }
-                        }}
                         className={cn(
                           "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
                           active
@@ -144,12 +138,21 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                         )}
                       >
                         <div className="absolute top-3 right-3 flex items-center gap-1">
-                          <button
-                            type="button"
+                          {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role */}
+                          <span
+                            role="button" // eslint-disable-line
+                            tabIndex={0}
                             title="Customize preset"
                             onClick={(e) => {
                               e.stopPropagation();
                               onCustomizePreset(preset.id);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onCustomizePreset(preset.id);
+                              }
                             }}
                             className={cn(
                               "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors",
@@ -159,7 +162,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                             )}
                           >
                             <Pencil className="h-2.5 w-2.5" />
-                          </button>
+                          </span>
                           {active && (
                             <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
                               <Check className="h-3 w-3" />
@@ -190,7 +193,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                             </span>
                           ))}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

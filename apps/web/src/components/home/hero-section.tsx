@@ -20,6 +20,7 @@ export default function HeroSection() {
     navigator.clipboard.writeText(commands[selectedPM]).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      return;
     }).catch(() => {});
   };
 

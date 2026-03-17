@@ -3,7 +3,7 @@ import type {
   VirtualNode,
 } from "@better-fullstack/template-generator";
 
-import { parse as parseJsonc, ParseError, printParseErrorCode } from "jsonc-parser";
+import { parse as parseJsonc, type ParseError, printParseErrorCode } from "jsonc-parser";
 import { Project, DiagnosticCategory } from "ts-morph";
 
 // ============================================================================

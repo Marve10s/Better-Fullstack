@@ -114,7 +114,7 @@ export function createStackSearchParams(
       continue;
     }
 
-    if (value == null) {
+    if (value === undefined || value === null) {
       if (includeDefaults && typeof defaultValue === "string") {
         params.set(urlKey, defaultValue);
       }

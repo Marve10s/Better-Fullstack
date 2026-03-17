@@ -110,7 +110,7 @@ async function updateTemplateFiles(
   for (const update of templateUpdates) {
     const files = findTemplateFilesWithPackage(templatesDir, update.name);
     for (const { filePath } of files) {
-      let content = fs.readFileSync(filePath, "utf-8");
+      const content = fs.readFileSync(filePath, "utf-8");
       const escapedName = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const pattern = new RegExp(`("${escapedName}"\\s*:\\s*")([~^]?[\\d][^"]+)(")`, "g");
 
