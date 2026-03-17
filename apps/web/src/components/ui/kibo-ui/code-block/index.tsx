@@ -21,7 +21,7 @@ import {
   SiCircleci,
   SiCoffeescript,
   SiCplusplus,
-  SiCss3,
+  SiCss,
   SiCssmodules,
   SiDart,
   SiDocker,
@@ -221,7 +221,7 @@ const filenameIconMap = {
   ".circleci/config.yml": SiCircleci,
   "*.coffee": SiCoffeescript,
   "*.module.css": SiCssmodules,
-  "*.css": SiCss3,
+  "*.css": SiCss,
   "*.dart": SiDart,
   Dockerfile: SiDocker,
   "docusaurus.config.js": SiDocusaurus,
@@ -704,6 +704,7 @@ export const CodeBlockCopyButton = ({
       onCopy?.();
 
       setTimeout(() => setIsCopied(false), timeout);
+      return;
     }, onError);
   };
 

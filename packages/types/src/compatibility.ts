@@ -856,6 +856,16 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
+  // Redis is a key-value store without SQL support — better-auth requires SQL tables
+  if (nextStack.auth === "better-auth" && nextStack.database === "redis") {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
+    });
+  }
+
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1576,6 +1586,9 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
+    if (optionId === "better-auth" && currentStack.database === "redis") {
+      return "Better Auth requires a SQL database (not Redis)";
+    }
     return getCapabilityDisabledReason(
       "auth",
       {

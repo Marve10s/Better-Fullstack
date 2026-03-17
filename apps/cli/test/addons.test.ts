@@ -1,4 +1,6 @@
 import { describe, it, expect } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import type { Addons, Frontend } from "../src";
 
@@ -1265,6 +1267,361 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
       });
+    });
+  });
+
+  describe("TanStack AI SDK", () => {
+    describe("Compatible frontends (React and Solid)", () => {
+      it("should work with tanstack-ai + React frontend (tanstack-router)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tai-react",
+          ai: "tanstack-ai",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with tanstack-ai + Solid frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tai-solid",
+          ai: "tanstack-ai",
+          frontend: ["solid"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with tanstack-ai + Next.js (self backend)", async () => {
+        const result = await runTRPCTest({
+          projectName: "tai-next",
+          ai: "tanstack-ai",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+    });
+
+    describe("Dependency verification", () => {
+      it("should install @tanstack/ai on server and @tanstack/ai-react on web", async () => {
+        const result = await runTRPCTest({
+          projectName: "tai-deps-react",
+          ai: "tanstack-ai",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+
+        const projectDir = result.result?.projectDirectory ?? result.projectDir;
+        expect(projectDir).toBeDefined();
+
+        const serverPkg = JSON.parse(readFileSync(join(projectDir!, "apps/server/package.json"), "utf-8"));
+        expect(serverPkg.dependencies?.["@tanstack/ai"]).toBeDefined();
+
+        const webPkg = JSON.parse(readFileSync(join(projectDir!, "apps/web/package.json"), "utf-8"));
+        expect(webPkg.dependencies?.["@tanstack/ai-react"]).toBeDefined();
+      });
+
+      it("should install @tanstack/ai-solid on web for Solid frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "tai-deps-solid",
+          ai: "tanstack-ai",
+          frontend: ["solid"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+
+        const projectDir = result.result?.projectDirectory ?? result.projectDir;
+        expect(projectDir).toBeDefined();
+
+        const webPkg = JSON.parse(readFileSync(join(projectDir!, "apps/web/package.json"), "utf-8"));
+        expect(webPkg.dependencies?.["@tanstack/ai-solid"]).toBeDefined();
+      });
+
+    });
+
+    describe("Incompatible frontends", () => {
+      // TanStack AI requires React or Solid — all other frontends are rejected
+      const incompatibleCases = [
+        { frontend: "svelte" as Frontend, api: "orpc" as const, backend: "hono" as const, runtime: "bun" as const },
+        { frontend: "nuxt" as Frontend, api: "orpc" as const, backend: "hono" as const, runtime: "bun" as const },
+        { frontend: "angular" as Frontend, api: "none" as const, backend: "none" as const, runtime: "none" as const },
+        { frontend: "qwik" as Frontend, api: "none" as const, backend: "none" as const, runtime: "none" as const },
+        { frontend: "fresh" as Frontend, api: "none" as const, backend: "none" as const, runtime: "none" as const },
+        { frontend: "native-bare" as Frontend, api: "none" as const, backend: "hono" as const, runtime: "bun" as const },
+        { frontend: "native-uniwind" as Frontend, api: "none" as const, backend: "hono" as const, runtime: "bun" as const },
+        { frontend: "native-unistyles" as Frontend, api: "none" as const, backend: "hono" as const, runtime: "bun" as const },
+      ];
+
+      for (const { frontend, api, backend, runtime } of incompatibleCases) {
+        it(`should fail with tanstack-ai + ${frontend}`, async () => {
+          const result = await runTRPCTest({
+            projectName: `tai-${frontend}-fail`,
+            ai: "tanstack-ai",
+            frontend: [frontend],
+            backend,
+            runtime,
+            database: backend === "none" ? "none" : "sqlite",
+            orm: backend === "none" ? "none" : "drizzle",
+            auth: "none",
+            api,
+            addons: ["none"],
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            expectError: true,
+          });
+
+          expectError(result, "TanStack AI requires React or Solid frontend");
+        });
+      }
+    });
+
+    describe("Compatible frontend coverage", () => {
+      // All React-based and Solid frontends should work with TanStack AI
+      const compatibleCases: { frontend: Frontend; api: "trpc" | "orpc" | "none"; expectAdapter: string; backend?: "self" | "hono"; runtime?: "none" | "bun" }[] = [
+        { frontend: "tanstack-router", api: "none", expectAdapter: "@tanstack/ai-react" },
+        { frontend: "react-router", api: "none", expectAdapter: "@tanstack/ai-react" },
+        { frontend: "react-vite", api: "none", expectAdapter: "@tanstack/ai-react" },
+        { frontend: "tanstack-start", api: "orpc", expectAdapter: "@tanstack/ai-react", backend: "self", runtime: "none" },
+        { frontend: "next", api: "trpc", expectAdapter: "@tanstack/ai-react", backend: "self", runtime: "none" },
+        { frontend: "solid", api: "orpc", expectAdapter: "@tanstack/ai-solid" },
+        { frontend: "solid-start", api: "orpc", expectAdapter: "@tanstack/ai-solid", backend: "self", runtime: "none" },
+      ];
+
+      for (const { frontend, api, expectAdapter, backend: be, runtime: rt } of compatibleCases) {
+        it(`should install ${expectAdapter} for ${frontend}`, async () => {
+          const useSelf = be === "self";
+          const result = await runTRPCTest({
+            projectName: `tai-${frontend}`,
+            ai: "tanstack-ai",
+            frontend: [frontend as Frontend],
+            backend: useSelf ? "self" : "hono",
+            runtime: rt ?? "bun",
+            database: "sqlite",
+            orm: "drizzle",
+            auth: "none",
+            api,
+            addons: ["none"],
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+
+          const projectDir = result.result?.projectDirectory ?? result.projectDir;
+          expect(projectDir).toBeDefined();
+
+          // For self backends, @tanstack/ai core is in web package
+          // For separate backends, it's in server package
+          const serverPkgPath = useSelf
+            ? join(projectDir!, "apps/web/package.json")
+            : join(projectDir!, "apps/server/package.json");
+          const serverPkg = JSON.parse(readFileSync(serverPkgPath, "utf-8"));
+          expect(serverPkg.dependencies?.["@tanstack/ai"]).toBeDefined();
+
+          const webPkg = JSON.parse(readFileSync(join(projectDir!, "apps/web/package.json"), "utf-8"));
+          expect(webPkg.dependencies?.[expectAdapter]).toBeDefined();
+        });
+      }
+    });
+  });
+
+  describe("TanStack Showcase Example", () => {
+    it("should generate showcase files with tanstack-start", async () => {
+      const result = await runTRPCTest({
+        projectName: "showcase-start",
+        examples: ["tanstack-showcase"],
+        frontend: ["tanstack-start"],
+        backend: "self",
+        runtime: "none",
+        database: "postgres",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const projectDir = result.result?.projectDirectory ?? result.projectDir;
+      expect(projectDir).toBeDefined();
+
+      // Verify all 7 showcase route files exist
+      const showcaseDir = join(projectDir!, "apps/web/src/routes/showcase");
+      const expectedFiles = ["index.tsx", "query.tsx", "table.tsx", "virtual.tsx", "form.tsx", "store.tsx", "pacer.tsx"];
+      for (const file of expectedFiles) {
+        const content = readFileSync(join(showcaseDir, file), "utf-8");
+        expect(content.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("should install TanStack showcase dependencies", async () => {
+      const result = await runTRPCTest({
+        projectName: "showcase-deps",
+        examples: ["tanstack-showcase"],
+        frontend: ["tanstack-start"],
+        backend: "self",
+        runtime: "none",
+        database: "postgres",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const projectDir = result.result?.projectDirectory ?? result.projectDir;
+      const webPkg = JSON.parse(readFileSync(join(projectDir!, "apps/web/package.json"), "utf-8"));
+
+      expect(webPkg.dependencies?.["@tanstack/react-query"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/react-table"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/react-virtual"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/react-form"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/store"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/react-store"]).toBeDefined();
+      expect(webPkg.dependencies?.["@tanstack/react-pacer"]).toBeDefined();
+    });
+
+    it("should work with tanstack-router frontend", async () => {
+      const result = await runTRPCTest({
+        projectName: "showcase-router",
+        examples: ["tanstack-showcase"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const projectDir = result.result?.projectDirectory ?? result.projectDir;
+      const indexFile = readFileSync(join(projectDir!, "apps/web/src/routes/showcase/index.tsx"), "utf-8");
+      expect(indexFile).toContain("TanStack Ecosystem Showcase");
+    });
+
+    it("should fail with incompatible frontend (svelte)", async () => {
+      const result = await runTRPCTest({
+        projectName: "showcase-svelte-fail",
+        examples: ["tanstack-showcase"],
+        frontend: ["svelte"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "orpc",
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "tanstack-showcase' example requires TanStack Router or TanStack Start");
+    });
+
+    it("should fail with incompatible frontend (next)", async () => {
+      const result = await runTRPCTest({
+        projectName: "showcase-next-fail",
+        examples: ["tanstack-showcase"],
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "tanstack-showcase' example requires TanStack Router or TanStack Start");
     });
   });
 });

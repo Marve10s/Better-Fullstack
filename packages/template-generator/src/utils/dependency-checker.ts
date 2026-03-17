@@ -1,9 +1,12 @@
 /**
  * Dependency Version Checker
  *
- * Core library for checking and updating dependency versions in add-deps.ts.
+ * Core library for checking and updating dependency versions.
  * Used by both the CLI command and GitHub Action.
  */
+
+import fs from "node:fs";
+import path from "node:path";
 
 import { dependencyVersionMap } from "./add-deps";
 
@@ -16,12 +19,21 @@ export type VersionInfo = {
   latest: string;
   updateType: UpdateType;
   ecosystem?: string;
+  source?: string;
+};
+
+export type VersionMismatch = {
+  name: string;
+  mapVersion: string;
+  templateVersion: string;
+  file: string;
 };
 
 export type CheckResult = {
   outdated: VersionInfo[];
   upToDate: VersionInfo[];
   errors: { name: string; error: string }[];
+  versionMismatches?: VersionMismatch[];
 };
 
 export type NpmPackageInfo = {
@@ -229,6 +241,108 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
     "@temporalio/activity",
   ],
 };
+
+const SKIP_FIELDS = new Set([
+  "name", "version", "private", "type", "main", "module", "types",
+  "exports", "scripts", "workspaces", "engines", "packageManager",
+  "author", "license", "description", "homepage", "repository",
+  "bugs", "keywords", "files", "sideEffects", "browserslist",
+  "eslintConfig", "prettier", "jest", "babel",
+]);
+
+const DEP_PATTERN = /"(@?[a-z][a-z0-9._-]*(?:\/[a-z][a-z0-9._-]*)?)"\s*:\s*"([~^]?[\d][^"]+)"/g;
+
+export function scanTemplateVersions(templatesDir: string): {
+  templateOnly: Record<string, string>;
+  versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[];
+} {
+  const templateOnly: Record<string, string> = {};
+  const versionMismatches: { name: string; mapVersion: string; templateVersion: string; file: string }[] = [];
+  const seenMismatches = new Set<string>();
+
+  function walkDir(dir: string) {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walkDir(fullPath);
+      } else if (entry.name === "package.json.hbs") {
+        extractVersions(fullPath);
+      }
+    }
+  }
+
+  function extractVersions(filePath: string) {
+    const content = fs.readFileSync(filePath, "utf-8");
+    const relPath = path.relative(templatesDir, filePath);
+
+    DEP_PATTERN.lastIndex = 0;
+    let match;
+
+    while ((match = DEP_PATTERN.exec(content)) !== null) {
+      const [, pkg, version] = match;
+      if (!pkg || !version) continue;
+
+      if (SKIP_FIELDS.has(pkg)) continue;
+
+      if (pkg in dependencyVersionMap) {
+        const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
+        if (mapVersion !== version && !seenMismatches.has(`${pkg}|${version}`)) {
+          seenMismatches.add(`${pkg}|${version}`);
+          versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
+        }
+      } else {
+        const existing = templateOnly[pkg];
+        if (!existing || compareVersions(version, existing) > 0) {
+          templateOnly[pkg] = version;
+        }
+      }
+    }
+  }
+
+  walkDir(templatesDir);
+  return { templateOnly, versionMismatches };
+}
+
+export function findTemplateFilesWithPackage(
+  templatesDir: string,
+  packageName: string,
+): { filePath: string; version: string }[] {
+  const results: { filePath: string; version: string }[] = [];
+
+  function walkDir(dir: string) {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walkDir(fullPath);
+      } else if (entry.name === "package.json.hbs") {
+        const content = fs.readFileSync(fullPath, "utf-8");
+        const escapedName = packageName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const pattern = new RegExp(`"${escapedName}"\\s*:\\s*"([~^]?[\\d][^"]+)"`, "g");
+        let match;
+        while ((match = pattern.exec(content)) !== null) {
+          if (match[1]) {
+            results.push({ filePath: fullPath, version: match[1] });
+          }
+        }
+      }
+    }
+  }
+
+  walkDir(templatesDir);
+  return results;
+}
 
 // Cache for npm registry responses
 const versionCache = new Map<string, { latest: string; timestamp: number }>();
@@ -488,11 +602,9 @@ export function groupByEcosystem(packages: string[]): Record<string, string[]> {
   return grouped;
 }
 
-/**
- * Check all versions in the dependency map
- */
 export async function checkAllVersions(options: {
   versionMap?: Record<string, string>;
+  templateVersions?: Record<string, string>;
   filter?: string[];
   ecosystem?: string;
   concurrency?: number;
@@ -501,6 +613,7 @@ export async function checkAllVersions(options: {
 }): Promise<CheckResult> {
   const {
     versionMap = dependencyVersionMap,
+    templateVersions = {},
     filter,
     ecosystem,
     concurrency = 5,
@@ -508,7 +621,17 @@ export async function checkAllVersions(options: {
     delayMs = 100,
   } = options;
 
-  let packages = Object.keys(versionMap);
+  const allPackages: Record<string, { version: string; source: string }> = {};
+  for (const [pkg, version] of Object.entries(versionMap)) {
+    allPackages[pkg] = { version, source: "map" };
+  }
+  for (const [pkg, version] of Object.entries(templateVersions)) {
+    if (!(pkg in allPackages)) {
+      allPackages[pkg] = { version, source: "template" };
+    }
+  }
+
+  let packages = Object.keys(allPackages);
 
   // Filter by specific packages
   if (filter && filter.length > 0) {
@@ -548,18 +671,19 @@ export async function checkAllVersions(options: {
 
     const batchResults = await Promise.allSettled(
       batch.map(async (pkg) => {
-        const current = versionMap[pkg as keyof typeof versionMap];
+        const entry = allPackages[pkg]!;
         try {
           const latest = await fetchLatestVersion(pkg);
-          const updateType = getUpdateType(current, latest);
+          const updateType = getUpdateType(entry.version, latest);
           const ecosystem = getEcosystem(pkg);
 
           return {
             name: pkg,
-            current,
+            current: entry.version,
             latest: `^${latest}`,
             updateType,
             ecosystem,
+            source: entry.source,
           };
         } catch (error) {
           throw { name: pkg, error: String(error) };
@@ -614,7 +738,11 @@ export function generateMarkdownReport(result: CheckResult): string {
   // Summary
   lines.push("## Summary\n");
   const downgradeCount = result.outdated.filter((info) => info.updateType === "downgrade").length;
+  const templateOnlyCount = result.outdated.filter((info) => info.source === "template").length;
   lines.push(`- **Outdated**: ${result.outdated.length}`);
+  if (templateOnlyCount > 0) {
+    lines.push(`- **Template-only** (not in version map): ${templateOnlyCount}`);
+  }
   lines.push(`- **Downgrades detected**: ${downgradeCount}`);
   lines.push(`- **Up to date**: ${result.upToDate.length}`);
   lines.push(`- **Errors**: ${result.errors.length}\n`);
@@ -637,11 +765,11 @@ export function generateMarkdownReport(result: CheckResult): string {
 
     if (byType.downgrade.length > 0) {
       lines.push("### Downgrades Detected (Manual Review Required)\n");
-      lines.push("| Package | Current | Latest | Ecosystem |");
-      lines.push("|---------|---------|--------|-----------|");
+      lines.push("| Package | Current | Latest | Ecosystem | Source |");
+      lines.push("|---------|---------|--------|-----------|--------|");
       for (const info of byType.downgrade) {
         lines.push(
-          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} |`,
+          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} | ${info.source === "template" ? "template" : "map"} |`,
         );
       }
       lines.push("");
@@ -649,11 +777,11 @@ export function generateMarkdownReport(result: CheckResult): string {
 
     if (byType.major.length > 0) {
       lines.push("### Major Updates (Breaking Changes Possible)\n");
-      lines.push("| Package | Current | Latest | Ecosystem |");
-      lines.push("|---------|---------|--------|-----------|");
+      lines.push("| Package | Current | Latest | Ecosystem | Source |");
+      lines.push("|---------|---------|--------|-----------|--------|");
       for (const info of byType.major) {
         lines.push(
-          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} |`,
+          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} | ${info.source === "template" ? "template" : "map"} |`,
         );
       }
       lines.push("");
@@ -661,11 +789,11 @@ export function generateMarkdownReport(result: CheckResult): string {
 
     if (byType.minor.length > 0) {
       lines.push("### Minor Updates\n");
-      lines.push("| Package | Current | Latest | Ecosystem |");
-      lines.push("|---------|---------|--------|-----------|");
+      lines.push("| Package | Current | Latest | Ecosystem | Source |");
+      lines.push("|---------|---------|--------|-----------|--------|");
       for (const info of byType.minor) {
         lines.push(
-          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} |`,
+          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} | ${info.source === "template" ? "template" : "map"} |`,
         );
       }
       lines.push("");
@@ -673,15 +801,25 @@ export function generateMarkdownReport(result: CheckResult): string {
 
     if (byType.patch.length > 0) {
       lines.push("### Patch Updates\n");
-      lines.push("| Package | Current | Latest | Ecosystem |");
-      lines.push("|---------|---------|--------|-----------|");
+      lines.push("| Package | Current | Latest | Ecosystem | Source |");
+      lines.push("|---------|---------|--------|-----------|--------|");
       for (const info of byType.patch) {
         lines.push(
-          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} |`,
+          `| ${info.name} | ${info.current} | ${info.latest} | ${info.ecosystem || "-"} | ${info.source === "template" ? "template" : "map"} |`,
         );
       }
       lines.push("");
     }
+  }
+
+  if (result.versionMismatches && result.versionMismatches.length > 0) {
+    lines.push("## Version Mismatches (map vs template)\n");
+    lines.push("| Package | Map Version | Template Version | Template File |");
+    lines.push("|---------|-------------|------------------|---------------|");
+    for (const m of result.versionMismatches) {
+      lines.push(`| ${m.name} | ${m.mapVersion} | ${m.templateVersion} | ${m.file} |`);
+    }
+    lines.push("");
   }
 
   // Errors
@@ -763,6 +901,13 @@ export function generateCliReport(result: CheckResult): string {
     }
   }
 
+  if (result.versionMismatches && result.versionMismatches.length > 0) {
+    lines.push("\nVersion Mismatches (map vs template):");
+    for (const m of result.versionMismatches) {
+      lines.push(`  ${m.name.padEnd(45)} map: ${m.mapVersion.padEnd(15)} template: ${m.templateVersion.padEnd(15)} ${m.file}`);
+    }
+  }
+
   if (result.errors.length > 0) {
     lines.push("\nErrors:");
     for (const err of result.errors) {
@@ -770,8 +915,9 @@ export function generateCliReport(result: CheckResult): string {
     }
   }
 
+  const mismatchCount = result.versionMismatches?.length ?? 0;
   lines.push(
-    `\nSummary: ${result.outdated.length} outdated, ${result.upToDate.length} up to date, ${result.errors.length} errors`,
+    `\nSummary: ${result.outdated.length} outdated, ${result.upToDate.length} up to date, ${mismatchCount} mismatches, ${result.errors.length} errors`,
   );
 
   return lines.join("\n");

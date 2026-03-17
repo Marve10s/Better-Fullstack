@@ -14,6 +14,10 @@ export function processExamplesDeps(vfs: VirtualFileSystem, config: ProjectConfi
   if (config.examples.includes("chat-sdk")) {
     setupChatSdkDependencies(vfs, config);
   }
+
+  if (config.examples.includes("tanstack-showcase")) {
+    setupTanStackShowcaseDependencies(vfs, config);
+  }
 }
 
 function setupChatSdkDependencies(vfs: VirtualFileSystem, config: ProjectConfig): void {
@@ -274,4 +278,23 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       });
     }
   }
+}
+
+function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, _config: ProjectConfig): void {
+  const webPkgPath = "apps/web/package.json";
+  if (!vfs.exists(webPkgPath)) return;
+
+  // Showcase pages import these directly. Some may already be installed via
+  // addon selections — addPackageDependency is idempotent.
+  const deps: AvailableDependencies[] = [
+    "@tanstack/react-query",
+    "@tanstack/react-table",
+    "@tanstack/react-virtual",
+    "@tanstack/react-form",
+    "@tanstack/store",
+    "@tanstack/react-store",
+    "@tanstack/react-pacer",
+  ];
+
+  addPackageDependency({ vfs, packagePath: webPkgPath, dependencies: deps });
 }

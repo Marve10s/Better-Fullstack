@@ -184,6 +184,10 @@ function getPackageManagerConfig(
         checkTypes: "yarn workspaces foreach -Aptv run check-types",
         filter: (workspace, script) => `yarn workspace ${workspace} ${script}`,
       };
+    default: {
+      const _exhaustive: never = packageManager;
+      throw new Error(`Unknown package manager: ${_exhaustive}`);
+    }
   }
 }
 
