@@ -138,8 +138,8 @@ export const dependencyVersionMap = {
   "encore.dev": "^1.56.0",
 
   // AdonisJS
-  "@adonisjs/core": "^6.20.0",
-  "@adonisjs/cors": "^2.2.1",
+  "@adonisjs/core": "^7.0.0",
+  "@adonisjs/cors": "^3.0.0",
   "@adonisjs/assembler": "^8.0.1",
   "@adonisjs/tsconfig": "^1.4.1",
 
