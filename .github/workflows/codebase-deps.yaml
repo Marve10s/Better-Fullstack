@@ -51,11 +51,49 @@ jobs:
 
       - name: Update Dependencies
         run: |
-          if [ "${{ steps.mode.outputs.mode }}" = "all" ]; then
-            bun update --recursive --latest
-          else
-            bun update --recursive
-          fi
+          # --latest bumps version specifiers in package.json (not just lockfile)
+          # Both modes use --latest; "patch-minor" is enforced by the npm
+          # query below which reverts any major bumps.
+          bun update --recursive --latest
+
+      - name: Revert Major Bumps (patch-minor mode)
+        if: steps.mode.outputs.mode == 'patch-minor'
+        run: |
+          # Restore any package.json version specifiers that jumped a major
+          # by comparing against the committed versions on this branch.
+          git diff --name-only -- '*/package.json' 'package.json' | while IFS= read -r f; do
+            if [ -f "$f" ]; then
+              node -e "
+                const fs = require('fs');
+                const { execSync } = require('child_process');
+                const current = JSON.parse(fs.readFileSync('$f', 'utf-8'));
+                let original;
+                try {
+                  original = JSON.parse(execSync('git show HEAD:$f', { encoding: 'utf-8' }));
+                } catch { process.exit(0); }
+                let reverted = false;
+                for (const key of ['dependencies', 'devDependencies']) {
+                  const orig = original[key] || {};
+                  const curr = current[key] || {};
+                  for (const [pkg, oldVer] of Object.entries(orig)) {
+                    const newVer = curr[pkg];
+                    if (!newVer || newVer === oldVer) continue;
+                    const oldMajor = parseInt(String(oldVer).replace(/^[\\^~>=<]+/, ''));
+                    const newMajor = parseInt(String(newVer).replace(/^[\\^~>=<]+/, ''));
+                    if (!isNaN(oldMajor) && !isNaN(newMajor) && newMajor > oldMajor) {
+                      curr[pkg] = oldVer;
+                      reverted = true;
+                    }
+                  }
+                }
+                if (reverted) {
+                  fs.writeFileSync('$f', JSON.stringify(current, null, 2) + '\n');
+                }
+              "
+            fi
+          done
+          # Re-install to fix lockfile after any reverts
+          bun install
 
       - name: Disable Git Hooks For Automation Commit
         run: git config core.hooksPath /dev/null
