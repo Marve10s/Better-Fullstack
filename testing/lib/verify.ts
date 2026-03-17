@@ -1,6 +1,8 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import type { Ecosystem } from "@better-fullstack/types";
+import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
+
+import { runDevCheck } from "./dev-check";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
 
@@ -14,6 +16,11 @@ export type StepResult = {
   skipped?: boolean;
   advisory?: boolean;
   classification?: "environment" | "template" | "unknown";
+};
+
+export type VerifyOptions = {
+  devCheck?: boolean;
+  config?: ProjectConfig;
 };
 
 export type VerifyResult = {
@@ -177,17 +184,19 @@ async function runAdvisoryStep(
 export async function verifyTypeScript(
   comboName: string,
   projectDir: string,
+  options?: VerifyOptions,
 ): Promise<VerifyResult> {
   const steps: StepResult[] = [];
 
   // Convex projects require `convex codegen` before build/typecheck can work
   const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
 
-  // Step 1: install
   steps.push(await runStep("install", "bun", ["install"], projectDir));
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
-  // Step 2: build (if script exists)
+  if (options?.devCheck && options?.config) {
+    steps.push(await runDevCheck(projectDir, options.config));
+  }
   if (isConvex) {
     steps.push(skippedStep("build"));
   } else if (hasPackageScript(projectDir, "build")) {
@@ -202,14 +211,12 @@ export async function verifyTypeScript(
     steps.push(skippedStep("build"));
   }
 
-  // Step 3: lint (advisory — doesn't affect overall pass/fail)
   if (hasPackageScript(projectDir, "lint")) {
     steps.push(await runAdvisoryStep("lint", "bun", ["run", "lint"], projectDir));
   } else {
     steps.push(skippedStep("lint"));
   }
 
-  // Step 4: typecheck (check-types or typecheck script)
   const typecheckScript = hasPackageScript(projectDir, "check-types")
     ? "check-types"
     : hasPackageScript(projectDir, "typecheck")
@@ -288,7 +295,7 @@ export async function verifyGo(comboName: string, projectDir: string): Promise<V
 
 export function getVerifier(
   ecosystem: Ecosystem,
-): (comboName: string, projectDir: string) => Promise<VerifyResult> {
+): (comboName: string, projectDir: string, options?: VerifyOptions) => Promise<VerifyResult> {
   switch (ecosystem) {
     case "typescript":
       return verifyTypeScript;

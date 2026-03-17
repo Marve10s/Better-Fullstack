@@ -7,7 +7,8 @@ import type { Ecosystem } from "@better-fullstack/types";
 
 import { generateBatch } from "./lib/generate-combos/options";
 import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
-import type { GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
 
 // ── Types ───────────────────────────────────────────────────────────────
@@ -17,6 +18,8 @@ interface SmokeTestArgs {
   ecosystem?: Ecosystem;
   count: number;
   output: string;
+  devCheck: boolean;
+  preset?: string;
 }
 
 // ── Arg Parsing ─────────────────────────────────────────────────────────
@@ -26,7 +29,10 @@ function parseArgs(argv: string[]): SmokeTestArgs {
     seed: Date.now().toString(),
     count: 14,
     output: resolve(process.cwd(), "testing/.smoke-output"),
+    devCheck: false,
   };
+
+  let countExplicit = false;
 
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
@@ -46,7 +52,10 @@ function parseArgs(argv: string[]): SmokeTestArgs {
       case "--count":
         if (next) {
           const parsed = Number(next);
-          if (Number.isFinite(parsed) && parsed > 0) args.count = Math.floor(parsed);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            args.count = Math.floor(parsed);
+            countExplicit = true;
+          }
         }
         i++;
         break;
@@ -54,7 +63,18 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         if (next) args.output = resolve(process.cwd(), next);
         i++;
         break;
+      case "--dev-check":
+        args.devCheck = true;
+        break;
+      case "--preset":
+        if (next) args.preset = next;
+        i++;
+        break;
     }
+  }
+
+  if (args.preset && !countExplicit) {
+    args.count = 0;
   }
 
   return args;
@@ -159,7 +179,12 @@ async function scaffoldProject(
 
 // ── Reporting ───────────────────────────────────────────────────────────
 
-function formatMarkdownSummary(seed: string, results: VerifyResult[]): string {
+function formatMarkdownSummary(
+  seed: string,
+  results: VerifyResult[],
+  options?: { presetId?: string; devCheckEnabled?: boolean },
+): string {
+  const { presetId, devCheckEnabled } = options ?? {};
   const passed = results.filter((r) => r.overallSuccess).length;
   const failed = results.filter((r) => !r.overallSuccess).length;
 
@@ -208,15 +233,25 @@ function formatMarkdownSummary(seed: string, results: VerifyResult[]): string {
 
   md += `\n### Reproduce locally\n\`\`\`bash\nbun run test:smoke -- --seed ${seed}\n\`\`\`\n`;
 
+  if (presetId) {
+    md += `\n\`\`\`bash\n# Preset mode:\nbun run test:smoke -- --preset ${presetId}${devCheckEnabled ? " --dev-check" : ""}\n\`\`\`\n`;
+  }
+
   return md;
 }
 
 // ── Main ────────────────────────────────────────────────────────────────
 
 const args = parseArgs(process.argv.slice(2));
-const combos = generateCombos(args);
 
-console.log(`Running smoke test (seed: ${args.seed}, combos: ${combos.length})\n`);
+let combos: ComboCandidate[];
+if (args.preset) {
+  combos = getPresetCombos(args.preset);
+  console.log(`Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${args.devCheck ? " [dev-check enabled]" : ""}\n`);
+} else {
+  combos = generateCombos(args);
+  console.log(`Running smoke test (seed: ${args.seed}, combos: ${combos.length})${args.devCheck ? " [dev-check enabled]" : ""}\n`);
+}
 
 await mkdir(args.output, { recursive: true });
 const results: VerifyResult[] = [];
@@ -252,7 +287,10 @@ for (const combo of combos) {
   console.log(`  Scaffolded (${scaffoldResult.durationMs}ms)`);
 
   const verify = getVerifier(combo.ecosystem);
-  const result = await verify(combo.name, scaffoldResult.projectDir);
+  const result = await verify(combo.name, scaffoldResult.projectDir, {
+    devCheck: args.devCheck,
+    config: combo.config,
+  });
   results.push(result);
 
   for (const step of result.steps) {
@@ -284,7 +322,13 @@ const failed = results.filter((r) => !r.overallSuccess).length;
 console.log(`Results: ${passed} passed, ${failed} failed out of ${results.length}`);
 
 await writeFile(join(args.output, "smoke-results.json"), JSON.stringify(results, null, 2));
-await writeFile(join(args.output, "summary.md"), formatMarkdownSummary(args.seed, results));
+await writeFile(
+  join(args.output, "summary.md"),
+  formatMarkdownSummary(args.seed, results, {
+    presetId: args.preset,
+    devCheckEnabled: args.devCheck,
+  }),
+);
 
 const hasTemplateBug = results.some((r) =>
   r.steps.some((s) => !s.success && !s.skipped && s.classification === "template"),
