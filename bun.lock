@@ -154,7 +154,7 @@
       "name": "@better-fullstack/template-generator",
       "version": "1.4.0",
       "dependencies": {
-        "@better-fullstack/types": "^1.4.13",
+        "@better-fullstack/types": "workspace:*",
         "handlebars": "^4.7.8",
         "memfs": "4.56.11",
         "pathe": "^2.0.3",
@@ -1879,8 +1879,6 @@
     "@babel/core/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
     "@babel/helper-compilation-targets/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
-
-    "@better-fullstack/template-generator/@better-fullstack/types": ["@better-fullstack/types@1.4.13", "", { "dependencies": { "zod": "^4.1.13" } }, "sha512-5L8b3/c/S641aLAAiHxaw0w6gVWL2JSe43MOYZ4feeBFFAdCf0qIz9mBOZgJ3fVR5ISsxtdAB0KgOtOLzLxDMQ=="],
 
     "@jsonjoy.com/fs-snapshot/@jsonjoy.com/json-pack": ["@jsonjoy.com/json-pack@17.67.0", "", { "dependencies": { "@jsonjoy.com/base64": "17.67.0", "@jsonjoy.com/buffers": "17.67.0", "@jsonjoy.com/codegen": "17.67.0", "@jsonjoy.com/json-pointer": "17.67.0", "@jsonjoy.com/util": "17.67.0", "hyperdyperid": "^1.2.0", "thingies": "^2.5.0", "tree-dump": "^1.1.0" }, "peerDependencies": { "tslib": "2" } }, "sha512-t0ejURcGaZsn1ClbJ/3kFqSOjlryd92eQY465IYrezsXmPcfHPE/av4twRSxf6WE+TkZgLY+71vCZbiIiFKA/w=="],
 
