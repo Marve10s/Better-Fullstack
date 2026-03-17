@@ -19,6 +19,8 @@ import {
   generateMarkdownReport,
   generateCliReport,
   listEcosystems,
+  scanTemplateVersions,
+  findTemplateFilesWithPackage,
   type VersionInfo,
 } from "../src/utils/dependency-checker";
 
@@ -96,6 +98,33 @@ async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
   return false;
 }
 
+async function updateTemplateFiles(
+  updates: VersionInfo[],
+  templatesDir: string,
+): Promise<boolean> {
+  const templateUpdates = updates.filter((u) => u.source === "template");
+  if (templateUpdates.length === 0) return false;
+
+  let anyUpdated = false;
+
+  for (const update of templateUpdates) {
+    const files = findTemplateFilesWithPackage(templatesDir, update.name);
+    for (const { filePath } of files) {
+      let content = fs.readFileSync(filePath, "utf-8");
+      const escapedName = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = new RegExp(`("${escapedName}"\\s*:\\s*")([~^]?[\\d][^"]+)(")`, "g");
+
+      const newContent = content.replace(pattern, `$1${update.latest}$3`);
+      if (newContent !== content) {
+        fs.writeFileSync(filePath, newContent, "utf-8");
+        anyUpdated = true;
+      }
+    }
+  }
+
+  return anyUpdated;
+}
+
 async function main() {
   if (options.help) {
     printHelp();
@@ -122,7 +151,31 @@ async function main() {
     console.error("Checking dependency versions...");
   }
 
+  const templatesDir = path.join(__dirname, "../templates");
+  const { templateOnly, versionMismatches } = scanTemplateVersions(templatesDir);
+  const templateCount = Object.keys(templateOnly).length;
+
+  if (!structuredOutput) {
+    if (templateCount > 0) {
+      console.log(`Found ${templateCount} additional packages in template files`);
+    }
+    if (versionMismatches.length > 0) {
+      console.log(`Found ${versionMismatches.length} version mismatches between map and templates`);
+    }
+    if (templateCount > 0 || versionMismatches.length > 0) {
+      console.log("");
+    }
+  } else {
+    if (templateCount > 0) {
+      console.error(`Found ${templateCount} additional packages in template files`);
+    }
+    if (versionMismatches.length > 0) {
+      console.error(`Found ${versionMismatches.length} version mismatches between map and templates`);
+    }
+  }
+
   const result = await checkAllVersions({
+    templateVersions: templateOnly,
     ecosystem: options.ecosystem,
     concurrency: 5,
     delayMs: 100,
@@ -137,6 +190,8 @@ async function main() {
   if (showProgress) {
     process.stderr.write("\r" + " ".repeat(50) + "\r");
   }
+
+  result.versionMismatches = versionMismatches;
 
   // Output results
   if (options.json) {
@@ -160,15 +215,29 @@ async function main() {
     if (toApply.length === 0) {
       console.log("\nNo updates to apply.");
     } else {
-      console.log(`\nApplying ${toApply.length} updates...`);
+      const mapUpdates = toApply.filter((u) => u.source !== "template");
+      const templateUpdates = toApply.filter((u) => u.source === "template");
 
-      const success = await updateAddDepsFile(toApply);
+      console.log(`\nApplying ${toApply.length} updates (${mapUpdates.length} in version map, ${templateUpdates.length} in templates)...`);
 
-      if (success) {
+      let anySuccess = false;
+
+      if (mapUpdates.length > 0) {
+        const mapSuccess = await updateAddDepsFile(mapUpdates);
+        if (mapSuccess) anySuccess = true;
+      }
+
+      if (templateUpdates.length > 0) {
+        const templateSuccess = await updateTemplateFiles(templateUpdates, templatesDir);
+        if (templateSuccess) anySuccess = true;
+      }
+
+      if (anySuccess) {
         console.log("Updates applied successfully!\n");
         console.log("Updated packages:");
         for (const update of toApply) {
-          console.log(`  ${update.name}: ${update.current} -> ${update.latest}`);
+          const src = update.source === "template" ? " (template)" : "";
+          console.log(`  ${update.name}: ${update.current} -> ${update.latest}${src}`);
         }
       } else {
         console.error("Failed to apply updates.");
