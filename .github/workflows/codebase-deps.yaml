@@ -51,10 +51,14 @@ jobs:
 
       - name: Update Dependencies
         run: |
-          # --latest bumps version specifiers in package.json (not just lockfile)
-          # Both modes use --latest; "patch-minor" is enforced by the npm
-          # query below which reverts any major bumps.
-          bun update --recursive --latest
+          bun update --latest
+          for dir in apps/*/package.json packages/*/package.json; do
+            ws="$(dirname "$dir")"
+            if [ -f "$dir" ]; then
+              echo "Updating $ws..."
+              (cd "$ws" && bun update --latest) || true
+            fi
+          done
 
       - name: Revert Major Bumps (patch-minor mode)
         if: steps.mode.outputs.mode == 'patch-minor'
