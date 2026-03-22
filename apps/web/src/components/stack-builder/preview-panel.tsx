@@ -1,4 +1,4 @@
-import { Loader2, FolderTree, FileCode2, Info, ChevronLeft } from "lucide-react";
+import { AlertTriangle, Loader2, FolderTree, FileCode2, Info, ChevronLeft } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
 import type { StackState } from "@/lib/constant";
@@ -7,16 +7,19 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { cn } from "@/lib/utils";
 
+import type { PreflightWarning } from "@better-fullstack/template-generator";
+
 // Client-side generation via dynamic import — the ~354KB template-generator
 // bundle is only loaded when the user actually opens the Preview tab.
 const generatePreview = async (stack: StackState) => {
-  const { generateVirtualProject, EMBEDDED_TEMPLATES } =
+  const { generateVirtualProject, EMBEDDED_TEMPLATES, validatePreflightConfig } =
     await import("@better-fullstack/template-generator");
   const config = stackStateToProjectConfig(stack);
   const result = await generateVirtualProject({
     config,
     templates: EMBEDDED_TEMPLATES,
   });
+  const preflight = validatePreflightConfig(config);
   return {
     success: result.success,
     tree: result.tree
@@ -27,6 +30,7 @@ const generatePreview = async (stack: StackState) => {
         }
       : undefined,
     error: result.error,
+    preflightWarnings: preflight.warnings,
   };
 };
 
@@ -46,6 +50,8 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
   const [selectedFile, setSelectedFile] = useState<VirtualFile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [preflightWarnings, setPreflightWarnings] = useState<readonly PreflightWarning[]>([]);
+  const [showWarnings, setShowWarnings] = useState(false);
   // On mobile, track whether we're viewing the file tree or the code
   const [mobileView, setMobileView] = useState<"tree" | "code">("tree");
 
@@ -60,6 +66,8 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
         setTree(data.tree.root);
         setFileCount(data.tree.fileCount);
         setDirectoryCount(data.tree.directoryCount);
+        setPreflightWarnings(data.preflightWarnings);
+        setShowWarnings(data.preflightWarnings.length > 0);
 
         // Restore selected file from query state if it exists
         if (selectedFilePath) {
@@ -197,6 +205,36 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         </div>
       </div>
+
+      {/* Pre-flight warnings */}
+      {preflightWarnings.length > 0 && (
+        <div className="border-b border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5">
+          <button
+            type="button"
+            onClick={() => setShowWarnings((v) => !v)}
+            className="flex w-full items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span className="font-medium">
+              {preflightWarnings.length} feature{preflightWarnings.length > 1 ? "s" : ""} will not
+              generate templates
+            </span>
+            <span className="ml-auto text-[10px] text-yellow-600/60 dark:text-yellow-400/60">
+              {showWarnings ? "hide" : "show"}
+            </span>
+          </button>
+          {showWarnings && (
+            <ul className="mt-1.5 space-y-1">
+              {preflightWarnings.map((w) => (
+                <li key={w.ruleId} className="text-[11px] text-yellow-700 dark:text-yellow-300">
+                  <span className="font-medium">{w.featureDisplayName}:</span>{" "}
+                  <span className="opacity-80">{w.reason}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Split view - side by side on desktop, toggle on mobile */}
       <div className="flex flex-1 overflow-hidden">

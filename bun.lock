@@ -155,6 +155,7 @@
       "version": "1.4.0",
       "dependencies": {
         "@better-fullstack/types": "workspace:*",
+        "effect": "^3.20.0",
         "handlebars": "^4.7.8",
         "memfs": "4.56.11",
         "pathe": "^2.0.3",
