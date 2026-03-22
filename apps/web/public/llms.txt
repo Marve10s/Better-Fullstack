@@ -1,0 +1,84 @@
+# Better Fullstack
+
+> Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options across TypeScript, Rust, Python, and Go — the CLI wires everything together.
+
+Better Fullstack is an open-source CLI tool and visual web builder that generates fully configured, production-ready fullstack applications. Unlike single-framework scaffolders, it supports 4 language ecosystems and lets developers mix and match from 270+ technology options.
+
+## Key Facts
+
+- Package: `create-better-fullstack` on npm
+- Install: `bun create better-fullstack@latest` (also works with npm, pnpm, yarn)
+- License: MIT
+- Repository: https://github.com/Marve10s/Better-Fullstack
+
+## Supported Ecosystems
+
+- TypeScript (Node.js, Bun, Deno, Cloudflare Workers)
+- Rust (Actix, Axum, Rocket, Leptos, Dioxus, Yew)
+- Python (FastAPI, Django, SQLAlchemy, SQLModel)
+- Go (Gin, Echo, GORM, sqlc)
+
+## Frontend Frameworks (15)
+
+Next.js, Nuxt, SvelteKit, Astro, Angular, SolidStart, Solid, React + Vite, React Router, TanStack Start, Fresh, Expo (React Native), and more.
+
+## Backend Frameworks (17)
+
+Hono, Elysia, Express, Fastify, Nitro, Convex, Axum, Actix Web, Rocket, FastAPI, Django, Gin, Echo, and more.
+
+## Databases & ORMs
+
+6 databases (PostgreSQL, MySQL, SQLite, MongoDB, and more) with 13 ORM options (Drizzle, Prisma, Mongoose, SQLAlchemy, GORM, Diesel, SeaORM, sqlc, and more).
+
+## Authentication (7 providers)
+
+Better Auth, Clerk, Lucia, Auth.js, Supabase Auth, Convex Auth, Firebase Auth.
+
+## Payment Integrations (5)
+
+Stripe, Polar, Lemon Squeezy, and more.
+
+## AI Integrations (12)
+
+OpenAI SDK, Anthropic SDK, Vercel AI SDK, LangChain, LlamaIndex, CrewAI, and more.
+
+## Type-Safe APIs (7)
+
+tRPC, oRPC, ts-rest, Garph (GraphQL), gRPC, and more.
+
+## Additional Features
+
+- Visual web builder at https://better-fullstack.dev/new
+- Monorepo support via Turborepo
+- Desktop apps via Tauri
+- Mobile apps via Expo / React Native
+- PWA support
+- 11 UI library options (shadcn/ui, Radix, and more)
+- 5 deployment targets (Vercel, Cloudflare, Docker, Railway, and more)
+- Real-time features (WebSockets, CRDTs)
+- Background job queues
+
+## Pages
+
+- Homepage: https://better-fullstack.dev/
+- Stack Builder: https://better-fullstack.dev/new
+- Comparison: https://better-fullstack.dev/compare
+- npm: https://www.npmjs.com/package/create-better-fullstack
+- GitHub: https://github.com/Marve10s/Better-Fullstack
+
+## Common Questions
+
+### What is Better Fullstack?
+A CLI and web-based tool that scaffolds production-ready fullstack applications with 270+ configurable options across 4 language ecosystems (TypeScript, Rust, Python, Go).
+
+### How is it different from create-t3-app?
+Better Fullstack supports 4 ecosystems (not just TypeScript), 15 frontend frameworks (not just Next.js), 17 backend options, payments, AI integrations, and a visual web builder. create-t3-app focuses on the T3 Stack (Next.js + tRPC + Prisma + Tailwind).
+
+### How is it different from create-next-app?
+create-next-app only scaffolds Next.js projects. Better Fullstack scaffolds complete fullstack applications with your choice of frontend, backend, database, ORM, auth, payments, AI, and deployment — across multiple languages.
+
+### Is it free?
+Yes. Better Fullstack is fully open-source under the MIT license.
+
+### What package managers does it support?
+bun, pnpm, npm, and yarn.

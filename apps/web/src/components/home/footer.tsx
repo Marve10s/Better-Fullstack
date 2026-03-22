@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 
 export default function Footer() {
   return (
@@ -21,6 +22,12 @@ export default function Footer() {
           >
             npm
           </a>
+          <Link
+            to="/compare"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Compare
+          </Link>
         </div>
 
         {/* Fork info */}

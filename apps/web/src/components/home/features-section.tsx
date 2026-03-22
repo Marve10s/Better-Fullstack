@@ -60,6 +60,7 @@ export default function FeaturesSection() {
     <CollapsibleSection
       title="What is Better Fullstack?"
       subtitle="A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from 270+ options across 4 ecosystems."
+      defaultOpen
     >
       <ul className="space-y-3 sm:space-y-4">
         {features.map((feature) => (
