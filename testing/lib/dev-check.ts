@@ -77,6 +77,7 @@ const HTML_ERROR_PATTERNS = [
 function validateHtmlResponse(
   body: string,
   status: number,
+  config?: ProjectConfig,
 ): { ok: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -97,6 +98,25 @@ function validateHtmlResponse(
   for (const pattern of HTML_ERROR_PATTERNS) {
     if (pattern.test(body)) {
       errors.push(`Matches error pattern: ${pattern.source}`);
+    }
+  }
+
+  // Empty body detection
+  if (/<body[^>]*>\s*<\/body>/i.test(body)) {
+    errors.push("Empty body element — framework may have failed to render");
+  }
+
+  // Framework-specific markers (advisory)
+  if (config) {
+    const frontend = config.frontend?.[0];
+    if (frontend === "next" && !body.includes("_next")) {
+      errors.push("Missing Next.js asset markers");
+    }
+    if (frontend === "nuxt" && !body.includes("_nuxt")) {
+      errors.push("Missing Nuxt asset markers");
+    }
+    if (["tanstack-router", "react-router", "svelte", "react-vite"].includes(frontend || "") && !body.includes('type="module"')) {
+      errors.push("Missing Vite module scripts");
     }
   }
 
@@ -286,7 +306,7 @@ export async function runDevCheck(
           signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT_MS),
         });
         const body = await resp.text();
-        const validation = validateHtmlResponse(body, resp.status);
+        const validation = validateHtmlResponse(body, resp.status, config);
 
         if (validation.ok) {
           return {

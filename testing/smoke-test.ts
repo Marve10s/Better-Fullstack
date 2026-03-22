@@ -19,6 +19,7 @@ interface SmokeTestArgs {
   count: number;
   output: string;
   devCheck: boolean;
+  strict?: boolean;
   preset?: string;
 }
 
@@ -65,6 +66,9 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         break;
       case "--dev-check":
         args.devCheck = true;
+        break;
+      case "--strict":
+        args.strict = true;
         break;
       case "--preset":
         if (next) args.preset = next;
@@ -289,6 +293,7 @@ for (const combo of combos) {
   const verify = getVerifier(combo.ecosystem);
   const result = await verify(combo.name, scaffoldResult.projectDir, {
     devCheck: args.devCheck,
+    strict: args.strict,
     config: combo.config,
   });
   results.push(result);

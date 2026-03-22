@@ -20,6 +20,7 @@ export type StepResult = {
 
 export type VerifyOptions = {
   devCheck?: boolean;
+  strict?: boolean;
   config?: ProjectConfig;
 };
 
@@ -195,7 +196,11 @@ export async function verifyTypeScript(
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
   if (options?.devCheck && options?.config) {
-    steps.push(await runDevCheck(projectDir, options.config));
+    const devCheckResult = await runDevCheck(projectDir, options.config);
+    if (options.strict) {
+      devCheckResult.advisory = false;
+    }
+    steps.push(devCheckResult);
   }
   if (isConvex) {
     steps.push(skippedStep("build"));
