@@ -1,0 +1,29 @@
+import { createClient, type QueryParams } from "@sanity/client";
+
+import { apiVersion, dataset, projectId, token } from "../env";
+
+export const client = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: true,
+});
+
+// Server-side client with token for authenticated requests
+export const serverClient = token
+  ? client.withConfig({
+      token,
+      useCdn: false,
+    })
+  : client;
+
+// Helper function for fetching data
+export async function sanityFetch<T>({
+  query,
+  params = {},
+}: {
+  query: string;
+  params?: QueryParams;
+}): Promise<T> {
+  return client.fetch<T>(query, params);
+}

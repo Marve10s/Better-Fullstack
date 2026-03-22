@@ -653,6 +653,7 @@ export const dependencyVersionMap = {
   "next-sanity": "^9.11.2",
   "@sanity/image-url": "^1.1.0",
   "@sanity/vision": "^3.82.0",
+  "@sanity/client": "^7.3.0",
 
   // Headless CMS - Strapi
   "@strapi/client": "^1.6.1",

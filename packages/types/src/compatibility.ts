@@ -1623,6 +1623,15 @@ export const getDisabledReason = (
   }
 
   // ============================================
+  // CMS CONSTRAINTS
+  // ============================================
+  if (category === "cms" && optionId === "payload") {
+    if (!currentStack.webFrontend.includes("next")) {
+      return "Payload CMS v3 requires Next.js";
+    }
+  }
+
+  // ============================================
   // EMAIL CONSTRAINTS
   // ============================================
   if (category === "email" && optionId !== "none") {
