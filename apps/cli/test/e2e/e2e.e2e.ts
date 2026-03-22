@@ -13,6 +13,7 @@ import {
   setupE2EProject,
   startDevServer,
   startServer,
+  typecheckProject,
   validateFrameworkPage,
   type DevServerProcess,
   type ServerProcess,
@@ -279,6 +280,16 @@ describeE2E("E2E Fullstack Dev Environment Tests", () => {
         }
         // At least some assets should be checked (CSS/JS)
         expect(assets.checked).toBeGreaterThan(0);
+      });
+
+      it("should pass TypeScript typecheck", async () => {
+        const tc = await typecheckProject(join(E2E_SMOKE_DIR, config.name), {
+          timeout: 180_000,
+        });
+        if (!tc.ok) {
+          console.error(`[E2E] Typecheck errors for ${config.name}:`, tc.stderr);
+        }
+        expect(tc.ok).toBe(true);
       });
     });
   }

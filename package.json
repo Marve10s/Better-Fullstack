@@ -15,9 +15,9 @@
     "build:web": "turbo run build --filter=web --only",
     "build:cli": "turbo run build --filter=create-better-fullstack",
     "lint": "turbo lint",
-    "test": "turbo test --filter=create-better-fullstack",
-    "test:all": "turbo test",
+    "test": "turbo test",
     "test:cli": "turbo test --filter=create-better-fullstack",
+    "test:web": "turbo test --filter=web",
     "test:release": "bun run --cwd packages/types build && bun run --cwd packages/template-generator build && bun test apps/cli/test/template-snapshots.test.ts && bun test apps/cli/test/cli-builder-sync.test.ts && bun test apps/web/test/preview-config.test.ts",
     "check": "oxfmt . && oxlint .",
     "prepare": "lefthook install",
@@ -35,8 +35,10 @@
     "upstream-gap-report": "bun run scripts/upstream-gap-report.ts --markdown",
     "test:smoke": "bun run testing/smoke-test.ts",
     "test:smoke:strict": "bun run testing/smoke-test.ts --preset all --dev-check --strict",
-    "test:e2e": "E2E=1 bun test apps/cli/test/e2e/e2e.e2e.ts --timeout 600000",
-    "test:playwright": "cd apps/web && npx playwright test"
+    "test:e2e": "turbo test:e2e",
+    "test:e2e:cli": "E2E=1 bun test apps/cli/test/e2e/e2e.e2e.ts --timeout 600000",
+    "test:e2e:web": "cd apps/web && npx playwright test",
+    "test:integration": "turbo test:integration"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",

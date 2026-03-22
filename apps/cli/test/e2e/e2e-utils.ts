@@ -1,6 +1,7 @@
 import type { ExecaChildProcess } from "execa";
 
 import { execa } from "execa";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { runTRPCTest, type TestConfig } from "../test-utils";
@@ -496,4 +497,86 @@ export async function callORPC(
       body: { error: error instanceof Error ? error.message : "Unknown error" },
     };
   }
+}
+
+export interface TypecheckResult {
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+/**
+ * Run typecheck on a generated project to verify zero TypeScript errors.
+ */
+export async function typecheckProject(
+  projectDir: string,
+  options?: { timeout?: number },
+): Promise<TypecheckResult> {
+  const timeout = options?.timeout ?? 120_000;
+
+  const webDir = join(projectDir, "apps", "web");
+  const serverDir = join(projectDir, "apps", "server");
+
+  const results: TypecheckResult[] = [];
+
+  for (const dir of [webDir, serverDir]) {
+    if (!existsSync(join(dir, "tsconfig.json"))) continue;
+
+    const result = await execa("bun", ["run", "check-types"], {
+      cwd: dir,
+      timeout,
+      reject: false,
+      env: { ...process.env, NODE_ENV: "development" },
+    });
+
+    results.push({
+      ok: result.exitCode === 0,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode ?? 1,
+    });
+  }
+
+  if (results.length === 0) {
+    return { ok: true, stdout: "No tsconfig found", stderr: "", exitCode: 0 };
+  }
+
+  const failed = results.filter((r) => !r.ok);
+  return {
+    ok: failed.length === 0,
+    stdout: results.map((r) => r.stdout).join("\n"),
+    stderr: results.map((r) => r.stderr).join("\n"),
+    exitCode: failed.length > 0 ? (failed[0]?.exitCode ?? 1) : 0,
+  };
+}
+
+/**
+ * Scaffold a project using the actual CLI binary (node dist/cli.mjs).
+ * Sets cwd to the parent directory and passes just the project name,
+ * since the CLI requires a relative path within the current directory.
+ */
+export async function scaffoldWithCLIBinary(
+  projectDir: string,
+  flags: string[],
+  options?: { timeout?: number; cliPath?: string },
+): Promise<{ ok: boolean; stdout: string; stderr: string; exitCode: number }> {
+  const timeout = options?.timeout ?? 120_000;
+  const cliPath = options?.cliPath ?? join(import.meta.dir, "..", "..", "dist", "cli.mjs");
+  const parentDir = join(projectDir, "..");
+  const projectName = projectDir.split("/").pop() || "test-project";
+
+  const result = await execa("node", [cliPath, projectName, ...flags], {
+    cwd: parentDir,
+    timeout,
+    reject: false,
+    env: { ...process.env, NODE_ENV: "development" },
+  });
+
+  return {
+    ok: result.exitCode === 0,
+    stdout: result.stdout,
+    stderr: result.stderr,
+    exitCode: result.exitCode ?? 1,
+  };
 }
