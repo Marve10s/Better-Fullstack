@@ -9,6 +9,7 @@ describe("stackStateToProjectConfig", () => {
       backend: "self-svelte",
       webFrontend: ["svelte", "none"],
       nativeFrontend: ["none"],
+      versionChannel: "beta",
       aiSdk: "langchain",
       codeQuality: ["biome", "none"],
       documentation: ["none"],
@@ -27,6 +28,7 @@ describe("stackStateToProjectConfig", () => {
     expect(config.serverDeploy).toBe("none");
     expect(config.ai).toBe("langchain");
     expect(config.git).toBe(false);
+    expect(config.versionChannel).toBe("beta");
     expect(config.addons).toEqual(["biome"]);
     expect(config.aiDocs).toEqual(["cursorrules"]);
     expect(config.rustLibraries).toEqual(["serde"]);
@@ -51,6 +53,7 @@ describe("stackStateToProjectConfig", () => {
     expect(config.examples).toEqual([]);
     expect(config.aiDocs).toEqual([]);
     expect(config.ai).toBe("vercel-ai");
+    expect(config.versionChannel).toBe("stable");
     expect(config.install).toBe(false);
   });
 });

@@ -47,6 +47,7 @@ export const DEFAULT_CONFIG_BASE = {
   examples: [],
   git: true,
   install: true,
+  versionChannel: "stable",
   dbSetup: "none",
   backend: "hono",
   runtime: "bun",

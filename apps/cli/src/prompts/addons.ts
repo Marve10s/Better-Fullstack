@@ -114,7 +114,8 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
 const ADDON_GROUPS = {
   Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "msw", "storybook"],
+  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler"],
+  Integrations: ["msw", "storybook"],
   "AI Agents": ["mcp", "skills"],
   TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
 };
@@ -127,6 +128,7 @@ export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[],
     Tooling: [],
     Documentation: [],
     Extensions: [],
+    Integrations: [],
     "AI Agents": [],
     TanStack: [],
   };
@@ -146,6 +148,8 @@ export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[],
       groupedOptions.Documentation.push(option);
     } else if (ADDON_GROUPS.Extensions.includes(addon)) {
       groupedOptions.Extensions.push(option);
+    } else if (ADDON_GROUPS.Integrations.includes(addon)) {
+      groupedOptions.Integrations.push(option);
     } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
       groupedOptions["AI Agents"].push(option);
     } else if (ADDON_GROUPS.TanStack.includes(addon)) {
@@ -193,6 +197,7 @@ export async function getAddonsToAdd(
     Tooling: [],
     Documentation: [],
     Extensions: [],
+    Integrations: [],
     "AI Agents": [],
     TanStack: [],
   };
@@ -216,6 +221,8 @@ export async function getAddonsToAdd(
       groupedOptions.Documentation.push(option);
     } else if (ADDON_GROUPS.Extensions.includes(addon)) {
       groupedOptions.Extensions.push(option);
+    } else if (ADDON_GROUPS.Integrations.includes(addon)) {
+      groupedOptions.Integrations.push(option);
     } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
       groupedOptions["AI Agents"].push(option);
     } else if (ADDON_GROUPS.TanStack.includes(addon)) {

@@ -82,6 +82,7 @@ export function loadStackParams(
       documentation: getArray("documentation", DEFAULT_STACK.documentation),
       appPlatforms: getArray("appPlatforms", DEFAULT_STACK.appPlatforms),
       packageManager: getString("packageManager", DEFAULT_STACK.packageManager),
+      versionChannel: getString("versionChannel", DEFAULT_STACK.versionChannel),
       examples: getArray("examples", DEFAULT_STACK.examples),
       aiSdk: getString("aiSdk", DEFAULT_STACK.aiSdk),
       git: getString("git", DEFAULT_STACK.git),
@@ -178,6 +179,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("documentation", stack.documentation);
   addParam("appPlatforms", stack.appPlatforms);
   addParam("packageManager", stack.packageManager);
+  addParam("versionChannel", stack.versionChannel);
   addParam("examples", stack.examples);
   addParam("aiSdk", stack.aiSdk);
   addParam("git", stack.git);
@@ -258,6 +260,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     documentation: search.doc ?? DEFAULT_STACK.documentation,
     appPlatforms: search.ap ?? DEFAULT_STACK.appPlatforms,
     packageManager: search.pm ?? DEFAULT_STACK.packageManager,
+    versionChannel: search.vc ?? DEFAULT_STACK.versionChannel,
     examples: search.ex ?? DEFAULT_STACK.examples,
     aiSdk: search.aisdk ?? DEFAULT_STACK.aiSdk,
     aiDocs: search.aid ?? DEFAULT_STACK.aiDocs,

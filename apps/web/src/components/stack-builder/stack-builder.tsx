@@ -93,6 +93,58 @@ function formatProjectName(name: string): string {
   return name.replace(/\s+/g, "-");
 }
 
+type TechOption = (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS][number];
+
+const APP_PLATFORM_OPTION_GROUPS = [
+  {
+    heading: "Workspace & Platforms",
+    ids: ["turborepo", "pwa", "tauri", "wxt", "opentui"],
+  },
+  {
+    heading: "AI Agents",
+    ids: ["mcp", "skills"],
+  },
+  {
+    heading: "Integrations",
+    ids: ["msw", "storybook"],
+  },
+  {
+    heading: "TanStack",
+    ids: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
+  },
+] as const;
+
+function getCategoryOptionGroups(
+  categoryKey: string,
+  options: readonly TechOption[],
+): Array<{ heading: string | null; options: TechOption[] }> {
+  if (categoryKey !== "appPlatforms") {
+    return [{ heading: null, options: [...options] }];
+  }
+
+  const assignedIds = new Set<string>();
+  const groupedOptions: Array<{ heading: string | null; options: TechOption[] }> =
+    APP_PLATFORM_OPTION_GROUPS.map((group) => {
+      const groupIds = new Set<string>(group.ids);
+      const groupOptions = options.filter((option) => groupIds.has(option.id));
+      for (const option of groupOptions) {
+        assignedIds.add(option.id);
+      }
+
+      return {
+        heading: group.heading,
+        options: groupOptions,
+      };
+    }).filter((group) => group.options.length > 0);
+
+  const ungroupedOptions = options.filter((option) => !assignedIds.has(option.id));
+  if (ungroupedOptions.length > 0) {
+    groupedOptions.push({ heading: "Other", options: ungroupedOptions });
+  }
+
+  return groupedOptions;
+}
+
 function TechResourceButtons({ category, techId }: { category: string; techId: string }) {
   const { docsUrl, githubUrl } = getTechResourceLinks(category, techId);
 
@@ -164,8 +216,9 @@ function CategoryHint({ categoryKey }: { categoryKey: string }) {
 
   return (
     <div className="mb-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">MCP / Skills:</span> selecting these adds the
-      addon flags, then the CLI asks follow-up questions to configure servers and skill packs.
+      <span className="font-medium text-foreground">Grouped add-ons:</span> platforms,
+      integrations, AI agents, and TanStack extras are split below. MCP and Skills still add the
+      addon flags first, then the CLI asks follow-up questions to configure them.
     </div>
   );
 }
@@ -1228,6 +1281,10 @@ const StackBuilder = () => {
                           TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [],
                         );
                         const categoryDisplayName = getCategoryDisplayName(categoryKey);
+                        const categoryOptionGroups = getCategoryOptionGroups(
+                          categoryKey,
+                          categoryOptions,
+                        );
 
                         if (categoryOptions.length === 0) return null;
 
@@ -1280,110 +1337,125 @@ const StackBuilder = () => {
                                     className="overflow-hidden"
                                   >
                                     <CategoryHint categoryKey={categoryKey} />
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                      {categoryOptions.map((tech) => {
-                                        const isSelected = isSelectedCheck(
-                                          stack,
-                                          categoryKey,
-                                          tech.id,
-                                        );
-                                        const isDisabled = !isOptionCompatible(
-                                          stack,
-                                          categoryKey as keyof typeof TECH_OPTIONS,
-                                          tech.id,
-                                        );
-                                        const disabledReason = isDisabled
-                                          ? getDisabledReason(
-                                              stack,
-                                              categoryKey as keyof typeof TECH_OPTIONS,
-                                              tech.id,
-                                            )
-                                          : null;
-
-                                        return (
-                                          <motion.div
-                                            key={tech.id}
-                                            className={cn(
-                                              "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                              isSelected
-                                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                : isDisabled
-                                                  ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                  : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                            )}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleTechSelect(
+                                    <div className="space-y-4">
+                                      {categoryOptionGroups.map((group, groupIndex) => (
+                                        <div key={group.heading ?? `default-${groupIndex}`}>
+                                          {group.heading && (
+                                            <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                                              {group.heading}
+                                            </h3>
+                                          )}
+                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                            {group.options.map((tech) => {
+                                              const isSelected = isSelectedCheck(
+                                                stack,
+                                                categoryKey,
+                                                tech.id,
+                                              );
+                                              const isDisabled = !isOptionCompatible(
+                                                stack,
                                                 categoryKey as keyof typeof TECH_OPTIONS,
                                                 tech.id,
                                               );
-                                            }}
-                                            title={disabledReason || undefined}
-                                          >
-                                            <div className="absolute top-2 right-2 flex items-center gap-1">
-                                              <TechResourceButtons
-                                                category={categoryKey}
-                                                techId={tech.id}
-                                              />
-                                              {tech.default && !isSelected && (
-                                                <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                  Default
-                                                </span>
-                                              )}
-                                              {tech.legacy && (
-                                                <Tooltip>
-                                                  <TooltipTrigger
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="cursor-default"
-                                                  >
-                                                    <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                      Legacy
-                                                    </span>
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>
-                                                    No longer actively maintained
-                                                  </TooltipContent>
-                                                </Tooltip>
-                                              )}
-                                            </div>
-                                            <div className="flex items-start gap-3">
-                                              {tech.icon !== "" && (
-                                                <div
+                                              const disabledReason = isDisabled
+                                                ? getDisabledReason(
+                                                    stack,
+                                                    categoryKey as keyof typeof TECH_OPTIONS,
+                                                    tech.id,
+                                                  )
+                                                : null;
+
+                                              return (
+                                                <motion.div
+                                                  key={tech.id}
                                                   className={cn(
-                                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+                                                    "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
                                                     isSelected
-                                                      ? "bg-primary/10"
-                                                      : "bg-muted/50 group-hover:bg-muted",
+                                                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                      : isDisabled
+                                                        ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                        : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
                                                   )}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleTechSelect(
+                                                      categoryKey as keyof typeof TECH_OPTIONS,
+                                                      tech.id,
+                                                    );
+                                                  }}
+                                                  title={disabledReason || undefined}
                                                 >
-                                                  <TechIcon
-                                                    techId={tech.id}
-                                                    icon={tech.icon}
-                                                    name={tech.name}
-                                                    className="h-5 w-5"
-                                                  />
-                                                </div>
-                                              )}
-                                              <div className="min-w-0 flex-1 pt-0.5">
-                                                <span
-                                                  className={cn(
-                                                    "block font-semibold text-sm",
-                                                    isSelected ? "text-primary" : "text-foreground",
-                                                  )}
-                                                >
-                                                  {tech.name}
-                                                </span>
-                                                <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                  {tech.description}
-                                                </p>
-                                                {isDisabled && disabledReason && (
-                                                  <DisabledReasonInline reason={disabledReason} />
-                                                )}
-                                              </div>
-                                            </div>
-                                          </motion.div>
-                                        );
-                                      })}
+                                                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                                                    <TechResourceButtons
+                                                      category={categoryKey}
+                                                      techId={tech.id}
+                                                    />
+                                                    {tech.default && !isSelected && (
+                                                      <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                                        Default
+                                                      </span>
+                                                    )}
+                                                    {tech.legacy && (
+                                                      <Tooltip>
+                                                        <TooltipTrigger
+                                                          onClick={(e) => e.stopPropagation()}
+                                                          className="cursor-default"
+                                                        >
+                                                          <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                            Legacy
+                                                          </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                          No longer actively maintained
+                                                        </TooltipContent>
+                                                      </Tooltip>
+                                                    )}
+                                                  </div>
+                                                  <div className="flex items-start gap-3">
+                                                    {tech.icon !== "" && (
+                                                      <div
+                                                        className={cn(
+                                                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+                                                          isSelected
+                                                            ? "bg-primary/10"
+                                                            : "bg-muted/50 group-hover:bg-muted",
+                                                        )}
+                                                      >
+                                                        <TechIcon
+                                                          techId={tech.id}
+                                                          icon={tech.icon}
+                                                          name={tech.name}
+                                                          className="h-5 w-5"
+                                                        />
+                                                      </div>
+                                                    )}
+                                                    <div className="min-w-0 flex-1 pt-0.5">
+                                                      <span
+                                                        className={cn(
+                                                          "block font-semibold text-sm",
+                                                          isSelected
+                                                            ? "text-primary"
+                                                            : "text-foreground",
+                                                        )}
+                                                      >
+                                                        {tech.name}
+                                                      </span>
+                                                      <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                        {tech.description}
+                                                      </p>
+                                                      {isDisabled && disabledReason && (
+                                                        <DisabledReasonInline
+                                                          reason={disabledReason}
+                                                        />
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                </motion.div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      ))}
                                     </div>
                                   </motion.div>
                                 )}

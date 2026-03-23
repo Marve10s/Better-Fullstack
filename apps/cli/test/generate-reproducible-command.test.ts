@@ -21,6 +21,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     payments: "none",
     git: true,
     packageManager: "bun",
+    versionChannel: "stable",
     install: true,
     dbSetup: "none",
     api: "trpc",
@@ -279,5 +280,22 @@ describe("generateReproducibleCommand", () => {
         "--package-manager bun " +
         "--no-install",
     );
+  });
+
+  it("includes the version channel flag when using latest or beta", () => {
+    const latestCommand = generateReproducibleCommand(
+      makeConfig({
+        versionChannel: "latest",
+      }),
+    );
+
+    const betaCommand = generateReproducibleCommand(
+      makeConfig({
+        versionChannel: "beta",
+      }),
+    );
+
+    expect(latestCommand).toContain("--version-channel latest");
+    expect(betaCommand).toContain("--version-channel beta");
   });
 });

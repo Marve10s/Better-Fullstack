@@ -94,6 +94,10 @@ export const ExamplesSchema = z
 
 export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun", "yarn"]).describe("Package manager");
 
+export const VersionChannelSchema = z
+  .enum(["stable", "latest", "beta"])
+  .describe("Dependency version channel");
+
 export const DatabaseSetupSchema = z
   .enum([
     "turso",
@@ -434,6 +438,7 @@ export const CreateInputSchema = z.object({
   examples: z.array(ExamplesSchema).optional(),
   git: z.boolean().optional(),
   packageManager: PackageManagerSchema.optional(),
+  versionChannel: VersionChannelSchema.optional(),
   install: z.boolean().optional(),
   dbSetup: DatabaseSetupSchema.optional(),
   backend: BackendSchema.optional(),
@@ -527,6 +532,7 @@ export const ProjectConfigSchema = z.object({
   payments: PaymentsSchema,
   git: z.boolean(),
   packageManager: PackageManagerSchema,
+  versionChannel: VersionChannelSchema,
   install: z.boolean(),
   dbSetup: DatabaseSetupSchema,
   api: APISchema,
@@ -599,6 +605,7 @@ export const BetterTStackConfigSchema = z.object({
   auth: AuthSchema,
   payments: PaymentsSchema,
   packageManager: PackageManagerSchema,
+  versionChannel: VersionChannelSchema,
   dbSetup: DatabaseSetupSchema,
   api: APISchema,
   webDeploy: WebDeploySchema,
@@ -686,6 +693,7 @@ export const FRONTEND_VALUES = FrontendSchema.options;
 export const ADDONS_VALUES = AddonsSchema.options;
 export const EXAMPLES_VALUES = ExamplesSchema.options;
 export const PACKAGE_MANAGER_VALUES = PackageManagerSchema.options;
+export const VERSION_CHANNEL_VALUES = VersionChannelSchema.options;
 export const DATABASE_SETUP_VALUES = DatabaseSetupSchema.options;
 export const API_VALUES = APISchema.options;
 export const AUTH_VALUES = AuthSchema.options;

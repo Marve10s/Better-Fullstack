@@ -15,6 +15,7 @@ import type { AddInput, Addons, ProjectConfig } from "../../types";
 import { getDefaultConfig } from "../../constants";
 import { getAddonsToAdd } from "../../prompts/addons";
 import { readBtsConfig, updateBtsConfig } from "../../utils/bts-config";
+import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
@@ -169,6 +170,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
   await writeTreeToFilesystem(tree, projectDir);
 
   await setupAddons(config);
+  await applyDependencyVersionChannel(projectDir, config.versionChannel);
 
   const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
   const configUpdates: Partial<Pick<ProjectConfig, "webDeploy" | "serverDeploy">> & {

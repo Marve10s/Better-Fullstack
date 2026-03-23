@@ -143,6 +143,10 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Package Manager:")} ${String(config.packageManager)}`);
   }
 
+  if (config.versionChannel !== undefined) {
+    configDisplay.push(`${pc.blue("Version Channel:")} ${String(config.versionChannel)}`);
+  }
+
   if (config.install !== undefined) {
     const installText =
       typeof config.install === "boolean"

@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
-import { TECH_OPTIONS } from "@/lib/constant";
+import { DEFAULT_STACK, TECH_OPTIONS } from "@/lib/constant";
 import { CATEGORY_ORDER } from "@/lib/stack-utils";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,7 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
           !tech ||
           tech.id === "none" ||
           tech.id === "false" ||
+          (category === "versionChannel" && tech.id === DEFAULT_STACK.versionChannel) ||
           ((category === "git" || category === "install" || category === "auth") &&
             tech.id === "true")
         ) {

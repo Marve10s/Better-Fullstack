@@ -53,6 +53,7 @@ export type CompatibilityCategory =
   | "documentation"
   | "appPlatforms"
   | "packageManager"
+  | "versionChannel"
   | "examples"
   | "ai"
   | "aiDocs"
@@ -130,6 +131,7 @@ export type CompatibilityInput = {
   documentation: string[];
   appPlatforms: string[];
   packageManager: string;
+  versionChannel: string;
   examples: string[];
   aiSdk: string;
   aiDocs: string[];
@@ -197,6 +199,7 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "documentation",
   "appPlatforms",
   "packageManager",
+  "versionChannel",
   "examples",
   "aiDocs",
   "git",

@@ -1764,6 +1764,30 @@ export const TECH_OPTIONS: Record<
       color: "from-sky-500 to-sky-700",
     },
   ],
+  versionChannel: [
+    {
+      id: "stable",
+      name: "Stable",
+      description: "Use Better Fullstack's curated pinned versions",
+      icon: "",
+      color: "from-emerald-500 to-emerald-700",
+      default: true,
+    },
+    {
+      id: "latest",
+      name: "Latest",
+      description: "Resolve current npm latest tags during scaffolding",
+      icon: "",
+      color: "from-blue-500 to-blue-700",
+    },
+    {
+      id: "beta",
+      name: "Beta",
+      description: "Prefer beta, next, RC, canary, or alpha releases when available",
+      icon: "",
+      color: "from-amber-500 to-orange-700",
+    },
+  ],
   codeQuality: [
     {
       id: "biome",
@@ -2981,6 +3005,7 @@ export const ECOSYSTEMS: {
 // Categories available for each ecosystem
 export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
   typescript: [
+    "versionChannel",
     "webFrontend",
     "nativeFrontend",
     "astroIntegration",
@@ -3015,6 +3040,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "install",
   ],
   rust: [
+    "versionChannel",
     "rustWebFramework",
     "rustFrontend",
     "rustOrm",
@@ -3026,6 +3052,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "install",
   ],
   python: [
+    "versionChannel",
     "pythonWebFramework",
     "pythonOrm",
     "pythonValidation",
@@ -3036,7 +3063,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "git",
     "install",
   ],
-  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "auth", "aiDocs", "git", "install"],
+  go: ["versionChannel", "goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "auth", "aiDocs", "git", "install"],
 };
 
 export const PRESET_CATEGORIES = [

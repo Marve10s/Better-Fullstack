@@ -33,6 +33,9 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
 
   flags.push(config.git ? "--git" : "--no-git");
   flags.push(`--package-manager ${config.packageManager}`);
+  if (config.versionChannel !== "stable") {
+    flags.push(`--version-channel ${config.versionChannel}`);
+  }
   flags.push(config.install ? "--install" : "--no-install");
 }
 

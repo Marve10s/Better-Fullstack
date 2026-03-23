@@ -44,6 +44,7 @@ const STACK_OPTION_CATEGORY_BY_KEY: Partial<Record<keyof StackState, OptionCateg
   documentation: "documentation",
   appPlatforms: "appPlatforms",
   packageManager: "packageManager",
+  versionChannel: "versionChannel",
   examples: "examples",
   aiSdk: "ai",
   aiDocs: "aiDocs",

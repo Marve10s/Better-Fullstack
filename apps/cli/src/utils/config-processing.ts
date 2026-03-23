@@ -32,6 +32,7 @@ import type {
   Observability,
   ORM,
   PackageManager,
+  VersionChannel,
   Payments,
   ProjectConfig,
   PythonAi,
@@ -205,6 +206,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.packageManager) {
     config.packageManager = options.packageManager as PackageManager;
+  }
+
+  if (options.versionChannel) {
+    config.versionChannel = options.versionChannel as VersionChannel;
   }
 
   if (options.webDeploy) {

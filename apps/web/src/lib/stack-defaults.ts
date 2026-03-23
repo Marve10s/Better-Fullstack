@@ -44,6 +44,7 @@ export type StackState = {
   documentation: string[];
   appPlatforms: string[];
   packageManager: string;
+  versionChannel: string;
   examples: string[];
   aiSdk: string;
   aiDocs: string[];
@@ -116,6 +117,7 @@ export const DEFAULT_STACK: StackState = {
   documentation: [],
   appPlatforms: ["turborepo"],
   packageManager: "bun",
+  versionChannel: "stable",
   examples: [],
   aiSdk: "vercel-ai",
   aiDocs: ["claude-md"],

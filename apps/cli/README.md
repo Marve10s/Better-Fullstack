@@ -38,6 +38,7 @@ Configure your stack visually — pick every option from a UI, preview your choi
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
 --ecosystem <lang> # Start in rust, python, or go mode
+--version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation
 --package-manager  # Package manager (bun, pnpm, npm, yarn)

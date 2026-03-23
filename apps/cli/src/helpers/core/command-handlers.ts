@@ -9,6 +9,7 @@ import type { CreateInput, DirectoryConflict, ProjectConfig } from "../../types"
 import { getDefaultConfig } from "../../constants";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { getProjectName } from "../../prompts/project-name";
+import { getVersionChannelChoice } from "../../prompts/version-channel";
 import { trackProjectCreation } from "../../utils/analytics";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
@@ -28,6 +29,14 @@ import { createProject } from "./create-project";
 
 export interface CreateHandlerOptions {
   silent?: boolean;
+}
+
+function shouldPromptForVersionChannel(input: CreateInput & { projectName?: string }): boolean {
+  if (input.yes || input.versionChannel !== undefined || isSilent()) {
+    return false;
+  }
+
+  return process.stdin.isTTY === true && process.stdout.isTTY === true && process.env.CI !== "true";
 }
 
 export async function createProjectHandler(
@@ -68,6 +77,10 @@ export async function createProjectHandler(
       } else {
         currentPathInput = await getProjectName(input.projectName);
       }
+
+      const versionChannel = shouldPromptForVersionChannel(input)
+        ? await getVersionChannelChoice()
+        : (input.versionChannel ?? "stable");
 
       let finalPathInput: string;
       let shouldClearDirectory: boolean;
@@ -111,6 +124,7 @@ export async function createProjectHandler(
             effect: "none",
             git: false,
             packageManager: "npm",
+            versionChannel: "stable",
             install: false,
             dbSetup: "none",
             api: "none",
@@ -210,6 +224,7 @@ export async function createProjectHandler(
           projectName: finalBaseName,
           projectDir: finalResolvedPath,
           relativePath: finalPathInput,
+          versionChannel,
         };
 
         validateConfigCompatibility(config, providedFlags, cliInput);
@@ -228,7 +243,13 @@ export async function createProjectHandler(
           log.message("");
         }
 
-        config = await gatherConfig(flagConfig, finalBaseName, finalResolvedPath, finalPathInput);
+        const gatheredConfig = await gatherConfig(
+          flagConfig,
+          finalBaseName,
+          finalResolvedPath,
+          finalPathInput,
+        );
+        config = { ...gatheredConfig, versionChannel };
       }
 
       await createProject(config, {

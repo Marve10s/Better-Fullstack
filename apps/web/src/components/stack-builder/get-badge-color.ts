@@ -36,6 +36,7 @@ export const getBadgeColors = (category: string): string => {
     case "examples":
       return "border-primary/40 bg-primary/15 text-primary";
     case "packageManager":
+    case "versionChannel":
       return "border-muted-foreground/30 bg-muted text-muted-foreground";
     case "git":
     case "webDeploy":

@@ -8,7 +8,7 @@ import type { LoadedStackState } from "@/lib/stack-url-state";
 
 import { ShareDialog } from "@/components/ui/share-dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
-import { type StackState, TECH_OPTIONS } from "@/lib/constant";
+import { DEFAULT_STACK, type StackState, TECH_OPTIONS } from "@/lib/constant";
 import {
   CATEGORY_ORDER,
   generateStackCommand,
@@ -77,6 +77,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           !tech ||
           tech.id === "none" ||
           tech.id === "false" ||
+          (category === "versionChannel" && tech.id === DEFAULT_STACK.versionChannel) ||
           ((category === "git" || category === "install" || category === "auth") &&
             tech.id === "true")
         ) {

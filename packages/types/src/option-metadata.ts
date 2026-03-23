@@ -28,6 +28,7 @@ import {
   ORM_VALUES,
   PACKAGE_MANAGER_VALUES,
   PAYMENTS_VALUES,
+  VERSION_CHANNEL_VALUES,
   PYTHON_AI_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_QUALITY_VALUES,
@@ -97,6 +98,7 @@ export type OptionCategory =
   | "documentation"
   | "appPlatforms"
   | "packageManager"
+  | "versionChannel"
   | "examples"
   | "ai"
   | "aiDocs"
@@ -266,6 +268,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   documentation: DOCUMENTATION_VALUES,
   appPlatforms: APP_PLATFORM_VALUES,
   packageManager: PACKAGE_MANAGER_VALUES,
+  versionChannel: VERSION_CHANNEL_VALUES,
   examples: EXAMPLE_VALUES,
   ai: AI_VALUES,
   aiDocs: AI_DOCS_VALUES,
@@ -431,6 +434,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "tanstack-virtual": "TanStack Virtual",
     "tanstack-db": "TanStack DB",
     "tanstack-pacer": "TanStack Pacer",
+  },
+  versionChannel: {
+    stable: "Stable",
+    latest: "Latest",
+    beta: "Beta",
   },
   examples: {
     ai: "AI Example",
@@ -688,6 +696,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   documentation: buildCategoryMetadata("documentation"),
   appPlatforms: buildCategoryMetadata("appPlatforms"),
   packageManager: buildCategoryMetadata("packageManager"),
+  versionChannel: buildCategoryMetadata("versionChannel"),
   examples: buildCategoryMetadata("examples"),
   ai: buildCategoryMetadata("ai"),
   aiDocs: buildCategoryMetadata("aiDocs"),

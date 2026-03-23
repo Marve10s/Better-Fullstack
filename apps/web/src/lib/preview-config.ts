@@ -76,6 +76,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     testing: stack.testing as ProjectConfig["testing"],
     git: toBoolean(stack.git),
     packageManager: stack.packageManager as ProjectConfig["packageManager"],
+    versionChannel: stack.versionChannel as ProjectConfig["versionChannel"],
     install: false,
     dbSetup: stack.dbSetup as ProjectConfig["dbSetup"],
     api: stack.api as ProjectConfig["api"],

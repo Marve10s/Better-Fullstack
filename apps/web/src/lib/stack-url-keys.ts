@@ -46,6 +46,7 @@ export const stackUrlKeys = {
   documentation: "doc",
   appPlatforms: "ap",
   packageManager: "pm",
+  versionChannel: "vc",
   examples: "ex",
   aiSdk: "aisdk",
   aiDocs: "aid",

@@ -1,4 +1,6 @@
 import type { StackState } from "@/lib/constant";
+import { DEFAULT_STACK } from "@/lib/stack-defaults";
+import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
 
 const SAVED_STACKS_STORAGE_KEY = "betterFullstackSavedStacks";
 const LEGACY_SAVED_STACK_KEY = "betterFullstackPreference";
@@ -39,7 +41,10 @@ function normalizeSavedStackEntry(entry: Partial<SavedStackEntry>): SavedStackEn
   return {
     id: typeof entry.id === "string" && entry.id.length > 0 ? entry.id : createSavedStackId(),
     name: entry.name.trim() || "Untitled preset",
-    stack: entry.stack as StackState,
+    stack: normalizeStackStateSelections({
+      ...DEFAULT_STACK,
+      ...(entry.stack as Partial<StackState>),
+    }),
     createdAt:
       typeof entry.createdAt === "string" && entry.createdAt.length > 0 ? entry.createdAt : now,
     updatedAt:
@@ -90,7 +95,10 @@ export function loadSavedStacks(): SavedStackEntry[] {
   }
 
   try {
-    const legacyStack = JSON.parse(legacyRaw) as StackState;
+    const legacyStack = normalizeStackStateSelections({
+      ...DEFAULT_STACK,
+      ...(JSON.parse(legacyRaw) as Partial<StackState>),
+    });
     const alreadyMigrated = entries.some(
       (entry) => JSON.stringify(entry.stack) === JSON.stringify(legacyStack),
     );

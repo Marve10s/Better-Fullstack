@@ -87,6 +87,7 @@ yarn create better-fullstack@latest
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
 --ecosystem <lang> # Start in rust, python, or go mode
+--version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation
 --verbose          # Show detailed output

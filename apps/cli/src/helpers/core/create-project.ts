@@ -9,6 +9,7 @@ import path from "node:path";
 import type { ProjectConfig } from "../../types";
 
 import { writeBtsConfig } from "../../utils/bts-config";
+import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { isSilent } from "../../utils/context";
 import { exitWithError } from "../../utils/errors";
 import { formatProject } from "../../utils/file-formatter";
@@ -53,6 +54,8 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     if (options.addons.length > 0 && options.addons[0] !== "none") {
       await setupAddons(options);
     }
+
+    await applyDependencyVersionChannel(projectDir, options.versionChannel);
 
     await writeBtsConfig(options);
 

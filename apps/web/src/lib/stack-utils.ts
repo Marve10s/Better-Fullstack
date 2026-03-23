@@ -11,6 +11,7 @@ const PACKAGE_MANAGER_COMMANDS = {
 
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "versionChannel",
   "webFrontend",
   "nativeFrontend",
   "astroIntegration",
@@ -64,6 +65,7 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 
 // Rust ecosystem category order
 const RUST_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "versionChannel",
   "rustWebFramework",
   "rustFrontend",
   "rustOrm",
@@ -77,6 +79,7 @@ const RUST_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 
 // Python ecosystem category order
 const PYTHON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "versionChannel",
   "pythonWebFramework",
   "pythonOrm",
   "pythonValidation",
@@ -90,6 +93,7 @@ const PYTHON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 
 // Go ecosystem category order
 const GO_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "versionChannel",
   "goWebFramework",
   "goOrm",
   "goApi",
@@ -102,29 +106,14 @@ const GO_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 ];
 
 // Combined category order for backwards compatibility
-const CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  ...TYPESCRIPT_CATEGORY_ORDER,
-  // Rust categories (excluding duplicates like git, install)
-  "rustWebFramework",
-  "rustFrontend",
-  "rustOrm",
-  "rustApi",
-  "rustCli",
-  "rustLibraries",
-  // Python categories (excluding duplicates like git, install)
-  "pythonWebFramework",
-  "pythonOrm",
-  "pythonValidation",
-  "pythonAi",
-  "pythonTaskQueue",
-  "pythonQuality",
-  // Go categories (excluding duplicates like git, install)
-  "goWebFramework",
-  "goOrm",
-  "goApi",
-  "goCli",
-  "goLogging",
-];
+const CATEGORY_ORDER = [
+  ...new Set([
+    ...TYPESCRIPT_CATEGORY_ORDER,
+    ...RUST_CATEGORY_ORDER,
+    ...PYTHON_CATEGORY_ORDER,
+    ...GO_CATEGORY_ORDER,
+  ]),
+] as Array<keyof typeof TECH_OPTIONS>;
 
 export function generateStackSummary(stack: StackState) {
   const selectedTechs = CATEGORY_ORDER.flatMap((category) => {
@@ -140,6 +129,7 @@ export function generateStackSummary(stack: StackState) {
           (id) =>
             id !== "none" &&
             id !== "false" &&
+            !(category === "versionChannel" && id === DEFAULT_STACK.versionChannel) &&
             !(["git", "install", "auth"].includes(category) && id === "true"),
         )
         .map((id) => options.find((opt) => opt.id === id)?.name)
@@ -251,6 +241,9 @@ export function generateStackCommand(stack: StackState) {
     `--orm ${stack.orm}`,
     `--db-setup ${stack.dbSetup}`,
     `--package-manager ${stack.packageManager}`,
+    ...(stack.versionChannel !== DEFAULT_STACK.versionChannel
+      ? [`--version-channel ${stack.versionChannel}`]
+      : []),
     stack.git === "false" ? "--no-git" : "--git",
     `--web-deploy ${stack.webDeploy}`,
     `--server-deploy ${stack.serverDeploy}`,
@@ -326,6 +319,9 @@ function generateRustCommand(stack: StackState, projectName: string) {
   if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
     flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
   }
+  if (stack.versionChannel !== DEFAULT_STACK.versionChannel) {
+    flags.push(`--version-channel ${stack.versionChannel}`);
+  }
   if (stack.git === "false") {
     flags.push("--no-git");
   }
@@ -362,6 +358,9 @@ function generatePythonCommand(stack: StackState, projectName: string) {
   }
   if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
     flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
+  }
+  if (stack.versionChannel !== DEFAULT_STACK.versionChannel) {
+    flags.push(`--version-channel ${stack.versionChannel}`);
   }
   if (stack.git === "false") {
     flags.push("--no-git");
@@ -400,6 +399,9 @@ function generateGoCommand(stack: StackState, projectName: string) {
   }
   if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
     flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
+  }
+  if (stack.versionChannel !== DEFAULT_STACK.versionChannel) {
+    flags.push(`--version-channel ${stack.versionChannel}`);
   }
   if (stack.git === "false") {
     flags.push("--no-git");
