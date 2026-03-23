@@ -231,9 +231,10 @@ export async function displayPostInstallInstructions(
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
 
   output += `\n${pc.bold(
-    "Like Better Fullstack?",
-  )} Please consider giving us a star\n   on GitHub:\n`;
-  output += pc.cyan("https://github.com/Marve10s/Better-Fullstack");
+    "Enjoying Better Fullstack?",
+  )} Help us grow — star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
 
   consola.box(output);
 }
@@ -543,9 +544,10 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
   output += `${pc.cyan("•")} Lint: cargo clippy\n`;
 
   output += `\n${pc.bold(
-    "Like Better Fullstack?",
-  )} Please consider giving us a star\n   on GitHub:\n`;
-  output += pc.cyan("https://github.com/Marve10s/Better-Fullstack");
+    "Enjoying Better Fullstack?",
+  )} Help us grow — star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
 
   consola.box(output);
 }
@@ -620,9 +622,10 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
   }
 
   output += `\n${pc.bold(
-    "Like Better Fullstack?",
-  )} Please consider giving us a star\n   on GitHub:\n`;
-  output += pc.cyan("https://github.com/Marve10s/Better-Fullstack");
+    "Enjoying Better Fullstack?",
+  )} Help us grow — star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
 
   consola.box(output);
 }
@@ -722,9 +725,10 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `${pc.cyan("•")} API: http://localhost:8000\n`;
 
   output += `\n${pc.bold(
-    "Like Better Fullstack?",
-  )} Please consider giving us a star\n   on GitHub:\n`;
-  output += pc.cyan("https://github.com/Marve10s/Better-Fullstack");
+    "Enjoying Better Fullstack?",
+  )} Help us grow — star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
 
   consola.box(output);
 }

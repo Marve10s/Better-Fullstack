@@ -16,7 +16,7 @@ import {
   DEFAULT_X_IMAGE_URL,
   SITE_NAME,
   canonicalUrl,
-  organizationJsonLd,
+  siteJsonLd,
 } from "@/lib/seo";
 import "@/styles/global.css";
 
@@ -53,7 +53,7 @@ export const Route = createRootRoute({
       {
         name: "keywords",
         content:
-          "fullstack, CLI, project scaffolding, boilerplate, TypeScript, Rust, Drizzle, Prisma, hono, elysia, turborepo, trpc, orpc, turso, neon, Better-Auth, convex, monorepo, Better-Fullstack",
+          "fullstack, CLI, scaffolding, boilerplate, starter kit, project generator, TypeScript, Rust, Python, Go, Next.js, Nuxt, SvelteKit, Astro, Angular, Solid, React, Vite, Hono, Elysia, Express, FastAPI, Django, Axum, Actix, Gin, Drizzle, Prisma, tRPC, oRPC, Better-Auth, Convex, Turborepo, monorepo, auth, payments, AI, deploy, Docker, Tauri, Expo, React Native, create-t3-app alternative",
       },
       { property: "og:title", content: SITE_NAME },
       {
@@ -118,7 +118,7 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
         />
       </head>
       <body className="bg-background text-foreground">
