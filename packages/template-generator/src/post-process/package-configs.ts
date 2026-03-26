@@ -24,6 +24,13 @@ type PackageManagerConfig = {
   filter: (workspace: string, script: string) => string;
 };
 
+const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
+  npm: "10.9.2",
+  pnpm: "10.17.1",
+  bun: "1.3.5",
+  yarn: "4.12.0",
+};
+
 /**
  * Update all package.json files with proper names, scripts, and workspaces
  */
@@ -119,8 +126,11 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["db:down"] = pmConfig.filter(dbPackageName, "db:down");
   }
 
-  pkgJson.packageManager =
-    packageManager === "yarn" ? "yarn@4.12.0" : `${packageManager}@latest`;
+  // Virtual generation runs in preview and test contexts where we cannot shell out
+  // to discover the user's installed package manager version. Keep the field valid
+  // so generated workspaces remain buildable; the CLI create() path rewrites this to
+  // the actual local version after scaffolding.
+  pkgJson.packageManager = `${packageManager}@${VIRTUAL_PACKAGE_MANAGER_VERSIONS[packageManager]}`;
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
