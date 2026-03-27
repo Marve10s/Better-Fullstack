@@ -12,6 +12,19 @@ const KILL_GRACE_MS = 3_000;
 
 const URL_REGEX = /https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0):(\d+)/g;
 
+// ── Exported Types ──────────────────────────────────────────────────────
+
+export type DevServerHandle = {
+  proc: ReturnType<typeof Bun.spawn>;
+  serverUrl: string;
+  config: ProjectConfig;
+  stdoutBuf: () => string;
+  stderrBuf: () => string;
+  startTime: number;
+};
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+
 function extractUrlFromOutput(text: string, expectedPort?: number): string | null {
   const matches = [...text.matchAll(URL_REGEX)];
   if (matches.length === 0) return null;
@@ -41,7 +54,7 @@ const EXTERNAL_DB_TYPES = new Set([
   "planetscale", "neon", "turso", "xata", "supabase",
 ]);
 
-function isDbDependentProject(config: ProjectConfig): boolean {
+export function isDbDependentProject(config: ProjectConfig): boolean {
   return EXTERNAL_DB_TYPES.has(config.database);
 }
 
@@ -58,7 +71,7 @@ const DB_ERROR_PATTERNS = [
   /getaddrinfo.*ENOTFOUND/i,
 ];
 
-const HTML_ERROR_PATTERNS = [
+export const HTML_ERROR_PATTERNS = [
   /Internal Server Error/i,
   /Application error/i,
   /Unhandled Runtime Error/i,
@@ -74,7 +87,7 @@ const HTML_ERROR_PATTERNS = [
   /There was an error while hydrating/i,
 ];
 
-function validateHtmlResponse(
+export function validateHtmlResponse(
   body: string,
   status: number,
   config?: ProjectConfig,
@@ -192,101 +205,128 @@ async function killProcessTree(pid: number): Promise<void> {
   }
 }
 
+// ── Server Lifecycle ────────────────────────────────────────────────────
+
+/**
+ * Start a dev server and wait for it to be reachable.
+ * Returns a handle that can be passed to stopDevServer().
+ * Throws with a StepResult-shaped error if the server fails to start.
+ */
+export async function startDevServer(
+  projectDir: string,
+  config: ProjectConfig,
+): Promise<DevServerHandle> {
+  const start = Date.now();
+
+  const proc = Bun.spawn(["bun", "run", "dev"], {
+    cwd: projectDir,
+    stdout: "pipe",
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      NO_COLOR: "1",
+      BROWSER: "none",
+      FORCE_COLOR: "0",
+    },
+  });
+
+  let _stdoutBuf = "";
+  let _stderrBuf = "";
+  const decoder = new TextDecoder();
+
+  const readStream = (
+    stream: ReadableStream<Uint8Array>,
+    target: "stdout" | "stderr",
+  ) => {
+    const reader = stream.getReader();
+    (async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          if (target === "stdout") _stdoutBuf += chunk;
+          else _stderrBuf += chunk;
+        }
+      } catch {}
+    })();
+  };
+
+  readStream(proc.stdout as ReadableStream<Uint8Array>, "stdout");
+  readStream(proc.stderr as ReadableStream<Uint8Array>, "stderr");
+
+  let serverUrl: string | null = null;
+  const urlDeadline = Date.now() + DEV_STARTUP_TIMEOUT_MS;
+
+  while (Date.now() < urlDeadline && !serverUrl) {
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+
+    if (proc.exitCode !== null) {
+      throw Object.assign(
+        new Error(`Dev server exited with code ${proc.exitCode}`),
+        { stdoutBuf: _stdoutBuf, stderrBuf: _stderrBuf },
+      );
+    }
+
+    const port = getExpectedPort(config);
+    serverUrl =
+      extractUrlFromOutput(_stdoutBuf, port) || extractUrlFromOutput(_stderrBuf, port);
+  }
+
+  if (!serverUrl) {
+    const fallbackUrl = getExpectedDevUrl(config);
+    try {
+      const resp = await fetch(fallbackUrl, {
+        signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT_MS),
+      });
+      await resp.text();
+      serverUrl = fallbackUrl;
+    } catch {}
+  }
+
+  if (!serverUrl) {
+    await killProcessTree(proc.pid);
+    throw Object.assign(
+      new Error(`Could not detect dev server URL within ${DEV_STARTUP_TIMEOUT_MS / 1000}s`),
+      { stdoutBuf: _stdoutBuf, stderrBuf: _stderrBuf },
+    );
+  }
+
+  // Let the server stabilize
+  await new Promise((r) => setTimeout(r, 2000));
+
+  return {
+    proc,
+    serverUrl,
+    config,
+    stdoutBuf: () => _stdoutBuf,
+    stderrBuf: () => _stderrBuf,
+    startTime: start,
+  };
+}
+
+/**
+ * Kill the dev server process tree gracefully.
+ */
+export async function stopDevServer(handle: DevServerHandle): Promise<void> {
+  if (handle.proc?.pid) {
+    await killProcessTree(handle.proc.pid);
+  }
+}
+
+// ── Original runDevCheck (backward-compatible wrapper) ──────────────────
+
 export async function runDevCheck(
   projectDir: string,
   config: ProjectConfig,
 ): Promise<StepResult> {
   const start = Date.now();
   const isDbDependent = isDbDependentProject(config);
-  let proc: ReturnType<typeof Bun.spawn> | null = null;
+
+  let handle: DevServerHandle | null = null;
 
   try {
-    proc = Bun.spawn(["bun", "run", "dev"], {
-      cwd: projectDir,
-      stdout: "pipe",
-      stderr: "pipe",
-      env: {
-        ...process.env,
-        NO_COLOR: "1",
-        BROWSER: "none",
-        FORCE_COLOR: "0",
-      },
-    });
-
-    const pid = proc.pid;
-
-    let stdoutBuf = "";
-    let stderrBuf = "";
-    const decoder = new TextDecoder();
-
-    const readStream = (
-      stream: ReadableStream<Uint8Array>,
-      target: "stdout" | "stderr",
-    ) => {
-      const reader = stream.getReader();
-      (async () => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            if (target === "stdout") stdoutBuf += chunk;
-            else stderrBuf += chunk;
-          }
-        } catch {}
-      })();
-    };
-
-    readStream(proc.stdout as ReadableStream<Uint8Array>, "stdout");
-    readStream(proc.stderr as ReadableStream<Uint8Array>, "stderr");
-
-    let serverUrl: string | null = null;
-    const urlDeadline = Date.now() + DEV_STARTUP_TIMEOUT_MS;
-
-    while (Date.now() < urlDeadline && !serverUrl) {
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-
-      if (proc.exitCode !== null) {
-        return {
-          step: "dev-check",
-          success: false,
-          durationMs: Date.now() - start,
-          stdout: stdoutBuf.slice(-2000),
-          stderr: `Dev server exited with code ${proc.exitCode}\n${stderrBuf.slice(-2000)}`,
-          classification: classifyDevCheckError(stderrBuf, stdoutBuf, config),
-          advisory: isDbDependent,
-        };
-      }
-
-      const port = getExpectedPort(config);
-      serverUrl =
-        extractUrlFromOutput(stdoutBuf, port) || extractUrlFromOutput(stderrBuf, port);
-    }
-
-    if (!serverUrl) {
-      const fallbackUrl = getExpectedDevUrl(config);
-      try {
-        const resp = await fetch(fallbackUrl, {
-          signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT_MS),
-        });
-        await resp.text();
-        serverUrl = fallbackUrl;
-      } catch {}
-    }
-
-    if (!serverUrl) {
-      return {
-        step: "dev-check",
-        success: false,
-        durationMs: Date.now() - start,
-        stdout: stdoutBuf.slice(-2000),
-        stderr: `Could not detect dev server URL within ${DEV_STARTUP_TIMEOUT_MS / 1000}s\n${stderrBuf.slice(-2000)}`,
-        classification: classifyDevCheckError(stderrBuf, stdoutBuf, config),
-        advisory: isDbDependent,
-      };
-    }
-
-    await new Promise((r) => setTimeout(r, 2000));
+    handle = await startDevServer(projectDir, config);
 
     let lastError = "";
     for (let attempt = 0; attempt < MAX_FETCH_RETRIES; attempt++) {
@@ -296,13 +336,13 @@ export async function runDevCheck(
           success: false,
           durationMs: Date.now() - start,
           stderr: `Total dev-check timeout exceeded (${TOTAL_DEV_CHECK_TIMEOUT_MS / 1000}s)\nLast error: ${lastError}`,
-          classification: classifyDevCheckError(stderrBuf, stdoutBuf, config),
+          classification: classifyDevCheckError(handle.stderrBuf(), handle.stdoutBuf(), config),
           advisory: isDbDependent,
         };
       }
 
       try {
-        const resp = await fetch(serverUrl, {
+        const resp = await fetch(handle.serverUrl, {
           signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT_MS),
         });
         const body = await resp.text();
@@ -313,7 +353,7 @@ export async function runDevCheck(
             step: "dev-check",
             success: true,
             durationMs: Date.now() - start,
-            stdout: `${serverUrl} → ${resp.status} (${body.length} bytes)`,
+            stdout: `${handle.serverUrl} → ${resp.status} (${body.length} bytes)`,
             advisory: isDbDependent,
           };
         }
@@ -325,11 +365,11 @@ export async function runDevCheck(
             step: "dev-check",
             success: false,
             durationMs: Date.now() - start,
-            stdout: `${serverUrl} → ${resp.status} (${body.length} bytes)`,
+            stdout: `${handle.serverUrl} → ${resp.status} (${body.length} bytes)`,
             stderr: `Page loaded but has errors:\n${validation.errors.join("\n")}\n\nBody (first 2000 chars):\n${body.slice(0, 2000)}`,
             classification: classifyDevCheckError(
-              stderrBuf + "\n" + body,
-              stdoutBuf,
+              handle.stderrBuf() + "\n" + body,
+              handle.stdoutBuf(),
               config,
             ),
             advisory: isDbDependent,
@@ -349,23 +389,25 @@ export async function runDevCheck(
       step: "dev-check",
       success: false,
       durationMs: Date.now() - start,
-      stdout: stdoutBuf.slice(-2000),
-      stderr: `Failed to get valid response from ${serverUrl} after ${MAX_FETCH_RETRIES} attempts\nLast error: ${lastError}\nServer stderr:\n${stderrBuf.slice(-1000)}`,
-      classification: classifyDevCheckError(stderrBuf, stdoutBuf, config),
+      stdout: handle.stdoutBuf().slice(-2000),
+      stderr: `Failed to get valid response from ${handle.serverUrl} after ${MAX_FETCH_RETRIES} attempts\nLast error: ${lastError}\nServer stderr:\n${handle.stderrBuf().slice(-1000)}`,
+      classification: classifyDevCheckError(handle.stderrBuf(), handle.stdoutBuf(), config),
       advisory: isDbDependent,
     };
   } catch (error) {
+    const err = error as Error & { stdoutBuf?: string; stderrBuf?: string };
     return {
       step: "dev-check",
       success: false,
       durationMs: Date.now() - start,
-      stderr: error instanceof Error ? error.message : String(error),
-      classification: "unknown",
-      advisory: isDbDependentProject(config),
+      stdout: err.stdoutBuf?.slice(-2000),
+      stderr: `${err.message}\n${err.stderrBuf?.slice(-2000) ?? ""}`,
+      classification: classifyDevCheckError(err.stderrBuf ?? "", err.stdoutBuf ?? "", config),
+      advisory: isDbDependent,
     };
   } finally {
-    if (proc?.pid) {
-      await killProcessTree(proc.pid);
+    if (handle) {
+      await stopDevServer(handle);
     }
   }
 }

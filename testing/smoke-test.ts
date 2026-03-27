@@ -5,9 +5,12 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Ecosystem } from "@better-fullstack/types";
 
+import { readFileSync } from "node:fs";
+
 import { generateBatch } from "./lib/generate-combos/options";
 import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
 import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+import { buildMajorDepCombos, buildMajorDepCombosFromDiff, type MajorDepInfo } from "./lib/major-dep-combos";
 import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
 
@@ -20,7 +23,11 @@ interface SmokeTestArgs {
   output: string;
   devCheck: boolean;
   strict?: boolean;
+  routeCheck: boolean;
   preset?: string;
+  majorDeps?: boolean;
+  majorDepsPackages?: string;
+  majorDepsDiff?: string;
 }
 
 // ── Arg Parsing ─────────────────────────────────────────────────────────
@@ -31,6 +38,7 @@ function parseArgs(argv: string[]): SmokeTestArgs {
     count: 14,
     output: resolve(process.cwd(), "testing/.smoke-output"),
     devCheck: false,
+    routeCheck: false,
   };
 
   let countExplicit = false;
@@ -70,14 +78,31 @@ function parseArgs(argv: string[]): SmokeTestArgs {
       case "--strict":
         args.strict = true;
         break;
+      case "--route-check":
+        args.routeCheck = true;
+        args.devCheck = true; // route-check implies dev-check
+        break;
       case "--preset":
         if (next) args.preset = next;
+        i++;
+        break;
+      case "--major-deps":
+        args.majorDeps = true;
+        break;
+      case "--major-deps-packages":
+        if (next) args.majorDepsPackages = next;
+        args.majorDeps = true;
+        i++;
+        break;
+      case "--major-deps-diff":
+        if (next) args.majorDepsDiff = next;
+        args.majorDeps = true;
         i++;
         break;
     }
   }
 
-  if (args.preset && !countExplicit) {
+  if ((args.preset || args.majorDeps) && !countExplicit) {
     args.count = 0;
   }
 
@@ -186,13 +211,19 @@ async function scaffoldProject(
 function formatMarkdownSummary(
   seed: string,
   results: VerifyResult[],
-  options?: { presetId?: string; devCheckEnabled?: boolean },
+  options?: { presetId?: string; devCheckEnabled?: boolean; majorDepInfo?: MajorDepInfo[] },
 ): string {
-  const { presetId, devCheckEnabled } = options ?? {};
+  const { presetId, devCheckEnabled, majorDepInfo: depInfo } = options ?? {};
   const passed = results.filter((r) => r.overallSuccess).length;
   const failed = results.filter((r) => !r.overallSuccess).length;
 
-  let md = "## Smoke Test Results\n\n";
+  let md = depInfo ? "## Major Dependency Smoke Test Results\n\n" : "## Smoke Test Results\n\n";
+
+  if (depInfo && depInfo.length > 0) {
+    const pkgList = depInfo.map((p) => `${p.name} ^${p.oldMajor}\u2192^${p.newMajor}`).join(", ");
+    md += `**Packages tested:** ${pkgList}\n`;
+  }
+
   md += `**Seed**: \`${seed}\`\n`;
   md += `**Total**: ${results.length} | **Passed**: ${passed} | **Failed**: ${failed}\n\n`;
 
@@ -249,7 +280,54 @@ function formatMarkdownSummary(
 const args = parseArgs(process.argv.slice(2));
 
 let combos: ComboCandidate[];
-if (args.preset) {
+let majorDepInfo: MajorDepInfo[] | undefined;
+
+if (args.majorDeps) {
+  // Major-dependency mode: build combos targeting specific package updates
+  let majorPackageNames: string[];
+
+  if (args.majorDepsPackages) {
+    majorPackageNames = args.majorDepsPackages.split(",").map((s) => s.trim()).filter(Boolean);
+    combos = buildMajorDepCombos(majorPackageNames);
+  } else if (args.majorDepsDiff) {
+    const diffText = readFileSync(args.majorDepsDiff, "utf-8");
+    const result = buildMajorDepCombosFromDiff(diffText);
+    majorDepInfo = result.packages;
+    combos = result.combos;
+    majorPackageNames = result.packages.map((p) => p.name);
+  } else {
+    // Auto-detect from git diff
+    try {
+      const proc = Bun.spawn(
+        ["git", "diff", "HEAD~1", "--", "packages/template-generator/src/utils/add-deps.ts"],
+        { stdout: "pipe", stderr: "pipe" },
+      );
+      const diffText = await new Response(proc.stdout).text();
+      await proc.exited;
+      const result = buildMajorDepCombosFromDiff(diffText);
+      majorDepInfo = result.packages;
+      combos = result.combos;
+      majorPackageNames = result.packages.map((p) => p.name);
+    } catch {
+      console.error("Failed to auto-detect major deps from git diff. Use --major-deps-packages or --major-deps-diff.");
+      process.exit(1);
+    }
+  }
+
+  if (combos.length === 0) {
+    console.log("No major-dep combos to test (no matching package rules found).");
+    process.exit(0);
+  }
+
+  const flags = [args.devCheck && "dev-check", args.routeCheck && "route-check"].filter(Boolean).join(", ");
+  console.log(`Running major-deps smoke test (${combos.length} combo(s) for ${majorPackageNames.length} package(s))${flags ? ` [${flags}]` : ""}\n`);
+  if (majorDepInfo) {
+    for (const p of majorDepInfo) {
+      console.log(`  ${p.name}: ^${p.oldMajor} → ^${p.newMajor}`);
+    }
+    console.log();
+  }
+} else if (args.preset) {
   combos = getPresetCombos(args.preset);
   console.log(`Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${args.devCheck ? " [dev-check enabled]" : ""}\n`);
 } else {
@@ -294,6 +372,8 @@ for (const combo of combos) {
   const result = await verify(combo.name, scaffoldResult.projectDir, {
     devCheck: args.devCheck,
     strict: args.strict,
+    routeCheck: args.routeCheck,
+    outputDir: args.output,
     config: combo.config,
   });
   results.push(result);
@@ -332,6 +412,7 @@ await writeFile(
   formatMarkdownSummary(args.seed, results, {
     presetId: args.preset,
     devCheckEnabled: args.devCheck,
+    majorDepInfo,
   }),
 );
 

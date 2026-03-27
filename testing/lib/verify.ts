@@ -2,7 +2,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
 
-import { runDevCheck } from "./dev-check";
+import { runDevCheck, startDevServer, stopDevServer, isDbDependentProject } from "./dev-check";
+import { runRouteCheck } from "./route-check";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
 
@@ -21,6 +22,8 @@ export type StepResult = {
 export type VerifyOptions = {
   devCheck?: boolean;
   strict?: boolean;
+  routeCheck?: boolean;
+  outputDir?: string;
   config?: ProjectConfig;
 };
 
@@ -196,11 +199,43 @@ export async function verifyTypeScript(
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
   if (options?.devCheck && options?.config) {
-    const devCheckResult = await runDevCheck(projectDir, options.config);
-    if (options.strict) {
-      devCheckResult.advisory = false;
+    if (options.routeCheck) {
+      // Start server, run dev-check validation, then route-check, then stop
+      const isDbDep = isDbDependentProject(options.config);
+      try {
+        const handle = await startDevServer(projectDir, options.config);
+        try {
+          const devStep: StepResult = {
+            step: "dev-check",
+            success: true,
+            durationMs: Date.now() - handle.startTime,
+            stdout: `${handle.serverUrl} → server started`,
+            advisory: options.strict ? false : isDbDep,
+          };
+          steps.push(devStep);
+          steps.push(await runRouteCheck(handle, options.outputDir));
+        } finally {
+          await stopDevServer(handle);
+        }
+      } catch (error) {
+        const err = error as Error & { stdoutBuf?: string; stderrBuf?: string };
+        steps.push({
+          step: "dev-check",
+          success: false,
+          durationMs: 0,
+          stderr: `${err.message}\n${err.stderrBuf?.slice(-2000) ?? ""}`,
+          classification: "unknown",
+          advisory: options.strict ? false : isDbDep,
+        });
+        steps.push(skippedStep("route-check"));
+      }
+    } else {
+      const devCheckResult = await runDevCheck(projectDir, options.config);
+      if (options.strict) {
+        devCheckResult.advisory = false;
+      }
+      steps.push(devCheckResult);
     }
-    steps.push(devCheckResult);
   }
   if (isConvex) {
     steps.push(skippedStep("build"));

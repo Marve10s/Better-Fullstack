@@ -5,7 +5,7 @@ import { buildHistoryFingerprint, fingerprintToKey } from "./generate-combos/fin
 import { buildCommand } from "./generate-combos/render";
 import type { ComboCandidate } from "./generate-combos/types";
 
-function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
+export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
   return {
     projectName: name,
     projectDir: path.resolve(process.cwd(), name),
