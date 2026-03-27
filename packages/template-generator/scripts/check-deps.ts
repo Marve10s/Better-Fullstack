@@ -251,7 +251,10 @@ async function main() {
     const outputFile = process.env.GITHUB_OUTPUT;
     const outdatedCount = result.outdated.length;
     const downgradeCount = result.outdated.filter((u) => u.updateType === "downgrade").length;
+    const majorUpdates = result.outdated.filter((u) => u.updateType === "major");
     const hasUpdates = outdatedCount > 0 ? "true" : "false";
+    const hasMajorUpdates = majorUpdates.length > 0 ? "true" : "false";
+    const majorPackageNames = majorUpdates.map((u) => u.name).join(",");
 
     fs.appendFileSync(
       outputFile,
@@ -259,7 +262,9 @@ async function main() {
         `outdated_count=${outdatedCount}\n` +
         `downgrade_count=${downgradeCount}\n` +
         `uptodate_count=${result.upToDate.length}\n` +
-        `error_count=${result.errors.length}\n`,
+        `error_count=${result.errors.length}\n` +
+        `has_major_updates=${hasMajorUpdates}\n` +
+        `major_packages=${majorPackageNames}\n`,
     );
   }
 

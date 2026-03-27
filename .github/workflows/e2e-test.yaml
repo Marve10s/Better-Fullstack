@@ -1,0 +1,182 @@
+name: E2E & Integration Tests
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: "Run CLI E2E runtime tests"
+        type: boolean
+        default: true
+      run_smoke_strict:
+        description: "Run strict smoke tests (dev-check blocking)"
+        type: boolean
+        default: true
+      run_playwright:
+        description: "Run Playwright web builder tests"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-runtime:
+    name: E2E Runtime Tests
+    if: ${{ inputs.run_e2e != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: e2e-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: e2e-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run E2E Tests
+        env:
+          E2E: "1"
+        run: bun test apps/cli/test/e2e/e2e.e2e.ts --timeout 600000
+
+      - name: Upload E2E Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: apps/cli/.smoke-e2e/
+          if-no-files-found: warn
+          retention-days: 7
+
+  smoke-strict:
+    name: Strict Smoke Tests
+    if: ${{ inputs.run_smoke_strict != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: smoke-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: smoke-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Strict Smoke Tests
+        run: |
+          bun run testing/smoke-test.ts \
+            --preset all \
+            --dev-check \
+            --strict \
+            --output testing/.smoke-output
+
+      - name: Post Summary
+        if: always()
+        run: |
+          if [ -f testing/.smoke-output/summary.md ]; then
+            cat testing/.smoke-output/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-strict-results
+          path: testing/.smoke-output/
+          if-no-files-found: warn
+          retention-days: 7
+
+  playwright:
+    name: Playwright Web Builder Tests
+    if: ${{ inputs.run_playwright != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: pw-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: pw-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+
+      - name: Install Playwright Browsers
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright Tests
+        working-directory: apps/web
+        run: npx playwright test
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/test-results/
+          if-no-files-found: warn
+          retention-days: 7

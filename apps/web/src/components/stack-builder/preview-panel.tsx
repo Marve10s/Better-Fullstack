@@ -171,7 +171,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           )}
         >
           <FolderTree className="h-3.5 w-3.5" />
-          <span>{directoryCount} folders</span>
+          <span data-testid="preview-folder-count">{directoryCount} folders</span>
         </div>
         <div
           className={cn(
@@ -180,7 +180,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           )}
         >
           <FileCode2 className="h-3.5 w-3.5" />
-          <span>{fileCount} files</span>
+          <span data-testid="preview-file-count">{fileCount} files</span>
         </div>
         {/* Show current file name on mobile */}
         {mobileView === "code" && selectedFile && (
@@ -240,6 +240,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
       <div className="flex flex-1 overflow-hidden">
         {/* File explorer - full width on mobile when tree view, hidden when code view */}
         <div
+          data-testid="preview-file-explorer"
           className={cn(
             "shrink-0 overflow-hidden border-r border-border",
             "w-full sm:w-48 md:w-56 lg:w-64",

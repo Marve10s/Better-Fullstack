@@ -109,6 +109,11 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build Core Packages
+        run: |
+          bun run --filter=@better-fullstack/types build
+          bun run --filter=@better-fullstack/template-generator build
+
       - name: Run Tests
         run: bun run test
 

@@ -31,6 +31,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      has_major_updates: ${{ steps.check.outputs.has_major_updates }}
+      major_packages: ${{ steps.check.outputs.major_packages }}
 
     steps:
       - name: Checkout Code
@@ -88,6 +91,12 @@ jobs:
           fi
           if ! grep -q "^downgrade_count=" "$GITHUB_OUTPUT"; then
             echo "downgrade_count=0" >> "$GITHUB_OUTPUT"
+          fi
+          if ! grep -q "^has_major_updates=" "$GITHUB_OUTPUT"; then
+            echo "has_major_updates=false" >> "$GITHUB_OUTPUT"
+          fi
+          if ! grep -q "^major_packages=" "$GITHUB_OUTPUT"; then
+            echo "major_packages=" >> "$GITHUB_OUTPUT"
           fi
 
           # Store the report
@@ -157,8 +166,82 @@ jobs:
           echo "**Mode:** ${{ steps.check.outputs.effective_update_mode }}" >> $GITHUB_STEP_SUMMARY
           echo "**Has Updates:** ${{ steps.check.outputs.has_updates }}" >> $GITHUB_STEP_SUMMARY
           echo "**Downgrades Detected:** ${{ steps.check.outputs.downgrade_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Major Updates:** ${{ steps.check.outputs.has_major_updates }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Report" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.check.outputs.report }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+  major-deps-smoke:
+    name: Major Deps Smoke Test
+    needs: check-versions
+    if: needs.check-versions.outputs.has_major_updates == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: deps/version-updates
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: major-smoke-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            major-smoke-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Install Playwright
+        run: bunx playwright install chromium --with-deps
+
+      - name: Run Major Deps Smoke Test
+        run: |
+          bun run testing/smoke-test.ts \
+            --major-deps \
+            --major-deps-packages "${{ needs.check-versions.outputs.major_packages }}" \
+            --dev-check \
+            --route-check \
+            --output testing/.smoke-output
+        continue-on-error: true
+
+      - name: Post Step Summary
+        if: always()
+        run: |
+          if [ -f testing/.smoke-output/summary.md ]; then
+            cat testing/.smoke-output/summary.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: major-deps-smoke-results
+          path: testing/.smoke-output/
+          retention-days: 7
