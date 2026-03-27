@@ -1177,7 +1177,7 @@ export default defineConfig({
     "db:migrate": "bun run --filter @snapshot-tanstack-router-minimal/db db:migrate",
     "db:local": "bun run --filter @snapshot-tanstack-router-minimal/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -1785,7 +1785,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "db:generate": "bun run --filter @snapshot-next-self-fullstack/db db:generate",
     "db:migrate": "bun run --filter @snapshot-next-self-fullstack/db db:migrate"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -2429,7 +2429,7 @@ export const client = createORPCClient<typeof appRouter>(link);
     "db:migrate": "bun run --filter @snapshot-astro-react-integration/db db:migrate",
     "db:local": "bun run --filter @snapshot-astro-react-integration/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -2939,7 +2939,7 @@ export default defineNuxtConfig({
     "db:migrate": "bun run --filter @snapshot-nuxt-standalone/db db:migrate",
     "db:local": "bun run --filter @snapshot-nuxt-standalone/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -3698,7 +3698,7 @@ export default defineConfig({
     "db:generate": "bun run --filter @snapshot-express-node-trpc/db db:generate",
     "db:migrate": "bun run --filter @snapshot-express-node-trpc/db db:migrate"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -4480,7 +4480,7 @@ export default defineConfig({
     "db:migrate": "bun run --filter @snapshot-hono-bun-orpc/db db:migrate",
     "db:local": "bun run --filter @snapshot-hono-bun-orpc/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -5276,7 +5276,7 @@ export default defineConfig({
     "db:generate": "bun run --filter @snapshot-better-auth-full/db db:generate",
     "db:migrate": "bun run --filter @snapshot-better-auth-full/db db:migrate"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -6101,7 +6101,7 @@ export default defineConfig({
     "dev:server": "bun run --filter @snapshot-convex-clerk/backend dev",
     "dev:setup": "bun run --filter @snapshot-convex-clerk/backend dev:setup"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -6594,7 +6594,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "db:migrate": "bun run --filter @snapshot-self-next-clerk/db db:migrate",
     "db:local": "bun run --filter @snapshot-self-next-clerk/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -7275,7 +7275,7 @@ export default defineConfig({
     "db:migrate": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:migrate",
     "db:local": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -8026,7 +8026,7 @@ export default defineConfig({
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -8750,7 +8750,7 @@ export default defineConfig({
     "db:generate": "bun run --filter @snapshot-postgres-prisma/db db:generate",
     "db:migrate": "bun run --filter @snapshot-postgres-prisma/db db:migrate"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -9308,7 +9308,7 @@ export default defineConfig({
     "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -9908,7 +9908,7 @@ export default app;
     "db:migrate": "bun run --filter @snapshot-native-react-native/db db:migrate",
     "db:local": "bun run --filter @snapshot-native-react-native/db db:local"
   },
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@latest",
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
