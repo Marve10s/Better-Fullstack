@@ -68,14 +68,20 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
       [key: string]: unknown;
     }>(webPath);
     if (pkgJson?.scripts) {
-      const existingDev = pkgJson.scripts.dev || "next dev --port 3001";
-      pkgJson.scripts.dev = `tinacms dev -c "${existingDev}"`;
+      const existingDev = pkgJson.scripts.dev;
+      if (existingDev) {
+        pkgJson.scripts.dev = `tinacms dev -c "${existingDev}"`;
+      }
 
-      const existingBuild = pkgJson.scripts.build || "next build";
-      pkgJson.scripts.build = `tinacms build && ${existingBuild}`;
+      const existingBuild = pkgJson.scripts.build;
+      if (existingBuild) {
+        pkgJson.scripts.build = `tinacms build && ${existingBuild}`;
+      }
 
-      const existingCheckTypes = pkgJson.scripts["check-types"] || "tsc --noEmit";
-      pkgJson.scripts["check-types"] = `tinacms build && ${existingCheckTypes}`;
+      const existingCheckTypes = pkgJson.scripts["check-types"];
+      if (existingCheckTypes) {
+        pkgJson.scripts["check-types"] = `tinacms build && ${existingCheckTypes}`;
+      }
 
       vfs.writeJson(webPath, pkgJson);
     }
