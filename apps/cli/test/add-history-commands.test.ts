@@ -42,7 +42,8 @@ async function runCli(
     lastResult = result;
     const transientModuleRace =
       result.exitCode !== 0 &&
-      result.stderr.includes("Cannot find module '@better-fullstack/types'");
+      (result.stderr.includes("Cannot find module '@better-fullstack/types'") ||
+        result.stderr.includes("Cannot find module '@better-fullstack/template-generator'"));
 
     if (!transientModuleRace) {
       return result;

@@ -25,6 +25,9 @@ import {
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
 } from "../../validation";
+import { validatePreflightConfig } from "@better-fullstack/template-generator";
+
+import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { createProject } from "./create-project";
 
 export interface CreateHandlerOptions {
@@ -229,6 +232,11 @@ export async function createProjectHandler(
 
         validateConfigCompatibility(config, providedFlags, cliInput);
 
+        const yesPreflight = validatePreflightConfig(config);
+        if (yesPreflight.hasWarnings && !isSilent()) {
+          displayPreflightWarnings(yesPreflight);
+        }
+
         if (!isSilent()) {
           log.info(pc.yellow("Using default/flag options (config prompts skipped):"));
           log.message(displayConfig(config));
@@ -250,6 +258,11 @@ export async function createProjectHandler(
           finalPathInput,
         );
         config = { ...gatheredConfig, versionChannel };
+      }
+
+      const preflight = validatePreflightConfig(config);
+      if (preflight.hasWarnings && !isSilent()) {
+        displayPreflightWarnings(preflight);
       }
 
       await createProject(config, {

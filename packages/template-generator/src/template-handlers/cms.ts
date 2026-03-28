@@ -4,6 +4,23 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { type TemplateData, processTemplatesFromPrefix } from "./utils";
 
+const REACT_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+]);
+
+function getCMSVariant(frontend: readonly string[]): string | null {
+  if (frontend.includes("next")) return "next";
+  if (frontend.includes("astro")) return "astro";
+  if (frontend.includes("nuxt")) return "nuxt";
+  if (frontend.includes("svelte")) return "svelte";
+  if (frontend.some((f) => REACT_FRONTENDS.has(f))) return "react";
+  return null;
+}
+
 export async function processCMSTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
@@ -11,26 +28,15 @@ export async function processCMSTemplates(
 ): Promise<void> {
   if (!config.cms || config.cms === "none") return;
 
-  // Both Payload and Sanity require Next.js for optimal integration
-  const hasNext = config.frontend.includes("next");
-
-  if (config.cms === "payload" && hasNext) {
-    // Process Payload CMS templates for Next.js
-    processTemplatesFromPrefix(vfs, templates, "cms/payload/web/next", "apps/web", config);
+  if (config.cms === "payload") {
+    if (config.frontend.includes("next")) {
+      processTemplatesFromPrefix(vfs, templates, "cms/payload/web/next", "apps/web", config);
+    }
+    return;
   }
 
-  if (config.cms === "sanity" && hasNext) {
-    // Process Sanity CMS templates for Next.js
-    processTemplatesFromPrefix(vfs, templates, "cms/sanity/web/next", "apps/web", config);
-  }
+  const variant = getCMSVariant(config.frontend);
+  if (!variant) return;
 
-  if (config.cms === "strapi" && hasNext) {
-    // Process Strapi CMS templates for Next.js
-    processTemplatesFromPrefix(vfs, templates, "cms/strapi/web/next", "apps/web", config);
-  }
-
-  if (config.cms === "tinacms" && hasNext) {
-    // Process TinaCMS templates for Next.js
-    processTemplatesFromPrefix(vfs, templates, "cms/tinacms/web/next", "apps/web", config);
-  }
+  processTemplatesFromPrefix(vfs, templates, `cms/${config.cms}/web/${variant}`, "apps/web", config);
 }

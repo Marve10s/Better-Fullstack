@@ -5,7 +5,7 @@ import { buildHistoryFingerprint, fingerprintToKey } from "./generate-combos/fin
 import { buildCommand } from "./generate-combos/render";
 import type { ComboCandidate } from "./generate-combos/types";
 
-function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
+export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
   return {
     projectName: name,
     projectDir: path.resolve(process.cwd(), name),
@@ -179,6 +179,77 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       orm: "drizzle",
       auth: "better-auth",
       cssFramework: "tailwind",
+      addons: ["turborepo"],
+    },
+  },
+
+  "next-payload": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["next"],
+      backend: "self",
+      runtime: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      cms: "payload",
+      api: "trpc",
+      addons: ["turborepo"],
+    },
+  },
+
+  "astro-sanity": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["astro"],
+      backend: "hono",
+      runtime: "bun",
+      cms: "sanity",
+      astroIntegration: "react",
+      api: "trpc",
+      addons: ["turborepo"],
+    },
+  },
+
+  "nuxt-fullstack": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["nuxt"],
+      backend: "self",
+      runtime: "none",
+      api: "orpc",
+      auth: "better-auth",
+      addons: ["turborepo"],
+    },
+  },
+
+  "react-router-hono": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["react-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "orpc",
+      addons: ["turborepo"],
+    },
+  },
+
+  "tanstack-start-fullstack": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["tanstack-start"],
+      backend: "self",
+      runtime: "none",
+      api: "orpc",
+      auth: "better-auth",
+      cssFramework: "tailwind",
+      uiLibrary: "shadcn-ui",
+      shadcnBase: "radix",
+      shadcnStyle: "nova",
+      shadcnIconLibrary: "lucide",
+      shadcnColorTheme: "neutral",
+      shadcnBaseColor: "neutral",
+      shadcnFont: "inter",
+      shadcnRadius: "default",
       addons: ["turborepo"],
     },
   },

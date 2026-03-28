@@ -1,6 +1,7 @@
 import type { ExecaChildProcess } from "execa";
 
 import { execa } from "execa";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { runTRPCTest, type TestConfig } from "../test-utils";
@@ -9,6 +10,13 @@ export interface ServerProcess {
   process: ExecaChildProcess;
   port: number;
   baseUrl: string;
+  kill: () => Promise<void>;
+}
+
+export interface DevServerProcess {
+  process: ExecaChildProcess;
+  frontendUrl: string;
+  backendUrl: string | null;
   kill: () => Promise<void>;
 }
 
@@ -24,9 +32,54 @@ export interface StartServerOptions {
   timeout?: number;
 }
 
-/**
- * Generate a project with dependencies installed for E2E testing
- */
+export interface StartDevServerOptions {
+  frontend: string;
+  backend: string;
+  packageManager?: "bun" | "npm" | "pnpm";
+  timeout?: number;
+}
+
+export interface PageCheckResult {
+  ok: boolean;
+  status: number;
+  html: string;
+  errors: string[];
+}
+
+export interface AssetCheckResult {
+  ok: boolean;
+  checked: number;
+  failed: Array<{ url: string; status: number; error?: string }>;
+}
+
+export interface FrameworkCheckResult {
+  ok: boolean;
+  markers: string[];
+  missing: string[];
+}
+
+const HTML_ERROR_PATTERNS = [
+  /Internal Server Error/i,
+  /Application error/i,
+  /Unhandled Runtime Error/i,
+  /Cannot find module/i,
+  /Module not found/i,
+  /(?:Type|Reference|Syntax)Error:/,
+  /ENOENT/,
+  /Error when evaluating SSR module/i,
+  /\[vite\] Internal Server Error/i,
+  /ServerError/i,
+  /Hydration failed/i,
+  /hydration mismatch/i,
+  /There was an error while hydrating/i,
+];
+
+const VITE_WEB_FRONTENDS = new Set(["react-router", "react-vite", "svelte", "fresh"]);
+
+function getWebDevPort(frontend: string): number {
+  return VITE_WEB_FRONTENDS.has(frontend) ? 5173 : 3001;
+}
+
 export async function setupE2EProject(
   projectName: string,
   config: Partial<TestConfig>,
@@ -47,9 +100,6 @@ export async function setupE2EProject(
   };
 }
 
-/**
- * Start the dev server and wait for it to be ready
- */
 export async function startServer(
   projectDir: string,
   options: StartServerOptions = {},
@@ -59,8 +109,6 @@ export async function startServer(
   const serverDir = join(projectDir, "apps", "server");
   const baseUrl = `http://localhost:${port}`;
 
-  // Use the package manager to run the dev script
-  // The dev script handles runtime-specific execution (bun run --hot vs tsx watch)
   let command: string;
   let args: string[];
 
@@ -94,7 +142,6 @@ export async function startServer(
     reject: false,
   });
 
-  // Define handlers so we can remove them later
   const stdoutHandler = (data: Buffer) => {
     serverOutput += data.toString();
   };
@@ -102,15 +149,12 @@ export async function startServer(
     serverError += data.toString();
   };
 
-  // Capture server output for debugging
   serverProcess.stdout?.on("data", stdoutHandler);
   serverProcess.stderr?.on("data", stderrHandler);
 
-  // Wait for server to be ready
   const isReady = await waitForServer(baseUrl, timeout);
 
   if (!isReady) {
-    // Remove listeners before killing to prevent unhandled events
     serverProcess.stdout?.off("data", stdoutHandler);
     serverProcess.stderr?.off("data", stderrHandler);
     serverProcess.kill("SIGTERM");
@@ -124,35 +168,124 @@ export async function startServer(
     port,
     baseUrl,
     kill: async () => {
-      // Remove event listeners before killing to prevent unhandled events
       serverProcess.stdout?.off("data", stdoutHandler);
       serverProcess.stderr?.off("data", stderrHandler);
-
       serverProcess.kill("SIGTERM");
-      // Give it a moment to gracefully shutdown
       await new Promise((r) => setTimeout(r, 1000));
       if (!serverProcess.killed) {
         serverProcess.kill("SIGKILL");
       }
-      // Wait a bit more for streams to fully close
       await new Promise((r) => setTimeout(r, 100));
     },
   };
 }
 
 /**
- * Poll URL until it responds or timeout
+ * Start the full dev environment via turbo from the project root.
+ * For "self" backends: turbo starts the fullstack framework. Wait for frontend port.
+ * For standalone backends: turbo starts both frontend + backend. Wait for both ports.
  */
+export async function startDevServer(
+  projectDir: string,
+  options: StartDevServerOptions,
+): Promise<DevServerProcess> {
+  const { frontend, backend, packageManager = "bun", timeout = 120_000 } = options;
+
+  const frontendPort = getWebDevPort(frontend);
+  const backendPort = 3000;
+  const frontendUrl = `http://localhost:${frontendPort}`;
+  const isFullstack = backend === "self";
+  const backendUrl = isFullstack ? null : `http://localhost:${backendPort}`;
+
+  let command: string;
+  let args: string[];
+
+  switch (packageManager) {
+    case "npm":
+      command = "npm";
+      args = ["run", "dev"];
+      break;
+    case "pnpm":
+      command = "pnpm";
+      args = ["dev"];
+      break;
+    default:
+      command = "bun";
+      args = ["run", "dev"];
+      break;
+  }
+
+  let output = "";
+  let errOutput = "";
+
+  const devProcess = execa(command, args, {
+    cwd: projectDir,
+    stdio: "pipe",
+    env: {
+      ...process.env,
+      NODE_ENV: "development",
+      PORT: String(backendPort),
+    },
+    reject: false,
+  });
+
+  const stdoutHandler = (data: Buffer) => {
+    output += data.toString();
+  };
+  const stderrHandler = (data: Buffer) => {
+    errOutput += data.toString();
+  };
+
+  devProcess.stdout?.on("data", stdoutHandler);
+  devProcess.stderr?.on("data", stderrHandler);
+
+  const frontendReady = await waitForServer(frontendUrl, timeout);
+
+  if (!frontendReady) {
+    devProcess.stdout?.off("data", stdoutHandler);
+    devProcess.stderr?.off("data", stderrHandler);
+    devProcess.kill("SIGTERM");
+    console.error(`[E2E] Dev stdout:\n${output}`);
+    console.error(`[E2E] Dev stderr:\n${errOutput}`);
+    throw new Error(
+      `Frontend (${frontend}) failed to start on port ${frontendPort} within ${timeout}ms`,
+    );
+  }
+
+  if (backendUrl) {
+    const backendReady = await waitForServer(backendUrl, 30_000);
+    if (!backendReady) {
+      console.warn(`[E2E] Backend not ready on ${backendUrl} — may be expected for some configs`);
+    }
+  }
+
+  return {
+    process: devProcess,
+    frontendUrl,
+    backendUrl,
+    kill: async () => {
+      devProcess.stdout?.off("data", stdoutHandler);
+      devProcess.stderr?.off("data", stderrHandler);
+      devProcess.kill("SIGTERM");
+      await new Promise((r) => setTimeout(r, 2000));
+      if (!devProcess.killed) {
+        devProcess.kill("SIGKILL");
+      }
+      await new Promise((r) => setTimeout(r, 500));
+    },
+  };
+}
+
 export async function waitForServer(url: string, timeout = 60000): Promise<boolean> {
   const start = Date.now();
-  const pollInterval = 500;
+  const pollInterval = 1000;
 
   while (Date.now() - start < timeout) {
     try {
       const response = await fetch(url, {
         signal: AbortSignal.timeout(5000),
       });
-      if (response.ok) {
+      if (response.ok || response.status < 500) {
         return true;
       }
     } catch {
@@ -164,9 +297,6 @@ export async function waitForServer(url: string, timeout = 60000): Promise<boole
   return false;
 }
 
-/**
- * Check the health endpoint (GET /)
- */
 export async function checkHealth(baseUrl: string): Promise<boolean> {
   try {
     const response = await fetch(baseUrl, {
@@ -179,32 +309,162 @@ export async function checkHealth(baseUrl: string): Promise<boolean> {
   }
 }
 
-/**
- * Call a tRPC procedure via HTTP
- * tRPC queries use GET with input in query params, mutations use POST
- */
+export async function checkFrontendPage(
+  url: string,
+  options?: { timeout?: number },
+): Promise<PageCheckResult> {
+  const timeout = options?.timeout ?? 15_000;
+  const errors: string[] = [];
+
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(timeout) });
+    const html = await response.text();
+
+    if (response.status >= 400) {
+      errors.push(`HTTP ${response.status}`);
+    }
+
+    if (!html || html.trim().length === 0) {
+      errors.push("Empty response body");
+      return { ok: false, status: response.status, html: "", errors };
+    }
+
+    const lower = html.toLowerCase();
+    if (!lower.includes("<html") && !lower.includes("<!doctype")) {
+      errors.push("Response is not HTML");
+    }
+
+    for (const pattern of HTML_ERROR_PATTERNS) {
+      if (pattern.test(html)) {
+        errors.push(`Error pattern: ${pattern.source}`);
+      }
+    }
+
+    return { ok: errors.length === 0, status: response.status, html, errors };
+  } catch (err) {
+    errors.push(`Fetch failed: ${err instanceof Error ? err.message : String(err)}`);
+    return { ok: false, status: 0, html: "", errors };
+  }
+}
+
+export async function checkStaticAssets(
+  baseUrl: string,
+  html: string,
+  options?: { timeout?: number },
+): Promise<AssetCheckResult> {
+  const timeout = options?.timeout ?? 10_000;
+  const failed: AssetCheckResult["failed"] = [];
+
+  const assetPatterns = [
+    /href="([^"]+\.css[^"]*)"/g,
+    /src="([^"]+\.(?:js|mjs|tsx?)[^"]*)"/g,
+    /href="([^"]+\.(?:js|mjs)[^"]*)"/g,
+  ];
+
+  const urls = new Set<string>();
+  for (const pattern of assetPatterns) {
+    for (const match of html.matchAll(pattern)) {
+      const href = match[1];
+      if (href && !href.startsWith("data:") && !href.startsWith("mailto:")) {
+        try {
+          const resolved = new URL(href, baseUrl).toString();
+          urls.add(resolved);
+        } catch {
+          // Invalid URL, skip
+        }
+      }
+    }
+  }
+
+  for (const assetUrl of urls) {
+    try {
+      const res = await fetch(assetUrl, { signal: AbortSignal.timeout(timeout) });
+      if (!res.ok) {
+        failed.push({ url: assetUrl, status: res.status });
+      }
+    } catch (err) {
+      failed.push({
+        url: assetUrl,
+        status: 0,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  return { ok: failed.length === 0, checked: urls.size, failed };
+}
+
+export function validateFrameworkPage(html: string, frontend: string): FrameworkCheckResult {
+  const markers: string[] = [];
+  const missing: string[] = [];
+
+  if (/<body[^>]*>\s*<\/body>/i.test(html)) {
+    missing.push("Empty body — framework may have failed to render");
+  }
+
+  switch (frontend) {
+    case "next":
+      if (html.includes("_next") || html.includes("__next")) {
+        markers.push("_next assets");
+      } else {
+        missing.push("Missing Next.js asset markers (_next)");
+      }
+      break;
+    case "nuxt":
+      if (html.includes("_nuxt") || html.includes("__nuxt")) {
+        markers.push("_nuxt assets");
+      } else {
+        missing.push("Missing Nuxt asset markers (_nuxt)");
+      }
+      break;
+    case "tanstack-router":
+    case "react-router":
+    case "react-vite":
+    case "svelte":
+    case "solid":
+    case "solid-start":
+      if (html.includes('type="module"')) {
+        markers.push("Vite module scripts");
+      } else {
+        missing.push("Missing Vite module scripts");
+      }
+      break;
+    case "tanstack-start":
+      if (html.includes("__root") || html.includes('type="module"') || html.includes("<script")) {
+        markers.push("TanStack Start scripts");
+      } else {
+        missing.push("Missing TanStack Start markers");
+      }
+      break;
+    case "astro":
+      markers.push("Astro (no specific marker required)");
+      break;
+  }
+
+  return {
+    ok: missing.length === 0,
+    markers,
+    missing,
+  };
+}
+
 export async function callTRPC(
   baseUrl: string,
   procedure: string,
   input?: unknown,
 ): Promise<{ status: number; body: unknown }> {
-  // tRPC queries use GET requests with batch format
   const url = new URL(`/trpc/${procedure}`, baseUrl);
-
-  // For queries with no input, we still need the batch format
-  const inputParam = input !== undefined ? JSON.stringify({ 0: input }) : JSON.stringify({ 0: {} });
+  const inputParam =
+    input !== undefined ? JSON.stringify({ 0: input }) : JSON.stringify({ 0: {} });
   url.searchParams.set("batch", "1");
   url.searchParams.set("input", inputParam);
 
   try {
     const response = await fetch(url.toString(), {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(10000),
     });
-
     const body = await response.json();
     return { status: response.status, body };
   } catch (error) {
@@ -215,10 +475,6 @@ export async function callTRPC(
   }
 }
 
-/**
- * Call an oRPC procedure via HTTP
- * oRPC uses POST requests with the procedure path
- */
 export async function callORPC(
   baseUrl: string,
   procedure: string,
@@ -229,13 +485,10 @@ export async function callORPC(
   try {
     const response = await fetch(url.toString(), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: input !== undefined ? JSON.stringify(input) : undefined,
       signal: AbortSignal.timeout(10000),
     });
-
     const body = await response.json();
     return { status: response.status, body };
   } catch (error) {
@@ -244,4 +497,86 @@ export async function callORPC(
       body: { error: error instanceof Error ? error.message : "Unknown error" },
     };
   }
+}
+
+export interface TypecheckResult {
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+/**
+ * Run typecheck on a generated project to verify zero TypeScript errors.
+ */
+export async function typecheckProject(
+  projectDir: string,
+  options?: { timeout?: number },
+): Promise<TypecheckResult> {
+  const timeout = options?.timeout ?? 120_000;
+
+  const webDir = join(projectDir, "apps", "web");
+  const serverDir = join(projectDir, "apps", "server");
+
+  const results: TypecheckResult[] = [];
+
+  for (const dir of [webDir, serverDir]) {
+    if (!existsSync(join(dir, "tsconfig.json"))) continue;
+
+    const result = await execa("bun", ["run", "check-types"], {
+      cwd: dir,
+      timeout,
+      reject: false,
+      env: { ...process.env, NODE_ENV: "development" },
+    });
+
+    results.push({
+      ok: result.exitCode === 0,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode ?? 1,
+    });
+  }
+
+  if (results.length === 0) {
+    return { ok: true, stdout: "No tsconfig found", stderr: "", exitCode: 0 };
+  }
+
+  const failed = results.filter((r) => !r.ok);
+  return {
+    ok: failed.length === 0,
+    stdout: results.map((r) => r.stdout).join("\n"),
+    stderr: results.map((r) => r.stderr).join("\n"),
+    exitCode: failed.length > 0 ? (failed[0]?.exitCode ?? 1) : 0,
+  };
+}
+
+/**
+ * Scaffold a project using the actual CLI binary (node dist/cli.mjs).
+ * Sets cwd to the parent directory and passes just the project name,
+ * since the CLI requires a relative path within the current directory.
+ */
+export async function scaffoldWithCLIBinary(
+  projectDir: string,
+  flags: string[],
+  options?: { timeout?: number; cliPath?: string },
+): Promise<{ ok: boolean; stdout: string; stderr: string; exitCode: number }> {
+  const timeout = options?.timeout ?? 120_000;
+  const cliPath = options?.cliPath ?? join(import.meta.dir, "..", "..", "dist", "cli.mjs");
+  const parentDir = join(projectDir, "..");
+  const projectName = projectDir.split("/").pop() || "test-project";
+
+  const result = await execa("node", [cliPath, projectName, ...flags], {
+    cwd: parentDir,
+    timeout,
+    reject: false,
+    env: { ...process.env, NODE_ENV: "development" },
+  });
+
+  return {
+    ok: result.exitCode === 0,
+    stdout: result.stdout,
+    stderr: result.stderr,
+    exitCode: result.exitCode ?? 1,
+  };
 }

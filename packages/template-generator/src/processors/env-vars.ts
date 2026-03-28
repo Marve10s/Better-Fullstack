@@ -1238,8 +1238,20 @@ function buildServerVars(
   ];
 }
 
-function buildCMSVars(cms: ProjectConfig["cms"]): EnvVariable[] {
+function getPublicEnvPrefix(frontend: string[]): string {
+  if (frontend.includes("next")) return "NEXT_PUBLIC_";
+  if (frontend.includes("nuxt")) return "NUXT_PUBLIC_";
+  if (frontend.includes("svelte")) return "PUBLIC_";
+  if (frontend.includes("astro")) return "PUBLIC_";
+  return "VITE_";
+}
+
+function buildCMSVars(
+  cms: ProjectConfig["cms"],
+  frontend: ProjectConfig["frontend"],
+): EnvVariable[] {
   const vars: EnvVariable[] = [];
+  const prefix = getPublicEnvPrefix(frontend);
 
   if (cms === "payload") {
     vars.push({
@@ -1256,19 +1268,19 @@ function buildCMSVars(cms: ProjectConfig["cms"]): EnvVariable[] {
   if (cms === "sanity") {
     vars.push(
       {
-        key: "NEXT_PUBLIC_SANITY_PROJECT_ID",
+        key: `${prefix}SANITY_PROJECT_ID`,
         value: "your-project-id",
         condition: true,
         comment: "Sanity project ID - get from sanity.io/manage",
       },
       {
-        key: "NEXT_PUBLIC_SANITY_DATASET",
+        key: `${prefix}SANITY_DATASET`,
         value: "production",
         condition: true,
         comment: "Sanity dataset name",
       },
       {
-        key: "NEXT_PUBLIC_SANITY_API_VERSION",
+        key: `${prefix}SANITY_API_VERSION`,
         value: new Date().toISOString().split("T")[0],
         condition: true,
         comment: "Sanity API version (YYYY-MM-DD format)",
@@ -1282,10 +1294,27 @@ function buildCMSVars(cms: ProjectConfig["cms"]): EnvVariable[] {
     );
   }
 
+  if (cms === "strapi") {
+    vars.push(
+      {
+        key: `${prefix}STRAPI_URL`,
+        value: "http://localhost:1337",
+        condition: true,
+        comment: "Strapi backend URL",
+      },
+      {
+        key: "STRAPI_API_TOKEN",
+        value: "",
+        condition: true,
+        comment: "Strapi API token for authenticated requests (optional)",
+      },
+    );
+  }
+
   if (cms === "tinacms") {
     vars.push(
       {
-        key: "NEXT_PUBLIC_TINA_CLIENT_ID",
+        key: `${prefix}TINA_CLIENT_ID`,
         value: "",
         condition: true,
         comment: "TinaCMS client ID - get from tina.io (optional for local dev)",
@@ -1433,13 +1462,16 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     writeEnvFile(vfs, envPath, serverVars);
   }
 
-  // --- CMS .env (Payload, Sanity, and TinaCMS require Next.js and add vars to web/.env) ---
-  if ((config.cms === "payload" || config.cms === "sanity" || config.cms === "tinacms") && hasNextJs) {
-    const webDir = "apps/web";
-    if (vfs.directoryExists(webDir)) {
-      const envPath = `${webDir}/.env`;
-      const cmsVars = buildCMSVars(config.cms);
-      writeEnvFile(vfs, envPath, cmsVars);
+  // --- CMS .env ---
+  if (config.cms && config.cms !== "none") {
+    const payloadSkip = config.cms === "payload" && !hasNextJs;
+    if (!payloadSkip) {
+      const webDir = "apps/web";
+      if (vfs.directoryExists(webDir)) {
+        const envPath = `${webDir}/.env`;
+        const cmsVars = buildCMSVars(config.cms, config.frontend);
+        writeEnvFile(vfs, envPath, cmsVars);
+      }
     }
   }
 

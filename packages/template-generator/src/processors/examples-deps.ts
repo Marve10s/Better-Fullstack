@@ -101,6 +101,7 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
   const useOpenAIAgents = ai === "openai-agents";
   const useGoogleADK = ai === "google-adk";
   const useModelFusion = ai === "modelfusion";
+  const sharedAIExampleServerDeps: AvailableDependencies[] = ["ai", "@ai-sdk/google", "@ai-sdk/devtools"];
 
   if (backend === "convex" && convexBackendExists) {
     addPackageDependency({
@@ -114,13 +115,18 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["mastra", "@mastra/core"],
+        dependencies: ["mastra", "@mastra/core", ...sharedAIExampleServerDeps],
       });
     } else if (useVoltAgent) {
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["@voltagent/core", "@voltagent/server-hono", "@voltagent/libsql"],
+        dependencies: [
+          "@voltagent/core",
+          "@voltagent/server-hono",
+          "@voltagent/libsql",
+          ...sharedAIExampleServerDeps,
+        ],
         customDependencies: { ai: "^6.0.0", "@ai-sdk/google": "^3.0.1", zod: "^3.25.76" },
       });
     } else if (useLangGraph) {
@@ -140,14 +146,14 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["@openai/agents"],
+        dependencies: ["@openai/agents", ...sharedAIExampleServerDeps],
         customDependencies: { zod: "^3.25.67" },
       });
     } else if (useGoogleADK) {
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["@google/adk"],
+        dependencies: ["@google/adk", ...sharedAIExampleServerDeps],
         customDependencies: { zod: "^3.25.67" },
       });
     } else if (useModelFusion) {
@@ -168,13 +174,18 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: serverPkgPath,
-        dependencies: ["mastra", "@mastra/core"],
+        dependencies: ["mastra", "@mastra/core", ...sharedAIExampleServerDeps],
       });
     } else if (useVoltAgent) {
       addPackageDependency({
         vfs,
         packagePath: serverPkgPath,
-        dependencies: ["@voltagent/core", "@voltagent/server-hono", "@voltagent/libsql"],
+        dependencies: [
+          "@voltagent/core",
+          "@voltagent/server-hono",
+          "@voltagent/libsql",
+          ...sharedAIExampleServerDeps,
+        ],
         customDependencies: { ai: "^6.0.0", "@ai-sdk/google": "^3.0.1", zod: "^3.25.76" },
       });
     } else if (useLangGraph) {
@@ -194,14 +205,14 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: serverPkgPath,
-        dependencies: ["@openai/agents"],
+        dependencies: ["@openai/agents", ...sharedAIExampleServerDeps],
         customDependencies: { zod: "^3.25.67" },
       });
     } else if (useGoogleADK) {
       addPackageDependency({
         vfs,
         packagePath: serverPkgPath,
-        dependencies: ["@google/adk"],
+        dependencies: ["@google/adk", ...sharedAIExampleServerDeps],
         customDependencies: { zod: "^3.25.67" },
       });
     } else if (useModelFusion) {
@@ -224,33 +235,24 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
     if (backend === "convex") {
       if (hasReactWeb) deps.push("@convex-dev/agent", "streamdown");
     } else if (useMastra) {
-      // Mastra uses @ai-sdk/react for frontend integration
-      if (hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
     } else if (useVoltAgent) {
-      // VoltAgent uses @ai-sdk/react for frontend integration (built on Vercel AI SDK)
-      if (hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
     } else if (useLangGraph) {
       // LangGraph uses native streaming - no special frontend SDK needed
       // Frontend still uses Vercel AI SDK transport primitives + streamdown for React markdown rendering
       deps.push("ai");
       if (hasReactWeb) deps.push("streamdown");
     } else if (useOpenAIAgents) {
-      // OpenAI Agents SDK uses native streaming - no special frontend SDK needed
-      // Just add streamdown for markdown rendering
-      if (hasReactWeb) deps.push("streamdown");
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
     } else if (useGoogleADK) {
-      // Google ADK uses native streaming - no special frontend SDK needed
-      // Just add streamdown for markdown rendering
-      if (hasReactWeb) deps.push("streamdown");
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
     } else if (useModelFusion) {
       // ModelFusion uses native streaming - no special frontend SDK needed
       // Just add streamdown for markdown rendering
       if (hasReactWeb) deps.push("streamdown");
     } else {
-      deps.push("ai");
-      if (hasNuxt) deps.push("@ai-sdk/vue");
-      else if (hasSvelte) deps.push("@ai-sdk/svelte");
-      else if (hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
+      addAITransportClientDeps(deps, { hasReactWeb, hasNuxt, hasSvelte });
     }
     // AI example React templates always use lucide-react icons (Send, Loader2)
     // regardless of the configured shadcn icon library
@@ -278,6 +280,16 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       });
     }
   }
+}
+
+function addAITransportClientDeps(
+  deps: AvailableDependencies[],
+  options: { hasReactWeb: boolean; hasNuxt: boolean; hasSvelte: boolean },
+): void {
+  deps.push("ai");
+  if (options.hasNuxt) deps.push("@ai-sdk/vue");
+  else if (options.hasSvelte) deps.push("@ai-sdk/svelte");
+  else if (options.hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
 }
 
 function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, _config: ProjectConfig): void {

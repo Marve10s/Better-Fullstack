@@ -999,7 +999,7 @@ const StackBuilder = () => {
                     )}
                   </button>
                 </div>
-                <code className="block break-all text-muted-foreground text-[11px] leading-relaxed max-h-32 overflow-y-auto">
+                <code data-testid="command-output" className="block break-all text-muted-foreground text-[11px] leading-relaxed max-h-32 overflow-y-auto">
                   <span className="select-none text-chart-4">$ </span>
                   {command}
                 </code>
@@ -1019,6 +1019,7 @@ const StackBuilder = () => {
               <button
                 type="button"
                 onClick={() => setViewMode("command")}
+                data-testid="tab-builder"
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "command"
@@ -1032,6 +1033,7 @@ const StackBuilder = () => {
               <button
                 type="button"
                 onClick={() => setViewMode("presets")}
+                data-testid="tab-presets"
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "presets"
@@ -1045,6 +1047,7 @@ const StackBuilder = () => {
               <button
                 type="button"
                 onClick={() => setViewMode("preview")}
+                data-testid="tab-preview"
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "preview"
@@ -1058,6 +1061,7 @@ const StackBuilder = () => {
               <button
                 type="button"
                 onClick={() => setViewMode("saved")}
+                data-testid="tab-saved"
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "saved"
@@ -1142,6 +1146,7 @@ const StackBuilder = () => {
                           type="button"
                           onClick={resetStack}
                           title="Reset to defaults"
+                          data-testid="btn-reset"
                           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         />
                       }
@@ -1157,6 +1162,7 @@ const StackBuilder = () => {
                           type="button"
                           onClick={getRandomStack}
                           title="Generate a random stack"
+                          data-testid="btn-random"
                           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         />
                       }

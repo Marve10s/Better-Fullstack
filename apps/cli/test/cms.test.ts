@@ -465,56 +465,183 @@ describe("CMS Options", () => {
     });
   });
 
-  describe("CMS not supported with non-Next.js frontends", () => {
-    test("payload without Next.js should still work (cms deps skipped)", async () => {
+  describe("Payload stays Next.js-only", () => {
+    test("payload without Next.js still creates project (cms skipped)", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
-          projectName: "payload-tanstack-router",
+          projectName: "payload-tanstack-skip",
           frontend: ["tanstack-router"],
           cms: "payload",
         }),
       );
-      // Payload requires Next.js, but the project should still be created
-      // The CMS deps processor will skip adding Payload deps for non-Next.js
       expectSuccess(result);
     });
+  });
 
-    test("sanity without Next.js should still work (cms deps skipped)", async () => {
+  describe("Sanity with non-Next.js frameworks", () => {
+    test("sanity with TanStack Router", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
-          projectName: "sanity-tanstack-router",
+          projectName: "sanity-tanstack",
           frontend: ["tanstack-router"],
           cms: "sanity",
         }),
       );
-      // Sanity requires Next.js for optimal integration, but the project should still be created
-      // The CMS deps processor will skip adding Sanity deps for non-Next.js
       expectSuccess(result);
     });
 
-    test("strapi without Next.js should still work (cms deps skipped)", async () => {
+    test("sanity with Astro", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
-          projectName: "strapi-tanstack-router",
+          projectName: "sanity-astro",
+          frontend: ["astro"],
+          astroIntegration: "react",
+          backend: "hono",
+          runtime: "bun",
+          api: "trpc",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("sanity with Nuxt", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sanity-nuxt",
+          frontend: ["nuxt"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("sanity with SvelteKit", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sanity-svelte",
+          frontend: ["svelte"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Strapi with non-Next.js frameworks", () => {
+    test("strapi with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-tanstack",
           frontend: ["tanstack-router"],
           cms: "strapi",
         }),
       );
-      // Strapi client requires Next.js for our templates, but the project should still be created
-      // The CMS deps processor will skip adding Strapi deps for non-Next.js
       expectSuccess(result);
     });
 
-    test("tinacms without Next.js should still work (cms deps skipped)", async () => {
+    test("strapi with Astro", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
-          projectName: "tinacms-tanstack-router",
+          projectName: "strapi-astro",
+          frontend: ["astro"],
+          astroIntegration: "react",
+          backend: "hono",
+          runtime: "bun",
+          api: "trpc",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("strapi with Nuxt", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-nuxt",
+          frontend: ["nuxt"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("strapi with SvelteKit", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-svelte",
+          frontend: ["svelte"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("TinaCMS with non-Next.js frameworks", () => {
+    test("tinacms with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-tanstack",
           frontend: ["tanstack-router"],
           cms: "tinacms",
         }),
       );
-      // TinaCMS requires Next.js for our templates, but the project should still be created
-      // The CMS deps processor will skip adding TinaCMS deps for non-Next.js
+      expectSuccess(result);
+    });
+
+    test("tinacms with Astro", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-astro",
+          frontend: ["astro"],
+          astroIntegration: "react",
+          backend: "hono",
+          runtime: "bun",
+          api: "trpc",
+          cms: "tinacms",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("tinacms with Nuxt", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-nuxt",
+          frontend: ["nuxt"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "tinacms",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("tinacms with SvelteKit", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-svelte",
+          frontend: ["svelte"],
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          cms: "tinacms",
+        }),
+      );
       expectSuccess(result);
     });
   });
