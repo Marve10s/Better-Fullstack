@@ -56,9 +56,9 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "documentation",
   "appPlatforms",
   "packageManager",
-  "versionChannel",
   "examples",
   "aiDocs",
+  "versionChannel",
   "git",
   "install",
 ];

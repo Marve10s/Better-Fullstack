@@ -44,8 +44,8 @@ const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
     "aiSdk", "stateManagement", "forms", "validation", "testing",
     "realtime", "jobQueue", "caching", "search", "fileStorage",
     "animation", "cms",
-    "codeQuality", "documentation", "appPlatforms", "packageManager", "versionChannel", "examples",
-    "aiDocs", "git", "install", "yolo",
+    "codeQuality", "documentation", "appPlatforms", "packageManager", "examples",
+    "aiDocs", "versionChannel", "git", "install", "yolo",
   ],
   rust: [
     "ecosystem", "projectName",
