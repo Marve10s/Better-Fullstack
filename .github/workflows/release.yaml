@@ -179,6 +179,20 @@ jobs:
           BTS_TELEMETRY: 1
           CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
 
+      - name: Publish packages to GitHub Packages
+        if: steps.check-version.outputs.exists == 'false'
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          echo "@better-fullstack:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+          for pkg in packages/types packages/template-generator apps/cli packages/create-bfs; do
+            cd ${{ github.workspace }}/$pkg
+            jq '.publishConfig.registry = "https://npm.pkg.github.com"' package.json > tmp.json && mv tmp.json package.json
+            npm publish --access public 2>/dev/null || echo "Skipped $pkg (may already exist on GitHub Packages)"
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Release Summary
         if: steps.check-version.outputs.exists == 'false'
         run: |
