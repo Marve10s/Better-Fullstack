@@ -176,6 +176,10 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     parts.push(renderFlag(flag, value));
   }
 
+  if (config.versionChannel && config.versionChannel !== "stable") {
+    parts.push(renderFlag("version-channel", config.versionChannel));
+  }
+
   parts.push(config.git ? "--git" : "--no-git");
   parts.push(config.install ? "--install" : "--no-install");
 

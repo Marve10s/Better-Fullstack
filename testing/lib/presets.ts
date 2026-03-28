@@ -66,6 +66,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     goApi: "none",
     goCli: "none",
     goLogging: "none",
+    versionChannel: "stable",
   } as ProjectConfig;
 }
 
@@ -251,6 +252,20 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       shadcnFont: "inter",
       shadcnRadius: "default",
       addons: ["turborepo"],
+    },
+  },
+
+  "version-channel-latest": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      database: "sqlite",
+      orm: "drizzle",
+      api: "orpc",
+      cssFramework: "tailwind",
+      versionChannel: "latest",
     },
   },
 };
