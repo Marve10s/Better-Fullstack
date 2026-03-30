@@ -535,15 +535,15 @@ export const dependencyVersionMap = {
   msw: "^2.12.14",
 
   // Storybook
-  storybook: "^10.3.3",
-  "@storybook/react": "^10.3.3",
-  "@storybook/react-vite": "^10.3.3",
-  "@storybook/vue3-vite": "^10.3.3",
-  "@storybook/svelte-vite": "^10.3.3",
-  "@storybook/nextjs": "^10.3.3",
-  "@storybook/addon-essentials": "^8.6.14",
-  "@storybook/addon-interactions": "^8.6.14",
-  "@storybook/test": "^8.6.15",
+  storybook: "^8.6.18",
+  "@storybook/react": "^8.6.18",
+  "@storybook/react-vite": "^8.6.18",
+  "@storybook/vue3-vite": "^8.6.18",
+  "@storybook/svelte-vite": "^8.6.18",
+  "@storybook/nextjs": "^8.6.18",
+  "@storybook/addon-essentials": "^8.6.18",
+  "@storybook/addon-interactions": "^8.6.18",
+  "@storybook/test": "^8.6.18",
 
   // Animation
   motion: "^12.38.0",
