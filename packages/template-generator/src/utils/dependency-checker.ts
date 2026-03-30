@@ -292,8 +292,9 @@ export function scanTemplateVersions(templatesDir: string): {
 
       if (pkg in dependencyVersionMap) {
         const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
-        if (mapVersion !== version && !seenMismatches.has(`${pkg}|${version}`)) {
-          seenMismatches.add(`${pkg}|${version}`);
+        const mismatchKey = `${relPath}|${pkg}|${version}`;
+        if (mapVersion !== version && !seenMismatches.has(mismatchKey)) {
+          seenMismatches.add(mismatchKey);
           versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
         }
       } else {
@@ -344,8 +345,11 @@ export function findTemplateFilesWithPackage(
   return results;
 }
 
+const LOCKSTEP_ECOSYSTEMS = new Set(["storybook"]);
+
 // Cache for npm registry responses
-const versionCache = new Map<string, { latest: string; timestamp: number }>();
+const versionCache = new Map<string, { info: NpmPackageInfo; timestamp: number }>();
+const lockstepVersionCache = new Map<string, { latest: string; timestamp: number }>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
@@ -456,16 +460,10 @@ export function getUpdateType(current: string, latest: string): UpdateType {
 /**
  * Fetch the latest version of a package from npm registry
  */
-export async function fetchLatestVersion(
-  packageName: string,
-  options: { skipPrerelease?: boolean } = {},
-): Promise<string> {
-  const { skipPrerelease = true } = options;
-
-  // Check cache
+async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
   const cached = versionCache.get(packageName);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-    return cached.latest;
+    return cached.info;
   }
 
   const encodedName = encodeURIComponent(packageName).replace("%40", "@");
@@ -479,22 +477,63 @@ export async function fetchLatestVersion(
     throw new Error(`Package ${packageName} not found (${response.status})`);
   }
 
-  const data = (await response.json()) as NpmPackageInfo;
+  const info = (await response.json()) as NpmPackageInfo;
 
+  versionCache.set(packageName, { info, timestamp: Date.now() });
+  return info;
+}
+
+function getStableVersionsDescending(info: NpmPackageInfo): string[] {
+  return Object.keys(info.versions || {})
+    .filter((version) => !/-(alpha|beta|rc|next|canary)/.test(version))
+    .sort((a, b) => compareVersions(b, a));
+}
+
+async function fetchLatestCompatibleEcosystemVersion(ecosystem: string): Promise<string | undefined> {
+  const cached = lockstepVersionCache.get(ecosystem);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.latest;
+  }
+
+  const ecosystemPackages = ECOSYSTEM_GROUPS[ecosystem]?.filter((pkg) => !pkg.endsWith("/*")) ?? [];
+  if (ecosystemPackages.length === 0) return undefined;
+
+  const packageInfos = await Promise.all(ecosystemPackages.map((pkg) => fetchPackageInfo(pkg)));
+  const [firstInfo, ...remainingInfos] = packageInfos;
+  if (!firstInfo) return undefined;
+
+  const sharedVersions = getStableVersionsDescending(firstInfo);
+
+  for (const info of remainingInfos) {
+    const stableVersions = new Set(getStableVersionsDescending(info));
+    for (let i = sharedVersions.length - 1; i >= 0; i--) {
+      const version = sharedVersions[i];
+      if (!version || !stableVersions.has(version)) {
+        sharedVersions.splice(i, 1);
+      }
+    }
+  }
+
+  const latest = sharedVersions[0];
+  if (latest) {
+    lockstepVersionCache.set(ecosystem, { latest, timestamp: Date.now() });
+  }
+
+  return latest;
+}
+
+export async function fetchLatestVersion(
+  packageName: string,
+  options: { skipPrerelease?: boolean } = {},
+): Promise<string> {
+  const { skipPrerelease = true } = options;
+  const data = await fetchPackageInfo(packageName);
   let latest = data["dist-tags"]?.latest;
 
   // If the latest is a prerelease and we want to skip prereleases,
   // find the highest stable version
   if (skipPrerelease && latest && /-(alpha|beta|rc|next|canary)/.test(latest)) {
-    const versions = Object.keys(data.versions || {})
-      .filter((v) => !/-(alpha|beta|rc|next|canary)/.test(v))
-      .sort((a, b) => {
-        const pa = parseVersion(a);
-        const pb = parseVersion(b);
-        if (pa.major !== pb.major) return pb.major - pa.major;
-        if (pa.minor !== pb.minor) return pb.minor - pa.minor;
-        return pb.patch - pa.patch;
-      });
+    const versions = getStableVersionsDescending(data);
     if (versions.length > 0 && versions[0]) {
       latest = versions[0];
     }
@@ -504,10 +543,18 @@ export async function fetchLatestVersion(
     throw new Error(`No versions found for ${packageName}`);
   }
 
-  // Update cache
-  versionCache.set(packageName, { latest, timestamp: Date.now() });
-
   return latest;
+}
+
+async function resolveLatestVersion(packageName: string, ecosystem?: string): Promise<string> {
+  if (ecosystem && LOCKSTEP_ECOSYSTEMS.has(ecosystem)) {
+    const compatibleVersion = await fetchLatestCompatibleEcosystemVersion(ecosystem);
+    if (compatibleVersion) {
+      return compatibleVersion;
+    }
+  }
+
+  return fetchLatestVersion(packageName);
 }
 
 /**
@@ -673,9 +720,9 @@ export async function checkAllVersions(options: {
       batch.map(async (pkg) => {
         const entry = allPackages[pkg]!;
         try {
-          const latest = await fetchLatestVersion(pkg);
-          const updateType = getUpdateType(entry.version, latest);
           const ecosystem = getEcosystem(pkg);
+          const latest = await resolveLatestVersion(pkg, ecosystem);
+          const updateType = getUpdateType(entry.version, latest);
 
           return {
             name: pkg,
