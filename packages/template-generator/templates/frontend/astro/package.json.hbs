@@ -10,41 +10,41 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"astro": "^5.7.10"
+		"astro": "^6.1.1"
 {{#if (eq astroIntegration "react")}}
-		,"@astrojs/react": "^4.2.1"
-		,"react": "^19.1.0"
+		,"@astrojs/react": "^5.0.2"
+		,"react": "^19.2.4"
 		,"react-dom": "^19.2.4"
 {{#if (eq uiLibrary "shadcn-ui")}}
 		,"clsx": "^2.1.1"
-		,"tailwind-merge": "^3.3.1"
+		,"tailwind-merge": "^3.5.0"
 		,"class-variance-authority": "^0.7.1"
 {{/if}}
 {{/if}}
 {{#if (eq astroIntegration "vue")}}
-		,"@astrojs/vue": "^5.0.6"
+		,"@astrojs/vue": "^6.0.1"
 		,"vue": "^3.5.31"
 {{/if}}
 {{#if (eq astroIntegration "svelte")}}
-		,"@astrojs/svelte": "^7.0.8"
+		,"@astrojs/svelte": "^8.0.4"
 		,"svelte": "^5.55.1"
 {{/if}}
 {{#if (eq astroIntegration "solid")}}
-		,"@astrojs/solid-js": "^5.0.6"
+		,"@astrojs/solid-js": "^6.0.1"
 		,"solid-js": "^1.9.12"
 {{/if}}
 {{#if (eq backend "self")}}
-		,"@astrojs/node": "^9.1.3"
+		,"@astrojs/node": "^10.0.4"
 {{/if}}
 {{#if (eq runtime "workers")}}
-		,"@astrojs/cloudflare": "^12.3.1"
+		,"@astrojs/cloudflare": "^13.1.4"
 {{/if}}
 	},
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.2.2",
 		"tailwindcss": "^4.2.2"
 {{#if (eq astroIntegration "react")}}
-		,"@types/react": "^19.1.6"
+		,"@types/react": "^19.2.14"
 		,"@types/react-dom": "^19.1.5"
 {{/if}}
 	}

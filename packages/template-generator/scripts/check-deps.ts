@@ -81,9 +81,16 @@ async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
 
   for (const update of updates) {
     const escapedName = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(`(["']${escapedName}["']:\\s*["'])([^"']+)(["'])`, "g");
+    const isIdentifierKey = /^[A-Za-z_$][\w$]*$/.test(update.name);
+    const quotedPattern = new RegExp(`((?:["'])${escapedName}(?:["'])\\s*:\\s*["'])([^"']+)(["'])`, "g");
 
-    const newContent = content.replace(pattern, `$1${update.latest}$3`);
+    let newContent = content.replace(quotedPattern, `$1${update.latest}$3`);
+
+    if (isIdentifierKey) {
+      const unquotedPattern = new RegExp(`(^[\\t ]*${escapedName}\\s*:\\s*["'])([^"']+)(["'])`, "gm");
+      newContent = newContent.replace(unquotedPattern, `$1${update.latest}$3`);
+    }
+
     if (newContent !== content) {
       content = newContent;
       updated = true;
@@ -123,6 +130,44 @@ async function updateTemplateFiles(
   }
 
   return anyUpdated;
+}
+
+async function syncTemplateVersionMismatches(
+  templatesDir: string,
+  mismatches: Array<{ name: string; mapVersion: string; templateVersion: string; file: string }>,
+): Promise<number> {
+  if (mismatches.length === 0) return 0;
+
+  const fileUpdates = new Map<string, typeof mismatches>();
+
+  for (const mismatch of mismatches) {
+    const existing = fileUpdates.get(mismatch.file) ?? [];
+    existing.push(mismatch);
+    fileUpdates.set(mismatch.file, existing);
+  }
+
+  let fixedCount = 0;
+
+  for (const [file, updates] of fileUpdates) {
+    const fullPath = path.join(templatesDir, file);
+    let content = fs.readFileSync(fullPath, "utf-8");
+
+    for (const update of updates) {
+      const escapedPkg = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapedVersion = update.templateVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = new RegExp(`("${escapedPkg}"\\s*:\\s*)"${escapedVersion}"`, "g");
+
+      const newContent = content.replace(pattern, `$1"${update.mapVersion}"`);
+      if (newContent !== content) {
+        content = newContent;
+        fixedCount++;
+      }
+    }
+
+    fs.writeFileSync(fullPath, content, "utf-8");
+  }
+
+  return fixedCount;
 }
 
 async function main() {
@@ -233,11 +278,21 @@ async function main() {
       }
 
       if (anySuccess) {
+        const postApplyScan = scanTemplateVersions(templatesDir);
+        const fixedMismatchCount = await syncTemplateVersionMismatches(
+          templatesDir,
+          postApplyScan.versionMismatches,
+        );
+
         console.log("Updates applied successfully!\n");
         console.log("Updated packages:");
         for (const update of toApply) {
           const src = update.source === "template" ? " (template)" : "";
           console.log(`  ${update.name}: ${update.current} -> ${update.latest}${src}`);
+        }
+
+        if (fixedMismatchCount > 0) {
+          console.log(`\nSynchronized ${fixedMismatchCount} template version mismatch(es) with dependencyVersionMap.`);
         }
       } else {
         console.error("Failed to apply updates.");

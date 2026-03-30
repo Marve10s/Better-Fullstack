@@ -16,7 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "tinyglobby";
 
-import { dependencyVersionMap } from "../src/utils/add-deps";
+import { scanTemplateVersions } from "../src/utils/dependency-checker";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,11 +36,6 @@ type Mismatch = {
   package: string;
   templateVersion: string;
   mapVersion: string;
-};
-
-type TemplatePackageJson = {
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
 };
 
 function printHelp() {
@@ -63,87 +58,28 @@ Examples:
 `);
 }
 
-function extractVersionsFromTemplate(content: string): Record<string, string> {
-  const versions: Record<string, string> = {};
-
-  // Parse the template as JSON (ignoring Handlebars syntax for now)
-  // This is a simplified approach that works for most cases
-  try {
-    // Remove Handlebars expressions temporarily for parsing
-    const cleanedContent = content.replace(/\{\{[^}]+\}\}/g, '""').replace(/,(\s*[}\]])/g, "$1"); // Remove trailing commas
-
-    const parsed = JSON.parse(cleanedContent) as TemplatePackageJson;
-
-    // Extract versions from dependencies and devDependencies
-    if (parsed.dependencies) {
-      for (const [pkg, version] of Object.entries(parsed.dependencies)) {
-        if (typeof version === "string" && !version.startsWith("{{")) {
-          versions[pkg] = version;
-        }
-      }
-    }
-
-    if (parsed.devDependencies) {
-      for (const [pkg, version] of Object.entries(parsed.devDependencies)) {
-        if (typeof version === "string" && !version.startsWith("{{")) {
-          versions[pkg] = version;
-        }
-      }
-    }
-  } catch {
-    // If JSON parsing fails, try regex extraction
-    const versionPattern = /"([^"]+)":\s*"(\^?[\d.]+[^"]*)"/g;
-    let match;
-    while ((match = versionPattern.exec(content)) !== null) {
-      const [, pkg, version] = match;
-      if (!version.startsWith("{{") && !pkg.startsWith("{")) {
-        versions[pkg] = version;
-      }
-    }
-  }
-
-  return versions;
-}
-
 async function checkTemplateVersions(): Promise<Mismatch[]> {
   const files = await glob("**/package.json.hbs", {
     cwd: TEMPLATES_DIR,
     dot: true,
     onlyFiles: true,
   });
+  const { templateOnly, versionMismatches } = scanTemplateVersions(TEMPLATES_DIR);
 
   console.log(`Scanning ${files.length} package.json.hbs files...\n`);
 
-  const mismatches: Mismatch[] = [];
-
-  for (const file of files) {
-    const fullPath = path.join(TEMPLATES_DIR, file);
-    const content = fs.readFileSync(fullPath, "utf-8");
-
-    const templateVersions = extractVersionsFromTemplate(content);
-
-    for (const [pkg, templateVersion] of Object.entries(templateVersions)) {
-      // Check if this package is in our version map
-      const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
-
-      if (mapVersion) {
-        if (templateVersion !== mapVersion) {
-          mismatches.push({
-            file,
-            package: pkg,
-            templateVersion,
-            mapVersion,
-          });
-        } else if (options.verbose) {
-          console.log(`   ${pkg}: ${templateVersion}`);
-        }
-      } else if (options.verbose) {
-        console.log(`  ? ${pkg}: ${templateVersion} (not in version map)`);
-      }
+  if (options.verbose) {
+    for (const [pkg, version] of Object.entries(templateOnly)) {
+      console.log(`  ? ${pkg}: ${version} (not in version map)`);
     }
   }
 
-  return mismatches;
+  return versionMismatches.map((m) => ({
+    file: m.file,
+    package: m.name,
+    templateVersion: m.templateVersion,
+    mapVersion: m.mapVersion,
+  }));
 }
 
 async function fixMismatches(mismatches: Mismatch[]): Promise<number> {

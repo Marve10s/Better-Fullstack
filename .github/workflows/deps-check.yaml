@@ -34,6 +34,7 @@ jobs:
     outputs:
       has_major_updates: ${{ steps.check.outputs.has_major_updates }}
       major_packages: ${{ steps.check.outputs.major_packages }}
+      has_pr_changes: ${{ steps.pending.outputs.has_changes }}
 
     steps:
       - name: Checkout Code
@@ -67,11 +68,11 @@ jobs:
         run: |
           cd packages/template-generator
 
-          # Scheduled runs should auto-open PRs with safe updates by default.
+          # Scheduled runs should keep dependency update PRs aligned with the newest stable versions.
           EFFECTIVE_UPDATE_MODE="${{ inputs.update_mode }}"
           if [ -z "$EFFECTIVE_UPDATE_MODE" ]; then
             if [ "${{ github.event_name }}" = "schedule" ]; then
-              EFFECTIVE_UPDATE_MODE="patch-minor"
+              EFFECTIVE_UPDATE_MODE="all"
             else
               EFFECTIVE_UPDATE_MODE="check-only"
             fi
@@ -99,17 +100,10 @@ jobs:
             echo "major_packages=" >> "$GITHUB_OUTPUT"
           fi
 
-          # Store the report
-          {
-            echo 'report<<EOF'
-            cat ../deps-report.md
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
-
       - name: Display Report
         run: |
           echo "## Dependency Check Report"
-          echo "${{ steps.check.outputs.report }}"
+          cat packages/deps-report.md
 
       - name: Apply Updates (if requested)
         if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
@@ -122,12 +116,52 @@ jobs:
             bun run scripts/check-deps.ts --apply-all || true
           fi
 
+      - name: Sync Templates And Verification Artifacts
+        if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
+        run: |
+          bun run --cwd packages/template-generator sync-versions:fix
+          bun run --cwd packages/template-generator sync-versions
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun test apps/cli/test/template-snapshots.test.ts -u
+          bun test apps/cli/test/cli-builder-sync.test.ts
+          bun test apps/web/test/preview-config.test.ts
+
+      - name: Regenerate Dependency Report
+        if: steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all'
+        run: |
+          cd packages/template-generator
+
+          if [ -n "${{ inputs.ecosystem }}" ]; then
+            bun run scripts/check-deps.ts --markdown --ecosystem "${{ inputs.ecosystem }}" > ../deps-report.md || true
+          else
+            bun run scripts/check-deps.ts --markdown > ../deps-report.md || true
+          fi
+
+      - name: Determine Pending Changes
+        id: pending
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Capture Final Report
+        id: final-report
+        run: |
+          {
+            echo 'report<<EOF'
+            cat packages/deps-report.md
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Disable Git Hooks For Automation Commit
-        if: steps.check.outputs.has_updates == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
+        if: steps.pending.outputs.has_changes == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
         run: git config core.hooksPath /dev/null
 
       - name: Create Pull Request
-        if: steps.check.outputs.has_updates == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
+        if: steps.pending.outputs.has_changes == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -140,9 +174,10 @@ jobs:
 
             - Mode: `${{ steps.check.outputs.effective_update_mode }}`
             - Downgrades detected in check report: `${{ steps.check.outputs.downgrade_count }}`
-            - Note: `patch-minor` mode only applies patch/minor changes; downgrades/major updates remain for manual review.
+            - Note: Template versions, snapshots, and the dependency report were regenerated after applying updates.
+            - Note: `all` mode includes major-version changes; the major dependency smoke test runs automatically when majors are detected.
 
-            ${{ steps.check.outputs.report }}
+            ${{ steps.final-report.outputs.report }}
 
             ### Review Checklist
             - [ ] Review the version changes
@@ -170,13 +205,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Report" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.check.outputs.report }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.final-report.outputs.report }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
   major-deps-smoke:
     name: Major Deps Smoke Test
     needs: check-versions
-    if: needs.check-versions.outputs.has_major_updates == 'true'
+    if: needs.check-versions.outputs.has_major_updates == 'true' && needs.check-versions.outputs.has_pr_changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -229,7 +264,6 @@ jobs:
             --dev-check \
             --route-check \
             --output testing/.smoke-output
-        continue-on-error: true
 
       - name: Post Step Summary
         if: always()

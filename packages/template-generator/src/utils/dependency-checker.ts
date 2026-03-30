@@ -292,8 +292,9 @@ export function scanTemplateVersions(templatesDir: string): {
 
       if (pkg in dependencyVersionMap) {
         const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
-        if (mapVersion !== version && !seenMismatches.has(`${pkg}|${version}`)) {
-          seenMismatches.add(`${pkg}|${version}`);
+        const mismatchKey = `${relPath}|${pkg}|${version}`;
+        if (mapVersion !== version && !seenMismatches.has(mismatchKey)) {
+          seenMismatches.add(mismatchKey);
           versionMismatches.push({ name: pkg, mapVersion, templateVersion: version, file: relPath });
         }
       } else {
