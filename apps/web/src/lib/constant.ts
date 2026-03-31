@@ -2250,6 +2250,15 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "elasticsearch",
+      name: "Elasticsearch",
+      description:
+        "Distributed full-text search and analytics engine for local or cloud deployments",
+      icon: "https://cdn.simpleicons.org/elasticsearch/005571",
+      color: "from-cyan-500 to-blue-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Search",
       description: "Skip search engine setup",
@@ -3061,7 +3070,17 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "git",
     "install",
   ],
-  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "auth", "aiDocs", "git", "install"],
+  go: [
+    "goWebFramework",
+    "goOrm",
+    "goApi",
+    "goCli",
+    "goLogging",
+    "auth",
+    "aiDocs",
+    "git",
+    "install",
+  ],
 };
 
 export const PRESET_CATEGORIES = [
@@ -3582,7 +3601,8 @@ export const PRESET_TEMPLATES: {
   {
     id: "tanstack-fullstack",
     name: "TanStack Fullstack",
-    description: "Full TanStack ecosystem: Start + oRPC + Query + Store + Form + Table + Virtual + Pacer + AI (with Showcase)",
+    description:
+      "Full TanStack ecosystem: Start + oRPC + Query + Store + Form + Table + Virtual + Pacer + AI (with Showcase)",
     category: "tanstack",
     stack: {
       projectName: "my-app",
@@ -3604,7 +3624,13 @@ export const PRESET_TEMPLATES: {
       forms: "tanstack-form",
       codeQuality: ["biome"],
       documentation: [],
-      appPlatforms: ["turborepo", "tanstack-table", "tanstack-virtual", "tanstack-query", "tanstack-pacer"],
+      appPlatforms: [
+        "turborepo",
+        "tanstack-table",
+        "tanstack-virtual",
+        "tanstack-query",
+        "tanstack-pacer",
+      ],
       packageManager: "bun",
       examples: ["tanstack-showcase"],
       git: "true",

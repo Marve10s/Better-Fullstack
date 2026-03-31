@@ -17,6 +17,7 @@ describe("stackStateToProjectConfig", () => {
       examples: ["none"],
       aiDocs: ["cursorrules", "none"],
       git: "false",
+      search: "elasticsearch",
       rustLibraries: "serde",
       pythonAi: "langchain",
     });
@@ -31,6 +32,7 @@ describe("stackStateToProjectConfig", () => {
     expect(config.versionChannel).toBe("beta");
     expect(config.addons).toEqual(["biome"]);
     expect(config.aiDocs).toEqual(["cursorrules"]);
+    expect(config.search).toBe("elasticsearch");
     expect(config.rustLibraries).toEqual(["serde"]);
     expect(config.pythonAi).toEqual(["langchain"]);
   });

@@ -92,7 +92,9 @@ export const ExamplesSchema = z
   .enum(["ai", "chat-sdk", "tanstack-showcase", "none"])
   .describe("Example templates to include");
 
-export const PackageManagerSchema = z.enum(["npm", "pnpm", "bun", "yarn"]).describe("Package manager");
+export const PackageManagerSchema = z
+  .enum(["npm", "pnpm", "bun", "yarn"])
+  .describe("Package manager");
 
 export const VersionChannelSchema = z
   .enum(["stable", "latest", "beta"])
@@ -230,8 +232,10 @@ export const CachingSchema = z
   .describe("Caching solution (upstash-redis for serverless Redis)");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "none"])
-  .describe("Search engine solution (meilisearch or typesense for lightning-fast search)");
+  .enum(["meilisearch", "typesense", "elasticsearch", "none"])
+  .describe(
+    "Search engine solution (meilisearch, typesense, or elasticsearch for fast search experiences)",
+  );
 
 export const FileStorageSchema = z
   .enum(["s3", "r2", "none"])

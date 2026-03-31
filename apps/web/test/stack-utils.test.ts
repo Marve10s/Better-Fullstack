@@ -1,7 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
 import { DEFAULT_STACK } from "../src/lib/constant";
-import { createStackSearchParams, parseStackFromUrlRecord } from "../src/lib/stack-url-state.shared";
+import {
+  createStackSearchParams,
+  parseStackFromUrlRecord,
+} from "../src/lib/stack-url-state.shared";
 import { generateStackCommand } from "../src/lib/stack-utils";
 
 describe("generateStackCommand", () => {
@@ -34,6 +37,16 @@ describe("generateStackCommand", () => {
     });
 
     expect(command).not.toContain("--version-channel stable");
+  });
+
+  it("includes elasticsearch in generated commands", () => {
+    const command = generateStackCommand({
+      ...DEFAULT_STACK,
+      projectName: "elastic-app",
+      search: "elasticsearch",
+    });
+
+    expect(command).toContain("--search elasticsearch");
   });
 });
 
