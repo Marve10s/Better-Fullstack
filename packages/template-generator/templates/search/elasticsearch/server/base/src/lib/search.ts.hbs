@@ -99,7 +99,10 @@ export async function indexDocuments<T extends Record<string, unknown>>(
 export async function bulk<T extends Record<string, unknown>>(
   operations: Array<estypes.BulkOperationContainer | T>,
   options?: { refresh?: boolean | "wait_for" },
-): Promise<{ errors: boolean; items?: estypes.BulkResponseItem[] }> {
+): Promise<{
+  errors: boolean;
+  items?: Partial<Record<estypes.BulkOperationType, estypes.BulkResponseItem>>[];
+}> {
   const response = await searchClient.bulk({
     operations: operations as estypes.BulkOperationContainer[],
     refresh: options?.refresh,
@@ -182,8 +185,8 @@ export async function getDocument<T extends Record<string, unknown>>(
 export async function createIndex(
   index: string,
   options?: {
-    mappings?: estypes.TypeMapping;
-    settings?: estypes.IndexSettings;
+    mappings?: estypes.MappingTypeMapping;
+    settings?: estypes.IndicesIndexSettings;
     aliases?: Record<string, estypes.IndicesAlias>;
   },
 ): Promise<{ acknowledged: boolean; index: string }> {
