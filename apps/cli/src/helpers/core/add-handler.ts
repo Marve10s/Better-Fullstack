@@ -31,6 +31,7 @@ export interface AddResult {
   addedAddons: Addons[];
   projectDir: string;
   error?: string;
+  setupWarnings?: string[];
 }
 
 export async function addHandler(
@@ -169,7 +170,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
 
   await writeTreeToFilesystem(tree, projectDir);
 
-  await setupAddons(config);
+  const setupWarnings = await setupAddons(config);
   await applyDependencyVersionChannel(projectDir, config.versionChannel);
 
   const updatedAddons = [...new Set([...existingAddons, ...addonsToAdd])];
@@ -197,6 +198,9 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
 
   if (!isSilent()) {
     log.success(pc.green(`Successfully added: ${addonsToAdd.join(", ")}`));
+    for (const warning of setupWarnings) {
+      log.warn(pc.yellow(warning));
+    }
     if (!input.install) {
       const installCmd =
         config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
@@ -209,6 +213,7 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     success: true,
     addedAddons: addonsToAdd,
     projectDir,
+    setupWarnings: setupWarnings.length > 0 ? setupWarnings : undefined,
   };
 }
 

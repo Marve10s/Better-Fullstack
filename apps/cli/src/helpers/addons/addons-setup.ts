@@ -15,7 +15,8 @@ import { setupTui } from "./tui-setup";
 import { setupUltracite } from "./ultracite-setup";
 import { setupWxt } from "./wxt-setup";
 
-export async function setupAddons(config: ProjectConfig) {
+export async function setupAddons(config: ProjectConfig): Promise<string[]> {
+  const warnings: string[] = [];
   const { addons, frontend, projectDir } = config;
   const hasReactWebFrontend =
     frontend.includes("react-router") ||
@@ -95,12 +96,22 @@ export async function setupAddons(config: ProjectConfig) {
   }
 
   if (addons.includes("mcp")) {
-    await setupMcp(config);
+    try {
+      await setupMcp(config);
+    } catch (error) {
+      warnings.push(`MCP setup failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   if (addons.includes("skills")) {
-    await setupSkills(config);
+    try {
+      await setupSkills(config);
+    } catch (error) {
+      warnings.push(`Skills setup failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
+
+  return warnings;
 }
 
 export async function setupBiome(projectDir: string) {
