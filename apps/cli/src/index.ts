@@ -364,6 +364,12 @@ export const router = os.router({
         ecosystem: input.ecosystem,
       });
     }),
+  mcp: os
+    .meta({ description: "Start MCP server for AI agent integration (stdio transport)" })
+    .handler(async () => {
+      log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
+      log.message("Run: create-better-fullstack mcp");
+    }),
 });
 
 const caller = createRouterClient(router, { context: {} });

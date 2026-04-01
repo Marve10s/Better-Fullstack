@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/cli.ts", "src/virtual.ts"],
+  entry: ["src/index.ts", "src/cli.ts", "src/virtual.ts", "src/mcp-entry.ts"],
   format: ["esm"],
   clean: true,
   shims: true,
