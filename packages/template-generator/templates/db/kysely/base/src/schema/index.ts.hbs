@@ -1,7 +1,6 @@
 import type { Generated, ColumnType } from "kysely";
 
 {{#if (eq auth "better-auth")}}
-// Auth tables
 export interface UserTable {
 	id: string;
 	name: string;
@@ -47,14 +46,22 @@ export interface VerificationTable {
 	createdAt: ColumnType<Date, string | undefined, never>;
 	updatedAt: ColumnType<Date, string | undefined, never>;
 }
-{{/if}}
 
-// Database interface - lists all tables
+{{else}}
+export interface ExampleTable {
+	id: Generated<number>;
+	name: string;
+	createdAt: ColumnType<Date, string | undefined, never>;
+}
+
+{{/if}}
 export interface Database {
 {{#if (eq auth "better-auth")}}
 	user: UserTable;
 	session: SessionTable;
 	account: AccountTable;
 	verification: VerificationTable;
+{{else}}
+	example: ExampleTable;
 {{/if}}
 }
