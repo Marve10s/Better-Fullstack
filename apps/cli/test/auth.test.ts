@@ -210,32 +210,32 @@ describe("Authentication Configurations", () => {
         throw new Error("Expected projectDir to be defined");
       }
 
-      const convexConfigFile = await fs.readFile(
-        path.join(result.projectDir, "packages/backend/convex/convex.config.ts"),
+      const convexConfigFile = await readFile(
+        join(result.projectDir, "packages/backend/convex/convex.config.ts"),
         "utf8",
       );
-      const httpFile = await fs.readFile(
-        path.join(result.projectDir, "packages/backend/convex/http.ts"),
+      const httpFile = await readFile(
+        join(result.projectDir, "packages/backend/convex/http.ts"),
         "utf8",
       );
-      const polarFile = await fs.readFile(
-        path.join(result.projectDir, "packages/backend/convex/polar.ts"),
+      const polarFile = await readFile(
+        join(result.projectDir, "packages/backend/convex/polar.ts"),
         "utf8",
       );
-      const dashboardFile = await fs.readFile(
-        path.join(result.projectDir, "apps/web/src/routes/dashboard.tsx"),
+      const dashboardFile = await readFile(
+        join(result.projectDir, "apps/web/src/routes/dashboard.tsx"),
         "utf8",
       );
-      const backendPackageFile = await fs.readFile(
-        path.join(result.projectDir, "packages/backend/package.json"),
+      const backendPackageFile = await readFile(
+        join(result.projectDir, "packages/backend/package.json"),
         "utf8",
       );
-      const webPackageFile = await fs.readFile(
-        path.join(result.projectDir, "apps/web/package.json"),
+      const webPackageFile = await readFile(
+        join(result.projectDir, "apps/web/package.json"),
         "utf8",
       );
-      const convexEnvFile = await fs.readFile(
-        path.join(result.projectDir, "packages/backend/.env.local"),
+      const convexEnvFile = await readFile(
+        join(result.projectDir, "packages/backend/.env.local"),
         "utf8",
       );
 
@@ -253,7 +253,7 @@ describe("Authentication Configurations", () => {
       expect(webPackageFile).toContain('"@convex-dev/polar"');
       expect(webPackageFile).toContain('"@polar-sh/checkout"');
       expect(convexEnvFile).toContain("# npx convex env set POLAR_ORGANIZATION_TOKEN");
-      expect(convexEnvFile).toContain("# POLAR_PRODUCT_ID_PRO=");
+      expect(convexEnvFile).toContain("# npx convex env set POLAR_PRODUCT_ID_PRO");
       expect(convexEnvFile).toContain("POLAR_SERVER=sandbox");
     });
 
