@@ -128,7 +128,7 @@ export async function getFrontendChoice(
       );
 
       const webFramework = await navigableSelect<Frontend>({
-        message: "Choose web",
+        message: "Select web framework",
         options: webOptions,
         initialValue: DEFAULT_CONFIG.frontend[0],
       });
