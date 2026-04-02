@@ -4,72 +4,80 @@ import type { NextRequest } from "next/server";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-export async function createContext(req: NextRequest) {
 {{#if (eq auth "better-auth")}}
+export async function createContext(req: NextRequest) {
   const session = await auth.api.getSession({
     headers: req.headers,
   });
   return {
     session,
   };
-{{else}}
-  return {}
-{{/if}}
 }
+{{else}}
+export async function createContext(_req: NextRequest) {
+  return {}
+}
+{{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "tanstack-start"))}}
 {{#if (eq auth "better-auth")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-export async function createContext({ req }: { req: Request }) {
 {{#if (eq auth "better-auth")}}
+export async function createContext({ req }: { req: Request }) {
 	const session = await auth.api.getSession({
 		headers: req.headers,
 	});
 	return {
 		session,
 	};
-{{else}}
-	return {};
-{{/if}}
 }
+{{else}}
+export async function createContext(_opts: { req: Request }) {
+	return {};
+}
+{{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "svelte"))}}
 {{#if (eq auth "better-auth")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-export async function createContext(req: Request) {
 {{#if (eq auth "better-auth")}}
+export async function createContext(req: Request) {
   const session = await auth.api.getSession({
     headers: req.headers,
   });
   return {
     session,
   };
-{{else}}
-  return {}
-{{/if}}
 }
+{{else}}
+export async function createContext(_req: Request) {
+  return {}
+}
+{{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "solid-start"))}}
 {{#if (eq auth "better-auth")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-export async function createContext(req: Request) {
 {{#if (eq auth "better-auth")}}
+export async function createContext(req: Request) {
   const session = await auth.api.getSession({
     headers: req.headers,
   });
   return {
     session,
   };
-{{else}}
-  return {}
-{{/if}}
 }
+{{else}}
+export async function createContext(_req: Request) {
+  return {}
+}
+{{/if}}
 
 {{else if (eq backend 'hono')}}
 import type { Context as HonoContext } from "hono";
@@ -162,21 +170,23 @@ import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-export async function createContext(req: IncomingHttpHeaders) {
 {{#if (eq auth "better-auth")}}
+export async function createContext(req: IncomingHttpHeaders) {
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(req),
   });
   return {
     session,
   };
+}
 {{else}}
+export async function createContext(_req: IncomingHttpHeaders) {
   // No auth configured
   return {
     session: null,
   };
-{{/if}}
 }
+{{/if}}
 
 {{else if (eq backend 'nitro')}}
 import type { IncomingMessage } from "node:http";

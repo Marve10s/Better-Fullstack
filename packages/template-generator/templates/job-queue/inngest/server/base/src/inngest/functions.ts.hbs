@@ -10,8 +10,8 @@ export const sendEmail = inngest.createFunction(
     id: "send-email",
     // Retry configuration
     retries: 3,
+    triggers: [{ event: "app/email.send" }],
   },
-  { event: "app/email.send" },
   async ({ event, step }) => {
     const { to } = event.data;
 
@@ -43,8 +43,8 @@ export const sendNotification = inngest.createFunction(
   {
     id: "send-notification",
     retries: 3,
+    triggers: [{ event: "app/notification.send" }],
   },
-  { event: "app/notification.send" },
   async ({ event, step }) => {
     const { userId, type } = event.data;
 
@@ -92,8 +92,8 @@ export const processData = inngest.createFunction(
         match: "data.dataId",
       },
     ],
+    triggers: [{ event: "app/data.process" }],
   },
-  { event: "app/data.process" },
   async ({ event, step }) => {
     const { dataId, operation } = event.data;
 
@@ -151,8 +151,10 @@ export const processData = inngest.createFunction(
  * @see https://www.inngest.com/docs/guides/scheduled-functions
  */
 export const hourlyCleanup = inngest.createFunction(
-  { id: "hourly-cleanup" },
-  { cron: "0 * * * *" }, // Every hour at minute 0
+  {
+    id: "hourly-cleanup",
+    triggers: [{ cron: "0 * * * *" }], // Every hour at minute 0
+  },
   async ({ step }) => {
     const result = await step.run("cleanup", async () => {
       // TODO: Implement your cleanup logic here
@@ -177,8 +179,10 @@ export const hourlyCleanup = inngest.createFunction(
  * Runs at 9 AM UTC - change timezone as needed
  */
 export const dailyReport = inngest.createFunction(
-  { id: "daily-report" },
-  { cron: "TZ=UTC 0 9 * * *" }, // 9 AM UTC every day
+  {
+    id: "daily-report",
+    triggers: [{ cron: "TZ=UTC 0 9 * * *" }], // 9 AM UTC every day
+  },
   async ({ step }) => {
     // Step 1: Generate report data
     const reportData = await step.run("generate-report", async () => {
@@ -220,8 +224,10 @@ export const dailyReport = inngest.createFunction(
  * Demonstrates using step.sleep for delayed execution
  */
 export const welcomeSequence = inngest.createFunction(
-  { id: "welcome-sequence" },
-  { event: "app/user.signup" },
+  {
+    id: "welcome-sequence",
+    triggers: [{ event: "app/user.signup" }],
+  },
   async ({ event, step }) => {
     const { userId, email, name } = event.data;
 
