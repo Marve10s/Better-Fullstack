@@ -2252,9 +2252,10 @@ export const TECH_OPTIONS: Record<
     {
       id: "elasticsearch",
       name: "Elasticsearch",
-      description: "Distributed search and analytics engine with local and cloud deployments",
+      description:
+        "Distributed full-text search and analytics engine for local or cloud deployments",
       icon: "https://cdn.simpleicons.org/elasticsearch/005571",
-      color: "from-teal-500 to-cyan-700",
+      color: "from-cyan-500 to-blue-700",
       default: false,
     },
     {

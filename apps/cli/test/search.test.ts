@@ -433,9 +433,245 @@ describe("Search Options", () => {
     });
   });
 
+  describe("Elasticsearch with different backends", () => {
+    test("elasticsearch with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Express backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-express",
+          frontend: ["tanstack-router"],
+          backend: "express",
+          runtime: "node",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Fastify backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-fastify",
+          frontend: ["tanstack-router"],
+          backend: "fastify",
+          runtime: "node",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Elysia backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-elysia",
+          frontend: ["tanstack-router"],
+          backend: "elysia",
+          runtime: "bun",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with NestJS backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-nestjs",
+          frontend: ["tanstack-router"],
+          backend: "nestjs",
+          runtime: "node",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Elasticsearch with fullstack frameworks", () => {
+    test("elasticsearch with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with TanStack Start", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-tanstack-start",
+          frontend: ["tanstack-start"],
+          backend: "self",
+          runtime: "none",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Elasticsearch with different frontends", () => {
+    test("elasticsearch with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-tanstack-router",
+          frontend: ["tanstack-router"],
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with React Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-react-router",
+          frontend: ["react-router"],
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Svelte", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-svelte",
+          frontend: ["svelte"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Solid", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-solid",
+          frontend: ["solid"],
+          uiLibrary: "daisyui",
+          api: "orpc",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Elasticsearch with database setups", () => {
+    test("elasticsearch with PostgreSQL and Drizzle", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-postgres-drizzle",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "drizzle",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with SQLite and Prisma", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-sqlite-prisma",
+          frontend: ["tanstack-router"],
+          database: "sqlite",
+          orm: "prisma",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with MySQL and TypeORM", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-mysql-typeorm",
+          frontend: ["tanstack-router"],
+          database: "mysql",
+          orm: "typeorm",
+          runtime: "node",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Elasticsearch with authentication", () => {
+    test("elasticsearch with Better Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-better-auth",
+          frontend: ["tanstack-router"],
+          auth: "better-auth",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("elasticsearch with Auth.js", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-authjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          auth: "nextauth",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
   describe("Generated search files", () => {
+    test("server backends emit search helper, dependency, and env for elasticsearch", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "elasticsearch-server-files",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "elasticsearch",
+        }),
+      );
+      expectSuccess(result);
+
+      const projectDir = result.projectDir!;
+      const helper = await readFile(join(projectDir, "apps/server/src/lib/search.ts"), "utf-8");
+      const pkg = await readFile(join(projectDir, "apps/server/package.json"), "utf-8");
+      const env = await readFile(join(projectDir, "apps/server/.env"), "utf-8");
+
+      expect(helper).toContain('from "@elastic/elasticsearch"');
+      expect(pkg).toContain('"@elastic/elasticsearch"');
+      expect(env).toContain("ELASTICSEARCH_NODE=http://localhost:9200");
+      expect(env).toContain("ELASTICSEARCH_CLOUD_ID=");
+    });
+
     test("self backends emit search helper, dependency, and env for all search engines", async () => {
-      const searches = ["meilisearch", "typesense"] as const;
+      const searches = ["meilisearch", "typesense", "elasticsearch"] as const;
 
       for (const search of searches) {
         const result = await runTRPCTest(
@@ -461,6 +697,9 @@ describe("Search Options", () => {
         } else if (search === "typesense") {
           expect(pkg).toContain('"typesense"');
           expect(env).toContain("TYPESENSE_HOST=localhost");
+        } else {
+          expect(pkg).toContain('"@elastic/elasticsearch"');
+          expect(env).toContain("ELASTICSEARCH_NODE=http://localhost:9200");
         }
       }
     });
