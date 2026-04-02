@@ -58,7 +58,7 @@ async function installAndBuildProject(
 
 afterAll(async () => {
   await Promise.all(TEMP_ROOTS.map((dir) => rm(dir, { recursive: true, force: true })));
-});
+}, 30_000);
 
 describe("React + Vite", () => {
   it("scaffolds a routed SPA shell by default", async () => {
