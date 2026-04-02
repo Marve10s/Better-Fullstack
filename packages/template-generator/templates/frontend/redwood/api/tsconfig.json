@@ -7,6 +7,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "baseUrl": "./",
+    "ignoreDeprecations": "6.0",
     "strict": true,
     "skipLibCheck": true,
     "rootDirs": ["./src", "../.redwood/types/mirror/api/src"],

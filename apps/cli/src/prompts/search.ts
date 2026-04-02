@@ -23,11 +23,6 @@ export async function getSearchChoice(search?: Search, backend?: Backend) {
       hint: "Fast, typo-tolerant search with built-in vector search",
     },
     {
-      value: "elasticsearch" as const,
-      label: "Elasticsearch",
-      hint: "Distributed search and analytics engine with local and cloud deployments",
-    },
-    {
       value: "none" as const,
       label: "None",
       hint: "Skip search engine setup",

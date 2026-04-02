@@ -39,14 +39,14 @@ describe("generateStackCommand", () => {
     expect(command).not.toContain("--version-channel stable");
   });
 
-  it("includes elasticsearch in generated commands", () => {
+  it("includes typesense in generated commands", () => {
     const command = generateStackCommand({
       ...DEFAULT_STACK,
-      projectName: "elastic-app",
-      search: "elasticsearch",
+      projectName: "typesense-app",
+      search: "typesense",
     });
 
-    expect(command).toContain("--search elasticsearch");
+    expect(command).toContain("--search typesense");
   });
 });
 
