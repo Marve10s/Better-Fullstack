@@ -6,6 +6,7 @@ import type { Backend, Database, Frontend, ORM } from "../src/types";
 
 import {
   AUTH_PROVIDERS,
+  createCustomConfig,
   expectError,
   expectSuccess,
   runTRPCTest,
@@ -1411,6 +1412,124 @@ describe("Authentication Configurations", () => {
         expectSuccess(result);
       });
     }
+  });
+
+  describe("ORM + Auth compatibility", () => {
+    it("should scaffold Kysely with Better Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-better-auth",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          database: "postgres",
+          orm: "kysely",
+          auth: "better-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "kysely",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely without auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-no-auth",
+          frontend: ["tanstack-router"],
+          database: "sqlite",
+          orm: "kysely",
+          auth: "none",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold NextAuth with Prisma and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "nextauth-prisma-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "prisma",
+          auth: "nextauth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold NextAuth with Drizzle and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "nextauth-drizzle-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "drizzle",
+          auth: "nextauth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("TypeORM + better-auth should be auto-adjusted to none", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "typeorm-better-auth",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "typeorm",
+          auth: "better-auth",
+          runtime: "node",
+        }),
+      );
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
+    });
+
+    it("Sequelize + better-auth should be auto-adjusted to none", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sequelize-better-auth",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "sequelize",
+          auth: "better-auth",
+          runtime: "node",
+        }),
+      );
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
+    });
+
+    it("MikroORM + better-auth should be auto-adjusted to none", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "mikroorm-better-auth",
+          frontend: ["tanstack-router"],
+          database: "postgres",
+          orm: "mikroorm",
+          auth: "better-auth",
+        }),
+      );
+      expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
+    });
   });
 
   describe("Auth Edge Cases", () => {
