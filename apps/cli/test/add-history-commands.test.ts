@@ -73,7 +73,7 @@ async function readJsoncFile(path: string): Promise<unknown> {
 
 afterAll(async () => {
   await Promise.all(TEMP_ROOTS.map((dir) => rm(dir, { recursive: true, force: true })));
-}, 30000);
+});
 
 describe("CLI add command", () => {
   it("adds addon via --addons and is idempotent for already-installed addon", async () => {
