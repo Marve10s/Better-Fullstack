@@ -1487,7 +1487,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("TypeORM + better-auth should be auto-adjusted", async () => {
+    it("TypeORM + better-auth should be auto-adjusted to none", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "typeorm-better-auth",
@@ -1499,9 +1499,10 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("Sequelize + better-auth should be auto-adjusted", async () => {
+    it("Sequelize + better-auth should be auto-adjusted to none", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "sequelize-better-auth",
@@ -1513,9 +1514,10 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should scaffold MikroORM with Better Auth", async () => {
+    it("MikroORM + better-auth should be auto-adjusted to none", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "mikroorm-better-auth",
@@ -1526,6 +1528,7 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      expect(result.result?.projectConfig.auth).toBe("none");
     });
   });
 
