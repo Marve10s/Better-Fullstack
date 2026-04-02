@@ -196,7 +196,21 @@ const SCHEMA_MAP: Record<string, z.ZodType> = {
   goLogging: GoLoggingSchema,
 };
 
-function getSchemaOptions(category?: string) {
+const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
+  typescript: [
+    "database", "orm", "backend", "runtime", "frontend", "api", "auth", "payments",
+    "email", "fileUpload", "effect", "ai", "stateManagement", "forms", "validation",
+    "testing", "cssFramework", "uiLibrary", "realtime", "jobQueue", "animation",
+    "logging", "observability", "featureFlags", "analytics", "cms", "caching",
+    "search", "fileStorage", "astroIntegration",
+  ],
+  rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries"],
+  python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonTaskQueue", "pythonQuality"],
+  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging"],
+  shared: ["ecosystem", "packageManager", "addons", "examples", "webDeploy", "serverDeploy", "dbSetup"],
+};
+
+function getSchemaOptions(category?: string, ecosystem?: string) {
   if (category) {
     const schema = SCHEMA_MAP[category];
     if (!schema) {
@@ -207,13 +221,42 @@ function getSchemaOptions(category?: string) {
     }
     return { category, description: "Schema exists but is not a simple enum." };
   }
+  const allowedKeys = ecosystem && ECOSYSTEM_CATEGORIES[ecosystem]
+    ? new Set([...ECOSYSTEM_CATEGORIES[ecosystem], ...ECOSYSTEM_CATEGORIES.shared])
+    : null;
   const result: Record<string, string[]> = {};
   for (const [key, schema] of Object.entries(SCHEMA_MAP)) {
+    if (allowedKeys && !allowedKeys.has(key)) continue;
     if (schema instanceof z.ZodEnum) {
       result[key] = schema.options as string[];
     }
   }
   return result;
+}
+
+function getInstallCommand(ecosystem: string, projectName: string, packageManager?: string): string {
+  switch (ecosystem) {
+    case "rust": return `cd ${projectName} && cargo build`;
+    case "python": return `cd ${projectName} && uv sync`;
+    case "go": return `cd ${projectName} && go mod tidy`;
+    default: return `cd ${projectName} && ${packageManager ?? "bun"} install`;
+  }
+}
+
+function filterCompatibilityResult(result: { adjustedStack: CompatibilityInput | null; notes: Record<string, unknown>; changes: { category: string; message: string }[] }, ecosystem: string) {
+  const { adjustedStack, changes } = result;
+  if (!adjustedStack) return { adjustedStack: null, changes };
+
+  const relevantKeys = new Set([
+    ...(ECOSYSTEM_CATEGORIES[ecosystem] ?? ECOSYSTEM_CATEGORIES.typescript),
+    ...ECOSYSTEM_CATEGORIES.shared,
+    "projectName", "git", "install", "aiDocs",
+  ]);
+  const filtered: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(adjustedStack)) {
+    if (relevantKeys.has(key)) filtered[key] = value;
+  }
+  return { adjustedStack: filtered, changes };
 }
 
 function buildProjectConfig(
@@ -500,10 +543,13 @@ export async function startMcpServer() {
 
   server.tool(
     "bfs_get_schema",
-    "Returns valid options for a specific category (e.g., 'database', 'frontend', 'backend') or ALL categories if no category specified.",
-    { category: z.string().optional().describe("Category name (e.g., 'database', 'orm', 'frontend'). Omit for all categories.") },
-    async ({ category }) => {
-      const result = getSchemaOptions(category);
+    "Returns valid options for a specific category (e.g., 'database', 'frontend', 'backend') or ALL categories. Use ecosystem to filter to relevant categories only.",
+    {
+      category: z.string().optional().describe("Category name (e.g., 'database', 'orm', 'frontend'). Omit for all categories."),
+      ecosystem: EcosystemSchema.optional().describe("Filter categories to this ecosystem (e.g., 'rust' returns only Rust + shared categories)."),
+    },
+    async ({ category, ecosystem }) => {
+      const result = getSchemaOptions(category, ecosystem);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
       };
@@ -531,8 +577,9 @@ export async function startMcpServer() {
       try {
         const compatInput = buildCompatibilityInput(input);
         const result = analyzeStackCompatibility(compatInput);
+        const filtered = filterCompatibilityResult(result, input.ecosystem);
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }],
         };
       } catch (error) {
         return {
@@ -661,7 +708,8 @@ export async function startMcpServer() {
           addonWarnings = await setupAddons(config);
         }
 
-        const pm = input.packageManager ?? "bun";
+        const ecosystem = (input.ecosystem as string) ?? "typescript";
+        const installCmd = getInstallCommand(ecosystem, projectName, input.packageManager);
         return {
           content: [{
             type: "text",
@@ -670,7 +718,7 @@ export async function startMcpServer() {
               projectDirectory: projectDir,
               fileCount: result.tree.fileCount,
               ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
-              message: `Project created at ${projectDir}. Tell the user to run: cd ${projectName} && ${pm} install`,
+              message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
             }, null, 2),
           }],
         };
@@ -706,6 +754,18 @@ export async function startMcpServer() {
         const existingAddons = new Set(config.addons ?? []);
         const newAddons = (addons ?? []).filter((a) => a !== "none" && !existingAddons.has(a));
 
+        const mergedAddons = [...new Set([...(config.addons ?? []), ...newAddons])];
+        const compatInput = buildCompatibilityInput({
+          ...config,
+          addons: mergedAddons,
+          webDeploy: webDeploy ?? config.webDeploy,
+          serverDeploy: serverDeploy ?? config.serverDeploy,
+        });
+        const compatResult = analyzeStackCompatibility(compatInput);
+        const compatibilityWarnings = compatResult.changes.length > 0
+          ? compatResult.changes.map((c) => c.message)
+          : undefined;
+
         return {
           content: [{
             type: "text",
@@ -723,6 +783,7 @@ export async function startMcpServer() {
                 serverDeploy: serverDeploy ?? null,
               },
               alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
+              ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
             }, null, 2),
           }],
         };
@@ -761,6 +822,10 @@ export async function startMcpServer() {
 
         const result = await add(addInput);
         if (result?.success) {
+          const existingConfig = await readBtsConfig(safePath);
+          const ecosystem = existingConfig?.ecosystem ?? "typescript";
+          const dirName = safePath.split("/").pop() ?? "project";
+          const installCmd = getInstallCommand(ecosystem, dirName, input.packageManager);
           return {
             content: [{
               type: "text",
@@ -768,7 +833,7 @@ export async function startMcpServer() {
                 success: true,
                 addedAddons: result.addedAddons,
                 projectDir: result.projectDir,
-                message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run install.`,
+                message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
               }, null, 2),
             }],
           };
