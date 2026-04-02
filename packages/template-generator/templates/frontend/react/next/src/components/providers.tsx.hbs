@@ -28,6 +28,9 @@ import { queryClient } from "@/utils/trpc";
 {{#if (eq api "garph")}}
 import { queryClient } from "@/utils/garph";
 {{/if}}
+{{#if (eq api "ts-rest")}}
+import { queryClient } from "@/utils/ts-rest";
+{{/if}}
 {{/unless}}
 {{/if}}
 {{#if (eq uiLibrary "mantine")}}

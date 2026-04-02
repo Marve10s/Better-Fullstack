@@ -64,8 +64,7 @@ export default function Home() {
                   : "Error"}
             </span>
           </div>
-          {{else}}
-            {{#unless (eq api "none")}}
+          {{else if (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph"))}}
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
@@ -78,7 +77,6 @@ export default function Home() {
                     : "Disconnected"}
               </span>
             </div>
-            {{/unless}}
           {{/if}}
         </section>
       </div>
