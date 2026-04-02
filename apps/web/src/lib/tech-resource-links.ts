@@ -564,6 +564,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://typesense.org/docs/",
     githubUrl: "https://github.com/typesense/typesense",
   },
+  elasticsearch: {
+    docsUrl: "https://www.elastic.co/docs",
+    githubUrl: "https://github.com/elastic/elasticsearch",
+  },
   s3: {
     docsUrl: "https://docs.aws.amazon.com/AmazonS3/",
     githubUrl: "https://github.com/aws/aws-sdk-js-v3",
