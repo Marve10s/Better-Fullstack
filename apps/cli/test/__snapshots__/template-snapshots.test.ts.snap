@@ -1231,7 +1231,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -1248,7 +1248,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -1845,7 +1845,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     {
       "content": 
 "import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -1877,7 +1877,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 "import {
   protectedProcedure, publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -2493,7 +2493,7 @@ export const client = createORPCClient<typeof appRouter>(link);
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -2505,7 +2505,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -3009,7 +3009,7 @@ export default defineNuxtConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -3021,7 +3021,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -3772,7 +3772,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -3789,7 +3789,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -4558,7 +4558,7 @@ export default defineConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -4570,7 +4570,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -5358,7 +5358,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -5390,7 +5390,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 "import {
   protectedProcedure, publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -6681,7 +6681,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -6698,7 +6698,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -7369,7 +7369,7 @@ export default defineConfig({
     {
       "content": 
 "import { os } from "@orpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const o = os.$context<Context>();
 
@@ -7381,7 +7381,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -8124,7 +8124,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -8141,7 +8141,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -8850,7 +8850,7 @@ export default defineConfig({
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -8867,7 +8867,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -10012,7 +10012,7 @@ export default app;
     {
       "content": 
 "import { initTRPC } from "@trpc/server";
-import type { Context } from "./context";
+import type { Context } from "./context.js";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -10029,7 +10029,7 @@ export const publicProcedure = t.procedure;
 "import {
   publicProcedure,
   router,
-} from "../index";
+} from "../index.js";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {

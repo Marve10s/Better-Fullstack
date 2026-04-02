@@ -1,5 +1,5 @@
-import { g, buildSchema, type InferResolvers, queryType, mutationType } from "../index";
-import type { Context } from "../context";
+import { g, buildSchema, type InferResolvers, queryType, mutationType } from "../index.js";
+import type { Context } from "../context.js";
 
 export function createResolvers(ctx: Context): InferResolvers<{ Query: typeof queryType; Mutation: typeof mutationType }, { context: Context }> {
   return {
