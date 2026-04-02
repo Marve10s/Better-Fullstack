@@ -113,7 +113,7 @@ async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
   const cached = VERSION_CACHE.get(packageName);
   if (cached) return cached;
 
-  const encodedName = encodeURIComponent(packageName).replaceAll("%40", "@");
+  const encodedName = encodeURIComponent(packageName).replace("%40", "@");
   const response = await fetch(`https://registry.npmjs.org/${encodedName}`, {
     headers: { Accept: "application/vnd.npm.install-v1+json" },
     signal: AbortSignal.timeout(REGISTRY_FETCH_TIMEOUT_MS),
