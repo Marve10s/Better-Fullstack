@@ -1448,7 +1448,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
       const envLocalPath = `${convexBackendDir}/.env.local`;
 
       // Write comment blocks first
-      const commentBlocks = buildConvexCommentBlocks(frontend, auth,payments, examples);
+      const commentBlocks = buildConvexCommentBlocks(frontend, auth, payments, examples);
       if (commentBlocks) {
         let currentContent = "";
         if (vfs.exists(envLocalPath)) {
@@ -1458,7 +1458,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
       }
 
       // Then add variables
-      const convexBackendVars = buildConvexBackendVars(frontend, auth,payments, examples);
+      const convexBackendVars = buildConvexBackendVars(frontend, auth, payments, examples);
       if (convexBackendVars.length > 0) {
         let existingContent = "";
         if (vfs.exists(envLocalPath)) {

@@ -5,7 +5,11 @@ import SignUpForm from "@/components/sign-up-form";
 import UserMenu from "@/components/user-menu";
 {{#if (eq payments "polar")}}
 import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+{{#if (ne uiLibrary "none")}}
 import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{else}}
+import { buttonVariants } from "@/components/ui/button";
+{{/if}}
 {{/if}}
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import {

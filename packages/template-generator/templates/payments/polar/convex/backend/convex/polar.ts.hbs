@@ -58,9 +58,3 @@ export const syncProducts = action({
     await polar.syncProducts(ctx);
   },
 });
-`],
-  ["payments/polar/convex/web/react/tanstack-start/src/functions/get-payment.ts.hbs", `import { createServerFn } from "@tanstack/react-start";
-
-export const getPayment = createServerFn({ method: "GET" }).handler(async () => {
-  return null;
-});

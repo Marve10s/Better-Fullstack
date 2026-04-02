@@ -109,7 +109,7 @@ export async function displayPostInstallInstructions(
     config.auth === "clerk" ? getClerkInstructions(config.backend, config.frontend ?? []) : "";
   const polarInstructions =
     config.payments === "polar" && config.auth === "better-auth"
-      ? getPolarInstructions(backend,packageManager)
+      ? getPolarInstructions(backend, packageManager)
       : "";
   const alchemyDeployInstructions = getAlchemyDeployInstructions(
     runCmd,
