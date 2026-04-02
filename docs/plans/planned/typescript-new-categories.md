@@ -108,12 +108,20 @@ No documentation site scaffolding.
 
 ---
 
+## Browser Extension — Plasmo (better-t-stack #575)
+
+WXT is already tracked above. Plasmo is a more batteries-included alternative.
+
+- [ ] Add `plasmo` — browser extension framework. React/Vue/Svelte support. Manifest V3, hot reload, Content Script UI (CSUI). More opinionated than WXT.
+
+---
+
 ## Priority Order
 
 1. **GraphQL** (pothos + yoga) — most requested missing API pattern
-2. **i18n** (paraglide + i18next) — common production requirement
+2. **i18n** (paraglide + i18next + intlayer) — common production requirement
 3. **Rate Limiting** (upstash-ratelimit + arcjet) — security essential
 4. **Tauri** — desktop app support, competitive gap
 5. **PWA** — simple high-value addon
-6. **WXT** — browser extensions
+6. **WXT / Plasmo** — browser extensions
 7. **Docs site** — fumadocs/starlight scaffolding

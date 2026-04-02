@@ -8,7 +8,7 @@ These are additions to categories that already exist but need more options.
 
 - [ ] Add `algolia` — managed search-as-a-service. Largest in the market. Instant search, faceting, analytics.
 - [ ] Add `opensearch` — AWS-backed open-source fork of Elasticsearch. Good for AWS-heavy stacks.
-- [ ] Add `elasticsearch` — PR #111 in progress. Distributed full-text search. Has 3 type errors to fix before merge.
+- [x] Add `elasticsearch` ✅ Merged. Now in `SearchSchema`.
 
 ### Files to touch per addition
 - `packages/types/src/schemas.ts` — add to `SearchSchema`
@@ -87,6 +87,7 @@ PostHog is already a feature flags option. Consider promoting it to analytics ca
 ## File Storage (current: s3, r2)
 
 - [ ] Add `supabase-storage` — S3-compatible storage with Supabase. Row-level security, CDN, image transformations.
+- [ ] Add `cloudinary` — managed media storage, transformation, and CDN. Image/video optimization, AI-based cropping. (GitHub #80)
 
 ---
 
@@ -125,13 +126,29 @@ These may already be in the schema — verify current state before implementing.
 
 ---
 
+## Data Fetching (new section)
+
+No dedicated data-fetching category currently. TanStack Query is available as an addon but SWR is not.
+
+- [ ] Add `swr` — Vercel's stale-while-revalidate data fetching. Smaller bundle than TanStack Query, simpler API. React-only. (GitHub #79, maintainer positive)
+
+---
+
+## API (current: trpc, orpc, ts-rest, garph)
+
+- [ ] Add `rest` / `openapi` — plain REST scaffolding with auto-generated OpenAPI spec and Swagger UI. No RPC overhead. (better-t-stack #631)
+- [ ] Add `effect-http` — Effect-ts as API layer. Type-safe, composable. For `--effect` users. (better-t-stack #815)
+
+---
+
 ## Priority Order
 
 1. **Deploy** (vercel, render, netlify) — highest user demand
 2. **Search** (algolia, opensearch) — natural expansion
-3. **CMS** (directus, keystatic) — fills gaps
-4. **Feature Flags** (flagsmith, unleash) — enterprise demand
-5. **Observability** (axiom, betterstack, datadog) — production readiness
-6. **Auth** (kinde, workos) — more choices
-7. **Nx** — enterprise monorepo
-8. Remaining categories
+3. **REST/OpenAPI** — most common API pattern, currently missing
+4. **CMS** (directus, keystatic) — fills gaps
+5. **Feature Flags** (flagsmith, unleash) — enterprise demand
+6. **Observability** (axiom, betterstack, datadog) — production readiness
+7. **Auth** (kinde, workos) — more choices
+8. **Nx** — enterprise monorepo
+9. Remaining categories

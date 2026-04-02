@@ -41,8 +41,40 @@ That release lane currently covers:
 
 ## Upstream maintenance
 
-- Use `bun run upstream-gap-report` or `bun run scripts/upstream-gap-report.ts --markdown` to inspect drift from upstream.
-- The report classifies likely backport candidates into `reliability`, `dependency-safety`, and `compatibility`.
-- Prefer manual backports over large cherry-picks unless the upstream change is isolated and low-risk.
-- Keep Better-Fullstack-specific naming and architecture choices intact when backporting.
-- Use `docs/plans/README.md` as the stable entry point for current planning documents instead of assuming an older backlog filename still exists.
+### Weekly CI workflow
+
+`.github/workflows/upstream-gap.yml` runs every Monday and generates a grouped gap report for `apps/cli`, `apps/web`, `packages/template-generator`, and `packages/types`. The report is posted in the workflow summary and appended to the tracking issue.
+
+### Local usage
+
+```bash
+# Markdown report
+bun run upstream-gap-report
+# or
+bun run scripts/upstream-gap-report.ts --markdown
+
+# JSON output
+bun run scripts/upstream-gap-report.ts --json
+
+# Compare against a specific base ref
+bun run scripts/upstream-gap-report.ts --base origin/main --markdown
+
+# Limit displayed commits per area
+bun run scripts/upstream-gap-report.ts --markdown --max-per-area 25
+```
+
+The report classifies likely backport candidates into `reliability`, `dependency-safety`, and `compatibility`. Treat it as advisory — no automatic merge/cherry-pick in CI.
+
+### Backport procedure
+
+1. Pick commits from the report by area and impact. Prefer reliability, DX, and compatibility fixes first; skip upstream architectural shifts that conflict with this fork.
+2. Implement manually — avoid large cherry-picks unless the change is isolated and low-risk.
+3. Keep Better-Fullstack-specific naming and architecture choices intact.
+4. Run gates:
+   - `bun run check`
+   - `bun run build`
+   - `cd apps/cli && bun test cli-builder-sync`
+   - `cd apps/web && bun run build`
+5. Open focused PRs by theme (stability, commands, web parity, etc.).
+
+Use `docs/plans/README.md` as the stable entry point for current planning documents.

@@ -8,21 +8,21 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 
 ### High Priority Gaps (competitive differentiators)
 
-| Feature | Their Implementation | Impact |
-|---------|---------------------|--------|
-| **MCP Server** | CLI runs as MCP server. AI agents scaffold projects programmatically via tools: `bts_get_stack_guidance`, `bts_create_project`, etc. | High — AI-native DX is their killer feature |
-| **`add` command** | Add addons/deployment to existing projects post-scaffold (v3.19) | High — iterative development without re-scaffolding |
-| **Skills addon** | Installs curated AI coding agent skills from 19+ sources into 25+ agents | Medium — deep agent integration |
-| **MCP addon** | Auto-configures MCP servers for 18+ tools into various AI agents | Medium — AI workflow automation |
-| **Tauri** | Desktop app addon. Supports all web frontends as shell (v3.24) | Medium — desktop apps |
-| **Electrobun** | Alternative desktop framework. All web frontends supported | Low — niche |
-| **PWA** | Progressive Web App addon | Medium — common requirement |
-| **WXT** | Browser extension scaffolding (vanilla/vue/react/solid/svelte) | Low-Medium — niche but unique |
-| **OpenTUI** | Terminal UI addon with core/react/solid templates | Low — very niche |
-| **Nx** | Alternative monorepo tool to Turborepo (v3.23) | Medium — enterprise teams |
-| **Fumadocs** | Docs framework with 7 template variants | Low-Medium — documentation sites |
-| **Starlight** | Astro-based docs site | Low-Medium — documentation sites |
-| **`history` command** | View/reproduce past scaffolds (v3.19) | Low — nice DX touch |
+| Feature | Their Implementation | Impact | Status |
+|---------|---------------------|--------|--------|
+| **MCP Server** | CLI runs as MCP server. AI agents scaffold projects programmatically. | High | ✅ Done |
+| **`add` command** | Add addons/deployment to existing projects post-scaffold | High | ✅ Done |
+| **Skills addon** | Installs curated AI coding agent skills from 19+ sources into 25+ agents | Medium | ✅ Done |
+| **MCP addon** | Auto-configures MCP servers for 18+ tools into various AI agents | Medium | ✅ Done |
+| **`history` command** | View/reproduce past scaffolds | Low | ✅ Done |
+| **Tauri** | Desktop app addon. Supports all web frontends as shell (v3.24) | Medium | Planned |
+| **Electrobun** | Alternative desktop framework. All web frontends supported | Low | Planned |
+| **PWA** | Progressive Web App addon | Medium | Planned |
+| **WXT** | Browser extension scaffolding (vanilla/vue/react/solid/svelte) | Low-Medium | Planned |
+| **OpenTUI** | Terminal UI addon with core/react/solid templates | Low | Planned |
+| **Nx** | Alternative monorepo tool to Turborepo (v3.23) | Medium | Planned |
+| **Fumadocs** | Docs framework with 7 template variants | Low-Medium | Planned |
+| **Starlight** | Astro-based docs site | Low-Medium | Planned |
 
 ### Database Provisioning (they have more providers)
 
@@ -40,7 +40,7 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 | Cloudflare Workers runtime | First-class runtime option (not just deploy target) |
 | Lefthook | Git hooks addon (we have it too) |
 | Ultracite | Opinionated linting with deep agent integrations |
-| Project config file | `.better-t-stack.json` for reproducibility |
+| Project config file | `.better-t-stack.json` — we have `bts.jsonc` ✅ |
 
 ---
 
@@ -77,8 +77,8 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 
 ## Strategic Takeaways
 
-1. **Close the AI/agent gap** — MCP server + skills + MCP addon are their biggest DX wins. We should prioritize MCP server mode.
-2. **Ship `add` command** — second highest impact feature they have that we don't. Iterative development is a real workflow need.
-3. **Desktop/extensions are niche** — Tauri/WXT/PWA are nice-to-have but lower priority than the platform features above.
+1. ~~**Close the AI/agent gap**~~ ✅ Done — MCP server, skills addon, MCP addon all shipped.
+2. ~~**Ship `add` command**~~ ✅ Done — iterative post-scaffold additions implemented.
+3. **Desktop/extensions are niche** — Tauri/WXT/PWA are nice-to-have, next priority tier.
 4. **Our breadth is our moat** — multi-ecosystem, more integrations, more deploy targets. Keep expanding this.
 5. **Their release cadence is aggressive** — 20+ releases in 3 months. We should match or exceed this for feature velocity.

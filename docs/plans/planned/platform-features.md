@@ -4,101 +4,39 @@ CLI-level and DX improvements that go beyond adding libraries. These are structu
 
 ---
 
-## MCP Server (Model Context Protocol)
+## ~~MCP Server (Model Context Protocol)~~ ✅ Done
 
-better-t-stack ships their CLI as an MCP server. AI agents (Claude Code, Cursor, Cline, Codex, etc.) can programmatically scaffold projects via MCP protocol.
-
-- [ ] Implement MCP server mode for the CLI
-  - Expose tools: `get_stack_guidance`, `get_schema`, `plan_project`, `create_project`
-  - Allow AI agents to scaffold projects without manual CLI interaction
-  - Register in MCP server directories
-
-### Implementation
-- New file: `apps/cli/src/mcp.ts`
-- Use `@modelcontextprotocol/sdk` to expose tools
-- Map existing CLI create logic to MCP tool handlers
-- Add `--mcp` flag to start server mode
+Implemented in `apps/cli/src/mcp.ts`. Subcommand: `create-better-fullstack mcp` (stdio transport). Exposes `bfs_get_guidance`, `bfs_get_schema`, `bfs_plan_project`, `bfs_create_project`, `bfs_add_feature`, etc.
 
 ---
 
-## MCP Addon
+## ~~MCP Addon~~ ✅ Done
 
-Auto-configure MCP servers for project tools into AI coding agents.
-
-- [ ] Add MCP addon that installs MCP server configs for project dependencies
-  - Map: drizzle, prisma, convex, supabase, better-auth, neon, etc. to their MCP servers
-  - Target agents: Claude Code, Cursor, Cline, Codex, VS Code, Zed, etc.
-  - Generate `.cursor/mcp.json`, `.claude/settings.json`, etc.
-
-### Implementation
-- Add `mcp` to `AppPlatformsSchema` (already exists in schema)
-- Generate agent-specific config files based on stack choices
-- Maintain registry of known MCP servers per dependency
+Implemented in `apps/cli/src/helpers/addons/mcp-setup.ts`. Auto-configures MCP servers (Convex, shadcn, Next Devtools, Nuxt Docs, Svelte Docs, Astro Docs, Cloudflare Docs, Polar, etc.) for 9+ AI agents (Cursor, Claude Code, Codex, VS Code, Zed, etc.).
 
 ---
 
-## Skills Addon
+## ~~Skills Addon~~ ✅ Done
 
-Install curated AI coding agent skills/instructions.
-
-- [ ] Add skills addon that installs agent instruction files
-  - Sources: shadcn/ui, better-auth, prisma, hono, nuxt-ui, expo, clerk, etc.
-  - Target agents: Claude Code (CLAUDE.md), Cursor (.cursorrules), Cline, etc.
-  - Download from curated skill repositories
-
-### Implementation
-- Add `skills` to `AppPlatformsSchema` (already exists in schema)
-- Map stack choices to relevant skill sources
-- Generate/merge instruction files per agent
+Implemented in `apps/cli/src/helpers/addons/skills-setup.ts`. 16 curated skill sources, 25+ target agents.
 
 ---
 
-## `add` Command
+## ~~`add` Command~~ ✅ Done
 
-Add features/addons to existing projects after initial scaffold.
-
-- [ ] Implement `bfs add` command
-  - Detect existing project config (read `.better-fullstack.json` or infer from files)
-  - Allow adding: search, caching, auth, payments, email, etc. to an existing project
-  - Modify package.json, add templates, update env files incrementally
-
-### Implementation
-- New command: `apps/cli/src/commands/add.ts`
-- Project detection: scan for existing config markers
-- Incremental template application: generate only new files, merge into existing package.json
-- Critical: must not overwrite existing user modifications
+Implemented in `apps/cli/src/helpers/core/add-handler.ts`. CLI: `create-better-fullstack add [options]`. Reads `bts.jsonc` config to detect existing stack.
 
 ---
 
-## `history` Command
+## ~~`history` Command~~ ✅ Done
 
-View and reproduce past scaffolded projects.
-
-- [ ] Implement `bfs history` command
-  - Store scaffold configs locally (in `~/.better-fullstack/history/`)
-  - Show list of past projects with dates
-  - Allow re-running any past scaffold command
-
-### Implementation
-- Save config JSON after each successful scaffold
-- New command: `apps/cli/src/commands/history.ts`
-- Output reproducible CLI command per entry
+Implemented in `apps/cli/src/commands/history.ts`. Options: `--limit`, `--clear`, `--json`. Stores history in `~/.better-fullstack/history/`.
 
 ---
 
-## Project Config File
+## ~~Project Config File~~ ✅ Done
 
-Store scaffold configuration in each generated project.
-
-- [ ] Generate `.better-fullstack.json` in every scaffolded project
-  - Contains full config used to create the project
-  - Enables `add` command to understand existing stack
-  - Enables reproducible scaffolding
-
-### Implementation
-- Write config file as last step in `generator.ts`
-- Include version, timestamp, full config object
-- Used by `add` command for project detection
+Generates `bts.jsonc` (not `.better-fullstack.json`) in every scaffolded project. Contains full config with schema reference. Used by `add` command for project detection.
 
 ---
 
@@ -147,14 +85,8 @@ Show generated code in the web builder before scaffolding.
 
 ---
 
-## Priority Order
+## Priority Order (remaining)
 
-1. **Project config file** (`.better-fullstack.json`) — prerequisite for `add` command
-2. **`add` command** — highest impact DX feature, competitive gap
-3. **MCP server** — AI-native scaffolding, major differentiator
-4. **`--dry-run`** — simple, high value
-5. **MCP addon** — AI agent integration
-6. **Skills addon** — AI agent skills
-7. **`history` command** — nice DX touch
-8. **Cross-ecosystem stacks** — research phase only
-9. **Template preview** — enhance existing web builder
+1. **`--dry-run`** — simple, high value (MCP has it via `bfs_plan_project`, CLI does not)
+2. **Cross-ecosystem stacks** — research phase only
+3. **Template preview** — enhance existing web builder

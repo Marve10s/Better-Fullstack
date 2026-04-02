@@ -18,3 +18,4 @@ Files:
 - `scripted-cli-runs.md` - non-interactive CLI rules, prompt avoidance, and matrix caveats
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
+- `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos

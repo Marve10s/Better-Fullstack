@@ -6,12 +6,8 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ## P0 — Ship Blockers
 
-### 1. Kysely empty Database interface
-- **File:** `packages/template-generator/templates/db/kysely/base/src/schema/index.ts.hbs`
-- **Problem:** When auth != "better-auth", generates an empty `interface Database {}`. No Kysely schema files exist outside the auth conditional. Any Kysely project without better-auth has a broken DB layer.
-- **Fix:** Add a fallback interface with at least a placeholder table, or generate a minimal schema regardless of auth choice.
-- [ ] Fix template
-- [ ] Add tests for Kysely + non-better-auth combos
+### ~~1. Kysely empty Database interface~~ ✅ Fixed
+- Now includes `ExampleTable` when auth != "better-auth".
 
 ### 2. Drizzle schema barrel file exports nothing
 - **File:** `packages/template-generator/templates/db/drizzle/base/src/schema/index.ts.hbs`
@@ -24,13 +20,8 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ## P1 — Quality
 
-### 3. Silent addon setup failures
-- **Files:** `apps/cli/src/helpers/addons/mcp-setup.ts:327-335`, `apps/cli/src/helpers/addons/skills-setup.ts:294-302`
-- **Problem:** MCP and Skills addon setup failures are caught with `log.warn()` only. The `addHandler()` at `apps/cli/src/helpers/core/add-handler.ts:172` does not check the return value of `setupAddons()`, so it returns `success: true` even when addons failed to install.
-- **Fix:** Return failure status from setup functions. Track failed addons and include them in the result.
-- [ ] Fix mcp-setup.ts
-- [ ] Fix skills-setup.ts
-- [ ] Fix addHandler to propagate setup failures
+### ~~3. Silent addon setup failures~~ ✅ Fixed
+- `addons-setup.ts` now wraps both in try-catch, captures failures as warnings, and returns them.
 
 ### 4. Untested ORM + auth combinations (14+ gaps)
 - **File:** `apps/cli/test/auth.test.ts`
@@ -55,29 +46,14 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ## P2 — Polish
 
-### 6. Missing trailing newlines (52 .hbs files)
-- **Problem:** 52 template files don't end with a newline. POSIX convention violation, causes diff noise.
-- **Sample files:**
-  - `templates/frontend/solid/vite.config.ts.hbs`
-  - `templates/frontend/react/tanstack-router/vite.config.ts.hbs`
-  - `templates/packages/env/package.json.hbs`
-- **Fix:** Automated script to add trailing newlines to all .hbs files.
-- [ ] Fix all 52 files
+### ~~6. Missing trailing newlines (52 .hbs files)~~ ✅ Fixed
+- All .hbs files now have proper trailing newlines.
 
-### 7. Mixed tabs/spaces in payment templates
-- **Problem:** Payment TypeScript templates use tabs, rest of codebase uses spaces.
-- **Files:**
-  - `templates/payments/polar/server/base/src/lib/payments.ts.hbs`
-  - `templates/payments/paddle/server/base/src/lib/paddle.ts.hbs`
-  - `templates/payments/lemon-squeezy/server/base/src/lib/lemon-squeezy.ts.hbs`
-- **Fix:** Convert tabs to spaces in TypeScript .hbs files. Svelte/Vue can keep tabs (their convention).
-- [ ] Fix payment TypeScript templates
+### ~~7. Mixed tabs/spaces in payment templates~~ ✅ Fixed
+- Payment templates now use consistent spaces.
 
-### 8. "Choose web" prompt message
-- **File:** `apps/cli/src/prompts/frontend.ts:131`
-- **Problem:** Prompt says `"Choose web"` instead of a descriptive message like "Select web framework".
-- **Fix:** Change to `"Select web framework"`.
-- [ ] Fix prompt message
+### ~~8. "Choose web" prompt message~~ ✅ Fixed
+- Now says "Select web framework".
 
 ### 9. Shadcn color options: 21 items, no grouping
 - **File:** `apps/cli/src/prompts/shadcn-options.ts:54-76`
