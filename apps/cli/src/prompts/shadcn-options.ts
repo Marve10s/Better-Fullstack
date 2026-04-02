@@ -51,26 +51,32 @@ const ICON_LIBRARY_OPTIONS: { value: ShadcnIconLibrary; label: string; hint: str
   { value: "remixicon", label: "Remix Icon", hint: "Open-source neutral style icons" },
 ];
 
-const COLOR_THEME_OPTIONS: { value: ShadcnColorTheme; label: string; hint: string }[] = [
+const COLOR_THEME_OPTIONS: { value: ShadcnColorTheme; label: string; hint: string; disabled?: boolean }[] = [
+  // ── Neutrals ──
+  { value: "neutral" as ShadcnColorTheme, label: "── Neutrals ──", hint: "", disabled: true },
   { value: "neutral", label: "Neutral", hint: "Clean and minimal" },
   { value: "stone", label: "Stone", hint: "Warm neutral tones" },
   { value: "zinc", label: "Zinc", hint: "Cool neutral tones" },
   { value: "gray", label: "Gray", hint: "Blue-tinted neutral" },
+  // ── Cool ──
+  { value: "neutral" as ShadcnColorTheme, label: "── Cool ──", hint: "", disabled: true },
   { value: "blue", label: "Blue", hint: "Trust and reliability" },
+  { value: "indigo", label: "Indigo", hint: "Deep and focused" },
   { value: "violet", label: "Violet", hint: "Creative and modern" },
-  { value: "green", label: "Green", hint: "Growth and success" },
+  { value: "purple", label: "Purple", hint: "Royal and elegant" },
+  { value: "cyan", label: "Cyan", hint: "Cool and refreshing" },
+  { value: "sky", label: "Sky", hint: "Light and airy" },
+  { value: "teal", label: "Teal", hint: "Calm and sophisticated" },
+  // ── Warm ──
+  { value: "neutral" as ShadcnColorTheme, label: "── Warm ──", hint: "", disabled: true },
   { value: "red", label: "Red", hint: "Bold and energetic" },
   { value: "rose", label: "Rose", hint: "Warm and inviting" },
   { value: "orange", label: "Orange", hint: "Friendly and vibrant" },
   { value: "amber", label: "Amber", hint: "Warm and golden" },
   { value: "yellow", label: "Yellow", hint: "Bright and optimistic" },
   { value: "lime", label: "Lime", hint: "Fresh and lively" },
+  { value: "green", label: "Green", hint: "Growth and success" },
   { value: "emerald", label: "Emerald", hint: "Rich and luxurious" },
-  { value: "teal", label: "Teal", hint: "Calm and sophisticated" },
-  { value: "cyan", label: "Cyan", hint: "Cool and refreshing" },
-  { value: "sky", label: "Sky", hint: "Light and airy" },
-  { value: "indigo", label: "Indigo", hint: "Deep and focused" },
-  { value: "purple", label: "Purple", hint: "Royal and elegant" },
   { value: "fuchsia", label: "Fuchsia", hint: "Playful and bold" },
   { value: "pink", label: "Pink", hint: "Soft and expressive" },
 ];

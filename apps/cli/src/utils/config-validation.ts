@@ -276,6 +276,19 @@ export function validateEcosystemAuthCompatibility(
     return;
   }
 
+  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
+  if (auth === "better-auth" && config.orm && ormsWithoutBetterAuth.includes(config.orm)) {
+    config.auth = "none";
+    if (providedFlags?.has("auth") && !isSilent()) {
+      consola.warn(
+        pc.yellow(
+          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
+        ),
+      );
+    }
+    return;
+  }
+
   const normalized = normalizeCapabilitySelection(
     "auth",
     {
