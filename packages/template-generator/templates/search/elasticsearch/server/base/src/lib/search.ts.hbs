@@ -1,0 +1,238 @@
+import {
+  Client,
+  type estypes,
+} from "@elastic/elasticsearch";
+
+function resolveConnection(): ConstructorParameters<typeof Client>[0] {
+  const cloudId = process.env.ELASTICSEARCH_CLOUD_ID;
+  const apiKey = process.env.ELASTICSEARCH_API_KEY;
+  const username = process.env.ELASTICSEARCH_USERNAME;
+  const password = process.env.ELASTICSEARCH_PASSWORD;
+
+  const auth =
+    apiKey && apiKey.length > 0
+      ? { apiKey }
+      : username && password
+        ? { username, password }
+        : undefined;
+
+  if (cloudId && cloudId.length > 0) {
+    return {
+      cloud: { id: cloudId },
+      auth,
+    };
+  }
+
+  return {
+    node: process.env.ELASTICSEARCH_NODE || "http://localhost:9200",
+    auth,
+  };
+}
+
+/**
+ * Elasticsearch client for distributed full-text search and analytics.
+ * Prefers Elastic Cloud when ELASTICSEARCH_CLOUD_ID is set, otherwise uses ELASTICSEARCH_NODE.
+ */
+export const searchClient = new Client(resolveConnection());
+
+export type SearchHit<T extends Record<string, unknown>> = {
+  id: string;
+  score: number | null;
+  source: T;
+};
+
+export type NormalizedSearchResponse<T extends Record<string, unknown>> = {
+  hits: SearchHit<T>[];
+  total: number;
+  took: number;
+};
+
+export async function search<T extends Record<string, unknown>>(
+  params: estypes.SearchRequest,
+): Promise<NormalizedSearchResponse<T>> {
+  const response = await searchClient.search<T>(params);
+  const total =
+    typeof response.hits.total === "number"
+      ? response.hits.total
+      : response.hits.total?.value ?? 0;
+
+  return {
+    hits: response.hits.hits
+      .filter((hit) => hit._source)
+      .map((hit) => ({
+        id: hit._id ?? "",
+        score: hit._score ?? null,
+        source: hit._source as T,
+      })),
+    total,
+    took: response.took,
+  };
+}
+
+export async function indexDocuments<T extends Record<string, unknown>>(
+  index: string,
+  documents: Array<T & { id?: string | number }>,
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{ indexed: number; errors: boolean }> {
+  if (documents.length === 0) {
+    return { indexed: 0, errors: false };
+  }
+
+  const operations: Record<string, unknown>[] = [];
+  for (const document of documents) {
+    const { id, ...source } = document;
+    operations.push({ index: { _index: index, ...(id !== undefined ? { _id: String(id) } : {}) } });
+    operations.push(source);
+  }
+
+  const response = await searchClient.bulk({
+    operations: operations as estypes.BulkOperationContainer[],
+    refresh: options?.refresh,
+  });
+
+  return {
+    indexed: documents.length,
+    errors: response.errors,
+  };
+}
+
+export async function bulk<T extends Record<string, unknown>>(
+  operations: Array<estypes.BulkOperationContainer | T>,
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{
+  errors: boolean;
+  items?: Partial<Record<estypes.BulkOperationType, estypes.BulkResponseItem>>[];
+}> {
+  const response = await searchClient.bulk({
+    operations: operations as estypes.BulkOperationContainer[],
+    refresh: options?.refresh,
+  });
+
+  return {
+    errors: response.errors,
+    items: response.items,
+  };
+}
+
+export async function updateDocument<T extends Record<string, unknown>>(
+  index: string,
+  id: string | number,
+  document: Partial<T>,
+  options?: { refresh?: boolean | "wait_for"; docAsUpsert?: boolean },
+): Promise<{ id: string; result: string }> {
+  const response = await searchClient.update<T>({
+    index,
+    id: String(id),
+    doc: document,
+    doc_as_upsert: options?.docAsUpsert,
+    refresh: options?.refresh,
+  });
+
+  return {
+    id: response._id,
+    result: response.result,
+  };
+}
+
+export async function deleteDocument(
+  index: string,
+  id: string | number,
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{ id: string; result: string }> {
+  const response = await searchClient.delete({
+    index,
+    id: String(id),
+    refresh: options?.refresh,
+  });
+
+  return {
+    id: response._id,
+    result: response.result,
+  };
+}
+
+export async function deleteByQuery(
+  index: string,
+  query: estypes.QueryDslQueryContainer,
+  options?: { refresh?: boolean; conflicts?: "abort" | "proceed" },
+): Promise<{ deleted: number }> {
+  const response = await searchClient.deleteByQuery({
+    index,
+    query,
+    refresh: options?.refresh,
+    conflicts: options?.conflicts,
+  });
+
+  return { deleted: response.deleted ?? 0 };
+}
+
+export async function getDocument<T extends Record<string, unknown>>(
+  index: string,
+  id: string | number,
+): Promise<T | null> {
+  try {
+    const response = await searchClient.get<T>({
+      index,
+      id: String(id),
+    });
+
+    return response._source ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createIndex(
+  index: string,
+  options?: {
+    mappings?: estypes.MappingTypeMapping;
+    settings?: estypes.IndicesIndexSettings;
+    aliases?: Record<string, estypes.IndicesAlias>;
+  },
+): Promise<{ acknowledged: boolean; index: string }> {
+  const response = await searchClient.indices.create({
+    index,
+    mappings: options?.mappings,
+    settings: options?.settings,
+    aliases: options?.aliases,
+  });
+
+  return {
+    acknowledged: response.acknowledged,
+    index,
+  };
+}
+
+export async function deleteIndex(index: string): Promise<{ acknowledged: boolean }> {
+  const response = await searchClient.indices.delete({ index });
+  return { acknowledged: response.acknowledged };
+}
+
+export async function indexExists(index: string): Promise<boolean> {
+  return searchClient.indices.exists({ index });
+}
+
+export async function listIndices(
+  pattern = "*",
+): Promise<Array<{ index: string; health?: string; status?: string; docsCount?: string }>> {
+  const response = await searchClient.cat.indices({
+    index: pattern,
+    format: "json",
+  });
+
+  return (response as Array<Record<string, string>>).map((entry) => ({
+    index: entry.index ?? "",
+    health: entry.health,
+    status: entry.status,
+    docsCount: entry["docs.count"],
+  }));
+}
+
+export async function healthCheck(): Promise<{ status: "available" | "unavailable" }> {
+  try {
+    await searchClient.ping();
+    return { status: "available" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}

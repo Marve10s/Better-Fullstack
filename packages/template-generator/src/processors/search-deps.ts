@@ -52,6 +52,9 @@ function getSearchDeps(search: ProjectConfig["search"]): AvailableDependencies[]
     case "typesense":
       deps.push("typesense");
       break;
+    case "elasticsearch":
+      deps.push("@elastic/elasticsearch");
+      break;
   }
 
   return deps;

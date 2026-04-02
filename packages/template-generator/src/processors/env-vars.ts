@@ -1188,6 +1188,41 @@ function buildServerVars(
       comment: "Typesense API key - get it from your Typesense server or Typesense Cloud",
     },
     {
+      key: "ELASTICSEARCH_NODE",
+      value: "http://localhost:9200",
+      condition: search === "elasticsearch",
+      comment:
+        "Elasticsearch node URL for local or self-managed clusters. Ignored when ELASTICSEARCH_CLOUD_ID is set",
+    },
+    {
+      key: "ELASTICSEARCH_CLOUD_ID",
+      value: "",
+      condition: search === "elasticsearch",
+      comment:
+        "Elastic Cloud deployment ID. When set, prefer this over ELASTICSEARCH_NODE for managed clusters",
+    },
+    {
+      key: "ELASTICSEARCH_API_KEY",
+      value: "",
+      condition: search === "elasticsearch",
+      comment:
+        "Preferred authentication method for production. If set, it takes precedence over username/password",
+    },
+    {
+      key: "ELASTICSEARCH_USERNAME",
+      value: "",
+      condition: search === "elasticsearch",
+      comment:
+        "Basic auth username. Used only when ELASTICSEARCH_API_KEY is empty and both username/password are provided",
+    },
+    {
+      key: "ELASTICSEARCH_PASSWORD",
+      value: "",
+      condition: search === "elasticsearch",
+      comment:
+        "Basic auth password. Used only when ELASTICSEARCH_API_KEY is empty and both username/password are provided",
+    },
+    {
       key: "AWS_S3_REGION",
       value: "us-east-1",
       condition: fileStorage === "s3",
