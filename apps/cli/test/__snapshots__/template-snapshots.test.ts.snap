@@ -2493,7 +2493,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -3003,7 +3003,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -4541,7 +4541,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
@@ -7331,7 +7331,7 @@ export const publicProcedure = o;
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { publicProcedure } from "../index.js";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {

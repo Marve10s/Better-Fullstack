@@ -19,6 +19,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    {{#if (eq cssFramework "tailwind")}}
+    "@tailwindcss/vite": "^4.2.2",
+    "tailwindcss": "^4.2.2",
+    {{/if}}
     "typescript": "^5",
     "vite": "^8.0.3",
     "vite-tsconfig-paths": "^6.1.1"

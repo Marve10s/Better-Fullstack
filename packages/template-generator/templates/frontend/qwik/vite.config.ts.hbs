@@ -2,10 +2,13 @@ import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+{{#if (eq cssFramework "tailwind")}}
+import tailwindcss from "@tailwindcss/vite";
+{{/if}}
 
 export default defineConfig(() => {
   return {
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
+    plugins: [qwikCity(), qwikVite(), tsconfigPaths(){{#if (eq cssFramework "tailwind")}}, tailwindcss(){{/if}}],
     server: {
       port: 3001,
     },
