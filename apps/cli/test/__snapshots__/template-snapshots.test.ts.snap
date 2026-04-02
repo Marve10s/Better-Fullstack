@@ -1131,7 +1131,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -1270,7 +1271,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -1311,7 +1313,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -1392,7 +1395,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -1406,7 +1412,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -1899,7 +1906,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -1982,7 +1990,8 @@ provider: "pg",
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/auth/tsconfig.json",
     },
@@ -2023,7 +2032,8 @@ provider: "pg",
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -2200,7 +2210,8 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth.js";
-export {};"
+export {};
+"
 ,
       "path": "packages/db/src/schema/index.ts",
     },
@@ -2215,7 +2226,8 @@ export {};"
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -2518,7 +2530,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -2559,7 +2572,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -2640,7 +2654,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -2654,7 +2671,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -3028,7 +3046,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -3069,7 +3088,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -3150,7 +3170,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -3164,7 +3187,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -3650,7 +3674,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -3787,7 +3812,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -3828,7 +3854,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -3905,7 +3932,8 @@ export default prisma;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -4426,7 +4454,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -4566,7 +4595,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -4607,7 +4637,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -4688,7 +4719,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -4702,7 +4736,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -5224,7 +5259,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -5383,7 +5419,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -5472,7 +5509,8 @@ provider: "pg",
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/auth/tsconfig.json",
     },
@@ -5513,7 +5551,8 @@ provider: "pg",
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -5690,7 +5729,8 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth.js";
-export {};"
+export {};
+"
 ,
       "path": "packages/db/src/schema/index.ts",
     },
@@ -5705,7 +5745,8 @@ export {};"
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -6054,7 +6095,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -6232,7 +6274,8 @@ export default defineSchema({});
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -6678,7 +6721,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -6719,7 +6763,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -6800,7 +6845,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -6814,7 +6862,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -7219,7 +7268,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -7356,7 +7406,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -7397,7 +7448,8 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -7478,7 +7530,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -7492,7 +7547,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -7975,7 +8031,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -8107,7 +8164,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -8148,7 +8206,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -8208,7 +8267,8 @@ export { client };
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -8692,7 +8752,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -8829,7 +8890,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -8870,7 +8932,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -8947,7 +9010,8 @@ export default prisma;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
@@ -9258,7 +9322,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});"
+});
+"
 ,
       "path": "apps/web/vite.config.ts",
     },
@@ -9344,7 +9409,8 @@ export default defineConfig({
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -9604,7 +9670,8 @@ statusCardTitle: {
 marginBottom: 8,
 fontWeight: "bold",
 },
-});"
+});
+"
 ,
       "path": "apps/native/app/(drawer)/index.tsx",
     },
@@ -9985,7 +10052,8 @@ export type AppRouter = typeof appRouter;
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/api/tsconfig.json",
     },
@@ -10026,7 +10094,8 @@ export type AppRouter = typeof appRouter;
 
     ]
   }
-}"
+}
+"
 ,
       "path": "packages/config/tsconfig.base.json",
     },
@@ -10107,7 +10176,10 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
-      "content": "export {};",
+      "content": 
+"export {};
+"
+,
       "path": "packages/db/src/schema/index.ts",
     },
     {
@@ -10121,7 +10193,8 @@ export const db = drizzle({ client, schema });
     "outDir": "dist",
     "composite": true
   }
-}"
+}
+"
 ,
       "path": "packages/db/tsconfig.json",
     },
