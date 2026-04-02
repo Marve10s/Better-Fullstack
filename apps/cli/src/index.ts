@@ -298,7 +298,7 @@ export const router = os.router({
       log.message(`Please visit ${DOCS_URL}`);
     }
   }),
-  builder: os.meta({ description: "Open the web-based stack builder" }).handler(async () => {
+  builder: os.meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" }).handler(async () => {
     const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
     try {
       await openUrl(BUILDER_URL);
@@ -308,7 +308,7 @@ export const router = os.router({
     }
   }),
   add: os
-    .meta({ description: "Add addons to an existing Better Fullstack project" })
+    .meta({ description: "Add addons or deployment targets to an existing Better Fullstack project" })
     .input(
       z.object({
         addons: z.array(AddonsSchema).optional().describe("Addons to add"),
@@ -327,7 +327,7 @@ export const router = os.router({
       await addHandler(input as AddInput);
     }),
   history: os
-    .meta({ description: "Show project creation history" })
+    .meta({ description: "Show history of scaffolded projects with reproducible commands" })
     .input(
       z.object({
         limit: z.number().optional().default(10).describe("Number of entries to show"),

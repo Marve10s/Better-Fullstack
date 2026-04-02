@@ -143,7 +143,7 @@ export async function displayPostInstallInstructions(
   }
 
   if (hasFresh) {
-    output += `${pc.yellow("NOTE:")} Fresh projects require ${pc.white("deno")} on your PATH\n`;
+    output += `${pc.yellow("NOTE:")} Fresh projects require ${pc.white("deno")} on your PATH.\n   Install: ${pc.underline("https://docs.deno.com/runtime/getting_started/installation/")}\n`;
   }
 
   if (database === "sqlite" && dbSetup !== "d1") {
@@ -350,7 +350,7 @@ async function getDatabaseInstructions(
   if (orm === "prisma") {
     if (database === "mongodb" && dbSetup === "docker") {
       instructions.push(
-        `${pc.yellow("WARNING:")} Prisma + MongoDB + Docker combination\n   may not work.`,
+        `${pc.yellow("WARNING:")} Prisma + MongoDB + Docker: this combination has known issues.\n   Consider using MongoDB Atlas (${pc.underline("https://www.mongodb.com/atlas")}) for reliable Prisma + MongoDB support.`,
       );
     }
     if (dbSetup === "docker") {

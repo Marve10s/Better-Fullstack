@@ -869,6 +869,16 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
+  if (nextStack.auth === "better-auth" && ormsWithoutBetterAuth.includes(nextStack.orm)) {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
+    });
+  }
+
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1591,6 +1601,10 @@ export const getDisabledReason = (
   if (category === "auth") {
     if (optionId === "better-auth" && currentStack.database === "redis") {
       return "Better Auth requires a SQL database (not Redis)";
+    }
+    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
+    if (optionId === "better-auth" && ormsWithoutBetterAuth.includes(currentStack.orm)) {
+      return `Better Auth has no ${currentStack.orm} adapter`;
     }
     return getCapabilityDisabledReason(
       "auth",

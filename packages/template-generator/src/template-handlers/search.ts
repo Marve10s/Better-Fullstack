@@ -12,14 +12,15 @@ export async function processSearchTemplates(
   if (!config.search || config.search === "none") return;
   if (config.backend === "convex") return;
   if (config.backend === "none") return;
-  if (config.backend === "self") return;
+
+  const destPrefix = config.backend === "self" ? "apps/web" : "apps/server";
 
   // Process server-side search templates
   processTemplatesFromPrefix(
     vfs,
     templates,
     `search/${config.search}/server/base`,
-    "apps/server",
+    destPrefix,
     config,
   );
 }

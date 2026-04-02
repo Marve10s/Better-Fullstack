@@ -1,3 +1,4 @@
+import { getCapabilityDefinitions } from "./capabilities";
 import {
   AI_DOCS_VALUES,
   AI_VALUES,
@@ -58,7 +59,6 @@ import {
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "./schemas";
-import { getCapabilityDefinitions } from "./capabilities";
 
 export type OptionCategory =
   | "api"
@@ -390,6 +390,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     bullmq: "BullMQ",
     "trigger-dev": "Trigger.dev",
   },
+  search: {
+    meilisearch: "Meilisearch",
+    typesense: "Typesense",
+    elasticsearch: "Elasticsearch",
+  },
   cssFramework: { tailwind: "Tailwind CSS", scss: "SCSS", "postcss-only": "PostCSS Only" },
   uiLibrary: {
     "shadcn-ui": "shadcn/ui",
@@ -580,14 +585,15 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
 };
 
-const OPTION_ALIASES: Partial<Record<OptionCategory, Partial<Record<string, readonly string[]>>>> = {
-  webFrontend: {
-    svelte: ["sveltekit"],
-  },
-  backend: {
-    "self-svelte": ["self-sveltekit"],
-  },
-};
+const OPTION_ALIASES: Partial<Record<OptionCategory, Partial<Record<string, readonly string[]>>>> =
+  {
+    webFrontend: {
+      svelte: ["sveltekit"],
+    },
+    backend: {
+      "self-svelte": ["self-sveltekit"],
+    },
+  };
 
 const CLI_VALUE_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
   backend: {
@@ -624,16 +630,15 @@ function toStartCaseToken(token: string): string {
 }
 
 function humanizeOptionId(id: string): string {
-  return id
-    .split("-")
-    .filter(Boolean)
-    .map(toStartCaseToken)
-    .join(" ");
+  return id.split("-").filter(Boolean).map(toStartCaseToken).join(" ");
 }
 
 function getOptionLabel(category: OptionCategory, id: string): string {
   if (category === "auth") {
-    return getCapabilityDefinitions("auth").find((option) => option.id === id)?.label ?? humanizeOptionId(id);
+    return (
+      getCapabilityDefinitions("auth").find((option) => option.id === id)?.label ??
+      humanizeOptionId(id)
+    );
   }
   return EXACT_LABEL_OVERRIDES[category]?.[id] ?? humanizeOptionId(id);
 }
@@ -747,7 +752,10 @@ export function isMultiSelectCategory(category: OptionCategory): boolean {
   return OPTION_CATEGORY_METADATA[category].selectionMode === "multiple";
 }
 
-export function getOptionMetadata(category: OptionCategory, optionId: string): OptionMetadata | undefined {
+export function getOptionMetadata(
+  category: OptionCategory,
+  optionId: string,
+): OptionMetadata | undefined {
   return OPTION_CATEGORY_METADATA[category].options.find((option) => option.id === optionId);
 }
 

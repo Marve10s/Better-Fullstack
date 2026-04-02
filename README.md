@@ -305,6 +305,15 @@ If Better Fullstack saves you time, consider supporting:
         <br /><sub><code>+1,072</code> <code>−139</code></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/Kavin-Bakyaraj">
+        <img src="https://avatars.githubusercontent.com/u/154714641?v=4" width="80" style="border-radius:50%" alt="Kavin-Bakyaraj"/>
+        <br /><sub><b>Kavin B</b></sub>
+        <br /><sub>Elasticsearch search engine support</sub>
+        <br /><sub><a href="https://github.com/Marve10s/Better-Fullstack/pull/111">#111</a></sub>
+        <br /><sub><code>+643</code> <code>−26</code></sub>
+      </a>
+    </td>
   </tr>
 </table>
 

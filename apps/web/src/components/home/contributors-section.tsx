@@ -17,6 +17,18 @@ const contributors: Contributor[] = [
     role: "QA & Testing",
     github: "https://github.com/EthanShoeDev",
   },
+  {
+    username: "Divith123",
+    name: "Divith S",
+    role: "Version channels, builder parity",
+    github: "https://github.com/Divith123",
+  },
+  {
+    username: "Kavin-Bakyaraj",
+    name: "Kavin B",
+    role: "Elasticsearch search engine support",
+    github: "https://github.com/Kavin-Bakyaraj",
+  },
 ];
 
 function ContributorCard({ contributor }: { contributor: Contributor }) {
