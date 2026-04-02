@@ -11,7 +11,6 @@ import {
   mutationType,
 } from "@{{projectName}}/api/index";
 
-// Create QueryClient for React Query integration
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,12 +20,10 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Build a GraphQL schema from garph types for GQty client generation
 const schema = buildSchema({ g, resolvers: {} });
 const generatedSchema = createGeneratedSchema(schema);
 const scalarsEnumsHash = createScalarsEnumsHash(schema);
 
-// Create type-safe GraphQL client
 type Schema = InferClient<{ query: typeof queryType; mutation: typeof mutationType }>;
 
 export const client = createClient<Schema>({
@@ -38,10 +35,8 @@ export const client = createClient<Schema>({
 {{/if}}
 });
 
-// Export typed query and mutation functions
 export const { query, mutation, resolved } = client;
 
-// Helper for React Query integration
 export async function graphqlFetcher<T>(
   fn: () => T | Promise<T>
 ): Promise<T> {

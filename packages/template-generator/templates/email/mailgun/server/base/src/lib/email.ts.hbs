@@ -3,7 +3,6 @@ import type { MailgunMessageData } from "mailgun.js/definitions";
 import { Interfaces } from "mailgun.js/definitions";
 import FormData from "form-data";
 
-// Initialize Mailgun client
 const mailgun = new Mailgun(FormData);
 const mg: Interfaces.IMailgunClient = mailgun.client({
   username: "api",
@@ -32,7 +31,6 @@ export interface SendEmailOptions {
 }
 
 /**
- * Send an email using Mailgun
  * @see https://documentation.mailgun.com/en/latest/api-sending-messages.html
  */
 export async function sendEmail(options: SendEmailOptions) {
@@ -88,7 +86,6 @@ export async function sendEmail(options: SendEmailOptions) {
 }
 
 /**
- * Send multiple emails in a batch using Mailgun's recipient variables
  * @see https://documentation.mailgun.com/en/latest/user_manual.html#batch-sending
  */
 export async function sendBatchEmails(
@@ -107,7 +104,6 @@ export async function sendBatchEmails(
   const fromAddress =
     commonOptions?.from || process.env.MAILGUN_FROM_EMAIL || "noreply@example.com";
 
-  // Mailgun batch sending uses recipient variables
   const recipients = emails.map((e) => e.to);
   const recipientVariables: Record<string, Record<string, string>> = {};
 
@@ -118,7 +114,6 @@ export async function sendBatchEmails(
   }
 
   try {
-    // For batch emails, we use the first email as template
     const firstEmail = emails[0];
     if (!firstEmail) throw new Error("No emails provided");
 
@@ -143,7 +138,6 @@ export async function sendBatchEmails(
 }
 
 /**
- * Send an email using a Mailgun template
  * @see https://documentation.mailgun.com/en/latest/api-sending-messages.html#sending-via-api
  */
 export async function sendTemplateEmail(options: {
@@ -180,8 +174,7 @@ export async function sendTemplateEmail(options: {
 }
 
 /**
- * Validate an email address using Mailgun's email validation API
- * Note: This requires the email validation feature to be enabled on your account
+ * Requires the email validation feature enabled on your Mailgun account.
  * @see https://documentation.mailgun.com/en/latest/api-email-validation.html
  */
 export async function validateEmail(email: string) {
@@ -201,9 +194,6 @@ export async function validateEmail(email: string) {
   }
 }
 
-/**
- * Get the Mailgun client for advanced usage
- */
 export function getMailgunClient(): Interfaces.IMailgunClient {
   return mg;
 }
