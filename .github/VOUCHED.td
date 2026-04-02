@@ -9,5 +9,5 @@
 #   -github:username reason for denouncement
 #
 # Keep entries sorted alphabetically.
-github:Alisha-21-cloud
 github:github-actions[bot]
+github:Marve10s
