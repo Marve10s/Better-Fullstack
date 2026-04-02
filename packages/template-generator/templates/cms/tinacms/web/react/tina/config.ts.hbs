@@ -7,7 +7,7 @@ const branch =
 
 export default defineConfig({
   branch,
-  clientId: process.env.VITE_TINA_CLIENT_ID ?? "",
+  clientId: import.meta.env.VITE_TINA_CLIENT_ID ?? "",
   token: process.env.TINA_TOKEN ?? "",
 
   build: {

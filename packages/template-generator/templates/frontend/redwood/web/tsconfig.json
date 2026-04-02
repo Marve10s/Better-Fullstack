@@ -1,13 +1,11 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "allowJs": true,
     "esModuleInterop": true,
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "baseUrl": "./",
     "strict": true,
     "skipLibCheck": true,
     "jsx": "preserve",

@@ -393,7 +393,6 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   search: {
     meilisearch: "Meilisearch",
     typesense: "Typesense",
-    elasticsearch: "Elasticsearch",
   },
   cssFramework: { tailwind: "Tailwind CSS", scss: "SCSS", "postcss-only": "PostCSS Only" },
   uiLibrary: {

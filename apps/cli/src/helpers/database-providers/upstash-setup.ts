@@ -102,7 +102,12 @@ export async function setupUpstash(config: ProjectConfig, cliInput?: { manualDb?
       placeholder: "https://xxx.upstash.io",
       validate(value) {
         if (!value) return "Please enter a REST URL";
-        if (!value.startsWith("https://") || !value.includes("upstash.io")) {
+        try {
+          const hostname = new URL(value).hostname;
+          if (!hostname.endsWith(".upstash.io")) {
+            return "URL should be a valid Upstash REST URL (https://xxx.upstash.io)";
+          }
+        } catch {
           return "URL should be a valid Upstash REST URL (https://xxx.upstash.io)";
         }
       },
