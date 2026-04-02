@@ -87,6 +87,7 @@
       "import": "./dist/virtual.mjs"
     },
     "./mcp": {
+      "types": "./dist/mcp-entry.d.mts",
       "import": "./dist/mcp-entry.mjs"
     }
   },

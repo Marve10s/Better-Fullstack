@@ -217,11 +217,13 @@ function getSchemaOptions(category?: string) {
 }
 
 function sanitizePath(input: string): string {
-  if (/[\x00-\x1f]/.test(input)) {
-    throw new Error("Path contains control characters");
+  for (const ch of input) {
+    if (ch.charCodeAt(0) < 0x20) {
+      throw new Error("Path contains control characters");
+    }
   }
-  if (input.includes("\0")) {
-    throw new Error("Path contains null byte");
+  if (input.split(/[/\\]/).includes("..")) {
+    throw new Error("Path must not contain '..' components");
   }
   return input;
 }
@@ -306,20 +308,19 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
   };
 }
 
-function summarizeTree(tree: { fileCount: number; directoryCount: number; root: { children: Record<string, unknown> } }) {
+function summarizeTree(tree: { fileCount: number; directoryCount: number; root: { children: { type: string; name: string; children?: unknown[] }[] } }) {
   const paths: string[] = [];
-  function walk(node: Record<string, unknown>, prefix: string) {
-    for (const [name, child] of Object.entries(node)) {
-      const current = prefix ? `${prefix}/${name}` : name;
-      const c = child as { type?: string; children?: Record<string, unknown> };
-      if (c.type === "directory" && c.children) {
-        walk(c.children, current);
+  function walk(nodes: { type: string; name: string; children?: unknown[] }[], prefix: string) {
+    for (const node of nodes) {
+      const current = prefix ? `${prefix}/${node.name}` : node.name;
+      if (node.type === "directory" && node.children) {
+        walk(node.children as typeof nodes, current);
       } else {
         paths.push(current);
       }
     }
   }
-  walk(tree.root.children as Record<string, unknown>, "");
+  walk(tree.root.children, "");
   return { fileCount: tree.fileCount, directoryCount: tree.directoryCount, files: paths };
 }
 
@@ -328,7 +329,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 ## Backend Constraints
 - **Convex**: Forces runtime=none, database=none, orm=none, api=none, dbSetup=none, serverDeploy=none. Removes incompatible frontends (Solid, SolidStart, Astro).
 - **No backend (none)**: Clears auth, payments, database, orm, api, serverDeploy, search, fileStorage.
-- **Fullstack (self-*)**: Sets runtime=none, serverDeploy=none. Only works with: next, tanstack-start, astro, nuxt, svelte, solid-start.
+- **Fullstack (backend='self')**: Sets runtime=none, serverDeploy=none. Only works with: next, tanstack-start, astro, nuxt, svelte, solid-start.
 
 ## Runtime Constraints
 - NestJS and AdonisJS require runtime=node.
@@ -581,7 +582,7 @@ export async function startMcpServer() {
         const { writeTreeToFilesystem } = await import("@better-fullstack/template-generator/fs-writer");
         const path = await import("node:path");
 
-        const projectName = input.projectName;
+        const projectName = sanitizePath(input.projectName);
         const projectDir = path.resolve(process.cwd(), projectName);
         const config: ProjectConfig = {
           projectName,
@@ -672,6 +673,12 @@ export async function startMcpServer() {
 
         await writeBtsConfig(config);
 
+        let addonWarnings: string[] = [];
+        if (config.addons.length > 0 && config.addons[0] !== "none") {
+          const { setupAddons } = await import("./helpers/addons/addons-setup.js");
+          addonWarnings = await setupAddons(config);
+        }
+
         const pm = input.packageManager ?? "bun";
         return {
           content: [{
@@ -680,6 +687,7 @@ export async function startMcpServer() {
               success: true,
               projectDirectory: projectDir,
               fileCount: result.tree.fileCount,
+              ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
               message: `Project created at ${projectDir}. Tell the user to run: cd ${projectName} && ${pm} install`,
             }, null, 2),
           }],
