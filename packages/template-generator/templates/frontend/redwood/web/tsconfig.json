@@ -6,8 +6,6 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "baseUrl": "./",
-    "ignoreDeprecations": "6.0",
     "strict": true,
     "skipLibCheck": true,
     "jsx": "preserve",

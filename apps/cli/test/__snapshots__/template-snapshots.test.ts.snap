@@ -807,8 +807,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -1102,8 +1100,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -2383,8 +2379,6 @@ export const client = createORPCClient<typeof appRouter>(link);
 "{
 	"extends": "astro/tsconfigs/strict",
 	"compilerOptions": {
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
 		"paths": {
 			"@/*": ["./src/*"]
 		}
@@ -3334,8 +3328,6 @@ app.listen(3000, () => {
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -3627,8 +3619,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -4116,8 +4106,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -4407,8 +4395,6 @@ export const orpc = createTanstackQueryUtils(client)
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -4883,8 +4869,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -5209,8 +5193,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -6041,8 +6023,6 @@ function HomeComponent() {
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -7212,8 +7192,6 @@ export const orpc = createTanstackQueryUtils(client)
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -7675,8 +7653,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -7968,8 +7944,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -8395,8 +8369,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -8689,8 +8661,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -9257,8 +9227,6 @@ function HomeComponent() {
     "skipLibCheck": true,
     "types": ["vite/client"],
     "rootDirs": ["."],
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }
@@ -9869,8 +9837,6 @@ export default app;
   "compilerOptions": {
     "composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     },
