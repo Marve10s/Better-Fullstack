@@ -306,15 +306,15 @@ If Better Fullstack saves you time, consider supporting:
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/Alisha-21-cloud">
-      <img src="https://github.com/Alisha-21-cloud/Alisha-21-cloud/blob/main/pic.jpg?raw=true" width="80" style="border-radius:50%" alt="Alisha"/>
-      <br /><sub><b>Syed Ahmad Alisha</b></sub>
-      <br /><sub>polar better auth convex support</sub>
-      <br /><sub><a href="https://github.com/Marve10s/Better-Fullstack/pull/110">#110</a></sub>
-      <br /><sub><code>+474</code> <code>−60</code></sub>
+      <a href="https://github.com/Kavin-Bakyaraj">
+        <img src="https://avatars.githubusercontent.com/u/154714641?v=4" width="80" style="border-radius:50%" alt="Kavin-Bakyaraj"/>
+        <br /><sub><b>Kavin B</b></sub>
+        <br /><sub>Elasticsearch search engine support</sub>
+        <br /><sub><a href="https://github.com/Marve10s/Better-Fullstack/pull/111">#111</a></sub>
+        <br /><sub><code>+643</code> <code>−26</code></sub>
       </a>
     </td>
-    </tr>
+  </tr>
 </table>
 
 <br>
