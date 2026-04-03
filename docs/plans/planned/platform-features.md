@@ -58,19 +58,9 @@ Allow combining ecosystems in a single monorepo (e.g., Rust backend + TypeScript
 
 ---
 
-## Dry Run Mode
+## ~~Dry Run Mode~~ ✅ Done
 
-Preview what would be generated without writing files.
-
-- [ ] Add `--dry-run` flag
-  - Show file tree that would be created
-  - Show dependencies that would be added
-  - Show env variables that would be generated
-  - No filesystem writes
-
-### Implementation
-- VirtualFileSystem already exists — just skip the write step
-- Output file list, dep list, env list to terminal
+Implemented via `--dry-run` flag on the `create` command. Generates project in-memory using `generateVirtualProject()`, displays full file tree and file/directory counts, then exits without writing to disk. Reproducible command is also shown.
 
 ---
 
@@ -87,6 +77,6 @@ Show generated code in the web builder before scaffolding.
 
 ## Priority Order (remaining)
 
-1. **`--dry-run`** — simple, high value (MCP has it via `bfs_plan_project`, CLI does not)
+1. ~~**`--dry-run`**~~ ✅ Done
 2. **Cross-ecosystem stacks** — research phase only
 3. **Template preview** — enhance existing web builder

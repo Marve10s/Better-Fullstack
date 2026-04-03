@@ -15,3 +15,21 @@ updates:
     commit-message:
       prefix: "chore(actions)"
     open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "11:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "automated"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]

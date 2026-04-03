@@ -20,6 +20,7 @@ jobs:
     if: startsWith(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: npm-publish
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -117,7 +118,7 @@ jobs:
 
       - name: Publish types to NPM
         if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/types && bun publish --access public
+        run: cd packages/types && bun publish --access public --provenance
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
           BTS_TELEMETRY: 1
@@ -136,7 +137,7 @@ jobs:
 
       - name: Publish template-generator to NPM
         if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/template-generator && bun publish --access public
+        run: cd packages/template-generator && bun publish --access public --provenance
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
           BTS_TELEMETRY: 1
@@ -165,7 +166,7 @@ jobs:
 
       - name: Publish CLI to NPM
         if: steps.check-version.outputs.exists == 'false'
-        run: cd apps/cli && bun publish --access public
+        run: cd apps/cli && bun publish --access public --provenance
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
           BTS_TELEMETRY: 1
@@ -173,7 +174,7 @@ jobs:
 
       - name: Publish create-bfs alias to NPM
         if: steps.check-version.outputs.exists == 'false'
-        run: cd packages/create-bfs && bun publish --access public
+        run: cd packages/create-bfs && bun publish --access public --provenance
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
           BTS_TELEMETRY: 1

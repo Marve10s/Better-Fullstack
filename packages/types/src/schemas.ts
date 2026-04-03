@@ -432,6 +432,7 @@ export const CreateInputSchema = z.object({
   yes: z.boolean().optional(),
   yolo: z.boolean().optional(),
   verbose: z.boolean().optional(),
+  dryRun: z.boolean().optional(),
   ecosystem: EcosystemSchema.optional(),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),

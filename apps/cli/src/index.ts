@@ -154,6 +154,11 @@ export const router = os.router({
             .optional()
             .default(false)
             .describe("Show detailed result information"),
+          dryRun: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Preview generated file tree without writing to disk"),
           ecosystem: EcosystemSchema.optional().describe(
             "Language ecosystem (typescript, rust, python, or go)",
           ),

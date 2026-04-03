@@ -9,12 +9,8 @@ Validated issues found during April 2026 audit. Each item was verified against t
 ### ~~1. Kysely empty Database interface~~ ✅ Fixed
 - Now includes `ExampleTable` when auth != "better-auth".
 
-### 2. Drizzle schema barrel file exports nothing
-- **File:** `packages/template-generator/templates/db/drizzle/base/src/schema/index.ts.hbs`
-- **Problem:** When auth != "better-auth", the file only contains `export {}`. The auth schema re-export is wrapped in `{{#if (eq auth "better-auth")}}`. Projects using Drizzle with Clerk/Stack-auth/Auth0/Supabase-auth have an empty schema barrel.
-- **Fix:** Ensure each auth provider that uses Drizzle generates its own schema exports, or provide a base schema that always exists.
-- [ ] Fix template
-- [ ] Add tests for Drizzle + Clerk, Drizzle + Stack-auth, Drizzle + Auth0, Drizzle + Supabase-auth
+### ~~2. Drizzle schema barrel file exports nothing~~ ✅ Fixed
+- Added database-specific example schema templates (postgres, mysql, sqlite) and updated barrel to export from `./example.js` when auth is not better-auth/nextauth.
 
 ---
 
@@ -23,17 +19,8 @@ Validated issues found during April 2026 audit. Each item was verified against t
 ### ~~3. Silent addon setup failures~~ ✅ Fixed
 - `addons-setup.ts` now wraps both in try-catch, captures failures as warnings, and returns them.
 
-### 4. Untested ORM + auth combinations (14+ gaps)
-- **File:** `apps/cli/test/auth.test.ts`
-- **Problem:** These combos have zero tests:
-  - Kysely + any auth provider (0 tests total)
-  - Clerk + Prisma, Clerk + TypeORM, Clerk + MikroORM, Clerk + Sequelize
-  - Stack-auth + Prisma + MySQL
-  - Auth0 + Prisma + MySQL/SQLite
-  - Supabase-auth + Prisma + MySQL/SQLite
-- **Fix:** Add test cases for each. Prioritize Kysely combos since they hit issue #1.
-- [ ] Add Kysely + auth tests
-- [ ] Add remaining ORM + auth combo tests
+### ~~4. Untested ORM + auth combinations~~ ✅ Fixed
+- Added 11 tests: Drizzle+Clerk, Drizzle+StackAuth+MySQL, Drizzle+Auth0+MySQL, Prisma+Clerk, Prisma+StackAuth+MySQL, Prisma+Auth0+MySQL, Prisma+SupabaseAuth+MySQL, Kysely+NextAuth, Kysely+StackAuth, Kysely+SupabaseAuth, Kysely+Auth0. Previous batch added Kysely+BetterAuth, Kysely+Clerk, Kysely+noAuth.
 
 ### 5. No network retry for addon setup
 - **Files:** `apps/cli/src/helpers/addons/mcp-setup.ts:327-335`, `apps/cli/src/helpers/addons/skills-setup.ts:294-302`
@@ -85,32 +72,20 @@ Validated issues found during April 2026 audit. Each item was verified against t
 
 ## P3 — Security
 
-### 12. No dependency vulnerability scanning
-- **File:** `.github/dependabot.yml`
-- **Problem:** Dependabot only monitors `github-actions`, not npm packages. No `npm audit`, Snyk, or Trivy in any CI workflow.
-- **Fix:** Add `package-ecosystem: "npm"` to dependabot.yml or add `npm audit` step to CI.
-- [ ] Enable npm dependency scanning
+### ~~12. No dependency vulnerability scanning~~ ✅ Fixed
+- Added `package-ecosystem: "npm"` to `.github/dependabot.yml`.
 
-### 13. No SAST scanning
-- **Problem:** No CodeQL, SonarQube, or any static application security testing workflow in `.github/workflows/`.
-- **Fix:** Add CodeQL workflow for TypeScript/JavaScript analysis.
-- [ ] Add CodeQL workflow
+### ~~13. No SAST scanning~~ ✅ Fixed
+- CodeQL workflow added at `.github/workflows/codeql.yaml` (push, PR, weekly schedule).
 
-### 14. No release approval gates
-- **File:** `.github/workflows/release.yaml`
-- **Problem:** Release triggers automatically on push to main when commit starts with `chore(release):`. No manual approval, no environment protection rules.
-- **Fix:** Add GitHub environment protection rule requiring manual approval before NPM publish.
-- [ ] Add release environment with approval requirement
+### ~~14. No release approval gates~~ ✅ Fixed
+- Added `environment: npm-publish` to release workflow. Requires creating the environment with protection rules in GitHub settings.
 
-### 15. No SBOM generation
-- **Problem:** `bun publish --access public` used without `--provenance` flag. No SBOM tools (CycloneDX, Syft) configured.
-- **Fix:** Add `--provenance` to publish commands for npm supply chain attestation.
-- [ ] Add provenance to publish
+### ~~15. No SBOM generation~~ ✅ Fixed
+- Added `--provenance` flag to all `bun publish` commands in release workflow.
 
-### 16. No code coverage in CI
-- **File:** `apps/cli/package.json:103` has `test:coverage` script, but it's never run in CI.
-- **Fix:** Add coverage step to CI, upload reports as artifacts.
-- [ ] Add coverage to CI workflow
+### ~~16. No code coverage in CI~~ ✅ Fixed
+- Replaced `bun run test` with `bun run --filter=create-better-fullstack test:coverage` in CI, with artifact upload.
 
 ### 17. No accessibility testing
 - **Problem:** Playwright tests use Chromium only with no axe-core or a11y assertions.

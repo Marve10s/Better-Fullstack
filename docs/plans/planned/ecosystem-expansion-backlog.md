@@ -155,5 +155,5 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [x] `add` command ✅
 - [x] `history` command ✅
 - [x] Project config (`bts.jsonc`) ✅
-- [ ] `--dry-run` flag (CLI — MCP has it via `bfs_plan_project`)
+- [x] `--dry-run` flag ✅
 - [ ] Cross-ecosystem stacks (research)

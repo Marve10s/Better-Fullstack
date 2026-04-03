@@ -114,8 +114,16 @@ jobs:
           bun run --filter=@better-fullstack/types build
           bun run --filter=@better-fullstack/template-generator build
 
-      - name: Run Tests
-        run: bun run test
+      - name: Run Tests with Coverage
+        run: bun run --filter=create-better-fullstack test:coverage
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: apps/cli/coverage
+          if-no-files-found: warn
 
   build:
     name: Build Check

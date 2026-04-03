@@ -25,7 +25,7 @@ import {
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
 } from "../../validation";
-import { validatePreflightConfig } from "@better-fullstack/template-generator";
+import { validatePreflightConfig, generateVirtualProject, EMBEDDED_TEMPLATES } from "@better-fullstack/template-generator";
 
 import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { createProject } from "./create-project";
@@ -85,104 +85,112 @@ export async function createProjectHandler(
         ? await getVersionChannelChoice()
         : (input.versionChannel ?? "stable");
 
-      let finalPathInput: string;
-      let shouldClearDirectory: boolean;
+      let finalResolvedPath: string;
+      let finalBaseName: string;
 
-      try {
-        if (input.directoryConflict) {
-          const result = await handleDirectoryConflictProgrammatically(
-            currentPathInput,
-            input.directoryConflict,
-          );
-          finalPathInput = result.finalPathInput;
-          shouldClearDirectory = result.shouldClearDirectory;
-        } else {
-          const result = await handleDirectoryConflict(currentPathInput);
-          finalPathInput = result.finalPathInput;
-          shouldClearDirectory = result.shouldClearDirectory;
-        }
-      } catch (error) {
-        if (error instanceof UserCancelledError || error instanceof CLIError) {
-          throw error;
-        }
-        const elapsedTimeMs = Date.now() - startTime;
-        return {
-          success: false,
-          projectConfig: {
-            projectName: "",
-            projectDir: "",
+      if (input.dryRun) {
+        finalBaseName = path.basename(currentPathInput);
+        finalResolvedPath = path.resolve(process.cwd(), currentPathInput);
+      } else {
+        let finalPathInput: string;
+        let shouldClearDirectory: boolean;
+
+        try {
+          if (input.directoryConflict) {
+            const result = await handleDirectoryConflictProgrammatically(
+              currentPathInput,
+              input.directoryConflict,
+            );
+            finalPathInput = result.finalPathInput;
+            shouldClearDirectory = result.shouldClearDirectory;
+          } else {
+            const result = await handleDirectoryConflict(currentPathInput);
+            finalPathInput = result.finalPathInput;
+            shouldClearDirectory = result.shouldClearDirectory;
+          }
+        } catch (error) {
+          if (error instanceof UserCancelledError || error instanceof CLIError) {
+            throw error;
+          }
+          const elapsedTimeMs = Date.now() - startTime;
+          return {
+            success: false,
+            projectConfig: {
+              projectName: "",
+              projectDir: "",
+              relativePath: "",
+              ecosystem: "typescript",
+              database: "none",
+              orm: "none",
+              backend: "none",
+              runtime: "none",
+              frontend: [],
+              addons: [],
+              examples: [],
+              auth: "none",
+              payments: "none",
+              email: "none",
+              fileUpload: "none",
+              effect: "none",
+              git: false,
+              packageManager: "npm",
+              versionChannel: "stable",
+              install: false,
+              dbSetup: "none",
+              api: "none",
+              webDeploy: "none",
+              serverDeploy: "none",
+              cssFramework: "none",
+              uiLibrary: "none",
+              ai: "none",
+              stateManagement: "none",
+              validation: "zod",
+              forms: "react-hook-form",
+              testing: "vitest",
+              realtime: "none",
+              jobQueue: "none",
+              animation: "none",
+              logging: "none",
+              observability: "none",
+              rustWebFramework: "none",
+              rustFrontend: "none",
+              rustOrm: "none",
+              rustApi: "none",
+              rustCli: "none",
+              rustLibraries: [],
+              cms: "none",
+              caching: "none",
+              search: "none",
+              featureFlags: "none",
+              analytics: "none",
+              fileStorage: "none",
+              pythonWebFramework: "none",
+              pythonOrm: "none",
+              pythonValidation: "none",
+              pythonAi: [],
+              pythonTaskQueue: "none",
+              pythonQuality: "none",
+              goWebFramework: "none",
+              goOrm: "none",
+              goApi: "none",
+              goCli: "none",
+              goLogging: "none",
+              aiDocs: [],
+            } satisfies ProjectConfig,
+            reproducibleCommand: "",
+            timeScaffolded,
+            elapsedTimeMs,
+            projectDirectory: "",
             relativePath: "",
-            ecosystem: "typescript",
-            database: "none",
-            orm: "none",
-            backend: "none",
-            runtime: "none",
-            frontend: [],
-            addons: [],
-            examples: [],
-            auth: "none",
-            payments: "none",
-            email: "none",
-            fileUpload: "none",
-            effect: "none",
-            git: false,
-            packageManager: "npm",
-            versionChannel: "stable",
-            install: false,
-            dbSetup: "none",
-            api: "none",
-            webDeploy: "none",
-            serverDeploy: "none",
-            cssFramework: "none",
-            uiLibrary: "none",
-            ai: "none",
-            stateManagement: "none",
-            validation: "zod",
-            forms: "react-hook-form",
-            testing: "vitest",
-            realtime: "none",
-            jobQueue: "none",
-            animation: "none",
-            logging: "none",
-            observability: "none",
-            rustWebFramework: "none",
-            rustFrontend: "none",
-            rustOrm: "none",
-            rustApi: "none",
-            rustCli: "none",
-            rustLibraries: [],
-            cms: "none",
-            caching: "none",
-            search: "none",
-            featureFlags: "none",
-            analytics: "none",
-            fileStorage: "none",
-            pythonWebFramework: "none",
-            pythonOrm: "none",
-            pythonValidation: "none",
-            pythonAi: [],
-            pythonTaskQueue: "none",
-            pythonQuality: "none",
-            goWebFramework: "none",
-            goOrm: "none",
-            goApi: "none",
-            goCli: "none",
-            goLogging: "none",
-            aiDocs: [],
-          } satisfies ProjectConfig,
-          reproducibleCommand: "",
-          timeScaffolded,
-          elapsedTimeMs,
-          projectDirectory: "",
-          relativePath: "",
-          error: error instanceof Error ? error.message : String(error),
-        };
-      }
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
 
-      const { finalResolvedPath, finalBaseName } = await setupProjectDirectory(
-        finalPathInput,
-        shouldClearDirectory,
-      );
+        const setupResult = await setupProjectDirectory(finalPathInput, shouldClearDirectory);
+        finalResolvedPath = setupResult.finalResolvedPath;
+        finalBaseName = setupResult.finalBaseName;
+        currentPathInput = finalPathInput;
+      }
 
       const originalInput = {
         ...input,
@@ -226,7 +234,7 @@ export async function createProjectHandler(
           ...flagConfig,
           projectName: finalBaseName,
           projectDir: finalResolvedPath,
-          relativePath: finalPathInput,
+          relativePath: currentPathInput,
           versionChannel,
         };
 
@@ -255,7 +263,7 @@ export async function createProjectHandler(
           flagConfig,
           finalBaseName,
           finalResolvedPath,
-          finalPathInput,
+          currentPathInput,
         );
         config = { ...gatheredConfig, versionChannel };
       }
@@ -263,6 +271,77 @@ export async function createProjectHandler(
       const preflight = validatePreflightConfig(config);
       if (preflight.hasWarnings && !isSilent()) {
         displayPreflightWarnings(preflight);
+      }
+
+      if (input.dryRun) {
+        const result = await generateVirtualProject({
+          config,
+          templates: EMBEDDED_TEMPLATES,
+        });
+
+        if (!result.success || !result.tree) {
+          throw new Error(result.error || "Failed to generate project templates");
+        }
+
+        const files: string[] = [];
+        function walk(
+          nodes: { type: string; name: string; children?: unknown[] }[],
+          prefix: string,
+        ) {
+          for (const node of nodes) {
+            const current = prefix ? `${prefix}/${node.name}` : node.name;
+            if (node.type === "directory" && node.children) {
+              walk(node.children as typeof nodes, current);
+            } else {
+              files.push(current);
+            }
+          }
+        }
+        walk(result.tree.root.children, "");
+
+        if (!isSilent()) {
+          log.info(
+            pc.bold(
+              pc.cyan(
+                `Dry run complete — ${result.tree.fileCount} files in ${result.tree.directoryCount} directories`,
+              ),
+            ),
+          );
+          log.message("");
+          log.message(pc.bold("Files that would be created:"));
+          for (const file of files) {
+            log.message(pc.dim(`  ${file}`));
+          }
+        }
+
+        const reproducibleCommand = generateReproducibleCommand(config);
+        if (!isSilent()) {
+          log.message("");
+          log.success(
+            pc.blue(
+              `You can reproduce this setup with the following command:\n${reproducibleCommand}`,
+            ),
+          );
+        }
+
+        const elapsedTimeMs = Date.now() - startTime;
+        if (!isSilent()) {
+          outro(pc.magenta("No files were written (dry run)."));
+        }
+
+        return {
+          success: true,
+          projectConfig: config,
+          reproducibleCommand,
+          timeScaffolded,
+          elapsedTimeMs,
+          projectDirectory: config.projectDir,
+          relativePath: config.relativePath,
+          dryRun: true,
+          fileCount: result.tree.fileCount,
+          directoryCount: result.tree.directoryCount,
+          files,
+        };
       }
 
       await createProject(config, {
