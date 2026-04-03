@@ -1601,6 +1601,171 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
       expect(result.result?.projectConfig.auth).toBe("none");
     });
+
+    it("should scaffold Drizzle with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "drizzle-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Drizzle with Stack-Auth and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "drizzle-stack-auth-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "drizzle",
+          auth: "stack-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Drizzle with Auth0 and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "drizzle-auth0-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "drizzle",
+          auth: "auth0",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Prisma with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "prisma-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "prisma",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Prisma with Stack-Auth and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "prisma-stack-auth-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "prisma",
+          auth: "stack-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Prisma with Auth0 and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "prisma-auth0-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "prisma",
+          auth: "auth0",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Prisma with Supabase-Auth and MySQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "prisma-supabase-auth-mysql",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "mysql",
+          orm: "prisma",
+          auth: "supabase-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely with NextAuth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-nextauth",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "kysely",
+          auth: "nextauth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely with Stack-Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-stack-auth",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "kysely",
+          auth: "stack-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely with Supabase-Auth", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-supabase-auth",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "kysely",
+          auth: "supabase-auth",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Kysely with Auth0", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "kysely-auth0",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "kysely",
+          auth: "auth0",
+        }),
+      );
+      expectSuccess(result);
+    });
   });
 
   describe("Auth Edge Cases", () => {

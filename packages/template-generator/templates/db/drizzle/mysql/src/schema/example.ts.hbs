@@ -1,0 +1,13 @@
+{{#unless (or (eq auth "better-auth") (eq auth "nextauth"))}}
+import { mysqlTable, serial, varchar, timestamp } from "drizzle-orm/mysql-core";
+
+export const example = mysqlTable("example", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { fsp: 3 })
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+{{/unless}}

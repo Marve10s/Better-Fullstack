@@ -1,4 +1,5 @@
 {{#if (or (eq auth "better-auth") (eq auth "nextauth"))}}
 export * from "./auth.js";
+{{else}}
+export * from "./example.js";
 {{/if}}
-export {};
