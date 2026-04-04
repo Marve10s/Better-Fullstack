@@ -10,6 +10,32 @@ permissions:
   pull-requests: write
 
 jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Bun Audit
+        run: bun audit --audit-level high 2>&1 | tee audit-report.txt || true
+
+      - name: Upload Audit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: audit-report.txt
+
   update-template-deps:
     name: Update Template Dependency Versions
     runs-on: ubuntu-latest
