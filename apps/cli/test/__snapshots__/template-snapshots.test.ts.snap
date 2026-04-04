@@ -872,7 +872,7 @@ export default app;
     "@trpc/tanstack-react-query": "^11.16.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
@@ -888,7 +888,7 @@ export default app;
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -1551,7 +1551,7 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.16.0",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.28.6",
     "lucide-react": "^1.7.0"
@@ -1564,7 +1564,7 @@ export default nextConfig;
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-next-self-fullstack/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -2875,7 +2875,7 @@ export default defineNuxtConfig({
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@tanstack/vue-query": "^5.95.2",
+    "@tanstack/vue-query": "^5.96.2",
     "@orpc/tanstack-query": "^1.13.13"
   },
   "devDependencies": {
@@ -2883,7 +2883,7 @@ export default defineNuxtConfig({
     "@iconify-json/lucide": "^1.2.100",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
-    "@tanstack/vue-query-devtools": "^6.1.10"
+    "@tanstack/vue-query-devtools": "^6.1.13"
   }
 }
 "
@@ -3314,7 +3314,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: express-node-t
     "@types/express": "catalog:",
     "@types/cors": "^2.8.19",
     "tsx": "^4.21.0",
-    "@types/node": "catalog:"
+    "@types/node": "^25.5.2"
   }
 }
 "
@@ -3426,14 +3426,14 @@ app.listen(3000, () => {
     "@trpc/tanstack-react-query": "^11.16.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.166.11",
     "@tanstack/router-cli": "^1.166.23",
     "@tanstack/router-plugin": "^1.167.9",
-    "@types/node": "catalog:",
+    "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -3442,7 +3442,7 @@ app.listen(3000, () => {
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -3716,7 +3716,6 @@ export default defineConfig({
       "dotenv": "^17.3.1",
       "zod": "^4.3.6",
       "typescript": "^6.0.2",
-      "@types/node": "^25.5.0",
       "@trpc/server": "^11.16.0",
       "@types/express": "^5.0.6",
       "@prisma/client": "^7.6.0",
@@ -3743,7 +3742,7 @@ export default defineConfig({
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "^25.5.2",
     "@snapshot-express-node-trpc/config": "workspace:*"
   }
 }
@@ -3973,7 +3972,7 @@ export default prisma;
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "^25.5.2",
     "@snapshot-express-node-trpc/config": "workspace:*"
   }
 }
@@ -4210,7 +4209,7 @@ export default app;
     "@orpc/tanstack-query": "^1.13.13",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
@@ -4226,7 +4225,7 @@ export default app;
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -4983,7 +4982,7 @@ export default app;
     "@trpc/tanstack-react-query": "^11.16.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.28.6",
     "lucide-react": "^1.7.0"
@@ -5001,7 +5000,7 @@ export default app;
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -6423,8 +6422,8 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.16.0",
-    "@tanstack/react-query": "^5.95.2",
-    "@clerk/nextjs": "^7.0.7",
+    "@tanstack/react-query": "^5.96.2",
+    "@clerk/nextjs": "^7.0.8",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
@@ -6435,7 +6434,7 @@ export default nextConfig;
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-self-next-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -7005,7 +7004,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
     "@orpc/tanstack-query": "^1.13.13",
-    "@clerk/tanstack-react-start": "^1.0.7",
+    "@clerk/tanstack-react-start": "^1.0.8",
     "srvx": "^0.11.13",
     "lucide-react": "^1.7.0"
   },
@@ -7021,7 +7020,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "web-vitals": "^5.2.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -7794,7 +7793,7 @@ export default app;
     "@trpc/tanstack-react-query": "^11.16.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
@@ -7810,7 +7809,7 @@ export default app;
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -8515,7 +8514,7 @@ export default app;
     "@trpc/tanstack-react-query": "^11.16.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^1.7.0"
   },
   "devDependencies": {
@@ -8531,7 +8530,7 @@ export default app;
     "vite": "^8.0.3",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.95.2"
+    "@tanstack/react-query-devtools": "^5.96.2"
   }
 }
 "
@@ -10387,7 +10386,7 @@ repository = ""
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.43", features = ["full"] }
+tokio = { version = "1.51", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -10779,7 +10778,7 @@ repository = ""
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.43", features = ["full"] }
+tokio = { version = "1.51", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -11162,7 +11161,7 @@ repository = ""
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.43", features = ["full"] }
+tokio = { version = "1.51", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
