@@ -43,6 +43,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: tanstack-ro
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -144,6 +145,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -184,6 +186,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -292,6 +295,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-or
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -457,6 +461,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -508,6 +513,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -703,6 +709,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "packages/db/drizzle.config.ts",
   "packages/db/package.json",
   "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
@@ -716,7 +723,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
 
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -1395,8 +1402,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -2210,7 +2221,6 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth.js";
-export {};
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -2298,7 +2308,7 @@ export {};
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 38,
+  "fileCount": 39,
   "files": [
     {
       "content": "[exists]",
@@ -2654,8 +2664,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -2741,7 +2755,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 40,
+  "fileCount": 41,
   "files": [
     {
       "content": "[exists]",
@@ -3170,8 +3184,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -4003,7 +4021,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -4719,8 +4737,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -5729,7 +5751,6 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth.js";
-export {};
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -6344,7 +6365,7 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -6845,8 +6866,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -6934,7 +6959,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 50,
+  "fileCount": 51,
   "files": [
     {
       "content": "[exists]",
@@ -7530,8 +7555,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
@@ -9479,7 +9508,7 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 61,
+  "fileCount": 62,
   "files": [
     {
       "content": "[exists]",
@@ -10176,8 +10205,12 @@ export const db = drizzle({ client, schema });
       "path": "packages/db/src/index.ts",
     },
     {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
       "content": 
-"export {};
+"export * from "./example.js";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
