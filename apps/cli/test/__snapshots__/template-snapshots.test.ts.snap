@@ -11496,3 +11496,599 @@ async fn main() -> anyhow::Result<()> {
   ],
 }
 `;
+
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: gin-gorm-zap 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "cmd/server/main.go",
+  "go.mod",
+  "internal/database/database.go",
+  "internal/handlers/handlers.go",
+  "internal/models/models.go",
+]
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: echo-sqlc-grpc 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "cmd/server/main.go",
+  "go.mod",
+  "internal/database/database.go",
+  "internal/handlers/handlers.go",
+  "internal/models/models.go",
+  "proto/greeter.go",
+  "proto/greeter.pb.go",
+  "proto/greeter.proto",
+  "proto/greeter_grpc.pb.go",
+  "sql/queries/posts.sql",
+  "sql/queries/users.sql",
+  "sql/schema/001_schema.sql",
+  "sqlc.yaml",
+]
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: cli-cobra 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "cmd/cli/main.go",
+  "cmd/server/main.go",
+  "go.mod",
+]
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: gin-gorm-zap 1`] = `
+{
+  "fileCount": 9,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/database/database.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/handlers/handlers.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/models/models.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-sqlc-grpc 1`] = `
+{
+  "fileCount": 17,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/database/database.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/handlers/handlers.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/models/models.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "proto/greeter_grpc.pb.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "proto/greeter.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "proto/greeter.pb.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "proto/greeter.proto",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "sql/queries/posts.sql",
+    },
+    {
+      "content": "[exists]",
+      "path": "sql/queries/users.sql",
+    },
+    {
+      "content": "[exists]",
+      "path": "sql/schema/001_schema.sql",
+    },
+    {
+      "content": "[exists]",
+      "path": "sqlc.yaml",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: cli-cobra 1`] = `
+{
+  "fileCount": 7,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/cli/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: fastapi-sqlalchemy-celery 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "alembic.ini",
+  "migrations/env.py",
+  "migrations/script.py.mako",
+  "pyproject.toml",
+  "src/app/__init__.py",
+  "src/app/celery_app.py",
+  "src/app/celery_schemas.py",
+  "src/app/crud.py",
+  "src/app/database.py",
+  "src/app/main.py",
+  "src/app/models.py",
+  "src/app/schemas.py",
+  "src/app/settings.py",
+  "src/app/tasks.py",
+  "tests/__init__.py",
+  "tests/test_database.py",
+  "tests/test_main.py",
+]
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: django-sqlmodel-langchain 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "alembic.ini",
+  "migrations/env.py",
+  "migrations/script.py.mako",
+  "pyproject.toml",
+  "src/app/__init__.py",
+  "src/app/crud.py",
+  "src/app/database.py",
+  "src/app/langchain_client.py",
+  "src/app/langchain_schemas.py",
+  "src/app/main.py",
+  "src/app/models.py",
+  "src/app/settings.py",
+  "tests/__init__.py",
+  "tests/test_database.py",
+  "tests/test_main.py",
+]
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: fastapi-ai-multi 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "pyproject.toml",
+  "src/app/__init__.py",
+  "src/app/anthropic_client.py",
+  "src/app/anthropic_schemas.py",
+  "src/app/main.py",
+  "src/app/openai_client.py",
+  "src/app/openai_schemas.py",
+  "src/app/schemas.py",
+  "src/app/settings.py",
+  "tests/__init__.py",
+  "tests/test_main.py",
+]
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: fastapi-sqlalchemy-celery 1`] = `
+{
+  "fileCount": 21,
+  "files": [
+    {
+      "content": 
+"# Environment Configuration
+# Copy this file to .env and update the values
+
+# Application
+DEBUG=true
+HOST=0.0.0.0
+PORT=8000
+
+# Database (if using SQLAlchemy/SQLModel)
+DATABASE_URL=sqlite:///./app.db
+
+# OpenAI (if using AI frameworks)
+OPENAI_API_KEY=your-openai-api-key
+
+# Anthropic (if using Anthropic SDK)
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Celery (if using task queue)
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "alembic.ini",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "migrations/env.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "migrations/script.py.mako",
+    },
+    {
+      "content": "[exists]",
+      "path": "pyproject.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/celery_app.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/celery_schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/crud.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/database.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/main.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/models.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/settings.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/tasks.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/test_database.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/test_main.py",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: django-sqlmodel-langchain 1`] = `
+{
+  "fileCount": 19,
+  "files": [
+    {
+      "content": 
+"# Environment Configuration
+# Copy this file to .env and update the values
+
+# Application
+DEBUG=true
+HOST=0.0.0.0
+PORT=8000
+
+# Database (if using SQLAlchemy/SQLModel)
+DATABASE_URL=sqlite:///./app.db
+
+# OpenAI (if using AI frameworks)
+OPENAI_API_KEY=your-openai-api-key
+
+# Anthropic (if using Anthropic SDK)
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Celery (if using task queue)
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "alembic.ini",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "migrations/env.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "migrations/script.py.mako",
+    },
+    {
+      "content": "[exists]",
+      "path": "pyproject.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/crud.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/database.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/langchain_client.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/langchain_schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/main.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/models.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/settings.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/test_database.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/test_main.py",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: fastapi-ai-multi 1`] = `
+{
+  "fileCount": 15,
+  "files": [
+    {
+      "content": 
+"# Environment Configuration
+# Copy this file to .env and update the values
+
+# Application
+DEBUG=true
+HOST=0.0.0.0
+PORT=8000
+
+# Database (if using SQLAlchemy/SQLModel)
+DATABASE_URL=sqlite:///./app.db
+
+# OpenAI (if using AI frameworks)
+OPENAI_API_KEY=your-openai-api-key
+
+# Anthropic (if using Anthropic SDK)
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Celery (if using task queue)
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "pyproject.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/anthropic_client.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/anthropic_schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/main.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/openai_client.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/openai_schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/schemas.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/app/settings.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/__init__.py",
+    },
+    {
+      "content": "[exists]",
+      "path": "tests/test_main.py",
+    },
+  ],
+}
+`;

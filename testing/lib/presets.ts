@@ -268,6 +268,76 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       versionChannel: "latest",
     },
   },
+
+  // === RUST PRESETS ===
+  "rust-axum-seaorm": {
+    ecosystem: "rust",
+    overrides: {
+      rustWebFramework: "axum",
+      rustFrontend: "leptos",
+      rustOrm: "sea-orm",
+      rustApi: "none",
+      rustCli: "none",
+      rustLibraries: ["serde", "validator", "jsonwebtoken", "argon2"],
+    },
+  },
+  "rust-actix-sqlx": {
+    ecosystem: "rust",
+    overrides: {
+      rustWebFramework: "actix-web",
+      rustFrontend: "dioxus",
+      rustOrm: "sqlx",
+      rustApi: "none",
+      rustCli: "none",
+      rustLibraries: ["serde", "validator"],
+    },
+  },
+
+  // === GO PRESETS ===
+  "go-gin-gorm": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "gin",
+      goOrm: "gorm",
+      goApi: "none",
+      goCli: "none",
+      goLogging: "zap",
+    },
+  },
+  "go-echo-sqlc": {
+    ecosystem: "go",
+    overrides: {
+      goWebFramework: "echo",
+      goOrm: "sqlc",
+      goApi: "grpc-go",
+      goCli: "none",
+      goLogging: "none",
+    },
+  },
+
+  // === PYTHON PRESETS ===
+  "python-fastapi-sqlalchemy": {
+    ecosystem: "python",
+    overrides: {
+      pythonWebFramework: "fastapi",
+      pythonOrm: "sqlalchemy",
+      pythonValidation: "pydantic",
+      pythonAi: [],
+      pythonTaskQueue: "celery",
+      pythonQuality: "ruff",
+    },
+  },
+  "python-django-langchain": {
+    ecosystem: "python",
+    overrides: {
+      pythonWebFramework: "django",
+      pythonOrm: "sqlmodel",
+      pythonValidation: "pydantic",
+      pythonAi: ["langchain"],
+      pythonTaskQueue: "none",
+      pythonQuality: "ruff",
+    },
+  },
 };
 
 export function listPresetIds(): string[] {
