@@ -6,6 +6,7 @@ import type { ProjectConfig } from "../../types";
 
 import { shouldSkipExternalCommands } from "../../utils/external-commands";
 import { getPackageRunnerPrefix } from "../../utils/package-runner";
+import { runInstallWithRetries } from "./retry-install";
 
 type McpTransport = "http" | "sse";
 
@@ -324,15 +325,12 @@ export async function setupMcp(config: ProjectConfig): Promise<void> {
       "-y",
     ];
 
-    try {
-      await $({ cwd: projectDir, env: { CI: "true" } })`${args}`;
-    } catch (error) {
-      log.warn(
-        pc.yellow(
-          `Warning: Could not install MCP server '${server.name}': ${error instanceof Error ? error.message : String(error)}`,
-        ),
-      );
-    }
+    await runInstallWithRetries({
+      description: `install MCP server '${server.name}'`,
+      run: async () => {
+        await $({ cwd: projectDir, env: { CI: "true" } })`${args}`;
+      },
+    });
   }
 
   installSpinner.stop("MCP servers installed");

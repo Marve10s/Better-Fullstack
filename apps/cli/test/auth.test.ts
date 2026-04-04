@@ -1662,6 +1662,51 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
+    it("should scaffold TypeORM with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "typeorm-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "typeorm",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold MikroORM with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "mikroorm-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "mikroorm",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    it("should scaffold Sequelize with Clerk", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sequelize-clerk",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "sequelize",
+          auth: "clerk",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     it("should scaffold Prisma with Stack-Auth and MySQL", async () => {
       const result = await runTRPCTest(
         createCustomConfig({

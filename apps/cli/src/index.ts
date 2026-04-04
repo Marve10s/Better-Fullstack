@@ -134,7 +134,7 @@ import { displaySponsors, fetchSponsors } from "./utils/sponsors";
 export const router = os.router({
   create: os
     .meta({
-      description: "Create a new Better Fullstack project",
+      description: "Scaffold a new Better Fullstack project from 270+ compatible stack options",
       default: true,
       negateBooleans: true,
     })
@@ -313,7 +313,10 @@ export const router = os.router({
     }
   }),
   add: os
-    .meta({ description: "Add addons or deployment targets to an existing Better Fullstack project" })
+    .meta({
+      description:
+        "Add addons or deployment targets to an existing Better Fullstack project using its bts.jsonc config",
+    })
     .input(
       z.object({
         addons: z.array(AddonsSchema).optional().describe("Addons to add"),
@@ -370,7 +373,10 @@ export const router = os.router({
       });
     }),
   mcp: os
-    .meta({ description: "Start MCP server for AI agent integration (stdio transport)" })
+    .meta({
+      description:
+        "Start the Better Fullstack MCP server so AI agents can inspect the schema, plan stacks, and scaffold projects over stdio",
+    })
     .handler(async () => {
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");

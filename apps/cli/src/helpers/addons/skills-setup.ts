@@ -7,6 +7,7 @@ import type { ProjectConfig } from "../../types";
 import { readBtsConfig } from "../../utils/bts-config";
 import { shouldSkipExternalCommands } from "../../utils/external-commands";
 import { getPackageRunnerPrefix } from "../../utils/package-runner";
+import { runInstallWithRetries } from "./retry-install";
 
 type SkillSource = {
   label: string;
@@ -291,15 +292,12 @@ export async function setupSkills(config: ProjectConfig): Promise<void> {
       "-y",
     ];
 
-    try {
-      await $({ cwd: projectDir, env: { CI: "true" } })`${args}`;
-    } catch (error) {
-      log.warn(
-        pc.yellow(
-          `Warning: Could not install skills from ${source}: ${error instanceof Error ? error.message : String(error)}`,
-        ),
-      );
-    }
+    await runInstallWithRetries({
+      description: `install skills from ${source}`,
+      run: async () => {
+        await $({ cwd: projectDir, env: { CI: "true" } })`${args}`;
+      },
+    });
   }
 
   installSpinner.stop("Skills installed");

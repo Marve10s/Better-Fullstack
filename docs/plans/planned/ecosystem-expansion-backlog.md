@@ -25,10 +25,10 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | [community-requested-integrations.md](community-requested-integrations.md) | Cloudinary, SWR, shadcn-svelte, REST API, InstantDB, Intlayer, Plasmo, etc. |
 | [mobile-react-native.md](mobile-react-native.md) | Navigation, mobile UI libs, testing, push, Capacitor, OTA updates |
 | [documentation-site.md](documentation-site.md) | User-facing docs: getting started, CLI ref, compatibility matrix, public roadmap |
-| [ci-and-quality.md](ci-and-quality.md) | Dependabot npm, CodeQL, coverage, release gates, template validation, a11y |
+| [ci-and-quality.md](ci-and-quality.md) | Remaining quality backlog: cross-browser testing (CI/security foundation + Phase 1 hardening completed) |
 | **Reference** | |
 | [competitive-analysis.md](competitive-analysis.md) | Gap analysis vs better-t-stack |
-| [codebase-issues.md](codebase-issues.md) | Bugs and quality issues from April 2026 audit |
+| [../completed/codebase-issues-2026-04-04.md](../completed/codebase-issues-2026-04-04.md) | ✅ Bugs and quality issues from April 2026 audit (all resolved) |
 
 ## Quick Reference — All Pending Items
 
@@ -144,11 +144,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Public roadmap page
 
 ### CI / Quality
-- [ ] Dependabot npm scanning
-- [ ] CodeQL SAST workflow
-- [ ] Code coverage in CI
-- [ ] Release approval gates
-- [ ] Template validation matrix
+- [ ] Cross-browser testing
 
 ### Platform / CLI
 - [x] MCP server mode ✅

@@ -1,0 +1,67 @@
+name: Template Matrix Validation
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generated-project-typecheck:
+    name: Typecheck ${{ matrix.preset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - t3
+          - tanstack-fullstack
+          - react-hono
+          - sveltekit
+          - astro-sanity
+          - nuxt-fullstack
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: matrix-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            matrix-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Core Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Generated Project Typecheck
+        run: bun run test:smoke -- --preset ${{ matrix.preset }} --output testing/.smoke-output/${{ matrix.preset }}
+
+      - name: Upload Smoke Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results-${{ matrix.preset }}
+          path: testing/.smoke-output/${{ matrix.preset }}
+          if-no-files-found: ignore

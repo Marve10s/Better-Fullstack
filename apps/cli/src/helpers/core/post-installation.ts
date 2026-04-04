@@ -107,10 +107,12 @@ export async function displayPostInstallInstructions(
     : "";
   const clerkInstructions =
     config.auth === "clerk" ? getClerkInstructions(config.backend, config.frontend ?? []) : "";
+  const authSetupInstructions = getAuthSetupInstructions(config.auth, backend, config.frontend ?? []);
   const polarInstructions =
-    config.payments === "polar" && config.auth === "better-auth"
+    config.payments === "polar"
       ? getPolarInstructions(backend, packageManager)
       : "";
+  const paymentSetupInstructions = getPaymentSetupInstructions(config.payments, backend);
   const alchemyDeployInstructions = getAlchemyDeployInstructions(
     runCmd,
     webDeploy,
@@ -224,8 +226,10 @@ export async function displayPostInstallInstructions(
   if (alchemyDeployInstructions) output += `\n${alchemyDeployInstructions.trim()}\n`;
   if (starlightInstructions) output += `\n${starlightInstructions.trim()}\n`;
   if (clerkInstructions) output += `\n${clerkInstructions.trim()}\n`;
+  if (authSetupInstructions) output += `\n${authSetupInstructions.trim()}\n`;
   if (betterAuthConvexInstructions) output += `\n${betterAuthConvexInstructions.trim()}\n`;
   if (polarInstructions) output += `\n${polarInstructions.trim()}\n`;
+  if (paymentSetupInstructions) output += `\n${paymentSetupInstructions.trim()}\n`;
 
   if (noOrmWarning) output += `\n${noOrmWarning.trim()}\n`;
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
@@ -343,14 +347,52 @@ async function getDatabaseInstructions(
     instructions.push(
       `${pc.yellow(
         "NOTE:",
-      )} Follow Turso's Prisma guide for migrations via the Turso CLI:\n   https://docs.turso.tech/sdk/ts/orm/prisma`,
+      )} Turso + Prisma migrations require the Turso CLI.\n   1. Install and authenticate the Turso CLI:\n      ${pc.underline("https://docs.turso.tech/cli/installation")}\n   2. Confirm ${pc.white("DATABASE_URL")} and ${pc.white("TURSO_AUTH_TOKEN")} are set in your env file\n   3. Generate Prisma Client: ${`${runCmd} db:generate`}\n   4. Follow the official migration workflow:\n      ${pc.underline("https://docs.turso.tech/sdk/ts/orm/prisma")}`,
+    );
+  }
+
+  if (dbSetup === "turso" && orm === "drizzle") {
+    instructions.push(
+      `${pc.yellow(
+        "NOTE:",
+      )} Turso + Drizzle requires the Turso CLI for database management.\n   1. Install and authenticate the Turso CLI:\n      ${pc.underline("https://docs.turso.tech/cli/installation")}\n   2. Confirm ${pc.white("DATABASE_URL")} and ${pc.white("TURSO_AUTH_TOKEN")} are set in your env file\n   3. Push schema: ${`${runCmd} db:push`}\n   4. Docs: ${pc.underline("https://orm.drizzle.team/docs/get-started/turso-new")}`,
+    );
+  }
+
+  if (dbSetup === "neon") {
+    instructions.push(
+      `${pc.yellow("NOTE:")} Set your Neon ${pc.white("DATABASE_URL")} in your env file.\n   Dashboard: ${pc.underline("https://console.neon.tech")}`,
+    );
+  }
+
+  if (dbSetup === "supabase") {
+    instructions.push(
+      `${pc.yellow("NOTE:")} Set your Supabase ${pc.white("DATABASE_URL")} in your env file.\n   Dashboard: ${pc.underline("https://supabase.com/dashboard")}`,
+    );
+  }
+
+  if (dbSetup === "prisma-postgres") {
+    instructions.push(
+      `${pc.yellow("NOTE:")} Get your Prisma Postgres connection string from the console.\n   Console: ${pc.underline("https://console.prisma.io")}`,
+    );
+  }
+
+  if (dbSetup === "mongodb-atlas") {
+    instructions.push(
+      `${pc.yellow("NOTE:")} Set your Atlas ${pc.white("DATABASE_URL")} in your env file.\n   Dashboard: ${pc.underline("https://cloud.mongodb.com")}`,
+    );
+  }
+
+  if (dbSetup === "upstash") {
+    instructions.push(
+      `${pc.yellow("NOTE:")} Set your Upstash Redis credentials in your env file.\n   Console: ${pc.underline("https://console.upstash.com")}`,
     );
   }
 
   if (orm === "prisma") {
     if (database === "mongodb" && dbSetup === "docker") {
       instructions.push(
-        `${pc.yellow("WARNING:")} Prisma + MongoDB + Docker: this combination has known issues.\n   Consider using MongoDB Atlas (${pc.underline("https://www.mongodb.com/atlas")}) for reliable Prisma + MongoDB support.`,
+        `${pc.yellow("WARNING:")} Prisma + MongoDB + Docker can be unreliable in local development.\n   • Start MongoDB first and wait until the container is ready before Prisma commands\n   • If ${`${runCmd} db:push`} keeps failing locally, switch to MongoDB Atlas for a supported Prisma workflow:\n     ${pc.underline("https://www.mongodb.com/atlas")}`,
       );
     }
     if (dbSetup === "docker") {
@@ -374,6 +416,10 @@ async function getDatabaseInstructions(
       instructions.push(`${pc.cyan("•")} Database UI: ${`${runCmd} db:studio`}`);
     }
   } else if (orm === "mongoose") {
+    if (dbSetup === "docker") {
+      instructions.push(`${pc.cyan("•")} Start docker container: ${`${runCmd} db:start`}`);
+    }
+  } else if (orm === "typeorm" || orm === "mikroorm" || orm === "sequelize" || orm === "kysely") {
     if (dbSetup === "docker") {
       instructions.push(`${pc.cyan("•")} Start docker container: ${`${runCmd} db:start`}`);
     }
@@ -430,6 +476,100 @@ function getClerkInstructions(backend: Backend, frontend: Frontend[]) {
       ? "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
       : "VITE_CLERK_PUBLISHABLE_KEY";
     return `${pc.bold("Clerk Authentication Setup:")}\n${pc.cyan("•")} Create an application in ${pc.underline("https://dashboard.clerk.com/")}\n${pc.cyan("•")} Set ${publishableKeyVar} in ${pc.white("apps/web/.env")}\n${pc.cyan("•")} Set CLERK_SECRET_KEY in ${pc.white("apps/web/.env")}\n${pc.cyan("•")} Clerk middleware and a protected dashboard route are already generated`;
+  }
+
+  return "";
+}
+
+function getAuthSetupInstructions(auth: ProjectConfig["auth"], backend: Backend, frontend: Frontend[]): string {
+  // Clerk and better-auth already have dedicated instruction functions
+  if (auth === "clerk" || auth === "better-auth" || auth === "go-better-auth" || auth === "none") {
+    return "";
+  }
+
+  const isSelf = backend === "self";
+  const envPath = isSelf ? "apps/web/.env" : "apps/server/.env";
+
+  if (auth === "nextauth") {
+    return (
+      `${pc.bold("NextAuth.js Setup:")}\n` +
+      `${pc.cyan("•")} Generate a secret: ${pc.white("npx auth secret")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("AUTH_SECRET")} in ${pc.white(envPath)}\n` +
+      `${pc.cyan("•")} Configure your OAuth providers (e.g. ${pc.white("AUTH_GITHUB_ID")}, ${pc.white("AUTH_GITHUB_SECRET")})\n` +
+      `${pc.cyan("•")} Docs: ${pc.underline("https://authjs.dev/getting-started")}`
+    );
+  }
+
+  if (auth === "stack-auth") {
+    return (
+      `${pc.bold("Stack Auth Setup:")}\n` +
+      `${pc.cyan("•")} Create a project at ${pc.underline("https://app.stack-auth.com")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("NEXT_PUBLIC_STACK_PROJECT_ID")}, ${pc.white("NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY")},\n` +
+      `   and ${pc.white("STACK_SECRET_SERVER_KEY")} in ${pc.white(envPath)}`
+    );
+  }
+
+  if (auth === "supabase-auth") {
+    return (
+      `${pc.bold("Supabase Auth Setup:")}\n` +
+      `${pc.cyan("•")} Create a project at ${pc.underline("https://supabase.com/dashboard")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("NEXT_PUBLIC_SUPABASE_URL")}, ${pc.white("NEXT_PUBLIC_SUPABASE_ANON_KEY")},\n` +
+      `   and ${pc.white("SUPABASE_SERVICE_ROLE_KEY")} in ${pc.white(envPath)}`
+    );
+  }
+
+  if (auth === "auth0") {
+    return (
+      `${pc.bold("Auth0 Setup:")}\n` +
+      `${pc.cyan("•")} Create an application at ${pc.underline("https://manage.auth0.com")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("AUTH0_SECRET")}, ${pc.white("AUTH0_CLIENT_ID")}, ${pc.white("AUTH0_CLIENT_SECRET")},\n` +
+      `   and ${pc.white("AUTH0_ISSUER_BASE_URL")} in ${pc.white(envPath)}\n` +
+      `${pc.cyan("•")} Docs: ${pc.underline("https://auth0.com/docs/quickstart")}`
+    );
+  }
+
+  return "";
+}
+
+function getPaymentSetupInstructions(payments: ProjectConfig["payments"], backend: Backend): string {
+  // Polar already has a dedicated instruction function
+  if (payments === "polar" || payments === "none") {
+    return "";
+  }
+
+  const envPath = backend === "self" ? "apps/web/.env" : "apps/server/.env";
+
+  if (payments === "stripe") {
+    return (
+      `${pc.bold("Stripe Setup:")}\n` +
+      `${pc.cyan("•")} Get API keys from ${pc.underline("https://dashboard.stripe.com/apikeys")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("STRIPE_SECRET_KEY")} and ${pc.white("STRIPE_WEBHOOK_SECRET")} in ${pc.white(envPath)}\n` +
+      `${pc.cyan("•")} For local webhooks: ${pc.white("stripe listen --forward-to localhost:3000/api/webhooks/stripe")}`
+    );
+  }
+
+  if (payments === "lemon-squeezy") {
+    return (
+      `${pc.bold("Lemon Squeezy Setup:")}\n` +
+      `${pc.cyan("•")} Get API key from ${pc.underline("https://app.lemonsqueezy.com/settings/api")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("LEMONSQUEEZY_API_KEY")} and ${pc.white("LEMONSQUEEZY_STORE_ID")} in ${pc.white(envPath)}`
+    );
+  }
+
+  if (payments === "paddle") {
+    return (
+      `${pc.bold("Paddle Setup:")}\n` +
+      `${pc.cyan("•")} Get API keys from ${pc.underline("https://vendors.paddle.com")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("PADDLE_API_KEY")} and ${pc.white("PADDLE_WEBHOOK_SECRET")} in ${pc.white(envPath)}`
+    );
+  }
+
+  if (payments === "dodo") {
+    return (
+      `${pc.bold("Dodo Payments Setup:")}\n` +
+      `${pc.cyan("•")} Get API key from ${pc.underline("https://app.dodopayments.com")}\n` +
+      `${pc.cyan("•")} Set ${pc.white("DODO_PAYMENTS_API_KEY")} and ${pc.white("DODO_PAYMENTS_WEBHOOK_SECRET")} in ${pc.white(envPath)}`
+    );
   }
 
   return "";
