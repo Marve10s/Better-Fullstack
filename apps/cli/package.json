@@ -101,7 +101,7 @@
     "check-types": "tsc --noEmit",
     "test": "bun test ./test/*.test.ts",
     "test:watch": "bun test --watch",
-    "test:coverage": "bun test --coverage",
+    "test:coverage": "bun test --coverage ./test/*.test.ts",
     "test:ci": "CI=1 bun test --bail=5",
     "test:e2e": "E2E=1 bun test test/e2e/e2e.e2e.ts --timeout 600000",
     "test:integration": "bun test test/e2e/cli-interaction.test.ts test/e2e/cli-binary.test.ts",
