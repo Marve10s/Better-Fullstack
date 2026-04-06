@@ -323,3 +323,150 @@ describe("Template Snapshots - Rust Ecosystem", () => {
     }
   });
 });
+
+describe("Template Snapshots - Go Ecosystem", () => {
+  const GO_CONFIGS = [
+    {
+      name: "gin-gorm-zap",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "gin" as const,
+        goOrm: "gorm" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "zap" as const,
+      },
+    },
+    {
+      name: "echo-sqlc-grpc",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "echo" as const,
+        goOrm: "sqlc" as const,
+        goApi: "grpc-go" as const,
+        goCli: "none" as const,
+        goLogging: "none" as const,
+      },
+    },
+    {
+      name: "cli-cobra",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "none" as const,
+        goOrm: "none" as const,
+        goApi: "none" as const,
+        goCli: "cobra" as const,
+        goLogging: "none" as const,
+      },
+    },
+  ];
+
+  describe("Go File Structure Snapshots", () => {
+    for (const { name, config } of GO_CONFIGS) {
+      it(`file structure: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-go-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const fileList = treeToFileList(result.tree!);
+        expect(fileList).toMatchSnapshot();
+      });
+    }
+  });
+
+  describe("Go Key File Content Snapshots", () => {
+    for (const { name, config } of GO_CONFIGS) {
+      it(`key files: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-go-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const snapshot = treeToSnapshot(result.tree!);
+        expect(snapshot).toMatchSnapshot();
+      });
+    }
+  });
+});
+
+describe("Template Snapshots - Python Ecosystem", () => {
+  const PYTHON_CONFIGS = [
+    {
+      name: "fastapi-sqlalchemy-celery",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "fastapi" as const,
+        pythonOrm: "sqlalchemy" as const,
+        pythonValidation: "pydantic" as const,
+        pythonAi: [] as const,
+        pythonTaskQueue: "celery" as const,
+        pythonQuality: "ruff" as const,
+      },
+    },
+    {
+      name: "django-sqlmodel-langchain",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "django" as const,
+        pythonOrm: "sqlmodel" as const,
+        pythonValidation: "pydantic" as const,
+        pythonAi: ["langchain"] as const,
+        pythonTaskQueue: "none" as const,
+        pythonQuality: "ruff" as const,
+      },
+    },
+    {
+      name: "fastapi-ai-multi",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "fastapi" as const,
+        pythonOrm: "none" as const,
+        pythonValidation: "pydantic" as const,
+        pythonAi: ["openai-sdk", "anthropic-sdk"] as const,
+        pythonTaskQueue: "none" as const,
+        pythonQuality: "none" as const,
+      },
+    },
+  ];
+
+  describe("Python File Structure Snapshots", () => {
+    for (const { name, config } of PYTHON_CONFIGS) {
+      it(`file structure: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-python-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const fileList = treeToFileList(result.tree!);
+        expect(fileList).toMatchSnapshot();
+      });
+    }
+  });
+
+  describe("Python Key File Content Snapshots", () => {
+    for (const { name, config } of PYTHON_CONFIGS) {
+      it(`key files: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-python-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const snapshot = treeToSnapshot(result.tree!);
+        expect(snapshot).toMatchSnapshot();
+      });
+    }
+  });
+});

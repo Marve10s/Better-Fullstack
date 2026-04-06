@@ -2246,7 +2246,7 @@ describe("Python Language Support", () => {
       const pyprojectContent = getFileContent(root, "pyproject.toml");
       expect(pyprojectContent).toBeDefined();
       expect(pyprojectContent).toContain("celery");
-      expect(pyprojectContent).toContain("celery[redis]>=5.4.0");
+      expect(pyprojectContent).toContain("celery[redis]>=5.6.3");
     });
 
     it("should create celery_app.py with app configuration", async () => {

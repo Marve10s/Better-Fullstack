@@ -144,7 +144,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Public roadmap page
 
 ### CI / Quality
-- [ ] Cross-browser testing
+- [x] Phase 1 quality hardening ✅
 
 ### Platform / CLI
 - [x] MCP server mode ✅

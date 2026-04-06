@@ -27,6 +27,12 @@ jobs:
           - sveltekit
           - astro-sanity
           - nuxt-fullstack
+          - rust-axum-seaorm
+          - rust-actix-sqlx
+          - go-gin-gorm
+          - go-echo-sqlc
+          - python-fastapi-sqlalchemy
+          - python-django-langchain
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -35,6 +41,20 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      - name: Setup Rust
+        if: startsWith(matrix.preset, 'rust-')
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Go
+        if: startsWith(matrix.preset, 'go-')
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Setup Python + uv
+        if: startsWith(matrix.preset, 'python-')
+        uses: astral-sh/setup-uv@v5
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -55,7 +75,7 @@ jobs:
           bun run --cwd packages/template-generator build
           bun run --cwd apps/cli build
 
-      - name: Run Generated Project Typecheck
+      - name: Run Generated Project Verification
         run: bun run test:smoke -- --preset ${{ matrix.preset }} --output testing/.smoke-output/${{ matrix.preset }}
 
       - name: Upload Smoke Results

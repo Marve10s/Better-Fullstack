@@ -13,15 +13,4 @@ Tracks the quality backlog that remains after the verified CI/security baseline 
 
 ---
 
-## Cross-Browser Testing (codebase-issues #18)
-
-- [ ] Add Firefox and WebKit to Playwright config
-  - Currently Chromium-only in `apps/web/playwright.config.ts`
-  - At minimum add WebKit (Safari-like) — catches flexbox/grid rendering differences
-  - Firefox optional but recommended
-
----
-
-## Priority Order
-
-1. **Cross-browser testing** — broadens web confidence beyond Chromium
+All Phase 1 quality items are complete. Remaining quality work is tracked in ecosystem-specific plans.
