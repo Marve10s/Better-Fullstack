@@ -164,7 +164,7 @@ jobs:
         if: steps.pending.outputs.has_changes == 'true' && (steps.check.outputs.effective_update_mode == 'patch-minor' || steps.check.outputs.effective_update_mode == 'all')
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_WORKFLOW }}
           commit-message: "chore(deps): update dependency versions"
           title: "chore(deps): Update dependency versions"
           body: |

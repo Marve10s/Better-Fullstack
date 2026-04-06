@@ -121,7 +121,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_WORKFLOW }}
           commit-message: "chore(deps): update codebase dependencies"
           title: "chore(deps): update codebase dependencies"
           body: |
