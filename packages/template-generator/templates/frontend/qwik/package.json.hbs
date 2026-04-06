@@ -18,7 +18,7 @@
     "@builder.io/qwik-city": "^1.19.2"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     {{!-- WORKAROUND: @builder.io/qwik@1.19.2 CLI requires 'ignore' at runtime but doesn't declare it.
          bun doesn't hoist transitive deps like npm, so qwik build crashes with MODULE_NOT_FOUND.
          Remove when Qwik fixes this upstream or when upgrading to Qwik v2. --}}
@@ -28,7 +28,7 @@
     "tailwindcss": "^4.2.2",
     {{/if}}
     "typescript": "^5",
-    "vite": "^8.0.3",
+    "vite": "^8.0.4",
     "vite-tsconfig-paths": "^6.1.1"
   }
 }
