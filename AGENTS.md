@@ -15,6 +15,7 @@ See `docs/guidelines/` for deeper reference on these topics:
 - `scripted-cli-runs.md` - safe non-interactive CLI usage, prompt-avoidance flags, and matrix-testing caveats
 - `production-package-testing.md` - how to use the `testing/` workspace for published npm-package validation cycles
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
+- `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Covers every file that must be touched, with worked examples, template handler reference, test patterns, and routing gotchas (Convex skips, self-backend, frontend array detection, processor ordering)
 
 ## Git Remotes and Pull Requests
 

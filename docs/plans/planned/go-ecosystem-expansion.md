@@ -8,7 +8,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Web Frameworks
 
-- [ ] Add `fiber` — 38k+ stars, Express.js-like API, built on FastHTTP. Attracts Node.js developers migrating to Go. 11% adoption among Go devs.
+- [x] Add `fiber` ✅ — 38k+ stars, Express.js-like API, built on FastHTTP. Attracts Node.js developers migrating to Go. 11% adoption among Go devs.
 - [ ] Add `chi` — 18k+ stars, lightweight, zero-dependency, built on net/http stdlib. Popular for microservices. Fully standard-library compatible.
 - [ ] Add `stdlib` (net/http) — Go 1.22+ pattern routing makes the standard library viable without any framework. Offer as a "no framework" option.
 

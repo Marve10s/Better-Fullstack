@@ -2259,6 +2259,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "algolia",
+      name: "Algolia",
+      description: "Hosted search API with instant results, typo tolerance, and analytics",
+      icon: "https://cdn.simpleicons.org/algolia/003DFF",
+      color: "from-blue-500 to-indigo-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Search",
       description: "Skip search engine setup",

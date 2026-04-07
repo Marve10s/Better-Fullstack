@@ -568,6 +568,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.elastic.co/docs",
     githubUrl: "https://github.com/elastic/elasticsearch",
   },
+  algolia: {
+    docsUrl: "https://www.algolia.com/doc/",
+    githubUrl: "https://github.com/algolia/algoliasearch-client-javascript",
+  },
   s3: {
     docsUrl: "https://docs.aws.amazon.com/AmazonS3/",
     githubUrl: "https://github.com/aws/aws-sdk-js-v3",

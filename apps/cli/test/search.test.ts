@@ -647,6 +647,108 @@ describe("Search Options", () => {
     });
   });
 
+  describe("Algolia with different backends", () => {
+    test("algolia with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("algolia with Express backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-express",
+          frontend: ["tanstack-router"],
+          backend: "express",
+          runtime: "node",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("algolia with Elysia backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-elysia",
+          frontend: ["tanstack-router"],
+          backend: "elysia",
+          runtime: "bun",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Algolia with fullstack frameworks", () => {
+    test("algolia with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Algolia generated files", () => {
+    test("server backends emit search helper, dependency, and env for algolia", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-server-files",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+
+      const projectDir = result.projectDir!;
+      const helper = await readFile(join(projectDir, "apps/server/src/lib/search.ts"), "utf-8");
+      const pkg = await readFile(join(projectDir, "apps/server/package.json"), "utf-8");
+      const env = await readFile(join(projectDir, "apps/server/.env"), "utf-8");
+
+      expect(helper).toContain('from "algoliasearch"');
+      expect(pkg).toContain('"algoliasearch"');
+      expect(env).toContain("ALGOLIA_APP_ID=");
+      expect(env).toContain("ALGOLIA_API_KEY=");
+    });
+
+    test("self backends emit search helper, dependency, and env for algolia", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "algolia-self-files",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          search: "algolia",
+        }),
+      );
+      expectSuccess(result);
+
+      const projectDir = result.projectDir!;
+      const helper = await readFile(join(projectDir, "apps/web/src/lib/search.ts"), "utf-8");
+      const pkg = await readFile(join(projectDir, "apps/web/package.json"), "utf-8");
+      const env = await readFile(join(projectDir, "apps/web/.env"), "utf-8");
+
+      expect(helper).toContain("export const searchClient");
+      expect(pkg).toContain('"algoliasearch"');
+      expect(env).toContain("ALGOLIA_APP_ID=");
+      expect(env).toContain("ALGOLIA_API_KEY=");
+    });
+  });
+
   describe("Generated search files", () => {
     test("server backends emit search helper, dependency, and env for elasticsearch", async () => {
       const result = await runTRPCTest(
@@ -671,7 +773,7 @@ describe("Search Options", () => {
     });
 
     test("self backends emit search helper, dependency, and env for all search engines", async () => {
-      const searches = ["meilisearch", "typesense", "elasticsearch"] as const;
+      const searches = ["meilisearch", "typesense", "elasticsearch", "algolia"] as const;
 
       for (const search of searches) {
         const result = await runTRPCTest(
@@ -697,6 +799,10 @@ describe("Search Options", () => {
         } else if (search === "typesense") {
           expect(pkg).toContain('"typesense"');
           expect(env).toContain("TYPESENSE_HOST=localhost");
+        } else if (search === "algolia") {
+          expect(pkg).toContain('"algoliasearch"');
+          expect(env).toContain("ALGOLIA_APP_ID=");
+          expect(env).toContain("ALGOLIA_API_KEY=");
         } else {
           expect(pkg).toContain('"@elastic/elasticsearch"');
           expect(env).toContain("ELASTICSEARCH_NODE=http://localhost:9200");

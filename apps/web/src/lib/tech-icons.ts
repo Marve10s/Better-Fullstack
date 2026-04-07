@@ -282,6 +282,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   meilisearch: { type: "si", slug: "meilisearch", hex: "FF5CAA" },
   typesense: { type: "local", src: "/icon/typesense.png" },
   elasticsearch: { type: "si", slug: "elasticsearch", hex: "005571" },
+  algolia: { type: "si", slug: "algolia", hex: "003DFF" },
 
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },

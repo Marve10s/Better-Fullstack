@@ -1,0 +1,258 @@
+import { algoliasearch, type SearchResponse } from "algoliasearch";
+
+/**
+ * Algolia client for fast, relevant search
+ * @see https://www.algolia.com/doc/
+ */
+export const searchClient = algoliasearch(
+  process.env.ALGOLIA_APP_ID!,
+  process.env.ALGOLIA_API_KEY!,
+);
+
+/**
+ * Search utilities for common search patterns
+ */
+
+/**
+ * Search documents in an index
+ */
+export async function search<T extends Record<string, unknown>>(
+  indexName: string,
+  query: string,
+  options?: {
+    hitsPerPage?: number;
+    page?: number;
+    filters?: string;
+    facets?: string[];
+    attributesToRetrieve?: string[];
+    attributesToHighlight?: string[];
+  }
+): Promise<SearchResponse<T>> {
+  return searchClient.searchSingleIndex<T>({
+    indexName,
+    searchParams: {
+      query,
+      ...options,
+    },
+  });
+}
+
+/**
+ * Add or update documents in an index
+ */
+export async function addDocuments<T extends Record<string, unknown>>(
+  indexName: string,
+  documents: T[],
+): Promise<{ taskID: number }> {
+  const response = await searchClient.saveObjects({
+    indexName,
+    objects: documents,
+  });
+  return { taskID: response[0].taskID };
+}
+
+/**
+ * Partially update documents in an index
+ */
+export async function updateDocuments<T extends Record<string, unknown>>(
+  indexName: string,
+  documents: Array<Partial<T> & { objectID: string }>,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.partialUpdateObjects({
+    indexName,
+    objects: documents,
+    createIfNotExists: true,
+  });
+  return { taskID: response[0].taskID };
+}
+
+/**
+ * Delete a document by objectID
+ */
+export async function deleteDocument(
+  indexName: string,
+  objectID: string,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.deleteObject({
+    indexName,
+    objectID,
+  });
+  return { taskID: response.taskID };
+}
+
+/**
+ * Delete multiple documents by objectIDs
+ */
+export async function deleteDocuments(
+  indexName: string,
+  objectIDs: string[],
+): Promise<{ taskID: number }> {
+  const response = await searchClient.deleteObjects({
+    indexName,
+    objectIDs,
+  });
+  return { taskID: response[0].taskID };
+}
+
+/**
+ * Delete all documents in an index (clear index)
+ */
+export async function deleteAllDocuments(
+  indexName: string,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.clearObjects({ indexName });
+  return { taskID: response.taskID };
+}
+
+/**
+ * Get a single document by objectID
+ */
+export async function getDocument<T extends Record<string, unknown>>(
+  indexName: string,
+  objectID: string,
+): Promise<T | null> {
+  try {
+    return await searchClient.getObject({ indexName, objectID }) as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Browse all documents in an index with pagination
+ */
+export async function browseDocuments<T extends Record<string, unknown>>(
+  indexName: string,
+  options?: {
+    hitsPerPage?: number;
+    filters?: string;
+    attributesToRetrieve?: string[];
+  }
+): Promise<{ hits: T[]; nbHits: number }> {
+  const response = await searchClient.browse<T>({
+    indexName,
+    browseParams: {
+      ...options,
+    },
+  });
+  return {
+    hits: response.hits as T[],
+    nbHits: response.nbHits ?? 0,
+  };
+}
+
+/**
+ * Configure index settings (searchable attributes, ranking, etc.)
+ */
+export async function updateSettings(
+  indexName: string,
+  settings: {
+    searchableAttributes?: string[];
+    attributesForFaceting?: string[];
+    customRanking?: string[];
+    ranking?: string[];
+    sortingReplicas?: string[];
+  },
+): Promise<{ taskID: number }> {
+  const response = await searchClient.setSettings({
+    indexName,
+    indexSettings: settings,
+    forwardToReplicas: true,
+  });
+  return { taskID: response.taskID };
+}
+
+/**
+ * Get current index settings
+ */
+export async function getSettings(indexName: string) {
+  return searchClient.getSettings({ indexName });
+}
+
+/**
+ * Multi-index search (federated search across multiple indices)
+ */
+export async function multiSearch<T extends Record<string, unknown>>(
+  queries: Array<{
+    indexName: string;
+    query: string;
+    hitsPerPage?: number;
+    filters?: string;
+  }>
+): Promise<{ results: SearchResponse<T>[] }> {
+  return searchClient.search<T>({
+    requests: queries.map((q) => ({
+      indexName: q.indexName,
+      query: q.query,
+      hitsPerPage: q.hitsPerPage,
+      filters: q.filters,
+    })),
+  });
+}
+
+/**
+ * Wait for a task to complete
+ */
+export async function waitForTask(
+  indexName: string,
+  taskID: number,
+): Promise<void> {
+  await searchClient.waitForTask({ indexName, taskID });
+}
+
+/**
+ * Delete an index
+ */
+export async function deleteIndex(
+  indexName: string,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.deleteIndex({ indexName });
+  return { taskID: response.taskID };
+}
+
+/**
+ * List all indices
+ */
+export async function listIndices(): Promise<
+  Array<{ name: string; entries: number }>
+> {
+  const response = await searchClient.listIndices();
+  return (response.items ?? []).map((idx) => ({
+    name: idx.name,
+    entries: idx.entries ?? 0,
+  }));
+}
+
+/**
+ * Copy index settings, synonyms, and rules to another index
+ */
+export async function copyIndex(
+  srcIndexName: string,
+  destIndexName: string,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.operationIndex({
+    indexName: srcIndexName,
+    operationIndexParams: {
+      operation: "copy",
+      destination: destIndexName,
+    },
+  });
+  return { taskID: response.taskID };
+}
+
+/**
+ * Move (rename) an index
+ */
+export async function moveIndex(
+  srcIndexName: string,
+  destIndexName: string,
+): Promise<{ taskID: number }> {
+  const response = await searchClient.operationIndex({
+    indexName: srcIndexName,
+    operationIndexParams: {
+      operation: "move",
+      destination: destIndexName,
+    },
+  });
+  return { taskID: response.taskID };
+}

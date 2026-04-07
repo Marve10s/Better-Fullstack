@@ -1266,6 +1266,19 @@ function buildServerVars(
         "Basic auth password. Used only when ELASTICSEARCH_API_KEY is empty and both username/password are provided",
     },
     {
+      key: "ALGOLIA_APP_ID",
+      value: "",
+      condition: search === "algolia",
+      comment: "Algolia application ID - get it from your Algolia dashboard",
+    },
+    {
+      key: "ALGOLIA_API_KEY",
+      value: "",
+      condition: search === "algolia",
+      comment:
+        "Algolia API key - use Admin API key for indexing, Search-Only API key for search-only operations",
+    },
+    {
       key: "AWS_S3_REGION",
       value: "us-east-1",
       condition: fileStorage === "s3",

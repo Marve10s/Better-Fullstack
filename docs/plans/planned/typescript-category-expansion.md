@@ -6,7 +6,7 @@ These are additions to categories that already exist but need more options.
 
 ## Search (current: meilisearch, typesense)
 
-- [ ] Add `algolia` — managed search-as-a-service. Largest in the market. Instant search, faceting, analytics.
+- [x] Add `algolia` ✅ — managed search-as-a-service. Largest in the market. Instant search, faceting, analytics.
 - [ ] Add `opensearch` — AWS-backed open-source fork of Elasticsearch. Good for AWS-heavy stacks.
 - [x] Add `elasticsearch` ✅ Merged. Now in `SearchSchema`.
 

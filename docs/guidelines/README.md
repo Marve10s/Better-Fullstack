@@ -19,3 +19,9 @@ Files:
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
 - `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos
+- `adding-new-tool-options/` - complete guide for adding new tool/library options to any ecosystem
+  - `README.md` - master guide: checklists, both scenarios (existing category vs new category), area-by-area file reference, ecosystem rules, naming conventions, common mistakes
+  - `worked-example.md` - complete end-to-end walkthrough adding "opensearch" to Search, with every file diff and new-category wiring patterns
+  - `templates-and-handlers.md` - `processTemplatesFromPrefix()` reference, Handlebars helpers, conditional patterns, and ecosystem handler differences (Rust/Go/Python vs TypeScript)
+  - `testing.md` - both test APIs (`runTRPCTest` vs `createVirtual`), utility functions, assertion patterns, and which tests auto-detect missing files
+  - `routing-gotchas.md` - edge cases: Convex backend skips, self-backend routing, Redwood paths, frontend array detection, processor ordering, auth+payments interactions
