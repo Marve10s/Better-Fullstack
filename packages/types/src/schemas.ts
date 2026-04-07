@@ -232,9 +232,9 @@ export const CachingSchema = z
   .describe("Caching solution (upstash-redis for serverless Redis)");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "elasticsearch", "none"])
+  .enum(["meilisearch", "typesense", "elasticsearch", "algolia", "none"])
   .describe(
-    "Search engine solution (meilisearch, typesense, or elasticsearch for fast search experiences)",
+    "Search engine solution (meilisearch, typesense, elasticsearch, or algolia for fast search experiences)",
   );
 
 export const FileStorageSchema = z

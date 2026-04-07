@@ -55,6 +55,9 @@ function getSearchDeps(search: ProjectConfig["search"]): AvailableDependencies[]
     case "elasticsearch":
       deps.push("@elastic/elasticsearch");
       break;
+    case "algolia":
+      deps.push("algoliasearch");
+      break;
   }
 
   return deps;

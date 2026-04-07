@@ -28,6 +28,11 @@ export async function getSearchChoice(search?: Search, backend?: Backend) {
       hint: "Distributed search and analytics engine with local and cloud deployments",
     },
     {
+      value: "algolia" as const,
+      label: "Algolia",
+      hint: "Hosted search API with instant results, typo tolerance, and analytics",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "Skip search engine setup",
