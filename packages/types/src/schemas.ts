@@ -135,11 +135,11 @@ export const PaymentsSchema = z
   .describe("Payments provider");
 
 export const WebDeploySchema = z
-  .enum(["cloudflare", "fly", "railway", "docker", "sst", "none"])
+  .enum(["cloudflare", "fly", "railway", "docker", "sst", "vercel", "none"])
   .describe("Web deployment");
 
 export const ServerDeploySchema = z
-  .enum(["cloudflare", "fly", "railway", "docker", "sst", "none"])
+  .enum(["cloudflare", "fly", "railway", "docker", "sst", "vercel", "none"])
   .describe("Server deployment");
 
 export const AISchema = z

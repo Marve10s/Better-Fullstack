@@ -118,6 +118,8 @@ export const dependencyVersionMap = {
   hono: "^4.12.11",
   "@octokit/rest": "^22.0.1",
   "@vercel/sandbox": "^1.9.2",
+  vercel: "^41.7.4",
+  "@sveltejs/adapter-vercel": "^5.7.2",
   "bash-tool": "^1.3.15",
 
   cors: "^2.8.6",

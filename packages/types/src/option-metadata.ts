@@ -344,8 +344,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "mongodb-atlas": "MongoDB Atlas",
     planetscale: "PlanetScale",
   },
-  webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST" },
-  serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST" },
+  webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
+  serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
   cms: { tinacms: "TinaCMS" },
   auth: {},
   payments: {

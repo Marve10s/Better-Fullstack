@@ -644,6 +644,13 @@ export const TECH_OPTIONS: Record<
       color: "from-orange-400 to-yellow-500",
     },
     {
+      id: "vercel",
+      name: "Vercel",
+      description: "Deploy to Vercel's edge network with zero config",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-800 to-black",
+    },
+    {
       id: "none",
       name: "None",
       description: "Skip deployment setup",
@@ -687,6 +694,13 @@ export const TECH_OPTIONS: Record<
       description: "Deploy to AWS with SST (Serverless Stack)",
       icon: "/icon/sst.svg",
       color: "from-orange-400 to-yellow-500",
+    },
+    {
+      id: "vercel",
+      name: "Vercel",
+      description: "Deploy to Vercel's edge network with zero config",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-800 to-black",
     },
     {
       id: "none",

@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && {{#if (eq packageManager "bun")}}bun run build --filter=web{{else}}npx turbo build --filter=web{{/if}}",
+  "outputDirectory": ".output/public"
+}
