@@ -48,6 +48,7 @@ import {
   RUST_API_VALUES,
   RUST_CLI_VALUES,
   RUST_FRONTEND_VALUES,
+  RUST_LOGGING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   STATE_MANAGEMENT_VALUES,
@@ -596,6 +597,12 @@ const PROMPT_SCHEMA_MAP: Record<
     schema: RUST_CLI_VALUES,
     name: "RustCliSchema",
     functionName: "getRustCliChoice",
+  },
+  rustLogging: {
+    file: "rust-ecosystem.ts",
+    schema: RUST_LOGGING_VALUES,
+    name: "RustLoggingSchema",
+    functionName: "getRustLoggingChoice",
   },
   pythonWebFramework: {
     file: "python-ecosystem.ts",

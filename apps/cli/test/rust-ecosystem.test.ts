@@ -11,6 +11,7 @@ import {
   RustApiSchema,
   RustCliSchema,
   RustLibrariesSchema,
+  RustLoggingSchema,
 } from "../src/types";
 
 /**
@@ -64,6 +65,7 @@ const RUST_ORMS = extractEnumValues(RustOrmSchema);
 const RUST_APIS = extractEnumValues(RustApiSchema);
 const RUST_CLIS = extractEnumValues(RustCliSchema);
 const RUST_LIBRARIES = extractEnumValues(RustLibrariesSchema);
+const RUST_LOGGINGS = extractEnumValues(RustLoggingSchema);
 
 describe("Rust Ecosystem", () => {
   describe("Schema Definitions", () => {
@@ -113,6 +115,12 @@ describe("Rust Ecosystem", () => {
       expect(RUST_LIBRARIES).toContain("tokio-test");
       expect(RUST_LIBRARIES).toContain("mockall");
       expect(RUST_LIBRARIES).toContain("none");
+    });
+
+    it("should have rust logging options", () => {
+      expect(RUST_LOGGINGS).toContain("tracing");
+      expect(RUST_LOGGINGS).toContain("env-logger");
+      expect(RUST_LOGGINGS).toContain("none");
     });
   });
 
@@ -2406,6 +2414,104 @@ describe("Rust Ecosystem", () => {
       const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
       expect(serverCargoContent).toBeDefined();
       expect(serverCargoContent).toContain('name = "my-awesome-rust-app-server"');
+    });
+  });
+
+  describe("Rust Logging Option", () => {
+    it("should include tracing deps when rustLogging is tracing", async () => {
+      const result = await createVirtual({
+        projectName: "rust-tracing",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('tracing = "0.1"');
+      expect(cargoContent).toContain("tracing-subscriber");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("tracing_subscriber::registry()");
+      expect(mainContent).toContain("tracing::info!");
+    });
+
+    it("should include env_logger deps when rustLogging is env-logger", async () => {
+      const result = await createVirtual({
+        projectName: "rust-envlogger",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "env-logger",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('log = "0.4"');
+      expect(cargoContent).toContain("env_logger");
+      expect(cargoContent).not.toContain('tracing = "0.1"');
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("env_logger::init()");
+      expect(mainContent).toContain("log::info!");
+    });
+
+    it("should not include logging deps when rustLogging is none", async () => {
+      const result = await createVirtual({
+        projectName: "rust-nolog",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).not.toContain('tracing = "0.1"');
+      expect(cargoContent).not.toContain("env_logger");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).not.toContain("tracing_subscriber");
+      expect(mainContent).not.toContain("env_logger");
+      expect(mainContent).toContain("println!");
+    });
+
+    it("should default to tracing when ecosystem is rust and no rustLogging specified", async () => {
+      const result = await createVirtual({
+        projectName: "rust-default-log",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('tracing = "0.1"');
     });
   });
 });

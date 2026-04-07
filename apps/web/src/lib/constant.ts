@@ -2698,6 +2698,32 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  rustLogging: [
+    {
+      id: "tracing",
+      name: "Tracing",
+      description: "Structured, composable instrumentation framework from the Tokio project",
+      icon: "",
+      color: "from-amber-500 to-orange-600",
+      default: true,
+    },
+    {
+      id: "env-logger",
+      name: "env_logger",
+      description: "Simple logger configurable via environment variables",
+      icon: "",
+      color: "from-green-500 to-emerald-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "None",
+      description: "No logging library",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
   // Python ecosystem options
   pythonWebFramework: [
     {
@@ -3063,6 +3089,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "rustApi",
     "rustCli",
     "rustLibraries",
+    "rustLogging",
     "aiDocs",
     "git",
     "install",

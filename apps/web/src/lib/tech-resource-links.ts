@@ -652,6 +652,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/tonic/latest/tonic/",
     githubUrl: "https://github.com/hyperium/tonic",
   },
+  tracing: {
+    docsUrl: "https://docs.rs/tracing/latest/tracing/",
+    githubUrl: "https://github.com/tokio-rs/tracing",
+  },
+  "env-logger": {
+    docsUrl: "https://docs.rs/env_logger/latest/env_logger/",
+    githubUrl: "https://github.com/rust-cli/env_logger",
+  },
   clap: {
     docsUrl: "https://docs.rs/clap/latest/clap/",
     githubUrl: "https://github.com/clap-rs/clap",

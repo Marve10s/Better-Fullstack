@@ -315,6 +315,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "sea-orm": { type: "local", src: "/icon/seaorm.svg" },
   "async-graphql": { type: "si", slug: "graphql", hex: "E10098" },
   tonic: { type: "local", src: "/icon/tonic.svg" },
+  tracing: { type: "si", slug: "rust", hex: "CE422B" },
+  "env-logger": { type: "si", slug: "rust", hex: "CE422B" },
 
   // ─── Python ────────────────────────────────────────────────────────────────
   fastapi: { type: "si", slug: "fastapi", hex: "009688" },
