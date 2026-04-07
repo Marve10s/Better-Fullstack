@@ -411,6 +411,33 @@ def test_health(client):
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 {{/if}}
+{{#if (eq pythonWebFramework "flask")}}
+import pytest
+
+from app.main import app
+
+
+@pytest.fixture
+def client():
+    """Create a test client."""
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
+
+
+def test_root(client):
+    """Test root endpoint."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.get_json() == {"message": "Welcome to {{projectName}}!"}
+
+
+def test_health(client):
+    """Test health endpoint."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "healthy"}
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def test_main():
     """Test main module imports correctly."""

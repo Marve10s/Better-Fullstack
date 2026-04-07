@@ -812,6 +812,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   let runCommand = "uv run uvicorn app.main:app --reload";
   if (pythonWebFramework === "django") {
     runCommand = "uv run python manage.py runserver";
+  } else if (pythonWebFramework === "flask") {
+    runCommand = "uv run flask --app app.main run --reload";
   }
 
   let output = `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
@@ -829,6 +831,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     const frameworkNames: Record<string, string> = {
       fastapi: "FastAPI",
       django: "Django",
+      flask: "Flask",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[pythonWebFramework] || pythonWebFramework}\n`;
   }

@@ -2743,6 +2743,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "flask",
+      name: "Flask",
+      description: "Lightweight WSGI web framework with minimal boilerplate",
+      icon: "https://cdn.simpleicons.org/flask/000000",
+      color: "from-gray-600 to-gray-800",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Python web framework selection",

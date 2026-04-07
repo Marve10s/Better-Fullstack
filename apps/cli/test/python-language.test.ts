@@ -77,6 +77,7 @@ describe("Python Language Support", () => {
     it("should have python web framework options", () => {
       expect(PYTHON_WEB_FRAMEWORKS).toContain("fastapi");
       expect(PYTHON_WEB_FRAMEWORKS).toContain("django");
+      expect(PYTHON_WEB_FRAMEWORKS).toContain("flask");
       expect(PYTHON_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -307,6 +308,52 @@ describe("Python Language Support", () => {
       expect(mainContent).toBeDefined();
       expect(mainContent).toContain("import django");
       expect(mainContent).toContain("from django.http import JsonResponse");
+    });
+  });
+
+  describe("Flask Web Framework", () => {
+    it("should include Flask dependencies in pyproject.toml", async () => {
+      const result = await createVirtual({
+        projectName: "python-flask-deps",
+        ecosystem: "python",
+        pythonWebFramework: "flask",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("flask");
+      expect(pyprojectContent).toContain("flask-cors");
+    });
+
+    it("should have Flask main.py with proper structure", async () => {
+      const result = await createVirtual({
+        projectName: "python-flask-main",
+        ecosystem: "python",
+        pythonWebFramework: "flask",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "src/app/main.py");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("from flask import Flask");
+      expect(mainContent).toContain("app = Flask(__name__)");
+      expect(mainContent).toContain('@app.route("/")');
+      expect(mainContent).toContain('@app.route("/health")');
     });
   });
 

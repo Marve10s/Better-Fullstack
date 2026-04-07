@@ -551,6 +551,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   pythonWebFramework: {
     fastapi: "FastAPI",
     django: "Django",
+    flask: "Flask",
   },
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",

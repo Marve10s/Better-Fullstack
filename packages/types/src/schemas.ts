@@ -294,7 +294,7 @@ export const RustLoggingSchema = z
 
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
-  .enum(["fastapi", "django", "none"])
+  .enum(["fastapi", "django", "flask", "none"])
   .describe("Python web framework");
 
 export const PythonOrmSchema = z

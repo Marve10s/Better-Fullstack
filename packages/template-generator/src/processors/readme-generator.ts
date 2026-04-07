@@ -958,6 +958,8 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **FastAPI** - Modern, fast (high-performance) async web framework");
   } else if (pythonWebFramework === "django") {
     features.push("- **Django** - High-level Python web framework with batteries included");
+  } else if (pythonWebFramework === "flask") {
+    features.push("- **Flask** - Lightweight WSGI web framework with minimal boilerplate");
   }
 
   // ORM
@@ -1107,6 +1109,9 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
 - \`uv run uvicorn app.main:app\`: Start FastAPI production server`;
   } else if (pythonWebFramework === "django") {
     scripts = `- \`uv run python -m app.main\`: Start Django dev server`;
+  } else if (pythonWebFramework === "flask") {
+    scripts = `- \`uv run flask --app app.main run --reload\`: Start Flask dev server
+- \`uv run flask --app app.main run\`: Start Flask production server`;
   }
 
   scripts += `
@@ -1171,7 +1176,16 @@ uv run python -m app.main
 
 The application will be running at [http://localhost:8000](http://localhost:8000).
 `
-      : `Run the application:
+      : pythonWebFramework === "flask"
+        ? `Start the Flask development server:
+
+\`\`\`bash
+uv run flask --app app.main run --reload
+\`\`\`
+
+The API will be running at [http://localhost:5000](http://localhost:5000).
+`
+        : `Run the application:
 
 \`\`\`bash
 uv run python -m app.main

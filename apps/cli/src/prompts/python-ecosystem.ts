@@ -25,6 +25,11 @@ export async function getPythonWebFrameworkChoice(pythonWebFramework?: PythonWeb
       hint: "High-level Python web framework with batteries included",
     },
     {
+      value: "flask" as const,
+      label: "Flask",
+      hint: "Lightweight WSGI web framework with minimal boilerplate",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No web framework",

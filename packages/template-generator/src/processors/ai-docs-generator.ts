@@ -247,6 +247,8 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`uv sync\` - Install dependencies`);
     if (config.pythonWebFramework === "fastapi") {
       lines.push(`- \`uv run uvicorn app.main:app --reload\` - Start dev server`);
+    } else if (config.pythonWebFramework === "flask") {
+      lines.push(`- \`uv run flask --app app.main run --reload\` - Start dev server`);
     } else {
       lines.push(`- \`uv run python -m app.main\` - Run application`);
     }

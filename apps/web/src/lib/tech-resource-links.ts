@@ -694,6 +694,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.djangoproject.com/",
     githubUrl: "https://github.com/django/django",
   },
+  flask: {
+    docsUrl: "https://flask.palletsprojects.com/",
+    githubUrl: "https://github.com/pallets/flask",
+  },
   sqlalchemy: {
     docsUrl: "https://docs.sqlalchemy.org/",
     githubUrl: "https://github.com/sqlalchemy/sqlalchemy",
