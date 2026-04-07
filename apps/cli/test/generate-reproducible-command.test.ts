@@ -60,6 +60,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustOrm: "none",
     rustApi: "none",
     rustCli: "none",
+    rustLogging: "tracing",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
@@ -219,6 +220,7 @@ describe("generateReproducibleCommand", () => {
       rustOrm: "sqlx",
       rustApi: "tonic",
       rustCli: "clap",
+      rustLogging: "tracing",
       rustLibraries: ["serde", "validator"],
       aiDocs: [],
     });
@@ -232,6 +234,7 @@ describe("generateReproducibleCommand", () => {
         "--rust-api tonic " +
         "--rust-cli clap " +
         "--rust-libraries serde validator " +
+        "--rust-logging tracing " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +
