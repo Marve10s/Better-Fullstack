@@ -48,8 +48,8 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Logging / Tracing (new category)
 
-- [ ] Add `tracing` — de facto standard for structured logging and distributed tracing in async Rust. Built by Tokio team. Integrates with OpenTelemetry.
-- [ ] Add `env_logger` — simple environment-variable-configured logger. Good default for development.
+- [x] Add `tracing` ✅ — de facto standard for structured logging and distributed tracing in async Rust. Built by Tokio team. Integrates with OpenTelemetry.
+- [x] Add `env_logger` ✅ — simple environment-variable-configured logger. Good default for development.
 
 ### Implementation
 - New schema: `RustLoggingSchema = z.enum(["tracing", "env-logger", "none"])`

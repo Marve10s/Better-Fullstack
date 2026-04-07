@@ -8,7 +8,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 ## Web Frameworks
 
-- [ ] Add `flask` — 68k stars, #2 most-used Python web framework. Massive ecosystem, mature, well-documented. Essential given its popularity.
+- [x] Add `flask` ✅ — 68k stars, #2 most-used Python web framework. Massive ecosystem, mature, well-documented. Essential given its popularity.
 - [ ] Add `litestar` — serious FastAPI competitor. 2x faster serialization (msgspec). Better route organization, built-in HTMX support. v3 supported until 2026.
 - [ ] Add `starlette` — ASGI toolkit that powers FastAPI. Useful standalone for minimal high-performance async apps. Good "no-framework" option.
 
