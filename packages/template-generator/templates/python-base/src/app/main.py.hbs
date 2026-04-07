@@ -977,6 +977,50 @@ if __name__ == "__main__":
         debug=os.getenv("DEBUG", "true").lower() == "true",
     )
 {{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+from litestar import Litestar, get
+from litestar.config.cors import CORSConfig
+{{#if (eq pythonValidation "pydantic")}}
+from app.settings import get_settings
+{{/if}}
+
+load_dotenv()
+
+{{#if (eq pythonValidation "pydantic")}}
+settings = get_settings()
+{{/if}}
+
+cors_config = CORSConfig(allow_origins=["*"])
+
+
+@get("/")
+async def root() -> dict[str, str]:
+    """Root endpoint."""
+    return {"message": "Welcome to {{projectName}}!"}
+
+
+@get("/health")
+async def health() -> dict[str, str]:
+    """Health check endpoint."""
+    return {"status": "healthy"}
+
+
+app = Litestar(
+    route_handlers=[root, health],
+    cors_config=cors_config,
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        reload=True,
+    )
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def main():
     """Main entry point."""

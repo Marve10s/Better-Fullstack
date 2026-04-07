@@ -438,6 +438,27 @@ def test_health(client):
     assert response.status_code == 200
     assert response.get_json() == {"status": "healthy"}
 {{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+from litestar.testing import TestClient
+
+from app.main import app
+
+
+def test_root():
+    """Test root endpoint."""
+    with TestClient(app=app) as client:
+        response = client.get("/")
+        assert response.status_code == 200
+        assert response.json() == {"message": "Welcome to {{projectName}}!"}
+
+
+def test_health():
+    """Test health endpoint."""
+    with TestClient(app=app) as client:
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "healthy"}
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def test_main():
     """Test main module imports correctly."""

@@ -78,6 +78,7 @@ describe("Python Language Support", () => {
       expect(PYTHON_WEB_FRAMEWORKS).toContain("fastapi");
       expect(PYTHON_WEB_FRAMEWORKS).toContain("django");
       expect(PYTHON_WEB_FRAMEWORKS).toContain("flask");
+      expect(PYTHON_WEB_FRAMEWORKS).toContain("litestar");
       expect(PYTHON_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -354,6 +355,72 @@ describe("Python Language Support", () => {
       expect(mainContent).toContain("app = Flask(__name__)");
       expect(mainContent).toContain('@app.route("/")');
       expect(mainContent).toContain('@app.route("/health")');
+    });
+  });
+
+  describe("Litestar Web Framework", () => {
+    it("should include Litestar dependencies in pyproject.toml", async () => {
+      const result = await createVirtual({
+        projectName: "python-litestar-deps",
+        ecosystem: "python",
+        pythonWebFramework: "litestar",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("litestar[standard]");
+    });
+
+    it("should have Litestar main.py with proper structure", async () => {
+      const result = await createVirtual({
+        projectName: "python-litestar-main",
+        ecosystem: "python",
+        pythonWebFramework: "litestar",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "src/app/main.py");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("from litestar import Litestar, get");
+      expect(mainContent).toContain("app = Litestar(");
+      expect(mainContent).toContain('@get("/")');
+      expect(mainContent).toContain('@get("/health")');
+    });
+
+    it("should have Litestar test_main.py with proper structure", async () => {
+      const result = await createVirtual({
+        projectName: "python-litestar-test",
+        ecosystem: "python",
+        pythonWebFramework: "litestar",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const testContent = getFileContent(root, "tests/test_main.py");
+      expect(testContent).toBeDefined();
+      expect(testContent).toContain("from litestar.testing import TestClient");
+      expect(testContent).toContain("from app.main import app");
     });
   });
 

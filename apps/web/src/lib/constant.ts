@@ -2751,6 +2751,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "litestar",
+      name: "Litestar",
+      description: "High-performance ASGI framework with 2x faster serialization via msgspec",
+      icon: "https://cdn.simpleicons.org/litestar/EDB641",
+      color: "from-yellow-500 to-amber-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Python web framework selection",

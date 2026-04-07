@@ -30,6 +30,11 @@ export async function getPythonWebFrameworkChoice(pythonWebFramework?: PythonWeb
       hint: "Lightweight WSGI web framework with minimal boilerplate",
     },
     {
+      value: "litestar" as const,
+      label: "Litestar",
+      hint: "High-performance ASGI framework with 2x faster serialization (msgspec)",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No web framework",

@@ -960,6 +960,8 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **Django** - High-level Python web framework with batteries included");
   } else if (pythonWebFramework === "flask") {
     features.push("- **Flask** - Lightweight WSGI web framework with minimal boilerplate");
+  } else if (pythonWebFramework === "litestar") {
+    features.push("- **Litestar** - High-performance ASGI web framework with msgspec serialization");
   }
 
   // ORM
@@ -1112,6 +1114,9 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   } else if (pythonWebFramework === "flask") {
     scripts = `- \`uv run flask --app app.main run --reload\`: Start Flask dev server
 - \`uv run flask --app app.main run\`: Start Flask production server`;
+  } else if (pythonWebFramework === "litestar") {
+    scripts = `- \`uv run litestar --app app.main:app run --reload --port 8000\`: Start Litestar dev server
+- \`uv run litestar --app app.main:app run\`: Start Litestar production server`;
   }
 
   scripts += `
@@ -1185,7 +1190,16 @@ uv run flask --app app.main run --reload
 
 The API will be running at [http://localhost:5000](http://localhost:5000).
 `
-        : `Run the application:
+        : pythonWebFramework === "litestar"
+          ? `Start the Litestar development server:
+
+\`\`\`bash
+uv run litestar --app app.main:app run --reload --port 8000
+\`\`\`
+
+The API will be running at [http://localhost:8000](http://localhost:8000).
+`
+          : `Run the application:
 
 \`\`\`bash
 uv run python -m app.main

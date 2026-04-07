@@ -814,6 +814,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     runCommand = "uv run python manage.py runserver";
   } else if (pythonWebFramework === "flask") {
     runCommand = "uv run flask --app app.main run --reload";
+  } else if (pythonWebFramework === "litestar") {
+    runCommand = "uv run litestar --app app.main:app run --reload --port 8000";
   }
 
   let output = `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
@@ -832,6 +834,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       fastapi: "FastAPI",
       django: "Django",
       flask: "Flask",
+      litestar: "Litestar",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[pythonWebFramework] || pythonWebFramework}\n`;
   }
