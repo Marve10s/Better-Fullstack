@@ -55,6 +55,10 @@ function parseArgs(argv: string[]): GeneratorArgs {
     if (token === "--no-install") {
       args.installMode = "no-install";
     }
+
+    if (token === "--no-dedup") {
+      args.noDedup = true;
+    }
   }
 
   return args;
@@ -62,12 +66,16 @@ function parseArgs(argv: string[]): GeneratorArgs {
 
 const program = Effect.gen(function* () {
   const args = parseArgs(process.argv.slice(2));
-  const history = yield* loadHistoricalLedger();
+
+  const history = args.noDedup
+    ? { fingerprintKeys: new Set<string>(), legacyNames: new Set<string>(), historyCount: 0 }
+    : yield* loadHistoricalLedger();
+
   const combos = generateBatch(args, history);
 
   yield* Console.log(
     `Generated ${combos.length}/${args.count} unique combos from schema-driven pools ` +
-      `(history signatures: ${history.historyCount}, legacy names: ${history.legacyNames.size})\n`,
+      `(${args.noDedup ? "dedup disabled" : `history signatures: ${history.historyCount}, legacy names: ${history.legacyNames.size}`})\n`,
   );
 
   for (const combo of combos) {
