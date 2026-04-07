@@ -153,6 +153,15 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     reason: "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
     suggestions: ["Select an ORM like Drizzle or Prisma", "Use EdgeDB or Redis instead", "Remove database"],
   },
+
+  {
+    id: "vercel-elysia-bun-only",
+    featureKey: "serverDeploy",
+    displayName: "Server Deployment",
+    willSkip: (c) => c.serverDeploy === "vercel" && c.backend === "elysia",
+    reason: "Elysia is Bun-only. Vercel's serverless runtime uses Node.js by default. Your server may need configuration to run on Vercel.",
+    suggestions: ["Consider using Hono (works with both Bun and Node.js)", "Check Vercel Bun runtime documentation"],
+  },
 ];
 
 const isFeatureSelected = (value: unknown): boolean => {

@@ -651,6 +651,18 @@ export function validateFullConfig(
     );
   }
 
+  // Vercel serverDeploy incompatible with persistent backends
+  if (config.serverDeploy === "vercel" && ["nestjs", "adonisjs", "encore"].includes(config.backend!)) {
+    incompatibilityError({
+      message: "Vercel serverless functions cannot host persistent-process backends",
+      provided: { backend: config.backend!, serverDeploy: config.serverDeploy },
+      suggestions: [
+        "Use --server-deploy fly or --server-deploy railway for NestJS/AdonisJS",
+        "Switch to a serverless-compatible backend like Hono or Express",
+      ],
+    });
+  }
+
   if (config.addons && config.addons.length > 0) {
     validateAddonsAgainstFrontends(config.addons, config.frontend, config.auth);
     config.addons = [...new Set(config.addons)];

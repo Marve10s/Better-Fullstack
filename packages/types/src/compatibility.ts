@@ -1885,6 +1885,12 @@ export const getDisabledReason = (
     if (!currentStack.webFrontend.some((f) => f !== "none")) {
       return "Web deployment requires a web frontend";
     }
+    if (optionId === "vercel") {
+      // These frontends don't have Vercel templates
+      if (currentStack.webFrontend.some(f => ["redwood", "fresh"].includes(f))) {
+        return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
+      }
+    }
   }
 
   if (category === "serverDeploy") {
@@ -1894,6 +1900,16 @@ export const getDisabledReason = (
       }
       if (currentStack.backend !== "hono") {
         return "In Better-Fullstack, Cloudflare server deploy is currently supported only with Hono";
+      }
+    }
+    if (optionId === "vercel") {
+      // Vercel serverless can't host persistent-process backends
+      if (["nestjs", "adonisjs"].includes(currentStack.backend)) {
+        return "Vercel serverless functions are incompatible with persistent-process backends like NestJS/AdonisJS. Use Fly.io or Railway instead.";
+      }
+      // Encore has its own deployment
+      if (currentStack.backend === "encore") {
+        return "Encore manages its own deployment infrastructure";
       }
     }
     if (optionId !== "none") {
