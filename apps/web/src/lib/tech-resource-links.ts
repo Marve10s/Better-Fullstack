@@ -718,6 +718,7 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/labstack/echo",
   },
   fiber: { docsUrl: "https://docs.gofiber.io/", githubUrl: "https://github.com/gofiber/fiber" },
+  chi: { docsUrl: "https://go-chi.io/", githubUrl: "https://github.com/go-chi/chi" },
   gorm: { docsUrl: "https://gorm.io/docs/", githubUrl: "https://github.com/go-gorm/gorm" },
   sqlc: { docsUrl: "https://docs.sqlc.dev/", githubUrl: "https://github.com/sqlc-dev/sqlc" },
   "grpc-go": {

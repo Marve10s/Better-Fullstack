@@ -2925,6 +2925,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "chi",
+      name: "Chi",
+      description: "Lightweight, zero-dependency router built on net/http",
+      icon: "",
+      color: "from-red-400 to-red-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Go web framework selection",

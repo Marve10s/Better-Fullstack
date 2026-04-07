@@ -82,6 +82,7 @@ describe("Go Language Support", () => {
       expect(GO_WEB_FRAMEWORKS).toContain("gin");
       expect(GO_WEB_FRAMEWORKS).toContain("echo");
       expect(GO_WEB_FRAMEWORKS).toContain("fiber");
+      expect(GO_WEB_FRAMEWORKS).toContain("chi");
       expect(GO_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -433,6 +434,93 @@ describe("Go Language Support", () => {
       const handlersContent = getFileContent(root, "internal/handlers/handlers.go");
       expect(handlersContent).toContain("*fiber.Ctx");
       expect(handlersContent).toContain("fiber.Map");
+    });
+  });
+
+  describe("Chi Web Framework Integration", () => {
+    it("should include Chi dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-chi-project",
+        ecosystem: "go",
+        goWebFramework: "chi",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).toContain("github.com/go-chi/chi/v5");
+    });
+
+    it("should generate proper Chi main.go with middleware and routes", async () => {
+      const result = await createVirtual({
+        projectName: "go-chi-main-check",
+        ecosystem: "go",
+        goWebFramework: "chi",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("github.com/go-chi/chi/v5");
+      expect(mainContent).toContain("chi.NewRouter()");
+      expect(mainContent).toContain("middleware.Logger");
+      expect(mainContent).toContain("middleware.Recoverer");
+      expect(mainContent).toContain(`r.Get("/health"`);
+      expect(mainContent).toContain("http.ListenAndServe(addr, r)");
+    });
+
+    it("should generate Chi handlers file when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-chi-handlers",
+        ecosystem: "go",
+        goWebFramework: "chi",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "internal/handlers/handlers.go")).toBe(true);
+      const handlersContent = getFileContent(root, "internal/handlers/handlers.go");
+      expect(handlersContent).toContain("http.ResponseWriter");
+      expect(handlersContent).toContain("*http.Request");
+    });
+
+    it("should generate Chi with gorm handlers", async () => {
+      const result = await createVirtual({
+        projectName: "go-chi-gorm",
+        ecosystem: "go",
+        goWebFramework: "chi",
+        goOrm: "gorm",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const handlersContent = getFileContent(root, "internal/handlers/handlers.go");
+      expect(handlersContent).toBeDefined();
+      expect(handlersContent).toContain("chi.URLParam(r,");
+      expect(handlersContent).toContain("json.NewDecoder(r.Body)");
+      expect(handlersContent).toContain("json.NewEncoder(w)");
+      expect(handlersContent).toContain("database.GetDB()");
     });
   });
 
