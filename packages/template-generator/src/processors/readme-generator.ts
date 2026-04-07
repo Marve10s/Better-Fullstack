@@ -1192,6 +1192,8 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     features.push("- **Gin** - High-performance HTTP web framework");
   } else if (goWebFramework === "echo") {
     features.push("- **Echo** - High performance, minimalist Go web framework");
+  } else if (goWebFramework === "fiber") {
+    features.push("- **Fiber** - Express-inspired web framework built on Fasthttp");
   }
 
   // ORM/Database

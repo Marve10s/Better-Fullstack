@@ -569,6 +569,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goWebFramework: {
     gin: "Gin",
     echo: "Echo",
+    fiber: "Fiber",
   },
   goOrm: {
     gorm: "GORM",

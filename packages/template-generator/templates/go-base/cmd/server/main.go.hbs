@@ -1,7 +1,7 @@
 package main
 
 import (
-{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
 	"os"
 {{/if}}
 {{#if (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq auth "go-better-auth"))}}
@@ -14,6 +14,15 @@ import (
 {{#if (eq goWebFramework "echo")}}
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+{{/if}}
+{{#if (eq goWebFramework "fiber")}}
+	"github.com/gofiber/fiber/v2"
+{{#if (eq auth "go-better-auth")}}
+	"github.com/gofiber/adaptor/v2"
+{{/if}}
+	fibercors "github.com/gofiber/fiber/v2/middleware/cors"
+	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
+	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
 {{/if}}
 {{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
@@ -105,14 +114,14 @@ func main() {
 	_ = pool // Use pool in your handlers
 {{/if}}
 
-{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
 	// Get host from environment
 	host := os.Getenv("HOST")
 	if host == "" {
 		host = "0.0.0.0"
 	}
 {{/if}}
-{{#if (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq auth "go-better-auth"))}}
+{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq auth "go-better-auth"))}}
 	// Get HTTP port from environment
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -241,6 +250,48 @@ func main() {
 {{/if}}
 	}
 {{/if}}
+{{#if (eq goWebFramework "fiber")}}
+{{#if (eq goLogging "zap")}}
+	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+
+	// Create Fiber app
+	app := fiber.New()
+
+	// Middleware
+	app.Use(fiberlogger.New())
+	app.Use(fiberrecover.New())
+	app.Use(fibercors.New())
+
+{{#if (eq auth "go-better-auth")}}
+	app.All("/api/auth", adaptor.HTTPHandler(authApp.Handler()))
+	app.All("/api/auth/*", adaptor.HTTPHandler(authApp.Handler()))
+{{/if}}
+
+	// Health check endpoint
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status":  "ok",
+			"message": "Server is running",
+		})
+	})
+
+	// Root endpoint
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"message": "Welcome to {{projectName}}!",
+		})
+	})
+
+	// Start server
+	if err := app.Listen(addr); err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to start server", zap.Error(err))
+{{else}}
+		panic("Failed to start server: " + err.Error())
+{{/if}}
+	}
+{{/if}}
 {{#if (eq goWebFramework "none")}}
 {{#if (eq auth "go-better-auth")}}
 {{#if (eq goLogging "zap")}}
@@ -281,10 +332,10 @@ func main() {
 {{else}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("{{projectName}} started")
-	logger.Info("Add a web framework (gin or echo) to start building your API")
+	logger.Info("Add a web framework (gin, echo, or fiber) to start building your API")
 {{else}}
 	println("{{projectName}} started")
-	println("Add a web framework (gin or echo) to start building your API")
+	println("Add a web framework (gin, echo, or fiber) to start building your API")
 {{/if}}
 {{/if}}
 {{/if}}

@@ -2883,6 +2883,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "fiber",
+      name: "Fiber",
+      description: "Express-inspired web framework built on Fasthttp",
+      icon: "https://cdn.simpleicons.org/gofiber/00ACD7",
+      color: "from-cyan-400 to-cyan-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Go web framework selection",

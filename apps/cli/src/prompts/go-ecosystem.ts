@@ -18,6 +18,11 @@ export async function getGoWebFrameworkChoice(goWebFramework?: GoWebFramework) {
       hint: "High performance, minimalist Go web framework",
     },
     {
+      value: "fiber" as const,
+      label: "Fiber",
+      hint: "Express-inspired web framework built on Fasthttp",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No web framework",

@@ -363,6 +363,17 @@ describe("Template Snapshots - Go Ecosystem", () => {
       },
     },
     {
+      name: "fiber-gorm-zap",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "fiber" as const,
+        goOrm: "gorm" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "zap" as const,
+      },
+    },
+    {
       name: "cli-cobra",
       config: {
         ecosystem: "go" as const,
