@@ -19,12 +19,12 @@ For deeper dives, see the companion files:
 2. [Scenario A: New Option in an Existing Category](#2-scenario-a-new-option-in-an-existing-category)
 3. [Scenario B: Creating an Entirely New Category](#3-scenario-b-creating-an-entirely-new-category)
 4. [Scenario C: Adding an Entirely New Language Ecosystem](#scenario-c-adding-an-entirely-new-language-ecosystem)
-5. [Area-by-Area File Reference](#4-area-by-area-file-reference)
-6. [Ecosystem-Specific Rules](#5-ecosystem-specific-rules)
-7. [Test Updates Required](#6-test-updates-required)
-8. [Build & Verification Commands](#7-build--verification-commands)
-9. [Naming Conventions](#8-naming-conventions)
-10. [Common Mistakes](#9-common-mistakes)
+5. [Area-by-Area File Reference](#5-area-by-area-file-reference)
+6. [Ecosystem-Specific Rules](#6-ecosystem-specific-rules)
+7. [Test Updates Required](#7-test-updates-required)
+8. [Build, Verification & Pre-Push Checklist](#8-build-verification--pre-push-checklist)
+9. [Naming Conventions](#9-naming-conventions)
+10. [Common Mistakes](#10-common-mistakes)
 
 ---
 
@@ -1065,57 +1065,101 @@ No manual CI edits needed unless adding a new preset to the weekly matrix.
 
 ---
 
-## 7. Build & Verification Commands
+## 8. Build, Verification & Pre-Push Checklist
 
-Run these after making changes. Order matters.
+Run these after making changes. Order matters. **Every step must pass before committing.**
 
-### After editing `.hbs` template files
+### Step 1 — Rebuild (always run the full chain)
 
 ```bash
+# Rebuild types first (schemas changed), then downstream
+bun run --filter=@better-fullstack/types build
 bun run --filter=@better-fullstack/template-generator generate-templates
 bun run --filter=@better-fullstack/template-generator build
 bun run --filter=create-better-fullstack build
 ```
 
-### After editing processor/handler `.ts` files (no .hbs changes)
+### Step 2 — Auto-sync test (catches missing builder/prompt/schema entries)
 
 ```bash
-bun run --filter=@better-fullstack/template-generator build
-bun run --filter=create-better-fullstack build
-```
-
-### After editing `packages/types/src/*`
-
-```bash
-bun run --filter=@better-fullstack/types build
-# Then rebuild downstream consumers:
-bun run --filter=@better-fullstack/template-generator build
-bun run --filter=create-better-fullstack build
-```
-
-### Verification
-
-```bash
-# 1. Auto-sync test (catches most missing files)
 bun test apps/cli/test/cli-builder-sync.test.ts
+```
 
-# 2. Type check
+If this fails, you missed a file. Check the error message — it tells you exactly which option is missing from which file.
+
+### Step 3 — Type check both apps
+
+```bash
 bun run --cwd apps/cli check-types
 bun run --cwd apps/web typecheck
+```
 
-# 3. Category-specific test
+If web typecheck fails with "Property 'X' is missing," you forgot to add your new field to `preview-config.ts` or `stack-defaults.ts`.
+
+### Step 4 — Category-specific tests
+
+```bash
+# For TypeScript categories:
 bun test apps/cli/test/<cat>.test.ts
 
-# 4. Snapshot update (if structure changed)
-bun test apps/cli/test/template-snapshots.test.ts --update
+# For Rust/Go/Python:
+bun test apps/cli/test/<eco>-language.test.ts
+# or
+bun test apps/cli/test/<eco>-ecosystem.test.ts
+```
 
-# 5. Full release validation
+### Step 5 — Snapshot update (CRITICAL — this is what breaks CI most often)
+
+```bash
+# Generate/update snapshots
+bun test apps/cli/test/template-snapshots.test.ts -u
+
+# Verify they pass cleanly now
+bun test apps/cli/test/template-snapshots.test.ts
+```
+
+**You MUST commit the updated `.snap` file.** This is the #1 CI failure cause:
+- Adding a snapshot config in `template-snapshots.test.ts` without running `-u` = missing `.snap` entry
+- Changing templates that affect existing snapshots without running `-u` = stale `.snap` content
+- The `.snap` file lives at `apps/cli/test/__snapshots__/template-snapshots.test.ts.snap`
+
+### Step 6 — Release guard (mirrors CI exactly)
+
+```bash
 bun run test:release
+```
 
-# 6. Web lint / link validation
+This runs the same checks as CI's "Release Guard" job: snapshot verification, CLI/builder parity, and preview-config validation.
+
+### Step 7 — Web validation
+
+```bash
 bun run --cwd apps/web lint
 bun run --cwd apps/web validate:tech-links
 ```
+
+Catches missing icon entries and broken docs/GitHub links.
+
+### Pre-commit checklist
+
+Before running `git add` and `git commit`, verify:
+
+- [ ] All 7 steps above pass
+- [ ] The `.snap` file is staged (`git add apps/cli/test/__snapshots__/`)
+- [ ] No placeholder `// ...other required fields` in test configs
+- [ ] Template `.hbs` files have trailing newlines
+- [ ] New Handlebars `{{#if}}` and `{{/if}}` are balanced (count them in large files)
+
+### What CI runs (so you know what will fail remotely)
+
+| CI Job | What it checks | Local equivalent |
+|--------|---------------|------------------|
+| **Lint** | `turbo lint` across all packages | `bun run --cwd apps/cli check-types && bun run --cwd apps/web typecheck` |
+| **Test** | `bun run test:coverage` (all 2500+ tests) | `bun test apps/cli/test/` |
+| **Release Guard** | Snapshot verification + CLI/builder parity | `bun run test:release` |
+| **Build Check** | Full build of all packages | Step 1 above |
+| **Smoke Test** | Curated preset generation | `bun run test:smoke -- --preset <name>` |
+| **CodeQL** | Security analysis | (runs remotely only) |
 
 ---
 
@@ -1169,6 +1213,7 @@ These are the most frequently missed files based on git history analysis and rea
 | **Non-TS:** missing `ai-docs-generator.ts` branch | Generated CLAUDE.md has wrong dev command | Manual inspection of generated project |
 | **Go:** forgot to widen `.hbs` outer guards | New framework option generates empty handlers file | `createVirtual` test with content assertion |
 | Editing handler when template conditionals suffice | Unnecessary code; may break empty-file-skip logic | Review handler before editing |
+| **#1 CI killer:** Snapshot file not committed | Added snapshot config in test but didn't run `-u` or didn't `git add` the `.snap` file — Release Guard fails | Run `bun test apps/cli/test/template-snapshots.test.ts -u` then `git add apps/cli/test/__snapshots__/` |
 | **Go/Rust:** Unbalanced `{{#if}}`/`{{/if}}` in large `.hbs` files | New framework block inserted inside another block's unclosed conditional — breaks ALL generation for that ecosystem | Count `{{#if` and `{{/if}}` in the file after editing; they must match. Search for the previous framework's closing `{{/if}}` before inserting. |
 
 ### The golden rule
