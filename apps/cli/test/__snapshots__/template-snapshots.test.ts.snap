@@ -10342,6 +10342,18 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 ]
 `;
 
+exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-envlogger 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "Cargo.toml",
+  "README.md",
+  "crates/server/Cargo.toml",
+  "crates/server/src/main.rs",
+  "rust-toolchain.toml",
+]
+`;
+
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
   "fileCount": 13,
@@ -11478,6 +11490,232 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("Hello from snapshot-rust-cli-clap!");
     tracing::info!("Add a web framework (axum or actix-web) to start building your API.");
+
+    Ok(())
+}
+"
+,
+      "path": "crates/server/src/main.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "rust-toolchain.toml",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
+{
+  "fileCount": 8,
+  "files": [
+    {
+      "content": 
+"# Application
+RUST_LOG=debug
+APP_ENV=development
+
+# Server
+HOST=127.0.0.1
+PORT=3000
+
+# gRPC (if using tonic)
+# GRPC_PORT=50051
+
+# Database (if using)
+# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+# DATABASE_URL=sqlite:./data.db
+
+# JWT Secret (if using jsonwebtoken)
+# JWT_SECRET=your-secret-key-here
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": 
+"[workspace]
+resolver = "2"
+members = [
+    "crates/server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+repository = ""
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.51", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Logging (env_logger)
+log = "0.4"
+env_logger = "0.11"
+
+# Environment variables
+dotenvy = "0.15"
+
+# Web framework (Axum)
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# Database (SQLx)
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "mysql", "migrate"] }
+
+
+
+
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+"
+,
+      "path": "Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"[package]
+name = "snapshot-rust-axum-envlogger-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+log.workspace = true
+env_logger.workspace = true
+
+# Environment
+dotenvy.workspace = true
+
+# Web framework
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+# Database
+sqlx.workspace = true
+
+
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+"
+,
+      "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": 
+"use axum::{routing::get, Json, Router};
+use serde::Serialize;
+use tower_http::cors::CorsLayer;
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
+
+#[derive(Serialize)]
+struct HealthResponse {
+    status: &'static str,
+    message: &'static str,
+    database: &'static str,
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: PgPool,
+}
+
+async fn health(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<HealthResponse> {
+    let db_status = if state.db.acquire().await.is_ok() {
+        "connected"
+    } else {
+        "disconnected"
+    };
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // Load environment variables
+    dotenvy::dotenv().ok();
+
+    // Initialize logging
+    env_logger::init();
+
+    // Initialize database connection pool
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+
+    log::info!("Connecting to database...");
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await?;
+    log::info!("Database connected successfully");
+
+    let state = AppState { db: pool.clone() };
+
+    // Build router with state
+    let app = Router::new()
+        .route("/health", get(health))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
+
+    // Get host and port from environment
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = format!("{}:{}", host, port);
+
+    log::info!("Starting HTTP server at http://{}", addr);
+
+    // Start server
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    axum::serve(listener, app).await?;
 
     Ok(())
 }
