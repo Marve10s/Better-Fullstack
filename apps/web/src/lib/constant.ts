@@ -2777,6 +2777,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "litestar",
+      name: "Litestar",
+      description: "High-performance ASGI framework with class-based controllers",
+      icon: "https://cdn.simpleicons.org/litestar/EDB641",
+      color: "from-yellow-500 to-yellow-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Python web framework selection",
