@@ -38,9 +38,16 @@ serde_json = "1.0"
 thiserror = "2.0"
 anyhow = "1.0"
 
-# Logging
+{{#if (or (eq rustLogging "tracing") (not (eq rustCli "none")) (not (eq rustFrontend "none")))}}
+# Tracing (used by server logging, CLI, TUI, and WASM frontends)
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+{{/if}}
+{{#if (eq rustLogging "env-logger")}}
+# Logging (env_logger)
+log = "0.4"
+env_logger = "0.11"
+{{/if}}
 
 # Environment variables
 dotenvy = "0.15"

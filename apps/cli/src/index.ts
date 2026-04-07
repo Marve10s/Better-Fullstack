@@ -93,6 +93,8 @@ import {
   type RustCli,
   RustLibrariesSchema,
   type RustLibraries,
+  RustLoggingSchema,
+  type RustLogging,
   PythonWebFrameworkSchema,
   type PythonWebFramework,
   PythonOrmSchema,
@@ -245,6 +247,7 @@ export const router = os.router({
           rustApi: RustApiSchema.optional().describe("Rust API layer (tonic, async-graphql)"),
           rustCli: RustCliSchema.optional().describe("Rust CLI tools (clap, ratatui)"),
           rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust core libraries"),
+          rustLogging: RustLoggingSchema.optional().describe("Rust logging (tracing, env-logger)"),
           // Python ecosystem options
           pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
             "Python web framework (fastapi, django)",
@@ -571,6 +574,7 @@ export async function createVirtual(
       rustApi: options.rustApi || "none",
       rustCli: options.rustCli || "none",
       rustLibraries: options.rustLibraries || [],
+      rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",
@@ -640,6 +644,7 @@ export type {
   RustApi,
   RustCli,
   RustLibraries,
+  RustLogging,
   CMS,
   Caching,
   Analytics,

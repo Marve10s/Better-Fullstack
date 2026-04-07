@@ -122,6 +122,7 @@ function getRustFlags(config: ProjectConfig) {
   flags.push(`--rust-api ${config.rustApi}`);
   flags.push(`--rust-cli ${config.rustCli}`);
   flags.push(formatArrayFlag("rust-libraries", config.rustLibraries));
+  flags.push(`--rust-logging ${config.rustLogging}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);

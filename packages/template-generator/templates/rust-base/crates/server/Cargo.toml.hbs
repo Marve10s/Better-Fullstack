@@ -17,9 +17,16 @@ serde_json.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
 
+{{#if (eq rustLogging "tracing")}}
 # Logging
 tracing.workspace = true
 tracing-subscriber.workspace = true
+{{/if}}
+{{#if (eq rustLogging "env-logger")}}
+# Logging
+log.workspace = true
+env_logger.workspace = true
+{{/if}}
 
 # Environment
 dotenvy.workspace = true

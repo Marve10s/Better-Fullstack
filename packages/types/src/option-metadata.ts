@@ -42,6 +42,7 @@ import {
   RUST_CLI_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_LIBRARIES_VALUES,
+  RUST_LOGGING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -118,6 +119,7 @@ export type OptionCategory =
   | "rustApi"
   | "rustCli"
   | "rustLibraries"
+  | "rustLogging"
   | "pythonWebFramework"
   | "pythonOrm"
   | "pythonValidation"
@@ -288,6 +290,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rustApi: RUST_API_VALUES,
   rustCli: RUST_CLI_VALUES,
   rustLibraries: RUST_LIBRARIES_VALUES,
+  rustLogging: RUST_LOGGING_VALUES,
   pythonWebFramework: PYTHON_WEB_FRAMEWORK_VALUES,
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
@@ -540,6 +543,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "tokio-test": "Tokio Test",
     mockall: "Mockall",
   },
+  rustLogging: {
+    tracing: "Tracing",
+    "env-logger": "env_logger",
+  },
   pythonWebFramework: {
     fastapi: "FastAPI",
     django: "Django",
@@ -721,6 +728,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rustApi: buildCategoryMetadata("rustApi"),
   rustCli: buildCategoryMetadata("rustCli"),
   rustLibraries: buildCategoryMetadata("rustLibraries"),
+  rustLogging: buildCategoryMetadata("rustLogging"),
   pythonWebFramework: buildCategoryMetadata("pythonWebFramework"),
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),

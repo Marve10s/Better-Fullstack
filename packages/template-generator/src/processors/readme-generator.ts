@@ -802,6 +802,14 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **Tokio Test** - Async testing utilities");
   }
 
+  // Logging
+  const { rustLogging } = config;
+  if (rustLogging === "tracing") {
+    features.push("- **Tracing** - Structured, composable instrumentation framework");
+  } else if (rustLogging === "env-logger") {
+    features.push("- **env_logger** - Simple logger configured via environment variables");
+  }
+
   // Project structure
   const structure: string[] = [`${projectName}/`, "├── Cargo.toml            # Workspace manifest"];
 
