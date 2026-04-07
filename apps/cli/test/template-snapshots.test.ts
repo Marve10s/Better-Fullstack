@@ -157,6 +157,20 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
+  // === SEARCH VARIATIONS ===
+  {
+    name: "algolia-search-hono",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      search: "algolia",
+    },
+  },
+
   // === SPECIAL CASES ===
   {
     name: "frontend-only-no-backend",
