@@ -1,10 +1,10 @@
 package main
 
 import (
-{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
 	"os"
 {{/if}}
-{{#if (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
+{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
 	"net/http"
 {{/if}}
 
@@ -23,6 +23,12 @@ import (
 	fibercors "github.com/gofiber/fiber/v2/middleware/cors"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
+{{/if}}
+{{#if (eq goWebFramework "chi")}}
+	"encoding/json"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 {{/if}}
 {{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
@@ -114,14 +120,14 @@ func main() {
 	_ = pool // Use pool in your handlers
 {{/if}}
 
-{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
 	// Get host from environment
 	host := os.Getenv("HOST")
 	if host == "" {
 		host = "0.0.0.0"
 	}
 {{/if}}
-{{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq auth "go-better-auth"))}}
+{{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq auth "go-better-auth"))}}
 	// Get HTTP port from environment
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -292,6 +298,51 @@ func main() {
 {{/if}}
 	}
 {{/if}}
+{{#if (eq goWebFramework "chi")}}
+{{#if (eq goLogging "zap")}}
+	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+
+	// Create Chi router
+	r := chi.NewRouter()
+
+	// Middleware
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+{{#if (eq auth "go-better-auth")}}
+	r.Handle("/api/auth", authApp.Handler())
+	r.Handle("/api/auth/*", authApp.Handler())
+{{/if}}
+
+	// Health check endpoint
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "ok",
+			"message": "Server is running",
+		})
+	})
+
+	// Root endpoint
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Welcome to {{projectName}}!",
+		})
+	})
+
+	// Start server
+	if err := http.ListenAndServe(addr, r); err != nil && err != http.ErrServerClosed {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to start server", zap.Error(err))
+{{else}}
+		panic("Failed to start server: " + err.Error())
+{{/if}}
+	}
+{{/if}}
 {{#if (eq goWebFramework "none")}}
 {{#if (eq auth "go-better-auth")}}
 {{#if (eq goLogging "zap")}}
@@ -332,10 +383,10 @@ func main() {
 {{else}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("{{projectName}} started")
-	logger.Info("Add a web framework (gin, echo, or fiber) to start building your API")
+	logger.Info("Add a web framework (gin, echo, fiber, or chi) to start building your API")
 {{else}}
 	println("{{projectName}} started")
-	println("Add a web framework (gin, echo, or fiber) to start building your API")
+	println("Add a web framework (gin, echo, fiber, or chi) to start building your API")
 {{/if}}
 {{/if}}
 {{/if}}

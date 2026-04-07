@@ -387,6 +387,17 @@ describe("Template Snapshots - Go Ecosystem", () => {
       },
     },
     {
+      name: "chi-gorm",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "chi" as const,
+        goOrm: "gorm" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "none" as const,
+      },
+    },
+    {
       name: "cli-cobra",
       config: {
         ecosystem: "go" as const,

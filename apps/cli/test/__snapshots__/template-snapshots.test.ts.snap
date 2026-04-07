@@ -12614,6 +12614,19 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 ]
 `;
 
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: chi-gorm 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "cmd/server/main.go",
+  "go.mod",
+  "internal/database/database.go",
+  "internal/handlers/handlers.go",
+  "internal/models/models.go",
+]
+`;
+
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: cli-cobra 1`] = `
 [
   ".env.example",
@@ -12766,6 +12779,60 @@ LOG_LEVEL=debug
 `;
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: fiber-gorm-zap 1`] = `
+{
+  "fileCount": 9,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/database/database.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/handlers/handlers.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/models/models.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: chi-gorm 1`] = `
 {
   "fileCount": 9,
   "files": [

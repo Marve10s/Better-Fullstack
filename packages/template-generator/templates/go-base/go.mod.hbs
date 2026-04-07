@@ -18,6 +18,9 @@ require (
 	github.com/gofiber/adaptor/v2 v2.2.1
 {{/if}}
 {{/if}}
+{{#if (eq goWebFramework "chi")}}
+	github.com/go-chi/chi/v5 v5.2.1
+{{/if}}
 {{#if (eq goOrm "gorm")}}
 	gorm.io/gorm v1.31.1
 	gorm.io/driver/sqlite v1.6.0

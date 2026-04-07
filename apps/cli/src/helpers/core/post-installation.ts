@@ -736,6 +736,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       gin: "Gin",
       echo: "Echo",
       fiber: "Fiber",
+      chi: "Chi",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[goWebFramework] || goWebFramework}\n`;
   }

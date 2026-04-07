@@ -23,6 +23,11 @@ export async function getGoWebFrameworkChoice(goWebFramework?: GoWebFramework) {
       hint: "Express-inspired web framework built on Fasthttp",
     },
     {
+      value: "chi" as const,
+      label: "Chi",
+      hint: "Lightweight, zero-dependency router built on net/http",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No web framework",

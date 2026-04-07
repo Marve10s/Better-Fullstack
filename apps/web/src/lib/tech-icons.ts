@@ -331,5 +331,6 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Go ────────────────────────────────────────────────────────────────────
   gin: { type: "si", slug: "gin", hex: "00ADD8" },
   fiber: { type: "si", slug: "gofiber", hex: "00ACD7" },
+  chi: { type: "local", src: "/icon/go.svg" },
   "grpc-go": { type: "local", src: "/icon/grpc.svg" },
 };
