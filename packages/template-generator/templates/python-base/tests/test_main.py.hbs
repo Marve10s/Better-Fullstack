@@ -438,6 +438,33 @@ def test_health(client):
     assert response.status_code == 200
     assert response.get_json() == {"status": "healthy"}
 {{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+import pytest
+from litestar.testing import TestClient
+
+from app.main import app
+
+
+@pytest.fixture
+def client():
+    """Create a test client."""
+    with TestClient(app=app) as client:
+        yield client
+
+
+def test_root(client):
+    """Test root endpoint."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Hello from Litestar!"}
+
+
+def test_health(client):
+    """Test health endpoint."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def test_main():
     """Test main module imports correctly."""

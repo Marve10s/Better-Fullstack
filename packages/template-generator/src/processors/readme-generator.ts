@@ -1185,7 +1185,16 @@ uv run flask --app app.main run --reload
 
 The API will be running at [http://localhost:5000](http://localhost:5000).
 `
-        : `Run the application:
+        : pythonWebFramework === "litestar"
+          ? `Start the Litestar development server:
+
+\`\`\`bash
+litestar --app src.app.main:app run --reload --port 3001
+\`\`\`
+
+The API will be running at [http://localhost:3001](http://localhost:3001).
+`
+          : `Run the application:
 
 \`\`\`bash
 uv run python -m app.main

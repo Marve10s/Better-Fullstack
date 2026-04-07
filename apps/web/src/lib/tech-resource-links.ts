@@ -698,6 +698,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://flask.palletsprojects.com/",
     githubUrl: "https://github.com/pallets/flask",
   },
+  litestar: {
+    docsUrl: "https://docs.litestar.dev/",
+    githubUrl: "https://github.com/litestar-org/litestar",
+  },
   sqlalchemy: {
     docsUrl: "https://docs.sqlalchemy.org/",
     githubUrl: "https://github.com/sqlalchemy/sqlalchemy",

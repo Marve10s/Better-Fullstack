@@ -977,6 +977,28 @@ if __name__ == "__main__":
         debug=os.getenv("DEBUG", "true").lower() == "true",
     )
 {{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+from litestar import Litestar, get, post
+from litestar.config.cors import CORSConfig
+
+load_dotenv()
+
+
+@get("/")
+async def index() -> dict[str, str]:
+    """Root endpoint."""
+    return {"message": "Hello from Litestar!"}
+
+
+@get("/health")
+async def health() -> dict[str, str]:
+    """Health check endpoint."""
+    return {"status": "ok"}
+
+
+cors_config = CORSConfig(allow_origins=["*"])
+app = Litestar(route_handlers=[index, health], cors_config=cors_config)
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def main():
     """Main entry point."""

@@ -484,6 +484,18 @@ describe("Template Snapshots - Python Ecosystem", () => {
         pythonQuality: "ruff" as const,
       },
     },
+    {
+      name: "litestar-pydantic-ruff",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "litestar" as const,
+        pythonOrm: "none" as const,
+        pythonValidation: "pydantic" as const,
+        pythonAi: [] as const,
+        pythonTaskQueue: "none" as const,
+        pythonQuality: "ruff" as const,
+      },
+    },
   ];
 
   describe("Python File Structure Snapshots", () => {
