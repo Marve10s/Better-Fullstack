@@ -138,6 +138,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Deploy ────────────────────────────────────────────────────────────────
   cloudflare: { type: "si", slug: "cloudflareworkers", hex: "F38020" },
+  vercel: { type: "si", slug: "vercel", hex: "000000" },
   fly: { type: "si", slug: "flydotio", hex: "8B5CF6" },
   railway: { type: "si", slug: "railway", hex: "0B0D0E" },
   sst: { type: "local", src: "/icon/sst.svg" },

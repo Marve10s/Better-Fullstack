@@ -20,6 +20,12 @@ function getDeploymentDisplay(deployment: ServerDeploy): {
       hint: "Deploy to Cloudflare Workers using Alchemy",
     };
   }
+  if (deployment === "vercel") {
+    return {
+      label: "Vercel",
+      hint: "Deploy serverless functions to Vercel",
+    };
+  }
   return {
     label: deployment,
     hint: `Add ${deployment} deployment`,

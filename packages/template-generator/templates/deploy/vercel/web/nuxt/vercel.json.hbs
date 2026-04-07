@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nuxtjs",
+  "buildCommand": "cd ../.. && {{#if (eq packageManager "bun")}}bun run build --filter=web{{else if (eq packageManager "pnpm")}}pnpm run build --filter=web{{else}}npm run build --filter=web{{/if}}",
+  "installCommand": "cd ../.. && {{#if (eq packageManager "bun")}}bun install{{else if (eq packageManager "pnpm")}}pnpm install{{else}}npm install{{/if}}",
+  "outputDirectory": ".output"
+}

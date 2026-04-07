@@ -75,6 +75,32 @@ export function processDeployDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     }
   }
 
+  // Handle Vercel deployment dependencies
+  const isVercelWeb = webDeploy === "vercel";
+  const isVercelServer = serverDeploy === "vercel";
+
+  if (isVercelWeb || isVercelServer) {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: ["vercel"],
+    });
+
+    // SvelteKit requires node adapter for Vercel serverless functions
+    if (isVercelWeb) {
+      const webPkgPath = "apps/web/package.json";
+      if (vfs.exists(webPkgPath)) {
+        if (frontend.includes("svelte")) {
+          addPackageDependency({
+            vfs,
+            packagePath: webPkgPath,
+            devDependencies: ["@sveltejs/adapter-node"],
+          });
+        }
+      }
+    }
+  }
+
   if (!isCloudflareWeb && !isCloudflareServer) return;
 
   if (isCloudflareWeb || isCloudflareServer) {

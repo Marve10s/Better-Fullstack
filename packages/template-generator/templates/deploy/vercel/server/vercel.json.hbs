@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && {{#if (eq packageManager "bun")}}bun run build --filter=server{{else if (eq packageManager "pnpm")}}pnpm run build --filter=server{{else}}npm run build --filter=server{{/if}}",
+  "installCommand": "cd ../.. && {{#if (eq packageManager "bun")}}bun install{{else if (eq packageManager "pnpm")}}pnpm install{{else}}npm install{{/if}}",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "functions": {
+    "api/**": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}

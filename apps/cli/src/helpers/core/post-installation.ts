@@ -119,6 +119,7 @@ export async function displayPostInstallInstructions(
     serverDeploy,
     backend,
   );
+  const vercelDeployInstructions = getVercelDeployInstructions(webDeploy, serverDeploy, backend);
 
   const hasWeb = frontend?.some((f) => WEB_FRAMEWORKS.includes(f));
   const hasNative =
@@ -224,6 +225,7 @@ export async function displayPostInstallInstructions(
   if (lintingInstructions) output += `\n${lintingInstructions.trim()}\n`;
   if (pwaInstructions) output += `\n${pwaInstructions.trim()}\n`;
   if (alchemyDeployInstructions) output += `\n${alchemyDeployInstructions.trim()}\n`;
+  if (vercelDeployInstructions) output += `\n${vercelDeployInstructions.trim()}\n`;
   if (starlightInstructions) output += `\n${starlightInstructions.trim()}\n`;
   if (clerkInstructions) output += `\n${clerkInstructions.trim()}\n`;
   if (authSetupInstructions) output += `\n${authSetupInstructions.trim()}\n`;
@@ -626,6 +628,39 @@ function getAlchemyDeployInstructions(
   } else if (webDeploy === "cloudflare" && (serverDeploy === "cloudflare" || isBackendSelf)) {
     instructions.push(
       `${pc.bold("Deploy with Alchemy:")}\n${pc.cyan("•")} Dev: ${`${runCmd} dev`}\n${pc.cyan("•")} Deploy: ${`${runCmd} deploy`}\n${pc.cyan("•")} Destroy: ${`${runCmd} destroy`}`,
+    );
+  }
+
+  return instructions.length ? `\n${instructions.join("\n")}` : "";
+}
+
+function getVercelDeployInstructions(
+  webDeploy: WebDeploy,
+  serverDeploy: ServerDeploy,
+  backend: Backend,
+) {
+  const instructions: string[] = [];
+  const isBackendSelf = backend === "self";
+
+  if (webDeploy === "vercel" || serverDeploy === "vercel") {
+    instructions.push(
+      `${pc.bold("Deploy with Vercel:")}`,
+    );
+    instructions.push(
+      `${pc.cyan("•")} Install Vercel CLI: npm i -g vercel`,
+    );
+    if (webDeploy === "vercel" && (serverDeploy !== "vercel" || isBackendSelf)) {
+      instructions.push(
+        `${pc.cyan("•")} Deploy web: cd apps/web && vercel`,
+      );
+    }
+    if (serverDeploy === "vercel" && !isBackendSelf) {
+      instructions.push(
+        `${pc.cyan("•")} Deploy server: cd apps/server && vercel`,
+      );
+    }
+    instructions.push(
+      `${pc.cyan("•")} Set environment variables in the Vercel dashboard`,
     );
   }
 

@@ -616,6 +616,13 @@ export const TECH_OPTIONS: Record<
       color: "from-orange-400 to-orange-600",
     },
     {
+      id: "vercel",
+      name: "Vercel",
+      description: "Deploy to Vercel — zero-config for Next.js, supports all frameworks",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-800 to-black",
+    },
+    {
       id: "fly",
       name: "Fly.io",
       description: "Deploy globally with Fly.io edge platform",
@@ -659,6 +666,13 @@ export const TECH_OPTIONS: Record<
       description: "Deploy to Cloudflare Workers using Alchemy",
       icon: "https://cdn.simpleicons.org/cloudflareworkers/F38020",
       color: "from-orange-400 to-orange-600",
+    },
+    {
+      id: "vercel",
+      name: "Vercel",
+      description: "Deploy serverless functions to Vercel",
+      icon: "https://cdn.simpleicons.org/vercel/000000",
+      color: "from-zinc-800 to-black",
     },
     {
       id: "fly",

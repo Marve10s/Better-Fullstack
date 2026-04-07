@@ -171,6 +171,21 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
+  // === DEPLOY VARIATIONS ===
+  {
+    name: "vercel-deploy-next",
+    config: {
+      frontend: ["next"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      webDeploy: "vercel",
+      serverDeploy: "vercel",
+    },
+  },
+
   // === SPECIAL CASES ===
   {
     name: "frontend-only-no-backend",

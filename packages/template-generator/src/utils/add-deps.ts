@@ -298,6 +298,9 @@ export const dependencyVersionMap = {
   constructs: "^10.6.0",
   "@opennextjs/aws": "^3.9.16",
 
+  // Vercel
+  vercel: "^44.2.7",
+
   dotenv: "^17.4.1",
   tsdown: "^0.21.7",
   zod: "^4.3.6",
