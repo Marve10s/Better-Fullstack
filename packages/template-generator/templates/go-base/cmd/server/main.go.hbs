@@ -4,7 +4,7 @@ import (
 {{#if (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
 	"os"
 {{/if}}
-{{#if (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq auth "go-better-auth"))}}
+{{#if (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
 	"net/http"
 {{/if}}
 
