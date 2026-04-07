@@ -1,6 +1,7 @@
 import type {
   RustApi,
   RustCli,
+  RustErrorHandling,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -244,6 +245,38 @@ export async function getRustLoggingChoice(rustLogging?: RustLogging) {
     message: "Select Rust logging library",
     options,
     initialValue: "tracing",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustErrorHandlingChoice(rustErrorHandling?: RustErrorHandling) {
+  if (rustErrorHandling !== undefined) return rustErrorHandling;
+
+  const options = [
+    {
+      value: "anyhow-thiserror" as const,
+      label: "anyhow + thiserror",
+      hint: "anyhow for application errors, thiserror for custom error types",
+    },
+    {
+      value: "eyre" as const,
+      label: "eyre + color-eyre",
+      hint: "Customizable error reports with pretty backtraces via color-eyre",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No error handling library (uses standard library only)",
+    },
+  ];
+
+  const response = await navigableSelect<RustErrorHandling>({
+    message: "Select Rust error handling library",
+    options,
+    initialValue: "anyhow-thiserror",
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

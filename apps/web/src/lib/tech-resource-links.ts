@@ -660,6 +660,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/env_logger/latest/env_logger/",
     githubUrl: "https://github.com/rust-cli/env_logger",
   },
+  "anyhow-thiserror": {
+    docsUrl: "https://docs.rs/anyhow/latest/anyhow/",
+    githubUrl: "https://github.com/dtolnay/anyhow",
+  },
+  eyre: {
+    docsUrl: "https://docs.rs/eyre/latest/eyre/",
+    githubUrl: "https://github.com/eyre-rs/eyre",
+  },
   clap: {
     docsUrl: "https://docs.rs/clap/latest/clap/",
     githubUrl: "https://github.com/clap-rs/clap",

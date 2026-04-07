@@ -698,6 +698,15 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
     output += `${pc.cyan("•")} Logging: ${loggingNames[rustLogging] || rustLogging}\n`;
   }
 
+  const { rustErrorHandling } = config;
+  if (rustErrorHandling && rustErrorHandling !== "none") {
+    const errorHandlingNames: Record<string, string> = {
+      "anyhow-thiserror": "anyhow + thiserror",
+      eyre: "eyre + color-eyre",
+    };
+    output += `${pc.cyan("•")} Error Handling: ${errorHandlingNames[rustErrorHandling] || rustErrorHandling}\n`;
+  }
+
   output += `\n${pc.bold("Common Cargo commands:")}\n`;
   output += `${pc.cyan("•")} Build: cargo build\n`;
   output += `${pc.cyan("•")} Run: cargo run\n`;

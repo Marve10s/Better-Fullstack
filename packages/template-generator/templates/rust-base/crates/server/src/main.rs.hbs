@@ -2,6 +2,9 @@
 use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -95,9 +98,14 @@ async fn graphiql() -> impl IntoResponse {
 {{/if}}
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+{{/if}}
 
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
@@ -246,6 +254,9 @@ async fn main() -> anyhow::Result<()> {
 use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -346,9 +357,14 @@ async fn graphiql() -> impl Responder {
 {{/if}}
 
 #[actix_web::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+{{/if}}
 
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
@@ -520,6 +536,9 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 {{else}}
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -529,9 +548,14 @@ mod grpc;
 {{/if}}
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+{{/if}}
 
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing

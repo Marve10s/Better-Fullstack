@@ -292,6 +292,10 @@ export const RustLoggingSchema = z
   .enum(["tracing", "env-logger", "none"])
   .describe("Rust logging/tracing library");
 
+export const RustErrorHandlingSchema = z
+  .enum(["anyhow-thiserror", "eyre", "none"])
+  .describe("Rust error handling library");
+
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
   .enum(["fastapi", "django", "flask", "none"])
@@ -496,6 +500,7 @@ export const CreateInputSchema = z.object({
   rustCli: RustCliSchema.optional(),
   rustLibraries: z.array(RustLibrariesSchema).optional(),
   rustLogging: RustLoggingSchema.optional(),
+  rustErrorHandling: RustErrorHandlingSchema.optional(),
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema.optional(),
   pythonOrm: PythonOrmSchema.optional(),
@@ -585,6 +590,7 @@ export const ProjectConfigSchema = z.object({
   rustCli: RustCliSchema,
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
+  rustErrorHandling: RustErrorHandlingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -658,6 +664,7 @@ export const BetterTStackConfigSchema = z.object({
   rustCli: RustCliSchema,
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
+  rustErrorHandling: RustErrorHandlingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -744,6 +751,7 @@ export const RUST_API_VALUES = RustApiSchema.options;
 export const RUST_CLI_VALUES = RustCliSchema.options;
 export const RUST_LIBRARIES_VALUES = RustLibrariesSchema.options;
 export const RUST_LOGGING_VALUES = RustLoggingSchema.options;
+export const RUST_ERROR_HANDLING_VALUES = RustErrorHandlingSchema.options;
 export const PYTHON_WEB_FRAMEWORK_VALUES = PythonWebFrameworkSchema.options;
 export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;

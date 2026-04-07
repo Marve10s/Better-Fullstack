@@ -2724,6 +2724,32 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  rustErrorHandling: [
+    {
+      id: "anyhow-thiserror",
+      name: "anyhow + thiserror",
+      description: "anyhow for application errors with thiserror for custom error types — the standard Rust combo",
+      icon: "",
+      color: "from-red-500 to-orange-600",
+      default: true,
+    },
+    {
+      id: "eyre",
+      name: "eyre + color-eyre",
+      description: "Customizable error reports with pretty backtraces via color-eyre",
+      icon: "",
+      color: "from-purple-500 to-pink-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "None",
+      description: "No error handling library (standard library only)",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
   // Python ecosystem options
   pythonWebFramework: [
     {
@@ -3106,6 +3132,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "rustCli",
     "rustLibraries",
     "rustLogging",
+    "rustErrorHandling",
     "aiDocs",
     "git",
     "install",

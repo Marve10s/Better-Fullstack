@@ -314,6 +314,19 @@ describe("Template Snapshots - Rust Ecosystem", () => {
         rustLibraries: ["serde"] as const,
       },
     },
+    {
+      name: "axum-eyre",
+      config: {
+        ecosystem: "rust" as const,
+        rustWebFramework: "axum" as const,
+        rustFrontend: "none" as const,
+        rustOrm: "none" as const,
+        rustApi: "none" as const,
+        rustCli: "none" as const,
+        rustErrorHandling: "eyre" as const,
+        rustLibraries: ["serde"] as const,
+      },
+    },
   ];
 
   describe("Rust File Structure Snapshots", () => {

@@ -97,6 +97,7 @@ export function loadStackParams(
       rustCli: getString("rustCli", DEFAULT_STACK.rustCli),
       rustLibraries: getString("rustLibraries", DEFAULT_STACK.rustLibraries),
       rustLogging: getString("rustLogging", DEFAULT_STACK.rustLogging),
+      rustErrorHandling: getString("rustErrorHandling", DEFAULT_STACK.rustErrorHandling),
       pythonWebFramework: getString("pythonWebFramework", DEFAULT_STACK.pythonWebFramework),
       pythonOrm: getString("pythonOrm", DEFAULT_STACK.pythonOrm),
       pythonValidation: getString("pythonValidation", DEFAULT_STACK.pythonValidation),
@@ -195,6 +196,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("rustCli", stack.rustCli);
   addParam("rustLibraries", stack.rustLibraries);
   addParam("rustLogging", stack.rustLogging);
+  addParam("rustErrorHandling", stack.rustErrorHandling);
   addParam("pythonWebFramework", stack.pythonWebFramework);
   addParam("pythonOrm", stack.pythonOrm);
   addParam("pythonValidation", stack.pythonValidation);
@@ -278,6 +280,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     rustCli: search.rcli ?? DEFAULT_STACK.rustCli,
     rustLibraries: search.rlib ?? DEFAULT_STACK.rustLibraries,
     rustLogging: search.rlog ?? DEFAULT_STACK.rustLogging,
+    rustErrorHandling: search.reh ?? DEFAULT_STACK.rustErrorHandling,
     pythonWebFramework: search.pwf ?? DEFAULT_STACK.pythonWebFramework,
     pythonOrm: search.porm ?? DEFAULT_STACK.pythonOrm,
     pythonValidation: search.pval ?? DEFAULT_STACK.pythonValidation,

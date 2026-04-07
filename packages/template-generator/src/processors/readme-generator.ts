@@ -810,6 +810,14 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **env_logger** - Simple logger configured via environment variables");
   }
 
+  // Error handling
+  const { rustErrorHandling } = config;
+  if (rustErrorHandling === "anyhow-thiserror") {
+    features.push("- **anyhow + thiserror** - Application errors (anyhow) with custom error types (thiserror)");
+  } else if (rustErrorHandling === "eyre") {
+    features.push("- **eyre + color-eyre** - Customizable error reports with pretty backtraces");
+  }
+
   // Project structure
   const structure: string[] = [`${projectName}/`, "├── Cargo.toml            # Workspace manifest"];
 

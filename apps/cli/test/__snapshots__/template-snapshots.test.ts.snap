@@ -11139,6 +11139,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/client/src/lib.rs",
   "crates/client/style/main.css",
   "crates/server/Cargo.toml",
+  "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
 ]
@@ -11155,6 +11156,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/dioxus-client/assets/main.css",
   "crates/dioxus-client/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
 ]
@@ -11169,6 +11171,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/cli/Cargo.toml",
   "crates/cli/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
 ]
@@ -11181,6 +11184,20 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/error.rs",
+  "crates/server/src/main.rs",
+  "rust-toolchain.toml",
+]
+`;
+
+exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-eyre 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "Cargo.toml",
+  "README.md",
+  "crates/server/Cargo.toml",
+  "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
 ]
@@ -11188,7 +11205,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
-  "fileCount": 13,
+  "fileCount": 14,
   "files": [
     {
       "content": 
@@ -11237,7 +11254,7 @@ tokio = { version = "1.51", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+# Error handling (anyhow + thiserror)
 thiserror = "2.0"
 anyhow = "1.0"
 
@@ -11486,10 +11503,15 @@ path = "src/main.rs"
       "path": "crates/server/Cargo.toml",
     },
     {
+      "content": "[exists]",
+      "path": "crates/server/src/error.rs",
+    },
+    {
       "content": 
 "use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
+mod error;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
@@ -11580,7 +11602,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: actix-dioxus-sqlx 1`] = `
 {
-  "fileCount": 12,
+  "fileCount": 13,
   "files": [
     {
       "content": 
@@ -11629,7 +11651,7 @@ tokio = { version = "1.51", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+# Error handling (anyhow + thiserror)
 thiserror = "2.0"
 anyhow = "1.0"
 
@@ -11865,10 +11887,15 @@ path = "src/main.rs"
       "path": "crates/server/Cargo.toml",
     },
     {
+      "content": "[exists]",
+      "path": "crates/server/src/error.rs",
+    },
+    {
       "content": 
 "use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
+mod error;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
@@ -11963,7 +11990,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: cli-clap 1`] = `
 {
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "content": 
@@ -12012,7 +12039,7 @@ tokio = { version = "1.51", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+# Error handling (anyhow + thiserror)
 thiserror = "2.0"
 anyhow = "1.0"
 
@@ -12306,8 +12333,13 @@ path = "src/main.rs"
       "path": "crates/server/Cargo.toml",
     },
     {
+      "content": "[exists]",
+      "path": "crates/server/src/error.rs",
+    },
+    {
       "content": 
-"use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+"mod error;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -12343,7 +12375,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
 {
-  "fileCount": 8,
+  "fileCount": 9,
   "files": [
     {
       "content": 
@@ -12391,7 +12423,7 @@ tokio = { version = "1.51", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+# Error handling (anyhow + thiserror)
 thiserror = "2.0"
 anyhow = "1.0"
 
@@ -12476,10 +12508,15 @@ path = "src/main.rs"
       "path": "crates/server/Cargo.toml",
     },
     {
+      "content": "[exists]",
+      "path": "crates/server/src/error.rs",
+    },
+    {
       "content": 
 "use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
+mod error;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
@@ -12544,6 +12581,210 @@ async fn main() -> anyhow::Result<()> {
     let addr = format!("{}:{}", host, port);
 
     log::info!("Starting HTTP server at http://{}", addr);
+
+    // Start server
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    axum::serve(listener, app).await?;
+
+    Ok(())
+}
+"
+,
+      "path": "crates/server/src/main.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "rust-toolchain.toml",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-eyre 1`] = `
+{
+  "fileCount": 9,
+  "files": [
+    {
+      "content": 
+"# Application
+RUST_LOG=debug
+APP_ENV=development
+
+# Server
+HOST=127.0.0.1
+PORT=3000
+
+# gRPC (if using tonic)
+# GRPC_PORT=50051
+
+# Database (if using)
+# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+# DATABASE_URL=sqlite:./data.db
+
+# JWT Secret (if using jsonwebtoken)
+# JWT_SECRET=your-secret-key-here
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": 
+"[workspace]
+resolver = "2"
+members = [
+    "crates/server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+repository = ""
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.51", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling (eyre + color-eyre)
+eyre = "0.6"
+color-eyre = "0.6"
+
+# Tracing (used by server logging, CLI, TUI, and WASM frontends)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# Web framework (Axum)
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+
+
+
+
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+"
+,
+      "path": "Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"[package]
+name = "snapshot-rust-axum-eyre-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+eyre.workspace = true
+color-eyre.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Environment
+dotenvy.workspace = true
+
+# Web framework
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+
+
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+"
+,
+      "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/error.rs",
+    },
+    {
+      "content": 
+"use axum::{routing::get, Json, Router};
+use serde::Serialize;
+use tower_http::cors::CorsLayer;
+mod error;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[derive(Serialize)]
+struct HealthResponse {
+    status: &'static str,
+    message: &'static str,
+}
+
+async fn health() -> Json<HealthResponse> {
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+    })
+}
+
+
+#[tokio::main]
+async fn main() -> eyre::Result<()> {
+    // Load environment variables
+    dotenvy::dotenv().ok();
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+
+    // Initialize tracing
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    // Build router
+    let app = Router::new()
+        .route("/health", get(health))
+        .layer(CorsLayer::permissive());
+
+    // Get host and port from environment
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = format!("{}:{}", host, port);
+
+    tracing::info!("Starting HTTP server at http://{}", addr);
 
     // Start server
     let listener = tokio::net::TcpListener::bind(&addr).await?;

@@ -34,9 +34,15 @@ tokio = { version = "1.51", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+{{#if (eq rustErrorHandling "anyhow-thiserror")}}
+# Error handling (anyhow + thiserror)
 thiserror = "2.0"
 anyhow = "1.0"
+{{else if (eq rustErrorHandling "eyre")}}
+# Error handling (eyre + color-eyre)
+eyre = "0.6"
+color-eyre = "0.6"
+{{/if}}
 
 {{#if (or (eq rustLogging "tracing") (not (eq rustCli "none")) (not (eq rustFrontend "none")))}}
 # Tracing (used by server logging, CLI, TUI, and WASM frontends)

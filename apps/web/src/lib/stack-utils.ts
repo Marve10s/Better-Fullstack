@@ -72,6 +72,7 @@ const RUST_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "rustCli",
   "rustLibraries",
   "rustLogging",
+  "rustErrorHandling",
   "aiDocs",
   "git",
   "install",
@@ -316,6 +317,9 @@ function generateRustCommand(stack: StackState, projectName: string) {
   }
   if (stack.rustLogging !== "tracing") {
     flags.push(`--rust-logging ${stack.rustLogging}`);
+  }
+  if (stack.rustErrorHandling !== "anyhow-thiserror") {
+    flags.push(`--rust-error-handling ${stack.rustErrorHandling}`);
   }
   if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
     flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);

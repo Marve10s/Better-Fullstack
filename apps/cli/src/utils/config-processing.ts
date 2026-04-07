@@ -47,6 +47,7 @@ import type {
   RustFrontend,
   RustLibraries,
   RustLogging,
+  RustErrorHandling,
   RustOrm,
   RustWebFramework,
   Runtime,
@@ -304,6 +305,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.rustLogging !== undefined) {
     config.rustLogging = options.rustLogging as RustLogging;
+  }
+
+  if (options.rustErrorHandling !== undefined) {
+    config.rustErrorHandling = options.rustErrorHandling as RustErrorHandling;
   }
 
   // Python ecosystem options

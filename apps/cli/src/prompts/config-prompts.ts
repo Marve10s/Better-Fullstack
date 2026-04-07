@@ -42,6 +42,7 @@ import type {
   Realtime,
   RustApi,
   RustCli,
+  RustErrorHandling,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -114,6 +115,7 @@ import {
   getRustFrontendChoice,
   getRustLibrariesChoice,
   getRustLoggingChoice,
+  getRustErrorHandlingChoice,
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
@@ -174,6 +176,7 @@ type PromptGroupResults = {
   rustCli: RustCli;
   rustLibraries: RustLibraries[];
   rustLogging: RustLogging;
+  rustErrorHandling: RustErrorHandling;
   // Python ecosystem
   pythonWebFramework: PythonWebFramework;
   pythonOrm: PythonOrm;
@@ -440,6 +443,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustLogging);
         return getRustLoggingChoice(flags.rustLogging);
       },
+      rustErrorHandling: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustErrorHandling);
+        return getRustErrorHandlingChoice(flags.rustErrorHandling);
+      },
       // Python ecosystem prompts (skip if TypeScript or Rust)
       pythonWebFramework: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
@@ -560,6 +567,7 @@ export async function gatherConfig(
     rustCli: result.rustCli,
     rustLibraries: result.rustLibraries,
     rustLogging: result.rustLogging,
+    rustErrorHandling: result.rustErrorHandling,
     // Python ecosystem options
     pythonWebFramework: result.pythonWebFramework,
     pythonOrm: result.pythonOrm,

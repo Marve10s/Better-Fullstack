@@ -1,0 +1,43 @@
+{{#if (eq rustErrorHandling "anyhow-thiserror")}}
+use thiserror::Error;
+
+/// Application-level errors using thiserror for custom types.
+/// Use `anyhow::Result` in application code for ad-hoc errors,
+/// and `AppError` for well-defined domain errors.
+#[derive(Debug, Error)]
+pub enum AppError {
+    #[error("Configuration error: {0}")]
+    Config(String),
+
+    #[error("Database error: {0}")]
+    Database(String),
+
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    #[error("Internal error: {0}")]
+    Internal(#[from] anyhow::Error),
+}
+{{else if (eq rustErrorHandling "eyre")}}
+/// Application-level errors using eyre for rich error reports.
+/// Use `eyre::Result` throughout your application and
+/// `color_eyre::eyre::eyre!` / `color_eyre::eyre::bail!` macros.
+///
+/// color-eyre is installed in main() to provide pretty backtraces.
+///
+/// Example usage:
+/// ```rust
+/// use eyre::{Result, WrapErr};
+///
+/// fn connect_db() -> Result<()> {
+///     let url = std::env::var("DATABASE_URL")
+///         .wrap_err("DATABASE_URL must be set")?;
+///     // ...
+///     Ok(())
+/// }
+/// ```
+pub fn setup() {
+    // color-eyre is installed in main() via color_eyre::install()
+    // This module exists as a placeholder for custom error types
+}
+{{/if}}

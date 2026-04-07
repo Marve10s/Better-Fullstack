@@ -2514,4 +2514,121 @@ describe("Rust Ecosystem", () => {
       expect(cargoContent).toContain('tracing = "0.1"');
     });
   });
+
+  describe("Rust Error Handling Option", () => {
+    it("should include anyhow+thiserror deps when rustErrorHandling is anyhow-thiserror", async () => {
+      const result = await createVirtual({
+        projectName: "rust-anyhow",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('thiserror = "2.0"');
+      expect(cargoContent).toContain('anyhow = "1.0"');
+
+      const serverCargo = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargo).toContain("thiserror.workspace = true");
+      expect(serverCargo).toContain("anyhow.workspace = true");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("anyhow::Result<()>");
+      expect(mainContent).toContain("mod error;");
+
+      const errorContent = getFileContent(root, "crates/server/src/error.rs");
+      expect(errorContent).toContain("thiserror::Error");
+      expect(errorContent).toContain("AppError");
+    });
+
+    it("should include eyre+color-eyre deps when rustErrorHandling is eyre", async () => {
+      const result = await createVirtual({
+        projectName: "rust-eyre",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "eyre",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('eyre = "0.6"');
+      expect(cargoContent).toContain('color-eyre = "0.6"');
+
+      const serverCargo = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargo).toContain("eyre.workspace = true");
+      expect(serverCargo).toContain("color-eyre.workspace = true");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("eyre::Result<()>");
+      expect(mainContent).toContain("color_eyre::install()");
+      expect(mainContent).toContain("mod error;");
+
+      const errorContent = getFileContent(root, "crates/server/src/error.rs");
+      expect(errorContent).toContain("eyre");
+    });
+
+    it("should not include error handling deps when rustErrorHandling is none", async () => {
+      const result = await createVirtual({
+        projectName: "rust-noerror",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).not.toContain("thiserror");
+      expect(cargoContent).not.toContain("anyhow");
+      expect(cargoContent).not.toContain("eyre");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("Result<(), Box<dyn std::error::Error>>");
+      expect(mainContent).not.toContain("mod error;");
+    });
+
+    it("should default to anyhow-thiserror when ecosystem is rust", async () => {
+      const result = await createVirtual({
+        projectName: "rust-default-error",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain('anyhow = "1.0"');
+      expect(cargoContent).toContain('thiserror = "2.0"');
+    });
+  });
 });

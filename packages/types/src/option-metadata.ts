@@ -43,6 +43,7 @@ import {
   RUST_FRONTEND_VALUES,
   RUST_LIBRARIES_VALUES,
   RUST_LOGGING_VALUES,
+  RUST_ERROR_HANDLING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -120,6 +121,7 @@ export type OptionCategory =
   | "rustCli"
   | "rustLibraries"
   | "rustLogging"
+  | "rustErrorHandling"
   | "pythonWebFramework"
   | "pythonOrm"
   | "pythonValidation"
@@ -291,6 +293,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rustCli: RUST_CLI_VALUES,
   rustLibraries: RUST_LIBRARIES_VALUES,
   rustLogging: RUST_LOGGING_VALUES,
+  rustErrorHandling: RUST_ERROR_HANDLING_VALUES,
   pythonWebFramework: PYTHON_WEB_FRAMEWORK_VALUES,
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
@@ -548,6 +551,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     tracing: "Tracing",
     "env-logger": "env_logger",
   },
+  rustErrorHandling: {
+    "anyhow-thiserror": "anyhow + thiserror",
+    eyre: "eyre + color-eyre",
+  },
   pythonWebFramework: {
     fastapi: "FastAPI",
     django: "Django",
@@ -732,6 +739,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rustCli: buildCategoryMetadata("rustCli"),
   rustLibraries: buildCategoryMetadata("rustLibraries"),
   rustLogging: buildCategoryMetadata("rustLogging"),
+  rustErrorHandling: buildCategoryMetadata("rustErrorHandling"),
   pythonWebFramework: buildCategoryMetadata("pythonWebFramework"),
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),

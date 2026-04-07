@@ -95,6 +95,8 @@ import {
   type RustLibraries,
   RustLoggingSchema,
   type RustLogging,
+  RustErrorHandlingSchema,
+  type RustErrorHandling,
   PythonWebFrameworkSchema,
   type PythonWebFramework,
   PythonOrmSchema,
@@ -248,6 +250,7 @@ export const router = os.router({
           rustCli: RustCliSchema.optional().describe("Rust CLI tools (clap, ratatui)"),
           rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust core libraries"),
           rustLogging: RustLoggingSchema.optional().describe("Rust logging (tracing, env-logger)"),
+          rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling (anyhow-thiserror, eyre)"),
           // Python ecosystem options
           pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
             "Python web framework (fastapi, django)",
@@ -575,6 +578,7 @@ export async function createVirtual(
       rustCli: options.rustCli || "none",
       rustLibraries: options.rustLibraries || [],
       rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
+      rustErrorHandling: options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",
