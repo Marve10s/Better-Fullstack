@@ -649,7 +649,7 @@ function getVercelDeployInstructions(
     instructions.push(
       `${pc.cyan("•")} Install Vercel CLI: npm i -g vercel`,
     );
-    if (webDeploy === "vercel" && (serverDeploy !== "vercel" || isBackendSelf)) {
+    if (webDeploy === "vercel") {
       instructions.push(
         `${pc.cyan("•")} Deploy web: cd apps/web && vercel`,
       );
