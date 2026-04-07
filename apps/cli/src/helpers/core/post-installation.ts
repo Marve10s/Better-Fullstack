@@ -689,6 +689,15 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
     output += `${pc.cyan("•")} CLI: ${cliNames[rustCli] || rustCli}\n`;
   }
 
+  const { rustLogging } = config;
+  if (rustLogging && rustLogging !== "none") {
+    const loggingNames: Record<string, string> = {
+      tracing: "Tracing",
+      "env-logger": "env_logger",
+    };
+    output += `${pc.cyan("•")} Logging: ${loggingNames[rustLogging] || rustLogging}\n`;
+  }
+
   output += `\n${pc.bold("Common Cargo commands:")}\n`;
   output += `${pc.cyan("•")} Build: cargo build\n`;
   output += `${pc.cyan("•")} Run: cargo run\n`;

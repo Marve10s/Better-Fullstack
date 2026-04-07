@@ -3,6 +3,7 @@ import type {
   RustCli,
   RustFrontend,
   RustLibraries,
+  RustLogging,
   RustOrm,
   RustWebFramework,
 } from "../types";
@@ -216,4 +217,36 @@ export async function getRustLibrariesChoice(rustLibraries?: RustLibraries[]) {
   if (isCancel(response)) return exitCancelled("Operation cancelled");
 
   return response as RustLibraries[];
+}
+
+export async function getRustLoggingChoice(rustLogging?: RustLogging) {
+  if (rustLogging !== undefined) return rustLogging;
+
+  const options = [
+    {
+      value: "tracing" as const,
+      label: "Tracing",
+      hint: "Structured, composable instrumentation framework from Tokio",
+    },
+    {
+      value: "env-logger" as const,
+      label: "env_logger",
+      hint: "Simple logger configured via environment variables",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No logging library",
+    },
+  ];
+
+  const response = await navigableSelect<RustLogging>({
+    message: "Select Rust logging library",
+    options,
+    initialValue: "tracing",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
 }

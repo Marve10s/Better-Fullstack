@@ -2,7 +2,9 @@
 use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
+{{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{/if}}
 {{#if (eq rustOrm "sea-orm")}}
 use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
@@ -97,20 +99,25 @@ async fn main() -> anyhow::Result<()> {
     // Load environment variables
     dotenvy::dotenv().ok();
 
+{{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+{{else if (eq rustLogging "env-logger")}}
+    // Initialize logging
+    env_logger::init();
+{{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
-    tracing::info!("Connecting to database...");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let db = Database::connect(&database_url).await?;
-    tracing::info!("Database connected successfully");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database connected successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database connected successfully");{{else}}    println!("Database connected successfully");{{/if}}
 
     let state = AppState { db: Arc::new(db) };
 
@@ -126,8 +133,8 @@ async fn main() -> anyhow::Result<()> {
         .layer(CorsLayer::permissive())
         .with_state(state);
 
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{else}}
     // Build router with state
     let app = Router::new()
@@ -140,12 +147,12 @@ async fn main() -> anyhow::Result<()> {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
-    tracing::info!("Connecting to database...");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&database_url)
         .await?;
-    tracing::info!("Database connected successfully");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database connected successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database connected successfully");{{else}}    println!("Database connected successfully");{{/if}}
 
     let state = AppState { db: pool.clone() };
 
@@ -161,8 +168,8 @@ async fn main() -> anyhow::Result<()> {
         .layer(CorsLayer::permissive())
         .with_state(state);
 
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{else}}
     // Build router with state
     let app = Router::new()
@@ -182,8 +189,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/graphiql", get(graphiql))
         .layer(CorsLayer::permissive());
 
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{else}}
     // Build router
     let app = Router::new()
@@ -197,14 +204,14 @@ async fn main() -> anyhow::Result<()> {
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr = format!("{}:{}", host, port);
 
-    tracing::info!("Starting HTTP server at http://{}", addr);
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Starting HTTP server at http://{}", addr);{{else if (eq rustLogging "env-logger")}}    log::info!("Starting HTTP server at http://{}", addr);{{else}}    println!("Starting HTTP server at http://{}", addr);{{/if}}
 
 {{#if (eq rustApi "tonic")}}
     // Start gRPC server on a separate port
     let grpc_port = std::env::var("GRPC_PORT").unwrap_or_else(|_| "50051".to_string());
     let grpc_addr = format!("{}:{}", host, grpc_port).parse()?;
 
-    tracing::info!("Starting gRPC server at {}", grpc_addr);
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Starting gRPC server at {}", grpc_addr);{{else if (eq rustLogging "env-logger")}}    log::info!("Starting gRPC server at {}", grpc_addr);{{else}}    println!("Starting gRPC server at {}", grpc_addr);{{/if}}
 
     let grpc_server = tonic::transport::Server::builder()
         .add_service(grpc::create_grpc_server())
@@ -218,12 +225,12 @@ async fn main() -> anyhow::Result<()> {
     tokio::select! {
         result = http_server => {
             if let Err(e) = result {
-                tracing::error!("HTTP server error: {}", e);
+{{#if (eq rustLogging "tracing")}}                tracing::error!("HTTP server error: {}", e);{{else if (eq rustLogging "env-logger")}}                log::error!("HTTP server error: {}", e);{{else}}                eprintln!("HTTP server error: {}", e);{{/if}}
             }
         }
         result = grpc_server => {
             if let Err(e) = result {
-                tracing::error!("gRPC server error: {}", e);
+{{#if (eq rustLogging "tracing")}}                tracing::error!("gRPC server error: {}", e);{{else if (eq rustLogging "env-logger")}}                log::error!("gRPC server error: {}", e);{{else}}                eprintln!("gRPC server error: {}", e);{{/if}}
             }
         }
     }
@@ -239,7 +246,9 @@ async fn main() -> anyhow::Result<()> {
 use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
+{{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{/if}}
 {{#if (eq rustOrm "sea-orm")}}
 use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
@@ -341,20 +350,25 @@ async fn main() -> anyhow::Result<()> {
     // Load environment variables
     dotenvy::dotenv().ok();
 
+{{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+{{else if (eq rustLogging "env-logger")}}
+    // Initialize logging
+    env_logger::init();
+{{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
-    tracing::info!("Connecting to database...");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let db = Database::connect(&database_url).await?;
-    tracing::info!("Database connected successfully");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database connected successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database connected successfully");{{else}}    println!("Database connected successfully");{{/if}}
 
     let db_arc = Arc::new(db);
     let state = web::Data::new(AppState { db: db_arc.clone() });
@@ -362,8 +376,8 @@ async fn main() -> anyhow::Result<()> {
 
     // Build GraphQL schema with database
     let schema = web::Data::new(graphql::build_schema(db_arc));
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{/if}}
 {{/if}}
 {{#if (eq rustOrm "sqlx")}}
@@ -371,27 +385,27 @@ async fn main() -> anyhow::Result<()> {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
-    tracing::info!("Connecting to database...");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&database_url)
         .await?;
-    tracing::info!("Database connected successfully");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database connected successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database connected successfully");{{else}}    println!("Database connected successfully");{{/if}}
 
     let state = web::Data::new(AppState { db: pool.clone() });
 {{#if (eq rustApi "async-graphql")}}
 
     // Build GraphQL schema with database pool
     let schema = web::Data::new(graphql::build_schema(pool));
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{/if}}
 {{/if}}
 {{#if (and (not (eq rustOrm "sea-orm")) (not (eq rustOrm "sqlx")) (eq rustApi "async-graphql"))}}
     // Build GraphQL schema
     let schema = web::Data::new(graphql::build_schema());
-    tracing::info!("GraphQL endpoint: /graphql");
-    tracing::info!("GraphiQL IDE: /graphiql");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{/if}}
 
     // Get host and port from environment
@@ -400,7 +414,7 @@ async fn main() -> anyhow::Result<()> {
         .unwrap_or_else(|_| "3000".to_string())
         .parse()?;
 
-    tracing::info!("Starting HTTP server at http://{}:{}", host, port);
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Starting HTTP server at http://{}:{}", host, port);{{else if (eq rustLogging "env-logger")}}    log::info!("Starting HTTP server at http://{}:{}", host, port);{{else}}    println!("Starting HTTP server at http://{}:{}", host, port);{{/if}}
 
 {{#if (eq rustApi "tonic")}}
     // Start gRPC server on a separate port
@@ -408,7 +422,7 @@ async fn main() -> anyhow::Result<()> {
     let grpc_host = host.clone();
     let grpc_addr = format!("{}:{}", grpc_host, grpc_port).parse()?;
 
-    tracing::info!("Starting gRPC server at {}", grpc_addr);
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Starting gRPC server at {}", grpc_addr);{{else if (eq rustLogging "env-logger")}}    log::info!("Starting gRPC server at {}", grpc_addr);{{else}}    println!("Starting gRPC server at {}", grpc_addr);{{/if}}
 
     // Spawn gRPC server in a separate task
     let grpc_handle = tokio::spawn(async move {
@@ -442,14 +456,14 @@ async fn main() -> anyhow::Result<()> {
     tokio::select! {
         result = http_server => {
             if let Err(e) = result {
-                tracing::error!("HTTP server error: {}", e);
+{{#if (eq rustLogging "tracing")}}                tracing::error!("HTTP server error: {}", e);{{else if (eq rustLogging "env-logger")}}                log::error!("HTTP server error: {}", e);{{else}}                eprintln!("HTTP server error: {}", e);{{/if}}
             }
         }
         result = grpc_handle => {
             match result {
                 Ok(Ok(())) => {}
-                Ok(Err(e)) => tracing::error!("gRPC server error: {}", e),
-                Err(e) => tracing::error!("gRPC task error: {}", e),
+{{#if (eq rustLogging "tracing")}}                Ok(Err(e)) => tracing::error!("gRPC server error: {}", e),{{else if (eq rustLogging "env-logger")}}                Ok(Err(e)) => log::error!("gRPC server error: {}", e),{{else}}                Ok(Err(e)) => eprintln!("gRPC server error: {}", e),{{/if}}
+{{#if (eq rustLogging "tracing")}}                Err(e) => tracing::error!("gRPC task error: {}", e),{{else if (eq rustLogging "env-logger")}}                Err(e) => log::error!("gRPC task error: {}", e),{{else}}                Err(e) => eprintln!("gRPC task error: {}", e),{{/if}}
             }
         }
     }
@@ -506,7 +520,9 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 {{else}}
+{{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{/if}}
 {{#if (eq rustApi "tonic")}}
 
 mod grpc;
@@ -517,11 +533,16 @@ async fn main() -> anyhow::Result<()> {
     // Load environment variables
     dotenvy::dotenv().ok();
 
+{{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+{{else if (eq rustLogging "env-logger")}}
+    // Initialize logging
+    env_logger::init();
+{{/if}}
 
 {{#if (eq rustApi "tonic")}}
     // Get host and port from environment
@@ -529,15 +550,15 @@ async fn main() -> anyhow::Result<()> {
     let grpc_port = std::env::var("GRPC_PORT").unwrap_or_else(|_| "50051".to_string());
     let grpc_addr = format!("{}:{}", host, grpc_port).parse()?;
 
-    tracing::info!("Starting gRPC server at {}", grpc_addr);
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Starting gRPC server at {}", grpc_addr);{{else if (eq rustLogging "env-logger")}}    log::info!("Starting gRPC server at {}", grpc_addr);{{else}}    println!("Starting gRPC server at {}", grpc_addr);{{/if}}
 
     tonic::transport::Server::builder()
         .add_service(grpc::create_grpc_server())
         .serve(grpc_addr)
         .await?;
 {{else}}
-    tracing::info!("Hello from {{projectName}}!");
-    tracing::info!("Add a web framework (axum or actix-web) to start building your API.");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Hello from {{projectName}}!");{{else if (eq rustLogging "env-logger")}}    log::info!("Hello from {{projectName}}!");{{else}}    println!("Hello from {{projectName}}!");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Add a web framework (axum or actix-web) to start building your API.");{{else if (eq rustLogging "env-logger")}}    log::info!("Add a web framework (axum or actix-web) to start building your API.");{{else}}    println!("Add a web framework (axum or actix-web) to start building your API.");{{/if}}
 {{/if}}
 
     Ok(())

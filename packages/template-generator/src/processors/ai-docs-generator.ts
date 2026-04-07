@@ -115,6 +115,7 @@ function generateTechStackSection(config: ProjectConfig): string {
       const libs = config.rustLibraries.filter((l) => l !== "none");
       if (libs.length > 0) lines.push(`- Libraries: ${libs.join(", ")}`);
     }
+    if (config.rustLogging !== "none") lines.push(`- Logging: ${config.rustLogging}`);
   }
 
   if (config.ecosystem === "python") {

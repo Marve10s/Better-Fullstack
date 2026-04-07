@@ -43,7 +43,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Better Auth `organizations` plugin
 
 ### Search
-- [ ] Add `algolia`
+- [x] Add `algolia` ✅
 - [ ] Add `opensearch`
 - [x] Add `elasticsearch` ✅
 
@@ -111,13 +111,13 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Non-monorepo / single-app mode
 
 ### Python Frameworks
-- [ ] Add `flask`
+- [x] Add `flask` ✅
 - [ ] Add `litestar`
 - [ ] Add `starlette`
 
 ### Go Frameworks
 - [ ] Add `chi`
-- [ ] Add `fiber`
+- [x] Add `fiber` ✅
 - [ ] Add `stdlib` (net/http)
 
 ### Rust Frameworks

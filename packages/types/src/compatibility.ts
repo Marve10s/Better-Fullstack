@@ -147,6 +147,7 @@ export type CompatibilityInput = {
   rustApi: string;
   rustCli: string;
   rustLibraries: string;
+  rustLogging: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -295,6 +296,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     rustApi: "Rust API Layer",
     rustCli: "Rust CLI Tools",
     rustLibraries: "Rust Core Libraries",
+    rustLogging: "Rust Logging",
   };
 
   // Custom display names for Python categories

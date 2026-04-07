@@ -301,6 +301,19 @@ describe("Template Snapshots - Rust Ecosystem", () => {
         rustLibraries: [] as const,
       },
     },
+    {
+      name: "axum-envlogger",
+      config: {
+        ecosystem: "rust" as const,
+        rustWebFramework: "axum" as const,
+        rustFrontend: "none" as const,
+        rustOrm: "sqlx" as const,
+        rustApi: "none" as const,
+        rustCli: "none" as const,
+        rustLogging: "env-logger" as const,
+        rustLibraries: ["serde"] as const,
+      },
+    },
   ];
 
   describe("Rust File Structure Snapshots", () => {
