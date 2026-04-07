@@ -262,7 +262,7 @@ export const router = os.router({
           pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
           pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
           // Go ecosystem options
-          goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo)"),
+          goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
           goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
           goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
           goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea)"),

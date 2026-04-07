@@ -314,7 +314,7 @@ export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python
 export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
 
 // Go ecosystem schemas
-export const GoWebFrameworkSchema = z.enum(["gin", "echo", "none"]).describe("Go web framework");
+export const GoWebFrameworkSchema = z.enum(["gin", "echo", "fiber", "none"]).describe("Go web framework");
 
 export const GoOrmSchema = z.enum(["gorm", "sqlc", "none"]).describe("Go ORM/database layer");
 

@@ -81,6 +81,7 @@ describe("Go Language Support", () => {
     it("should have go web framework options", () => {
       expect(GO_WEB_FRAMEWORKS).toContain("gin");
       expect(GO_WEB_FRAMEWORKS).toContain("echo");
+      expect(GO_WEB_FRAMEWORKS).toContain("fiber");
       expect(GO_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -366,6 +367,72 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("middleware.CORS()");
       expect(mainContent).toContain(`e.GET("/health"`);
       expect(mainContent).toContain("e.Start(addr)");
+    });
+  });
+
+  describe("Fiber Web Framework Integration", () => {
+    it("should include Fiber dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-fiber-project",
+        ecosystem: "go",
+        goWebFramework: "fiber",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).toContain("github.com/gofiber/fiber/v2");
+    });
+
+    it("should generate proper Fiber main.go with middleware and routes", async () => {
+      const result = await createVirtual({
+        projectName: "go-fiber-main-check",
+        ecosystem: "go",
+        goWebFramework: "fiber",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("github.com/gofiber/fiber/v2");
+      expect(mainContent).toContain("fiber.New()");
+      expect(mainContent).toContain("fiberlogger.New()");
+      expect(mainContent).toContain("fiberrecover.New()");
+      expect(mainContent).toContain("fibercors.New()");
+      expect(mainContent).toContain(`app.Get("/health"`);
+      expect(mainContent).toContain("app.Listen(addr)");
+    });
+
+    it("should generate Fiber handlers file when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-fiber-handlers",
+        ecosystem: "go",
+        goWebFramework: "fiber",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "internal/handlers/handlers.go")).toBe(true);
+      const handlersContent = getFileContent(root, "internal/handlers/handlers.go");
+      expect(handlersContent).toContain("*fiber.Ctx");
+      expect(handlersContent).toContain("fiber.Map");
     });
   });
 

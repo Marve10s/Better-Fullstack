@@ -12,6 +12,12 @@ require (
 {{#if (eq goWebFramework "echo")}}
 	github.com/labstack/echo/v4 v4.15.1
 {{/if}}
+{{#if (eq goWebFramework "fiber")}}
+	github.com/gofiber/fiber/v2 v2.52.6
+{{#if (eq auth "go-better-auth")}}
+	github.com/gofiber/adaptor/v2 v2.2.1
+{{/if}}
+{{/if}}
 {{#if (eq goOrm "gorm")}}
 	gorm.io/gorm v1.31.1
 	gorm.io/driver/sqlite v1.6.0
