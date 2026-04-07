@@ -102,6 +102,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     rustOrm: stack.rustOrm as ProjectConfig["rustOrm"],
     rustApi: stack.rustApi as ProjectConfig["rustApi"],
     rustCli: stack.rustCli as ProjectConfig["rustCli"],
+    rustLogging: stack.rustLogging as ProjectConfig["rustLogging"],
     rustLibraries:
       stack.rustLibraries === "none"
         ? []
