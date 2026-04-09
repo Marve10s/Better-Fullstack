@@ -757,6 +757,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://pkg.go.dev/go.uber.org/zap",
     githubUrl: "https://github.com/uber-go/zap",
   },
+  zerolog: {
+    docsUrl: "https://pkg.go.dev/github.com/rs/zerolog",
+    githubUrl: "https://github.com/rs/zerolog",
+  },
+  slog: {
+    docsUrl: "https://pkg.go.dev/log/slog",
+    githubUrl: "https://github.com/golang/go",
+  },
 };
 
 const CATEGORY_LINKS: LinkMap = {

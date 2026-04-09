@@ -43,5 +43,8 @@ require (
 {{#if (eq goLogging "zap")}}
 	go.uber.org/zap v1.27.1
 {{/if}}
+{{#if (eq goLogging "zerolog")}}
+	github.com/rs/zerolog v1.34.0
+{{/if}}
 	github.com/joho/godotenv v1.5.1
 )

@@ -272,7 +272,7 @@ export const router = os.router({
           goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
           goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
           goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea)"),
-          goLogging: GoLoggingSchema.optional().describe("Go logging (zap)"),
+          goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
           // AI documentation files
           aiDocs: z
             .array(AiDocsSchema)

@@ -3110,6 +3110,22 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
     {
+      id: "zerolog",
+      name: "Zerolog",
+      description: "Zero-allocation JSON logger, fastest in benchmarks",
+      icon: "",
+      color: "from-blue-500 to-indigo-600",
+      default: false,
+    },
+    {
+      id: "slog",
+      name: "slog",
+      description: "Go 1.21+ stdlib structured logging, no external dependency",
+      icon: "",
+      color: "from-cyan-500 to-teal-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Logging Library",
       description: "Skip Go logging library selection",

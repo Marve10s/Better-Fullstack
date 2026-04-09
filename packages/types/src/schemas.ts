@@ -332,7 +332,7 @@ export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (g
 
 export const GoCliSchema = z.enum(["cobra", "bubbletea", "none"]).describe("Go CLI tools");
 
-export const GoLoggingSchema = z.enum(["zap", "none"]).describe("Go logging library");
+export const GoLoggingSchema = z.enum(["zap", "zerolog", "slog", "none"]).describe("Go logging library");
 
 export const AiDocsSchema = z
   .enum(["claude-md", "agents-md", "cursorrules", "none"])

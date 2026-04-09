@@ -1261,6 +1261,10 @@ function generateGoReadmeContent(config: ProjectConfig): string {
   // Logging
   if (goLogging === "zap") {
     features.push("- **Zap** - Blazing fast, structured logging");
+  } else if (goLogging === "zerolog") {
+    features.push("- **Zerolog** - Zero-allocation JSON logger");
+  } else if (goLogging === "slog") {
+    features.push("- **slog** - Go stdlib structured logging");
   }
 
   if (auth === "go-better-auth") {

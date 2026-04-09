@@ -146,6 +146,16 @@ export async function getGoLoggingChoice(goLogging?: GoLogging) {
       hint: "Blazing fast, structured, leveled logging in Go",
     },
     {
+      value: "zerolog" as const,
+      label: "Zerolog",
+      hint: "Zero-allocation JSON logger, fastest in benchmarks",
+    },
+    {
+      value: "slog" as const,
+      label: "slog",
+      hint: "Go 1.21+ stdlib structured logging (no external dependency)",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No logging library",

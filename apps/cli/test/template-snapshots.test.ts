@@ -421,6 +421,28 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goLogging: "none" as const,
       },
     },
+    {
+      name: "gin-gorm-zerolog",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "gin" as const,
+        goOrm: "gorm" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "zerolog" as const,
+      },
+    },
+    {
+      name: "echo-sqlc-slog",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "echo" as const,
+        goOrm: "sqlc" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "slog" as const,
+      },
+    },
   ];
 
   describe("Go File Structure Snapshots", () => {

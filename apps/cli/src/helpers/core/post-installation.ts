@@ -811,6 +811,8 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
   if (goLogging && goLogging !== "none") {
     const loggingNames: Record<string, string> = {
       zap: "Zap",
+      zerolog: "Zerolog",
+      slog: "slog",
     };
     output += `${pc.cyan("•")} Logging: ${loggingNames[goLogging] || goLogging}\n`;
   }

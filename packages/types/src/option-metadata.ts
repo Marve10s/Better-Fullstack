@@ -609,6 +609,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goLogging: {
     zap: "Zap",
+    zerolog: "Zerolog",
+    slog: "slog",
   },
 };
 

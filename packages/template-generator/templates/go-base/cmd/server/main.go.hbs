@@ -1,7 +1,7 @@
 package main
 
 import (
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (eq goLogging "zap")))}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
 	"os"
 {{/if}}
 {{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
@@ -42,6 +42,13 @@ import (
 
 	"go.uber.org/zap"
 {{/if}}
+{{#if (eq goLogging "zerolog")}}
+
+	"github.com/rs/zerolog"
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	"log/slog"
+{{/if}}
 	"github.com/joho/godotenv"
 {{#if (eq goApi "grpc-go")}}
 	"net"
@@ -68,6 +75,31 @@ func initLogger() {
 	}
 }
 {{/if}}
+{{#if (eq goLogging "zerolog")}}
+var logger zerolog.Logger
+
+func initLogger() {
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "production" {
+		logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
+	} else {
+		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+	}
+}
+{{/if}}
+{{#if (eq goLogging "slog")}}
+var logger *slog.Logger
+
+func initLogger() {
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "production" {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	} else {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
+	slog.SetDefault(logger)
+}
+{{/if}}
 
 func main() {
 	// Load environment variables
@@ -80,10 +112,28 @@ func main() {
 
 	logger.Info("Starting {{projectName}} server")
 {{/if}}
+{{#if (eq goLogging "zerolog")}}
+	// Initialize logger
+	initLogger()
+
+	logger.Info().Msg("Starting {{projectName}} server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	// Initialize logger
+	initLogger()
+
+	logger.Info("Starting {{projectName}} server")
+{{/if}}
 
 {{#if (eq auth "go-better-auth")}}
 	authApp := appauth.New()
 {{#if (eq goLogging "zap")}}
+	logger.Info("GoBetterAuth initialized")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("GoBetterAuth initialized")
+{{/if}}
+{{#if (eq goLogging "slog")}}
 	logger.Info("GoBetterAuth initialized")
 {{/if}}
 {{/if}}
@@ -94,11 +144,22 @@ func main() {
 	if err != nil {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to connect to database", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to connect to database: " + err.Error())
 {{/if}}
 	}
 {{#if (eq goLogging "zap")}}
+	logger.Info("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "slog")}}
 	logger.Info("Database connected successfully")
 {{/if}}
 	_ = db // Use db in your handlers
@@ -109,12 +170,23 @@ func main() {
 	if err != nil {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to connect to database", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to connect to database: " + err.Error())
 {{/if}}
 	}
 	defer database.Close()
 {{#if (eq goLogging "zap")}}
+	logger.Info("Database pool connected successfully")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Database pool connected successfully")
+{{/if}}
+{{#if (eq goLogging "slog")}}
 	logger.Info("Database pool connected successfully")
 {{/if}}
 	_ = pool // Use pool in your handlers
@@ -152,11 +224,22 @@ func main() {
 {{#if (eq goLogging "zap")}}
 		logger.Info("Starting gRPC server", zap.String("address", grpcAddr))
 {{/if}}
+{{#if (eq goLogging "zerolog")}}
+		logger.Info().Str("address", grpcAddr).Msg("Starting gRPC server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+		logger.Info("Starting gRPC server", "address", grpcAddr)
+{{/if}}
 
 		lis, err := net.Listen("tcp", grpcAddr)
 		if err != nil {
 {{#if (eq goLogging "zap")}}
 			logger.Fatal("Failed to listen for gRPC", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+			logger.Fatal().Err(err).Msg("Failed to listen for gRPC")
+{{else if (eq goLogging "slog")}}
+			logger.Error("Failed to listen for gRPC", "error", err)
+			os.Exit(1)
 {{else}}
 			panic("Failed to listen for gRPC: " + err.Error())
 {{/if}}
@@ -167,6 +250,11 @@ func main() {
 		if err := grpcServer.Serve(lis); err != nil {
 {{#if (eq goLogging "zap")}}
 			logger.Fatal("Failed to serve gRPC", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+			logger.Fatal().Err(err).Msg("Failed to serve gRPC")
+{{else if (eq goLogging "slog")}}
+			logger.Error("Failed to serve gRPC", "error", err)
+			os.Exit(1)
 {{else}}
 			panic("Failed to serve gRPC: " + err.Error())
 {{/if}}
@@ -180,6 +268,12 @@ func main() {
 {{#if (eq goWebFramework "gin")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
 {{/if}}
 
 	// Create Gin router
@@ -209,6 +303,11 @@ func main() {
 	if err := r.Run(addr); err != nil {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
 {{/if}}
@@ -217,6 +316,12 @@ func main() {
 {{#if (eq goWebFramework "echo")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
 {{/if}}
 
 	// Create Echo instance
@@ -251,6 +356,11 @@ func main() {
 	if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
 {{/if}}
@@ -259,6 +369,12 @@ func main() {
 {{#if (eq goWebFramework "fiber")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
 {{/if}}
 
 	// Create Fiber app
@@ -293,6 +409,11 @@ func main() {
 	if err := app.Listen(addr); err != nil {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
 {{/if}}
@@ -301,6 +422,12 @@ func main() {
 {{#if (eq goWebFramework "chi")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
 {{/if}}
 
 	// Create Chi router
@@ -338,6 +465,11 @@ func main() {
 	if err := http.ListenAndServe(addr, r); err != nil && err != http.ErrServerClosed {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
 {{/if}}
@@ -347,6 +479,12 @@ func main() {
 {{#if (eq auth "go-better-auth")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Starting HTTP server", "address", addr)
 {{/if}}
 
 	mux := http.NewServeMux()
@@ -376,12 +514,23 @@ func main() {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 {{#if (eq goLogging "zap")}}
 		logger.Fatal("Failed to start server", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start server")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 {{else}}
 		panic("Failed to start server: " + err.Error())
 {{/if}}
 	}
 {{else}}
 {{#if (eq goLogging "zap")}}
+	logger.Info("{{projectName}} started")
+	logger.Info("Add a web framework (gin, echo, fiber, or chi) to start building your API")
+{{else if (eq goLogging "zerolog")}}
+	logger.Info().Msg("{{projectName}} started")
+	logger.Info().Msg("Add a web framework (gin, echo, fiber, or chi) to start building your API")
+{{else if (eq goLogging "slog")}}
 	logger.Info("{{projectName}} started")
 	logger.Info("Add a web framework (gin, echo, fiber, or chi) to start building your API")
 {{else}}

@@ -105,6 +105,8 @@ describe("Go Language Support", () => {
 
     it("should have go logging options", () => {
       expect(GO_LOGGINGS).toContain("zap");
+      expect(GO_LOGGINGS).toContain("zerolog");
+      expect(GO_LOGGINGS).toContain("slog");
       expect(GO_LOGGINGS).toContain("none");
     });
   });
@@ -1255,6 +1257,95 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("var logger *zap.Logger");
       expect(mainContent).toContain("func initLogger()");
       expect(mainContent).toContain("logger.Info");
+    });
+  });
+
+  describe("Zerolog Logging Integration", () => {
+    it("should include Zerolog dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-zerolog-project",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "zerolog",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).toContain("github.com/rs/zerolog");
+    });
+
+    it("should include Zerolog logger initialization in main.go", async () => {
+      const result = await createVirtual({
+        projectName: "go-zerolog-main-check",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "zerolog",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("github.com/rs/zerolog");
+      expect(mainContent).toContain("var logger zerolog.Logger");
+      expect(mainContent).toContain("func initLogger()");
+      expect(mainContent).toContain("logger.Info()");
+    });
+  });
+
+  describe("slog Logging Integration", () => {
+    it("should NOT include external slog dependencies in go.mod", async () => {
+      const result = await createVirtual({
+        projectName: "go-stdlib-log-project",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "slog",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      // slog is stdlib - should not appear in require block
+      const requireBlock = goModContent!.split("require (")[1]?.split(")")[0] ?? "";
+      expect(requireBlock).not.toContain("slog");
+    });
+
+    it("should include slog logger initialization in main.go", async () => {
+      const result = await createVirtual({
+        projectName: "go-slog-main-check",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "slog",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("\"log/slog\"");
+      expect(mainContent).toContain("var logger *slog.Logger");
+      expect(mainContent).toContain("func initLogger()");
+      expect(mainContent).toContain("slog.SetDefault(logger)");
+      expect(mainContent).toContain("logger.Info(");
     });
   });
 
