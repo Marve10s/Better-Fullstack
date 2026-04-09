@@ -160,6 +160,7 @@ export async function createProjectHandler(
               rustLibraries: [],
               rustLogging: "none",
               rustErrorHandling: "none",
+              rustCaching: "none",
               cms: "none",
               caching: "none",
               search: "none",

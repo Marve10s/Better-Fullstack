@@ -5,6 +5,9 @@ use tower_http::cors::CorsLayer;
 {{#if (ne rustErrorHandling "none")}}
 mod error;
 {{/if}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -140,6 +143,17 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{else if (eq rustLogging "env-logger")}}
     // Initialize logging
     env_logger::init();
+{{/if}}
+
+{{#if (eq rustCaching "moka")}}
+    // Initialize in-memory cache
+    let _cache = cache::create_cache::<String>();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Moka in-memory cache initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Moka in-memory cache initialized");{{else}}    println!("Moka in-memory cache initialized");{{/if}}
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    // Initialize Redis client
+    let _redis_client = cache::create_redis_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
@@ -314,6 +328,9 @@ use serde::Serialize;
 {{#if (ne rustErrorHandling "none")}}
 mod error;
 {{/if}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -454,6 +471,17 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{else if (eq rustLogging "env-logger")}}
     // Initialize logging
     env_logger::init();
+{{/if}}
+
+{{#if (eq rustCaching "moka")}}
+    // Initialize in-memory cache
+    let _cache = cache::create_cache::<String>();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Moka in-memory cache initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Moka in-memory cache initialized");{{else}}    println!("Moka in-memory cache initialized");{{/if}}
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    // Initialize Redis client
+    let _redis_client = cache::create_redis_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
@@ -635,6 +663,9 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 }
 {{else}}
 {{#if (ne rustErrorHandling "none")}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
 mod error;
 {{/if}}
 {{#if (eq rustLogging "tracing")}}
@@ -664,6 +695,17 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{else if (eq rustLogging "env-logger")}}
     // Initialize logging
     env_logger::init();
+{{/if}}
+
+{{#if (eq rustCaching "moka")}}
+    // Initialize in-memory cache
+    let _cache = cache::create_cache::<String>();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Moka in-memory cache initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Moka in-memory cache initialized");{{else}}    println!("Moka in-memory cache initialized");{{/if}}
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    // Initialize Redis client
+    let _redis_client = cache::create_redis_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustApi "tonic")}}

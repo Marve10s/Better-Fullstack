@@ -2779,6 +2779,32 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
   ],
+  rustCaching: [
+    {
+      id: "moka",
+      name: "Moka",
+      description: "High-performance concurrent in-memory cache inspired by Java's Caffeine",
+      icon: "",
+      color: "from-amber-500 to-yellow-600",
+      default: false,
+    },
+    {
+      id: "redis",
+      name: "Redis",
+      description: "Official Redis client for Rust with async support and connection pooling",
+      icon: "https://cdn.simpleicons.org/redis/DC382D",
+      color: "from-red-500 to-red-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "None",
+      description: "No caching library",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   // Python ecosystem options
   pythonWebFramework: [
     {
@@ -3220,6 +3246,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "rustLibraries",
     "rustLogging",
     "rustErrorHandling",
+    "rustCaching",
     "aiDocs",
     "git",
     "install",

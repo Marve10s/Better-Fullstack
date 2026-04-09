@@ -1,0 +1,31 @@
+{{#if (eq rustCaching "moka")}}
+use moka::future::Cache;
+use std::time::Duration;
+
+/// Create a new in-memory cache with default settings.
+///
+/// - Maximum capacity: 10,000 entries
+/// - Time to live: 10 minutes
+/// - Time to idle: 5 minutes
+pub fn create_cache<V: Clone + Send + Sync + 'static>() -> Cache<String, V> {
+    Cache::builder()
+        .max_capacity(10_000)
+        .time_to_live(Duration::from_secs(600))
+        .time_to_idle(Duration::from_secs(300))
+        .build()
+}
+{{else if (eq rustCaching "redis")}}
+use redis::Client;
+
+/// Create a new Redis client from the `REDIS_URL` environment variable.
+///
+/// Defaults to `redis://127.0.0.1/` if `REDIS_URL` is not set.
+///
+/// # Errors
+///
+/// Returns `redis::RedisError` if the connection string is invalid.
+pub fn create_redis_client() -> redis::RedisResult<Client> {
+    let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
+    Client::open(redis_url)
+}
+{{/if}}

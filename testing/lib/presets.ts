@@ -56,6 +56,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     rustCli: "none",
     rustLogging: "tracing",
     rustErrorHandling: "anyhow-thiserror",
+    rustCaching: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",

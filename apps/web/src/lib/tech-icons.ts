@@ -322,6 +322,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "env-logger": { type: "si", slug: "rust", hex: "CE422B" },
   "anyhow-thiserror": { type: "si", slug: "rust", hex: "CE422B" },
   eyre: { type: "si", slug: "rust", hex: "CE422B" },
+  moka: { type: "si", slug: "rust", hex: "CE422B" },
 
   // ─── Python ────────────────────────────────────────────────────────────────
   fastapi: { type: "si", slug: "fastapi", hex: "009688" },

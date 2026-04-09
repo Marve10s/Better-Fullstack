@@ -73,6 +73,7 @@ export const DEFAULT_CONFIG_BASE = {
   rustLibraries: [],
   rustLogging: "tracing",
   rustErrorHandling: "anyhow-thiserror",
+  rustCaching: "none",
   // Python ecosystem defaults
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",

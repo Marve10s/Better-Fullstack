@@ -56,6 +56,7 @@ import type {
   RustLibrariesSchema,
   RustLoggingSchema,
   RustErrorHandlingSchema,
+  RustCachingSchema,
   PythonWebFrameworkSchema,
   PythonOrmSchema,
   PythonValidationSchema,
@@ -128,6 +129,7 @@ export type RustCli = z.infer<typeof RustCliSchema>;
 export type RustLibraries = z.infer<typeof RustLibrariesSchema>;
 export type RustLogging = z.infer<typeof RustLoggingSchema>;
 export type RustErrorHandling = z.infer<typeof RustErrorHandlingSchema>;
+export type RustCaching = z.infer<typeof RustCachingSchema>;
 export type PythonWebFramework = z.infer<typeof PythonWebFrameworkSchema>;
 export type PythonOrm = z.infer<typeof PythonOrmSchema>;
 export type PythonValidation = z.infer<typeof PythonValidationSchema>;

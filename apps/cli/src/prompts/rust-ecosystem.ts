@@ -2,6 +2,7 @@ import type {
   RustApi,
   RustCli,
   RustErrorHandling,
+  RustCaching,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -282,6 +283,38 @@ export async function getRustErrorHandlingChoice(rustErrorHandling?: RustErrorHa
     message: "Select Rust error handling library",
     options,
     initialValue: "anyhow-thiserror",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustCachingChoice(rustCaching?: RustCaching) {
+  if (rustCaching !== undefined) return rustCaching;
+
+  const options = [
+    {
+      value: "moka" as const,
+      label: "Moka",
+      hint: "High-performance concurrent in-memory cache (Caffeine-inspired)",
+    },
+    {
+      value: "redis" as const,
+      label: "Redis",
+      hint: "Redis client with async support and connection pooling",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No caching library",
+    },
+  ];
+
+  const response = await navigableSelect<RustCaching>({
+    message: "Select Rust caching library",
+    options,
+    initialValue: "none",
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

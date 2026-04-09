@@ -298,6 +298,10 @@ export const RustErrorHandlingSchema = z
   .enum(["anyhow-thiserror", "eyre", "none"])
   .describe("Rust error handling library");
 
+export const RustCachingSchema = z
+  .enum(["moka", "redis", "none"])
+  .describe("Rust caching library");
+
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
   .enum(["fastapi", "django", "flask", "litestar", "none"])
@@ -507,6 +511,7 @@ export const CreateInputSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema).optional(),
   rustLogging: RustLoggingSchema.optional(),
   rustErrorHandling: RustErrorHandlingSchema.optional(),
+  rustCaching: RustCachingSchema.optional(),
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema.optional(),
   pythonOrm: PythonOrmSchema.optional(),
@@ -598,6 +603,7 @@ export const ProjectConfigSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
   rustErrorHandling: RustErrorHandlingSchema,
+  rustCaching: RustCachingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -673,6 +679,7 @@ export const BetterTStackConfigSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
   rustErrorHandling: RustErrorHandlingSchema,
+  rustCaching: RustCachingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -761,6 +768,7 @@ export const RUST_CLI_VALUES = RustCliSchema.options;
 export const RUST_LIBRARIES_VALUES = RustLibrariesSchema.options;
 export const RUST_LOGGING_VALUES = RustLoggingSchema.options;
 export const RUST_ERROR_HANDLING_VALUES = RustErrorHandlingSchema.options;
+export const RUST_CACHING_VALUES = RustCachingSchema.options;
 export const PYTHON_WEB_FRAMEWORK_VALUES = PythonWebFrameworkSchema.options;
 export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;

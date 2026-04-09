@@ -327,6 +327,19 @@ describe("Template Snapshots - Rust Ecosystem", () => {
         rustLibraries: ["serde"] as const,
       },
     },
+    {
+      name: "axum-moka-cache",
+      config: {
+        ecosystem: "rust" as const,
+        rustWebFramework: "axum" as const,
+        rustFrontend: "none" as const,
+        rustOrm: "none" as const,
+        rustApi: "none" as const,
+        rustCli: "none" as const,
+        rustCaching: "moka" as const,
+        rustLibraries: ["serde"] as const,
+      },
+    },
   ];
 
   describe("Rust File Structure Snapshots", () => {

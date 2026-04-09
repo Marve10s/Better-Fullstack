@@ -62,6 +62,7 @@ export type StackState = {
   rustLibraries: string;
   rustLogging: string;
   rustErrorHandling: string;
+  rustCaching: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -138,6 +139,7 @@ export const DEFAULT_STACK: StackState = {
   rustLibraries: "serde",
   rustLogging: "tracing",
   rustErrorHandling: "anyhow-thiserror",
+  rustCaching: "none",
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",

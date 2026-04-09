@@ -62,6 +62,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustCli: "none",
     rustLogging: "tracing",
     rustErrorHandling: "anyhow-thiserror",
+    rustCaching: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
@@ -228,6 +229,7 @@ describe("generateReproducibleCommand", () => {
       rustCli: "clap",
       rustLogging: "tracing",
       rustErrorHandling: "anyhow-thiserror",
+    rustCaching: "none",
       rustLibraries: ["serde", "validator"],
       aiDocs: [],
     });
@@ -243,6 +245,7 @@ describe("generateReproducibleCommand", () => {
         "--rust-libraries serde validator " +
         "--rust-logging tracing " +
         "--rust-error-handling anyhow-thiserror " +
+        "--rust-caching none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +

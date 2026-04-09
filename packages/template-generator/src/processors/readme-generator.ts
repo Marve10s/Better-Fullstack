@@ -820,6 +820,14 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **eyre + color-eyre** - Customizable error reports with pretty backtraces");
   }
 
+  // Caching
+  const { rustCaching } = config;
+  if (rustCaching === "moka") {
+    features.push("- **Moka** - High-performance concurrent in-memory cache (Caffeine-inspired)");
+  } else if (rustCaching === "redis") {
+    features.push("- **Redis** - Redis client with async support and connection pooling");
+  }
+
   // Project structure
   const structure: string[] = [`${projectName}/`, "├── Cargo.toml            # Workspace manifest"];
 

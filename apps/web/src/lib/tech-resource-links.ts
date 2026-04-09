@@ -677,6 +677,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/eyre/latest/eyre/",
     githubUrl: "https://github.com/eyre-rs/eyre",
   },
+  moka: {
+    docsUrl: "https://docs.rs/moka/latest/moka/",
+    githubUrl: "https://github.com/moka-rs/moka",
+  },
   clap: {
     docsUrl: "https://docs.rs/clap/latest/clap/",
     githubUrl: "https://github.com/clap-rs/clap",

@@ -63,6 +63,7 @@ export const stackUrlKeys = {
   rustLibraries: "rlib",
   rustLogging: "rlog",
   rustErrorHandling: "reh",
+  rustCaching: "rca",
   pythonWebFramework: "pwf",
   pythonOrm: "porm",
   pythonValidation: "pval",

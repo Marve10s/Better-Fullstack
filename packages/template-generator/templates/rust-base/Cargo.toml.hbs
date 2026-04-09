@@ -156,6 +156,15 @@ tokio-test = "0.4"
 mockall = "0.13"
 {{/if}}
 
+{{#if (eq rustCaching "moka")}}
+# Caching (Moka)
+moka = { version = "0.12", features = ["future"] }
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+# Caching (Redis)
+redis = { version = "0.29", features = ["aio", "tokio-comp"] }
+{{/if}}
+
 [profile.dev]
 opt-level = 0
 

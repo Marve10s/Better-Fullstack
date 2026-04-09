@@ -2631,4 +2631,95 @@ describe("Rust Ecosystem", () => {
       expect(cargoContent).toContain('thiserror = "2.0"');
     });
   });
+
+  describe("Rust Caching Option", () => {
+    it("should include moka deps when rustCaching is moka", async () => {
+      const result = await createVirtual({
+        projectName: "rust-moka",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "moka",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain("moka");
+
+      const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargoContent).toContain("moka.workspace");
+
+      expect(hasFile(root, "crates/server/src/cache.rs")).toBe(true);
+      const cacheContent = getFileContent(root, "crates/server/src/cache.rs");
+      expect(cacheContent).toContain("moka::future::Cache");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("mod cache;");
+    });
+
+    it("should include redis deps when rustCaching is redis", async () => {
+      const result = await createVirtual({
+        projectName: "rust-redis",
+        ecosystem: "rust",
+        rustWebFramework: "actix-web",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "redis",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toContain("redis");
+
+      const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargoContent).toContain("redis.workspace");
+
+      expect(hasFile(root, "crates/server/src/cache.rs")).toBe(true);
+      const cacheContent = getFileContent(root, "crates/server/src/cache.rs");
+      expect(cacheContent).toContain("redis::Client");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("mod cache;");
+    });
+
+    it("should not include caching deps when rustCaching is none", async () => {
+      const result = await createVirtual({
+        projectName: "rust-nocache",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).not.toContain("moka");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).not.toContain("mod cache;");
+    });
+  });
 });

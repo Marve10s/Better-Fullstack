@@ -97,6 +97,15 @@ argon2.workspace = true
 clap.workspace = true
 {{/if}}
 
+{{#if (eq rustCaching "moka")}}
+# Caching
+moka.workspace = true
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+# Caching
+redis.workspace = true
+{{/if}}
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
