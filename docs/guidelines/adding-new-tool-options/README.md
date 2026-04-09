@@ -66,6 +66,10 @@ For deeper dives, see the companion files:
 | 20 | `apps/cli/src/constants.ts` | Ecosystem-aware default value — use a meaningful default when the category has a clear winner (e.g., Rust logging defaults to `"tracing"`, not `"none"`; use `"none"` only when no default makes sense) |
 | 21 | `apps/cli/src/helpers/core/command-handlers.ts` | Add field with `"none"` default to error fallback config |
 | 22 | `apps/cli/src/utils/generate-reproducible-command.ts` | Add `--<flag-name>` to reproduced command output |
+| 23 | `apps/cli/src/utils/config-processing.ts` | Add type import + `processFlags()` branch for the new field |
+| **Tests** | | |
+| 24 | `apps/cli/test/generate-reproducible-command.test.ts` | Add field to `makeConfig()` defaults + update expected command strings |
+| 25 | `apps/cli/test/add-history-commands.test.ts` | Add `--<flag> none` to CLI args and expected command in Python/Go/Rust history tests |
 | **Compatibility** | | |
 | 23 | `packages/types/src/compatibility.ts` | Add field to `CompatibilityInput` type + `getCategoryDisplayName()` |
 | **Web builder** | | |
@@ -1266,6 +1270,10 @@ These are the most frequently missed files based on git history analysis and rea
 | **New cat:** missing `generate-combos/options.ts` wiring | New category never randomly tested by smoke tests — bugs go undetected | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default |
 | **#1 CI killer:** Snapshot file not committed | Added snapshot config in test but didn't run `-u` or didn't `git add` the `.snap` file — Release Guard fails | Run `bun test apps/cli/test/template-snapshots.test.ts -u` then `git add apps/cli/test/__snapshots__/` |
 | **Go/Rust:** Unbalanced `{{#if}}`/`{{/if}}` in large `.hbs` files | New framework block inserted inside another block's unclosed conditional — breaks ALL generation for that ecosystem | Count `{{#if` and `{{/if}}` in the file after editing; they must match. Search for the previous framework's closing `{{/if}}` before inserting. |
+| **New cat:** missing `config-processing.ts` branch | CLI silently ignores the `--flag` value, always prompts interactively | `bun run --cwd apps/cli check-types` (type error on missing property) |
+| **New cat:** missing `add-history-commands.test.ts` update | History command test has stale expected output (missing new flag) | Now caught by `test:release` |
+| **New cat:** missing `generate-reproducible-command.test.ts` update | Reproducible command test has stale assertion | Now caught by `test:release` |
+| **Cross-PR:** Duplicate keys in `tech-resource-links.ts` or `tech-icons.ts` | Rebase brings in entries from another merged PR, your branch adds the same key | `bun run --cwd apps/web lint` (oxlint catches duplicate object keys) |
 
 ### The golden rule
 
