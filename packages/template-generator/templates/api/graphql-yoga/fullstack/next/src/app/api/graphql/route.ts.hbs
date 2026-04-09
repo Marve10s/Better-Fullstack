@@ -1,0 +1,30 @@
+import { createYoga } from "graphql-yoga";
+import { schema } from "@{{projectName}}/api";
+import { createContext } from "@{{projectName}}/api/context";
+{{#if (eq auth "better-auth")}}
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+{{/if}}
+
+const yoga = createYoga({
+  graphqlEndpoint: "/api/graphql",
+  fetchAPI: { Response },
+  context: async () => {
+{{#if (eq auth "better-auth")}}
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    return createContext(session);
+{{else}}
+    return createContext();
+{{/if}}
+  },
+});
+
+export async function GET(request: Request) {
+  return yoga.handleRequest(request, {});
+}
+
+export async function POST(request: Request) {
+  return yoga.handleRequest(request, {});
+}

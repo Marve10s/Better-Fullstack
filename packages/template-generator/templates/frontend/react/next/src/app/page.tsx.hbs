@@ -2,7 +2,7 @@
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
-{{else if (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph"))}}
+{{else if (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga"))}}
 import { useQuery } from "@tanstack/react-query";
   {{#if (eq api "orpc")}}
 import { orpc } from "@/utils/orpc";
@@ -12,6 +12,9 @@ import { trpc } from "@/utils/trpc";
   {{/if}}
   {{#if (eq api "garph")}}
 import { query, resolved } from "@/utils/garph";
+  {{/if}}
+  {{#if (eq api "graphql-yoga")}}
+import { graphqlFetch } from "@/utils/graphql";
   {{/if}}
 {{/if}}
 
@@ -42,6 +45,11 @@ export default function Home() {
   const healthCheck = useQuery({
     queryKey: ["healthCheck"],
     queryFn: () => resolved(() => query.health),
+  });
+  {{else if (eq api "graphql-yoga")}}
+  const healthCheck = useQuery({
+    queryKey: ["healthCheck"],
+    queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),
   });
   {{/if}}
 

@@ -96,6 +96,12 @@ function addApiPackageDeps(
       packagePath: pkgPath,
       dependencies: ["garph", "graphql-yoga", "graphql"],
     });
+  } else if (api === "graphql-yoga") {
+    addPackageDependency({
+      vfs,
+      packagePath: pkgPath,
+      dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
+    });
   }
 
   // Add next dep for api package when backend is self and frontend includes next
@@ -151,6 +157,12 @@ function addServerDeps(vfs: VirtualFileSystem, api: API, backend: Backend): void
       packagePath: serverPath,
       dependencies: ["garph", "graphql-yoga", "graphql"],
     });
+  } else if (api === "graphql-yoga") {
+    addPackageDependency({
+      vfs,
+      packagePath: serverPath,
+      dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
+    });
   }
 }
 
@@ -196,6 +208,12 @@ function addSelfBackendWebDeps(
       vfs,
       packagePath: webPath,
       dependencies: ["garph", "graphql-yoga", "graphql"],
+    });
+  } else if (api === "graphql-yoga") {
+    addPackageDependency({
+      vfs,
+      packagePath: webPath,
+      dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
     });
   }
 }

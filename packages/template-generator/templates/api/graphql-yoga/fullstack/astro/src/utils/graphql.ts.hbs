@@ -1,0 +1,21 @@
+export async function graphqlFetch<T = unknown>(
+  query: string,
+  variables?: Record<string, unknown>,
+): Promise<T> {
+  const response = await fetch("/api/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+{{#if (eq auth "better-auth")}}
+    credentials: "include",
+{{/if}}
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const json = await response.json();
+
+  if (json.errors) {
+    throw new Error(json.errors.map((e: { message: string }) => e.message).join(", "));
+  }
+
+  return json.data as T;
+}

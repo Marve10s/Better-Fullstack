@@ -40,6 +40,11 @@ export async function getApiChoice(
       label: "Garph",
       hint: "Fullstack GraphQL framework with end-to-end type safety",
     },
+    "graphql-yoga": {
+      value: "graphql-yoga",
+      label: "GraphQL Yoga",
+      hint: "Batteries-included GraphQL server with Pothos schema builder",
+    },
     none: {
       value: "none",
       label: "None",

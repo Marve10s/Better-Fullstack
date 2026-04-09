@@ -221,6 +221,9 @@ export const dependencyVersionMap = {
   "@garph/gqty": "^0.4.5",
   gqty: "^3.6.0",
 
+  // GraphQL Yoga + Pothos
+  "@pothos/core": "^4.6.0",
+
   "@trpc/tanstack-react-query": "^11.16.0",
   "@trpc/server": "^11.16.0",
   "@trpc/client": "^11.16.0",

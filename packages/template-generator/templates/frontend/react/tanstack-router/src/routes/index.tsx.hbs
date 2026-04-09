@@ -13,6 +13,9 @@ import { tsr } from "@/utils/ts-rest";
 {{else if (eq api "garph")}}
 import { query, resolved } from "@/utils/garph";
 import { useQuery } from "@tanstack/react-query";
+{{else if (eq api "graphql-yoga")}}
+import { graphqlFetch } from "@/utils/graphql";
+import { useQuery } from "@tanstack/react-query";
 {{/if}}
 
 export const Route = createFileRoute("/")({
@@ -48,6 +51,11 @@ function HomeComponent() {
   const healthCheck = useQuery({
     queryKey: ["healthCheck"],
     queryFn: () => resolved(() => query.health),
+  });
+  {{else if (eq api "graphql-yoga")}}
+  const healthCheck = useQuery({
+    queryKey: ["healthCheck"],
+    queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),
   });
   {{/if}}
 

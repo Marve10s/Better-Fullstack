@@ -60,6 +60,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── API ───────────────────────────────────────────────────────────────────
   trpc: { type: "si", slug: "trpc", hex: "398CCB" },
   orpc: { type: "local", src: "/icon/orpc.svg", needsInvert: "dark" }, // black circle SVG
+  "graphql-yoga": { type: "si", slug: "graphql", hex: "E10098" },
 
   // ─── Web Frontend ──────────────────────────────────────────────────────────
   "tanstack-router": { type: "local", src: "/icon/tanstack.png" },

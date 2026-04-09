@@ -58,6 +58,13 @@ export const TECH_OPTIONS: Record<
       legacy: true,
     },
     {
+      id: "graphql-yoga",
+      name: "GraphQL Yoga",
+      description: "Batteries-included GraphQL server with Pothos schema builder",
+      icon: "",
+      color: "from-pink-500 to-rose-600",
+    },
+    {
       id: "none",
       name: "No API",
       description: "No API layer (API routes disabled)",

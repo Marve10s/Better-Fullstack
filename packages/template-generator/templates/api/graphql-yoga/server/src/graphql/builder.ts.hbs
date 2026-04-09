@@ -1,0 +1,16 @@
+import SchemaBuilder from "@pothos/core";
+{{#if (eq auth "better-auth")}}
+import type { Session, User } from "better-auth";
+{{/if}}
+
+export interface PothosContext {
+{{#if (eq auth "better-auth")}}
+  session: { user: User; session: Session } | null;
+{{/if}}
+}
+
+const builder = new SchemaBuilder<{
+  Context: PothosContext;
+}>({});
+
+export { builder };

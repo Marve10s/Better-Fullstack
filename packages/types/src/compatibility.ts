@@ -2148,19 +2148,19 @@ export function allowedApisForFrontends(
   const includesAngular = frontends.includes("angular");
   const includesRedwood = frontends.includes("redwood");
   const includesFresh = frontends.includes("fresh");
-  const base: API[] = ["trpc", "orpc", "ts-rest", "garph", "none"];
+  const base: API[] = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "none"];
 
   if (includesQwik || includesAngular || includesRedwood || includesFresh) {
-    return ["none"] as API[];
+    return ["graphql-yoga", "none"] as API[];
   }
 
   const includesSolidStartApi = frontends.includes("solid-start");
   if (includesNuxt || includesSvelte || includesSolid || includesSolidStartApi) {
-    return ["orpc", "none"] as API[];
+    return ["orpc", "graphql-yoga", "none"] as API[];
   }
 
   if (includesAstro && astroIntegration && astroIntegration !== "react") {
-    return ["orpc", "none"] as API[];
+    return ["orpc", "graphql-yoga", "none"] as API[];
   }
 
   return base;

@@ -13,6 +13,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/ts-rest/ts-rest",
   },
   garph: { docsUrl: "https://garph.dev/", githubUrl: "https://github.com/ghoullier/garph" },
+  "graphql-yoga": {
+    docsUrl: "https://the-guild.dev/graphql/yoga-server/docs",
+    githubUrl: "https://github.com/dotansimha/graphql-yoga",
+  },
   "tanstack-router": {
     docsUrl: "https://tanstack.com/router/latest",
     githubUrl: "https://github.com/TanStack/router",

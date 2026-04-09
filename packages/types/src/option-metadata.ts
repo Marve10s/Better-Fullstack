@@ -308,7 +308,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
-  api: { trpc: "tRPC", orpc: "oRPC" },
+  api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga" },
   webFrontend: {
     next: "Next.js",
     "react-vite": "React + Vite",

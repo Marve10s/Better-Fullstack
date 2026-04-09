@@ -57,8 +57,8 @@ export async function processApiTemplates(
         "apps/web",
         config,
       );
-    } else if (config.api === "orpc" || config.api === "garph") {
-      // Non-React Astro integrations use oRPC or Garph
+    } else if (config.api === "orpc" || config.api === "garph" || config.api === "graphql-yoga") {
+      // Non-React Astro integrations use oRPC, Garph, or GraphQL Yoga
       processTemplatesFromPrefix(vfs, templates, `api/${config.api}/web/astro`, "apps/web", config);
     }
 
