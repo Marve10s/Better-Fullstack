@@ -16,9 +16,9 @@ import {
   EMAIL_VALUES,
   FEATURE_FLAGS_VALUES,
   FILE_STORAGE_VALUES,
+  I18N_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
-  I18N_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
   GO_LOGGING_VALUES,
@@ -94,6 +94,7 @@ export type OptionCategory =
   | "caching"
   | "search"
   | "fileStorage"
+  | "i18n"
   | "i18n"
   | "animation"
   | "cssFramework"

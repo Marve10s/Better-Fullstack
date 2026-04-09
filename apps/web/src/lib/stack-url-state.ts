@@ -78,6 +78,7 @@ export function loadStackParams(
       cms: getString("cms", DEFAULT_STACK.cms),
       search: getString("search", DEFAULT_STACK.search),
       fileStorage: getString("fileStorage", DEFAULT_STACK.fileStorage),
+      i18n: getString("i18n", DEFAULT_STACK.i18n),
       codeQuality: getArray("codeQuality", DEFAULT_STACK.codeQuality),
       documentation: getArray("documentation", DEFAULT_STACK.documentation),
       appPlatforms: getArray("appPlatforms", DEFAULT_STACK.appPlatforms),
@@ -180,6 +181,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("cms", stack.cms);
   addParam("search", stack.search);
   addParam("fileStorage", stack.fileStorage);
+  addParam("i18n", stack.i18n);
   addParam("codeQuality", stack.codeQuality);
   addParam("documentation", stack.documentation);
   addParam("appPlatforms", stack.appPlatforms);
@@ -266,6 +268,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     cms: search.cms ?? DEFAULT_STACK.cms,
     search: search.srch ?? DEFAULT_STACK.search,
     fileStorage: search.fs ?? DEFAULT_STACK.fileStorage,
+    i18n: search.i18n ?? DEFAULT_STACK.i18n,
     codeQuality: search.cq ?? DEFAULT_STACK.codeQuality,
     documentation: search.doc ?? DEFAULT_STACK.documentation,
     appPlatforms: search.ap ?? DEFAULT_STACK.appPlatforms,

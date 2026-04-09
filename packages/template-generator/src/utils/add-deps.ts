@@ -694,6 +694,8 @@ export const dependencyVersionMap = {
   // i18n - next-intl
   "next-intl": "^4.1.0",
 
+
+
   // EdgeDB
   edgedb: "^2.0.1",
   "@edgedb/generate": "^0.6.1",

@@ -332,10 +332,8 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     goLogging: "Go Logging",
   };
 
-  if (categoryKey === "i18n") {
-    return "Internationalization (i18n)";
-  }
 
+  if (categoryKey === "i18n") return "Internationalization (i18n)";
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
   }
@@ -1948,15 +1946,10 @@ export const getDisabledReason = (
     }
   }
 
+  // I18N CONSTRAINTS
   // ============================================
   // I18N CONSTRAINTS
   // ============================================
-  if (category === "i18n") {
-    if (optionId === "next-intl" && !currentStack.webFrontend.includes("next")) {
-      return "next-intl requires a Next.js frontend";
-    }
-  }
-
   return null;
 };
 

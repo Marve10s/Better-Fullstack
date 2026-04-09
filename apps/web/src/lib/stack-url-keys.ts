@@ -42,6 +42,7 @@ export const stackUrlKeys = {
   cms: "cms",
   search: "srch",
   fileStorage: "fs",
+  i18n: "i18n",
   codeQuality: "cq",
   documentation: "doc",
   appPlatforms: "ap",

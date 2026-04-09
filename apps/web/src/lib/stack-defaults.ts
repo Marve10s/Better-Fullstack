@@ -39,6 +39,7 @@ export type StackState = {
   shadcnRadius: string;
   cms: string;
   search: string;
+  i18n: string;
   fileStorage: string;
   codeQuality: string[];
   documentation: string[];
@@ -118,6 +119,7 @@ export const DEFAULT_STACK: StackState = {
   cms: "none",
   search: "none",
   fileStorage: "none",
+  i18n: "none",
   codeQuality: [],
   documentation: [],
   appPlatforms: ["turborepo"],

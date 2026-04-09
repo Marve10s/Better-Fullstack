@@ -1,5 +1,1 @@
-{
-  "welcome": "Welcome to {{projectName}}",
-  "description": "Get started by editing the source code",
-  "language": "Language"
-}
+{ "welcome": "Welcome", "description": "Get started by editing the source code", "language": "Language" }

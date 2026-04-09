@@ -290,9 +290,11 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   s3: { type: "local", src: "/icon/aws-s3.svg" },
   r2: { type: "si", slug: "cloudflare", hex: "F38020" },
 
-  // ─── i18n ──────────────────────────────────────────────────────────────────
+  // i18n
   i18next: { type: "si", slug: "i18next", hex: "26A69A" },
   "next-intl": { type: "si", slug: "nextdotjs", hex: "000000" },
+
+  // ─── i18n ──────────────────────────────────────────────────────────────────
 
   // ─── Animation ─────────────────────────────────────────────────────────────
   "framer-motion": { type: "si", slug: "framer", hex: "0055FF" },

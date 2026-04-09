@@ -20,9 +20,9 @@ import type {
   Email,
   FeatureFlags,
   FileStorage,
+  I18n,
   FileUpload,
   Forms,
-  I18n,
   GoCli,
   GoLogging,
   GoOrm,
@@ -181,6 +181,7 @@ export function processFlags(options: CLIInput, projectName?: string) {
   if (options.fileStorage !== undefined) {
     config.fileStorage = options.fileStorage as FileStorage;
   }
+
 
   if (options.i18n !== undefined) {
     config.i18n = options.i18n as I18n;
