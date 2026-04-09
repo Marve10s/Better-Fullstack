@@ -25,7 +25,8 @@ For deeper dives, see the companion files:
 7. [Test Updates Required](#7-test-updates-required)
 8. [Build, Verification & Pre-Push Checklist](#8-build-verification--pre-push-checklist)
 9. [Naming Conventions](#9-naming-conventions)
-10. [Common Mistakes](#10-common-mistakes)
+10. [AI Agent Pre-Merge Checklist](#10-ai-agent-pre-merge-checklist)
+11. [Common Mistakes](#11-common-mistakes)
 
 ---
 
@@ -1215,7 +1216,24 @@ Before running `git add` and `git commit`, verify:
 
 ---
 
-## 10. Common Mistakes
+## 10. AI Agent Pre-Merge Checklist
+
+Use this section as the final review gate before you consider a tool-option PR "done". This is intentionally optimized for AI agents, not humans doing broad product review.
+
+- Schema parity: every new option/category added to `schemas.ts` is wired through the actual config shapes that consume it.
+- Builder parity: `cli-builder-sync.test.ts` would pass because the option exists in CLI prompts, web builder constants, labels, and flags.
+- Compatibility parity: every newly allowed combo is backed by handler routing and real template directories; compatibility files never advertise unsupported paths.
+- Dependency parity: every newly added dependency is either used by generated output or explicitly justified as indirect support.
+- Runtime parity: new generated behavior has at least one semantic assertion, not just snapshot or compile coverage.
+- Constraint parity: any new disabled reason, auto-adjustment, hard block, or preflight warning has a matching test in the appropriate suite.
+- Deploy parity: any claimed deploy target support is backed by templates, dependency/setup wiring, and at least one scaffolded combo.
+- Non-TS parity: README/AI-doc generators and post-install instructions reflect the new framework/tool when those outputs change.
+- Smoke parity: new categories are wired into combo generation and presets so they do not disappear from random coverage.
+- Drift check: docs and examples do not point at deleted or non-existent files/tests.
+
+If any one of those checks fails, the PR is not finished. The usual failure mode in this repo is not "feature absent", it is "feature selectable but only partially generated".
+
+## 11. Common Mistakes
 
 These are the most frequently missed files based on git history analysis and real validation runs across all 4 ecosystems:
 
@@ -1231,7 +1249,10 @@ These are the most frequently missed files based on git history analysis and rea
 | Forgot `generate-templates` after `.hbs` edit | Templates not included in build | Stale output, test failures |
 | Forgot to rebuild `packages/types` | Downstream packages use stale types | Type errors in CLI/web |
 | Missing test combo | Broken generation discovered in production | Smoke test or user report |
+| Compatibility updated without matching handler/template coverage | Builder allows a combo the generator cannot actually emit | Compare `compatibility.ts` changes against handler branches and template directories; add a scaffold combo for every newly allowed frontend/backend family |
 | Template dir name doesn't match schema ID | Handler can't find templates | Empty generated output |
+| New dependency added but never referenced in generated code | Dead dependency, misleading starter, unnecessary install weight | Search templates for imports/usages and add a file-content assertion |
+| Runtime feature only checked by compile/snapshot tests | Semantically wrong generated code ships despite passing CI | Add behavioral file assertions for routes, headers, body parsing, rewrites, and framework-specific helpers |
 | Forgot trailing newline in `.hbs` file | Linting warnings | Previous audit fixed 52 files — keep the habit |
 | **New cat:** missing `config-prompts.ts` wiring | Prompt never called in interactive mode | Type error on missing `PromptGroupResults` field |
 | **New cat:** missing `mcp.ts` updates (5 spots) | MCP server can't scaffold with new option | Manual MCP testing |
@@ -1253,3 +1274,7 @@ These are the most frequently missed files based on git history analysis and rea
 ```bash
 bun test apps/cli/test/cli-builder-sync.test.ts
 ```
+
+### The second golden rule
+
+**Never widen compatibility beyond emitted template coverage.** If a new combo is selectable, the handler branches, template directories, dependency wiring, and tests must already exist for it.

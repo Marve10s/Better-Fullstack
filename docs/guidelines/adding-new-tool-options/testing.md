@@ -213,6 +213,24 @@ What it catches automatically:
 bun test apps/cli/test/cli-builder-sync.test.ts
 ```
 
+### Test placement map
+
+Use the closest existing suite instead of inventing a new test file by default.
+
+| Change type | Preferred test location |
+|-------------|--------------------------|
+| Schema/prompt/builder wiring parity | `apps/cli/test/cli-builder-sync.test.ts` |
+| Hard CLI validation blocks | `apps/cli/test/basic-configurations.test.ts` |
+| Preflight warnings | `apps/cli/test/preflight-validation.test.ts` |
+| Auth capability / compatibility behavior | `apps/cli/test/auth-capabilities.test.ts` |
+| Rust ecosystem generation / compatibility behavior | `apps/cli/test/rust-ecosystem.test.ts` |
+| Python ecosystem generation behavior | `apps/cli/test/python-language.test.ts` |
+| Go ecosystem generation / compatibility behavior | `apps/cli/test/go-language.test.ts` |
+| Template output regression coverage | `apps/cli/test/template-snapshots.test.ts` |
+| New option with no natural home in an existing suite | Create a dedicated test file only if the assertion does not fit cleanly anywhere above |
+
+If a change affects multiple layers, use multiple suites. Do not overload snapshots with compatibility assertions or use `cli-builder-sync.test.ts` as a substitute for runtime/behavioral checks.
+
 ### B. Category test (MUST add test cases)
 
 **File:** `apps/cli/test/<category>.test.ts`
@@ -301,7 +319,49 @@ describe("Rust Diesel ORM", () => {
 });
 ```
 
-### C. Snapshot test (SHOULD add combo)
+### C. Compatibility rule tests (MUST add when rules change)
+
+If you change any of these files:
+- `packages/types/src/compatibility.ts`
+- `packages/template-generator/src/preflight-validation.ts`
+- `apps/cli/src/utils/config-validation.ts`
+
+then add or update tests in the corresponding suite:
+
+- Disabled reasons / auto-adjustments: the nearest compatibility-focused suite such as `apps/cli/test/auth-capabilities.test.ts` or another domain-specific compatibility test
+- Preflight warnings: `apps/cli/test/preflight-validation.test.ts`
+- Hard CLI blocks: `apps/cli/test/basic-configurations.test.ts`
+
+Do not stop at `cli-builder-sync.test.ts`. That test proves wiring, not behavioral correctness.
+
+### D. Behavioral verification for generated code
+
+For features that introduce new runtime behavior, add assertions that prove the generated code shape is correct, not just present.
+
+This especially applies to:
+- auth routes and middleware
+- API client/server integrations
+- deploy adapters and generated platform config
+- framework-specific request/response handling
+
+Examples of high-signal assertions:
+- Generated route file contains the correct endpoint path and framework-specific decorator/helper
+- Header/body/query extraction uses the framework's actual API rather than a placeholder function parameter
+- Newly added dependencies are imported or referenced by generated code
+- Generated config file contains the expected framework/output/rewrite values
+
+Compile-only validation is not enough for these changes. A template can type-check and still be semantically wrong at runtime.
+
+### E. Dependency-use sanity check
+
+Whenever you add a new dependency in generator wiring:
+
+1. Search the relevant templates for an actual import/reference to that package
+2. Add a file-content assertion that proves the generated output uses it, or document clearly why the dependency is intentionally indirect
+
+This catches dead starter dependencies such as "added to the manifest, never referenced by generated code".
+
+### F. Snapshot test (SHOULD add combo)
 
 **File:** `apps/cli/test/template-snapshots.test.ts`
 
@@ -330,7 +390,7 @@ After adding, update snapshots:
 bun test apps/cli/test/template-snapshots.test.ts -u
 ```
 
-### D. Template validation test (SHOULD include in combos)
+### G. Template validation test (SHOULD include in combos)
 
 **File:** `apps/cli/test/template-validation.test.ts`
 
@@ -348,7 +408,7 @@ const SEARCH_CONFIGS = SEARCH_VALUES.filter(s => s !== "none").map(search => ({
 
 Your new option will be auto-included if you added it to the schema (since `SEARCH_VALUES` derives from the enum).
 
-### E. Preflight validation test (IF constrained)
+### H. Preflight validation test (IF constrained)
 
 **File:** `apps/cli/test/preflight-validation.test.ts`
 
@@ -365,7 +425,7 @@ test("opensearch warns with no backend", () => {
 });
 ```
 
-### F. Smoke test presets (OPTIONAL)
+### I. Smoke test presets (OPTIONAL)
 
 **File:** `testing/lib/presets.ts`
 

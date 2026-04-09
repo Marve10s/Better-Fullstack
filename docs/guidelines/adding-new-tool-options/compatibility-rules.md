@@ -24,6 +24,36 @@ Not every new tool needs compatibility rules. Use this decision tree:
 
 **Rule of thumb:** If a user can select the option but the generated project won't work, you need a compatibility rule.
 
+### Compatibility-template parity rule
+
+Before you widen compatibility, prove the generator can actually emit working files for every newly allowed combo.
+
+For every backend/frontend/runtime combination you mark as supported, verify all of these exist together:
+
+1. A compatibility decision that allows the combo (`getDisabledReason()`, `allowedApisForFrontends()`, etc.)
+2. Template handler routing that reaches the correct template subtree
+3. Real template files for that subtree
+4. Dependency/env wiring for the emitted files
+5. At least one test or scaffold combo that exercises the newly allowed path
+
+Do not treat compatibility files as aspirational product design. They are part of the executable contract of the generator.
+
+Examples:
+- If `allowedApisForFrontends()` allows `graphql-yoga` for Nuxt/Svelte/Solid, `template-handlers/api.ts` must route those frontends to `templates/api/graphql-yoga/...` paths that actually exist.
+- If `webDeploy === "vercel"` is enabled for a frontend, `templates/deploy/vercel/...` must contain the matching config and dependency support for that frontend.
+
+### Claimed support policy
+
+In this repo, "supported" has a strict meaning for AI agents:
+
+- The combo is selectable in CLI/web builder
+- Compatibility logic allows it
+- The generator emits the required files for it
+- Dependency/setup wiring exists for it
+- At least one test or scaffold combo exercises it
+
+If any of those are missing, do not present the combo as supported. Keep it disabled, warned, or out of the compatibility matrix until the generator contract is complete.
+
 ---
 
 ## 2. Four Types of Rules (Severity Order)
@@ -151,8 +181,8 @@ Before adding a tool, check what it's compatible with:
 
 | Rule type | File | Function | Test file |
 |-----------|------|----------|-----------|
-| Disabled reason | `packages/types/src/compatibility.ts` | `getDisabledReason()` | `apps/cli/test/compatibility-engine.test.ts` |
-| Auto-adjustment | `packages/types/src/compatibility.ts` | `analyzeStackCompatibility()` | `apps/cli/test/compatibility-engine.test.ts` |
+| Disabled reason | `packages/types/src/compatibility.ts` | `getDisabledReason()` | The nearest compatibility-focused suite, for example `apps/cli/test/auth-capabilities.test.ts` or `apps/cli/test/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
+| Auto-adjustment | `packages/types/src/compatibility.ts` | `analyzeStackCompatibility()` | The nearest compatibility-focused suite, for example `apps/cli/test/auth-capabilities.test.ts` or `apps/cli/test/go-language.test.ts`; create a dedicated compatibility test file if no existing suite fits cleanly |
 | Hard block | `apps/cli/src/utils/compatibility-rules.ts` + `config-validation.ts` | New validator function + register in `validateFullConfig()` | `apps/cli/test/basic-configurations.test.ts` |
 | Preflight warning | `packages/template-generator/src/preflight-validation.ts` | Add to `PREFLIGHT_RULES` array | `apps/cli/test/preflight-validation.test.ts` |
 
@@ -162,8 +192,10 @@ Before adding a tool, check what it's compatible with:
 
 ### Disabled reasons (unit test)
 
+There is no single canonical `compatibility-engine.test.ts` file in this repo today. Put the assertion in the closest existing compatibility-focused suite, or create a dedicated one when the change does not belong naturally in an existing domain-specific file.
+
 ```typescript
-// In apps/cli/test/compatibility-engine.test.ts
+// In a compatibility-focused test file
 test("vercel server deploy disabled for nestjs backend", () => {
   const reason = getDisabledReason(
     { ...baseStack, backend: "nestjs" },
@@ -261,6 +293,18 @@ For each ❌ or ⚠️ in the matrix above:
 2. Add `validateFullConfig()` entry → blocks in CLI
 3. Add preflight warning if ⚠️ (works but may have issues)
 4. Add tests for each rule
+5. Confirm template parity: every supported frontend/backend pair has matching `templates/deploy/<target>/...` coverage and handler routing
+
+### Deploy-target parity check
+
+When a deploy target claims support for a frontend, verify all four layers stay aligned:
+
+1. `packages/types/src/compatibility.ts`
+2. `packages/template-generator/templates/deploy/<target>/...`
+3. Any dependency/setup logic such as `processors/deploy-deps.ts`
+4. At least one scaffold test for the claimed combo
+
+If one of those layers is missing, keep the option disabled or warned. Do not merge a "support" claim based only on docs research.
 
 ---
 

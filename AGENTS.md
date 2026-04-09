@@ -33,6 +33,7 @@ When creating pull requests, always target `--repo Marve10s/Better-Fullstack`. D
 - For release-sensitive stack or generator changes, run `bun run test:release` from the repo root. That lane covers template snapshots, CLI/builder parity, and preview-config regressions.
 - Surprise worth remembering: `apps/cli/test/cli-builder-sync.test.ts` reads the built `packages/types/dist` output via the workspace package, not just the source files. After changing `packages/types/src/*`, rebuild `packages/types` before trusting that parity test.
 - Surprise worth remembering: `react-vite` originally received auth dependencies from `packages/template-generator/src/processors/auth-deps.ts` without receiving matching auth templates from `packages/template-generator/src/template-handlers/auth.ts`. When expanding `react-vite`, verify both dependency processors and template handlers are updated together.
+- Surprise worth remembering: `packages/types/src/compatibility.ts` can allow an API option for a frontend before `packages/template-generator/src/template-handlers/api.ts` knows how to emit matching web/client templates for that frontend. When expanding non-React API support, verify compatibility rules, template-handler branches, and `templates/api/<option>/...` coverage stay in sync.
 
 ## Bun
 

@@ -181,6 +181,29 @@ const hasNative = config.frontend.some(f =>
 
 An agent that creates templates only at one level will either miss shared code or miss framework-specific overrides.
 
+### Compatibility claims must match handler routing
+
+Frontend compatibility and handler routing must evolve together.
+
+If you:
+- widen a compatibility helper such as `allowedApisForFrontends()`
+- add a new frontend to a deploy target
+- claim a non-React frontend is supported by a TypeScript integration
+
+then verify the handler has a matching branch and the template tree has matching directories.
+
+Common failure mode:
+- `compatibility.ts` allows a frontend
+- `template-handlers/*.ts` still routes only the old frontend family
+- generation succeeds for some stacks but silently omits the feature for the newly allowed one
+
+Required check:
+1. Inspect the handler branch conditions
+2. Inspect the template directory inventory
+3. Add a combo test for every newly allowed frontend family
+
+If the handler does not route the combo, the compatibility change is incomplete.
+
 ---
 
 ## 5. Processor Execution Order Is Load-Bearing
