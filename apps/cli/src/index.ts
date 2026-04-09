@@ -105,6 +105,8 @@ import {
   type PythonValidation,
   PythonAiSchema,
   type PythonAi,
+  PythonAuthSchema,
+  type PythonAuth,
   PythonTaskQueueSchema,
   type PythonTaskQueue,
   PythonQualitySchema,
@@ -262,6 +264,7 @@ export const router = os.router({
             "Python validation (pydantic)",
           ),
           pythonAi: z.array(PythonAiSchema).optional().describe("Python AI/ML frameworks"),
+          pythonAuth: PythonAuthSchema.optional().describe("Python auth library (authlib, jwt)"),
           pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
           pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
           // Go ecosystem options
@@ -584,6 +587,7 @@ export async function createVirtual(
       pythonOrm: options.pythonOrm || "none",
       pythonValidation: options.pythonValidation || "none",
       pythonAi: options.pythonAi || [],
+      pythonAuth: options.pythonAuth || "none",
       pythonTaskQueue: options.pythonTaskQueue || "none",
       pythonQuality: options.pythonQuality || "none",
       // Go ecosystem options

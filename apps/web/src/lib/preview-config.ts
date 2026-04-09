@@ -112,6 +112,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     pythonOrm: stack.pythonOrm as ProjectConfig["pythonOrm"],
     pythonValidation: stack.pythonValidation as ProjectConfig["pythonValidation"],
     pythonAi: stack.pythonAi === "none" ? [] : ([stack.pythonAi] as ProjectConfig["pythonAi"]),
+    pythonAuth: stack.pythonAuth as ProjectConfig["pythonAuth"],
     pythonTaskQueue: stack.pythonTaskQueue as ProjectConfig["pythonTaskQueue"],
     pythonQuality: stack.pythonQuality as ProjectConfig["pythonQuality"],
     goWebFramework: stack.goWebFramework as ProjectConfig["goWebFramework"],

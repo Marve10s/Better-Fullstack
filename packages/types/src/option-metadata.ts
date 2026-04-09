@@ -31,6 +31,7 @@ import {
   PAYMENTS_VALUES,
   VERSION_CHANNEL_VALUES,
   PYTHON_AI_VALUES,
+  PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
@@ -126,6 +127,7 @@ export type OptionCategory =
   | "pythonOrm"
   | "pythonValidation"
   | "pythonAi"
+  | "pythonAuth"
   | "pythonTaskQueue"
   | "pythonQuality"
   | "goWebFramework"
@@ -298,6 +300,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
   pythonAi: PYTHON_AI_VALUES,
+  pythonAuth: PYTHON_AUTH_VALUES,
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
@@ -577,6 +580,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     langgraph: "LangGraph",
     crewai: "CrewAI",
   },
+  pythonAuth: {
+    authlib: "Authlib",
+    jwt: "JWT (python-jose)",
+  },
   pythonTaskQueue: {
     celery: "Celery",
   },
@@ -747,6 +754,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),
   pythonAi: buildCategoryMetadata("pythonAi"),
+  pythonAuth: buildCategoryMetadata("pythonAuth"),
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),

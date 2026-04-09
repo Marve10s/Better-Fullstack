@@ -78,6 +78,7 @@ export const DEFAULT_CONFIG_BASE = {
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",
   pythonAi: [],
+  pythonAuth: "none",
   pythonTaskQueue: "none",
   pythonQuality: "ruff",
   // Go ecosystem defaults

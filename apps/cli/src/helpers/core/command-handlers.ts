@@ -170,6 +170,7 @@ export async function createProjectHandler(
               pythonOrm: "none",
               pythonValidation: "none",
               pythonAi: [],
+              pythonAuth: "none",
               pythonTaskQueue: "none",
               pythonQuality: "none",
               goWebFramework: "none",

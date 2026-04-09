@@ -67,6 +67,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonOrm: "none",
     pythonValidation: "none",
     pythonAi: [],
+    pythonAuth: "none",
     pythonTaskQueue: "none",
     pythonQuality: "none",
     goWebFramework: "none",
@@ -117,6 +118,7 @@ describe("generateReproducibleCommand", () => {
       pythonOrm: "sqlalchemy",
       pythonValidation: "pydantic",
       pythonAi: [],
+      pythonAuth: "none",
       pythonTaskQueue: "celery",
       pythonQuality: "ruff",
       aiDocs: ["claude-md"],
@@ -129,6 +131,7 @@ describe("generateReproducibleCommand", () => {
         "--python-orm sqlalchemy " +
         "--python-validation pydantic " +
         "--python-ai none " +
+        "--python-auth none " +
         "--python-task-queue celery " +
         "--python-quality ruff " +
         "--addons none " +
@@ -180,6 +183,7 @@ describe("generateReproducibleCommand", () => {
       pythonOrm: "sqlmodel",
       pythonValidation: "pydantic",
       pythonAi: ["langchain", "openai-sdk"],
+      pythonAuth: "none",
       pythonTaskQueue: "celery",
       pythonQuality: "ruff",
       aiDocs: ["claude-md", "agents-md"],
@@ -194,6 +198,7 @@ describe("generateReproducibleCommand", () => {
         "--python-orm sqlmodel " +
         "--python-validation pydantic " +
         "--python-ai langchain openai-sdk " +
+        "--python-auth none " +
         "--python-task-queue celery " +
         "--python-quality ruff " +
         "--addons skills " +

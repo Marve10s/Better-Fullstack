@@ -70,6 +70,7 @@ export type CompatibilityCategory =
   | "pythonOrm"
   | "pythonValidation"
   | "pythonAi"
+  | "pythonAuth"
   | "pythonTaskQueue"
   | "pythonQuality"
   | "goWebFramework"
@@ -153,6 +154,7 @@ export type CompatibilityInput = {
   pythonOrm: string;
   pythonValidation: string;
   pythonAi: string;
+  pythonAuth: string;
   pythonTaskQueue: string;
   pythonQuality: string;
   goWebFramework: string;
@@ -220,6 +222,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "pythonOrm",
   "pythonValidation",
   "pythonAi",
+  "pythonAuth",
   "pythonTaskQueue",
   "pythonQuality",
   "goWebFramework",
@@ -307,6 +310,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     pythonOrm: "Python ORM / Database",
     pythonValidation: "Python Validation",
     pythonAi: "Python AI / ML",
+    pythonAuth: "Python Auth",
     pythonTaskQueue: "Python Task Queue",
     pythonQuality: "Python Code Quality",
   };

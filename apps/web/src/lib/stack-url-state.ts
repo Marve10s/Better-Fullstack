@@ -102,6 +102,7 @@ export function loadStackParams(
       pythonOrm: getString("pythonOrm", DEFAULT_STACK.pythonOrm),
       pythonValidation: getString("pythonValidation", DEFAULT_STACK.pythonValidation),
       pythonAi: getString("pythonAi", DEFAULT_STACK.pythonAi),
+      pythonAuth: getString("pythonAuth", DEFAULT_STACK.pythonAuth),
       pythonTaskQueue: getString("pythonTaskQueue", DEFAULT_STACK.pythonTaskQueue),
       pythonQuality: getString("pythonQuality", DEFAULT_STACK.pythonQuality),
       goWebFramework: getString("goWebFramework", DEFAULT_STACK.goWebFramework),
@@ -201,6 +202,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("pythonOrm", stack.pythonOrm);
   addParam("pythonValidation", stack.pythonValidation);
   addParam("pythonAi", stack.pythonAi);
+  addParam("pythonAuth", stack.pythonAuth);
   addParam("pythonTaskQueue", stack.pythonTaskQueue);
   addParam("pythonQuality", stack.pythonQuality);
   addParam("goWebFramework", stack.goWebFramework);
@@ -285,6 +287,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     pythonOrm: search.porm ?? DEFAULT_STACK.pythonOrm,
     pythonValidation: search.pval ?? DEFAULT_STACK.pythonValidation,
     pythonAi: search.pai ?? DEFAULT_STACK.pythonAi,
+    pythonAuth: search.pauth ?? DEFAULT_STACK.pythonAuth,
     pythonTaskQueue: search.ptq ?? DEFAULT_STACK.pythonTaskQueue,
     pythonQuality: search.pq ?? DEFAULT_STACK.pythonQuality,
     goWebFramework: search.gwf ?? DEFAULT_STACK.goWebFramework,

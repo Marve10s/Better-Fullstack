@@ -84,6 +84,7 @@ const PYTHON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "pythonOrm",
   "pythonValidation",
   "pythonAi",
+  "pythonAuth",
   "pythonTaskQueue",
   "pythonQuality",
   "aiDocs",
@@ -352,6 +353,9 @@ function generatePythonCommand(stack: StackState, projectName: string) {
   }
   // Omitting this flag makes the CLI treat Python AI as unspecified and re-open the prompt.
   flags.push(`--python-ai ${stack.pythonAi}`);
+  if (stack.pythonAuth !== "none") {
+    flags.push(`--python-auth ${stack.pythonAuth}`);
+  }
   if (stack.pythonTaskQueue !== "none") {
     flags.push(`--python-task-queue ${stack.pythonTaskQueue}`);
   }
