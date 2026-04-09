@@ -1244,6 +1244,8 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     features.push("- **GORM** - Full-featured ORM for Go");
   } else if (goOrm === "sqlc") {
     features.push("- **SQLc** - Generate type-safe code from SQL");
+  } else if (goOrm === "ent") {
+    features.push("- **Ent** - Code-first ORM by Meta with graph traversal API");
   }
 
   // API
@@ -1296,6 +1298,11 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     structure.push("│   │   └── database.go");
     if (goOrm === "gorm") {
       structure.push("│   ├── models/           # GORM models");
+      structure.push("│   │   └── models.go");
+      structure.push("│   └── handlers/         # HTTP handlers");
+      structure.push("│       └── handlers.go");
+    } else if (goOrm === "ent") {
+      structure.push("│   ├── models/           # Request/response types");
       structure.push("│   │   └── models.go");
       structure.push("│   └── handlers/         # HTTP handlers");
       structure.push("│       └── handlers.go");
@@ -1396,6 +1403,28 @@ cp .env.example .env
 \`\`\`bash
 sqlc generate
 \`\`\`
+`;
+  } else if (goOrm === "ent") {
+    databaseSetup = `
+## Database Setup
+
+This project uses Ent (by Meta) as the ORM. To set up:
+
+1. Copy the environment file:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+2. Update \`DATABASE_URL\` in \`.env\` with your database connection string.
+
+3. Generate Ent client code from schemas:
+\`\`\`bash
+go generate ./ent
+\`\`\`
+
+Supported databases:
+- SQLite (default): leave \`DATABASE_URL\` empty
+- PostgreSQL: \`DATABASE_URL=postgres://user:pass@localhost:5432/dbname?sslmode=disable\`
 `;
   }
 

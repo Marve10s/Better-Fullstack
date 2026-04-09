@@ -3048,6 +3048,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "ent",
+      name: "Ent",
+      description: "Code-first ORM by Meta with compile-time safety and graph traversal API",
+      icon: "",
+      color: "from-blue-500 to-indigo-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No ORM",
       description: "Skip Go ORM/database layer selection",

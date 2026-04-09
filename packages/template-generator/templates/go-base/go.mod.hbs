@@ -29,6 +29,11 @@ require (
 {{#if (eq goOrm "sqlc")}}
 	github.com/jackc/pgx/v5 v5.9.1
 {{/if}}
+{{#if (eq goOrm "ent")}}
+	entgo.io/ent v0.14.0
+	github.com/lib/pq v1.10.9
+	github.com/mattn/go-sqlite3 v1.14.24
+{{/if}}
 {{#if (eq goApi "grpc-go")}}
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11

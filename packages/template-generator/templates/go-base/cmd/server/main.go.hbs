@@ -30,7 +30,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 {{/if}}
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 
 	"{{projectName}}/internal/database"
 {{/if}}
@@ -190,6 +190,33 @@ func main() {
 	logger.Info("Database pool connected successfully")
 {{/if}}
 	_ = pool // Use pool in your handlers
+{{/if}}
+{{#if (eq goOrm "ent")}}
+	// Initialize database (run `go generate ./ent` to use Ent client)
+	db, err := database.InitDB()
+	if err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to connect to database", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
+{{else}}
+		panic("Failed to connect to database: " + err.Error())
+{{/if}}
+	}
+	defer database.Close()
+{{#if (eq goLogging "zap")}}
+	logger.Info("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Database connected successfully")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Database connected successfully")
+{{/if}}
+	_ = db // Use db in your handlers
 {{/if}}
 
 {{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}

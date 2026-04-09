@@ -789,6 +789,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
     const ormNames: Record<string, string> = {
       gorm: "GORM",
       sqlc: "sqlc",
+      ent: "Ent",
     };
     output += `${pc.cyan("•")} Database: ${ormNames[goOrm] || goOrm}\n`;
   }

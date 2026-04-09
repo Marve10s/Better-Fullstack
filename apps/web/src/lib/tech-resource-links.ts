@@ -744,6 +744,7 @@ const BASE_LINKS: LinkMap = {
   chi: { docsUrl: "https://go-chi.io/", githubUrl: "https://github.com/go-chi/chi" },
   gorm: { docsUrl: "https://gorm.io/docs/", githubUrl: "https://github.com/go-gorm/gorm" },
   sqlc: { docsUrl: "https://docs.sqlc.dev/", githubUrl: "https://github.com/sqlc-dev/sqlc" },
+  ent: { docsUrl: "https://entgo.io/docs/getting-started/", githubUrl: "https://github.com/ent/ent" },
   "grpc-go": {
     docsUrl: "https://grpc.io/docs/languages/go/quickstart/",
     githubUrl: "https://github.com/grpc/grpc-go",

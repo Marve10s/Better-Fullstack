@@ -60,6 +60,11 @@ export async function getGoOrmChoice(goOrm?: GoOrm) {
       hint: "Generate type-safe Go code from SQL",
     },
     {
+      value: "ent" as const,
+      label: "Ent",
+      hint: "Code-first ORM by Meta with graph traversal API, 15k+ stars",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No ORM/database layer",

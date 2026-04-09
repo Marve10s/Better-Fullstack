@@ -326,7 +326,7 @@ export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python cod
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z.enum(["gin", "echo", "fiber", "chi", "none"]).describe("Go web framework");
 
-export const GoOrmSchema = z.enum(["gorm", "sqlc", "none"]).describe("Go ORM/database layer");
+export const GoOrmSchema = z.enum(["gorm", "sqlc", "ent", "none"]).describe("Go ORM/database layer");
 
 export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
 

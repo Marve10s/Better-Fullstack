@@ -599,6 +599,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goOrm: {
     gorm: "GORM",
     sqlc: "sqlc",
+    ent: "Ent",
   },
   goApi: {
     "grpc-go": "gRPC-Go",

@@ -4,12 +4,12 @@ package handlers
 {{#if (eq goWebFramework "gin")}}
 import (
 	"net/http"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 	"strconv"
 {{/if}}
 
 	"github.com/gin-gonic/gin"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 
 	"{{projectName}}/internal/database"
 	"{{projectName}}/internal/models"
@@ -459,6 +459,153 @@ func DeletePost(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+{{else if (eq goOrm "ent")}}
+// GetUsers returns all users
+func GetUsers(c *gin.Context) {
+	rows, err := database.GetDB().Query("SELECT id, name, email, created_at, updated_at FROM users ORDER BY id")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var users []models.UserCreate
+	for rows.Next() {
+		var id int
+		var name, email string
+		var createdAt, updatedAt string
+		if err := rows.Scan(&id, &name, &email, &createdAt, &updatedAt); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		users = append(users, models.UserCreate{Name: name, Email: email})
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// GetUser returns a user by ID
+func GetUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var name, email string
+	err = database.GetDB().QueryRow("SELECT name, email FROM users WHERE id = ?", id).Scan(&name, &email)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"id": id, "name": name, "email": email})
+}
+
+// CreateUser creates a new user
+func CreateUser(c *gin.Context) {
+	var input models.UserCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO users (name, email) VALUES (?, ?)", input.Name, input.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, _ := result.LastInsertId()
+	c.JSON(http.StatusCreated, gin.H{"id": id, "name": input.Name, "email": input.Email})
+}
+
+// UpdateUser updates a user
+func UpdateUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var input models.UserUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if input.Name != nil {
+		database.GetDB().Exec("UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", *input.Name, id)
+	}
+	if input.Email != nil {
+		database.GetDB().Exec("UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", *input.Email, id)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"id": id, "message": "User updated"})
+}
+
+// DeleteUser deletes a user
+func DeleteUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	_, err = database.GetDB().Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
+
+// GetPosts returns all posts
+func GetPosts(c *gin.Context) {
+	rows, err := database.GetDB().Query("SELECT id, title, content, published, author_id, created_at, updated_at FROM posts ORDER BY id")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var posts []gin.H
+	for rows.Next() {
+		var id, authorID int
+		var title, content string
+		var published bool
+		var createdAt, updatedAt string
+		if err := rows.Scan(&id, &title, &content, &published, &authorID, &createdAt, &updatedAt); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		posts = append(posts, gin.H{"id": id, "title": title, "content": content, "published": published, "author_id": authorID})
+	}
+
+	if posts == nil {
+		posts = []gin.H{}
+	}
+	c.JSON(http.StatusOK, posts)
+}
+
+// CreatePost creates a new post
+func CreatePost(c *gin.Context) {
+	var input models.PostCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)", input.Title, input.Content, input.AuthorID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, _ := result.LastInsertId()
+	c.JSON(http.StatusCreated, gin.H{"id": id, "title": input.Title, "content": input.Content, "author_id": input.AuthorID})
+}
 {{else}}
 // HealthCheck returns server health status
 func HealthCheck(c *gin.Context) {
@@ -472,12 +619,12 @@ func HealthCheck(c *gin.Context) {
 {{#if (eq goWebFramework "echo")}}
 import (
 	"net/http"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 	"strconv"
 {{/if}}
 
 	"github.com/labstack/echo/v4"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 
 	"{{projectName}}/internal/database"
 	"{{projectName}}/internal/models"
@@ -881,6 +1028,118 @@ func DeletePost(c echo.Context) error {
 
 	return c.NoContent(http.StatusNoContent)
 }
+{{else if (eq goOrm "ent")}}
+// GetUsers returns all users
+func GetUsers(c echo.Context) error {
+	rows, err := database.GetDB().Query("SELECT id, name, email FROM users ORDER BY id")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	var users []map[string]any
+	for rows.Next() {
+		var id int
+		var name, email string
+		if err := rows.Scan(&id, &name, &email); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		users = append(users, map[string]any{"id": id, "name": name, "email": email})
+	}
+
+	if users == nil {
+		users = []map[string]any{}
+	}
+	return c.JSON(http.StatusOK, users)
+}
+
+// GetUser returns a user by ID
+func GetUser(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID"})
+	}
+
+	var name, email string
+	err = database.GetDB().QueryRow("SELECT name, email FROM users WHERE id = ?", id).Scan(&name, &email)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{"id": id, "name": name, "email": email})
+}
+
+// CreateUser creates a new user
+func CreateUser(c echo.Context) error {
+	var input models.UserCreate
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO users (name, email) VALUES (?, ?)", input.Name, input.Email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	id, _ := result.LastInsertId()
+	return c.JSON(http.StatusCreated, map[string]any{"id": id, "name": input.Name, "email": input.Email})
+}
+
+// DeleteUser deletes a user
+func DeleteUser(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID"})
+	}
+
+	_, err = database.GetDB().Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+// GetPosts returns all posts
+func GetPosts(c echo.Context) error {
+	rows, err := database.GetDB().Query("SELECT id, title, content, published, author_id FROM posts ORDER BY id")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	var posts []map[string]any
+	for rows.Next() {
+		var id, authorID int
+		var title, content string
+		var published bool
+		if err := rows.Scan(&id, &title, &content, &published, &authorID); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		posts = append(posts, map[string]any{"id": id, "title": title, "content": content, "published": published, "author_id": authorID})
+	}
+
+	if posts == nil {
+		posts = []map[string]any{}
+	}
+	return c.JSON(http.StatusOK, posts)
+}
+
+// CreatePost creates a new post
+func CreatePost(c echo.Context) error {
+	var input models.PostCreate
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)", input.Title, input.Content, input.AuthorID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	id, _ := result.LastInsertId()
+	return c.JSON(http.StatusCreated, map[string]any{"id": id, "title": input.Title, "content": input.Content, "author_id": input.AuthorID})
+}
 {{else}}
 // HealthCheck returns server health status
 func HealthCheck(c echo.Context) error {
@@ -893,13 +1152,13 @@ func HealthCheck(c echo.Context) error {
 {{/if}}
 {{#if (eq goWebFramework "fiber")}}
 import (
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 	"net/http"
 	"strconv"
 {{/if}}
 
 	"github.com/gofiber/fiber/v2"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 
 	"{{projectName}}/internal/database"
 	"{{projectName}}/internal/models"
@@ -1292,6 +1551,102 @@ func DeletePost(c *fiber.Ctx) error {
 
 	return c.SendStatus(http.StatusNoContent)
 }
+{{else if (eq goOrm "ent")}}
+// GetUsers returns all users
+func GetUsers(c *fiber.Ctx) error {
+	rows, err := database.GetDB().Query("SELECT id, name, email FROM users ORDER BY id")
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	var users []fiber.Map
+	for rows.Next() {
+		var id int
+		var name, email string
+		if err := rows.Scan(&id, &name, &email); err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		users = append(users, fiber.Map{"id": id, "name": name, "email": email})
+	}
+
+	if users == nil {
+		users = []fiber.Map{}
+	}
+	return c.JSON(users)
+}
+
+// CreateUser creates a new user
+func CreateUser(c *fiber.Ctx) error {
+	var input models.UserCreate
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO users (name, email) VALUES (?, ?)", input.Name, input.Email)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	id, _ := result.LastInsertId()
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"id": id, "name": input.Name, "email": input.Email})
+}
+
+// DeleteUser deletes a user
+func DeleteUser(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+	}
+
+	_, err = database.GetDB().Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
+
+// GetPosts returns all posts
+func GetPosts(c *fiber.Ctx) error {
+	rows, err := database.GetDB().Query("SELECT id, title, content, published, author_id FROM posts ORDER BY id")
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	var posts []fiber.Map
+	for rows.Next() {
+		var id, authorID int
+		var title, content string
+		var published bool
+		if err := rows.Scan(&id, &title, &content, &published, &authorID); err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		posts = append(posts, fiber.Map{"id": id, "title": title, "content": content, "published": published, "author_id": authorID})
+	}
+
+	if posts == nil {
+		posts = []fiber.Map{}
+	}
+	return c.JSON(posts)
+}
+
+// CreatePost creates a new post
+func CreatePost(c *fiber.Ctx) error {
+	var input models.PostCreate
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)", input.Title, input.Content, input.AuthorID)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	id, _ := result.LastInsertId()
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"id": id, "title": input.Title, "content": input.Content, "author_id": input.AuthorID})
+}
 {{else}}
 // HealthCheck returns server health status
 func HealthCheck(c *fiber.Ctx) error {
@@ -1306,7 +1661,7 @@ func HealthCheck(c *fiber.Ctx) error {
 import (
 	"encoding/json"
 	"net/http"
-{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
+{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -1859,6 +2214,138 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+{{else if (eq goOrm "ent")}}
+// GetUsers returns all users
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	rows, err := database.GetDB().Query("SELECT id, name, email FROM users ORDER BY id")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var users []map[string]any
+	for rows.Next() {
+		var id int
+		var name, email string
+		if err := rows.Scan(&id, &name, &email); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
+		}
+		users = append(users, map[string]any{"id": id, "name": name, "email": email})
+	}
+
+	if users == nil {
+		users = []map[string]any{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+// CreateUser creates a new user
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	var input models.UserCreate
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO users (name, email) VALUES (?, ?)", input.Name, input.Email)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	id, _ := result.LastInsertId()
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{"id": id, "name": input.Name, "email": input.Email})
+}
+
+// DeleteUser deletes a user
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid ID"})
+		return
+	}
+
+	_, err = database.GetDB().Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetPosts returns all posts
+func GetPosts(w http.ResponseWriter, r *http.Request) {
+	rows, err := database.GetDB().Query("SELECT id, title, content, published, author_id FROM posts ORDER BY id")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var posts []map[string]any
+	for rows.Next() {
+		var id, authorID int
+		var title, content string
+		var published bool
+		if err := rows.Scan(&id, &title, &content, &published, &authorID); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
+		}
+		posts = append(posts, map[string]any{"id": id, "title": title, "content": content, "published": published, "author_id": authorID})
+	}
+
+	if posts == nil {
+		posts = []map[string]any{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
+}
+
+// CreatePost creates a new post
+func CreatePost(w http.ResponseWriter, r *http.Request) {
+	var input models.PostCreate
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	result, err := database.GetDB().Exec("INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)", input.Title, input.Content, input.AuthorID)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	id, _ := result.LastInsertId()
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{"id": id, "title": input.Title, "content": input.Content, "author_id": input.AuthorID})
 }
 {{else}}
 // HealthCheck returns server health status
