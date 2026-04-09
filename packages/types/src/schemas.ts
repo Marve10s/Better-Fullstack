@@ -275,7 +275,7 @@ export const RustFrontendSchema = z
   .describe("Rust WASM frontend framework");
 
 export const RustOrmSchema = z
-  .enum(["sea-orm", "sqlx", "none"])
+  .enum(["sea-orm", "sqlx", "diesel", "none"])
   .describe("Rust ORM/database layer");
 
 export const RustApiSchema = z

@@ -530,6 +530,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   rustOrm: {
     "sea-orm": "SeaORM",
     sqlx: "SQLx",
+    diesel: "Diesel",
   },
   rustApi: {
     "async-graphql": "async-graphql",

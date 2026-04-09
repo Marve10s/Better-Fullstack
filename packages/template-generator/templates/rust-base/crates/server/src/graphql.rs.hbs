@@ -6,6 +6,10 @@ use std::sync::Arc;
 {{#if (eq rustOrm "sqlx")}}
 use sqlx::PgPool;
 {{/if}}
+{{#if (eq rustOrm "diesel")}}
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::AsyncPgConnection;
+{{/if}}
 
 /// GraphQL Query root
 pub struct QueryRoot;
@@ -42,6 +46,16 @@ impl QueryRoot {
         }
     }
 {{/if}}
+{{#if (eq rustOrm "diesel")}}
+    /// Example query using database pool
+    async fn db_status(&self, ctx: &Context<'_>) -> async_graphql::Result<String> {
+        let pool = ctx.data::<Pool<AsyncPgConnection>>()?;
+        match pool.get().await {
+            Ok(_) => Ok("Database connected".to_string()),
+            Err(e) => Ok(format!("Database error: {}", e)),
+        }
+    }
+{{/if}}
 }
 
 /// GraphQL Mutation root
@@ -67,6 +81,12 @@ pub fn build_schema(db: Arc<DatabaseConnection>) -> GraphQLSchema {
 }
 {{else if (eq rustOrm "sqlx")}}
 pub fn build_schema(pool: PgPool) -> GraphQLSchema {
+    Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(pool)
+        .finish()
+}
+{{else if (eq rustOrm "diesel")}}
+pub fn build_schema(pool: Pool<AsyncPgConnection>) -> GraphQLSchema {
     Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(pool)
         .finish()

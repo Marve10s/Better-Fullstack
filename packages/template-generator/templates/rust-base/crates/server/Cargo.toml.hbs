@@ -58,6 +58,11 @@ sqlx.workspace = true
 # Database
 sea-orm.workspace = true
 {{/if}}
+{{#if (eq rustOrm "diesel")}}
+# Database
+diesel.workspace = true
+diesel-async.workspace = true
+{{/if}}
 
 {{#if (eq rustApi "tonic")}}
 # gRPC

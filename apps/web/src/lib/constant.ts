@@ -2594,6 +2594,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "diesel",
+      name: "Diesel",
+      description: "Safe, extensible ORM with compile-time query validation",
+      icon: "",
+      color: "from-red-500 to-red-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No ORM",
       description: "Skip Rust ORM/database layer",

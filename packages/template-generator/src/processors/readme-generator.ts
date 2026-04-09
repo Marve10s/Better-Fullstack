@@ -771,6 +771,8 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **SeaORM** - Async & dynamic ORM with ActiveRecord pattern");
   } else if (rustOrm === "sqlx") {
     features.push("- **SQLx** - Async SQL toolkit with compile-time checked queries");
+  } else if (rustOrm === "diesel") {
+    features.push("- **Diesel** - Safe, extensible ORM with compile-time query validation");
   }
 
   // API

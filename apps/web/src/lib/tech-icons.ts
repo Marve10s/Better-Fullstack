@@ -314,6 +314,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   leptos: { type: "local", src: "/icon/leptos.svg" },
   dioxus: { type: "local", src: "/icon/dioxus.svg" },
   "sea-orm": { type: "local", src: "/icon/seaorm.svg" },
+  diesel: { type: "si", slug: "rust", hex: "CE422B" },
   "async-graphql": { type: "si", slug: "graphql", hex: "E10098" },
   tonic: { type: "local", src: "/icon/tonic.svg" },
   tracing: { type: "si", slug: "rust", hex: "CE422B" },

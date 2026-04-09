@@ -645,6 +645,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/sqlx/latest/sqlx/",
     githubUrl: "https://github.com/launchbadge/sqlx",
   },
+  diesel: {
+    docsUrl: "https://diesel.rs/guides/",
+    githubUrl: "https://github.com/diesel-rs/diesel",
+  },
   "async-graphql": {
     docsUrl: "https://async-graphql.github.io/async-graphql/en/",
     githubUrl: "https://github.com/async-graphql/async-graphql",

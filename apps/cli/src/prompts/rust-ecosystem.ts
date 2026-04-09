@@ -91,6 +91,11 @@ export async function getRustOrmChoice(rustOrm?: RustOrm) {
       hint: "Async SQL toolkit with compile-time checked queries",
     },
     {
+      value: "diesel" as const,
+      label: "Diesel",
+      hint: "Safe, extensible ORM with compile-time query validation",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No database layer",

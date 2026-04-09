@@ -16,6 +16,11 @@ use std::sync::Arc;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 {{/if}}
+{{#if (eq rustOrm "diesel")}}
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+use diesel_async::AsyncPgConnection;
+{{/if}}
 {{#if (eq rustApi "tonic")}}
 
 mod grpc;
@@ -32,7 +37,7 @@ mod graphql;
 struct HealthResponse {
     status: &'static str,
     message: &'static str,
-{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx"))}}
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
     database: &'static str,
 {{/if}}
 }
@@ -70,6 +75,25 @@ async fn health(
         "connected"
     } else {
         "disconnected"
+    };
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+{{else if (eq rustOrm "diesel")}}
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: Pool<AsyncPgConnection>,
+}
+
+async fn health(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<HealthResponse> {
+    let db_status = match state.pool.get().await {
+        Ok(_) => "connected",
+        Err(_) => "disconnected",
     };
     Json(HealthResponse {
         status: "ok",
@@ -185,6 +209,39 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
         .layer(CorsLayer::permissive())
         .with_state(state);
 {{/if}}
+{{else if (eq rustOrm "diesel")}}
+    // Initialize database connection pool
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
+    let pool = Pool::builder(manager).build()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database pool created successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database pool created successfully");{{else}}    println!("Database pool created successfully");{{/if}}
+
+    let state = AppState { pool: pool.clone() };
+
+{{#if (eq rustApi "async-graphql")}}
+    // Build GraphQL schema with database pool
+    let schema = graphql::build_schema(pool);
+
+    // Build router with GraphQL and state
+    let app = Router::new()
+        .route("/health", get(health))
+        .route_service("/graphql", GraphQL::new(schema))
+        .route("/graphiql", get(graphiql))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
+
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
+{{else}}
+    // Build router with state
+    let app = Router::new()
+        .route("/health", get(health))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
+{{/if}}
 {{else}}
 {{#if (eq rustApi "async-graphql")}}
     // Build GraphQL schema
@@ -268,6 +325,11 @@ use std::sync::Arc;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 {{/if}}
+{{#if (eq rustOrm "diesel")}}
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+use diesel_async::AsyncPgConnection;
+{{/if}}
 {{#if (eq rustApi "tonic")}}
 
 mod grpc;
@@ -283,7 +345,7 @@ mod graphql;
 struct HealthResponse {
     status: &'static str,
     message: &'static str,
-{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx"))}}
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
     database: &'static str,
 {{/if}}
 }
@@ -317,6 +379,23 @@ async fn health(data: web::Data<AppState>) -> impl Responder {
         "connected"
     } else {
         "disconnected"
+    };
+    HttpResponse::Ok().json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+{{else if (eq rustOrm "diesel")}}
+pub struct AppState {
+    pub pool: Pool<AsyncPgConnection>,
+}
+
+#[get("/health")]
+async fn health(data: web::Data<AppState>) -> impl Responder {
+    let db_status = match data.pool.get().await {
+        Ok(_) => "connected",
+        Err(_) => "disconnected",
     };
     HttpResponse::Ok().json(HealthResponse {
         status: "ok",
@@ -417,7 +496,26 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
 {{/if}}
 {{/if}}
-{{#if (and (not (eq rustOrm "sea-orm")) (not (eq rustOrm "sqlx")) (eq rustApi "async-graphql"))}}
+{{#if (eq rustOrm "diesel")}}
+    // Initialize database connection pool
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
+    let pool = Pool::builder(manager).build()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Database pool created successfully");{{else if (eq rustLogging "env-logger")}}    log::info!("Database pool created successfully");{{else}}    println!("Database pool created successfully");{{/if}}
+
+    let state = web::Data::new(AppState { pool: pool.clone() });
+{{#if (eq rustApi "async-graphql")}}
+
+    // Build GraphQL schema with database pool
+    let schema = web::Data::new(graphql::build_schema(pool));
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!("GraphiQL IDE: /graphiql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphiQL IDE: /graphiql");{{else}}    println!("GraphiQL IDE: /graphiql");{{/if}}
+{{/if}}
+{{/if}}
+{{#if (and (not (eq rustOrm "sea-orm")) (not (eq rustOrm "sqlx")) (not (eq rustOrm "diesel")) (eq rustApi "async-graphql"))}}
     // Build GraphQL schema
     let schema = web::Data::new(graphql::build_schema());
 {{#if (eq rustLogging "tracing")}}    tracing::info!("GraphQL endpoint: /graphql");{{else if (eq rustLogging "env-logger")}}    log::info!("GraphQL endpoint: /graphql");{{else}}    println!("GraphQL endpoint: /graphql");{{/if}}
@@ -449,7 +547,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     });
 
     // Start HTTP server
-{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx"))}}
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
     let http_server = HttpServer::new(move || {
         let cors = Cors::permissive();
         App::new()
@@ -485,7 +583,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     }
 {{else if (eq rustApi "async-graphql")}}
     // Start server with GraphQL
-{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx"))}}
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
     HttpServer::new(move || {
         let cors = Cors::permissive();
         App::new()
@@ -512,7 +610,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     .await?;
 {{else}}
     // Start server
-{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx"))}}
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
     HttpServer::new(move || {
         let cors = Cors::permissive();
         App::new()
