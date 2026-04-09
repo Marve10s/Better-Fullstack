@@ -52,7 +52,6 @@ jobs:
     name: Smoke Test
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,12 +109,49 @@ jobs:
           cd ../template-generator && bun run build
           cd ../../apps/cli && bun run build
 
+      - name: Detect changed schemas for PR-aware testing
+        id: detect-changes
+        if: github.event_name == 'pull_request'
+        run: |
+          FORCE_FLAGS=""
+
+          # Get files changed in this PR
+          CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' 2>/dev/null || true)
+
+          # Detect new options added to schemas.ts
+          if echo "$CHANGED" | grep -q "packages/types/src/schemas.ts"; then
+            DIFF=$(gh pr diff ${{ github.event.pull_request.number }} -- packages/types/src/schemas.ts 2>/dev/null || true)
+
+            # Extract newly added enum values from the diff (lines starting with +)
+            # Pattern: look for added lines containing quoted strings in enum arrays
+            NEW_VALUES=$(echo "$DIFF" | grep '^+' | grep -oP '"\K[a-z0-9-]+(?=")' | grep -v "none" | sort -u || true)
+
+            if [ -n "$NEW_VALUES" ]; then
+              # Force the first new value found (most PRs add one tool)
+              FIRST_NEW=$(echo "$NEW_VALUES" | head -1)
+              echo "Detected new schema value: $FIRST_NEW"
+
+              # Try to find which category it belongs to by checking the surrounding context
+              CATEGORY=$(echo "$DIFF" | grep -B 20 "\"$FIRST_NEW\"" | grep -oP '(?<=export const )\w+Schema' | tail -1 | sed 's/Schema$//' | sed 's/\([A-Z]\)/-\1/g' | sed 's/^-//' | tr '[:upper:]' '[:lower:]' || true)
+
+              if [ -n "$CATEGORY" ]; then
+                FORCE_FLAGS="--force-option $CATEGORY=$FIRST_NEW"
+                echo "Will force: $FORCE_FLAGS"
+              fi
+            fi
+          fi
+
+          echo "force_flags=$FORCE_FLAGS" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Run Smoke Tests
         env:
           INPUT_SEED: ${{ inputs.seed }}
           FALLBACK_SEED: ${{ github.sha }}
           SMOKE_ECOSYSTEM: ${{ inputs.ecosystem }}
           SMOKE_COUNT: ${{ inputs.count || '14' }}
+          FORCE_FLAGS: ${{ steps.detect-changes.outputs.force_flags }}
         run: |
           SEED="${INPUT_SEED:-$FALLBACK_SEED}"
 
@@ -128,6 +164,7 @@ jobs:
             --seed "$SEED" \
             --count "$SMOKE_COUNT" \
             $ECOSYSTEM_FLAG \
+            $FORCE_FLAGS \
             --output testing/.smoke-output
 
       - name: Post Step Summary
