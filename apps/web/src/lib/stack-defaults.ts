@@ -66,6 +66,7 @@ export type StackState = {
   pythonOrm: string;
   pythonValidation: string;
   pythonAi: string;
+  pythonAuth: string;
   pythonTaskQueue: string;
   pythonQuality: string;
   goWebFramework: string;
@@ -141,6 +142,7 @@ export const DEFAULT_STACK: StackState = {
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",
   pythonAi: "none",
+  pythonAuth: "none",
   pythonTaskQueue: "none",
   pythonQuality: "ruff",
   goWebFramework: "gin",

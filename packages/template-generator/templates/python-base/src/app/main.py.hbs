@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 {{#if (eq pythonWebFramework "fastapi")}}
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, Depends, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (eq pythonValidation "pydantic"))}}, HTTPException{{/if}}
+from fastapi import FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, Depends, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
@@ -149,6 +149,9 @@ from app.celery_schemas import (
     TaskRevokeResponse,
 )
 {{/if}}
+{{#if (ne pythonAuth "none")}}
+from app.auth import create_access_token, verify_token
+{{/if}}
 
 load_dotenv()
 
@@ -200,6 +203,30 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+{{#if (ne pythonAuth "none")}}
+
+# Auth endpoints
+@app.post("/auth/token")
+async def login(username: str = "", password: str = ""):
+    """Create an access token."""
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    token = create_access_token(data={"sub": username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@app.get("/auth/me")
+async def get_current_user(authorization: str = ""):
+    """Get the current authenticated user from a Bearer token."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+    token = authorization.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return {"username": payload.get("sub"), "token_data": payload}
+{{/if}}
 
 {{#if (includes pythonAi "langchain")}}
 
@@ -889,9 +916,13 @@ if __name__ == "__main__":
 {{/if}}
 {{#if (eq pythonWebFramework "django")}}
 import django
+import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path
+{{#if (ne pythonAuth "none")}}
+from app.auth import create_access_token, verify_token
+{{/if}}
 
 load_dotenv()
 
@@ -925,9 +956,39 @@ def health(request):
     return JsonResponse({"status": "healthy"})
 
 
+{{#if (ne pythonAuth "none")}}
+def auth_token(request):
+    """Create an access token."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    body = json.loads(request.body) if request.body else {}
+    username = body.get("username", "")
+    if not username:
+        return JsonResponse({"error": "Username is required"}, status=400)
+    token = create_access_token(data={"sub": username})
+    return JsonResponse({"access_token": token, "token_type": "bearer"})
+
+
+def auth_me(request):
+    """Get current authenticated user from Bearer token."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return JsonResponse({"error": "Missing or invalid authorization header"}, status=401)
+    token = auth_header.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        return JsonResponse({"error": "Invalid or expired token"}, status=401)
+    return JsonResponse({"username": payload.get("sub"), "token_data": payload})
+{{/if}}
+
+
 urlpatterns = [
     path("", root),
     path("health", health),
+{{#if (ne pythonAuth "none")}}
+    path("auth/token", auth_token),
+    path("auth/me", auth_me),
+{{/if}}
 ]
 
 
@@ -943,6 +1004,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
+{{/if}}
+{{#if (ne pythonAuth "none")}}
+from app.auth import create_access_token, verify_token
 {{/if}}
 
 load_dotenv()
@@ -969,6 +1033,32 @@ def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy"})
 
+{{#if (ne pythonAuth "none")}}
+
+@app.route("/auth/token", methods=["POST"])
+def auth_token():
+    """Create an access token."""
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "")
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+    token = create_access_token(data={"sub": username})
+    return jsonify({"access_token": token, "token_type": "bearer"})
+
+
+@app.route("/auth/me")
+def auth_me():
+    """Get current authenticated user from Bearer token."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid authorization header"}), 401
+    token = auth_header.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    return jsonify({"username": payload.get("sub"), "token_data": payload})
+{{/if}}
+
 
 if __name__ == "__main__":
     app.run(
@@ -980,6 +1070,11 @@ if __name__ == "__main__":
 {{#if (eq pythonWebFramework "litestar")}}
 from litestar import Litestar, get, post
 from litestar.config.cors import CORSConfig
+{{#if (ne pythonAuth "none")}}
+from litestar.exceptions import HTTPException
+
+from app.auth import create_access_token, verify_token
+{{/if}}
 
 load_dotenv()
 
@@ -996,8 +1091,36 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+{{#if (ne pythonAuth "none")}}
+
+@post("/auth/token")
+async def auth_token(data: dict) -> dict:
+    """Create an access token."""
+    username = data.get("username", "")
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    token = create_access_token(data={"sub": username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@get("/auth/me")
+async def auth_me(authorization: str = "") -> dict:
+    """Get current authenticated user from Bearer token."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+    token = authorization.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return {"username": payload.get("sub"), "token_data": payload}
+{{/if}}
+
+
 cors_config = CORSConfig(allow_origins=["*"])
-app = Litestar(route_handlers=[index, health], cors_config=cors_config)
+app = Litestar(
+    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}],
+    cors_config=cors_config,
+)
 {{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def main():

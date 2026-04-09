@@ -36,6 +36,7 @@ import type {
   Payments,
   ProjectConfig,
   PythonAi,
+  PythonAuth,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -326,6 +327,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.pythonAi !== undefined) {
     config.pythonAi = processArrayOption(options.pythonAi) as PythonAi[];
+  }
+
+  if (options.pythonAuth !== undefined) {
+    config.pythonAuth = options.pythonAuth as PythonAuth;
   }
 
   if (options.pythonTaskQueue !== undefined) {

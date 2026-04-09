@@ -331,6 +331,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   pydantic: { type: "si", slug: "pydantic", hex: "E92063" },
   "openai-sdk": { type: "local", src: "/icon/openai.svg", needsInvert: "dark" },
   "anthropic-sdk": { type: "si", slug: "anthropic", hex: "191919" },
+  authlib: { type: "si", slug: "auth0", hex: "EB5424" },
+  jwt: { type: "si", slug: "jsonwebtokens", hex: "000000" },
   celery: { type: "si", slug: "celery", hex: "37814A" },
   ruff: { type: "si", slug: "ruff", hex: "D7FF64" },
 

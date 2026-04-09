@@ -1,5 +1,6 @@
 import type {
   PythonAi,
+  PythonAuth,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -164,6 +165,38 @@ export async function getPythonAiChoice(pythonAi?: PythonAi[]) {
   if (response.includes("none")) return [];
 
   return response as PythonAi[];
+}
+
+export async function getPythonAuthChoice(pythonAuth?: PythonAuth) {
+  if (pythonAuth !== undefined) return pythonAuth;
+
+  const options = [
+    {
+      value: "authlib" as const,
+      label: "Authlib",
+      hint: "Comprehensive auth library — OAuth1/2, OIDC, JWS, JWK, JWT",
+    },
+    {
+      value: "jwt" as const,
+      label: "JWT (python-jose)",
+      hint: "Simple JWT token creation and verification",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No authentication library",
+    },
+  ];
+
+  const response = await navigableSelect<PythonAuth>({
+    message: "Select Python authentication library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
 }
 
 export async function getPythonTaskQueueChoice(pythonTaskQueue?: PythonTaskQueue) {

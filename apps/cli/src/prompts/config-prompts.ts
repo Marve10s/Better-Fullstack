@@ -34,6 +34,7 @@ import type {
   Payments,
   ProjectConfig,
   PythonAi,
+  PythonAuth,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -101,6 +102,7 @@ import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
 import {
   getPythonAiChoice,
+  getPythonAuthChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
   getPythonTaskQueueChoice,
@@ -182,6 +184,7 @@ type PromptGroupResults = {
   pythonOrm: PythonOrm;
   pythonValidation: PythonValidation;
   pythonAi: PythonAi[];
+  pythonAuth: PythonAuth;
   pythonTaskQueue: PythonTaskQueue;
   pythonQuality: PythonQuality;
   // Go ecosystem
@@ -464,6 +467,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "python") return Promise.resolve([] as PythonAi[]);
         return getPythonAiChoice(flags.pythonAi);
       },
+      pythonAuth: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
+        return getPythonAuthChoice(flags.pythonAuth);
+      },
       pythonTaskQueue: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
         return getPythonTaskQueueChoice(flags.pythonTaskQueue);
@@ -573,6 +580,7 @@ export async function gatherConfig(
     pythonOrm: result.pythonOrm,
     pythonValidation: result.pythonValidation,
     pythonAi: result.pythonAi,
+    pythonAuth: result.pythonAuth,
     pythonTaskQueue: result.pythonTaskQueue,
     pythonQuality: result.pythonQuality,
     // Go ecosystem options

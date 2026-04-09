@@ -315,6 +315,10 @@ export const PythonAiSchema = z
   .enum(["langchain", "llamaindex", "openai-sdk", "anthropic-sdk", "langgraph", "crewai", "none"])
   .describe("Python AI/ML framework");
 
+export const PythonAuthSchema = z
+  .enum(["authlib", "jwt", "none"])
+  .describe("Python authentication library");
+
 export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
 
 export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
@@ -508,6 +512,7 @@ export const CreateInputSchema = z.object({
   pythonOrm: PythonOrmSchema.optional(),
   pythonValidation: PythonValidationSchema.optional(),
   pythonAi: z.array(PythonAiSchema).optional(),
+  pythonAuth: PythonAuthSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
   // Go ecosystem options
@@ -758,6 +763,7 @@ export const PYTHON_WEB_FRAMEWORK_VALUES = PythonWebFrameworkSchema.options;
 export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;
 export const PYTHON_AI_VALUES = PythonAiSchema.options;
+export const PYTHON_AUTH_VALUES = PythonAuthSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;
 export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options;

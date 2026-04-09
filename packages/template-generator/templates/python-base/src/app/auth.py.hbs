@@ -1,0 +1,66 @@
+{{#if (eq pythonAuth "authlib")}}
+"""Authentication module using Authlib."""
+
+import os
+from datetime import datetime, timedelta, timezone
+
+from authlib.jose import JsonWebToken
+
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+_jwt = JsonWebToken(["HS256"])
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    """Create a JWT access token using Authlib."""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    header = {"alg": ALGORITHM}
+    return _jwt.serialize_compact(header, to_encode, SECRET_KEY).decode("utf-8")
+
+
+def verify_token(token: str) -> dict | None:
+    """Verify and decode a JWT token using Authlib."""
+    try:
+        claims = _jwt.deserialize_compact(token, SECRET_KEY)
+        claims.validate()
+        return dict(claims)
+    except Exception:
+        return None
+{{/if}}
+{{#if (eq pythonAuth "jwt")}}
+"""Authentication module using python-jose JWT."""
+
+import os
+from datetime import datetime, timedelta, timezone
+
+from jose import JWTError, jwt
+
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    """Create a JWT access token using python-jose."""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_token(token: str) -> dict | None:
+    """Verify and decode a JWT token using python-jose."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+{{/if}}

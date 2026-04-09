@@ -731,6 +731,8 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.pydantic.dev/",
     githubUrl: "https://github.com/pydantic/pydantic",
   },
+  authlib: { docsUrl: "https://docs.authlib.org/en/latest/", githubUrl: "https://github.com/lepture/authlib" },
+  jwt: { docsUrl: "https://python-jose.readthedocs.io/en/latest/", githubUrl: "https://github.com/mpdavis/python-jose" },
   celery: { docsUrl: "https://docs.celeryq.dev/", githubUrl: "https://github.com/celery/celery" },
   ruff: { docsUrl: "https://docs.astral.sh/ruff/", githubUrl: "https://github.com/astral-sh/ruff" },
   gin: { docsUrl: "https://gin-gonic.com/docs/", githubUrl: "https://github.com/gin-gonic/gin" },
