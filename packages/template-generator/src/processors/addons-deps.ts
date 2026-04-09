@@ -125,7 +125,12 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
 
   if (config.addons.includes("tauri")) {
     if (vfs.exists(webPkgPath)) {
-      addPackageDependency({ vfs, packagePath: webPkgPath, devDependencies: ["@tauri-apps/cli"] });
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["@tauri-apps/api"],
+        devDependencies: ["@tauri-apps/cli"],
+      });
       const webPkg = vfs.readJson<PackageJson>(webPkgPath);
       if (webPkg) {
         webPkg.scripts = {

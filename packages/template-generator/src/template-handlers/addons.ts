@@ -30,6 +30,14 @@ export async function processAddonTemplates(
       continue;
     }
 
+    // Tauri templates - add src-tauri to web app
+    if (addon === "tauri") {
+      if (vfs.exists("apps/web/package.json")) {
+        processTemplatesFromPrefix(vfs, templates, "addons/tauri/apps/web", "apps/web", config);
+      }
+      continue;
+    }
+
     // MSW templates - only add to existing packages
     if (addon === "msw") {
       if (vfs.exists("apps/web/package.json")) {

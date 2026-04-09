@@ -171,6 +171,20 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
+  // === ADDON VARIATIONS ===
+  {
+    name: "tauri-next-desktop",
+    config: {
+      frontend: ["next"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["tauri"],
+    },
+  },
+
   // === SPECIAL CASES ===
   {
     name: "frontend-only-no-backend",

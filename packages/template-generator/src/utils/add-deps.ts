@@ -92,6 +92,7 @@ export const dependencyVersionMap = {
   "@vite-pwa/assets-generator": "^1.0.2",
 
   "@tauri-apps/cli": "^2.10.1",
+  "@tauri-apps/api": "^2.5.0",
 
   "@biomejs/biome": "^2.4.10",
 

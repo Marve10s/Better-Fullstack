@@ -1,0 +1,89 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
+  "productName": "{{projectName}}",
+  "version": "0.1.0",
+  "identifier": "com.{{replace projectName "-" "."}}.app",
+  "build": {
+{{#if (includes frontend "next")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../.next"
+{{else if (includes frontend "nuxt")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../.output/public"
+{{else if (includes frontend "svelte")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../build"
+{{else if (includes frontend "react-router")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../build/client"
+{{else if (includes frontend "react-vite")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../dist"
+{{else if (includes frontend "solid")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../dist"
+{{else if (includes frontend "solid-start")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../.output/public"
+{{else if (includes frontend "angular")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../dist/{{projectName}}/browser"
+{{else if (includes frontend "astro")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../dist"
+{{else if (includes frontend "tanstack-start")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../.output/public"
+{{else}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../dist"
+{{/if}}
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "{{projectName}}",
+        "width": 1024,
+        "height": 768,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
