@@ -528,6 +528,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   rustWebFramework: {
     axum: "Axum",
     "actix-web": "Actix-web",
+    rocket: "Rocket",
   },
   rustFrontend: {
     leptos: "Leptos",

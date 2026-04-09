@@ -49,6 +49,11 @@ actix-web.workspace = true
 actix-rt.workspace = true
 actix-cors.workspace = true
 {{/if}}
+{{#if (eq rustWebFramework "rocket")}}
+# Web framework
+rocket.workspace = true
+rocket_cors.workspace = true
+{{/if}}
 
 {{#if (eq rustOrm "sqlx")}}
 # Database
@@ -79,6 +84,9 @@ async-graphql-axum.workspace = true
 {{/if}}
 {{#if (eq rustWebFramework "actix-web")}}
 async-graphql-actix-web.workspace = true
+{{/if}}
+{{#if (eq rustWebFramework "rocket")}}
+async-graphql-rocket.workspace = true
 {{/if}}
 {{/if}}
 

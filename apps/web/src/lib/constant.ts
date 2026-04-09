@@ -2549,6 +2549,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "rocket",
+      name: "Rocket",
+      description: "Convention-over-configuration web framework for Rust, 25k+ stars",
+      icon: "https://cdn.simpleicons.org/rocket/D33847",
+      color: "from-red-500 to-red-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Rust web framework",

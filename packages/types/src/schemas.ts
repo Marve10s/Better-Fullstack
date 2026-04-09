@@ -269,7 +269,7 @@ export const AnalyticsSchema = z
 
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
-  .enum(["axum", "actix-web", "none"])
+  .enum(["axum", "actix-web", "rocket", "none"])
   .describe("Rust web framework");
 
 export const RustFrontendSchema = z

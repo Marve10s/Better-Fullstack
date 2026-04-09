@@ -70,6 +70,11 @@ actix-web = "4"
 actix-rt = "2"
 actix-cors = "0.7"
 {{/if}}
+{{#if (eq rustWebFramework "rocket")}}
+# Web framework (Rocket)
+rocket = { version = "0.5", features = ["json"] }
+rocket_cors = "0.6"
+{{/if}}
 
 {{#if (eq rustOrm "sqlx")}}
 # Database (SQLx)
@@ -100,6 +105,9 @@ async-graphql-axum = "7"
 {{/if}}
 {{#if (eq rustWebFramework "actix-web")}}
 async-graphql-actix-web = "7"
+{{/if}}
+{{#if (eq rustWebFramework "rocket")}}
+async-graphql-rocket = "7"
 {{/if}}
 {{/if}}
 

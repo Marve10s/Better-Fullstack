@@ -28,6 +28,11 @@ export async function getRustWebFrameworkChoice(rustWebFramework?: RustWebFramew
       hint: "Powerful, pragmatic, and extremely fast web framework",
     },
     {
+      value: "rocket" as const,
+      label: "Rocket",
+      hint: "Convention-over-configuration web framework, 25k+ stars",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No web framework",

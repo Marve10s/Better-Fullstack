@@ -636,6 +636,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://actix.rs/docs/",
     githubUrl: "https://github.com/actix/actix-web",
   },
+  rocket: {
+    docsUrl: "https://rocket.rs/guide/",
+    githubUrl: "https://github.com/rwf2/Rocket",
+  },
   leptos: { docsUrl: "https://book.leptos.dev/", githubUrl: "https://github.com/leptos-rs/leptos" },
   dioxus: {
     docsUrl: "https://dioxuslabs.com/learn/",

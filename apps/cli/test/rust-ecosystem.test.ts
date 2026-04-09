@@ -80,6 +80,7 @@ describe("Rust Ecosystem", () => {
     it("should have rust web framework options", () => {
       expect(RUST_WEB_FRAMEWORKS).toContain("axum");
       expect(RUST_WEB_FRAMEWORKS).toContain("actix-web");
+      expect(RUST_WEB_FRAMEWORKS).toContain("rocket");
       expect(RUST_WEB_FRAMEWORKS).toContain("none");
     });
 
@@ -412,6 +413,102 @@ describe("Rust Ecosystem", () => {
       expect(mainRsContent).toContain("HttpServer::new");
       expect(mainRsContent).toContain("App::new()");
       expect(mainRsContent).toContain('#[get("/health")]');
+    });
+  });
+
+  describe("Rocket Web Framework", () => {
+    it("should include Rocket dependencies in workspace Cargo.toml", async () => {
+      const result = await createVirtual({
+        projectName: "rust-rocket-deps",
+        ecosystem: "rust",
+        rustWebFramework: "rocket",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toBeDefined();
+      expect(cargoContent).toContain('rocket = { version = "0.5", features = ["json"] }');
+      expect(cargoContent).toContain("rocket_cors");
+    });
+
+    it("should include Rocket dependencies in server crate", async () => {
+      const result = await createVirtual({
+        projectName: "rust-rocket-server",
+        ecosystem: "rust",
+        rustWebFramework: "rocket",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargoContent).toBeDefined();
+      expect(serverCargoContent).toContain("rocket.workspace = true");
+      expect(serverCargoContent).toContain("rocket_cors.workspace = true");
+    });
+
+    it("should generate Rocket main.rs with #[launch] and routes", async () => {
+      const result = await createVirtual({
+        projectName: "rust-rocket-main",
+        ecosystem: "rust",
+        rustWebFramework: "rocket",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainRsContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainRsContent).toBeDefined();
+
+      // Verify Rocket-specific code
+      expect(mainRsContent).toContain("use rocket::");
+      expect(mainRsContent).toContain("use rocket_cors::CorsOptions");
+      expect(mainRsContent).toContain("#[rocket::launch]");
+      expect(mainRsContent).toContain("async fn rocket()");
+      expect(mainRsContent).toContain("rocket::build()");
+      expect(mainRsContent).toContain('#[get("/health")]');
+      expect(mainRsContent).toContain("routes![health]");
+    });
+
+    it("should generate Rocket with SeaORM state management", async () => {
+      const result = await createVirtual({
+        projectName: "rust-rocket-seaorm",
+        ecosystem: "rust",
+        rustWebFramework: "rocket",
+        rustFrontend: "none",
+        rustOrm: "sea-orm",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainRsContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainRsContent).toBeDefined();
+
+      expect(mainRsContent).toContain("rocket::State<AppState>");
+      expect(mainRsContent).toContain("sea_orm::");
+      expect(mainRsContent).toContain("Database");
+      expect(mainRsContent).toContain(".manage(state)");
     });
   });
 

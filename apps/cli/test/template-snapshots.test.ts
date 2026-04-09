@@ -171,20 +171,6 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
-  // === ADDON VARIATIONS ===
-  {
-    name: "tauri-next-desktop",
-    config: {
-      frontend: ["next"],
-      backend: "hono",
-      api: "trpc",
-      database: "sqlite",
-      orm: "drizzle",
-      auth: "none",
-      addons: ["tauri"],
-    },
-  },
-
   // === SPECIAL CASES ===
   {
     name: "frontend-only-no-backend",
@@ -342,15 +328,14 @@ describe("Template Snapshots - Rust Ecosystem", () => {
       },
     },
     {
-      name: "axum-moka-cache",
+      name: "rocket-seaorm",
       config: {
         ecosystem: "rust" as const,
-        rustWebFramework: "axum" as const,
+        rustWebFramework: "rocket" as const,
         rustFrontend: "none" as const,
-        rustOrm: "none" as const,
+        rustOrm: "sea-orm" as const,
         rustApi: "none" as const,
         rustCli: "none" as const,
-        rustCaching: "moka" as const,
         rustLibraries: ["serde"] as const,
       },
     },

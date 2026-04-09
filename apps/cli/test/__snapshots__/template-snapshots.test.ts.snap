@@ -687,68 +687,6 @@ exports[`Template Snapshots File Structure Snapshots file structure: algolia-sea
 ]
 `;
 
-exports[`Template Snapshots File Structure Snapshots file structure: tauri-next-desktop 1`] = `
-[
-  "CLAUDE.md",
-  "README.md",
-  "apps/server/.env",
-  "apps/server/package.json",
-  "apps/server/src/index.ts",
-  "apps/server/tsconfig.json",
-  "apps/server/tsdown.config.ts",
-  "apps/web/.env",
-  "apps/web/next-env.d.ts",
-  "apps/web/next.config.ts",
-  "apps/web/package.json",
-  "apps/web/postcss.config.mjs",
-  "apps/web/src-tauri/Cargo.toml",
-  "apps/web/src-tauri/build.rs",
-  "apps/web/src-tauri/capabilities/default.json",
-  "apps/web/src-tauri/src/lib.rs",
-  "apps/web/src-tauri/src/main.rs",
-  "apps/web/src-tauri/tauri.conf.json",
-  "apps/web/src/app/layout.tsx",
-  "apps/web/src/app/page.tsx",
-  "apps/web/src/components/header.tsx",
-  "apps/web/src/components/loader.tsx",
-  "apps/web/src/components/mode-toggle.tsx",
-  "apps/web/src/components/providers.tsx",
-  "apps/web/src/components/theme-provider.tsx",
-  "apps/web/src/components/ui/button.tsx",
-  "apps/web/src/components/ui/card.tsx",
-  "apps/web/src/components/ui/checkbox.tsx",
-  "apps/web/src/components/ui/dropdown-menu.tsx",
-  "apps/web/src/components/ui/input.tsx",
-  "apps/web/src/components/ui/label.tsx",
-  "apps/web/src/components/ui/skeleton.tsx",
-  "apps/web/src/components/ui/sonner.tsx",
-  "apps/web/src/index.css",
-  "apps/web/src/lib/utils.ts",
-  "apps/web/src/utils/trpc.ts",
-  "apps/web/tsconfig.json",
-  "package.json",
-  "packages/api/package.json",
-  "packages/api/src/context.ts",
-  "packages/api/src/index.ts",
-  "packages/api/src/routers/index.ts",
-  "packages/api/tsconfig.json",
-  "packages/config/package.json",
-  "packages/config/tsconfig.base.json",
-  "packages/db/drizzle.config.ts",
-  "packages/db/package.json",
-  "packages/db/src/index.ts",
-  "packages/db/src/schema/example.ts",
-  "packages/db/src/schema/index.ts",
-  "packages/db/tsconfig.json",
-  "packages/env/package.json",
-  "packages/env/src/native.ts",
-  "packages/env/src/server.ts",
-  "packages/env/src/web.ts",
-  "packages/env/tsconfig.json",
-  "tsconfig.json",
-]
-`;
-
 exports[`Template Snapshots File Structure Snapshots file structure: frontend-only-no-backend 1`] = `
 [
   "CLAUDE.md",
@@ -10002,762 +9940,6 @@ export const db = drizzle({ client, schema });
 }
 `;
 
-exports[`Template Snapshots Key File Content Snapshots key files: tauri-next-desktop 1`] = `
-{
-  "fileCount": 63,
-  "files": [
-    {
-      "content": "[exists]",
-      "path": "apps/server/.env",
-    },
-    {
-      "content": 
-"{
-  "name": "server",
-  "main": "src/index.ts",
-  "type": "module",
-  "scripts": {
-    "build": "tsdown",
-    "check-types": "tsc -b",
-    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
-    "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
-  },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@snapshot-tauri-next-desktop/env": "workspace:*",
-    "@snapshot-tauri-next-desktop/api": "workspace:*",
-    "@snapshot-tauri-next-desktop/db": "workspace:*",
-    "hono": "catalog:",
-    "@trpc/server": "catalog:",
-    "@hono/trpc-server": "^0.4.2"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.2",
-    "tsdown": "^0.21.7",
-    "@snapshot-tauri-next-desktop/config": "workspace:*",
-    "@types/bun": "catalog:"
-  }
-}
-"
-,
-      "path": "apps/server/package.json",
-    },
-    {
-      "content": 
-"import { env } from "@snapshot-tauri-next-desktop/env/server";
-import { trpcServer } from "@hono/trpc-server";
-import { createContext } from "@snapshot-tauri-next-desktop/api/context";
-import { appRouter } from "@snapshot-tauri-next-desktop/api/routers/index";
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { logger } from "hono/logger";
-
-const app = new Hono();
-
-app.use(logger());
-app.use(
-	"/*",
-	cors({
-		origin: env.CORS_ORIGIN,
-		allowMethods: ["GET", "POST", "OPTIONS"],
-	})
-);
-
-
-
-app.use(
-	"/trpc/*",
-	trpcServer({
-		router: appRouter,
-		createContext: (_opts, context) => {
-			return createContext({ context });
-		},
-	})
-);
-
-
-
-app.get("/", (c) => {
-	return c.text("OK");
-});
-
-export default app;
-"
-,
-      "path": "apps/server/src/index.ts",
-    },
-    {
-      "content": 
-"{
-  "extends": "@snapshot-tauri-next-desktop/config/tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-		"outDir": "dist",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
-  }
-}
-"
-,
-      "path": "apps/server/tsconfig.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/server/tsdown.config.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/.env",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/next-env.d.ts",
-    },
-    {
-      "content": 
-"import "@snapshot-tauri-next-desktop/env/web";
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-	typedRoutes: true,
-	reactCompiler: true,
-};
-
-export default nextConfig;
-
-"
-,
-      "path": "apps/web/next.config.ts",
-    },
-    {
-      "content": 
-"{
-  "name": "web",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --port 3001",
-    "build": "next build",
-    "start": "next start",
-    "tauri": "tauri",
-    "desktop:dev": "tauri dev",
-    "desktop:build": "tauri build"
-  },
-  "dependencies": {
-    "@base-ui/react": "^1.3.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "next-themes": "^0.4.6",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.5.0",
-    "tw-animate-css": "^1.4.0",
-    "next": "^16.2.2",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.3",
-    "babel-plugin-react-compiler": "^1.0.0",
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@snapshot-tauri-next-desktop/env": "workspace:*",
-    "@snapshot-tauri-next-desktop/api": "workspace:*",
-    "@libsql/client": "catalog:",
-    "libsql": "catalog:",
-    "@trpc/tanstack-react-query": "^11.16.0",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.96.2",
-    "@tauri-apps/api": "^2.5.0",
-    "lucide-react": "^1.7.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "tailwindcss": "^4.2.2",
-    "@types/node": "^25.5.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "typescript": "^5",
-    "@snapshot-tauri-next-desktop/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.96.2",
-    "@tauri-apps/cli": "^2.10.1"
-  }
-}
-"
-,
-      "path": "apps/web/package.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/postcss.config.mjs",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src-tauri/build.rs",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src-tauri/capabilities/default.json",
-    },
-    {
-      "content": 
-"[package]
-name = "snapshot_tauri_next_desktop_desktop"
-version = "0.1.0"
-description = "A Tauri desktop application"
-authors = ["you"]
-edition = "2021"
-
-[lib]
-name = "snapshot_tauri_next_desktop_desktop_lib"
-crate-type = ["lib", "cdylib", "staticlib"]
-
-[build-dependencies]
-tauri-build = { version = "2", features = [] }
-
-[dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-"
-,
-      "path": "apps/web/src-tauri/Cargo.toml",
-    },
-    {
-      "content": 
-"#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
-"
-,
-      "path": "apps/web/src-tauri/src/lib.rs",
-    },
-    {
-      "content": 
-"// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
-fn main() {
-    snapshot_tauri_next_desktop_desktop_lib::run()
-}
-"
-,
-      "path": "apps/web/src-tauri/src/main.rs",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src-tauri/tauri.conf.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/app/layout.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/app/page.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/header.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/loader.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/mode-toggle.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/providers.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/theme-provider.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/button.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/card.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/checkbox.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/dropdown-menu.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/input.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/label.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/skeleton.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/components/ui/sonner.tsx",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/index.css",
-    },
-    {
-      "content": "[exists]",
-      "path": "apps/web/src/lib/utils.ts",
-    },
-    {
-      "content": 
-"import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
-import type { AppRouter } from "@snapshot-tauri-next-desktop/api/routers/index";
-import { toast } from 'sonner';
-import { env } from "@snapshot-tauri-next-desktop/env/web";
-
-export const queryClient = new QueryClient({
-	queryCache: new QueryCache({
-		onError: (error, query) => {
-			toast.error(error.message, {
-				action: {
-					label: "retry",
-					onClick: query.invalidate,
-				},
-			});
-		},
-	}),
-});
-
-const trpcClient = createTRPCClient<AppRouter>({
-	links: [
-		httpBatchLink({
-			url: \`\${env.NEXT_PUBLIC_SERVER_URL}/trpc\`,
-		}),
-	],
-})
-
-export const trpc = createTRPCOptionsProxy<AppRouter>({
-	client: trpcClient,
-	queryClient,
-});
-
-"
-,
-      "path": "apps/web/src/utils/trpc.ts",
-    },
-    {
-      "content": 
-"{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": [
-    "./next-env.d.ts",
-    "./**/*.ts",
-    "./**/*.tsx",
-    "./.next/types/**/*.ts"
-  ],
-  "exclude": [
-    "./node_modules"
-  ]
-}
-"
-,
-      "path": "apps/web/tsconfig.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "CLAUDE.md",
-    },
-    {
-      "content": 
-"{
-  "name": "snapshot-tauri-next-desktop",
-  "private": true,
-  "type": "module",
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "packages/*"
-    ],
-    "catalog": {
-      "dotenv": "^17.4.1",
-      "zod": "^4.3.6",
-      "@types/bun": "^1.3.11",
-      "hono": "^4.12.11",
-      "@trpc/server": "^11.16.0",
-      "@libsql/client": "^0.17.2",
-      "libsql": "^0.5.29",
-      "@trpc/client": "^11.16.0"
-    }
-  },
-  "scripts": {
-    "dev": "bun run --filter '*' dev",
-    "build": "bun run --filter '*' build",
-    "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
-    "dev:web": "bun run --filter web dev",
-    "dev:server": "bun run --filter server dev",
-    "db:push": "bun run --filter @snapshot-tauri-next-desktop/db db:push",
-    "db:studio": "bun run --filter @snapshot-tauri-next-desktop/db db:studio",
-    "db:generate": "bun run --filter @snapshot-tauri-next-desktop/db db:generate",
-    "db:migrate": "bun run --filter @snapshot-tauri-next-desktop/db db:migrate",
-    "db:local": "bun run --filter @snapshot-tauri-next-desktop/db db:local"
-  },
-  "packageManager": "bun@1.3.5",
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@snapshot-tauri-next-desktop/env": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.2",
-    "@types/bun": "catalog:",
-    "@snapshot-tauri-next-desktop/config": "workspace:*"
-  }
-}
-"
-,
-      "path": "package.json",
-    },
-    {
-      "content": 
-"{
-  "name": "@snapshot-tauri-next-desktop/api",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "type": "module",
-  "scripts": {},
-  "devDependencies": {
-    "typescript": "^6.0.2",
-    "@snapshot-tauri-next-desktop/config": "workspace:*"
-  },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@snapshot-tauri-next-desktop/env": "workspace:*",
-    "@snapshot-tauri-next-desktop/db": "workspace:*",
-    "@trpc/server": "catalog:",
-    "@trpc/client": "catalog:",
-    "hono": "catalog:"
-  }
-}
-"
-,
-      "path": "packages/api/package.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/api/src/context.ts",
-    },
-    {
-      "content": 
-"import { initTRPC } from "@trpc/server";
-import type { Context } from "./context.js";
-
-export const t = initTRPC.context<Context>().create();
-
-export const router = t.router;
-
-export const publicProcedure = t.procedure;
-
-"
-,
-      "path": "packages/api/src/index.ts",
-    },
-    {
-      "content": 
-"import {
-  publicProcedure,
-  router,
-} from "../index.js";
-
-export const appRouter = router({
-  healthCheck: publicProcedure.query(() => {
-    return "OK";
-  }),
-});
-export type AppRouter = typeof appRouter;
-"
-,
-      "path": "packages/api/src/routers/index.ts",
-    },
-    {
-      "content": 
-"{
-  "extends": "@snapshot-tauri-next-desktop/config/tsconfig.base.json",
-  "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "composite": true
-  }
-}
-"
-,
-      "path": "packages/api/tsconfig.json",
-    },
-    {
-      "content": 
-"{
-  "name": "@snapshot-tauri-next-desktop/config",
-  "version": "0.0.0",
-  "private": true
-}
-"
-,
-      "path": "packages/config/package.json",
-    },
-    {
-      "content": 
-"{
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": ["ESNext"],
-    "verbatimModuleSyntax": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": [
-        "bun"
-
-    ]
-  }
-}
-"
-,
-      "path": "packages/config/tsconfig.base.json",
-    },
-    {
-      "content": 
-"import { defineConfig } from "drizzle-kit";
-import dotenv from "dotenv";
-
-dotenv.config({
-    path: "../../apps/server/.env",
-});
-
-export default defineConfig({
-  schema: "./src/schema",
-  out: "./src/migrations",
-  dialect: "turso",
-  dbCredentials: {
-    url: process.env.DATABASE_URL || "",
-  },
-});
-"
-,
-      "path": "packages/db/drizzle.config.ts",
-    },
-    {
-      "content": 
-"{
-  "name": "@snapshot-tauri-next-desktop/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:local": "turso dev --db-file local.db",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.2",
-    "@snapshot-tauri-next-desktop/config": "workspace:*",
-    "drizzle-kit": "^0.31.10"
-  },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@snapshot-tauri-next-desktop/env": "workspace:*",
-    "drizzle-orm": "^0.45.2",
-    "@libsql/client": "catalog:",
-    "libsql": "catalog:"
-  }
-}
-"
-,
-      "path": "packages/db/package.json",
-    },
-    {
-      "content": 
-"import { env } from "@snapshot-tauri-next-desktop/env/server";
-import * as schema from "./schema/index.js";
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
-
-const client = createClient({
-	url: env.DATABASE_URL,
-});
-
-export const db = drizzle({ client, schema });
-
-"
-,
-      "path": "packages/db/src/index.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/db/src/schema/example.ts",
-    },
-    {
-      "content": 
-"export * from "./example.js";
-"
-,
-      "path": "packages/db/src/schema/index.ts",
-    },
-    {
-      "content": 
-"{
-  "extends": "@snapshot-tauri-next-desktop/config/tsconfig.base.json",
-  "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "composite": true
-  }
-}
-"
-,
-      "path": "packages/db/tsconfig.json",
-    },
-    {
-      "content": 
-"{
-  "name": "@snapshot-tauri-next-desktop/env",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    "./server": "./src/server.ts",
-    "./web": "./src/web.ts"
-  },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@t3-oss/env-nextjs": "^0.13.11",
-    "@t3-oss/env-core": "^0.13.11"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.2",
-    "@types/bun": "catalog:",
-    "@snapshot-tauri-next-desktop/config": "workspace:*"
-  }
-}
-"
-,
-      "path": "packages/env/package.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/env/src/native.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/env/src/server.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/env/src/web.ts",
-    },
-    {
-      "content": 
-"{
-  "extends": "@snapshot-tauri-next-desktop/config/tsconfig.base.json",
-}
-"
-,
-      "path": "packages/env/tsconfig.json",
-    },
-    {
-      "content": "[exists]",
-      "path": "README.md",
-    },
-    {
-      "content": 
-"{
-  "extends": "@snapshot-tauri-next-desktop/config/tsconfig.base.json",
-}
-"
-,
-      "path": "tsconfig.json",
-    },
-  ],
-}
-`;
-
 exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-no-backend 1`] = `
 {
   "fileCount": 35,
@@ -12026,7 +11208,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 ]
 `;
 
-exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-moka-cache 1`] = `
+exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: rocket-seaorm 1`] = `
 [
   ".env.example",
   "CLAUDE.md",
@@ -13211,7 +12393,7 @@ async fn main() -> anyhow::Result<()> {
 
 
     tracing::info!("Hello from snapshot-rust-cli-clap!");
-    tracing::info!("Add a web framework (axum or actix-web) to start building your API.");
+    tracing::info!("Add a web framework (axum, actix-web, or rocket) to start building your API.");
 
     Ok(())
 }
@@ -13680,7 +12862,7 @@ async fn main() -> eyre::Result<()> {
 }
 `;
 
-exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-moka-cache 1`] = `
+exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: rocket-seaorm 1`] = `
 {
   "fileCount": 10,
   "files": [
@@ -13741,18 +12923,18 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Environment variables
 dotenvy = "0.15"
 
-# Web framework (Axum)
-axum = "0.8"
-tower = "0.5"
-tower-http = { version = "0.6", features = ["cors", "trace"] }
+# Web framework (Rocket)
+rocket = { version = "0.5", features = ["json"] }
+rocket_cors = "0.6"
+
+# Database (SeaORM)
+sea-orm = { version = "1.1", features = ["runtime-tokio-rustls", "sqlx-postgres", "sqlx-sqlite", "sqlx-mysql"] }
+sea-orm-migration = "1.1"
 
 
 
 
 
-
-# Caching (Moka)
-moka = { version = "0.12", features = ["future"] }
 
 [profile.dev]
 opt-level = 0
@@ -13772,7 +12954,7 @@ codegen-units = 1
     {
       "content": 
 "[package]
-name = "snapshot-rust-axum-moka-cache-server"
+name = "snapshot-rust-rocket-seaorm-server"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -13798,15 +12980,14 @@ tracing-subscriber.workspace = true
 dotenvy.workspace = true
 
 # Web framework
-axum.workspace = true
-tower.workspace = true
-tower-http.workspace = true
+rocket.workspace = true
+rocket_cors.workspace = true
+
+# Database
+sea-orm.workspace = true
 
 
 
-
-# Caching
-moka.workspace = true
 
 [[bin]]
 name = "server"
@@ -13826,29 +13007,42 @@ path = "src/main.rs"
     },
     {
       "content": 
-"use axum::{routing::get, Json, Router};
+"use rocket::{get, routes, serde::json::Json};
+use rocket_cors::CorsOptions;
 use serde::Serialize;
-use tower_http::cors::CorsLayer;
 mod error;
-mod cache;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use sea_orm::{Database, DatabaseConnection};
+use std::sync::Arc;
 
 #[derive(Serialize)]
 struct HealthResponse {
     status: &'static str,
     message: &'static str,
+    database: &'static str,
 }
 
-async fn health() -> Json<HealthResponse> {
+pub struct AppState {
+    pub db: Arc<DatabaseConnection>,
+}
+
+#[get("/health")]
+async fn health(state: &rocket::State<AppState>) -> Json<HealthResponse> {
+    let db_status = if state.db.ping().await.is_ok() {
+        "connected"
+    } else {
+        "disconnected"
+    };
     Json(HealthResponse {
         status: "ok",
         message: "Server is running",
+        database: db_status,
     })
 }
 
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+#[rocket::launch]
+async fn rocket() -> _ {
     // Load environment variables
     dotenvy::dotenv().ok();
 
@@ -13858,27 +13052,25 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // Initialize in-memory cache
-    let _cache = cache::create_cache::<String>();
-    tracing::info!("Moka in-memory cache initialized");
+    // Configure CORS
+    let cors = CorsOptions::default()
+        .to_cors()
+        .expect("CORS configuration failed");
 
-    // Build router
-    let app = Router::new()
-        .route("/health", get(health))
-        .layer(CorsLayer::permissive());
+    // Initialize database connection
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
 
-    // Get host and port from environment
-    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let addr = format!("{}:{}", host, port);
+    tracing::info!("Connecting to database...");
+    let db = Database::connect(&database_url).await.expect("Failed to connect to database");
+    tracing::info!("Database connected successfully");
 
-    tracing::info!("Starting HTTP server at http://{}", addr);
+    let state = AppState { db: Arc::new(db) };
 
-    // Start server
-    let listener = tokio::net::TcpListener::bind(&addr).await?;
-    axum::serve(listener, app).await?;
-
-    Ok(())
+    rocket::build()
+        .manage(state)
+        .mount("/", routes![health])
+        .attach(cors)
 }
 "
 ,

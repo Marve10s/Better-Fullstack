@@ -755,6 +755,8 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **Axum** - Ergonomic and modular web framework by Tokio team");
   } else if (rustWebFramework === "actix-web") {
     features.push("- **Actix-web** - Powerful, pragmatic, and extremely fast web framework");
+  } else if (rustWebFramework === "rocket") {
+    features.push("- **Rocket** - Convention-over-configuration web framework for Rust");
   }
 
   // Frontend

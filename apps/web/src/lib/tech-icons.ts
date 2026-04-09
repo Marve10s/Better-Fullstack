@@ -312,6 +312,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Rust ──────────────────────────────────────────────────────────────────
   axum: { type: "local", src: "/icon/axum.svg" },
   "actix-web": { type: "local", src: "/icon/actix.svg" },
+  rocket: { type: "si", slug: "rust", hex: "CE422B" },
   leptos: { type: "local", src: "/icon/leptos.svg" },
   dioxus: { type: "local", src: "/icon/dioxus.svg" },
   "sea-orm": { type: "local", src: "/icon/seaorm.svg" },
