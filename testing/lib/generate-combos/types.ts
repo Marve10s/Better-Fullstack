@@ -8,6 +8,14 @@ export type GeneratorArgs = {
   installMode: InstallMode;
   rng?: () => number;
   noDedup?: boolean;
+  /** Force specific option values (e.g., { search: "algolia" }) */
+  forceOptions?: Record<string, string>;
+  /** Force these categories to never be "none" (e.g., ["search", "auth"]) */
+  forceNonNone?: string[];
+  /** Partition index for parallel runs (0-based) */
+  partitionIndex?: number;
+  /** Total number of partitions */
+  partitionTotal?: number;
 };
 
 export const DEFAULT_ARGS: GeneratorArgs = {

@@ -28,6 +28,10 @@ interface SmokeTestArgs {
   majorDeps?: boolean;
   majorDepsPackages?: string;
   majorDepsDiff?: string;
+  forceOptions?: Record<string, string>;
+  forceNonNone?: string[];
+  partitionIndex?: number;
+  partitionTotal?: number;
 }
 
 // ── Arg Parsing ─────────────────────────────────────────────────────────
@@ -99,6 +103,32 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         args.majorDeps = true;
         i++;
         break;
+      case "--force-option":
+        if (next) {
+          const eqIndex = next.indexOf("=");
+          if (eqIndex > 0) {
+            args.forceOptions ??= {};
+            args.forceOptions[next.slice(0, eqIndex)] = next.slice(eqIndex + 1);
+          }
+        }
+        i++;
+        break;
+      case "--force-non-none":
+        if (next) {
+          args.forceNonNone = next.split(",").map((s) => s.trim());
+        }
+        i++;
+        break;
+      case "--partition":
+        if (next) {
+          const parts = next.split("/");
+          if (parts.length === 2) {
+            args.partitionIndex = Number(parts[0]);
+            args.partitionTotal = Number(parts[1]);
+          }
+        }
+        i++;
+        break;
     }
   }
 
@@ -125,6 +155,10 @@ function generateCombos(args: SmokeTestArgs) {
     ecosystems: args.ecosystem ? [args.ecosystem] : ["typescript", "rust", "python", "go"],
     installMode: "no-install",
     rng,
+    forceOptions: args.forceOptions,
+    forceNonNone: args.forceNonNone,
+    partitionIndex: args.partitionIndex,
+    partitionTotal: args.partitionTotal,
   };
 
   return generateBatch(generatorArgs, emptyHistory);

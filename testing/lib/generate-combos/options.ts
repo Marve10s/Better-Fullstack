@@ -82,6 +82,8 @@ import type {
 import { DEFAULT_ECOSYSTEM_WEIGHTS } from "./types";
 
 let _rng: () => number = Math.random;
+let _forceOptions: Record<string, string> = {};
+let _forceNonNone: Set<string> = new Set();
 
 const SELF_COMPATIBLE_FRONTENDS = new Set([
   "next",
@@ -99,11 +101,19 @@ function sampleOne<T>(values: readonly T[]): T {
   return values[Math.floor(_rng() * values.length)];
 }
 
-function sampleScalar<T extends string>(values: readonly T[], noneWeight: number): T {
+function sampleScalar<T extends string>(values: readonly T[], noneWeight: number, key?: string): T {
+  // If this key has a forced value, use it (must be a valid option)
+  if (key && _forceOptions[key] && values.includes(_forceOptions[key] as T)) {
+    return _forceOptions[key] as T;
+  }
+
   const unique = Array.from(new Set(values));
   const nonNone = unique.filter((value) => value !== "none");
   if (nonNone.length === 0) return "none" as T;
-  if (unique.includes("none" as T) && _rng() < noneWeight) return "none" as T;
+
+  // If this key is in forceNonNone, never pick "none"
+  const effectiveNoneWeight = key && _forceNonNone.has(key) ? 0 : noneWeight;
+  if (unique.includes("none" as T) && _rng() < effectiveNoneWeight) return "none" as T;
   return sampleOne(nonNone);
 }
 
@@ -111,9 +121,16 @@ function sampleArray<T extends string>(
   values: readonly T[],
   noneWeight: number,
   maxItems = 1,
+  key?: string,
 ): T[] {
+  // If this key has a forced value, use it
+  if (key && _forceOptions[key] && values.includes(_forceOptions[key] as T)) {
+    return [_forceOptions[key] as T];
+  }
+
   const unique = Array.from(new Set(values)).filter((value) => value !== "none");
-  if (unique.length === 0 || _rng() < noneWeight) {
+  const effectiveNoneWeight = key && _forceNonNone.has(key) ? 0 : noneWeight;
+  if (unique.length === 0 || _rng() < effectiveNoneWeight) {
     return ["none" as T];
   }
 
@@ -475,21 +492,62 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
   }
 }
 
+/**
+ * Apply forced options to a draft's options object.
+ * forceOptions: override specific key=value pairs (e.g., { search: "algolia" })
+ * forceNonNone: re-sample keys that landed on "none" until they're non-none
+ */
+function applyForcedOptions(draft: CandidateDraft, args: GeneratorArgs): CandidateDraft {
+  const forceOptions = args.forceOptions ?? {};
+  const forceNonNone = new Set(args.forceNonNone ?? []);
+
+  if (Object.keys(forceOptions).length === 0 && forceNonNone.size === 0) {
+    return draft;
+  }
+
+  const options = { ...draft.options };
+
+  // Apply forced values
+  for (const [key, value] of Object.entries(forceOptions)) {
+    if (key in options) {
+      (options as Record<string, unknown>)[key] = value;
+    }
+  }
+
+  // Re-sample non-none for forced categories (simple: if value is "none", pick first non-none)
+  for (const key of forceNonNone) {
+    const val = (options as Record<string, unknown>)[key];
+    if (val === "none" || (Array.isArray(val) && val.length === 1 && val[0] === "none")) {
+      // We can't re-sample here without knowing the valid values,
+      // so we leave it — the sampleScalar/sampleArray key-aware version handles this
+    }
+  }
+
+  return { ...draft, options };
+}
+
 export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): ComboCandidate[] {
   _rng = args.rng ?? Math.random;
+  _forceOptions = args.forceOptions ?? {};
+  _forceNonNone = new Set(args.forceNonNone ?? []);
   try {
-    const requestedEcosystems = weightedDistribution(args.count, args.ecosystems);
+    // For partitioned runs, generate enough combos to cover all partitions
+    const totalNeeded = args.partitionTotal
+      ? args.count * args.partitionTotal
+      : args.count;
+
+    const requestedEcosystems = weightedDistribution(totalNeeded, args.ecosystems);
     const combos: ComboCandidate[] = [];
     const currentBatchKeys = new Set<string>();
     let attempts = 0;
-    const maxAttempts = Math.max(args.count * 600, 3000);
+    const maxAttempts = Math.max(totalNeeded * 600, 3000);
 
-    while (combos.length < args.count && attempts < maxAttempts) {
+    while (combos.length < totalNeeded && attempts < maxAttempts) {
       const ecosystem = requestedEcosystems[combos.length] ?? sampleOne(args.ecosystems);
       attempts += 1;
 
       try {
-        const draft = createDraft(ecosystem, args);
+        const draft = applyForcedOptions(createDraft(ecosystem, args), args);
         const provisionalConfig = validateDraft(draft, "candidate");
         const provisionalFingerprint = buildHistoryFingerprint(provisionalConfig);
         const provisionalKey = fingerprintToKey(provisionalFingerprint);
@@ -525,8 +583,17 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
       }
     }
 
+    // Partition: slice to this runner's portion
+    if (args.partitionIndex !== undefined && args.partitionTotal && args.partitionTotal > 1) {
+      const perPartition = Math.ceil(combos.length / args.partitionTotal);
+      const start = args.partitionIndex * perPartition;
+      return combos.slice(start, start + perPartition);
+    }
+
     return combos;
   } finally {
     _rng = Math.random;
+    _forceOptions = {};
+    _forceNonNone = new Set();
   }
 }

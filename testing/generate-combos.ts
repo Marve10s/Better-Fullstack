@@ -59,6 +59,32 @@ function parseArgs(argv: string[]): GeneratorArgs {
     if (token === "--no-dedup") {
       args.noDedup = true;
     }
+
+    if (token === "--force-option" && next) {
+      const eqIndex = next.indexOf("=");
+      if (eqIndex > 0) {
+        args.forceOptions ??= {};
+        args.forceOptions[next.slice(0, eqIndex)] = next.slice(eqIndex + 1);
+      }
+      index++;
+      continue;
+    }
+
+    if (token === "--force-non-none" && next) {
+      args.forceNonNone = next.split(",").map((s) => s.trim());
+      index++;
+      continue;
+    }
+
+    if (token === "--partition" && next) {
+      const parts = next.split("/");
+      if (parts.length === 2) {
+        args.partitionIndex = Number(parts[0]);
+        args.partitionTotal = Number(parts[1]);
+      }
+      index++;
+      continue;
+    }
   }
 
   return args;
