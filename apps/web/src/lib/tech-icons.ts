@@ -290,6 +290,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   s3: { type: "local", src: "/icon/aws-s3.svg" },
   r2: { type: "si", slug: "cloudflare", hex: "F38020" },
 
+  // ─── i18n ──────────────────────────────────────────────────────────────────
+  i18next: { type: "si", slug: "i18next", hex: "26A69A" },
+  "next-intl": { type: "si", slug: "nextdotjs", hex: "000000" },
+
   // ─── Animation ─────────────────────────────────────────────────────────────
   "framer-motion": { type: "si", slug: "framer", hex: "0055FF" },
   gsap: { type: "si", slug: "greensock", hex: "88CE02" },
@@ -322,6 +326,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "env-logger": { type: "si", slug: "rust", hex: "CE422B" },
   "anyhow-thiserror": { type: "si", slug: "rust", hex: "CE422B" },
   eyre: { type: "si", slug: "rust", hex: "CE422B" },
+  moka: { type: "si", slug: "rust", hex: "CE422B" },
 
   // ─── Python ────────────────────────────────────────────────────────────────
   fastapi: { type: "si", slug: "fastapi", hex: "009688" },
@@ -333,6 +338,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "anthropic-sdk": { type: "si", slug: "anthropic", hex: "191919" },
   authlib: { type: "si", slug: "auth0", hex: "EB5424" },
   jwt: { type: "si", slug: "jsonwebtokens", hex: "000000" },
+  strawberry: { type: "si", slug: "graphql", hex: "E10098" },
   celery: { type: "si", slug: "celery", hex: "37814A" },
   ruff: { type: "si", slug: "ruff", hex: "D7FF64" },
 

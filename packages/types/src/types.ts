@@ -47,6 +47,7 @@ import type {
   CachingSchema,
   SearchSchema,
   FileStorageSchema,
+  I18nSchema,
   EcosystemSchema,
   RustWebFrameworkSchema,
   RustFrontendSchema,
@@ -56,11 +57,13 @@ import type {
   RustLibrariesSchema,
   RustLoggingSchema,
   RustErrorHandlingSchema,
+  RustCachingSchema,
   PythonWebFrameworkSchema,
   PythonOrmSchema,
   PythonValidationSchema,
   PythonAiSchema,
   PythonAuthSchema,
+  PythonGraphqlSchema,
   PythonTaskQueueSchema,
   PythonQualitySchema,
   GoWebFrameworkSchema,
@@ -119,6 +122,7 @@ export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
 export type Search = z.infer<typeof SearchSchema>;
 export type FileStorage = z.infer<typeof FileStorageSchema>;
+export type I18n = z.infer<typeof I18nSchema>;
 export type Ecosystem = z.infer<typeof EcosystemSchema>;
 export type RustWebFramework = z.infer<typeof RustWebFrameworkSchema>;
 export type RustFrontend = z.infer<typeof RustFrontendSchema>;
@@ -128,11 +132,13 @@ export type RustCli = z.infer<typeof RustCliSchema>;
 export type RustLibraries = z.infer<typeof RustLibrariesSchema>;
 export type RustLogging = z.infer<typeof RustLoggingSchema>;
 export type RustErrorHandling = z.infer<typeof RustErrorHandlingSchema>;
+export type RustCaching = z.infer<typeof RustCachingSchema>;
 export type PythonWebFramework = z.infer<typeof PythonWebFrameworkSchema>;
 export type PythonOrm = z.infer<typeof PythonOrmSchema>;
 export type PythonValidation = z.infer<typeof PythonValidationSchema>;
 export type PythonAi = z.infer<typeof PythonAiSchema>;
 export type PythonAuth = z.infer<typeof PythonAuthSchema>;
+export type PythonGraphql = z.infer<typeof PythonGraphqlSchema>;
 export type PythonTaskQueue = z.infer<typeof PythonTaskQueueSchema>;
 export type PythonQuality = z.infer<typeof PythonQualitySchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;

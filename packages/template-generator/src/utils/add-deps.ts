@@ -685,6 +685,15 @@ export const dependencyVersionMap = {
   // Search - Algolia
   algoliasearch: "^5.22.0",
 
+  // i18n - i18next
+  i18next: "^24.2.2",
+  "react-i18next": "^15.4.1",
+  "i18next-browser-languagedetector": "^8.0.4",
+  "i18next-http-backend": "^3.0.2",
+
+  // i18n - next-intl
+  "next-intl": "^4.1.0",
+
   // EdgeDB
   edgedb: "^2.0.1",
   "@edgedb/generate": "^0.6.1",

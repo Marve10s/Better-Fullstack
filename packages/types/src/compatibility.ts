@@ -43,6 +43,7 @@ export type CompatibilityCategory =
   | "caching"
   | "search"
   | "fileStorage"
+  | "i18n"
   | "animation"
   | "cssFramework"
   | "uiLibrary"
@@ -71,6 +72,7 @@ export type CompatibilityCategory =
   | "pythonValidation"
   | "pythonAi"
   | "pythonAuth"
+  | "pythonGraphql"
   | "pythonTaskQueue"
   | "pythonQuality"
   | "goWebFramework"
@@ -128,6 +130,7 @@ export type CompatibilityInput = {
   cms: string;
   search: string;
   fileStorage: string;
+  i18n: string;
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -150,11 +153,13 @@ export type CompatibilityInput = {
   rustLibraries: string;
   rustLogging: string;
   rustErrorHandling: string;
+  rustCaching: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
   pythonAi: string;
   pythonAuth: string;
+  pythonGraphql: string;
   pythonTaskQueue: string;
   pythonQuality: string;
   goWebFramework: string;
@@ -223,6 +228,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "pythonValidation",
   "pythonAi",
   "pythonAuth",
+  "pythonGraphql",
   "pythonTaskQueue",
   "pythonQuality",
   "goWebFramework",
@@ -302,6 +308,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     rustLibraries: "Rust Core Libraries",
     rustLogging: "Rust Logging",
     rustErrorHandling: "Rust Error Handling",
+    rustCaching: "Rust Caching",
   };
 
   // Custom display names for Python categories
@@ -311,6 +318,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     pythonValidation: "Python Validation",
     pythonAi: "Python AI / ML",
     pythonAuth: "Python Auth",
+    pythonGraphql: "Python GraphQL",
     pythonTaskQueue: "Python Task Queue",
     pythonQuality: "Python Code Quality",
   };
@@ -323,6 +331,10 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     goCli: "Go CLI Tools",
     goLogging: "Go Logging",
   };
+
+  if (categoryKey === "i18n") {
+    return "Internationalization (i18n)";
+  }
 
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
@@ -1933,6 +1945,15 @@ export const getDisabledReason = (
     }
     if (optionId === "none" && currentStack.runtime === "workers") {
       return "Workers requires server deployment";
+    }
+  }
+
+  // ============================================
+  // I18N CONSTRAINTS
+  // ============================================
+  if (category === "i18n") {
+    if (optionId === "next-intl" && !currentStack.webFrontend.includes("next")) {
+      return "next-intl requires a Next.js frontend";
     }
   }
 

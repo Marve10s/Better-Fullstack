@@ -104,6 +104,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     rustCli: stack.rustCli as ProjectConfig["rustCli"],
     rustLogging: stack.rustLogging as ProjectConfig["rustLogging"],
     rustErrorHandling: stack.rustErrorHandling as ProjectConfig["rustErrorHandling"],
+    rustCaching: stack.rustCaching as ProjectConfig["rustCaching"],
     rustLibraries:
       stack.rustLibraries === "none"
         ? []
@@ -113,6 +114,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     pythonValidation: stack.pythonValidation as ProjectConfig["pythonValidation"],
     pythonAi: stack.pythonAi === "none" ? [] : ([stack.pythonAi] as ProjectConfig["pythonAi"]),
     pythonAuth: stack.pythonAuth as ProjectConfig["pythonAuth"],
+    pythonGraphql: stack.pythonGraphql as ProjectConfig["pythonGraphql"],
     pythonTaskQueue: stack.pythonTaskQueue as ProjectConfig["pythonTaskQueue"],
     pythonQuality: stack.pythonQuality as ProjectConfig["pythonQuality"],
     goWebFramework: stack.goWebFramework as ProjectConfig["goWebFramework"],

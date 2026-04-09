@@ -577,6 +577,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.algolia.com/doc/",
     githubUrl: "https://github.com/algolia/algoliasearch-client-javascript",
   },
+  i18next: {
+    docsUrl: "https://www.i18next.com/",
+    githubUrl: "https://github.com/i18next/i18next",
+  },
+  "next-intl": {
+    docsUrl: "https://next-intl-docs.vercel.app/",
+    githubUrl: "https://github.com/amannn/next-intl",
+  },
   s3: {
     docsUrl: "https://docs.aws.amazon.com/AmazonS3/",
     githubUrl: "https://github.com/aws/aws-sdk-js-v3",
@@ -677,6 +685,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/eyre/latest/eyre/",
     githubUrl: "https://github.com/eyre-rs/eyre",
   },
+  moka: {
+    docsUrl: "https://docs.rs/moka/latest/moka/",
+    githubUrl: "https://github.com/moka-rs/moka",
+  },
   clap: {
     docsUrl: "https://docs.rs/clap/latest/clap/",
     githubUrl: "https://github.com/clap-rs/clap",
@@ -733,6 +745,7 @@ const BASE_LINKS: LinkMap = {
   },
   authlib: { docsUrl: "https://docs.authlib.org/en/latest/", githubUrl: "https://github.com/lepture/authlib" },
   jwt: { docsUrl: "https://python-jose.readthedocs.io/en/latest/", githubUrl: "https://github.com/mpdavis/python-jose" },
+  strawberry: { docsUrl: "https://strawberry.rocks/docs", githubUrl: "https://github.com/strawberry-graphql/strawberry" },
   celery: { docsUrl: "https://docs.celeryq.dev/", githubUrl: "https://github.com/celery/celery" },
   ruff: { docsUrl: "https://docs.astral.sh/ruff/", githubUrl: "https://github.com/astral-sh/ruff" },
   gin: { docsUrl: "https://gin-gonic.com/docs/", githubUrl: "https://github.com/gin-gonic/gin" },

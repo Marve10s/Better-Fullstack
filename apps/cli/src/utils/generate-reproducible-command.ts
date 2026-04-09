@@ -91,6 +91,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
   flags.push(`--file-storage ${config.fileStorage}`);
+  flags.push(`--i18n ${config.i18n}`);
 
   if (config.addons && config.addons.length > 0) {
     flags.push(`--addons ${config.addons.join(" ")}`);
@@ -124,6 +125,7 @@ function getRustFlags(config: ProjectConfig) {
   flags.push(formatArrayFlag("rust-libraries", config.rustLibraries));
   flags.push(`--rust-logging ${config.rustLogging}`);
   flags.push(`--rust-error-handling ${config.rustErrorHandling}`);
+  flags.push(`--rust-caching ${config.rustCaching}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);
@@ -139,6 +141,7 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-validation ${config.pythonValidation}`);
   flags.push(formatArrayFlag("python-ai", config.pythonAi));
   flags.push(`--python-auth ${config.pythonAuth}`);
+  flags.push(`--python-graphql ${config.pythonGraphql}`);
   flags.push(`--python-task-queue ${config.pythonTaskQueue}`);
   flags.push(`--python-quality ${config.pythonQuality}`);
   appendSharedNonTypeScriptFlags(flags, config);

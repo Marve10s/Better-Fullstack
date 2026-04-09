@@ -98,11 +98,13 @@ export function loadStackParams(
       rustLibraries: getString("rustLibraries", DEFAULT_STACK.rustLibraries),
       rustLogging: getString("rustLogging", DEFAULT_STACK.rustLogging),
       rustErrorHandling: getString("rustErrorHandling", DEFAULT_STACK.rustErrorHandling),
+      rustCaching: getString("rustCaching", DEFAULT_STACK.rustCaching),
       pythonWebFramework: getString("pythonWebFramework", DEFAULT_STACK.pythonWebFramework),
       pythonOrm: getString("pythonOrm", DEFAULT_STACK.pythonOrm),
       pythonValidation: getString("pythonValidation", DEFAULT_STACK.pythonValidation),
       pythonAi: getString("pythonAi", DEFAULT_STACK.pythonAi),
       pythonAuth: getString("pythonAuth", DEFAULT_STACK.pythonAuth),
+      pythonGraphql: getString("pythonGraphql", DEFAULT_STACK.pythonGraphql),
       pythonTaskQueue: getString("pythonTaskQueue", DEFAULT_STACK.pythonTaskQueue),
       pythonQuality: getString("pythonQuality", DEFAULT_STACK.pythonQuality),
       goWebFramework: getString("goWebFramework", DEFAULT_STACK.goWebFramework),
@@ -198,11 +200,13 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("rustLibraries", stack.rustLibraries);
   addParam("rustLogging", stack.rustLogging);
   addParam("rustErrorHandling", stack.rustErrorHandling);
+  addParam("rustCaching", stack.rustCaching);
   addParam("pythonWebFramework", stack.pythonWebFramework);
   addParam("pythonOrm", stack.pythonOrm);
   addParam("pythonValidation", stack.pythonValidation);
   addParam("pythonAi", stack.pythonAi);
   addParam("pythonAuth", stack.pythonAuth);
+  addParam("pythonGraphql", stack.pythonGraphql);
   addParam("pythonTaskQueue", stack.pythonTaskQueue);
   addParam("pythonQuality", stack.pythonQuality);
   addParam("goWebFramework", stack.goWebFramework);
@@ -283,11 +287,13 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     rustLibraries: search.rlib ?? DEFAULT_STACK.rustLibraries,
     rustLogging: search.rlog ?? DEFAULT_STACK.rustLogging,
     rustErrorHandling: search.reh ?? DEFAULT_STACK.rustErrorHandling,
+    rustCaching: search.rca ?? DEFAULT_STACK.rustCaching,
     pythonWebFramework: search.pwf ?? DEFAULT_STACK.pythonWebFramework,
     pythonOrm: search.porm ?? DEFAULT_STACK.pythonOrm,
     pythonValidation: search.pval ?? DEFAULT_STACK.pythonValidation,
     pythonAi: search.pai ?? DEFAULT_STACK.pythonAi,
     pythonAuth: search.pauth ?? DEFAULT_STACK.pythonAuth,
+    pythonGraphql: search.pgql ?? DEFAULT_STACK.pythonGraphql,
     pythonTaskQueue: search.ptq ?? DEFAULT_STACK.pythonTaskQueue,
     pythonQuality: search.pq ?? DEFAULT_STACK.pythonQuality,
     goWebFramework: search.gwf ?? DEFAULT_STACK.goWebFramework,

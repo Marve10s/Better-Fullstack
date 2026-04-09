@@ -18,6 +18,7 @@ import {
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
+  I18N_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
   GO_LOGGING_VALUES,
@@ -32,6 +33,7 @@ import {
   VERSION_CHANNEL_VALUES,
   PYTHON_AI_VALUES,
   PYTHON_AUTH_VALUES,
+  PYTHON_GRAPHQL_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
@@ -45,6 +47,7 @@ import {
   RUST_LIBRARIES_VALUES,
   RUST_LOGGING_VALUES,
   RUST_ERROR_HANDLING_VALUES,
+  RUST_CACHING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -91,6 +94,7 @@ export type OptionCategory =
   | "caching"
   | "search"
   | "fileStorage"
+  | "i18n"
   | "animation"
   | "cssFramework"
   | "uiLibrary"
@@ -123,11 +127,13 @@ export type OptionCategory =
   | "rustLibraries"
   | "rustLogging"
   | "rustErrorHandling"
+  | "rustCaching"
   | "pythonWebFramework"
   | "pythonOrm"
   | "pythonValidation"
   | "pythonAi"
   | "pythonAuth"
+  | "pythonGraphql"
   | "pythonTaskQueue"
   | "pythonQuality"
   | "goWebFramework"
@@ -264,6 +270,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   caching: CACHING_VALUES,
   search: SEARCH_VALUES,
   fileStorage: FILE_STORAGE_VALUES,
+  i18n: I18N_VALUES,
   animation: ANIMATION_VALUES,
   cssFramework: CSS_FRAMEWORK_VALUES,
   uiLibrary: UI_LIBRARY_VALUES,
@@ -296,11 +303,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rustLibraries: RUST_LIBRARIES_VALUES,
   rustLogging: RUST_LOGGING_VALUES,
   rustErrorHandling: RUST_ERROR_HANDLING_VALUES,
+  rustCaching: RUST_CACHING_VALUES,
   pythonWebFramework: PYTHON_WEB_FRAMEWORK_VALUES,
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
   pythonAi: PYTHON_AI_VALUES,
   pythonAuth: PYTHON_AUTH_VALUES,
+  pythonGraphql: PYTHON_GRAPHQL_VALUES,
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
@@ -404,6 +413,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     typesense: "Typesense",
     elasticsearch: "Elasticsearch",
     algolia: "Algolia",
+  },
+  i18n: {
+    i18next: "i18next",
+    "next-intl": "next-intl",
   },
   cssFramework: { tailwind: "Tailwind CSS", scss: "SCSS", "postcss-only": "PostCSS Only" },
   uiLibrary: {
@@ -559,6 +572,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "anyhow-thiserror": "anyhow + thiserror",
     eyre: "eyre + color-eyre",
   },
+  rustCaching: {
+    moka: "Moka",
+    redis: "Redis",
+  },
   pythonWebFramework: {
     fastapi: "FastAPI",
     django: "Django",
@@ -584,6 +601,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
   },
+  pythonGraphql: {
+    strawberry: "Strawberry GraphQL",
+  },
   pythonTaskQueue: {
     celery: "Celery",
   },
@@ -599,6 +619,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goOrm: {
     gorm: "GORM",
     sqlc: "sqlc",
+    ent: "Ent",
   },
   goApi: {
     "grpc-go": "gRPC-Go",
@@ -720,6 +741,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   caching: buildCategoryMetadata("caching"),
   search: buildCategoryMetadata("search"),
   fileStorage: buildCategoryMetadata("fileStorage"),
+  i18n: buildCategoryMetadata("i18n"),
   animation: buildCategoryMetadata("animation"),
   cssFramework: buildCategoryMetadata("cssFramework"),
   uiLibrary: buildCategoryMetadata("uiLibrary"),
@@ -752,11 +774,13 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rustLibraries: buildCategoryMetadata("rustLibraries"),
   rustLogging: buildCategoryMetadata("rustLogging"),
   rustErrorHandling: buildCategoryMetadata("rustErrorHandling"),
+  rustCaching: buildCategoryMetadata("rustCaching"),
   pythonWebFramework: buildCategoryMetadata("pythonWebFramework"),
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),
   pythonAi: buildCategoryMetadata("pythonAi"),
   pythonAuth: buildCategoryMetadata("pythonAuth"),
+  pythonGraphql: buildCategoryMetadata("pythonGraphql"),
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
