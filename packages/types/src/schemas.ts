@@ -603,6 +603,7 @@ export const ProjectConfigSchema = z.object({
   pythonOrm: PythonOrmSchema,
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
+  pythonAuth: PythonAuthSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
@@ -677,6 +678,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonOrm: PythonOrmSchema,
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
+  pythonAuth: PythonAuthSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
