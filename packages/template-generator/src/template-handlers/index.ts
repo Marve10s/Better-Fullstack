@@ -23,4 +23,5 @@ export { processJobQueueTemplates } from "./job-queue";
 export { processCMSTemplates } from "./cms";
 export { processSearchTemplates } from "./search";
 export { processFileStorageTemplates } from "./file-storage";
+export { processI18nTemplates } from "./i18n";
 export { processTestingTemplates } from "./testing";

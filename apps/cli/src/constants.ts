@@ -37,6 +37,7 @@ export const DEFAULT_CONFIG_BASE = {
   caching: "none",
   search: "none",
   fileStorage: "none",
+  i18n: "none",
   animation: "none",
   logging: "none",
   observability: "none",
@@ -73,12 +74,14 @@ export const DEFAULT_CONFIG_BASE = {
   rustLibraries: [],
   rustLogging: "tracing",
   rustErrorHandling: "anyhow-thiserror",
+  rustCaching: "none",
   // Python ecosystem defaults
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",
   pythonAi: [],
   pythonAuth: "none",
+  pythonGraphql: "none",
   pythonTaskQueue: "none",
   pythonQuality: "ruff",
   // Go ecosystem defaults

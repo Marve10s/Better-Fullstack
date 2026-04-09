@@ -55,6 +55,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     caching: "none",
     search: "none",
     fileStorage: "none",
+    i18n: "none",
     rustWebFramework: "none",
     rustFrontend: "none",
     rustOrm: "none",
@@ -62,12 +63,14 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustCli: "none",
     rustLogging: "tracing",
     rustErrorHandling: "anyhow-thiserror",
+    rustCaching: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonGraphql: "none",
     pythonTaskQueue: "none",
     pythonQuality: "none",
     goWebFramework: "none",
@@ -114,11 +117,13 @@ describe("generateReproducibleCommand", () => {
       caching: "none",
       search: "none",
       fileStorage: "none",
+      i18n: "none",
       pythonWebFramework: "django",
       pythonOrm: "sqlalchemy",
       pythonValidation: "pydantic",
       pythonAi: [],
       pythonAuth: "none",
+    pythonGraphql: "none",
       pythonTaskQueue: "celery",
       pythonQuality: "ruff",
       aiDocs: ["claude-md"],
@@ -131,7 +136,8 @@ describe("generateReproducibleCommand", () => {
         "--python-orm sqlalchemy " +
         "--python-validation pydantic " +
         "--python-ai none " +
-        "--python-auth none " +
+                "--python-auth none " +
+        "--python-graphql none " +
         "--python-task-queue celery " +
         "--python-quality ruff " +
         "--addons none " +
@@ -179,11 +185,13 @@ describe("generateReproducibleCommand", () => {
       caching: "none",
       search: "none",
       fileStorage: "none",
+      i18n: "none",
       pythonWebFramework: "fastapi",
       pythonOrm: "sqlmodel",
       pythonValidation: "pydantic",
       pythonAi: ["langchain", "openai-sdk"],
       pythonAuth: "none",
+    pythonGraphql: "none",
       pythonTaskQueue: "celery",
       pythonQuality: "ruff",
       aiDocs: ["claude-md", "agents-md"],
@@ -198,7 +206,8 @@ describe("generateReproducibleCommand", () => {
         "--python-orm sqlmodel " +
         "--python-validation pydantic " +
         "--python-ai langchain openai-sdk " +
-        "--python-auth none " +
+                "--python-auth none " +
+        "--python-graphql none " +
         "--python-task-queue celery " +
         "--python-quality ruff " +
         "--addons skills " +
@@ -228,6 +237,7 @@ describe("generateReproducibleCommand", () => {
       rustCli: "clap",
       rustLogging: "tracing",
       rustErrorHandling: "anyhow-thiserror",
+    rustCaching: "none",
       rustLibraries: ["serde", "validator"],
       aiDocs: [],
     });
@@ -243,6 +253,7 @@ describe("generateReproducibleCommand", () => {
         "--rust-libraries serde validator " +
         "--rust-logging tracing " +
         "--rust-error-handling anyhow-thiserror " +
+        "--rust-caching none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +

@@ -21,6 +21,7 @@ import type {
   FileUpload,
   Forms,
   Frontend,
+  I18n,
   GoApi,
   GoCli,
   GoLogging,
@@ -35,6 +36,7 @@ import type {
   ProjectConfig,
   PythonAi,
   PythonAuth,
+  PythonGraphql,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -44,6 +46,7 @@ import type {
   RustApi,
   RustCli,
   RustErrorHandling,
+  RustCaching,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -103,6 +106,7 @@ import { getPaymentsChoice } from "./payments";
 import {
   getPythonAiChoice,
   getPythonAuthChoice,
+  getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
   getPythonTaskQueueChoice,
@@ -118,9 +122,11 @@ import {
   getRustLibrariesChoice,
   getRustLoggingChoice,
   getRustErrorHandlingChoice,
+  getRustCachingChoice,
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
+import { getI18nChoice } from "./i18n";
 import { getSearchChoice } from "./search";
 import { getServerDeploymentChoice } from "./server-deploy";
 import { getShadcnOptions, type ShadcnOptions } from "./shadcn-options";
@@ -170,6 +176,7 @@ type PromptGroupResults = {
   caching: Caching;
   search: Search;
   fileStorage: FileStorage;
+  i18n: I18n;
   // Rust ecosystem
   rustWebFramework: RustWebFramework;
   rustFrontend: RustFrontend;
@@ -179,12 +186,14 @@ type PromptGroupResults = {
   rustLibraries: RustLibraries[];
   rustLogging: RustLogging;
   rustErrorHandling: RustErrorHandling;
+  rustCaching: RustCaching;
   // Python ecosystem
   pythonWebFramework: PythonWebFramework;
   pythonOrm: PythonOrm;
   pythonValidation: PythonValidation;
   pythonAi: PythonAi[];
   pythonAuth: PythonAuth;
+  pythonGraphql: PythonGraphql;
   pythonTaskQueue: PythonTaskQueue;
   pythonQuality: PythonQuality;
   // Go ecosystem
@@ -417,6 +426,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);
         return getFileStorageChoice(flags.fileStorage, results.backend);
       },
+      i18n: ({ results }) => {
+        if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
+        return getI18nChoice(flags.i18n, results.frontend);
+      },
       // Rust ecosystem prompts (skip if TypeScript or Python)
       rustWebFramework: ({ results }) => {
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustWebFramework);
@@ -450,6 +463,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustErrorHandling);
         return getRustErrorHandlingChoice(flags.rustErrorHandling);
       },
+      rustCaching: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCaching);
+        return getRustCachingChoice(flags.rustCaching);
+      },
       // Python ecosystem prompts (skip if TypeScript or Rust)
       pythonWebFramework: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
@@ -470,6 +487,10 @@ export async function gatherConfig(
       pythonAuth: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
         return getPythonAuthChoice(flags.pythonAuth);
+      },
+      pythonGraphql: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonGraphql);
+        return getPythonGraphqlChoice(flags.pythonGraphql);
       },
       pythonTaskQueue: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
@@ -564,6 +585,7 @@ export async function gatherConfig(
     caching: result.caching,
     search: result.search,
     fileStorage: result.fileStorage,
+    i18n: result.i18n,
     // Ecosystem
     ecosystem: result.ecosystem,
     // Rust ecosystem options
@@ -575,12 +597,14 @@ export async function gatherConfig(
     rustLibraries: result.rustLibraries,
     rustLogging: result.rustLogging,
     rustErrorHandling: result.rustErrorHandling,
+    rustCaching: result.rustCaching,
     // Python ecosystem options
     pythonWebFramework: result.pythonWebFramework,
     pythonOrm: result.pythonOrm,
     pythonValidation: result.pythonValidation,
     pythonAi: result.pythonAi,
     pythonAuth: result.pythonAuth,
+    pythonGraphql: result.pythonGraphql,
     pythonTaskQueue: result.pythonTaskQueue,
     pythonQuality: result.pythonQuality,
     // Go ecosystem options

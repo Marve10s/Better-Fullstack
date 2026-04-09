@@ -22,6 +22,7 @@ import type {
   FileStorage,
   FileUpload,
   Forms,
+  I18n,
   GoCli,
   GoLogging,
   GoOrm,
@@ -37,6 +38,7 @@ import type {
   ProjectConfig,
   PythonAi,
   PythonAuth,
+  PythonGraphql,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -49,6 +51,7 @@ import type {
   RustLibraries,
   RustLogging,
   RustErrorHandling,
+  RustCaching,
   RustOrm,
   RustWebFramework,
   Runtime,
@@ -177,6 +180,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.fileStorage !== undefined) {
     config.fileStorage = options.fileStorage as FileStorage;
+  }
+
+  if (options.i18n !== undefined) {
+    config.i18n = options.i18n as I18n;
   }
 
   if (options.analytics !== undefined) {
@@ -312,6 +319,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
     config.rustErrorHandling = options.rustErrorHandling as RustErrorHandling;
   }
 
+  if (options.rustCaching !== undefined) {
+    config.rustCaching = options.rustCaching as RustCaching;
+  }
+
   // Python ecosystem options
   if (options.pythonWebFramework !== undefined) {
     config.pythonWebFramework = options.pythonWebFramework as PythonWebFramework;
@@ -331,6 +342,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.pythonAuth !== undefined) {
     config.pythonAuth = options.pythonAuth as PythonAuth;
+  }
+
+  if (options.pythonGraphql !== undefined) {
+    config.pythonGraphql = options.pythonGraphql as PythonGraphql;
   }
 
   if (options.pythonTaskQueue !== undefined) {

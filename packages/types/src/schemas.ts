@@ -267,6 +267,10 @@ export const AnalyticsSchema = z
   .enum(["plausible", "umami", "none"])
   .describe("Privacy-focused analytics provider");
 
+export const I18nSchema = z
+  .enum(["i18next", "next-intl", "none"])
+  .describe("Internationalization (i18n) library");
+
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
   .enum(["axum", "actix-web", "none"])
@@ -298,6 +302,10 @@ export const RustErrorHandlingSchema = z
   .enum(["anyhow-thiserror", "eyre", "none"])
   .describe("Rust error handling library");
 
+export const RustCachingSchema = z
+  .enum(["moka", "redis", "none"])
+  .describe("Rust caching library");
+
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
   .enum(["fastapi", "django", "flask", "litestar", "none"])
@@ -319,6 +327,10 @@ export const PythonAuthSchema = z
   .enum(["authlib", "jwt", "none"])
   .describe("Python authentication library");
 
+export const PythonGraphqlSchema = z
+  .enum(["strawberry", "none"])
+  .describe("Python GraphQL library");
+
 export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
 
 export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
@@ -326,7 +338,7 @@ export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python cod
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z.enum(["gin", "echo", "fiber", "chi", "none"]).describe("Go web framework");
 
-export const GoOrmSchema = z.enum(["gorm", "sqlc", "none"]).describe("Go ORM/database layer");
+export const GoOrmSchema = z.enum(["gorm", "sqlc", "ent", "none"]).describe("Go ORM/database layer");
 
 export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
 
@@ -498,6 +510,7 @@ export const CreateInputSchema = z.object({
   caching: CachingSchema.optional(),
   search: SearchSchema.optional(),
   fileStorage: FileStorageSchema.optional(),
+  i18n: I18nSchema.optional(),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema.optional(),
   rustFrontend: RustFrontendSchema.optional(),
@@ -507,12 +520,14 @@ export const CreateInputSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema).optional(),
   rustLogging: RustLoggingSchema.optional(),
   rustErrorHandling: RustErrorHandlingSchema.optional(),
+  rustCaching: RustCachingSchema.optional(),
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema.optional(),
   pythonOrm: PythonOrmSchema.optional(),
   pythonValidation: PythonValidationSchema.optional(),
   pythonAi: z.array(PythonAiSchema).optional(),
   pythonAuth: PythonAuthSchema.optional(),
+  pythonGraphql: PythonGraphqlSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
   // Go ecosystem options
@@ -589,6 +604,7 @@ export const ProjectConfigSchema = z.object({
   caching: CachingSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
+  i18n: I18nSchema,
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -598,12 +614,14 @@ export const ProjectConfigSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
   rustErrorHandling: RustErrorHandlingSchema,
+  rustCaching: RustCachingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonGraphql: PythonGraphqlSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
@@ -664,6 +682,7 @@ export const BetterTStackConfigSchema = z.object({
   caching: CachingSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
+  i18n: I18nSchema,
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -673,12 +692,14 @@ export const BetterTStackConfigSchema = z.object({
   rustLibraries: z.array(RustLibrariesSchema),
   rustLogging: RustLoggingSchema,
   rustErrorHandling: RustErrorHandlingSchema,
+  rustCaching: RustCachingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonGraphql: PythonGraphqlSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
@@ -752,6 +773,7 @@ export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
 export const FILE_STORAGE_VALUES = FileStorageSchema.options;
+export const I18N_VALUES = I18nSchema.options;
 export const ECOSYSTEM_VALUES = EcosystemSchema.options;
 export const RUST_WEB_FRAMEWORK_VALUES = RustWebFrameworkSchema.options;
 export const RUST_FRONTEND_VALUES = RustFrontendSchema.options;
@@ -761,11 +783,13 @@ export const RUST_CLI_VALUES = RustCliSchema.options;
 export const RUST_LIBRARIES_VALUES = RustLibrariesSchema.options;
 export const RUST_LOGGING_VALUES = RustLoggingSchema.options;
 export const RUST_ERROR_HANDLING_VALUES = RustErrorHandlingSchema.options;
+export const RUST_CACHING_VALUES = RustCachingSchema.options;
 export const PYTHON_WEB_FRAMEWORK_VALUES = PythonWebFrameworkSchema.options;
 export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;
 export const PYTHON_AI_VALUES = PythonAiSchema.options;
 export const PYTHON_AUTH_VALUES = PythonAuthSchema.options;
+export const PYTHON_GRAPHQL_VALUES = PythonGraphqlSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;
 export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options;

@@ -81,6 +81,7 @@ import {
   type Caching,
   SearchSchema,
   FileStorageSchema,
+  I18nSchema,
   RustWebFrameworkSchema,
   type RustWebFramework,
   RustFrontendSchema,
@@ -96,7 +97,9 @@ import {
   RustLoggingSchema,
   type RustLogging,
   RustErrorHandlingSchema,
+  RustCachingSchema,
   type RustErrorHandling,
+  type RustCaching,
   PythonWebFrameworkSchema,
   type PythonWebFramework,
   PythonOrmSchema,
@@ -107,6 +110,8 @@ import {
   type PythonAi,
   PythonAuthSchema,
   type PythonAuth,
+  PythonGraphqlSchema,
+  type PythonGraphql,
   PythonTaskQueueSchema,
   type PythonTaskQueue,
   PythonQualitySchema,
@@ -191,6 +196,7 @@ export const router = os.router({
           caching: CachingSchema.optional().describe("Caching solution"),
           search: SearchSchema.optional().describe("Search engine solution"),
           fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
+          i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
           frontend: z.array(FrontendSchema).optional(),
           astroIntegration: AstroIntegrationSchema.optional().describe(
             "Astro UI framework integration (react, vue, svelte, solid)",
@@ -253,6 +259,7 @@ export const router = os.router({
           rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust core libraries"),
           rustLogging: RustLoggingSchema.optional().describe("Rust logging (tracing, env-logger)"),
           rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling (anyhow-thiserror, eyre)"),
+          rustCaching: RustCachingSchema.optional().describe("Rust caching (moka, redis)"),
           // Python ecosystem options
           pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
             "Python web framework (fastapi, django)",
@@ -265,6 +272,7 @@ export const router = os.router({
           ),
           pythonAi: z.array(PythonAiSchema).optional().describe("Python AI/ML frameworks"),
           pythonAuth: PythonAuthSchema.optional().describe("Python auth library (authlib, jwt)"),
+          pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL library (strawberry)"),
           pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
           pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
           // Go ecosystem options
@@ -573,6 +581,7 @@ export async function createVirtual(
       caching: options.caching || "none",
       search: options.search || "none",
       fileStorage: options.fileStorage || "none",
+      i18n: options.i18n || "none",
       // Rust ecosystem options
       rustWebFramework: options.rustWebFramework || "none",
       rustFrontend: options.rustFrontend || "none",
@@ -582,12 +591,14 @@ export async function createVirtual(
       rustLibraries: options.rustLibraries || [],
       rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
       rustErrorHandling: options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
+      rustCaching: options.rustCaching || "none",
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",
       pythonValidation: options.pythonValidation || "none",
       pythonAi: options.pythonAi || [],
       pythonAuth: options.pythonAuth || "none",
+      pythonGraphql: options.pythonGraphql || "none",
       pythonTaskQueue: options.pythonTaskQueue || "none",
       pythonQuality: options.pythonQuality || "none",
       // Go ecosystem options
