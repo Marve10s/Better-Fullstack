@@ -2253,6 +2253,32 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  i18n: [
+    {
+      id: "i18next",
+      name: "i18next",
+      description: "Full-featured i18n framework with plugins for all major frontends",
+      icon: "https://cdn.simpleicons.org/i18next/26A69A",
+      color: "from-teal-500 to-green-600",
+      default: false,
+    },
+    {
+      id: "next-intl",
+      name: "next-intl",
+      description: "Lightweight internationalization for Next.js with App Router support",
+      icon: "/icon/next-intl.svg",
+      color: "from-blue-500 to-indigo-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No i18n",
+      description: "Skip internationalization setup",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   search: [
     {
       id: "meilisearch",
@@ -3241,6 +3267,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "observability",
     "featureFlags",
     "caching",
+    "i18n",
     "ai",
     "cms",
     "codeQuality",

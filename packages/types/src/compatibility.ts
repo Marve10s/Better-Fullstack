@@ -41,6 +41,7 @@ export type CompatibilityCategory =
   | "realtime"
   | "jobQueue"
   | "caching"
+  | "i18n"
   | "search"
   | "fileStorage"
   | "animation"
@@ -126,6 +127,7 @@ export type CompatibilityInput = {
   cssFramework: string;
   uiLibrary: string;
   cms: string;
+  i18n: string;
   search: string;
   fileStorage: string;
   codeQuality: string[];
@@ -196,6 +198,7 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "realtime",
   "jobQueue",
   "caching",
+  "i18n",
   "search",
   "fileStorage",
   "animation",
@@ -336,6 +339,15 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
 
   if (goCategoryNames[categoryKey]) {
     return goCategoryNames[categoryKey];
+  }
+
+  // Custom display names for TypeScript categories
+  const tsCategoryNames: Record<string, string> = {
+    i18n: "Internationalization (i18n)",
+  };
+
+  if (tsCategoryNames[categoryKey]) {
+    return tsCategoryNames[categoryKey];
   }
 
   const result = categoryKey.replace(/([A-Z])/g, " $1");
@@ -1935,6 +1947,17 @@ export const getDisabledReason = (
     }
     if (optionId === "none" && currentStack.runtime === "workers") {
       return "Workers requires server deployment";
+    }
+  }
+
+  // ============================================
+  // I18N RULES
+  // ============================================
+  if (category === "i18n") {
+    if (optionId === "next-intl") {
+      if (!currentStack.webFrontend.includes("next")) {
+        return "next-intl requires Next.js";
+      }
     }
   }
 

@@ -561,6 +561,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://upstash.com/docs/redis",
     githubUrl: "https://github.com/upstash/redis-js",
   },
+  i18next: {
+    docsUrl: "https://www.i18next.com/",
+    githubUrl: "https://github.com/i18next/i18next",
+  },
+  "next-intl": {
+    docsUrl: "https://next-intl.dev/",
+    githubUrl: "https://github.com/amannn/next-intl",
+  },
   meilisearch: {
     docsUrl: "https://www.meilisearch.com/docs",
     githubUrl: "https://github.com/meilisearch/meilisearch",

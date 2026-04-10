@@ -280,6 +280,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Caching ───────────────────────────────────────────────────────────────
   "upstash-redis": { type: "si", slug: "upstash", hex: "00E9A3" },
 
+  // ─── i18n ─────────────────────────────────────────────────────────────────
+  i18next: { type: "si", slug: "i18next", hex: "26A69A" },
+  "next-intl": { type: "local", src: "/icon/next-intl.svg" },
+
   // ─── Search ────────────────────────────────────────────────────────────────
   meilisearch: { type: "si", slug: "meilisearch", hex: "FF5CAA" },
   typesense: { type: "local", src: "/icon/typesense.png" },

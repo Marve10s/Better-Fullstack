@@ -95,6 +95,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     analytics: stack.analytics as ProjectConfig["analytics"],
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
+    i18n: stack.i18n as ProjectConfig["i18n"],
     search: stack.search as ProjectConfig["search"],
     fileStorage: stack.fileStorage as ProjectConfig["fileStorage"],
     rustWebFramework: stack.rustWebFramework as ProjectConfig["rustWebFramework"],

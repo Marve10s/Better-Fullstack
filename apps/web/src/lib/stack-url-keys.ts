@@ -38,6 +38,7 @@ export const stackUrlKeys = {
   realtime: "rt2",
   jobQueue: "jq",
   caching: "cache",
+  i18n: "i18n",
   animation: "anim",
   cms: "cms",
   search: "srch",

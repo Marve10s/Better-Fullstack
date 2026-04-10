@@ -27,6 +27,7 @@ export type StackState = {
   realtime: string;
   jobQueue: string;
   caching: string;
+  i18n: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -104,6 +105,7 @@ export const DEFAULT_STACK: StackState = {
   realtime: "none",
   jobQueue: "none",
   caching: "none",
+  i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
   uiLibrary: "shadcn-ui",

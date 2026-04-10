@@ -74,6 +74,7 @@ export function loadStackParams(
       realtime: getString("realtime", DEFAULT_STACK.realtime),
       jobQueue: getString("jobQueue", DEFAULT_STACK.jobQueue),
       caching: getString("caching", DEFAULT_STACK.caching),
+      i18n: getString("i18n", DEFAULT_STACK.i18n),
       animation: getString("animation", DEFAULT_STACK.animation),
       cms: getString("cms", DEFAULT_STACK.cms),
       search: getString("search", DEFAULT_STACK.search),
@@ -175,6 +176,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("realtime", stack.realtime);
   addParam("jobQueue", stack.jobQueue);
   addParam("caching", stack.caching);
+  addParam("i18n", stack.i18n);
   addParam("animation", stack.animation);
   addParam("cms", stack.cms);
   addParam("search", stack.search);
@@ -260,6 +262,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     realtime: search.rt2 ?? DEFAULT_STACK.realtime,
     jobQueue: search.jq ?? DEFAULT_STACK.jobQueue,
     caching: search.cache ?? DEFAULT_STACK.caching,
+    i18n: search.i18n ?? DEFAULT_STACK.i18n,
     animation: search.anim ?? DEFAULT_STACK.animation,
     cms: search.cms ?? DEFAULT_STACK.cms,
     search: search.srch ?? DEFAULT_STACK.search,

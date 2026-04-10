@@ -11,6 +11,7 @@ import type {
   Caching,
   CMS,
   CSSFramework,
+  I18n,
   Database,
   DatabaseSetup,
   Ecosystem,
@@ -93,6 +94,7 @@ import {
   getGoOrmChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
+import { getI18nChoice } from "./i18n";
 import { getinstallChoice } from "./install";
 import { getJobQueueChoice } from "./job-queue";
 import { getLoggingChoice } from "./logging";
@@ -170,6 +172,7 @@ type PromptGroupResults = {
   analytics: Analytics;
   cms: CMS;
   caching: Caching;
+  i18n: I18n;
   search: Search;
   fileStorage: FileStorage;
   // Rust ecosystem
@@ -412,6 +415,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as Caching);
         return getCachingChoice(flags.caching, results.backend);
       },
+      i18n: ({ results }) => {
+        if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
+        return getI18nChoice(flags.i18n, results.frontend);
+      },
       search: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as Search);
         return getSearchChoice(flags.search, results.backend);
@@ -569,6 +576,7 @@ export async function gatherConfig(
     analytics: result.analytics,
     cms: result.cms,
     caching: result.caching,
+    i18n: result.i18n,
     search: result.search,
     fileStorage: result.fileStorage,
     // Ecosystem
