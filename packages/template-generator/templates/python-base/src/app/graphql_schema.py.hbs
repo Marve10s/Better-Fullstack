@@ -1,0 +1,52 @@
+{{#if (eq pythonGraphql "strawberry")}}
+"""GraphQL schema using Strawberry."""
+
+import strawberry
+from typing import Optional
+
+
+@strawberry.type
+class Book:
+    title: str
+    author: str
+    year: Optional[int] = None
+
+
+books_db: list[Book] = [
+    Book(title="The Great Gatsby", author="F. Scott Fitzgerald", year=1925),
+    Book(title="To Kill a Mockingbird", author="Harper Lee", year=1960),
+]
+
+
+@strawberry.input
+class BookInput:
+    title: str
+    author: str
+    year: Optional[int] = None
+
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    def books(self) -> list[Book]:
+        return books_db
+
+    @strawberry.field
+    def book(self, title: str) -> Optional[Book]:
+        for book in books_db:
+            if book.title.lower() == title.lower():
+                return book
+        return None
+
+
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def add_book(self, input: BookInput) -> Book:
+        book = Book(title=input.title, author=input.author, year=input.year)
+        books_db.append(book)
+        return book
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
+{{/if}}

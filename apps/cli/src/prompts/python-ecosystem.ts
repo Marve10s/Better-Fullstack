@@ -1,6 +1,7 @@
 import type {
   PythonAi,
   PythonAuth,
+  PythonGraphql,
   PythonOrm,
   PythonQuality,
   PythonTaskQueue,
@@ -217,6 +218,33 @@ export async function getPythonTaskQueueChoice(pythonTaskQueue?: PythonTaskQueue
 
   const response = await navigableSelect<PythonTaskQueue>({
     message: "Select Python task queue",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getPythonGraphqlChoice(pythonGraphql?: PythonGraphql) {
+  if (pythonGraphql !== undefined) return pythonGraphql;
+
+  const options = [
+    {
+      value: "strawberry" as const,
+      label: "Strawberry",
+      hint: "Python GraphQL library using dataclasses and type hints",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No GraphQL framework",
+    },
+  ];
+
+  const response = await navigableSelect<PythonGraphql>({
+    message: "Select Python GraphQL framework",
     options,
     initialValue: "none",
   });

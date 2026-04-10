@@ -70,6 +70,7 @@ export const stackUrlKeys = {
   pythonAi: "pai",
   pythonAuth: "pauth",
   pythonTaskQueue: "ptq",
+  pythonGraphql: "pgql",
   pythonQuality: "pq",
   goWebFramework: "gwf",
   goOrm: "gorm",

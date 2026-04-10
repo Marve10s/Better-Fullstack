@@ -63,6 +63,7 @@ import type {
   PythonAiSchema,
   PythonAuthSchema,
   PythonTaskQueueSchema,
+  PythonGraphqlSchema,
   PythonQualitySchema,
   GoWebFrameworkSchema,
   GoOrmSchema,
@@ -136,6 +137,7 @@ export type PythonValidation = z.infer<typeof PythonValidationSchema>;
 export type PythonAi = z.infer<typeof PythonAiSchema>;
 export type PythonAuth = z.infer<typeof PythonAuthSchema>;
 export type PythonTaskQueue = z.infer<typeof PythonTaskQueueSchema>;
+export type PythonGraphql = z.infer<typeof PythonGraphqlSchema>;
 export type PythonQuality = z.infer<typeof PythonQualitySchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;
 export type GoOrm = z.infer<typeof GoOrmSchema>;

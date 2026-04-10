@@ -72,6 +72,7 @@ export type CompatibilityCategory =
   | "pythonAi"
   | "pythonAuth"
   | "pythonTaskQueue"
+  | "pythonGraphql"
   | "pythonQuality"
   | "goWebFramework"
   | "goOrm"
@@ -157,6 +158,7 @@ export type CompatibilityInput = {
   pythonAi: string;
   pythonAuth: string;
   pythonTaskQueue: string;
+  pythonGraphql: string;
   pythonQuality: string;
   goWebFramework: string;
   goOrm: string;
@@ -225,6 +227,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "pythonAi",
   "pythonAuth",
   "pythonTaskQueue",
+  "pythonGraphql",
   "pythonQuality",
   "goWebFramework",
   "goOrm",
@@ -314,6 +317,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     pythonAi: "Python AI / ML",
     pythonAuth: "Python Auth",
     pythonTaskQueue: "Python Task Queue",
+    pythonGraphql: "Python GraphQL",
     pythonQuality: "Python Code Quality",
   };
 

@@ -87,6 +87,7 @@ const PYTHON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "pythonAi",
   "pythonAuth",
   "pythonTaskQueue",
+  "pythonGraphql",
   "pythonQuality",
   "aiDocs",
   "git",
@@ -362,6 +363,9 @@ function generatePythonCommand(stack: StackState, projectName: string) {
   }
   if (stack.pythonTaskQueue !== "none") {
     flags.push(`--python-task-queue ${stack.pythonTaskQueue}`);
+  }
+  if (stack.pythonGraphql !== "none") {
+    flags.push(`--python-graphql ${stack.pythonGraphql}`);
   }
   if (stack.pythonQuality !== "none") {
     flags.push(`--python-quality ${stack.pythonQuality}`);

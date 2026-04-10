@@ -37,6 +37,7 @@ import {
   PYTHON_AI_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
+  PYTHON_GRAPHQL_VALUES,
   PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
@@ -316,6 +317,7 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
       pythonAi: sampleArray(PYTHON_AI_VALUES, 0.5, 1),
       pythonAuth: sampleScalar(PYTHON_AUTH_VALUES, 0.5),
       pythonTaskQueue: sampleScalar(PYTHON_TASK_QUEUE_VALUES, 0.55),
+      pythonGraphql: sampleScalar(PYTHON_GRAPHQL_VALUES, 0.5),
       pythonQuality: sampleScalar(PYTHON_QUALITY_VALUES, 0.35),
     },
   };
@@ -420,6 +422,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     pythonAi: [],
     pythonAuth: "none",
     pythonTaskQueue: "none",
+    pythonGraphql: "none",
     pythonQuality: "none",
     goWebFramework: "none",
     goOrm: "none",

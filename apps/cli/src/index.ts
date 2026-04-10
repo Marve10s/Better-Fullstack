@@ -111,6 +111,8 @@ import {
   type PythonAuth,
   PythonTaskQueueSchema,
   type PythonTaskQueue,
+  PythonGraphqlSchema,
+  type PythonGraphql,
   PythonQualitySchema,
   type PythonQuality,
   GoWebFrameworkSchema,
@@ -269,6 +271,7 @@ export const router = os.router({
           pythonAi: z.array(PythonAiSchema).optional().describe("Python AI/ML frameworks"),
           pythonAuth: PythonAuthSchema.optional().describe("Python auth library (authlib, jwt)"),
           pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
+          pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework (strawberry)"),
           pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
           // Go ecosystem options
           goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
@@ -593,6 +596,7 @@ export async function createVirtual(
       pythonAi: options.pythonAi || [],
       pythonAuth: options.pythonAuth || "none",
       pythonTaskQueue: options.pythonTaskQueue || "none",
+      pythonGraphql: options.pythonGraphql || "none",
       pythonQuality: options.pythonQuality || "none",
       // Go ecosystem options
       goWebFramework: options.goWebFramework || "none",

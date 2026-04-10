@@ -64,6 +64,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     pythonAi: projectConfig.pythonAi,
     pythonAuth: projectConfig.pythonAuth,
     pythonTaskQueue: projectConfig.pythonTaskQueue,
+    pythonGraphql: projectConfig.pythonGraphql,
     pythonQuality: projectConfig.pythonQuality,
     goWebFramework: projectConfig.goWebFramework,
     goOrm: projectConfig.goOrm,

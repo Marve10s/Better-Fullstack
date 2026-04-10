@@ -88,6 +88,7 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "pythonValidation",
   "pythonAi",
   "pythonTaskQueue",
+  "pythonGraphql",
   "pythonQuality",
   "goWebFramework",
   "goOrm",

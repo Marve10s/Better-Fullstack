@@ -105,6 +105,7 @@ export function loadStackParams(
       pythonAi: getString("pythonAi", DEFAULT_STACK.pythonAi),
       pythonAuth: getString("pythonAuth", DEFAULT_STACK.pythonAuth),
       pythonTaskQueue: getString("pythonTaskQueue", DEFAULT_STACK.pythonTaskQueue),
+      pythonGraphql: getString("pythonGraphql", DEFAULT_STACK.pythonGraphql),
       pythonQuality: getString("pythonQuality", DEFAULT_STACK.pythonQuality),
       goWebFramework: getString("goWebFramework", DEFAULT_STACK.goWebFramework),
       goOrm: getString("goOrm", DEFAULT_STACK.goOrm),
@@ -206,6 +207,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("pythonAi", stack.pythonAi);
   addParam("pythonAuth", stack.pythonAuth);
   addParam("pythonTaskQueue", stack.pythonTaskQueue);
+  addParam("pythonGraphql", stack.pythonGraphql);
   addParam("pythonQuality", stack.pythonQuality);
   addParam("goWebFramework", stack.goWebFramework);
   addParam("goOrm", stack.goOrm);
@@ -292,6 +294,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     pythonAi: search.pai ?? DEFAULT_STACK.pythonAi,
     pythonAuth: search.pauth ?? DEFAULT_STACK.pythonAuth,
     pythonTaskQueue: search.ptq ?? DEFAULT_STACK.pythonTaskQueue,
+    pythonGraphql: search.pgql ?? DEFAULT_STACK.pythonGraphql,
     pythonQuality: search.pq ?? DEFAULT_STACK.pythonQuality,
     goWebFramework: search.gwf ?? DEFAULT_STACK.goWebFramework,
     goOrm: search.gorm ?? DEFAULT_STACK.goOrm,
