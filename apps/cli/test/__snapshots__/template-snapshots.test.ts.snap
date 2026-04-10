@@ -11139,6 +11139,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/client/src/lib.rs",
   "crates/client/style/main.css",
   "crates/server/Cargo.toml",
+  "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
@@ -11156,6 +11157,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/dioxus-client/assets/main.css",
   "crates/dioxus-client/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
@@ -11171,6 +11173,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/cli/Cargo.toml",
   "crates/cli/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
@@ -11184,6 +11187,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
@@ -11197,6 +11201,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
   "rust-toolchain.toml",
@@ -11205,7 +11210,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
-  "fileCount": 14,
+  "fileCount": 15,
   "files": [
     {
       "content": 
@@ -11285,6 +11290,7 @@ log = "0.4"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "console"] }
+
 
 
 
@@ -11494,6 +11500,7 @@ sea-orm.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -11501,6 +11508,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/cache.rs",
     },
     {
       "content": "[exists]",
@@ -11555,6 +11566,7 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
@@ -11602,7 +11614,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: actix-dioxus-sqlx 1`] = `
 {
-  "fileCount": 13,
+  "fileCount": 14,
   "files": [
     {
       "content": 
@@ -11681,6 +11693,7 @@ wasm-bindgen = "0.2"
 
 # Validation
 validator = { version = "0.19", features = ["derive"] }
+
 
 [profile.dev]
 opt-level = 0
@@ -11878,6 +11891,7 @@ sqlx.workspace = true
 
 validator.workspace = true
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -11885,6 +11899,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/cache.rs",
     },
     {
       "content": "[exists]",
@@ -11936,6 +11954,7 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+
 
     // Initialize database connection pool
     let database_url = std::env::var("DATABASE_URL")
@@ -11990,7 +12009,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: cli-clap 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 12,
   "files": [
     {
       "content": 
@@ -12056,6 +12075,7 @@ dotenvy = "0.15"
 
 # CLI (Clap)
 clap = { version = "4", features = ["derive"] }
+
 
 
 [profile.dev]
@@ -12324,6 +12344,7 @@ dotenvy.workspace = true
 # CLI
 clap.workspace = true
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12331,6 +12352,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/cache.rs",
     },
     {
       "content": "[exists]",
@@ -12351,6 +12376,7 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+
 
     tracing::info!("Hello from snapshot-rust-cli-clap!");
     tracing::info!("Add a web framework (axum or actix-web) to start building your API.");
@@ -12375,7 +12401,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -12446,6 +12472,7 @@ sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "my
 
 
 
+
 [profile.dev]
 opt-level = 0
 
@@ -12499,6 +12526,7 @@ sqlx.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12506,6 +12534,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/cache.rs",
     },
     {
       "content": "[exists]",
@@ -12555,6 +12587,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize logging
     env_logger::init();
+
 
     // Initialize database connection pool
     let database_url = std::env::var("DATABASE_URL")
@@ -12606,7 +12639,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-eyre 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -12675,6 +12708,7 @@ tower-http = { version = "0.6", features = ["cors", "trace"] }
 
 
 
+
 [profile.dev]
 opt-level = 0
 
@@ -12726,6 +12760,7 @@ tower-http.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12733,6 +12768,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/cache.rs",
     },
     {
       "content": "[exists]",
@@ -12773,6 +12812,7 @@ async fn main() -> eyre::Result<()> {
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+
 
     // Build router
     let app = Router::new()

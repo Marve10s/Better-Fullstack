@@ -41,6 +41,7 @@ import type {
   JobQueue,
   Analytics,
   FeatureFlags,
+  I18n,
   AiDocs,
 } from "../src/types";
 
@@ -163,6 +164,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
     "jobQueue",
     "analytics",
     "featureFlags",
+    "i18n",
     "aiDocs",
   ];
   const hasSpecificCoreConfig = coreStackFlags.some((flag) => config[flag] !== undefined);
@@ -212,6 +214,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
         jobQueue: "none" as JobQueue,
         analytics: "none" as Analytics,
         featureFlags: "none" as FeatureFlags,
+        i18n: "none" as I18n,
         aiDocs: [] as AiDocs[],
       };
 
