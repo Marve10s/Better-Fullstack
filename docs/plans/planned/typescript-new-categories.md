@@ -8,8 +8,8 @@ These are entirely new option categories that don't exist yet in the TypeScript 
 
 Currently no GraphQL option. API choices are limited to tRPC, oRPC, ts-rest, garph.
 
-- [ ] Add `pothos` — most type-safe way to build GraphQL schemas in TypeScript. Code-first, zero runtime overhead. Pairs with GraphQL Yoga.
-- [ ] Add `graphql-yoga` — batteries-included GraphQL server by The Guild. Cross-platform, spec-compliant. Works with Pothos, Nexus, TypeGraphQL.
+- [x] Add `pothos` ✅ — most type-safe way to build GraphQL schemas in TypeScript. Code-first, zero runtime overhead. Pairs with GraphQL Yoga.
+- [x] Add `graphql-yoga` ✅ — batteries-included GraphQL server by The Guild. Cross-platform, spec-compliant. Works with Pothos, Nexus, TypeGraphQL.
 - [ ] Add `apollo-server` — most well-known GraphQL server. Large ecosystem (Apollo Client, Federation). Enterprise-grade.
 
 ### Implementation
@@ -26,8 +26,8 @@ Currently no GraphQL option. API choices are limited to tRPC, oRPC, ts-rest, gar
 No i18n support currently. Common requirement for production apps.
 
 - [ ] Add `paraglide` (Inlang) — type-safe, compile-time i18n. Every key is a typed function. Zero runtime overhead. Official support for TanStack Start, SvelteKit, Astro.
-- [ ] Add `i18next` — established standard. Largest ecosystem, most plugins. Framework adapters for React, Vue, Svelte.
-- [ ] Add `next-intl` — best choice specifically for Next.js App Router.
+- [x] Add `i18next` ✅ — established standard. Largest ecosystem, most plugins. Framework adapters for React, Vue, Svelte.
+- [x] Add `next-intl` ✅ — best choice specifically for Next.js App Router.
 
 ### Implementation
 - New schema: `I18nSchema = z.enum(["paraglide", "i18next", "next-intl", "none"])`
@@ -56,7 +56,7 @@ No rate limiting support. Essential for production API security.
 
 No desktop app support. better-t-stack has Tauri and Electrobun.
 
-- [ ] Add `tauri` — Rust-based desktop framework. Small binaries, native performance. Supports all web frontends as shell.
+- [x] Add `tauri` ✅ — Rust-based desktop framework. Small binaries, native performance. Supports all web frontends as shell.
 - [ ] Add `electrobun` — alternative desktop framework. Also supports web frontends.
 
 ### Implementation

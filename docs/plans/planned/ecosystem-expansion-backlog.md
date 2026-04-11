@@ -33,7 +33,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 ## Quick Reference — All Pending Items
 
 ### Deploy
-- [ ] Add `vercel`
+- [x] Add `vercel` ✅
 - [ ] Add `render`
 - [ ] Add `netlify`
 
@@ -71,16 +71,16 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Add `commet`
 
 ### API / GraphQL
-- [ ] Add `pothos` (GraphQL)
-- [ ] Add `graphql-yoga`
+- [x] Add `pothos` (GraphQL) ✅
+- [x] Add `graphql-yoga` ✅
 - [ ] Add `apollo-server`
 - [ ] Add `rest` / OpenAPI scaffolding
 - [ ] Add `effect-http`
 
 ### i18n (new category)
 - [ ] Add `paraglide`
-- [ ] Add `i18next`
-- [ ] Add `next-intl`
+- [x] Add `i18next` ✅
+- [x] Add `next-intl` ✅
 - [ ] Add `intlayer`
 
 ### Rate Limiting (new category)
@@ -99,7 +99,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Add `nx`
 
 ### Desktop / Extensions / Mobile
-- [ ] Add `tauri`
+- [x] Add `tauri` ✅
 - [ ] Add `wxt` (browser extensions)
 - [ ] Add `plasmo` (browser extensions)
 - [ ] Add `pwa` addon
@@ -112,18 +112,18 @@ Master tracking file. Detailed plans live in dedicated files per area.
 
 ### Python Frameworks
 - [x] Add `flask` ✅
-- [ ] Add `litestar`
+- [x] Add `litestar` ✅
 - [ ] Add `starlette`
 
 ### Go Frameworks
-- [ ] Add `chi`
+- [x] Add `chi` ✅
 - [x] Add `fiber` ✅
 - [ ] Add `stdlib` (net/http)
 
 ### Rust Frameworks
-- [ ] Add `rocket`
+- [x] Add `rocket` ✅
 - [ ] Add `loco`
-- [ ] Add `diesel`
+- [x] Add `diesel` ✅
 
 ### New Language Ecosystems
 - [ ] Add `java` (Spring Boot, Quarkus)

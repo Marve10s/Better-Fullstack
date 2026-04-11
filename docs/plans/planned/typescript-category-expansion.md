@@ -71,7 +71,7 @@ PostHog is already a feature flags option. Consider promoting it to analytics ca
 
 ## Deploy — Web (current: cloudflare, fly, railway, docker, sst)
 
-- [ ] Add `vercel` — most popular for Next.js/React. Zero-config deployments.
+- [x] Add `vercel` ✅ — most popular for Next.js/React. Zero-config deployments.
 - [ ] Add `render` — simple PaaS. Good for full-stack apps. Auto-deploys from git.
 - [ ] Add `netlify` — strong for static/JAMstack. Edge functions, forms, identity.
 
@@ -79,7 +79,7 @@ PostHog is already a feature flags option. Consider promoting it to analytics ca
 
 ## Deploy — Server (current: cloudflare, fly, railway, docker, sst)
 
-- [ ] Add `vercel` — serverless functions, edge middleware.
+- [x] Add `vercel` ✅ — serverless functions, edge middleware.
 - [ ] Add `render` — managed services, background workers.
 
 ---

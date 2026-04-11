@@ -8,7 +8,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Web Frameworks
 
-- [ ] Add `rocket` — 25k+ stars, convention-over-configuration, stable Rust support since v0.5. Appeals to Flask/Sinatra developers.
+- [x] Add `rocket` ✅ — 25k+ stars, convention-over-configuration, stable Rust support since v0.5. Appeals to Flask/Sinatra developers.
 - [ ] Add `loco` — "Rails of Rust". Built-in ORM, migrations, CLI, templating. Fastest-growing Rust web framework. Ideal for CRUD-heavy scaffolding.
 - [ ] Add `poem` — built on hyper/tokio, simpler API than Axum, lightweight. Good middle ground.
 
@@ -23,7 +23,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## ORMs / Database
 
-- [ ] Add `diesel` — 12k+ stars, most mature Rust ORM, compile-time query validation. "If it compiles, your queries are correct." Version 2.3.6+.
+- [x] Add `diesel` ✅ — 12k+ stars, most mature Rust ORM, compile-time query validation. "If it compiles, your queries are correct." Version 2.3.6+.
 
 ### Files to touch
 - `packages/types/src/schemas.ts` — add to `RustOrmSchema`
@@ -34,8 +34,8 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Error Handling (new category)
 
-- [ ] Add `anyhow` — standard application-level error handling. Ergonomic `?` operator, backtraces.
-- [ ] Add `thiserror` — derive macro for custom error types. Pairs with anyhow.
+- [x] Add `anyhow` ✅ — standard application-level error handling. Ergonomic `?` operator, backtraces.
+- [x] Add `thiserror` ✅ — derive macro for custom error types. Pairs with anyhow.
 - [ ] Add `eyre` — anyhow fork with customizable error reports (color-eyre for pretty backtraces).
 
 ### Implementation
@@ -73,8 +73,8 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Caching (new category)
 
-- [ ] Add `moka` — high-performance concurrent in-memory cache. Used by crates.io in production. Java Caffeine-inspired.
-- [ ] Add `redis-rs` — official Redis client for Rust. Async support, connection pooling.
+- [x] Add `moka` ✅ — high-performance concurrent in-memory cache. Used by crates.io in production. Java Caffeine-inspired.
+- [x] Add `redis-rs` ✅ — official Redis client for Rust. Async support, connection pooling.
 
 ### Implementation
 - New schema: `RustCachingSchema = z.enum(["moka", "redis", "none"])`

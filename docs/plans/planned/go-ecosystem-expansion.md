@@ -9,7 +9,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 ## Web Frameworks
 
 - [x] Add `fiber` ✅ — 38k+ stars, Express.js-like API, built on FastHTTP. Attracts Node.js developers migrating to Go. 11% adoption among Go devs.
-- [ ] Add `chi` — 18k+ stars, lightweight, zero-dependency, built on net/http stdlib. Popular for microservices. Fully standard-library compatible.
+- [x] Add `chi` ✅ — 18k+ stars, lightweight, zero-dependency, built on net/http stdlib. Popular for microservices. Fully standard-library compatible.
 - [ ] Add `stdlib` (net/http) — Go 1.22+ pattern routing makes the standard library viable without any framework. Offer as a "no framework" option.
 
 ### Files to touch
@@ -23,7 +23,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## ORMs / Database
 
-- [ ] Add `ent` — 15k+ stars, code-first ORM by Meta. Compile-time safety, graph traversal API, explicit schema definitions. Best for complex data models.
+- [x] Add `ent` ✅ — 15k+ stars, code-first ORM by Meta. Compile-time safety, graph traversal API, explicit schema definitions. Best for complex data models.
 - [ ] Add `bun` — lightweight, PostgreSQL-focused ORM with SQL-shaped query builder. Less overhead than GORM.
 
 ### Files to touch
@@ -59,8 +59,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Logging
 
-- [ ] Add `zerolog` — zero-allocation JSON logger. Fastest in many benchmarks. JSON-first approach.
-- [ ] Add `slog` — Go 1.21+ stdlib structured logging. Future-proof, no external dependencies.
+- [x] Add `zerolog` ✅ — zero-allocation JSON logger. Fastest in many benchmarks. JSON-first approach.
+- [x] Add `slog` ✅ — Go 1.21+ stdlib structured logging. Future-proof, no external dependencies.
 
 ### Files to touch
 - `packages/types/src/schemas.ts` — add to `GoLoggingSchema`

@@ -9,7 +9,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 ## Web Frameworks
 
 - [x] Add `flask` ✅ — 68k stars, #2 most-used Python web framework. Massive ecosystem, mature, well-documented. Essential given its popularity.
-- [ ] Add `litestar` — serious FastAPI competitor. 2x faster serialization (msgspec). Better route organization, built-in HTMX support. v3 supported until 2026.
+- [x] Add `litestar` ✅ — serious FastAPI competitor. 2x faster serialization (msgspec). Better route organization, built-in HTMX support. v3 supported until 2026.
 - [ ] Add `starlette` — ASGI toolkit that powers FastAPI. Useful standalone for minimal high-performance async apps. Good "no-framework" option.
 
 ### Files to touch
@@ -35,7 +35,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 ## Auth (new category)
 
-- [ ] Add `authlib` — most comprehensive Python auth library. OAuth1, OAuth2, OpenID Connect, JWS, JWK, JWT. Used by 26%+ of REST API projects.
+- [x] Add `authlib` ✅ — most comprehensive Python auth library. OAuth1, OAuth2, OpenID Connect, JWS, JWK, JWT. Used by 26%+ of REST API projects.
 - [ ] Add `fastapi-users` — purpose-built auth for FastAPI. JWT, cookies, OAuth2, email verification. Async, multiple DB backends.
 - [ ] Add `python-jose` — JWT library supporting multiple key types (HS256, RS256, ES256, EdDSA).
 
@@ -61,7 +61,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 ## GraphQL (new category)
 
-- [ ] Add `strawberry` — default Python GraphQL library. Code-first, leverages type hints, async. Seamless FastAPI integration.
+- [x] Add `strawberry` ✅ — default Python GraphQL library. Code-first, leverages type hints, async. Seamless FastAPI integration.
 - [ ] Add `ariadne` — schema-first GraphQL. Batteries included (query cost validation, tracing).
 
 ### Implementation
