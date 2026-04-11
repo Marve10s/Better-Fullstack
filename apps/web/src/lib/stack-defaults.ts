@@ -69,6 +69,7 @@ export type StackState = {
   pythonAi: string;
   pythonAuth: string;
   pythonTaskQueue: string;
+  pythonGraphql: string;
   pythonQuality: string;
   goWebFramework: string;
   goOrm: string;
@@ -146,6 +147,7 @@ export const DEFAULT_STACK: StackState = {
   pythonAi: "none",
   pythonAuth: "none",
   pythonTaskQueue: "none",
+  pythonGraphql: "none",
   pythonQuality: "ruff",
   goWebFramework: "gin",
   goOrm: "gorm",

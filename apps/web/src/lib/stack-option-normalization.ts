@@ -64,6 +64,7 @@ const STACK_OPTION_CATEGORY_BY_KEY: Partial<Record<keyof StackState, OptionCateg
   pythonValidation: "pythonValidation",
   pythonAi: "pythonAi",
   pythonTaskQueue: "pythonTaskQueue",
+  pythonGraphql: "pythonGraphql",
   pythonQuality: "pythonQuality",
   goWebFramework: "goWebFramework",
   goOrm: "goOrm",

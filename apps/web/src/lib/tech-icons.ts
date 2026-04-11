@@ -336,6 +336,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   authlib: { type: "si", slug: "auth0", hex: "EB5424" },
   jwt: { type: "si", slug: "jsonwebtokens", hex: "000000" },
   celery: { type: "si", slug: "celery", hex: "37814A" },
+  strawberry: { type: "si", slug: "graphql", hex: "E10098" },
   ruff: { type: "si", slug: "ruff", hex: "D7FF64" },
 
   // ─── Go ────────────────────────────────────────────────────────────────────

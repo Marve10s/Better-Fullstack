@@ -141,6 +141,7 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(formatArrayFlag("python-ai", config.pythonAi));
   flags.push(`--python-auth ${config.pythonAuth}`);
   flags.push(`--python-task-queue ${config.pythonTaskQueue}`);
+  flags.push(`--python-graphql ${config.pythonGraphql}`);
   flags.push(`--python-quality ${config.pythonQuality}`);
   appendSharedNonTypeScriptFlags(flags, config);
 

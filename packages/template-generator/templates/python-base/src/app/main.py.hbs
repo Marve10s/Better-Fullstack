@@ -152,6 +152,11 @@ from app.celery_schemas import (
 {{#if (ne pythonAuth "none")}}
 from app.auth import create_access_token, verify_token
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.fastapi import GraphQLRouter
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
 
 load_dotenv()
 
@@ -192,6 +197,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+{{#if (eq pythonGraphql "strawberry")}}
+graphql_app = GraphQLRouter(graphql_schema)
+app.include_router(graphql_app, prefix="/graphql")
+{{/if}}
 
 @app.get("/")
 async def root():
@@ -923,6 +932,11 @@ from django.urls import path
 {{#if (ne pythonAuth "none")}}
 from app.auth import create_access_token, verify_token
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.django.views import GraphQLView
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
 
 load_dotenv()
 
@@ -989,6 +1003,9 @@ urlpatterns = [
     path("auth/token", auth_token),
     path("auth/me", auth_me),
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+    path("graphql", GraphQLView.as_view(schema=graphql_schema)),
+{{/if}}
 ]
 
 
@@ -1008,6 +1025,11 @@ from app.settings import get_settings
 {{#if (ne pythonAuth "none")}}
 from app.auth import create_access_token, verify_token
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.flask.views import GraphQLView
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
 
 load_dotenv()
 
@@ -1020,6 +1042,9 @@ app.config["APP_NAME"] = settings.app_name
 app = Flask(__name__)
 {{/if}}
 CORS(app)
+{{#if (eq pythonGraphql "strawberry")}}
+app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=graphql_schema))
+{{/if}}
 
 
 @app.route("/")
@@ -1075,6 +1100,11 @@ from litestar.exceptions import HTTPException
 
 from app.auth import create_access_token, verify_token
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.litestar import make_graphql_controller
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
 
 load_dotenv()
 
@@ -1117,8 +1147,11 @@ async def auth_me(authorization: str = "") -> dict:
 
 
 cors_config = CORSConfig(allow_origins=["*"])
+{{#if (eq pythonGraphql "strawberry")}}
+GraphQLController = make_graphql_controller(graphql_schema, path="/graphql")
+{{/if}}
 app = Litestar(
-    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}],
+    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}],
     cors_config=cors_config,
 )
 {{/if}}

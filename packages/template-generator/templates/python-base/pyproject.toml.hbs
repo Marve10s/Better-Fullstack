@@ -72,6 +72,23 @@ dependencies = [
 {{#if (eq pythonTaskQueue "celery")}}
     "celery[redis]>=5.6.3",
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+{{#if (eq pythonWebFramework "fastapi")}}
+    "strawberry-graphql[fastapi]>=0.262.0",
+{{/if}}
+{{#if (eq pythonWebFramework "flask")}}
+    "strawberry-graphql[flask]>=0.262.0",
+{{/if}}
+{{#if (eq pythonWebFramework "django")}}
+    "strawberry-graphql[django]>=0.262.0",
+{{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+    "strawberry-graphql[litestar]>=0.262.0",
+{{/if}}
+{{#if (eq pythonWebFramework "none")}}
+    "strawberry-graphql>=0.262.0",
+{{/if}}
+{{/if}}
     "python-dotenv>=1.2.2",
 ]
 

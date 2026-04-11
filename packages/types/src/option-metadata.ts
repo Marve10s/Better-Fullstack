@@ -33,6 +33,7 @@ import {
   PYTHON_AI_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
+  PYTHON_GRAPHQL_VALUES,
   PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
@@ -131,6 +132,7 @@ export type OptionCategory =
   | "pythonAi"
   | "pythonAuth"
   | "pythonTaskQueue"
+  | "pythonGraphql"
   | "pythonQuality"
   | "goWebFramework"
   | "goOrm"
@@ -305,6 +307,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonAi: PYTHON_AI_VALUES,
   pythonAuth: PYTHON_AUTH_VALUES,
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
+  pythonGraphql: PYTHON_GRAPHQL_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
   goOrm: GO_ORM_VALUES,
@@ -595,6 +598,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   pythonTaskQueue: {
     celery: "Celery",
   },
+  pythonGraphql: {
+    strawberry: "Strawberry",
+  },
   pythonQuality: {
     ruff: "Ruff",
   },
@@ -768,6 +774,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonAi: buildCategoryMetadata("pythonAi"),
   pythonAuth: buildCategoryMetadata("pythonAuth"),
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
+  pythonGraphql: buildCategoryMetadata("pythonGraphql"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
   goOrm: buildCategoryMetadata("goOrm"),

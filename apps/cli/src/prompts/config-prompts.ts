@@ -37,6 +37,7 @@ import type {
   PythonAuth,
   PythonOrm,
   PythonQuality,
+  PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
   PythonWebFramework,
@@ -104,6 +105,7 @@ import { getPaymentsChoice } from "./payments";
 import {
   getPythonAiChoice,
   getPythonAuthChoice,
+  getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
   getPythonTaskQueueChoice,
@@ -189,6 +191,7 @@ type PromptGroupResults = {
   pythonAi: PythonAi[];
   pythonAuth: PythonAuth;
   pythonTaskQueue: PythonTaskQueue;
+  pythonGraphql: PythonGraphql;
   pythonQuality: PythonQuality;
   // Go ecosystem
   goWebFramework: GoWebFramework;
@@ -482,6 +485,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
         return getPythonTaskQueueChoice(flags.pythonTaskQueue);
       },
+      pythonGraphql: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonGraphql);
+        return getPythonGraphqlChoice(flags.pythonGraphql);
+      },
       pythonQuality: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonQuality);
         return getPythonQualityChoice(flags.pythonQuality);
@@ -590,6 +597,7 @@ export async function gatherConfig(
     pythonAi: result.pythonAi,
     pythonAuth: result.pythonAuth,
     pythonTaskQueue: result.pythonTaskQueue,
+    pythonGraphql: result.pythonGraphql,
     pythonQuality: result.pythonQuality,
     // Go ecosystem options
     goWebFramework: result.goWebFramework,

@@ -81,6 +81,7 @@ export const DEFAULT_CONFIG_BASE = {
   pythonAi: [],
   pythonAuth: "none",
   pythonTaskQueue: "none",
+  pythonGraphql: "none",
   pythonQuality: "ruff",
   // Go ecosystem defaults
   goWebFramework: "gin",

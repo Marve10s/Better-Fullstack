@@ -386,6 +386,18 @@ def test_send_message_invalid_email(client):
     )
     assert response.status_code == 422
 {{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+
+
+def test_graphql_endpoint(client):
+    """Test GraphQL endpoint returns data."""
+    query = '{ "query": "{ books { title author } }" }'
+    response = client.post("/graphql", content=query, headers={"Content-Type": "application/json"})
+    assert response.status_code == 200
+    data = response.json()
+    assert "data" in data
+    assert "books" in data["data"]
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "django")}}
 import pytest

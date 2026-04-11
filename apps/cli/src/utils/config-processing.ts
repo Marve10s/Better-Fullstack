@@ -39,6 +39,7 @@ import type {
   PythonAuth,
   PythonOrm,
   PythonQuality,
+  PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
   PythonWebFramework,
@@ -340,6 +341,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.pythonTaskQueue !== undefined) {
     config.pythonTaskQueue = options.pythonTaskQueue as PythonTaskQueue;
+  }
+
+  if (options.pythonGraphql !== undefined) {
+    config.pythonGraphql = options.pythonGraphql as PythonGraphql;
   }
 
   if (options.pythonQuality !== undefined) {

@@ -70,6 +70,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonAi: [],
     pythonAuth: "none",
     pythonTaskQueue: "none",
+    pythonGraphql: "none",
     pythonQuality: "none",
     goWebFramework: "none",
     goOrm: "none",
@@ -121,6 +122,7 @@ describe("generateReproducibleCommand", () => {
       pythonAi: [],
       pythonAuth: "none",
       pythonTaskQueue: "celery",
+      pythonGraphql: "none",
       pythonQuality: "ruff",
       aiDocs: ["claude-md"],
     });
@@ -134,6 +136,7 @@ describe("generateReproducibleCommand", () => {
         "--python-ai none " +
         "--python-auth none " +
         "--python-task-queue celery " +
+        "--python-graphql none " +
         "--python-quality ruff " +
         "--addons none " +
         "--examples none " +
@@ -186,6 +189,7 @@ describe("generateReproducibleCommand", () => {
       pythonAi: ["langchain", "openai-sdk"],
       pythonAuth: "none",
       pythonTaskQueue: "celery",
+      pythonGraphql: "none",
       pythonQuality: "ruff",
       aiDocs: ["claude-md", "agents-md"],
     });
@@ -201,6 +205,7 @@ describe("generateReproducibleCommand", () => {
         "--python-ai langchain openai-sdk " +
         "--python-auth none " +
         "--python-task-queue celery " +
+        "--python-graphql none " +
         "--python-quality ruff " +
         "--addons skills " +
         "--examples none " +

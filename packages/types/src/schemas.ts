@@ -325,6 +325,8 @@ export const PythonAuthSchema = z
 
 export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
 
+export const PythonGraphqlSchema = z.enum(["strawberry", "none"]).describe("Python GraphQL framework");
+
 export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
 
 // Go ecosystem schemas
@@ -519,6 +521,7 @@ export const CreateInputSchema = z.object({
   pythonAi: z.array(PythonAiSchema).optional(),
   pythonAuth: PythonAuthSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
+  pythonGraphql: PythonGraphqlSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema.optional(),
@@ -611,6 +614,7 @@ export const ProjectConfigSchema = z.object({
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
+  pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
@@ -687,6 +691,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
+  pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
@@ -775,6 +780,7 @@ export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;
 export const PYTHON_AI_VALUES = PythonAiSchema.options;
 export const PYTHON_AUTH_VALUES = PythonAuthSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
+export const PYTHON_GRAPHQL_VALUES = PythonGraphqlSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;
 export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options;
 export const GO_ORM_VALUES = GoOrmSchema.options;
