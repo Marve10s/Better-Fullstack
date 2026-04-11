@@ -27,6 +27,7 @@ import type {
   GoOrm,
   GoApi,
   GoWebFramework,
+  I18n,
   JobQueue,
   Logging,
   Observability,
@@ -171,6 +172,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.caching !== undefined) {
     config.caching = options.caching as Caching;
+  }
+
+  if (options.i18n !== undefined) {
+    config.i18n = options.i18n as I18n;
   }
 
   if (options.search !== undefined) {

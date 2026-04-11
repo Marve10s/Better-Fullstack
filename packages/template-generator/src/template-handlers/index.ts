@@ -21,6 +21,7 @@ export { processFeatureFlagsTemplates } from "./feature-flags";
 export { processAnalyticsTemplates } from "./analytics";
 export { processJobQueueTemplates } from "./job-queue";
 export { processCMSTemplates } from "./cms";
+export { processI18nTemplates } from "./i18n";
 export { processSearchTemplates } from "./search";
 export { processFileStorageTemplates } from "./file-storage";
 export { processTestingTemplates } from "./testing";

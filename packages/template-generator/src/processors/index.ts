@@ -12,6 +12,7 @@ import { processAuthDeps } from "./auth-deps";
 import { processAuthPlugins } from "./auth-plugins";
 import { processBackendDeps } from "./backend-deps";
 import { processCachingDeps } from "./caching-deps";
+import { processI18nDeps } from "./i18n-deps";
 import { processCMSDeps } from "./cms-deps";
 import { processCSSAndUILibraryDeps } from "./css-ui-deps";
 import { processDatabaseDeps } from "./db-deps";
@@ -72,6 +73,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processCSSAndUILibraryDeps(vfs, config);
   processCMSDeps(vfs, config);
   processCachingDeps(vfs, config);
+  processI18nDeps(vfs, config);
   processSearchDeps(vfs, config);
   processFileStorageDeps(vfs, config);
   processTurboConfig(vfs, config);
@@ -86,6 +88,7 @@ export {
   processAuthDeps,
   processBackendDeps,
   processCachingDeps,
+  processI18nDeps,
   processSearchDeps,
   processFileStorageDeps,
   processCMSDeps,

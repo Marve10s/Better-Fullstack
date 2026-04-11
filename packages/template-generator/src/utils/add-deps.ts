@@ -674,6 +674,15 @@ export const dependencyVersionMap = {
   // Caching - Upstash Redis
   "@upstash/redis": "^1.37.0",
 
+  // i18n - i18next
+  i18next: "^25.0.1",
+  "react-i18next": "^15.5.1",
+  "i18next-browser-languagedetector": "^8.0.4",
+  "i18next-http-backend": "^3.0.2",
+
+  // i18n - next-intl
+  "next-intl": "^4.1.0",
+
   // Search - Meilisearch
   meilisearch: "^0.57.0",
 

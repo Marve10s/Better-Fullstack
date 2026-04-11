@@ -45,6 +45,7 @@ import type {
   AnalyticsSchema,
   CMSSchema,
   CachingSchema,
+  I18nSchema,
   SearchSchema,
   FileStorageSchema,
   EcosystemSchema,
@@ -119,6 +120,7 @@ export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
+export type I18n = z.infer<typeof I18nSchema>;
 export type Search = z.infer<typeof SearchSchema>;
 export type FileStorage = z.infer<typeof FileStorageSchema>;
 export type Ecosystem = z.infer<typeof EcosystemSchema>;

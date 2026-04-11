@@ -233,6 +233,10 @@ export const CachingSchema = z
   .enum(["upstash-redis", "none"])
   .describe("Caching solution (upstash-redis for serverless Redis)");
 
+export const I18nSchema = z
+  .enum(["i18next", "next-intl", "none"])
+  .describe("Internationalization (i18n) library");
+
 export const SearchSchema = z
   .enum(["meilisearch", "typesense", "elasticsearch", "algolia", "none"])
   .describe(
@@ -502,6 +506,7 @@ export const CreateInputSchema = z.object({
   analytics: AnalyticsSchema.optional(),
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
+  i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
   fileStorage: FileStorageSchema.optional(),
   // Rust ecosystem options
@@ -595,6 +600,7 @@ export const ProjectConfigSchema = z.object({
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
+  i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
   // Rust ecosystem options
@@ -672,6 +678,7 @@ export const BetterTStackConfigSchema = z.object({
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
+  i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
   // Rust ecosystem options
@@ -762,6 +769,7 @@ export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
+export const I18N_VALUES = I18nSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
 export const FILE_STORAGE_VALUES = FileStorageSchema.options;
 export const ECOSYSTEM_VALUES = EcosystemSchema.options;

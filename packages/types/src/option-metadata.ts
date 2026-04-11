@@ -8,6 +8,7 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   CACHING_VALUES,
+  I18N_VALUES,
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
   DATABASE_SETUP_VALUES,
@@ -91,6 +92,7 @@ export type OptionCategory =
   | "realtime"
   | "jobQueue"
   | "caching"
+  | "i18n"
   | "search"
   | "fileStorage"
   | "animation"
@@ -266,6 +268,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   realtime: REALTIME_VALUES,
   jobQueue: JOB_QUEUE_VALUES,
   caching: CACHING_VALUES,
+  i18n: I18N_VALUES,
   search: SEARCH_VALUES,
   fileStorage: FILE_STORAGE_VALUES,
   animation: ANIMATION_VALUES,
@@ -404,6 +407,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   jobQueue: {
     bullmq: "BullMQ",
     "trigger-dev": "Trigger.dev",
+  },
+  i18n: {
+    i18next: "i18next",
+    "next-intl": "next-intl",
   },
   search: {
     meilisearch: "Meilisearch",
@@ -733,6 +740,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   realtime: buildCategoryMetadata("realtime"),
   jobQueue: buildCategoryMetadata("jobQueue"),
   caching: buildCategoryMetadata("caching"),
+  i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
   fileStorage: buildCategoryMetadata("fileStorage"),
   animation: buildCategoryMetadata("animation"),

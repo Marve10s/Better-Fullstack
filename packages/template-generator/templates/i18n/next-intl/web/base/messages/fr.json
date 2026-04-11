@@ -1,0 +1,7 @@
+{
+  "common": {
+    "welcome": "Bienvenue sur {projectName}",
+    "description": "Commencez par modifier cette page",
+    "language": "Langue"
+  }
+}

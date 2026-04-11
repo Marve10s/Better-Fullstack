@@ -39,6 +39,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     uiLibrary: "none",
     cms: "none",
     caching: "none",
+    i18n: "none",
     search: "none",
     fileStorage: "none",
     webDeploy: "none",

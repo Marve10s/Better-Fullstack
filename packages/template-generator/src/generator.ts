@@ -36,6 +36,7 @@ import {
   processAnalyticsTemplates,
   processJobQueueTemplates,
   processCMSTemplates,
+  processI18nTemplates,
   processSearchTemplates,
   processFileStorageTemplates,
   processTestingTemplates,
@@ -88,6 +89,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processAnalyticsTemplates(vfs, templates, config);
       await processJobQueueTemplates(vfs, templates, config);
       await processCMSTemplates(vfs, templates, config);
+      await processI18nTemplates(vfs, templates, config);
       await processSearchTemplates(vfs, templates, config);
       await processFileStorageTemplates(vfs, templates, config);
       await processTestingTemplates(vfs, templates, config);

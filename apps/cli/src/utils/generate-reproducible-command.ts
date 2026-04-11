@@ -88,6 +88,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--logging ${config.logging}`);
   flags.push(`--observability ${config.observability}`);
   flags.push(`--caching ${config.caching}`);
+  flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
   flags.push(`--file-storage ${config.fileStorage}`);
