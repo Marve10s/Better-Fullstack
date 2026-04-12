@@ -77,6 +77,7 @@ export type StackState = {
   goApi: string;
   goCli: string;
   goLogging: string;
+  goAuth: string;
 };
 
 export const DEFAULT_STACK: StackState = {
@@ -156,6 +157,7 @@ export const DEFAULT_STACK: StackState = {
   goApi: "none",
   goCli: "none",
   goLogging: "zap",
+  goAuth: "none",
 };
 
 export const isStackDefault = <K extends keyof StackState>(

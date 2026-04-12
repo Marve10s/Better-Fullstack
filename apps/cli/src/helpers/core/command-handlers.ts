@@ -181,6 +181,7 @@ export async function createProjectHandler(
               goApi: "none",
               goCli: "none",
               goLogging: "none",
+              goAuth: "none",
               aiDocs: [],
             } satisfies ProjectConfig,
             reproducibleCommand: "",

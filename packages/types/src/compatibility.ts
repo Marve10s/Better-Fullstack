@@ -79,7 +79,8 @@ export type CompatibilityCategory =
   | "goOrm"
   | "goApi"
   | "goCli"
-  | "goLogging";
+  | "goLogging"
+  | "goAuth";
 
 export type CompatibilityIssue = {
   code: string;
@@ -167,6 +168,7 @@ export type CompatibilityInput = {
   goApi: string;
   goCli: string;
   goLogging: string;
+  goAuth: string;
 };
 
 const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
@@ -237,6 +239,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "goApi",
   "goCli",
   "goLogging",
+  "goAuth",
 ];
 
 const DEFAULT_RUNTIME = "bun";
@@ -331,6 +334,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     goApi: "Go API Layer",
     goCli: "Go CLI Tools",
     goLogging: "Go Logging",
+    goAuth: "Go Auth",
   };
 
   if (rustCategoryNames[categoryKey]) {

@@ -90,6 +90,7 @@ export const DEFAULT_CONFIG_BASE = {
   goApi: "none",
   goCli: "none",
   goLogging: "zap",
+  goAuth: "none",
   // AI documentation files
   aiDocs: ["claude-md"],
 } as const;

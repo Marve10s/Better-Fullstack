@@ -113,6 +113,7 @@ export function loadStackParams(
       goApi: getString("goApi", DEFAULT_STACK.goApi),
       goCli: getString("goCli", DEFAULT_STACK.goCli),
       goLogging: getString("goLogging", DEFAULT_STACK.goLogging),
+      goAuth: getString("goAuth", DEFAULT_STACK.goAuth),
       aiDocs: getArray("aiDocs", DEFAULT_STACK.aiDocs),
     });
   };
@@ -216,6 +217,7 @@ export function serializeStackParams(basePath: string, stack: StackState): strin
   addParam("goApi", stack.goApi);
   addParam("goCli", stack.goCli);
   addParam("goLogging", stack.goLogging);
+  addParam("goAuth", stack.goAuth);
   addParam("aiDocs", stack.aiDocs);
 
   const queryString = params.toString();
@@ -304,6 +306,7 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
     goApi: search.gapi ?? DEFAULT_STACK.goApi,
     goCli: search.gcli ?? DEFAULT_STACK.goCli,
     goLogging: search.glog ?? DEFAULT_STACK.goLogging,
+    goAuth: search.gauth ?? DEFAULT_STACK.goAuth,
   });
 }
 

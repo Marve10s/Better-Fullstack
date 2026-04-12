@@ -1845,6 +1845,7 @@ describe("Authentication Configurations", () => {
         goApi: "none",
         goCli: "none",
         goLogging: "none",
+        goAuth: "none",
         backend: "none",
         runtime: "none",
         database: "none",

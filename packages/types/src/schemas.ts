@@ -344,6 +344,8 @@ export const GoCliSchema = z.enum(["cobra", "bubbletea", "none"]).describe("Go C
 
 export const GoLoggingSchema = z.enum(["zap", "zerolog", "slog", "none"]).describe("Go logging library");
 
+export const GoAuthSchema = z.enum(["casbin", "jwt", "none"]).describe("Go authentication library");
+
 export const AiDocsSchema = z
   .enum(["claude-md", "agents-md", "cursorrules", "none"])
   .describe("AI documentation files (CLAUDE.md, Agents.md, .cursorrules)");
@@ -534,6 +536,7 @@ export const CreateInputSchema = z.object({
   goApi: GoApiSchema.optional(),
   goCli: GoCliSchema.optional(),
   goLogging: GoLoggingSchema.optional(),
+  goAuth: GoAuthSchema.optional(),
   // AI documentation files
   aiDocs: z.array(AiDocsSchema).optional(),
 });
@@ -628,6 +631,7 @@ export const ProjectConfigSchema = z.object({
   goApi: GoApiSchema,
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
+  goAuth: GoAuthSchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
 });
@@ -706,6 +710,7 @@ export const BetterTStackConfigSchema = z.object({
   goApi: GoApiSchema,
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
+  goAuth: GoAuthSchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
 });
@@ -795,6 +800,7 @@ export const GO_ORM_VALUES = GoOrmSchema.options;
 export const GO_API_VALUES = GoApiSchema.options;
 export const GO_CLI_VALUES = GoCliSchema.options;
 export const GO_LOGGING_VALUES = GoLoggingSchema.options;
+export const GO_AUTH_VALUES = GoAuthSchema.options;
 export const AI_DOCS_VALUES = AiDocsSchema.options;
 export const SHADCN_BASE_VALUES = ShadcnBaseSchema.options;
 export const SHADCN_STYLE_VALUES = ShadcnStyleSchema.options;

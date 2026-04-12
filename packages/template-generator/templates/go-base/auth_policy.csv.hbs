@@ -1,0 +1,10 @@
+{{#if (eq goAuth "casbin")}}
+p, alice, data1, read
+p, bob, data2, write
+p, admin, data1, read
+p, admin, data1, write
+p, admin, data2, read
+p, admin, data2, write
+
+g, alice, admin
+{{/if}}

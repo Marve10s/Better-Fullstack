@@ -95,6 +95,7 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "goApi",
   "goCli",
   "goLogging",
+  "goAuth",
 ] as const;
 
 export type TemplateFingerprintKey = (typeof TEMPLATE_FINGERPRINT_KEYS)[number];

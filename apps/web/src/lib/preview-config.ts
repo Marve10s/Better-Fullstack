@@ -123,6 +123,7 @@ export function stackStateToProjectConfig(input: Partial<StackState>): ProjectCo
     goApi: stack.goApi as ProjectConfig["goApi"],
     goCli: stack.goCli as ProjectConfig["goCli"],
     goLogging: stack.goLogging as ProjectConfig["goLogging"],
+    goAuth: stack.goAuth as ProjectConfig["goAuth"],
     aiDocs: withoutNone(stack.aiDocs) as ProjectConfig["aiDocs"],
   };
 

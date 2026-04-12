@@ -68,6 +68,7 @@ const BASE_CONFIG: ProjectConfig = {
   goApi: "none",
   goCli: "none",
   goLogging: "none",
+  goAuth: "none",
   aiDocs: ["claude-md"],
 };
 

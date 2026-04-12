@@ -787,6 +787,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://pkg.go.dev/log/slog",
     githubUrl: "https://github.com/golang/go",
   },
+  casbin: {
+    docsUrl: "https://casbin.org/docs/overview",
+    githubUrl: "https://github.com/casbin/casbin",
+  },
 };
 
 const CATEGORY_LINKS: LinkMap = {

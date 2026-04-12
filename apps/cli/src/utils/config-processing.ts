@@ -22,6 +22,7 @@ import type {
   FileStorage,
   FileUpload,
   Forms,
+  GoAuth,
   GoCli,
   GoLogging,
   GoOrm,
@@ -375,6 +376,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.goLogging !== undefined) {
     config.goLogging = options.goLogging as GoLogging;
+  }
+
+  if (options.goAuth !== undefined) {
+    config.goAuth = options.goAuth as GoAuth;
   }
 
   return config;

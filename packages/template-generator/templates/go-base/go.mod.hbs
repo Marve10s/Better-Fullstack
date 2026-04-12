@@ -51,5 +51,11 @@ require (
 {{#if (eq goLogging "zerolog")}}
 	github.com/rs/zerolog v1.34.0
 {{/if}}
+{{#if (eq goAuth "casbin")}}
+	github.com/casbin/casbin/v2 v2.103.0
+{{/if}}
+{{#if (eq goAuth "jwt")}}
+	github.com/golang-jwt/jwt/v5 v5.2.2
+{{/if}}
 	github.com/joho/godotenv v1.5.1
 )

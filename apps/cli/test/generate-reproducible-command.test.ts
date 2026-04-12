@@ -78,6 +78,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     goApi: "none",
     goCli: "none",
     goLogging: "none",
+    goAuth: "none",
     aiDocs: ["claude-md"],
     ...overrides,
   };

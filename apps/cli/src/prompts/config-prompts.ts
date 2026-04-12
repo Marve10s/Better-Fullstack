@@ -23,6 +23,7 @@ import type {
   Forms,
   Frontend,
   GoApi,
+  GoAuth,
   GoCli,
   GoLogging,
   GoOrm,
@@ -90,6 +91,7 @@ import { getFrontendChoice } from "./frontend";
 import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
+  getGoAuthChoice,
   getGoCliChoice,
   getGoLoggingChoice,
   getGoOrmChoice,
@@ -202,6 +204,7 @@ type PromptGroupResults = {
   goApi: GoApi;
   goCli: GoCli;
   goLogging: GoLogging;
+  goAuth: GoAuth;
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
@@ -521,6 +524,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoLogging);
         return getGoLoggingChoice(flags.goLogging);
       },
+      goAuth: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
+        return getGoAuthChoice(flags.goAuth);
+      },
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
@@ -613,6 +620,7 @@ export async function gatherConfig(
     goApi: result.goApi,
     goCli: result.goCli,
     goLogging: result.goLogging,
+    goAuth: result.goAuth,
     // AI documentation files
     aiDocs: result.aiDocs,
   };

@@ -1,7 +1,7 @@
 package main
 
 import (
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (or (eq auth "go-better-auth") (ne goAuth "none")) (ne goLogging "none")))}}
 	"os"
 {{/if}}
 {{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
@@ -34,7 +34,7 @@ import (
 
 	"{{projectName}}/internal/database"
 {{/if}}
-{{#if (eq auth "go-better-auth")}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
 
 	appauth "{{projectName}}/internal/auth"
 {{/if}}
@@ -135,6 +135,45 @@ func main() {
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("GoBetterAuth initialized")
+{{/if}}
+{{/if}}
+
+{{#if (eq goAuth "casbin")}}
+	// Initialize Casbin authorization
+	if err := appauth.InitCasbin(); err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to initialize Casbin", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to initialize Casbin")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to initialize Casbin", "error", err)
+		os.Exit(1)
+{{else}}
+		panic("Failed to initialize Casbin: " + err.Error())
+{{/if}}
+	}
+{{#if (eq goLogging "zap")}}
+	logger.Info("Casbin authorization initialized")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Casbin authorization initialized")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Casbin authorization initialized")
+{{/if}}
+{{/if}}
+
+{{#if (eq goAuth "jwt")}}
+	// JWT auth helper available via appauth.GenerateToken / appauth.ValidateToken
+	_ = appauth.ErrInvalidToken // ensure auth package is imported
+{{#if (eq goLogging "zap")}}
+	logger.Info("JWT authentication configured")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("JWT authentication configured")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("JWT authentication configured")
 {{/if}}
 {{/if}}
 

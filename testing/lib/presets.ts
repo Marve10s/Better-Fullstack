@@ -72,6 +72,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     goApi: "none",
     goCli: "none",
     goLogging: "none",
+    goAuth: "none",
     versionChannel: "stable",
   } as ProjectConfig;
 }

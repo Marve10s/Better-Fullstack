@@ -26,6 +26,7 @@ import {
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
   GO_API_VALUES,
+  GO_AUTH_VALUES,
   GO_CLI_VALUES,
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
@@ -336,6 +337,7 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
       goApi: sampleScalar(GO_API_VALUES, 0.35),
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
+      goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
     },
   };
 }
@@ -432,6 +434,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     goApi: "none",
     goCli: "none",
     goLogging: "none",
+    goAuth: "none",
     aiDocs: [],
     packageManager: "bun",
     git: false,

@@ -57,6 +57,7 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.goApi === "string" ? fingerprint.goApi : undefined,
       typeof fingerprint.goCli === "string" ? fingerprint.goCli : undefined,
       typeof fingerprint.goLogging === "string" ? fingerprint.goLogging : undefined,
+      typeof fingerprint.goAuth === "string" ? fingerprint.goAuth : undefined,
     ],
   } as const;
 
@@ -140,6 +141,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["go-api", config.goApi],
     ["go-cli", config.goCli],
     ["go-logging", config.goLogging],
+    ["go-auth", config.goAuth],
   ];
 
   const orderedFlags = [...commonFlags];

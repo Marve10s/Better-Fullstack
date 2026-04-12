@@ -72,6 +72,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     goApi: projectConfig.goApi,
     goCli: projectConfig.goCli,
     goLogging: projectConfig.goLogging,
+    goAuth: projectConfig.goAuth,
     aiDocs: projectConfig.aiDocs,
   };
 
@@ -138,6 +139,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     goApi: btsConfig.goApi,
     goCli: btsConfig.goCli,
     goLogging: btsConfig.goLogging,
+    goAuth: btsConfig.goAuth,
     aiDocs: btsConfig.aiDocs,
   };
 
