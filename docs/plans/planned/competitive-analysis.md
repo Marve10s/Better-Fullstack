@@ -15,7 +15,7 @@ Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 | **Skills addon** | Installs curated AI coding agent skills from 19+ sources into 25+ agents | Medium | ✅ Done |
 | **MCP addon** | Auto-configures MCP servers for 18+ tools into various AI agents | Medium | ✅ Done |
 | **`history` command** | View/reproduce past scaffolds | Low | ✅ Done |
-| **Tauri** | Desktop app addon. Supports all web frontends as shell (v3.24) | Medium | Planned |
+| **Tauri** | Desktop app addon. Supports all web frontends as shell (v3.24) | Medium | ✅ Done |
 | **Electrobun** | Alternative desktop framework. All web frontends supported | Low | Planned |
 | **PWA** | Progressive Web App addon | Medium | Planned |
 | **WXT** | Browser extension scaffolding (vanilla/vue/react/solid/svelte) | Low-Medium | Planned |
