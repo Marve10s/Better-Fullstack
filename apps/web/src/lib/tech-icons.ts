@@ -125,6 +125,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   kysely: { type: "local", src: "https://kysely.dev/img/logo.svg" },
   mikroorm: { type: "local", src: "https://mikro-orm.io/img/logo.svg" },
   sequelize: { type: "si", slug: "sequelize", hex: "52B0E7" },
+  "tortoise-orm": { type: "local", src: "/icon/python.svg" },
 
   // ─── DB Setup ──────────────────────────────────────────────────────────────
   turso: { type: "si", slug: "turso", hex: "4FF8D2" },
