@@ -953,13 +953,13 @@ async fn rocket() -> _ {
 }
 {{else}}
 {{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
 {{#if (ne rustCaching "none")}}
 mod cache;
 {{/if}}
 {{#if (ne rustAuth "none")}}
 mod auth;
-{{/if}}
-mod error;
 {{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
