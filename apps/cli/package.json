@@ -1,7 +1,7 @@
 {
   "name": "create-better-fullstack",
   "version": "1.6.0",
-  "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options — the CLI wires everything together.",
+  "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 340+ options — the CLI wires everything together.",
   "keywords": [
     "angular",
     "astro",
