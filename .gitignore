@@ -66,3 +66,5 @@ scripts/ralph/
 /test/
 # Ignore Claude Code worktrees (ephemeral isolated branches)
 .claude/worktrees/
+testing/.validate-r4/
+testing/.verify-*/
