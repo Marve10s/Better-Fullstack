@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     api_version: str = "v1"
 
-{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm"))}}
     # Database settings
     database_url: str = "sqlite:///./app.db"
 {{/if}}

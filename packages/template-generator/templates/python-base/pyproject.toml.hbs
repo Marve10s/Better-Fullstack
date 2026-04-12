@@ -34,6 +34,10 @@ dependencies = [
     "sqlmodel>=0.0.38",
     "alembic>=1.14.0",
 {{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+    "tortoise-orm[aiosqlite]>=0.25.0",
+    "aerich>=0.8.0",
+{{/if}}
 {{#if (eq pythonValidation "pydantic")}}
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",

@@ -85,6 +85,7 @@ describe("Python Language Support", () => {
     it("should have python ORM options", () => {
       expect(PYTHON_ORMS).toContain("sqlalchemy");
       expect(PYTHON_ORMS).toContain("sqlmodel");
+      expect(PYTHON_ORMS).toContain("tortoise-orm");
       expect(PYTHON_ORMS).toContain("none");
     });
 
@@ -922,6 +923,192 @@ describe("Python Language Support", () => {
       expect(hasFile(root, "src/app/crud.py")).toBe(false);
       expect(hasFile(root, "alembic.ini")).toBe(false);
       expect(hasFile(root, "migrations/env.py")).toBe(false);
+    });
+  });
+
+  describe("Tortoise ORM", () => {
+    it("should include Tortoise ORM dependencies in pyproject.toml", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-deps",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("tortoise-orm");
+      expect(pyprojectContent).toContain("aerich");
+    });
+
+    it("should create Tortoise ORM database module", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-database",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/app/database.py")).toBe(true);
+      const databaseContent = getFileContent(root, "src/app/database.py");
+      expect(databaseContent).toBeDefined();
+      expect(databaseContent).toContain("from tortoise import Tortoise");
+      expect(databaseContent).toContain("TORTOISE_ORM");
+      expect(databaseContent).toContain("init_db");
+      expect(databaseContent).toContain("close_db");
+    });
+
+    it("should create Tortoise ORM models module", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-models",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/app/models.py")).toBe(true);
+      const modelsContent = getFileContent(root, "src/app/models.py");
+      expect(modelsContent).toBeDefined();
+      expect(modelsContent).toContain("from tortoise import fields, models");
+      expect(modelsContent).toContain("class User(models.Model)");
+      expect(modelsContent).toContain("class Post(models.Model)");
+    });
+
+    it("should create Tortoise ORM CRUD module", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-crud",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/app/crud.py")).toBe(true);
+      const crudContent = getFileContent(root, "src/app/crud.py");
+      expect(crudContent).toBeDefined();
+      expect(crudContent).toContain("from app.models import Post, User");
+      expect(crudContent).toContain("async def get_user");
+      expect(crudContent).toContain("async def create_user");
+      expect(crudContent).toContain("async def get_post");
+      expect(crudContent).toContain("async def create_post");
+    });
+
+    it("should create database test file", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-tests",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "tests/test_database.py")).toBe(true);
+      const testContent = getFileContent(root, "tests/test_database.py");
+      expect(testContent).toBeDefined();
+      expect(testContent).toContain("from app.models import Post, User");
+      expect(testContent).toContain("from app import crud");
+    });
+
+    it("should integrate Tortoise ORM with FastAPI endpoints", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-fastapi",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "src/app/main.py");
+      expect(mainContent).toBeDefined();
+      expect(mainContent).toContain("from app import crud");
+      expect(mainContent).toContain("from app.database import close_db, init_db");
+      expect(mainContent).toContain("await init_db()");
+      expect(mainContent).toContain("await close_db()");
+      expect(mainContent).toContain("/users");
+      expect(mainContent).toContain("/posts");
+    });
+
+    it("should generate README with Tortoise ORM instructions", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-readme",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const readmeContent = getFileContent(root, "README.md");
+      expect(readmeContent).toBeDefined();
+      expect(readmeContent).toContain("Tortoise ORM");
+      expect(readmeContent).toContain("Aerich");
+    });
+
+    it("should NOT use Alembic with Tortoise ORM", async () => {
+      const result = await createVirtual({
+        projectName: "python-tortoise-migrations",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "tortoise-orm",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      // Alembic should not be present with Tortoise ORM (uses aerich instead)
+      expect(hasFile(root, "alembic.ini")).toBe(false);
+      expect(hasFile(root, "migrations/env.py")).toBe(false);
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).not.toContain("alembic");
     });
   });
 

@@ -989,6 +989,9 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   } else if (pythonOrm === "sqlmodel") {
     features.push("- **SQLModel** - SQL databases with Pydantic and SQLAlchemy");
     features.push("- **Alembic** - Database migrations");
+  } else if (pythonOrm === "tortoise-orm") {
+    features.push("- **Tortoise ORM** - Async-first Python ORM with Django-like API");
+    features.push("- **Aerich** - Database migrations for Tortoise ORM");
   }
 
   // Validation
@@ -1069,6 +1072,13 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     structure.push("│       └── crud.py       # CRUD operations");
   }
 
+  // Add Tortoise ORM files
+  if (pythonOrm === "tortoise-orm") {
+    structure.push("│       ├── database.py   # Database configuration");
+    structure.push("│       ├── models.py     # Tortoise ORM models");
+    structure.push("│       └── crud.py       # CRUD operations");
+  }
+
   // Add standalone Pydantic schemas (no ORM)
   if (pythonOrm === "none" && pythonValidation === "pydantic") {
     structure.push("│       └── schemas.py    # Pydantic validation schemas");
@@ -1114,7 +1124,7 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   structure.push("│   ├── __init__.py");
   structure.push("│   └── test_main.py      # Test suite");
 
-  if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel") {
+  if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel" || pythonOrm === "tortoise-orm") {
     structure.push("│   └── test_database.py  # Database tests");
   }
 
@@ -1148,6 +1158,14 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
 - \`uv run alembic revision --autogenerate -m "description"\`: Generate migration
 - \`uv run alembic upgrade head\`: Apply migrations
 - \`uv run alembic downgrade -1\`: Rollback last migration`;
+  }
+
+  if (pythonOrm === "tortoise-orm") {
+    scripts += `
+- \`uv run aerich init -t app.database.TORTOISE_ORM\`: Initialize Aerich
+- \`uv run aerich init-db\`: Create initial migration
+- \`uv run aerich migrate\`: Generate migration
+- \`uv run aerich upgrade\`: Apply migrations`;
   }
 
   return `# ${projectName}

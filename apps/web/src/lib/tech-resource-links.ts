@@ -743,6 +743,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://sqlmodel.tiangolo.com/",
     githubUrl: "https://github.com/fastapi/sqlmodel",
   },
+  "tortoise-orm": {
+    docsUrl: "https://tortoise.github.io/",
+    githubUrl: "https://github.com/tortoise/tortoise-orm",
+  },
   pydantic: {
     docsUrl: "https://docs.pydantic.dev/",
     githubUrl: "https://github.com/pydantic/pydantic",

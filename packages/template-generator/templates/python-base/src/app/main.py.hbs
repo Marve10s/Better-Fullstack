@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 {{#if (eq pythonWebFramework "fastapi")}}
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, Depends, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
+from fastapi import FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, Depends, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
@@ -37,6 +37,10 @@ from app.models import (
     UserResponse,
     UserUpdate,
 )
+{{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+from app import crud
+from app.database import close_db, init_db
 {{/if}}
 {{#if (includes pythonAi "langchain")}}
 from fastapi.responses import StreamingResponse
@@ -168,7 +172,15 @@ async def lifespan(app: FastAPI):
     # Initialize database tables on startup
     init_db()
 {{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+    # Initialize Tortoise ORM on startup
+    await init_db()
+{{/if}}
     yield
+{{#if (eq pythonOrm "tortoise-orm")}}
+    # Close Tortoise ORM connections on shutdown
+    await close_db()
+{{/if}}
 
 
 {{#if (eq pythonValidation "pydantic")}}
@@ -909,6 +921,92 @@ async def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_
 async def delete_post(post_id: int, db: Session = Depends(get_db)):
     """Delete a post."""
     if not crud.delete_post(db, post_id):
+        raise HTTPException(status_code=404, detail="Post not found")
+{{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+
+# User endpoints
+@app.post("/users", status_code=201)
+async def create_user(email: str, name: str | None = None):
+    """Create a new user."""
+    existing = await crud.get_user_by_email(email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = await crud.create_user(email=email, name=name)
+    return {"id": user.id, "email": user.email, "name": user.name}
+
+
+@app.get("/users")
+async def list_users(skip: int = 0, limit: int = 100):
+    """List all users."""
+    users = await crud.get_users(skip=skip, limit=limit)
+    return [{"id": u.id, "email": u.email, "name": u.name} for u in users]
+
+
+@app.get("/users/{user_id}")
+async def get_user(user_id: int):
+    """Get a user by ID."""
+    user = await crud.get_user(user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": user.id, "email": user.email, "name": user.name}
+
+
+@app.patch("/users/{user_id}")
+async def update_user(user_id: int, email: str | None = None, name: str | None = None):
+    """Update a user."""
+    updated = await crud.update_user(user_id, email=email, name=name)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": updated.id, "email": updated.email, "name": updated.name}
+
+
+@app.delete("/users/{user_id}", status_code=204)
+async def delete_user(user_id: int):
+    """Delete a user."""
+    if not await crud.delete_user(user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+
+# Post endpoints
+@app.post("/posts", status_code=201)
+async def create_post(title: str, author_id: int, content: str | None = None):
+    """Create a new post."""
+    if await crud.get_user(author_id) is None:
+        raise HTTPException(status_code=400, detail="Author not found")
+    post = await crud.create_post(title=title, author_id=author_id, content=content)
+    return {"id": post.id, "title": post.title, "content": post.content, "author_id": post.author_id}
+
+
+@app.get("/posts")
+async def list_posts(skip: int = 0, limit: int = 100):
+    """List all posts."""
+    posts = await crud.get_posts(skip=skip, limit=limit)
+    return [{"id": p.id, "title": p.title, "content": p.content, "author_id": p.author_id} for p in posts]
+
+
+@app.get("/posts/{post_id}")
+async def get_post(post_id: int):
+    """Get a post by ID."""
+    post = await crud.get_post(post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"id": post.id, "title": post.title, "content": post.content, "author_id": post.author_id}
+
+
+@app.patch("/posts/{post_id}")
+async def update_post(post_id: int, title: str | None = None, content: str | None = None):
+    """Update a post."""
+    updated = await crud.update_post(post_id, title=title, content=content)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"id": updated.id, "title": updated.title, "content": updated.content, "author_id": updated.author_id}
+
+
+@app.delete("/posts/{post_id}", status_code=204)
+async def delete_post(post_id: int):
+    """Delete a post."""
+    if not await crud.delete_post(post_id):
         raise HTTPException(status_code=404, detail="Post not found")
 {{/if}}
 

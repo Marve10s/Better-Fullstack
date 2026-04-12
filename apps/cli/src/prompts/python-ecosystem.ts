@@ -69,6 +69,11 @@ export async function getPythonOrmChoice(pythonOrm?: PythonOrm) {
       hint: "SQL databases in Python with Pydantic and SQLAlchemy",
     },
     {
+      value: "tortoise-orm" as const,
+      label: "Tortoise ORM",
+      hint: "Async-first ORM with Django-like API",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No ORM/database layer",

@@ -312,7 +312,7 @@ export const PythonWebFrameworkSchema = z
   .describe("Python web framework");
 
 export const PythonOrmSchema = z
-  .enum(["sqlalchemy", "sqlmodel", "none"])
+  .enum(["sqlalchemy", "sqlmodel", "tortoise-orm", "none"])
   .describe("Python ORM/database layer");
 
 export const PythonValidationSchema = z
