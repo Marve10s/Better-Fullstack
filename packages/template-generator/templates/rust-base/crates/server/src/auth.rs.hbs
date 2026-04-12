@@ -1,0 +1,44 @@
+{{#if (eq rustAuth "oauth2")}}
+use oauth2::basic::BasicClient;
+use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, RedirectUrl, TokenUrl};
+
+/// Create an OAuth2 client configured from environment variables.
+///
+/// Required environment variables:
+/// - `OAUTH2_CLIENT_ID`
+/// - `OAUTH2_CLIENT_SECRET`
+/// - `OAUTH2_AUTH_URL`     (e.g. `https://accounts.google.com/o/oauth2/v2/auth`)
+/// - `OAUTH2_TOKEN_URL`    (e.g. `https://oauth2.googleapis.com/token`)
+/// - `OAUTH2_REDIRECT_URL` (e.g. `http://localhost:3000/auth/callback`)
+pub fn create_oauth2_client() -> BasicClient {
+    let client_id = ClientId::new(
+        std::env::var("OAUTH2_CLIENT_ID").expect("OAUTH2_CLIENT_ID must be set"),
+    );
+    let client_secret = ClientSecret::new(
+        std::env::var("OAUTH2_CLIENT_SECRET").expect("OAUTH2_CLIENT_SECRET must be set"),
+    );
+    let auth_url = AuthUrl::new(
+        std::env::var("OAUTH2_AUTH_URL").expect("OAUTH2_AUTH_URL must be set"),
+    )
+    .expect("Invalid authorization URL");
+    let token_url = TokenUrl::new(
+        std::env::var("OAUTH2_TOKEN_URL").expect("OAUTH2_TOKEN_URL must be set"),
+    )
+    .expect("Invalid token URL");
+    let redirect_url = RedirectUrl::new(
+        std::env::var("OAUTH2_REDIRECT_URL").expect("OAUTH2_REDIRECT_URL must be set"),
+    )
+    .expect("Invalid redirect URL");
+
+    BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url))
+        .set_redirect_uri(redirect_url)
+}
+
+/// Generate an authorization URL with a random CSRF token.
+///
+/// Returns `(url, csrf_token)`. Redirect the user to `url` and verify
+/// `csrf_token` when the provider calls back.
+pub fn authorize_url(client: &BasicClient) -> (url::Url, CsrfToken) {
+    client.authorize_url(CsrfToken::new_random).url()
+}
+{{/if}}
