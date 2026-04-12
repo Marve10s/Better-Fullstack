@@ -36,7 +36,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 - [x] Add `anyhow` ✅ — standard application-level error handling. Ergonomic `?` operator, backtraces.
 - [x] Add `thiserror` ✅ — derive macro for custom error types. Pairs with anyhow.
-- [ ] Add `eyre` — anyhow fork with customizable error reports (color-eyre for pretty backtraces).
+- [x] Add `eyre` ✅ — anyhow fork with customizable error reports (color-eyre for pretty backtraces).
 
 ### Implementation
 - New schema: `RustErrorHandlingSchema = z.enum(["anyhow-thiserror", "eyre", "none"])`
