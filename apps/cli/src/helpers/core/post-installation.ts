@@ -751,6 +751,14 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
     output += `${pc.cyan("•")} Caching: ${cachingNames[rustCaching] || rustCaching}\n`;
   }
 
+  const { rustAuth } = config;
+  if (rustAuth && rustAuth !== "none") {
+    const authNames: Record<string, string> = {
+      oauth2: "OAuth2",
+    };
+    output += `${pc.cyan("•")} Auth: ${authNames[rustAuth] || rustAuth}\n`;
+  }
+
   output += `\n${pc.bold("Common Cargo commands:")}\n`;
   output += `${pc.cyan("•")} Build: cargo build\n`;
   output += `${pc.cyan("•")} Run: cargo run\n`;

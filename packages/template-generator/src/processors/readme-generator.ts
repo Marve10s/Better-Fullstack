@@ -830,6 +830,12 @@ function generateRustReadmeContent(config: ProjectConfig): string {
     features.push("- **Redis** - Redis client with async support and connection pooling");
   }
 
+  // Auth
+  const { rustAuth } = config;
+  if (rustAuth === "oauth2") {
+    features.push("- **OAuth2** - OAuth2 client with authorization code, PKCE, and token exchange flows");
+  }
+
   // Project structure
   const structure: string[] = [`${projectName}/`, "├── Cargo.toml            # Workspace manifest"];
 

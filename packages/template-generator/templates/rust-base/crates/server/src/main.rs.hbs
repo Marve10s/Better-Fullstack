@@ -8,6 +8,9 @@ mod error;
 {{#if (ne rustCaching "none")}}
 mod cache;
 {{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -154,6 +157,12 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     // Initialize Redis client
     let _redis_client = cache::create_redis_client()?;
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let _oauth2_client = auth::create_oauth2_client();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
@@ -331,6 +340,9 @@ mod error;
 {{#if (ne rustCaching "none")}}
 mod cache;
 {{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -482,6 +494,12 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     // Initialize Redis client
     let _redis_client = cache::create_redis_client()?;
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let _oauth2_client = auth::create_oauth2_client();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustOrm "sea-orm")}}
@@ -668,6 +686,9 @@ use serde::Serialize;
 {{#if (ne rustErrorHandling "none")}}
 mod error;
 {{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -821,6 +842,12 @@ async fn rocket() -> _ {
         .to_cors()
         .expect("CORS configuration failed");
 
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let _oauth2_client = auth::create_oauth2_client();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
+{{/if}}
+
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
@@ -929,6 +956,9 @@ async fn rocket() -> _ {
 {{#if (ne rustCaching "none")}}
 mod cache;
 {{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
 mod error;
 {{/if}}
 {{#if (eq rustLogging "tracing")}}
@@ -969,6 +999,12 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     // Initialize Redis client
     let _redis_client = cache::create_redis_client()?;
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let _oauth2_client = auth::create_oauth2_client();
+{{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustApi "tonic")}}

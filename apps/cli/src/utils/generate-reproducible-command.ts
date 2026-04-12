@@ -126,6 +126,7 @@ function getRustFlags(config: ProjectConfig) {
   flags.push(`--rust-logging ${config.rustLogging}`);
   flags.push(`--rust-error-handling ${config.rustErrorHandling}`);
   flags.push(`--rust-caching ${config.rustCaching}`);
+  flags.push(`--rust-auth ${config.rustAuth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);

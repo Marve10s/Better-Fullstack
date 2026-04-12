@@ -329,6 +329,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "anyhow-thiserror": { type: "si", slug: "rust", hex: "CE422B" },
   eyre: { type: "si", slug: "rust", hex: "CE422B" },
   moka: { type: "si", slug: "rust", hex: "CE422B" },
+  oauth2: { type: "si", slug: "auth0", hex: "EB5424" },
 
   // ─── Python ────────────────────────────────────────────────────────────────
   fastapi: { type: "si", slug: "fastapi", hex: "009688" },

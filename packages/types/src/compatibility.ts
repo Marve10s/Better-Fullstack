@@ -155,6 +155,7 @@ export type CompatibilityInput = {
   rustLogging: string;
   rustErrorHandling: string;
   rustCaching: string;
+  rustAuth: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -313,6 +314,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     rustLogging: "Rust Logging",
     rustErrorHandling: "Rust Error Handling",
     rustCaching: "Rust Caching",
+    rustAuth: "Rust Auth",
   };
 
   // Custom display names for Python categories

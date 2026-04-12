@@ -114,6 +114,12 @@ moka.workspace = true
 redis.workspace = true
 {{/if}}
 
+{{#if (eq rustAuth "oauth2")}}
+# Auth
+oauth2.workspace = true
+url.workspace = true
+{{/if}}
+
 [[bin]]
 name = "server"
 path = "src/main.rs"

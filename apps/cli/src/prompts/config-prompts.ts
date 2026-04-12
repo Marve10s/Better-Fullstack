@@ -48,6 +48,7 @@ import type {
   RustCli,
   RustErrorHandling,
   RustCaching,
+  RustAuth,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -126,6 +127,7 @@ import {
   getRustLoggingChoice,
   getRustErrorHandlingChoice,
   getRustCachingChoice,
+  getRustAuthChoice,
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
@@ -189,6 +191,7 @@ type PromptGroupResults = {
   rustLogging: RustLogging;
   rustErrorHandling: RustErrorHandling;
   rustCaching: RustCaching;
+  rustAuth: RustAuth;
   // Python ecosystem
   pythonWebFramework: PythonWebFramework;
   pythonOrm: PythonOrm;
@@ -470,6 +473,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustCaching);
         return getRustCachingChoice(flags.rustCaching);
       },
+      rustAuth: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustAuth);
+        return getRustAuthChoice(flags.rustAuth);
+      },
       // Python ecosystem prompts (skip if TypeScript or Rust)
       pythonWebFramework: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
@@ -605,6 +612,7 @@ export async function gatherConfig(
     rustLogging: result.rustLogging,
     rustErrorHandling: result.rustErrorHandling,
     rustCaching: result.rustCaching,
+    rustAuth: result.rustAuth,
     // Python ecosystem options
     pythonWebFramework: result.pythonWebFramework,
     pythonOrm: result.pythonOrm,

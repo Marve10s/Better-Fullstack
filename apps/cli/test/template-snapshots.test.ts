@@ -387,6 +387,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "none" as const,
         goLogging: "zap" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -398,6 +399,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "grpc-go" as const,
         goCli: "none" as const,
         goLogging: "none" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -409,6 +411,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "none" as const,
         goLogging: "zap" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -420,6 +423,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "none" as const,
         goLogging: "none" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -431,6 +435,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "cobra" as const,
         goLogging: "none" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -442,6 +447,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "none" as const,
         goLogging: "zerolog" as const,
+        goAuth: "none" as const,
       },
     },
     {
@@ -453,6 +459,31 @@ describe("Template Snapshots - Go Ecosystem", () => {
         goApi: "none" as const,
         goCli: "none" as const,
         goLogging: "slog" as const,
+        goAuth: "none" as const,
+      },
+    },
+    {
+      name: "gin-casbin",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "gin" as const,
+        goOrm: "none" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "zap" as const,
+        goAuth: "casbin" as const,
+      },
+    },
+    {
+      name: "echo-jwt-auth",
+      config: {
+        ecosystem: "go" as const,
+        goWebFramework: "echo" as const,
+        goOrm: "none" as const,
+        goApi: "none" as const,
+        goCli: "none" as const,
+        goLogging: "none" as const,
+        goAuth: "jwt" as const,
       },
     },
   ];

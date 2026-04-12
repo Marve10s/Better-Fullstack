@@ -117,6 +117,7 @@ function generateTechStackSection(config: ProjectConfig): string {
     }
     if (config.rustLogging !== "none") lines.push(`- Logging: ${config.rustLogging}`);
     if (config.rustErrorHandling !== "none") lines.push(`- Error Handling: ${config.rustErrorHandling}`);
+    if (config.rustAuth !== "none") lines.push(`- Auth: ${config.rustAuth}`);
   }
 
   if (config.ecosystem === "python") {

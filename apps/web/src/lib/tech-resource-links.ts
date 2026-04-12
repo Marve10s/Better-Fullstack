@@ -693,6 +693,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/moka/latest/moka/",
     githubUrl: "https://github.com/moka-rs/moka",
   },
+  oauth2: {
+    docsUrl: "https://docs.rs/oauth2/latest/oauth2/",
+    githubUrl: "https://github.com/ramosbugs/oauth2-rs",
+  },
   clap: {
     docsUrl: "https://docs.rs/clap/latest/clap/",
     githubUrl: "https://github.com/clap-rs/clap",

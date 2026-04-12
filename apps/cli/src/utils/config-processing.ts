@@ -53,6 +53,7 @@ import type {
   RustLogging,
   RustErrorHandling,
   RustCaching,
+  RustAuth,
   RustOrm,
   RustWebFramework,
   Runtime,
@@ -322,6 +323,10 @@ export function processFlags(options: CLIInput, projectName?: string) {
 
   if (options.rustCaching !== undefined) {
     config.rustCaching = options.rustCaching as RustCaching;
+  }
+
+  if (options.rustAuth !== undefined) {
+    config.rustAuth = options.rustAuth as RustAuth;
   }
 
   // Python ecosystem options

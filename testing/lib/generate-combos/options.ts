@@ -53,6 +53,7 @@ import {
   RUST_LOGGING_VALUES,
   RUST_ERROR_HANDLING_VALUES,
   RUST_CACHING_VALUES,
+  RUST_AUTH_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -304,6 +305,7 @@ function makeRustDraft(args: GeneratorArgs): CandidateDraft {
       rustLogging: sampleScalar(RUST_LOGGING_VALUES, 0.15),
       rustErrorHandling: sampleScalar(RUST_ERROR_HANDLING_VALUES, 0.15),
       rustCaching: sampleScalar(RUST_CACHING_VALUES, 0.15),
+      rustAuth: sampleScalar(RUST_AUTH_VALUES, 0.15),
       rustLibraries: sampleArray(RUST_LIBRARIES_VALUES, 0.35, 2),
     },
   };
@@ -420,6 +422,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     rustLogging: "tracing",
     rustErrorHandling: "anyhow-thiserror",
     rustCaching: "none",
+    rustAuth: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",

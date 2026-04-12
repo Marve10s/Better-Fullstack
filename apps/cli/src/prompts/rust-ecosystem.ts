@@ -1,5 +1,6 @@
 import type {
   RustApi,
+  RustAuth,
   RustCli,
   RustErrorHandling,
   RustCaching,
@@ -318,6 +319,33 @@ export async function getRustCachingChoice(rustCaching?: RustCaching) {
 
   const response = await navigableSelect<RustCaching>({
     message: "Select Rust caching library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustAuthChoice(rustAuth?: RustAuth) {
+  if (rustAuth !== undefined) return rustAuth;
+
+  const options = [
+    {
+      value: "oauth2" as const,
+      label: "OAuth2",
+      hint: "OAuth2 client with authorization code, PKCE, and token exchange flows",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No authentication library",
+    },
+  ];
+
+  const response = await navigableSelect<RustAuth>({
+    message: "Select Rust authentication library",
     options,
     initialValue: "none",
   });

@@ -11139,6 +11139,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/client/src/lib.rs",
   "crates/client/style/main.css",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11157,6 +11158,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/dioxus-client/assets/main.css",
   "crates/dioxus-client/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11173,6 +11175,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/cli/Cargo.toml",
   "crates/cli/src/main.rs",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11187,6 +11190,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11201,6 +11205,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11215,6 +11220,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "Cargo.toml",
   "README.md",
   "crates/server/Cargo.toml",
+  "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
@@ -11224,7 +11230,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 16,
   "files": [
     {
       "content": 
@@ -11304,6 +11310,7 @@ log = "0.4"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "console"] }
+
 
 
 
@@ -11515,6 +11522,7 @@ sea-orm.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -11522,6 +11530,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -11581,6 +11593,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
 
+
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
@@ -11628,7 +11641,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: actix-dioxus-sqlx 1`] = `
 {
-  "fileCount": 14,
+  "fileCount": 15,
   "files": [
     {
       "content": 
@@ -11707,6 +11720,7 @@ wasm-bindgen = "0.2"
 
 # Validation
 validator = { version = "0.19", features = ["derive"] }
+
 
 
 [profile.dev]
@@ -11906,6 +11920,7 @@ sqlx.workspace = true
 validator.workspace = true
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -11913,6 +11928,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -11970,6 +11989,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
 
+
     // Initialize database connection pool
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
@@ -12023,7 +12043,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: cli-clap 1`] = `
 {
-  "fileCount": 12,
+  "fileCount": 13,
   "files": [
     {
       "content": 
@@ -12089,6 +12109,7 @@ dotenvy = "0.15"
 
 # CLI (Clap)
 clap = { version = "4", features = ["derive"] }
+
 
 
 
@@ -12359,6 +12380,7 @@ dotenvy.workspace = true
 clap.workspace = true
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12366,6 +12388,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -12392,6 +12418,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
 
+
     tracing::info!("Hello from snapshot-rust-cli-clap!");
     tracing::info!("Add a web framework (axum, actix-web, or rocket) to start building your API.");
 
@@ -12415,7 +12442,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
 {
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "content": 
@@ -12487,6 +12514,7 @@ sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "my
 
 
 
+
 [profile.dev]
 opt-level = 0
 
@@ -12541,6 +12569,7 @@ sqlx.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12548,6 +12577,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -12603,6 +12636,7 @@ async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
 
+
     // Initialize database connection pool
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
@@ -12653,7 +12687,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-eyre 1`] = `
 {
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "content": 
@@ -12723,6 +12757,7 @@ tower-http = { version = "0.6", features = ["cors", "trace"] }
 
 
 
+
 [profile.dev]
 opt-level = 0
 
@@ -12775,6 +12810,7 @@ tower-http.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12782,6 +12818,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -12828,6 +12868,7 @@ async fn main() -> eyre::Result<()> {
         .init();
 
 
+
     // Build router
     let app = Router::new()
         .route("/health", get(health))
@@ -12864,7 +12905,7 @@ async fn main() -> eyre::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: rocket-seaorm 1`] = `
 {
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "content": 
@@ -12936,6 +12977,7 @@ sea-orm-migration = "1.1"
 
 
 
+
 [profile.dev]
 opt-level = 0
 
@@ -12989,6 +13031,7 @@ sea-orm.workspace = true
 
 
 
+
 [[bin]]
 name = "server"
 path = "src/main.rs"
@@ -12996,6 +13039,10 @@ path = "src/main.rs"
 "
 ,
       "path": "crates/server/Cargo.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/auth.rs",
     },
     {
       "content": "[exists]",
@@ -13056,6 +13103,7 @@ async fn rocket() -> _ {
     let cors = CorsOptions::default()
         .to_cors()
         .expect("CORS configuration failed");
+
 
     // Initialize database connection
     let database_url = std::env::var("DATABASE_URL")
@@ -13186,6 +13234,32 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
   "sql/queries/users.sql",
   "sql/schema/001_schema.sql",
   "sqlc.yaml",
+]
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: gin-casbin 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "auth_model.conf",
+  "auth_policy.csv",
+  "cmd/server/main.go",
+  "go.mod",
+  "internal/auth/goauth.go",
+  "internal/handlers/handlers.go",
+]
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: echo-jwt-auth 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "cmd/server/main.go",
+  "go.mod",
+  "internal/auth/goauth.go",
+  "internal/handlers/handlers.go",
 ]
 `;
 
@@ -13602,6 +13676,121 @@ LOG_LEVEL=debug
     {
       "content": "[exists]",
       "path": "sqlc.yaml",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: gin-casbin 1`] = `
+{
+  "fileCount": 10,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+
+# Casbin settings
+CASBIN_MODEL=auth_model.conf
+CASBIN_POLICY=auth_policy.csv
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "auth_model.conf",
+    },
+    {
+      "content": "[exists]",
+      "path": "auth_policy.csv",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/auth/goauth.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/handlers/handlers.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-jwt-auth 1`] = `
+{
+  "fileCount": 8,
+  "files": [
+    {
+      "content": 
+"# Application settings
+HOST=0.0.0.0
+PORT=8080
+
+# Database settings (if using GORM or sqlc)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# gRPC settings (if using gRPC)
+GRPC_PORT=50051
+
+# Logging level
+LOG_LEVEL=debug
+
+# JWT settings
+JWT_SECRET=change-me-to-a-real-secret
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "cmd/server/main.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "go.mod",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/auth/goauth.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "internal/handlers/handlers.go",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
     },
   ],
 }

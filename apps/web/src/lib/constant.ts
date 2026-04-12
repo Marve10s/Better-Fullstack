@@ -2839,6 +2839,24 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  rustAuth: [
+    {
+      id: "oauth2",
+      name: "OAuth2",
+      description: "OAuth2 client with authorization code, PKCE, and token exchange flows",
+      icon: "https://cdn.simpleicons.org/auth0/EB5424",
+      color: "from-orange-500 to-red-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "None",
+      description: "No authentication library",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   // Python ecosystem options
   pythonWebFramework: [
     {
@@ -3342,6 +3360,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "rustLogging",
     "rustErrorHandling",
     "rustCaching",
+    "rustAuth",
     "aiDocs",
     "git",
     "install",

@@ -64,6 +64,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustLogging: "tracing",
     rustErrorHandling: "anyhow-thiserror",
     rustCaching: "none",
+    rustAuth: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
@@ -255,6 +256,7 @@ describe("generateReproducibleCommand", () => {
         "--rust-logging tracing " +
         "--rust-error-handling anyhow-thiserror " +
         "--rust-caching none " +
+        "--rust-auth none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +
@@ -281,6 +283,7 @@ describe("generateReproducibleCommand", () => {
       goApi: "grpc-go",
       goCli: "cobra",
       goLogging: "zap",
+      goAuth: "none",
       aiDocs: ["agents-md"],
     });
 
@@ -292,6 +295,7 @@ describe("generateReproducibleCommand", () => {
         "--go-api grpc-go " +
         "--go-cli cobra " +
         "--go-logging zap " +
+        "--go-auth none " +
         "--auth go-better-auth " +
         "--addons none " +
         "--examples none " +

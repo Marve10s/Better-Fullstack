@@ -64,6 +64,7 @@ export type StackState = {
   rustLogging: string;
   rustErrorHandling: string;
   rustCaching: string;
+  rustAuth: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -144,6 +145,7 @@ export const DEFAULT_STACK: StackState = {
   rustLogging: "tracing",
   rustErrorHandling: "anyhow-thiserror",
   rustCaching: "none",
+  rustAuth: "none",
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",

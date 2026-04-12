@@ -2819,4 +2819,115 @@ describe("Rust Ecosystem", () => {
       expect(mainContent).not.toContain("mod cache;");
     });
   });
+
+  describe("Rust Auth Option", () => {
+    it("should include oauth2 deps when rustAuth is oauth2", async () => {
+      const result = await createVirtual({
+        projectName: "rust-oauth2",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "none",
+        rustAuth: "oauth2",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const workspaceCargo = getFileContent(root, "Cargo.toml");
+      expect(workspaceCargo).toContain('oauth2 = "4.4"');
+      expect(workspaceCargo).toContain('url = "2"');
+
+      const serverCargo = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargo).toContain("oauth2.workspace = true");
+      expect(serverCargo).toContain("url.workspace = true");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("mod auth;");
+
+      const authContent = getFileContent(root, "crates/server/src/auth.rs");
+      expect(authContent).toContain("BasicClient");
+      expect(authContent).toContain("CsrfToken");
+      expect(authContent).toContain("create_oauth2_client");
+    });
+
+    it("should include oauth2 with actix-web", async () => {
+      const result = await createVirtual({
+        projectName: "rust-actix-oauth2",
+        ecosystem: "rust",
+        rustWebFramework: "actix-web",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "none",
+        rustAuth: "oauth2",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("mod auth;");
+      expect(mainContent).toContain("_oauth2_client");
+    });
+
+    it("should include oauth2 with rocket", async () => {
+      const result = await createVirtual({
+        projectName: "rust-rocket-oauth2",
+        ecosystem: "rust",
+        rustWebFramework: "rocket",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "none",
+        rustAuth: "oauth2",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).toContain("mod auth;");
+    });
+
+    it("should not include auth deps when rustAuth is none", async () => {
+      const result = await createVirtual({
+        projectName: "rust-noauth",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "tracing",
+        rustErrorHandling: "anyhow-thiserror",
+        rustCaching: "none",
+        rustAuth: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const workspaceCargo = getFileContent(root, "Cargo.toml");
+      expect(workspaceCargo).not.toContain("oauth2");
+
+      const mainContent = getFileContent(root, "crates/server/src/main.rs");
+      expect(mainContent).not.toContain("mod auth;");
+    });
+  });
 });

@@ -99,8 +99,10 @@ import {
   type RustLogging,
   RustErrorHandlingSchema,
   RustCachingSchema,
+  RustAuthSchema,
   type RustErrorHandling,
   type RustCaching,
+  type RustAuth,
   PythonWebFrameworkSchema,
   type PythonWebFramework,
   PythonOrmSchema,
@@ -263,6 +265,7 @@ export const router = os.router({
           rustLogging: RustLoggingSchema.optional().describe("Rust logging (tracing, env-logger)"),
           rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling (anyhow-thiserror, eyre)"),
           rustCaching: RustCachingSchema.optional().describe("Rust caching (moka, redis)"),
+          rustAuth: RustAuthSchema.optional().describe("Rust auth (oauth2)"),
           // Python ecosystem options
           pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
             "Python web framework (fastapi, django)",
@@ -596,6 +599,7 @@ export async function createVirtual(
       rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
       rustErrorHandling: options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       rustCaching: options.rustCaching || "none",
+      rustAuth: options.rustAuth || "none",
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",

@@ -173,6 +173,12 @@ moka = { version = "0.12", features = ["future"] }
 redis = { version = "0.29", features = ["aio", "tokio-comp"] }
 {{/if}}
 
+{{#if (eq rustAuth "oauth2")}}
+# Auth (OAuth2)
+oauth2 = "4.4"
+url = "2"
+{{/if}}
+
 [profile.dev]
 opt-level = 0
 
