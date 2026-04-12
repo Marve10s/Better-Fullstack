@@ -586,6 +586,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",
     sqlmodel: "SQLModel",
+    "tortoise-orm": "Tortoise ORM",
   },
   pythonValidation: {
     pydantic: "Pydantic",

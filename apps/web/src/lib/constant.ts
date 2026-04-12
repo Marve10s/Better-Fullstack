@@ -2901,6 +2901,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "tortoise-orm",
+      name: "Tortoise ORM",
+      description: "Async-first Python ORM with Django-like API, inspired by Django ORM",
+      icon: "",
+      color: "from-green-500 to-emerald-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No ORM",
       description: "Skip Python ORM selection",

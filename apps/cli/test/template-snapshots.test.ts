@@ -559,6 +559,19 @@ describe("Template Snapshots - Python Ecosystem", () => {
         pythonQuality: "ruff" as const,
       },
     },
+    {
+      name: "fastapi-tortoise-orm",
+      config: {
+        ecosystem: "python" as const,
+        pythonWebFramework: "fastapi" as const,
+        pythonOrm: "tortoise-orm" as const,
+        pythonValidation: "none" as const,
+        pythonAi: [] as const,
+        pythonTaskQueue: "none" as const,
+        pythonGraphql: "none" as const,
+        pythonQuality: "none" as const,
+      },
+    },
   ];
 
   describe("Python File Structure Snapshots", () => {

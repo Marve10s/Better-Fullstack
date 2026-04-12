@@ -900,6 +900,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     const ormNames: Record<string, string> = {
       sqlalchemy: "SQLAlchemy",
       sqlmodel: "SQLModel",
+      "tortoise-orm": "Tortoise ORM",
     };
     output += `${pc.cyan("•")} ORM: ${ormNames[pythonOrm] || pythonOrm}\n`;
   }
