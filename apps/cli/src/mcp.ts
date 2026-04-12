@@ -27,6 +27,7 @@ import {
   FrontendSchema,
   GoApiSchema,
   GoCliSchema,
+  GoAuthSchema,
   GoLoggingSchema,
   GoOrmSchema,
   GoWebFrameworkSchema,
@@ -206,6 +207,7 @@ const SCHEMA_MAP: Record<string, z.ZodType> = {
   goApi: GoApiSchema,
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
+  goAuth: GoAuthSchema,
 };
 
 const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
@@ -218,7 +220,7 @@ const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
   ],
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
   python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonAuth", "pythonTaskQueue", "pythonGraphql", "pythonQuality"],
-  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging"],
+  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "goAuth"],
   shared: ["ecosystem", "packageManager", "addons", "examples", "webDeploy", "serverDeploy", "dbSetup"],
 };
 
@@ -351,6 +353,7 @@ function buildProjectConfig(
     goApi: (input.goApi as ProjectConfig["goApi"]) ?? "none",
     goCli: (input.goCli as ProjectConfig["goCli"]) ?? "none",
     goLogging: (input.goLogging as ProjectConfig["goLogging"]) ?? "none",
+    goAuth: (input.goAuth as ProjectConfig["goAuth"]) ?? "none",
   };
 }
 
@@ -449,6 +452,7 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     goApi: (input.goApi as string) ?? "none",
     goCli: (input.goCli as string) ?? "none",
     goLogging: (input.goLogging as string) ?? "none",
+    goAuth: (input.goAuth as string) ?? "none",
   };
 }
 
@@ -671,6 +675,7 @@ export async function startMcpServer() {
     goApi: GoApiSchema.optional().describe("Go API layer"),
     goCli: GoCliSchema.optional().describe("Go CLI framework"),
     goLogging: GoLoggingSchema.optional().describe("Go logging library"),
+    goAuth: GoAuthSchema.optional().describe("Go authentication library"),
   };
 
   server.tool(

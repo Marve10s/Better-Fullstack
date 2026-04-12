@@ -1,0 +1,98 @@
+{{#if (eq goAuth "casbin")}}
+package auth
+
+import (
+	"os"
+
+	"github.com/casbin/casbin/v2"
+)
+
+var Enforcer *casbin.Enforcer
+
+// InitCasbin initialises the Casbin enforcer from model and policy files.
+// Set CASBIN_MODEL and CASBIN_POLICY env vars to override defaults.
+func InitCasbin() error {
+	modelPath := os.Getenv("CASBIN_MODEL")
+	if modelPath == "" {
+		modelPath = "auth_model.conf"
+	}
+	policyPath := os.Getenv("CASBIN_POLICY")
+	if policyPath == "" {
+		policyPath = "auth_policy.csv"
+	}
+
+	var err error
+	Enforcer, err = casbin.NewEnforcer(modelPath, policyPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CheckPermission verifies whether sub is allowed to perform act on obj.
+func CheckPermission(sub, obj, act string) (bool, error) {
+	return Enforcer.Enforce(sub, obj, act)
+}
+{{/if}}
+{{#if (eq goAuth "jwt")}}
+package auth
+
+import (
+	"errors"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+var (
+	ErrInvalidToken = errors.New("invalid or expired token")
+)
+
+// Claims represents the JWT payload.
+type Claims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func getSecretKey() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "change-me-to-a-real-secret"
+	}
+	return []byte(secret)
+}
+
+// GenerateToken creates a signed JWT for the given user ID.
+func GenerateToken(userID string) (string, error) {
+	claims := Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(getSecretKey())
+}
+
+// ValidateToken parses and validates a JWT string.
+func ValidateToken(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrInvalidToken
+		}
+		return getSecretKey(), nil
+	})
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+{{/if}}

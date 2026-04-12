@@ -79,6 +79,7 @@ function createTypeScriptStack(
     goApi: "none",
     goCli: "none",
     goLogging: "none",
+    goAuth: "none",
     ...overrides,
   };
 }

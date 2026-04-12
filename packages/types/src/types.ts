@@ -71,6 +71,7 @@ import type {
   GoApiSchema,
   GoCliSchema,
   GoLoggingSchema,
+  GoAuthSchema,
   AiDocsSchema,
   ShadcnBaseSchema,
   ShadcnStyleSchema,
@@ -146,6 +147,7 @@ export type GoOrm = z.infer<typeof GoOrmSchema>;
 export type GoApi = z.infer<typeof GoApiSchema>;
 export type GoCli = z.infer<typeof GoCliSchema>;
 export type GoLogging = z.infer<typeof GoLoggingSchema>;
+export type GoAuth = z.infer<typeof GoAuthSchema>;
 export type AiDocs = z.infer<typeof AiDocsSchema>;
 export type ShadcnBase = z.infer<typeof ShadcnBaseSchema>;
 export type ShadcnStyle = z.infer<typeof ShadcnStyleSchema>;

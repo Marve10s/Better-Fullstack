@@ -769,7 +769,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
 }
 
 function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
-  const { relativePath, depsInstalled, goWebFramework, goOrm, goApi, goCli, goLogging } = config;
+  const { relativePath, depsInstalled, goWebFramework, goOrm, goApi, goCli, goLogging, goAuth } = config;
 
   const cdCmd = `cd ${relativePath}`;
 
@@ -825,6 +825,14 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       slog: "slog",
     };
     output += `${pc.cyan("•")} Logging: ${loggingNames[goLogging] || goLogging}\n`;
+  }
+
+  if (goAuth && goAuth !== "none") {
+    const authNames: Record<string, string> = {
+      casbin: "Casbin",
+      jwt: "golang-jwt",
+    };
+    output += `${pc.cyan("•")} Auth: ${authNames[goAuth] || goAuth}\n`;
   }
 
   output += `\n${pc.bold("Common Go commands:")}\n`;

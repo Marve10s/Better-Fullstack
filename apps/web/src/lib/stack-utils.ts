@@ -102,6 +102,7 @@ const GO_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "goApi",
   "goCli",
   "goLogging",
+  "goAuth",
   "auth",
   "aiDocs",
   "git",
@@ -406,6 +407,9 @@ function generateGoCommand(stack: StackState, projectName: string) {
   }
   if (stack.goLogging !== "none") {
     flags.push(`--go-logging ${stack.goLogging}`);
+  }
+  if (stack.goAuth !== "none") {
+    flags.push(`--go-auth ${stack.goAuth}`);
   }
   if (stack.auth !== "none") {
     flags.push(`--auth ${stack.auth}`);

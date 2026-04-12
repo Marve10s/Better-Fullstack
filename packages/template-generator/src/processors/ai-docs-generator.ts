@@ -138,6 +138,7 @@ function generateTechStackSection(config: ProjectConfig): string {
     if (config.goApi !== "none") lines.push(`- API: ${config.goApi}`);
     if (config.goCli !== "none") lines.push(`- CLI: ${config.goCli}`);
     if (config.goLogging !== "none") lines.push(`- Logging: ${config.goLogging}`);
+    if (config.goAuth !== "none") lines.push(`- Auth Library: ${config.goAuth}`);
     if (config.auth !== "none") lines.push(`- Auth: ${config.auth}`);
   }
 

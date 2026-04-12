@@ -1,4 +1,4 @@
-import type { GoApi, GoCli, GoLogging, GoOrm, GoWebFramework } from "../types";
+import type { GoApi, GoAuth, GoCli, GoLogging, GoOrm, GoWebFramework } from "../types";
 
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableSelect } from "./navigable";
@@ -171,6 +171,38 @@ export async function getGoLoggingChoice(goLogging?: GoLogging) {
     message: "Select Go logging library",
     options,
     initialValue: "zap",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getGoAuthChoice(goAuth?: GoAuth) {
+  if (goAuth !== undefined) return goAuth;
+
+  const options = [
+    {
+      value: "casbin" as const,
+      label: "Casbin",
+      hint: "Model-based authorization (ACL, RBAC, ABAC) via config files",
+    },
+    {
+      value: "jwt" as const,
+      label: "golang-jwt",
+      hint: "JWT token creation and validation with HMAC/RSA/ECDSA signing",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No authentication library",
+    },
+  ];
+
+  const response = await navigableSelect<GoAuth>({
+    message: "Select Go authentication library",
+    options,
+    initialValue: "none",
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

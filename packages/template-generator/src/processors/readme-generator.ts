@@ -1252,7 +1252,7 @@ ${scripts}
 }
 
 function generateGoReadmeContent(config: ProjectConfig): string {
-  const { projectName, goWebFramework, goOrm, goApi, goCli, goLogging, auth } = config;
+  const { projectName, goWebFramework, goOrm, goApi, goCli, goLogging, goAuth, auth } = config;
 
   const features: string[] = ["- **Go** - Fast, reliable, and efficient programming language"];
 
@@ -1295,6 +1295,13 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     features.push("- **Zerolog** - Zero-allocation JSON logger");
   } else if (goLogging === "slog") {
     features.push("- **slog** - Go stdlib structured logging");
+  }
+
+  // Auth
+  if (goAuth === "casbin") {
+    features.push("- **Casbin** - Model-based authorization (ACL, RBAC, ABAC)");
+  } else if (goAuth === "jwt") {
+    features.push("- **golang-jwt** - JWT token creation and validation");
   }
 
   if (auth === "go-better-auth") {

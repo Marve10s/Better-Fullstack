@@ -159,6 +159,7 @@ function getGoFlags(config: ProjectConfig) {
   flags.push(`--go-api ${config.goApi}`);
   flags.push(`--go-cli ${config.goCli}`);
   flags.push(`--go-logging ${config.goLogging}`);
+  flags.push(`--go-auth ${config.goAuth}`);
   flags.push(`--auth ${config.auth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 

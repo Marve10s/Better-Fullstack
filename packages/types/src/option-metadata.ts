@@ -21,6 +21,7 @@ import {
   FORMS_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
+  GO_AUTH_VALUES,
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
@@ -140,7 +141,8 @@ export type OptionCategory =
   | "goOrm"
   | "goApi"
   | "goCli"
-  | "goLogging";
+  | "goLogging"
+  | "goAuth";
 
 export type OptionSelectionMode = "single" | "multiple";
 
@@ -317,6 +319,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   goApi: GO_API_VALUES,
   goCli: GO_CLI_VALUES,
   goLogging: GO_LOGGING_VALUES,
+  goAuth: GO_AUTH_VALUES,
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
@@ -635,6 +638,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     zerolog: "Zerolog",
     slog: "slog",
   },
+  goAuth: {
+    casbin: "Casbin",
+    jwt: "golang-jwt",
+  },
 };
 
 const OPTION_ALIASES: Partial<Record<OptionCategory, Partial<Record<string, readonly string[]>>>> =
@@ -790,6 +797,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   goApi: buildCategoryMetadata("goApi"),
   goCli: buildCategoryMetadata("goCli"),
   goLogging: buildCategoryMetadata("goLogging"),
+  goAuth: buildCategoryMetadata("goAuth"),
 };
 
 const OPTION_LOOKUP = Object.fromEntries(

@@ -78,4 +78,5 @@ export const stackUrlKeys = {
   goApi: "gapi",
   goCli: "gcli",
   goLogging: "glog",
+  goAuth: "gauth",
 } as const satisfies Record<keyof StackState, string>;

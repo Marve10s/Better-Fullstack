@@ -71,6 +71,7 @@ const STACK_OPTION_CATEGORY_BY_KEY: Partial<Record<keyof StackState, OptionCateg
   goApi: "goApi",
   goCli: "goCli",
   goLogging: "goLogging",
+  goAuth: "goAuth",
 };
 
 export function normalizeStackOptionValue<K extends keyof StackState>(
