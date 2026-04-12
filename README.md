@@ -16,7 +16,7 @@
 
 <div align="center">
 
-**Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options — the CLI wires everything together.**
+**Scaffold production-ready fullstack apps in seconds. Pick your stack from 340+ options — the CLI wires everything together.**
 
 <br>
 
@@ -34,7 +34,7 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **270+ options** — frontend, backend, database, auth, payments, AI, DevOps, and more
+- **340+ options** — frontend, backend, database, auth, payments, AI, DevOps, and more
 - **4 ecosystems** — TypeScript, Rust, Python, Go — with more coming
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
