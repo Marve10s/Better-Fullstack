@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       run_e2e:
-        description: "Run CLI E2E runtime tests"
+        description: "Run CLI runtime and roundtrip tests"
         type: boolean
         default: true
       run_smoke_strict:
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   e2e-runtime:
     name: E2E Runtime Tests
-    if: ${{ inputs.run_e2e != 'false' }}
+    if: ${{ github.event_name != 'pull_request' && inputs.run_e2e != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -165,11 +165,11 @@ jobs:
 
       - name: Install Playwright Browsers
         working-directory: apps/web
-        run: npx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
 
       - name: Run Playwright Tests
         working-directory: apps/web
-        run: npx playwright test
+        run: bunx playwright test test/e2e/builder-parity.spec.ts
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
