@@ -18,6 +18,9 @@ const TRACKED_KEYS = [
   "totalJsGzip",
 ];
 
+const MAIN_JS_PATTERNS = [/^main-.*\.js$/, /^index-.*\.js$/];
+const MAIN_CSS_PATTERNS = [/^main-.*\.css$/, /^index-.*\.css$/];
+
 const DEFAULT_BUDGETS = {
   mainJsGzip: 8 * 1024,
   mainCssGzip: 3 * 1024,
@@ -48,6 +51,10 @@ async function getFileSize(filePath) {
   };
 }
 
+function findAsset(entries, patterns) {
+  return entries.find((entry) => patterns.some((pattern) => pattern.test(entry.file)));
+}
+
 async function collectMetrics() {
   const files = await fs.readdir(ASSETS_DIR);
   const jsFiles = files.filter((file) => file.endsWith(".js"));
@@ -65,13 +72,13 @@ async function collectMetrics() {
     cssSizes.push({ file, ...size });
   }
 
-  const mainJs = jsSizes.find((entry) => /^main-.*\.js$/.test(entry.file));
-  const mainCss = cssSizes.find((entry) => /^main-.*\.css$/.test(entry.file));
+  const mainJs = findAsset(jsSizes, MAIN_JS_PATTERNS);
+  const mainCss = findAsset(cssSizes, MAIN_CSS_PATTERNS);
   const stackBuilderJs = jsSizes.find((entry) => /^stack-builder-.*\.js$/.test(entry.file));
 
   if (!mainJs || !mainCss || !stackBuilderJs) {
     throw new Error(
-      "Required build assets are missing (main JS/CSS or stack-builder JS). Run a successful web build first.",
+      `Required build assets are missing (main/index JS, main/index CSS, or stack-builder JS). Found JS assets: ${jsFiles.join(", ") || "(none)"}; CSS assets: ${cssFiles.join(", ") || "(none)"}`,
     );
   }
 
