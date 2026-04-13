@@ -1,53 +1,50 @@
 import { expect, test } from "@playwright/test";
 
+import { clickVisibleTestId, commandOutput, openBuilder, visibleTestId } from "./test-helpers";
+
 test.describe("Builder parity", () => {
   test.describe.configure({ mode: "serial" });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/new");
-    await expect(page.getByTestId("command-output")).toBeVisible();
+    await openBuilder(page);
   });
 
   test("selecting a TypeScript single-select option updates command and URL", async ({ page }) => {
-    await page.getByTestId("category-toggle-backend").click();
-    await page.getByTestId("option-backend-fastify").click();
+    await clickVisibleTestId(page, "option-backend-fastify");
 
-    await expect(page.getByTestId("command-output")).toContainText("--backend fastify");
+    await expect(commandOutput(page)).toContainText("--backend fastify");
     await expect(page).toHaveURL(/be=fastify/);
   });
 
   test("selecting and removing multi-select addons updates the command", async ({ page }) => {
-    await page.getByTestId("sidebar-category-toggle-codeQuality").click();
-    await page.getByTestId("sidebar-option-codeQuality-biome").click();
-    await expect(page.getByTestId("command-output")).toContainText("--addons biome turborepo");
+    await clickVisibleTestId(page, "option-codeQuality-biome");
+    await expect(commandOutput(page)).toContainText("--addons biome turborepo");
     await expect(page).toHaveURL(/cq=biome/);
 
-    await page.getByTestId("sidebar-option-codeQuality-biome").click();
-    await expect(page.getByTestId("command-output")).toContainText("--yes");
+    await clickVisibleTestId(page, "option-codeQuality-biome");
+    await expect(commandOutput(page)).toContainText("--yes");
   });
 
   test("python ecosystem exposes multi-select pythonAi and updates the command", async ({
     page,
   }) => {
-    await page.getByTestId("ecosystem-python").click();
-    await page.getByTestId("category-toggle-pythonAi").click();
-    await page.getByTestId("option-pythonAi-langchain").click();
-    await page.getByTestId("option-pythonAi-openai-sdk").click();
+    await clickVisibleTestId(page, "ecosystem-python");
+    await expect(visibleTestId(page, "category-pythonAi")).toBeVisible();
+    await clickVisibleTestId(page, "option-pythonAi-langchain");
+    await clickVisibleTestId(page, "option-pythonAi-openai-sdk");
 
-    await expect(page.getByTestId("command-output")).toContainText(
-      "--python-ai langchain openai-sdk",
-    );
+    await expect(commandOutput(page)).toContainText("--python-ai langchain openai-sdk");
   });
 
   test("rust ecosystem exposes multi-select rustLibraries and updates the command", async ({
     page,
   }) => {
-    await page.getByTestId("ecosystem-rust").click();
-    await page.getByTestId("sidebar-category-toggle-rustLibraries").click();
-    await page.getByTestId("sidebar-option-rustLibraries-validator").click();
-    await page.getByTestId("sidebar-option-rustLibraries-mockall").click();
+    await clickVisibleTestId(page, "ecosystem-rust");
+    await expect(visibleTestId(page, "category-rustLibraries")).toBeVisible();
+    await clickVisibleTestId(page, "option-rustLibraries-validator");
+    await clickVisibleTestId(page, "option-rustLibraries-mockall");
 
-    const command = page.getByTestId("command-output");
+    const command = commandOutput(page);
     await expect(command).toContainText("--rust-libraries");
     await expect(command).toContainText("validator");
     await expect(command).toContainText("mockall");
@@ -56,29 +53,27 @@ test.describe("Builder parity", () => {
   test("astro integration only appears when Astro is selected", async ({ page }) => {
     await expect(page.getByTestId("category-astroIntegration")).toHaveCount(0);
 
-    await page.getByTestId("category-toggle-webFrontend").click();
-    await page.getByTestId("option-webFrontend-astro").click();
+    await clickVisibleTestId(page, "option-webFrontend-astro");
 
     await expect(page.getByTestId("category-astroIntegration")).toBeVisible();
-    await page.getByTestId("option-astroIntegration-react").click();
-    await expect(page.getByTestId("command-output")).toContainText("--astro-integration react");
+    await clickVisibleTestId(page, "option-astroIntegration-react");
+    await expect(commandOutput(page)).toContainText("--astro-integration react");
   });
 
   test("go auth options stay ecosystem-filtered", async ({ page }) => {
-    await page.getByTestId("ecosystem-go").click();
-    await expect(page.getByTestId("sidebar-category-toggle-goAuth")).toBeVisible();
-    await page.getByTestId("sidebar-category-toggle-auth").click();
+    await clickVisibleTestId(page, "ecosystem-go");
 
-    await expect(page.getByTestId("sidebar-option-auth-go-better-auth")).toBeVisible();
-    await expect(page.getByTestId("sidebar-option-auth-nextauth")).toHaveCount(0);
+    await expect(visibleTestId(page, "category-auth")).toBeVisible();
+    await expect(visibleTestId(page, "option-auth-go-better-auth")).toBeVisible();
+    await expect(page.locator('[data-testid="option-auth-nextauth"]:visible')).toHaveCount(0);
   });
 
   test("disabled options do not mutate the command output", async ({ page }) => {
-    await page.getByTestId("sidebar-category-toggle-cms").click();
-    const command = page.getByTestId("command-output");
+    await clickVisibleTestId(page, "sidebar-category-toggle-cms");
+    const command = commandOutput(page);
     const initialCommand = await command.textContent();
 
-    const payloadOption = page.getByTestId("sidebar-option-cms-payload");
+    const payloadOption = visibleTestId(page, "sidebar-option-cms-payload");
     await expect(payloadOption).toContainText("Unavailable");
     await expect(payloadOption).toBeDisabled();
     await payloadOption.click({ force: true });

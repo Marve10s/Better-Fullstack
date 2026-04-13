@@ -1,20 +1,20 @@
 import { test, expect } from "@playwright/test";
 
+import { clickVisibleTestId, commandOutput, openBuilder } from "./test-helpers";
+
 test.describe("Stack Builder", () => {
   test("loads the builder page", async ({ page }) => {
-    await page.goto("/new");
-    await expect(page.getByTestId("command-output")).toBeVisible();
+    await openBuilder(page);
   });
 
   test("displays CLI command", async ({ page }) => {
-    await page.goto("/new");
-    await expect(page.getByTestId("command-output")).toContainText("bun create better-fullstack");
+    await openBuilder(page);
+    await expect(commandOutput(page)).toContainText("bun create better-fullstack");
   });
 
   test("URL updates when options change", async ({ page }) => {
-    await page.goto("/new");
-    await page.getByTestId("category-toggle-backend").click();
-    await page.getByTestId("option-backend-fastify").click();
+    await openBuilder(page);
+    await clickVisibleTestId(page, "option-backend-fastify");
     await expect(page).toHaveURL(/be=fastify/);
   });
 });
