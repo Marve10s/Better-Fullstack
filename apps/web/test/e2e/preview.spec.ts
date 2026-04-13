@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-import { clickVisibleTestId, visibleTestId } from "./test-helpers";
+import { clickVisibleTestId, openBuilder, visibleTestId } from "./test-helpers";
 
 test.describe("Preview Panel", () => {
   test("preview tab loads file tree", async ({ page }) => {
-    await page.goto("/new");
+    await openBuilder(page);
     await clickVisibleTestId(page, "tab-preview");
     await expect(page.getByTestId("preview-error")).toHaveCount(0);
     await expect(visibleTestId(page, "preview-file-explorer")).toBeVisible({ timeout: 60000 });
