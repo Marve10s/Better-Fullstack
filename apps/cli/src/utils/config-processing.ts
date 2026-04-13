@@ -411,4 +411,7 @@ export function validateArrayOptions(options: CLIInput) {
   validateNoneExclusivity(options.frontend, "frontend options");
   validateNoneExclusivity(options.addons, "addons");
   validateNoneExclusivity(options.examples, "examples");
+  validateNoneExclusivity(options.aiDocs, "ai docs");
+  validateNoneExclusivity(options.rustLibraries, "rust libraries");
+  validateNoneExclusivity(options.pythonAi, "python ai libraries");
 }

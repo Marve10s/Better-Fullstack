@@ -322,7 +322,7 @@ export async function getRustCliChoice(rustCli?: RustCli) {
 export function resolveRustLibrariesPrompt(rustLibraries?: RustLibraries[]) {
   return createStaticMultiPromptResolution(
     RUST_LIBRARIES_PROMPT_OPTIONS,
-    ["serde"],
+    [],
     rustLibraries,
   );
 }

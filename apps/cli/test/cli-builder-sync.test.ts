@@ -8,6 +8,9 @@ import { describe, expect, it } from "bun:test";
 
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import { PROMPT_RESOLVER_REGISTRY } from "../src/prompts/prompt-resolver-registry";
+import { resolveRustLibrariesPrompt } from "../src/prompts/rust-ecosystem";
+import { DEFAULT_CONFIG } from "../src/constants";
+import { validateArrayOptions } from "../src/utils/config-processing";
 import { STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../../web/src/lib/stack-contract";
 import { TECH_OPTIONS } from "../../web/src/lib/constant";
 import { stackStateKeys } from "../../web/src/lib/stack-url-state.shared";
@@ -201,5 +204,38 @@ describe("CLI prompts vs schemas parity", () => {
       "go-better-auth",
     );
     expect(goResolution.options.map((option) => option.value)).toContain("go-better-auth");
+  });
+
+  it("keeps the Rust libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveRustLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.rustLibraries);
+  });
+});
+
+describe("CLI array exclusivity", () => {
+  it("rejects aiDocs mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        aiDocs: ["none", "agents-md"],
+      }),
+    ).toThrow("Cannot combine 'none' with other ai docs.");
+  });
+
+  it("rejects rustLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        rustLibraries: ["none", "mockall"],
+      }),
+    ).toThrow("Cannot combine 'none' with other rust libraries.");
+  });
+
+  it("rejects pythonAi mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        pythonAi: ["none", "langchain"],
+      }),
+    ).toThrow("Cannot combine 'none' with other python ai libraries.");
   });
 });
