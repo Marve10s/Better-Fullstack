@@ -872,6 +872,9 @@ const StackBuilder = () => {
           <button
             type="button"
             onClick={() => setMobileTab("summary")}
+            data-testid="mobile-tab-summary"
+            aria-pressed={mobileTab === "summary"}
+            data-state={mobileTab === "summary" ? "active" : "inactive"}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 border-b-2 px-1 py-3 text-xs font-medium transition-all hover:bg-muted/50",
               mobileTab === "summary"
@@ -885,6 +888,9 @@ const StackBuilder = () => {
           <button
             type="button"
             onClick={() => setMobileTab("configure")}
+            data-testid="mobile-tab-configure"
+            aria-pressed={mobileTab === "configure"}
+            data-state={mobileTab === "configure" ? "active" : "inactive"}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 border-b-2 px-1 py-3 text-xs font-medium transition-all hover:bg-muted/50",
               mobileTab === "configure"
@@ -1035,6 +1041,8 @@ const StackBuilder = () => {
                 type="button"
                 onClick={() => setViewMode("command")}
                 data-testid="tab-builder"
+                aria-pressed={viewMode === "command"}
+                data-state={viewMode === "command" ? "active" : "inactive"}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "command"
@@ -1049,6 +1057,8 @@ const StackBuilder = () => {
                 type="button"
                 onClick={() => setViewMode("presets")}
                 data-testid="tab-presets"
+                aria-pressed={viewMode === "presets"}
+                data-state={viewMode === "presets" ? "active" : "inactive"}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "presets"
@@ -1063,6 +1073,8 @@ const StackBuilder = () => {
                 type="button"
                 onClick={() => setViewMode("preview")}
                 data-testid="tab-preview"
+                aria-pressed={viewMode === "preview"}
+                data-state={viewMode === "preview" ? "active" : "inactive"}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "preview"
@@ -1077,6 +1089,8 @@ const StackBuilder = () => {
                 type="button"
                 onClick={() => setViewMode("saved")}
                 data-testid="tab-saved"
+                aria-pressed={viewMode === "saved"}
+                data-state={viewMode === "saved" ? "active" : "inactive"}
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "saved"

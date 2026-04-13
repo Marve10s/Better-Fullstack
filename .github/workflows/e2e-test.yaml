@@ -29,7 +29,7 @@ concurrency:
 jobs:
   e2e-runtime:
     name: E2E Runtime Tests
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_e2e) }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { commandOutput, visibleTestId } from "./test-helpers";
+import { clickVisibleTestId, commandOutput, visibleTestId } from "./test-helpers";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -21,11 +21,9 @@ test.describe("Stack Builder - Mobile", () => {
 
   test("CLI command is visible on mobile", async ({ page }) => {
     await page.goto("/new");
-    const categoriesTab = page.getByRole("button", { name: "Categories" });
-    await categoriesTab.click();
-    await expect(categoriesTab).toHaveClass(/border-primary/);
-    const mobileCommand = page.locator('aside:visible [data-testid="command-output"]').last();
-    await mobileCommand.scrollIntoViewIfNeeded();
+    await clickVisibleTestId(page, "mobile-tab-summary");
+    await expect(visibleTestId(page, "mobile-tab-summary")).toHaveAttribute("data-state", "active");
+    const mobileCommand = commandOutput(page);
     await expect(mobileCommand).toBeVisible();
     await expect(mobileCommand).toContainText("bun create better-fullstack");
   });
