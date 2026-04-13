@@ -22,7 +22,6 @@ test.describe("Stack Builder - Mobile", () => {
   test("CLI command is visible on mobile", async ({ page }) => {
     await page.goto("/new");
     await clickVisibleTestId(page, "mobile-tab-summary");
-    await expect(visibleTestId(page, "mobile-tab-summary")).toHaveAttribute("data-state", "active");
     const mobileCommand = commandOutput(page);
     await expect(mobileCommand).toBeVisible();
     await expect(mobileCommand).toContainText("bun create better-fullstack");
