@@ -88,7 +88,7 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- "frontend" is an ARRAY (multiple frontends in one monorepo). All other fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", and "pythonAi". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
 - TypeScript-specific fields (frontend, backend, orm, etc.) are IGNORED for rust/python/go ecosystems.
@@ -119,6 +119,8 @@ function getGuidance() {
         "Must be set first. Determines which other fields are relevant.",
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
+      arrayFields:
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, and pythonAi. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime:
@@ -128,7 +130,7 @@ function getGuidance() {
     },
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",
-      'Do not infer addons, examples, or optional features the user did not mention. Default to "none".',
+      'Do not infer addons, examples, or optional features the user did not mention. Default strings to "none" and multi-select arrays to [].',
       "When the user says 'fullstack Next.js', use backend='self', frontend=['next'], runtime='none'.",
       "When the user says 'React + Hono', use frontend=['tanstack-router'] (or ask which React framework), backend='hono'.",
     ],
