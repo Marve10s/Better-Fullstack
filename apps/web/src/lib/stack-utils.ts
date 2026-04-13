@@ -1,11 +1,9 @@
 import {
   createCliDefaultProjectConfigBase,
   type CliDefaultProjectConfigBase,
-  type PackageManager,
-} from "@better-fullstack/types";
+} from "@better-fullstack/types/defaults";
 
 import { TECH_OPTIONS } from "@/lib/constant";
-import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
@@ -159,9 +157,22 @@ const GO_CONFIG_KEYS = [
   "goAuth",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
+const SELF_BACKENDS = new Set([
+  "self-next",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
+]);
+
 function formatArrayFlag(flag: string, values: readonly string[]) {
-  const filteredValues = [...new Set(values.filter((value) => value !== "none"))];
+  const filteredValues = toUniqueNonNoneArray(values);
   return `--${flag} ${filteredValues.join(" ") || "none"}`;
+}
+
+function toUniqueNonNoneArray(values: readonly string[]) {
+  return [...new Set(values.filter((value) => value !== "none"))];
 }
 
 function areStringArraysEqual(left: readonly string[], right: readonly string[]) {
@@ -174,14 +185,113 @@ function areStringArraysEqual(left: readonly string[], right: readonly string[])
   );
 }
 
-function isCliDefaultStack(stack: StackState, projectName: string) {
-  const comparableConfig: CliDefaultProjectConfigBase = {
-    ...stackStateToProjectConfig({ ...stack, projectName }),
+function stackToCliComparableConfig(
+  stack: StackState,
+  projectName: string,
+): CliDefaultProjectConfigBase {
+  const frontend = [
+    ...toUniqueNonNoneArray(stack.webFrontend),
+    ...toUniqueNonNoneArray(stack.nativeFrontend),
+  ] as CliDefaultProjectConfigBase["frontend"];
+
+  return {
+    projectName,
     relativePath: projectName,
+    ecosystem: stack.ecosystem as CliDefaultProjectConfigBase["ecosystem"],
+    database: stack.database as CliDefaultProjectConfigBase["database"],
+    orm: stack.orm as CliDefaultProjectConfigBase["orm"],
+    backend: (SELF_BACKENDS.has(stack.backend) ? "self" : stack.backend) as CliDefaultProjectConfigBase["backend"],
+    runtime: stack.runtime as CliDefaultProjectConfigBase["runtime"],
+    frontend: frontend.length > 0 ? frontend : ["tanstack-router"],
+    addons: [
+      ...toUniqueNonNoneArray(stack.codeQuality),
+      ...toUniqueNonNoneArray(stack.documentation),
+      ...toUniqueNonNoneArray(stack.appPlatforms),
+    ] as CliDefaultProjectConfigBase["addons"],
+    examples: toUniqueNonNoneArray(stack.examples) as CliDefaultProjectConfigBase["examples"],
+    auth: stack.auth as CliDefaultProjectConfigBase["auth"],
+    payments: stack.payments as CliDefaultProjectConfigBase["payments"],
+    email: stack.email as CliDefaultProjectConfigBase["email"],
+    fileUpload: stack.fileUpload as CliDefaultProjectConfigBase["fileUpload"],
+    effect: stack.backendLibraries as CliDefaultProjectConfigBase["effect"],
+    ai: stack.aiSdk as CliDefaultProjectConfigBase["ai"],
+    stateManagement:
+      stack.stateManagement as CliDefaultProjectConfigBase["stateManagement"],
+    forms: stack.forms as CliDefaultProjectConfigBase["forms"],
+    testing: stack.testing as CliDefaultProjectConfigBase["testing"],
+    git: stack.git === "true",
+    packageManager: stack.packageManager as CliDefaultProjectConfigBase["packageManager"],
+    versionChannel: stack.versionChannel as CliDefaultProjectConfigBase["versionChannel"],
     install: stack.install === "true",
+    dbSetup: stack.dbSetup as CliDefaultProjectConfigBase["dbSetup"],
+    api: stack.api as CliDefaultProjectConfigBase["api"],
+    webDeploy: stack.webDeploy as CliDefaultProjectConfigBase["webDeploy"],
+    serverDeploy: stack.serverDeploy as CliDefaultProjectConfigBase["serverDeploy"],
+    astroIntegration: stack.astroIntegration as CliDefaultProjectConfigBase["astroIntegration"],
+    cssFramework: stack.cssFramework as CliDefaultProjectConfigBase["cssFramework"],
+    uiLibrary: stack.uiLibrary as CliDefaultProjectConfigBase["uiLibrary"],
+    shadcnBase: stack.shadcnBase as CliDefaultProjectConfigBase["shadcnBase"],
+    shadcnStyle: stack.shadcnStyle as CliDefaultProjectConfigBase["shadcnStyle"],
+    shadcnIconLibrary:
+      stack.shadcnIconLibrary as CliDefaultProjectConfigBase["shadcnIconLibrary"],
+    shadcnColorTheme:
+      stack.shadcnColorTheme as CliDefaultProjectConfigBase["shadcnColorTheme"],
+    shadcnBaseColor: stack.shadcnBaseColor as CliDefaultProjectConfigBase["shadcnBaseColor"],
+    shadcnFont: stack.shadcnFont as CliDefaultProjectConfigBase["shadcnFont"],
+    shadcnRadius: stack.shadcnRadius as CliDefaultProjectConfigBase["shadcnRadius"],
+    validation: stack.validation as CliDefaultProjectConfigBase["validation"],
+    realtime: stack.realtime as CliDefaultProjectConfigBase["realtime"],
+    jobQueue: stack.jobQueue as CliDefaultProjectConfigBase["jobQueue"],
+    animation: stack.animation as CliDefaultProjectConfigBase["animation"],
+    logging: stack.logging as CliDefaultProjectConfigBase["logging"],
+    observability: stack.observability as CliDefaultProjectConfigBase["observability"],
+    featureFlags: stack.featureFlags as CliDefaultProjectConfigBase["featureFlags"],
+    analytics: stack.analytics as CliDefaultProjectConfigBase["analytics"],
+    cms: stack.cms as CliDefaultProjectConfigBase["cms"],
+    caching: stack.caching as CliDefaultProjectConfigBase["caching"],
+    i18n: stack.i18n as CliDefaultProjectConfigBase["i18n"],
+    search: stack.search as CliDefaultProjectConfigBase["search"],
+    fileStorage: stack.fileStorage as CliDefaultProjectConfigBase["fileStorage"],
+    rustWebFramework:
+      stack.rustWebFramework as CliDefaultProjectConfigBase["rustWebFramework"],
+    rustFrontend: stack.rustFrontend as CliDefaultProjectConfigBase["rustFrontend"],
+    rustOrm: stack.rustOrm as CliDefaultProjectConfigBase["rustOrm"],
+    rustApi: stack.rustApi as CliDefaultProjectConfigBase["rustApi"],
+    rustCli: stack.rustCli as CliDefaultProjectConfigBase["rustCli"],
+    rustLibraries:
+      toUniqueNonNoneArray(stack.rustLibraries) as CliDefaultProjectConfigBase["rustLibraries"],
+    rustLogging: stack.rustLogging as CliDefaultProjectConfigBase["rustLogging"],
+    rustErrorHandling:
+      stack.rustErrorHandling as CliDefaultProjectConfigBase["rustErrorHandling"],
+    rustCaching: stack.rustCaching as CliDefaultProjectConfigBase["rustCaching"],
+    pythonWebFramework:
+      stack.pythonWebFramework as CliDefaultProjectConfigBase["pythonWebFramework"],
+    pythonOrm: stack.pythonOrm as CliDefaultProjectConfigBase["pythonOrm"],
+    pythonValidation:
+      stack.pythonValidation as CliDefaultProjectConfigBase["pythonValidation"],
+    pythonAi:
+      toUniqueNonNoneArray(stack.pythonAi) as CliDefaultProjectConfigBase["pythonAi"],
+    pythonAuth: stack.pythonAuth as CliDefaultProjectConfigBase["pythonAuth"],
+    pythonTaskQueue:
+      stack.pythonTaskQueue as CliDefaultProjectConfigBase["pythonTaskQueue"],
+    pythonGraphql: stack.pythonGraphql as CliDefaultProjectConfigBase["pythonGraphql"],
+    pythonQuality: stack.pythonQuality as CliDefaultProjectConfigBase["pythonQuality"],
+    goWebFramework: stack.goWebFramework as CliDefaultProjectConfigBase["goWebFramework"],
+    goOrm: stack.goOrm as CliDefaultProjectConfigBase["goOrm"],
+    goApi: stack.goApi as CliDefaultProjectConfigBase["goApi"],
+    goCli: stack.goCli as CliDefaultProjectConfigBase["goCli"],
+    goLogging: stack.goLogging as CliDefaultProjectConfigBase["goLogging"],
+    goAuth: stack.goAuth as CliDefaultProjectConfigBase["goAuth"],
+    aiDocs: toUniqueNonNoneArray(stack.aiDocs) as CliDefaultProjectConfigBase["aiDocs"],
   };
+}
+
+function isCliDefaultStack(stack: StackState, projectName: string) {
+  const comparableConfig = stackToCliComparableConfig(stack, projectName);
   const cliDefaults = {
-    ...createCliDefaultProjectConfigBase(stack.packageManager as PackageManager),
+    ...createCliDefaultProjectConfigBase(
+      stack.packageManager as CliDefaultProjectConfigBase["packageManager"],
+    ),
     projectName,
     relativePath: projectName,
   };

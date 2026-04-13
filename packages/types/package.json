@@ -33,6 +33,14 @@
     "./json-schema": {
       "types": "./dist/json-schema.d.mts",
       "default": "./dist/json-schema.mjs"
+    },
+    "./defaults": {
+      "types": "./dist/defaults.d.mts",
+      "default": "./dist/defaults.mjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.mts",
+      "default": "./dist/types.mjs"
     }
   },
   "publishConfig": {

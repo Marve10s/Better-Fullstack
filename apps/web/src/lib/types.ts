@@ -1,4 +1,4 @@
-export type { Ecosystem } from "@better-fullstack/types";
+export type { Ecosystem } from "@better-fullstack/types/types";
 export type { OptionCategory as TechCategory } from "@better-fullstack/types";
 
 export type TechEdge = {

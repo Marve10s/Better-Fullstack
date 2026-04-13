@@ -53,7 +53,7 @@ import {
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
-} from "@better-fullstack/types";
+} from "@better-fullstack/types/schemas";
 
 export type ScientificNotation = {
   mantissa: string;
@@ -198,4 +198,3 @@ export const combinationsMetrics = {
   ),
   universeSandRatioScientific: formatScientificFromNumber(ratioToUniverseSand),
 };
-

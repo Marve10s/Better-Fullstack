@@ -7,13 +7,13 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { cn } from "@/lib/utils";
 
-import type { PreflightWarning } from "@better-fullstack/template-generator";
+import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
 
 // Client-side generation via dynamic import — the ~354KB template-generator
 // bundle is only loaded when the user actually opens the Preview tab.
 const generatePreview = async (stack: StackState) => {
   const { generateVirtualProject, EMBEDDED_TEMPLATES, validatePreflightConfig } =
-    await import("@better-fullstack/template-generator");
+    await import("@better-fullstack/template-generator/browser");
   const config = stackStateToProjectConfig(stack);
   const result = await generateVirtualProject({
     config,
