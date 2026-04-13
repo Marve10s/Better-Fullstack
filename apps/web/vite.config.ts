@@ -27,9 +27,6 @@ export default defineConfig({
     }),
     tanstackStart({
       srcDirectory: "src",
-      router: {
-        routeFileIgnorePattern: "(^|/)main-\\d+\\.(ts|tsx|js|jsx)$",
-      },
     }),
     nitro({
       config: {
