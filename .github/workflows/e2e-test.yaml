@@ -63,7 +63,7 @@ jobs:
       - name: Run E2E Tests
         env:
           E2E: "1"
-        run: bun test apps/cli/test/e2e/e2e.e2e.ts --timeout 600000
+        run: bun test ./apps/cli/test/e2e/e2e.e2e.ts --timeout 600000
 
       - name: Upload E2E Results
         if: always()

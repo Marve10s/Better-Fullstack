@@ -36,7 +36,7 @@
     "test:smoke": "bun run testing/smoke-test.ts",
     "test:smoke:strict": "bun run testing/smoke-test.ts --preset all --dev-check --strict",
     "test:e2e": "turbo test:e2e",
-    "test:e2e:cli": "E2E=1 bun test apps/cli/test/e2e/e2e.e2e.ts --timeout 600000",
+    "test:e2e:cli": "E2E=1 bun test ./apps/cli/test/e2e/e2e.e2e.ts --timeout 600000",
     "test:e2e:web": "cd apps/web && npx playwright test",
     "test:integration": "turbo test:integration"
   },
