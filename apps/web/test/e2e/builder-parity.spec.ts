@@ -60,12 +60,20 @@ test.describe("Builder parity", () => {
     await expect(commandOutput(page)).toContainText("--astro-integration react");
   });
 
-  test("go auth options stay ecosystem-filtered", async ({ page }) => {
+  test("go auth renders as one section while staying ecosystem-filtered", async ({ page }) => {
     await clickVisibleTestId(page, "ecosystem-go");
 
-    await expect(visibleTestId(page, "category-auth")).toBeVisible();
+    await expect(visibleTestId(page, "category-goAuth")).toBeVisible();
+    await expect(page.getByTestId("category-auth")).toHaveCount(0);
+    await expect(visibleTestId(page, "option-goAuth-casbin")).toBeVisible();
     await expect(visibleTestId(page, "option-auth-go-better-auth")).toBeVisible();
     await expect(page.locator('[data-testid="option-auth-nextauth"]:visible')).toHaveCount(0);
+
+    await clickVisibleTestId(page, "option-goAuth-casbin");
+    await clickVisibleTestId(page, "option-auth-go-better-auth");
+
+    await expect(commandOutput(page)).toContainText("--go-auth casbin");
+    await expect(commandOutput(page)).toContainText("--auth go-better-auth");
   });
 
   test("disabled options do not mutate the command output", async ({ page }) => {

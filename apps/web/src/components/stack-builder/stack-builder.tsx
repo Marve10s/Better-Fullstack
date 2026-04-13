@@ -94,6 +94,13 @@ function formatProjectName(name: string): string {
 }
 
 type TechOption = (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS][number];
+type CompatibilityNotes = { notes: string[]; hasIssue: boolean };
+type RenderOptionGroup = {
+  key: string;
+  heading: string | null;
+  category: keyof typeof TECH_OPTIONS;
+  options: TechOption[];
+};
 
 const APP_PLATFORM_OPTION_GROUPS = [
   {
@@ -143,6 +150,52 @@ function getCategoryOptionGroups(
   }
 
   return groupedOptions;
+}
+
+function mergeCompatibilityNotes(
+  ...noteGroups: Array<CompatibilityNotes | undefined>
+): CompatibilityNotes | undefined {
+  const notes = [...new Set(noteGroups.flatMap((group) => group?.notes ?? []))];
+  const hasIssue = noteGroups.some((group) => group?.hasIssue);
+
+  if (!hasIssue && notes.length === 0) {
+    return undefined;
+  }
+
+  return { notes, hasIssue };
+}
+
+function getCategoryRenderGroups(
+  stack: StackState,
+  categoryKey: keyof typeof TECH_OPTIONS,
+): RenderOptionGroup[] {
+  const categoryOptions = getVisibleOptions(stack, categoryKey, TECH_OPTIONS[categoryKey] || []);
+
+  if (stack.ecosystem === "go" && categoryKey === "goAuth") {
+    const authOptions = getVisibleOptions(stack, "auth", TECH_OPTIONS.auth);
+
+    return [
+      {
+        key: "go-auth-libraries",
+        heading: "Libraries",
+        category: "goAuth" as const,
+        options: [...categoryOptions],
+      },
+      {
+        key: "go-auth-integrated",
+        heading: "Integrated Auth",
+        category: "auth" as const,
+        options: [...authOptions],
+      },
+    ].filter((group) => group.options.length > 0);
+  }
+
+  return getCategoryOptionGroups(categoryKey, categoryOptions).map((group, index) => ({
+    key: `${categoryKey}-${group.heading ?? index}`,
+    heading: group.heading,
+    category: categoryKey,
+    options: group.options,
+  }));
 }
 
 function TechResourceButtons({ category, techId }: { category: string; techId: string }) {
@@ -223,12 +276,12 @@ function CategoryHint({ categoryKey }: { categoryKey: string }) {
   );
 }
 
-function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState): number {
-  const catKey = category as keyof StackState;
-  const value = stack[catKey];
-
+function getSelectionCountForValue(
+  category: keyof typeof TECH_OPTIONS,
+  value: StackState[keyof StackState],
+): number {
   if (Array.isArray(value)) {
-    return (value as string[]).filter((v) => v !== "none").length;
+    return value.filter((entry) => entry !== "none").length;
   }
 
   if (typeof value === "string" && value !== "none" && value !== "false") {
@@ -238,6 +291,18 @@ function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState
   }
 
   return 0;
+}
+
+function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState): number {
+  if (stack.ecosystem === "go" && category === "goAuth") {
+    return (
+      getSelectionCountForValue("goAuth", stack.goAuth) +
+      getSelectionCountForValue("auth", stack.auth)
+    );
+  }
+
+  const catKey = category as keyof StackState;
+  return getSelectionCountForValue(category, stack[catKey]);
 }
 
 function isSelectedCheck(stack: StackState, categoryKey: string, techId: string): boolean {
@@ -270,10 +335,13 @@ function SidebarAccordionItem({
   onToggle: () => void;
   stack: StackState;
   handleTechSelect: (cat: keyof typeof TECH_OPTIONS, techId: string) => void;
-  compatibilityNotes?: { notes: string[]; hasIssue: boolean };
+  compatibilityNotes?: CompatibilityNotes;
 }) {
-  const options = getVisibleOptions(stack, category, TECH_OPTIONS[category]);
-  if (!options || options.length === 0) return null;
+  const optionGroups = getCategoryRenderGroups(stack, category);
+  const options = optionGroups.flatMap((group) =>
+    group.options.map((option) => ({ option, category: group.category })),
+  );
+  if (options.length === 0) return null;
 
   const count = getSelectedCount(category, stack);
   const displayName = getCategoryDisplayName(category);
@@ -314,21 +382,21 @@ function SidebarAccordionItem({
             className="overflow-hidden"
           >
             <div className="space-y-0.5 px-2 py-1.5">
-              {options.map((option) => {
-                const selected = isSelectedCheck(stack, category, option.id);
-                const disabled = !isOptionCompatible(stack, category, option.id);
+              {options.map(({ option, category: optionCategory }) => {
+                const selected = isSelectedCheck(stack, optionCategory, option.id);
+                const disabled = !isOptionCompatible(stack, optionCategory, option.id);
                 const disabledReason = disabled
-                  ? getDisabledReason(stack, category, option.id)
+                  ? getDisabledReason(stack, optionCategory, option.id)
                   : null;
 
                 return (
                   <button
-                    key={option.id}
+                    key={`${optionCategory}-${option.id}`}
                     type="button"
-                    data-testid={`sidebar-option-${category}-${option.id}`}
+                    data-testid={`sidebar-option-${optionCategory}-${option.id}`}
                     onClick={() => {
                       if (!disabled) {
-                        handleTechSelect(category, option.id);
+                        handleTechSelect(optionCategory, option.id);
                       }
                     }}
                     disabled={disabled}
@@ -470,19 +538,42 @@ const StackBuilder = () => {
     }
   }, [stack.ecosystem]);
 
+  const sidebarCategories = useMemo(() => {
+    const cats: (keyof typeof TECH_OPTIONS)[] = [];
+    for (const cat of categoryOrder) {
+      if (cat === "astroIntegration") {
+        if (stack.webFrontend.includes("astro")) {
+          cats.push(cat);
+        }
+        continue;
+      }
+
+      if (SHADCN_SUB_CATEGORIES.has(cat)) {
+        continue;
+      }
+
+      if (stack.ecosystem === "go" && cat === "auth") {
+        continue;
+      }
+
+      cats.push(cat);
+    }
+    return cats;
+  }, [categoryOrder, stack.ecosystem, stack.webFrontend]);
+
   // Open first category when ecosystem changes
   const prevEcosystem = useRef(stack.ecosystem);
   useEffect(() => {
     if (prevEcosystem.current !== stack.ecosystem) {
       prevEcosystem.current = stack.ecosystem;
       if (
-        categoryOrder.length > 0 &&
-        !categoryOrder.includes(openCategory as keyof typeof TECH_OPTIONS)
+        sidebarCategories.length > 0 &&
+        !sidebarCategories.includes(openCategory as keyof typeof TECH_OPTIONS)
       ) {
-        setOpenCategory(categoryOrder[0] || null);
+        setOpenCategory(sidebarCategories[0] || null);
       }
     }
-  }, [stack.ecosystem, categoryOrder, openCategory]);
+  }, [stack.ecosystem, sidebarCategories, openCategory]);
 
   // Get the main scroll viewport for scrollIntoView
   useEffect(() => {
@@ -819,26 +910,6 @@ const StackBuilder = () => {
     });
   };
 
-  // ─── Build the categories to show in sidebar (with astro integration) ──
-
-  const sidebarCategories = useMemo(() => {
-    const cats: (keyof typeof TECH_OPTIONS)[] = [];
-    for (const cat of categoryOrder) {
-      if (cat === "astroIntegration") {
-        if (stack.webFrontend.includes("astro")) {
-          cats.push(cat);
-        }
-        continue;
-      }
-      // Skip individual shadcn sub-categories from sidebar — they render as a combined section
-      if (SHADCN_SUB_CATEGORIES.has(cat)) {
-        continue;
-      }
-      cats.push(cat);
-    }
-    return cats;
-  }, [categoryOrder, stack.webFrontend]);
-
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
@@ -985,7 +1056,14 @@ const StackBuilder = () => {
                         onToggle={() => handleAccordionToggle(category)}
                         stack={stack}
                         handleTechSelect={handleTechSelect}
-                        compatibilityNotes={compatibilityAnalysis.notes[category]}
+                        compatibilityNotes={
+                          stack.ecosystem === "go" && category === "goAuth"
+                            ? mergeCompatibilityNotes(
+                                compatibilityAnalysis.notes.goAuth,
+                                compatibilityAnalysis.notes.auth,
+                              )
+                            : compatibilityAnalysis.notes[category]
+                        }
                       />
                     ))}
                   </div>
@@ -1318,18 +1396,22 @@ const StackBuilder = () => {
                         // Skip shadcn sub-categories - rendered conditionally after uiLibrary
                         if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
 
-                        const categoryOptions = getVisibleOptions(
+                        if (stack.ecosystem === "go" && categoryKey === "auth") return null;
+
+                        const categoryOptionGroups = getCategoryRenderGroups(
                           stack,
                           categoryKey as keyof typeof TECH_OPTIONS,
-                          TECH_OPTIONS[categoryKey as keyof typeof TECH_OPTIONS] || [],
                         );
                         const categoryDisplayName = getCategoryDisplayName(categoryKey);
-                        const categoryOptionGroups = getCategoryOptionGroups(
-                          categoryKey,
-                          categoryOptions,
-                        );
+                        const sectionCompatibilityNotes =
+                          stack.ecosystem === "go" && categoryKey === "goAuth"
+                            ? mergeCompatibilityNotes(
+                                compatibilityAnalysis.notes.goAuth,
+                                compatibilityAnalysis.notes.auth,
+                              )
+                            : compatibilityAnalysis.notes[categoryKey];
 
-                        if (categoryOptions.length === 0) return null;
+                        if (categoryOptionGroups.length === 0) return null;
 
                         const isSectionCollapsed = collapsedSections.has(categoryKey);
                         const sectionSelectedCount = getSelectedCount(
@@ -1357,7 +1439,7 @@ const StackBuilder = () => {
                                 <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
                                   {categoryDisplayName}
                                 </h2>
-                                {compatibilityAnalysis.notes[categoryKey]?.hasIssue && (
+                                {sectionCompatibilityNotes?.hasIssue && (
                                   <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
                                 )}
                                 {isSectionCollapsed && sectionSelectedCount > 0 && (
@@ -1383,8 +1465,8 @@ const StackBuilder = () => {
                                   >
                                     <CategoryHint categoryKey={categoryKey} />
                                     <div className="space-y-4">
-                                      {categoryOptionGroups.map((group, groupIndex) => (
-                                        <div key={group.heading ?? `default-${groupIndex}`}>
+                                      {categoryOptionGroups.map((group) => (
+                                        <div key={group.key}>
                                           {group.heading && (
                                             <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                                               {group.heading}
@@ -1394,18 +1476,18 @@ const StackBuilder = () => {
                                             {group.options.map((tech) => {
                                               const isSelected = isSelectedCheck(
                                                 stack,
-                                                categoryKey,
+                                                group.category,
                                                 tech.id,
                                               );
                                               const isDisabled = !isOptionCompatible(
                                                 stack,
-                                                categoryKey as keyof typeof TECH_OPTIONS,
+                                                group.category,
                                                 tech.id,
                                               );
                                               const disabledReason = isDisabled
                                                 ? getDisabledReason(
                                                     stack,
-                                                    categoryKey as keyof typeof TECH_OPTIONS,
+                                                    group.category,
                                                     tech.id,
                                                   )
                                                 : null;
@@ -1413,7 +1495,7 @@ const StackBuilder = () => {
                                               return (
                                                 <motion.div
                                                   key={tech.id}
-                                                  data-testid={`option-${categoryKey}-${tech.id}`}
+                                                  data-testid={`option-${group.category}-${tech.id}`}
                                                   className={cn(
                                                     "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
                                                     isSelected
@@ -1424,16 +1506,13 @@ const StackBuilder = () => {
                                                   )}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleTechSelect(
-                                                      categoryKey as keyof typeof TECH_OPTIONS,
-                                                      tech.id,
-                                                    );
+                                                    handleTechSelect(group.category, tech.id);
                                                   }}
                                                   title={disabledReason || undefined}
                                                 >
                                                   <div className="absolute top-2 right-2 flex items-center gap-1">
                                                     <TechResourceButtons
-                                                      category={categoryKey}
+                                                      category={group.category}
                                                       techId={tech.id}
                                                     />
                                                     {tech.default && !isSelected && (

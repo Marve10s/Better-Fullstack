@@ -271,8 +271,10 @@ describe("Go Ecosystem Tab", () => {
   });
 
   describe("Go auth integration", () => {
-    it("should keep auth visible in the Go builder category order", () => {
+    it("should keep go auth categories adjacent in the Go builder category order", () => {
+      expect(GO_CATEGORY_ORDER.indexOf("goAuth")).toBeGreaterThan(-1);
       expect(GO_CATEGORY_ORDER.indexOf("auth")).toBeGreaterThan(-1);
+      expect(GO_CATEGORY_ORDER.indexOf("goAuth")).toBeLessThan(GO_CATEGORY_ORDER.indexOf("auth"));
       expect(GO_CATEGORY_ORDER.indexOf("auth")).toBeLessThan(GO_CATEGORY_ORDER.indexOf("aiDocs"));
     });
 
@@ -304,14 +306,16 @@ describe("Go Ecosystem Tab", () => {
       expect(visibleOptions.map((option) => option.id)).toContain("none");
     });
 
-    it("should include Go auth selection in generated CLI commands", () => {
+    it("should include both Go auth selections in generated CLI commands", () => {
       const command = generateStackCommand({
         ...DEFAULT_STACK,
         ecosystem: "go",
+        goAuth: "casbin",
         auth: "go-better-auth",
       });
 
       expect(command).toContain("--ecosystem go");
+      expect(command).toContain("--go-auth casbin");
       expect(command).toContain("--auth go-better-auth");
     });
   });
