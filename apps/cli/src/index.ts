@@ -6,6 +6,7 @@ import z from "zod";
 
 import { historyHandler } from "./commands/history";
 import { updateDepsHandler, showEcosystems } from "./commands/update-deps";
+import { CreateCommandInputSchema } from "./create-command-input";
 import { addHandler, type AddResult } from "./helpers/core/add-handler";
 import { createProjectHandler } from "./helpers/core/command-handlers";
 import {
@@ -154,148 +155,7 @@ export const router = os.router({
       default: true,
       negateBooleans: true,
     })
-    .input(
-      z.tuple([
-        ProjectNameSchema.optional(),
-        z.object({
-          template: TemplateSchema.optional().describe("Use a predefined template"),
-          yes: z.boolean().optional().default(false).describe("Use default configuration"),
-          yolo: z
-            .boolean()
-            .optional()
-            .default(false)
-            .describe("(WARNING - NOT RECOMMENDED) Bypass validations and compatibility checks"),
-          verbose: z
-            .boolean()
-            .optional()
-            .default(false)
-            .describe("Show detailed result information"),
-          dryRun: z
-            .boolean()
-            .optional()
-            .default(false)
-            .describe("Preview generated file tree without writing to disk"),
-          ecosystem: EcosystemSchema.optional().describe(
-            "Language ecosystem (typescript, rust, python, or go)",
-          ),
-          database: DatabaseSchema.optional(),
-          orm: ORMSchema.optional(),
-          auth: AuthSchema.optional(),
-          payments: PaymentsSchema.optional(),
-          email: EmailSchema.optional(),
-          fileUpload: FileUploadSchema.optional(),
-          effect: EffectSchema.optional(),
-          stateManagement: StateManagementSchema.optional(),
-          validation: ValidationSchema.optional(),
-          forms: FormsSchema.optional(),
-          testing: TestingSchema.optional(),
-          ai: AISchema.optional(),
-          realtime: RealtimeSchema.optional(),
-          jobQueue: JobQueueSchema.optional(),
-          animation: AnimationSchema.optional(),
-          logging: LoggingSchema.optional(),
-          observability: ObservabilitySchema.optional(),
-          featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
-          analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics"),
-          cms: CMSSchema.optional().describe("Headless CMS solution"),
-          caching: CachingSchema.optional().describe("Caching solution"),
-          i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
-          search: SearchSchema.optional().describe("Search engine solution"),
-          fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
-          frontend: z.array(FrontendSchema).optional(),
-          astroIntegration: AstroIntegrationSchema.optional().describe(
-            "Astro UI framework integration (react, vue, svelte, solid)",
-          ),
-          addons: z.array(AddonsSchema).optional(),
-          examples: z.array(ExamplesSchema).optional(),
-          git: z.boolean().optional(),
-          packageManager: PackageManagerSchema.optional(),
-          install: z.boolean().optional(),
-          versionChannel: VersionChannelSchema.optional().describe(
-            "Dependency version channel (stable, latest, beta)",
-          ),
-          dbSetup: DatabaseSetupSchema.optional(),
-          backend: BackendSchema.optional(),
-          runtime: RuntimeSchema.optional(),
-          api: APISchema.optional(),
-          cssFramework: CSSFrameworkSchema.optional(),
-          uiLibrary: UILibrarySchema.optional(),
-          shadcnBase: ShadcnBaseSchema.optional().describe(
-            "shadcn/ui headless library (radix, base)",
-          ),
-          shadcnStyle: ShadcnStyleSchema.optional().describe(
-            "shadcn/ui visual style (vega, nova, maia, lyra, mira)",
-          ),
-          shadcnIconLibrary: ShadcnIconLibrarySchema.optional().describe(
-            "shadcn/ui icon library (lucide, tabler, hugeicons, phosphor, remixicon)",
-          ),
-          shadcnColorTheme: ShadcnColorThemeSchema.optional().describe(
-            "shadcn/ui color theme (neutral, blue, violet, etc.)",
-          ),
-          shadcnBaseColor: ShadcnBaseColorSchema.optional().describe(
-            "shadcn/ui base neutral color (neutral, stone, zinc, gray)",
-          ),
-          shadcnFont: ShadcnFontSchema.optional().describe(
-            "shadcn/ui font (inter, geist, figtree, etc.)",
-          ),
-          shadcnRadius: ShadcnRadiusSchema.optional().describe(
-            "shadcn/ui border radius (default, none, small, medium, large)",
-          ),
-          webDeploy: WebDeploySchema.optional(),
-          serverDeploy: ServerDeploySchema.optional(),
-          directoryConflict: DirectoryConflictSchema.optional(),
-          renderTitle: z.boolean().optional(),
-          disableAnalytics: z.boolean().optional().default(false).describe("Disable analytics"),
-          manualDb: z
-            .boolean()
-            .optional()
-            .default(false)
-            .describe("Skip automatic/manual database setup prompt and use manual setup"),
-          // Rust ecosystem options
-          rustWebFramework: RustWebFrameworkSchema.optional().describe(
-            "Rust web framework (axum, actix-web)",
-          ),
-          rustFrontend: RustFrontendSchema.optional().describe(
-            "Rust WASM frontend (leptos, dioxus)",
-          ),
-          rustOrm: RustOrmSchema.optional().describe("Rust ORM/database (sea-orm, sqlx)"),
-          rustApi: RustApiSchema.optional().describe("Rust API layer (tonic, async-graphql)"),
-          rustCli: RustCliSchema.optional().describe("Rust CLI tools (clap, ratatui)"),
-          rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust core libraries"),
-          rustLogging: RustLoggingSchema.optional().describe("Rust logging (tracing, env-logger)"),
-          rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling (anyhow-thiserror, eyre)"),
-          rustCaching: RustCachingSchema.optional().describe("Rust caching (moka, redis)"),
-          rustAuth: RustAuthSchema.optional().describe("Rust auth (oauth2)"),
-          // Python ecosystem options
-          pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
-            "Python web framework (fastapi, django)",
-          ),
-          pythonOrm: PythonOrmSchema.optional().describe(
-            "Python ORM/database (sqlalchemy, sqlmodel)",
-          ),
-          pythonValidation: PythonValidationSchema.optional().describe(
-            "Python validation (pydantic)",
-          ),
-          pythonAi: z.array(PythonAiSchema).optional().describe("Python AI/ML frameworks"),
-          pythonAuth: PythonAuthSchema.optional().describe("Python auth library (authlib, jwt)"),
-          pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
-          pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework (strawberry)"),
-          pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
-          // Go ecosystem options
-          goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
-          goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
-          goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
-          goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea)"),
-          goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
-          goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
-          // AI documentation files
-          aiDocs: z
-            .array(AiDocsSchema)
-            .optional()
-            .describe("AI documentation files (claude-md, agents-md, cursorrules)"),
-        }),
-      ]),
-    )
+    .input(CreateCommandInputSchema)
     .handler(async ({ input }) => {
       const [projectName, options] = input;
       const combinedInput = {

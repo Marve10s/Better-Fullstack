@@ -18,7 +18,7 @@
     "test": "turbo test",
     "test:cli": "turbo test --filter=create-better-fullstack",
     "test:web": "turbo test --filter=web",
-    "test:release": "bun run --cwd packages/types build && bun run --cwd packages/template-generator build && bun test apps/cli/test/template-snapshots.test.ts && bun test apps/cli/test/cli-builder-sync.test.ts && bun test apps/web/test/preview-config.test.ts && bun test apps/cli/test/generate-reproducible-command.test.ts && bun test apps/cli/test/add-history-commands.test.ts && bun run --cwd apps/web validate:tech-links",
+    "test:release": "bun run --cwd packages/types build && bun run --cwd packages/template-generator build && bun test apps/cli/test/template-snapshots.test.ts && bun test apps/cli/test/cli-builder-sync.test.ts && bun test apps/web/test/preview-config.test.ts && bun test apps/web/test/stack-state-contract.test.ts && bun test apps/web/test/stack-command-parity.test.ts && bun test apps/cli/test/generate-reproducible-command.test.ts && bun test apps/cli/test/add-history-commands.test.ts && bun run --cwd apps/web validate:tech-links",
     "check": "oxfmt . && oxlint .",
     "prepare": "lefthook install",
     "release": "bun run scripts/release.ts",

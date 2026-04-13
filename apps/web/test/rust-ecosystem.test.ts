@@ -146,20 +146,20 @@ describe("Rust Ecosystem Tab", () => {
       expect(noneOption?.name).toBe("No WASM Frontend");
     });
 
-    it("should have Serde as default for rustLibraries", () => {
+    it("should expose Serde as a selectable rust library", () => {
       const options = TECH_OPTIONS.rustLibraries;
       const serdeOption = options.find((o) => o.id === "serde");
       expect(serdeOption).toBeDefined();
-      expect(serdeOption?.default).toBe(true);
+      expect(serdeOption?.default).toBe(false);
       expect(serdeOption?.name).toBe("Serde");
       expect(serdeOption?.description).toContain("serialization");
     });
 
-    it("should have none option for rustLibraries when user wants additional libraries only", () => {
+    it("should use none as the visible default for rustLibraries", () => {
       const options = TECH_OPTIONS.rustLibraries;
       const noneOption = options.find((o) => o.id === "none");
       expect(noneOption).toBeDefined();
-      expect(noneOption?.default).toBe(false);
+      expect(noneOption?.default).toBe(true);
       expect(noneOption?.name).toBe("No Additional Libraries");
     });
 
@@ -202,11 +202,11 @@ describe("Rust Ecosystem Tab", () => {
       expect(DEFAULT_STACK.rustOrm).toBe("sea-orm");
       expect(DEFAULT_STACK.rustApi).toBe("none");
       expect(DEFAULT_STACK.rustCli).toBe("none");
-      expect(DEFAULT_STACK.rustLibraries).toBe("serde");
+      expect(DEFAULT_STACK.rustLibraries).toEqual([]);
     });
 
-    it("should have serde as the default for rustLibraries", () => {
-      expect(DEFAULT_STACK.rustLibraries).toBe("serde");
+    it("should use an empty array as the default rustLibraries selection", () => {
+      expect(DEFAULT_STACK.rustLibraries).toEqual([]);
     });
   });
 
@@ -225,14 +225,14 @@ describe("Rust Ecosystem Tab", () => {
         rustOrm: "none",
         rustApi: "none",
         rustCli: "none",
-        rustLibraries: "none",
+        rustLibraries: [],
       };
       expect(stack.rustWebFramework).toBe("none");
       expect(stack.rustFrontend).toBe("none");
       expect(stack.rustOrm).toBe("none");
       expect(stack.rustApi).toBe("none");
       expect(stack.rustCli).toBe("none");
-      expect(stack.rustLibraries).toBe("none");
+      expect(stack.rustLibraries).toEqual([]);
     });
   });
 

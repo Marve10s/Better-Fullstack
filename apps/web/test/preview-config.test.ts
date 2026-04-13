@@ -18,8 +18,8 @@ describe("stackStateToProjectConfig", () => {
       aiDocs: ["cursorrules", "none"],
       git: "false",
       search: "elasticsearch",
-      rustLibraries: "serde",
-      pythonAi: "langchain",
+      rustLibraries: ["serde"],
+      pythonAi: ["langchain"],
     });
 
     expect(config.projectName).toBe("preview-app");
@@ -54,7 +54,7 @@ describe("stackStateToProjectConfig", () => {
     expect(config.addons).toEqual([]);
     expect(config.examples).toEqual([]);
     expect(config.aiDocs).toEqual([]);
-    expect(config.ai).toBe("vercel-ai");
+    expect(config.ai).toBe("none");
     expect(config.versionChannel).toBe("stable");
     expect(config.install).toBe(false);
   });

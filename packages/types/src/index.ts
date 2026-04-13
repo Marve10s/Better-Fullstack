@@ -5,3 +5,4 @@ export * from "./capabilities";
 export * from "./compatibility";
 export * from "./option-metadata";
 export * from "./local-dev";
+export * from "./defaults";

@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { CSSFramework, Frontend, UILibrary } from "./types";
+import { createCliDefaultProjectConfigBase } from "@better-fullstack/types";
 
 import { getUserPkgManager } from "./utils/get-package-manager";
 
@@ -15,86 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const distPath = path.dirname(__filename);
 export const PKG_ROOT = path.join(distPath, "../");
 
-export const DEFAULT_CONFIG_BASE = {
-  projectName: "my-app",
-  relativePath: "my-app",
-  ecosystem: "typescript",
-  frontend: ["tanstack-router"],
-  database: "sqlite",
-  orm: "drizzle",
-  auth: "better-auth",
-  payments: "none",
-  email: "none",
-  fileUpload: "none",
-  effect: "none",
-  stateManagement: "none",
-  validation: "zod",
-  forms: "react-hook-form",
-  testing: "vitest",
-  ai: "none",
-  realtime: "none",
-  jobQueue: "none",
-  caching: "none",
-  i18n: "none",
-  search: "none",
-  fileStorage: "none",
-  animation: "none",
-  logging: "none",
-  observability: "none",
-  featureFlags: "none",
-  analytics: "none",
-  cms: "none",
-  addons: ["turborepo"],
-  examples: [],
-  git: true,
-  install: true,
-  versionChannel: "stable",
-  dbSetup: "none",
-  backend: "hono",
-  runtime: "bun",
-  api: "trpc",
-  webDeploy: "none",
-  serverDeploy: "none",
-  cssFramework: "tailwind",
-  uiLibrary: "shadcn-ui",
-  // shadcn/ui sub-option defaults
-  shadcnBase: "radix",
-  shadcnStyle: "nova",
-  shadcnIconLibrary: "lucide",
-  shadcnColorTheme: "neutral",
-  shadcnBaseColor: "neutral",
-  shadcnFont: "inter",
-  shadcnRadius: "default",
-  // Rust ecosystem defaults
-  rustWebFramework: "none",
-  rustFrontend: "none",
-  rustOrm: "none",
-  rustApi: "none",
-  rustCli: "none",
-  rustLibraries: [],
-  rustLogging: "tracing",
-  rustErrorHandling: "anyhow-thiserror",
-  rustCaching: "none",
-  rustAuth: "none",
-  // Python ecosystem defaults
-  pythonWebFramework: "fastapi",
-  pythonOrm: "sqlalchemy",
-  pythonValidation: "pydantic",
-  pythonAi: [],
-  pythonAuth: "none",
-  pythonTaskQueue: "none",
-  pythonGraphql: "none",
-  pythonQuality: "ruff",
-  // Go ecosystem defaults
-  goWebFramework: "gin",
-  goOrm: "gorm",
-  goApi: "none",
-  goCli: "none",
-  goLogging: "zap",
-  goAuth: "none",
-  // AI documentation files
-  aiDocs: ["claude-md"],
-} as const;
+export const DEFAULT_CONFIG_BASE = createCliDefaultProjectConfigBase(getUserPkgManager());
 
 export function getDefaultConfig() {
   return {

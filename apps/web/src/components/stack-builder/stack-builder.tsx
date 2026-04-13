@@ -50,6 +50,7 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/constant";
+import { usesVirtualNoneSelection } from "@/lib/stack-contract";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   CATEGORY_ORDER,
@@ -244,7 +245,13 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
   const category = categoryKey as keyof StackState;
   const currentValue = stack[category];
   if (isMultiSelectCategory(categoryKey as OptionCategory)) {
-    return ((currentValue as string[]) || []).includes(techId);
+    const selectedValues = Array.isArray(currentValue) ? currentValue : [];
+
+    if (techId === "none" && usesVirtualNoneSelection(category)) {
+      return selectedValues.length === 0 || selectedValues.includes("none");
+    }
+
+    return selectedValues.includes(techId);
   }
   return currentValue === techId;
 }
@@ -277,6 +284,7 @@ function SidebarAccordionItem({
       <button
         type="button"
         onClick={onToggle}
+        data-testid={`sidebar-category-toggle-${category}`}
         className={cn(
           "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors",
           isOpen
@@ -318,6 +326,7 @@ function SidebarAccordionItem({
                   <button
                     key={option.id}
                     type="button"
+                    data-testid={`sidebar-option-${category}-${option.id}`}
                     onClick={() => {
                       if (!disabled) {
                         handleTechSelect(category, option.id);
@@ -551,6 +560,7 @@ const StackBuilder = () => {
           const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
           let nextArray = [...currentArray];
           const isSelected = currentArray.includes(techId);
+          const isVirtualNoneCategory = usesVirtualNoneSelection(catKey);
 
           if (catKey === "webFrontend") {
             if (techId === "none") {
@@ -573,11 +583,14 @@ const StackBuilder = () => {
               nextArray = [techId];
             }
           } else {
-            if (isSelected) {
+            if (isVirtualNoneCategory && techId === "none") {
+              nextArray = [];
+            } else if (isSelected) {
               nextArray = nextArray.filter((id) => id !== techId);
             } else {
               nextArray.push(techId);
             }
+
             if (nextArray.length > 1) {
               nextArray = nextArray.filter((id) => id !== "none");
             }
@@ -586,7 +599,8 @@ const StackBuilder = () => {
               (catKey === "codeQuality" ||
                 catKey === "documentation" ||
                 catKey === "appPlatforms" ||
-                catKey === "examples")
+                catKey === "examples" ||
+                isVirtualNoneCategory)
             ) {
               // These categories can be empty
             } else if (nextArray.length === 0) {
@@ -892,6 +906,7 @@ const StackBuilder = () => {
                 <button
                   key={eco.id}
                   type="button"
+                  data-testid={`ecosystem-${eco.id}`}
                   onClick={() => {
                     startTransition(() => {
                       setStack({ ecosystem: eco.id as Ecosystem });
@@ -1307,11 +1322,13 @@ const StackBuilder = () => {
                                 sectionRefs.current[categoryKey] = el;
                               }}
                               id={`section-${categoryKey}`}
+                              data-testid={`category-${categoryKey}`}
                               className="mb-6 scroll-mt-4 sm:mb-8"
                             >
                               <button
                                 type="button"
                                 onClick={() => toggleSection(categoryKey)}
+                                data-testid={`category-toggle-${categoryKey}`}
                                 className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                               >
                                 <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
@@ -1374,6 +1391,7 @@ const StackBuilder = () => {
                                               return (
                                                 <motion.div
                                                   key={tech.id}
+                                                  data-testid={`option-${categoryKey}-${tech.id}`}
                                                   className={cn(
                                                     "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
                                                     isSelected
@@ -1480,11 +1498,13 @@ const StackBuilder = () => {
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
                                     transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    data-testid="category-shadcnBase"
                                     className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
                                   >
                                     <button
                                       type="button"
                                       onClick={() => toggleSection("shadcnBase")}
+                                      data-testid="category-toggle-shadcnBase"
                                       className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                                     >
                                       <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
@@ -1550,6 +1570,7 @@ const StackBuilder = () => {
                                                     return (
                                                       <motion.div
                                                         key={tech.id}
+                                                        data-testid={`option-${key}-${tech.id}`}
                                                         className={cn(
                                                           "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
                                                           isSelected
@@ -1653,6 +1674,7 @@ const StackBuilder = () => {
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
                                     transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    data-testid="category-astroIntegration"
                                     className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
                                   >
                                     <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
@@ -1676,6 +1698,7 @@ const StackBuilder = () => {
                                         return (
                                           <motion.div
                                             key={tech.id}
+                                            data-testid={`option-astroIntegration-${tech.id}`}
                                             className={cn(
                                               "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
                                               isSelected

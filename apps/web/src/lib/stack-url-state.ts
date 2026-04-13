@@ -6,118 +6,19 @@ import type { StackSearchParams } from "@/lib/stack-search-schema";
 import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
-import { stackUrlKeys } from "@/lib/stack-url-keys";
+import {
+  createStackSearchParams,
+  parseStackFromSearch,
+  parseStackFromUrlRecord,
+} from "@/lib/stack-url-state.shared";
 
 export function loadStackParams(
   searchParams:
     | Record<string, string | string[] | undefined>
     | Promise<Record<string, string | string[] | undefined>>,
 ): Promise<StackState> | StackState {
-  const parseSync = (params: Record<string, string | string[] | undefined>): StackState => {
-    const getString = (key: string, defaultValue: string): string => {
-      const urlKey = stackUrlKeys[key as keyof typeof stackUrlKeys] || key;
-      const value = params[urlKey];
-      if (typeof value === "string") return value;
-      return defaultValue;
-    };
-
-    const getArray = (key: string, defaultValue: string[]): string[] => {
-      const urlKey = stackUrlKeys[key as keyof typeof stackUrlKeys] || key;
-      const value = params[urlKey];
-      if (typeof value === "string") {
-        return value.split(",").filter(Boolean);
-      }
-      if (Array.isArray(value)) {
-        return value.filter((v): v is string => typeof v === "string");
-      }
-      return defaultValue;
-    };
-
-    return normalizeStackStateSelections({
-      ecosystem: getString("ecosystem", DEFAULT_STACK.ecosystem) as
-        | "typescript"
-        | "rust"
-        | "python"
-        | "go",
-      projectName: getString("projectName", DEFAULT_STACK.projectName ?? "my-app"),
-      webFrontend: getArray("webFrontend", DEFAULT_STACK.webFrontend),
-      nativeFrontend: getArray("nativeFrontend", DEFAULT_STACK.nativeFrontend),
-      astroIntegration: getString("astroIntegration", DEFAULT_STACK.astroIntegration),
-      cssFramework: getString("cssFramework", DEFAULT_STACK.cssFramework),
-      uiLibrary: getString("uiLibrary", DEFAULT_STACK.uiLibrary),
-      shadcnBase: getString("shadcnBase", DEFAULT_STACK.shadcnBase),
-      shadcnStyle: getString("shadcnStyle", DEFAULT_STACK.shadcnStyle),
-      shadcnIconLibrary: getString("shadcnIconLibrary", DEFAULT_STACK.shadcnIconLibrary),
-      shadcnColorTheme: getString("shadcnColorTheme", DEFAULT_STACK.shadcnColorTheme),
-      shadcnBaseColor: getString("shadcnBaseColor", DEFAULT_STACK.shadcnBaseColor),
-      shadcnFont: getString("shadcnFont", DEFAULT_STACK.shadcnFont),
-      shadcnRadius: getString("shadcnRadius", DEFAULT_STACK.shadcnRadius),
-      runtime: getString("runtime", DEFAULT_STACK.runtime),
-      backend: getString("backend", DEFAULT_STACK.backend),
-      api: getString("api", DEFAULT_STACK.api),
-      database: getString("database", DEFAULT_STACK.database),
-      orm: getString("orm", DEFAULT_STACK.orm),
-      dbSetup: getString("dbSetup", DEFAULT_STACK.dbSetup),
-      auth: getString("auth", DEFAULT_STACK.auth),
-      payments: getString("payments", DEFAULT_STACK.payments),
-      email: getString("email", DEFAULT_STACK.email),
-      fileUpload: getString("fileUpload", DEFAULT_STACK.fileUpload),
-      logging: getString("logging", DEFAULT_STACK.logging),
-      observability: getString("observability", DEFAULT_STACK.observability),
-      featureFlags: getString("featureFlags", DEFAULT_STACK.featureFlags),
-      analytics: getString("analytics", DEFAULT_STACK.analytics),
-      backendLibraries: getString("backendLibraries", DEFAULT_STACK.backendLibraries),
-      stateManagement: getString("stateManagement", DEFAULT_STACK.stateManagement),
-      forms: getString("forms", DEFAULT_STACK.forms),
-      validation: getString("validation", DEFAULT_STACK.validation),
-      testing: getString("testing", DEFAULT_STACK.testing),
-      realtime: getString("realtime", DEFAULT_STACK.realtime),
-      jobQueue: getString("jobQueue", DEFAULT_STACK.jobQueue),
-      caching: getString("caching", DEFAULT_STACK.caching),
-      i18n: getString("i18n", DEFAULT_STACK.i18n),
-      animation: getString("animation", DEFAULT_STACK.animation),
-      cms: getString("cms", DEFAULT_STACK.cms),
-      search: getString("search", DEFAULT_STACK.search),
-      fileStorage: getString("fileStorage", DEFAULT_STACK.fileStorage),
-      codeQuality: getArray("codeQuality", DEFAULT_STACK.codeQuality),
-      documentation: getArray("documentation", DEFAULT_STACK.documentation),
-      appPlatforms: getArray("appPlatforms", DEFAULT_STACK.appPlatforms),
-      packageManager: getString("packageManager", DEFAULT_STACK.packageManager),
-      versionChannel: getString("versionChannel", DEFAULT_STACK.versionChannel),
-      examples: getArray("examples", DEFAULT_STACK.examples),
-      aiSdk: getString("aiSdk", DEFAULT_STACK.aiSdk),
-      git: getString("git", DEFAULT_STACK.git),
-      install: getString("install", DEFAULT_STACK.install),
-      webDeploy: getString("webDeploy", DEFAULT_STACK.webDeploy),
-      serverDeploy: getString("serverDeploy", DEFAULT_STACK.serverDeploy),
-      yolo: getString("yolo", DEFAULT_STACK.yolo),
-      rustWebFramework: getString("rustWebFramework", DEFAULT_STACK.rustWebFramework),
-      rustFrontend: getString("rustFrontend", DEFAULT_STACK.rustFrontend),
-      rustOrm: getString("rustOrm", DEFAULT_STACK.rustOrm),
-      rustApi: getString("rustApi", DEFAULT_STACK.rustApi),
-      rustCli: getString("rustCli", DEFAULT_STACK.rustCli),
-      rustLibraries: getString("rustLibraries", DEFAULT_STACK.rustLibraries),
-      rustLogging: getString("rustLogging", DEFAULT_STACK.rustLogging),
-      rustErrorHandling: getString("rustErrorHandling", DEFAULT_STACK.rustErrorHandling),
-      rustCaching: getString("rustCaching", DEFAULT_STACK.rustCaching),
-      rustAuth: getString("rustAuth", DEFAULT_STACK.rustAuth),
-      pythonWebFramework: getString("pythonWebFramework", DEFAULT_STACK.pythonWebFramework),
-      pythonOrm: getString("pythonOrm", DEFAULT_STACK.pythonOrm),
-      pythonValidation: getString("pythonValidation", DEFAULT_STACK.pythonValidation),
-      pythonAi: getString("pythonAi", DEFAULT_STACK.pythonAi),
-      pythonAuth: getString("pythonAuth", DEFAULT_STACK.pythonAuth),
-      pythonTaskQueue: getString("pythonTaskQueue", DEFAULT_STACK.pythonTaskQueue),
-      pythonGraphql: getString("pythonGraphql", DEFAULT_STACK.pythonGraphql),
-      pythonQuality: getString("pythonQuality", DEFAULT_STACK.pythonQuality),
-      goWebFramework: getString("goWebFramework", DEFAULT_STACK.goWebFramework),
-      goOrm: getString("goOrm", DEFAULT_STACK.goOrm),
-      goApi: getString("goApi", DEFAULT_STACK.goApi),
-      goCli: getString("goCli", DEFAULT_STACK.goCli),
-      goLogging: getString("goLogging", DEFAULT_STACK.goLogging),
-      goAuth: getString("goAuth", DEFAULT_STACK.goAuth),
-      aiDocs: getArray("aiDocs", DEFAULT_STACK.aiDocs),
-    });
-  };
+  const parseSync = (params: Record<string, string | string[] | undefined>): StackState =>
+    parseStackFromUrlRecord(params);
 
   if (searchParams instanceof Promise) {
     return searchParams.then(parseSync);
@@ -126,103 +27,7 @@ export function loadStackParams(
 }
 
 export function serializeStackParams(basePath: string, stack: StackState): string {
-  const params = new URLSearchParams();
-
-  const addParam = (key: keyof StackState, value: string | string[] | null) => {
-    const urlKey = stackUrlKeys[key] || key;
-    const defaultValue = DEFAULT_STACK[key];
-
-    if (Array.isArray(value)) {
-      const serialized = value.join(",");
-      const defaultSerialized = Array.isArray(defaultValue) ? defaultValue.join(",") : "";
-      if (serialized !== defaultSerialized) {
-        params.set(urlKey, serialized);
-      }
-    } else if (value !== null && value !== defaultValue) {
-      params.set(urlKey, value);
-    }
-  };
-
-  addParam("ecosystem", stack.ecosystem);
-  addParam("projectName", stack.projectName);
-  addParam("webFrontend", stack.webFrontend);
-  addParam("nativeFrontend", stack.nativeFrontend);
-  addParam("astroIntegration", stack.astroIntegration);
-  addParam("cssFramework", stack.cssFramework);
-  addParam("uiLibrary", stack.uiLibrary);
-  addParam("shadcnBase", stack.shadcnBase);
-  addParam("shadcnStyle", stack.shadcnStyle);
-  addParam("shadcnIconLibrary", stack.shadcnIconLibrary);
-  addParam("shadcnColorTheme", stack.shadcnColorTheme);
-  addParam("shadcnBaseColor", stack.shadcnBaseColor);
-  addParam("shadcnFont", stack.shadcnFont);
-  addParam("shadcnRadius", stack.shadcnRadius);
-  addParam("runtime", stack.runtime);
-  addParam("backend", stack.backend);
-  addParam("api", stack.api);
-  addParam("database", stack.database);
-  addParam("orm", stack.orm);
-  addParam("dbSetup", stack.dbSetup);
-  addParam("auth", stack.auth);
-  addParam("payments", stack.payments);
-  addParam("email", stack.email);
-  addParam("fileUpload", stack.fileUpload);
-  addParam("logging", stack.logging);
-  addParam("observability", stack.observability);
-  addParam("featureFlags", stack.featureFlags);
-  addParam("analytics", stack.analytics);
-  addParam("backendLibraries", stack.backendLibraries);
-  addParam("stateManagement", stack.stateManagement);
-  addParam("forms", stack.forms);
-  addParam("validation", stack.validation);
-  addParam("testing", stack.testing);
-  addParam("realtime", stack.realtime);
-  addParam("jobQueue", stack.jobQueue);
-  addParam("caching", stack.caching);
-  addParam("i18n", stack.i18n);
-  addParam("animation", stack.animation);
-  addParam("cms", stack.cms);
-  addParam("search", stack.search);
-  addParam("fileStorage", stack.fileStorage);
-  addParam("codeQuality", stack.codeQuality);
-  addParam("documentation", stack.documentation);
-  addParam("appPlatforms", stack.appPlatforms);
-  addParam("packageManager", stack.packageManager);
-  addParam("versionChannel", stack.versionChannel);
-  addParam("examples", stack.examples);
-  addParam("aiSdk", stack.aiSdk);
-  addParam("git", stack.git);
-  addParam("install", stack.install);
-  addParam("webDeploy", stack.webDeploy);
-  addParam("serverDeploy", stack.serverDeploy);
-  addParam("yolo", stack.yolo);
-  addParam("rustWebFramework", stack.rustWebFramework);
-  addParam("rustFrontend", stack.rustFrontend);
-  addParam("rustOrm", stack.rustOrm);
-  addParam("rustApi", stack.rustApi);
-  addParam("rustCli", stack.rustCli);
-  addParam("rustLibraries", stack.rustLibraries);
-  addParam("rustLogging", stack.rustLogging);
-  addParam("rustErrorHandling", stack.rustErrorHandling);
-  addParam("rustCaching", stack.rustCaching);
-  addParam("rustAuth", stack.rustAuth);
-  addParam("pythonWebFramework", stack.pythonWebFramework);
-  addParam("pythonOrm", stack.pythonOrm);
-  addParam("pythonValidation", stack.pythonValidation);
-  addParam("pythonAi", stack.pythonAi);
-  addParam("pythonAuth", stack.pythonAuth);
-  addParam("pythonTaskQueue", stack.pythonTaskQueue);
-  addParam("pythonGraphql", stack.pythonGraphql);
-  addParam("pythonQuality", stack.pythonQuality);
-  addParam("goWebFramework", stack.goWebFramework);
-  addParam("goOrm", stack.goOrm);
-  addParam("goApi", stack.goApi);
-  addParam("goCli", stack.goCli);
-  addParam("goLogging", stack.goLogging);
-  addParam("goAuth", stack.goAuth);
-  addParam("aiDocs", stack.aiDocs);
-
-  const queryString = params.toString();
+  const queryString = createStackSearchParams(stack).toString();
   return queryString ? `${basePath}?${queryString}` : basePath;
 }
 
@@ -231,86 +36,25 @@ export type LoadedStackState = StackState;
 function searchToStack(search: StackSearchParams | undefined): StackState {
   if (!search) return DEFAULT_STACK;
 
-  return normalizeStackStateSelections({
-    ecosystem: (search.eco as StackState["ecosystem"] | undefined) ?? DEFAULT_STACK.ecosystem,
-    projectName: search.name ?? DEFAULT_STACK.projectName,
-    webFrontend: search["fe-w"] ?? DEFAULT_STACK.webFrontend,
-    nativeFrontend: search["fe-n"] ?? DEFAULT_STACK.nativeFrontend,
-    astroIntegration: search.ai ?? DEFAULT_STACK.astroIntegration,
-    cssFramework: search.css ?? DEFAULT_STACK.cssFramework,
-    uiLibrary: search.ui ?? DEFAULT_STACK.uiLibrary,
-    shadcnBase: search.scb ?? DEFAULT_STACK.shadcnBase,
-    shadcnStyle: search.scs ?? DEFAULT_STACK.shadcnStyle,
-    shadcnIconLibrary: search.sci ?? DEFAULT_STACK.shadcnIconLibrary,
-    shadcnColorTheme: search.scc ?? DEFAULT_STACK.shadcnColorTheme,
-    shadcnBaseColor: search.scbc ?? DEFAULT_STACK.shadcnBaseColor,
-    shadcnFont: search.scf ?? DEFAULT_STACK.shadcnFont,
-    shadcnRadius: search.scr ?? DEFAULT_STACK.shadcnRadius,
-    runtime: search.rt ?? DEFAULT_STACK.runtime,
-    backend: search.be ?? DEFAULT_STACK.backend,
-    api: search.api ?? DEFAULT_STACK.api,
-    database: search.db ?? DEFAULT_STACK.database,
-    orm: search.orm ?? DEFAULT_STACK.orm,
-    dbSetup: search.dbs ?? DEFAULT_STACK.dbSetup,
-    auth: search.au ?? DEFAULT_STACK.auth,
-    payments: search.pay ?? DEFAULT_STACK.payments,
-    email: search.em ?? DEFAULT_STACK.email,
-    fileUpload: search.fu ?? DEFAULT_STACK.fileUpload,
-    logging: search.log ?? DEFAULT_STACK.logging,
-    observability: search.obs ?? DEFAULT_STACK.observability,
-    featureFlags: search.ff ?? DEFAULT_STACK.featureFlags,
-    analytics: search.an ?? DEFAULT_STACK.analytics,
-    backendLibraries: search.bl ?? DEFAULT_STACK.backendLibraries,
-    stateManagement: search.sm ?? DEFAULT_STACK.stateManagement,
-    forms: search.frm ?? DEFAULT_STACK.forms,
-    validation: search.val ?? DEFAULT_STACK.validation,
-    testing: search.tst ?? DEFAULT_STACK.testing,
-    realtime: search.rt2 ?? DEFAULT_STACK.realtime,
-    jobQueue: search.jq ?? DEFAULT_STACK.jobQueue,
-    caching: search.cache ?? DEFAULT_STACK.caching,
-    i18n: search.i18n ?? DEFAULT_STACK.i18n,
-    animation: search.anim ?? DEFAULT_STACK.animation,
-    cms: search.cms ?? DEFAULT_STACK.cms,
-    search: search.srch ?? DEFAULT_STACK.search,
-    fileStorage: search.fs ?? DEFAULT_STACK.fileStorage,
-    codeQuality: search.cq ?? DEFAULT_STACK.codeQuality,
-    documentation: search.doc ?? DEFAULT_STACK.documentation,
-    appPlatforms: search.ap ?? DEFAULT_STACK.appPlatforms,
-    packageManager: search.pm ?? DEFAULT_STACK.packageManager,
-    versionChannel: search.vc ?? DEFAULT_STACK.versionChannel,
-    examples: search.ex ?? DEFAULT_STACK.examples,
-    aiSdk: search.aisdk ?? DEFAULT_STACK.aiSdk,
-    aiDocs: search.aid ?? DEFAULT_STACK.aiDocs,
-    git: search.git ?? DEFAULT_STACK.git,
-    install: search.i ?? DEFAULT_STACK.install,
-    webDeploy: search.wd ?? DEFAULT_STACK.webDeploy,
-    serverDeploy: search.sd ?? DEFAULT_STACK.serverDeploy,
-    yolo: search.yolo ?? DEFAULT_STACK.yolo,
-    rustWebFramework: search.rwf ?? DEFAULT_STACK.rustWebFramework,
-    rustFrontend: search.rfe ?? DEFAULT_STACK.rustFrontend,
-    rustOrm: search.rorm ?? DEFAULT_STACK.rustOrm,
-    rustApi: search.rapi ?? DEFAULT_STACK.rustApi,
-    rustCli: search.rcli ?? DEFAULT_STACK.rustCli,
-    rustLibraries: search.rlib ?? DEFAULT_STACK.rustLibraries,
-    rustLogging: search.rlog ?? DEFAULT_STACK.rustLogging,
-    rustErrorHandling: search.reh ?? DEFAULT_STACK.rustErrorHandling,
-    rustCaching: search.rca ?? DEFAULT_STACK.rustCaching,
-    rustAuth: search.rau ?? DEFAULT_STACK.rustAuth,
-    pythonWebFramework: search.pwf ?? DEFAULT_STACK.pythonWebFramework,
-    pythonOrm: search.porm ?? DEFAULT_STACK.pythonOrm,
-    pythonValidation: search.pval ?? DEFAULT_STACK.pythonValidation,
-    pythonAi: search.pai ?? DEFAULT_STACK.pythonAi,
-    pythonAuth: search.pauth ?? DEFAULT_STACK.pythonAuth,
-    pythonTaskQueue: search.ptq ?? DEFAULT_STACK.pythonTaskQueue,
-    pythonGraphql: search.pgql ?? DEFAULT_STACK.pythonGraphql,
-    pythonQuality: search.pq ?? DEFAULT_STACK.pythonQuality,
-    goWebFramework: search.gwf ?? DEFAULT_STACK.goWebFramework,
-    goOrm: search.gorm ?? DEFAULT_STACK.goOrm,
-    goApi: search.gapi ?? DEFAULT_STACK.goApi,
-    goCli: search.gcli ?? DEFAULT_STACK.goCli,
-    goLogging: search.glog ?? DEFAULT_STACK.goLogging,
-    goAuth: search.gauth ?? DEFAULT_STACK.goAuth,
-  });
+  return parseStackFromSearch(search);
+}
+
+function createLiveBuilderSearchParams(
+  stack: StackState,
+  viewMode: "command" | "preview" | "presets" | "saved",
+  selectedFile: string,
+): URLSearchParams {
+  const params = createStackSearchParams(normalizeStackStateSelections(stack));
+
+  if (viewMode !== "command") {
+    params.set("view", viewMode);
+  }
+
+  if (selectedFile) {
+    params.set("file", selectedFile);
+  }
+
+  return params;
 }
 
 export function useStackState() {
@@ -350,6 +94,20 @@ export function useStackState() {
       setViewModeState(search.view);
     }
   }, [search?.view]);
+
+  useEffect(() => {
+    if (!initialized.current) return;
+
+    const url = new URL(window.location.href);
+    const nextParams = createLiveBuilderSearchParams(stack, viewMode, selectedFile);
+    const nextSearch = nextParams.toString();
+    const nextUrl = nextSearch ? `${url.pathname}?${nextSearch}` : url.pathname;
+    const currentUrl = `${url.pathname}${url.search}`;
+
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(window.history.state, "", nextUrl);
+    }
+  }, [stack, viewMode, selectedFile]);
 
   const updateStack = useCallback(
     (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => {

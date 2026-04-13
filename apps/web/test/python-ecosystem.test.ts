@@ -258,7 +258,7 @@ describe("Python Ecosystem Tab", () => {
       expect(DEFAULT_STACK.pythonWebFramework).toBe("fastapi");
       expect(DEFAULT_STACK.pythonOrm).toBe("sqlalchemy");
       expect(DEFAULT_STACK.pythonValidation).toBe("pydantic");
-      expect(DEFAULT_STACK.pythonAi).toBe("none");
+      expect(DEFAULT_STACK.pythonAi).toEqual([]);
       expect(DEFAULT_STACK.pythonTaskQueue).toBe("none");
       expect(DEFAULT_STACK.pythonQuality).toBe("ruff");
     });
@@ -281,14 +281,14 @@ describe("Python Ecosystem Tab", () => {
         pythonWebFramework: "fastapi",
         pythonOrm: "sqlalchemy",
         pythonValidation: "pydantic",
-        pythonAi: "langchain",
+        pythonAi: ["langchain"],
         pythonTaskQueue: "celery",
         pythonQuality: "ruff",
       };
       expect(stack.pythonWebFramework).toBe("fastapi");
       expect(stack.pythonOrm).toBe("sqlalchemy");
       expect(stack.pythonValidation).toBe("pydantic");
-      expect(stack.pythonAi).toBe("langchain");
+      expect(stack.pythonAi).toEqual(["langchain"]);
       expect(stack.pythonTaskQueue).toBe("celery");
       expect(stack.pythonQuality).toBe("ruff");
     });
@@ -343,7 +343,7 @@ describe("Python Ecosystem Tab", () => {
       const command = generateStackCommand({
         ...DEFAULT_STACK,
         ecosystem: "python",
-        pythonAi: "none",
+        pythonAi: [],
       });
 
       expect(command).toContain("--ecosystem python");

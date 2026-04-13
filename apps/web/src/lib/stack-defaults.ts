@@ -60,7 +60,7 @@ export type StackState = {
   rustOrm: string;
   rustApi: string;
   rustCli: string;
-  rustLibraries: string;
+  rustLibraries: string[];
   rustLogging: string;
   rustErrorHandling: string;
   rustCaching: string;
@@ -68,7 +68,7 @@ export type StackState = {
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
-  pythonAi: string;
+  pythonAi: string[];
   pythonAuth: string;
   pythonTaskQueue: string;
   pythonGraphql: string;
@@ -128,7 +128,7 @@ export const DEFAULT_STACK: StackState = {
   packageManager: "bun",
   versionChannel: "stable",
   examples: [],
-  aiSdk: "vercel-ai",
+  aiSdk: "none",
   aiDocs: ["claude-md"],
   git: "true",
   install: "true",
@@ -141,7 +141,7 @@ export const DEFAULT_STACK: StackState = {
   rustOrm: "sea-orm",
   rustApi: "none",
   rustCli: "none",
-  rustLibraries: "serde",
+  rustLibraries: [],
   rustLogging: "tracing",
   rustErrorHandling: "anyhow-thiserror",
   rustCaching: "none",
@@ -149,7 +149,7 @@ export const DEFAULT_STACK: StackState = {
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",
-  pythonAi: "none",
+  pythonAi: [],
   pythonAuth: "none",
   pythonTaskQueue: "none",
   pythonGraphql: "none",

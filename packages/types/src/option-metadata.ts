@@ -244,6 +244,8 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "appPlatforms",
   "examples",
   "aiDocs",
+  "rustLibraries",
+  "pythonAi",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {

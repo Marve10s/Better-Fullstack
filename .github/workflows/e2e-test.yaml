@@ -1,6 +1,7 @@
 name: E2E & Integration Tests
 
 on:
+  pull_request:
   schedule:
     - cron: "0 4 * * *"
   workflow_dispatch:
@@ -178,5 +179,50 @@ jobs:
         with:
           name: playwright-report
           path: apps/web/test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+  web-command-roundtrip:
+    name: Web Command Roundtrip
+    if: ${{ inputs.run_e2e != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: web-roundtrip-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: web-roundtrip-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Web Command Roundtrip Tests
+        run: bun test apps/cli/test/e2e/web-command-roundtrip.test.ts --timeout 600000
+
+      - name: Upload Roundtrip Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-command-roundtrip-results
+          path: apps/cli/.smoke-web-command-roundtrip/
           if-no-files-found: warn
           retention-days: 7

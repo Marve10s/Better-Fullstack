@@ -1,5 +1,12 @@
+import {
+  createCliDefaultProjectConfigBase,
+  type CliDefaultProjectConfigBase,
+  type PackageManager,
+} from "@better-fullstack/types";
+
 import { TECH_OPTIONS } from "@/lib/constant";
-import { DEFAULT_STACK, isStackDefault, type StackState } from "@/lib/stack-defaults";
+import { stackStateToProjectConfig } from "@/lib/preview-config";
+import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
 const PACKAGE_MANAGER_COMMANDS = {
@@ -120,6 +127,89 @@ const CATEGORY_ORDER = [
   ]),
 ] as Array<keyof typeof TECH_OPTIONS>;
 
+const RUST_CONFIG_KEYS = [
+  "rustWebFramework",
+  "rustFrontend",
+  "rustOrm",
+  "rustApi",
+  "rustCli",
+  "rustLibraries",
+  "rustLogging",
+  "rustErrorHandling",
+  "rustCaching",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const PYTHON_CONFIG_KEYS = [
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonValidation",
+  "pythonAi",
+  "pythonAuth",
+  "pythonTaskQueue",
+  "pythonGraphql",
+  "pythonQuality",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const GO_CONFIG_KEYS = [
+  "goWebFramework",
+  "goOrm",
+  "goApi",
+  "goCli",
+  "goLogging",
+  "goAuth",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+function formatArrayFlag(flag: string, values: readonly string[]) {
+  const filteredValues = [...new Set(values.filter((value) => value !== "none"))];
+  return `--${flag} ${filteredValues.join(" ") || "none"}`;
+}
+
+function areStringArraysEqual(left: readonly string[], right: readonly string[]) {
+  const sortedLeft = [...left].sort();
+  const sortedRight = [...right].sort();
+
+  return (
+    sortedLeft.length === sortedRight.length &&
+    sortedLeft.every((value, index) => value === sortedRight[index])
+  );
+}
+
+function isCliDefaultStack(stack: StackState, projectName: string) {
+  const comparableConfig: CliDefaultProjectConfigBase = {
+    ...stackStateToProjectConfig({ ...stack, projectName }),
+    relativePath: projectName,
+    install: stack.install === "true",
+  };
+  const cliDefaults = {
+    ...createCliDefaultProjectConfigBase(stack.packageManager as PackageManager),
+    projectName,
+    relativePath: projectName,
+  };
+  const ignoredKeys =
+    stack.ecosystem === "typescript"
+      ? new Set<keyof CliDefaultProjectConfigBase>([
+          ...RUST_CONFIG_KEYS,
+          ...PYTHON_CONFIG_KEYS,
+          ...GO_CONFIG_KEYS,
+        ])
+      : new Set<keyof CliDefaultProjectConfigBase>();
+
+  return (Object.keys(cliDefaults) as Array<keyof CliDefaultProjectConfigBase>).every((key) => {
+    if (ignoredKeys.has(key)) {
+      return true;
+    }
+
+    const currentValue = comparableConfig[key];
+    const defaultValue = cliDefaults[key];
+
+    if (Array.isArray(currentValue) && Array.isArray(defaultValue)) {
+      return areStringArraysEqual(currentValue, defaultValue);
+    }
+
+    return currentValue === defaultValue;
+  });
+}
+
 export function generateStackSummary(stack: StackState) {
   const selectedTechs = CATEGORY_ORDER.flatMap((category) => {
     const options = TECH_OPTIONS[category];
@@ -170,11 +260,7 @@ export function generateStackCommand(stack: StackState) {
     PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
     PACKAGE_MANAGER_COMMANDS.default;
 
-  const isStackDefaultExceptProjectName = Object.entries(DEFAULT_STACK).every(
-    ([key]) =>
-      key === "projectName" ||
-      isStackDefault(stack, key as keyof StackState, stack[key as keyof StackState]),
-  );
+  const isStackDefaultExceptProjectName = isCliDefaultStack(stack, projectName);
 
   if (isStackDefaultExceptProjectName) {
     return `${base} ${projectName} --yes`;
@@ -221,7 +307,13 @@ export function generateStackCommand(stack: StackState) {
         ]
       : []),
     `--backend ${mapBackendToCli(stack.backend)}`,
-    `--runtime ${stack.runtime}`,
+    `--runtime ${
+      mapBackendToCli(stack.backend) === "self" ||
+      stack.backend === "convex" ||
+      stack.backend === "none"
+        ? "none"
+        : stack.runtime
+    }`,
     `--api ${stack.api}`,
     `--auth ${stack.auth}`,
     `--payments ${stack.payments}`,
@@ -286,8 +378,8 @@ export function generateStackCommand(stack: StackState) {
             .join(" ") || "none"
         : "none"
     }`,
-    `--examples ${stack.examples.join(" ") || "none"}`,
-    `--ai-docs ${stack.aiDocs.filter((d) => d !== "none").join(" ") || "none"}`,
+    formatArrayFlag("examples", stack.examples),
+    formatArrayFlag("ai-docs", stack.aiDocs),
   ];
 
   if (stack.yolo === "true") {
@@ -302,41 +394,23 @@ function generateRustCommand(stack: StackState, projectName: string) {
     PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
     PACKAGE_MANAGER_COMMANDS.default;
 
-  const flags: string[] = [`--ecosystem rust`];
+  const flags: string[] = [
+    `--ecosystem rust`,
+    `--rust-web-framework ${stack.rustWebFramework}`,
+    `--rust-frontend ${stack.rustFrontend}`,
+    `--rust-orm ${stack.rustOrm}`,
+    `--rust-api ${stack.rustApi}`,
+    `--rust-cli ${stack.rustCli}`,
+    formatArrayFlag("rust-libraries", stack.rustLibraries),
+    `--rust-logging ${stack.rustLogging}`,
+    `--rust-error-handling ${stack.rustErrorHandling}`,
+    `--rust-caching ${stack.rustCaching}`,
+  ];
 
-  if (stack.rustWebFramework !== "none") {
-    flags.push(`--rust-web-framework ${stack.rustWebFramework}`);
-  }
-  if (stack.rustFrontend !== "none") {
-    flags.push(`--rust-frontend ${stack.rustFrontend}`);
-  }
-  if (stack.rustOrm !== "none") {
-    flags.push(`--rust-orm ${stack.rustOrm}`);
-  }
-  if (stack.rustApi !== "none") {
-    flags.push(`--rust-api ${stack.rustApi}`);
-  }
-  if (stack.rustCli !== "none") {
-    flags.push(`--rust-cli ${stack.rustCli}`);
-  }
-  if (stack.rustLibraries !== "none" && stack.rustLibraries !== "serde") {
-    flags.push(`--rust-libraries ${stack.rustLibraries}`);
-  }
-  if (stack.rustLogging !== "tracing") {
-    flags.push(`--rust-logging ${stack.rustLogging}`);
-  }
-  if (stack.rustErrorHandling !== "anyhow-thiserror") {
-    flags.push(`--rust-error-handling ${stack.rustErrorHandling}`);
-  }
-  if (stack.rustCaching !== "none") {
-    flags.push(`--rust-caching ${stack.rustCaching}`);
-  }
   if (stack.rustAuth !== "none") {
     flags.push(`--rust-auth ${stack.rustAuth}`);
   }
-  if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
-    flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
-  }
+  flags.push(formatArrayFlag("ai-docs", stack.aiDocs));
   if (stack.git === "false") {
     flags.push("--no-git");
   }
@@ -352,34 +426,20 @@ function generatePythonCommand(stack: StackState, projectName: string) {
     PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
     PACKAGE_MANAGER_COMMANDS.default;
 
-  const flags: string[] = [`--ecosystem python`];
+  const flags: string[] = [
+    `--ecosystem python`,
+    `--python-web-framework ${stack.pythonWebFramework}`,
+    `--python-orm ${stack.pythonOrm}`,
+    `--python-validation ${stack.pythonValidation}`,
+  ];
 
-  if (stack.pythonWebFramework !== "none") {
-    flags.push(`--python-web-framework ${stack.pythonWebFramework}`);
-  }
-  if (stack.pythonOrm !== "none") {
-    flags.push(`--python-orm ${stack.pythonOrm}`);
-  }
-  if (stack.pythonValidation !== "none") {
-    flags.push(`--python-validation ${stack.pythonValidation}`);
-  }
   // Omitting this flag makes the CLI treat Python AI as unspecified and re-open the prompt.
-  flags.push(`--python-ai ${stack.pythonAi}`);
-  if (stack.pythonAuth !== "none") {
-    flags.push(`--python-auth ${stack.pythonAuth}`);
-  }
-  if (stack.pythonTaskQueue !== "none") {
-    flags.push(`--python-task-queue ${stack.pythonTaskQueue}`);
-  }
-  if (stack.pythonGraphql !== "none") {
-    flags.push(`--python-graphql ${stack.pythonGraphql}`);
-  }
-  if (stack.pythonQuality !== "none") {
-    flags.push(`--python-quality ${stack.pythonQuality}`);
-  }
-  if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
-    flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
-  }
+  flags.push(formatArrayFlag("python-ai", stack.pythonAi));
+  flags.push(`--python-auth ${stack.pythonAuth}`);
+  flags.push(`--python-task-queue ${stack.pythonTaskQueue}`);
+  flags.push(`--python-graphql ${stack.pythonGraphql}`);
+  flags.push(`--python-quality ${stack.pythonQuality}`);
+  flags.push(formatArrayFlag("ai-docs", stack.aiDocs));
   if (stack.git === "false") {
     flags.push("--no-git");
   }
@@ -395,29 +455,17 @@ function generateGoCommand(stack: StackState, projectName: string) {
     PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
     PACKAGE_MANAGER_COMMANDS.default;
 
-  const flags: string[] = [`--ecosystem go`];
+  const flags: string[] = [
+    `--ecosystem go`,
+    `--go-web-framework ${stack.goWebFramework}`,
+    `--go-orm ${stack.goOrm}`,
+    `--go-api ${stack.goApi}`,
+    `--go-cli ${stack.goCli}`,
+    `--go-logging ${stack.goLogging}`,
+    `--go-auth ${stack.goAuth}`,
+    `--auth ${stack.auth}`,
+  ];
 
-  if (stack.goWebFramework !== "none") {
-    flags.push(`--go-web-framework ${stack.goWebFramework}`);
-  }
-  if (stack.goOrm !== "none") {
-    flags.push(`--go-orm ${stack.goOrm}`);
-  }
-  if (stack.goApi !== "none") {
-    flags.push(`--go-api ${stack.goApi}`);
-  }
-  if (stack.goCli !== "none") {
-    flags.push(`--go-cli ${stack.goCli}`);
-  }
-  if (stack.goLogging !== "none") {
-    flags.push(`--go-logging ${stack.goLogging}`);
-  }
-  if (stack.goAuth !== "none") {
-    flags.push(`--go-auth ${stack.goAuth}`);
-  }
-  if (stack.auth !== "none") {
-    flags.push(`--auth ${stack.auth}`);
-  }
   if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
     flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
   }

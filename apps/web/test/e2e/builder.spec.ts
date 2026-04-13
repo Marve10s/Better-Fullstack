@@ -3,18 +3,18 @@ import { test, expect } from "@playwright/test";
 test.describe("Stack Builder", () => {
   test("loads the builder page", async ({ page }) => {
     await page.goto("/new");
-    await expect(page.locator("text=Builder")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("command-output")).toBeVisible();
   });
 
   test("displays CLI command", async ({ page }) => {
     await page.goto("/new");
-    await expect(page.locator("text=bun create better-fullstack")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("command-output")).toContainText("bun create better-fullstack");
   });
 
   test("URL updates when options change", async ({ page }) => {
     await page.goto("/new");
-    await page.waitForTimeout(2000);
-    // The URL should contain search params for the default stack
-    expect(page.url()).toContain("/new");
+    await page.getByTestId("category-toggle-backend").click();
+    await page.getByTestId("option-backend-fastify").click();
+    await expect(page).toHaveURL(/be=fastify/);
   });
 });
