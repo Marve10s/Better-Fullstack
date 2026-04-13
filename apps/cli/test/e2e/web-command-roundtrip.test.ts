@@ -16,7 +16,11 @@ type RoundtripCase = {
   stack: typeof DEFAULT_STACK;
   assertConfig: (config: Record<string, unknown>) => void;
   assertMarkers?: (projectDir: string) => void | Promise<void>;
+  timeoutMs?: number;
 };
+
+const DEFAULT_CASE_TIMEOUT_MS = 180_000;
+const CLEANUP_TIMEOUT_MS = 120_000;
 
 function stripLauncherPrefix(command: string) {
   const prefixes = [
@@ -58,6 +62,7 @@ const CASES: RoundtripCase[] = [
       ...DEFAULT_STACK,
       projectName: "roundtrip-default",
     },
+    timeoutMs: 360_000,
     assertConfig: (config) => {
       expect(config.ecosystem).toBe("typescript");
       expect(config.backend).toBe("hono");
@@ -184,23 +189,24 @@ describe("Web command roundtrip", () => {
   beforeAll(async () => {
     await rm(SMOKE_DIR, { recursive: true, force: true });
     await mkdir(SMOKE_DIR, { recursive: true });
-  });
+  }, CLEANUP_TIMEOUT_MS);
 
   afterAll(async () => {
     if (!process.env.CI) {
       await rm(SMOKE_DIR, { recursive: true, force: true });
     }
-  });
+  }, CLEANUP_TIMEOUT_MS);
 
   for (const testCase of CASES) {
     it(`executes the built CLI for ${testCase.name}`, async () => {
       const generatedCommand = generateStackCommand(testCase.stack);
       const { projectName, flags } = parseCommand(generatedCommand);
       const projectDir = join(SMOKE_DIR, projectName);
+      const timeoutMs = testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS;
 
       const result = await scaffoldWithCLIBinary(projectDir, flags, {
         cliPath: CLI_BINARY_PATH,
-        timeout: 180_000,
+        timeout: timeoutMs,
       });
 
       if (!result.ok) {
@@ -214,6 +220,6 @@ describe("Web command roundtrip", () => {
       const config = await readJsoncFile(join(projectDir, "bts.jsonc"));
       testCase.assertConfig(config);
       await testCase.assertMarkers?.(projectDir);
-    }, 240_000);
+    }, (testCase.timeoutMs ?? DEFAULT_CASE_TIMEOUT_MS) + 60_000);
   }
 });

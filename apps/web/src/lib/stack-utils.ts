@@ -135,6 +135,7 @@ const RUST_CONFIG_KEYS = [
   "rustLogging",
   "rustErrorHandling",
   "rustCaching",
+  "rustAuth",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const PYTHON_CONFIG_KEYS = [
@@ -264,6 +265,7 @@ function stackToCliComparableConfig(
     rustErrorHandling:
       stack.rustErrorHandling as CliDefaultProjectConfigBase["rustErrorHandling"],
     rustCaching: stack.rustCaching as CliDefaultProjectConfigBase["rustCaching"],
+    rustAuth: stack.rustAuth as CliDefaultProjectConfigBase["rustAuth"],
     pythonWebFramework:
       stack.pythonWebFramework as CliDefaultProjectConfigBase["pythonWebFramework"],
     pythonOrm: stack.pythonOrm as CliDefaultProjectConfigBase["pythonOrm"],
@@ -515,11 +517,9 @@ function generateRustCommand(stack: StackState, projectName: string) {
     `--rust-logging ${stack.rustLogging}`,
     `--rust-error-handling ${stack.rustErrorHandling}`,
     `--rust-caching ${stack.rustCaching}`,
+    `--rust-auth ${stack.rustAuth}`,
   ];
 
-  if (stack.rustAuth !== "none") {
-    flags.push(`--rust-auth ${stack.rustAuth}`);
-  }
   flags.push(formatArrayFlag("ai-docs", stack.aiDocs));
   if (stack.git === "false") {
     flags.push("--no-git");

@@ -139,6 +139,7 @@ describe("generateStackCommand parity", () => {
 
     expect(pythonCommand).toContain("--python-ai langchain openai-sdk");
     expect(rustCommand).toContain("--rust-libraries validator mockall");
+    expect(rustCommand).toContain("--rust-auth none");
   });
 
   it("serializes empty python and rust multi-select arrays as none", () => {
