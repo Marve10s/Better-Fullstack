@@ -2,6 +2,7 @@ import type { Backend, Database, ORM, Runtime } from "../types";
 
 import { DEFAULT_CONFIG } from "../constants";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 const ormOptions = {
@@ -42,33 +43,44 @@ const ormOptions = {
   },
 };
 
-export async function getORMChoice(
-  orm: ORM | undefined,
-  hasDatabase: boolean,
-  database?: Database,
-  backend?: Backend,
-  runtime?: Runtime,
-) {
-  if (backend === "convex") {
-    return "none";
+type ORMPromptContext = {
+  orm?: ORM;
+  hasDatabase: boolean;
+  database?: Database;
+  backend?: Backend;
+  runtime?: Runtime;
+};
+
+export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolution<ORM> {
+  if (context.backend === "convex" || !context.hasDatabase) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
-  if (!hasDatabase) return "none";
-
-  // EdgeDB has its own built-in query builder, no separate ORM needed
-  if (database === "edgedb") {
-    return "none";
+  if (context.database === "edgedb" || context.database === "redis") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
-  // Redis is a key-value store and doesn't require an ORM
-  if (database === "redis") {
-    return "none";
+  if (context.orm !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.orm,
+    };
   }
-
-  if (orm !== undefined) return orm;
 
   const options =
-    database === "mongodb"
+    context.database === "mongodb"
       ? [ormOptions.prisma, ormOptions.mongoose]
       : [
           ormOptions.drizzle,
@@ -79,11 +91,35 @@ export async function getORMChoice(
           ormOptions.sequelize,
         ];
 
-  const response = await navigableSelect<ORM>({
-    message: "Select ORM",
+  return {
+    shouldPrompt: true,
+    mode: "single",
     options,
     initialValue:
-      database === "mongodb" ? "prisma" : runtime === "workers" ? "drizzle" : DEFAULT_CONFIG.orm,
+      context.database === "mongodb"
+        ? "prisma"
+        : context.runtime === "workers"
+          ? "drizzle"
+          : DEFAULT_CONFIG.orm,
+  };
+}
+
+export async function getORMChoice(
+  orm: ORM | undefined,
+  hasDatabase: boolean,
+  database?: Database,
+  backend?: Backend,
+  runtime?: Runtime,
+) {
+  const resolution = resolveORMPrompt({ orm, hasDatabase, database, backend, runtime });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<ORM>({
+    message: "Select ORM",
+    options: resolution.options,
+    initialValue: resolution.initialValue as ORM,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

@@ -50,7 +50,7 @@ export default function Footer() {
             href="https://elkamali.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground hover:underline"
+            className="text-foreground underline underline-offset-4"
           >
             Ibrahim Elkamali
           </a>

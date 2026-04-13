@@ -12,7 +12,6 @@ export async function openBuilder(page: Page) {
 
 export async function clickVisibleTestId(page: Page, testId: string) {
   const locator = visibleTestId(page, testId);
-  await locator.scrollIntoViewIfNeeded();
   await expect(locator).toBeVisible();
   await locator.click();
 }

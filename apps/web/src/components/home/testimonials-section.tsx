@@ -36,7 +36,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
           <span className="font-mono text-xs font-medium text-foreground">
             {testimonial.name}
           </span>
-          <span className="font-mono text-[10px] text-muted-foreground/60">
+          <span className="font-mono text-[10px] text-muted-foreground">
             via daily.dev
           </span>
         </div>
@@ -150,7 +150,7 @@ export default function TestimonialsSection() {
                 <span className="font-mono text-sm font-medium text-foreground">
                   {person.name}
                 </span>
-                <span className="font-mono text-[11px] text-muted-foreground/60">
+                <span className="font-mono text-[11px] text-muted-foreground">
                   {person.role}
                 </span>
               </div>

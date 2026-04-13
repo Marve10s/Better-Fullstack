@@ -1,11 +1,17 @@
 import { test, expect } from "@playwright/test";
 
+import { DEFAULT_STACK } from "../../src/lib/stack-defaults";
+import { createStackSearchParams } from "../../src/lib/stack-url-state.shared";
+import { commandOutput } from "./test-helpers";
+
 test.describe("URL Sharing", () => {
   test("navigating with search params restores stack", async ({ page }) => {
-    // Navigate with explicit params (wf = webFrontend)
-    await page.goto("/new?wf=next");
-    await page.waitForTimeout(2000);
-    // The command should reflect the Next.js frontend
-    await expect(page.locator("text=--frontend next")).toBeVisible({ timeout: 15000 });
+    const params = createStackSearchParams({
+      ...DEFAULT_STACK,
+      webFrontend: ["next"],
+    });
+
+    await page.goto(`/new?${params.toString()}`);
+    await expect(commandOutput(page)).toContainText("--frontend next");
   });
 });

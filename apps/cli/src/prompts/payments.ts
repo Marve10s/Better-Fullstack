@@ -3,22 +3,40 @@ import type { Auth, Backend, Frontend, Payments } from "../types";
 import { DEFAULT_CONFIG } from "../constants";
 import { splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getPaymentsChoice(
-  payments?: Payments,
-  auth?: Auth,
-  backend?: Backend,
-  frontends?: Frontend[],
-) {
-  if (payments !== undefined) return payments;
+type PaymentsPromptContext = {
+  payments?: Payments;
+  auth?: Auth;
+  backend?: Backend;
+  frontends?: Frontend[];
+};
 
-  if (backend === "none") {
-    return "none" as Payments;
+export function resolvePaymentsPrompt(
+  context: PaymentsPromptContext = {},
+): PromptSingleResolution<Payments> {
+  if (context.payments !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.payments,
+    };
+  }
+
+  if (context.backend === "none") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
   const isPolarCompatible =
-    auth === "better-auth" && (frontends?.length === 0 || splitFrontends(frontends).web.length > 0);
+    context.auth === "better-auth" &&
+    (context.frontends?.length === 0 || splitFrontends(context.frontends).web.length > 0);
 
   const options: Array<{ value: Payments; label: string; hint: string }> = [];
 
@@ -58,10 +76,29 @@ export async function getPaymentsChoice(
     },
   );
 
-  const response = await navigableSelect<Payments>({
-    message: "Select payments provider",
+  return {
+    shouldPrompt: true,
+    mode: "single",
     options,
     initialValue: DEFAULT_CONFIG.payments,
+  };
+}
+
+export async function getPaymentsChoice(
+  payments?: Payments,
+  auth?: Auth,
+  backend?: Backend,
+  frontends?: Frontend[],
+) {
+  const resolution = resolvePaymentsPrompt({ payments, auth, backend, frontends });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<Payments>({
+    message: "Select payments provider",
+    options: resolution.options,
+    initialValue: resolution.initialValue as Payments,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

@@ -156,4 +156,14 @@ describe("generateStackCommand parity", () => {
     expect(pythonCommand).toContain("--python-ai none");
     expect(rustCommand).toContain("--rust-libraries none");
   });
+
+  it("serializes empty Go aiDocs arrays as none", () => {
+    const goCommand = generateStackCommand({
+      ...DEFAULT_STACK,
+      ecosystem: "go",
+      aiDocs: [],
+    });
+
+    expect(goCommand).toContain("--ai-docs none");
+  });
 });

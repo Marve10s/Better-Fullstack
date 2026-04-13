@@ -2,14 +2,35 @@ import type { Backend, Database, Runtime } from "../types";
 
 import { DEFAULT_CONFIG } from "../constants";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getDatabaseChoice(database?: Database, backend?: Backend, runtime?: Runtime) {
-  if (backend === "convex" || backend === "none") {
-    return "none";
+type DatabasePromptContext = {
+  database?: Database;
+  backend?: Backend;
+  runtime?: Runtime;
+};
+
+export function resolveDatabasePrompt(
+  context: DatabasePromptContext = {},
+): PromptSingleResolution<Database> {
+  if (context.backend === "convex" || context.backend === "none") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
-  if (database !== undefined) return database;
+  if (context.database !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.database,
+    };
+  }
 
   const databaseOptions: Array<{
     value: Database;
@@ -38,7 +59,7 @@ export async function getDatabaseChoice(database?: Database, backend?: Backend, 
     },
   ];
 
-  if (runtime !== "workers") {
+  if (context.runtime !== "workers") {
     databaseOptions.push({
       value: "mongodb",
       label: "MongoDB",
@@ -56,10 +77,24 @@ export async function getDatabaseChoice(database?: Database, backend?: Backend, 
     });
   }
 
-  const response = await navigableSelect<Database>({
-    message: "Select database",
+  return {
+    shouldPrompt: true,
+    mode: "single",
     options: databaseOptions,
     initialValue: DEFAULT_CONFIG.database,
+  };
+}
+
+export async function getDatabaseChoice(database?: Database, backend?: Backend, runtime?: Runtime) {
+  const resolution = resolveDatabasePrompt({ database, backend, runtime });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<Database>({
+    message: "Select database",
+    options: resolution.options,
+    initialValue: resolution.initialValue as Database,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

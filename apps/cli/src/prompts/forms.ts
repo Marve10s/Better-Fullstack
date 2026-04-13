@@ -2,27 +2,42 @@ import type { Forms, Frontend } from "../types";
 
 import { splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getFormsChoice(forms?: Forms, frontends?: Frontend[]) {
-  if (forms !== undefined) return forms;
+type FormsPromptContext = {
+  forms?: Forms;
+  frontends?: Frontend[];
+};
 
-  const { web } = splitFrontends(frontends);
-
-  // Form libraries are primarily for web frontends
-  if (web.length === 0) {
-    return "none" as Forms;
+export function resolveFormsPrompt(
+  context: FormsPromptContext = {},
+): PromptSingleResolution<Forms> {
+  if (context.forms !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.forms,
+    };
   }
 
-  // Check frontend types
+  const { web } = splitFrontends(context.frontends);
+  if (web.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   const isReact = web.some((f) =>
     ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood"].includes(f),
   );
   const isSolid = web.includes("solid");
   const isQwik = web.includes("qwik");
   const isFresh = web.includes("fresh");
-
-  // Build options based on frontend
   const options: Array<{ value: Forms; label: string; hint: string }> = [];
 
   if (isReact) {
@@ -50,7 +65,6 @@ export async function getFormsChoice(forms?: Forms, frontends?: Frontend[]) {
     );
   }
 
-  // TanStack Form works with multiple frameworks (but not Fresh/Preact - no adapter exists)
   if (!isFresh) {
     options.push({
       value: "tanstack-form" as const,
@@ -59,7 +73,6 @@ export async function getFormsChoice(forms?: Forms, frontends?: Frontend[]) {
     });
   }
 
-  // Modular Forms for Solid/Qwik
   if (isSolid || isQwik) {
     options.push({
       value: "modular-forms" as const,
@@ -74,10 +87,26 @@ export async function getFormsChoice(forms?: Forms, frontends?: Frontend[]) {
     hint: "Build custom form handling",
   });
 
+  return {
+    shouldPrompt: true,
+    mode: "single",
+    options,
+    initialValue: isReact
+      ? "react-hook-form"
+      : (options.find((option) => option.value !== "none")?.value ?? "none"),
+  };
+}
+
+export async function getFormsChoice(forms?: Forms, frontends?: Frontend[]) {
+  const resolution = resolveFormsPrompt({ forms, frontends });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
   const response = await navigableSelect<Forms>({
     message: "Select form library",
-    options,
-    initialValue: isReact ? "react-hook-form" : "tanstack-form",
+    options: resolution.options,
+    initialValue: resolution.initialValue as Forms,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

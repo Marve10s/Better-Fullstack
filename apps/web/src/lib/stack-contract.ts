@@ -85,7 +85,11 @@ export const STACK_STATE_OPTION_CATEGORY_BY_KEY: Record<
   goAuth: "goAuth",
 };
 
-export const VIRTUAL_NONE_MULTI_SELECT_STACK_KEYS = ["rustLibraries", "pythonAi"] as const;
+export const VIRTUAL_NONE_MULTI_SELECT_STACK_KEYS = [
+  "rustLibraries",
+  "pythonAi",
+  "aiDocs",
+] as const;
 
 export function usesVirtualNoneSelection(
   key: keyof StackState,

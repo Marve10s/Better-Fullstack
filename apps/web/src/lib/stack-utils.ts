@@ -466,9 +466,7 @@ function generateGoCommand(stack: StackState, projectName: string) {
     `--auth ${stack.auth}`,
   ];
 
-  if (stack.aiDocs.length > 0 && !stack.aiDocs.includes("none")) {
-    flags.push(`--ai-docs ${stack.aiDocs.join(" ")}`);
-  }
+  flags.push(formatArrayFlag("ai-docs", stack.aiDocs));
   if (stack.git === "false") {
     flags.push("--no-git");
   }

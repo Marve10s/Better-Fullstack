@@ -3,6 +3,7 @@ import type { AstroIntegration, Frontend, UILibrary } from "../types";
 import { DEFAULT_UI_LIBRARY_BY_FRONTEND } from "../constants";
 import { getCompatibleUILibraries, splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 const UI_LIBRARY_OPTIONS: Record<UILibrary, { label: string; hint: string }> = {
@@ -56,41 +57,76 @@ const UI_LIBRARY_OPTIONS: Record<UILibrary, { label: string; hint: string }> = {
   },
 };
 
+type UILibraryPromptContext = {
+  uiLibrary?: UILibrary;
+  frontends?: Frontend[];
+  astroIntegration?: AstroIntegration;
+};
+
+export function resolveUILibraryPrompt(
+  context: UILibraryPromptContext = {},
+): PromptSingleResolution<UILibrary> {
+  const { web } = splitFrontends(context.frontends);
+  if (web.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  const compatibleLibraries = getCompatibleUILibraries(
+    context.frontends,
+    context.astroIntegration,
+  );
+
+  if (context.uiLibrary !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: compatibleLibraries.map((lib) => ({
+        value: lib,
+        label: UI_LIBRARY_OPTIONS[lib].label,
+        hint: UI_LIBRARY_OPTIONS[lib].hint,
+      })),
+      autoValue: compatibleLibraries.includes(context.uiLibrary)
+        ? context.uiLibrary
+        : compatibleLibraries[0],
+    };
+  }
+
+  const webFrontend = web[0];
+  const defaultLib = DEFAULT_UI_LIBRARY_BY_FRONTEND[webFrontend];
+
+  return {
+    shouldPrompt: true,
+    mode: "single",
+    options: compatibleLibraries.map((lib) => ({
+      value: lib,
+      label: UI_LIBRARY_OPTIONS[lib].label,
+      hint: UI_LIBRARY_OPTIONS[lib].hint,
+    })),
+    initialValue: compatibleLibraries.includes(defaultLib)
+      ? defaultLib
+      : compatibleLibraries[0],
+  };
+}
+
 export async function getUILibraryChoice(
   uiLibrary?: UILibrary,
   frontends?: Frontend[],
   astroIntegration?: AstroIntegration,
 ): Promise<UILibrary> {
-  const { web } = splitFrontends(frontends);
-
-  // If no web frontend selected, default to none
-  if (web.length === 0) {
-    return "none";
+  const resolution = resolveUILibraryPrompt({ uiLibrary, frontends, astroIntegration });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
   }
-
-  const compatibleLibraries = getCompatibleUILibraries(frontends, astroIntegration);
-
-  if (uiLibrary !== undefined) {
-    return compatibleLibraries.includes(uiLibrary) ? uiLibrary : compatibleLibraries[0];
-  }
-
-  const options = compatibleLibraries.map((lib) => ({
-    value: lib,
-    label: UI_LIBRARY_OPTIONS[lib].label,
-    hint: UI_LIBRARY_OPTIONS[lib].hint,
-  }));
-
-  // Determine default based on frontend
-  const webFrontend = web[0];
-  const defaultLib = DEFAULT_UI_LIBRARY_BY_FRONTEND[webFrontend];
-  const initialValue = compatibleLibraries.includes(defaultLib)
-    ? defaultLib
-    : compatibleLibraries[0];
 
   const selected = await navigableSelect<UILibrary>({
     message: "Select UI component library",
-    options,
-    initialValue,
+    options: resolution.options,
+    initialValue: resolution.initialValue as UILibrary,
   });
 
   if (isCancel(selected)) return exitCancelled("Operation cancelled");

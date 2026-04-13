@@ -4,7 +4,6 @@ import {
   API_VALUES,
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
-  type Auth,
   BACKEND_VALUES,
   CACHING_VALUES,
   CMS_VALUES,
@@ -16,6 +15,7 @@ import {
   FORMS_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
+  GO_AUTH_VALUES,
   GO_CLI_VALUES,
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
@@ -26,6 +26,8 @@ import {
   ORM_VALUES,
   PAYMENTS_VALUES,
   PYTHON_AI_VALUES,
+  PYTHON_AUTH_VALUES,
+  PYTHON_GRAPHQL_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
@@ -34,270 +36,84 @@ import {
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
+  RUST_CACHING_VALUES,
   RUST_CLI_VALUES,
+  RUST_ERROR_HANDLING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_LIBRARIES_VALUES,
   RUST_LOGGING_VALUES,
-  RUST_ERROR_HANDLING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   STATE_MANAGEMENT_VALUES,
   TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
-  type API,
-  type AstroIntegration,
-  type Backend,
-  type Frontend,
-  getSupportedCapabilityOptions,
-  type Runtime,
 } from "../types";
 
-import { DEFAULT_CONFIG } from "../constants";
-import { allowedApisForFrontends, isFrontendAllowedWithBackend } from "../utils/compatibility-rules";
-import type { PromptOption, PromptResolution } from "./prompt-contract";
+import { resolveAIPrompt } from "./ai";
+import { resolveAnimationPrompt } from "./animation";
+import { resolveApiPrompt } from "./api";
+import { resolveAstroIntegrationPrompt } from "./astro-integration";
+import { resolveAuthPrompt } from "./auth";
+import { resolveBackendPrompt } from "./backend";
+import { resolveCachingPrompt } from "./caching";
+import { resolveCMSPrompt } from "./cms";
+import { resolveCSSFrameworkPrompt } from "./css-framework";
+import { resolveDatabasePrompt } from "./database";
+import { resolveDBSetupPrompt } from "./database-setup";
+import { resolveEmailPrompt } from "./email";
+import { resolveFileUploadPrompt } from "./file-upload";
+import { resolveFrontendPrompt } from "./frontend";
+import { resolveFormsPrompt } from "./forms";
+import {
+  resolveGoApiPrompt,
+  resolveGoAuthPrompt,
+  resolveGoCliPrompt,
+  resolveGoLoggingPrompt,
+  resolveGoOrmPrompt,
+  resolveGoWebFrameworkPrompt,
+} from "./go-ecosystem";
+import { resolveJobQueuePrompt } from "./job-queue";
+import { resolveLoggingPrompt } from "./logging";
+import { resolveObservabilityPrompt } from "./observability";
+import { resolveORMPrompt } from "./orm";
+import { resolvePaymentsPrompt } from "./payments";
+import { type PromptResolution } from "./prompt-contract";
+import {
+  resolvePythonAiPrompt,
+  resolvePythonAuthPrompt,
+  resolvePythonGraphqlPrompt,
+  resolvePythonOrmPrompt,
+  resolvePythonQualityPrompt,
+  resolvePythonTaskQueuePrompt,
+  resolvePythonValidationPrompt,
+  resolvePythonWebFrameworkPrompt,
+} from "./python-ecosystem";
+import { resolveRealtimePrompt } from "./realtime";
+import { resolveRuntimePrompt } from "./runtime";
+import {
+  resolveRustApiPrompt,
+  resolveRustCachingPrompt,
+  resolveRustCliPrompt,
+  resolveRustErrorHandlingPrompt,
+  resolveRustFrontendPrompt,
+  resolveRustLibrariesPrompt,
+  resolveRustLoggingPrompt,
+  resolveRustOrmPrompt,
+  resolveRustWebFrameworkPrompt,
+} from "./rust-ecosystem";
+import { resolveStateManagementPrompt } from "./state-management";
+import { resolveTestingPrompt } from "./testing";
+import { resolveUILibraryPrompt } from "./ui-library";
+import { resolveValidationPrompt } from "./validation";
 
 type SingleOrMultiValue = string | string[];
 
 type PromptContractEntry<TValue extends SingleOrMultiValue, TContext = Record<string, never>> = {
   schemaValues: readonly string[];
-  resolve: (context?: TContext) => PromptResolution<string>;
+  resolve: (context?: TContext) => PromptResolution<any>;
   coverageContexts: TContext[];
 };
-
-function option(value: string, label = value): PromptOption<string> {
-  return { value, label };
-}
-
-function options(values: readonly string[]): PromptOption<string>[] {
-  return values.map((value) => option(value));
-}
-
-function resolveStaticSinglePrompt(
-  values: readonly string[],
-  initialValue: string,
-  selectedValue?: string,
-): PromptResolution<string> {
-  return selectedValue !== undefined
-    ? {
-        shouldPrompt: false,
-        mode: "single",
-        options: options(values),
-        autoValue: selectedValue,
-      }
-    : {
-        shouldPrompt: true,
-        mode: "single",
-        options: options(values),
-        initialValue,
-      };
-}
-
-type FrontendPromptContext = {
-  frontendOptions?: Frontend[];
-  backend?: Backend;
-  auth?: string;
-};
-
-export function resolveFrontendPrompt(
-  context: FrontendPromptContext = {},
-): PromptResolution<string> {
-  const availableOptions = FRONTEND_VALUES.filter(
-    (value) => value !== "none" && isFrontendAllowedWithBackend(value, context.backend, context.auth),
-  );
-
-  return context.frontendOptions !== undefined
-    ? {
-        shouldPrompt: false,
-        mode: "multiple",
-        options: options(availableOptions),
-        autoValue: context.frontendOptions,
-      }
-    : {
-        shouldPrompt: true,
-        mode: "multiple",
-        options: options(availableOptions),
-        initialValue: DEFAULT_CONFIG.frontend,
-      };
-}
-
-type BackendPromptContext = {
-  backendFramework?: Backend;
-  frontends?: Frontend[];
-};
-
-export function resolveBackendPrompt(
-  context: BackendPromptContext = {},
-): PromptResolution<string> {
-  const fullstackFrontends = new Set(["next", "tanstack-start", "astro", "nuxt", "svelte", "solid-start"]);
-  const hasIncompatibleFrontend = context.frontends?.some(
-    (frontend) => frontend === "solid" || frontend === "solid-start",
-  );
-  const hasFullstackFrontend = context.frontends?.some((frontend) => fullstackFrontends.has(frontend));
-  const backendOptions = [
-    ...(hasFullstackFrontend ? ["self"] : []),
-    "hono",
-    "express",
-    "fastify",
-    "elysia",
-    "fets",
-    "nestjs",
-    "adonisjs",
-    "nitro",
-    "encore",
-    ...(!hasIncompatibleFrontend ? ["convex"] : []),
-    "none",
-  ];
-
-  return context.backendFramework !== undefined
-    ? {
-        shouldPrompt: false,
-        mode: "single",
-        options: options(backendOptions),
-        autoValue: context.backendFramework,
-      }
-    : {
-        shouldPrompt: true,
-        mode: "single",
-        options: options(backendOptions),
-        initialValue: hasFullstackFrontend ? "self" : DEFAULT_CONFIG.backend,
-      };
-}
-
-type RuntimePromptContext = {
-  runtime?: Runtime;
-  backend?: Backend;
-};
-
-export function resolveRuntimePrompt(
-  context: RuntimePromptContext = {},
-): PromptResolution<string> {
-  if (context.backend === "convex" || context.backend === "none" || context.backend === "self") {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: [],
-      autoValue: "none",
-    };
-  }
-
-  const runtimeOptions = [
-    "bun",
-    "node",
-    ...(context.backend === "hono" ? ["workers"] : []),
-  ];
-
-  return context.runtime !== undefined
-    ? {
-        shouldPrompt: false,
-        mode: "single",
-        options: options(runtimeOptions),
-        autoValue: context.runtime,
-      }
-    : {
-        shouldPrompt: true,
-        mode: "single",
-        options: options(runtimeOptions),
-        initialValue: DEFAULT_CONFIG.runtime,
-      };
-}
-
-type ApiPromptContext = {
-  api?: API;
-  frontend?: Frontend[];
-  backend?: Backend;
-  astroIntegration?: AstroIntegration;
-};
-
-export function resolveApiPrompt(context: ApiPromptContext = {}): PromptResolution<string> {
-  if (context.backend === "convex" || context.backend === "none") {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: [],
-      autoValue: "none",
-    };
-  }
-
-  const allowedOptions = allowedApisForFrontends(context.frontend ?? [], context.astroIntegration);
-
-  if (context.api !== undefined) {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: options(allowedOptions),
-      autoValue: allowedOptions.includes(context.api) ? context.api : allowedOptions[0] ?? "none",
-    };
-  }
-
-  return {
-    shouldPrompt: true,
-    mode: "single",
-    options: options(allowedOptions),
-    initialValue: allowedOptions[0] ?? "none",
-  };
-}
-
-type AuthPromptContext = {
-  auth?: Auth;
-  backend?: Backend;
-  frontend?: string[];
-  ecosystem?: "typescript" | "go";
-};
-
-export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptResolution<string> {
-  const authOptionOrder = [
-    "better-auth",
-    "go-better-auth",
-    "clerk",
-    "nextauth",
-    "stack-auth",
-    "supabase-auth",
-    "auth0",
-    "none",
-  ] as const satisfies readonly Auth[];
-  const supportedOptions = getSupportedCapabilityOptions("auth", {
-    ecosystem: context.ecosystem ?? "typescript",
-    backend: context.backend,
-    frontend: context.frontend,
-  });
-  const orderedOptions = authOptionOrder.filter((value) =>
-    supportedOptions.some((option) => option.id === value),
-  );
-
-  if (context.auth !== undefined) {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: options(orderedOptions),
-      autoValue: context.auth,
-    };
-  }
-
-  if (orderedOptions.length === 1 && orderedOptions[0] === "none") {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: options(orderedOptions),
-      autoValue: "none",
-    };
-  }
-
-  return {
-    shouldPrompt: true,
-    mode: "single",
-    options: supportedOptions
-      .filter((supportedOption) => orderedOptions.includes(supportedOption.id as Auth))
-      .map((supportedOption) => ({
-        value: supportedOption.id,
-        label: supportedOption.label,
-        hint: supportedOption.promptHint,
-      })),
-    initialValue: orderedOptions.includes(DEFAULT_CONFIG.auth)
-      ? DEFAULT_CONFIG.auth
-      : (orderedOptions.find((value) => value !== "none") ?? "none"),
-  };
-}
 
 type ResolverRegistry = {
   [key: string]: PromptContractEntry<any, any>;
@@ -316,15 +132,13 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   },
   ai: {
     schemaValues: AI_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(AI_VALUES, DEFAULT_CONFIG.ai, value),
+    resolve: ({ value }: { value?: string } = {}) => resolveAIPrompt(value as any),
     coverageContexts: [{}],
   },
   animation: {
     schemaValues: ANIMATION_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(ANIMATION_VALUES, DEFAULT_CONFIG.animation, value),
-    coverageContexts: [{}],
+    resolve: resolveAnimationPrompt,
+    coverageContexts: [{ frontends: ["react-vite"] }],
   },
   api: {
     schemaValues: API_VALUES,
@@ -344,87 +158,82 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   },
   caching: {
     schemaValues: CACHING_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(CACHING_VALUES, DEFAULT_CONFIG.caching, value),
-    coverageContexts: [{}],
+    resolve: resolveCachingPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   cms: {
     schemaValues: CMS_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(CMS_VALUES, DEFAULT_CONFIG.cms, value),
-    coverageContexts: [{}],
+    resolve: resolveCMSPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   cssFramework: {
     schemaValues: CSS_FRAMEWORK_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(CSS_FRAMEWORK_VALUES, DEFAULT_CONFIG.cssFramework, value),
-    coverageContexts: [{}],
+    resolve: resolveCSSFrameworkPrompt,
+    coverageContexts: [{}, { uiLibrary: "radix-ui" }],
   },
   database: {
     schemaValues: DATABASE_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(DATABASE_VALUES, DEFAULT_CONFIG.database, value),
-    coverageContexts: [{}],
+    resolve: resolveDatabasePrompt,
+    coverageContexts: [{ backend: "hono", runtime: "node" }, { backend: "none" }],
   },
   dbSetup: {
     schemaValues: DATABASE_SETUP_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(DATABASE_SETUP_VALUES, DEFAULT_CONFIG.dbSetup, value),
-    coverageContexts: [{}],
+    resolve: resolveDBSetupPrompt,
+    coverageContexts: [
+      { databaseType: "sqlite", runtime: "workers" },
+      { databaseType: "postgres" },
+      { databaseType: "mongodb" },
+      { databaseType: "redis" },
+    ],
   },
   email: {
     schemaValues: EMAIL_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(EMAIL_VALUES, DEFAULT_CONFIG.email, value),
-    coverageContexts: [{}],
+    resolve: resolveEmailPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   fileUpload: {
     schemaValues: FILE_UPLOAD_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(FILE_UPLOAD_VALUES, DEFAULT_CONFIG.fileUpload, value),
-    coverageContexts: [{}],
+    resolve: resolveFileUploadPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   forms: {
     schemaValues: FORMS_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(FORMS_VALUES, DEFAULT_CONFIG.forms, value),
-    coverageContexts: [{}],
+    resolve: resolveFormsPrompt,
+    coverageContexts: [{ frontends: ["react-vite"] }, { frontends: ["solid"] }],
   },
   jobQueue: {
     schemaValues: JOB_QUEUE_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(JOB_QUEUE_VALUES, DEFAULT_CONFIG.jobQueue, value),
-    coverageContexts: [{}],
+    resolve: resolveJobQueuePrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   logging: {
     schemaValues: LOGGING_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(LOGGING_VALUES, DEFAULT_CONFIG.logging, value),
-    coverageContexts: [{}],
+    resolve: resolveLoggingPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   observability: {
     schemaValues: OBSERVABILITY_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(OBSERVABILITY_VALUES, DEFAULT_CONFIG.observability, value),
-    coverageContexts: [{}],
+    resolve: resolveObservabilityPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   orm: {
     schemaValues: ORM_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(ORM_VALUES, DEFAULT_CONFIG.orm, value),
-    coverageContexts: [{}],
+    resolve: resolveORMPrompt,
+    coverageContexts: [
+      { hasDatabase: true, database: "postgres", runtime: "node" },
+      { hasDatabase: true, database: "mongodb" },
+      { hasDatabase: false },
+    ],
   },
   payments: {
     schemaValues: PAYMENTS_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PAYMENTS_VALUES, DEFAULT_CONFIG.payments, value),
-    coverageContexts: [{}],
+    resolve: resolvePaymentsPrompt,
+    coverageContexts: [{ auth: "better-auth", backend: "hono", frontends: ["next"] }],
   },
   realtime: {
     schemaValues: REALTIME_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(REALTIME_VALUES, DEFAULT_CONFIG.realtime, value),
-    coverageContexts: [{}],
+    resolve: resolveRealtimePrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   runtime: {
     schemaValues: RUNTIME_VALUES,
@@ -433,178 +242,152 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   },
   stateManagement: {
     schemaValues: STATE_MANAGEMENT_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(
-        STATE_MANAGEMENT_VALUES,
-        DEFAULT_CONFIG.stateManagement,
-        value,
-      ),
-    coverageContexts: [{}],
+    resolve: resolveStateManagementPrompt,
+    coverageContexts: [{ frontends: ["react-vite"] }],
   },
   testing: {
     schemaValues: TESTING_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(TESTING_VALUES, DEFAULT_CONFIG.testing, value),
+    resolve: ({ value }: { value?: string } = {}) => resolveTestingPrompt(value as any),
     coverageContexts: [{}],
   },
   uiLibrary: {
     schemaValues: UI_LIBRARY_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(UI_LIBRARY_VALUES, DEFAULT_CONFIG.uiLibrary, value),
-    coverageContexts: [{}],
+    resolve: resolveUILibraryPrompt,
+    coverageContexts: [
+      { frontends: ["react-vite"] },
+      { frontends: ["solid"] },
+      { frontends: ["vue"] },
+    ],
   },
   validation: {
     schemaValues: VALIDATION_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(VALIDATION_VALUES, DEFAULT_CONFIG.validation, value),
+    resolve: ({ value }: { value?: string } = {}) => resolveValidationPrompt(value as any),
     coverageContexts: [{}],
   },
   astroIntegration: {
     schemaValues: ASTRO_INTEGRATION_VALUES,
     resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(
-        ASTRO_INTEGRATION_VALUES,
-        DEFAULT_CONFIG.astroIntegration ?? "none",
-        value,
-      ),
+      resolveAstroIntegrationPrompt(value as any),
     coverageContexts: [{}],
   },
   rustWebFramework: {
     schemaValues: RUST_WEB_FRAMEWORK_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_WEB_FRAMEWORK_VALUES, "axum", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustWebFrameworkPrompt(value as any),
     coverageContexts: [{}],
   },
   rustFrontend: {
     schemaValues: RUST_FRONTEND_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_FRONTEND_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustFrontendPrompt(value as any),
     coverageContexts: [{}],
   },
   rustOrm: {
     schemaValues: RUST_ORM_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_ORM_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustOrmPrompt(value as any),
     coverageContexts: [{}],
   },
   rustApi: {
     schemaValues: RUST_API_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_API_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustApiPrompt(value as any),
     coverageContexts: [{}],
   },
   rustCli: {
     schemaValues: RUST_CLI_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_CLI_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustCliPrompt(value as any),
     coverageContexts: [{}],
   },
   rustLogging: {
     schemaValues: RUST_LOGGING_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_LOGGING_VALUES, "tracing", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveRustLoggingPrompt(value as any),
     coverageContexts: [{}],
   },
   rustErrorHandling: {
     schemaValues: RUST_ERROR_HANDLING_VALUES,
     resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(RUST_ERROR_HANDLING_VALUES, "anyhow-thiserror", value),
+      resolveRustErrorHandlingPrompt(value as any),
     coverageContexts: [{}],
   },
   rustLibraries: {
     schemaValues: RUST_LIBRARIES_VALUES,
-    resolve: ({ value }: { value?: string[] } = {}) =>
-      value !== undefined
-        ? {
-            shouldPrompt: false,
-            mode: "multiple",
-            options: options(RUST_LIBRARIES_VALUES.filter((entry) => entry !== "none")),
-            autoValue: value,
-          }
-        : {
-            shouldPrompt: true,
-            mode: "multiple",
-            options: options(RUST_LIBRARIES_VALUES.filter((entry) => entry !== "none")),
-            initialValue: ["serde"],
-          },
+    resolve: ({ value }: { value?: string[] } = {}) => resolveRustLibrariesPrompt(value as any),
     coverageContexts: [{}, { value: ["none"] }],
+  },
+  rustCaching: {
+    schemaValues: RUST_CACHING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveRustCachingPrompt(value as any),
+    coverageContexts: [{}],
   },
   pythonWebFramework: {
     schemaValues: PYTHON_WEB_FRAMEWORK_VALUES,
     resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PYTHON_WEB_FRAMEWORK_VALUES, "fastapi", value),
+      resolvePythonWebFrameworkPrompt(value as any),
     coverageContexts: [{}],
   },
   pythonOrm: {
     schemaValues: PYTHON_ORM_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PYTHON_ORM_VALUES, "sqlalchemy", value),
+    resolve: ({ value }: { value?: string } = {}) => resolvePythonOrmPrompt(value as any),
     coverageContexts: [{}],
   },
   pythonValidation: {
     schemaValues: PYTHON_VALIDATION_VALUES,
     resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PYTHON_VALIDATION_VALUES, "pydantic", value),
+      resolvePythonValidationPrompt(value as any),
     coverageContexts: [{}],
   },
   pythonAi: {
     schemaValues: PYTHON_AI_VALUES,
-    resolve: ({ value }: { value?: string[] } = {}) =>
-      value !== undefined
-        ? {
-            shouldPrompt: false,
-            mode: "multiple",
-            options: options(PYTHON_AI_VALUES),
-            autoValue: value,
-          }
-        : {
-            shouldPrompt: true,
-            mode: "multiple",
-            options: options(PYTHON_AI_VALUES),
-            initialValue: [],
-          },
+    resolve: ({ value }: { value?: string[] } = {}) => resolvePythonAiPrompt(value as any),
     coverageContexts: [{}, { value: ["none"] }],
+  },
+  pythonAuth: {
+    schemaValues: PYTHON_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolvePythonAuthPrompt(value as any),
+    coverageContexts: [{}],
   },
   pythonTaskQueue: {
     schemaValues: PYTHON_TASK_QUEUE_VALUES,
     resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PYTHON_TASK_QUEUE_VALUES, "none", value),
+      resolvePythonTaskQueuePrompt(value as any),
+    coverageContexts: [{}],
+  },
+  pythonGraphql: {
+    schemaValues: PYTHON_GRAPHQL_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolvePythonGraphqlPrompt(value as any),
     coverageContexts: [{}],
   },
   pythonQuality: {
     schemaValues: PYTHON_QUALITY_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(PYTHON_QUALITY_VALUES, "ruff", value),
+    resolve: ({ value }: { value?: string } = {}) => resolvePythonQualityPrompt(value as any),
     coverageContexts: [{}],
   },
   goWebFramework: {
     schemaValues: GO_WEB_FRAMEWORK_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(GO_WEB_FRAMEWORK_VALUES, "gin", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveGoWebFrameworkPrompt(value as any),
     coverageContexts: [{}],
   },
   goOrm: {
     schemaValues: GO_ORM_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(GO_ORM_VALUES, "gorm", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveGoOrmPrompt(value as any),
     coverageContexts: [{}],
   },
   goApi: {
     schemaValues: GO_API_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(GO_API_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveGoApiPrompt(value as any),
     coverageContexts: [{}],
   },
   goCli: {
     schemaValues: GO_CLI_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(GO_CLI_VALUES, "none", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveGoCliPrompt(value as any),
     coverageContexts: [{}],
   },
   goLogging: {
     schemaValues: GO_LOGGING_VALUES,
-    resolve: ({ value }: { value?: string } = {}) =>
-      resolveStaticSinglePrompt(GO_LOGGING_VALUES, "zap", value),
+    resolve: ({ value }: { value?: string } = {}) => resolveGoLoggingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  goAuth: {
+    schemaValues: GO_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveGoAuthPrompt(value as any),
     coverageContexts: [{}],
   },
 };

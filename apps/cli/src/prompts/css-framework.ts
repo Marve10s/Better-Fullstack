@@ -2,6 +2,7 @@ import type { CSSFramework, UILibrary } from "../types";
 
 import { getCompatibleCSSFrameworks } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
 const CSS_FRAMEWORK_OPTIONS: Record<CSSFramework, { label: string; hint: string }> = {
@@ -27,26 +28,58 @@ const CSS_FRAMEWORK_OPTIONS: Record<CSSFramework, { label: string; hint: string 
   },
 };
 
+type CSSFrameworkPromptContext = {
+  cssFramework?: CSSFramework;
+  uiLibrary?: UILibrary;
+};
+
+export function resolveCSSFrameworkPrompt(
+  context: CSSFrameworkPromptContext = {},
+): PromptSingleResolution<CSSFramework> {
+  const compatibleFrameworks = getCompatibleCSSFrameworks(context.uiLibrary);
+
+  if (context.cssFramework !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: compatibleFrameworks.map((fw) => ({
+        value: fw,
+        label: CSS_FRAMEWORK_OPTIONS[fw].label,
+        hint: CSS_FRAMEWORK_OPTIONS[fw].hint,
+      })),
+      autoValue: compatibleFrameworks.includes(context.cssFramework)
+        ? context.cssFramework
+        : compatibleFrameworks[0],
+    };
+  }
+
+  return {
+    shouldPrompt: true,
+    mode: "single",
+    options: compatibleFrameworks.map((fw) => ({
+      value: fw,
+      label: CSS_FRAMEWORK_OPTIONS[fw].label,
+      hint: CSS_FRAMEWORK_OPTIONS[fw].hint,
+    })),
+    initialValue: compatibleFrameworks.includes("tailwind")
+      ? "tailwind"
+      : compatibleFrameworks[0],
+  };
+}
+
 export async function getCSSFrameworkChoice(
   cssFramework?: CSSFramework,
   uiLibrary?: UILibrary,
 ): Promise<CSSFramework> {
-  const compatibleFrameworks = getCompatibleCSSFrameworks(uiLibrary);
-
-  if (cssFramework !== undefined) {
-    return compatibleFrameworks.includes(cssFramework) ? cssFramework : compatibleFrameworks[0];
+  const resolution = resolveCSSFrameworkPrompt({ cssFramework, uiLibrary });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
   }
-
-  const options = compatibleFrameworks.map((fw) => ({
-    value: fw,
-    label: CSS_FRAMEWORK_OPTIONS[fw].label,
-    hint: CSS_FRAMEWORK_OPTIONS[fw].hint,
-  }));
 
   const selected = await navigableSelect<CSSFramework>({
     message: "Select CSS framework",
-    options,
-    initialValue: compatibleFrameworks.includes("tailwind") ? "tailwind" : compatibleFrameworks[0],
+    options: resolution.options,
+    initialValue: resolution.initialValue as CSSFramework,
   });
 
   if (isCancel(selected)) return exitCancelled("Operation cancelled");

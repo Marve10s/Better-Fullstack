@@ -1,35 +1,57 @@
 import type { Backend, DatabaseSetup, ORM, Runtime } from "../types";
 
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getDBSetupChoice(
-  databaseType: string,
-  dbSetup: DatabaseSetup | undefined,
-  _orm?: ORM,
-  backend?: Backend,
-  runtime?: Runtime,
-) {
-  if (backend === "convex") {
-    return "none";
+type DBSetupPromptContext = {
+  databaseType: string;
+  dbSetup?: DatabaseSetup;
+  orm?: ORM;
+  backend?: Backend;
+  runtime?: Runtime;
+};
+
+export function resolveDBSetupPrompt(
+  context: DBSetupPromptContext,
+): PromptSingleResolution<DatabaseSetup> {
+  if (context.backend === "convex") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
-  if (dbSetup !== undefined) return dbSetup as DatabaseSetup;
+  if (context.dbSetup !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.dbSetup,
+    };
+  }
 
-  if (databaseType === "none") {
-    return "none";
+  if (context.databaseType === "none") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
   }
 
   let options: Array<{ value: DatabaseSetup; label: string; hint: string }> = [];
 
-  if (databaseType === "sqlite") {
+  if (context.databaseType === "sqlite") {
     options = [
       {
         value: "turso" as const,
         label: "Turso",
         hint: "SQLite for Production. Powered by libSQL",
       },
-      ...(runtime === "workers"
+      ...(context.runtime === "workers"
         ? [
             {
               value: "d1" as const,
@@ -40,7 +62,7 @@ export async function getDBSetupChoice(
         : []),
       { value: "none" as const, label: "None", hint: "Manual setup" },
     ];
-  } else if (databaseType === "postgres") {
+  } else if (context.databaseType === "postgres") {
     options = [
       {
         value: "neon" as const,
@@ -69,7 +91,7 @@ export async function getDBSetupChoice(
       },
       { value: "none" as const, label: "None", hint: "Manual setup" },
     ];
-  } else if (databaseType === "mysql") {
+  } else if (context.databaseType === "mysql") {
     options = [
       {
         value: "planetscale" as const,
@@ -83,7 +105,7 @@ export async function getDBSetupChoice(
       },
       { value: "none" as const, label: "None", hint: "Manual setup" },
     ];
-  } else if (databaseType === "mongodb") {
+  } else if (context.databaseType === "mongodb") {
     options = [
       {
         value: "mongodb-atlas" as const,
@@ -97,7 +119,7 @@ export async function getDBSetupChoice(
       },
       { value: "none" as const, label: "None", hint: "Manual setup" },
     ];
-  } else if (databaseType === "redis") {
+  } else if (context.databaseType === "redis") {
     options = [
       {
         value: "upstash" as const,
@@ -112,13 +134,44 @@ export async function getDBSetupChoice(
       { value: "none" as const, label: "None", hint: "Manual setup" },
     ];
   } else {
-    return "none";
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  return {
+    shouldPrompt: true,
+    mode: "single",
+    options,
+    initialValue: "none",
+  };
+}
+
+export async function getDBSetupChoice(
+  databaseType: string,
+  dbSetup: DatabaseSetup | undefined,
+  _orm?: ORM,
+  backend?: Backend,
+  runtime?: Runtime,
+) {
+  const resolution = resolveDBSetupPrompt({
+    databaseType,
+    dbSetup,
+    orm: _orm,
+    backend,
+    runtime,
+  });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
   }
 
   const response = await navigableSelect<DatabaseSetup>({
     message: `Select ${databaseType} setup option`,
-    options,
-    initialValue: "none",
+    options: resolution.options,
+    initialValue: resolution.initialValue as DatabaseSetup,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

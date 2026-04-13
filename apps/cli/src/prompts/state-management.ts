@@ -2,28 +2,40 @@ import type { Frontend, StateManagement } from "../types";
 
 import { splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getStateManagementChoice(
-  stateManagement?: StateManagement,
-  frontends?: Frontend[],
-) {
-  if (stateManagement !== undefined) return stateManagement;
+type StateManagementPromptContext = {
+  stateManagement?: StateManagement;
+  frontends?: Frontend[];
+};
 
-  const { web } = splitFrontends(frontends);
-
-  // State management is primarily for web frontends
-  if (web.length === 0) {
-    return "none" as StateManagement;
+export function resolveStateManagementPrompt(
+  context: StateManagementPromptContext = {},
+): PromptSingleResolution<StateManagement> {
+  if (context.stateManagement !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.stateManagement,
+    };
   }
 
-  // Check if React-based frontend
+  const { web } = splitFrontends(context.frontends);
+  if (web.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   const isReact = web.some((f) =>
     ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood"].includes(f),
   );
   const isFresh = web.includes("fresh");
-
-  // Build options based on frontend
   const options: Array<{ value: StateManagement; label: string; hint: string }> = [];
 
   if (isReact) {
@@ -61,7 +73,6 @@ export async function getStateManagementChoice(
     );
   }
 
-  // Framework-agnostic options (but require React bindings, so exclude Fresh)
   if (!isFresh) {
     options.push(
       {
@@ -88,10 +99,27 @@ export async function getStateManagementChoice(
     hint: "Skip state management setup",
   });
 
-  const response = await navigableSelect<StateManagement>({
-    message: "Select state management",
+  return {
+    shouldPrompt: true,
+    mode: "single",
     options,
     initialValue: "none",
+  };
+}
+
+export async function getStateManagementChoice(
+  stateManagement?: StateManagement,
+  frontends?: Frontend[],
+) {
+  const resolution = resolveStateManagementPrompt({ stateManagement, frontends });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<StateManagement>({
+    message: "Select state management",
+    options: resolution.options,
+    initialValue: resolution.initialValue as StateManagement,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

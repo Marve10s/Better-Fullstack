@@ -29,7 +29,7 @@ concurrency:
 jobs:
   e2e-runtime:
     name: E2E Runtime Tests
-    if: ${{ github.event_name != 'pull_request' && inputs.run_e2e != 'false' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -76,7 +76,7 @@ jobs:
 
   smoke-strict:
     name: Strict Smoke Tests
-    if: ${{ inputs.run_smoke_strict != 'false' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_smoke_strict }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -133,7 +133,7 @@ jobs:
 
   playwright:
     name: Playwright Web Builder Tests
-    if: ${{ inputs.run_playwright != 'false' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_playwright }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -169,7 +169,7 @@ jobs:
 
       - name: Run Playwright Tests
         working-directory: apps/web
-        run: bunx playwright test test/e2e/builder-parity.spec.ts
+        run: bunx playwright test
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
@@ -184,7 +184,7 @@ jobs:
 
   web-command-roundtrip:
     name: Web Command Roundtrip
-    if: ${{ inputs.run_e2e != 'false' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:

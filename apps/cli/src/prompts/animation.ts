@@ -2,25 +2,40 @@ import type { Animation, Frontend } from "../types";
 
 import { splitFrontends } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
+import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
 
-export async function getAnimationChoice(animation?: Animation, frontends?: Frontend[]) {
-  if (animation !== undefined) return animation;
+type AnimationPromptContext = {
+  animation?: Animation;
+  frontends?: Frontend[];
+};
 
-  const { web } = splitFrontends(frontends);
-
-  // Animation libraries are primarily for web frontends
-  if (web.length === 0) {
-    return "none" as Animation;
+export function resolveAnimationPrompt(
+  context: AnimationPromptContext = {},
+): PromptSingleResolution<Animation> {
+  if (context.animation !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: context.animation,
+    };
   }
 
-  // Check if React-based frontend
+  const { web } = splitFrontends(context.frontends);
+  if (web.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   const isReact = web.some((f) =>
     ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood"].includes(f),
   );
   const isFresh = web.includes("fresh");
-
-  // Build options based on frontend
   const options: Array<{ value: Animation; label: string; hint: string }> = [];
 
   if (isReact) {
@@ -38,7 +53,6 @@ export async function getAnimationChoice(animation?: Animation, frontends?: Fron
     );
   }
 
-  // Framework-agnostic options
   options.push(
     {
       value: "gsap" as const,
@@ -52,7 +66,6 @@ export async function getAnimationChoice(animation?: Animation, frontends?: Fron
     },
   );
 
-  // Lottie requires lottie-react, not available for Fresh/Preact
   if (!isFresh) {
     options.push({
       value: "lottie" as const,
@@ -67,10 +80,24 @@ export async function getAnimationChoice(animation?: Animation, frontends?: Fron
     hint: "Skip animation library setup",
   });
 
-  const response = await navigableSelect<Animation>({
-    message: "Select animation library",
+  return {
+    shouldPrompt: true,
+    mode: "single",
     options,
     initialValue: "none",
+  };
+}
+
+export async function getAnimationChoice(animation?: Animation, frontends?: Frontend[]) {
+  const resolution = resolveAnimationPrompt({ animation, frontends });
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<Animation>({
+    message: "Select animation library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as Animation,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

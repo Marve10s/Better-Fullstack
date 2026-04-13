@@ -108,9 +108,11 @@ describe("StackState contract", () => {
       ...DEFAULT_STACK,
       rustLibraries: ["none"],
       pythonAi: ["none"],
+      aiDocs: ["none"],
     });
 
     expect(normalized.rustLibraries).toEqual([]);
     expect(normalized.pythonAi).toEqual([]);
+    expect(normalized.aiDocs).toEqual([]);
   });
 });

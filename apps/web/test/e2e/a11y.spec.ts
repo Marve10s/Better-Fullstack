@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect, type Page } from "@playwright/test";
 
+import { commandOutput } from "./test-helpers";
+
 async function expectNoSeriousViolations(page: Page, scope = "body") {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa"])
@@ -26,13 +28,15 @@ async function expectNoSeriousViolations(page: Page, scope = "body") {
 test.describe("Accessibility", () => {
   test("landing page has no serious accessibility violations", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("text=Better Fullstack")).toBeVisible({ timeout: 15000 });
+    await expect(
+      page.getByRole("heading", { name: "The full-stack app scaffolder" }),
+    ).toBeVisible({ timeout: 15000 });
     await expectNoSeriousViolations(page);
   });
 
   test("builder page has no serious accessibility violations", async ({ page }) => {
     await page.goto("/new");
-    await expect(page.locator("text=Builder")).toBeVisible({ timeout: 15000 });
+    await expect(commandOutput(page)).toContainText("bun create better-fullstack");
     await expectNoSeriousViolations(page);
   });
 });

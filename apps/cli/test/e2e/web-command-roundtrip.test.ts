@@ -150,12 +150,14 @@ const CASES: RoundtripCase[] = [
       ecosystem: "go",
       projectName: "roundtrip-go",
       goAuth: "casbin",
+      aiDocs: [],
       git: "false",
       install: "false",
     },
     assertConfig: (config) => {
       expect(config.ecosystem).toBe("go");
       expect(config.goAuth).toBe("casbin");
+      expect(config.aiDocs).toEqual([]);
     },
     assertMarkers: (projectDir) => {
       expect(existsSync(join(projectDir, "go.mod"))).toBe(true);
@@ -185,7 +187,9 @@ describe("Web command roundtrip", () => {
   });
 
   afterAll(async () => {
-    await rm(SMOKE_DIR, { recursive: true, force: true });
+    if (!process.env.CI) {
+      await rm(SMOKE_DIR, { recursive: true, force: true });
+    }
   });
 
   for (const testCase of CASES) {

@@ -916,7 +916,7 @@ const StackBuilder = () => {
                     "group relative flex items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
                     isActive
                       ? "text-foreground"
-                      : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/30",
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
                   )}
                 >
                   {/* Active underline */}
@@ -1038,7 +1038,7 @@ const StackBuilder = () => {
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "command"
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -1052,7 +1052,7 @@ const StackBuilder = () => {
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "presets"
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -1066,7 +1066,7 @@ const StackBuilder = () => {
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "preview"
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -1080,7 +1080,7 @@ const StackBuilder = () => {
                 className={cn(
                   "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
                   viewMode === "saved"
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -1192,6 +1192,8 @@ const StackBuilder = () => {
                       render={
                         <button
                           type="button"
+                          aria-label="Builder settings"
+                          title="Builder settings"
                           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         />
                       }
@@ -1210,6 +1212,8 @@ const StackBuilder = () => {
                     render={
                       <button
                         type="button"
+                        aria-label="More actions"
+                        title="More actions"
                         className="flex items-center justify-center rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
                       />
                     }
