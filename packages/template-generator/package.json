@@ -68,7 +68,7 @@
     "@types/node": "^22.10.2",
     "fs-extra": "^11.3.4",
     "is-binary-path": "^3.0.0",
-    "tinyglobby": "^0.2.15",
+    "tinyglobby": "^0.2.16",
     "tsdown": "^0.17.2",
     "typescript": "^5.9.3"
   }
