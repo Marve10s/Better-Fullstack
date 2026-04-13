@@ -10,6 +10,7 @@ import { readFileSync } from "node:fs";
 import { generateBatch } from "./lib/generate-combos/options";
 import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
 import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+import { ensureBuiltCliBinary } from "./lib/cli-binary";
 import { buildMajorDepCombos, buildMajorDepCombosFromDiff, type MajorDepInfo } from "./lib/major-dep-combos";
 import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
@@ -166,8 +167,6 @@ function generateCombos(args: SmokeTestArgs) {
 
 // ── Project Scaffolding ─────────────────────────────────────────────────
 
-const CLI_PATH = resolve(import.meta.dir, "../apps/cli/dist/cli.mjs");
-
 interface ScaffoldInput {
   name: string;
   command: string;
@@ -197,13 +196,14 @@ async function scaffoldProject(
 ): Promise<{ success: boolean; projectDir: string; error?: string; durationMs: number }> {
   const start = Date.now();
   const projectDir = join(outputDir, input.name);
+  const cliPath = await ensureBuiltCliBinary();
 
   await mkdir(outputDir, { recursive: true });
 
   const args = buildCliArgs(input);
 
   try {
-    const proc = Bun.spawn(["node", CLI_PATH, ...args], {
+    const proc = Bun.spawn(["node", cliPath, ...args], {
       cwd: outputDir,
       stdout: "pipe",
       stderr: "pipe",
