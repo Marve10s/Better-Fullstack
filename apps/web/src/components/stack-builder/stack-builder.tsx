@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { isMultiSelectCategory, type OptionCategory } from "@better-fullstack/types";
 
@@ -66,7 +66,6 @@ import { getTechResourceLinks } from "@/lib/tech-resource-links";
 import { cn } from "@/lib/utils";
 
 import { PresetsPanel } from "./presets-panel";
-import { PreviewPanel } from "./preview-panel";
 import { SavedStacksPanel } from "./saved-stacks-panel";
 import { ShareButton } from "./share-button";
 import { TechIcon } from "./tech-icon";
@@ -414,6 +413,11 @@ const SHADCN_SUB_CATEGORIES = new Set([
   "shadcnFont",
   "shadcnRadius",
 ]);
+
+const PreviewPanel = lazy(async () => {
+  const module = await import("./preview-panel");
+  return { default: module.PreviewPanel };
+});
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -1807,11 +1811,19 @@ const StackBuilder = () => {
               </div>
             ) : viewMode === "preview" ? (
               <div className="min-h-0 flex-1 overflow-hidden">
-                <PreviewPanel
-                  stack={adjustedStack || stack}
-                  selectedFilePath={selectedFile || null}
-                  onSelectFile={setSelectedFile}
-                />
+                <Suspense
+                  fallback={
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                      Loading preview...
+                    </div>
+                  }
+                >
+                  <PreviewPanel
+                    stack={adjustedStack || stack}
+                    selectedFilePath={selectedFile || null}
+                    onSelectFile={setSelectedFile}
+                  />
+                </Suspense>
               </div>
             ) : viewMode === "presets" ? (
               <div className="min-h-0 flex-1 overflow-hidden">
