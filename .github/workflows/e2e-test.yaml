@@ -74,8 +74,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  smoke-strict:
-    name: Strict Smoke Tests
+  smoke-strict-core:
+    name: Strict Smoke Tests (Core)
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_smoke_strict }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -107,27 +107,84 @@ jobs:
           bun run --cwd packages/template-generator build
           bun run --cwd apps/cli build
 
-      - name: Run Strict Smoke Tests
+      - name: Run Strict Smoke Tests (Core)
         run: |
           bun run testing/smoke-test.ts \
-            --preset all \
+            --preset pr-core \
             --dev-check \
             --strict \
-            --output testing/.smoke-output
+            --output testing/.smoke-output/core
 
       - name: Post Summary
         if: always()
         run: |
-          if [ -f testing/.smoke-output/summary.md ]; then
-            cat testing/.smoke-output/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f testing/.smoke-output/core/summary.md ]; then
+            cat testing/.smoke-output/core/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-strict-results
-          path: testing/.smoke-output/
+          name: smoke-strict-core-results
+          path: testing/.smoke-output/core/
+          if-no-files-found: warn
+          retention-days: 7
+
+  smoke-strict-broad:
+    name: Strict Smoke Tests (Broad)
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_smoke_strict }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: smoke-broad-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: smoke-broad-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Strict Smoke Tests (Broad)
+        run: |
+          bun run testing/smoke-test.ts \
+            --preset pr-broad \
+            --dev-check \
+            --strict \
+            --output testing/.smoke-output/broad
+
+      - name: Post Summary
+        if: always()
+        run: |
+          if [ -f testing/.smoke-output/broad/summary.md ]; then
+            cat testing/.smoke-output/broad/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-strict-broad-results
+          path: testing/.smoke-output/broad/
           if-no-files-found: warn
           retention-days: 7
 
@@ -224,5 +281,56 @@ jobs:
         with:
           name: web-command-roundtrip-results
           path: apps/cli/.smoke-web-command-roundtrip/
+          if-no-files-found: warn
+          retention-days: 7
+
+  package-manager-default-matrix:
+    name: Package Manager Default Matrix
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: package-managers-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: package-managers-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Enable Corepack Managers
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          corepack prepare yarn@stable --activate
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Package Manager Matrix
+        run: bun test apps/cli/test/e2e/default-package-manager-matrix.test.ts --timeout 900000
+
+      - name: Upload Package Manager Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-manager-default-matrix-results
+          path: apps/cli/.smoke-default-package-managers/
           if-no-files-found: warn
           retention-days: 7

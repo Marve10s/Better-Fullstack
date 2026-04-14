@@ -83,6 +83,8 @@ type PresetDef = {
   overrides: Partial<ProjectConfig>;
 };
 
+export type PresetGroupId = "pr-core" | "pr-broad" | "all";
+
 const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
   "tanstack-fullstack": {
     ecosystem: "typescript",
@@ -178,6 +180,22 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     },
   },
 
+  "frontend-only-react-vite": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["react-vite"],
+      backend: "none",
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      auth: "none",
+      cssFramework: "tailwind",
+      uiLibrary: "none",
+      addons: ["turborepo"],
+    },
+  },
+
   sveltekit: {
     ecosystem: "typescript",
     overrides: {
@@ -238,6 +256,54 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       backend: "hono",
       runtime: "bun",
       api: "orpc",
+      addons: ["turborepo"],
+    },
+  },
+
+  "react-vite-hono": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      database: "sqlite",
+      orm: "drizzle",
+      api: "orpc",
+      auth: "none",
+      cssFramework: "tailwind",
+      uiLibrary: "none",
+      addons: ["turborepo"],
+    },
+  },
+
+  "solid-start-express": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["solid-start"],
+      backend: "express",
+      runtime: "node",
+      database: "none",
+      orm: "none",
+      api: "orpc",
+      auth: "none",
+      cssFramework: "postcss-only",
+      uiLibrary: "none",
+      addons: ["turborepo"],
+    },
+  },
+
+  "angular-fets": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["angular"],
+      backend: "fets",
+      runtime: "node",
+      database: "sqlite",
+      orm: "drizzle",
+      api: "none",
+      auth: "none",
+      cssFramework: "postcss-only",
+      uiLibrary: "none",
       addons: ["turborepo"],
     },
   },
@@ -352,8 +418,40 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
   },
 };
 
+const PRESET_GROUPS = {
+  "pr-core": [
+    "tanstack-fullstack",
+    "t3",
+    "react-hono",
+    "astro-sanity",
+    "version-channel-latest",
+    "rust-axum-seaorm",
+    "python-fastapi-sqlalchemy",
+    "go-gin-gorm",
+    "frontend-only-react-vite",
+  ],
+  "pr-broad": [
+    "nextjs-minimal",
+    "next-payload",
+    "sveltekit",
+    "nuxt-fullstack",
+    "react-router-hono",
+    "tanstack-start-fullstack",
+    "rust-actix-sqlx",
+    "python-django-langchain",
+    "go-echo-sqlc",
+    "react-vite-hono",
+    "solid-start-express",
+    "angular-fets",
+  ],
+} as const satisfies Record<Exclude<PresetGroupId, "all">, readonly string[]>;
+
 export function listPresetIds(): string[] {
   return Object.keys(SMOKE_TEST_PRESETS);
+}
+
+export function listPresetGroupIds(): PresetGroupId[] {
+  return ["pr-core", "pr-broad", "all"];
 }
 
 function buildPresetConfig(presetId: string, def: PresetDef): ProjectConfig {
@@ -362,14 +460,31 @@ function buildPresetConfig(presetId: string, def: PresetDef): ProjectConfig {
   return { ...base, ...def.overrides, projectName: name, relativePath: name } as ProjectConfig;
 }
 
-export function getPresetCombos(presetId: string): ComboCandidate[] {
+function getAllGroupedPresetIds(): string[] {
+  return [...new Set([...PRESET_GROUPS["pr-core"], ...PRESET_GROUPS["pr-broad"]])];
+}
+
+function resolvePresetIds(presetId: string): string[] | null {
   if (presetId === "all") {
-    return listPresetIds().map((id) => buildSinglePresetCombo(id));
+    return getAllGroupedPresetIds();
+  }
+
+  if (presetId in PRESET_GROUPS) {
+    return [...PRESET_GROUPS[presetId as Exclude<PresetGroupId, "all">]];
+  }
+
+  return null;
+}
+
+export function getPresetCombos(presetId: string): ComboCandidate[] {
+  const resolvedPresetIds = resolvePresetIds(presetId);
+  if (resolvedPresetIds) {
+    return resolvedPresetIds.map((id) => buildSinglePresetCombo(id));
   }
 
   const def = SMOKE_TEST_PRESETS[presetId];
   if (!def) {
-    const available = listPresetIds().join(", ");
+    const available = [...listPresetIds(), ...listPresetGroupIds()].join(", ");
     throw new Error(
       `Unknown preset "${presetId}". Available: ${available}`,
     );
@@ -392,4 +507,22 @@ function buildSinglePresetCombo(presetId: string): ComboCandidate {
     fingerprintKey,
     command: buildCommand(config.projectName, config),
   };
+}
+
+const presetIds = new Set(listPresetIds());
+const groupedPresetIds = getAllGroupedPresetIds();
+
+for (const presetId of groupedPresetIds) {
+  if (!presetIds.has(presetId)) {
+    throw new Error(`Preset group references unknown preset "${presetId}"`);
+  }
+}
+
+if (groupedPresetIds.length !== presetIds.size) {
+  const missingPresetIds = [...presetIds].filter((presetId) => !groupedPresetIds.includes(presetId));
+  if (missingPresetIds.length > 0) {
+    throw new Error(
+      `Preset groups must cover every preset. Missing from groups: ${missingPresetIds.join(", ")}`,
+    );
+  }
 }

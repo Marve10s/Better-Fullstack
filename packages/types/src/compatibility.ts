@@ -2222,7 +2222,9 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   if (backend === "convex" && frontend === "fresh") return false;
 
   if (frontend === "qwik" && backend && backend !== "none") return false;
-  if (frontend === "angular" && backend && backend !== "none") return false;
+  if (frontend === "angular" && backend === "self") {
+    return false;
+  }
   if (frontend === "redwood" && backend && backend !== "none") return false;
   if (frontend === "fresh" && backend && backend !== "none") return false;
 

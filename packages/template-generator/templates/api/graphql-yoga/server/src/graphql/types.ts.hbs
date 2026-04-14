@@ -1,4 +1,4 @@
-import { builder } from "./builder.js";
+import { builder } from "./builder";
 
 {{#if (eq auth "better-auth")}}
 const UserType = builder.objectRef<{ id: string; email: string; name: string | null }>("User");

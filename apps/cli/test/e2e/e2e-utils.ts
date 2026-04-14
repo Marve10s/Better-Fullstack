@@ -1,10 +1,14 @@
 import type { ExecaChildProcess } from "execa";
 
+import { getLocalWebDevPort } from "@better-fullstack/types";
 import { execa } from "execa";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 import { runTRPCTest, type TestConfig } from "../test-utils";
+import { scaffoldWithCli, type CliScaffoldResult } from "../../../../testing/lib/cli-scaffold";
+
+type E2EPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 
 export interface ServerProcess {
   process: ExecaChildProcess;
@@ -27,7 +31,7 @@ export interface E2EProjectResult {
 }
 
 export interface StartServerOptions {
-  packageManager?: "bun" | "npm" | "pnpm";
+  packageManager?: E2EPackageManager;
   port?: number;
   timeout?: number;
 }
@@ -35,7 +39,7 @@ export interface StartServerOptions {
 export interface StartDevServerOptions {
   frontend: string;
   backend: string;
-  packageManager?: "bun" | "npm" | "pnpm";
+  packageManager?: E2EPackageManager;
   timeout?: number;
 }
 
@@ -73,12 +77,6 @@ const HTML_ERROR_PATTERNS = [
   /hydration mismatch/i,
   /There was an error while hydrating/i,
 ];
-
-const VITE_WEB_FRONTENDS = new Set(["react-router", "react-vite", "svelte", "fresh"]);
-
-function getWebDevPort(frontend: string): number {
-  return VITE_WEB_FRONTENDS.has(frontend) ? 5173 : 3001;
-}
 
 export async function setupE2EProject(
   projectName: string,
@@ -119,6 +117,10 @@ export async function startServer(
       break;
     case "pnpm":
       command = "pnpm";
+      args = ["dev"];
+      break;
+    case "yarn":
+      command = "yarn";
       args = ["dev"];
       break;
     case "bun":
@@ -191,7 +193,7 @@ export async function startDevServer(
 ): Promise<DevServerProcess> {
   const { frontend, backend, packageManager = "bun", timeout = 120_000 } = options;
 
-  const frontendPort = getWebDevPort(frontend);
+  const frontendPort = getLocalWebDevPort([frontend]);
   const backendPort = 3000;
   const frontendUrl = `http://localhost:${frontendPort}`;
   const isFullstack = backend === "self";
@@ -207,6 +209,10 @@ export async function startDevServer(
       break;
     case "pnpm":
       command = "pnpm";
+      args = ["dev"];
+      break;
+    case "yarn":
+      command = "yarn";
       args = ["dev"];
       break;
     default:
@@ -420,13 +426,19 @@ export function validateFrameworkPage(html: string, frontend: string): Framework
     case "tanstack-router":
     case "react-router":
     case "react-vite":
-    case "svelte":
     case "solid":
     case "solid-start":
       if (html.includes('type="module"')) {
         markers.push("Vite module scripts");
       } else {
         missing.push("Missing Vite module scripts");
+      }
+      break;
+    case "svelte":
+      if (html.includes('type="module"') || html.includes("data-sveltekit")) {
+        markers.push("SvelteKit hydration markers");
+      } else {
+        missing.push("Missing SvelteKit hydration markers");
       }
       break;
     case "tanstack-start":
@@ -559,24 +571,20 @@ export async function typecheckProject(
 export async function scaffoldWithCLIBinary(
   projectDir: string,
   flags: string[],
-  options?: { timeout?: number; cliPath?: string },
-): Promise<{ ok: boolean; stdout: string; stderr: string; exitCode: number }> {
+  options?: { timeout?: number; cliPath?: string; env?: NodeJS.ProcessEnv; expectedFiles?: string[] },
+): Promise<CliScaffoldResult> {
   const timeout = options?.timeout ?? 120_000;
   const cliPath = options?.cliPath ?? join(import.meta.dir, "..", "..", "dist", "cli.mjs");
-  const parentDir = join(projectDir, "..");
-  const projectName = projectDir.split("/").pop() || "test-project";
+  const parentDir = dirname(projectDir);
+  const projectName = basename(projectDir) || "test-project";
 
-  const result = await execa("node", [cliPath, projectName, ...flags], {
+  return scaffoldWithCli({
+    cliPath,
     cwd: parentDir,
-    timeout,
-    reject: false,
-    env: { ...process.env, NODE_ENV: "development" },
+    projectName,
+    flags,
+    timeoutMs: timeout,
+    env: options?.env,
+    expectedFiles: options?.expectedFiles,
   });
-
-  return {
-    ok: result.exitCode === 0,
-    stdout: result.stdout,
-    stderr: result.stderr,
-    exitCode: result.exitCode ?? 1,
-  };
 }

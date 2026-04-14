@@ -6,6 +6,7 @@ import { join } from "node:path";
 
 import { DEFAULT_STACK } from "../../../web/src/lib/stack-defaults";
 import { generateStackCommand } from "../../../web/src/lib/stack-utils";
+import { formatCliScaffoldFailure } from "../../../../testing/lib/cli-scaffold";
 import { scaffoldWithCLIBinary } from "./e2e-utils";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-web-command-roundtrip");
@@ -207,15 +208,17 @@ describe("Web command roundtrip", () => {
       const result = await scaffoldWithCLIBinary(projectDir, flags, {
         cliPath: CLI_BINARY_PATH,
         timeout: timeoutMs,
+        expectedFiles: ["bts.jsonc"],
       });
 
-      if (!result.ok) {
-        console.error(result.stderr);
-      }
+      const failureDetails = formatCliScaffoldFailure(result, {
+        header: `Web command roundtrip failed for ${testCase.name}`,
+        expectedFiles: ["bts.jsonc"],
+      });
 
-      expect(result.ok).toBe(true);
-      expect(result.stderr).not.toContain("ValidationError");
-      expect(existsSync(join(projectDir, "bts.jsonc"))).toBe(true);
+      if (!result.ok || result.stderr.includes("ValidationError") || !existsSync(join(projectDir, "bts.jsonc"))) {
+        throw new Error(failureDetails);
+      }
 
       const config = await readJsoncFile(join(projectDir, "bts.jsonc"));
       testCase.assertConfig(config);

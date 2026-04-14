@@ -11,6 +11,7 @@ import { generateBatch } from "./lib/generate-combos/options";
 import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
 import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
 import { ensureBuiltCliBinary } from "./lib/cli-binary";
+import { formatCliScaffoldFailure, scaffoldWithCli, type CliScaffoldResult } from "./lib/cli-scaffold";
 import { buildMajorDepCombos, buildMajorDepCombosFromDiff, type MajorDepInfo } from "./lib/major-dep-combos";
 import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
@@ -174,68 +175,63 @@ interface ScaffoldInput {
 
 function buildCliArgs(input: ScaffoldInput): string[] {
   // Parse the command: `bun create better-fullstack@latest <name> ...flags`
-  // into args for: `node cli.mjs create <name> ...flags --no-install --no-git`
+  // into args for: `node cli.mjs <name> ...flags --no-install --no-git`
   const parts = input.command.split(" ");
   const nameIndex = parts.indexOf(input.name);
   if (nameIndex === -1) {
     throw new Error(`Could not find project name "${input.name}" in command: ${input.command}`);
   }
-  const flags = parts.slice(nameIndex);
+  const flags = parts.slice(nameIndex + 1);
 
   // Override install/git flags: strip existing, force no-install and no-git
   const filtered = flags.filter(
     (f) => f !== "--install" && f !== "--no-install" && f !== "--git" && f !== "--no-git",
   );
 
-  return ["create", ...filtered, "--no-install", "--no-git"];
+  return [...filtered, "--no-install", "--no-git"];
 }
 
 async function scaffoldProject(
   input: ScaffoldInput,
   outputDir: string,
-): Promise<{ success: boolean; projectDir: string; error?: string; durationMs: number }> {
-  const start = Date.now();
+): Promise<{ success: boolean; projectDir: string; error?: string; durationMs: number; result?: CliScaffoldResult }> {
+  const startedAt = Date.now();
   const projectDir = join(outputDir, input.name);
   const cliPath = await ensureBuiltCliBinary();
 
   await mkdir(outputDir, { recursive: true });
 
-  const args = buildCliArgs(input);
+  const flags = buildCliArgs(input);
 
   try {
-    const proc = Bun.spawn(["node", cliPath, ...args], {
+    const result = await scaffoldWithCli({
+      cliPath,
       cwd: outputDir,
-      stdout: "pipe",
-      stderr: "pipe",
-      env: {
-        ...process.env,
-        NO_COLOR: "1",
-      },
+      projectName: input.name,
+      flags,
+      timeoutMs: 120_000,
+      expectedFiles: ["bts.jsonc"],
     });
 
-    const timeoutId = setTimeout(() => { try { proc.kill(); } catch {} }, 120_000); // 2 min scaffold timeout
-
-    const [_stdout, stderr] = await Promise.all([
-      new Response(proc.stdout).text(),
-      new Response(proc.stderr).text(),
-    ]);
-    const exitCode = await proc.exited;
-
-    clearTimeout(timeoutId);
-
-    const success = exitCode === 0 && existsSync(projectDir);
+    const success = result.ok && existsSync(projectDir);
     return {
       success,
       projectDir,
-      error: success ? undefined : `exit ${exitCode}: ${stderr.slice(-1000)}`,
-      durationMs: Date.now() - start,
+      error: success
+        ? undefined
+        : formatCliScaffoldFailure(result, {
+            header: `Smoke scaffold failed for ${input.name}`,
+            expectedFiles: ["bts.jsonc"],
+          }),
+      durationMs: result.durationMs,
+      result,
     };
   } catch (error) {
     return {
       success: false,
       projectDir,
       error: error instanceof Error ? error.message : String(error),
-      durationMs: Date.now() - start,
+      durationMs: Date.now() - startedAt,
     };
   }
 }
@@ -291,7 +287,8 @@ function formatMarkdownSummary(
     for (const result of failures) {
       md += `#### ${result.comboName} (${result.ecosystem})\n`;
       for (const step of result.steps.filter((s) => !s.success && !s.skipped)) {
-        md += `- **${step.step}**: exit ${step.exitCode} [${step.classification ?? "unknown"}]\n`;
+        const failureLabel = step.timedOut ? "timed out" : `exit ${step.exitCode}`;
+        md += `- **${step.step}**: ${failureLabel} [${step.classification ?? "unknown"}]\n`;
         if (step.stderr) {
           const snippet = step.stderr.trim().slice(-800);
           md += `  \`\`\`\n  ${snippet}\n  \`\`\`\n`;
@@ -414,7 +411,9 @@ for (const combo of combos) {
 
   for (const step of result.steps) {
     const icon = step.skipped ? "⊘" : step.success ? "✓" : "✗";
-    console.log(`  ${icon} ${step.step} (${step.durationMs}ms)${step.classification ? ` [${step.classification}]` : ""}`);
+    console.log(
+      `  ${icon} ${step.step} (${step.durationMs}ms)${step.timedOut ? " [timed out]" : ""}${step.classification ? ` [${step.classification}]` : ""}`,
+    );
     if (!step.success && !step.skipped && !step.advisory) {
       if (step.stdout) {
         const snippet = step.stdout.trim().split("\n").slice(-15).join("\n");

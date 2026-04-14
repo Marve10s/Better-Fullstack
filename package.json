@@ -35,8 +35,11 @@
     "upstream-gap-report": "bun run scripts/upstream-gap-report.ts --markdown",
     "test:smoke": "bun run testing/smoke-test.ts",
     "test:smoke:strict": "bun run testing/smoke-test.ts --preset all --dev-check --strict",
+    "test:smoke:pr-core": "bun run testing/smoke-test.ts --preset pr-core --dev-check --strict --output testing/.smoke-output/core",
+    "test:smoke:pr-broad": "bun run testing/smoke-test.ts --preset pr-broad --dev-check --strict --output testing/.smoke-output/broad",
     "test:e2e": "turbo test:e2e",
     "test:e2e:cli": "E2E=1 bun test ./apps/cli/test/e2e/e2e.e2e.ts --timeout 600000",
+    "test:e2e:package-managers": "bun test apps/cli/test/e2e/default-package-manager-matrix.test.ts --timeout 900000",
     "test:e2e:web": "cd apps/web && bunx playwright test",
     "test:integration": "turbo test:integration"
   },
@@ -47,15 +50,15 @@
     "three": "^0.183.2"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.12",
+    "@types/bun": "^1.3.11",
     "@types/three": "^0.183.1",
     "changelogithub": "^14.0.0",
     "effect": "^3.21.0",
     "lefthook": "^2.1.5",
     "lint-staged": "^16.4.0",
     "oxfmt": "^0.19.0",
-    "oxlint": "^1.59.0",
-    "turbo": "^2.9.6",
+    "oxlint": "^1.58.0",
+    "turbo": "^2.9.4",
     "typescript": "5.9.3"
   },
   "engines": {

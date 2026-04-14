@@ -1,7 +1,7 @@
 {{#if (eq auth "better-auth")}}
 import type { Session, User } from "better-auth";
 {{/if}}
-import type { PothosContext } from "./graphql/builder.js";
+import type { PothosContext } from "./graphql/builder";
 
 {{#if (eq auth "better-auth")}}
 export function createContext(session: { user: User; session: Session } | null): PothosContext {

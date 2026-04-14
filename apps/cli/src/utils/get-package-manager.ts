@@ -9,5 +9,8 @@ export const getUserPkgManager: () => PackageManager = () => {
   if (userAgent?.startsWith("bun")) {
     return "bun";
   }
+  if (userAgent?.startsWith("yarn")) {
+    return "yarn";
+  }
   return "npm";
 };

@@ -3,9 +3,16 @@ import { mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { formatCliScaffoldFailure, type CliScaffoldResult } from "../../../../testing/lib/cli-scaffold";
 import { scaffoldWithCLIBinary, typecheckProject } from "./e2e-utils";
 
 const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-binary");
+
+function assertScaffoldSuccess(result: CliScaffoldResult, expectedFiles: string[] = ["bts.jsonc"]) {
+  if (!result.ok) {
+    throw new Error(formatCliScaffoldFailure(result, { expectedFiles }));
+  }
+}
 
 describe("CLI Binary Tests", () => {
   beforeAll(async () => {
@@ -20,9 +27,10 @@ describe("CLI Binary Tests", () => {
   describe("non-interactive scaffolding via --yes", () => {
     it("scaffolds default TypeScript project", async () => {
       const dir = join(SMOKE_DIR, "default");
-      const result = await scaffoldWithCLIBinary(dir, ["--yes", "--no-install", "--no-git"]);
-      if (!result.ok) console.error("[Binary]", result.stderr);
-      expect(result.ok).toBe(true);
+      const result = await scaffoldWithCLIBinary(dir, ["--yes", "--no-install", "--no-git"], {
+        expectedFiles: ["bts.jsonc", "package.json"],
+      });
+      assertScaffoldSuccess(result, ["bts.jsonc", "package.json"]);
       expect(existsSync(join(dir, "package.json"))).toBe(true);
       expect(existsSync(join(dir, "apps", "web"))).toBe(true);
     });
@@ -30,7 +38,7 @@ describe("CLI Binary Tests", () => {
     it("outputs reproducible command", async () => {
       const dir = join(SMOKE_DIR, "repro");
       const result = await scaffoldWithCLIBinary(dir, ["--yes", "--no-install", "--no-git"]);
-      expect(result.ok).toBe(true);
+      assertScaffoldSuccess(result);
       expect(result.stdout).toContain("create-better-fullstack");
     });
 
@@ -39,7 +47,7 @@ describe("CLI Binary Tests", () => {
       const result = await scaffoldWithCLIBinary(dir, [
         "--ecosystem", "rust", "--yes", "--no-install", "--no-git",
       ]);
-      expect(result.ok).toBe(true);
+      assertScaffoldSuccess(result, ["bts.jsonc", "Cargo.toml"]);
       expect(existsSync(join(dir, "Cargo.toml"))).toBe(true);
     });
 
@@ -48,7 +56,7 @@ describe("CLI Binary Tests", () => {
       const result = await scaffoldWithCLIBinary(dir, [
         "--ecosystem", "python", "--yes", "--no-install", "--no-git",
       ]);
-      expect(result.ok).toBe(true);
+      assertScaffoldSuccess(result, ["bts.jsonc", "pyproject.toml"]);
       expect(existsSync(join(dir, "pyproject.toml"))).toBe(true);
     });
 
@@ -57,7 +65,7 @@ describe("CLI Binary Tests", () => {
       const result = await scaffoldWithCLIBinary(dir, [
         "--ecosystem", "go", "--yes", "--no-install", "--no-git",
       ]);
-      expect(result.ok).toBe(true);
+      assertScaffoldSuccess(result, ["bts.jsonc", "go.mod"]);
       expect(existsSync(join(dir, "go.mod"))).toBe(true);
     });
   });
@@ -66,7 +74,7 @@ describe("CLI Binary Tests", () => {
     it("generates a valid random project", async () => {
       const dir = join(SMOKE_DIR, "yolo");
       const result = await scaffoldWithCLIBinary(dir, ["--yolo", "--no-install", "--no-git"]);
-      expect(result.ok).toBe(true);
+      assertScaffoldSuccess(result);
       // At least one ecosystem marker should exist
       const hasMarker =
         existsSync(join(dir, "package.json")) ||
@@ -80,8 +88,10 @@ describe("CLI Binary Tests", () => {
   describe("scaffold + install + typecheck", () => {
     it("default stack has zero TypeScript errors", async () => {
       const dir = join(SMOKE_DIR, "typecheck");
-      const scaffold = await scaffoldWithCLIBinary(dir, ["--yes", "--no-git"]);
-      expect(scaffold.ok).toBe(true);
+      const scaffold = await scaffoldWithCLIBinary(dir, ["--yes", "--no-git"], {
+        expectedFiles: ["bts.jsonc", "package.json"],
+      });
+      assertScaffoldSuccess(scaffold, ["bts.jsonc", "package.json"]);
 
       const tc = await typecheckProject(dir, { timeout: 180_000 });
       if (!tc.ok) console.error("[Typecheck]", tc.stderr);

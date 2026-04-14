@@ -128,8 +128,15 @@ export function validateHtmlResponse(
     if (frontend === "nuxt" && !body.includes("_nuxt")) {
       errors.push("Missing Nuxt asset markers");
     }
-    if (["tanstack-router", "react-router", "svelte", "react-vite"].includes(frontend || "") && !body.includes('type="module"')) {
+    if (["tanstack-router", "react-router", "react-vite"].includes(frontend || "") && !body.includes('type="module"')) {
       errors.push("Missing Vite module scripts");
+    }
+    if (
+      frontend === "svelte"
+      && !body.includes('type="module"')
+      && !body.includes("data-sveltekit")
+    ) {
+      errors.push("Missing SvelteKit hydration markers");
     }
   }
 

@@ -109,6 +109,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["ui-library", config.uiLibrary],
     ["cms", config.cms],
     ["caching", config.caching],
+    ["i18n", config.i18n],
     ["search", config.search],
     ["file-storage", config.fileStorage],
     ["web-deploy", config.webDeploy],
@@ -121,6 +122,10 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["rust-orm", config.rustOrm],
     ["rust-api", config.rustApi],
     ["rust-cli", config.rustCli],
+    ["rust-logging", config.rustLogging],
+    ["rust-error-handling", config.rustErrorHandling],
+    ["rust-caching", config.rustCaching],
+    ["rust-auth", config.rustAuth],
     ["rust-libraries", withExplicitNone(config.rustLibraries)],
   ];
 
@@ -129,6 +134,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-orm", config.pythonOrm],
     ["python-validation", config.pythonValidation],
     ["python-ai", withExplicitNone(config.pythonAi)],
+    ["python-auth", config.pythonAuth],
     ["python-task-queue", config.pythonTaskQueue],
     ["python-graphql", config.pythonGraphql],
     ["python-quality", config.pythonQuality],

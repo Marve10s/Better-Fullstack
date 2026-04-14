@@ -46,6 +46,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     await writeTreeToFilesystem(result.tree, projectDir);
     await setPackageManagerVersion(projectDir, options.packageManager);
+    await ensurePackageManagerProjectFiles(projectDir, options.packageManager);
 
     if (!isConvex && options.database !== "none") {
       await setupDatabase(options, cliInput);
@@ -126,4 +127,20 @@ async function setPackageManagerVersion(
     delete pkgJson.packageManager;
     await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
   }
+}
+
+async function ensurePackageManagerProjectFiles(
+  projectDir: string,
+  packageManager: ProjectConfig["packageManager"],
+): Promise<void> {
+  if (packageManager !== "yarn") {
+    return;
+  }
+
+  const yarnLockPath = path.join(projectDir, "yarn.lock");
+  if (await fs.pathExists(yarnLockPath)) {
+    return;
+  }
+
+  await fs.writeFile(yarnLockPath, "");
 }

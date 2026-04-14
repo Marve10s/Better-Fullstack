@@ -6,6 +6,7 @@ import { runDevCheck, startDevServer, stopDevServer, isDbDependentProject } from
 import { runRouteCheck } from "./route-check";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
+const NUXT_INSTALL_TIMEOUT_MS = 900_000; // Nuxt dependency resolution is materially heavier.
 
 export type StepResult = {
   step: string;
@@ -14,9 +15,14 @@ export type StepResult = {
   stdout?: string;
   stderr?: string;
   exitCode?: number;
+  timedOut?: boolean;
   skipped?: boolean;
   advisory?: boolean;
   classification?: "environment" | "template" | "unknown";
+};
+
+type RunStepOptions = {
+  timeoutMs?: number;
 };
 
 export type VerifyOptions = {
@@ -90,8 +96,10 @@ async function runStep(
   command: string,
   args: string[],
   cwd: string,
+  options?: RunStepOptions,
 ): Promise<StepResult> {
   const start = Date.now();
+  const timeoutMs = options?.timeoutMs ?? STEP_TIMEOUT_MS;
 
   try {
     const proc = Bun.spawn([command, ...args], {
@@ -101,7 +109,13 @@ async function runStep(
       env: process.env,
     });
 
-    const timeoutId = setTimeout(() => { try { proc.kill(); } catch {} }, STEP_TIMEOUT_MS);
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      try {
+        proc.kill();
+      } catch {}
+    }, timeoutMs);
 
     const [stdout, stderr] = await Promise.all([
       new Response(proc.stdout).text(),
@@ -111,15 +125,17 @@ async function runStep(
 
     clearTimeout(timeoutId);
 
-    const success = exitCode === 0;
+    const success = exitCode === 0 && !timedOut;
+    const timeoutSuffix = timedOut ? `\nProcess timed out after ${Math.round(timeoutMs / 1000)}s.` : "";
     return {
       step,
       success,
       durationMs: Date.now() - start,
       stdout: stdout.slice(-4000),
-      stderr: stderr.slice(-4000),
+      stderr: `${stderr}${timeoutSuffix}`.slice(-4000),
       exitCode,
-      classification: success ? undefined : classifyError(stderr, stdout),
+      timedOut,
+      classification: success ? undefined : timedOut ? "environment" : classifyError(stderr, stdout),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -132,6 +148,11 @@ async function runStep(
       classification: classifyError(message, ""),
     };
   }
+}
+
+function getTypeScriptInstallTimeoutMs(config?: ProjectConfig): number {
+  const frontend = Array.isArray(config?.frontend) ? config.frontend : [];
+  return frontend.includes("nuxt") ? NUXT_INSTALL_TIMEOUT_MS : STEP_TIMEOUT_MS;
 }
 
 function hasPackageScript(projectDir: string, scriptName: string): boolean {
@@ -180,8 +201,9 @@ async function runAdvisoryStep(
   command: string,
   args: string[],
   cwd: string,
+  options?: RunStepOptions,
 ): Promise<StepResult> {
-  const result = await runStep(step, command, args, cwd);
+  const result = await runStep(step, command, args, cwd, options);
   return { ...result, advisory: true };
 }
 
@@ -195,7 +217,11 @@ export async function verifyTypeScript(
   // Convex projects require `convex codegen` before build/typecheck can work
   const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
 
-  steps.push(await runStep("install", "bun", ["install"], projectDir));
+  steps.push(
+    await runStep("install", "bun", ["install"], projectDir, {
+      timeoutMs: getTypeScriptInstallTimeoutMs(options?.config),
+    }),
+  );
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
   if (options?.devCheck && options?.config) {

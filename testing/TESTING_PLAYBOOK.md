@@ -1,51 +1,77 @@
-# Production Matrix Playbook
+# Testing Playbook
 
-## Scope
+## Runtime Lanes
 
-Validate scaffold quality using production package command:
+The runtime hardening stack is split into separate lanes on purpose.
 
-```bash
-bun create better-fullstack@latest
-```
+- `bun run test:smoke:pr-core`
+  Runs the representative curated runtime matrix used on pull requests for the most important product scenarios.
+- `bun run test:smoke:pr-broad`
+  Runs the broader curated runtime matrix used on pull requests for additional frontend and ecosystem coverage.
+- `bun run test:e2e:package-managers`
+  Verifies the default `--yes` path against `npm`, `pnpm`, `bun`, and `yarn`.
+- `bun test apps/cli/test/e2e/web-command-roundtrip.test.ts --timeout 600000`
+  Verifies web-generated commands against the built CLI.
 
-Run 10 unique combos per cycle (unless specified otherwise), verify internals, fix template issues in repo, and record results.
+Keep these lanes separate. A package-manager regression should fail the package-manager lane, not the smoke presets, and a runtime template regression should fail the relevant preset group.
+
+## Preset Groups
+
+`testing/lib/presets.ts` exposes deterministic preset groups:
+
+- `pr-core`
+  Use this when validating the main PR runtime contract or iterating on the most representative scenarios.
+- `pr-broad`
+  Use this when validating the extended PR runtime contract or iterating on secondary but still required scenarios.
+- `all`
+  Union of `pr-core` and `pr-broad`. Useful for local sweeps and for checking group coverage.
+
+Smoke presets intentionally keep `packageManager: "bun"`. TypeScript generated-app verification still runs with `bun install`, `build`, and `dev-check` in these presets. Package-manager correctness belongs in the dedicated default-path matrix.
 
 ## Standard Flow
 
-1. Read existing combo ledger in `testing/combos-*.json` and avoid duplicates.
-2. Generate 10 new projects with explicit stack flags plus `--ai-docs none --no-git`.
-3. Choose the run mode:
-   - Broad scaffold sweep: add `--no-install` to keep the cycle fast and isolate scaffold correctness.
-   - Full validation: allow installs, then run the ecosystem checks below.
-4. Verify generated content:
-   - root file presence (`Cargo.toml` / `pyproject.toml` / `go.mod`)
-   - selected-option markers in generated files
-5. Run deeper checks:
-   - Rust: `cargo check`
-   - Python: `python3 -m compileall -q .`
-   - Go: `go mod tidy && go build ./...`
-6. Classify failures:
-   - environment/tool missing
-   - template/generator bug
-7. Fix real bugs in repo templates/processors.
-8. Rebuild/regen as needed (e.g. template-generator embedded templates).
-9. Re-test failing combos until passing.
-10. Delete generated temp projects.
-11. Update combo JSON ledger with outcomes and fixed issues.
+1. Choose the narrowest lane that matches the change.
+2. Build the required packages first for built-CLI lanes:
+   ```bash
+   ~/.bun/bin/bun run --cwd packages/types build
+   ~/.bun/bin/bun run --cwd packages/template-generator build
+   ~/.bun/bin/bun run --cwd apps/cli build
+   ```
+3. Run the targeted lane:
+   ```bash
+   ~/.bun/bin/bun run test:smoke:pr-core
+   ~/.bun/bin/bun run test:smoke:pr-broad
+   ~/.bun/bin/bun run test:e2e:package-managers
+   ~/.bun/bin/bun test apps/cli/test/e2e/web-command-roundtrip.test.ts --timeout 600000
+   ```
+4. Inspect the generated artifacts under:
+   - `testing/.smoke-output/core/`
+   - `testing/.smoke-output/broad/`
+   - `apps/cli/.smoke-web-command-roundtrip/`
+   - `apps/cli/.smoke-default-package-managers/`
+5. Fix generator or harness bugs in the repo rather than weakening assertions.
 
-## Required Tooling
+## Real Verification Rules
 
-- `bun`
-- `python3`
-- `cargo`
-- `go`
-- `protoc` (needed for Rust tonic projects)
+Smoke verification stays real:
 
-## Notes
+- TypeScript: `bun install`, `build`, `dev-check`, advisory `lint`
+- Rust: `cargo check`
+- Python: `uv sync --all-extras`, `compileall`, advisory `ruff`
+- Go: `go mod tidy`, `go build`, advisory `go vet`
 
-- `--ai-docs none` suppresses AI documentation file prompts and keeps the run deterministic.
-- `--no-git` skips git init and the initial commit, which reduces noise in temp test projects.
-- `go.sum` is expected only after `go mod tidy` / build.
-- If CLI uses embedded templates, rebuild template generator before re-test.
-- Do not combine `--yes` with explicit stack flags like `--frontend`, `--css-framework`, or `--ui-library`.
-- Prefer `--no-install` only for broad scaffold sweeps or when the environment is missing ecosystem tooling. For production package validation of a smaller batch, installs are useful and should usually be enabled.
+Do not turn curated presets into marker-only checks.
+
+## Diagnostics
+
+Built-CLI scaffold failures should come from the shared structured diagnostics helper. Preserve these fields when changing the harness:
+
+- exact command
+- cwd
+- timeout state
+- exit code and signal
+- stdout/stderr tails
+- generated-project directory snapshot
+- missing expected files when applicable
+
+This contract is used by round-trip tests, the package-manager matrix, and smoke scaffolding so CI artifacts stay actionable.
