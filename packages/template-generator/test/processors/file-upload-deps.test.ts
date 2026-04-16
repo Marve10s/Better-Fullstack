@@ -69,6 +69,52 @@ describe("processFileUploadDeps", () => {
     expect(getDeps(astroBaseVfs, "apps/web/package.json").deps).toEqual(["uploadthing"]);
   });
 
+  it("adds UploadThing vue and solid adapters for supported web integrations", () => {
+    const nuxtVfs = createSeededVFS(["apps/web/package.json"]);
+    const astroVueVfs = createSeededVFS(["apps/web/package.json"]);
+    const astroSolidVfs = createSeededVFS(["apps/web/package.json"]);
+
+    processFileUploadDeps(
+      nuxtVfs,
+      makeConfig({
+        fileUpload: "uploadthing",
+        backend: "self",
+        frontend: ["nuxt"],
+      }),
+    );
+    processFileUploadDeps(
+      astroVueVfs,
+      makeConfig({
+        fileUpload: "uploadthing",
+        backend: "self",
+        frontend: ["astro"],
+        astroIntegration: "vue",
+      }),
+    );
+    processFileUploadDeps(
+      astroSolidVfs,
+      makeConfig({
+        fileUpload: "uploadthing",
+        backend: "self",
+        frontend: ["astro"],
+        astroIntegration: "solid",
+      }),
+    );
+
+    expectIncludesAll(getDeps(nuxtVfs, "apps/web/package.json").deps, [
+      "uploadthing",
+      "@uploadthing/nuxt",
+    ]);
+    expectIncludesAll(getDeps(astroVueVfs, "apps/web/package.json").deps, [
+      "uploadthing",
+      "@uploadthing/vue",
+    ]);
+    expectIncludesAll(getDeps(astroSolidVfs, "apps/web/package.json").deps, [
+      "uploadthing",
+      "@uploadthing/solid",
+    ]);
+  });
+
   it("adds FilePond framework adapters or vanilla plugins depending on frontend", () => {
     const svelteVfs = createSeededVFS(["apps/web/package.json"]);
     const astroVfs = createSeededVFS(["apps/web/package.json"]);
@@ -115,6 +161,36 @@ describe("processFileUploadDeps", () => {
       "filepond-plugin-file-validate-size",
       "filepond-plugin-file-validate-type",
       "filepond-plugin-image-preview",
+    ]);
+  });
+
+  it("adds FilePond vue adapters for Nuxt and Astro Vue integrations", () => {
+    const nuxtVfs = createSeededVFS(["apps/web/package.json"]);
+    const astroVueVfs = createSeededVFS(["apps/web/package.json"]);
+
+    processFileUploadDeps(
+      nuxtVfs,
+      makeConfig({
+        fileUpload: "filepond",
+        frontend: ["nuxt"],
+      }),
+    );
+    processFileUploadDeps(
+      astroVueVfs,
+      makeConfig({
+        fileUpload: "filepond",
+        frontend: ["astro"],
+        astroIntegration: "vue",
+      }),
+    );
+
+    expectIncludesAll(getDeps(nuxtVfs, "apps/web/package.json").deps, [
+      "filepond",
+      "vue-filepond",
+    ]);
+    expectIncludesAll(getDeps(astroVueVfs, "apps/web/package.json").deps, [
+      "filepond",
+      "vue-filepond",
     ]);
   });
 
@@ -166,6 +242,36 @@ describe("processFileUploadDeps", () => {
       "@uppy/progress-bar",
       "@uppy/tus",
       "@uppy/xhr-upload",
+    ]);
+  });
+
+  it("adds Uppy vue and react adapters for Nuxt and Astro integrations", () => {
+    const nuxtVfs = createSeededVFS(["apps/web/package.json"]);
+    const astroReactVfs = createSeededVFS(["apps/web/package.json"]);
+
+    processFileUploadDeps(
+      nuxtVfs,
+      makeConfig({
+        fileUpload: "uppy",
+        frontend: ["nuxt"],
+      }),
+    );
+    processFileUploadDeps(
+      astroReactVfs,
+      makeConfig({
+        fileUpload: "uppy",
+        frontend: ["astro"],
+        astroIntegration: "react",
+      }),
+    );
+
+    expectIncludesAll(getDeps(nuxtVfs, "apps/web/package.json").deps, [
+      "@uppy/core",
+      "@uppy/vue",
+    ]);
+    expectIncludesAll(getDeps(astroReactVfs, "apps/web/package.json").deps, [
+      "@uppy/core",
+      "@uppy/react",
     ]);
   });
 
