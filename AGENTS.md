@@ -45,6 +45,7 @@ When creating pull requests, always target `--repo Marve10s/Better-Fullstack`. D
 - Surprise worth remembering: `testing/smoke-test.ts` intentionally verifies TypeScript generated apps with `bun install` regardless of a preset's `packageManager`. Package-manager correctness belongs in `apps/cli/test/e2e/default-package-manager-matrix.test.ts`, not in the curated smoke presets.
 - Surprise worth remembering: web-command round-trip and package-manager matrix failures now depend on structured CLI scaffold diagnostics plus uploaded artifact directories. Preserve `testing/lib/cli-scaffold.ts`, the expected-file checks, and CI artifact uploads when changing those harnesses so failures stay debuggable.
 - Surprise worth remembering: TanStack Start route generation in `apps/web` only reads ignore settings from `tanstackStart({ router: ... })` in `apps/web/vite.config.ts`, not from top-level plugin options. Any `createFileRoute` scratch/design file left in `apps/web/src/routes` will be pulled into `routeTree.gen.ts` and build output unless it matches `routeFileIgnorePrefix`/`routeFileIgnorePattern`.
+- Surprise worth remembering: `packages/template-generator/tsconfig.json` includes only `src/**/*`, so tests added under `packages/template-generator/test/` are not covered by the package's normal TypeScript check unless you add a dedicated test tsconfig or expand the include set.
 
 ## Bun
 
