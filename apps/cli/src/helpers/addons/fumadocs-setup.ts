@@ -1,4 +1,4 @@
-import { isCancel, log, select, spinner } from "@clack/prompts";
+import { log, spinner } from "@clack/prompts";
 import consola from "consola";
 import { $ } from "execa";
 import fs from "fs-extra";
@@ -7,8 +7,8 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../../types";
 
-import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { selectAddonOptionOrDefault } from "./interactive-selection";
 
 type FumadocsTemplate =
   | "next-mdx"
@@ -51,17 +51,16 @@ export async function setupFumadocs(config: ProjectConfig) {
   try {
     log.info("Setting up Fumadocs...");
 
-    const template = await select<FumadocsTemplate>({
+    const template = await selectAddonOptionOrDefault<FumadocsTemplate>({
+      addonName: "Fumadocs",
       message: "Choose a template",
       options: Object.entries(TEMPLATES).map(([key, template]) => ({
         value: key as FumadocsTemplate,
         label: template.label,
         hint: template.hint,
       })),
-      initialValue: "next-mdx",
+      defaultValue: "next-mdx",
     });
-
-    if (isCancel(template)) return exitCancelled("Operation cancelled");
 
     const templateArg = TEMPLATES[template].value;
 

@@ -128,6 +128,7 @@ jobs:
         with:
           name: smoke-strict-core-results
           path: testing/.smoke-output/core/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 
@@ -185,6 +186,7 @@ jobs:
         with:
           name: smoke-strict-broad-results
           path: testing/.smoke-output/broad/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
 

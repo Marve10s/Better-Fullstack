@@ -84,4 +84,5 @@ jobs:
         with:
           name: smoke-results-${{ matrix.preset }}
           path: testing/.smoke-output/${{ matrix.preset }}
+          include-hidden-files: true
           if-no-files-found: ignore

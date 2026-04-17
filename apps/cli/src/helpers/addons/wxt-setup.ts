@@ -1,4 +1,4 @@
-import { isCancel, log, select, spinner } from "@clack/prompts";
+import { log, spinner } from "@clack/prompts";
 import { $ } from "execa";
 import fs from "fs-extra";
 import path from "node:path";
@@ -6,8 +6,8 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../../types";
 
-import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { selectAddonOptionOrDefault } from "./interactive-selection";
 
 type WxtTemplate = "vanilla" | "vue" | "react" | "solid" | "svelte";
 
@@ -40,17 +40,16 @@ export async function setupWxt(config: ProjectConfig) {
   try {
     log.info("Setting up WXT...");
 
-    const template = await select<WxtTemplate>({
+    const template = await selectAddonOptionOrDefault<WxtTemplate>({
+      addonName: "WXT",
       message: "Choose a template",
       options: Object.entries(TEMPLATES).map(([key, template]) => ({
         value: key as WxtTemplate,
         label: template.label,
         hint: template.hint,
       })),
-      initialValue: "react",
+      defaultValue: "react",
     });
-
-    if (isCancel(template)) return exitCancelled("Operation cancelled");
 
     const commandWithArgs = `wxt@latest init extension --template ${template} --pm ${packageManager}`;
     const args = getPackageExecutionArgs(packageManager, commandWithArgs);

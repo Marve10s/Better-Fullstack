@@ -1,4 +1,4 @@
-import { isCancel, log, select, spinner } from "@clack/prompts";
+import { log, spinner } from "@clack/prompts";
 import { $ } from "execa";
 import fs from "fs-extra";
 import path from "node:path";
@@ -6,8 +6,8 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "../../types";
 
-import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { selectAddonOptionOrDefault } from "./interactive-selection";
 
 type TuiTemplate = "core" | "react" | "solid";
 
@@ -32,17 +32,16 @@ export async function setupTui(config: ProjectConfig) {
   try {
     log.info("Setting up OpenTUI...");
 
-    const template = await select<TuiTemplate>({
+    const template = await selectAddonOptionOrDefault<TuiTemplate>({
+      addonName: "OpenTUI",
       message: "Choose a template",
       options: Object.entries(TEMPLATES).map(([key, template]) => ({
         value: key as TuiTemplate,
         label: template.label,
         hint: template.hint,
       })),
-      initialValue: "core",
+      defaultValue: "core",
     });
-
-    if (isCancel(template)) return exitCancelled("Operation cancelled");
 
     const commandWithArgs = `create-tui@latest --template ${template} --no-git --no-install tui`;
     const args = getPackageExecutionArgs(packageManager, commandWithArgs);
