@@ -25,6 +25,17 @@ describe("shouldPromptForAddonSelection", () => {
     ).toBe(false);
   });
 
+  it("returns false for CI values like 1", () => {
+    expect(
+      shouldPromptForAddonSelection({
+        silent: false,
+        stdinIsTTY: true,
+        stdoutIsTTY: true,
+        ci: "1",
+      }),
+    ).toBe(false);
+  });
+
   it("returns false when stdin is not a TTY", () => {
     expect(
       shouldPromptForAddonSelection({
@@ -48,13 +59,24 @@ describe("shouldPromptForAddonSelection", () => {
   });
 
   it("returns true for interactive sessions", () => {
-    expect(
-      shouldPromptForAddonSelection({
-        silent: false,
-        stdinIsTTY: true,
-        stdoutIsTTY: true,
-        ci: undefined,
-      }),
-    ).toBe(true);
+    const originalCi = process.env.CI;
+
+    process.env.CI = "true";
+    try {
+      expect(
+        shouldPromptForAddonSelection({
+          silent: false,
+          stdinIsTTY: true,
+          stdoutIsTTY: true,
+          ci: undefined,
+        }),
+      ).toBe(true);
+    } finally {
+      if (originalCi === undefined) {
+        delete process.env.CI;
+      } else {
+        process.env.CI = originalCi;
+      }
+    }
   });
 });
