@@ -1,4 +1,8 @@
+{{#if (eq rustErrorHandling "anyhow-thiserror")}}
 use anyhow::Result;
+{{else if (eq rustErrorHandling "eyre")}}
+use eyre::Result;
+{{/if}}
 use clap::{Parser, Subcommand};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -82,9 +86,14 @@ enum GenerateComponent {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> {{#if (or (eq rustErrorHandling "anyhow-thiserror") (eq rustErrorHandling "eyre"))}}Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+{{/if}}
 
     let cli = Cli::parse();
 

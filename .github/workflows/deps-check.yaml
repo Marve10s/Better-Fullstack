@@ -278,4 +278,5 @@ jobs:
         with:
           name: major-deps-smoke-results
           path: testing/.smoke-output/
+          include-hidden-files: true
           retention-days: 7

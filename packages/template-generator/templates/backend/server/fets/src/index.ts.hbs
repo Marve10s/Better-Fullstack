@@ -1,4 +1,6 @@
+{{#if (or (or (eq runtime "node") (eq runtime "bun")) (and (includes examples "ai") (eq runtime "workers")))}}
 import { env } from "@{{projectName}}/env/server";
+{{/if}}
 {{#if (eq api "orpc")}}
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
@@ -16,7 +18,7 @@ import { appRouter } from "@{{projectName}}/api/routers/index";
 {{#if (eq auth "better-auth")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
-import { createRouter, Response } from "fets";
+import { createRouter, Response, type Router } from "fets";
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
 import { streamText, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
@@ -43,7 +45,7 @@ const toNativeRequest = async (request: Request): Promise<Request> => {
 };
 {{/if}}
 
-const router = createRouter({
+const router: Router<any, any, any> = createRouter({
 	openAPI: {
 		info: {
 			title: "{{projectName}} API",
