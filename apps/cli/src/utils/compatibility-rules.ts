@@ -516,8 +516,29 @@ export function validateAddonCompatibility(
   addon: Addons,
   frontend: Frontend[],
   _auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
 ): { isCompatible: boolean; reason?: string } {
-  return validateAddonCompatibilityShared(addon, frontend, _auth);
+  const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
+  if (!baseCompatibility.isCompatible) return baseCompatibility;
+
+  // Docker Compose targets containerized/self-hosted stacks only.
+  if (addon === "docker-compose") {
+    if (backend === "convex") {
+      return {
+        isCompatible: false,
+        reason: "docker-compose is not compatible with Convex backend (managed service)",
+      };
+    }
+    if (runtime === "workers") {
+      return {
+        isCompatible: false,
+        reason: "docker-compose is not compatible with Cloudflare Workers runtime",
+      };
+    }
+  }
+
+  return { isCompatible: true };
 }
 
 export function getCompatibleAddons(
@@ -525,18 +546,27 @@ export function getCompatibleAddons(
   frontend: Frontend[],
   existingAddons: Addons[] = [],
   auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
-  return getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
+  const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
+
+  return compatibleAddons.filter((addon) => {
+    const { isCompatible } = validateAddonCompatibility(addon, frontend, auth, backend, runtime);
+    return isCompatible;
+  });
 }
 
 export function validateAddonsAgainstFrontends(
   addons: Addons[] = [],
   frontends: Frontend[] = [],
   auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
   for (const addon of addons) {
     if (addon === "none") continue;
-    const { isCompatible, reason } = validateAddonCompatibility(addon, frontends, auth);
+    const { isCompatible, reason } = validateAddonCompatibility(addon, frontends, auth, backend, runtime);
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);
     }

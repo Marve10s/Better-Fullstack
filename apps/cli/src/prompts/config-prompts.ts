@@ -317,7 +317,13 @@ export async function gatherConfig(
       },
       addons: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve([] as Addons[]);
-        return getAddonsChoice(flags.addons, results.frontend, results.auth);
+        return getAddonsChoice(
+          flags.addons,
+          results.frontend,
+          results.auth,
+          results.backend,
+          results.runtime,
+        );
       },
       examples: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve([] as Examples[]);

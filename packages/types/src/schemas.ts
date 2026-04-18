@@ -84,6 +84,7 @@ export const AddonsSchema = z
     "tanstack-virtual",
     "tanstack-db",
     "tanstack-pacer",
+    "docker-compose",
     "none",
   ])
   .describe("Additional addons");

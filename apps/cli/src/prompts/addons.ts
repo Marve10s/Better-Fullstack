@@ -1,5 +1,12 @@
 import { DEFAULT_CONFIG } from "../constants";
-import { type Addons, AddonsSchema, type Auth, type Frontend } from "../types";
+import {
+  type Addons,
+  AddonsSchema,
+  type Auth,
+  type Backend,
+  type Frontend,
+  type Runtime,
+} from "../types";
 import { getCompatibleAddons, validateAddonCompatibility } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableGroupMultiselect } from "./navigable";
@@ -103,6 +110,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "TanStack Pacer";
       hint = "Debounce, throttle, rate-limit & queue utilities (Beta)";
       break;
+    case "docker-compose":
+      label = "Docker Compose";
+      hint = "Containerize your app for deployment";
+      break;
     default:
       label = addon;
       hint = `Add ${addon}`;
@@ -114,13 +125,40 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
 const ADDON_GROUPS = {
   Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler"],
+  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
   Integrations: ["msw", "storybook"],
   "AI Agents": ["mcp", "skills"],
   TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
 };
 
-export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[], auth?: Auth) {
+function validateAddonCompatibilityForPrompt(
+  addon: Addons,
+  frontends: Frontend[],
+  auth?: Auth,
+  _backend?: Backend,
+  _runtime?: Runtime,
+) {
+  return validateAddonCompatibility(addon, frontends, auth);
+}
+
+function getCompatibleAddonsForPrompt(
+  allAddons: Addons[],
+  frontends: Frontend[],
+  existingAddons: Addons[] = [],
+  auth?: Auth,
+  _backend?: Backend,
+  _runtime?: Runtime,
+) {
+  return getCompatibleAddons(allAddons, frontends, existingAddons, auth);
+}
+
+export async function getAddonsChoice(
+  addons?: Addons[],
+  frontends?: Frontend[],
+  auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
+) {
   if (addons !== undefined) return addons;
 
   const allAddons = AddonsSchema.options.filter((addon) => addon !== "none");
@@ -136,7 +174,13 @@ export async function getAddonsChoice(addons?: Addons[], frontends?: Frontend[],
   const frontendsArray = frontends || [];
 
   for (const addon of allAddons) {
-    const { isCompatible } = validateAddonCompatibility(addon, frontendsArray, auth);
+    const { isCompatible } = validateAddonCompatibilityForPrompt(
+      addon,
+      frontendsArray,
+      auth,
+      backend,
+      runtime,
+    );
     if (!isCompatible) continue;
 
     const { label, hint } = getAddonDisplay(addon);
@@ -192,6 +236,8 @@ export async function getAddonsToAdd(
   frontend: Frontend[],
   existingAddons: Addons[] = [],
   auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
   const groupedOptions: Record<string, AddonOption[]> = {
     Tooling: [],
@@ -204,11 +250,13 @@ export async function getAddonsToAdd(
 
   const frontendArray = frontend || [];
 
-  const compatibleAddons = getCompatibleAddons(
+  const compatibleAddons = getCompatibleAddonsForPrompt(
     AddonsSchema.options.filter((addon) => addon !== "none"),
     frontendArray,
     existingAddons,
     auth,
+    backend,
+    runtime,
   );
 
   for (const addon of compatibleAddons) {
