@@ -68,6 +68,11 @@ Handlebars.registerHelper("shadcnRadiusValue", function (this: ProjectConfig) {
   return SHADCN_RADIUS[pref] ?? "0.625rem";
 });
 
+/** Returns the project name with a trailing brace for compose default syntax. */
+Handlebars.registerHelper("projectNameWithClosingBrace", function (this: ProjectConfig) {
+  return `${this.projectName ?? ""}}`;
+});
+
 /** Returns the CSS font-family string for the chosen shadcn font. */
 Handlebars.registerHelper("shadcnFontFamily", function (this: ProjectConfig) {
   const font = this.shadcnFont ?? "inter";
@@ -106,7 +111,7 @@ export function processFileContent(
   if (isBinaryFile(filePath)) return "[Binary file]";
 
   const originalPath = filePath.endsWith(".hbs") ? filePath : filePath + ".hbs";
-  if (filePath !== originalPath || filePath.includes(".hbs")) {
+  if (filePath.endsWith(".hbs")) {
     try {
       return processTemplateString(content, context);
     } catch (error) {

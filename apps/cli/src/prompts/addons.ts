@@ -135,10 +135,10 @@ function validateAddonCompatibilityForPrompt(
   addon: Addons,
   frontends: Frontend[],
   auth?: Auth,
-  _backend?: Backend,
-  _runtime?: Runtime,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
-  return validateAddonCompatibility(addon, frontends, auth);
+  return validateAddonCompatibility(addon, frontends, auth, backend, runtime);
 }
 
 function getCompatibleAddonsForPrompt(
@@ -146,10 +146,10 @@ function getCompatibleAddonsForPrompt(
   frontends: Frontend[],
   existingAddons: Addons[] = [],
   auth?: Auth,
-  _backend?: Backend,
-  _runtime?: Runtime,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
-  return getCompatibleAddons(allAddons, frontends, existingAddons, auth);
+  return getCompatibleAddons(allAddons, frontends, existingAddons, auth, backend, runtime);
 }
 
 export async function getAddonsChoice(

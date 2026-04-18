@@ -2,7 +2,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
-import { type TemplateData, processTemplatesFromPrefix } from "./utils";
+import { type TemplateData, processSingleTemplate, processTemplatesFromPrefix } from "./utils";
 
 export async function processAddonTemplates(
   vfs: VirtualFileSystem,
@@ -59,7 +59,10 @@ export async function processAddonTemplates(
 
     if (addon === "docker-compose") {
       // Place docker-compose.yml at project root
-      processTemplatesFromPrefix(vfs, templates, "addons/docker-compose", "", config);
+      processTemplatesFromPrefix(vfs, templates, "addons/docker-compose", "", config, [
+        "addons/docker-compose/apps/server",
+        "addons/docker-compose/apps/web",
+      ]);
 
       // Place server Dockerfile if backend exists
       if (config.backend !== "self" && config.backend !== "none") {
@@ -74,11 +77,18 @@ export async function processAddonTemplates(
 
       // Place web Dockerfile based on frontend
       if (config.frontend.includes("next")) {
-        processTemplatesFromPrefix(
+        processSingleTemplate(
           vfs,
           templates,
-          "addons/docker-compose/apps/web",
-          "apps/web",
+          "addons/docker-compose/apps/web/.dockerignore",
+          "apps/web/.dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/Dockerfile.next",
+          "apps/web/Dockerfile.next",
           config,
         );
       } else if (
@@ -94,11 +104,25 @@ export async function processAddonTemplates(
           ].includes(f),
         )
       ) {
-        processTemplatesFromPrefix(
+        processSingleTemplate(
           vfs,
           templates,
-          "addons/docker-compose/apps/web",
-          "apps/web",
+          "addons/docker-compose/apps/web/.dockerignore",
+          "apps/web/.dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/Dockerfile.vite",
+          "apps/web/Dockerfile.vite",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/nginx.conf",
+          "apps/web/nginx.conf",
           config,
         );
       }

@@ -322,6 +322,27 @@ describe("Addon Configurations", () => {
         expectSuccess(result);
       });
 
+      it("should fail with docker-compose + React Vite", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-react-vite-fail",
+          addons: ["docker-compose"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "docker-compose addon requires one of these frontends");
+      });
+
       describe("Docker Compose File Generation", () => {
         it("should generate docker-compose.yml at project root", async () => {
           const result = await runTRPCTest({
@@ -346,6 +367,7 @@ describe("Addon Configurations", () => {
 
           const dockerComposeYml = join(result.projectDir!, "docker-compose.yml");
           expect(existsSync(dockerComposeYml)).toBe(true);
+          expect(readFileSync(dockerComposeYml, "utf8")).toContain("dockerfile: Dockerfile.vite");
         });
 
         it("should generate Dockerfile in apps/server when backend exists", async () => {
@@ -427,6 +449,7 @@ describe("Addon Configurations", () => {
 
           expect(existsSync(dockerComposeYml)).toBe(true);
           expect(existsSync(webDockerfile)).toBe(true);
+          expect(readFileSync(dockerComposeYml, "utf8")).toContain("dockerfile: Dockerfile.next");
         });
 
         it("should generate .dockerignore files", async () => {
