@@ -16,7 +16,13 @@ impl Greeter for GreeterService {
         request: Request<HelloRequest>,
     ) -> Result<Response<HelloReply>, Status> {
         let name = request.into_inner().name;
+{{#if (eq rustLogging "tracing")}}
         tracing::info!("Received gRPC request: SayHello from '{}'", name);
+{{else if (eq rustLogging "env-logger")}}
+        log::info!("Received gRPC request: SayHello from '{}'", name);
+{{else}}
+        println!("Received gRPC request: SayHello from '{}'", name);
+{{/if}}
 
         let reply = HelloReply {
             message: format!("Hello, {}!", name),
@@ -33,7 +39,13 @@ impl Greeter for GreeterService {
         request: Request<HelloRequest>,
     ) -> Result<Response<Self::SayHelloStreamStream>, Status> {
         let name = request.into_inner().name;
+{{#if (eq rustLogging "tracing")}}
         tracing::info!("Received gRPC streaming request: SayHelloStream from '{}'", name);
+{{else if (eq rustLogging "env-logger")}}
+        log::info!("Received gRPC streaming request: SayHelloStream from '{}'", name);
+{{else}}
+        println!("Received gRPC streaming request: SayHelloStream from '{}'", name);
+{{/if}}
 
         let (tx, rx) = tokio::sync::mpsc::channel(4);
 

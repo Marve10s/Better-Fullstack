@@ -30,21 +30,8 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Fork info */}
-        <p className="mt-8 text-center text-xs text-muted-foreground">
-          Forked from{" "}
-          <a
-            href="https://github.com/better-t-stack/create-better-t-stack"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground underline-offset-4 hover:underline"
-          >
-            create-better-t-stack
-          </a>
-        </p>
-
         {/* Copyright */}
-        <p className="mt-2 text-center text-xs text-muted-foreground">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           {new Date().getFullYear()} Better Fullstack · Built by{" "}
           <a
             href="https://elkamali.dev"

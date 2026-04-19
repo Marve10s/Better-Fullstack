@@ -17,15 +17,6 @@ See `docs/guidelines/` for deeper reference on these topics:
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
 - `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Covers every file that must be touched, with worked examples, template handler reference, test patterns, and routing gotchas (Convex skips, self-backend, frontend array detection, processor ordering)
 
-## Git Remotes and Pull Requests
-
-This is a fork. There are two remotes:
-
-- `origin` → `Marve10s/Better-Fullstack` (our fork — **always create PRs here**)
-- `upstream` → `AmanVarshney01/create-better-t-stack` (the upstream project — never push PRs here)
-
-When creating pull requests, always target `--repo Marve10s/Better-Fullstack`. Do not let `gh pr create` default to the upstream repo.
-
 ## Workflow
 
 - Never start the dev server (`turbo dev`, `bun run dev`, `vite dev`, etc.) unless explicitly asked to.

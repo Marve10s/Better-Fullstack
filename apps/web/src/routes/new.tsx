@@ -58,14 +58,31 @@ export const Route = createFileRoute("/new")({
   component: StackBuilderPage,
 });
 
+function BuilderLoadingState() {
+  return (
+    <div className="flex h-[calc(100vh-64px)] w-full flex-col items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative flex h-12 w-12 items-center justify-center">
+          <div className="absolute h-full w-full animate-spin rounded-full border-2 border-muted border-t-primary" />
+          <div className="h-2 w-2 rounded-full bg-primary" />
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <h3 className="font-mono text-sm font-medium tracking-tight text-foreground">
+            Loading Builder
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Preparing your workspace...
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StackBuilderPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-[calc(100vh-64px)] items-center justify-center">Loading...</div>
-      }
-    >
-      <div className="grid h-[calc(100vh-64px)] w-full flex-1 grid-cols-1 overflow-hidden">
+    <Suspense fallback={<BuilderLoadingState />}>
+      <div className="flex h-[calc(100vh-64px)] w-full flex-1 flex-col overflow-hidden bg-background">
         <StackBuilder />
       </div>
     </Suspense>
