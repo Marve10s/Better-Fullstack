@@ -63,9 +63,9 @@
   },
   "dependencies": {
     "@better-fullstack/types": "workspace:*",
-    "effect": "^3.21.0",
+    "effect": "^3.21.1",
     "handlebars": "^4.7.9",
-    "memfs": "4.57.1",
+    "memfs": "4.57.2",
     "pathe": "^2.0.3",
     "ts-morph": "^27.0.2",
     "yaml": "^2.8.3"
