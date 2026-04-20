@@ -44,7 +44,7 @@ async function fetchStatsFromSources(): Promise<StatsPayload> {
     }),
     fetch(`https://api.github.com/search/issues?q=repo:${REPO}+type:pr+state:open`, { headers }),
     fetch(`https://api.github.com/search/issues?q=repo:${REPO}+type:pr+is:merged`, { headers }),
-    fetch("https://api.npmjs.org/downloads/point/last-week/create-better-fullstack"),
+    fetch("https://api.npmjs.org/downloads/point/last-month/create-better-fullstack"),
   ]);
 
   const [repoData, openIssues, closedIssues, openPRs, mergedPRs, npmData] = await Promise.all([
