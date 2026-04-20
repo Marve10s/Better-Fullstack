@@ -83,11 +83,19 @@ export const STACK_STATE_OPTION_CATEGORY_BY_KEY: Record<
   goCli: "goCli",
   goLogging: "goLogging",
   goAuth: "goAuth",
+  javaWebFramework: "javaWebFramework",
+  javaBuildTool: "javaBuildTool",
+  javaOrm: "javaOrm",
+  javaAuth: "javaAuth",
+  javaLibraries: "javaLibraries",
+  javaTestingLibraries: "javaTestingLibraries",
 };
 
 export const VIRTUAL_NONE_MULTI_SELECT_STACK_KEYS = [
   "rustLibraries",
   "pythonAi",
+  "javaLibraries",
+  "javaTestingLibraries",
   "aiDocs",
 ] as const;
 

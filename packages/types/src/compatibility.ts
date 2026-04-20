@@ -80,7 +80,13 @@ export type CompatibilityCategory =
   | "goApi"
   | "goCli"
   | "goLogging"
-  | "goAuth";
+  | "goAuth"
+  | "javaWebFramework"
+  | "javaBuildTool"
+  | "javaOrm"
+  | "javaAuth"
+  | "javaLibraries"
+  | "javaTestingLibraries";
 
 export type CompatibilityIssue = {
   code: string;
@@ -99,7 +105,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go";
+  ecosystem: "typescript" | "rust" | "python" | "go" | "java";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -177,6 +183,12 @@ export type CompatibilityInput = {
   goCli: string;
   goLogging: string;
   goAuth: string;
+  javaWebFramework: string;
+  javaBuildTool: string;
+  javaOrm: string;
+  javaAuth: string;
+  javaLibraries: string[];
+  javaTestingLibraries: string[];
 };
 
 const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
@@ -248,6 +260,12 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "goCli",
   "goLogging",
   "goAuth",
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
 ];
 
 const DEFAULT_RUNTIME = "bun";
@@ -346,6 +364,15 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     goAuth: "Go Auth",
   };
 
+  const javaCategoryNames: Record<string, string> = {
+    javaWebFramework: "Java Web Framework",
+    javaBuildTool: "Java Build Tool",
+    javaOrm: "Java ORM / Database",
+    javaAuth: "Java Auth",
+    javaLibraries: "Java Libraries",
+    javaTestingLibraries: "Java Testing Libraries",
+  };
+
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
   }
@@ -356,6 +383,10 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
 
   if (goCategoryNames[categoryKey]) {
     return goCategoryNames[categoryKey];
+  }
+
+  if (javaCategoryNames[categoryKey]) {
+    return javaCategoryNames[categoryKey];
   }
 
   // Custom display names for TypeScript categories
@@ -1978,6 +2009,15 @@ export const getDisabledReason = (
     }
   }
 
+  // ============================================
+  // JAVA ECOSYSTEM RULES
+  // ============================================
+  if (category === "javaLibraries") {
+    if (optionId === "flyway" && currentStack.javaOrm !== "spring-data-jpa") {
+      return "Flyway currently requires Spring Data JPA in the Java scaffold";
+    }
+  }
+
   return null;
 };
 
@@ -2430,6 +2470,10 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
     ["ai", input.aiSdk],
+    ["javaWebFramework", input.javaWebFramework],
+    ["javaBuildTool", input.javaBuildTool],
+    ["javaOrm", input.javaOrm],
+    ["javaAuth", input.javaAuth],
   ];
 
   for (const [category, optionId] of scalarChecks) {
@@ -2464,6 +2508,30 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "appPlatforms",
         optionId: addon,
+      });
+    }
+  }
+
+  for (const javaLibrary of input.javaLibraries) {
+    const reason = getDisabledReason(input, "javaLibraries", javaLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_LIBRARY",
+        message: reason,
+        category: "javaLibraries",
+        optionId: javaLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.javaTestingLibraries) {
+    const reason = getDisabledReason(input, "javaTestingLibraries", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_TESTING_LIBRARY",
+        message: reason,
+        category: "javaTestingLibraries",
+        optionId: testingLibrary,
       });
     }
   }

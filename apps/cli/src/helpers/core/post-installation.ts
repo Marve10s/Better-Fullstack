@@ -48,6 +48,12 @@ export async function displayPostInstallInstructions(
     return;
   }
 
+  // Handle Java projects with different instructions
+  if (ecosystem === "java") {
+    displayJavaInstructions(config);
+    return;
+  }
+
   // Handle Python projects with different instructions
   if (ecosystem === "python") {
     displayPythonInstructions(config);
@@ -857,6 +863,135 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
   if (goApi === "grpc-go") {
     output += `${pc.cyan("•")} gRPC: localhost:50051\n`;
   }
+
+  output += `\n${pc.bold(
+    "Enjoying Better Fullstack?",
+  )} Help us grow — star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
+
+  consola.box(output);
+}
+
+function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
+  const {
+    relativePath,
+    depsInstalled,
+    javaWebFramework,
+    javaBuildTool,
+    javaOrm,
+    javaAuth,
+    javaLibraries,
+    javaTestingLibraries,
+  } = config;
+
+  const cdCmd = `cd ${relativePath}`;
+  const buildToolCommand = javaBuildTool === "none"
+    ? null
+    :
+    javaBuildTool === "gradle"
+      ? process.platform === "win32"
+        ? "gradlew.bat"
+        : "./gradlew"
+      : process.platform === "win32"
+        ? "mvnw.cmd"
+        : "./mvnw";
+  const runCommand = buildToolCommand
+    ? javaBuildTool === "gradle"
+      ? `${buildToolCommand} bootRun`
+      : `${buildToolCommand} spring-boot:run`
+    : null;
+  const packageCommand = buildToolCommand
+    ? javaBuildTool === "gradle"
+      ? `${buildToolCommand} build`
+      : `${buildToolCommand} package`
+    : null;
+
+  let output = `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
+  let stepCounter = 2;
+
+  if (!depsInstalled && buildToolCommand) {
+    output += `${pc.cyan(`${stepCounter++}.`)} ${buildToolCommand} test\n`;
+  }
+
+  if (runCommand) {
+    output += `${pc.cyan(`${stepCounter++}.`)} ${runCommand}\n`;
+  } else {
+    output += `${pc.cyan(`${stepCounter++}.`)} Add Maven or Gradle, then run the app\n`;
+  }
+
+  output += `\n${pc.bold("Your Java project includes:")}\n`;
+
+  if (javaWebFramework && javaWebFramework !== "none") {
+    const frameworkNames: Record<string, string> = {
+      "spring-boot": "Spring Boot",
+    };
+    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[javaWebFramework] || javaWebFramework}\n`;
+  }
+
+  if (javaBuildTool && javaBuildTool !== "none") {
+    const buildToolNames: Record<string, string> = {
+      maven: "Maven Wrapper",
+      gradle: "Gradle Wrapper",
+    };
+    output += `${pc.cyan("•")} Build Tool: ${buildToolNames[javaBuildTool] || javaBuildTool}\n`;
+  }
+
+  if (javaOrm && javaOrm !== "none") {
+    const ormNames: Record<string, string> = {
+      "spring-data-jpa": "Spring Data JPA",
+    };
+    output += `${pc.cyan("•")} ORM: ${ormNames[javaOrm] || javaOrm}\n`;
+  }
+
+  if (javaAuth && javaAuth !== "none") {
+    const authNames: Record<string, string> = {
+      "spring-security": "Spring Security",
+    };
+    output += `${pc.cyan("•")} Auth: ${authNames[javaAuth] || javaAuth}\n`;
+  }
+
+  if (javaLibraries && javaLibraries.length > 0 && !javaLibraries.includes("none")) {
+    const libraryNames: Record<string, string> = {
+      "spring-actuator": "Spring Actuator",
+      "spring-validation": "Spring Validation",
+      flyway: "Flyway",
+    };
+    const libraryList = javaLibraries
+      .filter((library) => library !== "none")
+      .map((library) => libraryNames[library] || library)
+      .join(", ");
+    output += `${pc.cyan("•")} Libraries: ${libraryList}\n`;
+  }
+
+  if (
+    javaTestingLibraries &&
+    javaTestingLibraries.length > 0 &&
+    !javaTestingLibraries.includes("none")
+  ) {
+    const testingNames: Record<string, string> = {
+      junit5: "JUnit 5",
+      mockito: "Mockito",
+      testcontainers: "Testcontainers",
+    };
+    const testingList = javaTestingLibraries
+      .filter((library) => library !== "none")
+      .map((library) => testingNames[library] || library)
+      .join(", ");
+    output += `${pc.cyan("•")} Testing: ${testingList}\n`;
+  }
+
+  output += `\n${pc.bold("Common Java commands:")}\n`;
+  if (buildToolCommand && runCommand && packageCommand) {
+    output += `${pc.cyan("•")} Test: ${buildToolCommand} test\n`;
+    output += `${pc.cyan("•")} Run: ${runCommand}\n`;
+    output += `${pc.cyan("•")} Package: ${packageCommand}\n`;
+  } else {
+    output += `${pc.cyan("•")} Configure Maven or Gradle before running build commands\n`;
+  }
+
+  output += `\n${pc.bold("Your project will be available at:")}\n`;
+  output += `${pc.cyan("•")} API: http://localhost:8080\n`;
 
   output += `\n${pc.bold(
     "Enjoying Better Fullstack?",

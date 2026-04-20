@@ -1,0 +1,59 @@
+plugins {
+	java
+	id("org.springframework.boot") version "4.0.5"
+	id("io.spring.dependency-management") version "1.1.7"
+}
+
+group = "{{javaGroupId}}"
+version = "0.0.1-SNAPSHOT"
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+{{#if hasJavaJpa}}
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+{{/if}}
+{{#if hasJavaSecurity}}
+	implementation("org.springframework.boot:spring-boot-starter-security")
+{{/if}}
+{{#if hasJavaActuator}}
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+{{/if}}
+{{#if hasJavaValidation}}
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+{{/if}}
+{{#if hasJavaFlyway}}
+	implementation("org.flywaydb:flyway-core")
+{{/if}}
+	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+{{#if hasJavaJpa}}
+	runtimeOnly("com.h2database:h2")
+{{/if}}
+
+{{#if hasJavaTests}}
+{{#if hasJavaJpa}}
+	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+{{/if}}
+{{#if hasJavaSecurity}}
+	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+{{/if}}
+	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+{{#if hasJavaTestcontainers}}
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+{{/if}}
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+{{/if}}
+}
+
+tasks.withType<Test> {
+	useJUnitPlatform()
+}

@@ -169,6 +169,22 @@ function getGoFlags(config: ProjectConfig) {
   return flags;
 }
 
+function getJavaFlags(config: ProjectConfig) {
+  const flags = ["--ecosystem java"];
+
+  flags.push(`--java-web-framework ${config.javaWebFramework}`);
+  flags.push(`--java-build-tool ${config.javaBuildTool}`);
+  flags.push(`--java-orm ${config.javaOrm}`);
+  flags.push(`--java-auth ${config.javaAuth}`);
+  flags.push(formatArrayFlag("java-libraries", config.javaLibraries));
+  flags.push(formatArrayFlag("java-testing-libraries", config.javaTestingLibraries));
+  appendSharedNonTypeScriptFlags(flags, config);
+
+  appendCommonFlags(flags, config);
+
+  return flags;
+}
+
 export function generateReproducibleCommand(config: ProjectConfig) {
   let flags: string[];
 
@@ -181,6 +197,9 @@ export function generateReproducibleCommand(config: ProjectConfig) {
       break;
     case "go":
       flags = getGoFlags(config);
+      break;
+    case "java":
+      flags = getJavaFlags(config);
       break;
     case "typescript":
     default:

@@ -115,6 +115,19 @@ const GO_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "install",
 ];
 
+// Java ecosystem category order
+const JAVA_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
+  "aiDocs",
+  "git",
+  "install",
+];
+
 // Combined category order for backwards compatibility
 const CATEGORY_ORDER = [
   ...new Set([
@@ -122,6 +135,7 @@ const CATEGORY_ORDER = [
     ...RUST_CATEGORY_ORDER,
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
+    ...JAVA_CATEGORY_ORDER,
   ]),
 ] as Array<keyof typeof TECH_OPTIONS>;
 
@@ -156,6 +170,15 @@ const GO_CONFIG_KEYS = [
   "goCli",
   "goLogging",
   "goAuth",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const JAVA_CONFIG_KEYS = [
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const SELF_BACKENDS = new Set([
@@ -284,6 +307,16 @@ function stackToCliComparableConfig(
     goCli: stack.goCli as CliDefaultProjectConfigBase["goCli"],
     goLogging: stack.goLogging as CliDefaultProjectConfigBase["goLogging"],
     goAuth: stack.goAuth as CliDefaultProjectConfigBase["goAuth"],
+    javaWebFramework: stack.javaWebFramework as CliDefaultProjectConfigBase["javaWebFramework"],
+    javaBuildTool: stack.javaBuildTool as CliDefaultProjectConfigBase["javaBuildTool"],
+    javaOrm: stack.javaOrm as CliDefaultProjectConfigBase["javaOrm"],
+    javaAuth: stack.javaAuth as CliDefaultProjectConfigBase["javaAuth"],
+    javaLibraries:
+      toUniqueNonNoneArray(stack.javaLibraries) as CliDefaultProjectConfigBase["javaLibraries"],
+    javaTestingLibraries:
+      toUniqueNonNoneArray(
+        stack.javaTestingLibraries,
+      ) as CliDefaultProjectConfigBase["javaTestingLibraries"],
     aiDocs: toUniqueNonNoneArray(stack.aiDocs) as CliDefaultProjectConfigBase["aiDocs"],
   };
 }
@@ -303,6 +336,7 @@ function isCliDefaultStack(stack: StackState, projectName: string) {
           ...RUST_CONFIG_KEYS,
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
+          ...JAVA_CONFIG_KEYS,
         ])
       : new Set<keyof CliDefaultProjectConfigBase>();
 
@@ -365,6 +399,11 @@ export function generateStackCommand(stack: StackState) {
   // Handle Go ecosystem
   if (stack.ecosystem === "go") {
     return generateGoCommand(stack, projectName);
+  }
+
+  // Handle Java ecosystem
+  if (stack.ecosystem === "java") {
+    return generateJavaCommand(stack, projectName);
   }
 
   // TypeScript ecosystem
@@ -587,6 +626,32 @@ function generateGoCommand(stack: StackState, projectName: string) {
   return `${base} ${projectName} ${flags.join(" ")}`;
 }
 
+function generateJavaCommand(stack: StackState, projectName: string) {
+  const base =
+    PACKAGE_MANAGER_COMMANDS[stack.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ||
+    PACKAGE_MANAGER_COMMANDS.default;
+
+  const flags: string[] = [
+    `--ecosystem java`,
+    `--java-web-framework ${stack.javaWebFramework}`,
+    `--java-build-tool ${stack.javaBuildTool}`,
+    `--java-orm ${stack.javaOrm}`,
+    `--java-auth ${stack.javaAuth}`,
+    formatArrayFlag("java-libraries", stack.javaLibraries),
+    formatArrayFlag("java-testing-libraries", stack.javaTestingLibraries),
+  ];
+
+  flags.push(formatArrayFlag("ai-docs", stack.aiDocs));
+  if (stack.git === "false") {
+    flags.push("--no-git");
+  }
+  if (stack.install === "false") {
+    flags.push("--no-install");
+  }
+
+  return `${base} ${projectName} ${flags.join(" ")}`;
+}
+
 export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
   const origin = baseUrl || "https://better-fullstack-web.vercel.app";
 
@@ -609,4 +674,5 @@ export {
   RUST_CATEGORY_ORDER,
   PYTHON_CATEGORY_ORDER,
   GO_CATEGORY_ORDER,
+  JAVA_CATEGORY_ORDER,
 };

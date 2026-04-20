@@ -31,6 +31,12 @@ import {
   GoLoggingSchema,
   GoOrmSchema,
   GoWebFrameworkSchema,
+  JavaAuthSchema,
+  JavaBuildToolSchema,
+  JavaLibrariesSchema,
+  JavaOrmSchema,
+  JavaTestingLibrariesSchema,
+  JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
   LoggingSchema,
@@ -91,7 +97,7 @@ export const CreateCommandOptionsSchema = z.object({
     .optional()
     .default(false)
     .describe("Preview generated file tree without writing to disk"),
-  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, or go)"),
+  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, go, or java)"),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),
   auth: AuthSchema.optional(),
@@ -193,6 +199,20 @@ export const CreateCommandOptionsSchema = z.object({
   goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea)"),
   goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
   goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
+  javaWebFramework: JavaWebFrameworkSchema.optional().describe(
+    "Java web framework (spring-boot)",
+  ),
+  javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool (maven, gradle)"),
+  javaOrm: JavaOrmSchema.optional().describe("Java ORM/database (spring-data-jpa)"),
+  javaAuth: JavaAuthSchema.optional().describe("Java auth (spring-security)"),
+  javaLibraries: z
+    .array(JavaLibrariesSchema)
+    .optional()
+    .describe("Java application libraries"),
+  javaTestingLibraries: z
+    .array(JavaTestingLibrariesSchema)
+    .optional()
+    .describe("Java testing libraries"),
   aiDocs: z
     .array(AiDocsSchema)
     .optional()

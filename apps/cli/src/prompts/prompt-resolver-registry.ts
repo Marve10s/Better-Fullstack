@@ -20,6 +20,12 @@ import {
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
+  JAVA_AUTH_VALUES,
+  JAVA_BUILD_TOOL_VALUES,
+  JAVA_LIBRARIES_VALUES,
+  JAVA_ORM_VALUES,
+  JAVA_TESTING_LIBRARIES_VALUES,
+  JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
   OBSERVABILITY_VALUES,
@@ -73,6 +79,14 @@ import {
   resolveGoOrmPrompt,
   resolveGoWebFrameworkPrompt,
 } from "./go-ecosystem";
+import {
+  resolveJavaAuthPrompt,
+  resolveJavaBuildToolPrompt,
+  resolveJavaLibrariesPrompt,
+  resolveJavaOrmPrompt,
+  resolveJavaTestingLibrariesPrompt,
+  resolveJavaWebFrameworkPrompt,
+} from "./java-ecosystem";
 import { resolveJobQueuePrompt } from "./job-queue";
 import { resolveLoggingPrompt } from "./logging";
 import { resolveObservabilityPrompt } from "./observability";
@@ -389,5 +403,36 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: GO_AUTH_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveGoAuthPrompt(value as any),
     coverageContexts: [{}],
+  },
+  javaWebFramework: {
+    schemaValues: JAVA_WEB_FRAMEWORK_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveJavaWebFrameworkPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  javaBuildTool: {
+    schemaValues: JAVA_BUILD_TOOL_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveJavaBuildToolPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  javaOrm: {
+    schemaValues: JAVA_ORM_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveJavaOrmPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  javaAuth: {
+    schemaValues: JAVA_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveJavaAuthPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  javaLibraries: {
+    schemaValues: JAVA_LIBRARIES_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) => resolveJavaLibrariesPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
+  },
+  javaTestingLibraries: {
+    schemaValues: JAVA_TESTING_LIBRARIES_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) =>
+      resolveJavaTestingLibrariesPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
   },
 };

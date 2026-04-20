@@ -74,6 +74,12 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     goCli: projectConfig.goCli,
     goLogging: projectConfig.goLogging,
     goAuth: projectConfig.goAuth,
+    javaWebFramework: projectConfig.javaWebFramework,
+    javaBuildTool: projectConfig.javaBuildTool,
+    javaOrm: projectConfig.javaOrm,
+    javaAuth: projectConfig.javaAuth,
+    javaLibraries: projectConfig.javaLibraries,
+    javaTestingLibraries: projectConfig.javaTestingLibraries,
     aiDocs: projectConfig.aiDocs,
   };
 
@@ -142,6 +148,12 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     goCli: btsConfig.goCli,
     goLogging: btsConfig.goLogging,
     goAuth: btsConfig.goAuth,
+    javaWebFramework: btsConfig.javaWebFramework,
+    javaBuildTool: btsConfig.javaBuildTool,
+    javaOrm: btsConfig.javaOrm,
+    javaAuth: btsConfig.javaAuth,
+    javaLibraries: btsConfig.javaLibraries,
+    javaTestingLibraries: btsConfig.javaTestingLibraries,
     aiDocs: btsConfig.aiDocs,
   };
 

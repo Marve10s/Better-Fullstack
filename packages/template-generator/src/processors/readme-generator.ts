@@ -10,10 +10,120 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
     content = generatePythonReadmeContent(config);
   } else if (config.ecosystem === "go") {
     content = generateGoReadmeContent(config);
+  } else if (config.ecosystem === "java") {
+    content = generateJavaReadmeContent(config);
   } else {
     content = generateReadmeContent(config);
   }
   vfs.writeFile("README.md", content);
+}
+
+function generateJavaReadmeContent(config: ProjectConfig): string {
+  const buildToolCommand =
+    config.javaBuildTool === "gradle"
+      ? "./gradlew"
+      : config.javaBuildTool === "maven"
+        ? "./mvnw"
+        : null;
+  const runCommand = buildToolCommand
+    ? config.javaBuildTool === "gradle"
+      ? `${buildToolCommand} bootRun`
+      : `${buildToolCommand} spring-boot:run`
+    : null;
+  const packageCommand = buildToolCommand
+    ? config.javaBuildTool === "gradle"
+      ? `${buildToolCommand} build`
+      : `${buildToolCommand} package`
+    : null;
+  const javaLibraries = (config.javaLibraries || []).filter((library) => library !== "none");
+  const testingLibraries = (config.javaTestingLibraries || []).filter((library) => library !== "none");
+  const features = [
+    "Java 21",
+    config.javaWebFramework === "spring-boot" ? "Spring Boot 4" : null,
+    config.javaBuildTool === "maven" ? "Maven Wrapper" : null,
+    config.javaBuildTool === "gradle" ? "Gradle Wrapper" : null,
+    config.javaOrm === "spring-data-jpa" ? "Spring Data JPA + H2" : null,
+    config.javaAuth === "spring-security" ? "Spring Security" : null,
+    javaLibraries.length > 0 ? `Libraries: ${javaLibraries.join(", ")}` : null,
+    testingLibraries.length > 0 ? `Testing: ${testingLibraries.join(", ")}` : null,
+  ].filter(Boolean) as string[];
+
+  const structureLines = [
+    `${config.projectName}/`,
+    config.javaBuildTool === "gradle"
+      ? "├── gradle/                # Gradle Wrapper configuration"
+      : "├── .mvn/                  # Maven Wrapper configuration",
+    config.javaBuildTool === "gradle"
+      ? "├── gradlew                # Gradle Wrapper launcher"
+      : "├── mvnw                   # Maven Wrapper launcher",
+    config.javaBuildTool === "gradle"
+      ? "├── build.gradle.kts       # Gradle build definition"
+      : "├── pom.xml                # Build and dependency configuration",
+    "├── src/main/java/         # Application source code",
+    "├── src/main/resources/    # Spring configuration",
+  ];
+
+  if (testingLibraries.length > 0) {
+    structureLines.push("├── src/test/java/         # Test suite");
+  }
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) for the Java ecosystem.
+
+## Stack
+
+${features.map((feature) => `- ${feature}`).join("\n")}
+
+## Getting Started
+
+Make sure Java 21 or newer is installed.
+
+Run the test suite:
+
+\`\`\`bash
+${buildToolCommand ?? "# add Maven or Gradle first"}
+\`\`\`
+
+Start the Spring Boot application:
+
+\`\`\`bash
+${runCommand ?? "# configure a Java build tool first"}
+\`\`\`
+
+The health endpoint is available at \`http://localhost:8080/health\`.
+${
+  config.javaOrm === "spring-data-jpa"
+    ? "\nThe generated JPA example also exposes `GET /users` and `POST /users`, backed by an embedded H2 database.\n"
+    : ""
+}
+${
+  javaLibraries.includes("spring-actuator")
+    ? "\nSpring Actuator is enabled with `/actuator/health`, `/actuator/info`, and `/actuator/metrics`.\n"
+    : ""
+}
+${
+  config.javaAuth === "spring-security"
+    ? "\n## Authentication\n\nHTTP Basic auth protects application endpoints except `/health`.\n\nSet these environment variables before running locally:\n\n- `APP_BASIC_USERNAME`\n- `APP_BASIC_PASSWORD`\n"
+    : ""
+}
+
+## Project Structure
+
+\`\`\`
+${structureLines.join("\n")}
+\`\`\`
+
+## Common Commands
+
+${
+  buildToolCommand && runCommand && packageCommand
+    ? `- \`${buildToolCommand} test\` - Run the test suite
+- \`${runCommand}\` - Start the application
+- \`${packageCommand}\` - Build the jar`
+    : "- Configure Maven or Gradle before running build commands"
+}
+`;
 }
 
 function generateReadmeContent(options: ProjectConfig): string {

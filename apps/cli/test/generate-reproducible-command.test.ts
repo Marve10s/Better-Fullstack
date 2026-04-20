@@ -80,6 +80,12 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     goCli: "none",
     goLogging: "none",
     goAuth: "none",
+    javaWebFramework: "spring-boot",
+    javaBuildTool: "maven",
+    javaOrm: "none",
+    javaAuth: "none",
+    javaLibraries: [],
+    javaTestingLibraries: ["junit5"],
     aiDocs: ["claude-md"],
     ...overrides,
   };
@@ -324,5 +330,72 @@ describe("generateReproducibleCommand", () => {
 
     expect(latestCommand).toContain("--version-channel latest");
     expect(betaCommand).toContain("--version-channel beta");
+  });
+
+  it("generates a Java command without shared auth flags", () => {
+    const config = makeConfig({
+      ecosystem: "java",
+      frontend: [],
+      addons: [],
+      auth: "better-auth",
+      packageManager: "bun",
+      install: false,
+      git: false,
+      database: "none",
+      orm: "none",
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      payments: "none",
+      email: "none",
+      fileUpload: "none",
+      effect: "none",
+      stateManagement: "none",
+      forms: "none",
+      testing: "none",
+      validation: "none",
+      cssFramework: "none",
+      uiLibrary: "none",
+      realtime: "none",
+      jobQueue: "none",
+      animation: "none",
+      logging: "none",
+      observability: "none",
+      cms: "none",
+      caching: "none",
+      i18n: "none",
+      search: "none",
+      fileStorage: "none",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "gradle",
+      javaOrm: "spring-data-jpa",
+      javaAuth: "spring-security",
+      javaLibraries: ["spring-actuator", "flyway"],
+      javaTestingLibraries: ["junit5", "mockito"],
+      aiDocs: ["claude-md", "agents-md"],
+    });
+
+    const command = generateReproducibleCommand(config);
+
+    expect(command).toBe(
+      "bun create better-fullstack@latest my-app " +
+        "--ecosystem java " +
+        "--java-web-framework spring-boot " +
+        "--java-build-tool gradle " +
+        "--java-orm spring-data-jpa " +
+        "--java-auth spring-security " +
+        "--java-libraries spring-actuator flyway " +
+        "--java-testing-libraries junit5 mockito " +
+        "--addons none " +
+        "--examples none " +
+        "--db-setup none " +
+        "--web-deploy none " +
+        "--server-deploy none " +
+        "--ai-docs claude-md agents-md " +
+        "--no-git " +
+        "--package-manager bun " +
+        "--no-install",
+    );
+    expect(command).not.toContain("--auth ");
   });
 });

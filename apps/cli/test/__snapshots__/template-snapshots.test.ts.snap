@@ -777,6 +777,31 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: java-spring-boot-jpa-security 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "build.gradle.kts",
+  "gradle/wrapper/gradle-wrapper.jar",
+  "gradle/wrapper/gradle-wrapper.properties",
+  "gradlew",
+  "gradlew.bat",
+  "settings.gradle.kts",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/Application.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/config/SecurityConfig.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/controller/HealthController.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/controller/UserController.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/domain/AppUser.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/repository/AppUserRepository.java",
+  "src/main/java/com/example/snapshotjavaspringbootjpasecurity/service/AppUserService.java",
+  "src/main/resources/application.yml",
+  "src/main/resources/db/migration/V1__init.sql",
+  "src/test/java/com/example/snapshotjavaspringbootjpasecurity/ApplicationTests.java",
+  "src/test/java/com/example/snapshotjavaspringbootjpasecurity/service/AppUserServiceTest.java",
+]
+`;
+
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
   "fileCount": 55,
@@ -11122,6 +11147,100 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: java-spring-boot-jpa-security 1`] = `
+{
+  "fileCount": 22,
+  "files": [
+    {
+      "content": 
+"PORT=8080
+SPRING_PROFILES_ACTIVE=dev
+APP_BASIC_USERNAME=admin
+APP_BASIC_PASSWORD=change-me
+"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "build.gradle.kts",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "gradle/wrapper/gradle-wrapper.jar",
+    },
+    {
+      "content": "[exists]",
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+    },
+    {
+      "content": "[exists]",
+      "path": "gradlew",
+    },
+    {
+      "content": "[exists]",
+      "path": "gradlew.bat",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "settings.gradle.kts",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/Application.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/config/SecurityConfig.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/controller/HealthController.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/controller/UserController.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/domain/AppUser.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/repository/AppUserRepository.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/java/com/example/snapshotjavaspringbootjpasecurity/service/AppUserService.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/resources/application.yml",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/main/resources/db/migration/V1__init.sql",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/test/java/com/example/snapshotjavaspringbootjpasecurity/ApplicationTests.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/test/java/com/example/snapshotjavaspringbootjpasecurity/service/AppUserServiceTest.java",
     },
   ],
 }

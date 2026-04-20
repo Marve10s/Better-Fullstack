@@ -1,3 +1,4 @@
+import { EcosystemSchema } from "@better-fullstack/types";
 import { z } from "zod";
 
 import { DEFAULT_STACK } from "./stack-defaults";
@@ -11,9 +12,7 @@ const commaSeparatedArray = (defaultValue: string[]) =>
     .catch([...defaultValue]);
 
 const stackSearchShape: Record<string, z.ZodType> = {};
-const ecosystemSchema = z
-  .enum(["typescript", "rust", "python", "go"])
-  .catch(DEFAULT_STACK.ecosystem);
+const ecosystemSchema = EcosystemSchema.catch(DEFAULT_STACK.ecosystem);
 
 for (const stackKey of stackStateKeys) {
   const urlKey = stackUrlKeys[stackKey];

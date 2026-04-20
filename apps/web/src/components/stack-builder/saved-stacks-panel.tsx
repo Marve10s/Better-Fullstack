@@ -62,6 +62,11 @@ const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
     "goWebFramework", "goOrm", "goApi", "goCli", "goLogging",
     "auth", "aiDocs", "git", "install", "yolo",
   ],
+  java: [
+    "ecosystem", "projectName",
+    "javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries",
+    "aiDocs", "git", "install", "yolo",
+  ],
 };
 
 /** Subset of keys used for the card highlight badges. */
@@ -70,6 +75,7 @@ const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]>
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli"],
   python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonTaskQueue"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli"],
+  java: ["javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries"],
 };
 
 interface SavedStacksPanelProps {

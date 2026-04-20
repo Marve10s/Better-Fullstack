@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Addons, Frontend } from "../src";
@@ -682,7 +682,7 @@ describe("Addon Configurations", () => {
       "tanstack-virtual",
       "tanstack-db",
       "tanstack-pacer",
-      // Note: starlight, ultracite, ruler, fumadocs are prompt-controlled only
+      // Note: starlight, ruler, fumadocs are prompt-controlled only
     ];
 
     for (const addon of testableAddons) {
@@ -722,6 +722,90 @@ describe("Addon Configurations", () => {
         expectSuccess(result);
       });
     }
+  });
+
+  describe("Prompt-Controlled Addons", () => {
+    it("should scaffold mcp without interactive prompts in silent mode", async () => {
+      const previousSkipExternalCommands = process.env.BFS_SKIP_EXTERNAL_COMMANDS;
+      process.env.BFS_SKIP_EXTERNAL_COMMANDS = "1";
+
+      try {
+        const result = await runTRPCTest({
+          projectName: "mcp-silent-defaults",
+          addons: ["mcp"],
+          frontend: ["tanstack-start"],
+          backend: "none",
+          runtime: "none",
+          api: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          cssFramework: "none",
+          uiLibrary: "none",
+          stateManagement: "mobx",
+          forms: "conform",
+          validation: "valibot",
+          testing: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+
+        const projectDir = result.result?.projectDirectory ?? result.projectDir;
+        const btsConfigPath = join(projectDir!, "bts.jsonc");
+
+        expect(existsSync(btsConfigPath)).toBe(true);
+        expect(readFileSync(btsConfigPath, "utf-8")).toContain('"addons": ["mcp"]');
+      } finally {
+        if (previousSkipExternalCommands === undefined) {
+          delete process.env.BFS_SKIP_EXTERNAL_COMMANDS;
+        } else {
+          process.env.BFS_SKIP_EXTERNAL_COMMANDS = previousSkipExternalCommands;
+        }
+      }
+    });
+
+    it("should scaffold ultracite without interactive prompts in silent mode", async () => {
+      const previousSkipExternalCommands = process.env.BFS_SKIP_EXTERNAL_COMMANDS;
+      process.env.BFS_SKIP_EXTERNAL_COMMANDS = "1";
+
+      try {
+        const result = await runTRPCTest({
+          projectName: "ultracite-silent-defaults",
+          addons: ["ultracite"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          api: "trpc",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+
+        const projectDir = result.result?.projectDirectory ?? result.projectDir;
+        const btsConfigPath = join(projectDir!, "bts.jsonc");
+
+        expect(existsSync(btsConfigPath)).toBe(true);
+        expect(readFileSync(btsConfigPath, "utf-8")).toContain('"addons": ["ultracite"]');
+      } finally {
+        if (previousSkipExternalCommands === undefined) {
+          delete process.env.BFS_SKIP_EXTERNAL_COMMANDS;
+        } else {
+          process.env.BFS_SKIP_EXTERNAL_COMMANDS = previousSkipExternalCommands;
+        }
+      }
+    });
   });
 
   describe("TanStack Addons", () => {

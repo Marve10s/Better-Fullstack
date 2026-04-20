@@ -6,6 +6,7 @@ import type { ProjectConfig } from "../../types";
 
 import { shouldSkipExternalCommands } from "../../utils/external-commands";
 import { getPackageRunnerPrefix } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 import { runInstallWithRetries } from "./retry-install";
 
 type McpTransport = "http" | "sse";
@@ -220,52 +221,59 @@ function filterAgentsForScope(scope: InstallScope): AgentOption[] {
 }
 
 export async function setupMcp(config: ProjectConfig): Promise<void> {
-  if (shouldSkipExternalCommands()) {
-    return;
-  }
-
   const { packageManager, projectDir } = config;
   log.info("Setting up MCP servers...");
 
-  const scope = await select<InstallScope>({
-    message: "Where should MCP servers be installed?",
-    options: [
-      {
-        value: "project",
-        label: "Project",
-        hint: "Writes to project config files (recommended for teams)",
-      },
-      {
-        value: "global",
-        label: "Global",
-        hint: "Writes to user-level config files (personal machine)",
-      },
-    ],
-    initialValue: "project",
-  });
-
-  if (isCancel(scope)) {
-    return;
-  }
-
+  const skipExternalCommands = shouldSkipExternalCommands();
+  const canPrompt = canPromptInteractively() && !skipExternalCommands;
   const recommendedServers = getRecommendedMcpServers(config);
   if (recommendedServers.length === 0) {
     return;
   }
 
-  const selectedServerKeys = await multiselect({
-    message: "Select MCP servers to install",
-    options: recommendedServers.map((server) => ({
-      value: server.key,
-      label: server.label,
-      hint: server.target,
-    })),
-    required: false,
-    initialValues: recommendedServers.map((server) => server.key),
-  });
+  let scope: InstallScope = "project";
+  let selectedServerKeys: string[] = recommendedServers.map((server) => server.key);
 
-  if (isCancel(selectedServerKeys) || selectedServerKeys.length === 0) {
-    return;
+  if (canPrompt) {
+    const promptedScope = await select<InstallScope>({
+      message: "Where should MCP servers be installed?",
+      options: [
+        {
+          value: "project",
+          label: "Project",
+          hint: "Writes to project config files (recommended for teams)",
+        },
+        {
+          value: "global",
+          label: "Global",
+          hint: "Writes to user-level config files (personal machine)",
+        },
+      ],
+      initialValue: "project",
+    });
+
+    if (isCancel(promptedScope)) {
+      return;
+    }
+
+    scope = promptedScope;
+
+    const promptedServerKeys = await multiselect({
+      message: "Select MCP servers to install",
+      options: recommendedServers.map((server) => ({
+        value: server.key,
+        label: server.label,
+        hint: server.target,
+      })),
+      required: false,
+      initialValues: selectedServerKeys,
+    });
+
+    if (isCancel(promptedServerKeys) || promptedServerKeys.length === 0) {
+      return;
+    }
+
+    selectedServerKeys = [...promptedServerKeys];
   }
 
   const agentOptions = filterAgentsForScope(scope).map((a) => ({
@@ -279,25 +287,35 @@ export async function setupMcp(config: ProjectConfig): Promise<void> {
     ),
   );
 
-  const selectedAgents = await multiselect({
-    message: "Select agents to install MCP servers to",
-    options: agentOptions,
-    required: false,
-    initialValues: defaultAgents,
-  });
+  let selectedAgents: string[] = defaultAgents;
 
-  if (isCancel(selectedAgents) || selectedAgents.length === 0) {
-    return;
+  if (canPrompt) {
+    const promptedAgents = await multiselect({
+      message: "Select agents to install MCP servers to",
+      options: agentOptions,
+      required: false,
+      initialValues: defaultAgents,
+    });
+
+    if (isCancel(promptedAgents) || promptedAgents.length === 0) {
+      return;
+    }
+
+    selectedAgents = [...promptedAgents];
   }
 
   const serversByKey = new Map(recommendedServers.map((server) => [server.key, server]));
   const selectedServers: McpServerDef[] = [];
-  for (const key of selectedServerKeys as string[]) {
+  for (const key of selectedServerKeys) {
     const server = serversByKey.get(key);
     if (server) selectedServers.push(server);
   }
 
   if (selectedServers.length === 0) {
+    return;
+  }
+
+  if (skipExternalCommands) {
     return;
   }
 

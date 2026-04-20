@@ -76,6 +76,12 @@ const DEFAULT_CONFIG = {
   goCli: "none",
   goLogging: "none",
   goAuth: "none",
+  javaWebFramework: "none",
+  javaBuildTool: "none",
+  javaOrm: "none",
+  javaAuth: "none",
+  javaLibraries: [],
+  javaTestingLibraries: [],
   aiDocs: [],
 };
 

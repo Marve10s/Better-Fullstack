@@ -143,6 +143,20 @@ function generateTechStackSection(config: ProjectConfig): string {
     if (config.auth !== "none") lines.push(`- Auth: ${config.auth}`);
   }
 
+  if (config.ecosystem === "java") {
+    const javaLibraries = (config.javaLibraries || []).filter((library) => library !== "none");
+    lines.push(`- Java Version: 21`);
+    if (config.javaWebFramework !== "none") lines.push(`- Web Framework: ${config.javaWebFramework}`);
+    if (config.javaBuildTool !== "none") lines.push(`- Build Tool: ${config.javaBuildTool}`);
+    if (config.javaOrm !== "none") lines.push(`- ORM: ${config.javaOrm}`);
+    if (config.javaAuth !== "none") lines.push(`- Auth: ${config.javaAuth}`);
+    if (javaLibraries.length > 0) lines.push(`- Libraries: ${javaLibraries.join(", ")}`);
+    if (config.javaTestingLibraries?.length) {
+      const libraries = config.javaTestingLibraries.filter((library) => library !== "none");
+      if (libraries.length > 0) lines.push(`- Testing: ${libraries.join(", ")}`);
+    }
+  }
+
   return lines.join("\n");
 }
 
@@ -219,6 +233,34 @@ function generateStructureSection(config: ProjectConfig): string {
       lines.push("├── proto/           # Protocol buffers");
     }
     lines.push("```");
+  } else if (config.ecosystem === "java") {
+    const usesGradle = config.javaBuildTool === "gradle";
+    lines.push("```");
+    lines.push(`${config.projectName}/`);
+    lines.push(
+      usesGradle
+        ? "├── gradle/              # Gradle Wrapper metadata"
+        : "├── .mvn/                # Maven Wrapper metadata",
+    );
+    lines.push(
+      usesGradle
+        ? "├── gradlew              # Gradle Wrapper launcher"
+        : "├── mvnw                 # Maven Wrapper launcher",
+    );
+    lines.push(
+      usesGradle
+        ? "├── build.gradle.kts     # Gradle build definition"
+        : "├── pom.xml              # Maven build definition",
+    );
+    lines.push("├── src/main/java/       # Application source");
+    lines.push("├── src/main/resources/  # Spring configuration");
+    if ((config.javaLibraries || []).includes("flyway")) {
+      lines.push("├── src/main/resources/db/migration/ # SQL migrations");
+    }
+    if ((config.javaTestingLibraries || []).some((library) => library !== "none")) {
+      lines.push("├── src/test/java/       # Test suite");
+    }
+    lines.push("```");
   }
 
   return lines.join("\n");
@@ -267,6 +309,30 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`go run cmd/server/main.go\` - Start server`);
     lines.push(`- \`go test ./...\` - Run tests`);
     lines.push(`- \`go fmt ./...\` - Format code`);
+  } else if (config.ecosystem === "java") {
+    const buildToolCommand =
+      config.javaBuildTool === "gradle"
+        ? "./gradlew"
+        : config.javaBuildTool === "maven"
+          ? "./mvnw"
+          : null;
+    const runCommand = buildToolCommand
+      ? config.javaBuildTool === "gradle"
+        ? `${buildToolCommand} bootRun`
+        : `${buildToolCommand} spring-boot:run`
+      : null;
+    const packageCommand = buildToolCommand
+      ? config.javaBuildTool === "gradle"
+        ? `${buildToolCommand} build`
+        : `${buildToolCommand} package`
+      : null;
+    if (buildToolCommand && runCommand && packageCommand) {
+      lines.push(`- \`${buildToolCommand} test\` - Run tests`);
+      lines.push(`- \`${runCommand}\` - Start the app`);
+      lines.push(`- \`${packageCommand}\` - Build the jar`);
+    } else {
+      lines.push(`- Configure Maven or Gradle before running build commands`);
+    }
   }
 
   return lines.join("\n");
@@ -333,6 +399,26 @@ function generateCursorRules(config: ProjectConfig): string {
     if (config.goApi !== "none") rules.push(`API: ${config.goApi}`);
     if (config.goLogging !== "none") rules.push(`Logging: ${config.goLogging}`);
     if (config.auth !== "none") rules.push(`Auth: ${config.auth}`);
+  } else if (config.ecosystem === "java") {
+    const javaLibraries = (config.javaLibraries || []).filter((library) => library !== "none");
+    rules.push(`You are working on a Java project.`);
+    rules.push(`Java version: 21`);
+    if (config.javaWebFramework !== "none") rules.push(`Web framework: ${config.javaWebFramework}`);
+    if (config.javaBuildTool !== "none") rules.push(`Build tool: ${config.javaBuildTool}`);
+    if (config.javaOrm !== "none") rules.push(`ORM: ${config.javaOrm}`);
+    if (config.javaAuth !== "none") rules.push(`Auth: ${config.javaAuth}`);
+    if (javaLibraries.length > 0) rules.push(`Libraries: ${javaLibraries.join(", ")}`);
+    if (config.javaTestingLibraries?.length) {
+      const testingLibraries = config.javaTestingLibraries.filter((library) => library !== "none");
+      if (testingLibraries.length > 0) {
+        rules.push(`Testing: ${testingLibraries.join(", ")}`);
+      }
+    }
+    if (config.javaBuildTool === "gradle") {
+      rules.push(`Use ./gradlew for all Gradle commands.`);
+    } else if (config.javaBuildTool === "maven") {
+      rules.push(`Use ./mvnw for all Maven commands.`);
+    }
   }
 
   rules.push(``);
