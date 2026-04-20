@@ -90,7 +90,11 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     }
 
     // Run wrapper-based verification for Java projects
-    if (options.install && options.ecosystem === "java") {
+    if (
+      options.install &&
+      options.ecosystem === "java" &&
+      options.javaBuildTool !== "none"
+    ) {
       if (options.javaBuildTool === "gradle") {
         await runGradleTests({ projectDir });
       } else {
