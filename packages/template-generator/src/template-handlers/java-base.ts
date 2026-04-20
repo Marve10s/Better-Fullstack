@@ -24,6 +24,21 @@ type JavaTemplateContext = ProjectConfig & {
 
 const JAVA_GROUP_ID = "com.example";
 
+// Java reserved words + boolean/null literals. Using any of these as a
+// package segment produces uncompilable code (`package com.example.class;`).
+// Source: JLS §3.9 (keywords) + §3.10.3 (boolean literals) + §3.10.8 (null literal).
+const JAVA_RESERVED_WORDS = new Set([
+  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
+  "class", "const", "continue", "default", "do", "double", "else", "enum",
+  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
+  "import", "instanceof", "int", "interface", "long", "native", "new",
+  "non-sealed", "package", "private", "protected", "public", "return",
+  "sealed", "short", "static", "strictfp", "super", "switch", "synchronized",
+  "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
+  "yield", "record", "permits",
+  "true", "false", "null",
+]);
+
 function sanitizeJavaArtifactId(projectName: string): string {
   const sanitized = projectName
     .trim()
@@ -37,15 +52,32 @@ function sanitizeJavaArtifactId(projectName: string): string {
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
   const alphanumericOnly = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
-  const withLetterPrefix = /^[a-z]/.test(alphanumericOnly) ? alphanumericOnly : `app${alphanumericOnly}`;
-  return withLetterPrefix || "app";
+  const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
+    ? alphanumericOnly
+    : `app${alphanumericOnly}`;
+  const guarded = JAVA_RESERVED_WORDS.has(withLetterPrefix)
+    ? `app${withLetterPrefix}`
+    : withLetterPrefix;
+  return guarded || "app";
 }
 
 function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   const javaArtifactId = sanitizeJavaArtifactId(config.projectName);
   const javaPackageName = `${JAVA_GROUP_ID}.${sanitizeJavaPackageSuffix(config.projectName)}`;
-  const javaLibraries = (config.javaLibraries || []).filter((library) => library !== "none");
-  const testingLibraries = (config.javaTestingLibraries || []).filter((library) => library !== "none");
+  const hasJavaJpa = config.javaOrm === "spring-data-jpa";
+  const rawLibraries = (config.javaLibraries || []).filter((library) => library !== "none");
+  // Flyway requires Spring Data JPA in the current Java scaffold
+  // (see compatibility.ts `getDisabledReason` for the matching compat rule).
+  // If the user selects Flyway without JPA, we silently drop it here so the
+  // generated `pom.xml` / `build.gradle.kts` doesn't advertise a dependency
+  // that the scaffold cannot wire up — the Flyway auto-config would otherwise
+  // crash the app on startup with "No qualifying bean of type DataSource".
+  const javaLibraries = rawLibraries.filter(
+    (library) => library !== "flyway" || hasJavaJpa,
+  );
+  const testingLibraries = (config.javaTestingLibraries || []).filter(
+    (library) => library !== "none",
+  );
   const hasJavaMockito = testingLibraries.includes("mockito");
   const hasJavaTestcontainers = testingLibraries.includes("testcontainers");
   const hasJavaTests = testingLibraries.length > 0;
@@ -58,7 +90,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     javaPackagePath: javaPackageName.replace(/\./g, "/"),
     isJavaMaven: config.javaBuildTool === "maven",
     isJavaGradle: config.javaBuildTool === "gradle",
-    hasJavaJpa: config.javaOrm === "spring-data-jpa",
+    hasJavaJpa,
     hasJavaSecurity: config.javaAuth === "spring-security",
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
     hasJavaValidation: javaLibraries.includes("spring-validation"),
@@ -137,6 +169,17 @@ export async function processJavaBaseTemplate(
   config: ProjectConfig,
 ): Promise<void> {
   if (config.ecosystem !== "java") return;
+
+  // Without a build tool the scaffold emits sources that can't be compiled or
+  // run. Refuse to emit anything Java-specific so the user doesn't end up
+  // with a silently broken project; the CLI post-install step already shows
+  // an "Add Maven or Gradle, then run the app" fallback message.
+  if (config.javaBuildTool === "none") {
+    console.warn(
+      "[better-fullstack] java scaffold skipped: javaBuildTool is 'none' — pick 'maven' or 'gradle' to emit a runnable project.",
+    );
+    return;
+  }
 
   const prefix = "java-base/";
   const context = createJavaTemplateContext(config);
