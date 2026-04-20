@@ -58,14 +58,24 @@ describe("template processor", () => {
     expect(isBinaryFile("src/index.ts")).toBe(false);
   });
 
-  it("renders template syntax for file content processing", () => {
+  it("renders template syntax only for .hbs file content processing", () => {
+    const result = processFileContent(
+      "src/config.ts.hbs",
+      "export const name = '{{projectName}}';",
+      makeConfig({ projectName: "demo-app" }),
+    );
+
+    expect(result).toBe("export const name = 'demo-app';");
+  });
+
+  it("returns original content for non-template text files", () => {
     const result = processFileContent(
       "src/config.ts",
       "export const name = '{{projectName}}';",
       makeConfig({ projectName: "demo-app" }),
     );
 
-    expect(result).toBe("export const name = 'demo-app';");
+    expect(result).toBe("export const name = '{{projectName}}';");
   });
 
   it("returns a binary placeholder for binary files", () => {
