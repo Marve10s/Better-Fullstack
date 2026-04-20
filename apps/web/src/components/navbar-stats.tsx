@@ -15,7 +15,7 @@ type NavbarStatsData = {
 };
 
 const REPO = "Marve10s/Better-Fullstack";
-const CACHE_KEY = "navbar-stats-cache-v1";
+const CACHE_KEY = "navbar-stats-cache-v2";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let memoryCache: { data: NavbarStatsData; timestamp: number } | null = null;
@@ -152,10 +152,10 @@ export function NavbarStats() {
         target="_blank"
         rel="noopener noreferrer"
         className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground lg:flex"
-        title={`${stats.npm.downloads.toLocaleString()} downloads this week`}
+        title={`${stats.npm.downloads.toLocaleString()} downloads this month`}
       >
         <Download className="h-3.5 w-3.5" />
-        <span className="tabular-nums">{formatCompact(stats.npm.downloads)}/wk</span>
+        <span className="tabular-nums">{formatCompact(stats.npm.downloads)}/mo</span>
       </a>
     </>
   );
