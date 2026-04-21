@@ -31,6 +31,12 @@ import {
   GoLoggingSchema,
   GoOrmSchema,
   GoWebFrameworkSchema,
+  JavaAuthSchema,
+  JavaBuildToolSchema,
+  JavaLibrariesSchema,
+  JavaOrmSchema,
+  JavaTestingLibrariesSchema,
+  JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
   LoggingSchema,
@@ -73,7 +79,7 @@ import z from "zod";
 import { readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, and Python ecosystems with 270+ configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, Python, and Java ecosystems with 270+ configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -88,10 +94,10 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", and "pythonAi". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", and "javaTestingLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
-- TypeScript-specific fields (frontend, backend, orm, etc.) are IGNORED for rust/python/go ecosystems.
+- TypeScript-specific fields (frontend, backend, orm, etc.) are IGNORED for rust/python/go/java ecosystems.
 - The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
@@ -111,6 +117,8 @@ function getGuidance() {
       python:
         "Backend/AI: web framework (fastapi/django), ORM (sqlalchemy/sqlmodel), AI/ML integrations, task queues.",
       go: "Backend/CLI: web framework (gin/echo), ORM (gorm/sqlc), gRPC, CLI tools, logging.",
+      java:
+        "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
     },
     fieldRules: {
       projectName:
@@ -120,7 +128,7 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, and pythonAi. Use [] for "none" on multi-select fields.',
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, javaLibraries, and javaTestingLibraries. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime:
@@ -212,6 +220,12 @@ const SCHEMA_MAP: Record<string, z.ZodType> = {
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
   goAuth: GoAuthSchema,
+  javaWebFramework: JavaWebFrameworkSchema,
+  javaBuildTool: JavaBuildToolSchema,
+  javaOrm: JavaOrmSchema,
+  javaAuth: JavaAuthSchema,
+  javaLibraries: JavaLibrariesSchema,
+  javaTestingLibraries: JavaTestingLibrariesSchema,
 };
 
 const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
@@ -225,6 +239,14 @@ const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching", "rustAuth"],
   python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonAuth", "pythonTaskQueue", "pythonGraphql", "pythonQuality"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "goAuth"],
+  java: [
+    "javaWebFramework",
+    "javaBuildTool",
+    "javaOrm",
+    "javaAuth",
+    "javaLibraries",
+    "javaTestingLibraries",
+  ],
   shared: ["ecosystem", "packageManager", "addons", "examples", "webDeploy", "serverDeploy", "dbSetup"],
 };
 
@@ -252,11 +274,20 @@ function getSchemaOptions(category?: string, ecosystem?: string) {
   return result;
 }
 
-function getInstallCommand(ecosystem: string, projectName: string, packageManager?: string): string {
+function getInstallCommand(
+  ecosystem: string,
+  projectName: string,
+  packageManager?: string,
+  javaBuildTool?: string,
+): string {
   switch (ecosystem) {
     case "rust": return `cd ${projectName} && cargo build`;
     case "python": return `cd ${projectName} && uv sync`;
     case "go": return `cd ${projectName} && go mod tidy`;
+    case "java":
+      return javaBuildTool === "gradle"
+        ? `cd ${projectName} && ./gradlew test && ./gradlew bootRun`
+        : `cd ${projectName} && ./mvnw test && ./mvnw spring-boot:run`;
     default: return `cd ${projectName} && ${packageManager ?? "bun"} install`;
   }
 }
@@ -359,6 +390,14 @@ function buildProjectConfig(
     goCli: (input.goCli as ProjectConfig["goCli"]) ?? "none",
     goLogging: (input.goLogging as ProjectConfig["goLogging"]) ?? "none",
     goAuth: (input.goAuth as ProjectConfig["goAuth"]) ?? "none",
+    javaWebFramework:
+      (input.javaWebFramework as ProjectConfig["javaWebFramework"]) ?? "spring-boot",
+    javaBuildTool: (input.javaBuildTool as ProjectConfig["javaBuildTool"]) ?? "maven",
+    javaOrm: (input.javaOrm as ProjectConfig["javaOrm"]) ?? "none",
+    javaAuth: (input.javaAuth as ProjectConfig["javaAuth"]) ?? "none",
+    javaLibraries: (input.javaLibraries as ProjectConfig["javaLibraries"]) ?? [],
+    javaTestingLibraries:
+      (input.javaTestingLibraries as ProjectConfig["javaTestingLibraries"]) ?? ["junit5"],
   };
 }
 
@@ -466,6 +505,12 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     goCli: (input.goCli as string) ?? "none",
     goLogging: (input.goLogging as string) ?? "none",
     goAuth: (input.goAuth as string) ?? "none",
+    javaWebFramework: (input.javaWebFramework as string) ?? "spring-boot",
+    javaBuildTool: (input.javaBuildTool as string) ?? "maven",
+    javaOrm: (input.javaOrm as string) ?? "none",
+    javaAuth: (input.javaAuth as string) ?? "none",
+    javaLibraries: (input.javaLibraries as string[]) ?? [],
+    javaTestingLibraries: (input.javaTestingLibraries as string[]) ?? ["junit5"],
   };
 }
 
@@ -518,7 +563,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 - Polar requires better-auth and a web frontend.
 
 ## Ecosystem Isolation
-- Rust, Python, Go ecosystems are independent — TypeScript fields are ignored.
+- Rust, Python, Go, and Java ecosystems are independent — TypeScript fields are ignored.
 - Each ecosystem generates a standalone project with its own build system.
 `;
 
@@ -558,6 +603,14 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - goWebFramework: "gin"
    - goOrm: "gorm"
 2. Tell the user to run: cd my-go-app && go mod tidy && go run cmd/server/main.go
+
+## Quick Start — Java Project
+1. Call bfs_create_project with:
+   - projectName: "my-java-app"
+   - ecosystem: "java"
+   - javaWebFramework: "spring-boot"
+   - javaBuildTool: "maven"
+2. Tell the user to run: cd my-java-app && ./mvnw test && ./mvnw spring-boot:run
 
 ## Adding Features to Existing Projects
 1. Call bfs_add_feature with projectDir pointing to the project root.
@@ -613,6 +666,18 @@ export async function startMcpServer() {
       uiLibrary: z.string().optional().describe("UI component library"),
       cssFramework: z.string().optional().describe("CSS framework"),
       addons: z.array(z.string()).optional().describe("Addon list"),
+      javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
+      javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
+      javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
+      javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+      javaLibraries: z
+        .array(JavaLibrariesSchema)
+        .optional()
+        .describe("Java application libraries"),
+      javaTestingLibraries: z
+        .array(JavaTestingLibrariesSchema)
+        .optional()
+        .describe("Java testing libraries"),
     },
     async (input) => {
       try {
@@ -690,6 +755,18 @@ export async function startMcpServer() {
     goCli: GoCliSchema.optional().describe("Go CLI framework"),
     goLogging: GoLoggingSchema.optional().describe("Go logging library"),
     goAuth: GoAuthSchema.optional().describe("Go authentication library"),
+    javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
+    javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
+    javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
+    javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+    javaLibraries: z
+      .array(JavaLibrariesSchema)
+      .optional()
+      .describe("Java application libraries"),
+    javaTestingLibraries: z
+      .array(JavaTestingLibrariesSchema)
+      .optional()
+      .describe("Java testing libraries"),
   };
 
   server.tool(
@@ -757,7 +834,12 @@ export async function startMcpServer() {
         }
 
         const ecosystem = (input.ecosystem as string) ?? "typescript";
-        const installCmd = getInstallCommand(ecosystem, projectName, input.packageManager);
+        const installCmd = getInstallCommand(
+          ecosystem,
+          projectName,
+          input.packageManager,
+          input.javaBuildTool as string | undefined,
+        );
         return {
           content: [{
             type: "text",
@@ -873,7 +955,12 @@ export async function startMcpServer() {
           const existingConfig = await readBtsConfig(safePath);
           const ecosystem = existingConfig?.ecosystem ?? "typescript";
           const dirName = safePath.split("/").pop() ?? "project";
-          const installCmd = getInstallCommand(ecosystem, dirName, input.packageManager);
+          const installCmd = getInstallCommand(
+            ecosystem,
+            dirName,
+            input.packageManager,
+            existingConfig?.javaBuildTool,
+          );
           return {
             content: [{
               type: "text",

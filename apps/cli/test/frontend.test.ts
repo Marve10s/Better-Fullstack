@@ -965,6 +965,41 @@ describe("Frontend Configurations", () => {
     });
   });
 
+  describe("SolidStart", () => {
+    it("should include tsconfig path support when auth templates use @ aliases", async () => {
+      const result = await runTRPCTest({
+        projectName: "solid-start-better-auth-aliases",
+        frontend: ["solid-start"],
+        backend: "express",
+        runtime: "node",
+        database: "redis",
+        orm: "none",
+        auth: "better-auth",
+        api: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const projectDir = result.result?.projectDirectory ?? result.projectDir;
+      const appConfig = await Bun.file(`${projectDir}/apps/web/app.config.ts`).text();
+      const packageJson = JSON.parse(
+        await Bun.file(`${projectDir}/apps/web/package.json`).text(),
+      ) as {
+        devDependencies?: Record<string, string>;
+      };
+
+      expect(appConfig).toContain('import tsconfigPaths from "vite-tsconfig-paths";');
+      expect(appConfig).toContain("tsconfigPaths()");
+      expect(packageJson.devDependencies?.["vite-tsconfig-paths"]).toBeDefined();
+    });
+  });
+
   describe("Web Deploy Constraints", () => {
     it("should work with web frontend + web deploy", async () => {
       const result = await runTRPCTest({

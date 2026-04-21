@@ -6,6 +6,7 @@ import type { VirtualFileTree, VirtualNode, VirtualFile, VirtualDirectory } from
 import { getBinaryTemplatesRoot } from "./core/template-reader";
 
 const BINARY_FILE_MARKER = "[Binary file]";
+const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
 
 export async function writeTreeToFilesystem(tree: VirtualFileTree, destDir: string): Promise<void> {
   for (const child of tree.root.children) {
@@ -26,6 +27,7 @@ async function writeNode(node: VirtualNode, baseDir: string, relativePath: strin
     } else if (fileNode.content !== BINARY_FILE_MARKER) {
       await fs.writeFile(fullPath, fileNode.content, "utf-8");
     }
+    await maybeMakeExecutable(fullPath, node.name);
   } else {
     await fs.mkdir(fullPath, { recursive: true });
     for (const child of (node as VirtualDirectory).children) {
@@ -63,6 +65,7 @@ async function writeSelectedNode(
       } else if (fileNode.content !== BINARY_FILE_MARKER) {
         await fs.writeFile(join(baseDir, nodePath), fileNode.content, "utf-8");
       }
+      await maybeMakeExecutable(join(baseDir, nodePath), node.name);
       writtenFiles.push(nodePath);
     }
   } else {
@@ -80,5 +83,15 @@ async function copyBinaryFile(templatePath: string, destPath: string): Promise<v
     await fs.copyFile(sourcePath, destPath);
   } catch (error) {
     console.warn(`Failed to copy binary file: ${templatePath}`, error);
+  }
+}
+
+async function maybeMakeExecutable(fullPath: string, fileName: string): Promise<void> {
+  if (!EXECUTABLE_FILE_NAMES.has(fileName)) return;
+
+  try {
+    await fs.chmod(fullPath, 0o755);
+  } catch (error) {
+    console.warn(`Failed to mark file as executable: ${fullPath}`, error);
   }
 }

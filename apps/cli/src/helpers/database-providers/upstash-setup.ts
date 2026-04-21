@@ -8,6 +8,7 @@ import type { ProjectConfig } from "../../types";
 
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { exitCancelled } from "../../utils/errors";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type UpstashConfig = {
   redisUrl: string;
@@ -66,6 +67,15 @@ export async function setupUpstash(config: ProjectConfig, cliInput?: { manualDb?
 
     if (manualDb) {
       log.info("Upstash Redis manual setup selected");
+      await writeEnvFile(projectDir, backend);
+      displayManualSetupInstructions();
+      return;
+    }
+
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for
+    // credentials. Default to manual so scaffolding completes successfully.
+    if (!canPromptInteractively()) {
+      log.info("Upstash Redis manual setup selected (non-interactive mode)");
       await writeEnvFile(projectDir, backend);
       displayManualSetupInstructions();
       return;

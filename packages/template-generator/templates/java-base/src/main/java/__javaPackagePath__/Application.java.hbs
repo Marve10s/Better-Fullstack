@@ -1,0 +1,18 @@
+package {{javaPackageName}};
+
+{{#if isJavaSpringBoot}}
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+{{/if}}
+public class Application {
+
+  public static void main(String[] args) {
+{{#if isJavaSpringBoot}}
+    SpringApplication.run(Application.class, args);
+{{else}}
+    System.out.println("Hello from {{projectName}}");
+{{/if}}
+  }
+}

@@ -258,6 +258,50 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/pqina/filepond",
   },
   uppy: { docsUrl: "https://uppy.io/docs/", githubUrl: "https://github.com/transloadit/uppy" },
+  "spring-boot": {
+    docsUrl: "https://docs.spring.io/spring-boot/",
+    githubUrl: "https://github.com/spring-projects/spring-boot",
+  },
+  maven: {
+    docsUrl: "https://maven.apache.org/guides/",
+    githubUrl: "https://github.com/apache/maven",
+  },
+  gradle: {
+    docsUrl: "https://docs.gradle.org/current/userguide/userguide.html",
+    githubUrl: "https://github.com/gradle/gradle",
+  },
+  "spring-data-jpa": {
+    docsUrl: "https://docs.spring.io/spring-data/jpa/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-data-jpa",
+  },
+  "spring-security": {
+    docsUrl: "https://docs.spring.io/spring-security/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-security",
+  },
+  "spring-actuator": {
+    docsUrl: "https://docs.spring.io/spring-boot/reference/actuator/index.html",
+    githubUrl: "https://github.com/spring-projects/spring-boot",
+  },
+  "spring-validation": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/core/validation/beanvalidation.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  flyway: {
+    docsUrl: "https://documentation.red-gate.com/fd",
+    githubUrl: "https://github.com/flyway/flyway",
+  },
+  junit5: {
+    docsUrl: "https://junit.org/junit5/docs/current/user-guide/",
+    githubUrl: "https://github.com/junit-team/junit5",
+  },
+  mockito: {
+    docsUrl: "https://site.mockito.org/",
+    githubUrl: "https://github.com/mockito/mockito",
+  },
+  testcontainers: {
+    docsUrl: "https://java.testcontainers.org/",
+    githubUrl: "https://github.com/testcontainers/testcontainers-java",
+  },
   pino: { docsUrl: "https://getpino.io/#/", githubUrl: "https://github.com/pinojs/pino" },
   winston: {
     docsUrl: "https://github.com/winstonjs/winston#readme",

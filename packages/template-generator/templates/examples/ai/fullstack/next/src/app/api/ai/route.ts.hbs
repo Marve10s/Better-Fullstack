@@ -4,7 +4,7 @@ import { streamText, openai } from "modelfusion";
 export const maxDuration = 30;
 
 const model = openai.ChatTextGenerator({
-	model: "gpt-4o-mini",
+	model: "gpt-3.5-turbo",
 	temperature: 0.7,
 	maxGenerationTokens: 1000,
 });

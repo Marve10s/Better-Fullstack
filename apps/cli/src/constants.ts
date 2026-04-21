@@ -28,6 +28,8 @@ export function getDefaultConfig() {
     examples: [...DEFAULT_CONFIG_BASE.examples],
     rustLibraries: [...DEFAULT_CONFIG_BASE.rustLibraries],
     pythonAi: [...DEFAULT_CONFIG_BASE.pythonAi],
+    javaLibraries: [...DEFAULT_CONFIG_BASE.javaLibraries],
+    javaTestingLibraries: [...DEFAULT_CONFIG_BASE.javaTestingLibraries],
     aiDocs: [...DEFAULT_CONFIG_BASE.aiDocs],
   };
 }

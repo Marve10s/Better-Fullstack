@@ -66,12 +66,13 @@ const GO_LOGGINGS = extractEnumValues(GoLoggingSchema);
 
 describe("Go Language Support", () => {
   describe("Schema Definitions", () => {
-    it("should have ecosystem schema with typescript, rust, python, and go", () => {
+    it("should have ecosystem schema with typescript, rust, python, go, and java", () => {
       expect(ECOSYSTEMS).toContain("typescript");
       expect(ECOSYSTEMS).toContain("rust");
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
-      expect(ECOSYSTEMS.length).toBe(4);
+      expect(ECOSYSTEMS).toContain("java");
+      expect(ECOSYSTEMS.length).toBe(5);
     });
 
     it("should include GoBetterAuth in auth options", () => {

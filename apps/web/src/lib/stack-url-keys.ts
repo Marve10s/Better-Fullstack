@@ -80,4 +80,10 @@ export const stackUrlKeys = {
   goCli: "gcli",
   goLogging: "glog",
   goAuth: "gauth",
+  javaWebFramework: "jwf",
+  javaBuildTool: "jbt",
+  javaOrm: "jorm",
+  javaAuth: "jauth",
+  javaLibraries: "jlib",
+  javaTestingLibraries: "jtest",
 } as const satisfies Record<keyof StackState, string>;

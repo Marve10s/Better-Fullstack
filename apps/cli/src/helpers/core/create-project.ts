@@ -19,6 +19,8 @@ import { initializeGit } from "./git";
 import {
   installDependencies,
   runCargoBuild,
+  runGradleTests,
+  runMavenTests,
   runUvSync,
   runGoModTidy,
 } from "./install-dependencies";
@@ -85,6 +87,19 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     // Run go mod tidy for Go projects
     if (options.install && options.ecosystem === "go") {
       await runGoModTidy({ projectDir });
+    }
+
+    // Run wrapper-based verification for Java projects
+    if (
+      options.install &&
+      options.ecosystem === "java" &&
+      options.javaBuildTool !== "none"
+    ) {
+      if (options.javaBuildTool === "gradle") {
+        await runGradleTests({ projectDir });
+      } else {
+        await runMavenTests({ projectDir });
+      }
     }
 
     await initializeGit(projectDir, options.git);

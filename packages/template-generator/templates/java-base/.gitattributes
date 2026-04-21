@@ -1,0 +1,5 @@
+/mvnw text eol=lf
+/gradlew text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.jar binary

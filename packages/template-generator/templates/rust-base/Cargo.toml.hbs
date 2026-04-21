@@ -118,7 +118,9 @@ leptos_router = "0.7"
 leptos_meta = "0.7"
 console_error_panic_hook = "0.1"
 console_log = "1"
+{{#unless (eq rustLogging "env-logger")}}
 log = "0.4"
+{{/unless}}
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "console"] }

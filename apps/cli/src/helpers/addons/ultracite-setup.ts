@@ -5,7 +5,9 @@ import pc from "picocolors";
 import type { ProjectConfig } from "../../types";
 
 import { exitCancelled } from "../../utils/errors";
+import { shouldSkipExternalCommands } from "../../utils/external-commands";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type UltraciteLinter = "biome" | "eslint" | "oxlint";
 
@@ -131,51 +133,61 @@ export async function setupUltracite(config: ProjectConfig, gitHooks: string[]) 
   try {
     log.info("Setting up Ultracite...");
 
-    const result = await group(
-      {
-        linter: () =>
-          select<UltraciteLinter>({
-            message: "Choose linter/formatter",
-            options: Object.entries(LINTERS).map(([key, linter]) => ({
-              value: key as UltraciteLinter,
-              label: linter.label,
-              hint: linter.hint,
-            })),
-            initialValue: "biome" as UltraciteLinter,
-          }),
-        editors: () =>
-          multiselect<UltraciteEditor>({
-            message: "Choose editors",
-            options: Object.entries(EDITORS).map(([key, editor]) => ({
-              value: key as UltraciteEditor,
-              label: editor.label,
-            })),
-            required: true,
-          }),
-        agents: () =>
-          multiselect<UltraciteAgent>({
-            message: "Choose agents",
-            options: Object.entries(AGENTS).map(([key, agent]) => ({
-              value: key as UltraciteAgent,
-              label: agent.label,
-            })),
-            required: true,
-          }),
-        hooks: () =>
-          multiselect<UltraciteHook>({
-            message: "Choose hooks",
-            options: Object.entries(HOOKS).map(([key, hook]) => ({
-              value: key as UltraciteHook,
-              label: hook.label,
-            })),
-          }),
-      },
-      {
-        onCancel: () => {
-          exitCancelled("Operation cancelled");
-        },
-      },
-    );
+    const skipExternalCommands = shouldSkipExternalCommands();
+    const canPrompt = canPromptInteractively() && !skipExternalCommands;
+
+    const result = canPrompt
+      ? await group(
+          {
+            linter: () =>
+              select<UltraciteLinter>({
+                message: "Choose linter/formatter",
+                options: Object.entries(LINTERS).map(([key, linter]) => ({
+                  value: key as UltraciteLinter,
+                  label: linter.label,
+                  hint: linter.hint,
+                })),
+                initialValue: "biome" as UltraciteLinter,
+              }),
+            editors: () =>
+              multiselect<UltraciteEditor>({
+                message: "Choose editors",
+                options: Object.entries(EDITORS).map(([key, editor]) => ({
+                  value: key as UltraciteEditor,
+                  label: editor.label,
+                })),
+                required: true,
+              }),
+            agents: () =>
+              multiselect<UltraciteAgent>({
+                message: "Choose agents",
+                options: Object.entries(AGENTS).map(([key, agent]) => ({
+                  value: key as UltraciteAgent,
+                  label: agent.label,
+                })),
+                required: true,
+              }),
+            hooks: () =>
+              multiselect<UltraciteHook>({
+                message: "Choose hooks",
+                options: Object.entries(HOOKS).map(([key, hook]) => ({
+                  value: key as UltraciteHook,
+                  label: hook.label,
+                })),
+              }),
+          },
+          {
+            onCancel: () => {
+              exitCancelled("Operation cancelled");
+            },
+          },
+        )
+      : {
+          linter: "biome" as UltraciteLinter,
+          editors: [] as UltraciteEditor[],
+          agents: [] as UltraciteAgent[],
+          hooks: [] as UltraciteHook[],
+        };
 
     const linter = result.linter as UltraciteLinter;
     const editors = result.editors as UltraciteEditor[];
@@ -184,6 +196,10 @@ export async function setupUltracite(config: ProjectConfig, gitHooks: string[]) 
     const frameworks = getFrameworksFromFrontend(frontend);
 
     const ultraciteArgs = ["init", "--pm", packageManager, "--linter", linter];
+
+    if (!canPrompt) {
+      ultraciteArgs.push("--quiet");
+    }
 
     if (frameworks.length > 0) {
       ultraciteArgs.push("--frameworks", ...frameworks);
@@ -207,6 +223,10 @@ export async function setupUltracite(config: ProjectConfig, gitHooks: string[]) 
         integrations.push("lint-staged");
       }
       ultraciteArgs.push("--integrations", ...integrations);
+    }
+
+    if (skipExternalCommands) {
+      return;
     }
 
     const ultraciteArgsString = ultraciteArgs.join(" ");

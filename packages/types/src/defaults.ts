@@ -80,6 +80,12 @@ export function createCliDefaultProjectConfigBase(
     goCli: "none",
     goLogging: "zap",
     goAuth: "none",
+    javaWebFramework: "spring-boot",
+    javaBuildTool: "maven",
+    javaOrm: "none",
+    javaAuth: "none",
+    javaLibraries: [],
+    javaTestingLibraries: ["junit5"],
     aiDocs: ["claude-md"],
   };
 }

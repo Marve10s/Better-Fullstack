@@ -1,0 +1,34 @@
+package {{javaPackageName}}.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import {{javaPackageName}}.domain.AppUser;
+import {{javaPackageName}}.repository.AppUserRepository;
+
+@Service
+public class AppUserService {
+
+  private final AppUserRepository repository;
+
+  public AppUserService(AppUserRepository repository) {
+    this.repository = repository;
+  }
+
+  public List<AppUser> findAll() {
+    return repository.findAll();
+  }
+
+  public AppUser create(String email, String displayName) {
+    String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+    if (normalizedEmail.isBlank()) {
+      throw new IllegalArgumentException("email must not be blank");
+    }
+
+    String normalizedDisplayName =
+      displayName == null || displayName.isBlank() ? normalizedEmail : displayName.trim();
+
+    return repository.save(new AppUser(normalizedEmail, normalizedDisplayName));
+  }
+}

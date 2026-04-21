@@ -10,6 +10,7 @@ import type { PackageManager, ProjectConfig } from "../../types";
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 async function writeSupabaseEnvFile(
   projectDir: string,
@@ -147,6 +148,15 @@ export async function setupSupabase(config: ProjectConfig, cliInput?: { manualDb
     await fs.ensureDir(serverDir);
 
     if (manualDb) {
+      displayManualSupabaseInstructions();
+      await writeSupabaseEnvFile(projectDir, backend, "");
+      return;
+    }
+
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for
+    // a setup mode, and automatic Supabase setup requires Docker + the Supabase
+    // CLI. Default to manual so scaffolding completes successfully.
+    if (!canPromptInteractively()) {
       displayManualSupabaseInstructions();
       await writeSupabaseEnvFile(projectDir, backend, "");
       return;
