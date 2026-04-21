@@ -167,7 +167,7 @@ fn main() -> {{#if (or (eq rustErrorHandling "anyhow-thiserror") (eq rustErrorHa
 }
 
 /// Run the application main loop
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
+fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> {{#if (or (eq rustErrorHandling "anyhow-thiserror") (eq rustErrorHandling "eyre"))}}Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     loop {
         terminal.draw(|f| ui(f, app))?;
 

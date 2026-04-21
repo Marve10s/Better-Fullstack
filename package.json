@@ -20,7 +20,7 @@
     "test:web": "turbo test --filter=web",
     "test:release": "bun run --cwd packages/types build && bun run --cwd packages/template-generator build && bun test apps/cli/test/template-snapshots.test.ts && bun test apps/cli/test/cli-builder-sync.test.ts && bun test apps/web/test/preview-config.test.ts && bun test apps/web/test/stack-state-contract.test.ts && bun test apps/web/test/stack-command-parity.test.ts && bun test apps/cli/test/generate-reproducible-command.test.ts && bun test apps/cli/test/add-history-commands.test.ts && bun run --cwd apps/web validate:tech-links",
     "check": "oxfmt . && oxlint .",
-    "prepare": "sh scripts/install-hooks.sh",
+    "prepare": "bun run scripts/install-hooks.ts",
     "release": "bun run scripts/release.ts",
     "bump": "bun run scripts/bump-version.ts",
     "canary": "bun run scripts/canary-release.ts",

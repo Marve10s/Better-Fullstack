@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readFileSync,existsSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Addons, Frontend } from "../src";
@@ -175,6 +175,310 @@ describe("Addon Configurations", () => {
       }
     });
 
+    describe("Docker Compose Addon", () => {
+      it("should work with docker-compose + Hono + postgres + drizzle", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-hono-postgres",
+          addons: ["docker-compose"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with docker-compose + Next.js + self backend", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-nextjs-self",
+          addons: ["docker-compose"],
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should fail with docker-compose + Convex backend", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-convex-fail",
+          addons: ["docker-compose"],
+          frontend: ["tanstack-router"],
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none", // Convex requires api: "none"
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "docker-compose is not compatible with Convex backend");
+      });
+
+      it("should fail with docker-compose + Workers runtime", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-workers-fail",
+          addons: ["docker-compose"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "workers",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          serverDeploy: "cloudflare",
+          expectError: true,
+        });
+
+        expectError(result, "docker-compose is not compatible with Cloudflare Workers runtime");
+      });
+
+      it("should work with docker-compose + mysql + prisma", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-mysql-prisma",
+          addons: ["docker-compose"],
+          frontend: ["react-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "mysql",
+          orm: "prisma",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with docker-compose + Nuxt + oRPC", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-nuxt",
+          addons: ["docker-compose"],
+          frontend: ["nuxt"],
+          backend: "hono",
+          runtime: "bun",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should work with docker-compose + Svelte", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-svelte",
+          addons: ["docker-compose"],
+          frontend: ["svelte"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "orpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+      });
+
+      it("should fail with docker-compose + React Vite", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-react-vite-fail",
+          addons: ["docker-compose"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "docker-compose addon requires one of these frontends");
+      });
+
+      describe("Docker Compose File Generation", () => {
+        it("should generate docker-compose.yml at project root", async () => {
+          const result = await runTRPCTest({
+            projectName: "docker-compose-files-root",
+            addons: ["docker-compose"],
+            frontend: ["tanstack-router"],
+            backend: "hono",
+            runtime: "bun",
+            database: "postgres",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          expect(result.projectDir).toBeDefined();
+
+          const dockerComposeYml = join(result.projectDir!, "docker-compose.yml");
+          expect(existsSync(dockerComposeYml)).toBe(true);
+          expect(readFileSync(dockerComposeYml, "utf8")).toContain("dockerfile: Dockerfile.vite");
+        });
+
+        it("should generate Dockerfile in apps/server when backend exists", async () => {
+          const result = await runTRPCTest({
+            projectName: "docker-compose-files-server",
+            addons: ["docker-compose"],
+            frontend: ["tanstack-router"],
+            backend: "hono",
+            runtime: "bun",
+            database: "postgres",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          expect(result.projectDir).toBeDefined();
+
+          const serverDockerfile = join(result.projectDir!, "apps", "server", "Dockerfile");
+          expect(existsSync(serverDockerfile)).toBe(true);
+        });
+
+        it("should generate Dockerfile in apps/web for Vite-based frontend", async () => {
+          const result = await runTRPCTest({
+            projectName: "docker-compose-files-web",
+            addons: ["docker-compose"],
+            frontend: ["tanstack-router"],
+            backend: "hono",
+            runtime: "bun",
+            database: "postgres",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          expect(result.projectDir).toBeDefined();
+
+          // Vite-based frontends get Dockerfile.vite
+          const webDockerfile = join(result.projectDir!, "apps", "web", "Dockerfile.vite");
+          expect(existsSync(webDockerfile)).toBe(true);
+        });
+
+        it("should generate Dockerfile in apps/web for Next.js + self backend", async () => {
+          const result = await runTRPCTest({
+            projectName: "docker-compose-files-nextjs",
+            addons: ["docker-compose"],
+            frontend: ["next"],
+            backend: "self",
+            runtime: "none",
+            database: "postgres",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          expect(result.projectDir).toBeDefined();
+
+          // With self backend, there should be no server directory but web Dockerfile should exist
+          const dockerComposeYml = join(result.projectDir!, "docker-compose.yml");
+          // Next.js frontend gets Dockerfile.next
+          const webDockerfile = join(result.projectDir!, "apps", "web", "Dockerfile.next");
+
+          expect(existsSync(dockerComposeYml)).toBe(true);
+          expect(existsSync(webDockerfile)).toBe(true);
+          expect(readFileSync(dockerComposeYml, "utf8")).toContain("dockerfile: Dockerfile.next");
+        });
+
+        it("should generate .dockerignore files", async () => {
+          const result = await runTRPCTest({
+            projectName: "docker-compose-files-ignore",
+            addons: ["docker-compose"],
+            frontend: ["tanstack-router"],
+            backend: "hono",
+            runtime: "bun",
+            database: "postgres",
+            orm: "drizzle",
+            auth: "none",
+            api: "trpc",
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            install: false,
+          });
+
+          expectSuccess(result);
+          expect(result.projectDir).toBeDefined();
+
+          const rootDockerignore = join(result.projectDir!, ".dockerignore");
+          expect(existsSync(rootDockerignore)).toBe(true);
+        });
+      });
+    });
+
     describe("MSW Addon", () => {
       const mswCompatibleFrontends = [
         "tanstack-router",
@@ -234,7 +538,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -265,7 +569,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const serverPackageJson = result.result?.tree?.root?.children
+        const serverPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "server")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -297,7 +601,7 @@ describe("Addon Configurations", () => {
         expectSuccess(result);
 
         // Check MSW dependency was added, which confirms the addon was processed
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -329,7 +633,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -401,7 +705,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -435,7 +739,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -467,7 +771,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");
@@ -498,7 +802,7 @@ describe("Addon Configurations", () => {
 
         expectSuccess(result);
 
-        const webPackageJson = result.result?.tree?.root?.children
+        const webPackageJson = (result as any).result?.tree?.root?.children
           ?.find((c: any) => c.name === "apps")
           ?.children?.find((c: any) => c.name === "web")
           ?.children?.find((c: any) => c.name === "package.json");

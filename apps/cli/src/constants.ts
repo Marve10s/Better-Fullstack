@@ -74,6 +74,7 @@ export const ADDON_COMPATIBILITY = {
   fumadocs: [],
   opentui: [],
   wxt: [],
+  "docker-compose": [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
   "tanstack-query": [

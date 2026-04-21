@@ -253,7 +253,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
 const DEFAULT_RUNTIME = "bun";
 
 export function validateProjectName(name: string): string | undefined {
-  const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*"];
+  const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*", "/", "\\"];
   const MAX_LENGTH = 255;
 
   if (name === ".") return undefined;
@@ -2164,6 +2164,10 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
+  "docker-compose": [
+    "tanstack-router", "react-router", "tanstack-start", "next",
+    "nuxt", "svelte", "solid", "astro",
+  ],
   none: [],
 };
 
@@ -2235,7 +2239,7 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
         {
           ecosystem: "typescript",
           backend,
-          frontend: [frontend],
+          webFrontend: [frontend],
         },
         auth as Auth,
       ) === null
@@ -2463,6 +2467,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         code: "INCOMPATIBLE_ADDON",
         message: reason,
         category: "appPlatforms",
+        optionId: addon,
+      });
+    }
+  }
+
+  for (const addon of input.examples) {
+    const reason = getDisabledReason(input, "examples", addon);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_ADDON",
+        message: reason,
+        category: "examples",
         optionId: addon,
       });
     }
