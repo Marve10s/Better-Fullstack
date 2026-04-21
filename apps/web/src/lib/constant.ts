@@ -3474,7 +3474,7 @@ export const ECOSYSTEMS: {
   {
     id: "java",
     name: "Java",
-    description: "Spring-powered Java ecosystem",
+    description: "Modern Java ecosystem",
     icon: "https://cdn.simpleicons.org/openjdk/F80000",
     color: "from-red-500 to-orange-600",
   },
@@ -3585,7 +3585,7 @@ export const PRESET_CATEGORIES = [
   { id: "rust", name: "Rust", icon: "axum", ecosystem: "rust" },
   { id: "python", name: "Python", icon: "fastapi", ecosystem: "python" },
   { id: "go", name: "Go", icon: "gin", ecosystem: "go" },
-  { id: "java", name: "Java", icon: "spring-boot", ecosystem: "java" },
+  { id: "java", name: "Java", icon: "java", ecosystem: "java" },
 ] as const;
 
 export type PresetCategory = (typeof PRESET_CATEGORIES)[number]["id"];

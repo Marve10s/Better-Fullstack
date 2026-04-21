@@ -8,6 +8,7 @@ import {
   ECOSYSTEMS,
   ECOSYSTEM_CATEGORIES,
   PLANNED_JAVA_OPTIONS,
+  PRESET_CATEGORIES,
   TECH_OPTIONS,
   type StackState,
 } from "../src/lib/constant";
@@ -27,10 +28,18 @@ describe("Java Ecosystem Tab", () => {
       const javaEcosystem = ECOSYSTEMS.find((ecosystem) => ecosystem.id === "java");
       expect(javaEcosystem).toBeDefined();
       expect(javaEcosystem?.name).toBe("Java");
+      expect(javaEcosystem?.description).toBe("Modern Java ecosystem");
     });
 
     it("should have exactly 5 ecosystems", () => {
       expect(ECOSYSTEMS).toHaveLength(5);
+    });
+
+    it("should use the Java language icon for Java presets", () => {
+      const javaPresetCategory = PRESET_CATEGORIES.find((category) => category.id === "java");
+
+      expect(javaPresetCategory).toBeDefined();
+      expect(javaPresetCategory?.icon).toBe("java");
     });
   });
 
