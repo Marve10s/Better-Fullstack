@@ -8,6 +8,7 @@ import type { ProjectConfig } from "../../types";
 
 import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs, getPackageExecutionCommand } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 export async function setupRuler(config: ProjectConfig) {
   const { packageManager, projectDir } = config;
@@ -58,16 +59,24 @@ export async function setupRuler(config: ProjectConfig) {
       zed: { label: "Zed" },
     } as const;
 
-    const selectedEditors = await autocompleteMultiselect({
-      message: "Select AI assistants for Ruler",
-      options: Object.entries(EDITORS).map(([key, v]) => ({
-        value: key,
-        label: v.label,
-      })),
-      required: false,
-    });
+    let selectedEditors: string[] = [];
 
-    if (isCancel(selectedEditors)) return exitCancelled("Operation cancelled");
+    if (canPromptInteractively()) {
+      const prompted = await autocompleteMultiselect({
+        message: "Select AI assistants for Ruler",
+        options: Object.entries(EDITORS).map(([key, v]) => ({
+          value: key,
+          label: v.label,
+        })),
+        required: false,
+      });
+
+      if (isCancel(prompted)) return exitCancelled("Operation cancelled");
+
+      selectedEditors = [...prompted];
+    } else {
+      log.info("Skipping AI assistant selection (non-interactive mode).");
+    }
 
     if (selectedEditors.length === 0) {
       log.info("No AI assistants selected. To apply rules later, run:");
