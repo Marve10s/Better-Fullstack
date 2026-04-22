@@ -67,7 +67,7 @@ describe("processEnvVariables", () => {
     const backendContent = vfs.readFile("packages/backend/.env.local") ?? "";
     const backendEnv = getEnvVars(vfs, "packages/backend/.env.local");
 
-    expect(webEnv.PUBLIC_CONVEX_URL).toBe("https://<YOUR_CONVEX_URL>");
+    expect(webEnv.PUBLIC_CONVEX_URL).toBe("https://your-convex-url.convex.cloud");
     expect(backendEnv.VITE_CONVEX_SITE_URL).toBe("");
     expect(backendContent).toContain("# Set Google AI API key for AI agent");
     expect(backendContent).toContain("# Set Convex environment variables");
