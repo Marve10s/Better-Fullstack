@@ -7,6 +7,7 @@ import type { ProjectConfig } from "../../types";
 import { readBtsConfig } from "../../utils/bts-config";
 import { shouldSkipExternalCommands } from "../../utils/external-commands";
 import { getPackageRunnerPrefix } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 import { runInstallWithRetries } from "./retry-install";
 
 type SkillSource = {
@@ -216,6 +217,13 @@ export async function setupSkills(config: ProjectConfig): Promise<void> {
   });
 
   if (skillOptions.length === 0) {
+    return;
+  }
+
+  if (!canPromptInteractively()) {
+    log.info(
+      "Skipping skills installation (non-interactive mode). Run the skills CLI manually to install.",
+    );
     return;
   }
 

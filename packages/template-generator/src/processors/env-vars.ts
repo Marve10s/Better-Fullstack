@@ -129,7 +129,7 @@ function buildClientVars(
 
   const baseVar = getClientServerVar(frontend, backend);
   const envVarName = backend === "convex" ? getConvexVar(frontend) : baseVar.key;
-  const serverUrl = backend === "convex" ? "https://<YOUR_CONVEX_URL>" : baseVar.value;
+  const serverUrl = backend === "convex" ? "https://your-convex-url.convex.cloud" : baseVar.value;
 
   const vars: EnvVariable[] = [
     {
@@ -208,13 +208,13 @@ function buildClientVars(
     if (hasNextJs) {
       vars.push({
         key: "NEXT_PUBLIC_CONVEX_SITE_URL",
-        value: "https://<YOUR_CONVEX_URL>",
+        value: "https://your-convex-url.convex.cloud",
         condition: true,
       });
     } else if (hasReactRouter || hasTanStackRouter || hasTanStackStart) {
       vars.push({
         key: "VITE_CONVEX_SITE_URL",
-        value: "https://<YOUR_CONVEX_URL>",
+        value: "https://your-convex-url.convex.cloud",
         condition: true,
       });
     }
@@ -427,7 +427,7 @@ function buildNativeVars(
 
   if (backend === "convex") {
     envVarName = "EXPO_PUBLIC_CONVEX_URL";
-    serverUrl = "https://<YOUR_CONVEX_URL>";
+    serverUrl = "https://your-convex-url.convex.cloud";
   }
 
   const vars: EnvVariable[] = [
@@ -449,7 +449,7 @@ function buildNativeVars(
   if (backend === "convex" && auth === "better-auth") {
     vars.push({
       key: "EXPO_PUBLIC_CONVEX_SITE_URL",
-      value: "https://<YOUR_CONVEX_URL>",
+      value: "https://your-convex-url.convex.cloud",
       condition: true,
     });
   }
