@@ -3272,7 +3272,168 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  // Java ecosystem options
+  javaWebFramework: [
+    {
+      id: "spring-boot",
+      name: "Spring Boot",
+      description: "Production-grade Java framework with embedded server and auto-configuration",
+      icon: "https://cdn.simpleicons.org/springboot/6DB33F",
+      color: "from-green-500 to-emerald-600",
+      default: true,
+    },
+    {
+      id: "none",
+      name: "No Web Framework",
+      description: "Skip Java web framework selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
+  javaBuildTool: [
+    {
+      id: "maven",
+      name: "Maven",
+      description: "Convention-based Java build tool with Maven Wrapper support",
+      icon: "https://cdn.simpleicons.org/apachemaven/C71A36",
+      color: "from-rose-500 to-red-700",
+      default: true,
+    },
+    {
+      id: "gradle",
+      name: "Gradle",
+      description: "Flexible Java build tool with Gradle Wrapper support",
+      icon: "https://cdn.simpleicons.org/gradle/02303A",
+      color: "from-slate-500 to-slate-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Build Tool",
+      description: "Skip Java build tool selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
+  javaOrm: [
+    {
+      id: "spring-data-jpa",
+      name: "Spring Data JPA",
+      description: "Repository abstraction built on JPA and Hibernate",
+      icon: "https://cdn.simpleicons.org/hibernate/59666C",
+      color: "from-slate-500 to-slate-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No ORM",
+      description: "Skip Java ORM/database layer selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
+  javaAuth: [
+    {
+      id: "spring-security",
+      name: "Spring Security",
+      description: "Authentication and authorization for Spring applications",
+      icon: "https://cdn.simpleicons.org/springsecurity/6DB33F",
+      color: "from-emerald-500 to-green-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Auth Library",
+      description: "Skip Java authentication library selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
+  javaLibraries: [
+    {
+      id: "spring-actuator",
+      name: "Spring Actuator",
+      description: "Health, metrics, and diagnostics endpoints for production visibility",
+      icon: "https://cdn.simpleicons.org/spring/6DB33F",
+      color: "from-emerald-500 to-green-700",
+      default: false,
+    },
+    {
+      id: "spring-validation",
+      name: "Spring Validation",
+      description: "Request and entity validation with Jakarta Bean Validation",
+      icon: "https://cdn.simpleicons.org/spring/6DB33F",
+      color: "from-lime-500 to-green-700",
+      default: false,
+    },
+    {
+      id: "flyway",
+      name: "Flyway",
+      description: "Versioned SQL migrations for JPA-backed applications",
+      icon: "https://cdn.simpleicons.org/flyway/CC0200",
+      color: "from-red-500 to-rose-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Libraries",
+      description: "Skip extra Java application libraries",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
+  javaTestingLibraries: [
+    {
+      id: "junit5",
+      name: "JUnit 5",
+      description: "Modern Java unit testing platform",
+      icon: "https://cdn.simpleicons.org/junit5/25A162",
+      color: "from-emerald-500 to-green-700",
+      default: true,
+    },
+    {
+      id: "mockito",
+      name: "Mockito",
+      description: "Mocking framework for isolated unit tests",
+      icon: "https://cdn.simpleicons.org/mockito/78A641",
+      color: "from-lime-500 to-green-600",
+      default: false,
+    },
+    {
+      id: "testcontainers",
+      name: "Testcontainers",
+      description: "Disposable Docker-based integration testing",
+      icon: "https://cdn.simpleicons.org/testcontainers/2496ED",
+      color: "from-sky-500 to-blue-700",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Testing Libraries",
+      description: "Skip Java testing library selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: false,
+    },
+  ],
 };
+
+export const PLANNED_JAVA_OPTIONS = [
+  {
+    category: "javaWebFramework",
+    id: "quarkus",
+    name: "Quarkus",
+    description: "Planned Java framework support",
+    icon: "https://cdn.simpleicons.org/quarkus/4695EB",
+    color: "from-blue-500 to-indigo-700",
+    status: "Planned",
+  },
+] as const;
 
 // Ecosystem configuration
 export const ECOSYSTEMS: {
@@ -3309,6 +3470,13 @@ export const ECOSYSTEMS: {
     description: "High-performance Go ecosystem",
     icon: "https://cdn.simpleicons.org/go/00ADD8",
     color: "from-cyan-500 to-blue-600",
+  },
+  {
+    id: "java",
+    name: "Java",
+    description: "Modern Java ecosystem",
+    icon: "/icon/java.svg",
+    color: "from-red-500 to-orange-600",
   },
 ];
 
@@ -3390,6 +3558,17 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "git",
     "install",
   ],
+  java: [
+    "javaWebFramework",
+    "javaBuildTool",
+    "javaOrm",
+    "javaAuth",
+    "javaLibraries",
+    "javaTestingLibraries",
+    "aiDocs",
+    "git",
+    "install",
+  ],
 };
 
 export const PRESET_CATEGORIES = [
@@ -3406,6 +3585,7 @@ export const PRESET_CATEGORIES = [
   { id: "rust", name: "Rust", icon: "axum", ecosystem: "rust" },
   { id: "python", name: "Python", icon: "fastapi", ecosystem: "python" },
   { id: "go", name: "Go", icon: "gin", ecosystem: "go" },
+  { id: "java", name: "Java", icon: "java", ecosystem: "java" },
 ] as const;
 
 export type PresetCategory = (typeof PRESET_CATEGORIES)[number]["id"];
@@ -4395,6 +4575,64 @@ export const PRESET_TEMPLATES: {
       goCli: "bubbletea",
       goLogging: "none",
       goAuth: "none",
+      aiDocs: ["claude-md"],
+      git: "true",
+      install: "true",
+    },
+  },
+  // ── Java ─────────────────────────────────────────────
+  {
+    id: "java-spring",
+    name: "Spring Boot API",
+    description: "Spring Boot + Maven + JUnit 5",
+    category: "java",
+    stack: {
+      ecosystem: "java",
+      projectName: "my-app",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: ["junit5"],
+      aiDocs: ["claude-md"],
+      git: "true",
+      install: "true",
+    },
+  },
+  {
+    id: "java-jpa",
+    name: "Spring Data JPA",
+    description: "Spring Boot + Spring Data JPA + JUnit 5",
+    category: "java",
+    stack: {
+      ecosystem: "java",
+      projectName: "my-app",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "spring-data-jpa",
+      javaAuth: "none",
+      javaLibraries: ["flyway", "spring-validation"],
+      javaTestingLibraries: ["junit5", "mockito"],
+      aiDocs: ["claude-md"],
+      git: "true",
+      install: "true",
+    },
+  },
+  {
+    id: "java-secure",
+    name: "Secure Spring Boot",
+    description: "Spring Boot + Spring Security + JPA + Testcontainers",
+    category: "java",
+    stack: {
+      ecosystem: "java",
+      projectName: "my-app",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "gradle",
+      javaOrm: "spring-data-jpa",
+      javaAuth: "spring-security",
+      javaLibraries: ["spring-actuator", "flyway"],
+      javaTestingLibraries: ["junit5", "testcontainers"],
       aiDocs: ["claude-md"],
       git: "true",
       install: "true",

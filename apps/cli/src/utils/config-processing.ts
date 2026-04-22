@@ -28,6 +28,12 @@ import type {
   GoOrm,
   GoApi,
   GoWebFramework,
+  JavaAuth,
+  JavaBuildTool,
+  JavaLibraries,
+  JavaOrm,
+  JavaTestingLibraries,
+  JavaWebFramework,
   I18n,
   JobQueue,
   Logging,
@@ -387,6 +393,33 @@ export function processFlags(options: CLIInput, projectName?: string) {
     config.goAuth = options.goAuth as GoAuth;
   }
 
+  // Java ecosystem options
+  if (options.javaWebFramework !== undefined) {
+    config.javaWebFramework = options.javaWebFramework as JavaWebFramework;
+  }
+
+  if (options.javaBuildTool !== undefined) {
+    config.javaBuildTool = options.javaBuildTool as JavaBuildTool;
+  }
+
+  if (options.javaOrm !== undefined) {
+    config.javaOrm = options.javaOrm as JavaOrm;
+  }
+
+  if (options.javaAuth !== undefined) {
+    config.javaAuth = options.javaAuth as JavaAuth;
+  }
+
+  if (options.javaLibraries !== undefined) {
+    config.javaLibraries = processArrayOption(options.javaLibraries) as JavaLibraries[];
+  }
+
+  if (options.javaTestingLibraries !== undefined) {
+    config.javaTestingLibraries = processArrayOption(
+      options.javaTestingLibraries,
+    ) as JavaTestingLibraries[];
+  }
+
   return config;
 }
 
@@ -414,4 +447,6 @@ export function validateArrayOptions(options: CLIInput) {
   validateNoneExclusivity(options.aiDocs, "ai docs");
   validateNoneExclusivity(options.rustLibraries, "rust libraries");
   validateNoneExclusivity(options.pythonAi, "python ai libraries");
+  validateNoneExclusivity(options.javaLibraries, "java libraries");
+  validateNoneExclusivity(options.javaTestingLibraries, "java testing libraries");
 }

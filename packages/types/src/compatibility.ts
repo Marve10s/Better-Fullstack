@@ -80,7 +80,13 @@ export type CompatibilityCategory =
   | "goApi"
   | "goCli"
   | "goLogging"
-  | "goAuth";
+  | "goAuth"
+  | "javaWebFramework"
+  | "javaBuildTool"
+  | "javaOrm"
+  | "javaAuth"
+  | "javaLibraries"
+  | "javaTestingLibraries";
 
 export type CompatibilityIssue = {
   code: string;
@@ -99,7 +105,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go";
+  ecosystem: "typescript" | "rust" | "python" | "go" | "java";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -177,6 +183,12 @@ export type CompatibilityInput = {
   goCli: string;
   goLogging: string;
   goAuth: string;
+  javaWebFramework: string;
+  javaBuildTool: string;
+  javaOrm: string;
+  javaAuth: string;
+  javaLibraries: string[];
+  javaTestingLibraries: string[];
 };
 
 const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
@@ -248,6 +260,12 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "goCli",
   "goLogging",
   "goAuth",
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
 ];
 
 const DEFAULT_RUNTIME = "bun";
@@ -346,6 +364,15 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     goAuth: "Go Auth",
   };
 
+  const javaCategoryNames: Record<string, string> = {
+    javaWebFramework: "Java Web Framework",
+    javaBuildTool: "Java Build Tool",
+    javaOrm: "Java ORM / Database",
+    javaAuth: "Java Auth",
+    javaLibraries: "Java Libraries",
+    javaTestingLibraries: "Java Testing Libraries",
+  };
+
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
   }
@@ -356,6 +383,10 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
 
   if (goCategoryNames[categoryKey]) {
     return goCategoryNames[categoryKey];
+  }
+
+  if (javaCategoryNames[categoryKey]) {
+    return javaCategoryNames[categoryKey];
   }
 
   // Custom display names for TypeScript categories
@@ -1229,6 +1260,61 @@ export const analyzeStackCompatibility = (
   }
 
   // ============================================
+  // JAVA ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "java") {
+    if (nextStack.javaBuildTool === "none") {
+      if (nextStack.javaWebFramework !== "none") {
+        nextStack.javaWebFramework = "none";
+        changed = true;
+        changes.push({
+          category: "javaBuildTool",
+          message: "Java web framework set to 'None' (source-only Java does not use a framework)",
+        });
+      }
+
+      if (nextStack.javaTestingLibraries.some((library) => library !== "none")) {
+        nextStack.javaTestingLibraries = [];
+        changed = true;
+        changes.push({
+          category: "javaBuildTool",
+          message: "Java testing libraries cleared (a build tool is required for test dependencies)",
+        });
+      }
+    }
+
+    if (nextStack.javaWebFramework !== "spring-boot" || nextStack.javaBuildTool === "none") {
+      if (nextStack.javaOrm !== "none") {
+        nextStack.javaOrm = "none";
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java ORM set to 'None' (current scaffold only supports it with Spring Boot)",
+        });
+      }
+
+      if (nextStack.javaAuth !== "none") {
+        nextStack.javaAuth = "none";
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java auth set to 'None' (current scaffold only supports it with Spring Boot)",
+        });
+      }
+
+      if (nextStack.javaLibraries.some((library) => library !== "none")) {
+        nextStack.javaLibraries = [];
+        changed = true;
+        changes.push({
+          category: "javaWebFramework",
+          message: "Java libraries cleared (Spring libraries require Spring Boot)",
+        });
+      }
+    }
+  }
+
+  // ============================================
   // DEPLOYMENT CONSTRAINTS
   // ============================================
 
@@ -1978,6 +2064,71 @@ export const getDisabledReason = (
     }
   }
 
+  // ============================================
+  // JAVA ECOSYSTEM RULES
+  // ============================================
+  if (category === "javaWebFramework") {
+    if (optionId === "spring-boot" && currentStack.javaBuildTool === "none") {
+      return "Spring Boot requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaBuildTool") {
+    if (optionId === "none") {
+      if (currentStack.javaWebFramework === "spring-boot") {
+        return "Spring Boot requires Maven or Gradle";
+      }
+      if (currentStack.javaOrm !== "none") {
+        return "Java ORM support requires Maven or Gradle";
+      }
+      if (currentStack.javaAuth !== "none") {
+        return "Java auth support requires Maven or Gradle";
+      }
+      if (currentStack.javaLibraries.some((library) => library !== "none")) {
+        return "Java libraries require Maven or Gradle";
+      }
+      if (currentStack.javaTestingLibraries.some((library) => library !== "none")) {
+        return "Java testing libraries require Maven or Gradle";
+      }
+    }
+  }
+
+  if (category === "javaOrm") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Java ORM support currently requires Spring Boot";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java ORM support requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaAuth") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Java auth support currently requires Spring Boot";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java auth support requires Maven or Gradle";
+    }
+  }
+
+  if (category === "javaLibraries") {
+    if (optionId !== "none" && currentStack.javaWebFramework !== "spring-boot") {
+      return "Spring libraries currently require Spring Boot in the Java scaffold";
+    }
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java libraries require Maven or Gradle";
+    }
+    if (optionId === "flyway" && currentStack.javaOrm !== "spring-data-jpa") {
+      return "Flyway currently requires Spring Data JPA in the Java scaffold";
+    }
+  }
+
+  if (category === "javaTestingLibraries") {
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java testing libraries require Maven or Gradle";
+    }
+  }
+
   return null;
 };
 
@@ -2430,6 +2581,10 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
     ["ai", input.aiSdk],
+    ["javaWebFramework", input.javaWebFramework],
+    ["javaBuildTool", input.javaBuildTool],
+    ["javaOrm", input.javaOrm],
+    ["javaAuth", input.javaAuth],
   ];
 
   for (const [category, optionId] of scalarChecks) {
@@ -2464,6 +2619,30 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "appPlatforms",
         optionId: addon,
+      });
+    }
+  }
+
+  for (const javaLibrary of input.javaLibraries) {
+    const reason = getDisabledReason(input, "javaLibraries", javaLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_LIBRARY",
+        message: reason,
+        category: "javaLibraries",
+        optionId: javaLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.javaTestingLibraries) {
+    const reason = getDisabledReason(input, "javaTestingLibraries", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_JAVA_TESTING_LIBRARY",
+        message: reason,
+        category: "javaTestingLibraries",
+        optionId: testingLibrary,
       });
     }
   }

@@ -1,6 +1,6 @@
 import { createYoga } from "graphql-yoga";
-import { schema } from "./graphql/schema";
-import type { PothosContext } from "./graphql/builder";
+import { schema } from "./graphql/schema{{#if (eq backend "adonisjs")}}.js{{/if}}";
+import type { PothosContext } from "./graphql/builder{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
 export { schema };
 export type { PothosContext };

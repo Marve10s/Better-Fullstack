@@ -32,6 +32,8 @@ function normalizeInputStack(input: Partial<StackState>): StackState {
     appPlatforms: input.appPlatforms ?? DEFAULT_STACK.appPlatforms,
     examples: input.examples ?? DEFAULT_STACK.examples,
     aiDocs: input.aiDocs ?? DEFAULT_STACK.aiDocs,
+    javaLibraries: input.javaLibraries ?? DEFAULT_STACK.javaLibraries,
+    javaTestingLibraries: input.javaTestingLibraries ?? DEFAULT_STACK.javaTestingLibraries,
   });
 }
 
@@ -129,6 +131,13 @@ export function stackStateToProjectConfigBase(input: Partial<StackState>): Proje
     goCli: stack.goCli as ProjectConfig["goCli"],
     goLogging: stack.goLogging as ProjectConfig["goLogging"],
     goAuth: stack.goAuth as ProjectConfig["goAuth"],
+    javaWebFramework: stack.javaWebFramework as ProjectConfig["javaWebFramework"],
+    javaBuildTool: stack.javaBuildTool as ProjectConfig["javaBuildTool"],
+    javaOrm: stack.javaOrm as ProjectConfig["javaOrm"],
+    javaAuth: stack.javaAuth as ProjectConfig["javaAuth"],
+    javaLibraries: withoutNone(stack.javaLibraries) as ProjectConfig["javaLibraries"],
+    javaTestingLibraries:
+      withoutNone(stack.javaTestingLibraries) as ProjectConfig["javaTestingLibraries"],
     aiDocs: withoutNone(stack.aiDocs) as ProjectConfig["aiDocs"],
   };
 }

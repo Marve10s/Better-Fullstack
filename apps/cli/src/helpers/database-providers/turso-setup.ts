@@ -10,6 +10,7 @@ import type { ProjectConfig } from "../../types";
 import { commandExists } from "../../utils/command-exists";
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { exitCancelled } from "../../utils/errors";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type TursoConfig = {
   dbUrl: string;
@@ -196,6 +197,15 @@ export async function setupTurso(config: ProjectConfig, cliInput?: { manualDb?: 
 
   try {
     if (manualDb) {
+      await writeEnvFile(projectDir, backend);
+      displayManualSetupInstructions();
+      return;
+    }
+
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for
+    // a setup mode, and automatic Turso setup requires the turso CLI and
+    // interactive auth. Default to manual so scaffolding completes successfully.
+    if (!canPromptInteractively()) {
       await writeEnvFile(projectDir, backend);
       displayManualSetupInstructions();
       return;

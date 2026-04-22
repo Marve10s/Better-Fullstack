@@ -10,6 +10,7 @@ import type { ProjectConfig } from "../../types";
 import { commandExists } from "../../utils/command-exists";
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { exitCancelled } from "../../utils/errors";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type MongoDBConfig = {
   connectionString: string;
@@ -126,6 +127,16 @@ export async function setupMongoDBAtlas(config: ProjectConfig, cliInput?: { manu
 
     if (manualDb) {
       log.info("MongoDB Atlas manual setup selected");
+      await writeEnvFile(projectDir, backend);
+      displayManualSetupInstructions();
+      return;
+    }
+
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for
+    // a setup mode, and automatic MongoDB Atlas setup requires the Atlas CLI
+    // and interactive auth. Default to manual so scaffolding completes.
+    if (!canPromptInteractively()) {
+      log.info("MongoDB Atlas manual setup selected (non-interactive mode)");
       await writeEnvFile(projectDir, backend);
       displayManualSetupInstructions();
       return;

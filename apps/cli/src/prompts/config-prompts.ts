@@ -28,6 +28,12 @@ import type {
   GoLogging,
   GoOrm,
   GoWebFramework,
+  JavaAuth,
+  JavaBuildTool,
+  JavaLibraries,
+  JavaOrm,
+  JavaTestingLibraries,
+  JavaWebFramework,
   JobQueue,
   Logging,
   Observability,
@@ -100,6 +106,14 @@ import {
 } from "./go-ecosystem";
 import { getI18nChoice } from "./i18n";
 import { getinstallChoice } from "./install";
+import {
+  getJavaAuthChoice,
+  getJavaBuildToolChoice,
+  getJavaLibrariesChoice,
+  getJavaOrmChoice,
+  getJavaTestingLibrariesChoice,
+  getJavaWebFrameworkChoice,
+} from "./java-ecosystem";
 import { getJobQueueChoice } from "./job-queue";
 import { getLoggingChoice } from "./logging";
 import { navigableGroup } from "./navigable-group";
@@ -208,6 +222,13 @@ type PromptGroupResults = {
   goCli: GoCli;
   goLogging: GoLogging;
   goAuth: GoAuth;
+  // Java ecosystem
+  javaWebFramework: JavaWebFramework;
+  javaBuildTool: JavaBuildTool;
+  javaOrm: JavaOrm;
+  javaAuth: JavaAuth;
+  javaLibraries: JavaLibraries[];
+  javaTestingLibraries: JavaTestingLibraries[];
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
@@ -535,20 +556,59 @@ export async function gatherConfig(
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
         return getGoAuthChoice(flags.goAuth);
       },
+      // Java ecosystem prompts (skip if not Java)
+      javaWebFramework: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
+        return getJavaWebFrameworkChoice(flags.javaWebFramework);
+      },
+      javaBuildTool: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaBuildTool);
+        return getJavaBuildToolChoice(flags.javaBuildTool);
+      },
+      javaOrm: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaOrm);
+        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+          return Promise.resolve("none" as JavaOrm);
+        }
+        return getJavaOrmChoice(flags.javaOrm);
+      },
+      javaAuth: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaAuth);
+        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+          return Promise.resolve("none" as JavaAuth);
+        }
+        return getJavaAuthChoice(flags.javaAuth);
+      },
+      javaLibraries: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve([] as JavaLibraries[]);
+        if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
+          return Promise.resolve([] as JavaLibraries[]);
+        }
+        return getJavaLibrariesChoice(flags.javaLibraries);
+      },
+      javaTestingLibraries: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve([] as JavaTestingLibraries[]);
+        if (results.javaBuildTool === "none") {
+          return Promise.resolve([] as JavaTestingLibraries[]);
+        }
+        return getJavaTestingLibrariesChoice(flags.javaTestingLibraries);
+      },
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
       packageManager: ({ results }) => {
-        // Skip package manager prompt for Rust/Python/Go (they use cargo/uv/go mod, not npm/pnpm/bun)
+        // Skip package manager prompt for Rust/Python/Go/Java (they use cargo/uv/go mod/maven wrapper, not npm/pnpm/bun)
         if (
           results.ecosystem === "rust" ||
           results.ecosystem === "python" ||
-          results.ecosystem === "go"
+          results.ecosystem === "go" ||
+          results.ecosystem === "java"
         )
           return Promise.resolve(flags.packageManager ?? getUserPkgManager());
         return getPackageManagerChoice(flags.packageManager);
       },
-      install: ({ results }) => getinstallChoice(flags.install, results.ecosystem),
+      install: ({ results }) =>
+        getinstallChoice(flags.install, results.ecosystem, results.javaBuildTool),
     },
     {
       onCancel: () => exitCancelled("Operation cancelled"),
@@ -629,6 +689,13 @@ export async function gatherConfig(
     goCli: result.goCli,
     goLogging: result.goLogging,
     goAuth: result.goAuth,
+    // Java ecosystem options
+    javaWebFramework: result.javaWebFramework,
+    javaBuildTool: result.javaBuildTool,
+    javaOrm: result.javaOrm,
+    javaAuth: result.javaAuth,
+    javaLibraries: result.javaLibraries,
+    javaTestingLibraries: result.javaTestingLibraries,
     // AI documentation files
     aiDocs: result.aiDocs,
   };

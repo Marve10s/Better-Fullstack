@@ -10,6 +10,7 @@ import type { PackageManager, ProjectConfig } from "../../types";
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { exitCancelled } from "../../utils/errors";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type NeonConfig = {
   connectionString: string;
@@ -156,6 +157,15 @@ export async function setupNeonPostgres(config: ProjectConfig, cliInput?: { manu
       return;
     }
 
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for
+    // a setup mode, and the automatic Neon paths require network access and
+    // interactive auth. Default to manual so scaffolding completes successfully.
+    if (!canPromptInteractively()) {
+      await writeEnvFile(projectDir, backend);
+      displayManualSetupInstructions(backend === "self" ? "apps/web" : "apps/server");
+      return;
+    }
+
     const mode = await select({
       message: "Neon setup: choose mode",
       options: [
@@ -213,7 +223,7 @@ export async function setupNeonPostgres(config: ProjectConfig, cliInput?: { manu
       const regionId = await select({
         message: "Select a region for your Neon project:",
         options: NEON_REGIONS,
-        initialValue: NEON_REGIONS[0].value,
+        initialValue: NEON_REGIONS[0]?.value ?? "aws-us-east-1",
       });
 
       if (isCancel(projectName) || isCancel(regionId)) return exitCancelled("Operation cancelled");

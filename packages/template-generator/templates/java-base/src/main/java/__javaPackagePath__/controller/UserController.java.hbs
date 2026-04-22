@@ -1,0 +1,73 @@
+package {{javaPackageName}}.controller;
+
+import java.time.Instant;
+import java.util.List;
+
+{{#if hasJavaValidation}}
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+{{/if}}
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+{{#unless hasJavaValidation}}
+import org.springframework.web.server.ResponseStatusException;
+{{/unless}}
+
+import {{javaPackageName}}.domain.AppUser;
+import {{javaPackageName}}.service.AppUserService;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+  private final AppUserService userService;
+
+  public UserController(AppUserService userService) {
+    this.userService = userService;
+  }
+
+  @GetMapping
+  public List<UserResponse> listUsers() {
+    return userService.findAll().stream().map(UserResponse::from).toList();
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+{{#if hasJavaValidation}}
+  public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+{{else}}
+  public UserResponse createUser(@RequestBody CreateUserRequest request) {
+    if (request == null || request.email() == null || request.email().isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
+    }
+{{/if}}
+
+    AppUser createdUser = userService.create(request.email(), request.displayName());
+    return UserResponse.from(createdUser);
+  }
+
+{{#if hasJavaValidation}}
+  public record CreateUserRequest(@NotBlank @Email String email, @NotBlank String displayName) {
+  }
+{{else}}
+  public record CreateUserRequest(String email, String displayName) {
+  }
+{{/if}}
+
+  public record UserResponse(Long id, String email, String displayName, Instant createdAt) {
+    static UserResponse from(AppUser user) {
+      return new UserResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getDisplayName(),
+        user.getCreatedAt()
+      );
+    }
+  }
+}

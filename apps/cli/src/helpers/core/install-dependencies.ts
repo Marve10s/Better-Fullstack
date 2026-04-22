@@ -109,3 +109,45 @@ export async function runGoModTidy({ projectDir }: { projectDir: string }) {
     }
   }
 }
+
+export async function runMavenTests({ projectDir }: { projectDir: string }) {
+  const s = spinner();
+  const mvnw = process.platform === "win32" ? "mvnw.cmd" : "./mvnw";
+
+  try {
+    s.start("Running Maven tests...");
+
+    await $({
+      cwd: projectDir,
+      stderr: "inherit",
+    })`${mvnw} test`;
+
+    s.stop("Maven tests completed");
+  } catch (error) {
+    s.stop(pc.red("Maven tests failed"));
+    if (error instanceof Error) {
+      consola.error(pc.red(`Maven test error: ${error.message}`));
+    }
+  }
+}
+
+export async function runGradleTests({ projectDir }: { projectDir: string }) {
+  const s = spinner();
+  const gradlew = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
+
+  try {
+    s.start("Running Gradle tests...");
+
+    await $({
+      cwd: projectDir,
+      stderr: "inherit",
+    })`${gradlew} test`;
+
+    s.stop("Gradle tests completed");
+  } catch (error) {
+    s.stop(pc.red("Gradle tests failed"));
+    if (error instanceof Error) {
+      consola.error(pc.red(`Gradle test error: ${error.message}`));
+    }
+  }
+}

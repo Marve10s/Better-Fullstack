@@ -1,0 +1,48 @@
+package {{javaPackageName}}.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import {{javaPackageName}}.domain.AppUser;
+import {{javaPackageName}}.repository.AppUserRepository;
+
+@ExtendWith(MockitoExtension.class)
+class AppUserServiceTest {
+
+  @Mock
+  private AppUserRepository repository;
+
+  @InjectMocks
+  private AppUserService service;
+
+  @Test
+  void createPersistsANormalizedUser() {
+    when(repository.save(any(AppUser.class))).thenAnswer((invocation) -> invocation.getArgument(0));
+
+    AppUser createdUser = service.create("Ada@example.com ", "Ada Lovelace");
+
+    verify(repository).save(any(AppUser.class));
+    assertThat(createdUser.getEmail()).isEqualTo("ada@example.com");
+    assertThat(createdUser.getDisplayName()).isEqualTo("Ada Lovelace");
+  }
+
+  @Test
+  void findAllDelegatesToRepository() {
+    when(repository.findAll()).thenReturn(List.of(new AppUser("grace@example.com", "Grace Hopper")));
+
+    List<AppUser> users = service.findAll();
+
+    assertThat(users).hasSize(1);
+    verify(repository).findAll();
+  }
+}

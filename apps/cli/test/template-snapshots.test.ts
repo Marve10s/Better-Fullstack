@@ -194,6 +194,18 @@ const SNAPSHOT_CONFIGS: Array<{
       auth: "none",
     },
   },
+  {
+    name: "java-spring-boot-jpa-security",
+    config: {
+      ecosystem: "java",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "gradle",
+      javaOrm: "spring-data-jpa",
+      javaAuth: "spring-security",
+      javaLibraries: ["spring-actuator", "flyway"],
+      javaTestingLibraries: ["junit5", "mockito"],
+    },
+  },
 ];
 
 // Default values to fill in missing config options

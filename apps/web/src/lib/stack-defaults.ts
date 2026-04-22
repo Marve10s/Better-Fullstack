@@ -79,6 +79,12 @@ export type StackState = {
   goCli: string;
   goLogging: string;
   goAuth: string;
+  javaWebFramework: string;
+  javaBuildTool: string;
+  javaOrm: string;
+  javaAuth: string;
+  javaLibraries: string[];
+  javaTestingLibraries: string[];
 };
 
 export const DEFAULT_STACK: StackState = {
@@ -160,6 +166,12 @@ export const DEFAULT_STACK: StackState = {
   goCli: "none",
   goLogging: "zap",
   goAuth: "none",
+  javaWebFramework: "spring-boot",
+  javaBuildTool: "maven",
+  javaOrm: "none",
+  javaAuth: "none",
+  javaLibraries: [],
+  javaTestingLibraries: ["junit5"],
 };
 
 export const isStackDefault = <K extends keyof StackState>(

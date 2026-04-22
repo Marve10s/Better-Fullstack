@@ -69,12 +69,13 @@ const RUST_LOGGINGS = extractEnumValues(RustLoggingSchema);
 
 describe("Rust Ecosystem", () => {
   describe("Schema Definitions", () => {
-    it("should have ecosystem schema with typescript, rust, python, and go", () => {
+    it("should have ecosystem schema with typescript, rust, python, go, and java", () => {
       expect(ECOSYSTEMS).toContain("typescript");
       expect(ECOSYSTEMS).toContain("rust");
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
-      expect(ECOSYSTEMS.length).toBe(4);
+      expect(ECOSYSTEMS).toContain("java");
+      expect(ECOSYSTEMS.length).toBe(5);
     });
 
     it("should have rust web framework options", () => {
@@ -2564,6 +2565,28 @@ describe("Rust Ecosystem", () => {
       const mainContent = getFileContent(root, "crates/server/src/main.rs");
       expect(mainContent).toContain("env_logger::init()");
       expect(mainContent).toContain("log::info!");
+    });
+
+    it("should not duplicate log deps when leptos and env_logger are both selected", async () => {
+      const result = await createVirtual({
+        projectName: "rust-envlogger-leptos",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "leptos",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: [],
+        rustLogging: "env-logger",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      const logDependencyCount = cargoContent?.match(/^log = "0\.4"$/gm)?.length ?? 0;
+
+      expect(logDependencyCount).toBe(1);
     });
 
     it("should not include logging deps when rustLogging is none", async () => {

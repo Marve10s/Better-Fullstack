@@ -574,6 +574,69 @@ export function validateApiConstraints(_config: Partial<ProjectConfig>, _options
   // No API constraints currently needed
 }
 
+export function validateJavaConstraints(
+  config: Partial<ProjectConfig>,
+  providedFlags: Set<string> = new Set(),
+) {
+  if (config.ecosystem !== "java") return;
+
+  const hasSpringBoot = config.javaWebFramework === "spring-boot";
+  const hasNoBuildTool = config.javaBuildTool === "none";
+  const hasJavaLibraries = (config.javaLibraries ?? []).some((library) => library !== "none");
+  const hasJavaTestingLibraries = (config.javaTestingLibraries ?? []).some(
+    (library) => library !== "none",
+  );
+  const hasSpringOnlyFeatures =
+    config.javaOrm !== "none" ||
+    config.javaAuth !== "none" ||
+    hasJavaLibraries;
+
+  if (hasNoBuildTool && hasSpringBoot) {
+    incompatibilityError({
+      message: "Spring Boot requires Maven or Gradle in the Java scaffold.",
+      provided: {
+        "java-web-framework": config.javaWebFramework ?? "none",
+        "java-build-tool": config.javaBuildTool ?? "none",
+      },
+      suggestions: [
+        "Use --java-build-tool maven or --java-build-tool gradle with Spring Boot",
+        "Use --java-web-framework none for a plain Java source-only scaffold",
+      ],
+    });
+  }
+
+  if ((config.javaWebFramework === "none" || hasNoBuildTool) && hasSpringOnlyFeatures) {
+    incompatibilityError({
+      message: "Spring-only Java features require the Spring Boot scaffold with Maven or Gradle.",
+      provided: {
+        "java-web-framework": config.javaWebFramework ?? "none",
+        "java-build-tool": config.javaBuildTool ?? "none",
+        "java-orm": config.javaOrm ?? "none",
+        "java-auth": config.javaAuth ?? "none",
+        "java-libraries": (config.javaLibraries ?? []).join(" ") || "none",
+      },
+      suggestions: [
+        "Use --java-web-framework spring-boot and a real build tool for Spring features",
+        "Clear --java-orm, --java-auth, and --java-libraries when using plain Java",
+      ],
+    });
+  }
+
+  if (hasNoBuildTool && hasJavaTestingLibraries) {
+    incompatibilityError({
+      message: "Java testing libraries require Maven or Gradle to manage test dependencies.",
+      provided: {
+        "java-build-tool": config.javaBuildTool ?? "none",
+        "java-testing-libraries": (config.javaTestingLibraries ?? []).join(" ") || "none",
+      },
+      suggestions: [
+        "Use --java-build-tool maven or --java-build-tool gradle to enable JUnit/Mockito/Testcontainers",
+        "Set --java-testing-libraries none for a source-only plain Java scaffold",
+      ],
+    });
+  }
+}
+
 export function validateShadcnConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
@@ -629,6 +692,7 @@ export function validateFullConfig(
   validateFrontendConstraints(config, providedFlags);
 
   validateApiConstraints(config, options);
+  validateJavaConstraints(config, providedFlags);
 
   validateServerDeployRequiresBackend(config.serverDeploy, config.backend);
 
@@ -707,6 +771,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
+    validateJavaConstraints(config);
 
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);
 

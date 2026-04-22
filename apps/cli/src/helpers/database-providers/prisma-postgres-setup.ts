@@ -9,6 +9,7 @@ import type { PackageManager, ProjectConfig } from "../../types";
 
 import { addEnvVariablesToFile, type EnvVariable } from "../../utils/env-utils";
 import { getPackageExecutionArgs } from "../../utils/package-runner";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 
 type PrismaConfig = {
   databaseUrl: string;
@@ -38,11 +39,13 @@ async function setupWithCreateDb(serverDir: string, packageManager: PackageManag
   try {
     log.info("Starting Prisma Postgres setup with create-db.");
 
-    const selectedRegion = await select({
-      message: "Select your preferred region:",
-      options: AVAILABLE_REGIONS,
-      initialValue: "ap-southeast-1",
-    });
+    const selectedRegion = canPromptInteractively()
+      ? await select({
+          message: "Select your preferred region:",
+          options: AVAILABLE_REGIONS,
+          initialValue: "ap-southeast-1",
+        })
+      : "ap-southeast-1";
 
     if (isCancel(selectedRegion)) return null;
 
@@ -132,6 +135,15 @@ export async function setupPrismaPostgres(
     await fs.ensureDir(dbDir);
 
     if (manualDb) {
+      await writeEnvFile(projectDir, backend);
+      displayManualSetupInstructions(backend === "self" ? "apps/web" : "apps/server");
+      return;
+    }
+
+    // In non-interactive mode (CI, piped stdin, --silent) we cannot prompt for a
+    // setup mode, and the automatic `create-db` path requires network access and
+    // interactive auth. Default to manual so scaffolding completes successfully.
+    if (!canPromptInteractively()) {
       await writeEnvFile(projectDir, backend);
       displayManualSetupInstructions(backend === "self" ? "apps/web" : "apps/server");
       return;

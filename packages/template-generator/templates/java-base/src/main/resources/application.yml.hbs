@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: {{javaArtifactId}}
+{{#if hasJavaJpa}}
+  datasource:
+    url: jdbc:h2:file:./data/{{javaArtifactId}};MODE=PostgreSQL;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+{{#if hasJavaFlyway}}
+      ddl-auto: validate
+{{else}}
+      ddl-auto: update
+{{/if}}
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+{{/if}}
+{{#if hasJavaFlyway}}
+  flyway:
+    locations: classpath:db/migration
+{{/if}}
+{{#if hasJavaActuator}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+{{/if}}

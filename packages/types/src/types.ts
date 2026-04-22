@@ -73,6 +73,12 @@ import type {
   GoCliSchema,
   GoLoggingSchema,
   GoAuthSchema,
+  JavaWebFrameworkSchema,
+  JavaBuildToolSchema,
+  JavaOrmSchema,
+  JavaAuthSchema,
+  JavaLibrariesSchema,
+  JavaTestingLibrariesSchema,
   AiDocsSchema,
   ShadcnBaseSchema,
   ShadcnStyleSchema,
@@ -150,6 +156,12 @@ export type GoApi = z.infer<typeof GoApiSchema>;
 export type GoCli = z.infer<typeof GoCliSchema>;
 export type GoLogging = z.infer<typeof GoLoggingSchema>;
 export type GoAuth = z.infer<typeof GoAuthSchema>;
+export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
+export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
+export type JavaOrm = z.infer<typeof JavaOrmSchema>;
+export type JavaAuth = z.infer<typeof JavaAuthSchema>;
+export type JavaLibraries = z.infer<typeof JavaLibrariesSchema>;
+export type JavaTestingLibraries = z.infer<typeof JavaTestingLibrariesSchema>;
 export type AiDocs = z.infer<typeof AiDocsSchema>;
 export type ShadcnBase = z.infer<typeof ShadcnBaseSchema>;
 export type ShadcnStyle = z.infer<typeof ShadcnStyleSchema>;

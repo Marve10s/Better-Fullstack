@@ -8,6 +8,10 @@ import { describe, expect, it } from "bun:test";
 
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import { PROMPT_RESOLVER_REGISTRY } from "../src/prompts/prompt-resolver-registry";
+import {
+  resolveJavaLibrariesPrompt,
+  resolveJavaTestingLibrariesPrompt,
+} from "../src/prompts/java-ecosystem";
 import { resolveRustLibrariesPrompt } from "../src/prompts/rust-ecosystem";
 import { DEFAULT_CONFIG } from "../src/constants";
 import { validateArrayOptions } from "../src/utils/config-processing";
@@ -212,6 +216,20 @@ describe("CLI prompts vs schemas parity", () => {
     expect(resolution.mode).toBe("multiple");
     expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.rustLibraries);
   });
+
+  it("keeps the Java testing libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveJavaTestingLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.javaTestingLibraries);
+  });
+
+  it("keeps the Java libraries prompt default aligned with CLI defaults", () => {
+    const resolution = resolveJavaLibrariesPrompt();
+
+    expect(resolution.mode).toBe("multiple");
+    expect(resolution.initialValue).toEqual(DEFAULT_CONFIG.javaLibraries);
+  });
 });
 
 describe("CLI array exclusivity", () => {
@@ -237,5 +255,21 @@ describe("CLI array exclusivity", () => {
         pythonAi: ["none", "langchain"],
       }),
     ).toThrow("Cannot combine 'none' with other python ai libraries.");
+  });
+
+  it("rejects javaTestingLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        javaTestingLibraries: ["none", "junit5"],
+      }),
+    ).toThrow("Cannot combine 'none' with other java testing libraries.");
+  });
+
+  it("rejects javaLibraries mixed with none", () => {
+    expect(() =>
+      validateArrayOptions({
+        javaLibraries: ["none", "spring-actuator"],
+      }),
+    ).toThrow("Cannot combine 'none' with other java libraries.");
   });
 });

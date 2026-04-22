@@ -1,5 +1,5 @@
-import { contract } from "../index";
-import type { Context } from "../context";
+import { contract } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
+import type { Context } from "../context{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
 export function createRouter(ctx: Context) {
   return {

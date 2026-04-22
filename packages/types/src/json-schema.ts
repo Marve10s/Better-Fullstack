@@ -21,6 +21,12 @@ import {
   ProjectConfigSchema,
   BetterTStackConfigSchema,
   InitResultSchema,
+  JavaAuthSchema,
+  JavaBuildToolSchema,
+  JavaLibrariesSchema,
+  JavaOrmSchema,
+  JavaTestingLibrariesSchema,
+  JavaWebFrameworkSchema,
 } from "./schemas";
 
 // Generate JSON schemas for each type
@@ -104,6 +110,30 @@ export function getInitResultJsonSchema() {
   return z.toJSONSchema(InitResultSchema);
 }
 
+export function getJavaWebFrameworkJsonSchema() {
+  return z.toJSONSchema(JavaWebFrameworkSchema);
+}
+
+export function getJavaBuildToolJsonSchema() {
+  return z.toJSONSchema(JavaBuildToolSchema);
+}
+
+export function getJavaOrmJsonSchema() {
+  return z.toJSONSchema(JavaOrmSchema);
+}
+
+export function getJavaAuthJsonSchema() {
+  return z.toJSONSchema(JavaAuthSchema);
+}
+
+export function getJavaLibrariesJsonSchema() {
+  return z.toJSONSchema(JavaLibrariesSchema);
+}
+
+export function getJavaTestingLibrariesJsonSchema() {
+  return z.toJSONSchema(JavaTestingLibrariesSchema);
+}
+
 // Get all JSON schemas as a single object
 export function getAllJsonSchemas() {
   return {
@@ -123,6 +153,12 @@ export function getAllJsonSchemas() {
     serverDeploy: getServerDeployJsonSchema(),
     directoryConflict: getDirectoryConflictJsonSchema(),
     template: getTemplateJsonSchema(),
+    javaWebFramework: getJavaWebFrameworkJsonSchema(),
+    javaBuildTool: getJavaBuildToolJsonSchema(),
+    javaOrm: getJavaOrmJsonSchema(),
+    javaAuth: getJavaAuthJsonSchema(),
+    javaLibraries: getJavaLibrariesJsonSchema(),
+    javaTestingLibraries: getJavaTestingLibrariesJsonSchema(),
     createInput: getCreateInputJsonSchema(),
     projectConfig: getProjectConfigJsonSchema(),
     betterTStackConfig: getBetterTStackConfigJsonSchema(),

@@ -9,5 +9,5 @@
       "NODE_OPTIONS": "--max-old-space-size=7168"
     }
   },
-  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]"
+  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" = \"main\" ] || { [ -n \"$VERCEL_GIT_PULL_REQUEST_ID\" ] && [ \"$VERCEL_GIT_COMMIT_AUTHOR_LOGIN\" = \"Marve10s\" ]; }; then exit 1; else exit 0; fi"
 }
