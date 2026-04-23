@@ -161,10 +161,27 @@ describe("Java Ecosystem", () => {
     });
 
     it("should expose Java libraries, ORM, auth, and testing values", () => {
-      expect(JAVA_LIBRARIES).toEqual(["spring-actuator", "spring-validation", "flyway", "none"]);
+      expect(JAVA_LIBRARIES).toEqual([
+        "spring-actuator",
+        "spring-validation",
+        "flyway",
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "none",
+      ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
       expect(JAVA_AUTHS).toEqual(["spring-security", "none"]);
-      expect(JAVA_TESTING_LIBRARIES).toEqual(["junit5", "mockito", "testcontainers", "none"]);
+      expect(JAVA_TESTING_LIBRARIES).toEqual([
+        "junit5",
+        "mockito",
+        "testcontainers",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "none",
+      ]);
     });
   });
 
@@ -396,6 +413,54 @@ describe("Java Ecosystem", () => {
       expect(envContent).toContain("APP_BASIC_PASSWORD=change-me");
       expect(userControllerContent).toContain("@Valid @RequestBody");
       expect(userEntityContent).toContain("@Email");
+    });
+
+    it("should add extended Java libraries and testing dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "java-extended",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok"],
+        javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/RestAssuredHttpTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/WireMockHttpTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/AsyncWorkflowTest.java")).toBe(
+        true,
+      );
+
+      const pomContent = getFileContent(root, "pom.xml");
+      const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
+      const applicationTest = getFileContent(
+        root,
+        "src/test/java/com/example/javaextended/ApplicationTests.java",
+      );
+      const readmeContent = getFileContent(root, "README.md");
+
+      expect(pomContent).toContain("liquibase-core");
+      expect(pomContent).toContain("springdoc-openapi-starter-webmvc-ui");
+      expect(pomContent).toContain("lombok");
+      expect(pomContent).toContain("rest-assured");
+      expect(pomContent).toContain("wiremock");
+      expect(pomContent).toContain("awaitility");
+      expect(applicationConfig).toContain("change-log: classpath:db/changelog/db.changelog-master.yaml");
+      expect(applicationConfig).toContain("ddl-auto: validate");
+      expect(applicationTest).toContain("org.assertj.core.api.Assertions.assertThat");
+      expect(readmeContent).toContain("OpenAPI documentation is available");
     });
 
     it("should omit optional Java files when those features are not selected", async () => {

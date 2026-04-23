@@ -2121,6 +2121,15 @@ export const getDisabledReason = (
     if (optionId === "flyway" && currentStack.javaOrm !== "spring-data-jpa") {
       return "Flyway currently requires Spring Data JPA in the Java scaffold";
     }
+    if (optionId === "liquibase" && currentStack.javaOrm !== "spring-data-jpa") {
+      return "Liquibase currently requires Spring Data JPA in the Java scaffold";
+    }
+    if (optionId === "flyway" && currentStack.javaLibraries.includes("liquibase")) {
+      return "Flyway cannot be combined with Liquibase in the current Java scaffold";
+    }
+    if (optionId === "liquibase" && currentStack.javaLibraries.includes("flyway")) {
+      return "Liquibase cannot be combined with Flyway in the current Java scaffold";
+    }
   }
 
   if (category === "javaTestingLibraries") {

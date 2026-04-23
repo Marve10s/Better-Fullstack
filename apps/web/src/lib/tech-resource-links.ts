@@ -290,6 +290,18 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://documentation.red-gate.com/fd",
     githubUrl: "https://github.com/flyway/flyway",
   },
+  liquibase: {
+    docsUrl: "https://docs.liquibase.com/",
+    githubUrl: "https://github.com/liquibase/liquibase",
+  },
+  "springdoc-openapi": {
+    docsUrl: "https://springdoc.org/",
+    githubUrl: "https://github.com/springdoc/springdoc-openapi",
+  },
+  lombok: {
+    docsUrl: "https://projectlombok.org/features/",
+    githubUrl: "https://github.com/projectlombok/lombok",
+  },
   junit5: {
     docsUrl: "https://junit.org/junit5/docs/current/user-guide/",
     githubUrl: "https://github.com/junit-team/junit5",
@@ -301,6 +313,22 @@ const BASE_LINKS: LinkMap = {
   testcontainers: {
     docsUrl: "https://java.testcontainers.org/",
     githubUrl: "https://github.com/testcontainers/testcontainers-java",
+  },
+  assertj: {
+    docsUrl: "https://assertj.github.io/doc/",
+    githubUrl: "https://github.com/assertj/assertj",
+  },
+  "rest-assured": {
+    docsUrl: "https://rest-assured.io/",
+    githubUrl: "https://github.com/rest-assured/rest-assured",
+  },
+  wiremock: {
+    docsUrl: "https://wiremock.org/docs/",
+    githubUrl: "https://github.com/wiremock/wiremock",
+  },
+  awaitility: {
+    docsUrl: "https://github.com/awaitility/awaitility/wiki/Usage",
+    githubUrl: "https://github.com/awaitility/awaitility",
   },
   pino: { docsUrl: "https://getpino.io/#/", githubUrl: "https://github.com/pinojs/pino" },
   winston: {

@@ -920,9 +920,21 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
 
   const cdCmd = `cd ${relativePath}`;
   const isSpringBoot = javaWebFramework === "spring-boot" && javaBuildTool !== "none";
-  const effectiveJavaLibraries = isSpringBoot
+  const rawJavaLibraries = isSpringBoot
     ? javaLibraries.filter((library) => library !== "none")
     : [];
+  const rawJavaLibrarySet = new Set(rawJavaLibraries);
+  const jpaRequiredJavaLibraries = new Set(["flyway", "liquibase"]);
+  const effectiveJavaLibraries: typeof rawJavaLibraries = [];
+  for (const library of rawJavaLibraries) {
+    if (jpaRequiredJavaLibraries.has(library) && javaOrm !== "spring-data-jpa") {
+      continue;
+    }
+    if (library === "liquibase" && rawJavaLibrarySet.has("flyway")) {
+      continue;
+    }
+    effectiveJavaLibraries.push(library);
+  }
   const effectiveJavaTestingLibraries = javaBuildTool === "none"
     ? []
     : javaTestingLibraries.filter((library) => library !== "none");
@@ -1013,6 +1025,9 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       "spring-actuator": "Spring Actuator",
       "spring-validation": "Spring Validation",
       flyway: "Flyway",
+      liquibase: "Liquibase",
+      "springdoc-openapi": "Springdoc OpenAPI",
+      lombok: "Lombok",
     };
     const libraryList = effectiveJavaLibraries
       .map((library) => libraryNames[library] || library)
@@ -1025,6 +1040,10 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       junit5: "JUnit 5",
       mockito: "Mockito",
       testcontainers: "Testcontainers",
+      assertj: "AssertJ",
+      "rest-assured": "REST Assured",
+      wiremock: "WireMock",
+      awaitility: "Awaitility",
     };
     const testingList = effectiveJavaTestingLibraries
       .map((library) => testingNames[library] || library)

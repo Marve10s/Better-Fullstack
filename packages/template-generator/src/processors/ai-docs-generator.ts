@@ -73,9 +73,18 @@ function isSpringBootJavaProject(config: ProjectConfig): boolean {
 }
 
 function getEffectiveJavaLibraries(config: ProjectConfig): string[] {
-  return isSpringBootJavaProject(config)
-    ? (config.javaLibraries || []).filter((library) => library !== "none")
-    : [];
+  if (!isSpringBootJavaProject(config)) return [];
+  const hasJavaJpa = config.javaOrm === "spring-data-jpa";
+  const libraries = (config.javaLibraries || []).filter((library) => library !== "none");
+  return libraries.filter((library) => {
+    if ((library === "flyway" || library === "liquibase") && !hasJavaJpa) {
+      return false;
+    }
+    if (library === "liquibase" && libraries.includes("flyway")) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function getEffectiveJavaTestingLibraries(config: ProjectConfig): string[] {

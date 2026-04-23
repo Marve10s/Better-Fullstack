@@ -89,6 +89,26 @@ const JAVA_TESTING_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaTestingLibraries>[] 
     hint: "Disposable Docker-based integration tests",
   },
   {
+    value: "assertj",
+    label: "AssertJ",
+    hint: "Fluent assertions for Java tests",
+  },
+  {
+    value: "rest-assured",
+    label: "REST Assured",
+    hint: "DSL for HTTP API and REST endpoint tests",
+  },
+  {
+    value: "wiremock",
+    label: "WireMock",
+    hint: "HTTP service stubs for integration tests",
+  },
+  {
+    value: "awaitility",
+    label: "Awaitility",
+    hint: "Wait helpers for asynchronous Java tests",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra testing libraries",
@@ -110,6 +130,21 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     value: "flyway",
     label: "Flyway",
     hint: "Versioned SQL database migrations for JPA-backed apps",
+  },
+  {
+    value: "liquibase",
+    label: "Liquibase",
+    hint: "Database change management for JPA-backed apps",
+  },
+  {
+    value: "springdoc-openapi",
+    label: "Springdoc OpenAPI",
+    hint: "OpenAPI and Swagger UI documentation for Spring MVC APIs",
+  },
+  {
+    value: "lombok",
+    label: "Lombok",
+    hint: "Annotation processor for reducing Java boilerplate",
   },
   {
     value: "none",

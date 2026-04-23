@@ -368,11 +368,28 @@ export const JavaAuthSchema = z
   .describe("Java authentication library");
 
 export const JavaLibrariesSchema = z
-  .enum(["spring-actuator", "spring-validation", "flyway", "none"])
+  .enum([
+    "spring-actuator",
+    "spring-validation",
+    "flyway",
+    "liquibase",
+    "springdoc-openapi",
+    "lombok",
+    "none",
+  ])
   .describe("Java application libraries");
 
 export const JavaTestingLibrariesSchema = z
-  .enum(["junit5", "mockito", "testcontainers", "none"])
+  .enum([
+    "junit5",
+    "mockito",
+    "testcontainers",
+    "assertj",
+    "rest-assured",
+    "wiremock",
+    "awaitility",
+    "none",
+  ])
   .describe("Java testing libraries");
 
 export const AiDocsSchema = z

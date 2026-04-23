@@ -20,12 +20,20 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaActuator: boolean;
   hasJavaValidation: boolean;
   hasJavaFlyway: boolean;
+  hasJavaLiquibase: boolean;
+  hasJavaSpringdocOpenapi: boolean;
+  hasJavaLombok: boolean;
   hasJavaMockito: boolean;
   hasJavaTestcontainers: boolean;
+  hasJavaAssertj: boolean;
+  hasJavaRestAssured: boolean;
+  hasJavaWireMock: boolean;
+  hasJavaAwaitility: boolean;
   hasJavaTests: boolean;
 };
 
 const JAVA_GROUP_ID = "com.example";
+const JAVA_JPA_REQUIRED_LIBRARIES = new Set(["flyway", "liquibase"]);
 
 // Java reserved words + boolean/null literals. Using any of these as a
 // package segment produces uncompilable code (`package com.example.class;`).
@@ -77,20 +85,32 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
     : [];
+  const rawLibrarySet = new Set(rawLibraries);
   // Flyway requires Spring Data JPA in the current Java scaffold
   // (see compatibility.ts `getDisabledReason` for the matching compat rule).
   // If the user selects Flyway without JPA, we silently drop it here so the
   // generated `pom.xml` / `build.gradle.kts` doesn't advertise a dependency
   // that the scaffold cannot wire up — the Flyway auto-config would otherwise
   // crash the app on startup with "No qualifying bean of type DataSource".
-  const javaLibraries = rawLibraries.filter(
-    (library) => library !== "flyway" || hasJavaJpa,
-  );
+  const javaLibraries: typeof rawLibraries = [];
+  for (const library of rawLibraries) {
+    if (JAVA_JPA_REQUIRED_LIBRARIES.has(library) && !hasJavaJpa) {
+      continue;
+    }
+    if (library === "liquibase" && rawLibrarySet.has("flyway")) {
+      continue;
+    }
+    javaLibraries.push(library);
+  }
   const testingLibraries = hasJavaBuildTool
     ? (config.javaTestingLibraries || []).filter((library) => library !== "none")
     : [];
   const hasJavaMockito = testingLibraries.includes("mockito");
   const hasJavaTestcontainers = testingLibraries.includes("testcontainers");
+  const hasJavaAssertj = testingLibraries.includes("assertj");
+  const hasJavaRestAssured = testingLibraries.includes("rest-assured");
+  const hasJavaWireMock = testingLibraries.includes("wiremock");
+  const hasJavaAwaitility = testingLibraries.includes("awaitility");
   const hasJavaTests = testingLibraries.length > 0;
 
   return {
@@ -109,8 +129,15 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
     hasJavaValidation: javaLibraries.includes("spring-validation"),
     hasJavaFlyway: javaLibraries.includes("flyway"),
+    hasJavaLiquibase: javaLibraries.includes("liquibase"),
+    hasJavaSpringdocOpenapi: javaLibraries.includes("springdoc-openapi"),
+    hasJavaLombok: javaLibraries.includes("lombok"),
     hasJavaMockito,
     hasJavaTestcontainers,
+    hasJavaAssertj,
+    hasJavaRestAssured,
+    hasJavaWireMock,
+    hasJavaAwaitility,
     hasJavaTests,
   };
 }
@@ -176,6 +203,25 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     (!context.hasJavaFlyway || !context.hasJavaJpa) &&
     templatePath.includes("/db/migration/")
   ) {
+    return true;
+  }
+
+  if (
+    (!context.hasJavaLiquibase || !context.hasJavaJpa) &&
+    templatePath.includes("/db/changelog/")
+  ) {
+    return true;
+  }
+
+  if (!context.hasJavaRestAssured && templatePath.endsWith("/RestAssuredHttpTest.java.hbs")) {
+    return true;
+  }
+
+  if (!context.hasJavaWireMock && templatePath.endsWith("/WireMockHttpTest.java.hbs")) {
+    return true;
+  }
+
+  if (!context.hasJavaAwaitility && templatePath.endsWith("/AsyncWorkflowTest.java.hbs")) {
     return true;
   }
 

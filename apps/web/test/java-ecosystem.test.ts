@@ -97,6 +97,19 @@ describe("Java Ecosystem Tab", () => {
         "spring-actuator",
         "spring-validation",
         "flyway",
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "none",
+      ]);
+      expect(TECH_OPTIONS.javaTestingLibraries.map((option) => option.id)).toEqual([
+        "junit5",
+        "mockito",
+        "testcontainers",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
         "none",
       ]);
     });

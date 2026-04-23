@@ -55,9 +55,18 @@ function isSpringBootJavaProject(config: ProjectConfig): boolean {
 }
 
 function getEffectiveJavaLibraries(config: ProjectConfig): string[] {
-  return isSpringBootJavaProject(config)
-    ? (config.javaLibraries || []).filter((library) => library !== "none")
-    : [];
+  if (!isSpringBootJavaProject(config)) return [];
+  const hasJavaJpa = config.javaOrm === "spring-data-jpa";
+  const libraries = (config.javaLibraries || []).filter((library) => library !== "none");
+  return libraries.filter((library) => {
+    if ((library === "flyway" || library === "liquibase") && !hasJavaJpa) {
+      return false;
+    }
+    if (library === "liquibase" && libraries.includes("flyway")) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function getEffectiveJavaTestingLibraries(config: ProjectConfig): string[] {
@@ -188,6 +197,11 @@ ${
 ${
   javaLibraries.includes("spring-actuator")
     ? "\nSpring Actuator is enabled with `/actuator/health`, `/actuator/info`, and `/actuator/metrics`.\n"
+    : ""
+}
+${
+  javaLibraries.includes("springdoc-openapi")
+    ? "\nOpenAPI documentation is available at `/v3/api-docs`, with Swagger UI at `/swagger-ui.html`.\n"
     : ""
 }
 ${
