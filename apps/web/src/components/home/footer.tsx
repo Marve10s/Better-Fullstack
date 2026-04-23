@@ -30,14 +30,14 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Fork info */}
+        {/* Project lineage */}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Forked from{" "}
+          Originally inspired by{" "}
           <a
             href="https://github.com/better-t-stack/create-better-t-stack"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground underline-offset-4 hover:underline"
+            className="text-foreground underline underline-offset-4"
           >
             create-better-t-stack
           </a>
