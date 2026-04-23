@@ -1312,6 +1312,37 @@ export const analyzeStackCompatibility = (
         });
       }
     }
+
+    if (nextStack.javaWebFramework === "spring-boot" && nextStack.javaBuildTool !== "none") {
+      if (nextStack.javaOrm !== "spring-data-jpa") {
+        const filteredLibraries = nextStack.javaLibraries.filter(
+          (library) => library !== "flyway" && library !== "liquibase",
+        );
+        if (filteredLibraries.length !== nextStack.javaLibraries.length) {
+          nextStack.javaLibraries = filteredLibraries;
+          changed = true;
+          changes.push({
+            category: "javaOrm",
+            message:
+              "Java migration libraries cleared (Flyway and Liquibase require Spring Data JPA)",
+          });
+        }
+      }
+
+      if (
+        nextStack.javaLibraries.includes("flyway") &&
+        nextStack.javaLibraries.includes("liquibase")
+      ) {
+        nextStack.javaLibraries = nextStack.javaLibraries.filter(
+          (library) => library !== "liquibase",
+        );
+        changed = true;
+        changes.push({
+          category: "javaLibraries",
+          message: "Liquibase cleared (Flyway and Liquibase cannot be combined)",
+        });
+      }
+    }
   }
 
   // ============================================

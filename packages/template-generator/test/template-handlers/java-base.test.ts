@@ -8,8 +8,8 @@ import { makeTemplates } from "../_fixtures/template-factory";
 const JAVA_TEMPLATES = {
   "java-base/pom.xml.hbs":
     "<project>{{javaArtifactId}}|{{#if hasJavaFlyway}}flyway{{/if}}</project>",
-  "java-base/build.gradle.kts.hbs": "rootProject.name = \"{{javaArtifactId}}\"",
-  "java-base/settings.gradle.kts.hbs": "rootProject.name = \"{{javaArtifactId}}\"",
+  "java-base/build.gradle.kts.hbs": 'rootProject.name = "{{javaArtifactId}}"',
+  "java-base/settings.gradle.kts.hbs": 'rootProject.name = "{{javaArtifactId}}"',
   "java-base/mvnw": "#!/bin/sh\necho maven wrapper",
   "java-base/mvnw.cmd": "@echo maven wrapper",
   "java-base/.mvn/wrapper/maven-wrapper.properties": "distributionUrl=https://example",
@@ -198,6 +198,112 @@ describe("processJavaBaseTemplate", () => {
     expect(vfs.exists("src/main/resources/db/migration/V1__init.sql")).toBe(true);
   });
 
+  it("drops liquibase from effective libraries when javaOrm is not spring-data-jpa", async () => {
+    const vfs = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      vfs,
+      makeTemplates({
+        "java-base/pom.xml.hbs":
+          "<liquibase>{{#if hasJavaLiquibase}}yes{{else}}no{{/if}}</liquibase>",
+        "java-base/src/main/resources/db/changelog/db.changelog-master.yaml.hbs":
+          "databaseChangeLog: []",
+      }),
+      makeConfig({
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: ["liquibase"],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(vfs.readFile("pom.xml")).toContain("<liquibase>no</liquibase>");
+    expect(vfs.exists("src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(false);
+  });
+
+  it("keeps liquibase when javaOrm is spring-data-jpa", async () => {
+    const vfs = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      vfs,
+      makeTemplates({
+        "java-base/pom.xml.hbs":
+          "<liquibase>{{#if hasJavaLiquibase}}yes{{else}}no{{/if}}</liquibase>",
+        "java-base/src/main/resources/db/changelog/db.changelog-master.yaml.hbs":
+          "databaseChangeLog: []",
+      }),
+      makeConfig({
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["liquibase"],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(vfs.readFile("pom.xml")).toContain("<liquibase>yes</liquibase>");
+    expect(vfs.exists("src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(true);
+  });
+
+  it("prefers flyway when flyway and liquibase are both selected", async () => {
+    const vfs = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      vfs,
+      makeTemplates({
+        "java-base/pom.xml.hbs":
+          "<flyway>{{#if hasJavaFlyway}}yes{{else}}no{{/if}}</flyway><liquibase>{{#if hasJavaLiquibase}}yes{{else}}no{{/if}}</liquibase>",
+        "java-base/src/main/resources/db/migration/V1__init.sql.hbs": "-- migration",
+        "java-base/src/main/resources/db/changelog/db.changelog-master.yaml.hbs":
+          "databaseChangeLog: []",
+      }),
+      makeConfig({
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["flyway", "liquibase"],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(vfs.readFile("pom.xml")).toContain("<flyway>yes</flyway><liquibase>no</liquibase>");
+    expect(vfs.exists("src/main/resources/db/migration/V1__init.sql")).toBe(true);
+    expect(vfs.exists("src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(false);
+  });
+
+  it("falls back to a source-only plain Java scaffold when Spring Boot has no build tool", async () => {
+    const vfs = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      vfs,
+      makeTemplates(JAVA_TEMPLATES),
+      makeConfig({
+        projectName: "my-app",
+        projectDir: "/tmp/my-app",
+        relativePath: "my-app",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "none",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "spring-security",
+        javaLibraries: ["spring-actuator", "liquibase", "springdoc-openapi"],
+        javaTestingLibraries: ["junit5", "rest-assured", "wiremock", "awaitility"],
+      }),
+    );
+
+    expect(vfs.exists("src/main/java/com/example/myapp/Application.java")).toBe(true);
+    expect(vfs.exists("pom.xml")).toBe(false);
+    expect(vfs.exists("build.gradle.kts")).toBe(false);
+    expect(vfs.exists("src/main/resources/application.yml")).toBe(false);
+    expect(vfs.exists("src/main/java/com/example/myapp/controller/HealthController.java")).toBe(
+      false,
+    );
+    expect(vfs.exists("src/test/java/com/example/myapp/ApplicationTests.java")).toBe(false);
+  });
+
   it("prefixes 'app' when the project name sanitizes to a java reserved word", async () => {
     const templates = makeTemplates({
       "java-base/pom.xml.hbs": "<artifactId>{{javaArtifactId}}</artifactId>",
@@ -225,7 +331,9 @@ describe("processJavaBaseTemplate", () => {
       );
 
       // The package declaration must not be a reserved word.
-      const appSource = vfs.readFile(`src/main/java/com/example/app${reservedName}/Application.java`);
+      const appSource = vfs.readFile(
+        `src/main/java/com/example/app${reservedName}/Application.java`,
+      );
       expect(appSource).toBe(`package com.example.app${reservedName};`);
     }
   });

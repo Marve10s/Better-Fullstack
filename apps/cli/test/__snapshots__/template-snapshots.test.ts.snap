@@ -802,6 +802,30 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: java-spring-boot-extended-libraries 1`] = `
+[
+  ".env.example",
+  ".mvn/wrapper/maven-wrapper.properties",
+  "CLAUDE.md",
+  "README.md",
+  "mvnw",
+  "mvnw.cmd",
+  "pom.xml",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/Application.java",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/controller/HealthController.java",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/controller/UserController.java",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/domain/AppUser.java",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/repository/AppUserRepository.java",
+  "src/main/java/com/example/snapshotjavaspringbootextendedlibraries/service/AppUserService.java",
+  "src/main/resources/application.yml",
+  "src/main/resources/db/changelog/db.changelog-master.yaml",
+  "src/test/java/com/example/snapshotjavaspringbootextendedlibraries/ApplicationTests.java",
+  "src/test/java/com/example/snapshotjavaspringbootextendedlibraries/AsyncWorkflowTest.java",
+  "src/test/java/com/example/snapshotjavaspringbootextendedlibraries/RestAssuredHttpTest.java",
+  "src/test/java/com/example/snapshotjavaspringbootextendedlibraries/WireMockHttpTest.java",
+]
+`;
+
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
   "fileCount": 55,
