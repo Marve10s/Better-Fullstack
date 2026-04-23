@@ -37,6 +37,9 @@ import { queryClient } from "@/utils/ts-rest";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 {{/if}}
+{{#if (eq auth "auth0")}}
+import { AuthProvider } from "@/lib/auth-client";
+{{/if}}
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "./ui/sonner";
 
@@ -58,6 +61,9 @@ export default function Providers({
   return (
     {{#if (eq uiLibrary "mantine")}}
     <MantineProvider>
+    {{/if}}
+    {{#if (eq auth "auth0")}}
+    <AuthProvider>
     {{/if}}
     <ThemeProvider
       attribute="class"
@@ -93,6 +99,9 @@ export default function Providers({
       {{/if}}
       <Toaster richColors />
     </ThemeProvider>
+    {{#if (eq auth "auth0")}}
+    </AuthProvider>
+    {{/if}}
     {{#if (eq uiLibrary "mantine")}}
     </MantineProvider>
     {{/if}}
