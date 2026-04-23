@@ -3,11 +3,11 @@
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { useConvexQuery } from "convex-vue";
 {{else}}
-  {{#unless (eq api "none")}}
+  {{#if (eq api "orpc")}}
 import { useQuery } from '@tanstack/vue-query'
 
 const { $orpc } = useNuxtApp()
-  {{/unless}}
+  {{/if}}
 {{/if}}
 
 const TITLE_TEXT = `
@@ -29,9 +29,9 @@ const TITLE_TEXT = `
 {{#if (eq backend "convex")}}
 const healthCheck = useConvexQuery(api.healthCheck.get, {});
 {{else}}
-  {{#unless (eq api "none")}}
+  {{#if (eq api "orpc")}}
 const healthCheck = useQuery($orpc.healthCheck.queryOptions())
-  {{/unless}}
+  {{/if}}
 {{/if}}
 </script>
 
@@ -65,7 +65,7 @@ const healthCheck = useQuery($orpc.healthCheck.queryOptions())
           </span>
         </div>
         {{else}}
-        {{#unless (eq api "none")}}
+        {{#if (eq api "orpc")}}
         <div class="flex items-center gap-2">
           <UIcon
             :name="healthCheck.isLoading.value ? 'i-lucide-loader-2' : healthCheck.isSuccess.value ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
@@ -90,7 +90,7 @@ const healthCheck = useQuery($orpc.healthCheck.queryOptions())
             </template>
           </span>
         </div>
-        {{/unless}}
+        {{/if}}
         {{/if}}
       </UCard>
     </div>
