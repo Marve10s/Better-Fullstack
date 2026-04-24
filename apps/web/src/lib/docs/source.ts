@@ -77,17 +77,17 @@ export type DocPage = {
 
 const CONTENT_PREFIX = "/content/docs/";
 
-const mdxModules = import.meta.glob<MdxModule>("../../content/docs/**/*.mdx", {
+const mdxModules = import.meta.glob<MdxModule>("../../../content/docs/**/*.mdx", {
   eager: true,
 });
 
 const metaModules = import.meta.glob<{ default: MetaFile }>(
-  "../../content/docs/**/meta.json",
+  "../../../content/docs/**/meta.json",
   { eager: true },
 );
 
 /**
- * Convert a Vite glob path like `../../content/docs/cli/create.mdx` into a
+ * Convert a Vite glob path like `../../../content/docs/cli/create.mdx` into a
  * canonical relative path `cli/create.mdx` and the matching slug array.
  */
 function normalizeMdxPath(filePath: string): { relativePath: string; slug: string[] } {

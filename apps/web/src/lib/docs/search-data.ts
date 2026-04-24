@@ -9,7 +9,7 @@ const CONTENT_PREFIX = "/content/docs/";
  * the bundle (~50KB total, gzipped much less), so the search index ships
  * with the page bundle. No runtime fetch required.
  */
-const rawMdx = import.meta.glob<string>("../../content/docs/**/*.mdx", {
+const rawMdx = import.meta.glob<string>("../../../content/docs/**/*.mdx", {
   eager: true,
   query: "?raw",
   import: "default",
