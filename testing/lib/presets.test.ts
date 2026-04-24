@@ -11,6 +11,7 @@ const PR_CORE_PRESET_NAMES = [
   "preset-rust-axum-seaorm",
   "preset-python-fastapi-sqlalchemy",
   "preset-go-gin-gorm",
+  "preset-java-spring-maven",
   "preset-frontend-only-react-vite",
 ];
 
@@ -24,6 +25,8 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-rust-actix-sqlx",
   "preset-python-django-langchain",
   "preset-go-echo-sqlc",
+  "preset-java-spring-gradle-jpa",
+  "preset-java-plain-cli",
   "preset-react-vite-hono",
   "preset-solid-start-express",
   "preset-angular-fets",

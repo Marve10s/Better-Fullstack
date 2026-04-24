@@ -685,11 +685,23 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   javaLibraries: {
     "spring-actuator": "Spring Boot Actuator",
     "spring-validation": "Spring Validation",
+    flyway: "Flyway",
+    liquibase: "Liquibase",
+    "springdoc-openapi": "Springdoc OpenAPI",
+    lombok: "Lombok",
+    mapstruct: "MapStruct",
+    caffeine: "Caffeine",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
     mockito: "Mockito",
     testcontainers: "Testcontainers",
+    assertj: "AssertJ",
+    "rest-assured": "REST Assured",
+    wiremock: "WireMock",
+    awaitility: "Awaitility",
+    archunit: "ArchUnit",
+    jqwik: "jqwik",
   },
 };
 

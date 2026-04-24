@@ -58,6 +58,11 @@ jobs:
       - name: Apply Minor/Patch Updates
         run: bun run scripts/check-dep-versions.ts --update
 
+      - name: Build Template Generator
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+
       - name: Regenerate Snapshots
         run: bun test apps/cli/test/template-snapshots.test.ts --update-snapshots
 
@@ -86,11 +91,13 @@ jobs:
             - **Rust** — `templates/rust-base/Cargo.toml.hbs`
             - **Go** — `templates/go-base/go.mod.hbs`
             - **Python** — `templates/python-base/pyproject.toml.hbs`
+            - **Java** — `templates/java-base/pom.xml.hbs` and `templates/java-base/build.gradle.kts.hbs`
 
             Major version bumps are **not** included — they are listed in the
             `dep-freshness-report` artifact for manual review.
 
             ## Validation
+            - Template generator rebuilt
             - Template snapshots regenerated
             - No type-check or lint failures expected (version strings only)
           labels: |

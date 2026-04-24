@@ -28,7 +28,11 @@ function parseArgs(argv: string[]): GeneratorArgs {
         .map((value) => value.trim())
         .filter(
           (value): value is GeneratorArgs["ecosystems"][number] =>
-            value === "typescript" || value === "rust" || value === "python" || value === "go",
+            value === "typescript" ||
+            value === "rust" ||
+            value === "python" ||
+            value === "go" ||
+            value === "java",
         );
 
       if (selected.length > 0) {

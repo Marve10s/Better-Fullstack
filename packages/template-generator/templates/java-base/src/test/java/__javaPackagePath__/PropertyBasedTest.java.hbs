@@ -1,0 +1,22 @@
+package {{javaPackageName}};
+
+{{#if hasJavaAssertj}}
+import static org.assertj.core.api.Assertions.assertThat;
+{{else}}
+import static org.junit.jupiter.api.Assertions.assertTrue;
+{{/if}}
+
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+
+class PropertyBasedTest {
+
+  @Property
+  void trimmingDoesNotIncreaseLength(@ForAll String value) {
+{{#if hasJavaAssertj}}
+    assertThat(value.trim().length()).isLessThanOrEqualTo(value.length());
+{{else}}
+    assertTrue(value.trim().length() <= value.length());
+{{/if}}
+  }
+}

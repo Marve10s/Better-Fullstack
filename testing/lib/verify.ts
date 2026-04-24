@@ -1,6 +1,8 @@
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
+
+import { readFileSync, existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 import { runDevCheck, startDevServer, stopDevServer, isDbDependentProject } from "./dev-check";
 import { runRouteCheck } from "./route-check";
@@ -126,7 +128,9 @@ async function runStep(
     clearTimeout(timeoutId);
 
     const success = exitCode === 0 && !timedOut;
-    const timeoutSuffix = timedOut ? `\nProcess timed out after ${Math.round(timeoutMs / 1000)}s.` : "";
+    const timeoutSuffix = timedOut
+      ? `\nProcess timed out after ${Math.round(timeoutMs / 1000)}s.`
+      : "";
     return {
       step,
       success,
@@ -135,7 +139,11 @@ async function runStep(
       stderr: `${stderr}${timeoutSuffix}`.slice(-4000),
       exitCode,
       timedOut,
-      classification: success ? undefined : timedOut ? "environment" : classifyError(stderr, stdout),
+      classification: success
+        ? undefined
+        : timedOut
+          ? "environment"
+          : classifyError(stderr, stdout),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -268,7 +276,10 @@ export async function verifyTypeScript(
   } else if (hasPackageScript(projectDir, "build")) {
     const buildResult = await runStep("build", "bun", ["run", "build"], projectDir);
     // Native-only projects have no web packages to build — treat as skip
-    if (!buildResult.success && /No packages matched the filter/i.test(`${buildResult.stderr}\n${buildResult.stdout}`)) {
+    if (
+      !buildResult.success &&
+      /No packages matched the filter/i.test(`${buildResult.stderr}\n${buildResult.stdout}`)
+    ) {
       steps.push({ ...buildResult, success: true, skipped: true });
     } else {
       steps.push(buildResult);
@@ -359,6 +370,58 @@ export async function verifyGo(comboName: string, projectDir: string): Promise<V
   return wrapResult("go", comboName, projectDir, steps);
 }
 
+async function listJavaSources(dir: string): Promise<string[]> {
+  if (!existsSync(dir)) return [];
+
+  const entries = await readdir(dir, { withFileTypes: true });
+  const sources = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return listJavaSources(entryPath);
+      }
+      return entry.isFile() && entry.name.endsWith(".java") ? [entryPath] : [];
+    }),
+  );
+
+  return sources.flat();
+}
+
+export async function verifyJava(
+  comboName: string,
+  projectDir: string,
+  options?: VerifyOptions,
+): Promise<VerifyResult> {
+  const steps: StepResult[] = [];
+  const buildTool = options?.config?.javaBuildTool;
+
+  if (existsSync(join(projectDir, "pom.xml")) || buildTool === "maven") {
+    steps.push(await runStep("test", "bash", ["./mvnw", "-q", "test"], projectDir));
+    return wrapResult("java", comboName, projectDir, steps);
+  }
+
+  if (existsSync(join(projectDir, "build.gradle.kts")) || buildTool === "gradle") {
+    steps.push(await runStep("test", "bash", ["./gradlew", "test", "--no-daemon"], projectDir));
+    return wrapResult("java", comboName, projectDir, steps);
+  }
+
+  const sourceRoot = join(projectDir, "src", "main", "java");
+  const sources = await listJavaSources(sourceRoot);
+  if (sources.length === 0) {
+    steps.push({
+      step: "compile",
+      success: false,
+      durationMs: 0,
+      stderr: "No Java source files found under src/main/java",
+      classification: "template",
+    });
+    return wrapResult("java", comboName, projectDir, steps);
+  }
+
+  steps.push(await runStep("compile", "javac", ["-d", "out", ...sources], projectDir));
+  return wrapResult("java", comboName, projectDir, steps);
+}
+
 export function getVerifier(
   ecosystem: Ecosystem,
 ): (comboName: string, projectDir: string, options?: VerifyOptions) => Promise<VerifyResult> {
@@ -371,5 +434,7 @@ export function getVerifier(
       return verifyPython;
     case "go":
       return verifyGo;
+    case "java":
+      return verifyJava;
   }
 }

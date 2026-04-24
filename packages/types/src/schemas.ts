@@ -302,13 +302,9 @@ export const RustErrorHandlingSchema = z
   .enum(["anyhow-thiserror", "eyre", "none"])
   .describe("Rust error handling library");
 
-export const RustCachingSchema = z
-  .enum(["moka", "redis", "none"])
-  .describe("Rust caching library");
+export const RustCachingSchema = z.enum(["moka", "redis", "none"]).describe("Rust caching library");
 
-export const RustAuthSchema = z
-  .enum(["oauth2", "none"])
-  .describe("Rust authentication library");
+export const RustAuthSchema = z.enum(["oauth2", "none"]).describe("Rust authentication library");
 
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
@@ -333,20 +329,28 @@ export const PythonAuthSchema = z
 
 export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
 
-export const PythonGraphqlSchema = z.enum(["strawberry", "none"]).describe("Python GraphQL framework");
+export const PythonGraphqlSchema = z
+  .enum(["strawberry", "none"])
+  .describe("Python GraphQL framework");
 
 export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
 
 // Go ecosystem schemas
-export const GoWebFrameworkSchema = z.enum(["gin", "echo", "fiber", "chi", "none"]).describe("Go web framework");
+export const GoWebFrameworkSchema = z
+  .enum(["gin", "echo", "fiber", "chi", "none"])
+  .describe("Go web framework");
 
-export const GoOrmSchema = z.enum(["gorm", "sqlc", "ent", "none"]).describe("Go ORM/database layer");
+export const GoOrmSchema = z
+  .enum(["gorm", "sqlc", "ent", "none"])
+  .describe("Go ORM/database layer");
 
 export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
 
 export const GoCliSchema = z.enum(["cobra", "bubbletea", "none"]).describe("Go CLI tools");
 
-export const GoLoggingSchema = z.enum(["zap", "zerolog", "slog", "none"]).describe("Go logging library");
+export const GoLoggingSchema = z
+  .enum(["zap", "zerolog", "slog", "none"])
+  .describe("Go logging library");
 
 export const GoAuthSchema = z.enum(["casbin", "jwt", "none"]).describe("Go authentication library");
 
@@ -355,9 +359,7 @@ export const JavaWebFrameworkSchema = z
   .enum(["spring-boot", "none"])
   .describe("Java web framework");
 
-export const JavaBuildToolSchema = z
-  .enum(["maven", "gradle", "none"])
-  .describe("Java build tool");
+export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");
 
 export const JavaOrmSchema = z
   .enum(["spring-data-jpa", "none"])
@@ -368,11 +370,32 @@ export const JavaAuthSchema = z
   .describe("Java authentication library");
 
 export const JavaLibrariesSchema = z
-  .enum(["spring-actuator", "spring-validation", "flyway", "none"])
+  .enum([
+    "spring-actuator",
+    "spring-validation",
+    "flyway",
+    "liquibase",
+    "springdoc-openapi",
+    "lombok",
+    "mapstruct",
+    "caffeine",
+    "none",
+  ])
   .describe("Java application libraries");
 
 export const JavaTestingLibrariesSchema = z
-  .enum(["junit5", "mockito", "testcontainers", "none"])
+  .enum([
+    "junit5",
+    "mockito",
+    "testcontainers",
+    "assertj",
+    "rest-assured",
+    "wiremock",
+    "awaitility",
+    "archunit",
+    "jqwik",
+    "none",
+  ])
   .describe("Java testing libraries");
 
 export const AiDocsSchema = z

@@ -8,12 +8,12 @@ import type {
 } from "../types";
 
 import { exitCancelled } from "../utils/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
   createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
   {
@@ -89,6 +89,36 @@ const JAVA_TESTING_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaTestingLibraries>[] 
     hint: "Disposable Docker-based integration tests",
   },
   {
+    value: "assertj",
+    label: "AssertJ",
+    hint: "Fluent assertions for Java tests",
+  },
+  {
+    value: "rest-assured",
+    label: "REST Assured",
+    hint: "DSL for HTTP API and REST endpoint tests",
+  },
+  {
+    value: "wiremock",
+    label: "WireMock",
+    hint: "HTTP service stubs for integration tests",
+  },
+  {
+    value: "awaitility",
+    label: "Awaitility",
+    hint: "Wait helpers for asynchronous Java tests",
+  },
+  {
+    value: "archunit",
+    label: "ArchUnit",
+    hint: "Architecture rules for Java package boundaries",
+  },
+  {
+    value: "jqwik",
+    label: "jqwik",
+    hint: "Property-based testing on the JUnit Platform",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra testing libraries",
@@ -110,6 +140,31 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     value: "flyway",
     label: "Flyway",
     hint: "Versioned SQL database migrations for JPA-backed apps",
+  },
+  {
+    value: "liquibase",
+    label: "Liquibase",
+    hint: "Database change management for JPA-backed apps",
+  },
+  {
+    value: "springdoc-openapi",
+    label: "Springdoc OpenAPI",
+    hint: "OpenAPI and Swagger UI documentation for Spring MVC APIs",
+  },
+  {
+    value: "lombok",
+    label: "Lombok",
+    hint: "Annotation processor for reducing Java boilerplate",
+  },
+  {
+    value: "mapstruct",
+    label: "MapStruct",
+    hint: "Compile-time generated mappers for DTO and entity conversions",
+  },
+  {
+    value: "caffeine",
+    label: "Caffeine",
+    hint: "High-performance in-memory caching through Spring Cache",
   },
   {
     value: "none",
@@ -144,11 +199,7 @@ export async function getJavaWebFrameworkChoice(javaWebFramework?: JavaWebFramew
 }
 
 export function resolveJavaBuildToolPrompt(javaBuildTool?: JavaBuildTool) {
-  return createStaticSinglePromptResolution(
-    JAVA_BUILD_TOOL_PROMPT_OPTIONS,
-    "maven",
-    javaBuildTool,
-  );
+  return createStaticSinglePromptResolution(JAVA_BUILD_TOOL_PROMPT_OPTIONS, "maven", javaBuildTool);
 }
 
 export async function getJavaBuildToolChoice(javaBuildTool?: JavaBuildTool) {
@@ -234,9 +285,7 @@ export async function getJavaLibrariesChoice(javaLibraries?: JavaLibraries[]) {
   return response as JavaLibraries[];
 }
 
-export function resolveJavaTestingLibrariesPrompt(
-  javaTestingLibraries?: JavaTestingLibraries[],
-) {
+export function resolveJavaTestingLibrariesPrompt(javaTestingLibraries?: JavaTestingLibraries[]) {
   return createStaticMultiPromptResolution(
     JAVA_TESTING_LIBRARY_PROMPT_OPTIONS,
     ["junit5"],
@@ -244,9 +293,7 @@ export function resolveJavaTestingLibrariesPrompt(
   );
 }
 
-export async function getJavaTestingLibrariesChoice(
-  javaTestingLibraries?: JavaTestingLibraries[],
-) {
+export async function getJavaTestingLibrariesChoice(javaTestingLibraries?: JavaTestingLibraries[]) {
   const resolution = resolveJavaTestingLibrariesPrompt(javaTestingLibraries);
   if (!resolution.shouldPrompt) {
     return (resolution.autoValue as JavaTestingLibraries[]) ?? [];

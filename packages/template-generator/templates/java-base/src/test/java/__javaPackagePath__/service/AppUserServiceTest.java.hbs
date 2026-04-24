@@ -1,6 +1,10 @@
 package {{javaPackageName}}.service;
 
+{{#if hasJavaAssertj}}
 import static org.assertj.core.api.Assertions.assertThat;
+{{else}}
+import static org.junit.jupiter.api.Assertions.assertEquals;
+{{/if}}
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,8 +36,13 @@ class AppUserServiceTest {
     AppUser createdUser = service.create("Ada@example.com ", "Ada Lovelace");
 
     verify(repository).save(any(AppUser.class));
+{{#if hasJavaAssertj}}
     assertThat(createdUser.getEmail()).isEqualTo("ada@example.com");
     assertThat(createdUser.getDisplayName()).isEqualTo("Ada Lovelace");
+{{else}}
+    assertEquals("ada@example.com", createdUser.getEmail());
+    assertEquals("Ada Lovelace", createdUser.getDisplayName());
+{{/if}}
   }
 
   @Test
@@ -42,7 +51,11 @@ class AppUserServiceTest {
 
     List<AppUser> users = service.findAll();
 
+{{#if hasJavaAssertj}}
     assertThat(users).hasSize(1);
+{{else}}
+    assertEquals(1, users.size());
+{{/if}}
     verify(repository).findAll();
   }
 }

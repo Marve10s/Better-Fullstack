@@ -1,0 +1,40 @@
+package {{javaPackageName}};
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import org.junit.jupiter.api.Test;
+
+class WireMockHttpTest {
+
+  @Test
+  void stubsAnExternalHttpService() throws Exception {
+    WireMockServer server = new WireMockServer(0);
+    server.start();
+
+    try {
+      server.stubFor(get(urlEqualTo("/external")).willReturn(okJson("{\"message\":\"hello\"}")));
+
+      HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(server.baseUrl() + "/external"))
+        .GET()
+        .build();
+      HttpResponse<String> response = HttpClient.newHttpClient()
+        .send(request, HttpResponse.BodyHandlers.ofString());
+
+      assertEquals(200, response.statusCode());
+      assertTrue(response.body().contains("hello"));
+    } finally {
+      server.stop();
+    }
+  }
+}

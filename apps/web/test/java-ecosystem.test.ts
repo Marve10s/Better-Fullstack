@@ -2,7 +2,11 @@ import { describe, expect, it } from "bun:test";
 
 import type { Ecosystem, TechCategory } from "../src/lib/types";
 
-import { getCategoryDisplayName } from "../src/components/stack-builder/utils";
+import {
+  getCategoryDisplayName,
+  getDisabledReason,
+  isOptionCompatible,
+} from "../src/components/stack-builder/utils";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
@@ -12,7 +16,10 @@ import {
   TECH_OPTIONS,
   type StackState,
 } from "../src/lib/constant";
-import { createStackSearchParams, parseStackFromUrlRecord } from "../src/lib/stack-url-state.shared";
+import {
+  createStackSearchParams,
+  parseStackFromUrlRecord,
+} from "../src/lib/stack-url-state.shared";
 import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER, generateStackCommand } from "../src/lib/stack-utils";
 
 describe("Java Ecosystem Tab", () => {
@@ -79,9 +86,9 @@ describe("Java Ecosystem Tab", () => {
     }
 
     it("should default Spring Boot, Maven, and JUnit 5", () => {
-      expect(TECH_OPTIONS.javaWebFramework.find((option) => option.id === "spring-boot")?.default).toBe(
-        true,
-      );
+      expect(
+        TECH_OPTIONS.javaWebFramework.find((option) => option.id === "spring-boot")?.default,
+      ).toBe(true);
       expect(TECH_OPTIONS.javaBuildTool.find((option) => option.id === "maven")?.default).toBe(
         true,
       );
@@ -97,6 +104,23 @@ describe("Java Ecosystem Tab", () => {
         "spring-actuator",
         "spring-validation",
         "flyway",
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "mapstruct",
+        "caffeine",
+        "none",
+      ]);
+      expect(TECH_OPTIONS.javaTestingLibraries.map((option) => option.id)).toEqual([
+        "junit5",
+        "mockito",
+        "testcontainers",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "archunit",
+        "jqwik",
         "none",
       ]);
     });
@@ -193,8 +217,16 @@ describe("Java Ecosystem Tab", () => {
         javaBuildTool: "gradle",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
-        javaLibraries: ["spring-actuator", "flyway"],
-        javaTestingLibraries: ["junit5", "testcontainers"],
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
       };
 
       const params = createStackSearchParams(originalStack, { includeDefaults: true });
@@ -204,8 +236,65 @@ describe("Java Ecosystem Tab", () => {
       expect(parsedStack.javaBuildTool).toBe("gradle");
       expect(parsedStack.javaOrm).toBe("spring-data-jpa");
       expect(parsedStack.javaAuth).toBe("spring-security");
-      expect(parsedStack.javaLibraries).toEqual(["spring-actuator", "flyway"]);
-      expect(parsedStack.javaTestingLibraries).toEqual(["junit5", "testcontainers"]);
+      expect(parsedStack.javaLibraries).toEqual([
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "mapstruct",
+        "caffeine",
+      ]);
+      expect(parsedStack.javaTestingLibraries).toEqual([
+        "junit5",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "archunit",
+        "jqwik",
+      ]);
+    });
+  });
+
+  describe("Compatibility rules", () => {
+    it("should disable Java migration tools until Spring Data JPA is selected", () => {
+      const stack: StackState = {
+        ...DEFAULT_STACK,
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaLibraries: [],
+      };
+
+      expect(isOptionCompatible(stack, "javaLibraries", "liquibase")).toBe(false);
+      expect(getDisabledReason(stack, "javaLibraries", "liquibase")).toContain("Spring Data JPA");
+      expect(isOptionCompatible(stack, "javaLibraries", "flyway")).toBe(false);
+      expect(isOptionCompatible(stack, "javaLibraries", "springdoc-openapi")).toBe(true);
+      expect(isOptionCompatible(stack, "javaLibraries", "lombok")).toBe(true);
+      expect(isOptionCompatible(stack, "javaLibraries", "mapstruct")).toBe(true);
+      expect(isOptionCompatible(stack, "javaLibraries", "caffeine")).toBe(true);
+    });
+
+    it("should disable the opposite migration tool when Flyway or Liquibase is selected", () => {
+      const stackWithFlyway: StackState = {
+        ...DEFAULT_STACK,
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaLibraries: ["flyway"],
+      };
+      const stackWithLiquibase: StackState = {
+        ...stackWithFlyway,
+        javaLibraries: ["liquibase"],
+      };
+
+      expect(isOptionCompatible(stackWithFlyway, "javaLibraries", "liquibase")).toBe(false);
+      expect(getDisabledReason(stackWithFlyway, "javaLibraries", "liquibase")).toContain("Flyway");
+      expect(isOptionCompatible(stackWithLiquibase, "javaLibraries", "flyway")).toBe(false);
+      expect(getDisabledReason(stackWithLiquibase, "javaLibraries", "flyway")).toContain(
+        "Liquibase",
+      );
     });
   });
 });

@@ -6,6 +6,7 @@ import type {
   TemplateFingerprint,
   TemplateFingerprintKey,
 } from "./types";
+
 import { TEMPLATE_FINGERPRINT_KEYS } from "./types";
 
 const ARRAY_OPTION_KEYS = new Set([
@@ -14,6 +15,8 @@ const ARRAY_OPTION_KEYS = new Set([
   "examples",
   "rustLibraries",
   "pythonAi",
+  "javaLibraries",
+  "javaTestingLibraries",
   "aiDocs",
 ] as const);
 
