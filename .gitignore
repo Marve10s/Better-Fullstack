@@ -27,6 +27,7 @@ build
 dist
 .output
 .nitro
+.astro
 
 
 # Debug
@@ -58,6 +59,7 @@ templates-binary
 
 # Auto-generated at build time (avoids merge conflicts)
 packages/template-generator/src/templates.generated.ts
+apps/web/public/docs/
 
 # Ralph (autonomous agent loop)
 scripts/ralph/

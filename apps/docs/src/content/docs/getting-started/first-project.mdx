@@ -1,0 +1,71 @@
+---
+title: First Project
+description: Scaffold, inspect, install, and run a Better Fullstack project.
+---
+
+This flow creates a project, lets you inspect the generated files, then installs dependencies.
+
+## 1. Preview the project
+
+Use `--dry-run` when you want to see what will be generated before writing files.
+
+```bash
+bun create better-fullstack@latest my-app --dry-run
+```
+
+## 2. Scaffold the project
+
+Run the CLI interactively:
+
+```bash
+bun create better-fullstack@latest my-app
+```
+
+Or pass explicit choices:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc
+```
+
+## 3. Install dependencies
+
+If you selected `--no-install`, install manually inside the generated project:
+
+```bash
+cd my-app
+bun install
+```
+
+For non-TypeScript ecosystems, use the ecosystem’s package manager or generated wrapper:
+
+```bash
+cargo build
+uv sync
+go mod tidy
+./mvnw test
+./gradlew test
+```
+
+## 4. Read the project context
+
+Generated projects include:
+
+- `bts.jsonc` with the selected stack.
+- A reproducible command printed by the CLI.
+- Optional AI docs such as `Agents.md`, `CLAUDE.md`, or `.cursorrules`.
+- Framework-specific readme and commands.
+
+## 5. Add features later
+
+Inside a generated project, use the `add` command for supported addons and deployment targets:
+
+```bash
+bun create better-fullstack@latest add --addons mcp skills
+```

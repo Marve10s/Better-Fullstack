@@ -1,0 +1,66 @@
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  site: "https://better-fullstack.dev",
+  base: "/docs",
+  outDir: "../web/public/docs",
+  integrations: [
+    starlight({
+      title: "Better Fullstack",
+      description:
+        "Documentation for Better Fullstack, the stack builder and CLI for TypeScript, Rust, Python, Go, and Java projects.",
+      logo: {
+        src: "./src/assets/logo.svg",
+        alt: "Better Fullstack",
+      },
+      favicon: "/favicon/favicon.svg",
+      editLink: {
+        baseUrl: "https://github.com/Marve10s/Better-Fullstack/edit/main/apps/docs/",
+      },
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/Marve10s/Better-Fullstack",
+        },
+      ],
+      customCss: ["./src/styles/docs.css"],
+      sidebar: [
+        {
+          label: "Start Here",
+          items: [
+            { label: "Introduction", slug: "index" },
+            { label: "Installation", slug: "getting-started/installation" },
+            { label: "First Project", slug: "getting-started/first-project" },
+          ],
+        },
+        {
+          label: "CLI",
+          items: [
+            { label: "Create", slug: "cli/create" },
+            { label: "Add Features", slug: "cli/add" },
+          ],
+        },
+        {
+          label: "Ecosystems",
+          autogenerate: { directory: "ecosystems" },
+        },
+        {
+          label: "AI Agents",
+          items: [
+            { label: "Overview", slug: "ai/overview" },
+            { label: "MCP", slug: "ai/mcp" },
+          ],
+        },
+        {
+          label: "Reference",
+          items: [
+            { label: "Options", slug: "reference/options" },
+            { label: "Generated llms.txt", slug: "reference/llms" },
+          ],
+        },
+      ],
+    }),
+  ],
+});

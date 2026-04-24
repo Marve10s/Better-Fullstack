@@ -1,0 +1,41 @@
+---
+title: MCP
+description: Connect Better Fullstack to MCP-compatible AI coding agents.
+---
+
+The MCP server lets agents scaffold projects through structured tool calls instead of guessing CLI flags.
+
+## Start the server
+
+```bash
+npx create-better-fullstack mcp
+```
+
+## Recommended tool order
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+For existing projects:
+
+1. `bfs_plan_addition`
+2. `bfs_add_feature`
+
+## Important rules
+
+- Dependency installation is skipped in MCP mode.
+- Array fields include `frontend`, `addons`, `examples`, `aiDocs`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries`.
+- `none` means “skip this feature.”
+- TypeScript fields are ignored for Rust, Python, Go, and Java projects.
+- Always validate compatibility before creating.
+
+## Agent prompt
+
+Use this prompt when you want an agent to create a project:
+
+```text
+Use Better Fullstack MCP. First inspect guidance and schema, then validate the stack, then dry-run it. Only create the project after the dry-run succeeds. Skip dependency installation and tell me the exact commands to install, test, and run the project.
+```

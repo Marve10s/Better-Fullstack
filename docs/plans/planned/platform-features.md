@@ -12,7 +12,7 @@ Implemented in `apps/cli/src/mcp.ts`. Subcommand: `create-better-fullstack mcp` 
 
 ## ~~MCP Addon~~ ✅ Done
 
-Implemented in `apps/cli/src/helpers/addons/mcp-setup.ts`. Auto-configures MCP servers (Convex, shadcn, Next Devtools, Nuxt Docs, Svelte Docs, Astro Docs, Cloudflare Docs, Polar, etc.) for 9+ AI agents (Cursor, Claude Code, Codex, VS Code, Zed, etc.).
+Implemented in `apps/cli/src/helpers/addons/mcp-setup.ts`. Auto-configures MCP servers (Convex, shadcn, Next Devtools, Nuxt Docs, Svelte Docs, Astro Docs, Cloudflare Docs, Polar, etc.) for 9+ AI agents (Cursor, Claude Code, VS Code, Zed, etc.).
 
 ---
 

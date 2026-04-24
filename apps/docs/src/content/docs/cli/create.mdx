@@ -1,0 +1,58 @@
+---
+title: Create Command
+description: How to use create-better-fullstack to scaffold new projects.
+---
+
+The create command scaffolds a project from your selected stack.
+
+```bash
+bun create better-fullstack@latest [project-name] [flags]
+```
+
+## Common flags
+
+| Flag | Purpose |
+| --- | --- |
+| `--dry-run` | Preview generated files without writing them. |
+| `--yes` | Accept defaults. Do not combine with explicit stack flags. |
+| `--template <name>` | Use a preset such as `t3`, `mern`, `pern`, or `uniwind`. |
+| `--ecosystem <name>` | Start with `typescript`, `rust`, `python`, `go`, or `java`. |
+| `--ai-docs <items...>` | Generate AI context files such as `agents-md` or `claude-md`. |
+| `--addons <items...>` | Add optional features such as `mcp`, `skills`, `turborepo`, or `starlight`. |
+| `--no-install` | Skip dependency installation. Recommended for automation. |
+| `--no-git` | Skip Git initialization. |
+
+## Explicit TypeScript example
+
+```bash
+bun create better-fullstack@latest my-app \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --ai-docs agents-md \
+  --no-install
+```
+
+## Explicit Java example
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway springdoc-openapi \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs agents-md \
+  --no-install
+```
+
+## Automation rule
+
+For scripts and AI agents, use explicit flags and `--no-install`, then run installation after reviewing the generated files.

@@ -1,0 +1,24 @@
+{
+  "name": "docs",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 3334",
+    "generate": "bun run scripts/generate-docs.ts",
+    "prebuild": "bun run generate",
+    "build": "astro build",
+    "preview": "astro preview --port 3334",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.4",
+    "@better-fullstack/types": "workspace:*",
+    "astro": "^6.1.9",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "typescript": "^5.9.3"
+  }
+}

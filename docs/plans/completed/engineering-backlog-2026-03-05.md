@@ -1,6 +1,6 @@
 # Engineering Backlog
 
-This file tracks the engineering tasks that were previously grouped under "Codex improvements".
+This file tracks the engineering tasks that were previously grouped under agent workflow improvements.
 
 ## Completed (verified in repo)
 

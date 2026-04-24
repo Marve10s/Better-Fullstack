@@ -16,7 +16,7 @@
 
 <div align="center">
 
-**Scaffold production-ready fullstack apps in seconds. Pick your stack from 340+ options — the CLI wires everything together.**
+**Scaffold production-ready fullstack apps in seconds. Pick your stack from 424 options — the CLI wires everything together.**
 
 <br>
 
@@ -34,8 +34,8 @@
 
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
-- **340+ options** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **4 ecosystems** — TypeScript, Rust, Python, Go — with more coming
+- **424 options** — frontend, backend, database, auth, payments, AI, DevOps, and more
+- **5 ecosystems** — TypeScript, Rust, Python, Go, Java — with more coming
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
 
@@ -100,7 +100,7 @@ yarn create better-fullstack@latest
 ## 🧩 The Stack
 
 <details>
-<summary><strong>Ecosystems</strong> — TypeScript · Rust · Python · Go</summary>
+<summary><strong>Ecosystems</strong> — TypeScript · Rust · Python · Go · Java</summary>
 <br>
 
 | | |
@@ -109,6 +109,7 @@ yarn create better-fullstack@latest
 | **Rust** | Axum · Actix Web · Leptos · Dioxus · SeaORM · SQLx · tonic · async-graphql |
 | **Python** | FastAPI · Django · SQLAlchemy · SQLModel · Pydantic · LangChain · CrewAI · Celery |
 | **Go** | Gin · Echo · GORM · sqlc · gRPC · Cobra · BubbleTea · Zap |
+| **Java** | Spring Boot · Maven · Gradle · Spring Data JPA · Spring Security · JUnit · Testcontainers |
 
 </details>
 

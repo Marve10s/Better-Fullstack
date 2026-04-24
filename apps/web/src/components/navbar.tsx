@@ -56,6 +56,12 @@ export function Navbar() {
           >
             MCP
           </Link>
+          <a
+            href="/docs/"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
+          >
+            Docs
+          </a>
         </div>
 
         {/* Navigation Links */}

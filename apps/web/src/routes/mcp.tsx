@@ -388,9 +388,7 @@ function WorkflowSection() {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <a
-            href="https://github.com/Marve10s/Better-Fullstack/blob/main/MCP.md"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs/ai/mcp/"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Full documentation →

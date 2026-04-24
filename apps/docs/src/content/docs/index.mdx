@@ -1,0 +1,46 @@
+---
+title: Introduction
+description: Better Fullstack docs for the CLI, web builder, stack options, ecosystems, and AI-agent workflows.
+template: splash
+hero:
+  tagline: Scaffold production-ready projects across TypeScript, Rust, Python, Go, and Java. Pick your stack once; the CLI wires the project together.
+  actions:
+    - text: Start with installation
+      link: /docs/getting-started/installation/
+      icon: right-arrow
+      variant: primary
+    - text: Open the builder
+      link: https://better-fullstack.dev/new
+      icon: external
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+Better Fullstack is a stack builder and project generator. It helps you choose compatible tools, scaffold the app, and keep the generated project understandable for both humans and AI coding agents.
+
+<CardGrid>
+  <Card title="Choose a stack" icon="setting">
+    Use the web builder or CLI flags to select frameworks, databases, auth, deployment, AI tools, and ecosystem-specific libraries.
+  </Card>
+  <Card title="Generate the project" icon="rocket">
+    Scaffold a ready-to-run project with matching config files, scripts, templates, and AI docs.
+  </Card>
+  <Card title="Keep it maintainable" icon="document">
+    Generated projects include `bts.jsonc`, reproducible commands, and optional AI documentation files.
+  </Card>
+</CardGrid>
+
+## When to use it
+
+- You want a project quickly, but still need explicit technology choices.
+- You are comparing stack combinations before committing to one.
+- You want AI agents to scaffold projects safely through a structured tool interface.
+- You want TypeScript, Rust, Python, Go, or Java projects created from the same workflow.
+
+## What the docs cover
+
+- Install prerequisites and create your first project.
+- Use non-interactive CLI flags for repeatable scaffolds.
+- Understand ecosystem-specific options.
+- Connect AI coding agents through MCP.
+- Browse generated option references that come from the shared schema.

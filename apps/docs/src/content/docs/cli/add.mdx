@@ -1,0 +1,25 @@
+---
+title: Add Features
+description: Add supported addons and deployment targets to existing Better Fullstack projects.
+---
+
+The `add` command reads the generated `bts.jsonc` file and applies supported additions to an existing project.
+
+```bash
+bun create better-fullstack@latest add --addons mcp skills
+```
+
+## What it can add
+
+- AI-agent configuration through the `mcp` addon.
+- Curated coding-agent skills through the `skills` addon.
+- Documentation addons such as Starlight or Fumadocs when supported by the selected stack.
+- Deployment target configuration where available.
+
+## Recommended workflow
+
+1. Commit or stash your current work.
+2. Run `add` with explicit flags.
+3. Review generated file changes.
+4. Install dependencies if the addon introduced new packages.
+5. Run the project’s test or typecheck command.

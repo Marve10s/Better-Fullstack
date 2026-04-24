@@ -5,7 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "prebuild": "cd ../../packages/types && bun run build && cd ../template-generator && bun run build",
+    "prebuild": "cd ../../packages/types && bun run build && cd ../template-generator && bun run build && cd ../../apps/docs && bun run build",
     "build": "vite build",
     "dev": "vite dev --port 3333",
     "start": "node .output/server/index.mjs",
