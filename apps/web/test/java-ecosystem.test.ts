@@ -107,6 +107,8 @@ describe("Java Ecosystem Tab", () => {
         "liquibase",
         "springdoc-openapi",
         "lombok",
+        "mapstruct",
+        "caffeine",
         "none",
       ]);
       expect(TECH_OPTIONS.javaTestingLibraries.map((option) => option.id)).toEqual([
@@ -117,6 +119,8 @@ describe("Java Ecosystem Tab", () => {
         "rest-assured",
         "wiremock",
         "awaitility",
+        "archunit",
+        "jqwik",
         "none",
       ]);
     });
@@ -213,8 +217,16 @@ describe("Java Ecosystem Tab", () => {
         javaBuildTool: "gradle",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok"],
-        javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
       };
 
       const params = createStackSearchParams(originalStack, { includeDefaults: true });
@@ -224,13 +236,21 @@ describe("Java Ecosystem Tab", () => {
       expect(parsedStack.javaBuildTool).toBe("gradle");
       expect(parsedStack.javaOrm).toBe("spring-data-jpa");
       expect(parsedStack.javaAuth).toBe("spring-security");
-      expect(parsedStack.javaLibraries).toEqual(["liquibase", "springdoc-openapi", "lombok"]);
+      expect(parsedStack.javaLibraries).toEqual([
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "mapstruct",
+        "caffeine",
+      ]);
       expect(parsedStack.javaTestingLibraries).toEqual([
         "junit5",
         "assertj",
         "rest-assured",
         "wiremock",
         "awaitility",
+        "archunit",
+        "jqwik",
       ]);
     });
   });
@@ -251,6 +271,8 @@ describe("Java Ecosystem Tab", () => {
       expect(isOptionCompatible(stack, "javaLibraries", "flyway")).toBe(false);
       expect(isOptionCompatible(stack, "javaLibraries", "springdoc-openapi")).toBe(true);
       expect(isOptionCompatible(stack, "javaLibraries", "lombok")).toBe(true);
+      expect(isOptionCompatible(stack, "javaLibraries", "mapstruct")).toBe(true);
+      expect(isOptionCompatible(stack, "javaLibraries", "caffeine")).toBe(true);
     });
 
     it("should disable the opposite migration tool when Flyway or Liquibase is selected", () => {

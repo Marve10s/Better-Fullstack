@@ -214,8 +214,16 @@ const SNAPSHOT_CONFIGS: Array<{
       javaBuildTool: "maven",
       javaOrm: "spring-data-jpa",
       javaAuth: "none",
-      javaLibraries: ["liquibase", "springdoc-openapi", "lombok"],
-      javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+      javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+      javaTestingLibraries: [
+        "junit5",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "archunit",
+        "jqwik",
+      ],
     },
   },
 ];

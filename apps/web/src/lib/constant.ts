@@ -2791,7 +2791,8 @@ export const TECH_OPTIONS: Record<
     {
       id: "anyhow-thiserror",
       name: "anyhow + thiserror",
-      description: "anyhow for application errors with thiserror for custom error types — the standard Rust combo",
+      description:
+        "anyhow for application errors with thiserror for custom error types — the standard Rust combo",
       icon: "",
       color: "from-red-500 to-orange-600",
       default: true,
@@ -3403,6 +3404,22 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "mapstruct",
+      name: "MapStruct",
+      description: "Compile-time mappers for DTO and entity conversions",
+      icon: "/icon/java.svg",
+      color: "from-sky-500 to-cyan-700",
+      default: false,
+    },
+    {
+      id: "caffeine",
+      name: "Caffeine",
+      description: "High-performance in-memory caching with Spring Cache",
+      icon: "/icon/java.svg",
+      color: "from-amber-500 to-yellow-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Libraries",
       description: "Skip extra Java application libraries",
@@ -3466,6 +3483,22 @@ export const TECH_OPTIONS: Record<
       description: "Wait helpers for testing asynchronous workflows",
       icon: "/icon/java.svg",
       color: "from-teal-500 to-emerald-700",
+      default: false,
+    },
+    {
+      id: "archunit",
+      name: "ArchUnit",
+      description: "Executable architecture rules for Java packages",
+      icon: "/icon/java.svg",
+      color: "from-slate-500 to-zinc-700",
+      default: false,
+    },
+    {
+      id: "jqwik",
+      name: "jqwik",
+      description: "Property-based testing on the JUnit Platform",
+      icon: "/icon/java.svg",
+      color: "from-fuchsia-500 to-pink-700",
       default: false,
     },
     {

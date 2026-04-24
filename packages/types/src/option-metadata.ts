@@ -689,6 +689,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     liquibase: "Liquibase",
     "springdoc-openapi": "Springdoc OpenAPI",
     lombok: "Lombok",
+    mapstruct: "MapStruct",
+    caffeine: "Caffeine",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
@@ -698,6 +700,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "rest-assured": "REST Assured",
     wiremock: "WireMock",
     awaitility: "Awaitility",
+    archunit: "ArchUnit",
+    jqwik: "jqwik",
   },
 };
 

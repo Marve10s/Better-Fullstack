@@ -4,15 +4,64 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
-  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
-  "class", "const", "continue", "default", "do", "double", "else", "enum",
-  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
-  "import", "instanceof", "int", "interface", "long", "native", "new",
-  "non-sealed", "package", "private", "protected", "public", "return",
-  "sealed", "short", "static", "strictfp", "super", "switch", "synchronized",
-  "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
-  "yield", "record", "permits",
-  "true", "false", "null",
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "non-sealed",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "sealed",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "yield",
+  "record",
+  "permits",
+  "true",
+  "false",
+  "null",
 ]);
 
 export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): void {
@@ -32,7 +81,10 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
-  const alphanumericOnly = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const alphanumericOnly = projectName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
   const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
     ? alphanumericOnly
     : `app${alphanumericOnly}`;
@@ -100,15 +152,12 @@ function generateJavaReadmeContent(config: ProjectConfig): string {
       ? `${buildToolCommand} build`
       : `${buildToolCommand} package`
     : null;
-  const testCommand = buildToolCommand && getEffectiveJavaTestingLibraries(config).length > 0
-    ? `${buildToolCommand} test`
-    : null;
-  const compileCommand = buildToolCommand
-    ? null
-    : `javac -d out ${getJavaMainSourcePath(config)}`;
-  const sourceOnlyRunCommand = buildToolCommand
-    ? null
-    : `java -cp out ${getJavaMainClass(config)}`;
+  const testCommand =
+    buildToolCommand && getEffectiveJavaTestingLibraries(config).length > 0
+      ? `${buildToolCommand} test`
+      : null;
+  const compileCommand = buildToolCommand ? null : `javac -d out ${getJavaMainSourcePath(config)}`;
+  const sourceOnlyRunCommand = buildToolCommand ? null : `java -cp out ${getJavaMainClass(config)}`;
   const javaLibraries = getEffectiveJavaLibraries(config);
   const testingLibraries = getEffectiveJavaTestingLibraries(config);
   const features = [
@@ -160,22 +209,27 @@ ${features.map((feature) => `- ${feature}`).join("\n")}
 
 Make sure Java 21 or newer is installed.
 
-${testCommand ? `Run the test suite:
+${
+  testCommand
+    ? `Run the test suite:
 
 \`\`\`bash
 ${testCommand}
 \`\`\`
 
-` : ""}${buildToolCommand && runCommand
-    ? `${isSpringBoot ? "Start the Spring Boot application" : "Run the application"}:
+`
+    : ""
+}${
+    buildToolCommand && runCommand
+      ? `${isSpringBoot ? "Start the Spring Boot application" : "Run the application"}:
 
 \`\`\`bash
 ${runCommand}
 \`\`\`
 
 `
-    : compileCommand && sourceOnlyRunCommand
-      ? `Compile the application:
+      : compileCommand && sourceOnlyRunCommand
+        ? `Compile the application:
 
 \`\`\`bash
 ${compileCommand}
@@ -188,7 +242,8 @@ ${sourceOnlyRunCommand}
 \`\`\`
 
 `
-      : ""}${isSpringBoot ? "The health endpoint is available at `http://localhost:8080/health`.\n" : ""}
+        : ""
+  }${isSpringBoot ? "The health endpoint is available at `http://localhost:8080/health`.\n" : ""}
 ${
   isSpringBoot && config.javaOrm === "spring-data-jpa"
     ? "\nThe generated JPA example also exposes `GET /users` and `POST /users`, backed by an embedded H2 database.\n"
@@ -203,6 +258,18 @@ ${
   javaLibraries.includes("springdoc-openapi")
     ? "\nOpenAPI documentation is available at `/v3/api-docs`, with Swagger UI at `/swagger-ui.html`.\n"
     : ""
+}
+${
+  javaLibraries.includes("caffeine")
+    ? "\nSpring Cache is enabled with Caffeine, and the sample cache endpoint is available at `GET /cache/time`.\n"
+    : ""
+}
+${
+  javaLibraries.includes("mapstruct") && config.javaOrm === "spring-data-jpa"
+    ? "\nMapStruct is configured with a generated mapper example for the JPA user DTO.\n"
+    : javaLibraries.includes("mapstruct")
+      ? "\nMapStruct is configured for compile-time DTO and object mapping.\n"
+      : ""
 }
 ${
   isSpringBoot && config.javaAuth === "spring-security"
@@ -1031,7 +1098,9 @@ function generateRustReadmeContent(config: ProjectConfig): string {
   // Error handling
   const { rustErrorHandling } = config;
   if (rustErrorHandling === "anyhow-thiserror") {
-    features.push("- **anyhow + thiserror** - Application errors (anyhow) with custom error types (thiserror)");
+    features.push(
+      "- **anyhow + thiserror** - Application errors (anyhow) with custom error types (thiserror)",
+    );
   } else if (rustErrorHandling === "eyre") {
     features.push("- **eyre + color-eyre** - Customizable error reports with pretty backtraces");
   }
@@ -1047,7 +1116,9 @@ function generateRustReadmeContent(config: ProjectConfig): string {
   // Auth
   const { rustAuth } = config;
   if (rustAuth === "oauth2") {
-    features.push("- **OAuth2** - OAuth2 client with authorization code, PKCE, and token exchange flows");
+    features.push(
+      "- **OAuth2** - OAuth2 client with authorization code, PKCE, and token exchange flows",
+    );
   }
 
   // Project structure
@@ -1525,7 +1596,9 @@ function generateGoReadmeContent(config: ProjectConfig): string {
   }
 
   if (auth === "go-better-auth") {
-    features.push("- **GoBetterAuth** - Embedded auth routes with email/password and session support");
+    features.push(
+      "- **GoBetterAuth** - Embedded auth routes with email/password and session support",
+    );
   }
 
   // Project structure

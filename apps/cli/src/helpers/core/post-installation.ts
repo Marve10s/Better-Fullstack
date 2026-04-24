@@ -1,6 +1,6 @@
+import { getLocalWebDevPort } from "@better-fullstack/types";
 import { consola } from "consola";
 import pc from "picocolors";
-import { getLocalWebDevPort } from "@better-fullstack/types";
 
 import type {
   Backend,
@@ -113,11 +113,13 @@ export async function displayPostInstallInstructions(
     : "";
   const clerkInstructions =
     config.auth === "clerk" ? getClerkInstructions(config.backend, config.frontend ?? []) : "";
-  const authSetupInstructions = getAuthSetupInstructions(config.auth, backend, config.frontend ?? []);
+  const authSetupInstructions = getAuthSetupInstructions(
+    config.auth,
+    backend,
+    config.frontend ?? [],
+  );
   const polarInstructions =
-    config.payments === "polar"
-      ? getPolarInstructions(backend, packageManager)
-      : "";
+    config.payments === "polar" ? getPolarInstructions(backend, packageManager) : "";
   const paymentSetupInstructions = getPaymentSetupInstructions(config.payments, backend);
   const alchemyDeployInstructions = getAlchemyDeployInstructions(
     runCmd,
@@ -125,11 +127,7 @@ export async function displayPostInstallInstructions(
     serverDeploy,
     backend,
   );
-  const vercelDeployInstructions = getVercelDeployInstructions(
-    webDeploy,
-    serverDeploy,
-    backend,
-  );
+  const vercelDeployInstructions = getVercelDeployInstructions(webDeploy, serverDeploy, backend);
 
   const hasWeb = frontend?.some((f) => WEB_FRAMEWORKS.includes(f));
   const hasNative =
@@ -246,9 +244,7 @@ export async function displayPostInstallInstructions(
   if (noOrmWarning) output += `\n${noOrmWarning.trim()}\n`;
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
 
-  output += `\n${pc.bold(
-    "Enjoying Better Fullstack?",
-  )} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -493,7 +489,11 @@ function getClerkInstructions(backend: Backend, frontend: Frontend[]) {
   return "";
 }
 
-function getAuthSetupInstructions(auth: ProjectConfig["auth"], backend: Backend, frontend: Frontend[]): string {
+function getAuthSetupInstructions(
+  auth: ProjectConfig["auth"],
+  backend: Backend,
+  frontend: Frontend[],
+): string {
   // Clerk and better-auth already have dedicated instruction functions
   if (auth === "clerk" || auth === "better-auth" || auth === "go-better-auth" || auth === "none") {
     return "";
@@ -543,7 +543,10 @@ function getAuthSetupInstructions(auth: ProjectConfig["auth"], backend: Backend,
   return "";
 }
 
-function getPaymentSetupInstructions(payments: ProjectConfig["payments"], backend: Backend): string {
+function getPaymentSetupInstructions(
+  payments: ProjectConfig["payments"],
+  backend: Backend,
+): string {
   // Polar already has a dedicated instruction function
   if (payments === "polar" || payments === "none") {
     return "";
@@ -656,18 +659,12 @@ function getVercelDeployInstructions(
     instructions.push(pc.bold("Deploy with Vercel:"));
     instructions.push(`${pc.cyan("•")} Install Vercel CLI: ${pc.white("npm i -g vercel")}`);
     if (webDeploy === "vercel") {
-      instructions.push(
-        `${pc.cyan("•")} Deploy web: ${pc.white(`cd apps/web && vercel`)}`,
-      );
+      instructions.push(`${pc.cyan("•")} Deploy web: ${pc.white(`cd apps/web && vercel`)}`);
     }
     if (serverDeploy === "vercel" && !isBackendSelf) {
-      instructions.push(
-        `${pc.cyan("•")} Deploy server: ${pc.white(`cd apps/server && vercel`)}`,
-      );
+      instructions.push(`${pc.cyan("•")} Deploy server: ${pc.white(`cd apps/server && vercel`)}`);
     }
-    instructions.push(
-      `${pc.cyan("•")} Docs: ${pc.underline("https://vercel.com/docs")}`,
-    );
+    instructions.push(`${pc.cyan("•")} Docs: ${pc.underline("https://vercel.com/docs")}`);
   }
 
   return instructions.length ? `\n${instructions.join("\n")}` : "";
@@ -773,9 +770,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
   output += `${pc.cyan("•")} Format: cargo fmt\n`;
   output += `${pc.cyan("•")} Lint: cargo clippy\n`;
 
-  output += `\n${pc.bold(
-    "Enjoying Better Fullstack?",
-  )} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -783,7 +778,8 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
 }
 
 function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
-  const { relativePath, depsInstalled, goWebFramework, goOrm, goApi, goCli, goLogging, goAuth } = config;
+  const { relativePath, depsInstalled, goWebFramework, goOrm, goApi, goCli, goLogging, goAuth } =
+    config;
 
   const cdCmd = `cd ${relativePath}`;
 
@@ -864,9 +860,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
     output += `${pc.cyan("•")} gRPC: localhost:50051\n`;
   }
 
-  output += `\n${pc.bold(
-    "Enjoying Better Fullstack?",
-  )} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -875,19 +869,71 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
-  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
-  "class", "const", "continue", "default", "do", "double", "else", "enum",
-  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
-  "import", "instanceof", "int", "interface", "long", "native", "new",
-  "non-sealed", "package", "private", "protected", "public", "return",
-  "sealed", "short", "static", "strictfp", "super", "switch", "synchronized",
-  "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
-  "yield", "record", "permits",
-  "true", "false", "null",
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "non-sealed",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "sealed",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "yield",
+  "record",
+  "permits",
+  "true",
+  "false",
+  "null",
 ]);
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
-  const alphanumericOnly = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const alphanumericOnly = projectName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
   const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
     ? alphanumericOnly
     : `app${alphanumericOnly}`;
@@ -935,19 +981,18 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
     }
     effectiveJavaLibraries.push(library);
   }
-  const effectiveJavaTestingLibraries = javaBuildTool === "none"
-    ? []
-    : javaTestingLibraries.filter((library) => library !== "none");
-  const buildToolCommand = javaBuildTool === "none"
-    ? null
-    :
-    javaBuildTool === "gradle"
-      ? process.platform === "win32"
-        ? "gradlew.bat"
-        : "./gradlew"
-      : process.platform === "win32"
-        ? "mvnw.cmd"
-        : "./mvnw";
+  const effectiveJavaTestingLibraries =
+    javaBuildTool === "none" ? [] : javaTestingLibraries.filter((library) => library !== "none");
+  const buildToolCommand =
+    javaBuildTool === "none"
+      ? null
+      : javaBuildTool === "gradle"
+        ? process.platform === "win32"
+          ? "gradlew.bat"
+          : "./gradlew"
+        : process.platform === "win32"
+          ? "mvnw.cmd"
+          : "./mvnw";
   const runCommand = buildToolCommand
     ? isSpringBoot
       ? javaBuildTool === "gradle"
@@ -1028,6 +1073,8 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       liquibase: "Liquibase",
       "springdoc-openapi": "Springdoc OpenAPI",
       lombok: "Lombok",
+      mapstruct: "MapStruct",
+      caffeine: "Caffeine",
     };
     const libraryList = effectiveJavaLibraries
       .map((library) => libraryNames[library] || library)
@@ -1044,6 +1091,8 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       "rest-assured": "REST Assured",
       wiremock: "WireMock",
       awaitility: "Awaitility",
+      archunit: "ArchUnit",
+      jqwik: "jqwik",
     };
     const testingList = effectiveJavaTestingLibraries
       .map((library) => testingNames[library] || library)
@@ -1070,9 +1119,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
     output += `${pc.cyan("•")} API: http://localhost:8080\n`;
   }
 
-  output += `\n${pc.bold(
-    "Enjoying Better Fullstack?",
-  )} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 
@@ -1180,9 +1227,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `\n${pc.bold("Your project will be available at:")}\n`;
   output += `${pc.cyan("•")} API: http://localhost:8000\n`;
 
-  output += `\n${pc.bold(
-    "Enjoying Better Fullstack?",
-  )} Help us grow — star the repo!\n`;
+  output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
 

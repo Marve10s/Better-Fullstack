@@ -364,6 +364,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   liquibase: { type: "si", slug: "liquibase", hex: "2962FF" },
   "springdoc-openapi": { type: "si", slug: "swagger", hex: "85EA2D" },
   lombok: { type: "local", src: "/icon/java.svg" },
+  mapstruct: { type: "local", src: "/icon/java.svg" },
+  caffeine: { type: "local", src: "/icon/java.svg" },
   junit5: { type: "si", slug: "junit5", hex: "25A162" },
   mockito: { type: "si", slug: "mockito", hex: "78A641" },
   testcontainers: { type: "si", slug: "testcontainers", hex: "2496ED" },
@@ -371,4 +373,6 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "rest-assured": { type: "local", src: "/icon/java.svg" },
   wiremock: { type: "local", src: "/icon/java.svg" },
   awaitility: { type: "local", src: "/icon/java.svg" },
+  archunit: { type: "local", src: "/icon/java.svg" },
+  jqwik: { type: "local", src: "/icon/java.svg" },
 };

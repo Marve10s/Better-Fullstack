@@ -20,11 +20,21 @@ const JAVA_TEMPLATES = {
     "package {{javaPackageName}};",
   "java-base/src/main/java/__javaPackagePath__/controller/HealthController.java.hbs":
     "spring controller",
+  "java-base/src/main/java/__javaPackagePath__/controller/CacheController.java.hbs":
+    "cache controller",
+  "java-base/src/main/java/__javaPackagePath__/cache/CachedTimeService.java.hbs": "cache service",
   "java-base/src/main/java/__javaPackagePath__/domain/AppUser.java.hbs":
     "package {{javaPackageName}}.domain;",
+  "java-base/src/main/java/__javaPackagePath__/dto/UserDto.java.hbs":
+    "package {{javaPackageName}}.dto;",
+  "java-base/src/main/java/__javaPackagePath__/mapper/AppUserMapper.java.hbs":
+    "package {{javaPackageName}}.mapper;",
   "java-base/src/main/resources/application.yml.hbs": "spring:",
   "java-base/src/main/resources/db/migration/V1__init.sql.hbs": "-- migration",
   "java-base/src/test/java/__javaPackagePath__/ApplicationTests.java.hbs": "test",
+  "java-base/src/test/java/__javaPackagePath__/ArchitectureTest.java.hbs": "arch test",
+  "java-base/src/test/java/__javaPackagePath__/PropertyBasedTest.java.hbs": "property test",
+  "java-base/src/test/java/__javaPackagePath__/mapper/AppUserMapperTest.java.hbs": "mapper test",
 };
 
 describe("processJavaBaseTemplate", () => {
@@ -107,6 +117,7 @@ describe("processJavaBaseTemplate", () => {
       vfs,
       makeTemplates(JAVA_TEMPLATES),
       makeConfig({
+        projectName: "my-app",
         ecosystem: "java",
         javaWebFramework: "spring-boot",
         javaBuildTool: "maven",
@@ -161,6 +172,7 @@ describe("processJavaBaseTemplate", () => {
         "java-base/src/main/resources/db/migration/V1__init.sql.hbs": "-- migration",
       }),
       makeConfig({
+        projectName: "my-app",
         ecosystem: "java",
         javaWebFramework: "spring-boot",
         javaBuildTool: "maven",
@@ -184,6 +196,7 @@ describe("processJavaBaseTemplate", () => {
         "java-base/src/main/resources/db/migration/V1__init.sql.hbs": "-- migration",
       }),
       makeConfig({
+        projectName: "my-app",
         ecosystem: "java",
         javaWebFramework: "spring-boot",
         javaBuildTool: "maven",
@@ -209,6 +222,7 @@ describe("processJavaBaseTemplate", () => {
           "databaseChangeLog: []",
       }),
       makeConfig({
+        projectName: "my-app",
         ecosystem: "java",
         javaWebFramework: "spring-boot",
         javaBuildTool: "maven",
@@ -246,6 +260,116 @@ describe("processJavaBaseTemplate", () => {
 
     expect(vfs.readFile("pom.xml")).toContain("<liquibase>yes</liquibase>");
     expect(vfs.exists("src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(true);
+  });
+
+  it("emits MapStruct examples only when JPA is available", async () => {
+    const templates = makeTemplates(JAVA_TEMPLATES);
+
+    const withoutJpa = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      withoutJpa,
+      templates,
+      makeConfig({
+        projectName: "my-app",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: ["mapstruct"],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(withoutJpa.exists("src/main/java/com/example/myapp/dto/UserDto.java")).toBe(false);
+    expect(withoutJpa.exists("src/main/java/com/example/myapp/mapper/AppUserMapper.java")).toBe(
+      false,
+    );
+    expect(withoutJpa.exists("src/test/java/com/example/myapp/mapper/AppUserMapperTest.java")).toBe(
+      false,
+    );
+
+    const withJpa = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      withJpa,
+      templates,
+      makeConfig({
+        projectName: "my-app",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["mapstruct"],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(withJpa.exists("src/main/java/com/example/myapp/dto/UserDto.java")).toBe(true);
+    expect(withJpa.exists("src/main/java/com/example/myapp/mapper/AppUserMapper.java")).toBe(true);
+    expect(withJpa.exists("src/test/java/com/example/myapp/mapper/AppUserMapperTest.java")).toBe(
+      true,
+    );
+  });
+
+  it("emits Caffeine, ArchUnit, and jqwik templates only when selected", async () => {
+    const withoutSelections = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      withoutSelections,
+      makeTemplates(JAVA_TEMPLATES),
+      makeConfig({
+        projectName: "my-app",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+      }),
+    );
+
+    expect(
+      withoutSelections.exists("src/main/java/com/example/myapp/cache/CachedTimeService.java"),
+    ).toBe(false);
+    expect(
+      withoutSelections.exists("src/main/java/com/example/myapp/controller/CacheController.java"),
+    ).toBe(false);
+    expect(withoutSelections.exists("src/test/java/com/example/myapp/ArchitectureTest.java")).toBe(
+      false,
+    );
+    expect(withoutSelections.exists("src/test/java/com/example/myapp/PropertyBasedTest.java")).toBe(
+      false,
+    );
+
+    const withSelections = new VirtualFileSystem();
+    await processJavaBaseTemplate(
+      withSelections,
+      makeTemplates(JAVA_TEMPLATES),
+      makeConfig({
+        projectName: "my-app",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: ["caffeine"],
+        javaTestingLibraries: ["junit5", "archunit", "jqwik"],
+      }),
+    );
+
+    expect(
+      withSelections.exists("src/main/java/com/example/myapp/cache/CachedTimeService.java"),
+    ).toBe(true);
+    expect(
+      withSelections.exists("src/main/java/com/example/myapp/controller/CacheController.java"),
+    ).toBe(true);
+    expect(withSelections.exists("src/test/java/com/example/myapp/ArchitectureTest.java")).toBe(
+      true,
+    );
+    expect(withSelections.exists("src/test/java/com/example/myapp/PropertyBasedTest.java")).toBe(
+      true,
+    );
   });
 
   it("prefers flyway when flyway and liquibase are both selected", async () => {

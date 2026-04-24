@@ -24,6 +24,9 @@
 {{#if hasJavaLombok}}
 		<lombok.version>1.18.38</lombok.version>
 {{/if}}
+{{#if hasJavaMapstruct}}
+		<mapstruct.version>1.6.3</mapstruct.version>
+{{/if}}
 {{#if hasJavaAssertj}}
 		<assertj.version>3.27.7</assertj.version>
 {{/if}}
@@ -35,6 +38,12 @@
 {{/if}}
 {{#if hasJavaAwaitility}}
 		<awaitility.version>4.3.0</awaitility.version>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<archunit.version>1.4.1</archunit.version>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<jqwik.version>1.9.3</jqwik.version>
 {{/if}}
 {{else}}
 		<maven.compiler.release>21</maven.compiler.release>
@@ -59,9 +68,18 @@
 {{#if hasJavaAwaitility}}
 		<awaitility.version>4.3.0</awaitility.version>
 {{/if}}
+{{#if hasJavaArchunit}}
+		<archunit.version>1.4.1</archunit.version>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<jqwik.version>1.9.3</jqwik.version>
+{{/if}}
 {{/if}}
 {{#if hasJavaLombok}}
 		<lombok.version>1.18.38</lombok.version>
+{{/if}}
+{{#if hasJavaMapstruct}}
+		<mapstruct.version>1.6.3</mapstruct.version>
 {{/if}}
 {{/if}}
 	</properties>
@@ -142,6 +160,23 @@
 			<optional>true</optional>
 		</dependency>
 {{/if}}
+{{#if hasJavaMapstruct}}
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
+{{/if}}
+{{#if hasJavaCaffeine}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+{{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
@@ -203,6 +238,22 @@
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
 			<version>${awaitility.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>${jqwik.version}</version>
 			<scope>test</scope>
 		</dependency>
 {{/if}}
@@ -278,6 +329,22 @@
 			<scope>test</scope>
 		</dependency>
 {{/if}}
+{{#if hasJavaArchunit}}
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>${jqwik.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
 {{/if}}
 {{/if}}
 	</dependencies>
@@ -289,18 +356,27 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-{{#if hasJavaLombok}}
+{{#if hasJavaAnnotationProcessors}}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.0</version>
 				<configuration>
 					<annotationProcessorPaths>
+{{#if hasJavaLombok}}
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 							<version>${lombok.version}</version>
 						</path>
+{{/if}}
+{{#if hasJavaMapstruct}}
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+{{/if}}
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
@@ -310,14 +386,23 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.0</version>
-{{#if hasJavaLombok}}
+{{#if hasJavaAnnotationProcessors}}
 				<configuration>
 					<annotationProcessorPaths>
+{{#if hasJavaLombok}}
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 							<version>${lombok.version}</version>
 						</path>
+{{/if}}
+{{#if hasJavaMapstruct}}
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+{{/if}}
 					</annotationProcessorPaths>
 				</configuration>
 {{/if}}

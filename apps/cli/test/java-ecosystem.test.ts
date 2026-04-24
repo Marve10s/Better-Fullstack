@@ -169,6 +169,8 @@ describe("Java Ecosystem", () => {
         "liquibase",
         "springdoc-openapi",
         "lombok",
+        "mapstruct",
+        "caffeine",
         "none",
       ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
@@ -181,6 +183,8 @@ describe("Java Ecosystem", () => {
         "rest-assured",
         "wiremock",
         "awaitility",
+        "archunit",
+        "jqwik",
         "none",
       ]);
     });
@@ -330,6 +334,8 @@ describe("Java Ecosystem", () => {
           "rest-assured",
           "wiremock",
           "awaitility",
+          "archunit",
+          "jqwik",
         ],
       });
 
@@ -357,6 +363,12 @@ describe("Java Ecosystem", () => {
       expect(
         hasFile(root, "src/test/java/com/example/javaplaingradletests/AsyncWorkflowTest.java"),
       ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/ArchitectureTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/PropertyBasedTest.java"),
+      ).toBe(true);
 
       const gradleContent = getFileContent(root, "build.gradle.kts");
 
@@ -373,6 +385,10 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
+      expect(gradleContent).toContain(
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")',
+      );
+      expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
       expect(gradleContent).not.toContain("org.springframework.boot");
       expect(gradleContent).not.toContain("spring-boot-starter");
     });
@@ -484,8 +500,16 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "maven",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok"],
-        javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
       });
 
       expect(result.success).toBe(true);
@@ -501,8 +525,31 @@ describe("Java Ecosystem", () => {
       expect(hasFile(root, "src/test/java/com/example/javaextended/AsyncWorkflowTest.java")).toBe(
         true,
       );
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/cache/CachedTimeService.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/controller/CacheController.java"),
+      ).toBe(true);
+      expect(hasFile(root, "src/main/java/com/example/javaextended/dto/UserDto.java")).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/mapper/AppUserMapper.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextended/mapper/AppUserMapperTest.java"),
+      ).toBe(true);
+      expect(hasFile(root, "src/test/java/com/example/javaextended/ArchitectureTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/PropertyBasedTest.java")).toBe(
+        true,
+      );
 
       const pomContent = getFileContent(root, "pom.xml");
+      const applicationContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaextended/Application.java",
+      );
       const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
       const applicationTest = getFileContent(
         root,
@@ -513,6 +560,10 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("liquibase-core");
       expect(pomContent).toContain("springdoc-openapi-starter-webmvc-ui");
       expect(pomContent).toContain("lombok");
+      expect(pomContent).toContain("mapstruct");
+      expect(pomContent).toContain("mapstruct-processor");
+      expect(pomContent).toContain("spring-boot-starter-cache");
+      expect(pomContent).toContain("caffeine");
       expect(pomContent).toContain("<optional>true</optional>");
       expect(pomContent).toContain("<artifactId>maven-compiler-plugin</artifactId>");
       expect(pomContent).toContain("<annotationProcessorPaths>");
@@ -522,16 +573,24 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<rest-assured.version>6.0.0</rest-assured.version>");
       expect(pomContent).toContain("<wiremock.version>3.13.2</wiremock.version>");
       expect(pomContent).toContain("<awaitility.version>4.3.0</awaitility.version>");
+      expect(pomContent).toContain("<mapstruct.version>1.6.3</mapstruct.version>");
+      expect(pomContent).toContain("<archunit.version>1.4.1</archunit.version>");
+      expect(pomContent).toContain("<jqwik.version>1.9.3</jqwik.version>");
       expect(pomContent).toContain("rest-assured");
       expect(pomContent).toContain("wiremock");
       expect(pomContent).toContain("awaitility");
+      expect(pomContent).toContain("archunit-junit5");
+      expect(pomContent).toContain("jqwik");
       expect(pomContent).not.toContain("flyway-core");
+      expect(applicationContent).toContain("@EnableCaching");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
       );
       expect(applicationConfig).toContain("ddl-auto: validate");
       expect(applicationTest).toContain("org.assertj.core.api.Assertions.assertThat");
       expect(readmeContent).toContain("OpenAPI documentation is available");
+      expect(readmeContent).toContain("Spring Cache is enabled with Caffeine");
+      expect(readmeContent).toContain("MapStruct is configured with a generated mapper example");
     });
 
     it("should add extended Java libraries and testing dependencies for Gradle", async () => {
@@ -542,8 +601,16 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "gradle",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok"],
-        javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
       });
 
       expect(result.success).toBe(true);
@@ -559,6 +626,18 @@ describe("Java Ecosystem", () => {
       expect(
         hasFile(root, "src/test/java/com/example/javaextendedgradle/AsyncWorkflowTest.java"),
       ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextendedgradle/cache/CachedTimeService.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextendedgradle/mapper/AppUserMapper.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/ArchitectureTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/PropertyBasedTest.java"),
+      ).toBe(true);
 
       const gradleContent = getFileContent(root, "build.gradle.kts");
       const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
@@ -573,10 +652,22 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain(
         'testAnnotationProcessor("org.projectlombok:lombok:1.18.38")',
       );
+      expect(gradleContent).toContain('implementation("org.mapstruct:mapstruct:1.6.3")');
+      expect(gradleContent).toContain(
+        'annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")',
+      );
+      expect(gradleContent).toContain(
+        'implementation("org.springframework.boot:spring-boot-starter-cache")',
+      );
+      expect(gradleContent).toContain('implementation("com.github.ben-manes.caffeine:caffeine")');
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
+      expect(gradleContent).toContain(
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")',
+      );
+      expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
       expect(gradleContent).not.toContain("flyway-core");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
@@ -641,8 +732,16 @@ describe("Java Ecosystem", () => {
           javaBuildTool: "none",
           javaOrm: "spring-data-jpa",
           javaAuth: "spring-security",
-          javaLibraries: ["spring-actuator"],
-          javaTestingLibraries: ["junit5", "assertj", "rest-assured", "wiremock", "awaitility"],
+          javaLibraries: ["spring-actuator", "mapstruct", "caffeine"],
+          javaTestingLibraries: [
+            "junit5",
+            "assertj",
+            "rest-assured",
+            "wiremock",
+            "awaitility",
+            "archunit",
+            "jqwik",
+          ],
         }),
       );
 
@@ -664,12 +763,24 @@ describe("Java Ecosystem", () => {
           javaBuildTool: "maven",
           javaOrm: "none",
           javaAuth: "none",
-          javaLibraries: ["spring-actuator", "flyway", "liquibase", "springdoc-openapi"],
+          javaLibraries: [
+            "spring-actuator",
+            "flyway",
+            "liquibase",
+            "springdoc-openapi",
+            "mapstruct",
+            "caffeine",
+          ],
           javaTestingLibraries: ["junit5"],
         }),
       );
 
-      expect(result.adjustedStack?.javaLibraries).toEqual(["spring-actuator", "springdoc-openapi"]);
+      expect(result.adjustedStack?.javaLibraries).toEqual([
+        "spring-actuator",
+        "springdoc-openapi",
+        "mapstruct",
+        "caffeine",
+      ]);
       expect(result.changes.some((adjustment) => adjustment.category === "javaOrm")).toBe(true);
     });
 
@@ -749,14 +860,14 @@ describe("Java Ecosystem", () => {
       }
     });
 
-    it("should keep Springdoc OpenAPI and Lombok compatible without JPA", () => {
+    it("should keep non-migration Spring libraries compatible without JPA", () => {
       const result = evaluateCompatibility(
         createJavaCompatibilityInput({
           javaWebFramework: "spring-boot",
           javaBuildTool: "maven",
           javaOrm: "none",
           javaAuth: "none",
-          javaLibraries: ["springdoc-openapi", "lombok"],
+          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine"],
           javaTestingLibraries: ["junit5"],
         }),
       );

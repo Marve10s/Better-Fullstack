@@ -63,6 +63,15 @@ dependencies {
 	testCompileOnly("org.projectlombok:lombok:1.18.38")
 	testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 {{/if}}
+{{#if hasJavaMapstruct}}
+	implementation("org.mapstruct:mapstruct:1.6.3")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+	testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+{{/if}}
+{{#if hasJavaCaffeine}}
+	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("com.github.ben-manes.caffeine:caffeine")
+{{/if}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 {{#if hasJavaJpa}}
 	runtimeOnly("com.h2database:h2")
@@ -87,6 +96,12 @@ dependencies {
 {{/if}}
 {{#if hasJavaAwaitility}}
 	testImplementation("org.awaitility:awaitility:4.3.0")
+{{/if}}
+{{#if hasJavaArchunit}}
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+{{/if}}
+{{#if hasJavaJqwik}}
+	testImplementation("net.jqwik:jqwik:1.9.3")
 {{/if}}
 {{#if hasJavaTestcontainers}}
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
@@ -117,6 +132,12 @@ dependencies {
 {{/if}}
 {{#if hasJavaAwaitility}}
 	testImplementation("org.awaitility:awaitility:4.3.0")
+{{/if}}
+{{#if hasJavaArchunit}}
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+{{/if}}
+{{#if hasJavaJqwik}}
+	testImplementation("net.jqwik:jqwik:1.9.3")
 {{/if}}
 {{/if}}
 {{/if}}

@@ -8,12 +8,12 @@ import type {
 } from "../types";
 
 import { exitCancelled } from "../utils/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 import {
   createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
   {
@@ -109,6 +109,16 @@ const JAVA_TESTING_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaTestingLibraries>[] 
     hint: "Wait helpers for asynchronous Java tests",
   },
   {
+    value: "archunit",
+    label: "ArchUnit",
+    hint: "Architecture rules for Java package boundaries",
+  },
+  {
+    value: "jqwik",
+    label: "jqwik",
+    hint: "Property-based testing on the JUnit Platform",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra testing libraries",
@@ -147,6 +157,16 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     hint: "Annotation processor for reducing Java boilerplate",
   },
   {
+    value: "mapstruct",
+    label: "MapStruct",
+    hint: "Compile-time generated mappers for DTO and entity conversions",
+  },
+  {
+    value: "caffeine",
+    label: "Caffeine",
+    hint: "High-performance in-memory caching through Spring Cache",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra Java libraries",
@@ -179,11 +199,7 @@ export async function getJavaWebFrameworkChoice(javaWebFramework?: JavaWebFramew
 }
 
 export function resolveJavaBuildToolPrompt(javaBuildTool?: JavaBuildTool) {
-  return createStaticSinglePromptResolution(
-    JAVA_BUILD_TOOL_PROMPT_OPTIONS,
-    "maven",
-    javaBuildTool,
-  );
+  return createStaticSinglePromptResolution(JAVA_BUILD_TOOL_PROMPT_OPTIONS, "maven", javaBuildTool);
 }
 
 export async function getJavaBuildToolChoice(javaBuildTool?: JavaBuildTool) {
@@ -269,9 +285,7 @@ export async function getJavaLibrariesChoice(javaLibraries?: JavaLibraries[]) {
   return response as JavaLibraries[];
 }
 
-export function resolveJavaTestingLibrariesPrompt(
-  javaTestingLibraries?: JavaTestingLibraries[],
-) {
+export function resolveJavaTestingLibrariesPrompt(javaTestingLibraries?: JavaTestingLibraries[]) {
   return createStaticMultiPromptResolution(
     JAVA_TESTING_LIBRARY_PROMPT_OPTIONS,
     ["junit5"],
@@ -279,9 +293,7 @@ export function resolveJavaTestingLibrariesPrompt(
   );
 }
 
-export async function getJavaTestingLibrariesChoice(
-  javaTestingLibraries?: JavaTestingLibraries[],
-) {
+export async function getJavaTestingLibrariesChoice(javaTestingLibraries?: JavaTestingLibraries[]) {
   const resolution = resolveJavaTestingLibrariesPrompt(javaTestingLibraries);
   if (!resolution.shouldPrompt) {
     return (resolution.autoValue as JavaTestingLibraries[]) ?? [];
