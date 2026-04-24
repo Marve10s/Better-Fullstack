@@ -7,10 +7,6 @@
       "inputs": ["$TURBO_DEFAULT$"],
       "outputs": ["dist/**", ".output/**", ".vercel/output/**", ".nitro/**"]
     },
-    "docs#build": {
-      "inputs": ["$TURBO_DEFAULT$", "../../packages/types/src/**"],
-      "outputs": []
-    },
     "lint": {
       "dependsOn": ["^lint"],
       "inputs": ["$TURBO_DEFAULT$"]

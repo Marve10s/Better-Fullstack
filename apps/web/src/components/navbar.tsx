@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
 
+import { DocsSearchTrigger } from "@/components/docs/search-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NavbarStats = lazy(async () => {
@@ -11,6 +12,8 @@ const NavbarStats = lazy(async () => {
 
 export function Navbar() {
   const [showStats, setShowStats] = useState(false);
+  const location = useLocation();
+  const isDocsRoute = location.pathname.startsWith("/docs");
 
   useEffect(() => {
     const onIdle = () => setShowStats(true);
@@ -56,17 +59,21 @@ export function Navbar() {
           >
             MCP
           </Link>
-          <a
-            href="/docs/"
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
+          <Link
+            to="/docs"
+            activeOptions={{ includeSearch: false }}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm [&.active]:text-foreground"
+            activeProps={{ className: "active" }}
           >
             Docs
-          </a>
+          </Link>
         </div>
 
         {/* Navigation Links */}
         <div className="flex items-center gap-4 sm:gap-6">
-          {showStats ? (
+          {isDocsRoute ? (
+            <DocsSearchTrigger className="hidden md:inline-flex" />
+          ) : showStats ? (
             <Suspense
               fallback={
                 <>

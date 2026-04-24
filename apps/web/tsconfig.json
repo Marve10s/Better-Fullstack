@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "types": ["vite/client"],
     "paths": {
       "@/*": ["./src/*"],
       "@/public/*": ["./public/*"]

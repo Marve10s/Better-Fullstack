@@ -1,0 +1,75 @@
+---
+title: Get Started
+description: Install the required tools and scaffold your first Better Fullstack project.
+---
+
+Start here when you want a project generated quickly with explicit, reproducible stack choices.
+
+## 1. Install the required tools
+
+Everyone needs Node.js 20 or newer and Git. Bun is optional unless you choose Bun as the project runtime or package manager.
+
+- [Download Node.js](https://nodejs.org/en/download)
+- [Download Git](https://git-scm.com/downloads)
+- [Install Bun](https://bun.sh/docs/installation)
+
+```bash
+node --version
+git --version
+```
+
+If you plan to use Bun, verify it too:
+
+```bash
+bun --version
+```
+
+For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain before running generated project commands. The CLI can still be launched with Node.js even when the generated app targets another ecosystem.
+
+| Ecosystem | Tooling |
+| --- | --- |
+| TypeScript | Node.js plus npm, pnpm, Yarn, or Bun |
+| Rust | Rust toolchain and Cargo |
+| Python | Python and uv |
+| Go | Go toolchain |
+| Java | Java 21; generated Maven or Gradle wrappers handle builds |
+
+## 2. Create a project
+
+Use the interactive flow when exploring choices. Select your preferred package manager to run the create package:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+Use explicit flags when you already know the stack:
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --frontend next \
+  --backend self \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc
+```
+
+## 3. Inspect before installing
+
+For CI and AI-agent workflows, scaffold first and install dependencies after you inspect the generated files.
+
+```npm
+npm create better-fullstack@latest my-app -- --no-install --no-git --ai-docs agents-md
+cd my-app
+npm install
+```
+
+Use `bun install`, `pnpm install`, or `yarn install` instead when the generated project was configured for that package manager. Generated projects include `bts.jsonc`, a reproducible command, framework scripts, and optional AI documentation files.
+
+## 4. Next steps
+
+- Read [Installation](/docs/getting-started/installation/) for ecosystem prerequisites.
+- Read [First Project](/docs/getting-started/first-project/) for dry-runs, install flow, and generated project context.
+- Open [CLI Create](/docs/cli/create/) for the non-interactive command surface.
+- Open [Ecosystems](/docs/ecosystems/) to compare TypeScript, Rust, Python, Go, and Java support.

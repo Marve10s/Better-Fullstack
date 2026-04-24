@@ -564,3 +564,121 @@
   font-family: var(--font-mono);
   font-size: 0.875rem;
 }
+
+/*
+ * Docs typography ─ scoped to .docs-prose so we don't bleed styles into the
+ * marketing site. Mono headings + sans body matches the brand. Spacing
+ * follows the rhythm of the rest of the site (Tailwind `space-y-*` style).
+ */
+.docs-prose {
+  --prose-text: var(--foreground);
+  --prose-muted: var(--muted-foreground);
+  color: var(--prose-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.docs-prose > * + * {
+  margin-top: 1.1rem;
+}
+
+.docs-prose h2,
+.docs-prose h3,
+.docs-prose h4 {
+  color: var(--prose-text);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 5rem;
+}
+
+.docs-prose h2 {
+  margin-top: 2.4rem;
+  font-size: 1.4rem;
+}
+
+.docs-prose h3 {
+  margin-top: 2rem;
+  font-size: 1.1rem;
+}
+
+.docs-prose h4 {
+  margin-top: 1.6rem;
+  font-size: 0.95rem;
+}
+
+.docs-prose p,
+.docs-prose li {
+  color: var(--prose-text);
+}
+
+.docs-prose a:not(:where(.docs-prose .not-prose *)) {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--border) 70%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+
+.docs-prose a:not(:where(.docs-prose .not-prose *)):hover {
+  text-decoration-color: currentColor;
+}
+
+.docs-prose code:not(:where(.docs-prose pre code)) {
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  padding: 0.1rem 0.35rem;
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.docs-prose ul,
+.docs-prose ol {
+  padding-left: 1.4rem;
+}
+
+.docs-prose ul > li {
+  list-style: disc;
+}
+
+.docs-prose ol > li {
+  list-style: decimal;
+}
+
+.docs-prose blockquote {
+  border-left: 2px solid var(--border);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--prose-muted);
+  font-style: italic;
+}
+
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.docs-prose th,
+.docs-prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.docs-prose th {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--prose-muted);
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+
+.docs-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.4rem 0;
+}
+
+/* Heading anchor target offset already handled via scroll-margin-top above */
