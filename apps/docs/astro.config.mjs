@@ -26,11 +26,15 @@ export default defineConfig({
         },
       ],
       customCss: ["./src/styles/docs.css"],
+      components: {
+        Header: "./src/components/Header.astro",
+        PageTitle: "./src/components/PageTitle.astro",
+      },
       sidebar: [
         {
           label: "Start Here",
           items: [
-            { label: "Introduction", slug: "index" },
+            { label: "Get Started", slug: "index" },
             { label: "Installation", slug: "getting-started/installation" },
             { label: "First Project", slug: "getting-started/first-project" },
           ],

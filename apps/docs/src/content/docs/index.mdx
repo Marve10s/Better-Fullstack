@@ -1,46 +1,70 @@
 ---
-title: Introduction
-description: Better Fullstack docs for the CLI, web builder, stack options, ecosystems, and AI-agent workflows.
-template: splash
-hero:
-  tagline: Scaffold production-ready projects across TypeScript, Rust, Python, Go, and Java. Pick your stack once; the CLI wires the project together.
-  actions:
-    - text: Start with installation
-      link: /docs/getting-started/installation/
-      icon: right-arrow
-      variant: primary
-    - text: Open the builder
-      link: https://better-fullstack.dev/new
-      icon: external
+title: Get Started
+description: Install the required tools and scaffold your first Better Fullstack project.
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+Start here when you want a project generated quickly with explicit, reproducible stack choices.
 
-Better Fullstack is a stack builder and project generator. It helps you choose compatible tools, scaffold the app, and keep the generated project understandable for both humans and AI coding agents.
+## 1. Install the required tools
 
-<CardGrid>
-  <Card title="Choose a stack" icon="setting">
-    Use the web builder or CLI flags to select frameworks, databases, auth, deployment, AI tools, and ecosystem-specific libraries.
-  </Card>
-  <Card title="Generate the project" icon="rocket">
-    Scaffold a ready-to-run project with matching config files, scripts, templates, and AI docs.
-  </Card>
-  <Card title="Keep it maintainable" icon="document">
-    Generated projects include `bts.jsonc`, reproducible commands, and optional AI documentation files.
-  </Card>
-</CardGrid>
+Everyone needs Node.js 20 or newer and Git. Bun is the fastest launcher and the default used in this repository.
 
-## When to use it
+- [Download Node.js](https://nodejs.org/en/download)
+- [Install Bun](https://bun.sh/docs/installation)
+- [Download Git](https://git-scm.com/downloads)
 
-- You want a project quickly, but still need explicit technology choices.
-- You are comparing stack combinations before committing to one.
-- You want AI agents to scaffold projects safely through a structured tool interface.
-- You want TypeScript, Rust, Python, Go, or Java projects created from the same workflow.
+```bash
+node --version
+bun --version
+git --version
+```
 
-## What the docs cover
+For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain before running generated project commands.
 
-- Install prerequisites and create your first project.
-- Use non-interactive CLI flags for repeatable scaffolds.
-- Understand ecosystem-specific options.
-- Connect AI coding agents through MCP.
-- Browse generated option references that come from the shared schema.
+| Ecosystem | Tooling |
+| --- | --- |
+| TypeScript | Node.js plus Bun, npm, pnpm, or Yarn |
+| Rust | Rust toolchain and Cargo |
+| Python | Python and uv |
+| Go | Go toolchain |
+| Java | Java 21; generated Maven or Gradle wrappers handle builds |
+
+## 2. Create a project
+
+Use the interactive flow when exploring choices:
+
+```bash
+bun create better-fullstack@latest my-app
+```
+
+Use explicit flags when you already know the stack:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc
+```
+
+## 3. Inspect before installing
+
+For CI and AI-agent workflows, scaffold first and install dependencies after you inspect the generated files.
+
+```bash
+bun create better-fullstack@latest my-app --no-install --no-git --ai-docs agents-md
+cd my-app
+bun install
+```
+
+Generated projects include `bts.jsonc`, a reproducible command, framework scripts, and optional AI documentation files.
+
+## 4. Next steps
+
+- Read [Installation](/docs/getting-started/installation/) for ecosystem prerequisites.
+- Read [First Project](/docs/getting-started/first-project/) for dry-runs, install flow, and generated project context.
+- Open [CLI Create](/docs/cli/create/) for the non-interactive command surface.
+- Open [Ecosystems](/docs/ecosystems/) to compare TypeScript, Rust, Python, Go, and Java support.
