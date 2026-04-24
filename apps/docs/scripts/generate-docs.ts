@@ -239,7 +239,7 @@ function codeFence(content: string, language = "bash"): string {
 }
 
 function escapeTableCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\n/g, " ");
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
 function categoryTable(category: OptionCategory, metadata: OptionCategoryMetadata): string {

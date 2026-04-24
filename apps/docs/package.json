@@ -12,9 +12,9 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.38.4",
+    "@astrojs/starlight": "^0.37.0",
     "@better-fullstack/types": "workspace:*",
-    "astro": "^6.1.9",
+    "astro": "^5.18.1",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
