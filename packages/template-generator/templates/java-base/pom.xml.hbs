@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version>
+		<version>4.0.6</version>
 		<relativePath/>
 	</parent>
 {{/if}}
@@ -22,7 +22,7 @@
 		<springdoc.version>3.0.3</springdoc.version>
 {{/if}}
 {{#if hasJavaLombok}}
-		<lombok.version>1.18.38</lombok.version>
+		<lombok.version>1.18.46</lombok.version>
 {{/if}}
 {{#if hasJavaMapstruct}}
 		<mapstruct.version>1.6.3</mapstruct.version>
@@ -40,7 +40,7 @@
 		<awaitility.version>4.3.0</awaitility.version>
 {{/if}}
 {{#if hasJavaArchunit}}
-		<archunit.version>1.4.1</archunit.version>
+		<archunit.version>1.4.2</archunit.version>
 {{/if}}
 {{#if hasJavaJqwik}}
 		<jqwik.version>1.9.3</jqwik.version>
@@ -54,7 +54,7 @@
 		<assertj.version>3.27.7</assertj.version>
 {{/if}}
 {{#if hasJavaMockito}}
-		<mockito.version>5.15.2</mockito.version>
+		<mockito.version>5.23.0</mockito.version>
 {{/if}}
 {{#if hasJavaTestcontainers}}
 		<testcontainers.version>1.20.4</testcontainers.version>
@@ -69,14 +69,14 @@
 		<awaitility.version>4.3.0</awaitility.version>
 {{/if}}
 {{#if hasJavaArchunit}}
-		<archunit.version>1.4.1</archunit.version>
+		<archunit.version>1.4.2</archunit.version>
 {{/if}}
 {{#if hasJavaJqwik}}
 		<jqwik.version>1.9.3</jqwik.version>
 {{/if}}
 {{/if}}
 {{#if hasJavaLombok}}
-		<lombok.version>1.18.38</lombok.version>
+		<lombok.version>1.18.46</lombok.version>
 {{/if}}
 {{#if hasJavaMapstruct}}
 		<mapstruct.version>1.6.3</mapstruct.version>
@@ -360,7 +360,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.15.0</version>
 				<configuration>
 					<annotationProcessorPaths>
 {{#if hasJavaLombok}}
@@ -385,7 +385,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.15.0</version>
 {{#if hasJavaAnnotationProcessors}}
 				<configuration>
 					<annotationProcessorPaths>
@@ -411,7 +411,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.2</version>
+				<version>3.5.5</version>
 				<configuration>
 					<useModulePath>false</useModulePath>
 				</configuration>
@@ -420,7 +420,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.3</version>
 				<configuration>
 					<mainClass>{{javaPackageName}}.Application</mainClass>
 				</configuration>
@@ -428,7 +428,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.4.2</version>
+				<version>3.5.0</version>
 				<configuration>
 					<archive>
 						<manifest>

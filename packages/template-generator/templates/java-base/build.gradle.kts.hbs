@@ -1,7 +1,7 @@
 plugins {
 {{#if isJavaSpringBoot}}
 	java
-	id("org.springframework.boot") version "4.0.5"
+	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
 {{else}}
 	java
@@ -58,10 +58,10 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 {{/if}}
 {{#if hasJavaLombok}}
-	compileOnly("org.projectlombok:lombok:1.18.38")
-	annotationProcessor("org.projectlombok:lombok:1.18.38")
-	testCompileOnly("org.projectlombok:lombok:1.18.38")
-	testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+	compileOnly("org.projectlombok:lombok:1.18.46")
+	annotationProcessor("org.projectlombok:lombok:1.18.46")
+	testCompileOnly("org.projectlombok:lombok:1.18.46")
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
 {{/if}}
 {{#if hasJavaMapstruct}}
 	implementation("org.mapstruct:mapstruct:1.6.3")
@@ -98,7 +98,7 @@ dependencies {
 	testImplementation("org.awaitility:awaitility:4.3.0")
 {{/if}}
 {{#if hasJavaArchunit}}
-	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 {{/if}}
 {{#if hasJavaJqwik}}
 	testImplementation("net.jqwik:jqwik:1.9.3")
@@ -117,7 +117,7 @@ dependencies {
 	testImplementation("org.assertj:assertj-core:3.27.7")
 {{/if}}
 {{#if hasJavaMockito}}
-	testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
+	testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")
 {{/if}}
 {{#if hasJavaTestcontainers}}
 	testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
@@ -134,7 +134,7 @@ dependencies {
 	testImplementation("org.awaitility:awaitility:4.3.0")
 {{/if}}
 {{#if hasJavaArchunit}}
-	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 {{/if}}
 {{#if hasJavaJqwik}}
 	testImplementation("net.jqwik:jqwik:1.9.3")

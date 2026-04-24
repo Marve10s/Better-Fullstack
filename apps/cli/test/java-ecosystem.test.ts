@@ -376,7 +376,7 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain('mainClass = "com.example.javaplaingradletests.Application"');
       expect(gradleContent).toContain('testImplementation(platform("org.junit:junit-bom:5.12.2"))');
       expect(gradleContent).toContain(
-        'testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")',
+        'testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")',
       );
       expect(gradleContent).toContain(
         'testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))',
@@ -386,7 +386,7 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
       expect(gradleContent).toContain(
-        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")',
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
       expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
       expect(gradleContent).not.toContain("org.springframework.boot");
@@ -568,13 +568,13 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<artifactId>maven-compiler-plugin</artifactId>");
       expect(pomContent).toContain("<annotationProcessorPaths>");
       expect(pomContent).toContain("<springdoc.version>3.0.3</springdoc.version>");
-      expect(pomContent).toContain("<lombok.version>1.18.38</lombok.version>");
+      expect(pomContent).toContain("<lombok.version>1.18.46</lombok.version>");
       expect(pomContent).toContain("<assertj.version>3.27.7</assertj.version>");
       expect(pomContent).toContain("<rest-assured.version>6.0.0</rest-assured.version>");
       expect(pomContent).toContain("<wiremock.version>3.13.2</wiremock.version>");
       expect(pomContent).toContain("<awaitility.version>4.3.0</awaitility.version>");
       expect(pomContent).toContain("<mapstruct.version>1.6.3</mapstruct.version>");
-      expect(pomContent).toContain("<archunit.version>1.4.1</archunit.version>");
+      expect(pomContent).toContain("<archunit.version>1.4.2</archunit.version>");
       expect(pomContent).toContain("<jqwik.version>1.9.3</jqwik.version>");
       expect(pomContent).toContain("rest-assured");
       expect(pomContent).toContain("wiremock");
@@ -646,11 +646,11 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain(
         'implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")',
       );
-      expect(gradleContent).toContain('compileOnly("org.projectlombok:lombok:1.18.38")');
-      expect(gradleContent).toContain('annotationProcessor("org.projectlombok:lombok:1.18.38")');
-      expect(gradleContent).toContain('testCompileOnly("org.projectlombok:lombok:1.18.38")');
+      expect(gradleContent).toContain('compileOnly("org.projectlombok:lombok:1.18.46")');
+      expect(gradleContent).toContain('annotationProcessor("org.projectlombok:lombok:1.18.46")');
+      expect(gradleContent).toContain('testCompileOnly("org.projectlombok:lombok:1.18.46")');
       expect(gradleContent).toContain(
-        'testAnnotationProcessor("org.projectlombok:lombok:1.18.38")',
+        'testAnnotationProcessor("org.projectlombok:lombok:1.18.46")',
       );
       expect(gradleContent).toContain('implementation("org.mapstruct:mapstruct:1.6.3")');
       expect(gradleContent).toContain(
@@ -665,7 +665,7 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
       expect(gradleContent).toContain(
-        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")',
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
       expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
       expect(gradleContent).not.toContain("flyway-core");
