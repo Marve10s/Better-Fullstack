@@ -5,18 +5,23 @@ Scaffold production-ready fullstack apps in seconds. Pick your stack from 424 op
 ## Quick Start
 
 ```bash
-# Using bun (recommended)
-bun create better-fullstack@latest
+# Using npm
+npm create better-fullstack@latest
+
+# Using npx
+npx create-better-fullstack@latest
 
 # Using pnpm
 pnpm create better-fullstack@latest
 
-# Using npm
-npx create-better-fullstack@latest
+# Using bun
+bun create better-fullstack@latest
 
 # Using yarn
 yarn create better-fullstack@latest
 ```
+
+Bun is required only when the generated project selects Bun as its runtime or package manager. Node.js with npm is enough for Node-based projects.
 
 ## Web Builder
 

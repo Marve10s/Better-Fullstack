@@ -17,7 +17,7 @@ Better Fullstack supports multiple language ecosystems from the same CLI and bui
 
 ## Default CLI baseline
 
-The default project configuration is generated from the shared default config.
+The default project configuration below is generated from the shared default config with `npm` as the package manager. Runtime and package manager are separate choices; select `runtime: "node"` when you do not want a Bun runtime project.
 
 ```json
 {
@@ -41,7 +41,7 @@ The default project configuration is generated from the shared default config.
   "fileUpload": "none",
   "effect": "none",
   "git": true,
-  "packageManager": "bun",
+  "packageManager": "npm",
   "versionChannel": "stable",
   "install": true,
   "dbSetup": "none",

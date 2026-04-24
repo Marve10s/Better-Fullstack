@@ -114,4 +114,40 @@ const rawUrl = `https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main
       }, 1600);
     });
   }
+
+  for (const anchor of document.querySelectorAll<HTMLAnchorElement>(".sl-anchor-link")) {
+    let resetTimer: number | undefined;
+    anchor.setAttribute("aria-label", "Copy section link");
+    anchor.setAttribute("title", "Copy section link");
+
+    anchor.addEventListener("click", async (event) => {
+      event.preventDefault();
+
+      const href = anchor.getAttribute("href");
+      const label = anchor.querySelector<HTMLElement>(".sr-only");
+
+      if (!href) return;
+
+      try {
+        await navigator.clipboard.writeText(new URL(href, window.location.href).toString());
+        anchor.dataset.copied = "copied";
+        anchor.setAttribute("aria-label", "Copied section link");
+        anchor.setAttribute("title", "Copied");
+        if (label) label.textContent = "Copied section link";
+      } catch {
+        anchor.dataset.copied = "error";
+        anchor.setAttribute("aria-label", "Copy failed");
+        anchor.setAttribute("title", "Copy failed");
+        if (label) label.textContent = "Copy failed";
+      }
+
+      if (resetTimer) window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => {
+        delete anchor.dataset.copied;
+        anchor.setAttribute("aria-label", "Copy section link");
+        anchor.setAttribute("title", "Copy section link");
+        if (label) label.textContent = "Copy section link";
+      }, 1400);
+    });
+  }
 </script>

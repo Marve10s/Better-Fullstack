@@ -5,12 +5,14 @@ description: Scaffold, inspect, install, and run a Better Fullstack project.
 
 This flow creates a project, lets you inspect the generated files, then installs dependencies.
 
+The examples use `npm create` because Node.js includes npm. You can replace it with `bun create`, `pnpm create`, `yarn create`, or `npx create-better-fullstack@latest`.
+
 ## 1. Preview the project
 
 Use `--dry-run` when you want to see what will be generated before writing files.
 
 ```bash
-bun create better-fullstack@latest my-app --dry-run
+npm create better-fullstack@latest my-app -- --dry-run
 ```
 
 ## 2. Scaffold the project
@@ -18,16 +20,16 @@ bun create better-fullstack@latest my-app --dry-run
 Run the CLI interactively:
 
 ```bash
-bun create better-fullstack@latest my-app
+npm create better-fullstack@latest my-app
 ```
 
 Or pass explicit choices:
 
 ```bash
-bun create better-fullstack@latest my-app \
+npm create better-fullstack@latest my-app -- \
   --frontend next \
   --backend self \
-  --runtime none \
+  --runtime node \
   --database postgres \
   --orm drizzle \
   --auth better-auth \
@@ -36,12 +38,17 @@ bun create better-fullstack@latest my-app \
 
 ## 3. Install dependencies
 
-If you selected `--no-install`, install manually inside the generated project:
+If you selected `--no-install`, install manually inside the generated project with the package manager selected for that project:
 
 ```bash
 cd my-app
+npm install
+pnpm install
+yarn install
 bun install
 ```
+
+The runtime choice is separate. A Node runtime project can install with npm, pnpm, Yarn, or Bun; a Bun runtime project requires Bun to run server code.
 
 For non-TypeScript ecosystems, use the ecosystem’s package manager or generated wrapper:
 
@@ -67,5 +74,5 @@ Generated projects include:
 Inside a generated project, use the `add` command for supported addons and deployment targets:
 
 ```bash
-bun create better-fullstack@latest add --addons mcp skills
+npm create better-fullstack@latest add -- --addons mcp skills
 ```

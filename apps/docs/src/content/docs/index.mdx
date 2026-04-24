@@ -7,23 +7,28 @@ Start here when you want a project generated quickly with explicit, reproducible
 
 ## 1. Install the required tools
 
-Everyone needs Node.js 20 or newer and Git. Bun is the fastest launcher and the default used in this repository.
+Everyone needs Node.js 20 or newer and Git. Bun is optional unless you choose Bun as the project runtime or package manager.
 
 - [Download Node.js](https://nodejs.org/en/download)
-- [Install Bun](https://bun.sh/docs/installation)
 - [Download Git](https://git-scm.com/downloads)
+- [Install Bun](https://bun.sh/docs/installation)
 
 ```bash
 node --version
-bun --version
 git --version
 ```
 
-For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain before running generated project commands.
+If you plan to use Bun, verify it too:
+
+```bash
+bun --version
+```
+
+For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain before running generated project commands. The CLI can still be launched with Node.js even when the generated app targets another ecosystem.
 
 | Ecosystem | Tooling |
 | --- | --- |
-| TypeScript | Node.js plus Bun, npm, pnpm, or Yarn |
+| TypeScript | Node.js plus npm, pnpm, Yarn, or Bun |
 | Rust | Rust toolchain and Cargo |
 | Python | Python and uv |
 | Go | Go toolchain |
@@ -31,19 +36,29 @@ For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain
 
 ## 2. Create a project
 
+Use any supported launcher. These commands run the same create package:
+
+```bash
+npm create better-fullstack@latest my-app
+npx create-better-fullstack@latest my-app
+pnpm create better-fullstack@latest my-app
+bun create better-fullstack@latest my-app
+yarn create better-fullstack@latest my-app
+```
+
 Use the interactive flow when exploring choices:
 
 ```bash
-bun create better-fullstack@latest my-app
+npm create better-fullstack@latest my-app
 ```
 
 Use explicit flags when you already know the stack:
 
 ```bash
-bun create better-fullstack@latest my-app \
+npm create better-fullstack@latest my-app -- \
   --frontend next \
   --backend self \
-  --runtime none \
+  --runtime node \
   --database postgres \
   --orm drizzle \
   --auth better-auth \
@@ -55,12 +70,12 @@ bun create better-fullstack@latest my-app \
 For CI and AI-agent workflows, scaffold first and install dependencies after you inspect the generated files.
 
 ```bash
-bun create better-fullstack@latest my-app --no-install --no-git --ai-docs agents-md
+npm create better-fullstack@latest my-app -- --no-install --no-git --ai-docs agents-md
 cd my-app
-bun install
+npm install
 ```
 
-Generated projects include `bts.jsonc`, a reproducible command, framework scripts, and optional AI documentation files.
+Use `bun install`, `pnpm install`, or `yarn install` instead when the generated project was configured for that package manager. Generated projects include `bts.jsonc`, a reproducible command, framework scripts, and optional AI documentation files.
 
 ## 4. Next steps
 

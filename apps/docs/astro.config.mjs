@@ -60,7 +60,20 @@ export default defineConfig({
         {
           label: "Reference",
           items: [
-            { label: "Options", slug: "reference/options" },
+            {
+              label: "Options",
+              items: [
+                { label: "Overview", slug: "reference/options" },
+                { label: "Core Stack", slug: "reference/options/stack" },
+                { label: "Services & Integrations", slug: "reference/options/services" },
+                { label: "UI, Forms & State", slug: "reference/options/ui" },
+                { label: "Tooling, Deploy & Ops", slug: "reference/options/tooling" },
+                { label: "Rust", slug: "reference/options/rust" },
+                { label: "Python", slug: "reference/options/python" },
+                { label: "Go", slug: "reference/options/go" },
+                { label: "Java", slug: "reference/options/java" },
+              ],
+            },
             { label: "Generated llms.txt", slug: "reference/llms" },
           ],
         },

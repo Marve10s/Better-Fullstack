@@ -59,6 +59,10 @@ Configure your stack visually — pick every option from a UI, preview your choi
 ### 💻 CLI
 
 ```bash
+npm create better-fullstack@latest
+```
+
+```bash
 bun create better-fullstack@latest
 ```
 
@@ -73,6 +77,8 @@ npx create-better-fullstack@latest
 ```bash
 yarn create better-fullstack@latest
 ```
+
+Bun is only required when you choose Bun as the generated app runtime or package manager. Node.js with npm works for Node-based projects.
 
 </td>
 </tr>

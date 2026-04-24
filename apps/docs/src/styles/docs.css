@@ -393,6 +393,73 @@ header.header,
   border-color: color-mix(in srgb, hsl(0 72% 62%) 55%, transparent);
 }
 
+/* ── Section heading copy buttons ──────────────────────────────────────── */
+
+.sl-markdown-content .sl-heading-wrapper {
+  align-items: baseline;
+  column-gap: 0.2rem;
+}
+
+.sl-markdown-content .sl-anchor-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-inline-start: 0.15rem;
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--sl-color-gray-3);
+  opacity: 0;
+  transform: translateY(0.04em);
+  text-decoration: none;
+  transition:
+    opacity 140ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 140ms ease;
+}
+
+.sl-markdown-content .sl-heading-wrapper:hover .sl-anchor-link,
+.sl-markdown-content .sl-heading-wrapper:focus-within .sl-anchor-link,
+.sl-markdown-content .sl-anchor-link[data-copied] {
+  opacity: 1;
+  transform: translateY(0.04em);
+}
+
+.sl-markdown-content .sl-anchor-link:hover,
+.sl-markdown-content .sl-anchor-link:focus-visible {
+  color: var(--sl-color-white);
+}
+
+.sl-markdown-content .sl-anchor-icon,
+.sl-markdown-content .sl-anchor-icon svg {
+  display: block;
+  width: 0.78rem;
+  height: 0.78rem;
+}
+
+.sl-markdown-content .sl-anchor-link[data-copied="copied"] {
+  color: hsl(142 70% 55%);
+}
+
+.sl-markdown-content .sl-anchor-link[data-copied="copied"] .sl-anchor-icon {
+  display: none;
+}
+
+.sl-markdown-content .sl-anchor-link[data-copied="copied"]::after {
+  content: "✓";
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sl-markdown-content .sl-anchor-link[data-copied="error"] {
+  color: hsl(0 72% 62%);
+}
+
 .docs-open-menu {
   position: relative;
 }
@@ -571,6 +638,25 @@ mobile-starlight-toc a {
 
 mobile-starlight-toc a[aria-current="true"] {
   color: var(--sl-color-white);
+}
+
+/*
+ * TOC visibility: rely on Starlight's built-in breakpoints and utility
+ * classes (`lg:sl-hidden` hides the mobile TOC at ≥50em, `lg:sl-block`
+ * shows the desktop TOC at ≥50em). Any additional rules here risk showing
+ * both TOCs simultaneously or hiding both in a viewport gap, so we
+ * explicitly force the mobile-starlight-toc off at the lg breakpoint and
+ * zero out the reserved sticky-offset variable.
+ */
+@media (min-width: 50em) {
+  mobile-starlight-toc,
+  .right-sidebar .lg\:sl-hidden {
+    display: none !important;
+  }
+
+  html {
+    --sl-mobile-toc-height: 0rem;
+  }
 }
 
 /* ── Right TOC — BetterAuth-style tree rail with quarter-circle curves ──── */

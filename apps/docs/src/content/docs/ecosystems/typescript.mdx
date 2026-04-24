@@ -12,20 +12,21 @@ This page is generated from the shared option metadata. It currently includes **
 ## Prerequisites
 
 - Node.js 20+
-- Bun, npm, pnpm, or Yarn
+- npm, pnpm, Yarn, or Bun
 - Git
 
 ## Create command
 
 ```bash
-bun create better-fullstack@latest my-app \
+npm create better-fullstack@latest my-app -- \
   --frontend tanstack-router \
   --backend hono \
-  --runtime bun \
+  --runtime node \
   --database sqlite \
   --orm drizzle \
   --api orpc \
   --auth better-auth \
+  --package-manager npm \
   --addons turborepo \
   --no-install
 ```
