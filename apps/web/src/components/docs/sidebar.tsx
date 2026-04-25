@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DocsSearchTrigger } from "@/components/docs/search-dialog";
 import {
@@ -10,6 +10,8 @@ import {
   type PageTreeNode,
 } from "@/lib/docs/source";
 import { cn } from "@/lib/utils";
+
+const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
 
 /**
  * Top-level docs sidebar. Renders the page tree as a list of sections (each
@@ -78,6 +80,12 @@ function SidebarFolder({
   depth: number;
 }) {
   const [open, setOpen] = useState(folder.defaultOpen);
+  const handleToggle = useCallback(
+    (event: React.SyntheticEvent<HTMLDetailsElement>) => {
+      setOpen(event.currentTarget.open);
+    },
+    [],
+  );
   const childContains = (children: PageTreeNode[]): boolean =>
     children.some((c) => {
       if (c.type === "page") return c.url === currentUrl;
@@ -88,11 +96,21 @@ function SidebarFolder({
   // Auto-expand when a descendant is active so deep links land with the
   // section already open even if `defaultOpen` was false.
   const expanded = open || childContains(folder.children);
+  const indexPage = useMemo<PageNode | null>(() => {
+    if (!folder.index) return null;
+    return {
+      type: "page",
+      name: folder.index.frontmatter.title ?? "Overview",
+      slug: folder.index.slug,
+      url: folder.index.url,
+      frontmatter: folder.index.frontmatter,
+    };
+  }, [folder.index]);
 
   return (
     <details
       open={expanded}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
+      onToggle={handleToggle}
       className="group select-none"
     >
       <summary className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-[0.72rem] font-medium uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground">
@@ -105,16 +123,10 @@ function SidebarFolder({
         />
       </summary>
       <ul className="mt-1 flex flex-col">
-        {folder.index ? (
+        {indexPage ? (
           <li>
             <SidebarPageLink
-              page={{
-                type: "page",
-                name: folder.index.frontmatter.title ?? "Overview",
-                slug: folder.index.slug,
-                url: folder.index.url,
-                frontmatter: folder.index.frontmatter,
-              }}
+              page={indexPage}
               currentUrl={currentUrl}
               depth={depth + 1}
             />
@@ -140,6 +152,10 @@ function SidebarPageLink({
   depth: number;
 }) {
   const isActive = page.url === currentUrl;
+  const style = useMemo(
+    () => ({ "--sidebar-pad": `${0.5 + depth * 0.7}rem` }) as React.CSSProperties,
+    [depth],
+  );
   return (
     <Link
       to={page.url}
@@ -152,14 +168,14 @@ function SidebarPageLink({
           ? "text-foreground"
           : "text-muted-foreground hover:text-foreground",
       )}
-      style={{ "--sidebar-pad": `${0.5 + depth * 0.7}rem` } as React.CSSProperties}
+      style={style}
     >
       {isActive ? (
         <motion.span
           layoutId="docs-sidebar-active-rail"
           aria-hidden="true"
           className="absolute inset-y-0 left-0 w-px bg-foreground"
-          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          transition={ACTIVE_RAIL_TRANSITION}
         />
       ) : (
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-border" />

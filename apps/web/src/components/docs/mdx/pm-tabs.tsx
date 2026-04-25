@@ -1,6 +1,6 @@
 import { Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import PackageIcon from "@/components/home/icons";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ type Manager = (typeof MANAGERS)[number];
 
 const STORAGE_KEY = "bfs.docs.pm";
 const SYNC_EVENT = "bfs:docs:pm-changed";
+const ACTIVE_TAB_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
 
 /**
  * Renders a 4-tab package-manager picker around a shell command. Selection
@@ -29,7 +30,7 @@ export function PMTabs({
   bun: string;
   yarn: string;
 }) {
-  const commands: Record<Manager, string> = { npm, pnpm, bun, yarn };
+  const commands = useMemo<Record<Manager, string>>(() => ({ npm, pnpm, bun, yarn }), [npm, pnpm, bun, yarn]);
   const [active, setActive] = useState<Manager>("npm");
   const [copied, setCopied] = useState(false);
 
@@ -59,12 +60,20 @@ export function PMTabs({
     };
   }, []);
 
-  const select = (manager: Manager) => {
+  const select = useCallback((manager: Manager) => {
     setActive(manager);
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, manager);
     window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: manager }));
-  };
+  }, []);
+
+  const handleTabClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const manager = event.currentTarget.value as Manager;
+      select(manager);
+    },
+    [select],
+  );
 
   useEffect(() => {
     if (!copied) return;
@@ -72,14 +81,14 @@ export function PMTabs({
     return () => window.clearTimeout(id);
   }, [copied]);
 
-  const onCopy = async () => {
+  const onCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(commands[active]);
       setCopied(true);
     } catch {
       // best-effort
     }
-  };
+  }, [active, commands]);
 
   return (
     <div className="my-5 overflow-hidden rounded-md border border-border bg-[oklch(0.04_0_0)] dark:bg-[oklch(0.06_0_0)]">
@@ -97,7 +106,8 @@ export function PMTabs({
               role="tab"
               aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
-              onClick={() => select(manager)}
+              value={manager}
+              onClick={handleTabClick}
               className={cn(
                 "relative flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.05em] transition-colors",
                 isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
@@ -109,7 +119,7 @@ export function PMTabs({
                 <motion.span
                   layoutId="docs-pm-active-tab"
                   className="absolute inset-x-2 bottom-0 h-px bg-foreground"
-                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  transition={ACTIVE_TAB_TRANSITION}
                 />
               ) : null}
             </button>

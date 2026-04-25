@@ -4,6 +4,11 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
+const BUILDER_COMMAND_SEARCH = { view: "command", file: "" } as const;
+const BUILDER_PRESETS_SEARCH = { view: "presets", file: "" } as const;
+const DOCS_ACTIVE_OPTIONS = { includeSearch: false } as const;
+const DOCS_ACTIVE_PROPS = { className: "active" } as const;
+
 const NavbarStats = lazy(async () => {
   const mod = await import("@/components/navbar-stats");
   return { default: mod.NavbarStats };
@@ -40,14 +45,14 @@ export function Navbar() {
           </Link>
           <Link
             to="/new"
-            search={{ view: "command", file: "" }}
+            search={BUILDER_COMMAND_SEARCH}
             className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
           >
             Builder
           </Link>
           <Link
             to="/new"
-            search={{ view: "presets", file: "" }}
+            search={BUILDER_PRESETS_SEARCH}
             className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm"
           >
             Presets
@@ -60,9 +65,9 @@ export function Navbar() {
           </Link>
           <Link
             to="/docs"
-            activeOptions={{ includeSearch: false }}
+            activeOptions={DOCS_ACTIVE_OPTIONS}
             className="text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm [&.active]:text-foreground"
-            activeProps={{ className: "active" }}
+            activeProps={DOCS_ACTIVE_PROPS}
           >
             Docs
           </Link>
@@ -92,7 +97,7 @@ export function Navbar() {
             <ThemeToggle />
             <Link
               to="/new"
-              search={{ view: "command", file: "" }}
+              search={BUILDER_COMMAND_SEARCH}
               className="inline-flex items-center gap-1 rounded-lg bg-foreground px-2.5 py-1.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90 sm:gap-1.5 sm:px-3 sm:text-sm"
             >
               Try now
