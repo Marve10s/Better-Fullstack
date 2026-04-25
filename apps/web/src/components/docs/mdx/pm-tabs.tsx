@@ -1,23 +1,21 @@
 import { Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 
 import PackageIcon from "@/components/home/icons";
+import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
 import { cn } from "@/lib/utils";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];
 
-const STORAGE_KEY = "bfs.docs.pm";
-const SYNC_EVENT = "bfs:docs:pm-changed";
 const ACTIVE_TAB_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
+const PM_CODE_THEMES = { light: "catppuccin-latte", dark: "catppuccin-mocha" } as const;
 
 /**
- * Renders a 4-tab package-manager picker around a shell command. Selection
- * is shared across every PMTabs instance on the page (and persists across
- * reloads) via `localStorage` + a custom DOM event. Clicking a tab updates
- * `localStorage`, then dispatches the event so other tabs in the same page
- * (or other pages within the same tab thanks to `storage` events) react.
+ * Renders a 4-tab package-manager picker around a shell command. Each
+ * instance owns its own selected manager so switching one block does not
+ * update every other command on the page.
  */
 export function PMTabs({
   npm,
@@ -30,41 +28,16 @@ export function PMTabs({
   bun: string;
   yarn: string;
 }) {
-  const commands = useMemo<Record<Manager, string>>(() => ({ npm, pnpm, bun, yarn }), [npm, pnpm, bun, yarn]);
+  const commands = useMemo<Record<Manager, string>>(
+    () => ({ npm, pnpm, bun, yarn }),
+    [npm, pnpm, bun, yarn],
+  );
+  const instanceId = useId();
   const [active, setActive] = useState<Manager>("npm");
   const [copied, setCopied] = useState(false);
 
-  // Initialize from storage and subscribe to changes.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored && (MANAGERS as readonly string[]).includes(stored)) {
-      setActive(stored as Manager);
-    }
-    const onSync = (event: Event) => {
-      const detail = (event as CustomEvent<Manager>).detail;
-      if (detail && MANAGERS.includes(detail)) setActive(detail);
-    };
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY && event.newValue) {
-        if (MANAGERS.includes(event.newValue as Manager)) {
-          setActive(event.newValue as Manager);
-        }
-      }
-    };
-    window.addEventListener(SYNC_EVENT, onSync);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener(SYNC_EVENT, onSync);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
-
   const select = useCallback((manager: Manager) => {
     setActive(manager);
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(STORAGE_KEY, manager);
-    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: manager }));
   }, []);
 
   const handleTabClick = useCallback(
@@ -117,7 +90,7 @@ export function PMTabs({
               {manager}
               {isActive ? (
                 <motion.span
-                  layoutId="docs-pm-active-tab"
+                  layoutId={`docs-pm-active-tab-${instanceId}`}
                   className="absolute inset-x-2 bottom-0 h-px bg-foreground"
                   transition={ACTIVE_TAB_TRANSITION}
                 />
@@ -136,9 +109,24 @@ export function PMTabs({
           </button>
         </div>
       </div>
-      <pre className="overflow-x-auto px-4 py-4 text-[0.82rem] leading-relaxed [&_code]:font-mono">
-        <code className="text-foreground/90">{commands[active]}</code>
-      </pre>
+      <CodeBlockContent
+        language="bash"
+        themes={PM_CODE_THEMES}
+        className={cn(
+          "text-[0.82rem] leading-relaxed",
+          "[&_.shiki]:!bg-transparent",
+          "[&_pre]:!overflow-x-auto [&_pre]:!bg-transparent",
+          "[&_pre]:px-4 [&_pre]:py-4",
+          "[&_code]:font-mono",
+          "[&_code]:whitespace-pre-wrap",
+          "[&_code]:[overflow-wrap:anywhere]",
+          "[&_.line]:!px-0",
+          "[&_.line]:whitespace-pre-wrap",
+          "[&_.line]:[overflow-wrap:anywhere]",
+        )}
+      >
+        {commands[active]}
+      </CodeBlockContent>
     </div>
   );
 }
