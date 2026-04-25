@@ -23,18 +23,25 @@ Run the CLI interactively:
 npm create better-fullstack@latest my-app
 ```
 
-Or pass explicit choices:
+Or pass explicit choices to skip every prompt:
 
-```npm
+```bash
 npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
   --frontend next \
   --backend self \
-  --runtime node \
+  --runtime none \
   --database postgres \
   --orm drizzle \
   --auth better-auth \
-  --api trpc
+  --api trpc \
+  --no-install \
+  --no-git
 ```
+
+<Callout kind="warning" title="Non-interactive mode requires all flags">
+Any category you omit will trigger an interactive prompt. Pass `none` for features you want to skip (e.g., `--ai none --payments none`). Also: **do not use `--ai-docs none`** — it hangs. Omit the flag instead, or pass a valid value like `--ai-docs claude-md`.
+</Callout>
 
 ## 3. Install dependencies
 

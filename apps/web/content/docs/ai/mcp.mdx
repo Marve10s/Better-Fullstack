@@ -1,41 +1,183 @@
 ---
-title: MCP
-description: Connect Better Fullstack to MCP-compatible AI coding agents.
+title: MCP Server
+description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and any MCP-compatible AI coding agent.
 ---
 
-The MCP server lets agents scaffold projects through structured tool calls instead of guessing CLI flags.
+The Better Fullstack MCP server lets AI agents scaffold projects through structured tool calls instead of guessing CLI flags. It handles schema lookup, compatibility validation, dry-run previews, and project creation.
 
-## Start the server
+Works with Claude Code, Cursor, VS Code Copilot, Windsurf, Claude Desktop, Zed, Cline, and any MCP-compatible client.
 
-```npm
-npx create-better-fullstack@latest mcp
+## Setup
+
+### Claude Code
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack mcp
 ```
+
+### Cursor
+
+Create or edit `.cursor/mcp.json` in your project (or globally at `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+### VS Code
+
+Create `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "better-fullstack": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+Edit `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+### Windsurf
+
+Edit `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+### Zed
+
+In `settings.json`:
+
+```json
+{
+  "context_servers": {
+    "better-fullstack": {
+      "command": {
+        "path": "npx",
+        "args": ["-y", "create-better-fullstack", "mcp"]
+      }
+    }
+  }
+}
+```
+
+### Cline / Roo Code
+
+In the MCP settings JSON:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+## Tools
+
+### Discovery
+
+| Tool | Purpose |
+| --- | --- |
+| `bfs_get_guidance` | Returns workflow rules, field semantics, and critical constraints. **Call this first.** |
+| `bfs_get_schema` | Returns valid options for any or all configuration categories (50+ categories across all ecosystems). |
+| `bfs_check_compatibility` | Validates a stack combination and returns auto-adjusted selections with warnings. |
+
+### Project creation
+
+| Tool | Purpose |
+| --- | --- |
+| `bfs_plan_project` | Dry-run — generates a project in memory and returns the file tree without writing to disk. |
+| `bfs_create_project` | Scaffolds a new project to disk. Requires `projectName` (kebab-case). |
+
+### Existing projects
+
+| Tool | Purpose |
+| --- | --- |
+| `bfs_plan_addition` | Validates proposed addons against an existing project's `bts.jsonc` config. |
+| `bfs_add_feature` | Adds addons or features to an existing project. |
+
+<Callout kind="info" title="Dependencies are never installed in MCP mode">
+The server skips `npm install` / `bun install` to avoid timeout errors. After scaffolding, tell the user to run the install command manually: `cd <project> && bun install` (or the package manager they chose).
+</Callout>
+
+## Resources
+
+The server exposes three MCP resources that clients can read directly:
+
+| Resource | Contents |
+| --- | --- |
+| `docs://compatibility-rules` | Which frontend/backend/API/ORM combinations are valid or auto-adjusted. |
+| `docs://stack-options` | All available technology options per category across every ecosystem. |
+| `docs://getting-started` | Quick-start recipes for TypeScript, Rust, Python, Go, and Java. |
 
 ## Recommended tool order
 
-1. `bfs_get_guidance`
-2. `bfs_get_schema`
-3. `bfs_check_compatibility`
-4. `bfs_plan_project`
-5. `bfs_create_project`
+For a new project:
 
-For existing projects:
+1. `bfs_get_guidance` — understand rules and field semantics
+2. `bfs_get_schema` — fetch valid options for your planned categories
+3. `bfs_check_compatibility` — validate and auto-fix your stack
+4. `bfs_plan_project` — dry-run to confirm the file tree
+5. `bfs_create_project` — write to disk
 
-1. `bfs_plan_addition`
-2. `bfs_add_feature`
+For an existing project:
 
-## Important rules
+1. `bfs_plan_addition` — validate proposed changes
+2. `bfs_add_feature` — apply them
 
-- Dependency installation is skipped in MCP mode.
-- Array fields include `frontend`, `addons`, `examples`, `aiDocs`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries`.
-- `none` means “skip this feature.”
-- TypeScript fields are ignored for Rust, Python, Go, and Java projects.
-- Always validate compatibility before creating.
+## Key rules for agents
+
+- **`frontend` is an array** — supports multiple frontends in one monorepo, e.g., `["next", "native-bare"]`.
+- **`"none"` means skip** — it disables a feature entirely, not "use the default."
+- **Set `ecosystem` first** — it determines which fields apply. TypeScript fields are ignored for Rust/Python/Go/Java and vice versa.
+- **Array fields** — `frontend`, `addons`, `examples`, `aiDocs`, `rustLibraries`, `pythonAi`, `javaLibraries`, `javaTestingLibraries` all accept multiple values.
+- **Always run `bfs_check_compatibility` before creating** — it auto-corrects invalid combinations (e.g., tRPC + Svelte → oRPC) and returns specific warnings.
 
 ## Agent prompt
 
-Use this prompt when you want an agent to create a project:
+Paste this into your agent's system prompt or context to guide it:
 
 ```text
-Use Better Fullstack MCP. First inspect guidance and schema, then validate the stack, then dry-run it. Only create the project after the dry-run succeeds. Skip dependency installation and tell me the exact commands to install, test, and run the project.
+Use Better Fullstack MCP. First call bfs_get_guidance to understand
+the rules, then bfs_get_schema for the relevant categories, then
+bfs_check_compatibility to validate the stack, then bfs_plan_project
+for a dry-run. Only call bfs_create_project after the dry-run
+succeeds. Skip dependency installation and tell me the exact commands
+to install, test, and run the project.
 ```
