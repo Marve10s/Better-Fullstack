@@ -15,13 +15,17 @@ export const Route = createFileRoute("/docs/$")({
     const slug = splat.split("/").filter(Boolean);
     const page = getPage(slug);
     if (!page) throw notFound();
-    return { page, neighbors: getNeighbors(page.slug) };
+    return {
+      slug: page.slug,
+      frontmatter: page.frontmatter,
+      neighbors: getNeighbors(page.slug),
+    };
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: loaderData?.page.frontmatter.title ?? "Docs" },
-      ...(loaderData?.page.frontmatter.description
-        ? [{ name: "description", content: loaderData.page.frontmatter.description }]
+      { title: loaderData?.frontmatter.title ?? "Docs" },
+      ...(loaderData?.frontmatter.description
+        ? [{ name: "description", content: loaderData.frontmatter.description }]
         : []),
     ],
   }),
@@ -29,6 +33,8 @@ export const Route = createFileRoute("/docs/$")({
 });
 
 function DocsSplatPage() {
-  const { page, neighbors } = Route.useLoaderData();
+  const { slug, neighbors } = Route.useLoaderData();
+  const page = getPage(slug);
+  if (!page) throw notFound();
   return <DocsPageContent page={page} neighbors={neighbors} />;
 }

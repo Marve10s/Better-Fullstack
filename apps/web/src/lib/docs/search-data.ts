@@ -1,31 +1,42 @@
-import { buildSearchSections, type SearchSection } from "./search";
+import type { SearchSection } from "./search";
+import { getAllSlugs, getPage } from "./source";
 
-const CONTENT_PREFIX = "/content/docs/";
+function getPageSections(): SearchSection[] {
+  return getAllSlugs().flatMap((slug) => {
+    const page = getPage(slug);
+    if (!page) return [];
 
-/**
- * Eagerly import every MDX file as raw text. `?raw` returns the source
- * verbatim, which we then strip of frontmatter + markdown chrome inside
- * `buildSearchSections`. The eager glob inlines ~30 small text strings into
- * the bundle (~50KB total, gzipped much less), so the search index ships
- * with the page bundle. No runtime fetch required.
- */
-const rawMdx = import.meta.glob<string>("../../../content/docs/**/*.mdx", {
-  eager: true,
-  query: "?raw",
-  import: "default",
-});
+    const pageTitle = page.frontmatter.title ?? page.url;
+    const pageBody = page.frontmatter.description ?? "";
 
-function slugFromPath(filePath: string): string[] {
-  const idx = filePath.indexOf(CONTENT_PREFIX);
-  const relative = filePath.slice(idx + CONTENT_PREFIX.length).replace(/\.mdx$/, "");
-  const segments = relative.split("/");
-  return segments[segments.length - 1] === "index" ? segments.slice(0, -1) : segments;
+    const sections: SearchSection[] = [
+      {
+        id: `${page.url}#page`,
+        pageId: page.url,
+        pageTitle,
+        pageUrl: page.url,
+        sectionTitle: pageTitle,
+        sectionUrl: page.url,
+        body: pageBody,
+        kind: "page",
+      },
+    ];
+
+    for (const entry of page.toc) {
+      sections.push({
+        id: `${page.url}#${entry.id}`,
+        pageId: page.url,
+        pageTitle,
+        pageUrl: page.url,
+        sectionTitle: entry.text,
+        sectionUrl: `${page.url}#${entry.id}`,
+        body: pageBody,
+        kind: "heading",
+      });
+    }
+
+    return sections;
+  });
 }
 
-const pages = Object.entries(rawMdx).map(([filePath, rawSource]) => {
-  const slug = slugFromPath(filePath);
-  const url = "/docs" + (slug.length ? "/" + slug.join("/") : "");
-  return { url, rawSource };
-});
-
-export const searchSections: SearchSection[] = buildSearchSections(pages);
+export const searchSections: SearchSection[] = getPageSections();
