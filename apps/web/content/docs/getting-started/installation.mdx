@@ -1,0 +1,128 @@
+---
+title: Installation
+description: Set up your environment and scaffold your first Better Fullstack project.
+---
+
+The fastest way to start a new project is with the `create-better-fullstack` CLI. It generates a working fullstack app from your stack picks — every integration is pre-wired and ready to run.
+
+<Callout kind="tip" title="Online preview">
+Prefer to configure visually? Open the [Stack Builder](https://better-fullstack.dev/new), pick every option from a UI, and copy a ready-to-run command.
+</Callout>
+
+## Prerequisites
+
+- **Node.js** — `v20.0.0` or higher
+- **Text editor** — we recommend [VS Code](https://code.visualstudio.com/)
+- **Terminal** — Better Fullstack runs through a command-line interface
+
+That's it for the basics. Git and other toolchains are only required for specific stacks — see [Optional dependencies](#optional-dependencies) below.
+
+## Create a new project
+
+Run the following command in your terminal to start the wizard:
+
+<PMTabs
+  npm="npm create better-fullstack@latest"
+  pnpm="pnpm create better-fullstack@latest"
+  bun="bun create better-fullstack@latest"
+  yarn="yarn create better-fullstack@latest"
+/>
+
+You can run this command anywhere on your machine — the wizard will ask you where to install your project. The CLI walks you through each decision:
+
+1. **Project name** — the folder name for your new project
+2. **Ecosystem** — TypeScript, Rust, Python, Go, or Java
+3. **Stack** — frontend, backend, database, ORM, auth, API, and more
+4. **Addons** — payments, AI, real-time, jobs, deployment targets
+5. **Tooling** — Git initialization and dependency installation
+
+When the wizard finishes, your project is generated and ready to run.
+
+<Callout kind="info" title="npm flag forwarding">
+With `npm create`, pass Better Fullstack flags after a `--` separator. The other launchers forward flags directly.
+</Callout>
+
+## Skip the wizard with flags
+
+If you already know your stack, pass it explicitly and skip every prompt:
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+For the full flag reference, see [CLI Create](/docs/cli/create/).
+
+## Templates
+
+The CLI ships four named shorthand templates:
+
+| Template | Stack |
+| --- | --- |
+| `t3` | Next.js · tRPC · Prisma · PostgreSQL · Better Auth |
+| `mern` | MongoDB · Express · React Router · Node.js |
+| `pern` | PostgreSQL · Express · TanStack Router · Node.js |
+| `uniwind` | Expo + Uniwind — mobile, no backend |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
+For the full preset library — SvelteKit, Nuxt, Astro, TanStack, Angular, Solid, Rust, Python, Go, Java, and more — open the [Stack Builder](https://better-fullstack.dev/new), pick a preset, and copy the generated command.
+
+## Verify your setup
+
+Confirm the basics are installed:
+
+```bash
+node --version
+```
+
+If you plan to use Git or a non-default package manager, verify those too:
+
+```bash
+git --version
+pnpm --version
+bun --version
+yarn --version
+```
+
+## Optional dependencies
+
+### Git
+
+Required only if you want the CLI to initialize a repository. Skip with `--no-git`.
+
+→ [Download Git](https://git-scm.com/downloads)
+
+### Ecosystem toolchains
+
+Install only the toolchain for the ecosystem you scaffold. The CLI itself runs on Node.js even when the generated app targets another language.
+
+| Ecosystem | Tooling | Link |
+| --- | --- | --- |
+| TypeScript | Node.js plus a package manager | Already covered above |
+| Rust | Rust toolchain and Cargo | [Install Rust](https://www.rust-lang.org/tools/install) |
+| Python | Python and `uv` | [Python](https://www.python.org/downloads/) · [uv](https://docs.astral.sh/uv/) |
+| Go | Go toolchain | [Download Go](https://go.dev/dl/) |
+| Java | Java 21 (Maven/Gradle wrappers ship with the project) | [Eclipse Temurin](https://adoptium.net/temurin/releases/) |
+
+### Alternative package managers
+
+npm ships with Node.js and is enough for everything. Install one of these only if you prefer it for the generated project:
+
+- [pnpm](https://pnpm.io/installation)
+- [Yarn](https://yarnpkg.com/getting-started/install)
+- [Bun](https://bun.sh/) — also required when you choose Bun as the project runtime
+
+## Next steps
+
+- Walk through the [First Project](/docs/getting-started/first-project/) flow.
+- Browse every flag in the [CLI Create](/docs/cli/create/) reference.
+- Compare ecosystem support in [Ecosystems](/docs/ecosystems/).

@@ -1,0 +1,279 @@
+---
+title: Create Command
+description: Full reference for create-better-fullstack — every flag, all five ecosystems, and non-interactive examples for automation.
+---
+
+The `create` command scaffolds a new project from your selected stack. You can run the interactive wizard or pass all flags explicitly to skip every prompt.
+
+<PMTabs
+  npm="npm create better-fullstack@latest [project-name] -- [flags]"
+  pnpm="pnpm create better-fullstack@latest [project-name] [flags]"
+  bun="bun create better-fullstack@latest [project-name] [flags]"
+  yarn="yarn create better-fullstack@latest [project-name] [flags]"
+/>
+
+<Callout kind="info" title="npm flag forwarding">
+With `npm create`, pass all Better Fullstack flags after a `--` separator. The other launchers forward flags directly.
+</Callout>
+
+## Compatibility rules
+
+<Callout kind="warning" title="Know before you scaffold">
+A few combinations are hard-incompatible:
+
+- **tRPC** (`--api trpc`) only works with React-based frontends: `tanstack-router`, `react-router`, `react-vite`, `tanstack-start`, `next`.
+- **Angular** has its own HttpClient — use `--api none`.
+- **Qwik** has built-in server actions — use `--backend none --api none`.
+- **`--backend self`** only works with `next`, `tanstack-start`, `astro`, `nuxt`, `svelte`, `solid-start`. Requires `--runtime none`.
+- **NestJS / AdonisJS** require `--runtime node`.
+- **`--yes`** (accept defaults) is incompatible with explicit stack flags — omit it when you pass `--frontend`, `--backend`, or similar.
+- **`--ai-docs none`** hangs. Use `--ai-docs claude-md` or omit the flag entirely.
+</Callout>
+
+## TypeScript stack flags
+
+These flags apply to the `typescript` ecosystem (the default when `--ecosystem` is omitted).
+
+### Core stack
+
+| Flag | Values |
+| --- | --- |
+| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `native-bare` `native-uniwind` `native-unistyles` `redwood` `fresh` `none` |
+| `--backend` | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| `--runtime` | `node` `bun` `workers` `none` |
+| `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| `--auth` | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+| `--api` | `orpc` `trpc` `ts-rest` `graphql-yoga` `garph` `none` |
+
+### Features
+
+| Flag | Values |
+| --- | --- |
+| `--ai` | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `llamaindex` `langchain` `modelfusion` `tanstack-ai` `none` |
+| `--payments` | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| `--email` | `resend` `react-email` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| `--realtime` | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| `--job-queue` | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| `--state-management` | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| `--forms` | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| `--validation` | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| `--testing` | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none` |
+| `--logging` | `pino` `winston` `none` |
+| `--observability` | `opentelemetry` `sentry` `grafana` `none` |
+| `--cms` | `payload` `sanity` `strapi` `tinacms` `none` |
+| `--caching` | `upstash-redis` `none` |
+| `--search` | `meilisearch` `typesense` `elasticsearch` `algolia` `none` |
+| `--file-storage` | `s3` `r2` `none` |
+| `--file-upload` | `uploadthing` `filepond` `uppy` `none` |
+| `--animation` | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none` |
+| `--analytics` | `plausible` `umami` `none` |
+| `--feature-flags` | `growthbook` `posthog` `none` |
+| `--i18n` | `i18next` `next-intl` `none` |
+| `--effect` | `effect` `effect-full` `none` |
+
+### UI
+
+| Flag | Values |
+| --- | --- |
+| `--css-framework` | `tailwind` `scss` `less` `postcss-only` `none` |
+| `--ui-library` | `shadcn-ui` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `none` |
+
+### Deploy
+
+| Flag | Values |
+| --- | --- |
+| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
+
+### TypeScript example
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --ai none \
+  --payments none \
+  --email none \
+  --realtime none \
+  --job-queue none \
+  --state-management none \
+  --forms none \
+  --validation none \
+  --testing none \
+  --logging none \
+  --observability none \
+  --cms none \
+  --caching none \
+  --search none \
+  --file-storage none \
+  --file-upload none \
+  --analytics none \
+  --feature-flags none \
+  --animation none \
+  --effect none \
+  --addons none \
+  --examples none \
+  --web-deploy none \
+  --server-deploy none \
+  --ai-docs claude-md \
+  --package-manager npm \
+  --no-install \
+  --no-git
+```
+
+## Rust flags
+
+| Flag | Values |
+| --- | --- |
+| `--rust-web-framework` | `axum` `actix-web` `rocket` `none` |
+| `--rust-frontend` | `leptos` `dioxus` `none` |
+| `--rust-orm` | `sea-orm` `sqlx` `diesel` `none` |
+| `--rust-api` | `tonic` `async-graphql` `none` |
+| `--rust-cli` | `clap` `ratatui` `none` |
+| `--rust-libraries` _(multi)_ | `serde` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `none` |
+| `--rust-logging` | `tracing` `env-logger` `none` |
+| `--rust-error-handling` | `anyhow-thiserror` `eyre` `none` |
+| `--rust-caching` | `moka` `redis` `none` |
+| `--rust-auth` | `oauth2` `none` |
+
+### Rust example
+
+```bash
+npm create better-fullstack@latest my-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --ai-docs claude-md \
+  --no-install \
+  --no-git
+```
+
+## Python flags
+
+| Flag | Values |
+| --- | --- |
+| `--python-web-framework` | `fastapi` `django` `flask` `litestar` `none` |
+| `--python-orm` | `sqlalchemy` `sqlmodel` `tortoise-orm` `none` |
+| `--python-validation` | `pydantic` `none` |
+| `--python-ai` _(multi)_ | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `none` |
+| `--python-auth` | `authlib` `jwt` `none` |
+| `--python-task-queue` | `celery` `none` |
+| `--python-graphql` | `strawberry` `none` |
+| `--python-quality` | `ruff` `none` |
+
+### Python example
+
+```bash
+npm create better-fullstack@latest my-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --ai-docs claude-md \
+  --no-install \
+  --no-git
+```
+
+## Go flags
+
+| Flag | Values |
+| --- | --- |
+| `--go-web-framework` | `gin` `echo` `fiber` `chi` `none` |
+| `--go-orm` | `gorm` `sqlc` `ent` `none` |
+| `--go-api` | `grpc-go` `none` |
+| `--go-cli` | `cobra` `bubbletea` `none` |
+| `--go-logging` | `zap` `zerolog` `slog` `none` |
+| `--go-auth` | `casbin` `jwt` `none` |
+
+### Go example
+
+```bash
+npm create better-fullstack@latest my-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-logging zap \
+  --go-auth jwt \
+  --go-api none \
+  --go-cli none \
+  --ai-docs claude-md \
+  --no-install \
+  --no-git
+```
+
+## Java flags
+
+| Flag | Values |
+| --- | --- |
+| `--java-web-framework` | `spring-boot` `none` |
+| `--java-build-tool` | `maven` `gradle` `none` |
+| `--java-orm` | `spring-data-jpa` `none` |
+| `--java-auth` | `spring-security` `none` |
+| `--java-libraries` _(multi)_ | `spring-actuator` `spring-validation` `flyway` `springdoc-openapi` `none` |
+| `--java-testing-libraries` _(multi)_ | `junit5` `mockito` `testcontainers` `none` |
+
+### Java example
+
+```bash
+npm create better-fullstack@latest my-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator spring-validation flyway springdoc-openapi \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs claude-md \
+  --no-install \
+  --no-git
+```
+
+## Global flags
+
+These flags apply to all ecosystems.
+
+| Flag | Description |
+| --- | --- |
+| `--ecosystem` | Language ecosystem: `typescript` `rust` `python` `go` `java`. Defaults to `typescript`. |
+| `--template` | Use a CLI shorthand preset: `t3` `mern` `pern` `uniwind`. |
+| `--addons` _(multi)_ | Extra tooling: `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none`. |
+| `--examples` _(multi)_ | Starter examples to scaffold: `ai` `chat-sdk` `tanstack-showcase` `none`. |
+| `--ai-docs` _(multi)_ | AI context files to generate: `claude-md` `agents-md` `cursorrules`. **Do not use `none` — it hangs. Omit the flag instead.** |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn`. |
+| `--web-deploy` | Web deployment target (see TypeScript deploy table above). |
+| `--server-deploy` | Server deployment target. |
+| `--version-channel` | Dependency version pinning: `stable` `latest` `beta`. |
+| `--dry-run` | Preview the generated file tree without writing to disk. |
+| `--yes` | Accept all defaults. **Incompatible with explicit stack flags.** |
+| `--no-install` | Skip dependency installation. Run the installer separately after reviewing generated files. |
+| `--no-git` | Skip Git initialization. |
+| `--disable-analytics` | Opt out of anonymous usage analytics. |
+| `--verbose` | Print detailed scaffold result output. |
+
+## Automation tip
+
+<Callout kind="tip" title="Scripts and AI agents">
+For CI pipelines and AI-driven scaffolding, always pass `--no-install` and run the package manager separately after reviewing the generated files. Supply every flag explicitly to avoid interactive prompts — see the per-ecosystem examples above. The compatibility checker runs before generation and will reject invalid combinations with a clear error.
+</Callout>

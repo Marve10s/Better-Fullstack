@@ -1,0 +1,65 @@
+---
+title: Get Started
+description: Scaffold your first Better Fullstack project in minutes.
+---
+
+<Callout kind="tip" title="Online preview">
+Prefer to configure visually? Use the [Stack Builder](https://better-fullstack.dev/new) to pick options through a UI and copy a ready-to-run command.
+</Callout>
+
+## 1. Install Node.js
+
+Better Fullstack requires Node.js 20 or newer.
+
+```bash
+# macOS / Linux — using fnm
+curl -fsSL https://fnm.vercel.app/install | bash
+fnm install 22
+```
+
+```bash
+# macOS — using Homebrew
+brew install node
+```
+
+```bash
+# Windows — using winget
+winget install OpenJS.NodeJS.LTS
+```
+
+Prefer a GUI installer? → [nodejs.org/en/download](https://nodejs.org/en/download)
+
+**Verify the installation:**
+
+```bash
+node --version
+```
+
+## 2. Create a project
+
+Run the wizard — it walks you through ecosystem, frontend, backend, database, auth, and every other integration:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+When the wizard finishes, your project is generated and ready to run.
+
+## 3. Explore your project
+
+Once the wizard finishes, the CLI prints the exact next steps for your stack — the install command, how to start the dev server, and anything ecosystem-specific. Follow those rather than a generic sequence.
+
+Every generated project includes:
+
+- **`bts.jsonc`** — your stack config
+- **A reproducible command** — re-create the exact same project anywhere
+- **Optional AI docs** — `AGENTS.md`, `CLAUDE.md`, or `.cursorrules`
+
+Not ready to scaffold yet? Browse the [Stack Builder](https://better-fullstack.dev/new) to preview the generated file tree for any stack combination directly in your browser.
+
+## Next steps
+
+- [Installation](/docs/getting-started/installation/) — prerequisites for Rust, Python, Go, and Java ecosystems
+- [First Project](/docs/getting-started/first-project/) — dry-runs, deeper walkthrough, and project structure
+- [CLI Create](/docs/cli/create/) — every flag and option
+- [Ecosystems](/docs/ecosystems/) — compare TypeScript, Rust, Python, Go, and Java support

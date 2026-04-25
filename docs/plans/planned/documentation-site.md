@@ -36,7 +36,7 @@ No public documentation site exists yet. Users rely on CLI `--help`, the web bui
 
 ### MCP / AI Agent Integration
 
-- [ ] How to connect Better-Fullstack MCP to Claude Code, Cursor, Codex, etc.
+- [ ] How to connect Better-Fullstack MCP to Claude Code, Cursor, VS Code, and other agents.
 - [ ] MCP tools reference (bfs_plan_project, bfs_create_project, etc.)
 - [ ] Skills addon: what gets installed, how to customize
 - [ ] MCP addon: which servers get configured per stack

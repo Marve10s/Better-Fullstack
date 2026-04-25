@@ -1,0 +1,62 @@
+---
+title: AI Agents
+description: How AI coding agents should use Better Fullstack safely and reliably.
+---
+
+Better Fullstack is designed for AI-driven scaffolding. Agents can work through the MCP server (structured tool calls, no flag guessing) or drive the CLI directly.
+
+## Preferred workflow
+
+1. Determine the target ecosystem: `typescript`, `rust`, `python`, `go`, or `java`.
+2. Fetch valid schema options.
+3. Validate the stack combination — the compatibility engine auto-corrects invalid pairs and returns warnings.
+4. Dry-run to preview the generated file tree.
+5. Scaffold with dependency installation disabled.
+6. Report the exact install and run commands to the user.
+
+## MCP workflow
+
+The Better Fullstack MCP server is the safest option for agents: it exposes schema lookup, compatibility checks, dry-run previews, project creation, and feature additions as structured tool calls.
+
+See the [MCP setup guide](/docs/ai/mcp/) for client configuration (Claude Code, Cursor, VS Code, Windsurf, Zed, Cline).
+
+## CLI workflow
+
+For agents without MCP access, drive the CLI with explicit flags and `--no-install`:
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --ai-docs agents-md \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="warning" title="Known CLI gotchas for agents">
+- **`--ai-docs none` hangs.** Use a valid value (`claude-md`, `agents-md`, `cursorrules`) or omit the flag entirely.
+- **`--yes` is incompatible with explicit stack flags.** Omit it when passing `--frontend`, `--backend`, and similar.
+- **Specify all optional flags explicitly.** Any omitted option category will trigger an interactive prompt. Pass `none` for categories you want to skip.
+- **`--ecosystem` is required for non-interactive mode.** Omitting it defaults to TypeScript but may prompt in some versions.
+</Callout>
+
+See [CLI Create](/docs/cli/create/) for the full flag reference and per-ecosystem examples.
+
+## Generated AI docs
+
+Use `--ai-docs` to generate project-local context files that help agents understand the project's conventions:
+
+| Value | File generated |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `AGENTS.md` |
+| `cursorrules` | `.cursorrules` |
+
+Multiple values are accepted: `--ai-docs claude-md agents-md`.
+
+Agents should update those files when they change project structure, dependencies, or workflows.

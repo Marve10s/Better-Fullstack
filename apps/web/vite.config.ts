@@ -1,9 +1,17 @@
+import mdx from "@mdx-js/rollup";
+import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig, type PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+
+import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
+import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
 
 export default defineConfig({
   server: {
@@ -25,6 +33,34 @@ export default defineConfig({
       projects: ["./tsconfig.json"],
       ignoreConfigErrors: true,
     }),
+    // MDX must come BEFORE react/start plugins so .mdx files are compiled to
+    // JSX before downstream plugins try to transform them. The pipeline is:
+    //   1. remark-frontmatter      — recognise YAML frontmatter blocks
+    //   2. remark-mdx-frontmatter  — re-export it as `export const frontmatter`
+    //   3. remark-gfm              — GitHub-flavoured markdown (tables, etc.)
+    //   4. remark-extract-toc      — emit `export const toc` + heading ids
+    //   5. rehype-shiki            — syntax highlighting using existing shiki dep
+    {
+      enforce: "pre",
+      ...mdx({
+        providerImportSource: "@mdx-js/react",
+        remarkPlugins: [
+          remarkFrontmatter,
+          [remarkMdxFrontmatter, { name: "frontmatter" }],
+          remarkGfm,
+          remarkNpmTabs,
+          remarkExtractToc,
+        ],
+        rehypePlugins: [
+          [
+            rehypeShiki,
+            {
+              theme: "github-dark-default",
+            },
+          ],
+        ],
+      }),
+    },
     tanstackStart({
       srcDirectory: "src",
     }),
@@ -45,6 +81,11 @@ export default defineConfig({
             },
           },
           "/compare": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            },
+          },
+          "/docs/**": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
             },
