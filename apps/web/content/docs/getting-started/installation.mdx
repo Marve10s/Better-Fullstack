@@ -61,13 +61,20 @@ For the full flag reference, see [CLI Create](/docs/cli/create/).
 
 ## Templates
 
-Skip the picks entirely with a curated preset:
+The CLI ships four named shorthand templates:
 
-```bash
+| Template | Stack |
+| --- | --- |
+| `t3` | Next.js · tRPC · Prisma · PostgreSQL · Better Auth |
+| `mern` | MongoDB · Express · React Router · Node.js |
+| `pern` | PostgreSQL · Express · TanStack Router · Node.js |
+| `uniwind` | Expo + Uniwind — mobile, no backend |
+
+```npm
 npm create better-fullstack@latest my-app -- --template t3
 ```
 
-Available templates: `t3`, `mern`, `pern`, `uniwind`.
+For the full preset library — SvelteKit, Nuxt, Astro, TanStack, Angular, Solid, Rust, Python, Go, Java, and more — open the [Stack Builder](https://better-fullstack.dev/new), pick a preset, and copy the generated command.
 
 ## Verify your setup
 

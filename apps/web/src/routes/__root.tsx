@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_ALT,
@@ -19,6 +20,35 @@ import {
   siteJsonLd,
 } from "@/lib/seo";
 import "@/styles/global.css";
+
+const DARK_THEME_COLOR = "#050505";
+const LIGHT_THEME_COLOR = "#ffffff";
+const THEME_INIT_SCRIPT = `
+(() => {
+  try {
+    const stored = window.localStorage.getItem("${THEME_STORAGE_KEY}");
+    const theme = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    const resolved =
+      theme === "system"
+        ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : theme;
+    const root = document.documentElement;
+    root.classList.toggle("dark", resolved === "dark");
+    root.dataset.theme = resolved;
+    root.style.colorScheme = resolved;
+    root.style.backgroundColor = resolved === "dark" ? "${DARK_THEME_COLOR}" : "${LIGHT_THEME_COLOR}";
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute(
+        "content",
+        resolved === "dark" ? "${DARK_THEME_COLOR}" : "${LIGHT_THEME_COLOR}",
+      );
+    }
+  } catch {}
+})();
+`;
+const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
+const siteJsonLdMarkup = { __html: JSON.stringify(siteJsonLd) };
 
 function NotFoundComponent() {
   return (
@@ -115,10 +145,11 @@ function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="font-sans" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={themeInitMarkup} />
         <HeadContent />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+          dangerouslySetInnerHTML={siteJsonLdMarkup}
         />
       </head>
       <body className="bg-background text-foreground">
