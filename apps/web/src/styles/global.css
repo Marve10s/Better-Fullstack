@@ -242,6 +242,14 @@
   --shadow-xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 8px 10px -1px hsl(240 30% 25% / 0.12);
   --shadow-2xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.3);
   --tracking-normal: 0em;
+
+  /*
+   * Code block surfaces — GitHub Dark Default palette so token colors and
+   * chrome always match. Light-mode pages get a near-black code block (the
+   * classic dark-on-white contrast used by Next.js docs, shadcn/ui, Linear).
+   */
+  --code-bg: #0d1117;
+  --code-border: #30363d;
 }
 
 .dark {
@@ -297,6 +305,10 @@
   --shadow-lg: 0px 8px 16px 0px hsl(240 30% 5% / 0.3), 0px 4px 6px -1px hsl(240 30% 5% / 0.25);
   --shadow-xl: 0px 12px 24px 0px hsl(240 30% 5% / 0.35), 0px 8px 10px -1px hsl(240 30% 5% / 0.3);
   --shadow-2xl: 0px 16px 32px 0px hsl(240 30% 5% / 0.4);
+
+  /* Dark mode: slightly elevated from the page bg so code blocks lift off the surface */
+  --code-bg: #161b22;
+  --code-border: #30363d;
 }
 
 /* @layer base {
@@ -623,13 +635,29 @@
   text-decoration-color: currentColor;
 }
 
+/*
+ * Inline code — neutral chip that doesn't compete with body text.
+ * Excludes <code> inside <pre> so Shiki token colors stay untouched.
+ */
 .docs-prose code:not(:where(.docs-prose pre code)) {
   border-radius: 0.25rem;
   border: 1px solid var(--border);
   padding: 0.1rem 0.35rem;
-  background: color-mix(in srgb, var(--muted) 60%, transparent);
+  background: var(--muted);
+  color: var(--foreground);
   font-family: var(--font-mono);
   font-size: 0.85em;
+}
+
+/*
+ * Suppress Shiki's own injected background-color on <pre> and <code> so
+ * the wrapper div's `--code-bg` surface shows through cleanly.
+ * Token text colors are output as direct inline styles (single theme) and
+ * don't need additional CSS to activate.
+ */
+.docs-prose pre,
+.docs-prose .shiki {
+  background-color: transparent !important;
 }
 
 .docs-prose ul,

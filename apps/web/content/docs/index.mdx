@@ -1,75 +1,65 @@
 ---
 title: Get Started
-description: Install the required tools and scaffold your first Better Fullstack project.
+description: Scaffold your first Better Fullstack project in minutes.
 ---
 
-Start here when you want a project generated quickly with explicit, reproducible stack choices.
+<Callout kind="tip" title="Online preview">
+Prefer to configure visually? Use the [Stack Builder](https://better-fullstack.dev/new) to pick options through a UI and copy a ready-to-run command.
+</Callout>
 
-## 1. Install the required tools
+## 1. Install Node.js
 
-Everyone needs Node.js 20 or newer and Git. Bun is optional unless you choose Bun as the project runtime or package manager.
+Better Fullstack requires Node.js 20 or newer.
 
-- [Download Node.js](https://nodejs.org/en/download)
-- [Download Git](https://git-scm.com/downloads)
-- [Install Bun](https://bun.sh/docs/installation)
+```bash
+# macOS / Linux — using fnm
+curl -fsSL https://fnm.vercel.app/install | bash
+fnm install 22
+```
+
+```bash
+# macOS — using Homebrew
+brew install node
+```
+
+```bash
+# Windows — using winget
+winget install OpenJS.NodeJS.LTS
+```
+
+Prefer a GUI installer? → [nodejs.org/en/download](https://nodejs.org/en/download)
+
+**Verify the installation:**
 
 ```bash
 node --version
-git --version
 ```
-
-If you plan to use Bun, verify it too:
-
-```bash
-bun --version
-```
-
-For Rust, Python, Go, or Java projects, install the matching ecosystem toolchain before running generated project commands. The CLI can still be launched with Node.js even when the generated app targets another ecosystem.
-
-| Ecosystem | Tooling |
-| --- | --- |
-| TypeScript | Node.js plus npm, pnpm, Yarn, or Bun |
-| Rust | Rust toolchain and Cargo |
-| Python | Python and uv |
-| Go | Go toolchain |
-| Java | Java 21; generated Maven or Gradle wrappers handle builds |
 
 ## 2. Create a project
 
-Use the interactive flow when exploring choices. Select your preferred package manager to run the create package:
+Run the wizard — it walks you through ecosystem, frontend, backend, database, auth, and every other integration:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-Use explicit flags when you already know the stack:
+When the wizard finishes, your project is generated and ready to run.
 
-```npm
-npm create better-fullstack@latest my-app -- \
-  --frontend next \
-  --backend self \
-  --runtime node \
-  --database postgres \
-  --orm drizzle \
-  --auth better-auth \
-  --api trpc
-```
+## 3. Explore your project
 
-## 3. Inspect before installing
+Once the wizard finishes, the CLI prints the exact next steps for your stack — the install command, how to start the dev server, and anything ecosystem-specific. Follow those rather than a generic sequence.
 
-For CI and AI-agent workflows, scaffold first and install dependencies after you inspect the generated files.
+Every generated project includes:
 
-```npm
-npm create better-fullstack@latest my-app -- --no-install --no-git --ai-docs agents-md
-cd my-app
-npm install
-```
+- **`bts.jsonc`** — your stack config
+- **A reproducible command** — re-create the exact same project anywhere
+- **Optional AI docs** — `AGENTS.md`, `CLAUDE.md`, or `.cursorrules`
 
-Use `bun install`, `pnpm install`, or `yarn install` instead when the generated project was configured for that package manager. Generated projects include `bts.jsonc`, a reproducible command, framework scripts, and optional AI documentation files.
+Not ready to scaffold yet? Browse the [Stack Builder](https://better-fullstack.dev/new) to preview the generated file tree for any stack combination directly in your browser.
 
-## 4. Next steps
+## Next steps
 
-- Read [Installation](/docs/getting-started/installation/) for ecosystem prerequisites.
-- Read [First Project](/docs/getting-started/first-project/) for dry-runs, install flow, and generated project context.
-- Open [CLI Create](/docs/cli/create/) for the non-interactive command surface.
-- Open [Ecosystems](/docs/ecosystems/) to compare TypeScript, Rust, Python, Go, and Java support.
+- [Installation](/docs/getting-started/installation/) — prerequisites for Rust, Python, Go, and Java ecosystems
+- [First Project](/docs/getting-started/first-project/) — dry-runs, deeper walkthrough, and project structure
+- [CLI Create](/docs/cli/create/) — every flag and option
+- [Ecosystems](/docs/ecosystems/) — compare TypeScript, Rust, Python, Go, and Java support
