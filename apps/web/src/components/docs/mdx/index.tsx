@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import { Callout } from "./callout";
 import { CodeBlock } from "./code-block";
+import { CategoryCount, OptionCount } from "./option-stats";
 import { PMTabs } from "./pm-tabs";
 
 /**
@@ -20,5 +21,7 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
 
   // MDX-only components — referenced by name from .mdx files
   Callout,
+  CategoryCount,
+  OptionCount,
   PMTabs,
 };

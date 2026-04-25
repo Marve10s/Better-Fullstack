@@ -1,21 +1,35 @@
 ---
-title: Generated llms.txt
-description: Machine-readable project context for AI agents.
+title: llms.txt
+description: Machine-readable project context for AI agents and search tools.
 ---
 
-Better Fullstack publishes an `llms.txt` file for AI agents and search tools.
+Better Fullstack publishes an `llms.txt` file so AI agents, search crawlers, and language model tools can get a compact, text-first overview of the project without parsing HTML.
 
-- Site-level file: [`/llms.txt`](https://better-fullstack.dev/llms.txt)
-- Docs-specific file: [`/docs/llms.txt`](https://better-fullstack.dev/docs/llms.txt)
+- Site-level: [`/llms.txt`](https://better-fullstack.dev/llms.txt)
+- Docs-specific: [`/docs/llms.txt`](https://better-fullstack.dev/docs/llms.txt)
 
-The docs-specific file is generated from the same metadata used to build the option reference pages.
+## What it contains
 
-## Why it exists
+The docs `llms.txt` is generated from the same metadata that builds the option reference pages. It includes:
 
-`llms.txt` gives agents a compact, text-first overview of:
+- What Better Fullstack is and what it generates.
+- Supported ecosystems (TypeScript, Rust, Python, Go, Java).
+- Key CLI flags and non-interactive usage patterns.
+- MCP server instructions and tool names.
+- Links to option reference pages organized by category.
+- Compatibility rules (tRPC/Angular/Qwik constraints, etc.).
 
-- What Better Fullstack does.
-- Supported ecosystems.
-- Important pages.
-- Recommended CLI and MCP workflows.
-- Links to dynamic option reference pages.
+## For agents without MCP access
+
+If your agent can't use the MCP server, it can fetch the `llms.txt` at the start of a session for a compact context overview, then follow the links to the full reference pages for specific option values.
+
+```bash
+# Fetch the docs context
+curl https://better-fullstack.dev/docs/llms.txt
+```
+
+The file is plain text, under 10 KB, and includes the most important constraints and flag names an agent needs to scaffold without interactive prompts.
+
+## For agents with MCP access
+
+Prefer the MCP server — the `docs://getting-started`, `docs://stack-options`, and `docs://compatibility-rules` resources give structured, queryable data rather than a static text file. See [MCP setup](/docs/ai/mcp/).
