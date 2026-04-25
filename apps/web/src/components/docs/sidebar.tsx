@@ -2,12 +2,12 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
 
+import { DocsSearchTrigger } from "@/components/docs/search-dialog";
 import {
   type FolderNode,
   type PageNode,
   pageTree,
   type PageTreeNode,
-  type SeparatorNode,
 } from "@/lib/docs/source";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,7 @@ export function DocsSidebar({ className }: { className?: string }) {
         className,
       )}
     >
+      <DocsSearchTrigger className="w-full justify-between rounded-lg px-3 py-2 text-[0.78rem]" />
       {pageTree.children.map((node, index) => (
         <SidebarNode
           key={getNodeKey(node, index)}
@@ -61,18 +62,10 @@ function SidebarNode({
   currentUrl: string;
   depth: number;
 }) {
-  if (node.type === "separator") return <SidebarSeparator node={node} />;
+  if (node.type === "separator") return null;
   if (node.type === "folder")
     return <SidebarFolder folder={node} currentUrl={currentUrl} depth={depth} />;
   return <SidebarPageLink page={node} currentUrl={currentUrl} depth={depth} />;
-}
-
-function SidebarSeparator({ node }: { node: SeparatorNode }) {
-  return (
-    <div className="select-none px-2 pt-3 font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground/70">
-      {node.name}
-    </div>
-  );
 }
 
 function SidebarFolder({

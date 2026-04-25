@@ -2,6 +2,7 @@ import { Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
+import PackageIcon from "@/components/home/icons";
 import { cn } from "@/lib/utils";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
@@ -98,10 +99,11 @@ export function PMTabs({
               tabIndex={isActive ? 0 : -1}
               onClick={() => select(manager)}
               className={cn(
-                "relative flex-none px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.05em] transition-colors",
+                "relative flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.05em] transition-colors",
                 isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
+              <PackageIcon pm={manager} className="h-3.5 w-3.5 shrink-0" />
               {manager}
               {isActive ? (
                 <motion.span

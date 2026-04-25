@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
 
-import { DocsSearchTrigger } from "@/components/docs/search-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NavbarStats = lazy(async () => {
@@ -71,9 +70,7 @@ export function Navbar() {
 
         {/* Navigation Links */}
         <div className="flex items-center gap-4 sm:gap-6">
-          {isDocsRoute ? (
-            <DocsSearchTrigger className="hidden md:inline-flex" />
-          ) : showStats ? (
+          {!isDocsRoute && showStats ? (
             <Suspense
               fallback={
                 <>
@@ -84,12 +81,12 @@ export function Navbar() {
             >
               <NavbarStats />
             </Suspense>
-          ) : (
+          ) : !isDocsRoute ? (
             <>
               <div className="hidden h-4 w-12 animate-pulse rounded bg-muted sm:block" />
               <div className="hidden h-4 w-12 animate-pulse rounded bg-muted sm:block" />
             </>
-          )}
+          ) : null}
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
