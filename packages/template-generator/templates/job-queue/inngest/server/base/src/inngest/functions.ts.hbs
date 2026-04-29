@@ -1,11 +1,13 @@
 import { inngest } from "./client";
 
+type AppFunction = ReturnType<typeof inngest.createFunction>;
+
 /**
  * Example email sending function
  * Triggered by: inngest.send({ name: "app/email.send", data: { to, subject, body } })
  * @see https://www.inngest.com/docs/functions
  */
-export const sendEmail = inngest.createFunction(
+export const sendEmail: AppFunction = inngest.createFunction(
   {
     id: "send-email",
     // Retry configuration
@@ -39,7 +41,7 @@ export const sendEmail = inngest.createFunction(
  * Example notification function
  * Supports different notification types: push, in-app, sms
  */
-export const sendNotification = inngest.createFunction(
+export const sendNotification: AppFunction = inngest.createFunction(
   {
     id: "send-notification",
     retries: 3,
@@ -81,7 +83,7 @@ export const sendNotification = inngest.createFunction(
  * Example data processing function with multiple steps
  * Demonstrates step-based workflows for complex operations
  */
-export const processData = inngest.createFunction(
+export const processData: AppFunction = inngest.createFunction(
   {
     id: "process-data",
     retries: 2,
@@ -150,7 +152,7 @@ export const processData = inngest.createFunction(
  * Runs every hour - customize the cron pattern as needed
  * @see https://www.inngest.com/docs/guides/scheduled-functions
  */
-export const hourlyCleanup = inngest.createFunction(
+export const hourlyCleanup: AppFunction = inngest.createFunction(
   {
     id: "hourly-cleanup",
     triggers: [{ cron: "0 * * * *" }], // Every hour at minute 0
@@ -178,7 +180,7 @@ export const hourlyCleanup = inngest.createFunction(
  * Example daily report function with timezone
  * Runs at 9 AM UTC - change timezone as needed
  */
-export const dailyReport = inngest.createFunction(
+export const dailyReport: AppFunction = inngest.createFunction(
   {
     id: "daily-report",
     triggers: [{ cron: "TZ=UTC 0 9 * * *" }], // 9 AM UTC every day
@@ -223,7 +225,7 @@ export const dailyReport = inngest.createFunction(
  * Example delayed function
  * Demonstrates using step.sleep for delayed execution
  */
-export const welcomeSequence = inngest.createFunction(
+export const welcomeSequence: AppFunction = inngest.createFunction(
   {
     id: "welcome-sequence",
     triggers: [{ event: "app/user.signup" }],
@@ -274,7 +276,7 @@ export const welcomeSequence = inngest.createFunction(
 );
 
 // Export all functions for the serve handler
-export const functions = [
+export const functions: AppFunction[] = [
   sendEmail,
   sendNotification,
   processData,
