@@ -1,0 +1,54 @@
+---
+title: Rust
+description: Rust backend, CLI, WebAssembly frontend, GraphQL, gRPC, database, logging, caching, and auth scaffolds.
+---
+
+Rust projects use Cargo and language-native templates. TypeScript-only web, UI, package-manager, and example categories should not be treated as Rust scaffold support.
+
+## Prerequisites
+
+- Rust toolchain and Cargo.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Rust categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `axum` `actix-web` `rocket` `none` |
+| Frontend | `leptos` `dioxus` `none` |
+| ORM | `sea-orm` `sqlx` `diesel` `none` |
+| API | `tonic` `async-graphql` `none` |
+| CLI | `clap` `ratatui` `none` |
+| Libraries | `serde` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `none` |
+| Logging | `tracing` `env-logger` `none` |
+| Error handling | `anyhow-thiserror` `eyre` `none` |
+| Caching | `moka` `redis` `none` |
+| Auth | `oauth2` `none` |
+
+## Generated behavior
+
+- `cargo build` is the install/verification path when install is enabled.
+- Leptos, Dioxus, Tonic, Clap, and Ratatui template files are included only when their matching options are selected.
+- `rustLibraries` is multi-select; pass `none` or omit libraries you do not want.
+- AI instruction files are still available through `--ai-docs`, including `--ai-docs none`.

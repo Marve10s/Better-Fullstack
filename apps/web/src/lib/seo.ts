@@ -1,3 +1,5 @@
+import { ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "./project-stats";
+
 export const SITE_NAME = "Better Fullstack";
 export const SITE_URL = "https://better-fullstack.dev";
 export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}/og/better-fullstack-terminal-preview-1200x630.png`;
@@ -8,7 +10,7 @@ export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
 export const DEFAULT_DESCRIPTION =
-  "Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options across TypeScript, Rust, Python, and Go — frameworks, databases, auth, payments, AI, and deployment — all wired together by one CLI.";
+  `Scaffold production-ready fullstack apps in seconds. Pick your stack from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_NAMES.join(", ")} — frameworks, databases, auth, payments, AI, and deployment — all wired together by one CLI.`;
 
 export const DEFAULT_ROBOTS =
   "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
@@ -63,7 +65,7 @@ export const siteJsonLd = {
       license: "https://opensource.org/licenses/MIT",
       isAccessibleForFree: true,
       description: DEFAULT_DESCRIPTION,
-      programmingLanguage: ["TypeScript", "Rust", "Python", "Go"],
+      programmingLanguage: ECOSYSTEM_NAMES,
       featureList: [
         "15 frontend frameworks",
         "17 backend frameworks",

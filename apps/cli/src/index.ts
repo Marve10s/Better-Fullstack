@@ -144,6 +144,7 @@ import {
   type JavaAuth,
   JavaTestingLibrariesSchema,
   type JavaTestingLibraries,
+  OPTION_CATEGORY_METADATA,
   AiDocsSchema,
   type AiDocs,
   ShadcnBaseSchema,
@@ -160,10 +161,15 @@ import { openUrl } from "./utils/open-url";
 import { renderTitle } from "./utils/render-title";
 import { displaySponsors, fetchSponsors } from "./utils/sponsors";
 
+const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
+  (sum, metadata) => sum + metadata.options.length,
+  0,
+);
+
 export const router = os.router({
   create: os
     .meta({
-      description: "Scaffold a new Better Fullstack project from 270+ compatible stack options",
+      description: `Scaffold a new Better Fullstack project from ${OPTION_ENTRY_COUNT} compatible stack options`,
       default: true,
       negateBooleans: true,
     })

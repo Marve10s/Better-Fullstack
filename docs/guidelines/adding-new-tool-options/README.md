@@ -1239,7 +1239,7 @@ If any one of those checks fails, the PR is not finished. The usual failure mode
 
 ## 11. Common Mistakes
 
-These are the most frequently missed files based on git history analysis and real validation runs across all 4 ecosystems:
+These are the most frequently missed files based on git history analysis and real validation runs across all supported ecosystems:
 
 | Mistake | Consequence | How to catch |
 |---------|-------------|--------------|

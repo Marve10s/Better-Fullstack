@@ -13,6 +13,7 @@
     "cli": "cd apps/cli && node dist/cli.js",
     "dev:web": "turbo run dev --filter=web",
     "build:web": "turbo run build --filter=web --only",
+    "build:docs": "turbo run build --filter=docs --only",
     "build:cli": "turbo run build --filter=create-better-fullstack",
     "lint": "turbo lint",
     "test": "turbo test",

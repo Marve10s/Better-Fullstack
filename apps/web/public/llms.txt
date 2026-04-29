@@ -1,8 +1,8 @@
 # Better Fullstack
 
-> Scaffold production-ready fullstack apps in seconds. Pick your stack from 270+ options across TypeScript, Rust, Python, and Go — the CLI wires everything together.
+> Scaffold production-ready fullstack apps in seconds. Pick your stack from 424 options across TypeScript, Rust, Python, Go, and Java — the CLI wires everything together.
 
-Better Fullstack is an open-source CLI tool and visual web builder that generates fully configured, production-ready fullstack applications. Unlike single-framework scaffolders, it supports 4 language ecosystems and lets developers mix and match from 270+ technology options.
+Better Fullstack is an open-source CLI tool and visual web builder that generates fully configured, production-ready fullstack applications. Unlike single-framework scaffolders, it supports 5 language ecosystems and lets developers mix and match from 424 technology options.
 
 ## Key Facts
 
@@ -17,6 +17,7 @@ Better Fullstack is an open-source CLI tool and visual web builder that generate
 - Rust (Actix, Axum, Rocket, Leptos, Dioxus, Yew)
 - Python (FastAPI, Django, SQLAlchemy, SQLModel)
 - Go (Gin, Echo, GORM, sqlc)
+- Java (Spring Boot, Maven, Gradle, Spring Data JPA, Spring Security)
 
 ## Frontend Frameworks (15)
 
@@ -63,16 +64,19 @@ tRPC, oRPC, ts-rest, Garph (GraphQL), gRPC, and more.
 - Homepage: https://better-fullstack.dev/
 - Stack Builder: https://better-fullstack.dev/new
 - Comparison: https://better-fullstack.dev/compare
+- Docs: https://better-fullstack.dev/docs/
+- AI Agents: https://better-fullstack.dev/docs/ai/overview/
+- MCP: https://better-fullstack.dev/docs/ai/mcp/
 - npm: https://www.npmjs.com/package/create-better-fullstack
 - GitHub: https://github.com/Marve10s/Better-Fullstack
 
 ## Common Questions
 
 ### What is Better Fullstack?
-A CLI and web-based tool that scaffolds production-ready fullstack applications with 270+ configurable options across 4 language ecosystems (TypeScript, Rust, Python, Go).
+A CLI and web-based tool that scaffolds production-ready fullstack applications with 424 configurable options across 5 language ecosystems (TypeScript, Rust, Python, Go, Java).
 
 ### How is it different from create-t3-app?
-Better Fullstack supports 4 ecosystems (not just TypeScript), 15 frontend frameworks (not just Next.js), 17 backend options, payments, AI integrations, and a visual web builder. create-t3-app focuses on the T3 Stack (Next.js + tRPC + Prisma + Tailwind).
+Better Fullstack supports 5 ecosystems (not just TypeScript), 15 frontend frameworks (not just Next.js), 17 backend options, payments, AI integrations, and a visual web builder. create-t3-app focuses on the T3 Stack (Next.js + tRPC + Prisma + Tailwind).
 
 ### How is it different from create-next-app?
 create-next-app only scaffolds Next.js projects. Better Fullstack scaffolds complete fullstack applications with your choice of frontend, backend, database, ORM, auth, payments, AI, and deployment — across multiple languages.

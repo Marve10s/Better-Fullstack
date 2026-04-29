@@ -1,13 +1,14 @@
-
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
+
+import { ECOSYSTEM_COUNT_LABEL, ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "@/lib/project-stats";
 
 import { CollapsibleSection } from "./collapsible-section";
 
 const features = [
   {
-    title: "4 ecosystems",
-    description: "TypeScript, Rust, Python, and Go with native tooling for each",
+    title: `${ECOSYSTEM_COUNT_LABEL} ecosystems`,
+    description: `${ECOSYSTEM_NAMES.join(", ")} with native tooling for each`,
   },
   {
     title: "15 frontend frameworks",
@@ -15,7 +16,7 @@ const features = [
   },
   {
     title: "17 backend frameworks",
-    description: "From lightweight to batteries-included, across all four languages",
+    description: "From lightweight to batteries-included, across all supported languages",
   },
   {
     title: "6 databases & 13 ORMs",
@@ -59,7 +60,7 @@ export default function FeaturesSection() {
   return (
     <CollapsibleSection
       title="What is Better Fullstack?"
-      subtitle="A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from 270+ options across 4 ecosystems."
+      subtitle={`A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} ecosystems.`}
       defaultOpen
     >
       <ul className="space-y-3 sm:space-y-4">

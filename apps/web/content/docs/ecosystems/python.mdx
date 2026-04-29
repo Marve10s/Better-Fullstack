@@ -1,0 +1,51 @@
+---
+title: Python
+description: Python API and AI-oriented scaffolds with web frameworks, ORMs, validation, queues, GraphQL, and quality tooling.
+---
+
+Python projects use `uv` and Python-native templates. Shared TypeScript categories such as web UI libraries, package managers, and `chat-sdk` examples are not Python scaffold categories.
+
+## Prerequisites
+
+- Python.
+- `uv`.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Python categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `fastapi` `django` `flask` `litestar` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `none` |
+| Validation | `pydantic` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `none` |
+| Auth | `authlib` `jwt` `none` |
+| Task queue | `celery` `none` |
+| GraphQL | `strawberry` `none` |
+| Quality | `ruff` `none` |
+
+## Generated behavior
+
+- `uv sync` is the install path when install is enabled.
+- `pythonAi` is a multi-select category and is separate from TypeScript `--ai`.
+- Empty conditional Python template files are skipped when selected options do not need them.
+- AI instruction files are still available through `--ai-docs`, including `--ai-docs none`.

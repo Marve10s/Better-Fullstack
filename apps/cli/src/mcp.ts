@@ -42,6 +42,7 @@ import {
   LoggingSchema,
   ObservabilitySchema,
   ORMSchema,
+  OPTION_CATEGORY_METADATA,
   PackageManagerSchema,
   PaymentsSchema,
   type ProjectConfig,
@@ -79,7 +80,12 @@ import z from "zod";
 import { readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, Python, and Java ecosystems with 270+ configurable options.
+const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
+  (sum, metadata) => sum + metadata.options.length,
+  0,
+);
+
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, Python, and Java ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.

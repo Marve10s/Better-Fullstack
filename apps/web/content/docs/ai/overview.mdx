@@ -1,0 +1,76 @@
+---
+title: AI Agents
+description: How AI coding agents should use Better Fullstack safely and reliably.
+---
+
+Better Fullstack supports two separate AI workflows:
+
+- Generated AI instruction files selected with `--ai-docs`.
+- Structured project creation through the Better Fullstack MCP server.
+
+## Preferred workflow
+
+1. Choose the target ecosystem: `typescript`, `rust`, `python`, `go`, or `java`.
+2. Fetch schema options from MCP or the CLI docs.
+3. Validate compatibility before scaffolding.
+4. Dry-run to inspect the file tree.
+5. Scaffold with dependency installation disabled when an agent is driving the flow.
+6. Tell the user the exact install, test, and run commands.
+
+## Generated AI docs
+
+Use `--ai-docs` to generate project-local context files for coding agents:
+
+| Value | File generated |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | No AI docs |
+
+Multiple values are accepted:
+
+```bash
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+Use `--ai-docs none` to disable these files.
+
+## CLI workflow
+
+For agents without MCP access, pass explicit flags and avoid side effects:
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai-docs agents-md \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="CLI rules for agents">
+`--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass `none` for optional categories you want disabled.
+</Callout>
+
+## AI provider options
+
+TypeScript projects can select one AI SDK with `--ai`, including `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, or `none`.
+
+Python projects use the separate multi-select `--python-ai` option with `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai`, or `none`.
+
+Dependency placement depends on the selected framework and backend. Server-side AI packages are added to the server package or self-backend app; supported frontend integrations receive their matching client hooks/packages.
+
+## MCP workflow
+
+The Better Fullstack MCP server exposes schema lookup, compatibility checks, dry-run previews, project creation, and feature additions as structured tools. See the [MCP setup guide](/docs/ai/mcp/).
+
+This is distinct from the generated-project `mcp` addon. The server helps an agent create Better Fullstack projects; the addon writes MCP configuration inside a generated project.

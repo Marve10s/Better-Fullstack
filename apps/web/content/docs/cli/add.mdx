@@ -1,0 +1,59 @@
+---
+title: Add Features
+description: Add supported addons to existing Better Fullstack projects.
+---
+
+The `add` command reads an existing project's `bts.jsonc`, validates requested addons, writes supported addon files, and updates the project config.
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+## What add does
+
+- Reads `bts.jsonc` from the current project, or from `--project-dir`.
+- Prompts for compatible addons when `--addons` is omitted.
+- Skips addons that are already installed.
+- Writes addon templates and dependency changes when a new addon is selected.
+- Prints an install command when dependency installation is skipped.
+
+<Callout kind="warning" title="Addon-first command">
+`add` currently exits when no new addon is selected. Do not rely on deployment-only commands such as `add --web-deploy vercel`; deployment flags are only applied after the command has a new addon to process.
+</Callout>
+
+## Flags
+
+| Flag | Values or behavior |
+| --- | --- |
+| `--addons` | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none` |
+| `--project-dir` | Path to the generated project. Defaults to the current directory. |
+| `--install` | Install dependencies after adding files. Defaults to false for `add`. |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
+| `--web-deploy` | Records a web deployment target after addon processing. |
+| `--server-deploy` | Records a server deployment target after addon processing. |
+
+## Addon reference
+
+| Addon | Purpose |
+| --- | --- |
+| `mcp` | Generated-project MCP server configuration for coding agents. |
+| `skills` | Curated coding-agent skill files. |
+| `turborepo` | Monorepo orchestration. |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Code quality and hooks. |
+| `starlight` `fumadocs` | Documentation sites when compatible with the stack. |
+| `tauri` `pwa` `wxt` | Desktop, progressive web app, and browser extension support. |
+| `msw` `storybook` | Testing and component development utilities. |
+| `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | TanStack data and UI utilities. |
+| `opentui` | Terminal UI support. |
+
+## Idempotency
+
+`bts.jsonc` is the source of truth for installed addons. If every requested addon is already present, `add` reports that no new addons were selected and exits without applying unrelated changes.
+
+## Recommended workflow
+
+1. Commit or stash current work.
+2. Run `add` with explicit addon flags.
+3. Review generated file changes.
+4. Install dependencies if the command skipped install.
+5. Run the project's test, lint, or typecheck command.
