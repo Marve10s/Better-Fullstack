@@ -1,0 +1,53 @@
+---
+title: Java
+description: Spring Boot and plain Java scaffolds with Maven or Gradle wrappers, ORM, auth, libraries, and tests.
+---
+
+Java projects support Spring Boot and plain Java templates. Java options are available through flags, schemas, and templates; verify interactive ecosystem prompt support before relying on a wizard-only Java flow.
+
+## Prerequisites
+
+- Java 21.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest my-java-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator spring-validation flyway \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Java categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `spring-boot` `none` |
+| Build tool | `maven` `gradle` `none` |
+| ORM | `spring-data-jpa` `none` |
+| Auth | `spring-security` `none` |
+| Libraries | `spring-actuator` `spring-validation` `flyway` `none` |
+| Testing libraries | `junit5` `mockito` `testcontainers` `none` |
+
+## Compatibility notes
+
+- Spring Boot requires Maven or Gradle.
+- Java ORM, auth, and libraries require Spring Boot plus Maven or Gradle.
+- Flyway requires Spring Data JPA.
+- `springdoc-openapi` is not currently a supported Java library option.
+
+## Generated behavior
+
+- Maven projects use `./mvnw test` for verification when install is enabled.
+- Gradle projects use `./gradlew test` for verification when install is enabled.
+- Plain Java behavior is selected by using `--java-web-framework none` and compatible `none` values for framework-dependent categories.
+- AI instruction files are still available through `--ai-docs`, including `--ai-docs none`.

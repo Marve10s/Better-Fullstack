@@ -1,0 +1,93 @@
+---
+title: First Project
+description: Scaffold, inspect, install, and run a Better Fullstack project.
+---
+
+This flow writes a project to disk, explains what the CLI generated, and shows how to preview output when you want an extra safety check.
+
+## 1. Scaffold interactively
+
+Run the wizard when you want prompts:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+The default stack is TypeScript, TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, Git, install enabled, stable versions, and `CLAUDE.md`.
+
+## Optional: Preview before writing files
+
+Use `--dry-run` to generate the file tree in memory without writing files:
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+## 2. Scaffold from a script
+
+Use explicit flags when you want deterministic output. This example avoids dependency installation and Git initialization so you can inspect the files first:
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai none \
+  --payments none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --package-manager npm \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="Prompt behavior">
+Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional features you want disabled, including `--ai-docs none`.
+</Callout>
+
+## 3. Install dependencies
+
+If you selected `--no-install`, install manually inside the project:
+
+```npm
+cd my-app
+npm install
+```
+
+Non-TypeScript ecosystems use their generated toolchain commands instead:
+
+```bash
+cargo build
+uv sync
+go mod tidy
+./mvnw test
+./gradlew test
+```
+
+## 4. Inspect generated files
+
+Generated projects include:
+
+- `bts.jsonc` with the selected stack and schema reference.
+- Framework, package, and config files for the selected ecosystem.
+- A reproducible command printed by the CLI.
+- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+- README content and commands where the selected templates provide them.
+
+## 5. Add features later
+
+Inside a generated project, use `add` for supported addons:
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+The `add` command reads `bts.jsonc` and skips addons already present.

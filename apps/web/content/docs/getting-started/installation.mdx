@@ -1,0 +1,96 @@
+---
+title: Installation
+description: Set up your environment and scaffold your first Better Fullstack project.
+---
+
+The fastest path is the `create-better-fullstack` CLI. It can run as a wizard, accept flags, or execute commands copied from the Stack Builder.
+
+<Callout kind="tip" title="Online preview">
+Prefer to configure visually? Open the [Stack Builder](https://better-fullstack.dev/new), pick options from the UI, and copy the generated command.
+</Callout>
+
+## Prerequisites
+
+- Node.js 20 or newer.
+- A terminal.
+- Git only if you want the CLI to initialize a repository.
+- Ecosystem-specific tools only for the generated language you choose.
+
+## Launchers
+
+<PMTabs
+  npm="npm create better-fullstack@latest"
+  pnpm="pnpm create better-fullstack@latest"
+  bun="bun create better-fullstack@latest"
+  yarn="yarn create better-fullstack@latest"
+/>
+
+With `npm create`, pass Better Fullstack flags after a `--` separator. The generated npm command may use `npx create-better-fullstack@latest`; both target the same package entrypoint.
+
+## Wizard mode
+
+Run the CLI without stack flags to answer prompts:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+The wizard asks for the project name, ecosystem, stack options, optional addons, Git, and dependency installation.
+
+## Scripted mode
+
+Explicit flags skip the prompts for those categories. Omitted categories can still prompt unless defaults are being used, the CLI is running non-interactively, or you pass `--yes`.
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --db-setup none \
+  --ai-docs none \
+  --version-channel stable \
+  --package-manager npm \
+  --no-install \
+  --no-git
+```
+
+Use `--ai-docs none` when you do not want generated AI instruction files.
+
+## Templates
+
+The CLI includes shorthand templates:
+
+| Template | Stack |
+| --- | --- |
+| `t3` | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
+| `mern` | MongoDB, Express, React Router, Node.js |
+| `pern` | PostgreSQL, Express, TanStack Router, Node.js |
+| `uniwind` | Expo + Uniwind, mobile-only |
+| `none` | No shorthand template |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
+## Ecosystem toolchains
+
+| Ecosystem | Tooling |
+| --- | --- |
+| TypeScript | Node.js plus npm, pnpm, Yarn, or Bun |
+| Rust | Rust toolchain and Cargo |
+| Python | Python and `uv` |
+| Go | Go toolchain |
+| Java | Java 21; Maven/Gradle wrappers are generated when selected |
+
+For non-TypeScript projects, generated install or verification commands use the ecosystem tooling, such as `cargo build`, `uv sync`, `go mod tidy`, `./mvnw test`, or `./gradlew test`.
+
+## Next steps
+
+- Walk through the [First Project](/docs/getting-started/first-project/) flow.
+- Browse every flag in [CLI Create](/docs/cli/create/).
+- Compare language support in [Ecosystems](/docs/ecosystems/).

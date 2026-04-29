@@ -1,0 +1,16 @@
+{
+  "title": "Better Fullstack",
+  "pages": [
+    "index",
+    "---Start Here---",
+    "getting-started",
+    "---CLI---",
+    "cli",
+    "---Ecosystems---",
+    "ecosystems",
+    "---AI Agents---",
+    "ai",
+    "---Reference---",
+    "reference"
+  ]
+}

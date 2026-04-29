@@ -1,0 +1,195 @@
+---
+title: Create Command
+description: Full reference for create-better-fullstack flags, examples, and non-interactive usage.
+---
+
+The `create` command scaffolds a new project from a stack configuration. Run it as a wizard, accept defaults with `--yes`, or pass explicit flags for automation.
+
+<PMTabs
+  npm="npm create better-fullstack@latest [project-name] -- [flags]"
+  pnpm="pnpm create better-fullstack@latest [project-name] [flags]"
+  bun="bun create better-fullstack@latest [project-name] [flags]"
+  yarn="yarn create better-fullstack@latest [project-name] [flags]"
+/>
+
+<Callout kind="info" title="npm command forms">
+With `npm create`, pass Better Fullstack flags after `--`. Generated reproducible commands and the Stack Builder use `npx create-better-fullstack@latest` for npm.
+</Callout>
+
+## Prompt behavior
+
+- `--yes` accepts defaults and skips the stack wizard.
+- `--yes` conflicts with core stack flags such as `--frontend`, `--backend`, `--database`, `--orm`, `--auth`, and `--api`.
+- Explicit flags skip only the categories they cover.
+- Use `none` to disable optional categories, including `--ai-docs none`.
+- `--dry-run` previews the generated file tree without writing files.
+
+## TypeScript flags
+
+### Core stack
+
+| Flag | Values |
+| --- | --- |
+| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `native-bare` `native-uniwind` `native-unistyles` `redwood` `fresh` `none` |
+| `--backend` | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| `--runtime` | `node` `bun` `workers` `none` |
+| `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| `--db-setup` | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none` |
+| `--manual-db` | Skip provider-specific database setup prompts when applicable. |
+| `--auth` | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `go-better-auth` `none` |
+| `--api` | `orpc` `trpc` `ts-rest` `graphql-yoga` `garph` `none` |
+| `--astro-integration` | `react` `vue` `svelte` `solid` `none` |
+
+### Features and services
+
+| Flag | Values |
+| --- | --- |
+| `--ai` | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `llamaindex` `langchain` `modelfusion` `tanstack-ai` `none` |
+| `--payments` | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| `--email` | `resend` `react-email` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| `--realtime` | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| `--job-queue` | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| `--state-management` | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| `--forms` | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| `--validation` | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| `--testing` | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none` |
+| `--logging` | `pino` `winston` `none` |
+| `--observability` | `opentelemetry` `sentry` `grafana` `none` |
+| `--cms` | `payload` `sanity` `strapi` `tinacms` `none` |
+| `--caching` | `upstash-redis` `none` |
+| `--search` | `meilisearch` `typesense` `elasticsearch` `algolia` `none` |
+| `--file-storage` | `s3` `r2` `none` |
+| `--file-upload` | `uploadthing` `filepond` `uppy` `none` |
+| `--animation` | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none` |
+| `--analytics` | `plausible` `umami` `none` |
+| `--feature-flags` | `growthbook` `posthog` `none` |
+| `--i18n` | `i18next` `next-intl` `none` |
+| `--effect` | `effect` `effect-full` `none` |
+
+### UI
+
+| Flag | Values |
+| --- | --- |
+| `--css-framework` | `tailwind` `scss` `less` `postcss-only` `none` |
+| `--ui-library` | `shadcn-ui` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `base-ui` `ark-ui` `react-aria` `none` |
+| `--shadcn-base` | `radix` `base` |
+| `--shadcn-style` | `vega` `nova` `maia` `lyra` `mira` |
+| `--shadcn-icon-library` | `lucide` `tabler` `hugeicons` `phosphor` `remixicon` |
+| `--shadcn-color-theme` | `neutral` `stone` `zinc` `gray` `amber` `blue` `cyan` `emerald` `fuchsia` `green` `indigo` `lime` `orange` `pink` `purple` `red` `rose` `sky` `teal` `violet` `yellow` |
+| `--shadcn-base-color` | `neutral` `stone` `zinc` `gray` |
+| `--shadcn-font` | `inter` `geist` `figtree` `noto-sans` `nunito-sans` `roboto` `raleway` `dm-sans` `public-sans` `outfit` `jetbrains-mono` `geist-mono` |
+| `--shadcn-radius` | `default` `none` `small` `medium` `large` |
+
+## Language ecosystem flags
+
+### Rust
+
+| Flag | Values |
+| --- | --- |
+| `--rust-web-framework` | `axum` `actix-web` `rocket` `none` |
+| `--rust-frontend` | `leptos` `dioxus` `none` |
+| `--rust-orm` | `sea-orm` `sqlx` `diesel` `none` |
+| `--rust-api` | `tonic` `async-graphql` `none` |
+| `--rust-cli` | `clap` `ratatui` `none` |
+| `--rust-libraries` | `serde` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `none` |
+| `--rust-logging` | `tracing` `env-logger` `none` |
+| `--rust-error-handling` | `anyhow-thiserror` `eyre` `none` |
+| `--rust-caching` | `moka` `redis` `none` |
+| `--rust-auth` | `oauth2` `none` |
+
+### Python
+
+| Flag | Values |
+| --- | --- |
+| `--python-web-framework` | `fastapi` `django` `flask` `litestar` `none` |
+| `--python-orm` | `sqlalchemy` `sqlmodel` `tortoise-orm` `none` |
+| `--python-validation` | `pydantic` `none` |
+| `--python-ai` | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `none` |
+| `--python-auth` | `authlib` `jwt` `none` |
+| `--python-task-queue` | `celery` `none` |
+| `--python-graphql` | `strawberry` `none` |
+| `--python-quality` | `ruff` `none` |
+
+### Go
+
+| Flag | Values |
+| --- | --- |
+| `--go-web-framework` | `gin` `echo` `fiber` `chi` `none` |
+| `--go-orm` | `gorm` `sqlc` `ent` `none` |
+| `--go-api` | `grpc-go` `none` |
+| `--go-cli` | `cobra` `bubbletea` `none` |
+| `--go-logging` | `zap` `zerolog` `slog` `none` |
+| `--go-auth` | `casbin` `jwt` `none` |
+
+Go also supports the global `--auth go-better-auth` option for GoBetterAuth. That is separate from `--go-auth casbin|jwt|none`.
+
+### Java
+
+| Flag | Values |
+| --- | --- |
+| `--java-web-framework` | `spring-boot` `none` |
+| `--java-build-tool` | `maven` `gradle` `none` |
+| `--java-orm` | `spring-data-jpa` `none` |
+| `--java-auth` | `spring-security` `none` |
+| `--java-libraries` | `spring-actuator` `spring-validation` `flyway` `none` |
+| `--java-testing-libraries` | `junit5` `mockito` `testcontainers` `none` |
+
+Spring Boot requires Maven or Gradle. Java ORM, auth, and libraries require Spring Boot plus a build tool. Flyway requires Spring Data JPA.
+
+## Global flags
+
+| Flag | Description |
+| --- | --- |
+| `--ecosystem` | `typescript` `rust` `python` `go` `java`. Defaults to `typescript`. |
+| `--template` | `t3` `mern` `pern` `uniwind` `none`. |
+| `--addons` | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none`. |
+| `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`. |
+| `--ai-docs` | `claude-md` `agents-md` `cursorrules` `none`. |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn`. |
+| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none`. |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none`. |
+| `--version-channel` | `stable` `latest` `beta`. |
+| `--directory-conflict` | Conflict strategy for an existing target directory. |
+| `--dry-run` | Preview without writing files. |
+| `--yes` | Accept defaults; incompatible with core stack flags. |
+| `--yolo` | Skip safety confirmations where supported. |
+| `--no-install` | Skip dependency installation. |
+| `--no-git` | Skip Git initialization. |
+| `--disable-analytics` | Opt out of anonymous analytics. |
+| `--verbose` | Print detailed scaffold output. |
+
+## Scripted TypeScript example
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --ai none \
+  --payments none \
+  --email none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --package-manager npm \
+  --no-install \
+  --no-git
+```
+
+## Compatibility notes
+
+- tRPC is for React-based TypeScript frontends.
+- Qwik, Angular, Redwood, and Fresh have narrower API/backend support than the general option list.
+- `--backend self` is only for fullstack frameworks such as Next.js, TanStack Start, Astro, Nuxt, SvelteKit, and SolidStart, and uses `--runtime none`.
+- Workers runtime support depends on the backend and frontend combination.
+- The compatibility checker runs before generation and rejects invalid combinations with a clear error.

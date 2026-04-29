@@ -1,0 +1,55 @@
+---
+title: Go
+description: Go API, service, gRPC, CLI, logging, ORM, and auth-helper scaffolds.
+---
+
+Go projects use Go modules and Go-native templates. Shared TypeScript frontend/UI/example categories are not broad Go scaffold support.
+
+## Prerequisites
+
+- Go toolchain.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-logging zap \
+  --go-auth jwt \
+  --go-api none \
+  --go-cli none \
+  --auth none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Go categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `gin` `echo` `fiber` `chi` `none` |
+| ORM | `gorm` `sqlc` `ent` `none` |
+| API | `grpc-go` `none` |
+| CLI | `cobra` `bubbletea` `none` |
+| Logging | `zap` `zerolog` `slog` `none` |
+| Go auth helpers | `casbin` `jwt` `none` |
+
+## Auth split
+
+Go has two auth-related fields:
+
+- `--go-auth casbin|jwt|none` adds Go-native auth helpers.
+- `--auth go-better-auth` selects GoBetterAuth through the global auth field.
+
+Other global auth providers such as Clerk, NextAuth, Stack Auth, Supabase Auth, and Auth0 are TypeScript-oriented and should not be presented as general Go scaffold support.
+
+## Generated behavior
+
+- `go mod tidy` is the install/verification path when install is enabled.
+- gRPC, Cobra, and Bubble Tea files are included only when selected.
+- AI instruction files are still available through `--ai-docs`, including `--ai-docs none`.

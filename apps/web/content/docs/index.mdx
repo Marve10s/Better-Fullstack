@@ -1,0 +1,48 @@
+---
+title: Get Started
+description: Scaffold your first Better Fullstack project in minutes.
+---
+
+Better Fullstack generates a project from a typed stack configuration. You can pick options in the interactive CLI, pass flags directly, or use the [Stack Builder](https://better-fullstack.dev/new) to copy a command.
+
+## Requirements
+
+Better Fullstack requires Node.js 20 or newer.
+
+```bash
+node --version
+```
+
+The CLI itself runs on Node.js even when the generated project targets Rust, Python, Go, or Java. Install those ecosystem toolchains only when you scaffold that ecosystem.
+
+## Create a project
+
+Run the wizard:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+With `npm create`, Better Fullstack flags go after `--`. The generated reproducible command and Stack Builder use `npx create-better-fullstack@latest` for npm, which is the same package entrypoint in a non-interactive form.
+
+## Default stack
+
+If you accept defaults, the CLI creates a TypeScript project with TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, npm package manager, stable dependency versions, Git enabled, install enabled, and `CLAUDE.md` generated.
+
+## Generated context
+
+Every generated project includes:
+
+- `bts.jsonc` with the selected stack.
+- A reproducible command printed by the CLI.
+- Framework and package files for the selected ecosystem.
+- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+
+Not ready to scaffold yet? Use the [Stack Builder](https://better-fullstack.dev/new) to preview stack combinations and generated commands in your browser.
+
+## Next steps
+
+- [Installation](/docs/getting-started/installation/) — prerequisites and launchers.
+- [First Project](/docs/getting-started/first-project/) — dry-runs, scripted examples, and project structure.
+- [CLI Create](/docs/cli/create/) — flags and examples.
+- [Ecosystems](/docs/ecosystems/) — TypeScript, Rust, Python, Go, and Java support.

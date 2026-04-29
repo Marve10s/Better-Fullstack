@@ -1,0 +1,77 @@
+---
+title: TypeScript
+description: Fullstack web, mobile, desktop, API, worker, and integration scaffolds.
+---
+
+TypeScript is the primary Better Fullstack ecosystem and has the broadest support for shared categories: frontend, backend, database, auth, API, UI, services, addons, deploy targets, and examples.
+
+## Prerequisites
+
+- Node.js 20+.
+- npm, pnpm, Yarn, or Bun.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --package-manager npm \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## Core scaffold categories
+
+| Category | Values |
+| --- | --- |
+| Web frontend | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| Native frontend | `native-bare` `native-uniwind` `native-unistyles` `none` |
+| Backend | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| Runtime | `node` `bun` `workers` `none` |
+| Database | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `orpc` `trpc` `ts-rest` `graphql-yoga` `garph` `none` |
+| Auth | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## UI and app features
+
+| Category | Values |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| UI library | `shadcn-ui` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `base-ui` `ark-ui` `react-aria` `none` |
+| State | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| Forms | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| Validation | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| Examples | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## Services and tooling
+
+| Category | Values |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `none` |
+| Payments | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| Email | `resend` `react-email` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| Realtime | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| Jobs | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| Addons | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none` |
+
+## Compatibility notes
+
+- tRPC is for React-based frontends.
+- `self` backend is for fullstack frameworks and pairs with `runtime none`.
+- Qwik, Angular, Redwood, and Fresh have narrower API/backend support than the full option table.
+- Workers runtime support is backend-dependent.
+- UI libraries often depend on frontend family and CSS framework. For example, shadcn/ui is React-oriented and Tailwind-based.
+- Some providers have extra constraints, such as Polar requiring Better Auth and a web frontend.

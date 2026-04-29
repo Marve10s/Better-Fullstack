@@ -1,0 +1,81 @@
+---
+title: "Java Options"
+description: "Java-ecosystem categories: web framework, build tool, ORM, auth, libraries."
+---
+
+Categories applied when scaffolding a Java project.
+
+This page covers **17 options** across **6 categories**.
+
+Use CLI values in commands and MCP payloads.
+
+<Callout kind="info" title="Compatibility notes">
+Spring Boot requires Maven or Gradle. Java ORM, auth, and Java libraries require Spring Boot plus a build tool. Flyway requires Spring Data JPA. `springdoc-openapi` is not currently a supported Java library option.
+</Callout>
+
+## Java Web Framework
+
+
+Selection: **single**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `spring-boot` | Spring Boot | `spring-boot` |
+| `none` | None | `none` |
+
+## Java Build Tool
+
+
+Selection: **single**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `maven` | Maven | `maven` |
+| `gradle` | Gradle | `gradle` |
+| `none` | None | `none` |
+
+## Java ORM
+
+
+Selection: **single**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `spring-data-jpa` | Spring Data JPA | `spring-data-jpa` |
+| `none` | None | `none` |
+
+## Java Auth
+
+
+Selection: **single**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `spring-security` | Spring Security | `spring-security` |
+| `none` | None | `none` |
+
+## Java Libraries
+
+Java application libraries emitted into Maven and Gradle templates.
+
+Selection: **multiple**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `spring-actuator` | Spring Boot Actuator | `spring-actuator` |
+| `spring-validation` | Spring Validation | `spring-validation` |
+| `flyway` | Flyway | `flyway` |
+| `none` | None | `none` |
+
+## Java Testing Libraries
+
+Java testing libraries emitted into Maven and Gradle templates.
+
+Selection: **multiple**
+
+| Option | Label | CLI value |
+| --- | --- | --- |
+| `junit5` | JUnit 5 | `junit5` |
+| `mockito` | Mockito | `mockito` |
+| `testcontainers` | Testcontainers | `testcontainers` |
+| `none` | None | `none` |

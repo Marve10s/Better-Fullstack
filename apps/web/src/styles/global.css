@@ -242,6 +242,14 @@
   --shadow-xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 8px 10px -1px hsl(240 30% 25% / 0.12);
   --shadow-2xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.3);
   --tracking-normal: 0em;
+
+  /*
+   * Code block surfaces — GitHub Dark Default palette so token colors and
+   * chrome always match. Light-mode pages get a near-black code block (the
+   * classic dark-on-white contrast used by Next.js docs, shadcn/ui, Linear).
+   */
+  --code-bg: #0d1117;
+  --code-border: #30363d;
 }
 
 .dark {
@@ -297,6 +305,10 @@
   --shadow-lg: 0px 8px 16px 0px hsl(240 30% 5% / 0.3), 0px 4px 6px -1px hsl(240 30% 5% / 0.25);
   --shadow-xl: 0px 12px 24px 0px hsl(240 30% 5% / 0.35), 0px 8px 10px -1px hsl(240 30% 5% / 0.3);
   --shadow-2xl: 0px 16px 32px 0px hsl(240 30% 5% / 0.4);
+
+  /* Dark mode: slightly elevated from the page bg so code blocks lift off the surface */
+  --code-bg: #161b22;
+  --code-border: #30363d;
 }
 
 /* @layer base {
@@ -564,3 +576,137 @@
   font-family: var(--font-mono);
   font-size: 0.875rem;
 }
+
+/*
+ * Docs typography ─ scoped to .docs-prose so we don't bleed styles into the
+ * marketing site. Mono headings + sans body matches the brand. Spacing
+ * follows the rhythm of the rest of the site (Tailwind `space-y-*` style).
+ */
+.docs-prose {
+  --prose-text: var(--foreground);
+  --prose-muted: var(--muted-foreground);
+  color: var(--prose-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.docs-prose > * + * {
+  margin-top: 1.1rem;
+}
+
+.docs-prose h2,
+.docs-prose h3,
+.docs-prose h4 {
+  color: var(--prose-text);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 5rem;
+}
+
+.docs-prose h2 {
+  margin-top: 2.4rem;
+  font-size: 1.4rem;
+}
+
+.docs-prose h3 {
+  margin-top: 2rem;
+  font-size: 1.1rem;
+}
+
+.docs-prose h4 {
+  margin-top: 1.6rem;
+  font-size: 0.95rem;
+}
+
+.docs-prose p,
+.docs-prose li {
+  color: var(--prose-text);
+}
+
+.docs-prose a:not(:where(.docs-prose .not-prose *)) {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--border) 70%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+
+.docs-prose a:not(:where(.docs-prose .not-prose *)):hover {
+  text-decoration-color: currentColor;
+}
+
+/*
+ * Inline code — neutral chip that doesn't compete with body text.
+ * Excludes <code> inside <pre> so Shiki token colors stay untouched.
+ */
+.docs-prose code:not(:where(.docs-prose pre code)) {
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  padding: 0.1rem 0.35rem;
+  background: var(--muted);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+/*
+ * Suppress Shiki's own injected background-color on <pre> and <code> so
+ * the wrapper div's `--code-bg` surface shows through cleanly.
+ * Token text colors are output as direct inline styles (single theme) and
+ * don't need additional CSS to activate.
+ */
+.docs-prose pre,
+.docs-prose .shiki {
+  background-color: transparent !important;
+}
+
+.docs-prose ul,
+.docs-prose ol {
+  padding-left: 1.4rem;
+}
+
+.docs-prose ul > li {
+  list-style: disc;
+}
+
+.docs-prose ol > li {
+  list-style: decimal;
+}
+
+.docs-prose blockquote {
+  border-left: 2px solid var(--border);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--prose-muted);
+  font-style: italic;
+}
+
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.docs-prose th,
+.docs-prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.docs-prose th {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--prose-muted);
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+
+.docs-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.4rem 0;
+}
+
+/* Heading anchor target offset already handled via scroll-margin-top above */

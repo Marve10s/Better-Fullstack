@@ -11,6 +11,7 @@ import {
   SITE_NAME,
   canonicalUrl,
 } from "@/lib/seo";
+import { ECOSYSTEM_COUNT_LABEL, OPTION_COUNT_LABEL } from "@/lib/project-stats";
 import Footer from "@/components/home/footer";
 
 const COMPARE_TITLE = `Compare Fullstack Scaffolding Tools | ${SITE_NAME}`;
@@ -409,8 +410,7 @@ function ComparePage() {
             </h1>
             <p className="mt-4 text-sm text-muted-foreground sm:text-lg">
               Most scaffolding tools handle one framework and one opinion. Better Fullstack gives you
-              270+ options across 4 ecosystems — frontend, backend, database, auth, payments, AI, and
-              deployment — all preconfigured and ready to run.
+              {` ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} ecosystems — frontend, backend, database, auth, payments, AI, and deployment — all preconfigured and ready to run.`}
             </p>
           </div>
         </div>

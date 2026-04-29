@@ -1,0 +1,44 @@
+---
+title: Ecosystems
+description: Supported language ecosystems and what Better Fullstack scaffolds for each one.
+---
+
+Better Fullstack uses one CLI for multiple language ecosystems, but each ecosystem has its own scaffold surface. TypeScript has the broadest integration set; Rust, Python, Go, and Java focus on language-native project templates.
+
+| Ecosystem | Best for | Notes |
+| --- | --- | --- |
+| [TypeScript](/docs/ecosystems/typescript/) | Fullstack web, APIs, workers, mobile, desktop, and the largest integration matrix. | Most shared options are TypeScript-first. |
+| [Rust](/docs/ecosystems/rust/) | Backend services, CLI apps, GraphQL/gRPC, Rust web frontends, and strongly typed libraries. | Uses Cargo; templates are conditional by selected Rust options. |
+| [Python](/docs/ecosystems/python/) | API and AI-oriented services with framework, ORM, validation, queue, GraphQL, and quality choices. | Uses `uv`; Python AI is a separate multi-select category. |
+| [Go](/docs/ecosystems/go/) | API services, gRPC, CLIs, logging, ORM, and Go auth helpers. | Uses Go modules; GoBetterAuth is selected with global `--auth go-better-auth`. |
+| [Java](/docs/ecosystems/java/) | Spring Boot or plain Java projects with Maven/Gradle, Spring Data JPA, Spring Security, libraries, and tests. | Java is supported by flags/schema/templates; verify interactive prompt support before relying on wizard-only flows. |
+
+## Default CLI baseline
+
+Accepting defaults creates a TypeScript project:
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle",
+  "auth": "better-auth",
+  "api": "trpc",
+  "cssFramework": "tailwind",
+  "uiLibrary": "shadcn-ui",
+  "testing": "vitest",
+  "addons": ["turborepo"],
+  "packageManager": "npm",
+  "versionChannel": "stable",
+  "aiDocs": ["claude-md"]
+}
+```
+
+Runtime and package manager are separate choices. For example, a project can use npm for installs while selecting Bun as the TypeScript runtime.
+
+## Shared options are not universal
+
+Some flags are global because they are stored in one project config, but not every flag generates meaningful files in every ecosystem. Use the ecosystem pages below for what is actually scaffolded, and use the [Reference Options](/docs/reference/options/) pages for complete option values and compatibility caveats.
