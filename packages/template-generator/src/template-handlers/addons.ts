@@ -58,10 +58,39 @@ export async function processAddonTemplates(
     }
 
     if (addon === "docker-compose") {
+      if (config.ecosystem !== "typescript") {
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/.dockerignore",
+          ".dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/docker-compose.yml",
+          "docker-compose.yml",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          `addons/docker-compose/${config.ecosystem}/Dockerfile`,
+          "Dockerfile",
+          config,
+        );
+        continue;
+      }
+
       // Place docker-compose.yml at project root
       processTemplatesFromPrefix(vfs, templates, "addons/docker-compose", "", config, [
         "addons/docker-compose/apps/server",
         "addons/docker-compose/apps/web",
+        "addons/docker-compose/go",
+        "addons/docker-compose/java",
+        "addons/docker-compose/python",
+        "addons/docker-compose/rust",
       ]);
 
       // Place server Dockerfile if backend exists

@@ -2363,10 +2363,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
-  "docker-compose": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "astro",
-  ],
+  "docker-compose": [],
   none: [],
 };
 

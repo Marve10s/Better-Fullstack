@@ -1,6 +1,7 @@
 name: {{projectName}}
 
 services:
+{{#if (eq ecosystem "typescript")}}
   web:
     build:
       context: .
@@ -129,4 +130,67 @@ volumes:
 
 volumes:
   mongo_data:
+{{/if}}
+{{else}}
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+{{#if (eq ecosystem "python")}}
+      - "8000:8000"
+{{else if (eq ecosystem "rust")}}
+      - "3000:3000"
+{{else}}
+      - "8080:8080"
+{{/if}}
+    environment:
+{{#if (eq ecosystem "python")}}
+      - HOST=0.0.0.0
+      - PORT=8000
+{{else if (eq ecosystem "go")}}
+      - HOST=0.0.0.0
+      - PORT=8080
+{{#if (ne goOrm "none")}}
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}?sslmode=disable
+{{/if}}
+{{else if (eq ecosystem "rust")}}
+      - HOST=0.0.0.0
+      - PORT=3000
+{{#if (ne rustOrm "none")}}
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}
+{{/if}}
+{{else if (eq ecosystem "java")}}
+      - PORT=8080
+      - SPRING_PROFILES_ACTIVE=prod
+{{/if}}
+{{#if (or (and (eq ecosystem "go") (ne goOrm "none")) (and (eq ecosystem "rust") (ne rustOrm "none")))}}
+    depends_on:
+      db:
+        condition: service_healthy
+{{/if}}
+    restart: unless-stopped
+
+{{#if (or (and (eq ecosystem "go") (ne goOrm "none")) (and (eq ecosystem "rust") (ne rustOrm "none")))}}
+  db:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-{{projectNameWithClosingBrace}}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+{{/if}}
 {{/if}}

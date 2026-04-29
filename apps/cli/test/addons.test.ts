@@ -343,6 +343,118 @@ describe("Addon Configurations", () => {
         expectSuccess(result);
       });
 
+      it("should generate docker-compose for Python projects", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-python",
+          ecosystem: "python",
+          addons: ["docker-compose"],
+          pythonWebFramework: "fastapi",
+          pythonOrm: "none",
+          pythonValidation: "pydantic",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+
+        expect(dockerfile).toContain("FROM python:3.12-slim");
+        expect(dockerfile).toContain('CMD ["python", "-m", "app.main"]');
+        expect(compose).toContain('      - "8000:8000"');
+        expect(compose).toContain("PORT=8000");
+      });
+
+      it("should generate docker-compose for Go projects", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-go",
+          ecosystem: "go",
+          addons: ["docker-compose"],
+          goWebFramework: "gin",
+          goOrm: "gorm",
+          goApi: "none",
+          goCli: "none",
+          goLogging: "slog",
+          goAuth: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+
+        expect(dockerfile).toContain("FROM golang:1.22-alpine AS builder");
+        expect(dockerfile).toContain("go build -o /out/server ./cmd/server");
+        expect(compose).toContain('      - "8080:8080"');
+        expect(compose).toContain("DATABASE_URL=postgres://postgres:postgres@db:5432/docker-compose-go?sslmode=disable");
+        expect(compose).toContain("image: postgres:16-alpine");
+      });
+
+      it("should generate docker-compose for Rust projects", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-rust",
+          ecosystem: "rust",
+          addons: ["docker-compose"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "sqlx",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+
+        expect(dockerfile).toContain("FROM rust:1-slim AS builder");
+        expect(dockerfile).toContain("cargo build --release --bin server");
+        expect(compose).toContain('      - "3000:3000"');
+        expect(compose).toContain("DATABASE_URL=postgres://postgres:postgres@db:5432/docker-compose-rust");
+        expect(compose).toContain("image: postgres:16-alpine");
+      });
+
+      it("should generate docker-compose for Java projects", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-java",
+          ecosystem: "java",
+          addons: ["docker-compose"],
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "none",
+          javaAuth: "none",
+          javaLibraries: [],
+          javaTestingLibraries: ["junit5"],
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+
+        expect(dockerfile).toContain("FROM eclipse-temurin:21-jdk AS builder");
+        expect(dockerfile).toContain("./mvnw -DskipTests package");
+        expect(compose).toContain('      - "8080:8080"');
+        expect(compose).toContain("SPRING_PROFILES_ACTIVE=prod");
+      });
+
       describe("Docker Compose File Generation", () => {
         it("should generate docker-compose.yml at project root", async () => {
           const result = await runTRPCTest({

@@ -1,0 +1,26 @@
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache build-base ca-certificates git
+
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=1 GOOS=linux go build -o /out/server ./cmd/server
+
+FROM alpine:3.20 AS app
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=builder /out/server /app/server
+
+ENV HOST=0.0.0.0 \
+    PORT=8080
+
+EXPOSE 8080
+
+CMD ["/app/server"]

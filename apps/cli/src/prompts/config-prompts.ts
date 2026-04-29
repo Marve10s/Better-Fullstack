@@ -337,7 +337,12 @@ export async function gatherConfig(
         return getEffectChoice(flags.effect);
       },
       addons: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve([] as Addons[]);
+        if (results.ecosystem !== "typescript") {
+          const nonTypeScriptAddons = (flags.addons ?? []).filter(
+            (addon): addon is Addons => addon === "docker-compose",
+          );
+          return Promise.resolve(nonTypeScriptAddons);
+        }
         return getAddonsChoice(
           flags.addons,
           results.frontend,
