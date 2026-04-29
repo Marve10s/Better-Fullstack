@@ -15,7 +15,8 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | [python-ecosystem-expansion.md](python-ecosystem-expansion.md) | 12 new categories for Python (frameworks, ORMs, auth, GraphQL, CLI, testing, etc.) |
 | **New Ecosystems** | |
 | [new-ecosystems.md](new-ecosystems.md) | Index — links to individual ecosystem files below |
-| [java-ecosystem.md](java-ecosystem.md) | Java: Spring Boot, Quarkus, Micronaut, JPA, jOOQ, Spring Security, etc. |
+| [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
+| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir: Phoenix, Ecto, LiveView, Oban, Absinthe, etc. |
 | [dotnet-ecosystem.md](dotnet-ecosystem.md) | C#: ASP.NET Core, EF Core, Dapper, SignalR, etc. |
 | **Platform & Infra** | |
@@ -24,7 +25,8 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | [payment-providers-expansion.md](payment-providers-expansion.md) | Creem.io, Autumn, Commet, Better Auth orgs plugin |
 | [community-requested-integrations.md](community-requested-integrations.md) | Cloudinary, SWR, shadcn-svelte, REST API, InstantDB, Intlayer, Plasmo, etc. |
 | [mobile-react-native.md](mobile-react-native.md) | Navigation, mobile UI libs, testing, push, Capacitor, OTA updates |
-| [documentation-site.md](documentation-site.md) | User-facing docs: getting started, CLI ref, compatibility matrix, public roadmap |
+| [../completed/documentation-site-2026-04-29.md](../completed/documentation-site-2026-04-29.md) | ✅ Initial user-facing `/docs` site |
+| [documentation-follow-ups.md](documentation-follow-ups.md) | Remaining docs: roadmap, compatibility matrix, full CLI reference, deployment guides |
 | [ci-and-quality.md](ci-and-quality.md) | Remaining quality backlog: cross-browser testing (CI/security foundation + Phase 1 hardening completed) |
 | **Reference** | |
 | [competitive-analysis.md](competitive-analysis.md) | Gap analysis vs better-t-stack |
@@ -126,7 +128,8 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [x] Add `diesel` ✅
 
 ### New Language Ecosystems
-- [ ] Add `java` (Spring Boot, Quarkus)
+- [x] Add `java` foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries/testing ✅
+- [ ] Expand Java with Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
 - [ ] Add `elixir` (Phoenix, LiveView)
 - [ ] Add `c#/aspnet` (ASP.NET Core, EF Core)
 
@@ -138,7 +141,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [ ] Capacitor (web → mobile)
 
 ### Documentation
-- [ ] User-facing docs site (Fumadocs or Starlight)
+- [x] User-facing `/docs` site ✅
 - [ ] Auto-generated CLI reference
 - [ ] Interactive compatibility matrix
 - [ ] Public roadmap page

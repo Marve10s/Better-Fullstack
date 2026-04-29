@@ -12,6 +12,10 @@ Current files:
 - `docs/plans/completed/codebase-issues-2026-04-04.md`
 - `docs/plans/completed/engineering-backlog-2026-03-05.md`
 - `docs/plans/completed/compatibility-unification-and-url-state-foundation-2026-02-28.md`
+- `docs/plans/completed/documentation-site-2026-04-29.md`
+- `docs/plans/completed/java-ecosystem-foundation-2026-04-29.md`
 - `docs/plans/completed/shadcn-ui-polish-fixes-2026-03-02.md`
 - `docs/plans/planned/ecosystem-expansion-backlog.md`
 - `docs/plans/planned/ci-and-quality.md`
+- `docs/plans/planned/documentation-follow-ups.md`
+- `docs/plans/planned/java-ecosystem-follow-ups.md`
