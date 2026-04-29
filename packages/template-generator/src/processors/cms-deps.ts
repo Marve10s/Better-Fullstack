@@ -75,12 +75,12 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
 
       const existingBuild = pkgJson.scripts.build;
       if (existingBuild) {
-        pkgJson.scripts.build = `tinacms build && ${existingBuild}`;
+        pkgJson.scripts.build = `tinacms build --local --skip-cloud-checks && ${existingBuild}`;
       }
 
       const existingCheckTypes = pkgJson.scripts["check-types"];
       if (existingCheckTypes) {
-        pkgJson.scripts["check-types"] = `tinacms build && ${existingCheckTypes}`;
+        pkgJson.scripts["check-types"] = `tinacms build --local --skip-cloud-checks && ${existingCheckTypes}`;
       }
 
       vfs.writeJson(webPath, pkgJson);
