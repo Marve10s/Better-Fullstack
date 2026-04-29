@@ -3,8 +3,14 @@ package {{javaPackageName}};
 {{#if isJavaSpringBoot}}
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+{{#if hasJavaCaffeine}}
+import org.springframework.cache.annotation.EnableCaching;
+{{/if}}
 
 @SpringBootApplication
+{{#if hasJavaCaffeine}}
+@EnableCaching
+{{/if}}
 {{/if}}
 public class Application {
 

@@ -283,12 +283,33 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/spring-projects/spring-boot",
   },
   "spring-validation": {
-    docsUrl: "https://docs.spring.io/spring-framework/reference/core/validation/beanvalidation.html",
+    docsUrl:
+      "https://docs.spring.io/spring-framework/reference/core/validation/beanvalidation.html",
     githubUrl: "https://github.com/spring-projects/spring-framework",
   },
   flyway: {
     docsUrl: "https://documentation.red-gate.com/fd",
     githubUrl: "https://github.com/flyway/flyway",
+  },
+  liquibase: {
+    docsUrl: "https://docs.liquibase.com/",
+    githubUrl: "https://github.com/liquibase/liquibase",
+  },
+  "springdoc-openapi": {
+    docsUrl: "https://springdoc.org/",
+    githubUrl: "https://github.com/springdoc/springdoc-openapi",
+  },
+  lombok: {
+    docsUrl: "https://projectlombok.org/features/",
+    githubUrl: "https://github.com/projectlombok/lombok",
+  },
+  mapstruct: {
+    docsUrl: "https://mapstruct.org/documentation/",
+    githubUrl: "https://github.com/mapstruct/mapstruct",
+  },
+  caffeine: {
+    docsUrl: "https://github.com/ben-manes/caffeine/wiki",
+    githubUrl: "https://github.com/ben-manes/caffeine",
   },
   junit5: {
     docsUrl: "https://junit.org/junit5/docs/current/user-guide/",
@@ -301,6 +322,30 @@ const BASE_LINKS: LinkMap = {
   testcontainers: {
     docsUrl: "https://java.testcontainers.org/",
     githubUrl: "https://github.com/testcontainers/testcontainers-java",
+  },
+  assertj: {
+    docsUrl: "https://assertj.github.io/doc/",
+    githubUrl: "https://github.com/assertj/assertj",
+  },
+  "rest-assured": {
+    docsUrl: "https://rest-assured.io/",
+    githubUrl: "https://github.com/rest-assured/rest-assured",
+  },
+  wiremock: {
+    docsUrl: "https://wiremock.org/docs/",
+    githubUrl: "https://github.com/wiremock/wiremock",
+  },
+  awaitility: {
+    docsUrl: "https://github.com/awaitility/awaitility/wiki/Usage",
+    githubUrl: "https://github.com/awaitility/awaitility",
+  },
+  archunit: {
+    docsUrl: "https://www.archunit.org/userguide/html/000_Index.html",
+    githubUrl: "https://github.com/TNG/ArchUnit",
+  },
+  jqwik: {
+    docsUrl: "https://jqwik.net/docs/current/user-guide",
+    githubUrl: "https://github.com/jqwik-team/jqwik",
   },
   pino: { docsUrl: "https://getpino.io/#/", githubUrl: "https://github.com/pinojs/pino" },
   winston: {
@@ -799,10 +844,19 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.pydantic.dev/",
     githubUrl: "https://github.com/pydantic/pydantic",
   },
-  authlib: { docsUrl: "https://docs.authlib.org/en/latest/", githubUrl: "https://github.com/lepture/authlib" },
-  jwt: { docsUrl: "https://python-jose.readthedocs.io/en/latest/", githubUrl: "https://github.com/mpdavis/python-jose" },
+  authlib: {
+    docsUrl: "https://docs.authlib.org/en/latest/",
+    githubUrl: "https://github.com/lepture/authlib",
+  },
+  jwt: {
+    docsUrl: "https://python-jose.readthedocs.io/en/latest/",
+    githubUrl: "https://github.com/mpdavis/python-jose",
+  },
   celery: { docsUrl: "https://docs.celeryq.dev/", githubUrl: "https://github.com/celery/celery" },
-  strawberry: { docsUrl: "https://strawberry.rocks/docs", githubUrl: "https://github.com/strawberry-graphql/strawberry" },
+  strawberry: {
+    docsUrl: "https://strawberry.rocks/docs",
+    githubUrl: "https://github.com/strawberry-graphql/strawberry",
+  },
   ruff: { docsUrl: "https://docs.astral.sh/ruff/", githubUrl: "https://github.com/astral-sh/ruff" },
   gin: { docsUrl: "https://gin-gonic.com/docs/", githubUrl: "https://github.com/gin-gonic/gin" },
   echo: {
@@ -813,7 +867,10 @@ const BASE_LINKS: LinkMap = {
   chi: { docsUrl: "https://go-chi.io/", githubUrl: "https://github.com/go-chi/chi" },
   gorm: { docsUrl: "https://gorm.io/docs/", githubUrl: "https://github.com/go-gorm/gorm" },
   sqlc: { docsUrl: "https://docs.sqlc.dev/", githubUrl: "https://github.com/sqlc-dev/sqlc" },
-  ent: { docsUrl: "https://entgo.io/docs/getting-started/", githubUrl: "https://github.com/ent/ent" },
+  ent: {
+    docsUrl: "https://entgo.io/docs/getting-started/",
+    githubUrl: "https://github.com/ent/ent",
+  },
   "grpc-go": {
     docsUrl: "https://grpc.io/docs/languages/go/quickstart/",
     githubUrl: "https://github.com/grpc/grpc-go",

@@ -1,18 +1,27 @@
 #!/usr/bin/env bun
 
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
 import type { Ecosystem } from "@better-fullstack/types";
 
+import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
+import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
+
+import { ensureBuiltCliBinary } from "./lib/cli-binary";
+import {
+  formatCliScaffoldFailure,
+  scaffoldWithCli,
+  type CliScaffoldResult,
+} from "./lib/cli-scaffold";
 import { generateBatch } from "./lib/generate-combos/options";
 import { createSeededRandom, seedFromString } from "./lib/generate-combos/seed-random";
-import type { ComboCandidate, GeneratorArgs, HistoricalLedger } from "./lib/generate-combos/types";
-import { ensureBuiltCliBinary } from "./lib/cli-binary";
-import { formatCliScaffoldFailure, scaffoldWithCli, type CliScaffoldResult } from "./lib/cli-scaffold";
-import { buildMajorDepCombos, buildMajorDepCombosFromDiff, type MajorDepInfo } from "./lib/major-dep-combos";
+import {
+  buildMajorDepCombos,
+  buildMajorDepCombosFromDiff,
+  type MajorDepInfo,
+} from "./lib/major-dep-combos";
 import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
 
@@ -59,7 +68,7 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         i++;
         break;
       case "--ecosystem":
-        if (next && ["typescript", "rust", "python", "go"].includes(next)) {
+        if (next && ["typescript", "rust", "python", "go", "java"].includes(next)) {
           args.ecosystem = next as Ecosystem;
         }
         i++;
@@ -154,7 +163,7 @@ function generateCombos(args: SmokeTestArgs) {
 
   const generatorArgs: GeneratorArgs = {
     count: args.count,
-    ecosystems: args.ecosystem ? [args.ecosystem] : ["typescript", "rust", "python", "go"],
+    ecosystems: args.ecosystem ? [args.ecosystem] : ["typescript", "rust", "python", "go", "java"],
     installMode: "no-install",
     rng,
     forceOptions: args.forceOptions,
@@ -194,7 +203,13 @@ function buildCliArgs(input: ScaffoldInput): string[] {
 async function scaffoldProject(
   input: ScaffoldInput,
   outputDir: string,
-): Promise<{ success: boolean; projectDir: string; error?: string; durationMs: number; result?: CliScaffoldResult }> {
+): Promise<{
+  success: boolean;
+  projectDir: string;
+  error?: string;
+  durationMs: number;
+  result?: CliScaffoldResult;
+}> {
   const startedAt = Date.now();
   const projectDir = join(outputDir, input.name);
   const cliPath = await ensureBuiltCliBinary();
@@ -318,7 +333,10 @@ if (args.majorDeps) {
   let majorPackageNames: string[];
 
   if (args.majorDepsPackages) {
-    majorPackageNames = args.majorDepsPackages.split(",").map((s) => s.trim()).filter(Boolean);
+    majorPackageNames = args.majorDepsPackages
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     combos = buildMajorDepCombos(majorPackageNames);
   } else if (args.majorDepsDiff) {
     const diffText = readFileSync(args.majorDepsDiff, "utf-8");
@@ -340,7 +358,9 @@ if (args.majorDeps) {
       combos = result.combos;
       majorPackageNames = result.packages.map((p) => p.name);
     } catch {
-      console.error("Failed to auto-detect major deps from git diff. Use --major-deps-packages or --major-deps-diff.");
+      console.error(
+        "Failed to auto-detect major deps from git diff. Use --major-deps-packages or --major-deps-diff.",
+      );
       process.exit(1);
     }
   }
@@ -350,8 +370,12 @@ if (args.majorDeps) {
     process.exit(0);
   }
 
-  const flags = [args.devCheck && "dev-check", args.routeCheck && "route-check"].filter(Boolean).join(", ");
-  console.log(`Running major-deps smoke test (${combos.length} combo(s) for ${majorPackageNames.length} package(s))${flags ? ` [${flags}]` : ""}\n`);
+  const flags = [args.devCheck && "dev-check", args.routeCheck && "route-check"]
+    .filter(Boolean)
+    .join(", ");
+  console.log(
+    `Running major-deps smoke test (${combos.length} combo(s) for ${majorPackageNames.length} package(s))${flags ? ` [${flags}]` : ""}\n`,
+  );
   if (majorDepInfo) {
     for (const p of majorDepInfo) {
       console.log(`  ${p.name}: ^${p.oldMajor} → ^${p.newMajor}`);
@@ -360,10 +384,14 @@ if (args.majorDeps) {
   }
 } else if (args.preset) {
   combos = getPresetCombos(args.preset);
-  console.log(`Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${args.devCheck ? " [dev-check enabled]" : ""}\n`);
+  console.log(
+    `Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${args.devCheck ? " [dev-check enabled]" : ""}\n`,
+  );
 } else {
   combos = generateCombos(args);
-  console.log(`Running smoke test (seed: ${args.seed}, combos: ${combos.length})${args.devCheck ? " [dev-check enabled]" : ""}\n`);
+  console.log(
+    `Running smoke test (seed: ${args.seed}, combos: ${combos.length})${args.devCheck ? " [dev-check enabled]" : ""}\n`,
+  );
 }
 
 await mkdir(args.output, { recursive: true });

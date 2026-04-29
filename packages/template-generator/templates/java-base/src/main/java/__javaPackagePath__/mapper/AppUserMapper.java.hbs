@@ -1,0 +1,12 @@
+package {{javaPackageName}}.mapper;
+
+import org.mapstruct.Mapper;
+
+import {{javaPackageName}}.domain.AppUser;
+import {{javaPackageName}}.dto.UserDto;
+
+@Mapper(componentModel = "spring")
+public interface AppUserMapper {
+
+  UserDto toDto(AppUser user);
+}

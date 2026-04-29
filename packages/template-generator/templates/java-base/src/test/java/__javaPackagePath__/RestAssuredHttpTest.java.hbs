@@ -1,0 +1,40 @@
+package {{javaPackageName}};
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.Test;
+
+class RestAssuredHttpTest {
+
+  @Test
+  void verifiesHttpJsonResponse() throws IOException {
+    HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+    server.createContext("/health", exchange -> {
+      byte[] body = "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8);
+      exchange.getResponseHeaders().set("Content-Type", "application/json");
+      exchange.sendResponseHeaders(200, body.length);
+      exchange.getResponseBody().write(body);
+      exchange.close();
+    });
+
+    try {
+      server.start();
+      given()
+        .baseUri("http://localhost")
+        .port(server.getAddress().getPort())
+        .when()
+        .get("/health")
+        .then()
+        .statusCode(200)
+        .body("status", equalTo("ok"));
+    } finally {
+      server.stop(0);
+    }
+  }
+}

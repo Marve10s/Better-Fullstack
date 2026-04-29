@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version>
+		<version>4.0.6</version>
 		<relativePath/>
 	</parent>
 {{/if}}
@@ -18,17 +18,68 @@
 	<properties>
 {{#if isJavaSpringBoot}}
 		<java.version>21</java.version>
+{{#if hasJavaSpringdocOpenapi}}
+		<springdoc.version>3.0.3</springdoc.version>
+{{/if}}
+{{#if hasJavaLombok}}
+		<lombok.version>1.18.46</lombok.version>
+{{/if}}
+{{#if hasJavaMapstruct}}
+		<mapstruct.version>1.6.3</mapstruct.version>
+{{/if}}
+{{#if hasJavaAssertj}}
+		<assertj.version>3.27.7</assertj.version>
+{{/if}}
+{{#if hasJavaRestAssured}}
+		<rest-assured.version>6.0.0</rest-assured.version>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<wiremock.version>3.13.2</wiremock.version>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<awaitility.version>4.3.0</awaitility.version>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<archunit.version>1.4.2</archunit.version>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<jqwik.version>1.9.3</jqwik.version>
+{{/if}}
 {{else}}
 		<maven.compiler.release>21</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 {{#if hasJavaTests}}
 		<junit.version>5.12.2</junit.version>
+{{#if hasJavaAssertj}}
+		<assertj.version>3.27.7</assertj.version>
+{{/if}}
 {{#if hasJavaMockito}}
-		<mockito.version>5.15.2</mockito.version>
+		<mockito.version>5.23.0</mockito.version>
 {{/if}}
 {{#if hasJavaTestcontainers}}
 		<testcontainers.version>1.20.4</testcontainers.version>
 {{/if}}
+{{#if hasJavaRestAssured}}
+		<rest-assured.version>6.0.0</rest-assured.version>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<wiremock.version>3.13.2</wiremock.version>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<awaitility.version>4.3.0</awaitility.version>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<archunit.version>1.4.2</archunit.version>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<jqwik.version>1.9.3</jqwik.version>
+{{/if}}
+{{/if}}
+{{#if hasJavaLombok}}
+		<lombok.version>1.18.46</lombok.version>
+{{/if}}
+{{#if hasJavaMapstruct}}
+		<mapstruct.version>1.6.3</mapstruct.version>
 {{/if}}
 {{/if}}
 	</properties>
@@ -88,6 +139,44 @@
 			<artifactId>flyway-core</artifactId>
 		</dependency>
 {{/if}}
+{{#if hasJavaLiquibase}}
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+		</dependency>
+{{/if}}
+{{#if hasJavaSpringdocOpenapi}}
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+{{/if}}
+{{#if hasJavaLombok}}
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<optional>true</optional>
+		</dependency>
+{{/if}}
+{{#if hasJavaMapstruct}}
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
+{{/if}}
+{{#if hasJavaCaffeine}}
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+{{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
@@ -120,6 +209,54 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+{{#if hasJavaAssertj}}
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaRestAssured}}
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>${rest-assured.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>${awaitility.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>${jqwik.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
 {{#if hasJavaTestcontainers}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -140,6 +277,14 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+{{#if hasJavaAssertj}}
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
 {{#if hasJavaMockito}}
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -160,6 +305,46 @@
 			<scope>test</scope>
 		</dependency>
 {{/if}}
+{{#if hasJavaRestAssured}}
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>${rest-assured.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaWireMock}}
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock</artifactId>
+			<version>${wiremock.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaAwaitility}}
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>${awaitility.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaArchunit}}
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
+{{#if hasJavaJqwik}}
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>${jqwik.version}</version>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
 {{/if}}
 {{/if}}
 	</dependencies>
@@ -171,17 +356,62 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+{{#if hasJavaAnnotationProcessors}}
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.15.0</version>
+				<configuration>
+					<annotationProcessorPaths>
+{{#if hasJavaLombok}}
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+{{/if}}
+{{#if hasJavaMapstruct}}
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+{{/if}}
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+{{/if}}
 {{else}}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.15.0</version>
+{{#if hasJavaAnnotationProcessors}}
+				<configuration>
+					<annotationProcessorPaths>
+{{#if hasJavaLombok}}
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+{{/if}}
+{{#if hasJavaMapstruct}}
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+{{/if}}
+					</annotationProcessorPaths>
+				</configuration>
+{{/if}}
 			</plugin>
 {{#if hasJavaTests}}
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.2</version>
+				<version>3.5.5</version>
 				<configuration>
 					<useModulePath>false</useModulePath>
 				</configuration>
@@ -190,7 +420,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.3</version>
 				<configuration>
 					<mainClass>{{javaPackageName}}.Application</mainClass>
 				</configuration>
@@ -198,7 +428,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.4.2</version>
+				<version>3.5.0</version>
 				<configuration>
 					<archive>
 						<manifest>

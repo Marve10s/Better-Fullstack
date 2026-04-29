@@ -1,0 +1,15 @@
+package {{javaPackageName}}.cache;
+
+import java.time.Instant;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+@Service
+public class CachedTimeService {
+
+  @Cacheable("generated-timestamps")
+  public Instant generatedAt() {
+    return Instant.now();
+  }
+}

@@ -1,0 +1,33 @@
+package {{javaPackageName}}.mapper;
+
+{{#if hasJavaAssertj}}
+import static org.assertj.core.api.Assertions.assertThat;
+{{else}}
+import static org.junit.jupiter.api.Assertions.assertEquals;
+{{/if}}
+
+import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+
+import {{javaPackageName}}.domain.AppUser;
+import {{javaPackageName}}.dto.UserDto;
+
+class AppUserMapperTest {
+
+  private final AppUserMapper mapper = Mappers.getMapper(AppUserMapper.class);
+
+  @Test
+  void mapsUserToDto() {
+    AppUser user = new AppUser("admin@example.com", "Admin");
+
+    UserDto dto = mapper.toDto(user);
+
+{{#if hasJavaAssertj}}
+    assertThat(dto.email()).isEqualTo("admin@example.com");
+    assertThat(dto.displayName()).isEqualTo("Admin");
+{{else}}
+    assertEquals("admin@example.com", dto.email());
+    assertEquals("Admin", dto.displayName());
+{{/if}}
+  }
+}

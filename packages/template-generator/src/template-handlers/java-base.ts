@@ -20,26 +20,88 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaActuator: boolean;
   hasJavaValidation: boolean;
   hasJavaFlyway: boolean;
+  hasJavaLiquibase: boolean;
+  hasJavaSpringdocOpenapi: boolean;
+  hasJavaLombok: boolean;
+  hasJavaMapstruct: boolean;
+  hasJavaCaffeine: boolean;
+  hasJavaAnnotationProcessors: boolean;
   hasJavaMockito: boolean;
   hasJavaTestcontainers: boolean;
+  hasJavaAssertj: boolean;
+  hasJavaRestAssured: boolean;
+  hasJavaWireMock: boolean;
+  hasJavaAwaitility: boolean;
+  hasJavaArchunit: boolean;
+  hasJavaJqwik: boolean;
   hasJavaTests: boolean;
 };
 
 const JAVA_GROUP_ID = "com.example";
+const JAVA_JPA_REQUIRED_LIBRARIES = new Set(["flyway", "liquibase"]);
 
 // Java reserved words + boolean/null literals. Using any of these as a
 // package segment produces uncompilable code (`package com.example.class;`).
 // Source: JLS §3.9 (keywords) + §3.10.3 (boolean literals) + §3.10.8 (null literal).
 const JAVA_RESERVED_WORDS = new Set([
-  "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
-  "class", "const", "continue", "default", "do", "double", "else", "enum",
-  "extends", "final", "finally", "float", "for", "goto", "if", "implements",
-  "import", "instanceof", "int", "interface", "long", "native", "new",
-  "non-sealed", "package", "private", "protected", "public", "return",
-  "sealed", "short", "static", "strictfp", "super", "switch", "synchronized",
-  "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
-  "yield", "record", "permits",
-  "true", "false", "null",
+  "abstract",
+  "assert",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "extends",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "non-sealed",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "sealed",
+  "short",
+  "static",
+  "strictfp",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "void",
+  "volatile",
+  "while",
+  "yield",
+  "record",
+  "permits",
+  "true",
+  "false",
+  "null",
 ]);
 
 function sanitizeJavaArtifactId(projectName: string): string {
@@ -54,7 +116,10 @@ function sanitizeJavaArtifactId(projectName: string): string {
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
-  const alphanumericOnly = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const alphanumericOnly = projectName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
   const withLetterPrefix = /^[a-z]/.test(alphanumericOnly)
     ? alphanumericOnly
     : `app${alphanumericOnly}`;
@@ -77,20 +142,34 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
     : [];
+  const rawLibrarySet = new Set(rawLibraries);
   // Flyway requires Spring Data JPA in the current Java scaffold
   // (see compatibility.ts `getDisabledReason` for the matching compat rule).
   // If the user selects Flyway without JPA, we silently drop it here so the
   // generated `pom.xml` / `build.gradle.kts` doesn't advertise a dependency
   // that the scaffold cannot wire up — the Flyway auto-config would otherwise
   // crash the app on startup with "No qualifying bean of type DataSource".
-  const javaLibraries = rawLibraries.filter(
-    (library) => library !== "flyway" || hasJavaJpa,
-  );
+  const javaLibraries: typeof rawLibraries = [];
+  for (const library of rawLibraries) {
+    if (JAVA_JPA_REQUIRED_LIBRARIES.has(library) && !hasJavaJpa) {
+      continue;
+    }
+    if (library === "liquibase" && rawLibrarySet.has("flyway")) {
+      continue;
+    }
+    javaLibraries.push(library);
+  }
   const testingLibraries = hasJavaBuildTool
     ? (config.javaTestingLibraries || []).filter((library) => library !== "none")
     : [];
   const hasJavaMockito = testingLibraries.includes("mockito");
   const hasJavaTestcontainers = testingLibraries.includes("testcontainers");
+  const hasJavaAssertj = testingLibraries.includes("assertj");
+  const hasJavaRestAssured = testingLibraries.includes("rest-assured");
+  const hasJavaWireMock = testingLibraries.includes("wiremock");
+  const hasJavaAwaitility = testingLibraries.includes("awaitility");
+  const hasJavaArchunit = testingLibraries.includes("archunit");
+  const hasJavaJqwik = testingLibraries.includes("jqwik");
   const hasJavaTests = testingLibraries.length > 0;
 
   return {
@@ -109,8 +188,21 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
     hasJavaValidation: javaLibraries.includes("spring-validation"),
     hasJavaFlyway: javaLibraries.includes("flyway"),
+    hasJavaLiquibase: javaLibraries.includes("liquibase"),
+    hasJavaSpringdocOpenapi: javaLibraries.includes("springdoc-openapi"),
+    hasJavaLombok: javaLibraries.includes("lombok"),
+    hasJavaMapstruct: javaLibraries.includes("mapstruct"),
+    hasJavaCaffeine: javaLibraries.includes("caffeine"),
+    hasJavaAnnotationProcessors:
+      javaLibraries.includes("lombok") || javaLibraries.includes("mapstruct"),
     hasJavaMockito,
     hasJavaTestcontainers,
+    hasJavaAssertj,
+    hasJavaRestAssured,
+    hasJavaWireMock,
+    hasJavaAwaitility,
+    hasJavaArchunit,
+    hasJavaJqwik,
     hasJavaTests,
   };
 }
@@ -172,10 +264,49 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     return true;
   }
 
+  if ((!context.hasJavaFlyway || !context.hasJavaJpa) && templatePath.includes("/db/migration/")) {
+    return true;
+  }
+
   if (
-    (!context.hasJavaFlyway || !context.hasJavaJpa) &&
-    templatePath.includes("/db/migration/")
+    (!context.hasJavaLiquibase || !context.hasJavaJpa) &&
+    templatePath.includes("/db/changelog/")
   ) {
+    return true;
+  }
+
+  if (!context.hasJavaRestAssured && templatePath.endsWith("/RestAssuredHttpTest.java.hbs")) {
+    return true;
+  }
+
+  if (!context.hasJavaWireMock && templatePath.endsWith("/WireMockHttpTest.java.hbs")) {
+    return true;
+  }
+
+  if (!context.hasJavaAwaitility && templatePath.endsWith("/AsyncWorkflowTest.java.hbs")) {
+    return true;
+  }
+
+  if (
+    (!context.hasJavaMapstruct || !context.hasJavaJpa) &&
+    (templatePath.includes("/dto/") || templatePath.includes("/mapper/"))
+  ) {
+    return true;
+  }
+
+  if (
+    !context.hasJavaCaffeine &&
+    (templatePath.endsWith("/controller/CacheController.java.hbs") ||
+      templatePath.endsWith("/cache/CachedTimeService.java.hbs"))
+  ) {
+    return true;
+  }
+
+  if (!context.hasJavaArchunit && templatePath.endsWith("/ArchitectureTest.java.hbs")) {
+    return true;
+  }
+
+  if (!context.hasJavaJqwik && templatePath.endsWith("/PropertyBasedTest.java.hbs")) {
     return true;
   }
 
