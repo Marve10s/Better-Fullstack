@@ -58,7 +58,7 @@ jobs:
       - name: Apply Minor/Patch Updates
         run: bun run scripts/check-dep-versions.ts --update
 
-      - name: Build Template Generator
+      - name: Build Workspace Packages
         run: |
           bun run --cwd packages/types build
           bun run --cwd packages/template-generator build
