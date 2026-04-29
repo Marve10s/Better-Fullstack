@@ -79,6 +79,7 @@ import { getDefaultConfig } from "@cli/constants";
 import { processFlags } from "@cli/utils/config-processing";
 import { validateFullConfig } from "@cli/utils/config-validation";
 import { runWithContext } from "@cli/utils/context";
+import { randomInt } from "node:crypto";
 import * as path from "node:path";
 
 import type { CandidateDraft, ComboCandidate, GeneratorArgs, HistoricalLedger } from "./types";
@@ -87,7 +88,11 @@ import { buildHistoryFingerprint, fingerprintToKey } from "./fingerprint";
 import { formatNameFromFingerprint, buildCommand } from "./render";
 import { DEFAULT_ECOSYSTEM_WEIGHTS } from "./types";
 
-let _rng: () => number = Math.random;
+function secureRandom(): number {
+  return randomInt(0x1_0000_0000) / 0x1_0000_0000;
+}
+
+let _rng: () => number = secureRandom;
 let _forceOptions: Record<string, string> = {};
 let _forceNonNone: Set<string> = new Set();
 
@@ -595,7 +600,7 @@ function applyForcedOptions(draft: CandidateDraft, args: GeneratorArgs): Candida
 }
 
 export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): ComboCandidate[] {
-  _rng = args.rng ?? Math.random;
+  _rng = args.rng ?? secureRandom;
   _forceOptions = args.forceOptions ?? {};
   _forceNonNone = new Set(args.forceNonNone ?? []);
   try {
@@ -658,7 +663,7 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
 
     return combos;
   } finally {
-    _rng = Math.random;
+    _rng = secureRandom;
     _forceOptions = {};
     _forceNonNone = new Set();
   }
