@@ -33,6 +33,9 @@ jobs:
           - go-echo-sqlc
           - python-fastapi-sqlalchemy
           - python-django-langchain
+          - java-spring-maven
+          - java-spring-gradle-jpa
+          - java-plain-cli
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -55,6 +58,13 @@ jobs:
       - name: Setup Python + uv
         if: startsWith(matrix.preset, 'python-')
         uses: astral-sh/setup-uv@v5
+
+      - name: Setup Java
+        if: startsWith(matrix.preset, 'java-')
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
 
       - name: Cache Dependencies
         uses: actions/cache@v4

@@ -1,9 +1,11 @@
-import * as path from "node:path";
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
+
+import * as path from "node:path";
+
+import type { ComboCandidate } from "./generate-combos/types";
 
 import { buildHistoryFingerprint, fingerprintToKey } from "./generate-combos/fingerprint";
 import { buildCommand } from "./generate-combos/render";
-import type { ComboCandidate } from "./generate-combos/types";
 
 export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfig {
   return {
@@ -74,6 +76,12 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     goCli: "none",
     goLogging: "none",
     goAuth: "none",
+    javaWebFramework: "none",
+    javaBuildTool: "none",
+    javaOrm: "none",
+    javaAuth: "none",
+    javaLibraries: [],
+    javaTestingLibraries: [],
     versionChannel: "stable",
   } as ProjectConfig;
 }
@@ -108,7 +116,14 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       stateManagement: "tanstack-store",
       forms: "tanstack-form",
       ai: "tanstack-ai",
-      addons: ["turborepo", "tanstack-table", "tanstack-virtual", "tanstack-query", "tanstack-pacer", "biome"],
+      addons: [
+        "turborepo",
+        "tanstack-table",
+        "tanstack-virtual",
+        "tanstack-query",
+        "tanstack-pacer",
+        "biome",
+      ],
       examples: ["tanstack-showcase"],
     },
   },
@@ -416,6 +431,41 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       pythonQuality: "ruff",
     },
   },
+
+  // === JAVA PRESETS ===
+  "java-spring-maven": {
+    ecosystem: "java",
+    overrides: {
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: ["spring-actuator", "springdoc-openapi"],
+      javaTestingLibraries: ["junit5", "mockito"],
+    },
+  },
+  "java-spring-gradle-jpa": {
+    ecosystem: "java",
+    overrides: {
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "gradle",
+      javaOrm: "spring-data-jpa",
+      javaAuth: "spring-security",
+      javaLibraries: ["spring-actuator", "spring-validation", "flyway", "mapstruct", "caffeine"],
+      javaTestingLibraries: ["junit5", "mockito", "testcontainers"],
+    },
+  },
+  "java-plain-cli": {
+    ecosystem: "java",
+    overrides: {
+      javaWebFramework: "none",
+      javaBuildTool: "none",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: [],
+    },
+  },
 };
 
 const PRESET_GROUPS = {
@@ -428,6 +478,7 @@ const PRESET_GROUPS = {
     "rust-axum-seaorm",
     "python-fastapi-sqlalchemy",
     "go-gin-gorm",
+    "java-spring-maven",
     "frontend-only-react-vite",
   ],
   "pr-broad": [
@@ -440,6 +491,8 @@ const PRESET_GROUPS = {
     "rust-actix-sqlx",
     "python-django-langchain",
     "go-echo-sqlc",
+    "java-spring-gradle-jpa",
+    "java-plain-cli",
     "react-vite-hono",
     "solid-start-express",
     "angular-fets",
@@ -485,9 +538,7 @@ export function getPresetCombos(presetId: string): ComboCandidate[] {
   const def = SMOKE_TEST_PRESETS[presetId];
   if (!def) {
     const available = [...listPresetIds(), ...listPresetGroupIds()].join(", ");
-    throw new Error(
-      `Unknown preset "${presetId}". Available: ${available}`,
-    );
+    throw new Error(`Unknown preset "${presetId}". Available: ${available}`);
   }
 
   return [buildSinglePresetCombo(presetId)];
@@ -519,7 +570,9 @@ for (const presetId of groupedPresetIds) {
 }
 
 if (groupedPresetIds.length !== presetIds.size) {
-  const missingPresetIds = [...presetIds].filter((presetId) => !groupedPresetIds.includes(presetId));
+  const missingPresetIds = [...presetIds].filter(
+    (presetId) => !groupedPresetIds.includes(presetId),
+  );
   if (missingPresetIds.length > 0) {
     throw new Error(
       `Preset groups must cover every preset. Missing from groups: ${missingPresetIds.join(", ")}`,

@@ -1,9 +1,3 @@
-import * as path from "node:path";
-
-import { getDefaultConfig } from "@cli/constants";
-import { processFlags } from "@cli/utils/config-processing";
-import { runWithContext } from "@cli/utils/context";
-import { validateFullConfig } from "@cli/utils/config-validation";
 import {
   ADDONS_VALUES,
   AI_VALUES,
@@ -31,6 +25,12 @@ import {
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
+  JAVA_AUTH_VALUES,
+  JAVA_BUILD_TOOL_VALUES,
+  JAVA_LIBRARIES_VALUES,
+  JAVA_ORM_VALUES,
+  JAVA_TESTING_LIBRARIES_VALUES,
+  JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
   OBSERVABILITY_VALUES,
@@ -75,15 +75,16 @@ import {
   type Ecosystem,
   type ProjectConfig,
 } from "@better-fullstack/types";
+import { getDefaultConfig } from "@cli/constants";
+import { processFlags } from "@cli/utils/config-processing";
+import { validateFullConfig } from "@cli/utils/config-validation";
+import { runWithContext } from "@cli/utils/context";
+import * as path from "node:path";
+
+import type { CandidateDraft, ComboCandidate, GeneratorArgs, HistoricalLedger } from "./types";
 
 import { buildHistoryFingerprint, fingerprintToKey } from "./fingerprint";
 import { formatNameFromFingerprint, buildCommand } from "./render";
-import type {
-  CandidateDraft,
-  ComboCandidate,
-  GeneratorArgs,
-  HistoricalLedger,
-} from "./types";
 import { DEFAULT_ECOSYSTEM_WEIGHTS } from "./types";
 
 let _rng: () => number = Math.random;
@@ -183,13 +184,12 @@ function sampleTypeScriptFrontends(): CLIInput["frontend"] {
 function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
   const frontend = sampleTypeScriptFrontends();
   const cssFramework = sampleScalar(CSS_FRAMEWORK_VALUES, 0.2);
-  const backend =
-    frontend.some((value) => SELF_COMPATIBLE_FRONTENDS.has(value))
-      ? sampleScalar(BACKEND_VALUES, 0.18)
-      : sampleScalar(
-          BACKEND_VALUES.filter((value) => value !== "self"),
-          0.18,
-        );
+  const backend = frontend.some((value) => SELF_COMPATIBLE_FRONTENDS.has(value))
+    ? sampleScalar(BACKEND_VALUES, 0.18)
+    : sampleScalar(
+        BACKEND_VALUES.filter((value) => value !== "self"),
+        0.18,
+      );
 
   const runtime =
     backend === "self" || backend === "none" || backend === "convex"
@@ -199,9 +199,7 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
         : sampleScalar(RUNTIME_VALUES, 0.2);
 
   const database =
-    backend === "none" || backend === "convex"
-      ? "none"
-      : sampleScalar(DATABASE_VALUES, 0.2);
+    backend === "none" || backend === "convex" ? "none" : sampleScalar(DATABASE_VALUES, 0.2);
 
   const orm =
     database === "none" || database === "edgedb" || database === "redis"
@@ -227,13 +225,17 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
 
   // Most UI libraries are React-only; non-React astro integrations need compatible ones
   const REACT_ONLY_UI = new Set([
-    "radix-ui", "headless-ui", "chakra-ui", "nextui", "mantine", "base-ui", "react-aria",
+    "radix-ui",
+    "headless-ui",
+    "chakra-ui",
+    "nextui",
+    "mantine",
+    "base-ui",
+    "react-aria",
   ]);
-  const needsNonReactUI = astroIntegration && astroIntegration !== "react" && astroIntegration !== "none";
-  let uiLibrary =
-    cssFramework !== "tailwind"
-      ? "none"
-      : sampleScalar(UI_LIBRARY_VALUES, 0.25);
+  const needsNonReactUI =
+    astroIntegration && astroIntegration !== "react" && astroIntegration !== "none";
+  let uiLibrary = cssFramework !== "tailwind" ? "none" : sampleScalar(UI_LIBRARY_VALUES, 0.25);
   if (needsNonReactUI && REACT_ONLY_UI.has(uiLibrary)) uiLibrary = "none";
   const usesShadcn = uiLibrary === "shadcn-ui";
 
@@ -273,13 +275,22 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       search: sampleScalar(SEARCH_VALUES, 0.9),
       fileStorage: sampleScalar(FILE_STORAGE_VALUES, 0.84),
       webDeploy: sampleScalar(WEB_DEPLOY_VALUES, 0.92),
-      serverDeploy: backend === "hono"
-        ? sampleScalar(SERVER_DEPLOY_VALUES, 0.92)
-        : sampleScalar(SERVER_DEPLOY_VALUES.filter((v) => v !== "sst"), 0.92),
+      serverDeploy:
+        backend === "hono"
+          ? sampleScalar(SERVER_DEPLOY_VALUES, 0.92)
+          : sampleScalar(
+              SERVER_DEPLOY_VALUES.filter((v) => v !== "sst"),
+              0.92,
+            ),
       addons: sampleArray(ADDONS_VALUES, 0.82, 2),
-      examples: backend === "none"
-        ? sampleArray(EXAMPLES_VALUES.filter((v) => v !== "ai"), 0.9, 1)
-        : sampleArray(EXAMPLES_VALUES, 0.9, 1),
+      examples:
+        backend === "none"
+          ? sampleArray(
+              EXAMPLES_VALUES.filter((v) => v !== "ai"),
+              0.9,
+              1,
+            )
+          : sampleArray(EXAMPLES_VALUES, 0.9, 1),
       astroIntegration,
       shadcnBase: usesShadcn ? sampleScalar(SHADCN_BASE_VALUES, 0) : undefined,
       shadcnStyle: usesShadcn ? sampleScalar(SHADCN_STYLE_VALUES, 0) : undefined,
@@ -340,6 +351,42 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
       goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
+    },
+  };
+}
+
+function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
+  const javaBuildTool = sampleScalar(JAVA_BUILD_TOOL_VALUES, 0.12, "javaBuildTool");
+  const usesBuildTool = javaBuildTool !== "none";
+  const javaWebFramework = usesBuildTool
+    ? sampleScalar(JAVA_WEB_FRAMEWORK_VALUES, 0.2, "javaWebFramework")
+    : "none";
+  const usesSpringBoot = javaWebFramework === "spring-boot";
+  const javaOrm = usesSpringBoot ? sampleScalar(JAVA_ORM_VALUES, 0.45, "javaOrm") : "none";
+  const hasJpa = javaOrm === "spring-data-jpa";
+  const javaLibraries = usesSpringBoot
+    ? sampleArray(
+        hasJpa
+          ? JAVA_LIBRARIES_VALUES
+          : JAVA_LIBRARIES_VALUES.filter((value) => value !== "flyway" && value !== "liquibase"),
+        0.35,
+        3,
+        "javaLibraries",
+      )
+    : ["none" as const];
+
+  return {
+    ecosystem: "java",
+    options: {
+      ...createCommonOptions("java", args),
+      javaWebFramework,
+      javaBuildTool,
+      javaOrm,
+      javaAuth: usesSpringBoot ? sampleScalar(JAVA_AUTH_VALUES, 0.65, "javaAuth") : "none",
+      javaLibraries,
+      javaTestingLibraries: usesBuildTool
+        ? sampleArray(JAVA_TESTING_LIBRARIES_VALUES, 0.2, 3, "javaTestingLibraries")
+        : ["none" as const],
     },
   };
 }
@@ -438,6 +485,12 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     goCli: "none",
     goLogging: "none",
     goAuth: "none",
+    javaWebFramework: "none",
+    javaBuildTool: "none",
+    javaOrm: "none",
+    javaAuth: "none",
+    javaLibraries: [],
+    javaTestingLibraries: [],
     aiDocs: [],
     packageManager: "bun",
     git: false,
@@ -489,9 +542,7 @@ function weightedDistribution(count: number, ecosystems: readonly Ecosystem[]): 
     cursor += 1;
   }
 
-  return allocations.flatMap((entry) =>
-    Array.from({ length: entry.count }, () => entry.ecosystem),
-  );
+  return allocations.flatMap((entry) => Array.from({ length: entry.count }, () => entry.ecosystem));
 }
 
 function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft {
@@ -504,6 +555,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
       return makePythonDraft(args);
     case "go":
       return makeGoDraft(args);
+    case "java":
+      return makeJavaDraft(args);
   }
 }
 
@@ -547,9 +600,7 @@ export function generateBatch(args: GeneratorArgs, history: HistoricalLedger): C
   _forceNonNone = new Set(args.forceNonNone ?? []);
   try {
     // For partitioned runs, generate enough combos to cover all partitions
-    const totalNeeded = args.partitionTotal
-      ? args.count * args.partitionTotal
-      : args.count;
+    const totalNeeded = args.partitionTotal ? args.count * args.partitionTotal : args.count;
 
     const requestedEcosystems = weightedDistribution(totalNeeded, args.ecosystems);
     const combos: ComboCandidate[] = [];

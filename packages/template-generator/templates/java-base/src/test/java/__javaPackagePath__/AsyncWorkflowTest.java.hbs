@@ -1,0 +1,24 @@
+package {{javaPackageName}};
+
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.jupiter.api.Test;
+
+class AsyncWorkflowTest {
+
+  @Test
+  void waitsForAsyncWorkToComplete() {
+    AtomicBoolean completed = new AtomicBoolean(false);
+
+    Thread worker = new Thread(() -> completed.set(true));
+    worker.start();
+
+    await().atMost(Duration.ofSeconds(1)).untilTrue(completed);
+
+    assertTrue(completed.get());
+  }
+}

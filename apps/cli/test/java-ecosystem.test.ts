@@ -7,6 +7,7 @@ import {
   analyzeStackCompatibility,
   type CompatibilityInput,
   EcosystemSchema,
+  evaluateCompatibility,
   JavaAuthSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
@@ -161,10 +162,31 @@ describe("Java Ecosystem", () => {
     });
 
     it("should expose Java libraries, ORM, auth, and testing values", () => {
-      expect(JAVA_LIBRARIES).toEqual(["spring-actuator", "spring-validation", "flyway", "none"]);
+      expect(JAVA_LIBRARIES).toEqual([
+        "spring-actuator",
+        "spring-validation",
+        "flyway",
+        "liquibase",
+        "springdoc-openapi",
+        "lombok",
+        "mapstruct",
+        "caffeine",
+        "none",
+      ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
       expect(JAVA_AUTHS).toEqual(["spring-security", "none"]);
-      expect(JAVA_TESTING_LIBRARIES).toEqual(["junit5", "mockito", "testcontainers", "none"]);
+      expect(JAVA_TESTING_LIBRARIES).toEqual([
+        "junit5",
+        "mockito",
+        "testcontainers",
+        "assertj",
+        "rest-assured",
+        "wiremock",
+        "awaitility",
+        "archunit",
+        "jqwik",
+        "none",
+      ]);
     });
   });
 
@@ -193,9 +215,9 @@ describe("Java Ecosystem", () => {
       expect(hasFile(root, ".env.example")).toBe(true);
       expect(hasFile(root, "README.md")).toBe(true);
       expect(hasFile(root, "src/main/java/com/example/myapp/Application.java")).toBe(true);
-      expect(hasFile(root, "src/main/java/com/example/myapp/controller/HealthController.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/main/java/com/example/myapp/controller/HealthController.java"),
+      ).toBe(true);
       expect(hasFile(root, "src/main/resources/application.yml")).toBe(true);
       expect(hasFile(root, "src/test/java/com/example/myapp/ApplicationTests.java")).toBe(true);
     });
@@ -276,9 +298,7 @@ describe("Java Ecosystem", () => {
 
       expect(hasFile(root, "pom.xml")).toBe(true);
       expect(hasFile(root, "mvnw")).toBe(true);
-      expect(hasFile(root, "src/main/java/com/example/javaplainmaven/Application.java")).toBe(
-        true,
-      );
+      expect(hasFile(root, "src/main/java/com/example/javaplainmaven/Application.java")).toBe(true);
       expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
       expect(
         hasFile(root, "src/main/java/com/example/javaplainmaven/controller/HealthController.java"),
@@ -295,6 +315,82 @@ describe("Java Ecosystem", () => {
       expect(pomContent).not.toContain("spring-boot-starter-webmvc");
       expect(readmeContent).toContain("./mvnw exec:java");
       expect(readmeContent).not.toContain("spring-boot:run");
+    });
+
+    it("should create a plain Java Gradle project with optional testing libraries", async () => {
+      const result = await createVirtual({
+        projectName: "java-plain-gradle-tests",
+        ecosystem: "java",
+        javaWebFramework: "none",
+        javaBuildTool: "gradle",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: [
+          "junit5",
+          "mockito",
+          "testcontainers",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "build.gradle.kts")).toBe(true);
+      expect(hasFile(root, "settings.gradle.kts")).toBe(true);
+      expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
+      expect(
+        hasFile(
+          root,
+          "src/main/java/com/example/javaplaingradletests/controller/HealthController.java",
+        ),
+      ).toBe(false);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/ApplicationTests.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/RestAssuredHttpTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/WireMockHttpTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/AsyncWorkflowTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/ArchitectureTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaplaingradletests/PropertyBasedTest.java"),
+      ).toBe(true);
+
+      const gradleContent = getFileContent(root, "build.gradle.kts");
+
+      expect(gradleContent).toContain("application");
+      expect(gradleContent).toContain('mainClass = "com.example.javaplaingradletests.Application"');
+      expect(gradleContent).toContain('testImplementation(platform("org.junit:junit-bom:5.12.2"))');
+      expect(gradleContent).toContain(
+        'testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")',
+      );
+      expect(gradleContent).toContain(
+        'testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))',
+      );
+      expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
+      expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
+      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
+      expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
+      expect(gradleContent).toContain(
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
+      );
+      expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
+      expect(gradleContent).not.toContain("org.springframework.boot");
+      expect(gradleContent).not.toContain("spring-boot-starter");
     });
 
     it("should create a source-only plain Java project when no build tool is selected", async () => {
@@ -316,9 +412,7 @@ describe("Java Ecosystem", () => {
       expect(hasFile(root, "build.gradle.kts")).toBe(false);
       expect(hasFile(root, "mvnw")).toBe(false);
       expect(hasFile(root, "gradlew")).toBe(false);
-      expect(hasFile(root, "src/main/java/com/example/javasourceonly/Application.java")).toBe(
-        true,
-      );
+      expect(hasFile(root, "src/main/java/com/example/javasourceonly/Application.java")).toBe(true);
       expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
       expect(hasFile(root, "src/test/java/com/example/javasourceonly/ApplicationTests.java")).toBe(
         false,
@@ -351,25 +445,25 @@ describe("Java Ecosystem", () => {
       const root = result.tree!.root;
 
       expect(hasFile(root, "src/main/java/com/example/javafull/domain/AppUser.java")).toBe(true);
-      expect(hasFile(root, "src/main/java/com/example/javafull/repository/AppUserRepository.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javafull/repository/AppUserRepository.java"),
+      ).toBe(true);
       expect(hasFile(root, "src/main/java/com/example/javafull/service/AppUserService.java")).toBe(
         true,
       );
-      expect(hasFile(root, "src/main/java/com/example/javafull/controller/UserController.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javafull/controller/UserController.java"),
+      ).toBe(true);
       expect(hasFile(root, "src/main/java/com/example/javafull/config/SecurityConfig.java")).toBe(
         true,
       );
       expect(hasFile(root, "src/main/resources/db/migration/V1__init.sql")).toBe(true);
-      expect(hasFile(root, "src/test/java/com/example/javafull/service/AppUserServiceTest.java")).toBe(
-        true,
-      );
-      expect(hasFile(root, "src/test/java/com/example/javafull/ApplicationContainerTests.java")).toBe(
-        true,
-      );
+      expect(
+        hasFile(root, "src/test/java/com/example/javafull/service/AppUserServiceTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javafull/ApplicationContainerTests.java"),
+      ).toBe(true);
 
       const pomContent = getFileContent(root, "pom.xml");
       const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
@@ -398,6 +492,189 @@ describe("Java Ecosystem", () => {
       expect(userEntityContent).toContain("@Email");
     });
 
+    it("should add extended Java libraries and testing dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "java-extended",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "maven",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(true);
+      expect(hasFile(root, "src/test/java/com/example/javaextended/RestAssuredHttpTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/WireMockHttpTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/AsyncWorkflowTest.java")).toBe(
+        true,
+      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/cache/CachedTimeService.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/controller/CacheController.java"),
+      ).toBe(true);
+      expect(hasFile(root, "src/main/java/com/example/javaextended/dto/UserDto.java")).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextended/mapper/AppUserMapper.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextended/mapper/AppUserMapperTest.java"),
+      ).toBe(true);
+      expect(hasFile(root, "src/test/java/com/example/javaextended/ArchitectureTest.java")).toBe(
+        true,
+      );
+      expect(hasFile(root, "src/test/java/com/example/javaextended/PropertyBasedTest.java")).toBe(
+        true,
+      );
+
+      const pomContent = getFileContent(root, "pom.xml");
+      const applicationContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaextended/Application.java",
+      );
+      const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
+      const applicationTest = getFileContent(
+        root,
+        "src/test/java/com/example/javaextended/ApplicationTests.java",
+      );
+      const readmeContent = getFileContent(root, "README.md");
+
+      expect(pomContent).toContain("liquibase-core");
+      expect(pomContent).toContain("springdoc-openapi-starter-webmvc-ui");
+      expect(pomContent).toContain("lombok");
+      expect(pomContent).toContain("mapstruct");
+      expect(pomContent).toContain("mapstruct-processor");
+      expect(pomContent).toContain("spring-boot-starter-cache");
+      expect(pomContent).toContain("caffeine");
+      expect(pomContent).toContain("<optional>true</optional>");
+      expect(pomContent).toContain("<artifactId>maven-compiler-plugin</artifactId>");
+      expect(pomContent).toContain("<annotationProcessorPaths>");
+      expect(pomContent).toContain("<springdoc.version>3.0.3</springdoc.version>");
+      expect(pomContent).toContain("<lombok.version>1.18.46</lombok.version>");
+      expect(pomContent).toContain("<assertj.version>3.27.7</assertj.version>");
+      expect(pomContent).toContain("<rest-assured.version>6.0.0</rest-assured.version>");
+      expect(pomContent).toContain("<wiremock.version>3.13.2</wiremock.version>");
+      expect(pomContent).toContain("<awaitility.version>4.3.0</awaitility.version>");
+      expect(pomContent).toContain("<mapstruct.version>1.6.3</mapstruct.version>");
+      expect(pomContent).toContain("<archunit.version>1.4.2</archunit.version>");
+      expect(pomContent).toContain("<jqwik.version>1.9.3</jqwik.version>");
+      expect(pomContent).toContain("rest-assured");
+      expect(pomContent).toContain("wiremock");
+      expect(pomContent).toContain("awaitility");
+      expect(pomContent).toContain("archunit-junit5");
+      expect(pomContent).toContain("jqwik");
+      expect(pomContent).not.toContain("flyway-core");
+      expect(applicationContent).toContain("@EnableCaching");
+      expect(applicationConfig).toContain(
+        "change-log: classpath:db/changelog/db.changelog-master.yaml",
+      );
+      expect(applicationConfig).toContain("ddl-auto: validate");
+      expect(applicationTest).toContain("org.assertj.core.api.Assertions.assertThat");
+      expect(readmeContent).toContain("OpenAPI documentation is available");
+      expect(readmeContent).toContain("Spring Cache is enabled with Caffeine");
+      expect(readmeContent).toContain("MapStruct is configured with a generated mapper example");
+    });
+
+    it("should add extended Java libraries and testing dependencies for Gradle", async () => {
+      const result = await createVirtual({
+        projectName: "java-extended-gradle",
+        ecosystem: "java",
+        javaWebFramework: "spring-boot",
+        javaBuildTool: "gradle",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "none",
+        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaTestingLibraries: [
+          "junit5",
+          "assertj",
+          "rest-assured",
+          "wiremock",
+          "awaitility",
+          "archunit",
+          "jqwik",
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/main/resources/db/changelog/db.changelog-master.yaml")).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/RestAssuredHttpTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/WireMockHttpTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/AsyncWorkflowTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextendedgradle/cache/CachedTimeService.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaextendedgradle/mapper/AppUserMapper.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/ArchitectureTest.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/test/java/com/example/javaextendedgradle/PropertyBasedTest.java"),
+      ).toBe(true);
+
+      const gradleContent = getFileContent(root, "build.gradle.kts");
+      const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
+
+      expect(gradleContent).toContain('implementation("org.liquibase:liquibase-core")');
+      expect(gradleContent).toContain(
+        'implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")',
+      );
+      expect(gradleContent).toContain('compileOnly("org.projectlombok:lombok:1.18.46")');
+      expect(gradleContent).toContain('annotationProcessor("org.projectlombok:lombok:1.18.46")');
+      expect(gradleContent).toContain('testCompileOnly("org.projectlombok:lombok:1.18.46")');
+      expect(gradleContent).toContain(
+        'testAnnotationProcessor("org.projectlombok:lombok:1.18.46")',
+      );
+      expect(gradleContent).toContain('implementation("org.mapstruct:mapstruct:1.6.3")');
+      expect(gradleContent).toContain(
+        'annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")',
+      );
+      expect(gradleContent).toContain(
+        'implementation("org.springframework.boot:spring-boot-starter-cache")',
+      );
+      expect(gradleContent).toContain('implementation("com.github.ben-manes.caffeine:caffeine")');
+      expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
+      expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
+      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
+      expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
+      expect(gradleContent).toContain(
+        'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
+      );
+      expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
+      expect(gradleContent).not.toContain("flyway-core");
+      expect(applicationConfig).toContain(
+        "change-log: classpath:db/changelog/db.changelog-master.yaml",
+      );
+      expect(applicationConfig).toContain("ddl-auto: validate");
+    });
+
     it("should omit optional Java files when those features are not selected", async () => {
       const result = await createVirtual({
         projectName: "java-minimal",
@@ -413,12 +690,12 @@ describe("Java Ecosystem", () => {
       expect(result.success).toBe(true);
       const root = result.tree!.root;
 
-      expect(hasFile(root, "src/main/java/com/example/javaminimal/config/SecurityConfig.java")).toBe(
-        false,
-      );
-      expect(hasFile(root, "src/main/java/com/example/javaminimal/controller/UserController.java")).toBe(
-        false,
-      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javaminimal/config/SecurityConfig.java"),
+      ).toBe(false);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaminimal/controller/UserController.java"),
+      ).toBe(false);
       expect(hasFile(root, "src/test/java/com/example/javaminimal/ApplicationTests.java")).toBe(
         false,
       );
@@ -455,8 +732,16 @@ describe("Java Ecosystem", () => {
           javaBuildTool: "none",
           javaOrm: "spring-data-jpa",
           javaAuth: "spring-security",
-          javaLibraries: ["spring-actuator"],
-          javaTestingLibraries: ["junit5"],
+          javaLibraries: ["spring-actuator", "mapstruct", "caffeine"],
+          javaTestingLibraries: [
+            "junit5",
+            "assertj",
+            "rest-assured",
+            "wiremock",
+            "awaitility",
+            "archunit",
+            "jqwik",
+          ],
         }),
       );
 
@@ -469,6 +754,125 @@ describe("Java Ecosystem", () => {
       expect(result.changes.some((adjustment) => adjustment.category === "javaBuildTool")).toBe(
         true,
       );
+    });
+
+    it("should clear Java migration libraries when JPA is not selected", () => {
+      const result = analyzeStackCompatibility(
+        createJavaCompatibilityInput({
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "none",
+          javaAuth: "none",
+          javaLibraries: [
+            "spring-actuator",
+            "flyway",
+            "liquibase",
+            "springdoc-openapi",
+            "mapstruct",
+            "caffeine",
+          ],
+          javaTestingLibraries: ["junit5"],
+        }),
+      );
+
+      expect(result.adjustedStack?.javaLibraries).toEqual([
+        "spring-actuator",
+        "springdoc-openapi",
+        "mapstruct",
+        "caffeine",
+      ]);
+      expect(result.changes.some((adjustment) => adjustment.category === "javaOrm")).toBe(true);
+    });
+
+    it("should prefer Flyway when Flyway and Liquibase are both selected", () => {
+      const result = analyzeStackCompatibility(
+        createJavaCompatibilityInput({
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "spring-data-jpa",
+          javaAuth: "none",
+          javaLibraries: ["spring-actuator", "flyway", "liquibase", "springdoc-openapi"],
+          javaTestingLibraries: ["junit5"],
+        }),
+      );
+
+      expect(result.adjustedStack?.javaLibraries).toEqual([
+        "spring-actuator",
+        "flyway",
+        "springdoc-openapi",
+      ]);
+      expect(result.changes.some((adjustment) => adjustment.category === "javaLibraries")).toBe(
+        true,
+      );
+    });
+
+    it("should report Liquibase without JPA as an incompatible Java library", () => {
+      const result = evaluateCompatibility(
+        createJavaCompatibilityInput({
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "none",
+          javaAuth: "none",
+          javaLibraries: ["liquibase"],
+          javaTestingLibraries: ["junit5"],
+        }),
+      );
+
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({
+          code: "INCOMPATIBLE_JAVA_LIBRARY",
+          category: "javaLibraries",
+          optionId: "liquibase",
+        }),
+      );
+    });
+
+    it("should report Flyway and Liquibase as mutually incompatible in either order", () => {
+      for (const javaLibraries of [
+        ["flyway", "liquibase"],
+        ["liquibase", "flyway"],
+      ]) {
+        const result = evaluateCompatibility(
+          createJavaCompatibilityInput({
+            javaWebFramework: "spring-boot",
+            javaBuildTool: "maven",
+            javaOrm: "spring-data-jpa",
+            javaAuth: "none",
+            javaLibraries,
+            javaTestingLibraries: ["junit5"],
+          }),
+        );
+
+        expect(result.issues).toContainEqual(
+          expect.objectContaining({
+            code: "INCOMPATIBLE_JAVA_LIBRARY",
+            category: "javaLibraries",
+            optionId: "flyway",
+          }),
+        );
+        expect(result.issues).toContainEqual(
+          expect.objectContaining({
+            code: "INCOMPATIBLE_JAVA_LIBRARY",
+            category: "javaLibraries",
+            optionId: "liquibase",
+          }),
+        );
+      }
+    });
+
+    it("should keep non-migration Spring libraries compatible without JPA", () => {
+      const result = evaluateCompatibility(
+        createJavaCompatibilityInput({
+          javaWebFramework: "spring-boot",
+          javaBuildTool: "maven",
+          javaOrm: "none",
+          javaAuth: "none",
+          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+          javaTestingLibraries: ["junit5"],
+        }),
+      );
+
+      expect(result.issues.filter((issue) => issue.category === "javaLibraries")).toEqual([]);
     });
   });
 });

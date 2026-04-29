@@ -12,7 +12,7 @@ spring:
     password:
   jpa:
     hibernate:
-{{#if hasJavaFlyway}}
+{{#if (or hasJavaFlyway hasJavaLiquibase)}}
       ddl-auto: validate
 {{else}}
       ddl-auto: update
@@ -25,6 +25,10 @@ spring:
 {{#if hasJavaFlyway}}
   flyway:
     locations: classpath:db/migration
+{{/if}}
+{{#if hasJavaLiquibase}}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 {{/if}}
 {{#if hasJavaActuator}}
 

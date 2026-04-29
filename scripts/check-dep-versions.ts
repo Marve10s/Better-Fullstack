@@ -2,7 +2,7 @@
 /**
  * check-dep-versions.ts
  *
- * Audits hardcoded dependency versions across all ecosystems (npm, Rust, Go, Python)
+ * Audits hardcoded dependency versions across all ecosystems (npm, Rust, Go, Python, Java)
  * and optionally updates them in-place.
  *
  * Usage:
@@ -17,7 +17,7 @@ import { resolve } from "node:path";
 
 // ── types ──────────────────────────────────────────────────────────────────
 
-type Ecosystem = "npm" | "rust" | "go" | "python";
+type Ecosystem = "npm" | "rust" | "go" | "python" | "java";
 
 type DepEntry = {
   ecosystem: Ecosystem;
@@ -25,6 +25,8 @@ type DepEntry = {
   name: string;
   current: string; // raw version from file
   currentNorm: string; // normalised semver (no ^, >=, v prefix)
+  sourceKind?: "gradle-coordinate" | "gradle-plugin" | "maven-block" | "maven-property";
+  sourceKey?: string;
 };
 
 type CheckedDep = DepEntry & {
@@ -49,7 +51,34 @@ const ROOT = resolve(import.meta.dir, "..");
 const NPM_MAP = resolve(ROOT, "packages/template-generator/src/utils/add-deps.ts");
 const RUST_CARGO = resolve(ROOT, "packages/template-generator/templates/rust-base/Cargo.toml.hbs");
 const GO_MOD = resolve(ROOT, "packages/template-generator/templates/go-base/go.mod.hbs");
-const PYTHON_PYPROJECT = resolve(ROOT, "packages/template-generator/templates/python-base/pyproject.toml.hbs");
+const PYTHON_PYPROJECT = resolve(
+  ROOT,
+  "packages/template-generator/templates/python-base/pyproject.toml.hbs",
+);
+const JAVA_POM = resolve(ROOT, "packages/template-generator/templates/java-base/pom.xml.hbs");
+const JAVA_GRADLE = resolve(
+  ROOT,
+  "packages/template-generator/templates/java-base/build.gradle.kts.hbs",
+);
+
+const JAVA_PROPERTY_ARTIFACTS: Record<string, string> = {
+  "springdoc.version": "org.springdoc:springdoc-openapi-starter-webmvc-ui",
+  "lombok.version": "org.projectlombok:lombok",
+  "mapstruct.version": "org.mapstruct:mapstruct",
+  "assertj.version": "org.assertj:assertj-core",
+  "rest-assured.version": "io.rest-assured:rest-assured",
+  "wiremock.version": "org.wiremock:wiremock",
+  "awaitility.version": "org.awaitility:awaitility",
+  "archunit.version": "com.tngtech.archunit:archunit-junit5",
+  "jqwik.version": "net.jqwik:jqwik",
+  "junit.version": "org.junit:junit-bom",
+  "mockito.version": "org.mockito:mockito-junit-jupiter",
+  "testcontainers.version": "org.testcontainers:testcontainers-bom",
+};
+
+const JAVA_GRADLE_PLUGIN_ARTIFACTS: Record<string, string> = {
+  "org.springframework.boot": "org.springframework.boot:spring-boot-gradle-plugin",
+};
 
 // ── parsers ────────────────────────────────────────────────────────────────
 
@@ -172,6 +201,94 @@ function parsePythonPyproject(): DepEntry[] {
   return entries;
 }
 
+function addJavaEntry(entries: DepEntry[], seen: Set<string>, entry: DepEntry) {
+  const key = `${entry.file}|${entry.name}|${entry.current}|${entry.sourceKind ?? ""}|${entry.sourceKey ?? ""}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  entries.push(entry);
+}
+
+function parseJavaTemplates(): DepEntry[] {
+  const entries: DepEntry[] = [];
+  const seen = new Set<string>();
+
+  const pom = readFileSync(JAVA_POM, "utf-8");
+  const gradle = readFileSync(JAVA_GRADLE, "utf-8");
+
+  const propertyRe = /<([a-zA-Z0-9.-]+\.version)>([0-9][^<]+)<\/\1>/g;
+  let propertyMatch: RegExpExecArray | null;
+  while ((propertyMatch = propertyRe.exec(pom)) !== null) {
+    const [, propertyName, version] = propertyMatch;
+    if (!propertyName || !version) continue;
+    const artifact = JAVA_PROPERTY_ARTIFACTS[propertyName];
+    if (!artifact) continue;
+    addJavaEntry(entries, seen, {
+      ecosystem: "java",
+      file: JAVA_POM,
+      name: artifact,
+      current: version,
+      currentNorm: normVersion(version),
+      sourceKind: "maven-property",
+      sourceKey: propertyName,
+    });
+  }
+
+  const blockRe = /<(parent|dependency|plugin)>\s*([\s\S]*?)\s*<\/\1>/g;
+  let blockMatch: RegExpExecArray | null;
+  while ((blockMatch = blockRe.exec(pom)) !== null) {
+    const [, , block] = blockMatch;
+    if (!block) continue;
+    const groupId = block.match(/<groupId>([^<]+)<\/groupId>/)?.[1];
+    const artifactId = block.match(/<artifactId>([^<]+)<\/artifactId>/)?.[1];
+    const version = block.match(/<version>([^<]+)<\/version>/)?.[1];
+    if (!groupId || !artifactId || !version || version.startsWith("${")) continue;
+    if (artifactId === "{{javaArtifactId}}") continue;
+    addJavaEntry(entries, seen, {
+      ecosystem: "java",
+      file: JAVA_POM,
+      name: `${groupId}:${artifactId}`,
+      current: version,
+      currentNorm: normVersion(version),
+      sourceKind: "maven-block",
+    });
+  }
+
+  const gradleCoordinateRe = /["']([a-zA-Z0-9_.-]+):([a-zA-Z0-9_.-]+):([0-9][^"']+)["']/g;
+  let gradleMatch: RegExpExecArray | null;
+  while ((gradleMatch = gradleCoordinateRe.exec(gradle)) !== null) {
+    const [, groupId, artifactId, version] = gradleMatch;
+    if (!groupId || !artifactId || !version) continue;
+    addJavaEntry(entries, seen, {
+      ecosystem: "java",
+      file: JAVA_GRADLE,
+      name: `${groupId}:${artifactId}`,
+      current: version,
+      currentNorm: normVersion(version),
+      sourceKind: "gradle-coordinate",
+    });
+  }
+
+  const gradlePluginRe = /id\("([^"]+)"\)\s+version\s+"([0-9][^"]+)"/g;
+  let pluginMatch: RegExpExecArray | null;
+  while ((pluginMatch = gradlePluginRe.exec(gradle)) !== null) {
+    const [, pluginId, version] = pluginMatch;
+    if (!pluginId || !version) continue;
+    const artifact = JAVA_GRADLE_PLUGIN_ARTIFACTS[pluginId];
+    if (!artifact) continue;
+    addJavaEntry(entries, seen, {
+      ecosystem: "java",
+      file: JAVA_GRADLE,
+      name: artifact,
+      current: version,
+      currentNorm: normVersion(version),
+      sourceKind: "gradle-plugin",
+      sourceKey: pluginId,
+    });
+  }
+
+  return entries;
+}
+
 // ── registry fetchers ──────────────────────────────────────────────────────
 
 const CONCURRENCY = 12;
@@ -208,6 +325,36 @@ async function fetchLatestPyPI(name: string): Promise<string> {
   return data.info.version;
 }
 
+async function fetchLatestMaven(name: string): Promise<string> {
+  const [groupId, artifactId] = name.split(":");
+  if (!groupId || !artifactId) {
+    throw new Error(`invalid Maven coordinate ${name}`);
+  }
+  const groupPath = groupId.replaceAll(".", "/");
+  const res = await fetch(
+    `https://repo.maven.apache.org/maven2/${groupPath}/${artifactId}/maven-metadata.xml`,
+  );
+  if (!res.ok) throw new Error(`maven central ${res.status}`);
+  const xml = await res.text();
+  const candidates = Array.from(xml.matchAll(/<version>([^<]+)<\/version>/g))
+    .map((match) => match[1])
+    .filter((version): version is string => Boolean(version))
+    .filter((version) => !/alpha|beta|rc|cr|dev|pre|snapshot|milestone|[-.]m\d/i.test(version))
+    .sort((a, b) =>
+      isNewer(normVersion(b), normVersion(a))
+        ? -1
+        : isNewer(normVersion(a), normVersion(b))
+          ? 1
+          : 0,
+    );
+  const latest =
+    candidates[0] ??
+    xml.match(/<release>([^<]+)<\/release>/)?.[1] ??
+    xml.match(/<latest>([^<]+)<\/latest>/)?.[1];
+  if (!latest) throw new Error("no release version found");
+  return latest;
+}
+
 function getFetcher(eco: Ecosystem): (name: string) => Promise<string> {
   switch (eco) {
     case "npm":
@@ -218,6 +365,8 @@ function getFetcher(eco: Ecosystem): (name: string) => Promise<string> {
       return fetchLatestGo;
     case "python":
       return fetchLatestPyPI;
+    case "java":
+      return fetchLatestMaven;
   }
 }
 
@@ -285,9 +434,13 @@ function updateRustCargo(outdated: CheckedDep[]): number {
     if (dep.majorBump) continue;
     const escaped = dep.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     // Update simple format: name = "x.y"
-    const reSimple = new RegExp(`(${escaped}\\s*=\\s*")${dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`);
+    const reSimple = new RegExp(
+      `(${escaped}\\s*=\\s*")${dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`,
+    );
     // Update table format: name = { version = "x.y", ... }
-    const reTable = new RegExp(`(${escaped}\\s*=\\s*\\{\\s*version\\s*=\\s*")${dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`);
+    const reTable = new RegExp(
+      `(${escaped}\\s*=\\s*\\{\\s*version\\s*=\\s*")${dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`,
+    );
     // Use major.minor for Rust (no patch)
     const parts = dep.latest.split(".");
     const rustVer = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : dep.latest;
@@ -339,10 +492,79 @@ function updatePythonPyproject(outdated: CheckedDep[]): number {
   return count;
 }
 
+function replaceMavenBlockVersion(src: string, dep: CheckedDep): string {
+  const [groupId, artifactId] = dep.name
+    .split(":")
+    .map((part) => part?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!groupId || !artifactId) return src;
+  const current = dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const blockRe = /<(parent|dependency|plugin)>\s*[\s\S]*?\s*<\/\1>/g;
+  return src.replace(blockRe, (block) => {
+    if (
+      !new RegExp(`<groupId>${groupId}</groupId>`).test(block) ||
+      !new RegExp(`<artifactId>${artifactId}</artifactId>`).test(block)
+    ) {
+      return block;
+    }
+    return block.replace(new RegExp(`(<version>)${current}(</version>)`), `$1${dep.latest}$2`);
+  });
+}
+
+function updateJavaTemplates(outdated: CheckedDep[]): number {
+  let pom = readFileSync(JAVA_POM, "utf-8");
+  let gradle = readFileSync(JAVA_GRADLE, "utf-8");
+  let count = 0;
+
+  for (const dep of outdated) {
+    if (dep.majorBump) continue;
+    const beforePom = pom;
+    const beforeGradle = gradle;
+
+    if (dep.file === JAVA_POM && dep.sourceKind === "maven-property" && dep.sourceKey) {
+      const property = dep.sourceKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const current = dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      pom = pom.replace(
+        new RegExp(`(<${property}>)${current}(</${property}>)`, "g"),
+        `$1${dep.latest}$2`,
+      );
+    } else if (dep.file === JAVA_POM && dep.sourceKind === "maven-block") {
+      pom = replaceMavenBlockVersion(pom, dep);
+    } else if (dep.file === JAVA_GRADLE && dep.sourceKind === "gradle-coordinate") {
+      const [groupId, artifactId] = dep.name
+        .split(":")
+        .map((part) => part?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      if (groupId && artifactId) {
+        const current = dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        gradle = gradle.replace(
+          new RegExp(`(${groupId}:${artifactId}:)${current}`, "g"),
+          `$1${dep.latest}`,
+        );
+      }
+    } else if (dep.file === JAVA_GRADLE && dep.sourceKind === "gradle-plugin" && dep.sourceKey) {
+      const pluginId = dep.sourceKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const current = dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      gradle = gradle.replace(
+        new RegExp(`(id\\("${pluginId}"\\)\\s+version\\s+")${current}(")`, "g"),
+        `$1${dep.latest}$2`,
+      );
+    }
+
+    if (pom !== beforePom || gradle !== beforeGradle) {
+      count++;
+    }
+  }
+
+  if (pom !== readFileSync(JAVA_POM, "utf-8")) writeFileSync(JAVA_POM, pom);
+  if (gradle !== readFileSync(JAVA_GRADLE, "utf-8")) writeFileSync(JAVA_GRADLE, gradle);
+  return count;
+}
+
 // ── main ───────────────────────────────────────────────────────────────────
 
 async function main() {
-  const ecosystems: Ecosystem[] = ecosystemFilter ? [ecosystemFilter] : ["npm", "rust", "go", "python"];
+  const ecosystems: Ecosystem[] = ecosystemFilter
+    ? [ecosystemFilter]
+    : ["npm", "rust", "go", "python", "java"];
 
   // 1. Parse all sources
   let entries: DepEntry[] = [];
@@ -359,6 +581,9 @@ async function main() {
         break;
       case "python":
         entries.push(...parsePythonPyproject());
+        break;
+      case "java":
+        entries.push(...parseJavaTemplates());
         break;
     }
   }
@@ -407,9 +632,13 @@ async function main() {
   }
 
   if (majorUpdates.length > 0) {
-    console.log(`🚨 ${majorUpdates.length} MAJOR version bumps (skipped in --update, need manual review):\n`);
+    console.log(
+      `🚨 ${majorUpdates.length} MAJOR version bumps (skipped in --update, need manual review):\n`,
+    );
     for (const d of majorUpdates) {
-      console.log(`    ${d.ecosystem.padEnd(8)} ${d.name.padEnd(45)} ${d.currentNorm.padEnd(12)} → ${d.latest}`);
+      console.log(
+        `    ${d.ecosystem.padEnd(8)} ${d.name.padEnd(45)} ${d.currentNorm.padEnd(12)} → ${d.latest}`,
+      );
     }
     console.log();
   }
@@ -421,11 +650,13 @@ async function main() {
     const rustOutdated = minorUpdates.filter((d) => d.ecosystem === "rust");
     const goOutdated = minorUpdates.filter((d) => d.ecosystem === "go");
     const pyOutdated = minorUpdates.filter((d) => d.ecosystem === "python");
+    const javaOutdated = minorUpdates.filter((d) => d.ecosystem === "java");
 
     if (npmOutdated.length > 0) totalUpdated += updateNpmMap(npmOutdated);
     if (rustOutdated.length > 0) totalUpdated += updateRustCargo(rustOutdated);
     if (goOutdated.length > 0) totalUpdated += updateGoMod(goOutdated);
     if (pyOutdated.length > 0) totalUpdated += updatePythonPyproject(pyOutdated);
+    if (javaOutdated.length > 0) totalUpdated += updateJavaTemplates(javaOutdated);
 
     console.log(`\n✅ Updated ${totalUpdated} dependencies in place.`);
     if (majorUpdates.length > 0) {

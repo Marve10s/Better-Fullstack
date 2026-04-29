@@ -91,11 +91,13 @@ jobs:
             - **Rust** — `templates/rust-base/Cargo.toml.hbs`
             - **Go** — `templates/go-base/go.mod.hbs`
             - **Python** — `templates/python-base/pyproject.toml.hbs`
+            - **Java** — `templates/java-base/pom.xml.hbs` and `templates/java-base/build.gradle.kts.hbs`
 
             Major version bumps are **not** included — they are listed in the
             `dep-freshness-report` artifact for manual review.
 
             ## Validation
+            - Template generator rebuilt
             - Template snapshots regenerated
             - No type-check or lint failures expected (version strings only)
           labels: |

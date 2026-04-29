@@ -1,7 +1,8 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
-import { fingerprintToKey } from "./fingerprint";
 import type { TemplateFingerprint } from "./types";
+
+import { fingerprintToKey } from "./fingerprint";
 
 function withExplicitNone(values: readonly string[]): string[] {
   return values.length === 0 ? ["none"] : [...values];
@@ -59,9 +60,26 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.goLogging === "string" ? fingerprint.goLogging : undefined,
       typeof fingerprint.goAuth === "string" ? fingerprint.goAuth : undefined,
     ],
+    java: [
+      typeof fingerprint.javaWebFramework === "string" ? fingerprint.javaWebFramework : undefined,
+      typeof fingerprint.javaBuildTool === "string" ? fingerprint.javaBuildTool : undefined,
+      typeof fingerprint.javaOrm === "string" ? fingerprint.javaOrm : undefined,
+      typeof fingerprint.javaAuth === "string" ? fingerprint.javaAuth : undefined,
+      Array.isArray(fingerprint.javaLibraries)
+        ? fingerprint.javaLibraries.filter((value) => value !== "none").join("-")
+        : undefined,
+      Array.isArray(fingerprint.javaTestingLibraries)
+        ? fingerprint.javaTestingLibraries.filter((value) => value !== "none").join("-")
+        : undefined,
+    ],
   } as const;
 
-  const tokens = [ecosystem, ...tokensByEcosystem[ecosystem]]
+  const ecosystemTokens =
+    ecosystem in tokensByEcosystem
+      ? tokensByEcosystem[ecosystem as keyof typeof tokensByEcosystem]
+      : [];
+
+  const tokens = [ecosystem, ...ecosystemTokens]
     .filter((value): value is string => Boolean(value && value !== "none"))
     .map((value) => value.replace(/[^a-z0-9]+/gi, "-"));
 
@@ -150,6 +168,15 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["go-auth", config.goAuth],
   ];
 
+  const javaFlags: Array<[string, string | readonly string[]]> = [
+    ["java-web-framework", config.javaWebFramework],
+    ["java-build-tool", config.javaBuildTool],
+    ["java-orm", config.javaOrm],
+    ["java-auth", config.javaAuth],
+    ["java-libraries", withExplicitNone(config.javaLibraries)],
+    ["java-testing-libraries", withExplicitNone(config.javaTestingLibraries)],
+  ];
+
   const orderedFlags = [...commonFlags];
   switch (config.ecosystem) {
     case "typescript":
@@ -179,6 +206,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "go":
       orderedFlags.push(...goFlags);
+      break;
+    case "java":
+      orderedFlags.push(...javaFlags);
       break;
   }
 

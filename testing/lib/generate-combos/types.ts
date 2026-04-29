@@ -20,7 +20,7 @@ export type GeneratorArgs = {
 
 export const DEFAULT_ARGS: GeneratorArgs = {
   count: 10,
-  ecosystems: ["typescript", "rust", "python", "go"],
+  ecosystems: ["typescript", "rust", "python", "go", "java"],
   installMode: "install",
 };
 
@@ -29,6 +29,7 @@ export const DEFAULT_ECOSYSTEM_WEIGHTS: Record<Ecosystem, number> = {
   rust: 2,
   python: 2,
   go: 2,
+  java: 2,
 };
 
 export const TEMPLATE_FINGERPRINT_KEYS = [
@@ -96,6 +97,12 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "goCli",
   "goLogging",
   "goAuth",
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
 ] as const;
 
 export type TemplateFingerprintKey = (typeof TEMPLATE_FINGERPRINT_KEYS)[number];
