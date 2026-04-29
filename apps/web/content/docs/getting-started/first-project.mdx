@@ -3,27 +3,29 @@ title: First Project
 description: Scaffold, inspect, install, and run a Better Fullstack project.
 ---
 
-This flow creates a project, lets you inspect the generated files, then installs dependencies.
+This flow writes a project to disk, explains what the CLI generated, and shows how to preview output when you want an extra safety check.
 
-Use the package-manager tabs to copy the launcher that matches your workflow.
+## 1. Scaffold interactively
 
-## 1. Preview the project
-
-Use `--dry-run` when you want to see what will be generated before writing files.
-
-```npm
-npm create better-fullstack@latest my-app -- --dry-run
-```
-
-## 2. Scaffold the project
-
-Run the CLI interactively:
+Run the wizard when you want prompts:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-Or pass explicit choices to skip every prompt:
+The default stack is TypeScript, TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, Git, install enabled, stable versions, and `CLAUDE.md`.
+
+## Optional: Preview before writing files
+
+Use `--dry-run` to generate the file tree in memory without writing files:
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+## 2. Scaffold from a script
+
+Use explicit flags when you want deterministic output. This example avoids dependency installation and Git initialization so you can inspect the files first:
 
 ```bash
 npm create better-fullstack@latest my-app -- \
@@ -35,26 +37,32 @@ npm create better-fullstack@latest my-app -- \
   --orm drizzle \
   --auth better-auth \
   --api trpc \
+  --db-setup none \
+  --ai none \
+  --payments none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --package-manager npm \
   --no-install \
   --no-git
 ```
 
-<Callout kind="warning" title="Non-interactive mode requires all flags">
-Any category you omit will trigger an interactive prompt. Pass `none` for features you want to skip (e.g., `--ai none --payments none`). Also: **do not use `--ai-docs none`** — it hangs. Omit the flag instead, or pass a valid value like `--ai-docs claude-md`.
+<Callout kind="info" title="Prompt behavior">
+Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional features you want disabled, including `--ai-docs none`.
 </Callout>
 
 ## 3. Install dependencies
 
-If you selected `--no-install`, install manually inside the generated project with the package manager selected for that project:
+If you selected `--no-install`, install manually inside the project:
 
 ```npm
 cd my-app
 npm install
 ```
 
-The runtime choice is separate. A Node runtime project can install with npm, pnpm, Yarn, or Bun; a Bun runtime project requires Bun to run server code.
-
-For non-TypeScript ecosystems, use the ecosystem’s package manager or generated wrapper:
+Non-TypeScript ecosystems use their generated toolchain commands instead:
 
 ```bash
 cargo build
@@ -64,19 +72,22 @@ go mod tidy
 ./gradlew test
 ```
 
-## 4. Read the project context
+## 4. Inspect generated files
 
 Generated projects include:
 
-- `bts.jsonc` with the selected stack.
+- `bts.jsonc` with the selected stack and schema reference.
+- Framework, package, and config files for the selected ecosystem.
 - A reproducible command printed by the CLI.
-- Optional AI docs such as `Agents.md`, `CLAUDE.md`, or `.cursorrules`.
-- Framework-specific readme and commands.
+- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+- README content and commands where the selected templates provide them.
 
 ## 5. Add features later
 
-Inside a generated project, use the `add` command for supported addons and deployment targets:
+Inside a generated project, use `add` for supported addons:
 
 ```npm
 npm create better-fullstack@latest add -- --addons mcp skills
 ```
+
+The `add` command reads `bts.jsonc` and skips addons already present.

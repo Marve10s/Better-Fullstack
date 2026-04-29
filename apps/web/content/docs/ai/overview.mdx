@@ -3,26 +3,42 @@ title: AI Agents
 description: How AI coding agents should use Better Fullstack safely and reliably.
 ---
 
-Better Fullstack is designed for AI-driven scaffolding. Agents can work through the MCP server (structured tool calls, no flag guessing) or drive the CLI directly.
+Better Fullstack supports two separate AI workflows:
+
+- Generated AI instruction files selected with `--ai-docs`.
+- Structured project creation through the Better Fullstack MCP server.
 
 ## Preferred workflow
 
-1. Determine the target ecosystem: `typescript`, `rust`, `python`, `go`, or `java`.
-2. Fetch valid schema options.
-3. Validate the stack combination — the compatibility engine auto-corrects invalid pairs and returns warnings.
-4. Dry-run to preview the generated file tree.
-5. Scaffold with dependency installation disabled.
-6. Report the exact install and run commands to the user.
+1. Choose the target ecosystem: `typescript`, `rust`, `python`, `go`, or `java`.
+2. Fetch schema options from MCP or the CLI docs.
+3. Validate compatibility before scaffolding.
+4. Dry-run to inspect the file tree.
+5. Scaffold with dependency installation disabled when an agent is driving the flow.
+6. Tell the user the exact install, test, and run commands.
 
-## MCP workflow
+## Generated AI docs
 
-The Better Fullstack MCP server is the safest option for agents: it exposes schema lookup, compatibility checks, dry-run previews, project creation, and feature additions as structured tool calls.
+Use `--ai-docs` to generate project-local context files for coding agents:
 
-See the [MCP setup guide](/docs/ai/mcp/) for client configuration (Claude Code, Cursor, VS Code, Windsurf, Zed, Cline).
+| Value | File generated |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | No AI docs |
+
+Multiple values are accepted:
+
+```bash
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+Use `--ai-docs none` to disable these files.
 
 ## CLI workflow
 
-For agents without MCP access, drive the CLI with explicit flags and `--no-install`:
+For agents without MCP access, pass explicit flags and avoid side effects:
 
 ```bash
 npm create better-fullstack@latest my-app -- \
@@ -33,30 +49,28 @@ npm create better-fullstack@latest my-app -- \
   --database postgres \
   --orm drizzle \
   --auth better-auth \
+  --api trpc \
+  --db-setup none \
   --ai-docs agents-md \
+  --version-channel stable \
   --no-install \
   --no-git
 ```
 
-<Callout kind="warning" title="Known CLI gotchas for agents">
-- **`--ai-docs none` hangs.** Use a valid value (`claude-md`, `agents-md`, `cursorrules`) or omit the flag entirely.
-- **`--yes` is incompatible with explicit stack flags.** Omit it when passing `--frontend`, `--backend`, and similar.
-- **Specify all optional flags explicitly.** Any omitted option category will trigger an interactive prompt. Pass `none` for categories you want to skip.
-- **`--ecosystem` is required for non-interactive mode.** Omitting it defaults to TypeScript but may prompt in some versions.
+<Callout kind="info" title="CLI rules for agents">
+`--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass `none` for optional categories you want disabled.
 </Callout>
 
-See [CLI Create](/docs/cli/create/) for the full flag reference and per-ecosystem examples.
+## AI provider options
 
-## Generated AI docs
+TypeScript projects can select one AI SDK with `--ai`, including `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, or `none`.
 
-Use `--ai-docs` to generate project-local context files that help agents understand the project's conventions:
+Python projects use the separate multi-select `--python-ai` option with `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai`, or `none`.
 
-| Value | File generated |
-| --- | --- |
-| `claude-md` | `CLAUDE.md` |
-| `agents-md` | `AGENTS.md` |
-| `cursorrules` | `.cursorrules` |
+Dependency placement depends on the selected framework and backend. Server-side AI packages are added to the server package or self-backend app; supported frontend integrations receive their matching client hooks/packages.
 
-Multiple values are accepted: `--ai-docs claude-md agents-md`.
+## MCP workflow
 
-Agents should update those files when they change project structure, dependencies, or workflows.
+The Better Fullstack MCP server exposes schema lookup, compatibility checks, dry-run previews, project creation, and feature additions as structured tools. See the [MCP setup guide](/docs/ai/mcp/).
+
+This is distinct from the generated-project `mcp` addon. The server helps an agent create Better Fullstack projects; the addon writes MCP configuration inside a generated project.

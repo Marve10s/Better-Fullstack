@@ -3,17 +3,18 @@ title: Options
 description: Generated reference for Better Fullstack stack options.
 ---
 
-This reference is generated from `packages/types/src/option-metadata.ts`. It currently includes **<OptionCount /> option entries** across **<CategoryCount /> categories**, grouped into focused sub-pages.
+This reference is generated from the shared option metadata and then documented with compatibility notes from the CLI, schemas, and template generator.
 
-Use CLI values in commands and MCP payloads. Some builder-only labels normalize to the same CLI value.
+Use CLI values in commands and MCP payloads. Some builder labels normalize to the same CLI value, and not every option is valid with every frontend, backend, runtime, or ecosystem.
 
 | Section | Scope | Categories | Options |
 | --- | --- | --- | --- |
-| [Core Stack](/docs/reference/options/stack/) | Framework, runtime, database, ORM, API, and auth options. | 10 | 84 |
-| [Services & Integrations](/docs/reference/options/services/) | Payments, email, file upload, realtime, jobs, search, CMS, AI, analytics. | 13 | 66 |
-| [UI, Forms & State](/docs/reference/options/ui/) | CSS frameworks, UI libraries, state management, forms, validation, animation. | 15 | 108 |
-| [Tooling, Deploy & Ops](/docs/reference/options/tooling/) | Testing, logging, observability, code quality, deploy targets, package manager. | 14 | 66 |
+| [TypeScript Options](/docs/reference/options/typescript/) | TypeScript categories: frontend, backend, runtime, data, API, auth, UI, services, tooling, examples, addons, and deploy. | 52 | 325 |
 | [Rust Options](/docs/reference/options/rust/) | Rust-ecosystem categories: web framework, ORM, API, CLI, libraries, auth. | 10 | 35 |
 | [Python Options](/docs/reference/options/python/) | Python-ecosystem categories: web framework, ORM, validation, AI, quality. | 8 | 27 |
 | [Go Options](/docs/reference/options/go/) | Go-ecosystem categories: web framework, ORM, API, CLI, logging, auth. | 6 | 21 |
 | [Java Options](/docs/reference/options/java/) | Java-ecosystem categories: web framework, build tool, ORM, auth, libraries. | 6 | 17 |
+
+<Callout kind="info" title="Compatibility matters">
+The tables list valid option values. The compatibility checker still decides whether a full stack combination is valid and may reject or adjust combinations before generation.
+</Callout>

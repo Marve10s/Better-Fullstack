@@ -1,5 +1,5 @@
 {
   "title": "Options",
   "defaultOpen": true,
-  "pages": ["index", "stack", "services", "ui", "tooling", "rust", "python", "go", "java"]
+  "pages": ["index", "typescript", "rust", "python", "go", "java"]
 }

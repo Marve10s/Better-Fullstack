@@ -3,63 +3,46 @@ title: Get Started
 description: Scaffold your first Better Fullstack project in minutes.
 ---
 
-<Callout kind="tip" title="Online preview">
-Prefer to configure visually? Use the [Stack Builder](https://better-fullstack.dev/new) to pick options through a UI and copy a ready-to-run command.
-</Callout>
+Better Fullstack generates a project from a typed stack configuration. You can pick options in the interactive CLI, pass flags directly, or use the [Stack Builder](https://better-fullstack.dev/new) to copy a command.
 
-## 1. Install Node.js
+## Requirements
 
 Better Fullstack requires Node.js 20 or newer.
-
-```bash
-# macOS / Linux — using fnm
-curl -fsSL https://fnm.vercel.app/install | bash
-fnm install 22
-```
-
-```bash
-# macOS — using Homebrew
-brew install node
-```
-
-```bash
-# Windows — using winget
-winget install OpenJS.NodeJS.LTS
-```
-
-Prefer a GUI installer? → [nodejs.org/en/download](https://nodejs.org/en/download)
-
-**Verify the installation:**
 
 ```bash
 node --version
 ```
 
-## 2. Create a project
+The CLI itself runs on Node.js even when the generated project targets Rust, Python, Go, or Java. Install those ecosystem toolchains only when you scaffold that ecosystem.
 
-Run the wizard — it walks you through ecosystem, frontend, backend, database, auth, and every other integration:
+## Create a project
+
+Run the wizard:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-When the wizard finishes, your project is generated and ready to run.
+With `npm create`, Better Fullstack flags go after `--`. The generated reproducible command and Stack Builder use `npx create-better-fullstack@latest` for npm, which is the same package entrypoint in a non-interactive form.
 
-## 3. Explore your project
+## Default stack
 
-Once the wizard finishes, the CLI prints the exact next steps for your stack — the install command, how to start the dev server, and anything ecosystem-specific. Follow those rather than a generic sequence.
+If you accept defaults, the CLI creates a TypeScript project with TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, npm package manager, stable dependency versions, Git enabled, install enabled, and `CLAUDE.md` generated.
+
+## Generated context
 
 Every generated project includes:
 
-- **`bts.jsonc`** — your stack config
-- **A reproducible command** — re-create the exact same project anywhere
-- **Optional AI docs** — `AGENTS.md`, `CLAUDE.md`, or `.cursorrules`
+- `bts.jsonc` with the selected stack.
+- A reproducible command printed by the CLI.
+- Framework and package files for the selected ecosystem.
+- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
 
-Not ready to scaffold yet? Browse the [Stack Builder](https://better-fullstack.dev/new) to preview the generated file tree for any stack combination directly in your browser.
+Not ready to scaffold yet? Use the [Stack Builder](https://better-fullstack.dev/new) to preview stack combinations and generated commands in your browser.
 
 ## Next steps
 
-- [Installation](/docs/getting-started/installation/) — prerequisites for Rust, Python, Go, and Java ecosystems
-- [First Project](/docs/getting-started/first-project/) — dry-runs, deeper walkthrough, and project structure
-- [CLI Create](/docs/cli/create/) — every flag and option
-- [Ecosystems](/docs/ecosystems/) — compare TypeScript, Rust, Python, Go, and Java support
+- [Installation](/docs/getting-started/installation/) — prerequisites and launchers.
+- [First Project](/docs/getting-started/first-project/) — dry-runs, scripted examples, and project structure.
+- [CLI Create](/docs/cli/create/) — flags and examples.
+- [Ecosystems](/docs/ecosystems/) — TypeScript, Rust, Python, Go, and Java support.

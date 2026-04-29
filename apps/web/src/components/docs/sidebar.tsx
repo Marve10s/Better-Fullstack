@@ -106,6 +106,21 @@ function SidebarFolder({
       frontmatter: folder.index.frontmatter,
     };
   }, [folder.index]);
+  const nestedOnlyFolder =
+    !folder.index && folder.children.length === 1 && folder.children[0]?.type === "folder"
+      ? folder.children[0]
+      : null;
+  const visibleIndexPage = useMemo<PageNode | null>(() => {
+    if (!nestedOnlyFolder?.index) return indexPage;
+    return {
+      type: "page",
+      name: nestedOnlyFolder.index.frontmatter.title ?? nestedOnlyFolder.name,
+      slug: nestedOnlyFolder.index.slug,
+      url: nestedOnlyFolder.index.url,
+      frontmatter: nestedOnlyFolder.index.frontmatter,
+    };
+  }, [indexPage, nestedOnlyFolder]);
+  const visibleChildren = nestedOnlyFolder ? nestedOnlyFolder.children : folder.children;
 
   return (
     <details
@@ -123,16 +138,16 @@ function SidebarFolder({
         />
       </summary>
       <ul className="mt-1 flex flex-col">
-        {indexPage ? (
+        {visibleIndexPage ? (
           <li>
             <SidebarPageLink
-              page={indexPage}
+              page={visibleIndexPage}
               currentUrl={currentUrl}
               depth={depth + 1}
             />
           </li>
         ) : null}
-        {folder.children.map((child, index) => (
+        {visibleChildren.map((child, index) => (
           <li key={getNodeKey(child, index)}>
             <SidebarNode node={child} currentUrl={currentUrl} depth={depth + 1} />
           </li>

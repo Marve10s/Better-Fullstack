@@ -1,11 +1,11 @@
 ---
 title: MCP Server
-description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and any MCP-compatible AI coding agent.
+description: Connect Better Fullstack to Claude Code, Cursor, VS Code, and MCP-compatible AI coding agents.
 ---
 
-The Better Fullstack MCP server lets AI agents scaffold projects through structured tool calls instead of guessing CLI flags. It handles schema lookup, compatibility validation, dry-run previews, and project creation.
+The Better Fullstack MCP server lets agents scaffold projects through structured tool calls instead of guessing CLI flags. It handles schema lookup, compatibility validation, dry-run previews, project creation, and feature additions.
 
-Works with Claude Code, Cursor, VS Code Copilot, Windsurf, Claude Desktop, Zed, Cline, and any MCP-compatible client.
+This page describes the Better Fullstack MCP server. The generated-project `mcp` addon is separate: it writes MCP client/server configuration into a scaffolded app and may run external setup commands.
 
 ## Setup
 
@@ -16,8 +16,6 @@ claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack
 ```
 
 ### Cursor
-
-Create or edit `.cursor/mcp.json` in your project (or globally at `~/.cursor/mcp.json`):
 
 ```json
 {
@@ -32,8 +30,6 @@ Create or edit `.cursor/mcp.json` in your project (or globally at `~/.cursor/mcp
 
 ### VS Code
 
-Create `.vscode/mcp.json` in your workspace:
-
 ```json
 {
   "servers": {
@@ -46,138 +42,71 @@ Create `.vscode/mcp.json` in your workspace:
 }
 ```
 
-### Claude Desktop
+### Other MCP clients
 
-Edit `claude_desktop_config.json`:
+Use the same stdio command with clients such as Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose, or other MCP-compatible tools:
 
-```json
-{
-  "mcpServers": {
-    "better-fullstack": {
-      "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
-    }
-  }
-}
-```
-
-### Windsurf
-
-Edit `~/.codeium/windsurf/mcp_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "better-fullstack": {
-      "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
-    }
-  }
-}
-```
-
-### Zed
-
-In `settings.json`:
-
-```json
-{
-  "context_servers": {
-    "better-fullstack": {
-      "command": {
-        "path": "npx",
-        "args": ["-y", "create-better-fullstack", "mcp"]
-      }
-    }
-  }
-}
-```
-
-### Cline / Roo Code
-
-In the MCP settings JSON:
-
-```json
-{
-  "mcpServers": {
-    "better-fullstack": {
-      "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
-    }
-  }
-}
+```bash
+npx -y create-better-fullstack mcp
 ```
 
 ## Tools
 
-### Discovery
-
 | Tool | Purpose |
 | --- | --- |
-| `bfs_get_guidance` | Returns workflow rules, field semantics, and critical constraints. **Call this first.** |
-| `bfs_get_schema` | Returns valid options for any or all configuration categories (50+ categories across all ecosystems). |
-| `bfs_check_compatibility` | Validates a stack combination and returns auto-adjusted selections with warnings. |
+| `bfs_get_guidance` | Returns workflow rules and field semantics. Call this first. |
+| `bfs_get_schema` | Returns valid options for configuration categories. |
+| `bfs_check_compatibility` | Validates a stack and returns adjusted selections with warnings. |
+| `bfs_plan_project` | Dry-runs project generation in memory. |
+| `bfs_create_project` | Writes a new project to disk. |
+| `bfs_plan_addition` | Validates addon changes for an existing project. |
+| `bfs_add_feature` | Adds supported addons to an existing project. |
 
-### Project creation
-
-| Tool | Purpose |
-| --- | --- |
-| `bfs_plan_project` | Dry-run — generates a project in memory and returns the file tree without writing to disk. |
-| `bfs_create_project` | Scaffolds a new project to disk. Requires `projectName` (kebab-case). |
-
-### Existing projects
-
-| Tool | Purpose |
-| --- | --- |
-| `bfs_plan_addition` | Validates proposed addons against an existing project's `bts.jsonc` config. |
-| `bfs_add_feature` | Adds addons or features to an existing project. |
-
-<Callout kind="info" title="Dependencies are never installed in MCP mode">
-The server skips `npm install` / `bun install` to avoid timeout errors. After scaffolding, tell the user to run the install command manually: `cd <project> && bun install` (or the package manager they chose).
+<Callout kind="info" title="Install behavior">
+MCP project creation skips normal dependency installation to avoid long-running agent calls. If the generated project includes the `mcp` addon, that addon setup may still run external setup commands for MCP client configuration.
 </Callout>
 
 ## Resources
 
-The server exposes three MCP resources that clients can read directly:
+The server exposes these MCP resources:
 
 | Resource | Contents |
 | --- | --- |
-| `docs://compatibility-rules` | Which frontend/backend/API/ORM combinations are valid or auto-adjusted. |
-| `docs://stack-options` | All available technology options per category across every ecosystem. |
-| `docs://getting-started` | Quick-start recipes for TypeScript, Rust, Python, Go, and Java. |
+| `docs://compatibility-rules` | Compatibility rules for stack combinations. |
+| `docs://stack-options` | Available technology options by category. |
+| `docs://getting-started` | Quick-start recipes for supported ecosystems. |
 
 ## Recommended tool order
 
 For a new project:
 
-1. `bfs_get_guidance` — understand rules and field semantics
-2. `bfs_get_schema` — fetch valid options for your planned categories
-3. `bfs_check_compatibility` — validate and auto-fix your stack
-4. `bfs_plan_project` — dry-run to confirm the file tree
-5. `bfs_create_project` — write to disk
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
 
 For an existing project:
 
-1. `bfs_plan_addition` — validate proposed changes
-2. `bfs_add_feature` — apply them
+1. `bfs_plan_addition`
+2. `bfs_add_feature`
 
 ## Key rules for agents
 
-- **`frontend` is an array** — supports multiple frontends in one monorepo, e.g., `["next", "native-bare"]`.
-- **`"none"` means skip** — it disables a feature entirely, not "use the default."
-- **Set `ecosystem` first** — it determines which fields apply. TypeScript fields are ignored for Rust/Python/Go/Java and vice versa.
-- **Array fields** — `frontend`, `addons`, `examples`, `aiDocs`, `rustLibraries`, `pythonAi`, `javaLibraries`, `javaTestingLibraries` all accept multiple values.
-- **Always run `bfs_check_compatibility` before creating** — it auto-corrects invalid combinations (e.g., tRPC + Svelte → oRPC) and returns specific warnings.
+- `frontend` is an array and can contain multiple frontend targets.
+- `none` disables a category.
+- Set `ecosystem` first so the agent uses the correct field family.
+- Array fields include `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries`.
+- Current MCP project schemas do not expose `aiDocs` as a create field; project creation uses the server's built-in AI-doc behavior.
+- Always call `bfs_check_compatibility` before creating a project.
 
 ## Agent prompt
-
-Paste this into your agent's system prompt or context to guide it:
 
 ```text
 Use Better Fullstack MCP. First call bfs_get_guidance to understand
 the rules, then bfs_get_schema for the relevant categories, then
 bfs_check_compatibility to validate the stack, then bfs_plan_project
-for a dry-run. Only call bfs_create_project after the dry-run
-succeeds. Skip dependency installation and tell me the exact commands
-to install, test, and run the project.
+for a dry-run. Only call bfs_create_project after the dry-run succeeds.
+Skip normal dependency installation and tell me the exact commands to
+install, test, and run the project.
 ```

@@ -1,0 +1,91 @@
+---
+title: TypeScript Options
+description: TypeScript ecosystem option values for frontend, backend, services, UI, tooling, addons, and deploy.
+---
+
+TypeScript is the broadest Better Fullstack ecosystem. This page keeps the TypeScript option surface in one place, matching the single-page pattern used by Rust, Python, Go, and Java.
+
+Use CLI values in commands and MCP payloads.
+
+<Callout kind="info" title="Compatibility notes">
+The tables list valid option values, not every valid combination. tRPC is React-oriented. `backend: self` is for fullstack frameworks and pairs with `runtime: none`. Qwik, Angular, Redwood, and Fresh have narrower API/backend support. Workers runtime, PWA, UI libraries, payments, and file storage all have stack-specific constraints.
+</Callout>
+
+## Core Stack
+
+| Category | Selection | Values |
+| --- | --- | --- |
+| Web frontend | multiple | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| Native frontend | multiple | `native-bare` `native-uniwind` `native-unistyles` `none` |
+| Astro integration | single | `react` `vue` `svelte` `solid` `none` |
+| Backend | single | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| Runtime | single | `bun` `node` `workers` `none` |
+| Database | single | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | single | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| DB setup | single | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none` |
+| API | single | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| Auth | single | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+`dbSetup: upstash` is a Redis setup path. GoBetterAuth is documented on the [Go Options](/docs/reference/options/go/) page because it targets Go projects.
+
+## Services And Integrations
+
+| Category | Selection | Values |
+| --- | --- | --- |
+| AI | single | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `none` |
+| Payments | single | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| Email | single | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| File upload | single | `uploadthing` `filepond` `uppy` `none` |
+| File storage | single | `s3` `r2` `none` |
+| Realtime | single | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| Job queue | single | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| Caching | single | `upstash-redis` `none` |
+| i18n | single | `i18next` `next-intl` `none` |
+| Search | single | `meilisearch` `typesense` `elasticsearch` `algolia` `none` |
+| CMS | single | `payload` `sanity` `strapi` `tinacms` `none` |
+| Analytics | single | `plausible` `umami` `none` |
+| Feature flags | single | `growthbook` `posthog` `none` |
+
+Polar requires Better Auth and a web frontend. Dodo is not supported by every frontend. File storage is disabled for Convex/no-backend stacks and currently has narrower template support than dependency support.
+
+## UI, Forms, And State
+
+| Category | Selection | Values |
+| --- | --- | --- |
+| CSS framework | single | `tailwind` `scss` `less` `postcss-only` `none` |
+| UI library | single | `shadcn-ui` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `base-ui` `ark-ui` `react-aria` `none` |
+| State management | single | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| Forms | single | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| Validation | single | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| Animation | single | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none` |
+| Effect | single | `effect` `effect-full` `none` |
+| shadcn base | single | `radix` `base` |
+| shadcn style | single | `vega` `nova` `maia` `lyra` `mira` |
+| shadcn icons | single | `lucide` `tabler` `hugeicons` `phosphor` `remixicon` |
+| shadcn color theme | single | `neutral` `stone` `zinc` `gray` `amber` `blue` `cyan` `emerald` `fuchsia` `green` `indigo` `lime` `orange` `pink` `purple` `red` `rose` `sky` `teal` `violet` `yellow` |
+| shadcn base color | single | `neutral` `stone` `zinc` `gray` |
+| shadcn font | single | `inter` `geist` `noto-sans` `nunito-sans` `figtree` `roboto` `raleway` `dm-sans` `public-sans` `outfit` `jetbrains-mono` `geist-mono` |
+| shadcn radius | single | `default` `none` `small` `medium` `large` |
+
+UI libraries are frontend-sensitive. shadcn/ui, Radix UI, Chakra UI, NextUI, Base UI, Ark UI, and React Aria are React-oriented. shadcn/ui, daisyUI, and NextUI require Tailwind CSS.
+
+## Tooling, Examples, And Deploy
+
+| Category | Selection | Values |
+| --- | --- | --- |
+| Testing | single | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none` |
+| Logging | single | `pino` `winston` `none` |
+| Observability | single | `opentelemetry` `sentry` `grafana` `none` |
+| Code quality | multiple | `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` |
+| Documentation | multiple | `starlight` `fumadocs` |
+| App platforms and addons | multiple | `turborepo` `pwa` `tauri` `wxt` `opentui` `mcp` `skills` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` |
+| Package manager | single | `npm` `pnpm` `bun` `yarn` |
+| Version channel | single | `stable` `latest` `beta` |
+| Examples | multiple | `ai` `chat-sdk` `tanstack-showcase` `none` |
+| AI docs | multiple | `claude-md` `agents-md` `cursorrules` `none` |
+| Git | single | `true` `false` |
+| Install | single | `true` `false` |
+| Web deploy | single | `cloudflare` `fly` `railway` `docker` `sst` `vercel` `none` |
+| Server deploy | single | `cloudflare` `fly` `railway` `docker` `sst` `vercel` `none` |
+
+Addons and deploy targets are validated against the selected stack. The `add` command is addon-first and currently exits early when no new addon is selected.

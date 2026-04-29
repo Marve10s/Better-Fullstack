@@ -22,6 +22,8 @@ type MdxModule = {
   toc?: TocEntry[];
 };
 
+type RawMdxModule = string;
+
 /**
  * Sidebar config per directory (mirrors Fumadocs `meta.json` shape so we can
  * keep the existing files). `pages` is an ordered list of names: bare
@@ -70,6 +72,7 @@ export type DocPage = {
   slug: string[];
   url: string;
   path: string;
+  raw: string;
   frontmatter: DocFrontmatter;
   toc: TocEntry[];
   Component: MdxModule["default"];
@@ -79,6 +82,12 @@ const CONTENT_PREFIX = "/content/docs/";
 
 const mdxModules = import.meta.glob<MdxModule>("../../../content/docs/**/*.mdx", {
   eager: true,
+});
+
+const rawMdxModules = import.meta.glob<RawMdxModule>("../../../content/docs/**/*.mdx", {
+  eager: true,
+  query: "?raw",
+  import: "default",
 });
 
 const metaModules = import.meta.glob<{ default: MetaFile }>(
@@ -117,10 +126,12 @@ for (const [filePath, module] of Object.entries(mdxModules)) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/docs" + (slug.length ? "/" + slug.join("/") : "");
   const key = slug.join("/");
+  const raw = rawMdxModules[filePath] ?? "";
   pagesBySlug.set(key, {
     slug,
     url,
     path: relativePath,
+    raw,
     frontmatter: module.frontmatter ?? {},
     toc: module.toc ?? [],
     Component: module.default,

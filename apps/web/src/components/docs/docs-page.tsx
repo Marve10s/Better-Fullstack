@@ -2,6 +2,7 @@ import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
 
 import { DocsLayout } from "@/components/docs/docs-layout";
+import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
 import type { DocPage, PageNode } from "@/lib/docs/source";
 
@@ -23,14 +24,19 @@ export function DocsPageContent({ page, neighbors }: DocsPageContentProps) {
     <DocsLayout toc={page.toc}>
       <article className="mx-auto w-full max-w-3xl px-6 py-10">
         <header className="mb-8 border-b border-border pb-6">
-          {page.frontmatter.title ? (
-            <h1 className="font-semibold text-3xl tracking-tight text-foreground">
-              {page.frontmatter.title}
-            </h1>
-          ) : null}
-          {page.frontmatter.description ? (
-            <p className="mt-2 text-muted-foreground">{page.frontmatter.description}</p>
-          ) : null}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              {page.frontmatter.title ? (
+                <h1 className="font-semibold text-3xl tracking-tight text-foreground">
+                  {page.frontmatter.title}
+                </h1>
+              ) : null}
+              {page.frontmatter.description ? (
+                <p className="mt-2 text-muted-foreground">{page.frontmatter.description}</p>
+              ) : null}
+            </div>
+            <DocsPageActions path={page.path} markdown={page.raw} />
+          </div>
         </header>
 
         <div className="docs-prose">
