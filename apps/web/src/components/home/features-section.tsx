@@ -61,14 +61,6 @@ export default function FeaturesSection() {
             </Link>
           </div>
         </div>
-
-        <div
-          className="pointer-events-none absolute -bottom-12 right-[-4vw] -z-0 select-none font-mono font-black leading-none tracking-[-0.06em] text-muted-foreground"
-          style={{ fontSize: "clamp(14rem, 36vw, 32rem)" }}
-          aria-hidden
-        >
-          436
-        </div>
       </div>
 
       <ul>
