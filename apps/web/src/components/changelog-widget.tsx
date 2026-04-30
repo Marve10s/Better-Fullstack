@@ -69,7 +69,7 @@ export function ChangelogWidget() {
             <button
               type="button"
               onClick={openChangelog}
-              className="group relative block h-24 w-full overflow-hidden border-border border-b"
+              className="group relative block h-24 w-full cursor-pointer overflow-hidden border-border border-b"
               aria-label="Open changelog"
             >
               <img
@@ -85,12 +85,16 @@ export function ChangelogWidget() {
             <button
               type="button"
               onClick={openChangelog}
-              className="mt-0.5 flex size-8 shrink-0 items-center justify-center border border-border bg-background transition-colors hover:bg-muted"
+              className="mt-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center border border-border bg-background transition-colors hover:bg-muted"
               aria-label="Open changelog"
             >
               <History className="size-4" aria-hidden="true" />
             </button>
-            <button type="button" onClick={openChangelog} className="min-w-0 flex-1 text-left">
+            <button
+              type="button"
+              onClick={openChangelog}
+              className="min-w-0 flex-1 cursor-pointer text-left"
+            >
               <span className="flex flex-wrap items-center gap-2">
                 <span className="font-mono font-semibold text-sm transition-colors hover:text-muted-foreground">
                   Changelog
@@ -109,7 +113,7 @@ export function ChangelogWidget() {
             <button
               type="button"
               onClick={dismiss}
-              className="flex size-7 shrink-0 items-center justify-center border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-background hover:text-foreground"
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-background hover:text-foreground"
               aria-label="Close changelog"
             >
               <X className="size-3.5" aria-hidden="true" />
@@ -161,7 +165,7 @@ export function ChangelogWidget() {
                   href={latestChangelogRelease.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-1.5 font-medium text-xs transition-colors hover:text-muted-foreground"
+                  className="mt-4 inline-flex cursor-pointer items-center gap-1.5 font-medium text-xs transition-colors hover:text-muted-foreground"
                 >
                   Full release notes
                   <ExternalLink className="size-3" aria-hidden="true" />
@@ -178,7 +182,7 @@ export function ChangelogWidget() {
                       href={release.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between gap-3 border-border border-b px-3 py-2.5 transition-colors last:border-b-0 hover:bg-muted/45"
+                      className="flex cursor-pointer items-center justify-between gap-3 border-border border-b px-3 py-2.5 transition-colors last:border-b-0 hover:bg-muted/45"
                     >
                       <span className="flex min-w-0 items-center gap-2">
                         <span className="font-mono font-semibold text-xs">{release.version}</span>
