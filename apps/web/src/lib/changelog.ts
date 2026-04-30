@@ -4,6 +4,15 @@ export type ChangelogRelease = {
   displayDate: string;
   isLatest?: boolean;
   href: string;
+  title?: string;
+  summary?: string;
+  highlights?: string[];
+  image?: {
+    src: string;
+    alt: string;
+    credit: string;
+    creditHref: string;
+  };
 };
 
 const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/tag";
@@ -15,6 +24,21 @@ export const changelogReleases: ChangelogRelease[] = [
     displayDate: "Apr 29, 2026",
     isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.6.2`,
+    title: "Docs shipped, Java leveled up",
+    summary:
+      "The latest release adds the new docs experience, expands Java into a fuller Spring Boot generation path, and hardens generator, smoke, and release coverage around the larger stack surface.",
+    highlights: [
+      "New documentation pages for getting started, CLI usage, MCP, AI-agent docs, ecosystem guides, and option references.",
+      "Expanded Java support with Liquibase, Springdoc OpenAPI, Lombok, MapStruct, Caffeine, AssertJ, REST Assured, WireMock, Awaitility, ArchUnit, jqwik, and broader Testcontainers coverage.",
+      "More release safety through broader Java tests, smoke fixes, dependency refreshes, and a hardened npm publish path.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1777026050794-a5e4ef7cd254?q=80&w=900&auto=format&fit=crop",
+      alt: "A white bullet train passing a mountain",
+      credit: "Unsplash",
+      creditHref:
+        "https://unsplash.com/photos/a-white-bullet-train-speeds-past-a-mountain-9H6ZPRr7j6Q",
+    },
   },
   {
     version: "v1.6.1",
