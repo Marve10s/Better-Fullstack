@@ -5,8 +5,12 @@ export const visibleTestId = (page: Page, testId: string): Locator =>
 
 export const commandOutput = (page: Page): Locator => visibleTestId(page, "command-output");
 
+export async function gotoAppPage(page: Page, url: string) {
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+}
+
 export async function openBuilder(page: Page) {
-  await page.goto("/new");
+  await gotoAppPage(page, "/new");
   await expect(commandOutput(page)).toContainText("bun create better-fullstack");
 }
 
