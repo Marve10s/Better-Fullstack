@@ -1,5 +1,9 @@
 import { defineConfig } from "tinacms";
 
+const viteEnv = (import.meta as ImportMeta & {
+  env?: Record<string, string | undefined>;
+}).env ?? {};
+
 const branch =
   process.env.GITHUB_REF_NAME ||
   process.env.VERCEL_GIT_COMMIT_REF ||
@@ -7,7 +11,7 @@ const branch =
 
 export default defineConfig({
   branch,
-  clientId: import.meta.env.VITE_TINA_CLIENT_ID || "local",
+  clientId: viteEnv.VITE_TINA_CLIENT_ID || process.env.VITE_TINA_CLIENT_ID || "local",
   token: process.env.TINA_TOKEN || "local",
 
   build: {

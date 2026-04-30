@@ -52,7 +52,9 @@ async function getFileSize(filePath) {
 }
 
 function findAsset(entries, patterns) {
-  return entries.find((entry) => patterns.some((pattern) => pattern.test(entry.file)));
+  return [...entries]
+    .sort((a, b) => a.file.localeCompare(b.file))
+    .find((entry) => patterns.some((pattern) => pattern.test(entry.file)));
 }
 
 async function collectMetrics() {
@@ -105,6 +107,11 @@ async function collectMetrics() {
       totalJsGzip,
     },
     largestJsChunk: largestJs.file,
+    trackedAssets: {
+      mainJs: mainJs.file,
+      mainCss: mainCss.file,
+      stackBuilderJs: stackBuilderJs.file,
+    },
     topJsChunksByGzip: [...jsSizes]
       .sort((a, b) => b.gzip - a.gzip)
       .slice(0, 10)
@@ -207,6 +214,7 @@ async function checkAgainstBaseline(current) {
     ...rows,
     "",
     `Largest JS chunk: \`${current.largestJsChunk}\` (${formatBytes(current.metrics.largestJsGzip)} gzip)`,
+    `Tracked assets: main JS \`${current.trackedAssets?.mainJs ?? "unknown"}\`, main CSS \`${current.trackedAssets?.mainCss ?? "unknown"}\`, stack builder JS \`${current.trackedAssets?.stackBuilderJs ?? "unknown"}\``,
     "",
   ];
 

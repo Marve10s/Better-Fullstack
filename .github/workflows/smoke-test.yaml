@@ -71,6 +71,12 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
