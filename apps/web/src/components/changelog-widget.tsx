@@ -90,9 +90,6 @@ export function ChangelogWidget() {
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               loading="lazy"
             />
-            <span className="absolute right-2 bottom-2 bg-background/85 px-1.5 py-0.5 font-medium text-[10px] text-muted-foreground backdrop-blur-sm">
-              {latestChangelogRelease.image.credit}
-            </span>
           </a>
         ) : null}
 
