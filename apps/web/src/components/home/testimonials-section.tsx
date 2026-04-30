@@ -3,8 +3,9 @@ import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
-import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "./testimonials-data";
 import type { Testimonial } from "./testimonials-data";
+
+import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "./testimonials-data";
 
 const SHORT_REACTION_MAX_LENGTH = 28;
 const ALL_TESTIMONIALS: Testimonial[] = [...ROW_1, ...ROW_2, ...ROW_3];
@@ -18,13 +19,7 @@ for (const t of ALL_TESTIMONIALS) {
   }
 }
 
-function ReactionChip({
-  testimonial,
-  index,
-}: {
-  testimonial: Testimonial;
-  index: number;
-}) {
+function ReactionChip({ testimonial, index }: { testimonial: Testimonial; index: number }) {
   return (
     <motion.span
       initial={{ opacity: 0, scale: 0.95 }}
@@ -41,9 +36,7 @@ function ReactionChip({
         referrerPolicy="no-referrer"
         className="h-6 w-6 rounded-full border border-border"
       />
-      <span className="text-foreground">
-        &ldquo;{testimonial.comment}&rdquo;
-      </span>
+      <span className="text-foreground">&ldquo;{testimonial.comment}&rdquo;</span>
       <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">
         — {testimonial.name}
       </span>
@@ -51,13 +44,7 @@ function ReactionChip({
   );
 }
 
-function TestimonialCard({
-  testimonial,
-  index,
-}: {
-  testimonial: Testimonial;
-  index: number;
-}) {
+function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
   return (
     <motion.figure
       initial={{ opacity: 0, y: 8 }}
@@ -68,7 +55,7 @@ function TestimonialCard({
       className="group relative flex h-full flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
     >
       <Quote
-        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-lime-500/40"
+        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-lime-700/40"
         aria-hidden
       />
       <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
@@ -110,7 +97,7 @@ export default function TestimonialsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
               ✦ on the record
             </p>
             <h2
@@ -120,8 +107,7 @@ export default function TestimonialsSection() {
                 lineHeight: 0.98,
               }}
             >
-              People{" "}
-              <span className="italic text-muted-foreground">almost</span> love it.
+              People <span className="italic text-muted-foreground">almost</span> love it.
             </h2>
           </div>
           <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
@@ -131,7 +117,7 @@ export default function TestimonialsSection() {
                 href="https://app.daily.dev/posts/a42eCYoJk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-500"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-700"
               >
                 daily.dev
               </a>{" "}
@@ -140,7 +126,7 @@ export default function TestimonialsSection() {
                 href="https://x.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-500"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-700"
               >
                 X
               </a>{" "}
@@ -169,12 +155,10 @@ export default function TestimonialsSection() {
         <div className="mt-16 border-t border-border pt-10">
           <div className="grid grid-cols-12 gap-x-4 gap-y-4">
             <div className="col-span-12 sm:col-span-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
                 ✦ liked on x
               </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Builders who hearted the launch.
-              </p>
+              <p className="mt-2 text-xs text-muted-foreground">Builders who hearted the launch.</p>
             </div>
             <div className="col-span-12 sm:col-span-9">
               <ul className="flex flex-wrap gap-2">

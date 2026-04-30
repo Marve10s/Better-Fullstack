@@ -29,7 +29,7 @@ export default function CombinationsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 items-end gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
               ✦ combinatorics
             </p>
             <h2
@@ -39,12 +39,11 @@ export default function CombinationsSection() {
                 lineHeight: 0.98,
               }}
             >
-              Infinite{" "}
-              <span className="italic text-muted-foreground">possibilities.</span>
+              Infinite <span className="italic text-muted-foreground">possibilities.</span>
             </h2>
             <p className="mt-5 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
-              Mix and match frameworks, databases, auth, payments, AI, and more. Every
-              combination scaffolds a working, production-ready codebase.
+              Mix and match frameworks, databases, auth, payments, AI, and more. Every combination
+              scaffolds a working, production-ready codebase.
             </p>
           </div>
 
@@ -69,7 +68,7 @@ export default function CombinationsSection() {
                 ×&nbsp;10
               </span>
               <span
-                className="font-mono font-bold leading-none text-lime-500"
+                className="font-mono font-bold leading-none text-lime-700"
                 style={{ fontSize: "clamp(1.5rem, 4vw, 3rem)" }}
               >
                 {totalScientific.exponent}
@@ -102,7 +101,7 @@ export default function CombinationsSection() {
                 <sup>{yearsAtOneMillisecondScientific.exponent}</sup> years
               </span>{" "}
               <span className="text-muted-foreground">— that&rsquo;s</span>{" "}
-              <span className="font-mono font-semibold text-lime-500">
+              <span className="font-mono font-semibold text-lime-700">
                 {universeLifetimesScientific.mantissa} × 10
                 <sup>{universeLifetimesScientific.exponent}</sup> universe lifetimes
               </span>

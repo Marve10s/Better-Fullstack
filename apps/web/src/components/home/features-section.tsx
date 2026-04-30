@@ -4,9 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 
+import type { TechCategory } from "@/lib/types";
+
 import { TechIcon } from "@/components/ui/tech-icon";
 import { TECH_OPTIONS } from "@/lib/constant";
-import type { TechCategory } from "@/lib/types";
 
 type Layer = {
   cat: TechCategory;
@@ -33,7 +34,7 @@ export default function FeaturesSection() {
     <section className="relative border-t border-border bg-background">
       <div className="relative overflow-hidden border-b border-border">
         <div className="px-4 py-20 sm:px-8 sm:py-24">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
             ✦ pick anything
           </p>
           <h2
@@ -43,13 +44,12 @@ export default function FeaturesSection() {
               lineHeight: 0.94,
             }}
           >
-            All of it.{" "}
-            <span className="italic text-muted-foreground">Wired together.</span>
+            All of it. <span className="italic text-muted-foreground">Wired together.</span>
           </h2>
           <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-3">
             <p className="max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              Six layers of opinionated infrastructure, picked à la carte. The CLI handles
-              the wiring so you don&rsquo;t have to.
+              Six layers of opinionated infrastructure, picked à la carte. The CLI handles the
+              wiring so you don&rsquo;t have to.
             </p>
             <Link
               to="/new"
@@ -63,7 +63,7 @@ export default function FeaturesSection() {
         </div>
 
         <div
-          className="pointer-events-none absolute -bottom-12 right-[-4vw] -z-0 select-none font-mono font-black leading-none tracking-[-0.06em] text-foreground/[0.04]"
+          className="pointer-events-none absolute -bottom-12 right-[-4vw] -z-0 select-none font-mono font-black leading-none tracking-[-0.06em] text-muted-foreground"
           style={{ fontSize: "clamp(14rem, 36vw, 32rem)" }}
           aria-hidden
         >
@@ -113,7 +113,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             />
           </motion.div>
           <div
-            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500"
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700"
             style={{ direction: "ltr" }}
           >
             ✦ {String(index + 1).padStart(2, "0")}
@@ -164,18 +164,13 @@ function TotalBlock() {
   const inView = useInView(ref, { once: true, margin: "-30%" });
 
   return (
-    <div
-      ref={ref}
-      className="relative overflow-hidden bg-foreground text-background"
-    >
+    <div ref={ref} className="relative overflow-hidden bg-foreground text-background">
       <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-4 px-4 py-12 sm:gap-x-6 sm:px-8 sm:py-16">
         <div className="col-span-12 sm:col-span-4 lg:col-span-3">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-300">
-            ✦ total
-          </p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-300">✦ total</p>
           <p className="mt-2 max-w-[26ch] text-pretty text-sm text-background/70">
-            Multiply this by every database, every CSS framework, every AI SDK, and you
-            get more combinations than there are grains of sand.
+            Multiply this by every database, every CSS framework, every AI SDK, and you get more
+            combinations than there are grains of sand.
           </p>
         </div>
         <div className="col-span-12 sm:col-span-8 lg:col-span-9">
@@ -191,10 +186,7 @@ function TotalBlock() {
                 transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
               />
             </span>
-            <span
-              className="text-lime-300"
-              style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}
-            >
+            <span className="text-lime-300" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
               ✦
             </span>
           </motion.div>

@@ -93,7 +93,7 @@ export function ChangelogWidget() {
                 <span className="font-mono font-semibold text-sm transition-colors hover:text-muted-foreground">
                   Changelog
                 </span>
-                <span className="border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                <span className="border border-border px-1.5 py-0.5 font-mono font-medium text-[10px] text-foreground">
                   {latestChangelogRelease.version}
                 </span>
               </span>

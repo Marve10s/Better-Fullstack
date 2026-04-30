@@ -37,7 +37,7 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
         <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
           <DialogHeader>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <span className="border border-border px-1.5 py-0.5 font-mono font-medium text-[10px] text-foreground">
                 {latestChangelogRelease.version}
               </span>
               <span className="text-muted-foreground text-xs">
@@ -54,10 +54,7 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
               <ul className="mt-3 space-y-2 text-muted-foreground text-xs">
                 {latestChangelogRelease.highlights.map((highlight) => (
                   <li key={highlight} className="flex gap-2.5">
-                    <span
-                      className="mt-1.5 size-1 shrink-0 bg-foreground/60"
-                      aria-hidden="true"
-                    />
+                    <span className="mt-1.5 size-1 shrink-0 bg-foreground/60" aria-hidden="true" />
                     <span>{highlight}</span>
                   </li>
                 ))}
@@ -88,7 +85,7 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="font-mono font-semibold text-xs">{release.version}</span>
                       {release.isLatest ? (
-                        <span className="border border-foreground/20 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        <span className="border border-foreground/20 px-1.5 py-0.5 font-medium text-[10px] text-foreground">
                           Latest
                         </span>
                       ) : null}

@@ -32,8 +32,8 @@ test.describe("Stack Builder - Mobile", () => {
 
   test("landing page loads on mobile", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByRole("heading", { name: "The full-stack app scaffolder" }),
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("heading", { name: "Stop wiring. Start shipping." })).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

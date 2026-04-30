@@ -35,13 +35,7 @@ const contributors: Contributor[] = [
   },
 ];
 
-function ContributorCard({
-  contributor,
-  index,
-}: {
-  contributor: Contributor;
-  index: number;
-}) {
+function ContributorCard({ contributor, index }: { contributor: Contributor; index: number }) {
   return (
     <motion.a
       initial={{ opacity: 0, y: 8 }}
@@ -80,7 +74,7 @@ export default function ContributorsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
               ✦ contributors
             </p>
             <h2
@@ -96,8 +90,8 @@ export default function ContributorsSection() {
           </div>
           <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
             <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
-              Special thanks to the contributors who help improve Better Fullstack through
-              testing, feedback, and code.
+              Special thanks to the contributors who help improve Better Fullstack through testing,
+              feedback, and code.
             </p>
           </div>
         </div>
