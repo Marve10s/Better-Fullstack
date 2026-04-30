@@ -243,6 +243,7 @@ const APP_PLATFORM_VALUES = [
   "tanstack-virtual",
   "tanstack-db",
   "tanstack-pacer",
+  "docker-compose",
 ] as const satisfies readonly string[];
 
 const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
@@ -490,6 +491,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "tanstack-virtual": "TanStack Virtual",
     "tanstack-db": "TanStack DB",
     "tanstack-pacer": "TanStack Pacer",
+    "docker-compose": "Docker Compose",
   },
   versionChannel: {
     stable: "Stable",

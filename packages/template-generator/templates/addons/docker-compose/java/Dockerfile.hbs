@@ -1,0 +1,40 @@
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+COPY . .
+
+{{#if (eq javaBuildTool "gradle")}}
+RUN chmod +x ./gradlew \
+    && ./gradlew {{#if (eq javaWebFramework "spring-boot")}}bootJar{{else}}jar{{/if}} -x test \
+    && mkdir -p /out \
+    && cp build/libs/*.jar /out/app.jar
+{{else if (eq javaBuildTool "maven")}}
+RUN chmod +x ./mvnw \
+    && ./mvnw -DskipTests package \
+    && mkdir -p /out \
+    && cp target/*.jar /out/app.jar
+{{else}}
+RUN mkdir -p /out/classes \
+    && find src/main/java -name "*.java" -print0 | xargs -0 javac -d /out/classes
+{{/if}}
+
+FROM eclipse-temurin:21-jre AS app
+
+WORKDIR /app
+
+{{#if (eq javaBuildTool "none")}}
+COPY --from=builder /out/classes /app/classes
+{{else}}
+COPY --from=builder /out/app.jar /app/app.jar
+{{/if}}
+
+ENV PORT=8080
+
+EXPOSE 8080
+
+{{#if (eq javaBuildTool "none")}}
+CMD ["sh", "-c", "java -cp /app/classes $(find /app/classes -name Application.class | sed 's#^/app/classes/##; s#/#.#g; s#.class$##')"]
+{{else}}
+CMD ["java", "-jar", "/app/app.jar"]
+{{/if}}

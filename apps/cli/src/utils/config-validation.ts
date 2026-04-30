@@ -728,7 +728,17 @@ export function validateFullConfig(
   }
 
   if (config.addons && config.addons.length > 0) {
-    validateAddonsAgainstFrontends(config.addons, config.frontend, config.auth);
+    validateAddonsAgainstFrontends(
+      config.addons,
+      config.frontend,
+      config.auth,
+      config.backend,
+      config.runtime,
+      config.ecosystem,
+      config.rustFrontend,
+      config.javaWebFramework,
+      config.database,
+    );
     config.addons = [...new Set(config.addons)];
   }
 
@@ -776,7 +786,17 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);
 
     if (config.addons && config.addons.length > 0) {
-      validateAddonsAgainstFrontends(config.addons, config.frontend, config.auth);
+      validateAddonsAgainstFrontends(
+        config.addons,
+        config.frontend,
+        config.auth,
+        config.backend,
+        config.runtime,
+        config.ecosystem,
+        config.rustFrontend,
+        config.javaWebFramework,
+        config.database,
+      );
     }
 
     validateExamplesCompatibility(

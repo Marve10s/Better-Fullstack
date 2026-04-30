@@ -1,0 +1,61 @@
+{{#if (eq runtime "bun")}}
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+RUN bun run --filter server build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
+COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+WORKDIR /app/apps/server
+EXPOSE 3000
+CMD ["bun", "run", "dist/index.js"]
+{{else}}
+FROM node:20-alpine AS base
+{{#if (eq packageManager "pnpm")}}
+RUN corepack enable && corepack prepare pnpm@latest --activate
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+{{else if (eq packageManager "bun")}}
+RUN npm install -g bun
+{{/if}}
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+{{#if (eq packageManager "pnpm")}}
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+RUN pnpm --filter server build
+{{else if (eq packageManager "yarn")}}
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+RUN yarn workspace server build
+{{else if (eq packageManager "bun")}}
+RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+RUN bun run --filter server build
+{{else}}
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm run build --workspace=apps/server
+{{/if}}
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
+COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+WORKDIR /app/apps/server
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+{{/if}}

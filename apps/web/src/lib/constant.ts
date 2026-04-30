@@ -1904,6 +1904,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "docker-compose",
+      name: "Docker Compose",
+      description: "Containerize web, server, and database services",
+      icon: "https://cdn.simpleicons.org/docker/2496ED",
+      color: "from-blue-500 to-sky-700",
+      default: false,
+    },
+    {
       id: "wxt",
       name: "WXT",
       description: "Build browser extensions",

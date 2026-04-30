@@ -1,0 +1,29 @@
+FROM rust:1-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libpq-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Cargo.toml rust-toolchain.toml ./
+COPY crates ./crates
+
+RUN cargo build --release --bin server
+
+FROM debian:bookworm-slim AS app
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/release/server /app/server
+
+ENV HOST=0.0.0.0 \
+    PORT=3000
+
+EXPOSE 3000
+
+CMD ["/app/server"]

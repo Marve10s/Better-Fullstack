@@ -293,7 +293,11 @@ export async function gatherConfig(
         return getRuntimeChoice(flags.runtime, results.backend);
       },
       database: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Database);
+        if (results.ecosystem !== "typescript") {
+          return Promise.resolve(
+            results.ecosystem === "python" ? (flags.database ?? "none" as Database) : "none" as Database,
+          );
+        }
         return getDatabaseChoice(flags.database, results.backend, results.runtime);
       },
       orm: ({ results }) => {
@@ -337,8 +341,19 @@ export async function gatherConfig(
         return getEffectChoice(flags.effect);
       },
       addons: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve([] as Addons[]);
-        return getAddonsChoice(flags.addons, results.frontend, results.auth);
+        if (results.ecosystem !== "typescript") {
+          const nonTypeScriptAddons = (flags.addons ?? []).filter(
+            (addon): addon is Addons => addon === "docker-compose",
+          );
+          return Promise.resolve(nonTypeScriptAddons);
+        }
+        return getAddonsChoice(
+          flags.addons,
+          results.frontend,
+          results.auth,
+          results.backend,
+          results.runtime,
+        );
       },
       examples: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve([] as Examples[]);

@@ -4,6 +4,7 @@ import {
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleFormLibraries as getCompatibleFormLibrariesShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
+  hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
   isExampleAIAllowed as isExampleAIAllowedShared,
   isExampleChatSdkAllowed as isExampleChatSdkAllowedShared,
@@ -23,6 +24,8 @@ import type {
   Backend,
   CLIInput,
   CSSFramework,
+  Database,
+  Ecosystem,
   Forms,
   Frontend,
   Payments,
@@ -516,8 +519,70 @@ export function validateAddonCompatibility(
   addon: Addons,
   frontend: Frontend[],
   _auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
+  ecosystem?: Ecosystem,
+  rustFrontend?: string,
+  javaWebFramework?: string,
+  database?: Database,
 ): { isCompatible: boolean; reason?: string } {
-  return validateAddonCompatibilityShared(addon, frontend, _auth);
+  const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
+  if (!baseCompatibility.isCompatible) return baseCompatibility;
+
+  // Docker Compose targets containerized/self-hosted stacks only.
+  if (addon === "docker-compose") {
+    if (backend === "convex") {
+      return {
+        isCompatible: false,
+        reason: "docker-compose is not compatible with Convex backend (managed service)",
+      };
+    }
+    if (runtime === "workers") {
+      return {
+        isCompatible: false,
+        reason: "docker-compose is not compatible with Cloudflare Workers runtime",
+      };
+    }
+    if (ecosystem === "typescript" && !hasDockerComposeCompatibleFrontend(frontend)) {
+      return {
+        isCompatible: false,
+        reason:
+          "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro",
+      };
+    }
+    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next")) {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose self-backend support currently requires Next.js",
+      };
+    }
+    if (ecosystem === "rust" && rustFrontend && rustFrontend !== "none") {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Rust currently supports server-only projects",
+      };
+    }
+    if (ecosystem === "java" && javaWebFramework && javaWebFramework !== "spring-boot") {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Java currently requires Spring Boot",
+      };
+    }
+    if (
+      ecosystem === "python" &&
+      database &&
+      database !== "none" &&
+      database !== "sqlite" &&
+      database !== "postgres"
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres",
+      };
+    }
+  }
+
+  return { isCompatible: true };
 }
 
 export function getCompatibleAddons(
@@ -525,18 +590,41 @@ export function getCompatibleAddons(
   frontend: Frontend[],
   existingAddons: Addons[] = [],
   auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
 ) {
-  return getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
+  const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
+
+  return compatibleAddons.filter((addon) => {
+    const { isCompatible } = validateAddonCompatibility(addon, frontend, auth, backend, runtime);
+    return isCompatible;
+  });
 }
 
 export function validateAddonsAgainstFrontends(
   addons: Addons[] = [],
   frontends: Frontend[] = [],
   auth?: Auth,
+  backend?: Backend,
+  runtime?: Runtime,
+  ecosystem?: Ecosystem,
+  rustFrontend?: string,
+  javaWebFramework?: string,
+  database?: Database,
 ) {
   for (const addon of addons) {
     if (addon === "none") continue;
-    const { isCompatible, reason } = validateAddonCompatibility(addon, frontends, auth);
+    const { isCompatible, reason } = validateAddonCompatibility(
+      addon,
+      frontends,
+      auth,
+      backend,
+      runtime,
+      ecosystem,
+      rustFrontend,
+      javaWebFramework,
+      database,
+    );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);
     }

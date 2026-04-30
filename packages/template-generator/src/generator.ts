@@ -107,6 +107,10 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       processCatalogs(vfs, config);
     }
 
+    if (config.ecosystem !== "typescript") {
+      await processAddonTemplates(vfs, templates, config);
+    }
+
     processReadme(vfs, config);
     processAiDocs(vfs, config);
 

@@ -2,7 +2,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
-import { type TemplateData, processTemplatesFromPrefix } from "./utils";
+import { type TemplateData, processSingleTemplate, processTemplatesFromPrefix } from "./utils";
 
 export async function processAddonTemplates(
   vfs: VirtualFileSystem,
@@ -53,6 +53,105 @@ export async function processAddonTemplates(
     if (addon === "storybook") {
       if (vfs.exists("apps/web/package.json")) {
         processTemplatesFromPrefix(vfs, templates, "addons/storybook/apps/web", "apps/web", config);
+      }
+      continue;
+    }
+
+    if (addon === "docker-compose") {
+      if (config.ecosystem !== "typescript") {
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/.dockerignore",
+          ".dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/docker-compose.yml",
+          "docker-compose.yml",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          `addons/docker-compose/${config.ecosystem}/Dockerfile`,
+          "Dockerfile",
+          config,
+        );
+        continue;
+      }
+
+      // Place docker-compose.yml at project root
+      processTemplatesFromPrefix(vfs, templates, "addons/docker-compose", "", config, [
+        "addons/docker-compose/apps/server",
+        "addons/docker-compose/apps/web",
+        "addons/docker-compose/go",
+        "addons/docker-compose/java",
+        "addons/docker-compose/python",
+        "addons/docker-compose/rust",
+      ]);
+
+      // Place server Dockerfile if backend exists
+      if (config.backend !== "self" && config.backend !== "none") {
+        processTemplatesFromPrefix(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/server",
+          "apps/server",
+          config,
+        );
+      }
+
+      // Place web Dockerfile based on frontend
+      if (config.frontend.includes("next")) {
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/.dockerignore",
+          "apps/web/.dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/Dockerfile.next",
+          "apps/web/Dockerfile.next",
+          config,
+        );
+      } else if (
+        config.frontend.some((f) =>
+          [
+            "tanstack-router",
+            "react-router",
+            "react-vite",
+            "solid",
+            "astro",
+          ].includes(f),
+        )
+      ) {
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/.dockerignore",
+          "apps/web/.dockerignore",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/Dockerfile.vite",
+          "apps/web/Dockerfile.vite",
+          config,
+        );
+        processSingleTemplate(
+          vfs,
+          templates,
+          "addons/docker-compose/apps/web/nginx.conf",
+          "apps/web/nginx.conf",
+          config,
+        );
       }
       continue;
     }

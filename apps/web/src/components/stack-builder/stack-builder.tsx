@@ -107,7 +107,7 @@ type RenderOptionGroup = {
 const APP_PLATFORM_OPTION_GROUPS = [
   {
     heading: "Workspace & Platforms",
-    ids: ["turborepo", "pwa", "tauri", "wxt", "opentui"],
+    ids: ["turborepo", "docker-compose", "pwa", "tauri", "wxt", "opentui"],
   },
   {
     heading: "AI Agents",

@@ -179,6 +179,10 @@ const BASE_LINKS: LinkMap = {
   },
   upstash: { docsUrl: "https://upstash.com/docs", githubUrl: "https://github.com/upstash" },
   docker: { docsUrl: "https://docs.docker.com/", githubUrl: "https://github.com/docker/docs" },
+  "docker-compose": {
+    docsUrl: "https://docs.docker.com/compose/",
+    githubUrl: "https://github.com/docker/compose",
+  },
   cloudflare: {
     docsUrl: "https://developers.cloudflare.com/",
     githubUrl: "https://github.com/cloudflare/cloudflare-docs",

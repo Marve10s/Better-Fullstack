@@ -271,7 +271,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
 const DEFAULT_RUNTIME = "bun";
 
 export function validateProjectName(name: string): string | undefined {
-  const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*"];
+  const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*", "/", "\\"];
   const MAX_LENGTH = 255;
 
   if (name === ".") return undefined;
@@ -300,6 +300,11 @@ export const hasPWACompatibleFrontend = (webFrontend: string[]) =>
 export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
     ["tanstack-router", "react-router", "react-vite", "nuxt", "svelte", "solid", "next", "astro"].includes(f),
+  );
+
+export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
+  webFrontend.some((f) =>
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "astro"].includes(f),
   );
 
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
@@ -1835,6 +1840,41 @@ export const getDisabledReason = (
     if (optionId === "tauri" && !hasTauriCompatibleFrontend(currentStack.webFrontend)) {
       return "Tauri requires TanStack Router, React Router, Nuxt, Svelte, Solid, Next.js, or Astro";
     }
+    if (optionId === "docker-compose") {
+      if (currentStack.backend === "convex") {
+        return "Docker Compose is not compatible with Convex backend (managed service)";
+      }
+      if (currentStack.runtime === "workers") {
+        return "Docker Compose is not compatible with Cloudflare Workers runtime";
+      }
+      if (
+        currentStack.ecosystem === "typescript" &&
+        !hasDockerComposeCompatibleFrontend(currentStack.webFrontend)
+      ) {
+        return "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro";
+      }
+      if (
+        currentStack.ecosystem === "typescript" &&
+        currentStack.backend === "self" &&
+        !currentStack.webFrontend.includes("next")
+      ) {
+        return "Docker Compose self-backend support currently requires Next.js";
+      }
+      if (currentStack.ecosystem === "rust" && currentStack.rustFrontend !== "none") {
+        return "Docker Compose for Rust currently supports server-only projects";
+      }
+      if (currentStack.ecosystem === "java" && currentStack.javaWebFramework !== "spring-boot") {
+        return "Docker Compose for Java currently requires Spring Boot";
+      }
+      if (
+        currentStack.ecosystem === "python" &&
+        currentStack.database !== "none" &&
+        currentStack.database !== "sqlite" &&
+        currentStack.database !== "postgres"
+      ) {
+        return "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres";
+      }
+    }
     if (optionId === "tanstack-query" && currentStack.api !== "none") {
       return "TanStack Query is already included via your API layer";
     }
@@ -2355,6 +2395,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
+  "docker-compose": [],
   none: [],
 };
 
@@ -2426,7 +2467,7 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
         {
           ecosystem: "typescript",
           backend,
-          frontend: [frontend],
+          webFrontend: [frontend],
         },
         auth as Auth,
       ) === null
@@ -2658,6 +2699,18 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         code: "INCOMPATIBLE_ADDON",
         message: reason,
         category: "appPlatforms",
+        optionId: addon,
+      });
+    }
+  }
+
+  for (const addon of input.examples) {
+    const reason = getDisabledReason(input, "examples", addon);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_ADDON",
+        message: reason,
+        category: "examples",
         optionId: addon,
       });
     }

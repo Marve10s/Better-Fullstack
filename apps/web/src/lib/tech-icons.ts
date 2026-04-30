@@ -138,6 +138,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   planetscale: { type: "si", slug: "planetscale", hex: "000000" },
   upstash: { type: "si", slug: "upstash", hex: "00E9A3" },
   docker: { type: "si", slug: "docker", hex: "2496ED" },
+  "docker-compose": { type: "si", slug: "docker", hex: "2496ED" },
 
   // ─── Deploy ────────────────────────────────────────────────────────────────
   cloudflare: { type: "si", slug: "cloudflareworkers", hex: "F38020" },

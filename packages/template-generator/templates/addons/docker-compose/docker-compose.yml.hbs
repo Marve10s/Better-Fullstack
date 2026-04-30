@@ -1,0 +1,216 @@
+name: {{projectName}}
+
+services:
+{{#if (eq ecosystem "typescript")}}
+  web:
+    build:
+      context: .
+{{#if (includes frontend "next")}}
+      dockerfile: apps/web/Dockerfile.next
+{{else}}
+      dockerfile: apps/web/Dockerfile.vite
+      args:
+        VITE_SERVER_URL: http://localhost:3000
+{{/if}}
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+{{#if (eq backend "self")}}
+{{#if (eq database "postgres")}}
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
+{{else if (eq database "mysql")}}
+      - DATABASE_URL=mysql://root:rootpassword@db:3306/{{projectName}}
+{{else if (eq database "mongodb")}}
+      - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
+{{/if}}
+{{/if}}
+{{#unless (eq backend "self")}}
+{{#unless (eq backend "none")}}
+    depends_on:
+      - server
+{{/unless}}
+{{/unless}}
+{{#if (eq backend "self")}}
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+    depends_on:
+      db:
+        condition: service_healthy
+{{/if}}
+{{/if}}
+    restart: unless-stopped
+
+{{#unless (eq backend "self")}}
+{{#unless (eq backend "none")}}
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CORS_ORIGIN=http://localhost:3001
+{{#if (eq database "postgres")}}
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
+{{else if (eq database "mysql")}}
+      - DATABASE_URL=mysql://root:rootpassword@db:3306/{{projectName}}
+{{else if (eq database "mongodb")}}
+      - DATABASE_URL=mongodb://root:password@db:27017/{{projectName}}?authSource=admin
+{{/if}}
+{{#if (or (or (eq database "postgres") (eq database "mysql")) (eq database "mongodb"))}}
+    depends_on:
+      db:
+        condition: service_healthy
+{{/if}}
+    restart: unless-stopped
+{{/unless}}
+{{/unless}}
+
+{{#if (eq database "postgres")}}
+  db:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-postgres
+    # WARNING: Configure database credentials via environment variables before production use.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-{{projectNameWithClosingBrace}}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+{{/if}}
+{{#if (eq database "mysql")}}
+  db:
+    image: mysql:8
+    container_name: {{projectName}}-mysql
+    # WARNING: Configure database credentials via environment variables before production use.
+    environment:
+      MYSQL_DATABASE: {{projectName}}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+{{/if}}
+{{#if (eq database "mongodb")}}
+  db:
+    image: mongo:7
+    container_name: {{projectName}}-mongodb
+    # WARNING: Configure database credentials via environment variables before production use.
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: {{projectName}}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+{{/if}}
+{{else}}
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+{{#if (eq ecosystem "python")}}
+      - "8000:8000"
+{{else if (eq ecosystem "rust")}}
+      - "3000:3000"
+{{#if (eq rustApi "tonic")}}
+      - "50051:50051"
+{{/if}}
+{{else}}
+      - "8080:8080"
+{{/if}}
+    environment:
+{{#if (eq ecosystem "python")}}
+      - HOST=0.0.0.0
+      - PORT=8000
+{{#if (and (ne pythonOrm "none") (eq database "postgres"))}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}
+{{else}}
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/{{projectName}}
+{{/if}}
+{{/if}}
+{{else if (eq ecosystem "go")}}
+      - HOST=0.0.0.0
+      - PORT=8080
+{{#if (ne goOrm "none")}}
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}?sslmode=disable
+{{/if}}
+{{else if (eq ecosystem "rust")}}
+      - HOST=0.0.0.0
+      - PORT=3000
+{{#if (eq rustApi "tonic")}}
+      - GRPC_PORT=50051
+{{/if}}
+{{#if (ne rustOrm "none")}}
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/{{projectName}}
+{{/if}}
+{{else if (eq ecosystem "java")}}
+      - PORT=8080
+      - SPRING_PROFILES_ACTIVE=prod
+{{/if}}
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (eq database "postgres"))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (ne rustOrm "none")))}}
+    depends_on:
+      db:
+        condition: service_healthy
+{{/if}}
+    restart: unless-stopped
+
+{{#if (or (or (and (eq ecosystem "python") (and (ne pythonOrm "none") (eq database "postgres"))) (and (eq ecosystem "go") (ne goOrm "none"))) (and (eq ecosystem "rust") (ne rustOrm "none")))}}
+  db:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-{{projectNameWithClosingBrace}}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+{{/if}}
+{{/if}}
