@@ -1,6 +1,5 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Github } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -9,32 +8,10 @@ const BUILDER_PRESETS_SEARCH = { view: "presets", file: "" } as const;
 const DOCS_ACTIVE_OPTIONS = { includeSearch: false } as const;
 const DOCS_ACTIVE_PROPS = { className: "active" } as const;
 
-const NavbarStats = lazy(async () => {
-  const mod = await import("@/components/navbar-stats");
-  return { default: mod.NavbarStats };
-});
-
 export function Navbar() {
-  const [showStats, setShowStats] = useState(false);
-  const location = useLocation();
-  const isDocsRoute = location.pathname.startsWith("/docs");
-
-  useEffect(() => {
-    const onIdle = () => setShowStats(true);
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(onIdle, { timeout: 2000 });
-      return () => window.cancelIdleCallback(id);
-    }
-
-    const timeout = globalThis.setTimeout(onIdle, 600);
-    return () => globalThis.clearTimeout(timeout);
-  }, []);
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <nav className="container mx-auto flex h-14 items-center justify-between px-6">
-        {/* Logo + Builder */}
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
             to="/"
@@ -73,27 +50,17 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Navigation Links */}
         <div className="flex items-center gap-4 sm:gap-6">
-          {!isDocsRoute && showStats ? (
-            <Suspense
-              fallback={
-                <>
-                  <div className="hidden h-4 w-12 animate-pulse rounded bg-muted sm:block" />
-                  <div className="hidden h-4 w-12 animate-pulse rounded bg-muted lg:block" />
-                </>
-              }
-            >
-              <NavbarStats />
-            </Suspense>
-          ) : !isDocsRoute ? (
-            <>
-              <div className="hidden h-4 w-12 animate-pulse rounded bg-muted sm:block" />
-              <div className="hidden h-4 w-12 animate-pulse rounded bg-muted sm:block" />
-            </>
-          ) : null}
-
           <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://github.com/Marve10s/Better-Fullstack"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub repository"
+              className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Github className="h-4 w-4" />
+            </a>
             <ThemeToggle />
             <Link
               to="/new"

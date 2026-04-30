@@ -1,7 +1,5 @@
-
 import { Code2, GitPullRequest, Heart } from "lucide-react";
-
-import { CollapsibleSection } from "./collapsible-section";
+import { motion } from "motion/react";
 
 type Contributor = {
   username: string;
@@ -14,7 +12,7 @@ const contributors: Contributor[] = [
   {
     username: "EthanShoeDev",
     name: "Ethan Shoe",
-    role: "QA & Testing",
+    role: "QA & testing",
     github: "https://github.com/EthanShoeDev",
   },
   {
@@ -37,65 +35,100 @@ const contributors: Contributor[] = [
   },
 ];
 
-function ContributorCard({ contributor }: { contributor: Contributor }) {
+function ContributorCard({
+  contributor,
+  index,
+}: {
+  contributor: Contributor;
+  index: number;
+}) {
   return (
-    <a
+    <motion.a
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
+      whileHover={{ y: -2 }}
       href={contributor.github}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-4 rounded-lg border border-border bg-background p-4 transition-all hover:border-foreground/30 hover:bg-muted/50"
+      className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-colors hover:border-foreground/30"
     >
       <img
         src={`https://github.com/${contributor.username}.png`}
         alt={contributor.name}
-        className="h-14 w-14 rounded-full border-2 border-border transition-all group-hover:border-foreground/30"
+        loading="lazy"
+        className="h-14 w-14 rounded-full border-2 border-border transition-colors group-hover:border-lime-500/50"
       />
-      <div className="flex flex-col">
-        <span className="font-medium text-foreground">{contributor.name}</span>
-        <span className="text-sm text-muted-foreground">@{contributor.username}</span>
-        <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <Code2 className="h-3 w-3" />
+      <div className="min-w-0 flex-1">
+        <span className="block truncate font-medium text-foreground">{contributor.name}</span>
+        <span className="block truncate font-mono text-xs text-muted-foreground">
+          @{contributor.username}
+        </span>
+        <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Code2 className="h-3 w-3" aria-hidden />
           {contributor.role}
         </span>
       </div>
-    </a>
+    </motion.a>
   );
 }
 
 export default function ContributorsSection() {
   return (
-    <CollapsibleSection
-      title="QA & Contributing"
-      subtitle="Special thanks to our contributors who help improve Better Fullstack through testing, feedback, and code contributions."
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        {contributors.map((contributor) => (
-          <div key={contributor.username} data-animate>
-            <ContributorCard contributor={contributor} />
+    <section className="relative border-t border-border bg-muted/30">
+      <div className="px-4 py-20 sm:px-8 sm:py-28">
+        <div className="grid grid-cols-12 gap-x-4 gap-y-6">
+          <div className="col-span-12 sm:col-span-7">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+              ✦ contributors
+            </p>
+            <h2
+              className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
+              style={{
+                fontSize: "clamp(1.85rem, 5vw, 3.4rem)",
+                lineHeight: 0.98,
+              }}
+            >
+              Built in public.{" "}
+              <span className="italic text-muted-foreground">By the community.</span>
+            </h2>
           </div>
-        ))}
-      </div>
+          <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
+            <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
+              Special thanks to the contributors who help improve Better Fullstack through
+              testing, feedback, and code.
+            </p>
+          </div>
+        </div>
 
-      <div data-animate className="mt-8 flex flex-wrap items-center gap-3">
-        <a
-          href="https://github.com/Marve10s/Better-Fullstack/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          <GitPullRequest className="h-4 w-4" />
-          Contribute to Better Fullstack
-        </a>
-        <a
-          href="https://www.patreon.com/c/marve10s"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-        >
-          <Heart className="h-4 w-4" />
-          Become a Patron
-        </a>
+        <div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {contributors.map((contributor, i) => (
+            <ContributorCard key={contributor.username} contributor={contributor} index={i} />
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-wrap items-center gap-3">
+          <a
+            href="https://github.com/Marve10s/Better-Fullstack/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            <GitPullRequest className="h-4 w-4" />
+            Contribute on GitHub
+          </a>
+          <a
+            href="https://www.patreon.com/c/marve10s"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+          >
+            <Heart className="h-4 w-4" />
+            Become a patron
+          </a>
+        </div>
       </div>
-    </CollapsibleSection>
+    </section>
   );
 }

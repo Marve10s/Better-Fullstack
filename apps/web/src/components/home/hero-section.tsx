@@ -1,84 +1,183 @@
-
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 import PackageIcon from "./icons";
 
+const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
+type PM = (typeof PMS)[number];
+const COMMANDS: Record<PM, string> = {
+  bun: "bun create better-fullstack@latest",
+  pnpm: "pnpm create better-fullstack@latest",
+  npm: "npx create-better-fullstack@latest",
+  yarn: "yarn create better-fullstack@latest",
+};
+
+const C = {
+  bg: "#0a0a0a",
+  ink: "#fafafa",
+  muted: "#7a7a7a",
+  mutedHi: "#a3a3a3",
+  accent: "#bef264",
+  accentDeep: "#84cc16",
+  rule: "#1f1f1f",
+  ruleSoft: "#161616",
+  panel: "#111111",
+};
+
 export default function HeroSection() {
-  const [selectedPM, setSelectedPM] = useState<"bun" | "pnpm" | "npm" | "yarn">("bun");
+  const [pm, setPm] = useState<PM>("bun");
   const [copied, setCopied] = useState(false);
 
-  const commands = {
-    npm: "npx create-better-fullstack@latest",
-    pnpm: "pnpm create better-fullstack@latest",
-    bun: "bun create better-fullstack@latest",
-    yarn: "yarn create better-fullstack@latest",
-  };
-
-  const copyCommand = () => {
-    navigator.clipboard.writeText(commands[selectedPM]).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      return;
-    }).catch(() => {});
+  const copy = () => {
+    navigator.clipboard.writeText(COMMANDS[pm]).then(
+      () => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+        return;
+      },
+      () => {},
+    );
   };
 
   return (
-    <div className="flex flex-col items-center px-4 pt-12 pb-8 sm:pt-16">
-      <h1 className="max-w-3xl text-center font-mono text-2xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-        The full-stack app scaffolder
-      </h1>
-
-      <p className="mt-4 max-w-xl text-center text-sm text-muted-foreground sm:mt-6 sm:text-lg">
-        Production-ready templates with your choice of framework, database, auth, and more.
-      </p>
-
-      <div className="mt-8 w-full max-w-2xl sm:mt-10">
-        <div className="flex border-b border-border">
-          {(["bun", "pnpm", "npm", "yarn"] as const).map((pm) => (
-            <button
-              key={pm}
-              type="button"
-              onClick={() => setSelectedPM(pm)}
-              className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
-                selectedPM === pm
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <PackageIcon pm={pm} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              {pm}
-            </button>
-          ))}
+    <section
+      className="relative"
+      style={{ background: C.bg, color: C.ink, colorScheme: "dark" }}
+    >
+      <div
+        className="px-4 pb-5 pt-6 sm:px-8 sm:pt-8"
+        style={{ borderBottom: `1px solid ${C.rule}` }}
+      >
+        <div className="flex items-baseline justify-between">
+          <span
+            className="font-mono text-[11px] uppercase tracking-[0.22em]"
+            style={{ color: C.accent }}
+          >
+            ✦ install
+          </span>
+          <span
+            className="font-mono text-[11px] uppercase tracking-[0.22em]"
+            style={{ color: C.muted }}
+          >
+            v1.6.2 · apr 29, 2026
+          </span>
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-stretch sm:gap-3">
-          <div className="flex flex-1 items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5 sm:px-4 sm:py-3">
-            <code className="truncate font-mono text-xs sm:text-sm">{commands[selectedPM]}</code>
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-3 overflow-hidden rounded-md"
+          style={{ border: `1px solid ${C.rule}`, background: C.panel }}
+        >
+          <div className="flex" style={{ borderBottom: `1px solid ${C.rule}` }}>
+            {PMS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPm(p)}
+                className="flex cursor-pointer items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4"
+                style={{
+                  borderRight: `1px solid ${C.rule}`,
+                  background: pm === p ? C.accent : "transparent",
+                  color: pm === p ? C.bg : C.mutedHi,
+                }}
+              >
+                <PackageIcon pm={p} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                {p}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
+            <code className="truncate font-mono text-sm sm:text-base">
+              <span style={{ color: C.accent }}>$</span> {COMMANDS[pm]}
+            </code>
             <button
               type="button"
-              onClick={copyCommand}
-              className="ml-3 flex-shrink-0 text-muted-foreground transition-colors hover:text-foreground sm:ml-4"
+              onClick={copy}
               aria-label="Copy command"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]"
+              style={{
+                color: copied ? C.accent : C.mutedHi,
+                background: "transparent",
+              }}
             >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-green-500 sm:h-4 sm:w-4" />
-              ) : (
-                <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              )}
+              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
           </div>
+        </motion.div>
+      </div>
+
+      <div className="px-4 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="font-mono text-[11px] uppercase tracking-[0.22em]"
+          style={{ color: C.accent }}
+        >
+          ✦ the cli
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.05 }}
+          className="mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em]"
+          style={{
+            fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
+            lineHeight: 0.94,
+            color: C.ink,
+          }}
+        >
+          Stop wiring.
+          <br />
+          <span className="italic" style={{ color: C.accent }}>
+            Start shipping.
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-7 max-w-lg text-pretty text-base sm:text-lg"
+          style={{ color: C.mutedHi }}
+        >
+          A CLI that scaffolds production-ready fullstack apps across five language
+          ecosystems. Pick your stack — frontend, database, auth, payments, AI — and run
+          one command.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 flex flex-wrap items-center gap-3"
+        >
           <Link
             to="/new"
             search={{ view: "command", file: "" }}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-foreground px-4 py-2.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90 sm:gap-2 sm:px-5 sm:text-sm"
+            className="group inline-flex items-center gap-1.5 rounded-md px-5 py-2.5 text-sm font-semibold transition-all hover:gap-2.5"
+            style={{ background: C.accent, color: C.bg }}
           >
-            Builder
-            <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Open the builder
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
-        </div>
+          <Link
+            to="/docs"
+            className="rounded-md px-5 py-2.5 text-sm font-medium transition-colors"
+            style={{
+              border: `1px solid ${C.rule}`,
+              color: C.ink,
+            }}
+          >
+            Read the docs
+          </Link>
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 }

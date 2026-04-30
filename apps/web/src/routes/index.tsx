@@ -46,11 +46,11 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <main className="min-h-svh">
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="mx-auto max-w-[1480px] border-x border-border">
         <HeroSection />
         <FeaturesSection />
-        <TestimonialsSection />
         <CombinationsSection />
+        <TestimonialsSection />
         <ContributorsSection />
         <Footer />
       </div>

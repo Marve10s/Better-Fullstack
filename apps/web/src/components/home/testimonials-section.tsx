@@ -1,163 +1,217 @@
-
-import { Heart, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
 import { motion } from "motion/react";
-import { useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { LIKED_BY, ROW_1, ROW_2, ROW_3 } from "./testimonials-data";
 import type { Testimonial } from "./testimonials-data";
 
-function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
+const SHORT_REACTION_MAX_LENGTH = 28;
+const ALL_TESTIMONIALS: Testimonial[] = [...ROW_1, ...ROW_2, ...ROW_3];
+const SUBSTANTIVE: Testimonial[] = [];
+const REACTIONS: Testimonial[] = [];
+for (const t of ALL_TESTIMONIALS) {
+  if (t.gif || t.comment.length > SHORT_REACTION_MAX_LENGTH) {
+    SUBSTANTIVE.push(t);
+  } else {
+    REACTIONS.push(t);
+  }
+}
+
+function ReactionChip({
+  testimonial,
+  index,
+}: {
+  testimonial: Testimonial;
+  index: number;
+}) {
   return (
-    <div className="group relative flex w-[320px] shrink-0 flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.15)]">
-      <Quote className="absolute top-4 right-4 h-5 w-5 text-muted-foreground/10 transition-colors duration-300 group-hover:text-primary/20" />
-      <p className="text-sm leading-relaxed text-muted-foreground">
+    <motion.span
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.025, 0.3) }}
+      whileHover={{ y: -1 }}
+      className="group inline-flex items-center gap-2 rounded-full border border-border bg-background py-1 pl-1 pr-3 text-xs transition-colors hover:border-foreground/30"
+    >
+      <img
+        src={testimonial.avatar}
+        alt={testimonial.name}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        className="h-6 w-6 rounded-full border border-border"
+      />
+      <span className="text-foreground">
+        &ldquo;{testimonial.comment}&rdquo;
+      </span>
+      <span className="hidden font-mono text-[10px] text-muted-foreground sm:inline">
+        — {testimonial.name}
+      </span>
+    </motion.span>
+  );
+}
+
+function TestimonialCard({
+  testimonial,
+  index,
+}: {
+  testimonial: Testimonial;
+  index: number;
+}) {
+  return (
+    <motion.figure
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.36) }}
+      whileHover={{ y: -2 }}
+      className="group relative flex h-full flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
+    >
+      <Quote
+        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-lime-500/40"
+        aria-hidden
+      />
+      <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
         &ldquo;{testimonial.comment}&rdquo;
       </p>
-      {testimonial.gif && (
+      {testimonial.gif ? (
         <img
           src={testimonial.gif}
-          alt="Rick Sanchez reaction GIF"
+          alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
           className="w-full rounded-md border border-border"
         />
-      )}
-      <div className="mt-auto flex items-center gap-3 border-t border-border/50 pt-3">
+      ) : null}
+      <div className="mt-auto flex items-center gap-3 border-t border-border/60 pt-3">
         <img
           src={testimonial.avatar}
           alt={testimonial.name}
           loading="lazy"
           referrerPolicy="no-referrer"
-          className="h-8 w-8 rounded-full border border-border transition-all duration-300 group-hover:border-primary/30"
+          className="h-8 w-8 rounded-full border border-border"
         />
-        <div className="flex flex-col">
-          <span className="font-mono text-xs font-medium text-foreground">
+        <div className="min-w-0 flex-1">
+          <span className="block truncate font-mono text-xs font-medium text-foreground">
             {testimonial.name}
           </span>
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             via daily.dev
           </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function MarqueeRow({
-  testimonials,
-  direction = "left",
-  durationSeconds = 60,
-}: {
-  testimonials: Testimonial[];
-  direction?: "left" | "right";
-  durationSeconds?: number;
-}) {
-  if (testimonials.length === 0) return null;
-
-  const doubled = [...testimonials, ...testimonials];
-
-  return (
-    <div className="group/marquee relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
-      <div
-        className={cn(
-          "flex w-max gap-4 py-2 group-hover/marquee:[animation-play-state:paused]",
-          direction === "left" ? "animate-marquee-left" : "animate-marquee-right",
-        )}
-        style={{ animationDuration: `${durationSeconds}s` }}
-      >
-        {doubled.map((t, i) => (
-          <TestimonialCard key={`${t.name}-${i}`} testimonial={t} />
-        ))}
-      </div>
-    </div>
+    </motion.figure>
   );
 }
 
 export default function TestimonialsSection() {
-  const ref = useRef(null);
-
   return (
-    <section
-      ref={ref}
-      className="overflow-hidden border-t border-border py-16"
-    >
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-        className="mx-auto mb-10 max-w-3xl px-4"
-      >
-        <h2 className="font-pixel text-xl font-bold">
-          People almost love it!
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          What the community is saying on{" "}
-          <a
-            href="https://app.daily.dev/posts/a42eCYoJk"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4 transition-colors hover:text-foreground"
-          >
-            daily.dev
-          </a>
-        </p>
-      </motion.div>
-
-      <div className="space-y-4">
-        <MarqueeRow testimonials={ROW_1} direction="left" durationSeconds={50} />
-        <MarqueeRow testimonials={ROW_2} direction="right" durationSeconds={60} />
-        <MarqueeRow testimonials={ROW_3} direction="left" durationSeconds={45} />
-      </div>
-
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
-        className="liked-by mx-auto mt-14 max-w-3xl px-4"
-      >
-        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-          <span className="font-mono uppercase tracking-wide">
-            Liked on X by
-          </span>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-4">
-          {LIKED_BY.map((person) => (
-            <a
-              key={person.handle}
-              href={`https://x.com/${person.handle}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.1)]"
+    <section className="relative border-t border-border">
+      <div className="px-4 py-20 sm:px-8 sm:py-28">
+        <div className="grid grid-cols-12 gap-x-4 gap-y-6">
+          <div className="col-span-12 sm:col-span-7">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+              ✦ on the record
+            </p>
+            <h2
+              className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
+              style={{
+                fontSize: "clamp(1.85rem, 5vw, 3.4rem)",
+                lineHeight: 0.98,
+              }}
             >
-              <img
-                src={person.avatar}
-                alt={person.name}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className={cn(
-                  "h-9 w-9 rounded-full border border-border transition-all duration-300 group-hover:border-primary/30",
-                  person.invertDark && "dark:bg-white dark:p-0.5",
-                )}
-              />
-              <div className="flex flex-col">
-                <span className="font-mono text-sm font-medium text-foreground">
-                  {person.name}
-                </span>
-                <span className="font-mono text-[11px] text-muted-foreground">
-                  {person.role}
-                </span>
-              </div>
-            </a>
+              People{" "}
+              <span className="italic text-muted-foreground">almost</span> love it.
+            </h2>
+          </div>
+          <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
+            <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
+              Posted on{" "}
+              <a
+                href="https://app.daily.dev/posts/a42eCYoJk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-500"
+              >
+                daily.dev
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://x.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-500"
+              >
+                X
+              </a>{" "}
+              by people who shipped with it.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-12 columns-1 gap-3 sm:columns-2 lg:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
+          {SUBSTANTIVE.map((t, i) => (
+            <TestimonialCard key={`${t.name}-${i}`} testimonial={t} index={i} />
           ))}
         </div>
-      </motion.div>
+
+        {REACTIONS.length > 0 ? (
+          <div className="mt-10 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              ✦ + reactions
+            </span>
+            {REACTIONS.map((t, i) => (
+              <ReactionChip key={`${t.name}-${i}`} testimonial={t} index={i} />
+            ))}
+          </div>
+        ) : null}
+
+        <div className="mt-16 border-t border-border pt-10">
+          <div className="grid grid-cols-12 gap-x-4 gap-y-4">
+            <div className="col-span-12 sm:col-span-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+                ✦ liked on x
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Builders who hearted the launch.
+              </p>
+            </div>
+            <div className="col-span-12 sm:col-span-9">
+              <ul className="flex flex-wrap gap-2">
+                {LIKED_BY.map((person) => (
+                  <li key={person.handle}>
+                    <a
+                      href={`https://x.com/${person.handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2.5 rounded-full border border-border bg-background py-1.5 pl-1.5 pr-3 transition-colors hover:border-foreground/30"
+                    >
+                      <img
+                        src={person.avatar}
+                        alt={person.name}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        className={cn(
+                          "h-7 w-7 rounded-full border border-border",
+                          person.invertDark && "dark:bg-white dark:p-0.5",
+                        )}
+                      />
+                      <span className="flex flex-col items-start text-left">
+                        <span className="font-mono text-xs font-medium text-foreground">
+                          {person.name}
+                        </span>
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          {person.role}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

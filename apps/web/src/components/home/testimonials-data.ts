@@ -61,6 +61,12 @@ export const ROW_1: Testimonial[] = [
       "https://media.daily.dev/image/upload/s--ukVGv6qv--/f_auto/v1770254654/avatars/avatar_UNd7l5GPiQELdZUM9IM5p",
     comment: "very good",
   },
+  {
+    name: "Uzair",
+    avatar:
+      "https://media.daily.dev/image/upload/s--O0TOmw4y--/f_auto/v1715772965/public/noProfile",
+    comment: "Good",
+  },
 ];
 
 export const ROW_2: Testimonial[] = [
@@ -70,6 +76,13 @@ export const ROW_2: Testimonial[] = [
       "https://media.daily.dev/image/upload/s--5hPC52y_--/f_auto/v1773412842/avatars/avatar_8fkdziGASnSSBES6c4Ml9",
     comment:
       "424 options sounds powerful. The real question is how deep the generated code goes — if it actually handles the opinionated glue between layers, this is genuinely impressive infrastructure.",
+  },
+  {
+    name: "Juan Felipe Velasquez Alvarez",
+    avatar:
+      "https://media.daily.dev/image/upload/s--PbZORXAj--/f_auto/v1757214438/avatars/avatar_mQctWDEB2",
+    comment:
+      "Better Fullstack & SST — the perfect team. Better Fullstack gives you the tools to make your code clean and secure right from the start. SST takes that code and makes it work on the web in a professional way.",
   },
   {
     name: "Maxx",
@@ -128,6 +141,18 @@ export const ROW_3: Testimonial[] = [
     avatar:
       "https://lh3.googleusercontent.com/a/ACg8ocIPaXr32GKCKrbcxzIUPSaJOkOsFRQTOf-ycxkANuxwADhyvvIlgQ=s96-c",
     comment: "awesome project!",
+  },
+  {
+    name: "Rijad Zuzo",
+    avatar:
+      "https://lh3.googleusercontent.com/a-/AOh14GiTMC5ZP-x_0a8HMXg5a_mdMcvDTW8n9vyotgW3Jw=s100",
+    comment: "This is some sweet, sweet stuff!",
+  },
+  {
+    name: "Gaurab Gogoi",
+    avatar: "https://avatars.githubusercontent.com/u/67511840?v=4",
+    comment: "Perfect.",
+    gif: "https://media.tenor.com/QiIRP06rosgAAAAC/wow-oh-my.gif",
   },
 ];
 

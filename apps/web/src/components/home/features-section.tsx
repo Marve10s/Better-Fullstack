@@ -1,90 +1,208 @@
+import NumberFlow from "@number-flow/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { motion, useInView } from "motion/react";
+import { useRef } from "react";
 
-import { ECOSYSTEM_COUNT_LABEL, ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "@/lib/project-stats";
+import { TechIcon } from "@/components/ui/tech-icon";
+import { TECH_OPTIONS } from "@/lib/constant";
+import type { TechCategory } from "@/lib/types";
 
-import { CollapsibleSection } from "./collapsible-section";
+type Layer = {
+  cat: TechCategory;
+  word: string;
+};
 
-const features = [
-  {
-    title: `${ECOSYSTEM_COUNT_LABEL} ecosystems`,
-    description: `${ECOSYSTEM_NAMES.join(", ")} with native tooling for each`,
-  },
-  {
-    title: "15 frontend frameworks",
-    description: "Web, native mobile, and WASM frontends across all ecosystems",
-  },
-  {
-    title: "17 backend frameworks",
-    description: "From lightweight to batteries-included, across all supported languages",
-  },
-  {
-    title: "6 databases & 13 ORMs",
-    description: "SQL, NoSQL, and graph databases with type-safe query builders",
-  },
-  {
-    title: "7 auth providers",
-    description: "Self-hosted and managed authentication out of the box",
-  },
-  {
-    title: "5 payment integrations",
-    description: "Subscriptions, one-time payments, and usage-based billing",
-  },
-  {
-    title: "12 AI integrations",
-    description: "Agent frameworks, LLM SDKs, and orchestration tools",
-  },
-  {
-    title: "7 type-safe APIs & gRPC",
-    description: "End-to-end type safety and high-performance RPC",
-  },
-  {
-    title: "6 real-time & 4 job queues",
-    description: "WebSockets, CRDT collaboration, and background task processing",
-  },
-  {
-    title: "11 UI libraries",
-    description: "Accessible component systems and design primitives",
-  },
-  {
-    title: "Native & desktop apps",
-    description: "Mobile, desktop, and browser extension targets",
-  },
-  {
-    title: "5 deploy targets",
-    description: "Edge, serverless, containers, and infrastructure-as-code",
-  },
+const LAYERS: ReadonlyArray<Layer> = [
+  { cat: "webFrontend", word: "FRONTEND FRAMEWORKS" },
+  { cat: "backend", word: "BACKEND FRAMEWORKS" },
+  { cat: "orm", word: "DATABASE ORMs" },
+  { cat: "auth", word: "AUTH PROVIDERS" },
+  { cat: "ai", word: "AI INTEGRATIONS" },
+  { cat: "webDeploy", word: "DEPLOY TARGETS" },
 ];
+
+function getOptions(cat: TechCategory) {
+  return (TECH_OPTIONS[cat] ?? [])
+    .filter((o) => !o.legacy && o.id !== "none")
+    .map((o) => ({ id: o.id, name: o.name }));
+}
 
 export default function FeaturesSection() {
   return (
-    <CollapsibleSection
-      title="What is Better Fullstack?"
-      subtitle={`A CLI that scaffolds production-ready apps with your preferred tech stack. Choose from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} ecosystems.`}
-      defaultOpen
-    >
-      <ul className="space-y-3 sm:space-y-4">
-        {features.map((feature) => (
-          <li key={feature.title} data-animate className="flex items-start gap-2 sm:gap-3">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-foreground sm:h-5 sm:w-5" />
-            <div className="text-sm sm:text-base">
-              <span className="font-medium">{feature.title}</span>
-              <span className="text-muted-foreground"> — {feature.description}</span>
-            </div>
-          </li>
+    <section className="relative border-t border-border bg-background">
+      <div className="relative overflow-hidden border-b border-border">
+        <div className="px-4 py-20 sm:px-8 sm:py-24">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500">
+            ✦ pick anything
+          </p>
+          <h2
+            className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
+            style={{
+              fontSize: "clamp(2.5rem, 9vw, 6rem)",
+              lineHeight: 0.94,
+            }}
+          >
+            All of it.{" "}
+            <span className="italic text-muted-foreground">Wired together.</span>
+          </h2>
+          <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-3">
+            <p className="max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
+              Six layers of opinionated infrastructure, picked à la carte. The CLI handles
+              the wiring so you don&rsquo;t have to.
+            </p>
+            <Link
+              to="/new"
+              search={{ view: "command", file: "" }}
+              className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              Pick your stack
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+
+        <div
+          className="pointer-events-none absolute -bottom-12 right-[-4vw] -z-0 select-none font-mono font-black leading-none tracking-[-0.06em] text-foreground/[0.04]"
+          style={{ fontSize: "clamp(14rem, 36vw, 32rem)" }}
+          aria-hidden
+        >
+          436
+        </div>
+      </div>
+
+      <ul>
+        {LAYERS.map((layer, i) => (
+          <LayerRow key={layer.cat} layer={layer} index={i} />
         ))}
       </ul>
 
-      <div data-animate className="mt-6 sm:mt-8">
-        <Link
-          to="/new"
-          search={{ view: "command", file: "" }}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90 sm:gap-2 sm:px-4 sm:text-sm"
-        >
-          Try it now
-          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-        </Link>
+      <TotalBlock />
+    </section>
+  );
+}
+
+function LayerRow({ layer, index }: { layer: Layer; index: number }) {
+  const ref = useRef<HTMLLIElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-20%" });
+  const options = getOptions(layer.cat);
+  const flip = index % 2 === 1;
+
+  return (
+    <li
+      ref={ref}
+      className="group relative overflow-hidden border-b border-border transition-colors hover:bg-muted/40"
+    >
+      <div
+        className={`grid grid-cols-12 items-center gap-x-4 gap-y-6 px-4 py-12 sm:gap-x-6 sm:px-8 sm:py-16 ${
+          flip ? "sm:[direction:rtl]" : ""
+        }`}
+      >
+        <div className="col-span-12 sm:col-span-4 lg:col-span-3 sm:[direction:ltr]">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="font-mono font-black leading-[0.82] tracking-[-0.05em]"
+            style={{ fontSize: "clamp(5rem, 14vw, 11rem)" }}
+          >
+            <NumberFlow
+              value={inView ? options.length : 0}
+              format={{ minimumIntegerDigits: 2 }}
+              transformTiming={{ duration: 700, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
+            />
+          </motion.div>
+          <div
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-lime-500"
+            style={{ direction: "ltr" }}
+          >
+            ✦ {String(index + 1).padStart(2, "0")}
+          </div>
+        </div>
+
+        <div className="col-span-12 sm:col-span-8 lg:col-span-9 sm:[direction:ltr]">
+          <motion.h3
+            initial={{ opacity: 0, x: flip ? 16 : -16 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="font-mono font-bold uppercase leading-none tracking-[-0.03em]"
+            style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
+          >
+            {layer.word}
+          </motion.h3>
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mt-5 flex flex-wrap gap-1.5"
+          >
+            {options.map((opt, j) => (
+              <motion.span
+                key={opt.id}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={inView ? { opacity: 1, scale: 1 } : {}}
+                transition={{
+                  duration: 0.3,
+                  delay: 0.2 + Math.min(j * 0.02, 0.4),
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs transition-colors hover:border-foreground/30"
+              >
+                <TechIcon techId={opt.id} name={opt.name} className="size-3" />
+                <span>{opt.name}</span>
+              </motion.span>
+            ))}
+          </motion.div>
+        </div>
       </div>
-    </CollapsibleSection>
+    </li>
+  );
+}
+
+function TotalBlock() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-30%" });
+
+  return (
+    <div
+      ref={ref}
+      className="relative overflow-hidden bg-foreground text-background"
+    >
+      <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-4 px-4 py-12 sm:gap-x-6 sm:px-8 sm:py-16">
+        <div className="col-span-12 sm:col-span-4 lg:col-span-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-300">
+            ✦ total
+          </p>
+          <p className="mt-2 max-w-[26ch] text-pretty text-sm text-background/70">
+            Multiply this by every database, every CSS framework, every AI SDK, and you
+            get more combinations than there are grains of sand.
+          </p>
+        </div>
+        <div className="col-span-12 sm:col-span-8 lg:col-span-9">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="flex items-baseline gap-3 font-mono font-black leading-[0.85] tracking-[-0.05em]"
+          >
+            <span style={{ fontSize: "clamp(5rem, 18vw, 14rem)" }}>
+              <NumberFlow
+                value={inView ? 436 : 0}
+                transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
+              />
+            </span>
+            <span
+              className="text-lime-300"
+              style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}
+            >
+              ✦
+            </span>
+          </motion.div>
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
+            options across 5 ecosystems · ts · rust · go · python · java
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
