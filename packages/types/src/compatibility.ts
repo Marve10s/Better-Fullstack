@@ -302,6 +302,11 @@ export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
     ["tanstack-router", "react-router", "react-vite", "nuxt", "svelte", "solid", "next", "astro"].includes(f),
   );
 
+export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
+  webFrontend.some((f) =>
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "astro"].includes(f),
+  );
+
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
   if (stack.ecosystem !== "typescript") return false;
 
@@ -1841,6 +1846,33 @@ export const getDisabledReason = (
       }
       if (currentStack.runtime === "workers") {
         return "Docker Compose is not compatible with Cloudflare Workers runtime";
+      }
+      if (
+        currentStack.ecosystem === "typescript" &&
+        !hasDockerComposeCompatibleFrontend(currentStack.webFrontend)
+      ) {
+        return "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro";
+      }
+      if (
+        currentStack.ecosystem === "typescript" &&
+        currentStack.backend === "self" &&
+        !currentStack.webFrontend.includes("next")
+      ) {
+        return "Docker Compose self-backend support currently requires Next.js";
+      }
+      if (currentStack.ecosystem === "rust" && currentStack.rustFrontend !== "none") {
+        return "Docker Compose for Rust currently supports server-only projects";
+      }
+      if (currentStack.ecosystem === "java" && currentStack.javaWebFramework !== "spring-boot") {
+        return "Docker Compose for Java currently requires Spring Boot";
+      }
+      if (
+        currentStack.ecosystem === "python" &&
+        currentStack.database !== "none" &&
+        currentStack.database !== "sqlite" &&
+        currentStack.database !== "postgres"
+      ) {
+        return "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres";
       }
     }
     if (optionId === "tanstack-query" && currentStack.api !== "none") {

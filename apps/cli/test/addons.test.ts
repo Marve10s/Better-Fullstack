@@ -216,6 +216,14 @@ describe("Addon Configurations", () => {
         });
 
         expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const nextConfig = readFileSync(join(result.projectDir!, "apps", "web", "next.config.ts"), "utf8");
+
+        expect(compose).toContain("DATABASE_URL=postgresql://postgres:postgres@db:5432/docker-compose-nextjs-self");
+        expect(compose).toContain("condition: service_healthy");
+        expect(nextConfig).toContain('output: "standalone"');
       });
 
       it("should fail with docker-compose + Convex backend", async () => {
@@ -280,7 +288,7 @@ describe("Addon Configurations", () => {
         expectSuccess(result);
       });
 
-      it("should work with docker-compose + Nuxt + oRPC", async () => {
+      it("should fail with docker-compose + Nuxt until SSR Docker support exists", async () => {
         const result = await runTRPCTest({
           projectName: "docker-compose-nuxt",
           addons: ["docker-compose"],
@@ -295,13 +303,13 @@ describe("Addon Configurations", () => {
           dbSetup: "none",
           webDeploy: "none",
           serverDeploy: "none",
-          install: false,
+          expectError: true,
         });
 
-        expectSuccess(result);
+        expectError(result, "Docker Compose currently supports Next.js");
       });
 
-      it("should work with docker-compose + Svelte", async () => {
+      it("should fail with docker-compose + Svelte until SSR Docker support exists", async () => {
         const result = await runTRPCTest({
           projectName: "docker-compose-svelte",
           addons: ["docker-compose"],
@@ -316,10 +324,10 @@ describe("Addon Configurations", () => {
           dbSetup: "none",
           webDeploy: "none",
           serverDeploy: "none",
-          install: false,
+          expectError: true,
         });
 
-        expectSuccess(result);
+        expectError(result, "Docker Compose currently supports Next.js");
       });
 
       it("should work with docker-compose + React Vite", async () => {
@@ -341,6 +349,11 @@ describe("Addon Configurations", () => {
         });
 
         expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).not.toContain("condition: service_healthy");
+        expect(compose).not.toContain("DATABASE_URL=");
       });
 
       it("should generate docker-compose for Python projects", async () => {
@@ -371,6 +384,36 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("PORT=8000");
       });
 
+      it("should wire Postgres for Python ORM projects when selected", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-python-postgres",
+          ecosystem: "python",
+          addons: ["docker-compose"],
+          database: "postgres",
+          pythonWebFramework: "fastapi",
+          pythonOrm: "sqlalchemy",
+          pythonValidation: "pydantic",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        const pyproject = readFileSync(join(result.projectDir!, "pyproject.toml"), "utf8");
+
+        expect(compose).toContain(
+          "DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/docker-compose-python-postgres",
+        );
+        expect(compose).toContain("image: postgres:16-alpine");
+        expect(pyproject).toContain('"psycopg[binary]>=3.2.0"');
+      });
+
       it("should generate docker-compose for Go projects", async () => {
         const result = await runTRPCTest({
           projectName: "docker-compose-go",
@@ -391,7 +434,7 @@ describe("Addon Configurations", () => {
         const dockerfile = readFileSync(join(result.projectDir!, "Dockerfile"), "utf8");
         const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
 
-        expect(dockerfile).toContain("FROM golang:1.22-alpine AS builder");
+        expect(dockerfile).toContain("FROM golang:1.25-alpine AS builder");
         expect(dockerfile).toContain("go build -o /out/server ./cmd/server");
         expect(compose).toContain('      - "8080:8080"');
         expect(compose).toContain("DATABASE_URL=postgres://postgres:postgres@db:5432/docker-compose-go?sslmode=disable");
@@ -429,6 +472,53 @@ describe("Addon Configurations", () => {
         expect(compose).toContain("image: postgres:16-alpine");
       });
 
+      it("should expose gRPC for Rust tonic projects", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-rust-tonic",
+          ecosystem: "rust",
+          addons: ["docker-compose"],
+          rustWebFramework: "axum",
+          rustFrontend: "none",
+          rustOrm: "none",
+          rustApi: "tonic",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const compose = readFileSync(join(result.projectDir!, "docker-compose.yml"), "utf8");
+        expect(compose).toContain('      - "50051:50051"');
+        expect(compose).toContain("GRPC_PORT=50051");
+      });
+
+      it("should fail with docker-compose + Rust frontend until frontend container support exists", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-rust-frontend-fail",
+          ecosystem: "rust",
+          addons: ["docker-compose"],
+          rustWebFramework: "axum",
+          rustFrontend: "leptos",
+          rustOrm: "sqlx",
+          rustApi: "none",
+          rustCli: "none",
+          rustLibraries: [],
+          rustLogging: "tracing",
+          rustErrorHandling: "anyhow-thiserror",
+          rustCaching: "none",
+          rustAuth: "none",
+          expectError: true,
+        });
+
+        expectError(result, "Docker Compose for Rust currently supports server-only projects");
+      });
+
       it("should generate docker-compose for Java projects", async () => {
         const result = await runTRPCTest({
           projectName: "docker-compose-java",
@@ -453,6 +543,23 @@ describe("Addon Configurations", () => {
         expect(dockerfile).toContain("./mvnw -DskipTests package");
         expect(compose).toContain('      - "8080:8080"');
         expect(compose).toContain("SPRING_PROFILES_ACTIVE=prod");
+      });
+
+      it("should fail with docker-compose + plain Java until long-running service support exists", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-java-plain-fail",
+          ecosystem: "java",
+          addons: ["docker-compose"],
+          javaWebFramework: "none",
+          javaBuildTool: "maven",
+          javaOrm: "none",
+          javaAuth: "none",
+          javaLibraries: [],
+          javaTestingLibraries: ["junit5"],
+          expectError: true,
+        });
+
+        expectError(result, "Docker Compose for Java currently requires Spring Boot");
       });
 
       describe("Docker Compose File Generation", () => {

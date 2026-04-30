@@ -733,7 +733,11 @@ export function validateFullConfig(
       config.frontend,
       config.auth,
       config.backend,
-      config.runtime
+      config.runtime,
+      config.ecosystem,
+      config.rustFrontend,
+      config.javaWebFramework,
+      config.database,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -788,6 +792,10 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         config.auth,
         config.backend,
         config.runtime,
+        config.ecosystem,
+        config.rustFrontend,
+        config.javaWebFramework,
+        config.database,
       );
     }
 

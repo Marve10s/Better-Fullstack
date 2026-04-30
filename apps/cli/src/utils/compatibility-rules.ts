@@ -4,6 +4,7 @@ import {
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleFormLibraries as getCompatibleFormLibrariesShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
+  hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
   isExampleAIAllowed as isExampleAIAllowedShared,
   isExampleChatSdkAllowed as isExampleChatSdkAllowedShared,
@@ -23,6 +24,8 @@ import type {
   Backend,
   CLIInput,
   CSSFramework,
+  Database,
+  Ecosystem,
   Forms,
   Frontend,
   Payments,
@@ -518,6 +521,10 @@ export function validateAddonCompatibility(
   _auth?: Auth,
   backend?: Backend,
   runtime?: Runtime,
+  ecosystem?: Ecosystem,
+  rustFrontend?: string,
+  javaWebFramework?: string,
+  database?: Database,
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
@@ -534,6 +541,43 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason: "docker-compose is not compatible with Cloudflare Workers runtime",
+      };
+    }
+    if (ecosystem === "typescript" && !hasDockerComposeCompatibleFrontend(frontend)) {
+      return {
+        isCompatible: false,
+        reason:
+          "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro",
+      };
+    }
+    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next")) {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose self-backend support currently requires Next.js",
+      };
+    }
+    if (ecosystem === "rust" && rustFrontend && rustFrontend !== "none") {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Rust currently supports server-only projects",
+      };
+    }
+    if (ecosystem === "java" && javaWebFramework && javaWebFramework !== "spring-boot") {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Java currently requires Spring Boot",
+      };
+    }
+    if (
+      ecosystem === "python" &&
+      database &&
+      database !== "none" &&
+      database !== "sqlite" &&
+      database !== "postgres"
+    ) {
+      return {
+        isCompatible: false,
+        reason: "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres",
       };
     }
   }
@@ -563,10 +607,24 @@ export function validateAddonsAgainstFrontends(
   auth?: Auth,
   backend?: Backend,
   runtime?: Runtime,
+  ecosystem?: Ecosystem,
+  rustFrontend?: string,
+  javaWebFramework?: string,
+  database?: Database,
 ) {
   for (const addon of addons) {
     if (addon === "none") continue;
-    const { isCompatible, reason } = validateAddonCompatibility(addon, frontends, auth, backend, runtime);
+    const { isCompatible, reason } = validateAddonCompatibility(
+      addon,
+      frontends,
+      auth,
+      backend,
+      runtime,
+      ecosystem,
+      rustFrontend,
+      javaWebFramework,
+      database,
+    );
     if (!isCompatible) {
       exitWithError(`Incompatible addon/frontend combination: ${reason}`);
     }
