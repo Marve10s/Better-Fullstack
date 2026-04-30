@@ -53,7 +53,7 @@ async function getFileSize(filePath) {
 
 function findAsset(entries, patterns) {
   return [...entries]
-    .sort((a, b) => a.file.localeCompare(b.file))
+    .sort((a, b) => a.gzip - b.gzip || a.file.localeCompare(b.file))
     .find((entry) => patterns.some((pattern) => pattern.test(entry.file)));
 }
 

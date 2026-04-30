@@ -1,12 +1,10 @@
-import type { ReactNode } from "react";
-
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { lazy, Suspense, type ReactNode } from "react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
-import { THEME_STORAGE_KEY } from "@/lib/theme";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_ALT,
@@ -19,6 +17,7 @@ import {
   canonicalUrl,
   siteJsonLd,
 } from "@/lib/seo";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "@/styles/global.css";
 
 const DARK_THEME_COLOR = "#050505";
@@ -49,6 +48,11 @@ const THEME_INIT_SCRIPT = `
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
 const siteJsonLdMarkup = { __html: JSON.stringify(siteJsonLd) };
+
+const ChangelogWidget = lazy(async () => {
+  const mod = await import("@/components/changelog-widget");
+  return { default: mod.ChangelogWidget };
+});
 
 function NotFoundComponent() {
   return (
@@ -137,6 +141,9 @@ function RootComponent() {
     <RootDocument>
       <Navbar />
       <Outlet />
+      <Suspense fallback={null}>
+        <ChangelogWidget />
+      </Suspense>
     </RootDocument>
   );
 }
@@ -147,10 +154,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={themeInitMarkup} />
         <HeadContent />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={siteJsonLdMarkup}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={siteJsonLdMarkup} />
       </head>
       <body className="bg-background text-foreground">
         <Providers>{children}</Providers>
