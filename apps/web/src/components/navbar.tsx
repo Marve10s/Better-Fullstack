@@ -14,8 +14,8 @@ const NAV_LINK_CLASS =
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/85 backdrop-blur-md">
-      <nav className="container mx-auto flex h-14 items-center justify-between px-6">
-        <div className="flex items-center gap-5 sm:gap-7">
+      <nav className="container mx-auto flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-5 sm:gap-7">
           <Link
             to="/"
             className="flex items-center font-mono text-sm font-bold tracking-[-0.02em] text-foreground sm:text-base"
@@ -29,36 +29,38 @@ export function Navbar() {
             </span>
           </Link>
           <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
-          <Link
-            to="/new"
-            search={BUILDER_COMMAND_SEARCH}
-            className={NAV_LINK_CLASS}
-            activeProps={DOCS_ACTIVE_PROPS}
-          >
-            Builder
-          </Link>
-          <Link
-            to="/new"
-            search={BUILDER_PRESETS_SEARCH}
-            className={NAV_LINK_CLASS}
-            activeProps={DOCS_ACTIVE_PROPS}
-          >
-            Presets
-          </Link>
-          <Link to="/mcp" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
-            MCP
-          </Link>
-          <Link
-            to="/docs"
-            activeOptions={DOCS_ACTIVE_OPTIONS}
-            className={NAV_LINK_CLASS}
-            activeProps={DOCS_ACTIVE_PROPS}
-          >
-            Docs
-          </Link>
+          <div className="hidden items-center gap-5 sm:flex sm:gap-7">
+            <Link
+              to="/new"
+              search={BUILDER_COMMAND_SEARCH}
+              className={NAV_LINK_CLASS}
+              activeProps={DOCS_ACTIVE_PROPS}
+            >
+              Builder
+            </Link>
+            <Link
+              to="/new"
+              search={BUILDER_PRESETS_SEARCH}
+              className={NAV_LINK_CLASS}
+              activeProps={DOCS_ACTIVE_PROPS}
+            >
+              Presets
+            </Link>
+            <Link to="/mcp" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
+              MCP
+            </Link>
+            <Link
+              to="/docs"
+              activeOptions={DOCS_ACTIVE_OPTIONS}
+              className={NAV_LINK_CLASS}
+              activeProps={DOCS_ACTIVE_PROPS}
+            >
+              Docs
+            </Link>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <a
             href="https://github.com/Marve10s/Better-Fullstack"
             target="_blank"
