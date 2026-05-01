@@ -1,9 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import PackageIcon from "./icons";
+
+const ShaderLines = lazy(async () => {
+  const m = await import("@/components/effects/shader-lines");
+  return { default: m.ShaderLines };
+});
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
@@ -110,12 +115,28 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      <div className="px-4 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
+      <div className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] sm:block"
+          aria-hidden
+        >
+          <Suspense fallback={null}>
+            <ShaderLines className="h-full w-full" />
+          </Suspense>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, " + C.bg + " 0%, " + C.bg + " 18%, transparent 60%, transparent 100%)",
+            }}
+          />
+        </div>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="font-mono text-[11px] uppercase tracking-[0.22em]"
+          className="relative z-10 font-mono text-[11px] uppercase tracking-[0.22em]"
           style={{ color: C.accent }}
         >
           ✦ the cli
@@ -125,7 +146,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em]"
+          className="relative z-10 mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em]"
           style={{
             fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
             lineHeight: 0.94,
@@ -143,7 +164,7 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-7 max-w-lg text-pretty text-base sm:text-lg"
+          className="relative z-10 mt-7 max-w-lg text-pretty text-base sm:text-lg"
           style={{ color: C.mutedHi }}
         >
           A CLI that scaffolds production-ready fullstack apps across five language
@@ -155,7 +176,7 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 flex flex-wrap items-center gap-3"
+          className="relative z-10 mt-10 flex flex-wrap items-center gap-3"
         >
           <Link
             to="/new"

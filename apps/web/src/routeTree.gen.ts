@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as EffectsRouteImport } from './routes/effects'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
@@ -26,6 +27,11 @@ const NewRoute = NewRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EffectsRoute = EffectsRouteImport.update({
+  id: '/effects',
+  path: '/effects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -62,6 +68,7 @@ const ApiPreviewRoute = ApiPreviewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/compare'
+    | '/effects'
     | '/mcp'
     | '/new'
     | '/api/preview'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/compare'
+    | '/effects'
     | '/mcp'
     | '/new'
     | '/api/preview'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/compare'
+    | '/effects'
     | '/mcp'
     | '/new'
     | '/api/preview'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
+  EffectsRoute: typeof EffectsRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/effects': {
+      id: '/effects'
+      path: '/effects'
+      fullPath: '/effects'
+      preLoaderRoute: typeof EffectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
+  EffectsRoute: EffectsRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
   ApiPreviewRoute: ApiPreviewRoute,
