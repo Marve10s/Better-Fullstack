@@ -75,7 +75,7 @@ export const ROW_2: Testimonial[] = [
     avatar:
       "https://media.daily.dev/image/upload/s--5hPC52y_--/f_auto/v1773412842/avatars/avatar_8fkdziGASnSSBES6c4Ml9",
     comment:
-      "424 options sounds powerful. The real question is how deep the generated code goes — if it actually handles the opinionated glue between layers, this is genuinely impressive infrastructure.",
+      "425 options sounds powerful. The real question is how deep the generated code goes — if it actually handles the opinionated glue between layers, this is genuinely impressive infrastructure.",
   },
   {
     name: "Juan Felipe Velasquez Alvarez",

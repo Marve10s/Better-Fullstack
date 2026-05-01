@@ -392,6 +392,11 @@ ${packageManagerRunCmd} dev
 
 ${generateRunningInstructions(frontend, backend, webPort, hasNative, isConvex)}
 ${
+  ai === "ai-cli"
+    ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n`
+    : ""
+}
+${
   examples.includes("chat-sdk")
     ? `\n${generateChatSdkExampleSection(options, packageManagerRunCmd, webPort, ai)}\n`
     : ""
@@ -414,6 +419,65 @@ ${generateProjectStructure(projectName, frontend, backend, addons, isConvex, api
 
 ${generateScriptsList(packageManagerRunCmd, database, orm, hasNative, addons, backend, dbSetup)}
 `;
+}
+
+function generateAICLISection(
+  packageManagerRunCmd: string,
+  packageManager: ProjectConfig["packageManager"],
+): string {
+  const runPrefix = `${packageManagerRunCmd}`;
+  const dotenvNote =
+    packageManager === "bun"
+      ? "Bun loads the root `.env` file automatically for these scripts."
+      : "If your package manager does not load `.env` automatically, export the variables in your shell before running these commands.";
+
+  return `## AI CLI
+
+This project includes [AI CLI](https://github.com/vercel-labs/ai-cli), exposed through root package scripts for text, image, video, model discovery, and shell completions.
+
+### API keys
+
+Set at least one API key in the root \`.env\` file:
+
+\`\`\`bash
+AI_GATEWAY_API_KEY=your_vercel_ai_gateway_key
+# or use a provider-specific key:
+OPENAI_API_KEY=your_openai_key
+\`\`\`
+
+Optional defaults are also generated in \`.env\`:
+
+\`\`\`bash
+AI_CLI_TEXT_MODEL=openai/gpt-5.5
+AI_CLI_IMAGE_MODEL=openai/gpt-image-2
+AI_CLI_VIDEO_MODEL=bytedance/seedance-2.0
+AI_CLI_OUTPUT_DIR=ai-output
+\`\`\`
+
+${dotenvNote}
+
+### Commands
+
+\`\`\`bash
+${runPrefix} ai:text -- "summarize this repository"
+${runPrefix} ai:image -- "a product screenshot in a clean dashboard style" --output ai-output
+${runPrefix} ai:video -- "animate this product concept" --output ai-output
+${runPrefix} ai:models -- --type text
+${runPrefix} ai:completions -- zsh
+\`\`\`
+
+You can pipe local context into text generation:
+
+\`\`\`bash
+git diff | ${runPrefix} ai:text -- "explain these changes"
+cat notes.md | ${runPrefix} ai:text -- "turn this into release notes"
+\`\`\`
+
+Use \`--model\` to override the default model for a single command:
+
+\`\`\`bash
+${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
+\`\`\``;
 }
 
 function generateChatSdkExampleSection(

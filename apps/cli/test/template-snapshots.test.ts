@@ -171,6 +171,20 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
+  // === AI VARIATIONS ===
+  {
+    name: "ai-cli-root-tooling",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      ai: "ai-cli",
+    },
+  },
+
   // === SPECIAL CASES ===
   {
     name: "frontend-only-no-backend",

@@ -512,6 +512,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     langchain: "LangChain",
     llamaindex: "LlamaIndex",
     "tanstack-ai": "TanStack AI",
+    "ai-cli": "AI CLI",
   },
   aiDocs: {
     "claude-md": "CLAUDE.md",

@@ -119,6 +119,14 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["db:local"] = pmConfig.filter(dbPackageName, "db:local");
   }
 
+  if (config.ai === "ai-cli") {
+    scripts["ai:text"] = "ai text";
+    scripts["ai:image"] = "ai image";
+    scripts["ai:video"] = "ai video";
+    scripts["ai:models"] = "ai models";
+    scripts["ai:completions"] = "ai completions";
+  }
+
   if (dbSetup === "docker") {
     scripts["db:start"] = pmConfig.filter(dbPackageName, "db:start");
     scripts["db:watch"] = pmConfig.filter(dbPackageName, "db:watch");

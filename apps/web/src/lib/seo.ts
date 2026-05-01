@@ -73,7 +73,7 @@ export const siteJsonLd = {
         "13 ORMs",
         "7 auth providers",
         "5 payment integrations",
-        "12 AI integrations",
+        "13 AI integrations",
         "7 type-safe API options",
         "Visual web stack builder",
         "Monorepo support via Turborepo",

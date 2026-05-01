@@ -4,7 +4,9 @@ import { headers } from "next/headers";
 {{#if (eq backend "self")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
+{{#if (or (ne backend "self") (eq payments "polar"))}}
 import { authClient } from "@/lib/auth-client";
+{{/if}}
 
 export default async function DashboardPage() {
 	{{#if (eq backend "self")}}
@@ -36,7 +38,7 @@ export default async function DashboardPage() {
 		<div>
 			<h1>Dashboard</h1>
 			<p>Welcome {session.user.name}</p>
-			<Dashboard session={session} {{#if (eq payments "polar")}}customerState={customerState}{{/if}} />
+			<Dashboard {{#if (eq payments "polar")}}customerState={customerState}{{/if}} />
 		</div>
 	);
 }

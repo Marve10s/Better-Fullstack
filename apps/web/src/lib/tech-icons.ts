@@ -262,6 +262,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "google-adk": { type: "si", slug: "google", hex: "4285F4" },
   modelfusion: { type: "si", slug: "vercel", hex: "000000" },
   langchain: { type: "si", slug: "langchain", hex: "1C3C3C" },
+  "ai-cli": { type: "si", slug: "vercel", hex: "000000" },
 
   // ─── Realtime ──────────────────────────────────────────────────────────────
   "socket-io": { type: "si", slug: "socketdotio", hex: "010101" },

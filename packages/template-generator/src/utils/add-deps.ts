@@ -204,6 +204,9 @@ export const dependencyVersionMap = {
   // LlamaIndex
   llamaindex: "^0.12.1",
 
+  // AI CLI
+  "ai-cli": "^0.1.1",
+
   "@orpc/server": "^1.14.0",
   "@orpc/client": "^1.14.0",
   "@orpc/openapi": "^1.14.0",

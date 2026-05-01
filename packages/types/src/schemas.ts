@@ -157,6 +157,7 @@ export const AISchema = z
     "langchain",
     "llamaindex",
     "tanstack-ai",
+    "ai-cli",
     "none",
   ])
   .describe("AI SDK");

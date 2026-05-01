@@ -18,6 +18,14 @@ export function processAIDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
   // Skip if no AI SDK selected
   if (ai === "none") return;
 
+  if (ai === "ai-cli") {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: ["ai-cli"],
+    });
+  }
+
   // Get the web frontend for client-side AI packages
   const webFrontend = frontend.find((f) => !f.startsWith("native") && f !== "none");
 
@@ -184,6 +192,9 @@ export function processAIDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
           });
         }
       }
+      break;
+
+    case "ai-cli":
       break;
   }
 }

@@ -603,6 +603,10 @@ const BASE_LINKS: LinkMap = {
   },
   ai: { docsUrl: "https://ai-sdk.dev/docs", githubUrl: "https://github.com/vercel/ai" },
   "vercel-ai": { docsUrl: "https://ai-sdk.dev/docs", githubUrl: "https://github.com/vercel/ai" },
+  "ai-cli": {
+    docsUrl: "https://github.com/vercel-labs/ai-cli#readme",
+    githubUrl: "https://github.com/vercel-labs/ai-cli",
+  },
   mastra: { docsUrl: "https://mastra.ai/docs", githubUrl: "https://github.com/mastra-ai/mastra" },
   voltagent: {
     docsUrl: "https://docs.voltagent.dev/",

@@ -5,7 +5,13 @@ import { createEnv } from "@t3-oss/env-nuxt";
 {{else}}
 import { createEnv } from "@t3-oss/env-core";
 {{/if}}
+{{#if (or (or (eq backend "convex") (and (eq backend "self") (eq auth "clerk"))) (and (ne backend "self") (ne backend "none")))}}
 import { z } from "zod";
+{{/if}}
+
+{{#unless (or (includes frontend "next") (includes frontend "nuxt"))}}
+type ImportMetaEnvRecord = Record<string, string | boolean | undefined>;
+{{/unless}}
 
 {{#if (includes frontend "nuxt")}}
 /**
@@ -45,7 +51,7 @@ export const env = createEnv({
 	client: {
 		PUBLIC_CONVEX_URL: z.url(),
 	},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{else}}
 	clientPrefix: "VITE_",
 	client: {
@@ -57,7 +63,7 @@ export const env = createEnv({
 		VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
 {{/if}}
 	},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{/if}}
 {{else if (eq backend "self")}}
 {{#if (includes frontend "next")}}
@@ -78,7 +84,7 @@ export const env = createEnv({
 		VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
 {{/if}}
 	},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{/if}}
 {{else if (ne backend "none")}}
 {{#if (includes frontend "next")}}
@@ -97,13 +103,13 @@ export const env = createEnv({
 	client: {
 		PUBLIC_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{else}}
 	clientPrefix: "VITE_",
 	client: {
 		VITE_SERVER_URL: z.url().default("http://localhost:3000"),
 	},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{/if}}
 {{else}}
 {{#if (includes frontend "next")}}
@@ -114,7 +120,7 @@ export const env = createEnv({
 {{else}}
 	clientPrefix: "VITE_",
 	client: {},
-	runtimeEnv: (import.meta as any).env,
+	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
 {{/if}}
 {{/if}}
 	emptyStringAsUndefined: true,

@@ -607,6 +607,7 @@ function buildServerVars(
   payments: ProjectConfig["payments"],
   email: ProjectConfig["email"],
   examples: ProjectConfig["examples"],
+  ai: ProjectConfig["ai"],
   fileUpload: ProjectConfig["fileUpload"],
   logging: ProjectConfig["logging"],
   observability: ProjectConfig["observability"],
@@ -1337,6 +1338,47 @@ function getPublicEnvPrefix(frontend: string[]): string {
   return "VITE_";
 }
 
+function buildAICLIEnvVars(ai: ProjectConfig["ai"]): EnvVariable[] {
+  return [
+    {
+      key: "AI_GATEWAY_API_KEY",
+      value: "",
+      condition: ai === "ai-cli",
+      comment: "Vercel AI Gateway key for AI CLI. Provider-specific keys can be used instead.",
+    },
+    {
+      key: "OPENAI_API_KEY",
+      value: "",
+      condition: ai === "ai-cli",
+      comment: "Optional provider-specific key for AI CLI",
+    },
+    {
+      key: "AI_CLI_TEXT_MODEL",
+      value: "openai/gpt-5.5",
+      condition: ai === "ai-cli",
+      comment: "Default AI CLI text model",
+    },
+    {
+      key: "AI_CLI_IMAGE_MODEL",
+      value: "openai/gpt-image-2",
+      condition: ai === "ai-cli",
+      comment: "Default AI CLI image model",
+    },
+    {
+      key: "AI_CLI_VIDEO_MODEL",
+      value: "bytedance/seedance-2.0",
+      condition: ai === "ai-cli",
+      comment: "Default AI CLI video model",
+    },
+    {
+      key: "AI_CLI_OUTPUT_DIR",
+      value: "ai-output",
+      condition: ai === "ai-cli",
+      comment: "Default output directory for AI CLI generated artifacts",
+    },
+  ];
+}
+
 function buildCMSVars(
   cms: ProjectConfig["cms"],
   frontend: ProjectConfig["frontend"],
@@ -1458,6 +1500,10 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     hasSolid ||
     hasSvelte;
 
+  if (config.ai === "ai-cli") {
+    writeEnvFile(vfs, ".env", buildAICLIEnvVars(config.ai));
+  }
+
   // --- Client App .env ---
   if (hasWebFrontend) {
     const clientDir = "apps/web";
@@ -1532,6 +1578,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     payments,
     email,
     examples,
+    config.ai,
     fileUpload,
     logging,
     observability,

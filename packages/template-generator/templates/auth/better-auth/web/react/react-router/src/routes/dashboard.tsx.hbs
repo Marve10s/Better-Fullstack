@@ -11,14 +11,15 @@ import { trpc } from "@/utils/trpc";
 {{#if ( or (eq api "orpc") (eq api "trpc"))}}
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
-import { useEffect, useState } from "react";
+import { useEffect{{#if (eq payments "polar")}}, useState{{/if}} } from "react";
 import { useNavigate } from "react-router";
 
 export default function Dashboard() {
   const { data: session, isPending } = authClient.useSession();
   const navigate = useNavigate();
   {{#if (eq payments "polar")}}
-  const [customerState, setCustomerState] = useState<any>(null);
+  const [customerState, setCustomerState] =
+    useState<Awaited<ReturnType<typeof authClient.customer.state>>["data"] | null>(null);
   {{/if}}
 
   {{#if (eq api "orpc")}}

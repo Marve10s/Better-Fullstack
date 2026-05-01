@@ -74,9 +74,22 @@
 			"tailwindDirectives": true
 		}
 	}
-	{{#if (or (includes frontend "svelte") (includes frontend "nuxt"))}}
+	{{#if (or (or (includes frontend "svelte") (includes frontend "nuxt")) (eq uiLibrary "shadcn-ui"))}}
 	,
 	"overrides": [
+		{{#if (eq uiLibrary "shadcn-ui")}}
+		{
+			"includes": ["**/components/ui/label.tsx"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noLabelWithoutControl": "off"
+					}
+				}
+			}
+		}{{#if (or (includes frontend "svelte") (includes frontend "nuxt"))}},{{/if}}
+		{{/if}}
+		{{#if (or (includes frontend "svelte") (includes frontend "nuxt"))}}
 		{
 			"includes": ["**/*.svelte", "**/*.vue"],
 			"linter": {
@@ -92,6 +105,7 @@
 				}
 			}
 		}
+		{{/if}}
 	]
 	{{/if}}
 }

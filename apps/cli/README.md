@@ -1,6 +1,6 @@
 # Better Fullstack
 
-Scaffold production-ready fullstack apps in seconds. Pick your stack from 424 options — the CLI wires everything together.
+Scaffold production-ready fullstack apps in seconds. Pick your stack from 425 options — the CLI wires everything together.
 
 ## Quick Start
 
@@ -31,7 +31,7 @@ Configure your stack visually — pick every option from a UI, preview your choi
 
 ## Features
 
-- **424 options** — frontend, backend, database, auth, payments, AI, DevOps, and more
+- **425 options** — frontend, backend, database, auth, payments, AI, DevOps, and more
 - **5 ecosystems** — TypeScript, Rust, Python, Go, Java
 - **Visual builder** — configure your stack in the browser
 - **Wired for you** — every picked integration is preconfigured and working out of the box

@@ -59,6 +59,11 @@ const AI_PROMPT_OPTIONS: PromptOption<AI>[] = [
     hint: "Unified LLM interface for AI-powered apps (Alpha)",
   },
   {
+    value: "ai-cli",
+    label: "AI CLI",
+    hint: "Agent-native terminal CLI for generating text, images, and video",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No AI SDK",

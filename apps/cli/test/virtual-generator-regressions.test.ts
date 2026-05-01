@@ -12,7 +12,9 @@ function readJsonFromTree(
     if (node.type === "file" && node.path === targetPath) {
       return JSON.parse(node.content) as {
         packageManager?: string;
+        scripts?: Record<string, string>;
         dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
       };
     }
     if (node.type === "directory") {
@@ -73,7 +75,10 @@ describe("Virtual Generator Regressions", () => {
 
       const webPackageJson = result.tree ? readJsonFromTree(result.tree, "apps/web/package.json") : undefined;
 
-      expect(webPackageJson?.dependencies?.[sdkPackage]).toBeDefined();
+      expect(
+        webPackageJson?.dependencies?.[sdkPackage] ??
+          webPackageJson?.devDependencies?.[sdkPackage],
+      ).toBeDefined();
       expect(webPackageJson?.dependencies?.ai).toBeDefined();
       expect(webPackageJson?.dependencies?.["@ai-sdk/google"]).toBeDefined();
       expect(webPackageJson?.dependencies?.["@ai-sdk/devtools"]).toBeDefined();
@@ -81,4 +86,29 @@ describe("Virtual Generator Regressions", () => {
       expect(webPackageJson?.dependencies?.streamdown).toBeDefined();
     });
   }
+
+  it("adds AI CLI command presets at the generated workspace root", async () => {
+    const result = await createVirtual({
+      projectName: "ai-cli-root",
+      frontend: ["react-vite"],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      ai: "ai-cli",
+    });
+
+    expect(result.success).toBe(true);
+
+    const rootPackageJson = result.tree ? readJsonFromTree(result.tree, "package.json") : undefined;
+
+    expect(rootPackageJson?.devDependencies?.["ai-cli"]).toBeDefined();
+    expect(rootPackageJson?.scripts?.["ai:text"]).toBe("ai text");
+    expect(rootPackageJson?.scripts?.["ai:image"]).toBe("ai image");
+    expect(rootPackageJson?.scripts?.["ai:video"]).toBe("ai video");
+    expect(rootPackageJson?.scripts?.["ai:models"]).toBe("ai models");
+    expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
+  });
 });

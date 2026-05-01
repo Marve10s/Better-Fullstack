@@ -1,8 +1,8 @@
 "use client";
 {{#if (eq payments "polar")}}
 import { Button } from "@/components/ui/button";
-{{/if}}
 import { authClient } from "@/lib/auth-client";
+{{/if}}
 {{#if (eq api "orpc")}}
 import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
@@ -12,17 +12,15 @@ import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
 {{/if}}
 
+{{#if (eq payments "polar")}}
 export default function Dashboard({
-	{{#if (eq payments "polar")}}
 	customerState,
-	{{/if}}
-	session
 }: {
-	{{#if (eq payments "polar")}}
 	customerState: ReturnType<typeof authClient.customer.state>;
-	{{/if}}
-	session: typeof authClient.$Infer.Session;
 }) {
+{{else}}
+export default function Dashboard() {
+{{/if}}
 	{{#if (eq api "orpc")}}
 	const privateData = useQuery(orpc.privateData.queryOptions());
 	{{/if}}
@@ -36,7 +34,7 @@ export default function Dashboard({
 	{{/if}}
 
 	return (
-		<>
+		<div>
 			{{#if (eq api "orpc")}}
 			<p>API: {privateData.data?.message}</p>
 			{{/if}}
@@ -55,6 +53,6 @@ export default function Dashboard({
 				</Button>
 			)}
 			{{/if}}
-		</>
+		</div>
 	);
 }
