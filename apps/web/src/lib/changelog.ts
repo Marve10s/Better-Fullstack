@@ -19,10 +19,31 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v1.6.3",
+    publishedAt: "2026-05-01T23:00:49Z",
+    displayDate: "May 1, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v1.6.3`,
+    title: "AI CLI joins the TypeScript stack",
+    summary:
+      "This release adds ai-cli as a first-class TypeScript AI tooling option, wires it through generated app scripts and docs, and ships curated presets that prove the integration across common web stacks.",
+    highlights: [
+      "Added the ai-cli option across the TypeScript schema, CLI prompts, web builder, dependency generation, root package scripts, README output, and API key guidance.",
+      "Introduced ready-to-run ai-cli presets for a Next.js agent workbench, a React Router plus Hono stack, and a frontend-only React Vite lab.",
+      "Hardened generated TypeScript templates around Better Auth dashboards, env typing, Drizzle imports, React Router metadata, and Biome/shadcn lint behavior.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=900&auto=format&fit=crop",
+      alt: "A developer workstation with code on a monitor",
+      credit: "Unsplash",
+      creditHref:
+        "https://unsplash.com/photos/turned-on-monitor-displaying-programming-codes-2EJCSULRwC8",
+    },
+  },
+  {
     version: "v1.6.2",
     publishedAt: "2026-04-29T18:24:21Z",
     displayDate: "Apr 29, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.6.2`,
     title: "Docs shipped, Java leveled up",
     summary:
