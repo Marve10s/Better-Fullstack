@@ -5,6 +5,7 @@ import { ChangelogModal } from "@/components/changelog-modal";
 import { latestChangelogRelease } from "@/lib/changelog";
 
 const CHANGELOG_INTERACTION_STORAGE_PREFIX = "better-fullstack.changelog.interaction";
+const HAS_VISITED_KEY = "better-fullstack.has-visited";
 
 function getInteractionStorageKey() {
   return `${CHANGELOG_INTERACTION_STORAGE_PREFIX}:${latestChangelogRelease?.version ?? "unknown"}`;
@@ -18,9 +19,16 @@ export function ChangelogWidget() {
     if (!latestChangelogRelease) return;
 
     try {
+      const hasVisited = window.localStorage.getItem(HAS_VISITED_KEY);
+      if (!hasVisited) {
+        window.localStorage.setItem(HAS_VISITED_KEY, "true");
+        setIsVisible(false);
+        return;
+      }
+
       setIsVisible(window.localStorage.getItem(getInteractionStorageKey()) === null);
     } catch {
-      setIsVisible(true);
+      setIsVisible(false);
     }
   }, []);
 
