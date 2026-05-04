@@ -137,7 +137,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-mono font-black leading-[0.82] tracking-[-0.05em]"
+            className="font-mono font-black leading-[0.82] tracking-[-0.05em] text-[#14532d] dark:text-[#fafafa]"
             style={{ fontSize: "clamp(5rem, 14vw, 11rem)" }}
           >
             <NumberFlow
@@ -159,7 +159,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, x: flip ? 16 : -16 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="font-mono font-bold uppercase leading-none tracking-[-0.03em]"
+            className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-[#14532d] dark:text-[#fafafa]"
             style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
           >
             {layer.word}
@@ -180,7 +180,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
                   duration: 0.3,
                   delay: 0.2 + Math.min(j * 0.02, 0.4),
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs transition-colors hover:border-foreground/30"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-[#3f6212] transition-colors hover:border-foreground/30 dark:text-foreground"
               >
                 <TechIcon techId={opt.id} name={opt.name} className="size-3" />
                 <span>{opt.name}</span>
