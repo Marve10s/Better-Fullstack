@@ -3,6 +3,8 @@ import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { lazy, Suspense, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 import PackageIcon from "./icons";
 
 const ShaderLines = lazy(async () => {
@@ -19,17 +21,8 @@ const COMMANDS: Record<PM, string> = {
   yarn: "yarn create better-fullstack@latest",
 };
 
-const C = {
-  bg: "#0a0a0a",
-  ink: "#fafafa",
-  muted: "#7a7a7a",
-  mutedHi: "#a3a3a3",
-  accent: "#bef264",
-  accentDeep: "#84cc16",
-  rule: "#1f1f1f",
-  ruleSoft: "#161616",
-  panel: "#111111",
-};
+/** Homepage hero lime — same in both themes (matches shader / features section). */
+const ACCENT = "#bef264";
 
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
@@ -48,23 +41,29 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative"
-      style={{ background: C.bg, color: C.ink, colorScheme: "dark" }}
+      className={cn(
+        "relative bg-white text-[#14532d] [color-scheme:light]",
+        "dark:bg-[#0a0a0a] dark:text-[#fafafa] dark:[color-scheme:dark]",
+      )}
     >
       <div
-        className="px-4 pb-5 pt-6 sm:px-8 sm:pt-8"
-        style={{ borderBottom: `1px solid ${C.rule}` }}
+        className={cn(
+          "border-b border-[#e5e5e5] px-4 pb-5 pt-6 sm:px-8 sm:pt-8",
+          "dark:border-[#1f1f1f]",
+        )}
       >
         <div className="flex items-baseline justify-between">
           <span
             className="font-mono text-[11px] uppercase tracking-[0.22em]"
-            style={{ color: C.accent }}
+            style={{ color: ACCENT }}
           >
             ✦ install
           </span>
           <span
-            className="font-mono text-[11px] uppercase tracking-[0.22em]"
-            style={{ color: C.muted }}
+            className={cn(
+              "font-mono text-[11px] uppercase tracking-[0.22em] text-[#4d7c0f]",
+              "dark:text-[#7a7a7a]",
+            )}
           >
             v1.6.2 · apr 29, 2026
           </span>
@@ -74,21 +73,28 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mt-3 overflow-hidden rounded-md"
-          style={{ border: `1px solid ${C.rule}`, background: C.panel }}
+          className={cn(
+            "mt-3 overflow-hidden rounded-md border border-[#e5e5e5] bg-[#fafafa]",
+            "dark:border-[#1f1f1f] dark:bg-[#111111]",
+          )}
         >
-          <div className="flex" style={{ borderBottom: `1px solid ${C.rule}` }}>
+          <div
+            className={cn(
+              "flex border-b border-[#e5e5e5] dark:border-[#1f1f1f]",
+            )}
+          >
             {PMS.map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPm(p)}
-                className="flex cursor-pointer items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4"
-                style={{
-                  borderRight: `1px solid ${C.rule}`,
-                  background: pm === p ? C.accent : "transparent",
-                  color: pm === p ? C.bg : C.mutedHi,
-                }}
+                className={cn(
+                  "flex cursor-pointer items-center gap-1.5 border-r border-[#e5e5e5] px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4",
+                  "dark:border-[#1f1f1f]",
+                  pm === p
+                    ? "bg-[#bef264] text-[#0a0a0a]"
+                    : "bg-transparent text-[#3f6212] dark:text-[#a3a3a3]",
+                )}
               >
                 <PackageIcon pm={p} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {p}
@@ -97,17 +103,16 @@ export default function HeroSection() {
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
             <code className="truncate font-mono text-sm sm:text-base">
-              <span style={{ color: C.accent }}>$</span> {COMMANDS[pm]}
+              <span style={{ color: ACCENT }}>$</span> {COMMANDS[pm]}
             </code>
             <button
               type="button"
               onClick={copy}
               aria-label="Copy command"
-              className="flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]"
-              style={{
-                color: copied ? C.accent : C.mutedHi,
-                background: "transparent",
-              }}
+              className={cn(
+                "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
+                copied ? "text-[#bef264]" : "text-[#3f6212] dark:text-[#a3a3a3]",
+              )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
@@ -124,11 +129,10 @@ export default function HeroSection() {
             <ShaderLines className="h-full w-full" />
           </Suspense>
           <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(90deg, " + C.bg + " 0%, " + C.bg + " 18%, transparent 60%, transparent 100%)",
-            }}
+            className={cn(
+              "absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,#ffffff_18%,transparent_60%,transparent_100%)]",
+              "dark:bg-[linear-gradient(90deg,#0a0a0a_0%,#0a0a0a_18%,transparent_60%,transparent_100%)]",
+            )}
           />
         </div>
 
@@ -137,7 +141,7 @@ export default function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="relative z-10 font-mono text-[11px] uppercase tracking-[0.22em]"
-          style={{ color: C.accent }}
+          style={{ color: ACCENT }}
         >
           ✦ the cli
         </motion.p>
@@ -146,16 +150,17 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="relative z-10 mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em]"
+          className={cn(
+            "relative z-10 mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-[#14532d] dark:text-[#fafafa]",
+          )}
           style={{
             fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
             lineHeight: 0.94,
-            color: C.ink,
           }}
         >
           Stop wiring.
           <br />
-          <span className="italic" style={{ color: C.accent }}>
+          <span className="italic" style={{ color: ACCENT }}>
             Start shipping.
           </span>
         </motion.h1>
@@ -164,8 +169,10 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative z-10 mt-7 max-w-lg text-pretty text-base sm:text-lg"
-          style={{ color: C.mutedHi }}
+          className={cn(
+            "relative z-10 mt-7 max-w-lg text-pretty text-base text-[#3f6212] sm:text-lg",
+            "dark:text-[#a3a3a3]",
+          )}
         >
           A CLI that scaffolds production-ready fullstack apps across five language
           ecosystems. Pick your stack — frontend, database, auth, payments, AI — and run
@@ -181,19 +188,17 @@ export default function HeroSection() {
           <Link
             to="/new"
             search={{ view: "command", file: "" }}
-            className="group inline-flex items-center gap-1.5 rounded-md px-5 py-2.5 text-sm font-semibold transition-all hover:gap-2.5"
-            style={{ background: C.accent, color: C.bg }}
+            className="group inline-flex items-center gap-1.5 rounded-md bg-[#bef264] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
             Open the builder
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
             to="/docs"
-            className="rounded-md px-5 py-2.5 text-sm font-medium transition-colors"
-            style={{
-              border: `1px solid ${C.rule}`,
-              color: C.ink,
-            }}
+            className={cn(
+              "rounded-md border border-[#e5e5e5] px-5 py-2.5 text-sm font-medium text-[#14532d] transition-colors",
+              "dark:border-[#1f1f1f] dark:text-[#fafafa]",
+            )}
           >
             Read the docs
           </Link>
