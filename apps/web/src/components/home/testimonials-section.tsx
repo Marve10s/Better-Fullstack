@@ -97,7 +97,7 @@ export default function TestimonialsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
               ✦ on the record
             </p>
             <h2
@@ -155,7 +155,7 @@ export default function TestimonialsSection() {
         <div className="mt-16 border-t border-border pt-10">
           <div className="grid grid-cols-12 gap-x-4 gap-y-4">
             <div className="col-span-12 sm:col-span-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
                 ✦ liked on x
               </p>
               <p className="mt-2 text-xs text-muted-foreground">Builders who hearted the launch.</p>

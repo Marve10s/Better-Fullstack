@@ -74,7 +74,7 @@ export default function ContributorsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
               ✦ contributors
             </p>
             <h2
