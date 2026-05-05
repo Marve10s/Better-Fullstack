@@ -94,6 +94,37 @@ describe("Analytics Configurations", () => {
       }
     });
 
+    it("should work with plausible + Vinext fullstack", async () => {
+      const result = await runTRPCTest({
+        projectName: "plausible-vinext",
+        analytics: "plausible",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        frontend: ["vinext"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      // For fullstack apps, Plausible should be in web package
+      if (result.projectDir) {
+        const webPackageJsonPath = path.join(result.projectDir, "apps/web/package.json");
+        if (await fs.pathExists(webPackageJsonPath)) {
+          const pkgJson = await fs.readJson(webPackageJsonPath);
+          expect(pkgJson.dependencies?.["plausible-tracker"]).toBeDefined();
+        }
+      }
+    });
+
     it("should work with plausible + react-router frontend", async () => {
       const result = await runTRPCTest({
         projectName: "plausible-react-router",
@@ -180,6 +211,38 @@ describe("Analytics Configurations", () => {
         api: "trpc",
         auth: "better-auth",
         frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      // Check the env file contains the right env vars
+      if (result.projectDir) {
+        const envPath = path.join(result.projectDir, "apps/web/.env");
+        if (await fs.pathExists(envPath)) {
+          const envContent = await fs.readFile(envPath, "utf-8");
+          expect(envContent).toContain("NEXT_PUBLIC_PLAUSIBLE_DOMAIN");
+          expect(envContent).toContain("NEXT_PUBLIC_PLAUSIBLE_API_HOST");
+        }
+      }
+    });
+
+    it("should create plausible.tsx template with correct env vars for Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "plausible-env-vinext",
+        analytics: "plausible",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        frontend: ["vinext"],
         addons: ["turborepo"],
         examples: ["none"],
         dbSetup: "none",
@@ -313,6 +376,34 @@ describe("Analytics Configurations", () => {
       }
     });
 
+    it("should work with umami + Vinext fullstack", async () => {
+      const result = await runTRPCTest({
+        projectName: "umami-vinext",
+        analytics: "umami",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        frontend: ["vinext"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      // Verify Umami template was created in src/lib for fullstack
+      if (result.projectDir) {
+        const umamiPath = path.join(result.projectDir, "apps/web/src/lib/umami.tsx");
+        expect(await fs.pathExists(umamiPath)).toBe(true);
+      }
+    });
+
     it("should work with umami + react-router frontend", async () => {
       const result = await runTRPCTest({
         projectName: "umami-react-router",
@@ -396,6 +487,38 @@ describe("Analytics Configurations", () => {
         api: "trpc",
         auth: "better-auth",
         frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      // Check the env file contains the right env vars
+      if (result.projectDir) {
+        const envPath = path.join(result.projectDir, "apps/web/.env");
+        if (await fs.pathExists(envPath)) {
+          const envContent = await fs.readFile(envPath, "utf-8");
+          expect(envContent).toContain("NEXT_PUBLIC_UMAMI_WEBSITE_ID");
+          expect(envContent).toContain("NEXT_PUBLIC_UMAMI_SCRIPT_URL");
+        }
+      }
+    });
+
+    it("should create umami.tsx template with correct env vars for Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "umami-env-vinext",
+        analytics: "umami",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "better-auth",
+        frontend: ["vinext"],
         addons: ["turborepo"],
         examples: ["none"],
         dbSetup: "none",

@@ -33,6 +33,17 @@ describe("Animation", () => {
       expectSuccess(result);
     });
 
+    test("framer-motion with Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "animation-framer-vinext",
+        frontend: ["vinext"],
+        backend: "self",
+        runtime: "none",
+        animation: "framer-motion",
+      });
+      expectSuccess(result);
+    });
+
     test("framer-motion with TanStack Start", async () => {
       const result = await runTRPCTest({
         projectName: "animation-framer-tanstack-start",
@@ -88,6 +99,17 @@ describe("Animation", () => {
       const result = await runTRPCTest({
         projectName: "animation-gsap-next",
         frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        animation: "gsap",
+      });
+      expectSuccess(result);
+    });
+
+    test("gsap with Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "animation-gsap-vinext",
+        frontend: ["vinext"],
         backend: "self",
         runtime: "none",
         animation: "gsap",
@@ -157,6 +179,17 @@ describe("Animation", () => {
       expectSuccess(result);
     });
 
+    test("react-spring with Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "animation-react-spring-vinext",
+        frontend: ["vinext"],
+        backend: "self",
+        runtime: "none",
+        animation: "react-spring",
+      });
+      expectSuccess(result);
+    });
+
     test("react-spring with TanStack Start", async () => {
       const result = await runTRPCTest({
         projectName: "animation-react-spring-tanstack-start",
@@ -219,6 +252,17 @@ describe("Animation", () => {
       expectSuccess(result);
     });
 
+    test("auto-animate with Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "animation-auto-animate-vinext",
+        frontend: ["vinext"],
+        backend: "self",
+        runtime: "none",
+        animation: "auto-animate",
+      });
+      expectSuccess(result);
+    });
+
     test("auto-animate with TanStack Start", async () => {
       const result = await runTRPCTest({
         projectName: "animation-auto-animate-tanstack-start",
@@ -274,6 +318,17 @@ describe("Animation", () => {
       const result = await runTRPCTest({
         projectName: "animation-lottie-next",
         frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        animation: "lottie",
+      });
+      expectSuccess(result);
+    });
+
+    test("lottie with Vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "animation-lottie-vinext",
+        frontend: ["vinext"],
         backend: "self",
         runtime: "none",
         animation: "lottie",

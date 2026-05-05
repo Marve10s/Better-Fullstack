@@ -12,7 +12,7 @@ export async function processPaymentsTemplates(
   if (!config.payments || config.payments === "none") return;
 
   const hasReactWeb = config.frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
   );
   const hasNuxtWeb = config.frontend.includes("nuxt");
   const hasSvelteWeb = config.frontend.includes("svelte");
@@ -40,7 +40,7 @@ export async function processPaymentsTemplates(
     const reactFramework = config.frontend.includes("react-vite")
       ? "react-router"
       : config.frontend.find((f) =>
-          ["tanstack-router", "react-router", "tanstack-start", "next"].includes(f),
+          ["tanstack-router", "react-router", "tanstack-start", "next", "vinext"].includes(f),
         );
     if (reactFramework) {
       processTemplatesFromPrefix(

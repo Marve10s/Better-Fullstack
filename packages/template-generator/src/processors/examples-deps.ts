@@ -28,7 +28,7 @@ function setupChatSdkDependencies(vfs: VirtualFileSystem, config: ProjectConfig)
   const webExists = vfs.exists(webPkgPath);
   const serverExists = vfs.exists(serverPkgPath);
 
-  const isSelfNext = backend === "self" && frontend.includes("next");
+  const isSelfNext = backend === "self" && (frontend.includes("next") || frontend.includes("vinext"));
   const isSelfTanStackStart = backend === "self" && frontend.includes("tanstack-start");
   const isSelfNuxt = backend === "self" && frontend.includes("nuxt");
   const isHonoNode = backend === "hono" && runtime === "node";

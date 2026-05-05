@@ -40,6 +40,19 @@ describe("Payments Options", () => {
       expectSuccess(result);
     });
 
+    test("stripe with Vinext fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "stripe-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          payments: "stripe",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("stripe with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({

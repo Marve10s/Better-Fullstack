@@ -10,6 +10,7 @@ const REACT_FRONTENDS = new Set([
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
 ]);
 
 const SVELTE_FRONTENDS = new Set(["svelte"]);

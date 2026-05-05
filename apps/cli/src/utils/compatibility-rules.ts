@@ -77,6 +77,7 @@ export function ensureSingleWebAndNative(frontends: Frontend[]) {
 // Frontends with built-in server capabilities for backend="self"
 const FULLSTACK_FRONTENDS: readonly Frontend[] = [
   "next",
+  "vinext",
   "tanstack-start",
   "astro",
   "nuxt",
@@ -98,7 +99,7 @@ export function validateSelfBackendCompatibility(
 
     if (!hasSupportedWeb) {
       exitWithError(
-        "Backend 'self' (fullstack) only supports Next.js, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, or --frontend solid-start.",
+        "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, or --frontend solid-start.",
       );
     }
 
@@ -112,7 +113,7 @@ export function validateSelfBackendCompatibility(
   const hasFullstackFrontend = frontends.some((f) => FULLSTACK_FRONTENDS.includes(f));
   if (providedFlags.has("backend") && !hasFullstackFrontend && backend === "self") {
     exitWithError(
-      "Backend 'self' (fullstack) only supports Next.js, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or choose a different backend.",
+      "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or choose a different backend.",
     );
   }
 }
@@ -342,9 +343,10 @@ export function validateClerkCompatibility(
     }
 
     const hasNextJs = frontends.includes("next");
+    const hasVinext = frontends.includes("vinext");
     const hasTanStackStart = frontends.includes("tanstack-start");
 
-    if (!hasNextJs && !hasTanStackStart) {
+    if (!hasNextJs && !hasVinext && !hasTanStackStart) {
       if (frontends.includes("astro")) {
         exitWithError(
           "In Better-Fullstack, Clerk is not yet supported for Astro fullstack projects. Please use '--frontend next' or '--frontend tanstack-start' with '--backend self', or choose a different auth provider.",
@@ -386,10 +388,11 @@ export function validateNextAuthCompatibility(
   if (auth !== "nextauth") return;
 
   const hasNextJs = frontends.includes("next");
+  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Auth.js (NextAuth) is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Auth.js (NextAuth) is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -408,10 +411,11 @@ export function validateStackAuthCompatibility(
   if (auth !== "stack-auth") return;
 
   const hasNextJs = frontends.includes("next");
+  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Stack Auth is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Stack Auth is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -430,10 +434,11 @@ export function validateSupabaseAuthCompatibility(
   if (auth !== "supabase-auth") return;
 
   const hasNextJs = frontends.includes("next");
+  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -452,10 +457,11 @@ export function validateAuth0Compatibility(
   if (auth !== "auth0") return;
 
   const hasNextJs = frontends.includes("next");
+  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Auth0 is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Auth0 is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -547,13 +553,13 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason:
-          "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro",
+          "Docker Compose currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro",
       };
     }
-    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next")) {
+    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next") && !frontend.includes("vinext")) {
       return {
         isCompatible: false,
-        reason: "Docker Compose self-backend support currently requires Next.js",
+        reason: "Docker Compose self-backend support currently requires Next.js or Vinext",
       };
     }
     if (ecosystem === "rust" && rustFrontend && rustFrontend !== "none") {

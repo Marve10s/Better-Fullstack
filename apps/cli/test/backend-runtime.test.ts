@@ -153,7 +153,25 @@ describe("Backend and Runtime Combinations", () => {
       },
       {
         backend: "self",
+        runtime: "bun",
+        error: "Backend 'self' (fullstack) requires '--runtime none'",
+        frontend: ["vinext"], // Vinext also works with self backend
+      },
+      {
+        backend: "self",
         runtime: "node",
+        error: "Backend 'self' (fullstack) requires '--runtime none'",
+        frontend: ["next"], // Need to specify Next.js frontend for self backend
+      },
+      {
+        backend: "self",
+        runtime: "node",
+        error: "Backend 'self' (fullstack) requires '--runtime none'",
+        frontend: ["vinext"], // Vinext also works with self backend
+      },
+      {
+        backend: "self",
+        runtime: "workers",
         error: "Backend 'self' (fullstack) requires '--runtime none'",
         frontend: ["next"], // Need to specify Next.js frontend for self backend
       },
@@ -161,7 +179,7 @@ describe("Backend and Runtime Combinations", () => {
         backend: "self",
         runtime: "workers",
         error: "Backend 'self' (fullstack) requires '--runtime none'",
-        frontend: ["next"], // Need to specify Next.js frontend for self backend
+        frontend: ["vinext"], // Vinext also works with self backend
       },
 
       // AdonisJS only supports Node.js runtime
@@ -420,7 +438,7 @@ describe("Backend and Runtime Combinations", () => {
             config.api = "none";
             break;
           case "self":
-            config.frontend = ["next"]; // Self backend only works with Next.js
+            config.frontend = ["next"]; // Self backend works with Next.js, Vinext, and other fullstack frontends
             config.runtime = "none";
             config.database = "sqlite";
             config.orm = "drizzle";
@@ -484,6 +502,27 @@ describe("Backend and Runtime Combinations", () => {
       expectSuccess(result);
     });
 
+    it("should work with self backend and Vinext frontend", async () => {
+      const result = await runTRPCTest({
+        projectName: "self-backend-vinext",
+        backend: "self",
+        runtime: "none",
+        frontend: ["vinext"],
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        api: "trpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
     it("should fail self backend with unsupported frontend", async () => {
       const result = await runTRPCTest({
         projectName: "self-backend-invalid-frontend",
@@ -505,7 +544,7 @@ describe("Backend and Runtime Combinations", () => {
 
       expectError(
         result,
-        "Backend 'self' (fullstack) only supports Next.js, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends.",
+        "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends.",
       );
     });
 

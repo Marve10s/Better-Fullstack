@@ -13,6 +13,7 @@ describe("Frontend Configurations", () => {
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "native-bare",
       "native-uniwind",
@@ -30,6 +31,7 @@ describe("Frontend Configurations", () => {
       | "react-vite"
       | "tanstack-start"
       | "next"
+      | "vinext"
       | "nuxt"
       | "native-bare"
       | "native-uniwind"

@@ -39,6 +39,19 @@ describe("Form Library Options", () => {
       expectSuccess(result);
     });
 
+    test("formik with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "formik-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          forms: "formik",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("formik with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -179,6 +192,19 @@ describe("Form Library Options", () => {
       expectSuccess(result);
     });
 
+    test("final-form with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "final-form-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          forms: "final-form",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("final-form with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -299,6 +325,19 @@ describe("Form Library Options", () => {
         createCustomConfig({
           projectName: "conform-nextjs",
           frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          forms: "conform",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("conform with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "conform-vinext",
+          frontend: ["vinext"],
           backend: "self",
           runtime: "none",
           forms: "conform",

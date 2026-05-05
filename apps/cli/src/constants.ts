@@ -43,6 +43,7 @@ export const ADDON_COMPATIBILITY = {
     "react-vite",
     "solid",
     "next",
+    "vinext",
     "astro",
     "qwik",
     "angular",
@@ -57,6 +58,7 @@ export const ADDON_COMPATIBILITY = {
     "svelte",
     "solid",
     "next",
+    "vinext",
     "astro",
     "qwik",
     "angular",
@@ -78,25 +80,25 @@ export const ADDON_COMPATIBILITY = {
   wxt: [],
   "docker-compose": [],
   msw: [],
-  storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  storybook: ["tanstack-router", "react-router", "react-vite", "next", "vinext", "nuxt", "svelte", "solid"],
   "tanstack-query": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
   "tanstack-table": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
   "tanstack-virtual": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
   "tanstack-db": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "astro", "redwood",
   ],
   "tanstack-pacer": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
   ],
   none: [],
@@ -114,7 +116,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
   }
 > = {
   "shadcn-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind"],
   },
   daisyui: {
@@ -124,6 +126,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -137,11 +140,11 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind"],
   },
   "radix-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "headless-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "nuxt", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "nuxt", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "park-ui": {
@@ -151,6 +154,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "solid",
       "solid-start",
@@ -159,19 +163,19 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only"],
   },
   "chakra-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   nextui: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind"],
   },
   mantine: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "base-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "ark-ui": {
@@ -181,6 +185,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -190,7 +195,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "react-aria": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   none: {
@@ -200,6 +205,7 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -224,6 +230,7 @@ export const DEFAULT_UI_LIBRARY_BY_FRONTEND: Record<Frontend, UILibrary> = {
   "react-vite": "shadcn-ui",
   "tanstack-start": "shadcn-ui",
   next: "shadcn-ui",
+  vinext: "shadcn-ui",
   nuxt: "daisyui",
   svelte: "daisyui",
   solid: "daisyui",

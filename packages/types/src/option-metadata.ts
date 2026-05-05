@@ -178,6 +178,7 @@ const WEB_FRONTEND_VALUES = [
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
   "nuxt",
   "svelte",
   "solid",
@@ -209,6 +210,7 @@ const BACKEND_BUILDER_VALUES = [
   "encore",
   "convex",
   "self-next",
+  "self-vinext",
   "self-tanstack-start",
   "self-astro",
   "self-nuxt",
@@ -352,6 +354,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga" },
   webFrontend: {
     next: "Next.js",
+    vinext: "Vinext",
     "react-vite": "React + Vite",
     svelte: "SvelteKit",
     redwood: "RedwoodJS",
@@ -367,6 +370,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     nestjs: "NestJS",
     encore: "Encore.ts",
     "self-next": "Fullstack Next.js",
+    "self-vinext": "Fullstack Vinext",
     "self-tanstack-start": "Fullstack TanStack Start",
     "self-astro": "Fullstack Astro",
     "self-nuxt": "Fullstack Nuxt",
@@ -721,6 +725,7 @@ const OPTION_ALIASES: Partial<Record<OptionCategory, Partial<Record<string, read
 const CLI_VALUE_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
   backend: {
     "self-next": "self",
+    "self-vinext": "self",
     "self-tanstack-start": "self",
     "self-astro": "self",
     "self-nuxt": "self",

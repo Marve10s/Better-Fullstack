@@ -495,6 +495,27 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
+    it("should work with stack-auth + self backend + vinext", async () => {
+      const result = await runTRPCTest({
+        projectName: "stack-auth-self-vinext",
+        auth: "stack-auth",
+        backend: "self",
+        runtime: "none",
+        database: "postgres",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["vinext"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
     it("should work with stack-auth + self backend + next + prisma", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-self-next-prisma",
@@ -516,6 +537,27 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
+    it("should work with stack-auth + self backend + vinext + prisma", async () => {
+      const result = await runTRPCTest({
+        projectName: "stack-auth-self-vinext-prisma",
+        auth: "stack-auth",
+        backend: "self",
+        runtime: "none",
+        database: "postgres",
+        orm: "prisma",
+        api: "trpc",
+        frontend: ["vinext"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
     it("should work with stack-auth + self backend + next + sqlite", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-self-next-sqlite",
@@ -526,6 +568,27 @@ describe("Authentication Configurations", () => {
         orm: "drizzle",
         api: "trpc",
         frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+    });
+
+    it("should work with stack-auth + self backend + vinext + sqlite", async () => {
+      const result = await runTRPCTest({
+        projectName: "stack-auth-self-vinext-sqlite",
+        auth: "stack-auth",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["vinext"],
         addons: ["turborepo"],
         examples: ["none"],
         dbSetup: "none",

@@ -115,6 +115,15 @@ export const TECH_OPTIONS: Record<
       className: "invert-0 dark:invert",
     },
     {
+      id: "vinext",
+      name: "Vinext",
+      description: "next framework powered by Vite",
+      icon: "https://cdn.simpleicons.org/nextdotjs",
+      color: "from-green-400 to-green-600",
+      default: false,
+      className: "invert-0 dark:invert",
+    },
+    {
       id: "nuxt",
       name: "Nuxt",
       description: "Vue full-stack framework (SSR, SSG, hybrid)",
@@ -383,6 +392,13 @@ export const TECH_OPTIONS: Record<
       icon: "https://cdn.simpleicons.org/nextdotjs",
       color: "from-gray-700 to-black",
       className: "invert-0 dark:invert",
+    },
+    {
+      id: "self-vinext",
+      name: "Fullstack Vinext",
+      description: "Use Vinext server routes",
+      icon: "https://cdn.simpleicons.org/vue",
+      color: "from-green-400 to-green-600",
     },
     {
       id: "self-tanstack-start",

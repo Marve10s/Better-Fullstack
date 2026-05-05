@@ -18,7 +18,7 @@ export async function processAddonTemplates(
     if (addon === "turborepo") continue;
 
     if (addon === "pwa") {
-      if (config.frontend.includes("next")) {
+      if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
         processTemplatesFromPrefix(vfs, templates, "addons/pwa/apps/web/next", "apps/web", config);
       } else if (
         config.frontend.some((f) =>
@@ -105,7 +105,7 @@ export async function processAddonTemplates(
       }
 
       // Place web Dockerfile based on frontend
-      if (config.frontend.includes("next")) {
+      if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
         processSingleTemplate(
           vfs,
           templates,

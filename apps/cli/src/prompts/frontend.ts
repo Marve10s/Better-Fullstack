@@ -36,6 +36,11 @@ const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
     hint: "The React Framework for the Web",
   },
   {
+    value: "vinext",
+    label: "Vinext",
+    hint: "The Vite Compiler for Next.js",
+  },
+  {
     value: "nuxt",
     label: "Nuxt",
     hint: "The Progressive Web Framework for Vue.js",

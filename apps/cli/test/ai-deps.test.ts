@@ -444,4 +444,51 @@ describe("AI SDK Dependencies", () => {
       expect(nextPkg.dependencies["@ai-sdk/react"]).toBeDefined();
     }
   });
+
+  it("should install vercel-ai to fullstack frontend (Vinext) when backend is self", async () => {
+    const result = await runTRPCTest({
+      projectName: "ai-deps-self-vinext",
+      ecosystem: "typescript",
+      frontend: ["vinext"],
+      backend: "self",
+      runtime: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      api: "trpc",
+      auth: "none",
+      payments: "none",
+      addons: ["none"],
+      examples: ["none"],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      ai: "vercel-ai",
+      cssFramework: "tailwind",
+      uiLibrary: "none",
+      effect: "none",
+      email: "none",
+      stateManagement: "none",
+      forms: "react-hook-form",
+      testing: "vitest",
+      validation: "zod",
+      realtime: "none",
+      jobQueue: "none",
+      animation: "none",
+      logging: "none",
+      observability: "none",
+      cms: "none",
+      caching: "none",
+      fileUpload: "none",
+      packageManager: "bun",
+    });
+    expectSuccess(result);
+
+    // For self backend, AI SDK should be in the frontend package
+    // Vinext with self backend puts files directly in apps/web
+    if (result.projectDir) {
+      const vinextPkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
+      expect(vinextPkg.dependencies["ai"]).toBeDefined();
+      expect(vinextPkg.dependencies["@ai-sdk/react"]).toBeDefined();
+    }
+  });
 });

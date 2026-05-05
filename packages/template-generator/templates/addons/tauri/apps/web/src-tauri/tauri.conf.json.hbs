@@ -9,6 +9,11 @@
     "devUrl": "http://localhost:3001",
     "beforeBuildCommand": "cd .. && {{packageManager}} run build",
     "frontendDist": "../.next"
+{{else if (includes frontend "vinext")}}
+    "beforeDevCommand": "cd .. && {{packageManager}} run dev",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "cd .. && {{packageManager}} run build",
+    "frontendDist": "../.dist"
 {{else if (includes frontend "nuxt")}}
     "beforeDevCommand": "cd .. && {{packageManager}} run dev",
     "devUrl": "http://localhost:3001",

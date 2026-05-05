@@ -28,7 +28,6 @@
     "no-caller": "error",
     "no-alert": "error",
     "prefer-const": "error",
-    "no-underscore-dangle": "off",
     "no-void": "off",
 
     "typescript/no-explicit-any": "warn",

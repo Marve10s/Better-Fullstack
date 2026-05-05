@@ -1,0 +1,20 @@
+import "@{{projectName}}/env/web";
+import { defineConfig } from "vite";
+import vinext from "vinext/vite";
+
+export default defineConfig({
+  plugins: [vinext()],
+  server: {
+    port: 3001,
+  },
+  {{#if (or (eq webDeploy "fly") (includes addons "docker-compose"))}}
+  build: {
+    outDir: "dist",
+  },
+  {{/if}}
+  {{#if (includes examples "ai")}}
+  optimizeDeps: {
+    include: ["shiki"],
+  },
+  {{/if}}
+});

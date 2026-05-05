@@ -68,6 +68,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "tanstack-start": { type: "local", src: "/icon/tanstack.png" },
   "react-router": { type: "local", src: "/icon/react-router.svg" },
   next: { type: "si", slug: "nextdotjs", hex: "000000" },
+  vinext: { type: "si", slug: "nextdotjs", hex: "000000" },
   nuxt: { type: "local", src: "/icon/nuxt-js.svg" },
   svelte: { type: "si", slug: "svelte", hex: "FF3E00" },
   solid: { type: "local", src: "/icon/solid.svg" },

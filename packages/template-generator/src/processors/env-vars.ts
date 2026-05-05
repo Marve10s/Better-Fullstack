@@ -39,6 +39,7 @@ function generateAuthSecret() {
 
 function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"]) {
   const hasNextJs = frontend.includes("next");
+  const hasVinext = frontend.includes("vinext");
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
   const hasTanstackStart = frontend.includes("tanstack-start");
@@ -50,6 +51,7 @@ function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"
 
   let key = "VITE_SERVER_URL";
   if (hasNextJs) key = "NEXT_PUBLIC_SERVER_URL";
+  else if (hasVinext) key = "VITE_SERVER_URL";
   else if (hasNuxt) key = "NUXT_PUBLIC_SERVER_URL";
   else if (hasSvelte) key = "PUBLIC_SERVER_URL";
   else if (hasTanstackStart) key = "VITE_SERVER_URL";
@@ -59,10 +61,12 @@ function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"
 
 function getConvexVar(frontend: string[]) {
   const hasNextJs = frontend.includes("next");
+  const hasVinext = frontend.includes("vinext");
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
   const hasTanstackStart = frontend.includes("tanstack-start");
   if (hasNextJs) return "NEXT_PUBLIC_CONVEX_URL";
+  if (hasVinext) return "VITE_CONVEX_URL";
   if (hasNuxt) return "NUXT_PUBLIC_CONVEX_URL";
   if (hasSvelte) return "PUBLIC_CONVEX_URL";
   if (hasTanstackStart) return "VITE_CONVEX_URL";
@@ -120,6 +124,7 @@ function buildClientVars(
   analytics: ProjectConfig["analytics"],
 ): EnvVariable[] {
   const hasNextJs = frontend.includes("next");
+  const hasVinext = frontend.includes("vinext");
   const hasReactRouter = frontend.includes("react-router");
   const hasReactVite = frontend.includes("react-vite");
   const hasTanStackRouter = frontend.includes("tanstack-router");
@@ -158,7 +163,7 @@ function buildClientVars(
           condition: true,
         },
       );
-    } else if (hasReactRouter || hasReactVite || hasTanStackRouter || hasTanStackStart) {
+    } else if (hasVinext || hasReactRouter || hasReactVite || hasTanStackRouter || hasTanStackStart) {
       vars.push({
         key: "VITE_CLERK_PUBLISHABLE_KEY",
         value: "",
@@ -188,7 +193,7 @@ function buildClientVars(
           condition: true,
         },
       );
-    } else if (hasTanStackStart) {
+    } else if (hasVinext || hasTanStackStart) {
       vars.push(
         {
           key: "VITE_CLERK_PUBLISHABLE_KEY",
@@ -464,6 +469,7 @@ function buildConvexBackendVars(
   examples: ProjectConfig["examples"],
 ): EnvVariable[] {
   const hasNextJs = frontend.includes("next");
+  const hasVinext = frontend.includes("vinext");
   const hasNative =
     frontend.includes("native-bare") ||
     frontend.includes("native-uniwind") ||
@@ -474,6 +480,7 @@ function buildConvexBackendVars(
     frontend.includes("tanstack-router") ||
     frontend.includes("tanstack-start") ||
     hasNextJs ||
+    hasVinext ||
     frontend.includes("nuxt") ||
     frontend.includes("solid") ||
     frontend.includes("svelte");
@@ -1487,6 +1494,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
   const hasTanStackRouter = frontend.includes("tanstack-router");
   const hasTanStackStart = frontend.includes("tanstack-start");
   const hasNextJs = frontend.includes("next");
+  const hasVinext = frontend.includes("vinext");
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
   const hasSolid = frontend.includes("solid");
@@ -1496,6 +1504,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     hasTanStackRouter ||
     hasTanStackStart ||
     hasNextJs ||
+    hasVinext ||
     hasNuxt ||
     hasSolid ||
     hasSvelte;

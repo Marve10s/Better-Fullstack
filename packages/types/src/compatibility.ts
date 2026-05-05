@@ -294,23 +294,23 @@ export function validateProjectName(name: string): string | undefined {
 
 export const hasPWACompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "astro"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(f),
   );
 
 export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "nuxt", "svelte", "solid", "next", "astro"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "nuxt", "svelte", "solid", "next", "vinext", "astro"].includes(f),
   );
 
 export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "astro"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(f),
   );
 
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
   if (stack.ecosystem !== "typescript") return false;
 
-  if (stack.backend === "self-next" || stack.backend === "self-tanstack-start") {
+  if (stack.backend === "self-next" || stack.backend === "self-vinext" || stack.backend === "self-tanstack-start") {
     return true;
   }
 
@@ -555,6 +555,7 @@ export const analyzeStackCompatibility = (
   // Self (fullstack) backend constraints
   if (
     nextStack.backend === "self-next" ||
+    nextStack.backend === "self-vinext" ||
     nextStack.backend === "self-tanstack-start" ||
     nextStack.backend === "self-astro" ||
     nextStack.backend === "self-nuxt" ||
@@ -586,6 +587,14 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "backend",
         message: "Frontend set to 'Next.js' (required for Next.js fullstack)",
+      });
+    }
+    if (nextStack.backend === "self-vinext" && !nextStack.webFrontend.includes("vinext")) {
+      nextStack.webFrontend = ["vinext"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Frontend set to 'Vinext' (required for Vinext fullstack)",
       });
     }
     if (
@@ -679,6 +688,7 @@ export const analyzeStackCompatibility = (
     nextStack.backend !== "convex" &&
     nextStack.backend !== "none" &&
     nextStack.backend !== "self-next" &&
+    nextStack.backend !== "self-vinext" &&
     nextStack.backend !== "self-tanstack-start" &&
     nextStack.backend !== "self-astro" &&
     nextStack.backend !== "self-nuxt" &&
@@ -1379,6 +1389,7 @@ export const analyzeStackCompatibility = (
       "none",
       "convex",
       "self-next",
+      "self-vinext",
       "self-tanstack-start",
       "self-astro",
       "self-nuxt",
@@ -1512,6 +1523,18 @@ export const getDisabledReason = (
     }
   }
 
+  if (currentStack.backend === "self-vinext") {
+    if (category === "runtime" && optionId !== "none") {
+      return "Vinext fullstack uses built-in API routes";
+    }
+    if (category === "webFrontend" && optionId !== "vinext" && optionId !== "none") {
+      return "Vinext fullstack requires Vinext frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
   if (currentStack.backend === "self-tanstack-start") {
     if (category === "runtime" && optionId !== "none") {
       return "TanStack Start fullstack uses built-in API routes";
@@ -1579,6 +1602,9 @@ export const getDisabledReason = (
     if (optionId === "self-next" && !currentStack.webFrontend.includes("next")) {
       return "Requires Next.js frontend";
     }
+    if (optionId === "self-vinext" && !currentStack.webFrontend.includes("vinext")) {
+      return "Requires Vinext frontend";
+    }
     if (
       optionId === "self-tanstack-start" &&
       !currentStack.webFrontend.includes("tanstack-start")
@@ -1624,6 +1650,7 @@ export const getDisabledReason = (
         "convex",
         "none",
         "self-next",
+        "self-vinext",
         "self-tanstack-start",
         "self-astro",
         "self-nuxt",
@@ -1929,7 +1956,7 @@ export const getDisabledReason = (
       ) {
         return "Chat SDK self backend profile supports Next.js, TanStack Start, or Nuxt in v1";
       }
-      if (currentStack.backend === "self-next" || currentStack.backend === "self-tanstack-start") {
+      if (currentStack.backend === "self-next" || currentStack.backend === "self-vinext" || currentStack.backend === "self-tanstack-start") {
         return null;
       }
       if (currentStack.backend === "self-nuxt") {
@@ -2229,6 +2256,7 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
   "nuxt",
   "svelte",
   "solid",

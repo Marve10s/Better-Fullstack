@@ -136,7 +136,7 @@ function getGuidance() {
       arrayFields:
         'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, javaLibraries, and javaTestingLibraries. Use [] for "none" on multi-select fields.',
       backend:
-        'String. "self" means fullstack mode (Next.js/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
+        'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime:
         '"bun" or "node". Must be "none" when backend is "self" or "convex".',
       addons:
@@ -145,17 +145,17 @@ function getGuidance() {
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",
       'Do not infer addons, examples, or optional features the user did not mention. Default strings to "none" and multi-select arrays to [].',
-      "When the user says 'fullstack Next.js', use backend='self', frontend=['next'], runtime='none'.",
+      "When the user says 'fullstack Next.js', use backend='self', frontend=['next'], runtime='none'.\nWhen the user says 'fullstack Vinext', use backend='self', frontend=['vinext'], runtime='none'.",
       "When the user says 'React + Hono', use frontend=['tanstack-router'] (or ask which React framework), backend='hono'.",
     ],
     criticalConstraints: [
-      "tRPC (api='trpc') only works with React-based frontends: next, react-router, tanstack-router, tanstack-start.",
+      "tRPC (api='trpc') only works with React-based frontends: next, vinext, react-router, tanstack-router, tanstack-start.",
       "Use api='orpc' for svelte, solid, nuxt.",
       "Angular: use api='none' (has built-in HttpClient).",
       "Qwik: use backend='none', api='none' (built-in server).",
       "NestJS and AdonisJS backends require runtime='node'.",
       "Elysia backend requires runtime='bun'.",
-      "backend='self' only works with: next, tanstack-start, astro, nuxt, svelte, solid-start.",
+      "backend='self' only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start.",
       "backend='convex' overrides: runtime=none, database=none, orm=none, api=none.",
       "TypeORM + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
       "Sequelize + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
@@ -541,7 +541,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 ## Backend Constraints
 - **Convex**: Forces runtime=none, database=none, orm=none, api=none, dbSetup=none, serverDeploy=none. Removes incompatible frontends (Solid, SolidStart, Astro).
 - **No backend (none)**: Clears auth, payments, database, orm, api, serverDeploy, search, fileStorage.
-- **Fullstack (backend='self')**: Sets runtime=none, serverDeploy=none. Only works with: next, tanstack-start, astro, nuxt, svelte, solid-start.
+- **Fullstack (backend='self')**: Sets runtime=none, serverDeploy=none. Only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start.
 
 ## Runtime Constraints
 - NestJS and AdonisJS require runtime=node.
@@ -550,7 +550,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 - backend=self or backend=convex requires runtime=none.
 
 ## API Constraints
-- tRPC only works with React-based frontends: next, react-router, tanstack-router, tanstack-start.
+- tRPC only works with React-based frontends: next, vinext, react-router, tanstack-router, tanstack-start.
 - Use oRPC for svelte, solid, nuxt.
 - Angular: use api=none (has built-in HttpClient).
 - Qwik: use backend=none, api=none (built-in server, no external APIs).

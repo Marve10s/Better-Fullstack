@@ -8,9 +8,10 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   const { cms, frontend, database } = config;
   if (!cms || cms === "none") return;
 
-  const hasNext = frontend.includes("next");
+  const hasNext = frontend.includes("next") || frontend.includes("vinext");
   const hasWebFrontend =
     frontend.includes("next") ||
+    frontend.includes("vinext") ||
     frontend.includes("astro") ||
     frontend.includes("nuxt") ||
     frontend.includes("svelte") ||
