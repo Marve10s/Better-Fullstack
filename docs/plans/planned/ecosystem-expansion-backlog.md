@@ -142,9 +142,10 @@ Master tracking file. Detailed plans live in dedicated files per area.
 
 ### Documentation
 - [x] User-facing `/docs` site ✅
-- [ ] Auto-generated CLI reference
-- [ ] Interactive compatibility matrix
-- [ ] Public roadmap page
+- [x] Full CLI reference ✅
+- [x] Interactive compatibility matrix ✅
+- [x] Public roadmap page ✅
+- [x] MCP tools reference ✅
 
 ### CI / Quality
 - [x] Phase 1 quality hardening ✅

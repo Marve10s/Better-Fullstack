@@ -1,0 +1,48 @@
+---
+title: History Command
+description: View, clear, and export reproducible commands from previous Better Fullstack scaffolds.
+---
+
+The `history` command shows recent scaffolded projects and the reproducible commands that created them.
+
+```bash
+npx create-better-fullstack@latest history
+```
+
+## Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--limit` | `10` | Number of history entries to show. |
+| `--clear` | `false` | Clear all saved scaffold history. |
+| `--json` | `false` | Print history as JSON for scripts. |
+
+## Examples
+
+Show the five most recent entries:
+
+```bash
+npx create-better-fullstack@latest history --limit 5
+```
+
+Export history as JSON:
+
+```bash
+npx create-better-fullstack@latest history --json
+```
+
+Clear local history:
+
+```bash
+npx create-better-fullstack@latest history --clear
+```
+
+## Reproducible Workflow
+
+Use history when you want to recreate a stack, compare generated output, or share a known-good scaffold command with another developer.
+
+1. Run `history`.
+2. Copy the reproducible command for the stack you want.
+3. Re-run it with a new project name or adjusted flags.
+
+History is stored locally under your user directory and does not affect generated project files.

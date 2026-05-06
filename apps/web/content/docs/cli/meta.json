@@ -1,5 +1,5 @@
 {
   "title": "CLI",
   "defaultOpen": true,
-  "pages": ["create", "add"]
+  "pages": ["index", "create", "add", "history", "mcp"]
 }

@@ -1,0 +1,46 @@
+---
+title: Roadmap
+description: What Better Fullstack is focusing on now, next, and later.
+---
+
+This roadmap is a curated view of the active Better Fullstack backlog. It is not a promise of exact dates; order can change based on compatibility risk, maintenance cost, and community demand.
+
+## Now
+
+| Focus | Why it matters |
+| --- | --- |
+| Documentation trust layer | The public docs now need roadmap, compatibility, CLI, and MCP references so users can choose stacks confidently. |
+| REST / OpenAPI API option | REST remains the most common API style, and OpenAPI output makes generated projects easier to document and integrate. |
+| Dockerfile generation per app | Docker is the baseline for self-hosted deploys, platform previews, and reproducible production builds. |
+
+## Next
+
+| Focus | Why it matters |
+| --- | --- |
+| Docker Compose and DevContainers | Local databases, caches, search services, and editor environments should be reproducible after scaffold. |
+| Creem.io payments | Creem has a Better Auth plugin, making it a strong fit for SaaS scaffolds using the default auth path. |
+| Cloudinary storage | Managed media uploads, transformations, and CDN delivery are a frequent production need. |
+| SWR data fetching | SWR gives React users a smaller stale-while-revalidate option alongside TanStack Query. |
+| Java runtime validation and follow-ups | Java is first-class now; Maven/Gradle runtime smoke coverage and deeper Spring/Quarkus/Micronaut options are the next confidence layer. |
+
+## Later
+
+| Focus | Why it matters |
+| --- | --- |
+| Cross-ecosystem stacks research | Rust, Go, Python, or Java backends with TypeScript frontends would be powerful, but this needs architecture work first. |
+| Non-monorepo / single-app mode | Simpler generated layouts are valuable for small projects, but require careful template path design. |
+| React Native and mobile expansion | Navigation, UI, push notifications, and OTA updates would make native scaffolds more complete. |
+| Elixir ecosystem | Phoenix, LiveView, and BEAM strengths would be a unique differentiator. |
+| .NET ecosystem | ASP.NET Core, EF Core, Dapper, and SignalR would broaden enterprise coverage. |
+
+## How We Prioritize
+
+- Prefer features that improve generated-project trust for many users.
+- Prefer vertical slices that include schema, CLI, builder, templates, docs, and validation together.
+- Avoid large architecture changes until the current multi-ecosystem foundation is easy to understand and verify.
+
+## Related References
+
+- [Option reference](/docs/reference/options/) shows the currently supported stack choices.
+- [Compatibility reference](/docs/reference/compatibility/) helps answer whether a choice works with a baseline stack.
+- [CLI create](/docs/cli/create/) and [CLI add](/docs/cli/add/) document the current command surface.

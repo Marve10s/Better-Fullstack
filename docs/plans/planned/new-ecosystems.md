@@ -1,6 +1,6 @@
 # New Language Ecosystems
 
-Candidates for entirely new language ecosystem support beyond TypeScript, Rust, Go, and Python. Each has a dedicated plan file with full category breakdowns.
+Candidates for entirely new language ecosystem support beyond TypeScript, Rust, Go, Python, and Java. Java has shipped as a first-class ecosystem; this file now tracks the remaining new ecosystems and links Java follow-up work separately.
 
 ---
 
@@ -8,9 +8,10 @@ Candidates for entirely new language ecosystem support beyond TypeScript, Rust, 
 
 | File | Language | Effort | Priority |
 |------|----------|--------|----------|
-| [java-ecosystem.md](java-ecosystem.md) | Java (Spring Boot, Quarkus, Micronaut) | Large | 1 — highest community demand (GitHub #119) |
-| [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir (Phoenix, LiveView, Ecto) | Large | 2 — unique differentiator, no competing scaffolding tools |
-| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Large | 3 — enterprise demand |
+| [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | Java foundation | Done | Shipped in v1.6.2 |
+| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Java expansion | Medium/Large | Follow-up — Quarkus, Micronaut, jOOQ, Keycloak, messaging, observability |
+| [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir (Phoenix, LiveView, Ecto) | Large | 1 — unique differentiator, no competing scaffolding tools |
+| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Large | 2 — enterprise demand |
 
 ---
 
@@ -33,7 +34,7 @@ Candidates for entirely new language ecosystem support beyond TypeScript, Rust, 
 
 ## Priority Order
 
-1. **Java** — largest developer base, highest community demand, enterprise play
-2. **Elixir** — unique strengths (LiveView, BEAM), strong differentiator vs competitors
-3. **C# / ASP.NET** — enterprise demand, high-performance
-4. **Zig** — watch and wait
+1. **Elixir** — unique strengths (LiveView, BEAM), strong differentiator vs competitors
+2. **C# / ASP.NET** — enterprise demand, high-performance
+3. **Zig** — watch and wait
+4. **Kotlin** — consider as a Java ecosystem extension rather than a separate ecosystem

@@ -22,6 +22,7 @@ const COMMANDS: Record<PM, string> = {
 };
 
 const ACCENT_TEXT = "text-black dark:text-[#bef264]";
+const RELEASE_BADGE = `v${__BFS_CLI_VERSION__} · ${__BFS_BUILD_DATE__}`;
 
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
@@ -66,7 +67,7 @@ export default function HeroSection() {
               "dark:text-[#7a7a7a]",
             )}
           >
-            v1.6.2 · apr 29, 2026
+            {RELEASE_BADGE}
           </span>
         </div>
 

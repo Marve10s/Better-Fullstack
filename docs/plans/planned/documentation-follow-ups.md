@@ -8,21 +8,21 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 
 ## Roadmap
 
-- [ ] Add a public roadmap page to `/docs`
+- [x] Add a public roadmap page to `/docs`
   - Source from a curated subset of `docs/plans/planned`
   - Link each roadmap item to the relevant plan, issue, or discussion
   - Keep completed roadmap entries linked to `docs/plans/completed`
 
 ## Compatibility Reference
 
-- [ ] Add compatibility docs generated from shared compatibility metadata
-- [ ] Explain common disabled-option reasons and auto-resolution behavior
+- [x] Add compatibility docs generated from shared compatibility metadata
+- [x] Explain common disabled-option reasons and auto-resolution behavior
 - [ ] Link compatibility examples from ecosystem option reference pages
 
 ## CLI Reference
 
-- [ ] Add full CLI command reference
-- [ ] Include `create`, `add`, `history`, `mcp`, and builder-related command flows
+- [x] Add full CLI command reference
+- [x] Include `create`, `add`, `history`, `mcp`, and builder-related command flows
 - [ ] Generate flag/default data from CLI definitions or shared schemas where possible
 
 ## Stack Guides
@@ -40,6 +40,6 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 
 ## AI / MCP
 
-- [ ] Add MCP tools reference from `apps/cli/src/mcp.ts`
+- [x] Add MCP tools reference from `apps/cli/src/mcp.ts`
 - [ ] Add agent setup examples for Claude Code, Cursor, VS Code, Zed, and related tools
 - [ ] Explain skills addon and MCP addon output in generated projects
