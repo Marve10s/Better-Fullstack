@@ -338,7 +338,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   fastapi: { type: "si", slug: "fastapi", hex: "009688" },
   django: { type: "si", slug: "django", hex: "092E20" },
   flask: { type: "si", slug: "flask", hex: "000000" },
-  litestar: { type: "si", slug: "litestar", hex: "EDB641" },
+  litestar: { type: "local", src: "/icon/litestar.svg" },
   pydantic: { type: "si", slug: "pydantic", hex: "E92063" },
   "openai-sdk": { type: "local", src: "/icon/openai.svg", needsInvert: "dark" },
   "anthropic-sdk": { type: "si", slug: "anthropic", hex: "191919" },
