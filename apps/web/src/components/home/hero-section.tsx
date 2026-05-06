@@ -21,8 +21,7 @@ const COMMANDS: Record<PM, string> = {
   yarn: "yarn create better-fullstack@latest",
 };
 
-/** Homepage hero lime — same in both themes (matches shader / features section). */
-const ACCENT = "#bef264";
+const ACCENT_TEXT = "text-black dark:text-[#bef264]";
 
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
@@ -54,8 +53,10 @@ export default function HeroSection() {
       >
         <div className="flex items-baseline justify-between">
           <span
-            className="font-mono text-[11px] uppercase tracking-[0.22em]"
-            style={{ color: ACCENT }}
+            className={cn(
+              "font-mono text-[11px] uppercase tracking-[0.22em]",
+              ACCENT_TEXT,
+            )}
           >
             ✦ install
           </span>
@@ -103,7 +104,7 @@ export default function HeroSection() {
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
             <code className="truncate font-mono text-sm sm:text-base">
-              <span style={{ color: ACCENT }}>$</span> {COMMANDS[pm]}
+              <span className={ACCENT_TEXT}>$</span> {COMMANDS[pm]}
             </code>
             <button
               type="button"
@@ -111,7 +112,9 @@ export default function HeroSection() {
               aria-label="Copy command"
               className={cn(
                 "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
-                copied ? "text-[#bef264]" : "text-[#3f6212] dark:text-[#a3a3a3]",
+                copied
+                  ? "text-black dark:text-[#bef264]"
+                  : "text-[#3f6212] dark:text-[#a3a3a3]",
               )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -140,8 +143,10 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative z-10 font-mono text-[11px] uppercase tracking-[0.22em]"
-          style={{ color: ACCENT }}
+          className={cn(
+            "relative z-10 font-mono text-[11px] uppercase tracking-[0.22em]",
+            ACCENT_TEXT,
+          )}
         >
           ✦ the cli
         </motion.p>
@@ -160,9 +165,7 @@ export default function HeroSection() {
         >
           Stop wiring.
           <br />
-          <span className="italic" style={{ color: ACCENT }}>
-            Start shipping.
-          </span>
+          <span className={cn("italic", ACCENT_TEXT)}>Start shipping.</span>
         </motion.h1>
 
         <motion.p
