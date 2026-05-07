@@ -6,17 +6,28 @@ import pc from "picocolors";
 import type { Addons, PackageManager } from "../../types";
 
 export function getInstallEnvironment(packageManager: PackageManager): NodeJS.ProcessEnv | undefined {
-  if (packageManager !== "yarn") {
-    return undefined;
+  if (packageManager === "yarn") {
+    return {
+      // Fresh generated workspaces need to create yarn.lock on first install.
+      // GitHub Actions public-PR runs can force immutable/hardened Yarn behavior,
+      // which is correct for existing repos but breaks first-install scaffolds.
+      YARN_ENABLE_HARDENED_MODE: "0",
+      YARN_ENABLE_IMMUTABLE_INSTALLS: "false",
+    };
   }
 
-  return {
-    // Fresh generated workspaces need to create yarn.lock on first install.
-    // GitHub Actions public-PR runs can force immutable/hardened Yarn behavior,
-    // which is correct for existing repos but breaks first-install scaffolds.
-    YARN_ENABLE_HARDENED_MODE: "0",
-    YARN_ENABLE_IMMUTABLE_INSTALLS: "false",
-  };
+  return undefined;
+}
+
+export function getInstallArgs(packageManager: PackageManager): string[] {
+  if (packageManager === "pnpm") {
+    // pnpm v10 blocks dependency lifecycle scripts unless builds are approved.
+    // Fresh scaffolds have no approval state yet, so allow dependency builds
+    // for the first install instead of failing with ERR_PNPM_IGNORED_BUILDS.
+    return ["install", "--dangerously-allow-all-builds"];
+  }
+
+  return ["install"];
 }
 
 export async function installDependencies({
@@ -32,6 +43,7 @@ export async function installDependencies({
   try {
     s.start(`Running ${packageManager} install...`);
 
+    const installArgs = getInstallArgs(packageManager);
     await $({
       cwd: projectDir,
       env: {
@@ -39,7 +51,7 @@ export async function installDependencies({
         ...getInstallEnvironment(packageManager),
       },
       stderr: "inherit",
-    })`${packageManager} install`;
+    })`${packageManager} ${installArgs}`;
 
     s.stop("Dependencies installed successfully");
   } catch (error) {

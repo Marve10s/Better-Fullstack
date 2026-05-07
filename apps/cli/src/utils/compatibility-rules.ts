@@ -1,5 +1,7 @@
 import {
   allowedApisForFrontends as allowedApisForFrontendsShared,
+  getAIFrontendCompatibilityIssue,
+  getApiFrontendCompatibilityIssue,
   getCompatibleAddons as getCompatibleAddonsShared,
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleFormLibraries as getCompatibleFormLibrariesShared,
@@ -211,95 +213,14 @@ export function validateApiFrontendCompatibility(
   frontends: Frontend[] = [],
   astroIntegration?: AstroIntegration,
 ) {
-  const includesNuxt = frontends.includes("nuxt");
-  const includesSvelte = frontends.includes("svelte");
-  const includesSolid = frontends.includes("solid");
-  const includesAstro = frontends.includes("astro");
-  const includesQwik = frontends.includes("qwik");
-  const includesAngular = frontends.includes("angular");
-  const includesRedwood = frontends.includes("redwood");
-  const includesFresh = frontends.includes("fresh");
+  const issue = getApiFrontendCompatibilityIssue(api, frontends, astroIntegration);
+  if (!issue) return;
 
-  const includesSolidStart = frontends.includes("solid-start");
-
-  // ts-rest and garph require React like tRPC
-  if (
-    (includesNuxt || includesSvelte || includesSolid || includesSolidStart) &&
-    (api === "trpc" || api === "ts-rest" || api === "garph")
-  ) {
-    const apiName = api === "trpc" ? "tRPC" : api === "ts-rest" ? "ts-rest" : "garph";
-    const incompatibleFrontend = includesNuxt
-      ? "nuxt"
-      : includesSvelte
-        ? "svelte"
-        : includesSolid
-          ? "solid"
-          : "solid-start";
-    incompatibilityError({
-      message: `${apiName} API requires React-based frontends.`,
-      provided: { api, frontend: incompatibleFrontend },
-      suggestions: [
-        "Use --api orpc (works with all frontends)",
-        "Use --api none",
-        "Choose next, react-router, react-vite, or tanstack-start",
-      ],
-    });
-  }
-
-  // Qwik has its own server-side capabilities, doesn't support traditional API layer
-  if (includesQwik && api && api !== "none") {
-    incompatibilityError({
-      message: "Qwik has built-in server capabilities and doesn't support external APIs.",
-      provided: { api, frontend: "qwik" },
-      suggestions: ["Use --api none with Qwik"],
-    });
-  }
-
-  // Angular has its own HttpClient and doesn't support external API layers
-  if (includesAngular && api && api !== "none") {
-    incompatibilityError({
-      message: "Angular has built-in HttpClient and doesn't support external APIs.",
-      provided: { api, frontend: "angular" },
-      suggestions: ["Use --api none with Angular"],
-    });
-  }
-
-  // RedwoodJS has its own built-in GraphQL API and doesn't support external API layers
-  if (includesRedwood && api && api !== "none") {
-    incompatibilityError({
-      message: "RedwoodJS has built-in GraphQL API and doesn't support external APIs.",
-      provided: { api, frontend: "redwood" },
-      suggestions: ["Use --api none with RedwoodJS"],
-    });
-  }
-
-  // Fresh (Deno) has its own built-in server capabilities and doesn't support external API layers
-  if (includesFresh && api && api !== "none") {
-    incompatibilityError({
-      message: "Fresh has built-in server capabilities and doesn't support external APIs.",
-      provided: { api, frontend: "fresh" },
-      suggestions: ["Use --api none with Fresh"],
-    });
-  }
-
-  // Astro with non-React integrations doesn't support tRPC, ts-rest, or garph
-  if (
-    includesAstro &&
-    astroIntegration &&
-    astroIntegration !== "react" &&
-    (api === "trpc" || api === "ts-rest" || api === "garph")
-  ) {
-    const apiName = api === "trpc" ? "tRPC" : api === "ts-rest" ? "ts-rest" : "garph";
-    incompatibilityError({
-      message: `${apiName} API requires React integration with Astro.`,
-      provided: { api, "astro-integration": astroIntegration },
-      suggestions: [
-        "Use --api orpc (works with all Astro integrations)",
-        "Use --api none",
-        "Use --astro-integration react",
-      ],
-    });
-  }
+  incompatibilityError({
+    message: issue.message,
+    provided: issue.provided ?? {},
+    suggestions: issue.suggestions ?? [],
+  });
 }
 
 export function isFrontendAllowedWithBackend(
@@ -750,21 +671,10 @@ export function validateAIFrontendCompatibility(
   ai: AI | undefined,
   frontends: Frontend[] = [],
 ) {
-  if (!ai || ai !== "tanstack-ai") return;
+  const issue = getAIFrontendCompatibilityIssue(ai, frontends);
+  if (!issue) return;
 
-  const compatibleFrontends: Frontend[] = [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
-    "solid", "solid-start",
-  ];
-
-  const hasCompatible = frontends.some((f) => compatibleFrontends.includes(f));
-
-  if (!hasCompatible) {
-    exitWithError(
-      "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet). " +
-      "Please use a React-based frontend (Next.js, TanStack Router, React Router, etc.) or Solid.",
-    );
-  }
+  exitWithError(issue.message);
 }
 
 /**

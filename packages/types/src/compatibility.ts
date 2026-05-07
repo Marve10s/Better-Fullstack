@@ -1,4 +1,5 @@
 import type {
+  AI,
   Addons,
   API,
   AstroIntegration,
@@ -93,6 +94,8 @@ export type CompatibilityIssue = {
   message: string;
   category?: CompatibilityCategory;
   optionId?: string;
+  provided?: Record<string, string | string[]>;
+  suggestions?: string[];
 };
 
 export type CompatibilityEvaluation = {
@@ -2444,6 +2447,153 @@ export function allowedApisForFrontends(
   return base;
 }
 
+function getReactOnlyApiDisplayName(api: API) {
+  if (api === "trpc") return "tRPC";
+  if (api === "ts-rest") return "ts-rest";
+  return "garph";
+}
+
+export function getApiFrontendCompatibilityIssue(
+  api: API | undefined,
+  frontends: Frontend[] = [],
+  astroIntegration?: AstroIntegration,
+): CompatibilityIssue | undefined {
+  if (!api || api === "none") return undefined;
+
+  const includesNuxt = frontends.includes("nuxt");
+  const includesSvelte = frontends.includes("svelte");
+  const includesSolid = frontends.includes("solid");
+  const includesAstro = frontends.includes("astro");
+  const includesQwik = frontends.includes("qwik");
+  const includesAngular = frontends.includes("angular");
+  const includesRedwood = frontends.includes("redwood");
+  const includesFresh = frontends.includes("fresh");
+  const includesSolidStart = frontends.includes("solid-start");
+  const isReactOnlyApi = api === "trpc" || api === "ts-rest" || api === "garph";
+
+  if (
+    (includesNuxt || includesSvelte || includesSolid || includesSolidStart) &&
+    isReactOnlyApi
+  ) {
+    const incompatibleFrontend = includesNuxt
+      ? "nuxt"
+      : includesSvelte
+        ? "svelte"
+        : includesSolid
+          ? "solid"
+          : "solid-start";
+
+    return {
+      code: "API_REQUIRES_REACT_FRONTEND",
+      message: `${getReactOnlyApiDisplayName(api)} API requires React-based frontends.`,
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: incompatibleFrontend },
+      suggestions: [
+        "Use --api orpc (works with all frontends)",
+        "Use --api none",
+        "Choose next, react-router, react-vite, or tanstack-start",
+      ],
+    };
+  }
+
+  if (includesQwik) {
+    return {
+      code: "QWIK_REJECTS_EXTERNAL_API",
+      message: "Qwik has built-in server capabilities and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "qwik" },
+      suggestions: ["Use --api none with Qwik"],
+    };
+  }
+
+  if (includesAngular) {
+    return {
+      code: "ANGULAR_REJECTS_EXTERNAL_API",
+      message: "Angular has built-in HttpClient and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "angular" },
+      suggestions: ["Use --api none with Angular"],
+    };
+  }
+
+  if (includesRedwood) {
+    return {
+      code: "REDWOOD_REJECTS_EXTERNAL_API",
+      message: "RedwoodJS has built-in GraphQL API and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "redwood" },
+      suggestions: ["Use --api none with RedwoodJS"],
+    };
+  }
+
+  if (includesFresh) {
+    return {
+      code: "FRESH_REJECTS_EXTERNAL_API",
+      message: "Fresh has built-in server capabilities and doesn't support external APIs.",
+      category: "api",
+      optionId: api,
+      provided: { api, frontend: "fresh" },
+      suggestions: ["Use --api none with Fresh"],
+    };
+  }
+
+  if (
+    includesAstro &&
+    astroIntegration &&
+    astroIntegration !== "react" &&
+    isReactOnlyApi
+  ) {
+    return {
+      code: "ASTRO_API_REQUIRES_REACT_INTEGRATION",
+      message: `${getReactOnlyApiDisplayName(api)} API requires React integration with Astro.`,
+      category: "api",
+      optionId: api,
+      provided: { api, "astro-integration": astroIntegration },
+      suggestions: [
+        "Use --api orpc (works with all Astro integrations)",
+        "Use --api none",
+        "Use --astro-integration react",
+      ],
+    };
+  }
+
+  return undefined;
+}
+
+export function getAIFrontendCompatibilityIssue(
+  ai: AI | undefined,
+  frontends: Frontend[] = [],
+): CompatibilityIssue | undefined {
+  if (!ai || ai !== "tanstack-ai") return undefined;
+
+  const compatibleFrontends = new Set<Frontend>([
+    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
+    "solid", "solid-start",
+  ]);
+  const hasCompatible = frontends.some((frontend) => compatibleFrontends.has(frontend));
+
+  if (hasCompatible) return undefined;
+
+  return {
+    code: "TANSTACK_AI_REQUIRES_REACT_OR_SOLID_FRONTEND",
+    message:
+      "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet). " +
+      "Please use a React-based frontend (Next.js, TanStack Router, React Router, etc.) or Solid.",
+    category: "ai",
+    optionId: ai,
+    provided: { ai, frontend: frontends.length > 0 ? frontends : "none" },
+    suggestions: [
+      "Use a React-based frontend such as Next.js, TanStack Router, or React Router",
+      "Use Solid or SolidStart",
+      "Choose a different AI SDK",
+    ],
+  };
+}
+
 export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backend, auth?: string) {
   if (backend === "convex" && frontend === "solid") return false;
   if (backend === "convex" && frontend === "solid-start") return false;
@@ -2650,7 +2800,6 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["database", input.database],
     ["orm", input.orm],
     ["dbSetup", input.dbSetup],
-    ["api", input.api],
     ["auth", input.auth],
     ["payments", input.payments],
     ["email", input.email],
@@ -2661,7 +2810,6 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["forms", input.forms],
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
-    ["ai", input.aiSdk],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
@@ -2678,6 +2826,23 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         optionId,
       });
     }
+  }
+
+  const apiFrontendIssue = getApiFrontendCompatibilityIssue(
+    input.api as API | undefined,
+    [...input.webFrontend, ...input.nativeFrontend] as Frontend[],
+    input.astroIntegration as AstroIntegration | undefined,
+  );
+  if (apiFrontendIssue) {
+    issues.push(apiFrontendIssue);
+  }
+
+  const aiFrontendIssue = getAIFrontendCompatibilityIssue(
+    input.aiSdk as AI | undefined,
+    [...input.webFrontend, ...input.nativeFrontend] as Frontend[],
+  );
+  if (aiFrontendIssue) {
+    issues.push(aiFrontendIssue);
   }
 
   for (const frontend of input.webFrontend) {

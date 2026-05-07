@@ -19,10 +19,24 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v1.7.0",
+    publishedAt: "2026-05-07T13:52:15Z",
+    displayDate: "May 7, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v1.7.0`,
+    title: "Shared stack translation, steadier scaffolds",
+    summary:
+      "This release moves stack selection meaning into shared types, aligns CLI and web compatibility checks, and hardens fresh pnpm scaffolds for pnpm v10 installs.",
+    highlights: [
+      "Added a shared stack selection translation layer in @better-fullstack/types for preview configs, default detection, URL state, normalization, and web command generation.",
+      "Deepened shared compatibility helpers so CLI and web can rely on the same structured API/frontend and TanStack AI/frontend rule surface.",
+      "Fixed fresh pnpm scaffold installs under pnpm v10 by allowing dependency build scripts during the first install path.",
+    ],
+  },
+  {
     version: "v1.6.3",
     publishedAt: "2026-05-01T23:00:49Z",
     displayDate: "May 1, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.6.3`,
     title: "AI CLI joins the TypeScript stack",
     summary:
