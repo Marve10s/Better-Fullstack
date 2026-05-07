@@ -48,6 +48,7 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       Array.isArray(fingerprint.pythonAi)
         ? fingerprint.pythonAi.filter((value) => value !== "none").join("-")
         : undefined,
+      typeof fingerprint.pythonApi === "string" ? fingerprint.pythonApi : undefined,
       typeof fingerprint.pythonTaskQueue === "string" ? fingerprint.pythonTaskQueue : undefined,
       typeof fingerprint.pythonGraphql === "string" ? fingerprint.pythonGraphql : undefined,
       typeof fingerprint.pythonQuality === "string" ? fingerprint.pythonQuality : undefined,
@@ -153,6 +154,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-validation", config.pythonValidation],
     ["python-ai", withExplicitNone(config.pythonAi)],
     ["python-auth", config.pythonAuth],
+    ["python-api", config.pythonApi],
     ["python-task-queue", config.pythonTaskQueue],
     ["python-graphql", config.pythonGraphql],
     ["python-quality", config.pythonQuality],

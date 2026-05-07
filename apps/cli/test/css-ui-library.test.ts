@@ -72,7 +72,7 @@ describe("CSS Framework and UI Library Configurations", () => {
       });
     }
 
-    for (const shadcnIconLibrary of ["heroicons", "react-icons"] as const) {
+    for (const shadcnIconLibrary of ["heroicons", "react-icons", "hugeicons"] as const) {
       it(`should generate shadcn-ui with ${shadcnIconLibrary}`, async () => {
         const result = await runTRPCTest({
           projectName: `shadcn-${shadcnIconLibrary}`,
@@ -105,9 +105,13 @@ describe("CSS Framework and UI Library Configurations", () => {
         if (shadcnIconLibrary === "heroicons") {
           expect(webPackageJson.dependencies["@heroicons/react"]).toBeDefined();
           expect(modeToggle).toContain("@heroicons/react/24/outline");
-        } else {
+        } else if (shadcnIconLibrary === "react-icons") {
           expect(webPackageJson.dependencies["react-icons"]).toBeDefined();
           expect(modeToggle).toContain("react-icons/fa");
+        } else {
+          expect(webPackageJson.dependencies["@hugeicons/react"]).toBeDefined();
+          expect(webPackageJson.dependencies["@hugeicons/core-free-icons"]).toBeDefined();
+          expect(modeToggle).toContain("@hugeicons/core-free-icons");
         }
       });
     }

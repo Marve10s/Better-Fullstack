@@ -135,14 +135,14 @@
 {{/if}}
 {{#if hasJavaFlyway}}
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 {{/if}}
 {{#if hasJavaLiquibase}}
 		<dependency>
-			<groupId>org.liquibase</groupId>
-			<artifactId>liquibase-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
 		</dependency>
 {{/if}}
 {{#if hasJavaSpringdocOpenapi}}

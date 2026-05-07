@@ -483,7 +483,7 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("spring-boot-starter-security");
       expect(pomContent).toContain("spring-boot-starter-actuator");
       expect(pomContent).toContain("spring-boot-starter-validation");
-      expect(pomContent).toContain("flyway-core");
+      expect(pomContent).toContain("spring-boot-starter-flyway");
       expect(pomContent).toContain("spring-boot-testcontainers");
       expect(applicationConfig).toContain("jdbc:h2:file:./data/java-full");
       expect(applicationConfig).toContain("ddl-auto: validate");
@@ -566,7 +566,7 @@ describe("Java Ecosystem", () => {
       );
       const readmeContent = getFileContent(root, "README.md");
 
-      expect(pomContent).toContain("liquibase-core");
+      expect(pomContent).toContain("spring-boot-starter-liquibase");
       expect(pomContent).toContain("springdoc-openapi-starter-webmvc-ui");
       expect(pomContent).toContain("lombok");
       expect(pomContent).toContain("mapstruct");
@@ -592,7 +592,7 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("awaitility");
       expect(pomContent).toContain("archunit-junit5");
       expect(pomContent).toContain("jqwik");
-      expect(pomContent).not.toContain("flyway-core");
+      expect(pomContent).not.toContain("spring-boot-starter-flyway");
       expect(applicationContent).toContain("@EnableCaching");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
@@ -661,7 +661,9 @@ describe("Java Ecosystem", () => {
       const gradleContent = getFileContent(root, "build.gradle.kts");
       const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
 
-      expect(gradleContent).toContain('implementation("org.liquibase:liquibase-core")');
+      expect(gradleContent).toContain(
+        'implementation("org.springframework.boot:spring-boot-starter-liquibase")',
+      );
       expect(gradleContent).toContain(
         'implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")',
       );
@@ -690,7 +692,7 @@ describe("Java Ecosystem", () => {
         'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
       expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
-      expect(gradleContent).not.toContain("flyway-core");
+      expect(gradleContent).not.toContain("spring-boot-starter-flyway");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
       );

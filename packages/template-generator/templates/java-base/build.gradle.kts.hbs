@@ -49,10 +49,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 {{/if}}
 {{#if hasJavaFlyway}}
-	implementation("org.flywaydb:flyway-core")
+	implementation("org.springframework.boot:spring-boot-starter-flyway")
 {{/if}}
 {{#if hasJavaLiquibase}}
-	implementation("org.liquibase:liquibase-core")
+	implementation("org.springframework.boot:spring-boot-starter-liquibase")
 {{/if}}
 {{#if hasJavaSpringdocOpenapi}}
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
