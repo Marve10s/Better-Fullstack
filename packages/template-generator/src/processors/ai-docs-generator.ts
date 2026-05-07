@@ -194,6 +194,7 @@ function generateTechStackSection(config: ProjectConfig): string {
       const aiLibs = config.pythonAi.filter((l) => l !== "none");
       if (aiLibs.length > 0) lines.push(`- AI: ${aiLibs.join(", ")}`);
     }
+    if (config.pythonApi !== "none") lines.push(`- API Framework: ${config.pythonApi}`);
     if (config.pythonTaskQueue !== "none") lines.push(`- Task Queue: ${config.pythonTaskQueue}`);
     if (config.pythonQuality !== "none") lines.push(`- Code Quality: ${config.pythonQuality}`);
   }

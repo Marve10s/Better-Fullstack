@@ -105,6 +105,18 @@ argon2.workspace = true
 clap.workspace = true
 {{/if}}
 
+{{#if (includes rustLibraries "uuid")}}
+uuid.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "chrono")}}
+chrono.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "reqwest")}}
+reqwest.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "config")}}
+config.workspace = true
+{{/if}}
 {{#if (eq rustCaching "moka")}}
 # Caching
 moka.workspace = true
@@ -124,12 +136,18 @@ url.workspace = true
 name = "server"
 path = "src/main.rs"
 
-{{#if (or (includes rustLibraries "tokio-test") (includes rustLibraries "mockall"))}}
+{{#if (or (or (includes rustLibraries "tokio-test") (includes rustLibraries "mockall")) (or (includes rustLibraries "proptest") (includes rustLibraries "insta")))}}
 [dev-dependencies]
 {{#if (includes rustLibraries "tokio-test")}}
 tokio-test.workspace = true
 {{/if}}
 {{#if (includes rustLibraries "mockall")}}
 mockall.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "proptest")}}
+proptest.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "insta")}}
+insta.workspace = true
 {{/if}}
 {{/if}}

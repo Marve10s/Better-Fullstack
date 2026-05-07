@@ -177,6 +177,13 @@
 			<artifactId>caffeine</artifactId>
 		</dependency>
 {{/if}}
+{{#if hasJavaResilience4j}}
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+{{/if}}
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>

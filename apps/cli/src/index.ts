@@ -484,6 +484,7 @@ export async function createVirtual(
       pythonValidation: options.pythonValidation || "none",
       pythonAi: options.pythonAi || [],
       pythonAuth: options.pythonAuth || "none",
+      pythonApi: options.pythonApi || "none",
       pythonTaskQueue: options.pythonTaskQueue || "none",
       pythonGraphql: options.pythonGraphql || "none",
       pythonQuality: options.pythonQuality || "none",

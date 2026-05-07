@@ -30,6 +30,7 @@ const HIGHLIGHT_SCALAR_KEYS = [
   "pythonWebFramework",
   "pythonOrm",
   "pythonAi",
+  "pythonApi",
   "pythonTaskQueue",
   // Go
   "goWebFramework",

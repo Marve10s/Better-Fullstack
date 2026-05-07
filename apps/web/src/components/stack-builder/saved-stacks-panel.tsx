@@ -54,7 +54,7 @@ const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
   ],
   python: [
     "ecosystem", "projectName",
-    "pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonTaskQueue", "pythonQuality",
+    "pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonApi", "pythonTaskQueue", "pythonQuality",
     "aiDocs", "git", "install", "yolo",
   ],
   go: [
@@ -73,7 +73,7 @@ const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
 const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]> = {
   typescript: ["backend", "database", "orm", "api", "auth", "uiLibrary", "runtime"],
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli"],
-  python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonTaskQueue"],
+  python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonApi", "pythonTaskQueue"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli"],
   java: ["javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries"],
 };

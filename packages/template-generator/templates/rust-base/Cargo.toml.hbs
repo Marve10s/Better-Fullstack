@@ -145,6 +145,22 @@ crossterm = "0.28"
 tracing-appender = "0.2"
 {{/if}}
 
+{{#if (includes rustLibraries "uuid")}}
+# UUID generation and parsing
+uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }
+{{/if}}
+{{#if (includes rustLibraries "chrono")}}
+# Date and time
+chrono = { version = "0.4.44", features = ["serde"] }
+{{/if}}
+{{#if (includes rustLibraries "reqwest")}}
+# HTTP client
+reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
+{{/if}}
+{{#if (includes rustLibraries "config")}}
+# Layered configuration
+config = "0.15.22"
+{{/if}}
 {{#if (includes rustLibraries "validator")}}
 # Validation
 validator = { version = "0.19", features = ["derive"] }
@@ -164,6 +180,14 @@ tokio-test = "0.4"
 {{#if (includes rustLibraries "mockall")}}
 # Mocking
 mockall = "0.13"
+{{/if}}
+{{#if (includes rustLibraries "proptest")}}
+# Property-based testing
+proptest = "1"
+{{/if}}
+{{#if (includes rustLibraries "insta")}}
+# Snapshot testing
+insta = { version = "1", features = ["yaml"] }
 {{/if}}
 
 {{#if (eq rustCaching "moka")}}

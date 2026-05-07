@@ -118,6 +118,7 @@ function createJavaCompatibilityInput(
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
@@ -171,6 +172,7 @@ describe("Java Ecosystem", () => {
         "lombok",
         "mapstruct",
         "caffeine",
+        "resilience4j",
         "none",
       ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
@@ -500,7 +502,14 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "maven",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaLibraries: [
+          "liquibase",
+          "springdoc-openapi",
+          "lombok",
+          "mapstruct",
+          "caffeine",
+          "resilience4j",
+        ],
         javaTestingLibraries: [
           "junit5",
           "assertj",
@@ -564,6 +573,8 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("mapstruct-processor");
       expect(pomContent).toContain("spring-boot-starter-cache");
       expect(pomContent).toContain("caffeine");
+      expect(pomContent).toContain("resilience4j-spring-boot3");
+      expect(pomContent).toContain("<version>2.3.0</version>");
       expect(pomContent).toContain("<optional>true</optional>");
       expect(pomContent).toContain("<artifactId>maven-compiler-plugin</artifactId>");
       expect(pomContent).toContain("<annotationProcessorPaths>");
@@ -590,6 +601,7 @@ describe("Java Ecosystem", () => {
       expect(applicationTest).toContain("org.assertj.core.api.Assertions.assertThat");
       expect(readmeContent).toContain("OpenAPI documentation is available");
       expect(readmeContent).toContain("Spring Cache is enabled with Caffeine");
+      expect(readmeContent).toContain("Resilience4j is available");
       expect(readmeContent).toContain("MapStruct is configured with a generated mapper example");
     });
 
@@ -601,7 +613,14 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "gradle",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaLibraries: [
+          "liquibase",
+          "springdoc-openapi",
+          "lombok",
+          "mapstruct",
+          "caffeine",
+          "resilience4j",
+        ],
         javaTestingLibraries: [
           "junit5",
           "assertj",
@@ -660,6 +679,9 @@ describe("Java Ecosystem", () => {
         'implementation("org.springframework.boot:spring-boot-starter-cache")',
       );
       expect(gradleContent).toContain('implementation("com.github.ben-manes.caffeine:caffeine")');
+      expect(gradleContent).toContain(
+        'implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")',
+      );
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
@@ -770,6 +792,7 @@ describe("Java Ecosystem", () => {
             "springdoc-openapi",
             "mapstruct",
             "caffeine",
+            "resilience4j",
           ],
           javaTestingLibraries: ["junit5"],
         }),
@@ -780,6 +803,7 @@ describe("Java Ecosystem", () => {
         "springdoc-openapi",
         "mapstruct",
         "caffeine",
+        "resilience4j",
       ]);
       expect(result.changes.some((adjustment) => adjustment.category === "javaOrm")).toBe(true);
     });
@@ -867,7 +891,7 @@ describe("Java Ecosystem", () => {
           javaBuildTool: "maven",
           javaOrm: "none",
           javaAuth: "none",
-          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine", "resilience4j"],
           javaTestingLibraries: ["junit5"],
         }),
       );

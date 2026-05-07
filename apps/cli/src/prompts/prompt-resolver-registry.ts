@@ -32,6 +32,7 @@ import {
   ORM_VALUES,
   PAYMENTS_VALUES,
   PYTHON_AI_VALUES,
+  PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_GRAPHQL_VALUES,
   PYTHON_ORM_VALUES,
@@ -95,6 +96,7 @@ import { resolvePaymentsPrompt } from "./payments";
 import { type PromptResolution } from "./prompt-contract";
 import {
   resolvePythonAiPrompt,
+  resolvePythonApiPrompt,
   resolvePythonAuthPrompt,
   resolvePythonGraphqlPrompt,
   resolvePythonOrmPrompt,
@@ -355,6 +357,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   pythonAuth: {
     schemaValues: PYTHON_AUTH_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolvePythonAuthPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  pythonApi: {
+    schemaValues: PYTHON_API_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolvePythonApiPrompt(value as any),
     coverageContexts: [{}],
   },
   pythonTaskQueue: {

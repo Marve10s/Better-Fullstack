@@ -82,8 +82,18 @@ dependencies = [
     "python-jose[cryptography]>=3.4.0",
     "passlib[bcrypt]>=1.7.4",
 {{/if}}
+{{#if (and (eq pythonWebFramework "django") (eq pythonApi "django-rest-framework"))}}
+    "djangorestframework>=3.17.1",
+{{/if}}
+{{#if (and (eq pythonWebFramework "django") (eq pythonApi "django-ninja"))}}
+    "django-ninja>=1.6.2",
+{{/if}}
 {{#if (eq pythonTaskQueue "celery")}}
     "celery[redis]>=5.6.3",
+{{/if}}
+{{#if (eq pythonTaskQueue "rq")}}
+    "rq>=2.6.0",
+    "redis>=7.0.0",
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 {{#if (eq pythonWebFramework "fastapi")}}
@@ -109,6 +119,12 @@ dependencies = [
 dev = [
 {{#if (eq pythonQuality "ruff")}}
     "ruff>=0.15.9",
+{{/if}}
+{{#if (eq pythonQuality "mypy")}}
+    "mypy>=1.20.2",
+{{/if}}
+{{#if (eq pythonQuality "pyright")}}
+    "pyright>=1.1.409",
 {{/if}}
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
@@ -143,6 +159,24 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+{{/if}}
+
+{{#if (eq pythonQuality "mypy")}}
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+files = ["src/app", "tests"]
+{{/if}}
+
+{{#if (eq pythonQuality "pyright")}}
+[tool.pyright]
+include = ["src/app", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
 {{/if}}
 
 [tool.pytest.ini_options]

@@ -265,6 +265,11 @@ ${
     : ""
 }
 ${
+  javaLibraries.includes("resilience4j")
+    ? "\nResilience4j is available for circuit breakers, retries, rate limiters, and bulkheads.\n"
+    : ""
+}
+${
   javaLibraries.includes("mapstruct") && config.javaOrm === "spring-data-jpa"
     ? "\nMapStruct is configured with a generated mapper example for the JPA user DTO.\n"
     : javaLibraries.includes("mapstruct")
@@ -806,6 +811,8 @@ function generateFeaturesList(
       "radix-ui": "Radix UI",
       "headless-ui": "Headless UI",
       "chakra-ui": "Chakra UI",
+      mui: "MUI",
+      antd: "Ant Design",
       "base-ui": "Base UI",
       "park-ui": "Park UI",
       "ark-ui": "Ark UI",
@@ -1138,6 +1145,18 @@ function generateRustReadmeContent(config: ProjectConfig): string {
 
   // Libraries
   const libs = Array.isArray(rustLibraries) ? rustLibraries : [];
+  if (libs.includes("uuid")) {
+    features.push("- **uuid** - UUID generation and parsing with Serde support");
+  }
+  if (libs.includes("chrono")) {
+    features.push("- **Chrono** - Date and time handling with Serde support");
+  }
+  if (libs.includes("reqwest")) {
+    features.push("- **Reqwest** - Ergonomic async HTTP client");
+  }
+  if (libs.includes("config")) {
+    features.push("- **config** - Layered app configuration from files and environment");
+  }
   if (libs.includes("validator")) {
     features.push("- **Validator** - Derive-based validation");
   }
@@ -1322,6 +1341,7 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     pythonOrm,
     pythonValidation,
     pythonAi,
+    pythonApi,
     pythonTaskQueue,
     pythonQuality,
   } = config;
@@ -1377,14 +1397,27 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **CrewAI** - Multi-agent orchestration framework");
   }
 
+  // API framework
+  if (pythonApi === "django-rest-framework") {
+    features.push("- **Django REST Framework** - Mature toolkit for building Django REST APIs");
+  } else if (pythonApi === "django-ninja") {
+    features.push("- **Django Ninja** - FastAPI-style Django APIs with type hints and OpenAPI docs");
+  }
+
   // Task queue
   if (pythonTaskQueue === "celery") {
     features.push("- **Celery** - Distributed task queue");
+  } else if (pythonTaskQueue === "rq") {
+    features.push("- **RQ** - Simple Redis-backed job queue");
   }
 
   // Quality
   if (pythonQuality === "ruff") {
     features.push("- **Ruff** - Extremely fast Python linter and formatter");
+  } else if (pythonQuality === "mypy") {
+    features.push("- **mypy** - Static type checker for Python");
+  } else if (pythonQuality === "pyright") {
+    features.push("- **Pyright** - Fast Python type checker");
   }
 
   // Project structure
@@ -1506,6 +1539,12 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     scripts += `
 - \`uv run ruff check .\`: Run linter
 - \`uv run ruff format .\`: Format code`;
+  } else if (pythonQuality === "mypy") {
+    scripts += `
+- \`uv run mypy src/app tests\`: Run type checks`;
+  } else if (pythonQuality === "pyright") {
+    scripts += `
+- \`uv run pyright\`: Run type checks`;
   }
 
   if (pythonOrm === "sqlalchemy" || pythonOrm === "sqlmodel") {
@@ -1641,6 +1680,8 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     features.push("- **Cobra** - CLI application framework");
   } else if (goCli === "bubbletea") {
     features.push("- **Bubble Tea** - Terminal UI framework");
+  } else if (goCli === "urfave-cli") {
+    features.push("- **urfave/cli** - Declarative CLI framework");
   }
 
   // Logging
@@ -1673,6 +1714,9 @@ function generateGoReadmeContent(config: ProjectConfig): string {
   structure.push("│       └── main.go");
 
   if (goCli === "cobra") {
+    structure.push("│   └── cli/              # CLI application");
+    structure.push("│       └── main.go");
+  } else if (goCli === "urfave-cli") {
     structure.push("│   └── cli/              # CLI application");
     structure.push("│       └── main.go");
   } else if (goCli === "bubbletea") {
@@ -1723,6 +1767,9 @@ function generateGoReadmeContent(config: ProjectConfig): string {
 - \`go vet ./...\`: Run static analysis`;
 
   if (goCli === "cobra") {
+    goScripts += `
+- \`go run cmd/cli/main.go\`: Run the CLI application`;
+  } else if (goCli === "urfave-cli") {
     goScripts += `
 - \`go run cmd/cli/main.go\`: Run the CLI application`;
   } else if (goCli === "bubbletea") {

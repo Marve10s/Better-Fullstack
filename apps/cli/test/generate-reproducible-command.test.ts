@@ -71,6 +71,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
@@ -131,6 +132,7 @@ describe("generateReproducibleCommand", () => {
       pythonValidation: "pydantic",
       pythonAi: [],
       pythonAuth: "none",
+      pythonApi: "none",
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
@@ -145,6 +147,7 @@ describe("generateReproducibleCommand", () => {
         "--python-validation pydantic " +
         "--python-ai none " +
         "--python-auth none " +
+        "--python-api none " +
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
@@ -199,6 +202,7 @@ describe("generateReproducibleCommand", () => {
       pythonValidation: "pydantic",
       pythonAi: ["langchain", "openai-sdk"],
       pythonAuth: "none",
+      pythonApi: "none",
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
@@ -215,6 +219,7 @@ describe("generateReproducibleCommand", () => {
         "--python-validation pydantic " +
         "--python-ai langchain openai-sdk " +
         "--python-auth none " +
+        "--python-api none " +
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +

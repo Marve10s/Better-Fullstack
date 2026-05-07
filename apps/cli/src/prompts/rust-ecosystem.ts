@@ -126,6 +126,26 @@ const RUST_LIBRARIES_PROMPT_OPTIONS: PromptOption<RustLibraries>[] = [
     hint: "Serialization framework for Rust",
   },
   {
+    value: "uuid",
+    label: "uuid",
+    hint: "UUID generation and parsing with Serde support",
+  },
+  {
+    value: "chrono",
+    label: "Chrono",
+    hint: "Date and time library with Serde support",
+  },
+  {
+    value: "reqwest",
+    label: "Reqwest",
+    hint: "Ergonomic HTTP client with JSON and Rustls TLS support",
+  },
+  {
+    value: "config",
+    label: "config",
+    hint: "Layered configuration from files, environment, and defaults",
+  },
+  {
     value: "validator",
     label: "Validator",
     hint: "Struct validation derive macros",
@@ -149,6 +169,16 @@ const RUST_LIBRARIES_PROMPT_OPTIONS: PromptOption<RustLibraries>[] = [
     value: "mockall",
     label: "Mockall",
     hint: "Powerful mocking library for Rust",
+  },
+  {
+    value: "proptest",
+    label: "Proptest",
+    hint: "Property-based testing for Rust",
+  },
+  {
+    value: "insta",
+    label: "Insta",
+    hint: "Snapshot testing for Rust",
   },
 ];
 

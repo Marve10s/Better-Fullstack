@@ -247,6 +247,19 @@ describe("Python Ecosystem Tab", () => {
       expect(ruffOption?.name).toBe("Ruff");
       expect(ruffOption?.description).toContain("linter");
     });
+
+    it("should have Python type checker options for pythonQuality", () => {
+      const options = TECH_OPTIONS.pythonQuality;
+      const mypyOption = options.find((o) => o.id === "mypy");
+      const pyrightOption = options.find((o) => o.id === "pyright");
+
+      expect(mypyOption).toBeDefined();
+      expect(mypyOption?.name).toBe("mypy");
+      expect(mypyOption?.description).toContain("Static type checker");
+      expect(pyrightOption).toBeDefined();
+      expect(pyrightOption?.name).toBe("Pyright");
+      expect(pyrightOption?.description).toContain("type checker");
+    });
   });
 
   describe("DEFAULT_STACK", () => {
@@ -282,6 +295,7 @@ describe("Python Ecosystem Tab", () => {
         pythonOrm: "sqlalchemy",
         pythonValidation: "pydantic",
         pythonAi: ["langchain"],
+        pythonApi: "none",
         pythonTaskQueue: "celery",
         pythonQuality: "ruff",
       };
@@ -289,6 +303,7 @@ describe("Python Ecosystem Tab", () => {
       expect(stack.pythonOrm).toBe("sqlalchemy");
       expect(stack.pythonValidation).toBe("pydantic");
       expect(stack.pythonAi).toEqual(["langchain"]);
+      expect(stack.pythonApi).toBe("none");
       expect(stack.pythonTaskQueue).toBe("celery");
       expect(stack.pythonQuality).toBe("ruff");
     });

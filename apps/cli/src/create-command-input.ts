@@ -46,6 +46,7 @@ import {
   PaymentsSchema,
   ProjectNameSchema,
   PythonAiSchema,
+  PythonApiSchema,
   PythonAuthSchema,
   PythonGraphqlSchema,
   PythonOrmSchema,
@@ -188,15 +189,20 @@ export const CreateCommandOptionsSchema = z.object({
   pythonValidation: PythonValidationSchema.optional().describe("Python validation (pydantic)"),
   pythonAi: z.array(PythonAiSchema).optional().describe("Python AI/ML frameworks"),
   pythonAuth: PythonAuthSchema.optional().describe("Python auth library (authlib, jwt)"),
+  pythonApi: PythonApiSchema.optional().describe(
+    "Python API framework (django-rest-framework, django-ninja)",
+  ),
   pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
   pythonGraphql: PythonGraphqlSchema.optional().describe(
     "Python GraphQL framework (strawberry)",
   ),
-  pythonQuality: PythonQualitySchema.optional().describe("Python code quality (ruff)"),
+  pythonQuality: PythonQualitySchema.optional().describe(
+    "Python code quality (ruff, mypy, pyright)",
+  ),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
   goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
   goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
-  goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea)"),
+  goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea, urfave-cli)"),
   goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
   goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
   javaWebFramework: JavaWebFrameworkSchema.optional().describe(

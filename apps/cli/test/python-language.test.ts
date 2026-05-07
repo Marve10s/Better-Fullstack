@@ -9,6 +9,7 @@ import {
   PythonOrmSchema,
   PythonValidationSchema,
   PythonAiSchema,
+  PythonApiSchema,
   PythonTaskQueueSchema,
   PythonQualitySchema,
 } from "../src/types";
@@ -61,6 +62,7 @@ const PYTHON_WEB_FRAMEWORKS = extractEnumValues(PythonWebFrameworkSchema);
 const PYTHON_ORMS = extractEnumValues(PythonOrmSchema);
 const PYTHON_VALIDATIONS = extractEnumValues(PythonValidationSchema);
 const PYTHON_AIS = extractEnumValues(PythonAiSchema);
+const PYTHON_APIS = extractEnumValues(PythonApiSchema);
 const PYTHON_TASK_QUEUES = extractEnumValues(PythonTaskQueueSchema);
 const PYTHON_QUALITIES = extractEnumValues(PythonQualitySchema);
 
@@ -107,11 +109,20 @@ describe("Python Language Support", () => {
 
     it("should have python task queue options", () => {
       expect(PYTHON_TASK_QUEUES).toContain("celery");
+      expect(PYTHON_TASK_QUEUES).toContain("rq");
       expect(PYTHON_TASK_QUEUES).toContain("none");
+    });
+
+    it("should have python API framework options", () => {
+      expect(PYTHON_APIS).toContain("django-rest-framework");
+      expect(PYTHON_APIS).toContain("django-ninja");
+      expect(PYTHON_APIS).toContain("none");
     });
 
     it("should have python quality options", () => {
       expect(PYTHON_QUALITIES).toContain("ruff");
+      expect(PYTHON_QUALITIES).toContain("mypy");
+      expect(PYTHON_QUALITIES).toContain("pyright");
       expect(PYTHON_QUALITIES).toContain("none");
     });
   });
@@ -311,6 +322,54 @@ describe("Python Language Support", () => {
       expect(mainContent).toBeDefined();
       expect(mainContent).toContain("import django");
       expect(mainContent).toContain("from django.http import JsonResponse");
+    });
+
+    it("should generate Django REST Framework dependencies and endpoint", async () => {
+      const result = await createVirtual({
+        projectName: "python-drf-api",
+        ecosystem: "python",
+        pythonWebFramework: "django",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonAuth: "none",
+        pythonApi: "django-rest-framework",
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      const mainContent = getFileContent(root, "src/app/main.py");
+      expect(pyprojectContent).toContain("djangorestframework");
+      expect(mainContent).toContain("from rest_framework.decorators import api_view");
+      expect(mainContent).toContain('path("api/status", api_status)');
+    });
+
+    it("should generate Django Ninja dependencies and endpoint", async () => {
+      const result = await createVirtual({
+        projectName: "python-ninja-api",
+        ecosystem: "python",
+        pythonWebFramework: "django",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonAuth: "none",
+        pythonApi: "django-ninja",
+        pythonTaskQueue: "none",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      const mainContent = getFileContent(root, "src/app/main.py");
+      expect(pyprojectContent).toContain("django-ninja");
+      expect(mainContent).toContain("from ninja import NinjaAPI");
+      expect(mainContent).toContain('path("api/", ninja_api.urls)');
     });
   });
 
@@ -2746,6 +2805,78 @@ describe("Python Language Support", () => {
     });
   });
 
+  describe("RQ Task Queue", () => {
+    it("should include RQ dependencies in pyproject.toml", async () => {
+      const result = await createVirtual({
+        projectName: "python-rq-deps",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "rq",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("rq>=2.6.0");
+      expect(pyprojectContent).toContain("redis>=7.0.0");
+    });
+
+    it("should create RQ queue and task helpers", async () => {
+      const result = await createVirtual({
+        projectName: "python-rq-helpers",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "pydantic",
+        pythonAi: [],
+        pythonTaskQueue: "rq",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "src/app/rq_queue.py")).toBe(true);
+      expect(hasFile(root, "src/app/rq_tasks.py")).toBe(true);
+
+      const queueContent = getFileContent(root, "src/app/rq_queue.py");
+      const tasksContent = getFileContent(root, "src/app/rq_tasks.py");
+      expect(queueContent).toContain("from redis import Redis");
+      expect(queueContent).toContain("from rq import Queue");
+      expect(queueContent).toContain("Redis.from_url(settings.rq_redis_url)");
+      expect(tasksContent).toContain("def example_task(payload: dict[str, Any])");
+      expect(tasksContent).toContain('"status": "processed"');
+    });
+
+    it("should include RQ settings when Pydantic settings are selected", async () => {
+      const result = await createVirtual({
+        projectName: "python-rq-settings",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "pydantic",
+        pythonAi: [],
+        pythonTaskQueue: "rq",
+        pythonQuality: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const settingsContent = getFileContent(root, "src/app/settings.py");
+      expect(settingsContent).toBeDefined();
+      expect(settingsContent).toContain("rq_redis_url");
+      expect(settingsContent).toContain("rq_default_queue");
+      expect(settingsContent).toContain("redis://localhost:6379/0");
+    });
+  });
+
   describe("Ruff Quality Tool", () => {
     it("should include Ruff in dev dependencies and configuration", async () => {
       const result = await createVirtual({
@@ -2768,6 +2899,53 @@ describe("Python Language Support", () => {
       expect(pyprojectContent).toContain("[tool.ruff]");
       expect(pyprojectContent).toContain("[tool.ruff.lint]");
       expect(pyprojectContent).toContain("[tool.ruff.format]");
+    });
+  });
+
+  describe("Python Type Checkers", () => {
+    it("should include mypy in dev dependencies and configuration", async () => {
+      const result = await createVirtual({
+        projectName: "python-mypy-deps",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "mypy",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("mypy>=1.20.2");
+      expect(pyprojectContent).toContain("[tool.mypy]");
+      expect(pyprojectContent).toContain('files = ["src/app", "tests"]');
+    });
+
+    it("should include Pyright in dev dependencies and configuration", async () => {
+      const result = await createVirtual({
+        projectName: "python-pyright-deps",
+        ecosystem: "python",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "none",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "pyright",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const pyprojectContent = getFileContent(root, "pyproject.toml");
+      expect(pyprojectContent).toBeDefined();
+      expect(pyprojectContent).toContain("pyright>=1.1.409");
+      expect(pyprojectContent).toContain("[tool.pyright]");
+      expect(pyprojectContent).toContain('include = ["src/app", "tests"]');
+      expect(pyprojectContent).toContain('typeCheckingMode = "strict"');
     });
   });
 

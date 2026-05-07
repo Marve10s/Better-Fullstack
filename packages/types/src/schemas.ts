@@ -293,7 +293,21 @@ export const RustApiSchema = z
 export const RustCliSchema = z.enum(["clap", "ratatui", "none"]).describe("Rust CLI tools");
 
 export const RustLibrariesSchema = z
-  .enum(["serde", "validator", "jsonwebtoken", "argon2", "tokio-test", "mockall", "none"])
+  .enum([
+    "serde",
+    "uuid",
+    "chrono",
+    "reqwest",
+    "config",
+    "validator",
+    "jsonwebtoken",
+    "argon2",
+    "tokio-test",
+    "mockall",
+    "proptest",
+    "insta",
+    "none",
+  ])
   .describe("Rust core libraries");
 
 export const RustLoggingSchema = z
@@ -329,13 +343,19 @@ export const PythonAuthSchema = z
   .enum(["authlib", "jwt", "none"])
   .describe("Python authentication library");
 
-export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
+export const PythonApiSchema = z
+  .enum(["django-rest-framework", "django-ninja", "none"])
+  .describe("Python API framework");
+
+export const PythonTaskQueueSchema = z.enum(["celery", "rq", "none"]).describe("Python task queue");
 
 export const PythonGraphqlSchema = z
   .enum(["strawberry", "none"])
   .describe("Python GraphQL framework");
 
-export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
+export const PythonQualitySchema = z
+  .enum(["ruff", "mypy", "pyright", "none"])
+  .describe("Python code quality tool");
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
@@ -348,7 +368,9 @@ export const GoOrmSchema = z
 
 export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
 
-export const GoCliSchema = z.enum(["cobra", "bubbletea", "none"]).describe("Go CLI tools");
+export const GoCliSchema = z
+  .enum(["cobra", "bubbletea", "urfave-cli", "none"])
+  .describe("Go CLI tools");
 
 export const GoLoggingSchema = z
   .enum(["zap", "zerolog", "slog", "none"])
@@ -381,6 +403,7 @@ export const JavaLibrariesSchema = z
     "lombok",
     "mapstruct",
     "caffeine",
+    "resilience4j",
     "none",
   ])
   .describe("Java application libraries");
@@ -418,6 +441,8 @@ export const UILibrarySchema = z
     "chakra-ui",
     "nextui",
     "mantine",
+    "mui",
+    "antd",
     "base-ui",
     "ark-ui",
     "react-aria",
@@ -429,10 +454,10 @@ export const ShadcnBaseSchema = z
   .enum(["radix", "base"])
   .describe("shadcn/ui headless UI base library (radix or base-ui)");
 export const ShadcnStyleSchema = z
-  .enum(["vega", "nova", "maia", "lyra", "mira"])
+  .enum(["vega", "nova", "maia", "lyra", "mira", "luma", "sera"])
   .describe("shadcn/ui visual style preset");
 export const ShadcnIconLibrarySchema = z
-  .enum(["lucide", "tabler", "hugeicons", "phosphor", "remixicon"])
+  .enum(["lucide", "tabler", "hugeicons", "phosphor", "remixicon", "heroicons", "react-icons"])
   .describe("shadcn/ui icon library");
 export const ShadcnColorThemeSchema = z
   .enum([
@@ -582,6 +607,7 @@ export const CreateInputSchema = z.object({
   pythonValidation: PythonValidationSchema.optional(),
   pythonAi: z.array(PythonAiSchema).optional(),
   pythonAuth: PythonAuthSchema.optional(),
+  pythonApi: PythonApiSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
   pythonGraphql: PythonGraphqlSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
@@ -685,6 +711,7 @@ export const ProjectConfigSchema = z.object({
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonApi: PythonApiSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
@@ -772,6 +799,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonApi: PythonApiSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
@@ -871,6 +899,7 @@ export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;
 export const PYTHON_AI_VALUES = PythonAiSchema.options;
 export const PYTHON_AUTH_VALUES = PythonAuthSchema.options;
+export const PYTHON_API_VALUES = PythonApiSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
 export const PYTHON_GRAPHQL_VALUES = PythonGraphqlSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;

@@ -89,6 +89,7 @@ const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
     "pythonValidation",
     "pythonAi",
     "pythonAuth",
+    "pythonApi",
     "pythonTaskQueue",
     "pythonGraphql",
     "pythonQuality",
@@ -142,6 +143,7 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "pythonOrm", label: "ORM" },
     { category: "pythonValidation", label: "Validation" },
     { category: "pythonAuth", label: "Auth" },
+    { category: "pythonApi", label: "API" },
     { category: "pythonGraphql", label: "GraphQL" },
   ],
   go: [

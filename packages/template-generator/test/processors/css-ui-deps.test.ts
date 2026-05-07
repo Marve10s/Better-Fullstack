@@ -49,6 +49,31 @@ describe("processCSSAndUILibraryDeps", () => {
     expect(getDeps(vfs, "apps/web/package.json").deps).toEqual(["@tabler/icons-react"]);
   });
 
+  it("adds Heroicons and React Icons dependencies for selected icon libraries", () => {
+    const heroiconsVfs = createSeededVFS(["apps/web/package.json"]);
+    const reactIconsVfs = createSeededVFS(["apps/web/package.json"]);
+
+    processCSSAndUILibraryDeps(
+      heroiconsVfs,
+      makeConfig({
+        frontend: ["react-vite"],
+        uiLibrary: "none",
+        shadcnIconLibrary: "heroicons",
+      }),
+    );
+    processCSSAndUILibraryDeps(
+      reactIconsVfs,
+      makeConfig({
+        frontend: ["react-vite"],
+        uiLibrary: "none",
+        shadcnIconLibrary: "react-icons",
+      }),
+    );
+
+    expect(getDeps(heroiconsVfs, "apps/web/package.json").deps).toEqual(["@heroicons/react"]);
+    expect(getDeps(reactIconsVfs, "apps/web/package.json").deps).toEqual(["react-icons"]);
+  });
+
   it("adds shadcn-ui dependencies with base-ui, icon, and font selections", () => {
     const vfs = createSeededVFS(["apps/web/package.json"]);
 

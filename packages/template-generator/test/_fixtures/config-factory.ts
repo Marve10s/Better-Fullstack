@@ -67,6 +67,7 @@ const DEFAULT_CONFIG = {
   pythonValidation: "none",
   pythonAi: [],
   pythonAuth: "none",
+  pythonApi: "none",
   pythonTaskQueue: "none",
   pythonGraphql: "none",
   pythonQuality: "none",

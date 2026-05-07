@@ -111,11 +111,17 @@ describe("Rust Ecosystem", () => {
 
     it("should have rust libraries options", () => {
       expect(RUST_LIBRARIES).toContain("serde");
+      expect(RUST_LIBRARIES).toContain("uuid");
+      expect(RUST_LIBRARIES).toContain("chrono");
+      expect(RUST_LIBRARIES).toContain("reqwest");
+      expect(RUST_LIBRARIES).toContain("config");
       expect(RUST_LIBRARIES).toContain("validator");
       expect(RUST_LIBRARIES).toContain("jsonwebtoken");
       expect(RUST_LIBRARIES).toContain("argon2");
       expect(RUST_LIBRARIES).toContain("tokio-test");
       expect(RUST_LIBRARIES).toContain("mockall");
+      expect(RUST_LIBRARIES).toContain("proptest");
+      expect(RUST_LIBRARIES).toContain("insta");
       expect(RUST_LIBRARIES).toContain("none");
     });
 
@@ -1609,6 +1615,42 @@ describe("Rust Ecosystem", () => {
   });
 
   describe("Rust Libraries", () => {
+    it("should include common runtime libraries when selected", async () => {
+      const result = await createVirtual({
+        projectName: "rust-runtime-libs",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: ["uuid", "chrono", "reqwest", "config"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toBeDefined();
+      expect(cargoContent).toContain(
+        'uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }',
+      );
+      expect(cargoContent).toContain(
+        'chrono = { version = "0.4.44", features = ["serde"] }',
+      );
+      expect(cargoContent).toContain(
+        'reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }',
+      );
+      expect(cargoContent).toContain('config = "0.15.22"');
+
+      const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargoContent).toBeDefined();
+      expect(serverCargoContent).toContain("uuid.workspace = true");
+      expect(serverCargoContent).toContain("chrono.workspace = true");
+      expect(serverCargoContent).toContain("reqwest.workspace = true");
+      expect(serverCargoContent).toContain("config.workspace = true");
+    });
+
     it("should include validator library when selected", async () => {
       const result = await createVirtual({
         projectName: "rust-validator-deps",
@@ -1757,6 +1799,33 @@ describe("Rust Ecosystem", () => {
       expect(serverCargoContent).toContain("[dev-dependencies]");
       expect(serverCargoContent).toContain("tokio-test.workspace = true");
       expect(serverCargoContent).toContain("mockall.workspace = true");
+    });
+
+    it("should include proptest and insta as dev-dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "rust-property-snapshot-test-libs",
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend: "none",
+        rustOrm: "none",
+        rustApi: "none",
+        rustCli: "none",
+        rustLibraries: ["proptest", "insta"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const cargoContent = getFileContent(root, "Cargo.toml");
+      expect(cargoContent).toBeDefined();
+      expect(cargoContent).toContain('proptest = "1"');
+      expect(cargoContent).toContain('insta = { version = "1", features = ["yaml"] }');
+
+      const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+      expect(serverCargoContent).toBeDefined();
+      expect(serverCargoContent).toContain("[dev-dependencies]");
+      expect(serverCargoContent).toContain("proptest.workspace = true");
+      expect(serverCargoContent).toContain("insta.workspace = true");
     });
 
     it("should include multiple libraries when selected", async () => {

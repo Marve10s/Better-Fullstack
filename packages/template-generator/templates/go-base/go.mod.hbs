@@ -45,6 +45,9 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 {{/if}}
+{{#if (eq goCli "urfave-cli")}}
+	github.com/urfave/cli/v3 v3.8.0
+{{/if}}
 {{#if (eq goLogging "zap")}}
 	go.uber.org/zap v1.27.1
 {{/if}}

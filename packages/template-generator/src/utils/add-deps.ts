@@ -385,6 +385,7 @@ export const dependencyVersionMap = {
 
   "@chakra-ui/react": "^3.35.0",
   "@emotion/react": "^11.14.0",
+  "@emotion/styled": "^11.14.1",
 
   "@heroui/react": "^3.0.3",
   "framer-motion": "^12.38.0",
@@ -393,11 +394,15 @@ export const dependencyVersionMap = {
   "@mantine/core": "^9.1.1",
   "@mantine/hooks": "^9.1.1",
 
+  // MUI / Ant Design
+  "@mui/material": "^9.0.1",
+  antd: "^6.3.7",
+
   // Base UI
   "@base-ui-components/react": "^1.0.0-rc.0",
 
   // shadcn/ui core and unified packages
-  shadcn: "^4.6.0",
+  shadcn: "^4.7.0",
   "radix-ui": "^1.4.3",
   "class-variance-authority": "^0.7.1",
   clsx: "^2.1.1",
@@ -409,6 +414,8 @@ export const dependencyVersionMap = {
   "@hugeicons/core-free-icons": "^4.1.1",
   "@phosphor-icons/react": "^2.1.10",
   "@remixicon/react": "^4.9.0",
+  "@heroicons/react": "^2.2.0",
+  "react-icons": "^5.6.0",
 
   // Font packages (fontsource variable fonts)
   "@fontsource-variable/inter": "^5.2.8",

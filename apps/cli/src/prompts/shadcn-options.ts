@@ -41,6 +41,8 @@ const STYLE_OPTIONS: { value: ShadcnStyle; label: string; hint: string }[] = [
   { value: "maia", label: "Maia", hint: "Soft, rounded with generous spacing" },
   { value: "lyra", label: "Lyra", hint: "Boxy and sharp, pairs well with mono fonts" },
   { value: "mira", label: "Mira", hint: "Dense, made for data-heavy interfaces" },
+  { value: "luma", label: "Luma", hint: "Modern shadcn/ui v4 preset" },
+  { value: "sera", label: "Sera", hint: "Modern shadcn/ui v4 preset" },
 ];
 
 const ICON_LIBRARY_OPTIONS: { value: ShadcnIconLibrary; label: string; hint: string }[] = [
@@ -49,6 +51,8 @@ const ICON_LIBRARY_OPTIONS: { value: ShadcnIconLibrary; label: string; hint: str
   { value: "hugeicons", label: "HugeIcons", hint: "Modern icon set with wrapper component" },
   { value: "phosphor", label: "Phosphor Icons", hint: "Flexible, consistent icon family" },
   { value: "remixicon", label: "Remix Icon", hint: "Open-source neutral style icons" },
+  { value: "heroicons", label: "Heroicons", hint: "Tailwind Labs SVG icon set" },
+  { value: "react-icons", label: "React Icons", hint: "Popular wrapper for many icon packs" },
 ];
 
 const COLOR_THEME_OPTIONS: { value: ShadcnColorTheme; label: string; hint: string; disabled?: boolean }[] = [

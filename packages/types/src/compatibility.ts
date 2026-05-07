@@ -73,6 +73,7 @@ export type CompatibilityCategory =
   | "pythonValidation"
   | "pythonAi"
   | "pythonAuth"
+  | "pythonApi"
   | "pythonTaskQueue"
   | "pythonGraphql"
   | "pythonQuality"
@@ -177,6 +178,7 @@ export type CompatibilityInput = {
   pythonValidation: string;
   pythonAi: string[];
   pythonAuth: string;
+  pythonApi: string;
   pythonTaskQueue: string;
   pythonGraphql: string;
   pythonQuality: string;
@@ -254,6 +256,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "pythonValidation",
   "pythonAi",
   "pythonAuth",
+  "pythonApi",
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
@@ -357,6 +360,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     pythonValidation: "Python Validation",
     pythonAi: "Python AI / ML",
     pythonAuth: "Python Auth",
+    pythonApi: "Python API Framework",
     pythonTaskQueue: "Python Task Queue",
     pythonGraphql: "Python GraphQL",
     pythonQuality: "Python Code Quality",
@@ -1071,7 +1075,7 @@ export const analyzeStackCompatibility = (
   }
 
   // React-only UI libraries - check frontend compatibility
-  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
+  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
   const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
@@ -1263,6 +1267,21 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "animation",
         message: "Animation set to 'None' (Lottie requires lottie-react)",
+      });
+    }
+  }
+
+  // ============================================
+  // PYTHON ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "python") {
+    if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
+      nextStack.pythonApi = "none";
+      changed = true;
+      changes.push({
+        category: "pythonWebFramework",
+        message: "Python API framework set to 'None' (DRF and Django Ninja require Django)",
       });
     }
   }
@@ -2011,7 +2030,7 @@ export const getDisabledReason = (
     }
 
     // React-only UI libraries
-    const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
+    const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
     const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
 
     if (reactOnlyLibraries.includes(optionId)) {
@@ -2027,7 +2046,11 @@ export const getDisabledReason = (
               ? "Radix UI"
               : optionId === "chakra-ui"
                 ? "Chakra UI"
-                : "NextUI";
+                : optionId === "mui"
+                  ? "MUI"
+                  : optionId === "antd"
+                    ? "Ant Design"
+                    : "NextUI";
         return `${libraryName} requires a React-based frontend`;
       }
     }
@@ -2135,6 +2158,15 @@ export const getDisabledReason = (
       if (!currentStack.webFrontend.includes("next")) {
         return "next-intl requires Next.js";
       }
+    }
+  }
+
+  // ============================================
+  // PYTHON ECOSYSTEM RULES
+  // ============================================
+  if (category === "pythonApi") {
+    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
+      return "Python API frameworks currently require Django";
     }
   }
 
@@ -2305,6 +2337,14 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind"],
   },
   mantine: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
+  mui: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
+  antd: {
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
@@ -2810,6 +2850,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["forms", input.forms],
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
+    ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],

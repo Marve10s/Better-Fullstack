@@ -86,6 +86,7 @@ const PYTHON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "pythonValidation",
   "pythonAi",
   "pythonAuth",
+  "pythonApi",
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",

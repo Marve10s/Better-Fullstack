@@ -201,6 +201,7 @@ describe("CLI history command", () => {
       "--python-validation pydantic " +
       "--python-ai none " +
       "--python-auth none " +
+      "--python-api none " +
       "--python-task-queue celery " +
       "--python-graphql none " +
       "--python-quality ruff " +
@@ -229,6 +230,8 @@ describe("CLI history command", () => {
         "--python-ai",
         "none",
         "--python-auth",
+        "none",
+        "--python-api",
         "none",
         "--python-task-queue",
         "celery",

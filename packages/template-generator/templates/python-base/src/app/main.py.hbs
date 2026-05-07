@@ -1027,6 +1027,13 @@ import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path
+{{#if (eq pythonApi "django-rest-framework")}}
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+from ninja import NinjaAPI
+{{/if}}
 {{#if (ne pythonAuth "none")}}
 from app.auth import create_access_token, verify_token
 {{/if}}
@@ -1048,6 +1055,9 @@ if not settings.configured:
             "django.contrib.contenttypes",
             "django.contrib.auth",
             "corsheaders",
+{{#if (eq pythonApi "django-rest-framework")}}
+            "rest_framework",
+{{/if}}
         ],
         MIDDLEWARE=[
             "corsheaders.middleware.CorsMiddleware",
@@ -1066,6 +1076,24 @@ def root(request):
 def health(request):
     """Health check endpoint."""
     return JsonResponse({"status": "healthy"})
+
+{{#if (eq pythonApi "django-rest-framework")}}
+
+@api_view(["GET"])
+def api_status(request):
+    """REST API status endpoint."""
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+
+ninja_api = NinjaAPI(title="{{projectName}} API")
+
+
+@ninja_api.get("/status")
+def api_status(request):
+    """REST API status endpoint."""
+    return {"status": "ok", "framework": "django-ninja"}
+{{/if}}
 
 
 {{#if (ne pythonAuth "none")}}
@@ -1097,6 +1125,12 @@ def auth_me(request):
 urlpatterns = [
     path("", root),
     path("health", health),
+{{#if (eq pythonApi "django-rest-framework")}}
+    path("api/status", api_status),
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+    path("api/", ninja_api.urls),
+{{/if}}
 {{#if (ne pythonAuth "none")}}
     path("auth/token", auth_token),
     path("auth/me", auth_me),

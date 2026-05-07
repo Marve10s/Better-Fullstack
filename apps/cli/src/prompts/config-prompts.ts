@@ -42,6 +42,7 @@ import type {
   Payments,
   ProjectConfig,
   PythonAi,
+  PythonApi,
   PythonAuth,
   PythonOrm,
   PythonQuality,
@@ -123,6 +124,7 @@ import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
 import {
   getPythonAiChoice,
+  getPythonApiChoice,
   getPythonAuthChoice,
   getPythonGraphqlChoice,
   getPythonOrmChoice,
@@ -212,6 +214,7 @@ type PromptGroupResults = {
   pythonValidation: PythonValidation;
   pythonAi: PythonAi[];
   pythonAuth: PythonAuth;
+  pythonApi: PythonApi;
   pythonTaskQueue: PythonTaskQueue;
   pythonGraphql: PythonGraphql;
   pythonQuality: PythonQuality;
@@ -534,6 +537,13 @@ export async function gatherConfig(
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
         return getPythonAuthChoice(flags.pythonAuth);
       },
+      pythonApi: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonApi);
+        if (results.pythonWebFramework !== "django") {
+          return Promise.resolve("none" as PythonApi);
+        }
+        return getPythonApiChoice(flags.pythonApi);
+      },
       pythonTaskQueue: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
         return getPythonTaskQueueChoice(flags.pythonTaskQueue);
@@ -694,6 +704,7 @@ export async function gatherConfig(
     pythonValidation: result.pythonValidation,
     pythonAi: result.pythonAi,
     pythonAuth: result.pythonAuth,
+    pythonApi: result.pythonApi,
     pythonTaskQueue: result.pythonTaskQueue,
     pythonGraphql: result.pythonGraphql,
     pythonQuality: result.pythonQuality,

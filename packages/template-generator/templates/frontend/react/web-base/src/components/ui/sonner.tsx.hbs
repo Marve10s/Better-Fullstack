@@ -8,6 +8,10 @@ import { CheckmarkCircle02Icon as CircleCheckIcon, InformationCircleIcon as Info
 import { CheckCircle as CircleCheckIcon, Info as InfoIcon, SpinnerGap as Loader2Icon, XCircle as OctagonXIcon, Warning as TriangleAlertIcon } from '@phosphor-icons/react'
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiCheckboxCircleLine as CircleCheckIcon, RiInformationLine as InfoIcon, RiLoader4Line as Loader2Icon, RiCloseCircleLine as OctagonXIcon, RiAlertLine as TriangleAlertIcon } from '@remixicon/react'
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { CheckCircleIcon as CircleCheckIcon, InformationCircleIcon as InfoIcon, ArrowPathIcon as Loader2Icon, XCircleIcon as OctagonXIcon, ExclamationTriangleIcon as TriangleAlertIcon } from '@heroicons/react/24/outline'
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaCheckCircle as CircleCheckIcon, FaInfoCircle as InfoIcon, FaSpinner as Loader2Icon, FaTimesCircle as OctagonXIcon, FaExclamationTriangle as TriangleAlertIcon } from 'react-icons/fa'
 {{else}}
 import {
   CircleCheckIcon,

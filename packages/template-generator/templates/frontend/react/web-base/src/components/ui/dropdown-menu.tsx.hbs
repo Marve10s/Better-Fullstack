@@ -9,6 +9,10 @@ import { Tick02Icon as CheckIcon, ArrowRight01Icon as ChevronRightIcon } from '@
 import { Check as CheckIcon, CaretRight as ChevronRightIcon } from '@phosphor-icons/react'
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiCheckLine as CheckIcon, RiArrowRightSLine as ChevronRightIcon } from '@remixicon/react'
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { CheckIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaCheck as CheckIcon, FaChevronRight as ChevronRightIcon } from 'react-icons/fa'
 {{else}}
 import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 {{/if}}

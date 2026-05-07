@@ -83,6 +83,11 @@ const GO_CLI_PROMPT_OPTIONS: PromptOption<GoCli>[] = [
     hint: "Powerful TUI framework based on The Elm Architecture",
   },
   {
+    value: "urfave-cli",
+    label: "urfave/cli",
+    hint: "Declarative CLI framework with commands, flags, and shell completion",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No CLI tools",

@@ -315,6 +315,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://github.com/ben-manes/caffeine/wiki",
     githubUrl: "https://github.com/ben-manes/caffeine",
   },
+  resilience4j: {
+    docsUrl: "https://resilience4j.readme.io/docs",
+    githubUrl: "https://github.com/resilience4j/resilience4j",
+  },
   junit5: {
     docsUrl: "https://junit.org/junit5/docs/current/user-guide/",
     githubUrl: "https://github.com/junit-team/junit5",
@@ -535,6 +539,11 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/heroui-inc/heroui",
   },
   mantine: { docsUrl: "https://mantine.dev/", githubUrl: "https://github.com/mantinedev/mantine" },
+  mui: { docsUrl: "https://mui.com/material-ui/", githubUrl: "https://github.com/mui/material-ui" },
+  antd: {
+    docsUrl: "https://ant.design/docs/react/introduce",
+    githubUrl: "https://github.com/ant-design/ant-design",
+  },
   "base-ui": {
     docsUrl: "https://base-ui.com/react/overview/quick-start",
     githubUrl: "https://github.com/mui/base-ui",
@@ -804,6 +813,22 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/validator/latest/validator/",
     githubUrl: "https://github.com/Keats/validator",
   },
+  uuid: {
+    docsUrl: "https://docs.rs/uuid/latest/uuid/",
+    githubUrl: "https://github.com/uuid-rs/uuid",
+  },
+  chrono: {
+    docsUrl: "https://docs.rs/chrono/latest/chrono/",
+    githubUrl: "https://github.com/chronotope/chrono",
+  },
+  reqwest: {
+    docsUrl: "https://docs.rs/reqwest/latest/reqwest/",
+    githubUrl: "https://github.com/seanmonstar/reqwest",
+  },
+  config: {
+    docsUrl: "https://docs.rs/config/latest/config/",
+    githubUrl: "https://github.com/rust-cli/config-rs",
+  },
   jsonwebtoken: {
     docsUrl: "https://docs.rs/jsonwebtoken/latest/jsonwebtoken/",
     githubUrl: "https://github.com/Keats/jsonwebtoken",
@@ -819,6 +844,14 @@ const BASE_LINKS: LinkMap = {
   mockall: {
     docsUrl: "https://docs.rs/mockall/latest/mockall/",
     githubUrl: "https://github.com/asomers/mockall",
+  },
+  proptest: {
+    docsUrl: "https://docs.rs/proptest/latest/proptest/",
+    githubUrl: "https://github.com/proptest-rs/proptest",
+  },
+  insta: {
+    docsUrl: "https://insta.rs/",
+    githubUrl: "https://github.com/mitsuhiko/insta",
   },
   fastapi: {
     docsUrl: "https://fastapi.tiangolo.com/",
@@ -861,11 +894,17 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/mpdavis/python-jose",
   },
   celery: { docsUrl: "https://docs.celeryq.dev/", githubUrl: "https://github.com/celery/celery" },
+  rq: { docsUrl: "https://python-rq.org/", githubUrl: "https://github.com/rq/rq" },
   strawberry: {
     docsUrl: "https://strawberry.rocks/docs",
     githubUrl: "https://github.com/strawberry-graphql/strawberry",
   },
   ruff: { docsUrl: "https://docs.astral.sh/ruff/", githubUrl: "https://github.com/astral-sh/ruff" },
+  mypy: { docsUrl: "https://mypy.readthedocs.io/", githubUrl: "https://github.com/python/mypy" },
+  pyright: {
+    docsUrl: "https://microsoft.github.io/pyright/",
+    githubUrl: "https://github.com/microsoft/pyright",
+  },
   gin: { docsUrl: "https://gin-gonic.com/docs/", githubUrl: "https://github.com/gin-gonic/gin" },
   echo: {
     docsUrl: "https://echo.labstack.com/docs",
@@ -887,6 +926,10 @@ const BASE_LINKS: LinkMap = {
   bubbletea: {
     docsUrl: "https://github.com/charmbracelet/bubbletea#readme",
     githubUrl: "https://github.com/charmbracelet/bubbletea",
+  },
+  "urfave-cli": {
+    docsUrl: "https://cli.urfave.org/",
+    githubUrl: "https://github.com/urfave/cli",
   },
   zap: {
     docsUrl: "https://pkg.go.dev/go.uber.org/zap",
@@ -944,6 +987,14 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://docs.crewai.com/",
     githubUrl: "https://github.com/crewAIInc/crewAI",
   },
+  "pythonApi:django-rest-framework": {
+    docsUrl: "https://www.django-rest-framework.org/",
+    githubUrl: "https://github.com/encode/django-rest-framework",
+  },
+  "pythonApi:django-ninja": {
+    docsUrl: "https://django-ninja.dev/",
+    githubUrl: "https://github.com/vitalik/django-ninja",
+  },
   "aiDocs:claude-md": { docsUrl: "https://docs.anthropic.com/en/docs/claude-code/memory" },
   "aiDocs:agents-md": { docsUrl: "https://agents.md/" },
   "aiDocs:cursorrules": { docsUrl: "https://docs.cursor.com/context/rules-for-ai" },
@@ -979,6 +1030,14 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://remixicon.com/",
     githubUrl: "https://github.com/nicedoc/remixicon",
   },
+  "shadcnIconLibrary:heroicons": {
+    docsUrl: "https://heroicons.com/",
+    githubUrl: "https://github.com/tailwindlabs/heroicons",
+  },
+  "shadcnIconLibrary:react-icons": {
+    docsUrl: "https://react-icons.github.io/react-icons/",
+    githubUrl: "https://github.com/react-icons/react-icons",
+  },
 
   // ─── shadcn Color Themes────────────────────
   "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
@@ -991,6 +1050,8 @@ const CATEGORY_LINKS: LinkMap = {
 
   // ─── shadcn Styles─────────────────────────
   "shadcnStyle:vega": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:luma": { docsUrl: "https://ui.shadcn.com/docs/changelog/2026-03-luma" },
+  "shadcnStyle:sera": { docsUrl: "https://ui.shadcn.com/schema.json" },
 
   // ─── shadcn Fonts ──────────────────────────────────────────────────────────
   "shadcnFont:inter": { docsUrl: "https://rsms.me/inter/" },

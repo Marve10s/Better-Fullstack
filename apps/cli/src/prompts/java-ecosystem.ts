@@ -167,6 +167,11 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     hint: "High-performance in-memory caching through Spring Cache",
   },
   {
+    value: "resilience4j",
+    label: "Resilience4j",
+    hint: "Fault tolerance patterns for retries, circuit breakers, and rate limiting",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No extra Java libraries",

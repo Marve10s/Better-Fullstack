@@ -8,6 +8,10 @@ import { Tick02Icon as CheckIcon } from '@hugeicons/react'
 import { Check as CheckIcon } from '@phosphor-icons/react'
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiCheckLine as CheckIcon } from '@remixicon/react'
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { CheckIcon } from '@heroicons/react/24/outline'
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaCheck as CheckIcon } from 'react-icons/fa'
 {{else}}
 import { CheckIcon } from 'lucide-react'
 {{/if}}

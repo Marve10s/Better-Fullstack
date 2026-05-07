@@ -158,6 +158,14 @@ describe("Go Ecosystem Tab", () => {
       expect(bubbleTeaOption?.description).toContain("TUI");
     });
 
+    it("should have urfave/cli option for goCli", () => {
+      const options = TECH_OPTIONS.goCli;
+      const urfaveOption = options.find((o) => o.id === "urfave-cli");
+      expect(urfaveOption).toBeDefined();
+      expect(urfaveOption?.name).toBe("urfave/cli");
+      expect(urfaveOption?.description).toContain("CLI framework");
+    });
+
     it("should have Zap as default for goLogging", () => {
       const options = TECH_OPTIONS.goLogging;
       const zapOption = options.find((o) => o.id === "zap");

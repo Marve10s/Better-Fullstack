@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/0"
 {{/if}}
+{{#if (eq pythonTaskQueue "rq")}}
+    # RQ settings
+    rq_redis_url: str = "redis://localhost:6379/0"
+    rq_default_queue: str = "default"
+{{/if}}
 
 
 @lru_cache

@@ -72,6 +72,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("com.github.ben-manes.caffeine:caffeine")
 {{/if}}
+{{#if hasJavaResilience4j}}
+	implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")
+{{/if}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 {{#if hasJavaJpa}}
 	runtimeOnly("com.h2database:h2")

@@ -25,6 +25,7 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaLombok: boolean;
   hasJavaMapstruct: boolean;
   hasJavaCaffeine: boolean;
+  hasJavaResilience4j: boolean;
   hasJavaAnnotationProcessors: boolean;
   hasJavaMockito: boolean;
   hasJavaTestcontainers: boolean;
@@ -193,6 +194,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     hasJavaLombok: javaLibraries.includes("lombok"),
     hasJavaMapstruct: javaLibraries.includes("mapstruct"),
     hasJavaCaffeine: javaLibraries.includes("caffeine"),
+    hasJavaResilience4j: javaLibraries.includes("resilience4j"),
     hasJavaAnnotationProcessors:
       javaLibraries.includes("lombok") || javaLibraries.includes("mapstruct"),
     hasJavaMockito,

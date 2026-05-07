@@ -102,6 +102,12 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
       case "remixicon":
         iconDeps.push("@remixicon/react");
         break;
+      case "heroicons":
+        iconDeps.push("@heroicons/react");
+        break;
+      case "react-icons":
+        iconDeps.push("react-icons");
+        break;
     }
 
     if (iconDeps.length > 0) {
@@ -181,6 +187,18 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
       }
       break;
 
+    case "mui":
+      if (hasReactWeb || hasAstroReact) {
+        deps.push("@mui/material", "@emotion/react", "@emotion/styled");
+      }
+      break;
+
+    case "antd":
+      if (hasReactWeb || hasAstroReact) {
+        deps.push("antd");
+      }
+      break;
+
     case "base-ui":
       if (hasReactWeb || hasAstroReact) {
         deps.push("@base-ui-components/react");
@@ -256,6 +274,12 @@ function processShadcnDeps(vfs: VirtualFileSystem, config: ProjectConfig): void 
       break;
     case "remixicon":
       deps.push("@remixicon/react");
+      break;
+    case "heroicons":
+      deps.push("@heroicons/react");
+      break;
+    case "react-icons":
+      deps.push("react-icons");
       break;
   }
 

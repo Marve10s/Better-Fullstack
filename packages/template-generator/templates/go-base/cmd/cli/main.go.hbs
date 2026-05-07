@@ -67,3 +67,62 @@ func main() {
 	}
 }
 {{/if}}
+{{#if (eq goCli "urfave-cli")}}
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	cli "github.com/urfave/cli/v3"
+)
+
+const version = "0.1.0"
+
+func main() {
+	cmd := &cli.Command{
+		Name:    "{{projectName}}",
+		Usage:   "{{projectName}} CLI application",
+		Version: version,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Usage:   "Enable verbose output",
+			},
+		},
+		Commands: []*cli.Command{
+			{
+				Name:      "hello",
+				Usage:     "Say hello",
+				ArgsUsage: "[name]",
+				Action: func(_ context.Context, cmd *cli.Command) error {
+					name := "World"
+					if cmd.NArg() > 0 {
+						name = cmd.Args().First()
+					}
+					if cmd.Bool("verbose") {
+						fmt.Printf("Running hello command with name: %s\n", name)
+					}
+					fmt.Printf("Hello, %s!\n", name)
+					return nil
+				},
+			},
+			{
+				Name:  "version",
+				Usage: "Print the version number",
+				Action: func(context.Context, *cli.Command) error {
+					fmt.Printf("{{projectName}} v%s\n", version)
+					return nil
+				},
+			},
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+{{/if}}
