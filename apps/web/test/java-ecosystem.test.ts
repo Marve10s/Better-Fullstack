@@ -109,6 +109,7 @@ describe("Java Ecosystem Tab", () => {
         "lombok",
         "mapstruct",
         "caffeine",
+        "resilience4j",
         "none",
       ]);
       expect(TECH_OPTIONS.javaTestingLibraries.map((option) => option.id)).toEqual([
