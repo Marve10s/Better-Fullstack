@@ -258,8 +258,8 @@ describe("Analytics Configurations", () => {
         const envPath = path.join(result.projectDir, "apps/web/.env");
         if (await fs.pathExists(envPath)) {
           const envContent = await fs.readFile(envPath, "utf-8");
-          expect(envContent).toContain("NEXT_PUBLIC_PLAUSIBLE_DOMAIN");
-          expect(envContent).toContain("NEXT_PUBLIC_PLAUSIBLE_API_HOST");
+          expect(envContent).toContain("VITE_PLAUSIBLE_DOMAIN");
+          expect(envContent).toContain("VITE_PLAUSIBLE_API_HOST");
         }
       }
     });
@@ -534,8 +534,8 @@ describe("Analytics Configurations", () => {
         const envPath = path.join(result.projectDir, "apps/web/.env");
         if (await fs.pathExists(envPath)) {
           const envContent = await fs.readFile(envPath, "utf-8");
-          expect(envContent).toContain("NEXT_PUBLIC_UMAMI_WEBSITE_ID");
-          expect(envContent).toContain("NEXT_PUBLIC_UMAMI_SCRIPT_URL");
+          expect(envContent).toContain("VITE_UMAMI_WEBSITE_ID");
+          expect(envContent).toContain("VITE_UMAMI_SCRIPT_URL");
         }
       }
     });

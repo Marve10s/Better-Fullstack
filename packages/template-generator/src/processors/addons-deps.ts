@@ -93,7 +93,8 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const hasViteReactFrontend =
     config.frontend.includes("react-router") ||
     config.frontend.includes("react-vite") ||
-    config.frontend.includes("tanstack-router");
+    config.frontend.includes("tanstack-router") ||
+    config.frontend.includes("vinext");
   const hasReactFrontend = config.frontend.some((f) => REACT_FRONTENDS.includes(f));
   const hasAstroReact = config.frontend.includes("astro") && config.astroIntegration === "react";
   const hasAstroSolid = config.frontend.includes("astro") && config.astroIntegration === "solid";

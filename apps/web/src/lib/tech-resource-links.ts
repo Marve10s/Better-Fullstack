@@ -90,6 +90,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://nextjs.org/docs",
     githubUrl: "https://github.com/vercel/next.js",
   },
+  "self-vinext": {
+    docsUrl: "https://vinext.io",
+    githubUrl: "https://github.com/cloudflare/vinext",
+  },
   "self-tanstack-start": {
     docsUrl: "https://tanstack.com/start/latest",
     githubUrl: "https://github.com/TanStack/router",
