@@ -613,6 +613,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     argon2: "Argon2",
     "tokio-test": "Tokio Test",
     mockall: "Mockall",
+    proptest: "Proptest",
+    insta: "Insta",
   },
   rustLogging: {
     tracing: "Tracing",
