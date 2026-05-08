@@ -1,0 +1,62 @@
+---
+title: MCP Command
+description: Start the Better Fullstack MCP server over stdio for AI coding agents.
+---
+
+The `mcp` command starts the Better Fullstack MCP server. Agents can use it to inspect schemas, validate compatibility, preview generated files, create projects, and add supported features to existing projects.
+
+```bash
+npx create-better-fullstack@latest mcp
+```
+
+The server uses stdio transport. Configure your MCP client to launch the command and communicate over standard input/output.
+
+## Client Examples
+
+Claude Code:
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack mcp
+```
+
+Generic MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack", "mcp"]
+    }
+  }
+}
+```
+
+## Tool Surface
+
+| Tool | Purpose |
+| --- | --- |
+| `bfs_get_guidance` | Returns workflow rules and field semantics. |
+| `bfs_get_schema` | Returns valid options for one category or all categories. |
+| `bfs_check_compatibility` | Validates stack selections before generation. |
+| `bfs_plan_project` | Dry-runs generation in memory. |
+| `bfs_create_project` | Writes a new project to disk. |
+| `bfs_plan_addition` | Plans feature additions for an existing project. |
+| `bfs_add_feature` | Adds supported features to an existing project. |
+
+See the [MCP tools reference](/docs/ai/mcp-tools/) for inputs, outputs, and safe workflows.
+
+## Safety Notes
+
+- `bfs_plan_project` does not write files.
+- `bfs_create_project` writes files but does not install dependencies.
+- `bfs_add_feature` mutates an existing Better Fullstack project and does not install dependencies.
+- Agents should call `bfs_get_guidance` and `bfs_check_compatibility` before project creation.
+
+## Related Commands
+
+- `docs` opens the public documentation site.
+- `builder` opens the interactive Stack Builder.
+- `sponsors` shows Better Fullstack sponsors.
+
+See the [CLI reference](/docs/cli/) for examples of these utility commands.

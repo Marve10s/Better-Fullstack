@@ -10,14 +10,26 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig, type PluginOption } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+import cliPackage from "../cli/package.json";
+
 import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
+
+const buildDate = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+}).format(new Date()).toLowerCase();
 
 export default defineConfig({
   server: {
     port: 3333,
   },
   envPrefix: ["VITE_", "BFS_ENABLE_STACK_PREVIEW"],
+  define: {
+    __BFS_CLI_VERSION__: JSON.stringify(cliPackage.version),
+    __BFS_BUILD_DATE__: JSON.stringify(buildDate),
+  },
   build: {
     sourcemap: false,
     minify: "esbuild",

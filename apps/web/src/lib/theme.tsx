@@ -56,12 +56,24 @@ function applyResolvedTheme(resolvedTheme: ResolvedTheme) {
   );
 }
 
+function getInitialResolvedTheme(): ResolvedTheme {
+  if (typeof document !== "undefined") {
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  }
+  return "light";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => getStoredTheme());
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(getStoredTheme()));
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(getInitialResolvedTheme);
 
   useEffect(() => {
-    applyResolvedTheme(resolvedTheme);
+    if (typeof document !== "undefined") {
+      const currentResolved = document.documentElement.classList.contains("dark") ? "dark" : "light";
+      if (currentResolved !== resolvedTheme) {
+        applyResolvedTheme(resolvedTheme);
+      }
+    }
   }, [resolvedTheme]);
 
   useEffect(() => {

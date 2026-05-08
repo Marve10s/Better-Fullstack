@@ -2,37 +2,72 @@ import NumberFlow from "@number-flow/react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "motion/react";
-import { lazy, Suspense, useRef } from "react";
+import { lazy, Suspense, useMemo, useRef } from "react";
 
 import type { TechCategory } from "@/lib/types";
 
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
-import { TECH_OPTIONS } from "@/lib/constant";
+import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
 
 const WebGLShader = lazy(async () => {
   const m = await import("@/components/effects/web-gl-shader");
   return { default: m.WebGLShader };
 });
 
-type Layer = {
-  cat: TechCategory;
-  word: string;
-};
+type Layer =
+  | { type: "ecosystems"; word: string }
+  | { type: "categories"; categories: TechCategory[]; word: string };
 
 const LAYERS: ReadonlyArray<Layer> = [
-  { cat: "webFrontend", word: "FRONTEND FRAMEWORKS" },
-  { cat: "backend", word: "BACKEND FRAMEWORKS" },
-  { cat: "orm", word: "DATABASE ORMs" },
-  { cat: "auth", word: "AUTH PROVIDERS" },
-  { cat: "ai", word: "AI INTEGRATIONS" },
-  { cat: "webDeploy", word: "DEPLOY TARGETS" },
+  { type: "ecosystems", word: "LANGUAGE ECOSYSTEMS" },
+  {
+    type: "categories",
+    categories: ["webFrontend", "rustFrontend"],
+    word: "FRONTEND FRAMEWORKS",
+  },
+  {
+    type: "categories",
+    categories: [
+      "backend",
+      "rustWebFramework",
+      "pythonWebFramework",
+      "goWebFramework",
+      "javaWebFramework",
+    ],
+    word: "BACKEND FRAMEWORKS",
+  },
+  {
+    type: "categories",
+    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm"],
+    word: "DATABASE ORMs",
+  },
+  {
+    type: "categories",
+    categories: ["auth", "rustAuth", "pythonAuth", "goAuth", "javaAuth"],
+    word: "AUTH PROVIDERS",
+  },
+  {
+    type: "categories",
+    categories: ["ai", "pythonAi"],
+    word: "AI INTEGRATIONS",
+  },
 ];
 
-function getOptions(cat: TechCategory) {
-  return (TECH_OPTIONS[cat] ?? [])
-    .filter((o) => !o.legacy && o.id !== "none")
-    .map((o) => ({ id: o.id, name: o.name }));
+function getOptions(categories: TechCategory[]) {
+  const seen = new Set<string>();
+  const results: { id: string; name: string }[] = [];
+
+  for (const cat of categories) {
+    for (const opt of TECH_OPTIONS[cat] ?? []) {
+      if (!opt.legacy && opt.id !== "none" && !seen.has(opt.id)) {
+        seen.add(opt.id);
+        results.push({ id: opt.id, name: opt.name });
+      }
+    }
+  }
+
+  return results;
 }
 
 export default function FeaturesSection() {
@@ -41,8 +76,8 @@ export default function FeaturesSection() {
       <div className="relative overflow-hidden border-b border-border">
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
-              ✦ pick anything
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
+              ✦ five ecosystems
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -51,12 +86,12 @@ export default function FeaturesSection() {
                 lineHeight: 0.94,
               }}
             >
-              All of it.{" "}
-              <span className="italic text-muted-foreground">Wired together.</span>
+              Not just TypeScript.{" "}
+              <span className="italic text-muted-foreground">Everything.</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              Six layers of opinionated infrastructure, picked à la carte. The CLI handles
-              the wiring so you don&rsquo;t have to.
+              TypeScript, Rust, Python, Go, Java — one CLI scaffolds production-ready
+              apps across all five. Pick your ecosystem, pick your stack.
             </p>
           </div>
 
@@ -107,7 +142,7 @@ export default function FeaturesSection() {
 
       <ul>
         {LAYERS.map((layer, i) => (
-          <LayerRow key={layer.cat} layer={layer} index={i} />
+          <LayerRow key={layer.word} layer={layer} index={i} />
         ))}
       </ul>
 
@@ -119,8 +154,14 @@ export default function FeaturesSection() {
 function LayerRow({ layer, index }: { layer: Layer; index: number }) {
   const ref = useRef<HTMLLIElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20%" });
-  const options = getOptions(layer.cat);
   const flip = index % 2 === 1;
+
+  const options = useMemo(() => {
+    if (layer.type === "ecosystems") {
+      return ECOSYSTEMS.map((e) => ({ id: e.id, name: e.name }));
+    }
+    return getOptions(layer.categories);
+  }, [layer]);
 
   return (
     <li
@@ -137,7 +178,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-mono font-black leading-[0.82] tracking-[-0.05em]"
+            className="font-mono font-black leading-[0.82] tracking-[-0.05em] text-black dark:text-[#fafafa]"
             style={{ fontSize: "clamp(5rem, 14vw, 11rem)" }}
           >
             <NumberFlow
@@ -147,7 +188,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             />
           </motion.div>
           <div
-            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700"
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]"
             style={{ direction: "ltr" }}
           >
             ✦ {String(index + 1).padStart(2, "0")}
@@ -159,7 +200,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, x: flip ? 16 : -16 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="font-mono font-bold uppercase leading-none tracking-[-0.03em]"
+            className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-black dark:text-[#fafafa]"
             style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
           >
             {layer.word}
@@ -169,23 +210,45 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, y: 8 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="mt-5 flex flex-wrap gap-1.5"
+            className={
+              layer.type === "ecosystems"
+                ? "mt-6 flex flex-wrap items-center gap-6"
+                : "mt-5 flex flex-wrap gap-1.5"
+            }
           >
-            {options.map((opt, j) => (
-              <motion.span
-                key={opt.id}
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{
-                  duration: 0.3,
-                  delay: 0.2 + Math.min(j * 0.02, 0.4),
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs transition-colors hover:border-foreground/30"
-              >
-                <TechIcon techId={opt.id} name={opt.name} className="size-3" />
-                <span>{opt.name}</span>
-              </motion.span>
-            ))}
+            {options.map((opt, j) =>
+              layer.type === "ecosystems" ? (
+                <motion.div
+                  key={opt.id}
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={inView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.3,
+                    delay: 0.2 + Math.min(j * 0.04, 0.4),
+                  }}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <TechIcon techId={opt.id} name={opt.name} className="size-12 sm:size-14" />
+                  <span className="font-mono text-xs font-medium text-foreground">
+                    {opt.name}
+                  </span>
+                </motion.div>
+              ) : (
+                <motion.span
+                  key={opt.id}
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={inView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.3,
+                    delay: 0.2 + Math.min(j * 0.02, 0.4),
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-[#3f6212] transition-colors hover:border-foreground/30 dark:text-foreground"
+                >
+                  <TechIcon techId={opt.id} name={opt.name} className="size-3" />
+                  <span>{opt.name}</span>
+                </motion.span>
+              ),
+            )}
           </motion.div>
         </div>
       </div>
@@ -219,7 +282,7 @@ function TotalBlock() {
             >
               <span style={{ fontSize: "clamp(5rem, 18vw, 14rem)" }}>
                 <NumberFlow
-                  value={inView ? 436 : 0}
+                  value={inView ? 437 : 0}
                   transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
                 />
               </span>

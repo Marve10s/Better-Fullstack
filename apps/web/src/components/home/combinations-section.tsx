@@ -29,7 +29,7 @@ export default function CombinationsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 items-end gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-700">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
               ✦ combinatorics
             </p>
             <h2
@@ -68,7 +68,7 @@ export default function CombinationsSection() {
                 ×&nbsp;10
               </span>
               <span
-                className="font-mono font-bold leading-none text-lime-700"
+                className="font-mono font-bold leading-none text-black dark:text-[#bef264]"
                 style={{ fontSize: "clamp(1.5rem, 4vw, 3rem)" }}
               >
                 {totalScientific.exponent}

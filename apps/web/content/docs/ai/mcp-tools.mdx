@@ -1,0 +1,173 @@
+---
+title: MCP Tools Reference
+description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
+---
+
+The MCP server exposes structured tools for agents. Use them instead of asking an agent to guess CLI flags from prose.
+
+## Recommended Workflows
+
+### New Project
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+### Existing Project
+
+1. `bfs_get_guidance`
+2. `bfs_plan_addition`
+3. `bfs_add_feature`
+
+<Callout kind="warn" title="Mutation behavior">
+`bfs_plan_project` is dry-run only. `bfs_create_project` writes a new project to disk. `bfs_add_feature` mutates an existing project. MCP project creation and feature addition do not install dependencies.
+</Callout>
+
+## Tool Reference
+
+### `bfs_get_guidance`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Returns workflow rules, field semantics, ambiguity rules, and critical constraints. |
+| When to call | First, before other Better Fullstack MCP tools. |
+| Writes files | No. |
+| Required inputs | None. |
+| Optional inputs | None. |
+| Output | JSON guidance covering recommended tool order, array fields, ecosystem rules, and examples. |
+
+```json
+{}
+```
+
+### `bfs_get_schema`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Returns valid option values for one category or all categories. |
+| When to call | Before planning a stack, especially when the user named technologies informally. |
+| Writes files | No. |
+| Required inputs | None. |
+| Optional inputs | `category`, `ecosystem`. |
+| Output | JSON schema/options data filtered by category or ecosystem. |
+
+```json
+{
+  "category": "database",
+  "ecosystem": "typescript"
+}
+```
+
+### `bfs_check_compatibility`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Validates a stack combination and returns adjusted selections with warnings. |
+| When to call | Before `bfs_plan_project` or `bfs_create_project`. |
+| Writes files | No. |
+| Required inputs | `ecosystem`. |
+| Optional inputs | Frontend, backend, runtime, database, ORM, API, auth, payments, UI/CSS, addons, and Java-specific fields. |
+| Output | JSON compatibility analysis with changes, notes, and adjusted stack data. |
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["next"],
+  "backend": "self",
+  "runtime": "none",
+  "database": "postgres",
+  "orm": "drizzle",
+  "api": "trpc"
+}
+```
+
+### `bfs_plan_project`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Generates a project in memory and returns a file-tree summary. |
+| When to call | After compatibility validation and before writing files. |
+| Writes files | No. |
+| Required inputs | None, but `projectName` and `ecosystem` are recommended. |
+| Optional inputs | Full project stack selections. |
+| Output | JSON success flag plus generated file/directory summary. |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle"
+}
+```
+
+### `bfs_create_project`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Writes a new generated project to disk. |
+| When to call | Only after `bfs_plan_project` succeeds and the user approves. |
+| Writes files | Yes, creates the project directory and generated files. |
+| Required inputs | `projectName`. |
+| Optional inputs | Full project stack selections. |
+| Output | JSON success flag, project directory, file count, addon warnings, and install command guidance. |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "java",
+  "javaWebFramework": "spring-boot",
+  "javaBuildTool": "maven",
+  "javaTestingLibraries": ["junit5"]
+}
+```
+
+### `bfs_plan_addition`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Reads `bts.jsonc` and validates proposed additions for an existing project. |
+| When to call | Before mutating an existing project with `bfs_add_feature`. |
+| Writes files | No. |
+| Required inputs | `projectDir`. |
+| Optional inputs | `addons`, `webDeploy`, `serverDeploy`. |
+| Output | Existing config summary, proposed additions, already-present addons, and compatibility warnings. |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["mcp", "skills"]
+}
+```
+
+### `bfs_add_feature`
+
+| Field | Details |
+| --- | --- |
+| Purpose | Adds supported addons or deployment settings to an existing Better Fullstack project. |
+| When to call | After `bfs_plan_addition` succeeds and the user approves. |
+| Writes files | Yes, mutates the existing project. |
+| Required inputs | `projectDir`. |
+| Optional inputs | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
+| Output | JSON result from the add handler, including changed files and install guidance when available. |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["biome"],
+  "packageManager": "bun"
+}
+```
+
+## Agent Rules
+
+- Treat `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries` as arrays.
+- Set `ecosystem` before selecting ecosystem-specific fields.
+- Prefer `none` when the user explicitly wants to disable a category.
+- Do not call write tools until the user has approved the dry-run or addition plan.
+- Tell the user which install/test commands to run after MCP creation or addition, because MCP does not install dependencies.

@@ -38,6 +38,10 @@
       "types": "./dist/defaults.d.mts",
       "default": "./dist/defaults.mjs"
     },
+    "./stack-translation": {
+      "types": "./dist/stack-translation.d.mts",
+      "default": "./dist/stack-translation.mjs"
+    },
     "./types": {
       "types": "./dist/types.d.mts",
       "default": "./dist/types.mjs"

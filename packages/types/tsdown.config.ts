@@ -6,6 +6,7 @@ export default defineConfig({
     "src/schemas.ts",
     "src/json-schema.ts",
     "src/defaults.ts",
+    "src/stack-translation.ts",
     "src/types.ts",
   ],
   format: ["esm"],

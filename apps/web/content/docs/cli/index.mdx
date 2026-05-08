@@ -1,0 +1,54 @@
+---
+title: CLI Reference
+description: Commands for scaffolding projects, adding features, opening docs, and using AI-agent workflows.
+---
+
+Better Fullstack exposes a small command surface for project creation, project updates, local history, docs discovery, and MCP agent workflows.
+
+## Project Commands
+
+| Command | Purpose |
+| --- | --- |
+| `create` | Scaffold a new project from a stack configuration. This is the default command. |
+| `add` | Add supported addons or deployment settings to an existing Better Fullstack project. |
+| `history` | Show, export, or clear local scaffold history and reproducible commands. |
+| `mcp` | Start the Better Fullstack MCP server over stdio for AI coding agents. |
+
+## Utility Commands
+
+| Command | Purpose |
+| --- | --- |
+| `docs` | Open the public Better Fullstack documentation site in your browser. |
+| `builder` | Open the interactive Stack Builder. |
+| `sponsors` | Show Better Fullstack sponsors. |
+
+## Examples
+
+Open docs:
+
+```bash
+npx create-better-fullstack@latest docs
+```
+
+Open the builder:
+
+```bash
+npx create-better-fullstack@latest builder
+```
+
+Show sponsors:
+
+```bash
+npx create-better-fullstack@latest sponsors
+```
+
+## Maintainer Commands
+
+`update-deps` is a maintainer-oriented command for dependency version checks and updates. It is intentionally omitted from normal user workflows.
+
+## Next Steps
+
+- [Create command](/docs/cli/create/) covers all scaffold flags.
+- [Add command](/docs/cli/add/) covers existing-project updates.
+- [History command](/docs/cli/history/) covers reproducible command history.
+- [MCP command](/docs/cli/mcp/) covers stdio MCP startup.

@@ -1,0 +1,30 @@
+---
+title: Compatibility Matrix
+description: Check whether Better Fullstack options work with a selected baseline stack.
+---
+
+Better Fullstack validates stack choices before generation. The builder, CLI, and MCP server all rely on shared compatibility logic so invalid combinations are rejected or adjusted consistently.
+
+<CompatibilityMatrix />
+
+## What This Checks
+
+- Whether an option is compatible with the selected baseline stack.
+- The shared disabled reason when a combination is blocked.
+- Any automatic adjustment notes from the same compatibility analyzer used by the builder.
+
+## How To Use It
+
+1. Pick an ecosystem.
+2. Adjust the baseline stack fields that matter to your question.
+3. Pick a category to inspect.
+4. Review which options are compatible and why any are blocked.
+
+This is intentionally a practical matrix, not every possible pairwise combination. For full project validation, run the CLI or use the Stack Builder before scaffolding.
+
+## Compatibility Behavior
+
+- `none` disables optional categories when supported.
+- Some selections trigger automatic adjustments, such as Convex replacing backend-owned database/API choices.
+- Some frontend choices intentionally narrow API, UI, runtime, or deploy support.
+- Java, Rust, Python, and Go use ecosystem-specific categories instead of the full TypeScript stack surface.
