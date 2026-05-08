@@ -990,6 +990,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--file-upload ${selection.fileUpload}`,
     `--logging ${selection.logging}`,
     `--observability ${selection.observability}`,
+    `--feature-flags ${selection.featureFlags}`,
     `--realtime ${selection.realtime}`,
     `--job-queue ${selection.jobQueue}`,
     `--caching ${selection.caching}`,

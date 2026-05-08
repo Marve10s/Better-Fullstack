@@ -380,6 +380,10 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       rustApi: "none",
       rustCli: "none",
       rustLibraries: ["serde", "validator"],
+      email: "resend",
+      observability: "sentry",
+      caching: "upstash-redis",
+      search: "meilisearch",
     },
   },
 
@@ -402,6 +406,10 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       goApi: "grpc-go",
       goCli: "none",
       goLogging: "none",
+      email: "resend",
+      observability: "sentry",
+      caching: "upstash-redis",
+      search: "meilisearch",
     },
   },
 
@@ -418,6 +426,10 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
+      email: "resend",
+      observability: "sentry",
+      caching: "upstash-redis",
+      search: "meilisearch",
     },
   },
   "python-django-langchain": {
@@ -456,6 +468,10 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       javaAuth: "spring-security",
       javaLibraries: ["spring-actuator", "spring-validation", "flyway", "mapstruct", "caffeine"],
       javaTestingLibraries: ["junit5", "mockito", "testcontainers"],
+      email: "resend",
+      observability: "sentry",
+      caching: "upstash-redis",
+      search: "meilisearch",
     },
   },
   "java-plain-cli": {

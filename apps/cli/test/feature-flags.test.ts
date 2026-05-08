@@ -437,6 +437,7 @@ describe("Feature Flags Configurations", () => {
         serverFile: "apps/server/src/lib/launchdarkly.ts",
         webFile: "apps/web/src/lib/launchdarkly.tsx",
         envKey: "LAUNCHDARKLY_SDK_KEY",
+        webEnvKey: "VITE_LAUNCHDARKLY_CLIENT_SIDE_ID",
       },
       {
         id: "flagsmith",
@@ -445,6 +446,7 @@ describe("Feature Flags Configurations", () => {
         serverFile: "apps/server/src/lib/flagsmith.ts",
         webFile: "apps/web/src/lib/flagsmith.tsx",
         envKey: "FLAGSMITH_SERVER_SIDE_ENVIRONMENT_KEY",
+        webEnvKey: "VITE_FLAGSMITH_ENVIRONMENT_ID",
       },
       {
         id: "unleash",
@@ -453,6 +455,7 @@ describe("Feature Flags Configurations", () => {
         serverFile: "apps/server/src/lib/unleash.ts",
         webFile: "apps/web/src/lib/unleash.tsx",
         envKey: "UNLEASH_SERVER_API_TOKEN",
+        webEnvKey: "VITE_UNLEASH_FRONTEND_API_URL",
       },
     ] as const;
 
@@ -485,6 +488,7 @@ describe("Feature Flags Configurations", () => {
         expect(fileContent(result, provider.serverFile)).toContain(provider.serverPackage);
         expect(fileContent(result, provider.webFile)).toContain(provider.webPackage);
         expect(fileContent(result, "apps/server/.env")).toContain(provider.envKey);
+        expect(fileContent(result, "apps/web/.env")).toContain(provider.webEnvKey);
       });
     }
   });

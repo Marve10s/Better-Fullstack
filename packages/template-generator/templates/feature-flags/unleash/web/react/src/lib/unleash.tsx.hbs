@@ -49,7 +49,7 @@ export function useFeature(featureName: string): boolean {
   return useFlag(featureName);
 }
 
-export function useFeatureVariant(featureName: string): IVariant {
+export function useFeatureVariant(featureName: string): Partial<IVariant> {
   return useVariant(featureName);
 }
 

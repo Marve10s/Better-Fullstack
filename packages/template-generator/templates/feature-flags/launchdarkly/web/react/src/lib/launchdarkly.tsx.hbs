@@ -1,6 +1,6 @@
 "use client";
 
-import { initialize, type LDClient, type LDContext, type LDFlagValue } from "@launchdarkly/js-client-sdk";
+import { createClient, type LDClient, type LDContext, type LDFlagValue } from "@launchdarkly/js-client-sdk";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
@@ -33,8 +33,8 @@ export function LaunchDarklyProvider({
   useEffect(() => {
     if (!clientSideId) return;
 
-    const ldClient = initialize(clientSideId, context);
-    ldClient.waitForInitialization(5).then(() => setClient(ldClient));
+    const ldClient = createClient(clientSideId, context);
+    ldClient.start({ timeout: 5 }).then(() => setClient(ldClient));
 
     return () => {
       ldClient.close();

@@ -75,6 +75,22 @@ describe("Cross-ecosystem caching services", () => {
     expect(getFileContent(root, ".env.example")).toContain("UPSTASH_REDIS_URL=");
   });
 
+  it("initializes Upstash Redis for Rust Actix and Rocket projects", async () => {
+    for (const rustWebFramework of ["actix-web", "rocket"] as const) {
+      const result = await createVirtual({
+        projectName: `rust-upstash-${rustWebFramework}`,
+        ecosystem: "rust",
+        rustWebFramework,
+        caching: "upstash-redis",
+      });
+
+      expect(result.success).toBe(true);
+      const main = getFileContent(result.tree!.root, "crates/server/src/main.rs");
+      expect(main).toContain("mod upstash_cache;");
+      expect(main).toContain("upstash_cache::create_client()");
+    }
+  });
+
   it("wires Upstash Redis for Java projects", async () => {
     const result = await createVirtual({
       projectName: "java-upstash",

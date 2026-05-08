@@ -93,6 +93,16 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
 }
 
 describe("generateReproducibleCommand", () => {
+  it("generates TypeScript commands with feature flag selections", () => {
+    const command = generateReproducibleCommand(
+      makeConfig({
+        featureFlags: "flagsmith",
+      }),
+    );
+
+    expect(command).toContain("--feature-flags flagsmith");
+  });
+
   it("generates a Python command with explicit none selections", () => {
     const config = makeConfig({
       ecosystem: "python",

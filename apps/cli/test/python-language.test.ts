@@ -2903,7 +2903,7 @@ describe("Python Language Support", () => {
   });
 
   describe("Additional Python ecosystem options", () => {
-    it("should include Haystack dependencies when selected", async () => {
+    it("should include Haystack client, schemas, routes, and dependencies when selected", async () => {
       const result = await createVirtual({
         projectName: "python-haystack-deps",
         ecosystem: "python",
@@ -2921,6 +2921,14 @@ describe("Python Language Support", () => {
 
       const settingsContent = getFileContent(result.tree!.root, "src/app/settings.py");
       expect(settingsContent).toContain("haystack_default_model");
+
+      const root = result.tree!.root;
+      expect(hasFile(root, "src/app/haystack_client.py")).toBe(true);
+      const haystackClientContent = getFileContent(root, "src/app/haystack_client.py");
+      expect(haystackClientContent).toContain("OpenAIGenerator");
+      expect(haystackClientContent).toContain("Secret.from_token(api_key)");
+      expect(hasFile(root, "src/app/haystack_schemas.py")).toBe(true);
+      expect(getFileContent(root, "src/app/main.py")).toContain("/ai/haystack/ask");
     });
 
     it("should include Dramatiq files and dependencies when selected", async () => {
@@ -2963,7 +2971,7 @@ describe("Python Language Support", () => {
       expect(getFileContent(root, "src/app/settings.py")).toContain("huey_redis_url");
     });
 
-    it("should include Ariadne schema and dependency when selected", async () => {
+    it("should include Ariadne schema, dependency, and FastAPI route when selected", async () => {
       const result = await createVirtual({
         projectName: "python-ariadne-deps",
         ecosystem: "python",
@@ -2981,6 +2989,51 @@ describe("Python Language Support", () => {
       expect(getFileContent(root, "pyproject.toml")).toContain("ariadne[asgi]");
       expect(hasFile(root, "src/app/ariadne_schema.py")).toBe(true);
       expect(getFileContent(root, "src/app/ariadne_schema.py")).toContain("make_executable_schema");
+      expect(getFileContent(root, "src/app/main.py")).toContain('app.mount("/graphql"');
+    });
+
+    it("should mount Ariadne with framework-specific integrations", async () => {
+      const cases = [
+        {
+          pythonWebFramework: "django",
+          dependency: "ariadne-django",
+          importStatement: "from ariadne_django.views import GraphQLView",
+          mountStatement: 'path("graphql", GraphQLView.as_view(schema=ariadne_schema)),',
+        },
+        {
+          pythonWebFramework: "flask",
+          dependency: "ariadne[asgi]",
+          importStatement: "from ariadne.wsgi import GraphQL",
+          mountStatement: 'app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})',
+        },
+        {
+          pythonWebFramework: "litestar",
+          dependency: "ariadne[asgi]",
+          importStatement: "from ariadne.asgi import GraphQL",
+          mountStatement: '@asgi("/graphql", is_mount=True, copy_scope=True)',
+        },
+      ] as const;
+
+      for (const testCase of cases) {
+        const result = await createVirtual({
+          projectName: `python-ariadne-${testCase.pythonWebFramework}`,
+          ecosystem: "python",
+          pythonWebFramework: testCase.pythonWebFramework,
+          pythonOrm: "none",
+          pythonValidation: "none",
+          pythonAi: [],
+          pythonTaskQueue: "none",
+          pythonGraphql: "ariadne",
+          pythonQuality: "none",
+        });
+
+        expect(result.success).toBe(true);
+        const root = result.tree!.root;
+        expect(getFileContent(root, "pyproject.toml")).toContain(testCase.dependency);
+        const mainContent = getFileContent(root, "src/app/main.py");
+        expect(mainContent).toContain(testCase.importStatement);
+        expect(mainContent).toContain(testCase.mountStatement);
+      }
     });
   });
 

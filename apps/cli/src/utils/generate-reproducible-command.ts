@@ -91,6 +91,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--job-queue ${config.jobQueue}`);
   flags.push(`--logging ${config.logging}`);
   flags.push(`--observability ${config.observability}`);
+  flags.push(`--feature-flags ${config.featureFlags}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);

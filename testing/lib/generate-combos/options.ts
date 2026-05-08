@@ -108,6 +108,10 @@ const SELF_COMPATIBLE_FRONTENDS = new Set([
 
 const WEB_FRONTENDS = getCategoryOptionIds("webFrontend");
 const NATIVE_FRONTENDS = getCategoryOptionIds("nativeFrontend");
+const CROSS_ECOSYSTEM_EMAIL_VALUES = ["resend", "none"] as const;
+const CROSS_ECOSYSTEM_OBSERVABILITY_VALUES = ["sentry", "none"] as const;
+const CROSS_ECOSYSTEM_CACHING_VALUES = ["upstash-redis", "none"] as const;
+const CROSS_ECOSYSTEM_SEARCH_VALUES = ["meilisearch", "none"] as const;
 
 function sampleOne<T>(values: readonly T[]): T {
   return values[Math.floor(_rng() * values.length)];
@@ -327,6 +331,10 @@ function makeRustDraft(args: GeneratorArgs): CandidateDraft {
       rustCaching: sampleScalar(RUST_CACHING_VALUES, 0.15),
       rustAuth: sampleScalar(RUST_AUTH_VALUES, 0.15),
       rustLibraries: sampleArray(RUST_LIBRARIES_VALUES, 0.35, 2),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -345,6 +353,10 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
       pythonTaskQueue: sampleScalar(PYTHON_TASK_QUEUE_VALUES, 0.55),
       pythonGraphql: sampleScalar(PYTHON_GRAPHQL_VALUES, 0.5),
       pythonQuality: sampleScalar(PYTHON_QUALITY_VALUES, 0.35),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -361,6 +373,10 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
       goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -397,6 +413,14 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
       javaTestingLibraries: usesBuildTool
         ? sampleArray(JAVA_TESTING_LIBRARIES_VALUES, 0.2, 3, "javaTestingLibraries")
         : ["none" as const],
+      email: usesBuildTool ? sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email") : "none",
+      observability: usesBuildTool
+        ? sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability")
+        : "none",
+      caching: usesBuildTool
+        ? sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching")
+        : "none",
+      search: usesBuildTool ? sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search") : "none",
     },
   };
 }

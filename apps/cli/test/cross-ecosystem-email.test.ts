@@ -89,6 +89,21 @@ describe("Cross-ecosystem email services", () => {
     expect(getFileContent(root, ".env.example")).toContain("RESEND_API_KEY=");
   });
 
+  it("rejects Java Resend without a build tool", async () => {
+    const result = await runTRPCTest({
+      projectName: "java-resend-no-build",
+      ecosystem: "java",
+      javaWebFramework: "none",
+      javaBuildTool: "none",
+      email: "resend",
+    });
+
+    expectError(
+      result,
+      "Resend email for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+  });
+
   it("rejects unsupported non-TypeScript email providers", async () => {
     const result = await runTRPCTest({
       projectName: "python-sendgrid",

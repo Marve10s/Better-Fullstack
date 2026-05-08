@@ -50,21 +50,25 @@ const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
   rust: [
     "ecosystem", "projectName",
     "rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries",
+    "email", "observability", "caching", "search",
     "aiDocs", "git", "install", "yolo",
   ],
   python: [
     "ecosystem", "projectName",
     "pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonApi", "pythonTaskQueue", "pythonQuality",
+    "email", "observability", "caching", "search",
     "aiDocs", "git", "install", "yolo",
   ],
   go: [
     "ecosystem", "projectName",
     "goWebFramework", "goOrm", "goApi", "goCli", "goLogging",
-    "auth", "aiDocs", "git", "install", "yolo",
+    "auth", "email", "observability", "caching", "search",
+    "aiDocs", "git", "install", "yolo",
   ],
   java: [
     "ecosystem", "projectName",
     "javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries",
+    "email", "observability", "caching", "search",
     "aiDocs", "git", "install", "yolo",
   ],
 };

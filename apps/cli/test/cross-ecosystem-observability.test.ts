@@ -77,6 +77,22 @@ describe("Cross-ecosystem observability services", () => {
     expect(getFileContent(root, ".env.example")).toContain("SENTRY_DSN=");
   });
 
+  it("initializes Sentry for Rust Actix and Rocket projects", async () => {
+    for (const rustWebFramework of ["actix-web", "rocket"] as const) {
+      const result = await createVirtual({
+        projectName: `rust-sentry-${rustWebFramework}`,
+        ecosystem: "rust",
+        rustWebFramework,
+        observability: "sentry",
+      });
+
+      expect(result.success).toBe(true);
+      const main = getFileContent(result.tree!.root, "crates/server/src/main.rs");
+      expect(main).toContain("mod observability;");
+      expect(main).toContain("observability::init_sentry()");
+    }
+  });
+
   it("wires Sentry for Java projects", async () => {
     const result = await createVirtual({
       projectName: "java-sentry",
@@ -92,6 +108,21 @@ describe("Cross-ecosystem observability services", () => {
     expect(getFileContent(root, "src/main/java/com/example/javasentry/Application.java"))
       .toContain("Sentry.init");
     expect(getFileContent(root, ".env.example")).toContain("SENTRY_DSN=");
+  });
+
+  it("rejects Java Sentry without a build tool", async () => {
+    const result = await runTRPCTest({
+      projectName: "java-sentry-no-build",
+      ecosystem: "java",
+      javaWebFramework: "none",
+      javaBuildTool: "none",
+      observability: "sentry",
+    });
+
+    expectError(
+      result,
+      "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency",
+    );
   });
 
   it("rejects unsupported non-TypeScript observability providers", async () => {
