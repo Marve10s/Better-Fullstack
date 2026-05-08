@@ -2174,15 +2174,15 @@ export const getDisabledReason = (
   // JAVA ECOSYSTEM RULES
   // ============================================
   if (category === "javaWebFramework") {
-    if (optionId === "spring-boot" && currentStack.javaBuildTool === "none") {
-      return "Spring Boot requires Maven or Gradle";
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java web frameworks require Maven or Gradle";
     }
   }
 
   if (category === "javaBuildTool") {
     if (optionId === "none") {
-      if (currentStack.javaWebFramework === "spring-boot") {
-        return "Spring Boot requires Maven or Gradle";
+      if (currentStack.javaWebFramework !== "none") {
+        return "Java web frameworks require Maven or Gradle";
       }
       if (currentStack.javaOrm !== "none") {
         return "Java ORM support requires Maven or Gradle";

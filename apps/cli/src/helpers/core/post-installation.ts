@@ -967,6 +967,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
 
   const cdCmd = `cd ${relativePath}`;
   const isSpringBoot = javaWebFramework === "spring-boot" && javaBuildTool !== "none";
+  const isQuarkus = javaWebFramework === "quarkus" && javaBuildTool !== "none";
   const rawJavaLibraries = isSpringBoot
     ? javaLibraries.filter((library) => library !== "none")
     : [];
@@ -999,6 +1000,10 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       ? javaBuildTool === "gradle"
         ? `${buildToolCommand} bootRun`
         : `${buildToolCommand} spring-boot:run`
+      : isQuarkus
+        ? javaBuildTool === "gradle"
+          ? `${buildToolCommand} quarkusDev`
+          : `${buildToolCommand} quarkus:dev`
       : javaBuildTool === "gradle"
         ? `${buildToolCommand} run`
         : `${buildToolCommand} exec:java`
@@ -1033,9 +1038,10 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
 
   output += `\n${pc.bold("Your Java project includes:")}\n`;
 
-  if (isSpringBoot) {
+  if (isSpringBoot || isQuarkus) {
     const frameworkNames: Record<string, string> = {
       "spring-boot": "Spring Boot",
+      quarkus: "Quarkus",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[javaWebFramework] || javaWebFramework}\n`;
   } else {

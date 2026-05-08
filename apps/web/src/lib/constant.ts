@@ -3529,6 +3529,14 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
     {
+      id: "quarkus",
+      name: "Quarkus",
+      description: "Cloud-native Java framework optimized for fast startup and lower memory use",
+      icon: "https://cdn.simpleicons.org/quarkus/4695EB",
+      color: "from-blue-500 to-indigo-700",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Web Framework",
       description: "Skip Java web framework selection",
@@ -3820,18 +3828,6 @@ export const TECH_OPTIONS: Record<
     },
   ],
 };
-
-export const PLANNED_JAVA_OPTIONS = [
-  {
-    category: "javaWebFramework",
-    id: "quarkus",
-    name: "Quarkus",
-    description: "Planned Java framework support",
-    icon: "https://cdn.simpleicons.org/quarkus/4695EB",
-    color: "from-blue-500 to-indigo-700",
-    status: "Planned",
-  },
-] as const;
 
 // Ecosystem configuration
 export const ECOSYSTEMS: {

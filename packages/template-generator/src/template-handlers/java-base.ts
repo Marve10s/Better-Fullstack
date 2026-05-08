@@ -14,6 +14,7 @@ type JavaTemplateContext = ProjectConfig & {
   isJavaMaven: boolean;
   isJavaGradle: boolean;
   isJavaSpringBoot: boolean;
+  isJavaQuarkus: boolean;
   isJavaPlainJava: boolean;
   hasJavaJpa: boolean;
   hasJavaSecurity: boolean;
@@ -146,6 +147,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   // `javaWebFramework=spring-boot` with `javaBuildTool=none`, fall back to the
   // plain-Java path instead of emitting uncompilable Spring sources.
   const isJavaSpringBoot = config.javaWebFramework === "spring-boot" && hasJavaBuildTool;
+  const isJavaQuarkus = config.javaWebFramework === "quarkus" && hasJavaBuildTool;
   const hasJavaJpa = isJavaSpringBoot && config.javaOrm === "spring-data-jpa";
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
@@ -190,7 +192,8 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     isJavaMaven: config.javaBuildTool === "maven",
     isJavaGradle: config.javaBuildTool === "gradle",
     isJavaSpringBoot,
-    isJavaPlainJava: !isJavaSpringBoot,
+    isJavaQuarkus,
+    isJavaPlainJava: !isJavaSpringBoot && !isJavaQuarkus,
     hasJavaJpa,
     hasJavaSecurity: isJavaSpringBoot && config.javaAuth === "spring-security",
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
@@ -241,11 +244,27 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
   }
 
   if (
-    !context.isJavaSpringBoot &&
+    context.isJavaPlainJava &&
     (templatePath.includes("/config/") ||
       templatePath.includes("/controller/") ||
       templatePath.includes("src/main/resources/"))
   ) {
+    return true;
+  }
+
+  if (context.isJavaQuarkus) {
+    if (
+      templatePath.includes("/controller/") ||
+      templatePath.includes("/config/") ||
+      templatePath.includes("src/main/resources/") ||
+      templatePath.endsWith("/ApplicationTests.java.hbs") ||
+      templatePath.endsWith("/ApplicationContainerTests.java.hbs")
+    ) {
+      return true;
+    }
+  }
+
+  if (!context.isJavaQuarkus && templatePath.includes("/resource/")) {
     return true;
   }
 

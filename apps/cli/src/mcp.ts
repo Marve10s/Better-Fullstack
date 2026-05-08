@@ -287,12 +287,18 @@ function getInstallCommand(
   projectName: string,
   packageManager?: string,
   javaBuildTool?: string,
+  javaWebFramework?: string,
 ): string {
   switch (ecosystem) {
     case "rust": return `cd ${projectName} && cargo build`;
     case "python": return `cd ${projectName} && uv sync`;
     case "go": return `cd ${projectName} && go mod tidy`;
     case "java":
+      if (javaWebFramework === "quarkus") {
+        return javaBuildTool === "gradle"
+          ? `cd ${projectName} && ./gradlew test && ./gradlew quarkusDev`
+          : `cd ${projectName} && ./mvnw test && ./mvnw quarkus:dev`;
+      }
       return javaBuildTool === "gradle"
         ? `cd ${projectName} && ./gradlew test && ./gradlew bootRun`
         : `cd ${projectName} && ./mvnw test && ./mvnw spring-boot:run`;
@@ -851,6 +857,7 @@ export async function startMcpServer() {
           projectName,
           input.packageManager,
           input.javaBuildTool as string | undefined,
+          input.javaWebFramework as string | undefined,
         );
         return {
           content: [{
@@ -972,6 +979,7 @@ export async function startMcpServer() {
             dirName,
             input.packageManager,
             existingConfig?.javaBuildTool,
+            existingConfig?.javaWebFramework,
           );
           return {
             content: [{

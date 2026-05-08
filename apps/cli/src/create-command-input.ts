@@ -206,7 +206,7 @@ export const CreateCommandOptionsSchema = z.object({
   goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
   goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
   javaWebFramework: JavaWebFrameworkSchema.optional().describe(
-    "Java web framework (spring-boot, none)",
+    "Java web framework (spring-boot, quarkus, none)",
   ),
   javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool (maven, gradle, none)"),
   javaOrm: JavaOrmSchema.optional().describe("Java ORM/database (spring-data-jpa)"),

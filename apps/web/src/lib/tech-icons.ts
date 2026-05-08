@@ -380,6 +380,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Java ──────────────────────────────────────────────────────────────────
   "spring-boot": { type: "si", slug: "springboot", hex: "6DB33F" },
+  quarkus: { type: "si", slug: "quarkus", hex: "4695EB" },
   maven: { type: "si", slug: "apachemaven", hex: "C71A36" },
   gradle: { type: "si", slug: "gradle", hex: "02303A" },
   "spring-data-jpa": { type: "si", slug: "hibernate", hex: "59666C" },

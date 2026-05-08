@@ -266,6 +266,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.spring.io/spring-boot/",
     githubUrl: "https://github.com/spring-projects/spring-boot",
   },
+  quarkus: {
+    docsUrl: "https://quarkus.io/guides/",
+    githubUrl: "https://github.com/quarkusio/quarkus",
+  },
   maven: {
     docsUrl: "https://maven.apache.org/guides/",
     githubUrl: "https://github.com/apache/maven",

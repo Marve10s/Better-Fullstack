@@ -706,6 +706,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
+    quarkus: "Quarkus",
   },
   javaBuildTool: {
     maven: "Maven",

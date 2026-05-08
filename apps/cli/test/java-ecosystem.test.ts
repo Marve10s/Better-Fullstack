@@ -153,9 +153,8 @@ describe("Java Ecosystem", () => {
       expect(ECOSYSTEMS).toHaveLength(5);
     });
 
-    it("should only expose scaffolded Java web framework values", () => {
-      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "none"]);
-      expect(JAVA_WEB_FRAMEWORKS).not.toContain("quarkus");
+    it("should expose scaffolded Java web framework values", () => {
+      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "quarkus", "none"]);
     });
 
     it("should only expose scaffolded Java build tool values", () => {
@@ -251,6 +250,95 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<groupId>com.example</groupId>");
       expect(pomContent).toContain("<artifactId>java-pom-check</artifactId>");
       expect(pomContent).not.toContain("package.json");
+    });
+
+    it("should create a Quarkus Maven project with REST support", async () => {
+      const result = await createVirtual({
+        projectName: "java-quarkus-maven",
+        ecosystem: "java",
+        javaWebFramework: "quarkus",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+        aiDocs: ["claude-md"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "pom.xml")).toBe(true);
+      expect(hasFile(root, "mvnw")).toBe(true);
+      expect(hasFile(root, "src/main/java/com/example/javaquarkusmaven/Application.java")).toBe(
+        true,
+      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java"),
+      ).toBe(false);
+      expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
+
+      const pomContent = getFileContent(root, "pom.xml");
+      const applicationContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaquarkusmaven/Application.java",
+      );
+      const resourceContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java",
+      );
+      const readmeContent = getFileContent(root, "README.md");
+      const claudeContent = getFileContent(root, "CLAUDE.md");
+
+      expect(pomContent).toContain("<quarkus.platform.version>3.35.2</quarkus.platform.version>");
+      expect(pomContent).toContain("<artifactId>quarkus-rest</artifactId>");
+      expect(pomContent).toContain("<artifactId>quarkus-junit5</artifactId>");
+      expect(pomContent).toContain("<artifactId>quarkus-maven-plugin</artifactId>");
+      expect(pomContent).not.toContain("spring-boot-starter-parent");
+      expect(applicationContent).toContain("@QuarkusMain");
+      expect(resourceContent).toContain('@Path("/hello")');
+      expect(readmeContent).toContain("./mvnw quarkus:dev");
+      expect(readmeContent).toContain("http://localhost:8080/hello");
+      expect(claudeContent).toContain("Web Framework: quarkus");
+      expect(claudeContent).toContain("./mvnw quarkus:dev");
+    });
+
+    it("should create a Quarkus Gradle project with REST support", async () => {
+      const result = await createVirtual({
+        projectName: "java-quarkus-gradle",
+        ecosystem: "java",
+        javaWebFramework: "quarkus",
+        javaBuildTool: "gradle",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "build.gradle.kts")).toBe(true);
+      expect(hasFile(root, "gradlew")).toBe(true);
+      expect(hasFile(root, "pom.xml")).toBe(false);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusgradle/resource/GreetingResource.java"),
+      ).toBe(true);
+
+      const gradleContent = getFileContent(root, "build.gradle.kts");
+      const readmeContent = getFileContent(root, "README.md");
+
+      expect(gradleContent).toContain('id("io.quarkus") version "3.35.2"');
+      expect(gradleContent).toContain(
+        'implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.35.2"))',
+      );
+      expect(gradleContent).toContain('implementation("io.quarkus:quarkus-rest")');
+      expect(gradleContent).toContain('testImplementation("io.quarkus:quarkus-junit5")');
+      expect(gradleContent).not.toContain("org.springframework.boot");
+      expect(readmeContent).toContain("./gradlew quarkusDev");
     });
 
     it("should create a Spring Boot project with Gradle Wrapper files", async () => {

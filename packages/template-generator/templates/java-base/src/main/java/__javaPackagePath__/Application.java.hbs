@@ -6,18 +6,31 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 {{#if hasJavaCaffeine}}
 import org.springframework.cache.annotation.EnableCaching;
 {{/if}}
+{{/if}}
+{{#if isJavaQuarkus}}
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
+{{/if}}
+{{#if isJavaSpringBoot}}
 @SpringBootApplication
 {{#if hasJavaCaffeine}}
 @EnableCaching
 {{/if}}
+{{/if}}
+{{#if isJavaQuarkus}}
+@QuarkusMain
 {{/if}}
 public class Application {
 
   public static void main(String[] args) {
 {{#if isJavaSpringBoot}}
     SpringApplication.run(Application.class, args);
-{{else}}
+{{/if}}
+{{#if isJavaQuarkus}}
+    Quarkus.run(args);
+{{/if}}
+{{#if isJavaPlainJava}}
     System.out.println("Hello from {{projectName}}");
 {{/if}}
   }

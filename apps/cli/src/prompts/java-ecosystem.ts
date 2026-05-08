@@ -22,6 +22,11 @@ const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
     hint: "Production-grade Java framework with embedded server and auto-configuration",
   },
   {
+    value: "quarkus",
+    label: "Quarkus",
+    hint: "Cloud-native Java framework optimized for fast startup and lower memory use",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No Java web framework",

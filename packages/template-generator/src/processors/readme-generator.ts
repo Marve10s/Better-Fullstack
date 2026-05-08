@@ -106,6 +106,10 @@ function isSpringBootJavaProject(config: ProjectConfig): boolean {
   return config.javaWebFramework === "spring-boot" && config.javaBuildTool !== "none";
 }
 
+function isQuarkusJavaProject(config: ProjectConfig): boolean {
+  return config.javaWebFramework === "quarkus" && config.javaBuildTool !== "none";
+}
+
 function getEffectiveJavaLibraries(config: ProjectConfig): string[] {
   if (!isSpringBootJavaProject(config)) return [];
   const hasJavaJpa = config.javaOrm === "spring-data-jpa";
@@ -137,12 +141,17 @@ function getJavaBuildToolCommand(config: ProjectConfig): string | null {
 
 function generateJavaReadmeContent(config: ProjectConfig): string {
   const isSpringBoot = isSpringBootJavaProject(config);
+  const isQuarkus = isQuarkusJavaProject(config);
   const buildToolCommand = getJavaBuildToolCommand(config);
   const runCommand = buildToolCommand
     ? isSpringBoot
       ? config.javaBuildTool === "gradle"
         ? `${buildToolCommand} bootRun`
         : `${buildToolCommand} spring-boot:run`
+      : isQuarkus
+        ? config.javaBuildTool === "gradle"
+          ? `${buildToolCommand} quarkusDev`
+          : `${buildToolCommand} quarkus:dev`
       : config.javaBuildTool === "gradle"
         ? `${buildToolCommand} run`
         : `${buildToolCommand} exec:java`
@@ -162,7 +171,7 @@ function generateJavaReadmeContent(config: ProjectConfig): string {
   const testingLibraries = getEffectiveJavaTestingLibraries(config);
   const features = [
     "Java 21",
-    isSpringBoot ? "Spring Boot 4" : "Plain Java",
+    isSpringBoot ? "Spring Boot 4" : isQuarkus ? "Quarkus 3" : "Plain Java",
     config.javaBuildTool === "maven" ? "Maven Wrapper" : null,
     config.javaBuildTool === "gradle" ? "Gradle Wrapper" : null,
     config.javaBuildTool === "none" ? "No build tool" : null,
@@ -191,6 +200,7 @@ function generateJavaReadmeContent(config: ProjectConfig): string {
         : null,
     "├── src/main/java/         # Application source code",
     isSpringBoot ? "├── src/main/resources/    # Spring configuration" : null,
+    isQuarkus ? "├── src/main/java/*/resource/ # Quarkus REST resources" : null,
   ].filter(Boolean) as string[];
 
   if (testingLibraries.length > 0) {
@@ -221,7 +231,7 @@ ${testCommand}
     : ""
 }${
     buildToolCommand && runCommand
-      ? `${isSpringBoot ? "Start the Spring Boot application" : "Run the application"}:
+      ? `${isSpringBoot ? "Start the Spring Boot application" : isQuarkus ? "Start the Quarkus dev server" : "Run the application"}:
 
 \`\`\`bash
 ${runCommand}
@@ -244,6 +254,7 @@ ${sourceOnlyRunCommand}
 `
         : ""
   }${isSpringBoot ? "The health endpoint is available at `http://localhost:8080/health`.\n" : ""}
+${isQuarkus ? "The sample endpoint is available at `http://localhost:8080/hello`.\n" : ""}
 ${
   isSpringBoot && config.javaOrm === "spring-data-jpa"
     ? "\nThe generated JPA example also exposes `GET /users` and `POST /users`, backed by an embedded H2 database.\n"

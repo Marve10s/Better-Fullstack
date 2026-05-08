@@ -396,7 +396,7 @@ export const GoAuthSchema = z.enum(["casbin", "jwt", "none"]).describe("Go authe
 
 // Java ecosystem schemas
 export const JavaWebFrameworkSchema = z
-  .enum(["spring-boot", "none"])
+  .enum(["spring-boot", "quarkus", "none"])
   .describe("Java web framework");
 
 export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");

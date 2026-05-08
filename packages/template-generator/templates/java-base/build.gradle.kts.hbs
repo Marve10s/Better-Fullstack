@@ -3,6 +3,9 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
+{{else if isJavaQuarkus}}
+	java
+	id("io.quarkus") version "3.35.2"
 {{else}}
 	java
 	application
@@ -12,7 +15,7 @@ plugins {
 group = "{{javaGroupId}}"
 version = "0.0.1-SNAPSHOT"
 
-{{#unless isJavaSpringBoot}}
+{{#if isJavaPlainJava}}
 application {
 	mainClass = "{{javaPackageName}}.Application"
 }
@@ -22,7 +25,7 @@ tasks.jar {
 		attributes["Main-Class"] = "{{javaPackageName}}.Application"
 	}
 }
-{{/unless}}
+{{/if}}
 
 java {
 	toolchain {
@@ -132,6 +135,12 @@ dependencies {
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 {{/if}}
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+{{/if}}
+{{else if isJavaQuarkus}}
+	implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.35.2"))
+	implementation("io.quarkus:quarkus-rest")
+{{#if hasJavaTests}}
+	testImplementation("io.quarkus:quarkus-junit5")
 {{/if}}
 {{else}}
 {{#if hasJavaTests}}

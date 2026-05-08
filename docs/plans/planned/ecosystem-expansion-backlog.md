@@ -16,7 +16,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | **New Ecosystems** | |
 | [new-ecosystems.md](new-ecosystems.md) | Index — links to individual ecosystem files below |
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
-| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
+| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir: Phoenix, Ecto, LiveView, Oban, Absinthe, etc. |
 | [dotnet-ecosystem.md](dotnet-ecosystem.md) | C#: ASP.NET Core, EF Core, Dapper, SignalR, etc. |
 | **Platform & Infra** | |
@@ -129,7 +129,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 
 ### New Language Ecosystems
 - [x] Add `java` foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries/testing ✅
-- [ ] Expand Java with Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
+- [ ] Expand Java with Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
 - [ ] Add `elixir` (Phoenix, LiveView)
 - [ ] Add `c#/aspnet` (ASP.NET Core, EF Core)
 

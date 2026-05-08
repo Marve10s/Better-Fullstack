@@ -45,6 +45,15 @@
 {{#if hasJavaJqwik}}
 		<jqwik.version>1.9.3</jqwik.version>
 {{/if}}
+{{else if isJavaQuarkus}}
+		<compiler-plugin.version>3.14.1</compiler-plugin.version>
+		<maven.compiler.release>21</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+		<quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+		<quarkus.platform.version>3.35.2</quarkus.platform.version>
+		<surefire-plugin.version>3.5.3</surefire-plugin.version>
 {{else}}
 		<maven.compiler.release>21</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -83,7 +92,20 @@
 {{/if}}
 {{/if}}
 	</properties>
-{{#unless isJavaSpringBoot}}
+{{#if isJavaQuarkus}}
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>${quarkus.platform.group-id}</groupId>
+				<artifactId>${quarkus.platform.artifact-id}</artifactId>
+				<version>${quarkus.platform.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+{{/if}}
+{{#if (and (not isJavaSpringBoot) (not isJavaQuarkus))}}
 {{#if hasJavaTests}}
 	<dependencyManagement>
 		<dependencies>
@@ -106,7 +128,7 @@
 		</dependencies>
 	</dependencyManagement>
 {{/if}}
-{{/unless}}
+{{/if}}
 	<dependencies>
 {{#if isJavaSpringBoot}}
 {{#if hasJavaJpa}}
@@ -322,6 +344,18 @@
 		</dependency>
 {{/if}}
 {{/if}}
+{{else if isJavaQuarkus}}
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-rest</artifactId>
+		</dependency>
+{{#if hasJavaTests}}
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-junit5</artifactId>
+			<scope>test</scope>
+		</dependency>
+{{/if}}
 {{else}}
 {{#if hasJavaTests}}
 		<dependency>
@@ -430,6 +464,40 @@
 						</path>
 {{/if}}
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+{{/if}}
+{{else if isJavaQuarkus}}
+			<plugin>
+				<groupId>${quarkus.platform.group-id}</groupId>
+				<artifactId>quarkus-maven-plugin</artifactId>
+				<version>${quarkus.platform.version}</version>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build</goal>
+							<goal>generate-code</goal>
+							<goal>generate-code-tests</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler-plugin.version}</version>
+				<configuration>
+					<parameters>true</parameters>
+				</configuration>
+			</plugin>
+{{#if hasJavaTests}}
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${surefire-plugin.version}</version>
+				<configuration>
+					<systemPropertyVariables>
+						<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 {{/if}}

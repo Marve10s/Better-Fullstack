@@ -581,6 +581,7 @@ export function validateJavaConstraints(
   if (config.ecosystem !== "java") return;
 
   const hasSpringBoot = config.javaWebFramework === "spring-boot";
+  const hasJavaWebFramework = config.javaWebFramework !== "none";
   const hasNoBuildTool = config.javaBuildTool === "none";
   const hasJavaLibraries = (config.javaLibraries ?? []).some((library) => library !== "none");
   const hasJavaTestingLibraries = (config.javaTestingLibraries ?? []).some(
@@ -591,21 +592,21 @@ export function validateJavaConstraints(
     config.javaAuth !== "none" ||
     hasJavaLibraries;
 
-  if (hasNoBuildTool && hasSpringBoot) {
+  if (hasNoBuildTool && hasJavaWebFramework) {
     incompatibilityError({
-      message: "Spring Boot requires Maven or Gradle in the Java scaffold.",
+      message: "Java web frameworks require Maven or Gradle in the Java scaffold.",
       provided: {
         "java-web-framework": config.javaWebFramework ?? "none",
         "java-build-tool": config.javaBuildTool ?? "none",
       },
       suggestions: [
-        "Use --java-build-tool maven or --java-build-tool gradle with Spring Boot",
+        "Use --java-build-tool maven or --java-build-tool gradle with Java web frameworks",
         "Use --java-web-framework none for a plain Java source-only scaffold",
       ],
     });
   }
 
-  if ((config.javaWebFramework === "none" || hasNoBuildTool) && hasSpringOnlyFeatures) {
+  if ((!hasSpringBoot || hasNoBuildTool) && hasSpringOnlyFeatures) {
     incompatibilityError({
       message: "Spring-only Java features require the Spring Boot scaffold with Maven or Gradle.",
       provided: {
@@ -617,7 +618,7 @@ export function validateJavaConstraints(
       },
       suggestions: [
         "Use --java-web-framework spring-boot and a real build tool for Spring features",
-        "Clear --java-orm, --java-auth, and --java-libraries when using plain Java",
+        "Clear --java-orm, --java-auth, and --java-libraries when using plain Java or Quarkus",
       ],
     });
   }

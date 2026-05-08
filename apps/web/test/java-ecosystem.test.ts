@@ -11,7 +11,6 @@ import {
   DEFAULT_STACK,
   ECOSYSTEMS,
   ECOSYSTEM_CATEGORIES,
-  PLANNED_JAVA_OPTIONS,
   PRESET_CATEGORIES,
   TECH_OPTIONS,
   type StackState,
@@ -97,8 +96,12 @@ describe("Java Ecosystem Tab", () => {
       ).toBe(true);
     });
 
-    it("should keep planned options out of selectable builder options", () => {
-      expect(TECH_OPTIONS.javaWebFramework.map((option) => option.id)).not.toContain("quarkus");
+    it("should expose Java framework and library options", () => {
+      expect(TECH_OPTIONS.javaWebFramework.map((option) => option.id)).toEqual([
+        "spring-boot",
+        "quarkus",
+        "none",
+      ]);
       expect(TECH_OPTIONS.javaBuildTool.map((option) => option.id)).toContain("gradle");
       expect(TECH_OPTIONS.javaLibraries.map((option) => option.id)).toEqual([
         "spring-actuator",
@@ -131,13 +134,6 @@ describe("Java Ecosystem Tab", () => {
         "jqwik",
         "none",
       ]);
-    });
-  });
-
-  describe("Planned Java options", () => {
-    it("should expose only unimplemented roadmap items as planned metadata", () => {
-      expect(PLANNED_JAVA_OPTIONS.map((option) => option.id)).toEqual(["quarkus"]);
-      expect(PLANNED_JAVA_OPTIONS.map((option) => option.category)).toEqual(["javaWebFramework"]);
     });
   });
 
