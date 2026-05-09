@@ -899,6 +899,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
+    validatePythonApiConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);

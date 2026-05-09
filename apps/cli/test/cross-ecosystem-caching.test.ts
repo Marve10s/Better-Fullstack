@@ -75,6 +75,24 @@ describe("Cross-ecosystem caching services", () => {
     expect(getFileContent(root, ".env.example")).toContain("UPSTASH_REDIS_URL=");
   });
 
+  it("emits one Rust Redis workspace dependency when shared and Rust caching both use Redis", async () => {
+    const result = await createVirtual({
+      projectName: "rust-upstash-local-redis",
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+      caching: "upstash-redis",
+      rustCaching: "redis",
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+    const cargoContent = getFileContent(root, "Cargo.toml");
+    const serverCargoContent = getFileContent(root, "crates/server/Cargo.toml");
+
+    expect(cargoContent.match(/^redis = /gm)).toHaveLength(1);
+    expect(serverCargoContent.match(/^redis\.workspace = true/gm)).toHaveLength(1);
+  });
+
   it("initializes Upstash Redis for Rust Actix and Rocket projects", async () => {
     for (const rustWebFramework of ["actix-web", "rocket"] as const) {
       const result = await createVirtual({

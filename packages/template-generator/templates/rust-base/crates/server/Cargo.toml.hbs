@@ -45,8 +45,8 @@ resend-rs.workspace = true
 # Error tracking and performance monitoring
 sentry.workspace = true
 {{/if}}
-{{#if (eq caching "upstash-redis")}}
-# Upstash Redis via Redis protocol
+{{#if (or (eq caching "upstash-redis") (eq rustCaching "redis"))}}
+# Redis client
 redis.workspace = true
 {{/if}}
 {{#if (eq search "meilisearch")}}
@@ -153,11 +153,6 @@ utoipa.workspace = true
 # Caching
 moka.workspace = true
 {{/if}}
-{{#if (eq rustCaching "redis")}}
-# Caching
-redis.workspace = true
-{{/if}}
-
 {{#if (eq rustAuth "oauth2")}}
 # Auth
 oauth2.workspace = true

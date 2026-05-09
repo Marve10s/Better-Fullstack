@@ -4,7 +4,11 @@ import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
 import { runWithContext } from "../src/utils/context";
-import { validatePythonApiConstraints } from "../src/utils/config-validation";
+import {
+  validateConfigForProgrammaticUse,
+  validateFullConfig,
+  validatePythonApiConstraints,
+} from "../src/utils/config-validation";
 import {
   EcosystemSchema,
   PythonWebFrameworkSchema,
@@ -389,6 +393,34 @@ describe("Python Language Support", () => {
       expect(() =>
         runWithContext({ silent: true }, () =>
           validatePythonApiConstraints({
+            ecosystem: "python",
+            pythonWebFramework: "fastapi",
+            pythonApi: "django-ninja",
+          }),
+        ),
+      ).toThrow("Python API frameworks require --python-web-framework django.");
+    });
+
+    it("should reject Django API frameworks through full CLI validation", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateFullConfig(
+            {
+              ecosystem: "python",
+              pythonWebFramework: "fastapi",
+              pythonApi: "django-ninja",
+            },
+            new Set(["ecosystem", "pythonWebFramework", "pythonApi"]),
+            {} as never,
+          ),
+        ),
+      ).toThrow("Python API frameworks require --python-web-framework django.");
+    });
+
+    it("should reject Django API frameworks through programmatic validation", () => {
+      expect(() =>
+        runWithContext({ silent: true }, () =>
+          validateConfigForProgrammaticUse({
             ecosystem: "python",
             pythonWebFramework: "fastapi",
             pythonApi: "django-ninja",
