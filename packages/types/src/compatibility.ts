@@ -1865,7 +1865,7 @@ export const getDisabledReason = (
   // ============================================
   if (category === "appPlatforms") {
     if (optionId === "pwa" && !hasPWACompatibleFrontend(currentStack.webFrontend)) {
-      return "PWA requires TanStack Router, React Router, Solid, Next.js, or Astro";
+      return "PWA requires TanStack Router, React Router, Solid, Next.js, Vinext, or Astro";
     }
     if (optionId === "tauri" && !hasTauriCompatibleFrontend(currentStack.webFrontend)) {
       return "Tauri requires TanStack Router, React Router, Nuxt, Svelte, Solid, Next.js, or Astro";
@@ -2371,6 +2371,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "react-vite",
     "solid",
     "next",
+    "vinext",
     "astro",
     "qwik",
     "angular",
