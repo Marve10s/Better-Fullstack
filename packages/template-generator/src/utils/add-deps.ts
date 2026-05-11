@@ -102,7 +102,7 @@ export const dependencyVersionMap = {
 
   husky: "^9.1.7",
   lefthook: "^2.1.6",
-  "lint-staged": "^17.0.4",
+  "lint-staged": "^16.4.0",
 
   tsx: "^4.21.0",
   "@types/node": "^25.6.2",
