@@ -1,5 +1,6 @@
 import type {
   PythonAi,
+  PythonApi,
   PythonAuth,
   PythonGraphql,
   PythonOrm,
@@ -117,6 +118,11 @@ const PYTHON_AI_PROMPT_OPTIONS: PromptOption<PythonAi>[] = [
     label: "CrewAI",
     hint: "Multi-agent orchestration framework",
   },
+  {
+    value: "haystack",
+    label: "Haystack",
+    hint: "Composable LLM pipelines, RAG, and search applications",
+  },
 ];
 
 const PYTHON_AUTH_PROMPT_OPTIONS: PromptOption<PythonAuth>[] = [
@@ -137,11 +143,44 @@ const PYTHON_AUTH_PROMPT_OPTIONS: PromptOption<PythonAuth>[] = [
   },
 ];
 
+const PYTHON_API_PROMPT_OPTIONS: PromptOption<PythonApi>[] = [
+  {
+    value: "django-rest-framework",
+    label: "Django REST Framework",
+    hint: "Mature, widely used toolkit for building Django REST APIs",
+  },
+  {
+    value: "django-ninja",
+    label: "Django Ninja",
+    hint: "FastAPI-style Django APIs with type hints and automatic OpenAPI docs",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No additional Python API framework",
+  },
+];
+
 const PYTHON_TASK_QUEUE_PROMPT_OPTIONS: PromptOption<PythonTaskQueue>[] = [
   {
     value: "celery",
     label: "Celery",
     hint: "Distributed task queue for Python",
+  },
+  {
+    value: "rq",
+    label: "RQ",
+    hint: "Simple Redis-backed job queue for Python",
+  },
+  {
+    value: "dramatiq",
+    label: "Dramatiq",
+    hint: "Distributed task processing with Redis or RabbitMQ brokers",
+  },
+  {
+    value: "huey",
+    label: "Huey",
+    hint: "Lightweight task queue with Redis-backed scheduling",
   },
   {
     value: "none",
@@ -157,6 +196,11 @@ const PYTHON_GRAPHQL_PROMPT_OPTIONS: PromptOption<PythonGraphql>[] = [
     hint: "Python GraphQL library using dataclasses and type hints",
   },
   {
+    value: "ariadne",
+    label: "Ariadne",
+    hint: "Schema-first GraphQL server library for Python",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No GraphQL framework",
@@ -168,6 +212,16 @@ const PYTHON_QUALITY_PROMPT_OPTIONS: PromptOption<PythonQuality>[] = [
     value: "ruff",
     label: "Ruff",
     hint: "An extremely fast Python linter and formatter",
+  },
+  {
+    value: "mypy",
+    label: "mypy",
+    hint: "Static type checker for Python",
+  },
+  {
+    value: "pyright",
+    label: "Pyright",
+    hint: "Fast Python type checker from Microsoft",
   },
   {
     value: "none",
@@ -293,6 +347,31 @@ export async function getPythonAuthChoice(pythonAuth?: PythonAuth) {
     message: "Select Python authentication library",
     options: resolution.options,
     initialValue: resolution.initialValue as PythonAuth,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolvePythonApiPrompt(pythonApi?: PythonApi) {
+  return createStaticSinglePromptResolution(
+    PYTHON_API_PROMPT_OPTIONS,
+    "none",
+    pythonApi,
+  );
+}
+
+export async function getPythonApiChoice(pythonApi?: PythonApi) {
+  const resolution = resolvePythonApiPrompt(pythonApi);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<PythonApi>({
+    message: "Select Python API framework",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonApi,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

@@ -1,4 +1,4 @@
-import type { Backend, Email } from "../types";
+import type { Backend, Ecosystem, Email } from "../types";
 
 import { DEFAULT_CONFIG } from "../constants";
 import { exitCancelled } from "../utils/errors";
@@ -53,15 +53,28 @@ const EMAIL_PROMPT_OPTIONS = [
   },
 ];
 
+const NON_TYPESCRIPT_EMAIL_PROMPT_OPTIONS = EMAIL_PROMPT_OPTIONS.filter((option) =>
+  option.value === "resend" || option.value === "none"
+);
+
 type EmailPromptContext = {
   email?: Email;
   backend?: Backend;
+  ecosystem?: Ecosystem;
 };
 
 export function resolveEmailPrompt(
   context: EmailPromptContext = {},
 ): PromptSingleResolution<Email> {
-  if (context.backend === "none" || context.backend === "convex") {
+  const options =
+    context.ecosystem && context.ecosystem !== "typescript"
+      ? NON_TYPESCRIPT_EMAIL_PROMPT_OPTIONS
+      : EMAIL_PROMPT_OPTIONS;
+
+  if (
+    (!context.ecosystem || context.ecosystem === "typescript") &&
+    (context.backend === "none" || context.backend === "convex")
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",
@@ -74,19 +87,19 @@ export function resolveEmailPrompt(
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: EMAIL_PROMPT_OPTIONS,
+        options,
         autoValue: context.email,
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: EMAIL_PROMPT_OPTIONS,
+        options,
         initialValue: DEFAULT_CONFIG.email ?? "none",
       };
 }
 
-export async function getEmailChoice(email?: Email, backend?: Backend) {
-  const resolution = resolveEmailPrompt({ email, backend });
+export async function getEmailChoice(email?: Email, backend?: Backend, ecosystem?: Ecosystem) {
+  const resolution = resolveEmailPrompt({ email, backend, ecosystem });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

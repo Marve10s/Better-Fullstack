@@ -1,0 +1,27 @@
+{{#if (eq caching "upstash-redis")}}
+"""Upstash Redis cache helper."""
+
+from typing import Any
+
+from upstash_redis.asyncio import Redis
+
+
+redis = Redis.from_env()
+
+
+async def get_cache(key: str) -> Any:
+    """Get a cached value by key."""
+    return await redis.get(key)
+
+
+async def set_cache(key: str, value: Any, ttl_seconds: int | None = None) -> Any:
+    """Set a cached value, optionally with a TTL in seconds."""
+    if ttl_seconds is None:
+        return await redis.set(key, value)
+    return await redis.set(key, value, ex=ttl_seconds)
+
+
+async def delete_cache(key: str) -> Any:
+    """Delete a cached value by key."""
+    return await redis.delete(key)
+{{/if}}

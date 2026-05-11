@@ -83,6 +83,11 @@ const GO_CLI_PROMPT_OPTIONS: PromptOption<GoCli>[] = [
     hint: "Powerful TUI framework based on The Elm Architecture",
   },
   {
+    value: "urfave-cli",
+    label: "urfave/cli",
+    hint: "Declarative CLI framework with commands, flags, and shell completion",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No CLI tools",
@@ -104,6 +109,11 @@ const GO_LOGGING_PROMPT_OPTIONS: PromptOption<GoLogging>[] = [
     value: "slog",
     label: "slog",
     hint: "Go 1.21+ stdlib structured logging (no external dependency)",
+  },
+  {
+    value: "logrus",
+    label: "Logrus",
+    hint: "Classic structured logger with hooks and formatter ecosystem",
   },
   {
     value: "none",

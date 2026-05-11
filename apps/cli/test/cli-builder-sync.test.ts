@@ -62,6 +62,52 @@ describe("CLI and Builder catalog parity", () => {
     expect(missingBuilderCategories).toEqual([]);
   });
 
+  it("keeps explicit canonical labels for the tools added in this PR", () => {
+    const expectedLabels: Array<[OptionCategory, string, string]> = [
+      ["uiLibrary", "mui", "MUI"],
+      ["uiLibrary", "antd", "Ant Design"],
+      ["shadcnStyle", "luma", "Luma"],
+      ["shadcnStyle", "sera", "Sera"],
+      ["shadcnIconLibrary", "heroicons", "Heroicons"],
+      ["shadcnIconLibrary", "react-icons", "React Icons"],
+      ["rustLibraries", "uuid", "uuid"],
+      ["rustLibraries", "chrono", "Chrono"],
+      ["rustLibraries", "reqwest", "Reqwest"],
+      ["rustLibraries", "config", "config"],
+      ["rustLibraries", "dashmap", "DashMap"],
+      ["rustLibraries", "parking-lot", "parking_lot"],
+      ["rustLibraries", "secrecy", "Secrecy"],
+      ["rustLibraries", "tokio-util", "Tokio Util"],
+      ["rustLibraries", "utoipa", "utoipa"],
+      ["rustLibraries", "proptest", "Proptest"],
+      ["rustLibraries", "insta", "Insta"],
+      ["pythonAi", "haystack", "Haystack"],
+      ["pythonApi", "django-rest-framework", "Django REST Framework"],
+      ["pythonApi", "django-ninja", "Django Ninja"],
+      ["pythonTaskQueue", "rq", "RQ"],
+      ["pythonTaskQueue", "dramatiq", "Dramatiq"],
+      ["pythonTaskQueue", "huey", "Huey"],
+      ["pythonGraphql", "ariadne", "Ariadne"],
+      ["pythonQuality", "mypy", "mypy"],
+      ["pythonQuality", "pyright", "Pyright"],
+      ["goCli", "urfave-cli", "urfave/cli"],
+      ["goLogging", "logrus", "Logrus"],
+      ["javaWebFramework", "quarkus", "Quarkus"],
+      ["javaLibraries", "resilience4j", "Resilience4j"],
+      ["javaLibraries", "spring-webflux", "Spring WebFlux"],
+      ["javaLibraries", "spring-batch", "Spring Batch"],
+      ["javaLibraries", "spring-kafka", "Spring for Apache Kafka"],
+      ["javaLibraries", "spring-mail", "Spring Mail"],
+      ["javaLibraries", "spring-devtools", "Spring Boot DevTools"],
+      ["javaLibraries", "micrometer-prometheus", "Micrometer Prometheus"],
+      ["javaLibraries", "thymeleaf", "Thymeleaf"],
+    ];
+
+    for (const [category, id, label] of expectedLabels) {
+      expect(getOptionMetadata(category, id)?.label).toBe(label);
+    }
+  });
+
   for (const category of categoriesToTest) {
     const builderOptions = TECH_OPTIONS[category as keyof typeof TECH_OPTIONS];
     if (!builderOptions) continue;

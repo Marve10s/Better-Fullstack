@@ -1,0 +1,60 @@
+import { Flagsmith, type Flags } from "flagsmith-nodejs";
+
+const environmentKey = process.env.FLAGSMITH_SERVER_SIDE_ENVIRONMENT_KEY || "";
+const apiUrl = process.env.FLAGSMITH_API_URL || "https://edge.api.flagsmith.com/api/v1/";
+
+let flagsmithClient: Flagsmith | undefined;
+
+export function getFlagsmithClient(): Flagsmith {
+  if (!flagsmithClient) {
+    flagsmithClient = new Flagsmith({
+      environmentKey,
+      apiUrl,
+    });
+  }
+
+  return flagsmithClient;
+}
+
+export async function getEnvironmentFlags(): Promise<Flags | undefined> {
+  if (!environmentKey) return undefined;
+  return getFlagsmithClient().getEnvironmentFlags();
+}
+
+export async function getIdentityFlags(
+  identifier: string,
+  traits?: Record<string, string | number | boolean>,
+): Promise<Flags | undefined> {
+  if (!environmentKey) return undefined;
+  return getFlagsmithClient().getIdentityFlags(identifier, traits);
+}
+
+export async function isFeatureEnabled(
+  featureName: string,
+  identifier?: string,
+  traits?: Record<string, string | number | boolean>,
+): Promise<boolean> {
+  const flags = identifier
+    ? await getIdentityFlags(identifier, traits)
+    : await getEnvironmentFlags();
+
+  return flags?.isFeatureEnabled(featureName) ?? false;
+}
+
+export async function getFeatureValue<T>(
+  featureName: string,
+  defaultValue: T,
+  identifier?: string,
+  traits?: Record<string, string | number | boolean>,
+): Promise<T> {
+  const flags = identifier
+    ? await getIdentityFlags(identifier, traits)
+    : await getEnvironmentFlags();
+
+  return (flags?.getFeatureValue(featureName) as T | undefined) ?? defaultValue;
+}
+
+export async function closeFlagsmith(): Promise<void> {
+  await flagsmithClient?.close();
+  flagsmithClient = undefined;
+}

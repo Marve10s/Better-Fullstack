@@ -67,10 +67,29 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     crewai_verbose: bool = True
 {{/if}}
+{{#if (includes pythonAi "haystack")}}
+    # Haystack settings
+    openai_api_key: str = ""
+    haystack_default_model: str = "gpt-4o-mini"
+{{/if}}
 {{#if (eq pythonTaskQueue "celery")}}
     # Celery settings
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/0"
+{{/if}}
+{{#if (eq pythonTaskQueue "rq")}}
+    # RQ settings
+    rq_redis_url: str = "redis://localhost:6379/0"
+    rq_default_queue: str = "default"
+{{/if}}
+{{#if (eq pythonTaskQueue "dramatiq")}}
+    # Dramatiq settings
+    dramatiq_broker_url: str = "redis://localhost:6379/0"
+{{/if}}
+{{#if (eq pythonTaskQueue "huey")}}
+    # Huey settings
+    huey_redis_url: str = "redis://localhost:6379/0"
+    huey_name: str = "{{projectName}}"
 {{/if}}
 
 

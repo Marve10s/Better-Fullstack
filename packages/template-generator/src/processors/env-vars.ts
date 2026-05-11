@@ -345,6 +345,97 @@ function buildClientVars(
     );
   }
 
+  if (featureFlags === "launchdarkly") {
+    let clientIdName = "VITE_LAUNCHDARKLY_CLIENT_SIDE_ID";
+
+    if (hasNextJs) {
+      clientIdName = "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID";
+    } else if (hasNuxt) {
+      clientIdName = "NUXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID";
+    } else if (hasSvelte) {
+      clientIdName = "PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID";
+    }
+
+    vars.push({
+      key: clientIdName,
+      value: "",
+      condition: true,
+      comment: "LaunchDarkly client-side ID from project environment settings",
+    });
+  }
+
+  if (featureFlags === "flagsmith") {
+    let environmentIdName = "VITE_FLAGSMITH_ENVIRONMENT_ID";
+    let apiUrlName = "VITE_FLAGSMITH_API_URL";
+
+    if (hasNextJs) {
+      environmentIdName = "NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_ID";
+      apiUrlName = "NEXT_PUBLIC_FLAGSMITH_API_URL";
+    } else if (hasNuxt) {
+      environmentIdName = "NUXT_PUBLIC_FLAGSMITH_ENVIRONMENT_ID";
+      apiUrlName = "NUXT_PUBLIC_FLAGSMITH_API_URL";
+    } else if (hasSvelte) {
+      environmentIdName = "PUBLIC_FLAGSMITH_ENVIRONMENT_ID";
+      apiUrlName = "PUBLIC_FLAGSMITH_API_URL";
+    }
+
+    vars.push(
+      {
+        key: environmentIdName,
+        value: "",
+        condition: true,
+        comment: "Flagsmith client-side environment key",
+      },
+      {
+        key: apiUrlName,
+        value: "https://edge.api.flagsmith.com/api/v1/",
+        condition: true,
+        comment: "Flagsmith API URL, override when self-hosting",
+      },
+    );
+  }
+
+  if (featureFlags === "unleash") {
+    let urlName = "VITE_UNLEASH_FRONTEND_API_URL";
+    let clientKeyName = "VITE_UNLEASH_FRONTEND_API_TOKEN";
+    let appNameName = "VITE_UNLEASH_APP_NAME";
+
+    if (hasNextJs) {
+      urlName = "NEXT_PUBLIC_UNLEASH_FRONTEND_API_URL";
+      clientKeyName = "NEXT_PUBLIC_UNLEASH_FRONTEND_API_TOKEN";
+      appNameName = "NEXT_PUBLIC_UNLEASH_APP_NAME";
+    } else if (hasNuxt) {
+      urlName = "NUXT_PUBLIC_UNLEASH_FRONTEND_API_URL";
+      clientKeyName = "NUXT_PUBLIC_UNLEASH_FRONTEND_API_TOKEN";
+      appNameName = "NUXT_PUBLIC_UNLEASH_APP_NAME";
+    } else if (hasSvelte) {
+      urlName = "PUBLIC_UNLEASH_FRONTEND_API_URL";
+      clientKeyName = "PUBLIC_UNLEASH_FRONTEND_API_TOKEN";
+      appNameName = "PUBLIC_UNLEASH_APP_NAME";
+    }
+
+    vars.push(
+      {
+        key: urlName,
+        value: "",
+        condition: true,
+        comment: "Unleash Frontend API or Edge URL",
+      },
+      {
+        key: clientKeyName,
+        value: "",
+        condition: true,
+        comment: "Unleash frontend API token",
+      },
+      {
+        key: appNameName,
+        value: "my-app",
+        condition: true,
+        comment: "Unleash application name",
+      },
+    );
+  }
+
   // Plausible analytics client-side
   if (analytics === "plausible") {
     let plausibleDomainName = "VITE_PLAUSIBLE_DOMAIN";
@@ -1124,6 +1215,42 @@ function buildServerVars(
       comment: "PostHog API host (use https://eu.i.posthog.com for EU region)",
     },
     {
+      key: "LAUNCHDARKLY_SDK_KEY",
+      value: "",
+      condition: featureFlags === "launchdarkly",
+      comment: "LaunchDarkly server-side SDK key from project environment settings",
+    },
+    {
+      key: "FLAGSMITH_SERVER_SIDE_ENVIRONMENT_KEY",
+      value: "",
+      condition: featureFlags === "flagsmith",
+      comment: "Flagsmith server-side environment key",
+    },
+    {
+      key: "FLAGSMITH_API_URL",
+      value: "https://edge.api.flagsmith.com/api/v1/",
+      condition: featureFlags === "flagsmith",
+      comment: "Flagsmith API URL, override when self-hosting",
+    },
+    {
+      key: "UNLEASH_SERVER_API_URL",
+      value: "",
+      condition: featureFlags === "unleash",
+      comment: "Unleash server API URL",
+    },
+    {
+      key: "UNLEASH_SERVER_API_TOKEN",
+      value: "",
+      condition: featureFlags === "unleash",
+      comment: "Unleash backend token",
+    },
+    {
+      key: "UNLEASH_APP_NAME",
+      value: "my-app",
+      condition: featureFlags === "unleash",
+      comment: "Unleash application name",
+    },
+    {
       key: "REDIS_HOST",
       value: "localhost",
       condition: jobQueue === "bullmq",
@@ -1194,6 +1321,12 @@ function buildServerVars(
       value: "",
       condition: caching === "upstash-redis",
       comment: "Upstash Redis REST token - get it at https://console.upstash.com",
+    },
+    {
+      key: "UPSTASH_REDIS_URL",
+      value: "rediss://default:password@host.upstash.io:6379",
+      condition: caching === "upstash-redis",
+      comment: "Upstash Redis protocol URL for Go, Rust, and Java clients",
     },
     {
       key: "MEILISEARCH_HOST",
@@ -1589,7 +1722,10 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     config.fileStorage,
   );
 
-  if (backend === "self") {
+  if (config.ecosystem !== "typescript") {
+    if (!serverVars.some((variable) => variable.condition)) return;
+    writeEnvFile(vfs, ".env.example", serverVars);
+  } else if (backend === "self") {
     const webDir = "apps/web";
     if (vfs.directoryExists(webDir)) {
       const envPath = `${webDir}/.env`;

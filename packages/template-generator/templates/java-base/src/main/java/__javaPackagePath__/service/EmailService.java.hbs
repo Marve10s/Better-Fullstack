@@ -1,0 +1,33 @@
+{{#if (eq email "resend")}}
+package {{javaPackageName}}.service;
+
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
+
+public class EmailService {
+	private final Resend resend;
+	private final String fromEmail;
+
+	public EmailService() {
+		this.resend = new Resend(System.getenv("RESEND_API_KEY"));
+		String configuredFrom = System.getenv("RESEND_FROM_EMAIL");
+		this.fromEmail = configuredFrom == null || configuredFrom.isBlank()
+			? "Acme <onboarding@resend.dev>"
+			: configuredFrom;
+	}
+
+	public String sendEmail(String to, String subject, String html) throws ResendException {
+		CreateEmailOptions params = CreateEmailOptions.builder()
+			.from(fromEmail)
+			.to(to)
+			.subject(subject)
+			.html(html)
+			.build();
+
+		CreateEmailResponse response = resend.emails().send(params);
+		return response.getId();
+	}
+}
+{{/if}}

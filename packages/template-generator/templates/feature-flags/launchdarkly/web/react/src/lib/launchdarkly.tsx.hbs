@@ -1,0 +1,103 @@
+"use client";
+
+import { createClient, type LDClient, type LDContext, type LDFlagValue } from "@launchdarkly/js-client-sdk";
+import type { PropsWithChildren } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+
+{{#if (eq frontend.[0] "next")}}
+const clientSideId = process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID || "";
+{{else if (eq frontend.[0] "nuxt")}}
+const clientSideId = process.env.NUXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID || "";
+{{else}}
+const clientSideId = import.meta.env.VITE_LAUNCHDARKLY_CLIENT_SIDE_ID || "";
+{{/if}}
+
+const anonymousContext: LDContext = {
+  kind: "user",
+  key: "anonymous",
+  anonymous: true,
+};
+
+const LaunchDarklyContext = createContext<LDClient | null>(null);
+
+interface LaunchDarklyProviderProps extends PropsWithChildren {
+  context?: LDContext;
+}
+
+export function LaunchDarklyProvider({
+  children,
+  context = anonymousContext,
+}: LaunchDarklyProviderProps) {
+  const [client, setClient] = useState<LDClient | null>(null);
+
+  useEffect(() => {
+    if (!clientSideId) return;
+
+    const ldClient = createClient(clientSideId, context);
+    ldClient.start({ timeout: 5 }).then(() => setClient(ldClient));
+
+    return () => {
+      ldClient.close();
+    };
+  }, [context]);
+
+  return (
+    <LaunchDarklyContext.Provider value={client}>{children}</LaunchDarklyContext.Provider>
+  );
+}
+
+export function useLaunchDarkly() {
+  return useContext(LaunchDarklyContext);
+}
+
+export function useFeature(flagKey: string, defaultValue = false): boolean {
+  const client = useLaunchDarkly();
+  const [value, setValue] = useState(defaultValue);
+
+  useEffect(() => {
+    if (!client) return;
+
+    setValue(client.variation(flagKey, defaultValue));
+    const listener = (nextValue: LDFlagValue) => setValue(Boolean(nextValue));
+    client.on(`change:${flagKey}`, listener);
+
+    return () => {
+      client.off(`change:${flagKey}`, listener);
+    };
+  }, [client, flagKey, defaultValue]);
+
+  return value;
+}
+
+export function useFeatureValue<T extends LDFlagValue>(flagKey: string, defaultValue: T): T {
+  const client = useLaunchDarkly();
+  const [value, setValue] = useState<T>(defaultValue);
+
+  useEffect(() => {
+    if (!client) return;
+
+    setValue(client.variation(flagKey, defaultValue) as T);
+    const listener = (nextValue: LDFlagValue) => setValue((nextValue ?? defaultValue) as T);
+    client.on(`change:${flagKey}`, listener);
+
+    return () => {
+      client.off(`change:${flagKey}`, listener);
+    };
+  }, [client, flagKey, defaultValue]);
+
+  return value;
+}
+
+export function useIdentifyLaunchDarkly() {
+  const client = useLaunchDarkly();
+
+  return useMemo(
+    () => (context: LDContext) => {
+      if (!client) return Promise.resolve();
+      return client.identify(context);
+    },
+    [client],
+  );
+}
+
+export type { LDClient, LDContext, LDFlagValue };

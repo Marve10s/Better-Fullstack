@@ -1,7 +1,7 @@
 package main
 
 import (
-{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
+{{#if (or (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none"))) (eq observability "sentry"))}}
 	"os"
 {{/if}}
 {{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
@@ -38,6 +38,10 @@ import (
 
 	appauth "{{projectName}}/internal/auth"
 {{/if}}
+{{#if (eq observability "sentry")}}
+
+	appobservability "{{projectName}}/internal/observability"
+{{/if}}
 {{#if (eq goLogging "zap")}}
 
 	"go.uber.org/zap"
@@ -48,6 +52,10 @@ import (
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	"log/slog"
+{{/if}}
+{{#if (eq goLogging "logrus")}}
+
+	"github.com/sirupsen/logrus"
 {{/if}}
 	"github.com/joho/godotenv"
 {{#if (eq goApi "grpc-go")}}
@@ -100,11 +108,27 @@ func initLogger() {
 	slog.SetDefault(logger)
 }
 {{/if}}
+{{#if (eq goLogging "logrus")}}
+var logger = logrus.New()
+
+func initLogger() {
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	if os.Getenv("LOG_LEVEL") == "debug" {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+}
+{{/if}}
 
 func main() {
 	// Load environment variables
 	godotenv.Load()
 
+{{#if (eq observability "sentry")}}
+	// Initialize Sentry if configured
+	appobservability.InitSentry()
+	defer appobservability.FlushSentry()
+
+{{/if}}
 {{#if (eq goLogging "zap")}}
 	// Initialize logger
 	initLogger()
@@ -119,6 +143,12 @@ func main() {
 	logger.Info().Msg("Starting {{projectName}} server")
 {{/if}}
 {{#if (eq goLogging "slog")}}
+	// Initialize logger
+	initLogger()
+
+	logger.Info("Starting {{projectName}} server")
+{{/if}}
+{{#if (eq goLogging "logrus")}}
 	// Initialize logger
 	initLogger()
 

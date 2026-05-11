@@ -72,6 +72,10 @@ function isSpringBootJavaProject(config: ProjectConfig): boolean {
   return config.javaWebFramework === "spring-boot" && config.javaBuildTool !== "none";
 }
 
+function isQuarkusJavaProject(config: ProjectConfig): boolean {
+  return config.javaWebFramework === "quarkus" && config.javaBuildTool !== "none";
+}
+
 function getEffectiveJavaLibraries(config: ProjectConfig): string[] {
   if (!isSpringBootJavaProject(config)) return [];
   const hasJavaJpa = config.javaOrm === "spring-data-jpa";
@@ -194,6 +198,7 @@ function generateTechStackSection(config: ProjectConfig): string {
       const aiLibs = config.pythonAi.filter((l) => l !== "none");
       if (aiLibs.length > 0) lines.push(`- AI: ${aiLibs.join(", ")}`);
     }
+    if (config.pythonApi !== "none") lines.push(`- API Framework: ${config.pythonApi}`);
     if (config.pythonTaskQueue !== "none") lines.push(`- Task Queue: ${config.pythonTaskQueue}`);
     if (config.pythonQuality !== "none") lines.push(`- Code Quality: ${config.pythonQuality}`);
   }
@@ -211,14 +216,16 @@ function generateTechStackSection(config: ProjectConfig): string {
   if (config.ecosystem === "java") {
     const javaLibraries = getEffectiveJavaLibraries(config);
     const testingLibraries = getEffectiveJavaTestingLibraries(config);
+    const isSpringBoot = isSpringBootJavaProject(config);
+    const isQuarkus = isQuarkusJavaProject(config);
     lines.push(`- Java Version: 21`);
-    lines.push(`- Scaffold: ${isSpringBootJavaProject(config) ? "spring-boot" : "plain-java"}`);
-    if (config.javaWebFramework !== "none" && isSpringBootJavaProject(config)) {
+    lines.push(`- Scaffold: ${isSpringBoot ? "spring-boot" : isQuarkus ? "quarkus" : "plain-java"}`);
+    if (config.javaWebFramework !== "none" && (isSpringBoot || isQuarkus)) {
       lines.push(`- Web Framework: ${config.javaWebFramework}`);
     }
     if (config.javaBuildTool !== "none") lines.push(`- Build Tool: ${config.javaBuildTool}`);
-    if (isSpringBootJavaProject(config) && config.javaOrm !== "none") lines.push(`- ORM: ${config.javaOrm}`);
-    if (isSpringBootJavaProject(config) && config.javaAuth !== "none") lines.push(`- Auth: ${config.javaAuth}`);
+    if (isSpringBoot && config.javaOrm !== "none") lines.push(`- ORM: ${config.javaOrm}`);
+    if (isSpringBoot && config.javaAuth !== "none") lines.push(`- Auth: ${config.javaAuth}`);
     if (javaLibraries.length > 0) lines.push(`- Libraries: ${javaLibraries.join(", ")}`);
     if (testingLibraries.length > 0) lines.push(`- Testing: ${testingLibraries.join(", ")}`);
   }
@@ -383,11 +390,16 @@ function generateCommandsSection(config: ProjectConfig): string {
   } else if (config.ecosystem === "java") {
     const buildToolCommand = getJavaBuildToolCommand(config);
     const isSpringBoot = isSpringBootJavaProject(config);
+    const isQuarkus = isQuarkusJavaProject(config);
     const runCommand = buildToolCommand
       ? isSpringBoot
         ? config.javaBuildTool === "gradle"
           ? `${buildToolCommand} bootRun`
           : `${buildToolCommand} spring-boot:run`
+        : isQuarkus
+          ? config.javaBuildTool === "gradle"
+            ? `${buildToolCommand} quarkusDev`
+            : `${buildToolCommand} quarkus:dev`
         : config.javaBuildTool === "gradle"
           ? `${buildToolCommand} run`
           : `${buildToolCommand} exec:java`
@@ -477,15 +489,17 @@ function generateCursorRules(config: ProjectConfig): string {
   } else if (config.ecosystem === "java") {
     const javaLibraries = getEffectiveJavaLibraries(config);
     const testingLibraries = getEffectiveJavaTestingLibraries(config);
+    const isSpringBoot = isSpringBootJavaProject(config);
+    const isQuarkus = isQuarkusJavaProject(config);
     rules.push(`You are working on a Java project.`);
     rules.push(`Java version: 21`);
-    rules.push(`Scaffold: ${isSpringBootJavaProject(config) ? "spring-boot" : "plain-java"}`);
-    if (config.javaWebFramework !== "none" && isSpringBootJavaProject(config)) {
+    rules.push(`Scaffold: ${isSpringBoot ? "spring-boot" : isQuarkus ? "quarkus" : "plain-java"}`);
+    if (config.javaWebFramework !== "none" && (isSpringBoot || isQuarkus)) {
       rules.push(`Web framework: ${config.javaWebFramework}`);
     }
     if (config.javaBuildTool !== "none") rules.push(`Build tool: ${config.javaBuildTool}`);
-    if (isSpringBootJavaProject(config) && config.javaOrm !== "none") rules.push(`ORM: ${config.javaOrm}`);
-    if (isSpringBootJavaProject(config) && config.javaAuth !== "none") rules.push(`Auth: ${config.javaAuth}`);
+    if (isSpringBoot && config.javaOrm !== "none") rules.push(`ORM: ${config.javaOrm}`);
+    if (isSpringBoot && config.javaAuth !== "none") rules.push(`Auth: ${config.javaAuth}`);
     if (javaLibraries.length > 0) rules.push(`Libraries: ${javaLibraries.join(", ")}`);
     if (testingLibraries.length > 0) rules.push(`Testing: ${testingLibraries.join(", ")}`);
     if (config.javaBuildTool === "gradle") {

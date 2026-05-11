@@ -14,6 +14,7 @@ Task planning documents are organized by state:
 - `docs/plans/planned/payment-providers-expansion.md` - Creem, Autumn, Commet, and Better Auth payment/org plugins
 - `docs/plans/planned/docker-and-devcontainers.md` - Dockerfiles, Docker Compose, DevContainers, and single-app mode
 - `docs/plans/planned/platform-features.md` - cross-ecosystem research and template preview
+- `docs/plans/planned/mcp-incremental-library-updates.md` - future MCP support for adding scaffold-time libraries to existing projects
 - `docs/plans/planned/documentation-follow-ups.md` - roadmap, compatibility, CLI, MCP, and deployment docs
 - `docs/plans/planned/ci-and-quality.md` - remaining quality backlog
 - `docs/plans/planned/java-ecosystem-follow-ups.md` - Java expansion after the foundation release

@@ -88,4 +88,67 @@ export function processFeatureFlagsDeps(vfs: VirtualFileSystem, config: ProjectC
       }
     }
   }
+
+  if (featureFlags === "launchdarkly") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@launchdarkly/js-client-sdk"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["@launchdarkly/node-server-sdk"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "flagsmith") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@flagsmith/flagsmith"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["flagsmith-nodejs"],
+        });
+      }
+    }
+  }
+
+  if (featureFlags === "unleash") {
+    if (hasWebFrontend && vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@unleash/proxy-client-react", "unleash-proxy-client"],
+      });
+    }
+
+    if (backend !== "none" && backend !== "convex") {
+      const serverPath = backend === "self" ? webPath : "apps/server/package.json";
+      if (vfs.exists(serverPath)) {
+        addPackageDependency({
+          vfs,
+          packagePath: serverPath,
+          dependencies: ["unleash-client"],
+        });
+      }
+    }
+  }
 }

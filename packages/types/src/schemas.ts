@@ -266,7 +266,7 @@ export const ObservabilitySchema = z
   .describe("Observability and distributed tracing");
 
 export const FeatureFlagsSchema = z
-  .enum(["growthbook", "posthog", "none"])
+  .enum(["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"])
   .describe("Feature flags provider for A/B testing and feature management");
 
 export const AnalyticsSchema = z
@@ -293,7 +293,26 @@ export const RustApiSchema = z
 export const RustCliSchema = z.enum(["clap", "ratatui", "none"]).describe("Rust CLI tools");
 
 export const RustLibrariesSchema = z
-  .enum(["serde", "validator", "jsonwebtoken", "argon2", "tokio-test", "mockall", "none"])
+  .enum([
+    "serde",
+    "uuid",
+    "chrono",
+    "reqwest",
+    "config",
+    "dashmap",
+    "parking-lot",
+    "secrecy",
+    "tokio-util",
+    "utoipa",
+    "validator",
+    "jsonwebtoken",
+    "argon2",
+    "tokio-test",
+    "mockall",
+    "proptest",
+    "insta",
+    "none",
+  ])
   .describe("Rust core libraries");
 
 export const RustLoggingSchema = z
@@ -322,20 +341,37 @@ export const PythonValidationSchema = z
   .describe("Python validation library");
 
 export const PythonAiSchema = z
-  .enum(["langchain", "llamaindex", "openai-sdk", "anthropic-sdk", "langgraph", "crewai", "none"])
+  .enum([
+    "langchain",
+    "llamaindex",
+    "openai-sdk",
+    "anthropic-sdk",
+    "langgraph",
+    "crewai",
+    "haystack",
+    "none",
+  ])
   .describe("Python AI/ML framework");
 
 export const PythonAuthSchema = z
   .enum(["authlib", "jwt", "none"])
   .describe("Python authentication library");
 
-export const PythonTaskQueueSchema = z.enum(["celery", "none"]).describe("Python task queue");
+export const PythonApiSchema = z
+  .enum(["django-rest-framework", "django-ninja", "none"])
+  .describe("Python API framework");
+
+export const PythonTaskQueueSchema = z
+  .enum(["celery", "rq", "dramatiq", "huey", "none"])
+  .describe("Python task queue");
 
 export const PythonGraphqlSchema = z
-  .enum(["strawberry", "none"])
+  .enum(["strawberry", "ariadne", "none"])
   .describe("Python GraphQL framework");
 
-export const PythonQualitySchema = z.enum(["ruff", "none"]).describe("Python code quality tool");
+export const PythonQualitySchema = z
+  .enum(["ruff", "mypy", "pyright", "none"])
+  .describe("Python code quality tool");
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
@@ -348,17 +384,19 @@ export const GoOrmSchema = z
 
 export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
 
-export const GoCliSchema = z.enum(["cobra", "bubbletea", "none"]).describe("Go CLI tools");
+export const GoCliSchema = z
+  .enum(["cobra", "bubbletea", "urfave-cli", "none"])
+  .describe("Go CLI tools");
 
 export const GoLoggingSchema = z
-  .enum(["zap", "zerolog", "slog", "none"])
+  .enum(["zap", "zerolog", "slog", "logrus", "none"])
   .describe("Go logging library");
 
 export const GoAuthSchema = z.enum(["casbin", "jwt", "none"]).describe("Go authentication library");
 
 // Java ecosystem schemas
 export const JavaWebFrameworkSchema = z
-  .enum(["spring-boot", "none"])
+  .enum(["spring-boot", "quarkus", "none"])
   .describe("Java web framework");
 
 export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");
@@ -381,6 +419,14 @@ export const JavaLibrariesSchema = z
     "lombok",
     "mapstruct",
     "caffeine",
+    "resilience4j",
+    "spring-webflux",
+    "spring-batch",
+    "spring-kafka",
+    "spring-mail",
+    "spring-devtools",
+    "micrometer-prometheus",
+    "thymeleaf",
     "none",
   ])
   .describe("Java application libraries");
@@ -418,6 +464,8 @@ export const UILibrarySchema = z
     "chakra-ui",
     "nextui",
     "mantine",
+    "mui",
+    "antd",
     "base-ui",
     "ark-ui",
     "react-aria",
@@ -429,10 +477,10 @@ export const ShadcnBaseSchema = z
   .enum(["radix", "base"])
   .describe("shadcn/ui headless UI base library (radix or base-ui)");
 export const ShadcnStyleSchema = z
-  .enum(["vega", "nova", "maia", "lyra", "mira"])
+  .enum(["vega", "nova", "maia", "lyra", "mira", "luma", "sera"])
   .describe("shadcn/ui visual style preset");
 export const ShadcnIconLibrarySchema = z
-  .enum(["lucide", "tabler", "hugeicons", "phosphor", "remixicon"])
+  .enum(["lucide", "tabler", "hugeicons", "phosphor", "remixicon", "heroicons", "react-icons"])
   .describe("shadcn/ui icon library");
 export const ShadcnColorThemeSchema = z
   .enum([
@@ -582,6 +630,7 @@ export const CreateInputSchema = z.object({
   pythonValidation: PythonValidationSchema.optional(),
   pythonAi: z.array(PythonAiSchema).optional(),
   pythonAuth: PythonAuthSchema.optional(),
+  pythonApi: PythonApiSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
   pythonGraphql: PythonGraphqlSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
@@ -685,6 +734,7 @@ export const ProjectConfigSchema = z.object({
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonApi: PythonApiSchema,
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
@@ -772,6 +822,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonValidation: PythonValidationSchema,
   pythonAi: z.array(PythonAiSchema),
   pythonAuth: PythonAuthSchema,
+  pythonApi: PythonApiSchema.optional(),
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
@@ -871,6 +922,7 @@ export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;
 export const PYTHON_AI_VALUES = PythonAiSchema.options;
 export const PYTHON_AUTH_VALUES = PythonAuthSchema.options;
+export const PYTHON_API_VALUES = PythonApiSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
 export const PYTHON_GRAPHQL_VALUES = PythonGraphqlSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;

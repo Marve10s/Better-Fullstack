@@ -1,0 +1,23 @@
+{{#if (eq pythonTaskQueue "dramatiq")}}
+"""Example Dramatiq background tasks."""
+
+import time
+from typing import Any
+
+import dramatiq
+
+from app.dramatiq_app import broker as _broker
+
+
+@dramatiq.actor
+def example_task(name: str = "World") -> str:
+    """Simple example task."""
+    return f"Hello, {name}!"
+
+
+@dramatiq.actor(max_retries=3)
+def process_data_task(data: dict[str, Any]) -> dict[str, Any]:
+    """Process data in the background."""
+    time.sleep(1)
+    return {"processed": True, "items": len(data), "data": data}
+{{/if}}

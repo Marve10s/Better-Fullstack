@@ -1,0 +1,22 @@
+{{#if (includes pythonAi "haystack")}}
+"""Pydantic schemas for Haystack API endpoints."""
+
+from pydantic import BaseModel, Field
+
+
+class HaystackQuestionRequest(BaseModel):
+    """Request body for Haystack question-answering endpoint."""
+
+    question: str = Field(..., description="The question to answer", min_length=1)
+    context: str | None = Field(default=None, description="Optional grounding context")
+    model: str | None = Field(default=None, description="Optional model override")
+    temperature: float | None = Field(
+        default=None, ge=0.0, le=2.0, description="Optional temperature override"
+    )
+
+
+class HaystackQuestionResponse(BaseModel):
+    """Response body for Haystack question-answering endpoint."""
+
+    answer: str = Field(..., description="The generated answer")
+{{/if}}

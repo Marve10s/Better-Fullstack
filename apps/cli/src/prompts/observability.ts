@@ -1,4 +1,4 @@
-import type { Backend, Observability } from "../types";
+import type { Backend, Ecosystem, Observability } from "../types";
 
 import { exitCancelled } from "../utils/errors";
 import type { PromptSingleResolution } from "./prompt-contract";
@@ -27,15 +27,28 @@ const OBSERVABILITY_PROMPT_OPTIONS = [
   },
 ];
 
+const NON_TYPESCRIPT_OBSERVABILITY_PROMPT_OPTIONS = OBSERVABILITY_PROMPT_OPTIONS.filter(
+  (option) => option.value === "sentry" || option.value === "none",
+);
+
 type ObservabilityPromptContext = {
   observability?: Observability;
   backend?: Backend;
+  ecosystem?: Ecosystem;
 };
 
 export function resolveObservabilityPrompt(
   context: ObservabilityPromptContext = {},
 ): PromptSingleResolution<Observability> {
-  if (context.backend === "none" || context.backend === "convex") {
+  const options =
+    context.ecosystem && context.ecosystem !== "typescript"
+      ? NON_TYPESCRIPT_OBSERVABILITY_PROMPT_OPTIONS
+      : OBSERVABILITY_PROMPT_OPTIONS;
+
+  if (
+    (!context.ecosystem || context.ecosystem === "typescript") &&
+    (context.backend === "none" || context.backend === "convex")
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",
@@ -48,19 +61,23 @@ export function resolveObservabilityPrompt(
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: OBSERVABILITY_PROMPT_OPTIONS,
+        options,
         autoValue: context.observability,
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: OBSERVABILITY_PROMPT_OPTIONS,
+        options,
         initialValue: "none",
       };
 }
 
-export async function getObservabilityChoice(observability?: Observability, backend?: Backend) {
-  const resolution = resolveObservabilityPrompt({ observability, backend });
+export async function getObservabilityChoice(
+  observability?: Observability,
+  backend?: Backend,
+  ecosystem?: Ecosystem,
+) {
+  const resolution = resolveObservabilityPrompt({ observability, backend, ecosystem });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

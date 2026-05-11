@@ -185,6 +185,9 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Feature Flags ─────────────────────────────────────────────────────────
   growthbook: { type: "si", slug: "growthbook", hex: "4E00DF" },
   posthog: { type: "si", slug: "posthog", hex: "F54E00" },
+  launchdarkly: { type: "si", slug: "launchdarkly", hex: "405BFF" },
+  flagsmith: { type: "si", slug: "flagsmith", hex: "1A1A1A" },
+  unleash: { type: "si", slug: "unleash", hex: "1D4ED8" },
 
   // ─── State Management ──────────────────────────────────────────────────────
   "redux-toolkit": { type: "si", slug: "redux", hex: "764ABC" },
@@ -212,6 +215,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "chakra-ui": { type: "si", slug: "chakraui", hex: "319795" },
   nextui: { type: "local", src: "/icon/nextui.svg", needsInvert: "dark" }, // stroke="currentColor"
   mantine: { type: "si", slug: "mantine", hex: "339AF0" },
+  mui: { type: "si", slug: "mui", hex: "007FFF" },
+  antd: { type: "si", slug: "antdesign", hex: "0170FE" },
   "base-ui": { type: "local", src: "/icon/base-ui.svg", needsInvert: "dark" },
 
   // ─── shadcn Base Libraries ───────────────────────────────────────────────────
@@ -224,6 +229,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   hugeicons: { type: "local", src: "/icon/hugeicons.svg" },
   phosphor: { type: "si", slug: "phosphoricons", hex: "C4F042" },
   remixicon: { type: "si", slug: "remix", hex: "000000" },
+  "react-icons": { type: "si", slug: "react", hex: "61DAFB" },
 
   // ─── shadcn Fonts ──────────────────────────────────────────────────────────
   geist: { type: "si", slug: "vercel", hex: "000000" },
@@ -327,6 +333,15 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   diesel: { type: "si", slug: "rust", hex: "CE422B" },
   "async-graphql": { type: "si", slug: "graphql", hex: "E10098" },
   tonic: { type: "local", src: "/icon/tonic.svg" },
+  uuid: { type: "si", slug: "rust", hex: "CE422B" },
+  chrono: { type: "si", slug: "rust", hex: "CE422B" },
+  reqwest: { type: "si", slug: "rust", hex: "CE422B" },
+  config: { type: "si", slug: "rust", hex: "CE422B" },
+  dashmap: { type: "si", slug: "rust", hex: "CE422B" },
+  "parking-lot": { type: "si", slug: "rust", hex: "CE422B" },
+  secrecy: { type: "si", slug: "rust", hex: "CE422B" },
+  "tokio-util": { type: "si", slug: "rust", hex: "CE422B" },
+  utoipa: { type: "si", slug: "rust", hex: "CE422B" },
   tracing: { type: "si", slug: "rust", hex: "CE422B" },
   "env-logger": { type: "si", slug: "rust", hex: "CE422B" },
   "anyhow-thiserror": { type: "si", slug: "rust", hex: "CE422B" },
@@ -342,11 +357,20 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   pydantic: { type: "si", slug: "pydantic", hex: "E92063" },
   "openai-sdk": { type: "local", src: "/icon/openai.svg", needsInvert: "dark" },
   "anthropic-sdk": { type: "si", slug: "anthropic", hex: "191919" },
+  haystack: { type: "si", slug: "python", hex: "3776AB" },
   authlib: { type: "si", slug: "auth0", hex: "EB5424" },
   jwt: { type: "si", slug: "jsonwebtokens", hex: "000000" },
+  "django-rest-framework": { type: "si", slug: "django", hex: "092E20" },
+  "django-ninja": { type: "si", slug: "django", hex: "092E20" },
   celery: { type: "si", slug: "celery", hex: "37814A" },
+  rq: { type: "si", slug: "redis", hex: "DC382D" },
+  dramatiq: { type: "si", slug: "python", hex: "3776AB" },
+  huey: { type: "si", slug: "redis", hex: "DC382D" },
   strawberry: { type: "si", slug: "graphql", hex: "E10098" },
+  ariadne: { type: "si", slug: "graphql", hex: "E10098" },
   ruff: { type: "si", slug: "ruff", hex: "D7FF64" },
+  mypy: { type: "si", slug: "python", hex: "3776AB" },
+  pyright: { type: "si", slug: "microsoft", hex: "5E5E5E" },
 
   // ─── Go ────────────────────────────────────────────────────────────────────
   gin: { type: "si", slug: "gin", hex: "00ADD8" },
@@ -354,9 +378,12 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   fiber: { type: "si", slug: "go", hex: "00ADD8" },
   chi: { type: "si", slug: "go", hex: "00ADD8" },
   "grpc-go": { type: "local", src: "/icon/grpc.svg" },
+  "urfave-cli": { type: "si", slug: "go", hex: "00ADD8" },
+  logrus: { type: "si", slug: "go", hex: "00ADD8" },
 
   // ─── Java ──────────────────────────────────────────────────────────────────
   "spring-boot": { type: "si", slug: "springboot", hex: "6DB33F" },
+  quarkus: { type: "si", slug: "quarkus", hex: "4695EB" },
   maven: { type: "si", slug: "apachemaven", hex: "C71A36" },
   gradle: { type: "si", slug: "gradle", hex: "02303A" },
   "spring-data-jpa": { type: "si", slug: "hibernate", hex: "59666C" },
@@ -372,6 +399,14 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
     type: "local",
     src: "https://raw.githubusercontent.com/ben-manes/caffeine/master/wiki/logo.png",
   },
+  resilience4j: { type: "si", slug: "spring", hex: "6DB33F" },
+  "spring-webflux": { type: "si", slug: "spring", hex: "6DB33F" },
+  "spring-batch": { type: "si", slug: "spring", hex: "6DB33F" },
+  "spring-kafka": { type: "si", slug: "apachekafka", hex: "231F20" },
+  "spring-mail": { type: "si", slug: "spring", hex: "6DB33F" },
+  "spring-devtools": { type: "si", slug: "springboot", hex: "6DB33F" },
+  "micrometer-prometheus": { type: "si", slug: "prometheus", hex: "E6522C" },
+  thymeleaf: { type: "si", slug: "thymeleaf", hex: "005F0F" },
   junit5: { type: "si", slug: "junit5", hex: "25A162" },
   mockito: { type: "si", slug: "mockito", hex: "78A641" },
   testcontainers: { type: "si", slug: "testcontainers", hex: "2496ED" },

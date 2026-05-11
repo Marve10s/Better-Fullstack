@@ -1,0 +1,59 @@
+{{#if (includes pythonAi "haystack")}}
+"""Haystack pipeline helpers for retrieval-augmented generation workflows."""
+
+import os
+
+from haystack import Pipeline
+from haystack.components.builders import PromptBuilder
+from haystack.components.generators import OpenAIGenerator
+from haystack.utils import Secret
+
+
+def create_prompt_pipeline(
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+) -> Pipeline:
+    """Create a simple Haystack prompt pipeline backed by OpenAI."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+
+    template = """
+    {% if context %}Context:
+    \{{ context }}
+    {% endif %}
+    Question: \{{ question }}
+    Answer:
+    """
+
+    pipeline = Pipeline()
+    pipeline.add_component("prompt_builder", PromptBuilder(template=template))
+    pipeline.add_component(
+        "generator",
+        OpenAIGenerator(
+            api_key=Secret.from_token(api_key),
+            model=model,
+            generation_kwargs={"temperature": temperature},
+        ),
+    )
+    pipeline.connect("prompt_builder", "generator")
+    return pipeline
+
+
+def answer_question(
+    question: str,
+    context: str | None = None,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+) -> str:
+    """Answer a question with optional inline context."""
+    pipeline = create_prompt_pipeline(model=model, temperature=temperature)
+    result = pipeline.run({
+        "prompt_builder": {
+            "question": question,
+            "context": context or "",
+        }
+    })
+    replies = result["generator"]["replies"]
+    return replies[0] if replies else ""
+{{/if}}

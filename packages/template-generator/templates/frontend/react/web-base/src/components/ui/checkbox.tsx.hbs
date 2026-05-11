@@ -3,16 +3,27 @@ import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
 {{#if (eq shadcnIconLibrary "tabler")}}
 import { IconCheck as CheckIcon } from '@tabler/icons-react'
 {{else if (eq shadcnIconLibrary "hugeicons")}}
-import { Tick02Icon as CheckIcon } from '@hugeicons/react'
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
+import { Tick02Icon } from '@hugeicons/core-free-icons'
 {{else if (eq shadcnIconLibrary "phosphor")}}
 import { Check as CheckIcon } from '@phosphor-icons/react'
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiCheckLine as CheckIcon } from '@remixicon/react'
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { CheckIcon } from '@heroicons/react/24/outline'
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaCheck as CheckIcon } from 'react-icons/fa'
 {{else}}
 import { CheckIcon } from 'lucide-react'
 {{/if}}
 import { cn } from '@/lib/utils'
 
+{{#if (eq shadcnIconLibrary "hugeicons")}}
+const CheckIcon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={Tick02Icon} {...props} />
+)
+
+{{/if}}
 function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   return (
     <CheckboxPrimitive.Root

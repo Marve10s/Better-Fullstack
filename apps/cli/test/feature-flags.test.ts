@@ -1,6 +1,45 @@
 import { describe, it, expect } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { expectSuccess, runTRPCTest } from "./test-utils";
+
+function findNode(node: unknown, path: string): any {
+  if (!node) return undefined;
+
+  const typedNode = node as { path?: string; children?: unknown[] };
+  const normalizedNodePath = typedNode.path?.replace(/^\/+/, "");
+  const normalizedPath = path.replace(/^\/+/, "");
+  if (normalizedNodePath === normalizedPath || normalizedNodePath?.endsWith(`/${normalizedPath}`)) {
+    return typedNode;
+  }
+
+  for (const child of typedNode.children ?? []) {
+    const found = findNode(child, path);
+    if (found) return found;
+  }
+
+  return undefined;
+}
+
+function packageJson(
+  result: Awaited<ReturnType<typeof runTRPCTest>>,
+  path: "apps/server" | "apps/web",
+) {
+  const packageNode = findNode(result.result?.tree?.root, `${path}/package.json`);
+  if (packageNode?.content) return JSON.parse(packageNode.content);
+  if (!result.projectDir) return {};
+
+  return JSON.parse(readFileSync(join(result.projectDir, path, "package.json"), "utf8"));
+}
+
+function fileContent(result: Awaited<ReturnType<typeof runTRPCTest>>, path: string): string {
+  const fileNode = findNode(result.result?.tree?.root, path);
+  if (fileNode?.content) return fileNode.content;
+  if (!result.projectDir) return "";
+
+  return readFileSync(join(result.projectDir, path), "utf8");
+}
 
 describe("Feature Flags Configurations", () => {
   describe("PostHog", () => {
@@ -387,6 +426,76 @@ describe("Feature Flags Configurations", () => {
 
       expectSuccess(result);
     });
+  });
+
+  describe("Additional providers", () => {
+    const providers = [
+      {
+        id: "launchdarkly",
+        serverPackage: "@launchdarkly/node-server-sdk",
+        webPackage: "@launchdarkly/js-client-sdk",
+        serverFile: "apps/server/src/lib/launchdarkly.ts",
+        webFile: "apps/web/src/lib/launchdarkly.tsx",
+        envKey: "LAUNCHDARKLY_SDK_KEY",
+        webEnvKey: "VITE_LAUNCHDARKLY_CLIENT_SIDE_ID",
+      },
+      {
+        id: "flagsmith",
+        serverPackage: "flagsmith-nodejs",
+        webPackage: "@flagsmith/flagsmith",
+        serverFile: "apps/server/src/lib/flagsmith.ts",
+        webFile: "apps/web/src/lib/flagsmith.tsx",
+        envKey: "FLAGSMITH_SERVER_SIDE_ENVIRONMENT_KEY",
+        webEnvKey: "VITE_FLAGSMITH_ENVIRONMENT_ID",
+      },
+      {
+        id: "unleash",
+        serverPackage: "unleash-client",
+        webPackage: "@unleash/proxy-client-react",
+        serverFile: "apps/server/src/lib/unleash.ts",
+        webFile: "apps/web/src/lib/unleash.tsx",
+        envKey: "UNLEASH_SERVER_API_TOKEN",
+        webEnvKey: "VITE_UNLEASH_FRONTEND_API_URL",
+      },
+    ] as const;
+
+    for (const provider of providers) {
+      it(`should scaffold ${provider.id} for split web/server apps`, async () => {
+        const result = await runTRPCTest({
+          projectName: `${provider.id}-hono`,
+          featureFlags: provider.id,
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          api: "trpc",
+          auth: "better-auth",
+          frontend: ["tanstack-router"],
+          addons: ["turborepo"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+
+        expect(
+          packageJson(result, "apps/server").dependencies?.[provider.serverPackage],
+        ).toBeDefined();
+        expect(packageJson(result, "apps/web").dependencies?.[provider.webPackage]).toBeDefined();
+        if (provider.id === "unleash") {
+          expect(packageJson(result, "apps/web").dependencies?.["unleash-proxy-client"]).toBe(
+            "^3.8.0",
+          );
+        }
+        expect(fileContent(result, provider.serverFile)).toContain(provider.serverPackage);
+        expect(fileContent(result, provider.webFile)).toContain(provider.webPackage);
+        expect(fileContent(result, "apps/server/.env")).toContain(provider.envKey);
+        expect(fileContent(result, "apps/web/.env")).toContain(provider.webEnvKey);
+      });
+    }
   });
 
   describe("No Feature Flags (none)", () => {

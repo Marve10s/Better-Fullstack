@@ -37,6 +37,23 @@ env_logger.workspace = true
 # Environment
 dotenvy.workspace = true
 
+{{#if (eq email "resend")}}
+# Email delivery
+resend-rs.workspace = true
+{{/if}}
+{{#if (eq observability "sentry")}}
+# Error tracking and performance monitoring
+sentry.workspace = true
+{{/if}}
+{{#if (or (eq caching "upstash-redis") (eq rustCaching "redis"))}}
+# Redis client
+redis.workspace = true
+{{/if}}
+{{#if (eq search "meilisearch")}}
+# Search
+meilisearch-sdk.workspace = true
+{{/if}}
+
 {{#if (eq rustWebFramework "axum")}}
 # Web framework
 axum.workspace = true
@@ -105,15 +122,37 @@ argon2.workspace = true
 clap.workspace = true
 {{/if}}
 
+{{#if (includes rustLibraries "uuid")}}
+uuid.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "chrono")}}
+chrono.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "reqwest")}}
+reqwest.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "config")}}
+config.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "dashmap")}}
+dashmap.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "parking-lot")}}
+parking_lot.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "secrecy")}}
+secrecy.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "tokio-util")}}
+tokio-util.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "utoipa")}}
+utoipa.workspace = true
+{{/if}}
 {{#if (eq rustCaching "moka")}}
 # Caching
 moka.workspace = true
 {{/if}}
-{{#if (eq rustCaching "redis")}}
-# Caching
-redis.workspace = true
-{{/if}}
-
 {{#if (eq rustAuth "oauth2")}}
 # Auth
 oauth2.workspace = true
@@ -124,12 +163,18 @@ url.workspace = true
 name = "server"
 path = "src/main.rs"
 
-{{#if (or (includes rustLibraries "tokio-test") (includes rustLibraries "mockall"))}}
+{{#if (or (or (includes rustLibraries "tokio-test") (includes rustLibraries "mockall")) (or (includes rustLibraries "proptest") (includes rustLibraries "insta")))}}
 [dev-dependencies]
 {{#if (includes rustLibraries "tokio-test")}}
 tokio-test.workspace = true
 {{/if}}
 {{#if (includes rustLibraries "mockall")}}
 mockall.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "proptest")}}
+proptest.workspace = true
+{{/if}}
+{{#if (includes rustLibraries "insta")}}
+insta.workspace = true
 {{/if}}
 {{/if}}

@@ -158,6 +158,14 @@ describe("Go Ecosystem Tab", () => {
       expect(bubbleTeaOption?.description).toContain("TUI");
     });
 
+    it("should have urfave/cli option for goCli", () => {
+      const options = TECH_OPTIONS.goCli;
+      const urfaveOption = options.find((o) => o.id === "urfave-cli");
+      expect(urfaveOption).toBeDefined();
+      expect(urfaveOption?.name).toBe("urfave/cli");
+      expect(urfaveOption?.description).toContain("CLI framework");
+    });
+
     it("should have Zap as default for goLogging", () => {
       const options = TECH_OPTIONS.goLogging;
       const zapOption = options.find((o) => o.id === "zap");
@@ -165,6 +173,13 @@ describe("Go Ecosystem Tab", () => {
       expect(zapOption?.default).toBe(true);
       expect(zapOption?.name).toBe("Zap");
       expect(zapOption?.description).toContain("logging");
+    });
+
+    it("should have Logrus option for goLogging", () => {
+      const options = TECH_OPTIONS.goLogging;
+      const logrusOption = options.find((o) => o.id === "logrus");
+      expect(logrusOption).toBeDefined();
+      expect(logrusOption?.name).toBe("Logrus");
     });
   });
 

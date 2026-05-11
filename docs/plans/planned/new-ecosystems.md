@@ -9,7 +9,7 @@ Candidates for entirely new language ecosystem support beyond TypeScript, Rust, 
 | File | Language | Effort | Priority |
 |------|----------|--------|----------|
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | Java foundation | Done | Shipped in v1.6.2 |
-| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Java expansion | Medium/Large | Follow-up — Quarkus, Micronaut, jOOQ, Keycloak, messaging, observability |
+| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Java expansion | Medium/Large | Follow-up — Micronaut, jOOQ, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir (Phoenix, LiveView, Ecto) | Large | 1 — unique differentiator, no competing scaffolding tools |
 | [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Large | 2 — enterprise demand |
 

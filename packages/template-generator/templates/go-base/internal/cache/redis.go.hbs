@@ -1,0 +1,33 @@
+{{#if (eq caching "upstash-redis")}}
+package cache
+
+import (
+	"context"
+	"os"
+
+	"github.com/redis/go-redis/v9"
+)
+
+// NewRedisClient creates a Redis client for Upstash Redis.
+func NewRedisClient() *redis.Client {
+	redisURL := os.Getenv("UPSTASH_REDIS_URL")
+	if redisURL == "" {
+		redisURL = os.Getenv("REDIS_URL")
+	}
+	if redisURL == "" {
+		redisURL = "redis://localhost:6379"
+	}
+
+	opts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		return redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	}
+
+	return redis.NewClient(opts)
+}
+
+// Ping verifies that the Redis connection is reachable.
+func Ping(ctx context.Context, client *redis.Client) error {
+	return client.Ping(ctx).Err()
+}
+{{/if}}

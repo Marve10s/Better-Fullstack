@@ -1,0 +1,45 @@
+import { destroyWithFlush, getVariant, initialize, isEnabled, type Context, type Unleash } from "unleash-client";
+
+const url = process.env.UNLEASH_SERVER_API_URL || "";
+const token = process.env.UNLEASH_SERVER_API_TOKEN || "";
+const appName = process.env.UNLEASH_APP_NAME || "{{projectName}}";
+
+let unleashClient: Unleash | undefined;
+
+export function getUnleashClient(): Unleash | undefined {
+  if (!url || !token) return undefined;
+
+  if (!unleashClient) {
+    unleashClient = initialize({
+      url,
+      appName,
+      customHeaders: {
+        Authorization: token,
+      },
+    });
+  }
+
+  return unleashClient;
+}
+
+export function isFeatureEnabled(
+  featureName: string,
+  context?: Context,
+  defaultValue = false,
+): boolean {
+  if (!getUnleashClient()) return defaultValue;
+  return isEnabled(featureName, context, defaultValue);
+}
+
+export function getFeatureVariant(featureName: string, context?: Context) {
+  if (!getUnleashClient()) return undefined;
+  return getVariant(featureName, context);
+}
+
+export async function closeUnleash(): Promise<void> {
+  if (!unleashClient) return;
+  await destroyWithFlush();
+  unleashClient = undefined;
+}
+
+export type { Context, Unleash };

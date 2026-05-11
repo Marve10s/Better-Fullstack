@@ -1,0 +1,56 @@
+{{#if (eq pythonGraphql "ariadne")}}
+"""GraphQL schema using Ariadne."""
+
+from ariadne import QueryType, MutationType, make_executable_schema
+
+
+type_defs = """
+    type Book {
+        title: String!
+        author: String!
+        year: Int
+    }
+
+    input BookInput {
+        title: String!
+        author: String!
+        year: Int
+    }
+
+    type Query {
+        books: [Book!]!
+        book(title: String!): Book
+    }
+
+    type Mutation {
+        addBook(input: BookInput!): Book!
+    }
+"""
+
+books_db = [
+    {"title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "year": 1925},
+    {"title": "To Kill a Mockingbird", "author": "Harper Lee", "year": 1960},
+]
+
+query = QueryType()
+mutation = MutationType()
+
+
+@query.field("books")
+def resolve_books(*_) -> list[dict[str, object]]:
+    return books_db
+
+
+@query.field("book")
+def resolve_book(*_, title: str) -> dict[str, object] | None:
+    return next((book for book in books_db if book["title"].lower() == title.lower()), None)
+
+
+@mutation.field("addBook")
+def resolve_add_book(*_, input: dict[str, object]) -> dict[str, object]:
+    books_db.append(input)
+    return input
+
+
+schema = make_executable_schema(type_defs, query, mutation)
+{{/if}}

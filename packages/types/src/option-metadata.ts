@@ -39,6 +39,7 @@ import {
   PAYMENTS_VALUES,
   VERSION_CHANNEL_VALUES,
   PYTHON_AI_VALUES,
+  PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_GRAPHQL_VALUES,
@@ -142,6 +143,7 @@ export type OptionCategory =
   | "pythonValidation"
   | "pythonAi"
   | "pythonAuth"
+  | "pythonApi"
   | "pythonTaskQueue"
   | "pythonGraphql"
   | "pythonQuality"
@@ -331,6 +333,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonValidation: PYTHON_VALIDATION_VALUES,
   pythonAi: PYTHON_AI_VALUES,
   pythonAuth: PYTHON_AUTH_VALUES,
+  pythonApi: PYTHON_API_VALUES,
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
   pythonGraphql: PYTHON_GRAPHQL_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
@@ -456,6 +459,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "park-ui": "Park UI",
     "chakra-ui": "Chakra UI",
     nextui: "NextUI",
+    mui: "MUI",
+    antd: "Ant Design",
     "base-ui": "Base UI",
     "ark-ui": "Ark UI",
     "react-aria": "React Aria",
@@ -463,6 +468,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   featureFlags: {
     growthbook: "GrowthBook",
     posthog: "PostHog",
+    launchdarkly: "LaunchDarkly",
+    flagsmith: "Flagsmith",
+    unleash: "Unleash",
   },
   analytics: {
     plausible: "Plausible",
@@ -535,6 +543,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     maia: "Maia",
     lyra: "Lyra",
     mira: "Mira",
+    luma: "Luma",
+    sera: "Sera",
   },
   shadcnIconLibrary: {
     lucide: "Lucide",
@@ -542,6 +552,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     hugeicons: "HugeIcons",
     phosphor: "Phosphor Icons",
     remixicon: "Remix Icon",
+    heroicons: "Heroicons",
+    "react-icons": "React Icons",
   },
   shadcnColorTheme: {
     neutral: "Neutral",
@@ -590,11 +602,22 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   rustLibraries: {
     serde: "Serde",
+    uuid: "uuid",
+    chrono: "Chrono",
+    reqwest: "Reqwest",
+    config: "config",
+    dashmap: "DashMap",
+    "parking-lot": "parking_lot",
+    secrecy: "Secrecy",
+    "tokio-util": "Tokio Util",
+    utoipa: "utoipa",
     validator: "Validator",
     jsonwebtoken: "jsonwebtoken",
     argon2: "Argon2",
     "tokio-test": "Tokio Test",
     mockall: "Mockall",
+    proptest: "Proptest",
+    insta: "Insta",
   },
   rustLogging: {
     tracing: "Tracing",
@@ -632,19 +655,30 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "anthropic-sdk": "Anthropic SDK",
     langgraph: "LangGraph",
     crewai: "CrewAI",
+    haystack: "Haystack",
   },
   pythonAuth: {
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
   },
+  pythonApi: {
+    "django-rest-framework": "Django REST Framework",
+    "django-ninja": "Django Ninja",
+  },
   pythonTaskQueue: {
     celery: "Celery",
+    rq: "RQ",
+    dramatiq: "Dramatiq",
+    huey: "Huey",
   },
   pythonGraphql: {
     strawberry: "Strawberry",
+    ariadne: "Ariadne",
   },
   pythonQuality: {
     ruff: "Ruff",
+    mypy: "mypy",
+    pyright: "Pyright",
   },
   goWebFramework: {
     gin: "Gin",
@@ -663,11 +697,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goCli: {
     cobra: "Cobra",
     bubbletea: "Bubble Tea",
+    "urfave-cli": "urfave/cli",
   },
   goLogging: {
     zap: "Zap",
     zerolog: "Zerolog",
     slog: "slog",
+    logrus: "Logrus",
   },
   goAuth: {
     casbin: "Casbin",
@@ -675,6 +711,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
+    quarkus: "Quarkus",
   },
   javaBuildTool: {
     maven: "Maven",
@@ -694,6 +731,14 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     lombok: "Lombok",
     mapstruct: "MapStruct",
     caffeine: "Caffeine",
+    resilience4j: "Resilience4j",
+    "spring-webflux": "Spring WebFlux",
+    "spring-batch": "Spring Batch",
+    "spring-kafka": "Spring for Apache Kafka",
+    "spring-mail": "Spring Mail",
+    "spring-devtools": "Spring Boot DevTools",
+    "micrometer-prometheus": "Micrometer Prometheus",
+    thymeleaf: "Thymeleaf",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
@@ -854,6 +899,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonValidation: buildCategoryMetadata("pythonValidation"),
   pythonAi: buildCategoryMetadata("pythonAi"),
   pythonAuth: buildCategoryMetadata("pythonAuth"),
+  pythonApi: buildCategoryMetadata("pythonApi"),
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
   pythonGraphql: buildCategoryMetadata("pythonGraphql"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
