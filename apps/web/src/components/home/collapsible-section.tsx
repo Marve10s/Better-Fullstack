@@ -123,9 +123,8 @@ export function CollapsibleSection({
 
         <AnimatePresence initial={false}>
           {isOpen && (
-            <motion.div
+            <motion.section
               id={contentId}
-              role="region"
               aria-labelledby={headingId}
               initial={reduced ? false : { height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -136,7 +135,7 @@ export function CollapsibleSection({
               <div className="pb-8 sm:pb-12">
                 {children}
               </div>
-            </motion.div>
+            </motion.section>
           )}
         </AnimatePresence>
       </div>

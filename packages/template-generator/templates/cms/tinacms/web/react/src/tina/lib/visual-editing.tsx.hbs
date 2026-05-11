@@ -2,7 +2,7 @@
 
 import { useTina } from "tinacms/dist/react";
 
-export function useVisualEditing<T>(props: {
+export function useVisualEditing<T extends object>(props: {
   query: string;
   variables: object;
   data: T;

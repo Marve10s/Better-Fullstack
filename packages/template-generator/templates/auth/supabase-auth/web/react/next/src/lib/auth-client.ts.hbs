@@ -32,22 +32,25 @@ export function useUser() {
 
 export function useAuthClient() {
   const { user, isLoading } = useUser();
-  const supabase = createClient();
 
   return {
     user,
     isAuthenticated: !!user,
     isLoading,
     signOut: async () => {
+      const supabase = createClient();
       await supabase.auth.signOut();
     },
     signInWithEmail: async (email: string, password: string) => {
+      const supabase = createClient();
       return supabase.auth.signInWithPassword({ email, password });
     },
     signUpWithEmail: async (email: string, password: string) => {
+      const supabase = createClient();
       return supabase.auth.signUp({ email, password });
     },
     signInWithOAuth: async (provider: "google" | "github") => {
+      const supabase = createClient();
       return supabase.auth.signInWithOAuth({
         provider,
         options: {

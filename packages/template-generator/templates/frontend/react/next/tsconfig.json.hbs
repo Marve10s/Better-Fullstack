@@ -9,6 +9,9 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    {{#if (eq cms "tinacms")}}
+    "allowImportingTsExtensions": true,
+    {{/if}}
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
