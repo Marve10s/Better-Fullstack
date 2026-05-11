@@ -1,0 +1,43 @@
+{{#if (eq search "meilisearch")}}
+use meilisearch_sdk::{client::Client, errors::Error, search::SearchResults};
+use serde::{de::DeserializeOwned, Serialize};
+
+pub fn create_client() -> Result<Client, Error> {
+    let host = std::env::var("MEILISEARCH_HOST")
+        .unwrap_or_else(|_| "http://localhost:7700".to_string());
+    let api_key = std::env::var("MEILISEARCH_API_KEY").ok();
+
+    Client::new(host, api_key)
+}
+
+pub async fn search_documents<T>(
+    client: &Client,
+    index_name: &str,
+    query: &str,
+) -> Result<SearchResults<T>, Error>
+where
+    T: 'static + DeserializeOwned + Send + Sync,
+{
+    client
+        .index(index_name)
+        .search()
+        .with_query(query)
+        .execute::<T>()
+        .await
+}
+
+pub async fn add_documents<T>(
+    client: &Client,
+    index_name: &str,
+    documents: &[T],
+    primary_key: Option<&str>,
+) -> Result<meilisearch_sdk::task_info::TaskInfo, Error>
+where
+    T: Serialize + Send + Sync,
+{
+    client
+        .index(index_name)
+        .add_documents(documents, primary_key)
+        .await
+}
+{{/if}}

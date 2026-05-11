@@ -1,7 +1,18 @@
-import Plunk from "@plunk/node";
+import PlunkClient from "@plunk/node";
+
+type PlunkInstance = {
+  emails: {
+    send: (body: Record<string, unknown>) => Promise<unknown>;
+  };
+  events: {
+    track: (event: Record<string, unknown>) => Promise<unknown>;
+  };
+};
+
+type PlunkConstructor = new (key: string, options?: { baseUrl?: string }) => PlunkInstance;
 
 // Initialize Plunk client with secret API key
-const plunk = new Plunk(process.env.PLUNK_API_KEY || "");
+const plunk = new (PlunkClient as unknown as PlunkConstructor)(process.env.PLUNK_API_KEY || "");
 
 export interface SendEmailOptions {
   to: string;

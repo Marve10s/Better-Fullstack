@@ -170,6 +170,14 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
+  mui: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
+  antd: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
   "base-ui": {
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],

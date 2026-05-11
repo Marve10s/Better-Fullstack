@@ -266,6 +266,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.spring.io/spring-boot/",
     githubUrl: "https://github.com/spring-projects/spring-boot",
   },
+  quarkus: {
+    docsUrl: "https://quarkus.io/guides/",
+    githubUrl: "https://github.com/quarkusio/quarkus",
+  },
   maven: {
     docsUrl: "https://maven.apache.org/guides/",
     githubUrl: "https://github.com/apache/maven",
@@ -314,6 +318,38 @@ const BASE_LINKS: LinkMap = {
   caffeine: {
     docsUrl: "https://github.com/ben-manes/caffeine/wiki",
     githubUrl: "https://github.com/ben-manes/caffeine",
+  },
+  resilience4j: {
+    docsUrl: "https://resilience4j.readme.io/docs",
+    githubUrl: "https://github.com/resilience4j/resilience4j",
+  },
+  "spring-webflux": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/web/webflux.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-batch": {
+    docsUrl: "https://docs.spring.io/spring-batch/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-batch",
+  },
+  "spring-kafka": {
+    docsUrl: "https://docs.spring.io/spring-kafka/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-kafka",
+  },
+  "spring-mail": {
+    docsUrl: "https://docs.spring.io/spring-framework/reference/integration/email.html",
+    githubUrl: "https://github.com/spring-projects/spring-framework",
+  },
+  "spring-devtools": {
+    docsUrl: "https://docs.spring.io/spring-boot/reference/using/devtools.html",
+    githubUrl: "https://github.com/spring-projects/spring-boot",
+  },
+  "micrometer-prometheus": {
+    docsUrl: "https://docs.micrometer.io/micrometer/reference/implementations/prometheus.html",
+    githubUrl: "https://github.com/micrometer-metrics/micrometer",
+  },
+  thymeleaf: {
+    docsUrl: "https://www.thymeleaf.org/documentation.html",
+    githubUrl: "https://github.com/thymeleaf/thymeleaf",
   },
   junit5: {
     docsUrl: "https://junit.org/junit5/docs/current/user-guide/",
@@ -373,6 +409,18 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/growthbook/growthbook",
   },
   posthog: { docsUrl: "https://posthog.com/docs", githubUrl: "https://github.com/PostHog/posthog" },
+  launchdarkly: {
+    docsUrl: "https://launchdarkly.com/docs/sdk",
+    githubUrl: "https://github.com/launchdarkly",
+  },
+  flagsmith: {
+    docsUrl: "https://docs.flagsmith.com/",
+    githubUrl: "https://github.com/Flagsmith/flagsmith",
+  },
+  unleash: {
+    docsUrl: "https://docs.getunleash.io/",
+    githubUrl: "https://github.com/Unleash/unleash",
+  },
   plausible: {
     docsUrl: "https://plausible.io/docs",
     githubUrl: "https://github.com/plausible/analytics",
@@ -535,6 +583,11 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/heroui-inc/heroui",
   },
   mantine: { docsUrl: "https://mantine.dev/", githubUrl: "https://github.com/mantinedev/mantine" },
+  mui: { docsUrl: "https://mui.com/material-ui/", githubUrl: "https://github.com/mui/material-ui" },
+  antd: {
+    docsUrl: "https://ant.design/docs/react/introduce",
+    githubUrl: "https://github.com/ant-design/ant-design",
+  },
   "base-ui": {
     docsUrl: "https://base-ui.com/react/overview/quick-start",
     githubUrl: "https://github.com/mui/base-ui",
@@ -804,6 +857,42 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.rs/validator/latest/validator/",
     githubUrl: "https://github.com/Keats/validator",
   },
+  uuid: {
+    docsUrl: "https://docs.rs/uuid/latest/uuid/",
+    githubUrl: "https://github.com/uuid-rs/uuid",
+  },
+  chrono: {
+    docsUrl: "https://docs.rs/chrono/latest/chrono/",
+    githubUrl: "https://github.com/chronotope/chrono",
+  },
+  reqwest: {
+    docsUrl: "https://docs.rs/reqwest/latest/reqwest/",
+    githubUrl: "https://github.com/seanmonstar/reqwest",
+  },
+  config: {
+    docsUrl: "https://docs.rs/config/latest/config/",
+    githubUrl: "https://github.com/rust-cli/config-rs",
+  },
+  dashmap: {
+    docsUrl: "https://docs.rs/dashmap/latest/dashmap/",
+    githubUrl: "https://github.com/xacrimon/dashmap",
+  },
+  "parking-lot": {
+    docsUrl: "https://docs.rs/parking_lot/latest/parking_lot/",
+    githubUrl: "https://github.com/Amanieu/parking_lot",
+  },
+  secrecy: {
+    docsUrl: "https://docs.rs/secrecy/latest/secrecy/",
+    githubUrl: "https://github.com/iqlusioninc/crates",
+  },
+  "tokio-util": {
+    docsUrl: "https://docs.rs/tokio-util/latest/tokio_util/",
+    githubUrl: "https://github.com/tokio-rs/tokio",
+  },
+  utoipa: {
+    docsUrl: "https://docs.rs/utoipa/latest/utoipa/",
+    githubUrl: "https://github.com/juhaku/utoipa",
+  },
   jsonwebtoken: {
     docsUrl: "https://docs.rs/jsonwebtoken/latest/jsonwebtoken/",
     githubUrl: "https://github.com/Keats/jsonwebtoken",
@@ -819,6 +908,14 @@ const BASE_LINKS: LinkMap = {
   mockall: {
     docsUrl: "https://docs.rs/mockall/latest/mockall/",
     githubUrl: "https://github.com/asomers/mockall",
+  },
+  proptest: {
+    docsUrl: "https://docs.rs/proptest/latest/proptest/",
+    githubUrl: "https://github.com/proptest-rs/proptest",
+  },
+  insta: {
+    docsUrl: "https://insta.rs/",
+    githubUrl: "https://github.com/mitsuhiko/insta",
   },
   fastapi: {
     docsUrl: "https://fastapi.tiangolo.com/",
@@ -861,11 +958,26 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/mpdavis/python-jose",
   },
   celery: { docsUrl: "https://docs.celeryq.dev/", githubUrl: "https://github.com/celery/celery" },
+  rq: { docsUrl: "https://python-rq.org/", githubUrl: "https://github.com/rq/rq" },
+  dramatiq: { docsUrl: "https://dramatiq.io/", githubUrl: "https://github.com/Bogdanp/dramatiq" },
+  huey: {
+    docsUrl: "https://huey.readthedocs.io/",
+    githubUrl: "https://github.com/coleifer/huey",
+  },
   strawberry: {
     docsUrl: "https://strawberry.rocks/docs",
     githubUrl: "https://github.com/strawberry-graphql/strawberry",
   },
+  ariadne: {
+    docsUrl: "https://ariadnegraphql.org/",
+    githubUrl: "https://github.com/mirumee/ariadne",
+  },
   ruff: { docsUrl: "https://docs.astral.sh/ruff/", githubUrl: "https://github.com/astral-sh/ruff" },
+  mypy: { docsUrl: "https://mypy.readthedocs.io/", githubUrl: "https://github.com/python/mypy" },
+  pyright: {
+    docsUrl: "https://microsoft.github.io/pyright/",
+    githubUrl: "https://github.com/microsoft/pyright",
+  },
   gin: { docsUrl: "https://gin-gonic.com/docs/", githubUrl: "https://github.com/gin-gonic/gin" },
   echo: {
     docsUrl: "https://echo.labstack.com/docs",
@@ -888,6 +1000,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://github.com/charmbracelet/bubbletea#readme",
     githubUrl: "https://github.com/charmbracelet/bubbletea",
   },
+  "urfave-cli": {
+    docsUrl: "https://cli.urfave.org/",
+    githubUrl: "https://github.com/urfave/cli",
+  },
   zap: {
     docsUrl: "https://pkg.go.dev/go.uber.org/zap",
     githubUrl: "https://github.com/uber-go/zap",
@@ -899,6 +1015,10 @@ const BASE_LINKS: LinkMap = {
   slog: {
     docsUrl: "https://pkg.go.dev/log/slog",
     githubUrl: "https://github.com/golang/go",
+  },
+  logrus: {
+    docsUrl: "https://pkg.go.dev/github.com/sirupsen/logrus",
+    githubUrl: "https://github.com/sirupsen/logrus",
   },
   casbin: {
     docsUrl: "https://casbin.org/docs/overview",
@@ -944,6 +1064,18 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://docs.crewai.com/",
     githubUrl: "https://github.com/crewAIInc/crewAI",
   },
+  "pythonAi:haystack": {
+    docsUrl: "https://docs.haystack.deepset.ai/",
+    githubUrl: "https://github.com/deepset-ai/haystack",
+  },
+  "pythonApi:django-rest-framework": {
+    docsUrl: "https://www.django-rest-framework.org/",
+    githubUrl: "https://github.com/encode/django-rest-framework",
+  },
+  "pythonApi:django-ninja": {
+    docsUrl: "https://django-ninja.dev/",
+    githubUrl: "https://github.com/vitalik/django-ninja",
+  },
   "aiDocs:claude-md": { docsUrl: "https://docs.anthropic.com/en/docs/claude-code/memory" },
   "aiDocs:agents-md": { docsUrl: "https://agents.md/" },
   "aiDocs:cursorrules": { docsUrl: "https://docs.cursor.com/context/rules-for-ai" },
@@ -979,6 +1111,14 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://remixicon.com/",
     githubUrl: "https://github.com/nicedoc/remixicon",
   },
+  "shadcnIconLibrary:heroicons": {
+    docsUrl: "https://heroicons.com/",
+    githubUrl: "https://github.com/tailwindlabs/heroicons",
+  },
+  "shadcnIconLibrary:react-icons": {
+    docsUrl: "https://react-icons.github.io/react-icons/",
+    githubUrl: "https://github.com/react-icons/react-icons",
+  },
 
   // ─── shadcn Color Themes────────────────────
   "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
@@ -991,6 +1131,8 @@ const CATEGORY_LINKS: LinkMap = {
 
   // ─── shadcn Styles─────────────────────────
   "shadcnStyle:vega": { docsUrl: "https://ui.shadcn.com/docs/changelog/2025-12-shadcn-create" },
+  "shadcnStyle:luma": { docsUrl: "https://ui.shadcn.com/docs/changelog/2026-03-luma" },
+  "shadcnStyle:sera": { docsUrl: "https://ui.shadcn.com/schema.json" },
 
   // ─── shadcn Fonts ──────────────────────────────────────────────────────────
   "shadcnFont:inter": { docsUrl: "https://rsms.me/inter/" },

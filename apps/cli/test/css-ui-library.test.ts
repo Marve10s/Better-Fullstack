@@ -1,4 +1,4 @@
-import { describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 
 import type { CSSFramework, Frontend, UILibrary } from "../src/types";
 
@@ -69,6 +69,50 @@ describe("CSS Framework and UI Library Configurations", () => {
         });
 
         expectSuccess(result);
+      });
+    }
+
+    for (const shadcnIconLibrary of ["heroicons", "react-icons", "hugeicons"] as const) {
+      it(`should generate shadcn-ui with ${shadcnIconLibrary}`, async () => {
+        const result = await runTRPCTest({
+          projectName: `shadcn-${shadcnIconLibrary}`,
+          uiLibrary: "shadcn-ui",
+          shadcnIconLibrary,
+          cssFramework: "tailwind",
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          api: "trpc",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const webPackageJson = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
+        const modeToggle = await Bun.file(
+          `${result.projectDir}/apps/web/src/components/mode-toggle.tsx`,
+        ).text();
+
+        if (shadcnIconLibrary === "heroicons") {
+          expect(webPackageJson.dependencies["@heroicons/react"]).toBeDefined();
+          expect(modeToggle).toContain("@heroicons/react/24/outline");
+        } else if (shadcnIconLibrary === "react-icons") {
+          expect(webPackageJson.dependencies["react-icons"]).toBeDefined();
+          expect(modeToggle).toContain("react-icons/fa");
+        } else {
+          expect(webPackageJson.dependencies["@hugeicons/react"]).toBeDefined();
+          expect(webPackageJson.dependencies["@hugeicons/core-free-icons"]).toBeDefined();
+          expect(modeToggle).toContain("@hugeicons/core-free-icons");
+        }
       });
     }
 
@@ -794,6 +838,68 @@ describe("CSS Framework and UI Library Configurations", () => {
         });
 
         expectSuccess(result);
+      });
+    }
+  });
+
+  describe("MUI and Ant Design Tests", () => {
+    for (const uiLibrary of ["mui", "antd"] as const) {
+      it(`should add ${uiLibrary} dependencies for React frontends`, async () => {
+        const result = await runTRPCTest({
+          projectName: `${uiLibrary}-deps`,
+          uiLibrary,
+          cssFramework: "none",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          api: "trpc",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const webPackageJson = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
+        if (uiLibrary === "mui") {
+          expect(webPackageJson.dependencies["@mui/material"]).toBeDefined();
+          expect(webPackageJson.dependencies["@emotion/react"]).toBeDefined();
+          expect(webPackageJson.dependencies["@emotion/styled"]).toBeDefined();
+        } else {
+          expect(webPackageJson.dependencies.antd).toBeDefined();
+        }
+      });
+    }
+
+    for (const uiLibrary of ["mui", "antd"] as const) {
+      it(`should fail with ${uiLibrary} + Svelte`, async () => {
+        const result = await runTRPCTest({
+          projectName: `${uiLibrary}-svelte-fail`,
+          uiLibrary,
+          cssFramework: "tailwind",
+          frontend: ["svelte"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          api: "orpc",
+          webDeploy: "none",
+          serverDeploy: "none",
+          expectError: true,
+        });
+
+        expectError(result, "not compatible");
       });
     }
   });

@@ -2511,7 +2511,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/api": "workspace:*",
     "@libsql/client": "catalog:",
-    "libsql": "catalog:"
+    "libsql": "catalog:",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.4",
@@ -12030,7 +12031,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: java-spring-bo
 SPRING_PROFILES_ACTIVE=dev
 APP_BASIC_USERNAME=admin
 APP_BASIC_PASSWORD=change-me
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -12128,8 +12129,12 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
@@ -12147,8 +12152,12 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
@@ -12164,8 +12173,12 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
@@ -12179,8 +12192,12 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
@@ -12194,8 +12211,12 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
@@ -12209,15 +12230,19 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
   "crates/server/Cargo.toml",
   "crates/server/src/auth.rs",
   "crates/server/src/cache.rs",
+  "crates/server/src/email.rs",
   "crates/server/src/error.rs",
   "crates/server/src/main.rs",
+  "crates/server/src/meilisearch.rs",
+  "crates/server/src/observability.rs",
+  "crates/server/src/upstash_cache.rs",
   "rust-toolchain.toml",
 ]
 `;
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
-  "fileCount": 16,
+  "fileCount": 20,
   "files": [
     {
       "content": 
@@ -12238,7 +12263,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -12277,6 +12302,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Environment variables
 dotenvy = "0.15"
 
+
 # Web framework (Axum)
 axum = "0.8"
 tower = "0.5"
@@ -12297,7 +12323,6 @@ log = "0.4"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "console"] }
-
 
 
 
@@ -12498,6 +12523,7 @@ tracing-subscriber.workspace = true
 # Environment
 dotenvy.workspace = true
 
+
 # Web framework
 axum.workspace = true
 tower.workspace = true
@@ -12505,7 +12531,6 @@ tower-http.workspace = true
 
 # Database
 sea-orm.workspace = true
-
 
 
 
@@ -12525,6 +12550,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -12616,6 +12645,18 @@ async fn main() -> anyhow::Result<()> {
     },
     {
       "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
+    },
+    {
+      "content": "[exists]",
       "path": "README.md",
     },
     {
@@ -12628,7 +12669,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: actix-dioxus-sqlx 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 19,
   "files": [
     {
       "content": 
@@ -12649,7 +12690,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -12688,6 +12729,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Environment variables
 dotenvy = "0.15"
 
+
 # Web framework (Actix-web)
 actix-web = "4"
 actix-rt = "2"
@@ -12707,7 +12749,6 @@ wasm-bindgen = "0.2"
 
 # Validation
 validator = { version = "0.19", features = ["derive"] }
-
 
 
 [profile.dev]
@@ -12895,6 +12936,7 @@ tracing-subscriber.workspace = true
 # Environment
 dotenvy.workspace = true
 
+
 # Web framework
 actix-web.workspace = true
 actix-rt.workspace = true
@@ -12905,7 +12947,6 @@ sqlx.workspace = true
 
 
 validator.workspace = true
-
 
 
 [[bin]]
@@ -12923,6 +12964,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -13018,6 +13063,18 @@ async fn main() -> anyhow::Result<()> {
     },
     {
       "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
+    },
+    {
+      "content": "[exists]",
       "path": "README.md",
     },
     {
@@ -13030,7 +13087,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: cli-clap 1`] = `
 {
-  "fileCount": 13,
+  "fileCount": 17,
   "files": [
     {
       "content": 
@@ -13051,7 +13108,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -13094,9 +13151,9 @@ dotenvy = "0.15"
 
 
 
+
 # CLI (Clap)
 clap = { version = "4", features = ["derive"] }
-
 
 
 
@@ -13363,9 +13420,9 @@ dotenvy.workspace = true
 
 
 
+
 # CLI
 clap.workspace = true
-
 
 
 [[bin]]
@@ -13383,6 +13440,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -13417,6 +13478,18 @@ async fn main() -> anyhow::Result<()> {
     },
     {
       "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
+    },
+    {
+      "content": "[exists]",
       "path": "README.md",
     },
     {
@@ -13429,7 +13502,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 15,
   "files": [
     {
       "content": 
@@ -13450,7 +13523,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -13488,6 +13561,7 @@ env_logger = "0.11"
 # Environment variables
 dotenvy = "0.15"
 
+
 # Web framework (Axum)
 axum = "0.8"
 tower = "0.5"
@@ -13495,7 +13569,6 @@ tower-http = { version = "0.6", features = ["cors", "trace"] }
 
 # Database (SQLx)
 sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "sqlite", "mysql", "migrate"] }
-
 
 
 
@@ -13545,6 +13618,7 @@ env_logger.workspace = true
 # Environment
 dotenvy.workspace = true
 
+
 # Web framework
 axum.workspace = true
 tower.workspace = true
@@ -13552,7 +13626,6 @@ tower-http.workspace = true
 
 # Database
 sqlx.workspace = true
-
 
 
 
@@ -13572,6 +13645,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -13662,6 +13739,18 @@ async fn main() -> anyhow::Result<()> {
     },
     {
       "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
+    },
+    {
+      "content": "[exists]",
       "path": "README.md",
     },
     {
@@ -13674,7 +13763,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-eyre 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 15,
   "files": [
     {
       "content": 
@@ -13695,7 +13784,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -13733,11 +13822,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Environment variables
 dotenvy = "0.15"
 
+
 # Web framework (Axum)
 axum = "0.8"
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
-
 
 
 
@@ -13788,11 +13877,11 @@ tracing-subscriber.workspace = true
 # Environment
 dotenvy.workspace = true
 
+
 # Web framework
 axum.workspace = true
 tower.workspace = true
 tower-http.workspace = true
-
 
 
 
@@ -13813,6 +13902,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -13880,6 +13973,18 @@ async fn main() -> eyre::Result<()> {
     },
     {
       "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
+    },
+    {
+      "content": "[exists]",
       "path": "README.md",
     },
     {
@@ -13892,7 +13997,7 @@ async fn main() -> eyre::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: rocket-seaorm 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 15,
   "files": [
     {
       "content": 
@@ -13913,7 +14018,7 @@ PORT=3000
 
 # JWT Secret (if using jsonwebtoken)
 # JWT_SECRET=your-secret-key-here
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -13951,6 +14056,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Environment variables
 dotenvy = "0.15"
 
+
 # Web framework (Rocket)
 rocket = { version = "0.5", features = ["json"] }
 rocket_cors = "0.6"
@@ -13958,7 +14064,6 @@ rocket_cors = "0.6"
 # Database (SeaORM)
 sea-orm = { version = "1.1", features = ["runtime-tokio-rustls", "sqlx-postgres", "sqlx-sqlite", "sqlx-mysql"] }
 sea-orm-migration = "1.1"
-
 
 
 
@@ -14008,13 +14113,13 @@ tracing-subscriber.workspace = true
 # Environment
 dotenvy.workspace = true
 
+
 # Web framework
 rocket.workspace = true
 rocket_cors.workspace = true
 
 # Database
 sea-orm.workspace = true
-
 
 
 
@@ -14034,6 +14139,10 @@ path = "src/main.rs"
     {
       "content": "[exists]",
       "path": "crates/server/src/cache.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/email.rs",
     },
     {
       "content": "[exists]",
@@ -14110,6 +14219,18 @@ async fn rocket() -> _ {
 "
 ,
       "path": "crates/server/src/main.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/meilisearch.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/observability.rs",
+    },
+    {
+      "content": "[exists]",
+      "path": "crates/server/src/upstash_cache.rs",
     },
     {
       "content": "[exists]",
@@ -14268,7 +14389,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14322,7 +14443,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14408,7 +14529,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14462,7 +14583,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14516,7 +14637,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14562,7 +14683,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14616,7 +14737,7 @@ GRPC_PORT=50051
 
 # Logging level
 LOG_LEVEL=debug
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14690,7 +14811,7 @@ LOG_LEVEL=debug
 # Casbin settings
 CASBIN_MODEL=auth_model.conf
 CASBIN_POLICY=auth_policy.csv
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14751,7 +14872,7 @@ LOG_LEVEL=debug
 
 # JWT settings
 JWT_SECRET=change-me-to-a-real-secret
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -14923,7 +15044,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -15033,7 +15154,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -15135,7 +15256,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -15221,7 +15342,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -15291,7 +15412,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },
@@ -15361,7 +15482,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 # Celery (if using task queue)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
-"
+CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
     },

@@ -18,7 +18,8 @@ Files:
 - `scripted-cli-runs.md` - non-interactive CLI rules, prompt avoidance, and matrix caveats
 - `production-package-testing.md` - production `bun create better-fullstack@latest` validation workflow and combo-ledger rules
 - `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
-- `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos
+- `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos in this project
+- `design-reading-guide.md` - ordered index of all in-repo design specs (agent skills + BF Remotion style), precedence rules, and verification commands for agents reading “all designs”
 - `adding-new-tool-options/` - complete guide for adding new tool/library options to any ecosystem
   - `README.md` - master guide: checklists, both scenarios (existing category vs new category), area-by-area file reference, ecosystem rules, naming conventions, common mistakes
   - `worked-example.md` - complete end-to-end walkthrough adding "opensearch" to Search, with every file diff and new-category wiring patterns

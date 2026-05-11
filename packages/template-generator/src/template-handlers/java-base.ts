@@ -14,6 +14,7 @@ type JavaTemplateContext = ProjectConfig & {
   isJavaMaven: boolean;
   isJavaGradle: boolean;
   isJavaSpringBoot: boolean;
+  isJavaQuarkus: boolean;
   isJavaPlainJava: boolean;
   hasJavaJpa: boolean;
   hasJavaSecurity: boolean;
@@ -25,6 +26,14 @@ type JavaTemplateContext = ProjectConfig & {
   hasJavaLombok: boolean;
   hasJavaMapstruct: boolean;
   hasJavaCaffeine: boolean;
+  hasJavaResilience4j: boolean;
+  hasJavaWebflux: boolean;
+  hasJavaBatch: boolean;
+  hasJavaKafka: boolean;
+  hasJavaMail: boolean;
+  hasJavaDevtools: boolean;
+  hasJavaMicrometerPrometheus: boolean;
+  hasJavaThymeleaf: boolean;
   hasJavaAnnotationProcessors: boolean;
   hasJavaMockito: boolean;
   hasJavaTestcontainers: boolean;
@@ -138,6 +147,7 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
   // `javaWebFramework=spring-boot` with `javaBuildTool=none`, fall back to the
   // plain-Java path instead of emitting uncompilable Spring sources.
   const isJavaSpringBoot = config.javaWebFramework === "spring-boot" && hasJavaBuildTool;
+  const isJavaQuarkus = config.javaWebFramework === "quarkus" && hasJavaBuildTool;
   const hasJavaJpa = isJavaSpringBoot && config.javaOrm === "spring-data-jpa";
   const rawLibraries = isJavaSpringBoot
     ? (config.javaLibraries || []).filter((library) => library !== "none")
@@ -182,7 +192,8 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     isJavaMaven: config.javaBuildTool === "maven",
     isJavaGradle: config.javaBuildTool === "gradle",
     isJavaSpringBoot,
-    isJavaPlainJava: !isJavaSpringBoot,
+    isJavaQuarkus,
+    isJavaPlainJava: !isJavaSpringBoot && !isJavaQuarkus,
     hasJavaJpa,
     hasJavaSecurity: isJavaSpringBoot && config.javaAuth === "spring-security",
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
@@ -193,6 +204,14 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     hasJavaLombok: javaLibraries.includes("lombok"),
     hasJavaMapstruct: javaLibraries.includes("mapstruct"),
     hasJavaCaffeine: javaLibraries.includes("caffeine"),
+    hasJavaResilience4j: javaLibraries.includes("resilience4j"),
+    hasJavaWebflux: javaLibraries.includes("spring-webflux"),
+    hasJavaBatch: javaLibraries.includes("spring-batch"),
+    hasJavaKafka: javaLibraries.includes("spring-kafka"),
+    hasJavaMail: javaLibraries.includes("spring-mail"),
+    hasJavaDevtools: javaLibraries.includes("spring-devtools"),
+    hasJavaMicrometerPrometheus: javaLibraries.includes("micrometer-prometheus"),
+    hasJavaThymeleaf: javaLibraries.includes("thymeleaf"),
     hasJavaAnnotationProcessors:
       javaLibraries.includes("lombok") || javaLibraries.includes("mapstruct"),
     hasJavaMockito,
@@ -208,6 +227,8 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
 }
 
 function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateContext): boolean {
+  const isEmailServiceTemplate = templatePath.endsWith("/service/EmailService.java.hbs");
+
   if (
     (!context.isJavaMaven &&
       (templatePath === "java-base/pom.xml.hbs" ||
@@ -225,7 +246,7 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
   }
 
   if (
-    !context.isJavaSpringBoot &&
+    context.isJavaPlainJava &&
     (templatePath.includes("/config/") ||
       templatePath.includes("/controller/") ||
       templatePath.includes("src/main/resources/"))
@@ -233,11 +254,27 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     return true;
   }
 
+  if (context.isJavaQuarkus) {
+    if (
+      templatePath.includes("/controller/") ||
+      templatePath.includes("/config/") ||
+      templatePath.includes("src/main/resources/") ||
+      templatePath.endsWith("/ApplicationTests.java.hbs") ||
+      templatePath.endsWith("/ApplicationContainerTests.java.hbs")
+    ) {
+      return true;
+    }
+  }
+
+  if (!context.isJavaQuarkus && templatePath.includes("/resource/")) {
+    return true;
+  }
+
   if (!context.hasJavaJpa) {
     if (
       templatePath.includes("/domain/") ||
       templatePath.includes("/repository/") ||
-      templatePath.includes("/service/") ||
+      (templatePath.includes("/service/") && !isEmailServiceTemplate) ||
       templatePath.endsWith("/controller/UserController.java.hbs") ||
       templatePath.endsWith("/service/AppUserServiceTest.java.hbs")
     ) {

@@ -1,0 +1,13 @@
+{{#if (eq pythonTaskQueue "huey")}}
+"""Huey task queue configuration."""
+
+import os
+
+from huey import RedisHuey
+
+
+huey = RedisHuey(
+    os.getenv("HUEY_NAME", "{{projectName}}"),
+    url=os.getenv("HUEY_REDIS_URL", "redis://localhost:6379/0"),
+)
+{{/if}}

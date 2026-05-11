@@ -39,6 +39,14 @@ const UI_LIBRARY_OPTIONS: Record<UILibrary, { label: string; hint: string }> = {
     label: "Mantine",
     hint: "Full-featured React component library with 120+ components",
   },
+  mui: {
+    label: "MUI",
+    hint: "Popular React component library implementing Material Design",
+  },
+  antd: {
+    label: "Ant Design",
+    hint: "Enterprise-class React UI component library",
+  },
   "base-ui": {
     label: "Base UI",
     hint: "Unstyled, accessible components from MUI team (Radix successor)",

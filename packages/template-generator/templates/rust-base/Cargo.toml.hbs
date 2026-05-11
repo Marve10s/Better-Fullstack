@@ -58,6 +58,23 @@ env_logger = "0.11"
 # Environment variables
 dotenvy = "0.15"
 
+{{#if (eq email "resend")}}
+# Email delivery
+resend-rs = { version = "0.24", default-features = false, features = ["rustls-tls"] }
+{{/if}}
+{{#if (eq observability "sentry")}}
+# Error tracking and performance monitoring
+sentry = "0.48.1"
+{{/if}}
+{{#if (or (eq caching "upstash-redis") (eq rustCaching "redis"))}}
+# Redis client
+redis = { version = "1.2.1", features = ["tokio-comp"] }
+{{/if}}
+{{#if (eq search "meilisearch")}}
+# Search
+meilisearch-sdk = "0.33.0"
+{{/if}}
+
 {{#if (eq rustWebFramework "axum")}}
 # Web framework (Axum)
 axum = "0.8"
@@ -145,6 +162,42 @@ crossterm = "0.28"
 tracing-appender = "0.2"
 {{/if}}
 
+{{#if (includes rustLibraries "uuid")}}
+# UUID generation and parsing
+uuid = { version = "1.23.1", features = ["v4", "v7", "serde"] }
+{{/if}}
+{{#if (includes rustLibraries "chrono")}}
+# Date and time
+chrono = { version = "0.4.44", features = ["serde"] }
+{{/if}}
+{{#if (includes rustLibraries "reqwest")}}
+# HTTP client
+reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
+{{/if}}
+{{#if (includes rustLibraries "config")}}
+# Layered configuration
+config = "0.15.22"
+{{/if}}
+{{#if (includes rustLibraries "dashmap")}}
+# Concurrent maps
+dashmap = "6"
+{{/if}}
+{{#if (includes rustLibraries "parking-lot")}}
+# Synchronization primitives
+parking_lot = "0.12"
+{{/if}}
+{{#if (includes rustLibraries "secrecy")}}
+# Secret handling
+secrecy = { version = "0.10", features = ["serde"] }
+{{/if}}
+{{#if (includes rustLibraries "tokio-util")}}
+# Tokio utilities
+tokio-util = { version = "0.7", features = ["codec", "io", "rt"] }
+{{/if}}
+{{#if (includes rustLibraries "utoipa")}}
+# OpenAPI generation
+utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid"] }
+{{/if}}
 {{#if (includes rustLibraries "validator")}}
 # Validation
 validator = { version = "0.19", features = ["derive"] }
@@ -165,16 +218,19 @@ tokio-test = "0.4"
 # Mocking
 mockall = "0.13"
 {{/if}}
+{{#if (includes rustLibraries "proptest")}}
+# Property-based testing
+proptest = "1"
+{{/if}}
+{{#if (includes rustLibraries "insta")}}
+# Snapshot testing
+insta = { version = "1", features = ["yaml"] }
+{{/if}}
 
 {{#if (eq rustCaching "moka")}}
 # Caching (Moka)
 moka = { version = "0.12", features = ["future"] }
 {{/if}}
-{{#if (eq rustCaching "redis")}}
-# Caching (Redis)
-redis = { version = "0.29", features = ["aio", "tokio-comp"] }
-{{/if}}
-
 {{#if (eq rustAuth "oauth2")}}
 # Auth (OAuth2)
 oauth2 = "4.4"

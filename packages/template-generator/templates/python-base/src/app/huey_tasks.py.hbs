@@ -1,0 +1,21 @@
+{{#if (eq pythonTaskQueue "huey")}}
+"""Example Huey background tasks."""
+
+import time
+from typing import Any
+
+from app.huey_app import huey
+
+
+@huey.task()
+def example_task(name: str = "World") -> str:
+    """Simple example task."""
+    return f"Hello, {name}!"
+
+
+@huey.task(retries=3, retry_delay=10)
+def process_data_task(data: dict[str, Any]) -> dict[str, Any]:
+    """Process data in the background."""
+    time.sleep(1)
+    return {"processed": True, "items": len(data), "data": data}
+{{/if}}

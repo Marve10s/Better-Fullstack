@@ -45,17 +45,35 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 {{/if}}
+{{#if (eq goCli "urfave-cli")}}
+	github.com/urfave/cli/v3 v3.8.0
+{{/if}}
 {{#if (eq goLogging "zap")}}
 	go.uber.org/zap v1.27.1
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	github.com/rs/zerolog v1.34.0
 {{/if}}
+{{#if (eq goLogging "logrus")}}
+	github.com/sirupsen/logrus v1.9.3
+{{/if}}
 {{#if (eq goAuth "casbin")}}
 	github.com/casbin/casbin/v2 v2.103.0
 {{/if}}
 {{#if (eq goAuth "jwt")}}
 	github.com/golang-jwt/jwt/v5 v5.2.2
+{{/if}}
+{{#if (eq email "resend")}}
+	github.com/resend/resend-go/v3 v3.4.1
+{{/if}}
+{{#if (eq observability "sentry")}}
+	github.com/getsentry/sentry-go v0.46.2
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+	github.com/redis/go-redis/v9 v9.19.0
+{{/if}}
+{{#if (eq search "meilisearch")}}
+	github.com/meilisearch/meilisearch-go v0.36.2
 {{/if}}
 	github.com/joho/godotenv v1.5.1
 )

@@ -6,7 +6,6 @@ The Java ecosystem foundation shipped in `v1.6.2`. This plan tracks the remainin
 
 ## Web Frameworks
 
-- [ ] Add `quarkus` — cloud-native, GraalVM-optimized, faster startup and lower memory than Spring Boot.
 - [ ] Add `micronaut` — compile-time DI, low memory footprint, GraalVM native-image support.
 
 ## ORM / Data Access
@@ -26,13 +25,13 @@ The Java ecosystem foundation shipped in `v1.6.2`. This plan tracks the remainin
 
 ## Task Queues / Messaging
 
-- [ ] Add `spring-batch`
-- [ ] Add `spring-kafka`
+- [x] Add `spring-batch`
+- [x] Add `spring-kafka`
 - [ ] Add `rabbitmq` via Spring AMQP
 
 ## Observability
 
-- [ ] Add `micrometer`
+- [x] Add `micrometer-prometheus`
 - [ ] Add `opentelemetry-java`
 - [ ] Expand Spring Actuator examples beyond dependency wiring
 

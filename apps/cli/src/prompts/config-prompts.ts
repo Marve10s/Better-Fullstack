@@ -42,6 +42,7 @@ import type {
   Payments,
   ProjectConfig,
   PythonAi,
+  PythonApi,
   PythonAuth,
   PythonOrm,
   PythonQuality,
@@ -123,6 +124,7 @@ import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
 import {
   getPythonAiChoice,
+  getPythonApiChoice,
   getPythonAuthChoice,
   getPythonGraphqlChoice,
   getPythonOrmChoice,
@@ -212,6 +214,7 @@ type PromptGroupResults = {
   pythonValidation: PythonValidation;
   pythonAi: PythonAi[];
   pythonAuth: PythonAuth;
+  pythonApi: PythonApi;
   pythonTaskQueue: PythonTaskQueue;
   pythonGraphql: PythonGraphql;
   pythonQuality: PythonQuality;
@@ -333,8 +336,7 @@ export async function gatherConfig(
         return getPaymentsChoice(flags.payments, results.auth, results.backend, results.frontend);
       },
       email: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Email);
-        return getEmailChoice(flags.email, results.backend);
+        return getEmailChoice(flags.email, results.backend, results.ecosystem);
       },
       effect: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
@@ -441,8 +443,11 @@ export async function gatherConfig(
         return getLoggingChoice(flags.logging, results.backend);
       },
       observability: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Observability);
-        return getObservabilityChoice(flags.observability, results.backend);
+        return getObservabilityChoice(
+          flags.observability,
+          results.backend,
+          results.ecosystem,
+        );
       },
       featureFlags: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
@@ -457,16 +462,14 @@ export async function gatherConfig(
         return getCMSChoice(flags.cms, results.backend);
       },
       caching: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Caching);
-        return getCachingChoice(flags.caching, results.backend);
+        return getCachingChoice(flags.caching, results.backend, results.ecosystem);
       },
       i18n: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
         return getI18nChoice(flags.i18n, results.frontend);
       },
       search: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as Search);
-        return getSearchChoice(flags.search, results.backend);
+        return getSearchChoice(flags.search, results.backend, results.ecosystem);
       },
       fileStorage: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);
@@ -533,6 +536,13 @@ export async function gatherConfig(
       pythonAuth: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonAuth);
         return getPythonAuthChoice(flags.pythonAuth);
+      },
+      pythonApi: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonApi);
+        if (results.pythonWebFramework !== "django") {
+          return Promise.resolve("none" as PythonApi);
+        }
+        return getPythonApiChoice(flags.pythonApi);
       },
       pythonTaskQueue: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonTaskQueue);
@@ -694,6 +704,7 @@ export async function gatherConfig(
     pythonValidation: result.pythonValidation,
     pythonAi: result.pythonAi,
     pythonAuth: result.pythonAuth,
+    pythonApi: result.pythonApi,
     pythonTaskQueue: result.pythonTaskQueue,
     pythonGraphql: result.pythonGraphql,
     pythonQuality: result.pythonQuality,

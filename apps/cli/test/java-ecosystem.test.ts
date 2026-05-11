@@ -118,6 +118,7 @@ function createJavaCompatibilityInput(
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
@@ -152,9 +153,8 @@ describe("Java Ecosystem", () => {
       expect(ECOSYSTEMS).toHaveLength(5);
     });
 
-    it("should only expose scaffolded Java web framework values", () => {
-      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "none"]);
-      expect(JAVA_WEB_FRAMEWORKS).not.toContain("quarkus");
+    it("should expose scaffolded Java web framework values", () => {
+      expect(JAVA_WEB_FRAMEWORKS).toEqual(["spring-boot", "quarkus", "none"]);
     });
 
     it("should only expose scaffolded Java build tool values", () => {
@@ -171,6 +171,14 @@ describe("Java Ecosystem", () => {
         "lombok",
         "mapstruct",
         "caffeine",
+        "resilience4j",
+        "spring-webflux",
+        "spring-batch",
+        "spring-kafka",
+        "spring-mail",
+        "spring-devtools",
+        "micrometer-prometheus",
+        "thymeleaf",
         "none",
       ]);
       expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
@@ -242,6 +250,95 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<groupId>com.example</groupId>");
       expect(pomContent).toContain("<artifactId>java-pom-check</artifactId>");
       expect(pomContent).not.toContain("package.json");
+    });
+
+    it("should create a Quarkus Maven project with REST support", async () => {
+      const result = await createVirtual({
+        projectName: "java-quarkus-maven",
+        ecosystem: "java",
+        javaWebFramework: "quarkus",
+        javaBuildTool: "maven",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+        aiDocs: ["claude-md"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "pom.xml")).toBe(true);
+      expect(hasFile(root, "mvnw")).toBe(true);
+      expect(hasFile(root, "src/main/java/com/example/javaquarkusmaven/Application.java")).toBe(
+        true,
+      );
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java"),
+      ).toBe(true);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusmaven/controller/HealthController.java"),
+      ).toBe(false);
+      expect(hasFile(root, "src/main/resources/application.yml")).toBe(false);
+
+      const pomContent = getFileContent(root, "pom.xml");
+      const applicationContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaquarkusmaven/Application.java",
+      );
+      const resourceContent = getFileContent(
+        root,
+        "src/main/java/com/example/javaquarkusmaven/resource/GreetingResource.java",
+      );
+      const readmeContent = getFileContent(root, "README.md");
+      const claudeContent = getFileContent(root, "CLAUDE.md");
+
+      expect(pomContent).toContain("<quarkus.platform.version>3.35.2</quarkus.platform.version>");
+      expect(pomContent).toContain("<artifactId>quarkus-rest</artifactId>");
+      expect(pomContent).toContain("<artifactId>quarkus-junit5</artifactId>");
+      expect(pomContent).toContain("<artifactId>quarkus-maven-plugin</artifactId>");
+      expect(pomContent).not.toContain("spring-boot-starter-parent");
+      expect(applicationContent).toContain("@QuarkusMain");
+      expect(resourceContent).toContain('@Path("/hello")');
+      expect(readmeContent).toContain("./mvnw quarkus:dev");
+      expect(readmeContent).toContain("http://localhost:8080/hello");
+      expect(claudeContent).toContain("Web Framework: quarkus");
+      expect(claudeContent).toContain("./mvnw quarkus:dev");
+    });
+
+    it("should create a Quarkus Gradle project with REST support", async () => {
+      const result = await createVirtual({
+        projectName: "java-quarkus-gradle",
+        ecosystem: "java",
+        javaWebFramework: "quarkus",
+        javaBuildTool: "gradle",
+        javaOrm: "none",
+        javaAuth: "none",
+        javaLibraries: [],
+        javaTestingLibraries: ["junit5"],
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "build.gradle.kts")).toBe(true);
+      expect(hasFile(root, "gradlew")).toBe(true);
+      expect(hasFile(root, "pom.xml")).toBe(false);
+      expect(
+        hasFile(root, "src/main/java/com/example/javaquarkusgradle/resource/GreetingResource.java"),
+      ).toBe(true);
+
+      const gradleContent = getFileContent(root, "build.gradle.kts");
+      const readmeContent = getFileContent(root, "README.md");
+
+      expect(gradleContent).toContain('id("io.quarkus") version "3.35.2"');
+      expect(gradleContent).toContain(
+        'implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.35.2"))',
+      );
+      expect(gradleContent).toContain('implementation("io.quarkus:quarkus-rest")');
+      expect(gradleContent).toContain('testImplementation("io.quarkus:quarkus-junit5")');
+      expect(gradleContent).not.toContain("org.springframework.boot");
+      expect(readmeContent).toContain("./gradlew quarkusDev");
     });
 
     it("should create a Spring Boot project with Gradle Wrapper files", async () => {
@@ -481,7 +578,7 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("spring-boot-starter-security");
       expect(pomContent).toContain("spring-boot-starter-actuator");
       expect(pomContent).toContain("spring-boot-starter-validation");
-      expect(pomContent).toContain("flyway-core");
+      expect(pomContent).toContain("spring-boot-starter-flyway");
       expect(pomContent).toContain("spring-boot-testcontainers");
       expect(applicationConfig).toContain("jdbc:h2:file:./data/java-full");
       expect(applicationConfig).toContain("ddl-auto: validate");
@@ -500,7 +597,21 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "maven",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaLibraries: [
+          "liquibase",
+          "springdoc-openapi",
+          "lombok",
+          "mapstruct",
+          "caffeine",
+          "resilience4j",
+          "spring-webflux",
+          "spring-batch",
+          "spring-kafka",
+          "spring-mail",
+          "spring-devtools",
+          "micrometer-prometheus",
+          "thymeleaf",
+        ],
         javaTestingLibraries: [
           "junit5",
           "assertj",
@@ -557,13 +668,22 @@ describe("Java Ecosystem", () => {
       );
       const readmeContent = getFileContent(root, "README.md");
 
-      expect(pomContent).toContain("liquibase-core");
+      expect(pomContent).toContain("spring-boot-starter-liquibase");
       expect(pomContent).toContain("springdoc-openapi-starter-webmvc-ui");
       expect(pomContent).toContain("lombok");
       expect(pomContent).toContain("mapstruct");
       expect(pomContent).toContain("mapstruct-processor");
       expect(pomContent).toContain("spring-boot-starter-cache");
       expect(pomContent).toContain("caffeine");
+      expect(pomContent).toContain("resilience4j-spring-boot3");
+      expect(pomContent).toContain("spring-boot-starter-webflux");
+      expect(pomContent).toContain("spring-boot-starter-batch");
+      expect(pomContent).toContain("spring-kafka");
+      expect(pomContent).toContain("spring-boot-starter-mail");
+      expect(pomContent).toContain("spring-boot-devtools");
+      expect(pomContent).toContain("micrometer-registry-prometheus");
+      expect(pomContent).toContain("spring-boot-starter-thymeleaf");
+      expect(pomContent).toContain("<version>2.3.0</version>");
       expect(pomContent).toContain("<optional>true</optional>");
       expect(pomContent).toContain("<artifactId>maven-compiler-plugin</artifactId>");
       expect(pomContent).toContain("<annotationProcessorPaths>");
@@ -581,7 +701,7 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("awaitility");
       expect(pomContent).toContain("archunit-junit5");
       expect(pomContent).toContain("jqwik");
-      expect(pomContent).not.toContain("flyway-core");
+      expect(pomContent).not.toContain("spring-boot-starter-flyway");
       expect(applicationContent).toContain("@EnableCaching");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
@@ -590,6 +710,7 @@ describe("Java Ecosystem", () => {
       expect(applicationTest).toContain("org.assertj.core.api.Assertions.assertThat");
       expect(readmeContent).toContain("OpenAPI documentation is available");
       expect(readmeContent).toContain("Spring Cache is enabled with Caffeine");
+      expect(readmeContent).toContain("Resilience4j is available");
       expect(readmeContent).toContain("MapStruct is configured with a generated mapper example");
     });
 
@@ -601,7 +722,14 @@ describe("Java Ecosystem", () => {
         javaBuildTool: "gradle",
         javaOrm: "spring-data-jpa",
         javaAuth: "none",
-        javaLibraries: ["liquibase", "springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+        javaLibraries: [
+          "liquibase",
+          "springdoc-openapi",
+          "lombok",
+          "mapstruct",
+          "caffeine",
+          "resilience4j",
+        ],
         javaTestingLibraries: [
           "junit5",
           "assertj",
@@ -642,7 +770,9 @@ describe("Java Ecosystem", () => {
       const gradleContent = getFileContent(root, "build.gradle.kts");
       const applicationConfig = getFileContent(root, "src/main/resources/application.yml");
 
-      expect(gradleContent).toContain('implementation("org.liquibase:liquibase-core")');
+      expect(gradleContent).toContain(
+        'implementation("org.springframework.boot:spring-boot-starter-liquibase")',
+      );
       expect(gradleContent).toContain(
         'implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")',
       );
@@ -660,6 +790,9 @@ describe("Java Ecosystem", () => {
         'implementation("org.springframework.boot:spring-boot-starter-cache")',
       );
       expect(gradleContent).toContain('implementation("com.github.ben-manes.caffeine:caffeine")');
+      expect(gradleContent).toContain(
+        'implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")',
+      );
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
@@ -668,7 +801,7 @@ describe("Java Ecosystem", () => {
         'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
       expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
-      expect(gradleContent).not.toContain("flyway-core");
+      expect(gradleContent).not.toContain("spring-boot-starter-flyway");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
       );
@@ -770,6 +903,7 @@ describe("Java Ecosystem", () => {
             "springdoc-openapi",
             "mapstruct",
             "caffeine",
+            "resilience4j",
           ],
           javaTestingLibraries: ["junit5"],
         }),
@@ -780,6 +914,7 @@ describe("Java Ecosystem", () => {
         "springdoc-openapi",
         "mapstruct",
         "caffeine",
+        "resilience4j",
       ]);
       expect(result.changes.some((adjustment) => adjustment.category === "javaOrm")).toBe(true);
     });
@@ -867,7 +1002,7 @@ describe("Java Ecosystem", () => {
           javaBuildTool: "maven",
           javaOrm: "none",
           javaAuth: "none",
-          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine"],
+          javaLibraries: ["springdoc-openapi", "lombok", "mapstruct", "caffeine", "resilience4j"],
           javaTestingLibraries: ["junit5"],
         }),
       );

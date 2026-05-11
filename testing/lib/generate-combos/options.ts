@@ -37,6 +37,7 @@ import {
   ORM_VALUES,
   PAYMENTS_VALUES,
   PYTHON_AI_VALUES,
+  PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_GRAPHQL_VALUES,
@@ -107,6 +108,10 @@ const SELF_COMPATIBLE_FRONTENDS = new Set([
 
 const WEB_FRONTENDS = getCategoryOptionIds("webFrontend");
 const NATIVE_FRONTENDS = getCategoryOptionIds("nativeFrontend");
+const CROSS_ECOSYSTEM_EMAIL_VALUES = ["resend", "none"] as const;
+const CROSS_ECOSYSTEM_OBSERVABILITY_VALUES = ["sentry", "none"] as const;
+const CROSS_ECOSYSTEM_CACHING_VALUES = ["upstash-redis", "none"] as const;
+const CROSS_ECOSYSTEM_SEARCH_VALUES = ["meilisearch", "none"] as const;
 
 function sampleOne<T>(values: readonly T[]): T {
   return values[Math.floor(_rng() * values.length)];
@@ -261,7 +266,10 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       fileUpload: sampleScalar(FILE_UPLOAD_VALUES, 0.82),
       logging: backend === "none" ? "none" : sampleScalar(LOGGING_VALUES, 0.65),
       observability: sampleScalar(OBSERVABILITY_VALUES, 0.85),
-      featureFlags: sampleScalar(["growthbook", "posthog", "none"] as const, 0.85),
+      featureFlags: sampleScalar(
+        ["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"] as const,
+        0.85,
+      ),
       analytics: sampleScalar(ANALYTICS_VALUES, 0.9),
       effect: sampleScalar(EFFECT_VALUES, 0.82),
       stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7),
@@ -323,6 +331,10 @@ function makeRustDraft(args: GeneratorArgs): CandidateDraft {
       rustCaching: sampleScalar(RUST_CACHING_VALUES, 0.15),
       rustAuth: sampleScalar(RUST_AUTH_VALUES, 0.15),
       rustLibraries: sampleArray(RUST_LIBRARIES_VALUES, 0.35, 2),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -337,9 +349,14 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
       pythonValidation: sampleScalar(PYTHON_VALIDATION_VALUES, 0.35),
       pythonAi: sampleArray(PYTHON_AI_VALUES, 0.5, 1),
       pythonAuth: sampleScalar(PYTHON_AUTH_VALUES, 0.5),
+      pythonApi: sampleScalar(PYTHON_API_VALUES, 0.65),
       pythonTaskQueue: sampleScalar(PYTHON_TASK_QUEUE_VALUES, 0.55),
       pythonGraphql: sampleScalar(PYTHON_GRAPHQL_VALUES, 0.5),
       pythonQuality: sampleScalar(PYTHON_QUALITY_VALUES, 0.35),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -356,6 +373,10 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
       goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
+      email: sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email"),
+      observability: sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability"),
+      caching: sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching"),
+      search: sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search"),
     },
   };
 }
@@ -392,6 +413,14 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
       javaTestingLibraries: usesBuildTool
         ? sampleArray(JAVA_TESTING_LIBRARIES_VALUES, 0.2, 3, "javaTestingLibraries")
         : ["none" as const],
+      email: usesBuildTool ? sampleScalar(CROSS_ECOSYSTEM_EMAIL_VALUES, 0.75, "email") : "none",
+      observability: usesBuildTool
+        ? sampleScalar(CROSS_ECOSYSTEM_OBSERVABILITY_VALUES, 0.75, "observability")
+        : "none",
+      caching: usesBuildTool
+        ? sampleScalar(CROSS_ECOSYSTEM_CACHING_VALUES, 0.75, "caching")
+        : "none",
+      search: usesBuildTool ? sampleScalar(CROSS_ECOSYSTEM_SEARCH_VALUES, 0.75, "search") : "none",
     },
   };
 }
@@ -481,6 +510,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",

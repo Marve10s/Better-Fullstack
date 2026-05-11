@@ -1,0 +1,29 @@
+{{#if (eq email "resend")}}
+package email
+
+import (
+	"os"
+
+	"github.com/resend/resend-go/v3"
+)
+
+// Send sends an HTML email through Resend.
+func Send(to []string, subject string, html string) (string, error) {
+	client := resend.NewClient(os.Getenv("RESEND_API_KEY"))
+	from := os.Getenv("RESEND_FROM_EMAIL")
+	if from == "" {
+		from = "Acme <onboarding@resend.dev>"
+	}
+
+	sent, err := client.Emails.Send(&resend.SendEmailRequest{
+		From:    from,
+		To:      to,
+		Subject: subject,
+		Html:    html,
+	})
+	if err != nil {
+		return "", err
+	}
+	return sent.Id, nil
+}
+{{/if}}

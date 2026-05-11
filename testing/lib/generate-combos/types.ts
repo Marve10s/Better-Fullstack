@@ -88,6 +88,8 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "pythonOrm",
   "pythonValidation",
   "pythonAi",
+  "pythonAuth",
+  "pythonApi",
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",

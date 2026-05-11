@@ -16,6 +16,7 @@ export async function processGoBaseTemplate(
   const prefix = "go-base/";
   const hasGrpc = config.goApi === "grpc-go";
   const hasCobra = config.goCli === "cobra";
+  const hasUrfaveCli = config.goCli === "urfave-cli";
   const hasBubbletea = config.goCli === "bubbletea";
 
   for (const [templatePath, content] of templates) {
@@ -24,8 +25,8 @@ export async function processGoBaseTemplate(
     // Skip proto directory if gRPC is not selected
     if (!hasGrpc && templatePath.includes("proto/")) continue;
 
-    // Skip cmd/cli directory if Cobra is not selected
-    if (!hasCobra && templatePath.includes("cmd/cli/")) continue;
+    // Skip cmd/cli directory if no CLI framework using that entrypoint is selected
+    if (!hasCobra && !hasUrfaveCli && templatePath.includes("cmd/cli/")) continue;
 
     // Skip cmd/tui directory if Bubble Tea is not selected
     if (!hasBubbletea && templatePath.includes("cmd/tui/")) continue;

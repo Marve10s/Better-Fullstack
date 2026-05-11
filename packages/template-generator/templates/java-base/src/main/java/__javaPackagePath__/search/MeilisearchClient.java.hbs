@@ -1,0 +1,27 @@
+{{#if (eq search "meilisearch")}}
+package {{javaPackageName}}.search;
+
+import com.meilisearch.sdk.Client;
+import com.meilisearch.sdk.Config;
+import com.meilisearch.sdk.Index;
+
+public final class MeilisearchClient {
+    private MeilisearchClient() {
+    }
+
+    public static Client create() {
+        String host = envOrDefault("MEILISEARCH_HOST", "http://localhost:7700");
+        String apiKey = System.getenv("MEILISEARCH_API_KEY");
+        return new Client(new Config(host, apiKey));
+    }
+
+    public static Index index(Client client, String indexName) {
+        return client.index(indexName);
+    }
+
+    private static String envOrDefault(String key, String fallback) {
+        String value = System.getenv(key);
+        return value == null || value.isBlank() ? fallback : value;
+    }
+}
+{{/if}}

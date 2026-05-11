@@ -1,0 +1,24 @@
+{{#if (eq observability "sentry")}}
+/// Initialize Sentry when SENTRY_DSN is configured.
+pub fn init_sentry() -> Option<sentry::ClientInitGuard> {
+    let dsn = std::env::var("SENTRY_DSN")
+        .ok()
+        .filter(|value| !value.is_empty())?;
+    let environment = std::env::var("SENTRY_ENVIRONMENT")
+        .unwrap_or_else(|_| "development".to_string());
+    let traces_sample_rate = std::env::var("SENTRY_TRACES_SAMPLE_RATE")
+        .ok()
+        .and_then(|value| value.parse::<f32>().ok())
+        .unwrap_or(1.0);
+
+    Some(sentry::init((
+        dsn,
+        sentry::ClientOptions {
+            environment: Some(environment.into()),
+            traces_sample_rate,
+            release: sentry::release_name!(),
+            ..Default::default()
+        },
+    )))
+}
+{{/if}}

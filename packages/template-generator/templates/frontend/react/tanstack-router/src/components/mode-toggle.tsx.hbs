@@ -1,11 +1,16 @@
 {{#if (eq shadcnIconLibrary "tabler")}}
 import { IconMoon as Moon, IconSun as Sun } from "@tabler/icons-react";
 {{else if (eq shadcnIconLibrary "hugeicons")}}
-import { Moon02Icon as Moon, Sun03Icon as Sun } from "@hugeicons/react";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
+import { Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons";
 {{else if (eq shadcnIconLibrary "phosphor")}}
 import { Moon, Sun } from "@phosphor-icons/react";
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiMoonLine as Moon, RiSunLine as Sun } from "@remixicon/react";
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { MoonIcon as Moon, SunIcon as Sun } from "@heroicons/react/24/outline";
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaMoon as Moon, FaSun as Sun } from "react-icons/fa";
 {{else}}
 import { Moon, Sun } from "lucide-react";
 {{/if}}
@@ -19,6 +24,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 
+{{#if (eq shadcnIconLibrary "hugeicons")}}
+const Moon = (props: Omit<HugeiconsIconProps, "icon">) => (
+  <HugeiconsIcon icon={Moon02Icon} {...props} />
+);
+const Sun = (props: Omit<HugeiconsIconProps, "icon">) => (
+  <HugeiconsIcon icon={Sun03Icon} {...props} />
+);
+
+{{/if}}
 export function ModeToggle() {
   const { setTheme } = useTheme();
 

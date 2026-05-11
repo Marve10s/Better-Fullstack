@@ -1,0 +1,13 @@
+{{#if (eq caching "upstash-redis")}}
+use redis::Client;
+
+/// Create a Redis client for Upstash Redis.
+///
+/// Reads `UPSTASH_REDIS_URL` first, then falls back to `REDIS_URL`.
+pub fn create_client() -> redis::RedisResult<Client> {
+    let redis_url = std::env::var("UPSTASH_REDIS_URL")
+        .or_else(|_| std::env::var("REDIS_URL"))
+        .unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
+    Client::open(redis_url)
+}
+{{/if}}

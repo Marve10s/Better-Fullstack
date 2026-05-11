@@ -74,6 +74,9 @@ dependencies = [
 {{#if (includes pythonAi "crewai")}}
     "crewai>=0.80.0",
 {{/if}}
+{{#if (includes pythonAi "haystack")}}
+    "haystack-ai>=2.20.0",
+{{/if}}
 {{#if (eq pythonAuth "authlib")}}
     "authlib>=1.6.0",
     "httpx>=0.28.0",
@@ -82,8 +85,25 @@ dependencies = [
     "python-jose[cryptography]>=3.4.0",
     "passlib[bcrypt]>=1.7.4",
 {{/if}}
+{{#if (and (eq pythonWebFramework "django") (eq pythonApi "django-rest-framework"))}}
+    "djangorestframework>=3.17.1",
+{{/if}}
+{{#if (and (eq pythonWebFramework "django") (eq pythonApi "django-ninja"))}}
+    "django-ninja>=1.6.2",
+{{/if}}
 {{#if (eq pythonTaskQueue "celery")}}
     "celery[redis]>=5.6.3",
+{{/if}}
+{{#if (eq pythonTaskQueue "rq")}}
+    "rq>=2.6.0",
+    "redis>=7.0.0",
+{{/if}}
+{{#if (eq pythonTaskQueue "dramatiq")}}
+    "dramatiq[redis,watch]>=1.18.0",
+{{/if}}
+{{#if (eq pythonTaskQueue "huey")}}
+    "huey>=2.5.0",
+    "redis>=7.0.0",
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 {{#if (eq pythonWebFramework "fastapi")}}
@@ -102,6 +122,26 @@ dependencies = [
     "strawberry-graphql>=0.262.0",
 {{/if}}
 {{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+{{#if (eq pythonWebFramework "django")}}
+    "ariadne[asgi]>=0.26.0",
+    "ariadne-django>=0.3.0",
+{{else}}
+    "ariadne[asgi]>=0.26.0",
+{{/if}}
+{{/if}}
+{{#if (eq email "resend")}}
+    "resend>=2.29.0",
+{{/if}}
+{{#if (eq observability "sentry")}}
+    "sentry-sdk>=2.59.0",
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    "upstash-redis>=1.7.0",
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    "meilisearch>=0.41.0",
+{{/if}}
     "python-dotenv>=1.2.2",
 ]
 
@@ -109,6 +149,12 @@ dependencies = [
 dev = [
 {{#if (eq pythonQuality "ruff")}}
     "ruff>=0.15.9",
+{{/if}}
+{{#if (eq pythonQuality "mypy")}}
+    "mypy>=1.20.2",
+{{/if}}
+{{#if (eq pythonQuality "pyright")}}
+    "pyright>=1.1.409",
 {{/if}}
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
@@ -143,6 +189,23 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+{{/if}}
+
+{{#if (eq pythonQuality "mypy")}}
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+files = ["src/app", "tests"]
+{{/if}}
+
+{{#if (eq pythonQuality "pyright")}}
+[tool.pyright]
+include = ["src/app", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
 {{/if}}
 
 [tool.pytest.ini_options]

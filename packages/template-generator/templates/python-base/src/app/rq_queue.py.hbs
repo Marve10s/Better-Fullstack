@@ -1,0 +1,31 @@
+{{#if (eq pythonTaskQueue "rq")}}
+from functools import lru_cache
+
+from redis import Redis
+from rq import Queue
+
+{{#if (eq pythonValidation "pydantic")}}
+from app.settings import get_settings
+{{/if}}
+
+
+@lru_cache
+def get_redis_connection() -> Redis:
+    """Return a cached Redis connection for RQ."""
+{{#if (eq pythonValidation "pydantic")}}
+    settings = get_settings()
+    return Redis.from_url(settings.rq_redis_url)
+{{else}}
+    return Redis.from_url("redis://localhost:6379/0")
+{{/if}}
+
+
+def get_queue(name: str | None = None) -> Queue:
+    """Return an RQ queue bound to the configured Redis connection."""
+{{#if (eq pythonValidation "pydantic")}}
+    settings = get_settings()
+    return Queue(name or settings.rq_default_queue, connection=get_redis_connection())
+{{else}}
+    return Queue(name or "default", connection=get_redis_connection())
+{{/if}}
+{{/if}}

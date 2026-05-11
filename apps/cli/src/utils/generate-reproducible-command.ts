@@ -40,6 +40,10 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
 }
 
 function appendSharedNonTypeScriptFlags(flags: string[], config: ProjectConfig) {
+  flags.push(`--email ${config.email}`);
+  flags.push(`--observability ${config.observability}`);
+  flags.push(`--caching ${config.caching}`);
+  flags.push(`--search ${config.search}`);
   flags.push(formatArrayFlag("addons", config.addons));
   flags.push(formatArrayFlag("examples", config.examples));
   flags.push(`--db-setup ${config.dbSetup}`);
@@ -87,6 +91,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--job-queue ${config.jobQueue}`);
   flags.push(`--logging ${config.logging}`);
   flags.push(`--observability ${config.observability}`);
+  flags.push(`--feature-flags ${config.featureFlags}`);
   flags.push(`--caching ${config.caching}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
@@ -142,6 +147,7 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-validation ${config.pythonValidation}`);
   flags.push(formatArrayFlag("python-ai", config.pythonAi));
   flags.push(`--python-auth ${config.pythonAuth}`);
+  flags.push(`--python-api ${config.pythonApi}`);
   flags.push(`--python-task-queue ${config.pythonTaskQueue}`);
   flags.push(`--python-graphql ${config.pythonGraphql}`);
   flags.push(`--python-quality ${config.pythonQuality}`);
