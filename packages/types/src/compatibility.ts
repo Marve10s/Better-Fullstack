@@ -1081,7 +1081,7 @@ export const analyzeStackCompatibility = (
   }
 
   // React-only UI libraries - check frontend compatibility
-  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
+  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
   const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"];
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
