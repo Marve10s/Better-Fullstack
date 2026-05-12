@@ -10,6 +10,8 @@ import type { TocEntry } from "./remark-extract-toc";
 export type DocFrontmatter = {
   title?: string;
   description?: string;
+  updated?: string;
+  image?: string;
 };
 
 /**
@@ -250,6 +252,10 @@ export function getPage(slug: string[] | undefined): DocPage | undefined {
 
 export function getAllSlugs(): string[][] {
   return Array.from(pagesBySlug.values()).map((page) => page.slug);
+}
+
+export function getAllPages(): DocPage[] {
+  return Array.from(pagesBySlug.values());
 }
 
 /**

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as EffectsRouteImport } from './routes/effects'
@@ -19,6 +20,11 @@ import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NewRoute = NewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/effects': typeof EffectsRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/effects'
     | '/mcp'
     | '/new'
+    | '/sitemap.xml'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/effects'
     | '/mcp'
     | '/new'
+    | '/sitemap.xml'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/effects'
     | '/mcp'
     | '/new'
+    | '/sitemap.xml'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   EffectsRoute: typeof EffectsRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
   DocsSplatRoute: typeof DocsSplatRoute
@@ -149,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/new': {
       id: '/new'
       path: '/new'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   EffectsRoute: EffectsRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
   DocsSplatRoute: DocsSplatRoute,
