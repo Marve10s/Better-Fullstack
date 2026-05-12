@@ -171,6 +171,25 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     },
   },
 
+  "vinext-minimal": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["vinext"],
+      backend: "self",
+      runtime: "none",
+      cssFramework: "tailwind",
+      uiLibrary: "shadcn-ui",
+      shadcnBase: "radix",
+      shadcnStyle: "nova",
+      shadcnIconLibrary: "lucide",
+      shadcnColorTheme: "neutral",
+      shadcnBaseColor: "neutral",
+      shadcnFont: "inter",
+      shadcnRadius: "default",
+      addons: ["turborepo"],
+    },
+  },
+
   "react-hono": {
     ecosystem: "typescript",
     overrides: {
@@ -496,6 +515,7 @@ const PRESET_GROUPS = {
     "react-vite-hono",
     "solid-start-express",
     "angular-fets",
+    "vinext-minimal",
   ],
 } as const satisfies Record<Exclude<PresetGroupId, "all">, readonly string[]>;
 

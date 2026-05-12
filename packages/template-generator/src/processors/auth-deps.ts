@@ -29,7 +29,6 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
   );
   const hasNextJs = frontend.includes("next");
-  const hasVinext = frontend.includes("vinext");
   const hasTanStackStart = frontend.includes("tanstack-start");
   const hasViteReact = frontend.some((f) =>
     ["tanstack-router", "react-router", "react-vite"].includes(f),
@@ -43,12 +42,6 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
           vfs,
           packagePath: webPath,
           dependencies: ["@clerk/nextjs"],
-        });
-      } else if (hasVinext) {
-        addPackageDependency({
-          vfs,
-          packagePath: webPath,
-          dependencies: ["@clerk/clerk-react"],
         });
       } else if (hasTanStackStart) {
         addPackageDependency({
@@ -134,7 +127,6 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       "tanstack-router",
       "tanstack-start",
       "next",
-      "vinext",
       "nuxt",
       "svelte",
       "solid",

@@ -1082,7 +1082,7 @@ export const analyzeStackCompatibility = (
 
   // React-only UI libraries - check frontend compatibility
   const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
-  const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
+  const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"];
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
     const hasAstroReact =
@@ -2280,7 +2280,7 @@ const UI_LIBRARY_COMPATIBILITY: Record<
   }
 > = {
   "shadcn-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind"],
   },
   daisyui: {
@@ -2290,6 +2290,7 @@ const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -2303,11 +2304,11 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind"],
   },
   "radix-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "headless-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "nuxt", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "nuxt", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "park-ui": {
@@ -2317,6 +2318,7 @@ const UI_LIBRARY_COMPATIBILITY: Record<
       "react-vite",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "solid",
       "solid-start",
@@ -2325,19 +2327,19 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only"],
   },
   "chakra-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   nextui: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind"],
   },
   mantine: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "base-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "ark-ui": {
@@ -2346,6 +2348,7 @@ const UI_LIBRARY_COMPATIBILITY: Record<
       "react-router",
       "tanstack-start",
       "next",
+      "vinext",
       "nuxt",
       "svelte",
       "solid",
@@ -2355,7 +2358,7 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "react-aria": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   none: {

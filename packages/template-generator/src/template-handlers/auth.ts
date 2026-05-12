@@ -139,13 +139,13 @@ export async function processAuthTemplates(
     return;
   }
 
-  // NextAuth is specifically for Next.js and Vinext fullstack (self backend)
+  // NextAuth is specifically for Next.js fullstack (self backend)
   if (
     authProvider === "nextauth" &&
     config.backend === "self" &&
-    (config.frontend.includes("next") || config.frontend.includes("vinext"))
+    config.frontend.includes("next")
   ) {
-    const nextFramework = config.frontend.includes("next") ? "next" : "vinext";
+    const nextFramework = "next";
     // Process fullstack templates (auth config and API route)
     processTemplatesFromPrefix(vfs, templates, `auth/nextauth/fullstack/${nextFramework}`, "apps/web", config);
 
@@ -165,13 +165,13 @@ export async function processAuthTemplates(
     return;
   }
 
-  // Stack Auth is specifically for Next.js and Vinext fullstack (self backend)
+  // Stack Auth is specifically for Next.js fullstack (self backend)
   if (
     authProvider === "stack-auth" &&
     config.backend === "self" &&
-    (config.frontend.includes("next") || config.frontend.includes("vinext"))
+    config.frontend.includes("next")
   ) {
-    const nextFramework = config.frontend.includes("next") ? "next" : "vinext";
+    const nextFramework = "next";
     // Process fullstack templates (server app and handler)
     processTemplatesFromPrefix(
       vfs,
@@ -192,13 +192,13 @@ export async function processAuthTemplates(
     return;
   }
 
-  // Supabase Auth is specifically for Next.js and Vinext fullstack (self backend)
+  // Supabase Auth is specifically for Next.js fullstack (self backend)
   if (
     authProvider === "supabase-auth" &&
     config.backend === "self" &&
-    (config.frontend.includes("next") || config.frontend.includes("vinext"))
+    config.frontend.includes("next")
   ) {
-    const nextFramework = config.frontend.includes("next") ? "next" : "vinext";
+    const nextFramework = "next";
     // Process fullstack templates (server client and middleware)
     processTemplatesFromPrefix(
       vfs,
@@ -219,9 +219,9 @@ export async function processAuthTemplates(
     return;
   }
 
-  // Auth0 is specifically for Next.js and Vinext fullstack (self backend)
-  if (authProvider === "auth0" && config.backend === "self" && (config.frontend.includes("next") || config.frontend.includes("vinext"))) {
-    const nextFramework = config.frontend.includes("next") ? "next" : "vinext";
+  // Auth0 is specifically for Next.js fullstack (self backend)
+  if (authProvider === "auth0" && config.backend === "self" && config.frontend.includes("next")) {
+    const nextFramework = "next";
     // Process fullstack templates (API routes and middleware)
     processTemplatesFromPrefix(vfs, templates, `auth/auth0/fullstack/${nextFramework}`, "apps/web", config);
 

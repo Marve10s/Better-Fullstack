@@ -93,9 +93,9 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       id: `cms-${name}-requires-nextjs`,
       featureKey: "cms",
       displayName: `CMS (${capitalize(name)})`,
-      willSkip: (c) => c.cms === name && !c.frontend.includes("next") && !c.frontend.includes("vinext"),
-      reason: `${capitalize(name)} CMS currently requires Next.js or Vinext.`,
-      suggestions: ["Add Next.js or Vinext as your frontend", "Remove CMS"],
+      willSkip: (c) => c.cms === name && !c.frontend.includes("next"),
+      reason: `${capitalize(name)} CMS currently requires Next.js.`,
+      suggestions: ["Add Next.js as your frontend", "Remove CMS"],
     }),
   ),
 

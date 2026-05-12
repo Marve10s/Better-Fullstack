@@ -587,6 +587,7 @@ const SELF_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-vinext",
 ]);
 
 const RUST_CONFIG_KEYS = [
