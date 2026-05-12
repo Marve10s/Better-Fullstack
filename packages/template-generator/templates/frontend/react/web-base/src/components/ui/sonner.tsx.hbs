@@ -3,11 +3,16 @@ import { Toaster as Sonner  } from 'sonner'
 {{#if (eq shadcnIconLibrary "tabler")}}
 import { IconCircleCheck as CircleCheckIcon, IconInfoCircle as InfoIcon, IconLoader2 as Loader2Icon, IconCircleX as OctagonXIcon, IconAlertTriangle as TriangleAlertIcon } from '@tabler/icons-react'
 {{else if (eq shadcnIconLibrary "hugeicons")}}
-import { CheckmarkCircle02Icon as CircleCheckIcon, InformationCircleIcon as InfoIcon, Loading03Icon as Loader2Icon, AlertCircleIcon as OctagonXIcon, Alert02Icon as TriangleAlertIcon } from '@hugeicons/react'
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
+import { CheckmarkCircle02Icon, InformationCircleIcon, Loading03Icon, AlertCircleIcon, Alert02Icon } from '@hugeicons/core-free-icons'
 {{else if (eq shadcnIconLibrary "phosphor")}}
 import { CheckCircle as CircleCheckIcon, Info as InfoIcon, SpinnerGap as Loader2Icon, XCircle as OctagonXIcon, Warning as TriangleAlertIcon } from '@phosphor-icons/react'
 {{else if (eq shadcnIconLibrary "remixicon")}}
 import { RiCheckboxCircleLine as CircleCheckIcon, RiInformationLine as InfoIcon, RiLoader4Line as Loader2Icon, RiCloseCircleLine as OctagonXIcon, RiAlertLine as TriangleAlertIcon } from '@remixicon/react'
+{{else if (eq shadcnIconLibrary "heroicons")}}
+import { CheckCircleIcon as CircleCheckIcon, InformationCircleIcon as InfoIcon, ArrowPathIcon as Loader2Icon, XCircleIcon as OctagonXIcon, ExclamationTriangleIcon as TriangleAlertIcon } from '@heroicons/react/24/outline'
+{{else if (eq shadcnIconLibrary "react-icons")}}
+import { FaCheckCircle as CircleCheckIcon, FaInfoCircle as InfoIcon, FaSpinner as Loader2Icon, FaTimesCircle as OctagonXIcon, FaExclamationTriangle as TriangleAlertIcon } from 'react-icons/fa'
 {{else}}
 import {
   CircleCheckIcon,
@@ -19,6 +24,24 @@ import {
 {{/if}}
 import type {ToasterProps} from 'sonner';
 
+{{#if (eq shadcnIconLibrary "hugeicons")}}
+const CircleCheckIcon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={CheckmarkCircle02Icon} {...props} />
+)
+const InfoIcon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={InformationCircleIcon} {...props} />
+)
+const Loader2Icon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={Loading03Icon} {...props} />
+)
+const OctagonXIcon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={AlertCircleIcon} {...props} />
+)
+const TriangleAlertIcon = (props: Omit<HugeiconsIconProps, 'icon'>) => (
+  <HugeiconsIcon icon={Alert02Icon} {...props} />
+)
+
+{{/if}}
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme()
 

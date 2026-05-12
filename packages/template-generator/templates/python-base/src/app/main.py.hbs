@@ -4,6 +4,10 @@ import os
 
 from dotenv import load_dotenv
 
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
 from contextlib import asynccontextmanager
 
@@ -134,6 +138,10 @@ from app.crewai_schemas import (
     CrewAICompletionResponse,
 )
 {{/if}}
+{{#if (includes pythonAi "haystack")}}
+from app.haystack_client import answer_question as haystack_answer_question
+from app.haystack_schemas import HaystackQuestionRequest, HaystackQuestionResponse
+{{/if}}
 {{#if (eq pythonTaskQueue "celery")}}
 from celery.result import AsyncResult
 
@@ -161,8 +169,16 @@ from strawberry.fastapi import GraphQLRouter
 
 from app.graphql_schema import schema as graphql_schema
 {{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.asgi import GraphQL
+
+from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
 
 load_dotenv()
+{{#if (eq observability "sentry")}}
+init_sentry()
+{{/if}}
 
 
 @asynccontextmanager
@@ -212,6 +228,9 @@ app.add_middleware(
 {{#if (eq pythonGraphql "strawberry")}}
 graphql_app = GraphQLRouter(graphql_schema)
 app.include_router(graphql_app, prefix="/graphql")
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+app.mount("/graphql", GraphQL(ariadne_schema, debug=True))
 {{/if}}
 
 @app.get("/")
@@ -617,6 +636,20 @@ async def crewai_completion_endpoint(request: CrewAICompletionRequest):
         verbose=request.verbose if request.verbose is not None else False,
     )
     return CrewAICompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "haystack")}}
+
+# Haystack endpoints
+@app.post("/ai/haystack/ask", response_model=HaystackQuestionResponse)
+async def haystack_question_endpoint(request: HaystackQuestionRequest):
+    """Answer a question using a Haystack prompt pipeline."""
+    answer = haystack_answer_question(
+        question=request.question,
+        context=request.context,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return HaystackQuestionResponse(answer=answer)
 {{/if}}
 {{#if (eq pythonTaskQueue "celery")}}
 
@@ -1027,6 +1060,13 @@ import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path
+{{#if (eq pythonApi "django-rest-framework")}}
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+from ninja import NinjaAPI
+{{/if}}
 {{#if (ne pythonAuth "none")}}
 from app.auth import create_access_token, verify_token
 {{/if}}
@@ -1034,6 +1074,11 @@ from app.auth import create_access_token, verify_token
 from strawberry.django.views import GraphQLView
 
 from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne_django.views import GraphQLView
+
+from app.ariadne_schema import schema as ariadne_schema
 {{/if}}
 
 load_dotenv()
@@ -1048,6 +1093,9 @@ if not settings.configured:
             "django.contrib.contenttypes",
             "django.contrib.auth",
             "corsheaders",
+{{#if (eq pythonApi "django-rest-framework")}}
+            "rest_framework",
+{{/if}}
         ],
         MIDDLEWARE=[
             "corsheaders.middleware.CorsMiddleware",
@@ -1066,6 +1114,24 @@ def root(request):
 def health(request):
     """Health check endpoint."""
     return JsonResponse({"status": "healthy"})
+
+{{#if (eq pythonApi "django-rest-framework")}}
+
+@api_view(["GET"])
+def api_status(request):
+    """REST API status endpoint."""
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+
+ninja_api = NinjaAPI(title="{{projectName}} API")
+
+
+@ninja_api.get("/status")
+def api_status(request):
+    """REST API status endpoint."""
+    return {"status": "ok", "framework": "django-ninja"}
+{{/if}}
 
 
 {{#if (ne pythonAuth "none")}}
@@ -1097,12 +1163,21 @@ def auth_me(request):
 urlpatterns = [
     path("", root),
     path("health", health),
+{{#if (eq pythonApi "django-rest-framework")}}
+    path("api/status", api_status),
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+    path("api/", ninja_api.urls),
+{{/if}}
 {{#if (ne pythonAuth "none")}}
     path("auth/token", auth_token),
     path("auth/me", auth_me),
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
     path("graphql", GraphQLView.as_view(schema=graphql_schema)),
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+    path("graphql", GraphQLView.as_view(schema=ariadne_schema)),
 {{/if}}
 ]
 
@@ -1117,6 +1192,9 @@ if __name__ == "__main__":
 {{#if (eq pythonWebFramework "flask")}}
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+{{#if (eq pythonGraphql "ariadne")}}
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+{{/if}}
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
 {{/if}}
@@ -1127,6 +1205,11 @@ from app.auth import create_access_token, verify_token
 from strawberry.flask.views import GraphQLView
 
 from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.wsgi import GraphQL
+
+from app.ariadne_schema import schema as ariadne_schema
 {{/if}}
 
 load_dotenv()
@@ -1142,6 +1225,9 @@ app = Flask(__name__)
 CORS(app)
 {{#if (eq pythonGraphql "strawberry")}}
 app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=graphql_schema))
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})
 {{/if}}
 
 
@@ -1191,7 +1277,7 @@ if __name__ == "__main__":
     )
 {{/if}}
 {{#if (eq pythonWebFramework "litestar")}}
-from litestar import Litestar, get, post
+from litestar import Litestar, get, post{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
 from litestar.config.cors import CORSConfig
 {{#if (ne pythonAuth "none")}}
 from litestar.exceptions import HTTPException
@@ -1202,6 +1288,12 @@ from app.auth import create_access_token, verify_token
 from strawberry.litestar import make_graphql_controller
 
 from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.asgi import GraphQL
+from litestar.types import Receive, Scope, Send
+
+from app.ariadne_schema import schema as ariadne_schema
 {{/if}}
 
 load_dotenv()
@@ -1248,8 +1340,17 @@ cors_config = CORSConfig(allow_origins=["*"])
 {{#if (eq pythonGraphql "strawberry")}}
 GraphQLController = make_graphql_controller(graphql_schema, path="/graphql")
 {{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+ariadne_app = GraphQL(ariadne_schema, debug=True)
+
+
+@asgi("/graphql", is_mount=True, copy_scope=True)
+async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
+    """Mount Ariadne's ASGI GraphQL app."""
+    await ariadne_app(scope, receive, send)
+{{/if}}
 app = Litestar(
-    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}],
+    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
 )
 {{/if}}

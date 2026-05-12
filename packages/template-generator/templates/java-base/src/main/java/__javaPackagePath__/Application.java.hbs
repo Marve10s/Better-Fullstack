@@ -1,23 +1,51 @@
 package {{javaPackageName}};
 
+{{#if (eq observability "sentry")}}
+import io.sentry.Sentry;
+
+{{/if}}
 {{#if isJavaSpringBoot}}
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 {{#if hasJavaCaffeine}}
 import org.springframework.cache.annotation.EnableCaching;
 {{/if}}
+{{/if}}
+{{#if isJavaQuarkus}}
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
+{{/if}}
+{{#if isJavaSpringBoot}}
 @SpringBootApplication
 {{#if hasJavaCaffeine}}
 @EnableCaching
 {{/if}}
 {{/if}}
+{{#if isJavaQuarkus}}
+@QuarkusMain
+{{/if}}
 public class Application {
 
   public static void main(String[] args) {
+{{#if (eq observability "sentry")}}
+    String sentryDsn = System.getenv("SENTRY_DSN");
+    if (sentryDsn != null && !sentryDsn.isBlank()) {
+      Sentry.init(options -> {
+        options.setDsn(sentryDsn);
+        options.setEnvironment(System.getenv().getOrDefault("SENTRY_ENVIRONMENT", "development"));
+        options.setTracesSampleRate(Double.parseDouble(System.getenv().getOrDefault("SENTRY_TRACES_SAMPLE_RATE", "1.0")));
+      });
+    }
+
+{{/if}}
 {{#if isJavaSpringBoot}}
     SpringApplication.run(Application.class, args);
-{{else}}
+{{/if}}
+{{#if isJavaQuarkus}}
+    Quarkus.run(args);
+{{/if}}
+{{#if isJavaPlainJava}}
     System.out.println("Hello from {{projectName}}");
 {{/if}}
   }

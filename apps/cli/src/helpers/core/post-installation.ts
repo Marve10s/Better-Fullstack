@@ -824,6 +824,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
     const cliNames: Record<string, string> = {
       cobra: "Cobra",
       bubbletea: "Bubble Tea",
+      "urfave-cli": "urfave/cli",
     };
     output += `${pc.cyan("•")} CLI: ${cliNames[goCli] || goCli}\n`;
   }
@@ -966,6 +967,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
 
   const cdCmd = `cd ${relativePath}`;
   const isSpringBoot = javaWebFramework === "spring-boot" && javaBuildTool !== "none";
+  const isQuarkus = javaWebFramework === "quarkus" && javaBuildTool !== "none";
   const rawJavaLibraries = isSpringBoot
     ? javaLibraries.filter((library) => library !== "none")
     : [];
@@ -998,6 +1000,10 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       ? javaBuildTool === "gradle"
         ? `${buildToolCommand} bootRun`
         : `${buildToolCommand} spring-boot:run`
+      : isQuarkus
+        ? javaBuildTool === "gradle"
+          ? `${buildToolCommand} quarkusDev`
+          : `${buildToolCommand} quarkus:dev`
       : javaBuildTool === "gradle"
         ? `${buildToolCommand} run`
         : `${buildToolCommand} exec:java`
@@ -1032,9 +1038,10 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
 
   output += `\n${pc.bold("Your Java project includes:")}\n`;
 
-  if (isSpringBoot) {
+  if (isSpringBoot || isQuarkus) {
     const frameworkNames: Record<string, string> = {
       "spring-boot": "Spring Boot",
+      quarkus: "Quarkus",
     };
     output += `${pc.cyan("•")} Web Framework: ${frameworkNames[javaWebFramework] || javaWebFramework}\n`;
   } else {
@@ -1134,6 +1141,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonOrm,
     pythonValidation,
     pythonAi,
+    pythonApi,
     pythonTaskQueue,
     pythonQuality,
   } = config;
@@ -1203,6 +1211,14 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     output += `${pc.cyan("•")} AI: ${aiList}\n`;
   }
 
+  if (pythonApi && pythonApi !== "none") {
+    const apiNames: Record<string, string> = {
+      "django-rest-framework": "Django REST Framework",
+      "django-ninja": "Django Ninja",
+    };
+    output += `${pc.cyan("•")} API Framework: ${apiNames[pythonApi] || pythonApi}\n`;
+  }
+
   if (pythonTaskQueue && pythonTaskQueue !== "none") {
     const taskQueueNames: Record<string, string> = {
       celery: "Celery",
@@ -1213,6 +1229,8 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   if (pythonQuality && pythonQuality !== "none") {
     const qualityNames: Record<string, string> = {
       ruff: "Ruff",
+      mypy: "mypy",
+      pyright: "Pyright",
     };
     output += `${pc.cyan("•")} Code Quality: ${qualityNames[pythonQuality] || pythonQuality}\n`;
   }
@@ -1221,8 +1239,14 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `${pc.cyan("•")} Install: uv sync\n`;
   output += `${pc.cyan("•")} Run: ${runCommand}\n`;
   output += `${pc.cyan("•")} Test: uv run pytest\n`;
-  output += `${pc.cyan("•")} Format: uv run ruff format .\n`;
-  output += `${pc.cyan("•")} Lint: uv run ruff check .\n`;
+  if (pythonQuality === "ruff") {
+    output += `${pc.cyan("•")} Format: uv run ruff format .\n`;
+    output += `${pc.cyan("•")} Lint: uv run ruff check .\n`;
+  } else if (pythonQuality === "mypy") {
+    output += `${pc.cyan("•")} Type check: uv run mypy src/app tests\n`;
+  } else if (pythonQuality === "pyright") {
+    output += `${pc.cyan("•")} Type check: uv run pyright\n`;
+  }
 
   output += `\n${pc.bold("Your project will be available at:")}\n`;
   output += `${pc.cyan("•")} API: http://localhost:8000\n`;

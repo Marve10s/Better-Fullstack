@@ -101,6 +101,7 @@ describe("Go Language Support", () => {
     it("should have go CLI options", () => {
       expect(GO_CLIS).toContain("cobra");
       expect(GO_CLIS).toContain("bubbletea");
+      expect(GO_CLIS).toContain("urfave-cli");
       expect(GO_CLIS).toContain("none");
     });
 
@@ -108,6 +109,7 @@ describe("Go Language Support", () => {
       expect(GO_LOGGINGS).toContain("zap");
       expect(GO_LOGGINGS).toContain("zerolog");
       expect(GO_LOGGINGS).toContain("slog");
+      expect(GO_LOGGINGS).toContain("logrus");
       expect(GO_LOGGINGS).toContain("none");
     });
   });
@@ -585,7 +587,10 @@ describe("Go Language Support", () => {
         pythonOrm: "none",
         pythonValidation: "none",
         pythonAi: "none",
+        pythonAuth: "none",
+        pythonApi: "none",
         pythonTaskQueue: "none",
+        pythonGraphql: "none",
         pythonQuality: "none",
         goWebFramework: "gin",
         goOrm: "none",
@@ -654,7 +659,10 @@ describe("Go Language Support", () => {
         pythonOrm: "none",
         pythonValidation: "none",
         pythonAi: "none",
+        pythonAuth: "none",
+        pythonApi: "none",
         pythonTaskQueue: "none",
+        pythonGraphql: "none",
         pythonQuality: "none",
         goWebFramework: "gin",
         goOrm: "none",
@@ -1218,6 +1226,50 @@ describe("Go Language Support", () => {
     });
   });
 
+  describe("urfave/cli Integration", () => {
+    it("should include urfave/cli dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-urfave-cli-project",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "urfave-cli",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const goModContent = getFileContent(root, "go.mod");
+      expect(goModContent).toBeDefined();
+      expect(goModContent).toContain("github.com/urfave/cli/v3");
+      expect(goModContent).toContain("v3.8.0");
+    });
+
+    it("should generate cmd/cli directory when urfave/cli selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-urfave-cli-check",
+        ecosystem: "go",
+        goWebFramework: "none",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "urfave-cli",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(hasFile(root, "cmd/cli/main.go")).toBe(true);
+
+      const cliContent = getFileContent(root, "cmd/cli/main.go");
+      expect(cliContent).toBeDefined();
+      expect(cliContent).toContain('cli "github.com/urfave/cli/v3"');
+      expect(cliContent).toContain("cmd.Run(context.Background(), os.Args)");
+    });
+  });
+
   describe("Zap Logging Integration", () => {
     it("should include Zap dependencies when selected", async () => {
       const result = await createVirtual({
@@ -1347,6 +1399,43 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("func initLogger()");
       expect(mainContent).toContain("slog.SetDefault(logger)");
       expect(mainContent).toContain("logger.Info(");
+    });
+  });
+
+  describe("Logrus Logging Integration", () => {
+    it("should include Logrus dependencies when selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-logrus-project",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "logrus",
+      });
+
+      expect(result.success).toBe(true);
+      const goModContent = getFileContent(result.tree!.root, "go.mod");
+      expect(goModContent).toContain("github.com/sirupsen/logrus");
+    });
+
+    it("should include Logrus logger initialization in main.go", async () => {
+      const result = await createVirtual({
+        projectName: "go-logrus-main-check",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "none",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "logrus",
+      });
+
+      expect(result.success).toBe(true);
+      const mainContent = getFileContent(result.tree!.root, "cmd/server/main.go");
+      expect(mainContent).toContain("github.com/sirupsen/logrus");
+      expect(mainContent).toContain("var logger = logrus.New()");
+      expect(mainContent).toContain("logger.SetFormatter");
+      expect(mainContent).toContain("logger.Info");
     });
   });
 

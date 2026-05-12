@@ -18,10 +18,12 @@ describe("generateStackCommand parity", () => {
       ...DEFAULT_STACK,
       projectName: "demo-app",
       aiSdk: "vercel-ai",
+      featureFlags: "launchdarkly",
     });
 
     expect(command).not.toContain("--yes");
     expect(command).toContain("--ai vercel-ai");
+    expect(command).toContain("--feature-flags launchdarkly");
   });
 
   it("maps builder-only aliases to CLI flags", () => {

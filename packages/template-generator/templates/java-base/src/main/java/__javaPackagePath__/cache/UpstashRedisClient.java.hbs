@@ -1,0 +1,17 @@
+{{#if (eq caching "upstash-redis")}}
+package {{javaPackageName}}.cache;
+
+import redis.clients.jedis.JedisPooled;
+
+public final class UpstashRedisClient {
+  private UpstashRedisClient() {}
+
+  public static JedisPooled create() {
+    String redisUrl = System.getenv("UPSTASH_REDIS_URL");
+    if (redisUrl == null || redisUrl.isBlank()) {
+      redisUrl = System.getenv().getOrDefault("REDIS_URL", "redis://localhost:6379");
+    }
+    return new JedisPooled(redisUrl);
+  }
+}
+{{/if}}

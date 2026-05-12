@@ -1,0 +1,56 @@
+"use client";
+
+import flagsmith from "@flagsmith/flagsmith";
+import { FlagsmithProvider as BaseFlagsmithProvider, useFlags, useFlagsmith } from "@flagsmith/flagsmith/react";
+import type { PropsWithChildren } from "react";
+
+{{#if (eq frontend.[0] "next")}}
+const environmentID = process.env.NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_ID || "";
+const api = process.env.NEXT_PUBLIC_FLAGSMITH_API_URL || "https://edge.api.flagsmith.com/api/v1/";
+{{else if (eq frontend.[0] "nuxt")}}
+const environmentID = process.env.NUXT_PUBLIC_FLAGSMITH_ENVIRONMENT_ID || "";
+const api = process.env.NUXT_PUBLIC_FLAGSMITH_API_URL || "https://edge.api.flagsmith.com/api/v1/";
+{{else}}
+const environmentID = import.meta.env.VITE_FLAGSMITH_ENVIRONMENT_ID || "";
+const api = import.meta.env.VITE_FLAGSMITH_API_URL || "https://edge.api.flagsmith.com/api/v1/";
+{{/if}}
+
+export function FlagsmithProvider({ children }: PropsWithChildren) {
+  return (
+    <BaseFlagsmithProvider
+      flagsmith={flagsmith}
+      options=\{{
+        environmentID,
+        api,
+        cacheFlags: true,
+        enableAnalytics: true,
+      }}
+    >
+      {children}
+    </BaseFlagsmithProvider>
+  );
+}
+
+export function useFeature(featureName: string): boolean {
+  const flags = useFlags([featureName]);
+  return Boolean(flags[featureName]?.enabled);
+}
+
+export function useFeatureValue<T>(featureName: string, defaultValue: T): T {
+  const flags = useFlags([featureName]);
+  return (flags[featureName]?.value as T | undefined) ?? defaultValue;
+}
+
+export function useIdentifyFlagsmith() {
+  const client = useFlagsmith();
+
+  return (identifier: string, traits?: Record<string, string | number | boolean>) => {
+    if (traits) {
+      return client.identify(identifier, traits);
+    }
+
+    return client.identify(identifier);
+  };
+}
+
+export { flagsmith, useFlags, useFlagsmith };

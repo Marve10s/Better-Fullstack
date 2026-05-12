@@ -73,6 +73,7 @@ export type CompatibilityCategory =
   | "pythonValidation"
   | "pythonAi"
   | "pythonAuth"
+  | "pythonApi"
   | "pythonTaskQueue"
   | "pythonGraphql"
   | "pythonQuality"
@@ -177,6 +178,7 @@ export type CompatibilityInput = {
   pythonValidation: string;
   pythonAi: string[];
   pythonAuth: string;
+  pythonApi: string;
   pythonTaskQueue: string;
   pythonGraphql: string;
   pythonQuality: string;
@@ -254,6 +256,7 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "pythonValidation",
   "pythonAi",
   "pythonAuth",
+  "pythonApi",
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
@@ -357,6 +360,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     pythonValidation: "Python Validation",
     pythonAi: "Python AI / ML",
     pythonAuth: "Python Auth",
+    pythonApi: "Python API Framework",
     pythonTaskQueue: "Python Task Queue",
     pythonGraphql: "Python GraphQL",
     pythonQuality: "Python Code Quality",
@@ -1081,8 +1085,13 @@ export const analyzeStackCompatibility = (
   }
 
   // React-only UI libraries - check frontend compatibility
+<<<<<<< vinext-template
   const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
   const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"];
+=======
+  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
+  const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
+>>>>>>> main
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
     const hasAstroReact =
@@ -1273,6 +1282,21 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "animation",
         message: "Animation set to 'None' (Lottie requires lottie-react)",
+      });
+    }
+  }
+
+  // ============================================
+  // PYTHON ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "python") {
+    if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
+      nextStack.pythonApi = "none";
+      changed = true;
+      changes.push({
+        category: "pythonWebFramework",
+        message: "Python API framework set to 'None' (DRF and Django Ninja require Django)",
       });
     }
   }
@@ -1832,11 +1856,81 @@ export const getDisabledReason = (
   // EMAIL CONSTRAINTS
   // ============================================
   if (category === "email" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript" && optionId !== "resend") {
+      return "Only Resend email is available for non-TypeScript ecosystems";
+    }
+    if (
+      currentStack.ecosystem === "java" &&
+      currentStack.javaBuildTool === "none" &&
+      optionId === "resend"
+    ) {
+      return "Resend email for Java requires Maven or Gradle to manage the SDK dependency";
+    }
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
     if (currentStack.backend === "convex") {
       return "Email integration is not available with Convex backend";
     }
     if (currentStack.backend === "none") {
       return "Email integration requires a backend";
+    }
+  }
+
+  // ============================================
+  // OBSERVABILITY CONSTRAINTS
+  // ============================================
+  if (category === "observability" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript" && optionId !== "sentry") {
+      return "Only Sentry observability is available for non-TypeScript ecosystems";
+    }
+    if (
+      currentStack.ecosystem === "java" &&
+      currentStack.javaBuildTool === "none" &&
+      optionId === "sentry"
+    ) {
+      return "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency";
+    }
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+  }
+
+  // ============================================
+  // CACHING CONSTRAINTS
+  // ============================================
+  if (category === "caching" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript" && optionId !== "upstash-redis") {
+      return "Only Upstash Redis caching is available for non-TypeScript ecosystems";
+    }
+    if (
+      currentStack.ecosystem === "java" &&
+      currentStack.javaBuildTool === "none" &&
+      optionId === "upstash-redis"
+    ) {
+      return "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency";
+    }
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+  }
+
+  // ============================================
+  // SEARCH CONSTRAINTS
+  // ============================================
+  if (category === "search" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript" && optionId !== "meilisearch") {
+      return "Only Meilisearch search is available for non-TypeScript ecosystems";
+    }
+    if (
+      currentStack.ecosystem === "java" &&
+      currentStack.javaBuildTool === "none" &&
+      optionId === "meilisearch"
+    ) {
+      return "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency";
+    }
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
     }
   }
 
@@ -2038,7 +2132,7 @@ export const getDisabledReason = (
     }
 
     // React-only UI libraries
-    const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
+    const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
     const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
 
     if (reactOnlyLibraries.includes(optionId)) {
@@ -2054,7 +2148,11 @@ export const getDisabledReason = (
               ? "Radix UI"
               : optionId === "chakra-ui"
                 ? "Chakra UI"
-                : "NextUI";
+                : optionId === "mui"
+                  ? "MUI"
+                  : optionId === "antd"
+                    ? "Ant Design"
+                    : "NextUI";
         return `${libraryName} requires a React-based frontend`;
       }
     }
@@ -2166,18 +2264,27 @@ export const getDisabledReason = (
   }
 
   // ============================================
+  // PYTHON ECOSYSTEM RULES
+  // ============================================
+  if (category === "pythonApi") {
+    if (optionId !== "none" && currentStack.pythonWebFramework !== "django") {
+      return "Python API frameworks currently require Django";
+    }
+  }
+
+  // ============================================
   // JAVA ECOSYSTEM RULES
   // ============================================
   if (category === "javaWebFramework") {
-    if (optionId === "spring-boot" && currentStack.javaBuildTool === "none") {
-      return "Spring Boot requires Maven or Gradle";
+    if (optionId !== "none" && currentStack.javaBuildTool === "none") {
+      return "Java web frameworks require Maven or Gradle";
     }
   }
 
   if (category === "javaBuildTool") {
     if (optionId === "none") {
-      if (currentStack.javaWebFramework === "spring-boot") {
-        return "Spring Boot requires Maven or Gradle";
+      if (currentStack.javaWebFramework !== "none") {
+        return "Java web frameworks require Maven or Gradle";
       }
       if (currentStack.javaOrm !== "none") {
         return "Java ORM support requires Maven or Gradle";
@@ -2336,6 +2443,14 @@ const UI_LIBRARY_COMPATIBILITY: Record<
   },
   mantine: {
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
+  mui: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
+    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
+  },
+  antd: {
+    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "base-ui": {
@@ -2842,6 +2957,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["forms", input.forms],
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
+    ["pythonApi", input.pythonApi],
     ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],

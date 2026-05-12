@@ -1,0 +1,20 @@
+{{#if (eq email "resend")}}
+"""Resend email helper."""
+
+import os
+from typing import Any
+
+import resend
+
+
+def send_email(to: str | list[str], subject: str, html: str) -> Any:
+    """Send an HTML email with Resend."""
+    resend.api_key = os.environ["RESEND_API_KEY"]
+    params: resend.Emails.SendParams = {
+        "from": os.getenv("RESEND_FROM_EMAIL", "Acme <onboarding@resend.dev>"),
+        "to": [to] if isinstance(to, str) else to,
+        "subject": subject,
+        "html": html,
+    }
+    return resend.Emails.send(params)
+{{/if}}

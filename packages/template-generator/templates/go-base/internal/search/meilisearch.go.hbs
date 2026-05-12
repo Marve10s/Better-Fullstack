@@ -1,0 +1,29 @@
+{{#if (eq search "meilisearch")}}
+package search
+
+import (
+	"os"
+
+	meilisearch "github.com/meilisearch/meilisearch-go"
+)
+
+// NewMeilisearchClient creates a Meilisearch client from environment variables.
+func NewMeilisearchClient() meilisearch.ServiceManager {
+	host := os.Getenv("MEILISEARCH_HOST")
+	if host == "" {
+		host = "http://localhost:7700"
+	}
+
+	apiKey := os.Getenv("MEILISEARCH_API_KEY")
+	if apiKey == "" {
+		return meilisearch.New(host)
+	}
+
+	return meilisearch.New(host, meilisearch.WithAPIKey(apiKey))
+}
+
+// SearchDocuments runs a basic search request against an index.
+func SearchDocuments(client meilisearch.ServiceManager, indexName string, query string) (*meilisearch.SearchResponse, error) {
+	return client.Index(indexName).Search(query, &meilisearch.SearchRequest{})
+}
+{{/if}}

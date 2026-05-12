@@ -1,0 +1,65 @@
+"use client";
+
+import {
+  FlagProvider,
+  useFlag,
+  useFlagsStatus,
+  useUnleashContext,
+  useVariant,
+  type IContext,
+  type IVariant,
+} from "@unleash/proxy-client-react";
+import type { PropsWithChildren } from "react";
+
+{{#if (eq frontend.[0] "next")}}
+const url = process.env.NEXT_PUBLIC_UNLEASH_FRONTEND_API_URL || "";
+const clientKey = process.env.NEXT_PUBLIC_UNLEASH_FRONTEND_API_TOKEN || "";
+const appName = process.env.NEXT_PUBLIC_UNLEASH_APP_NAME || "{{projectName}}";
+{{else if (eq frontend.[0] "nuxt")}}
+const url = process.env.NUXT_PUBLIC_UNLEASH_FRONTEND_API_URL || "";
+const clientKey = process.env.NUXT_PUBLIC_UNLEASH_FRONTEND_API_TOKEN || "";
+const appName = process.env.NUXT_PUBLIC_UNLEASH_APP_NAME || "{{projectName}}";
+{{else}}
+const url = import.meta.env.VITE_UNLEASH_FRONTEND_API_URL || "";
+const clientKey = import.meta.env.VITE_UNLEASH_FRONTEND_API_TOKEN || "";
+const appName = import.meta.env.VITE_UNLEASH_APP_NAME || "{{projectName}}";
+{{/if}}
+
+interface UnleashProviderProps extends PropsWithChildren {
+  context?: IContext;
+}
+
+export function UnleashProvider({ children, context }: UnleashProviderProps) {
+  return (
+    <FlagProvider
+      config=\{{
+        url,
+        clientKey,
+        appName,
+        context,
+        refreshInterval: 15,
+      }}
+    >
+      {children}
+    </FlagProvider>
+  );
+}
+
+export function useFeature(featureName: string): boolean {
+  return useFlag(featureName);
+}
+
+export function useFeatureVariant(featureName: string): Partial<IVariant> {
+  return useVariant(featureName);
+}
+
+export function useUnleashReady(): boolean {
+  const { flagsReady } = useFlagsStatus();
+  return flagsReady;
+}
+
+export function useUpdateUnleashContext() {
+  return useUnleashContext();
+}
+
+export type { IContext, IVariant };

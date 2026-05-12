@@ -22,6 +22,11 @@ const JAVA_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<JavaWebFramework>[] = [
     hint: "Production-grade Java framework with embedded server and auto-configuration",
   },
   {
+    value: "quarkus",
+    label: "Quarkus",
+    hint: "Cloud-native Java framework optimized for fast startup and lower memory use",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No Java web framework",
@@ -165,6 +170,46 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     value: "caffeine",
     label: "Caffeine",
     hint: "High-performance in-memory caching through Spring Cache",
+  },
+  {
+    value: "resilience4j",
+    label: "Resilience4j",
+    hint: "Fault tolerance patterns for retries, circuit breakers, and rate limiting",
+  },
+  {
+    value: "spring-webflux",
+    label: "Spring WebFlux",
+    hint: "Reactive HTTP stack for Spring applications",
+  },
+  {
+    value: "spring-batch",
+    label: "Spring Batch",
+    hint: "Batch processing framework for ETL and scheduled jobs",
+  },
+  {
+    value: "spring-kafka",
+    label: "Spring for Apache Kafka",
+    hint: "Kafka producer, consumer, and listener integration",
+  },
+  {
+    value: "spring-mail",
+    label: "Spring Mail",
+    hint: "Email support through Jakarta Mail and Spring abstractions",
+  },
+  {
+    value: "spring-devtools",
+    label: "Spring Boot DevTools",
+    hint: "Developer-time restart and local productivity support",
+  },
+  {
+    value: "micrometer-prometheus",
+    label: "Micrometer Prometheus",
+    hint: "Prometheus metrics registry for Micrometer and Actuator",
+  },
+  {
+    value: "thymeleaf",
+    label: "Thymeleaf",
+    hint: "Server-rendered HTML templates for Spring MVC apps",
   },
   {
     value: "none",

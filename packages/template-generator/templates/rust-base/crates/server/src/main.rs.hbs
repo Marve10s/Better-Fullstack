@@ -11,6 +11,18 @@ mod cache;
 {{#if (ne rustAuth "none")}}
 mod auth;
 {{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+mod meilisearch;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -131,6 +143,9 @@ async fn graphiql() -> impl IntoResponse {
 async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq observability "sentry")}}
+    let _sentry_guard = observability::init_sentry();
+{{/if}}
 {{#if (eq rustErrorHandling "eyre")}}
 
     // Install color-eyre error handler
@@ -157,6 +172,16 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     // Initialize Redis client
     let _redis_client = cache::create_redis_client()?;
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    // Initialize Upstash Redis client helper
+    let _upstash_client = upstash_cache::create_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Upstash Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Upstash Redis client initialized");{{else}}    println!("Upstash Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    // Initialize Meilisearch client helper
+    let _meilisearch_client = meilisearch::create_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Meilisearch client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Meilisearch client initialized");{{else}}    println!("Meilisearch client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustAuth "oauth2")}}
@@ -343,6 +368,18 @@ mod cache;
 {{#if (ne rustAuth "none")}}
 mod auth;
 {{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+mod meilisearch;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -468,6 +505,9 @@ async fn graphiql() -> impl Responder {
 async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq observability "sentry")}}
+    let _sentry_guard = observability::init_sentry();
+{{/if}}
 {{#if (eq rustErrorHandling "eyre")}}
 
     // Install color-eyre error handler
@@ -494,6 +534,16 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
     // Initialize Redis client
     let _redis_client = cache::create_redis_client()?;
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    // Initialize Upstash Redis client helper
+    let _upstash_client = upstash_cache::create_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Upstash Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Upstash Redis client initialized");{{else}}    println!("Upstash Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    // Initialize Meilisearch client helper
+    let _meilisearch_client = meilisearch::create_client()?;
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Meilisearch client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Meilisearch client initialized");{{else}}    println!("Meilisearch client initialized");{{/if}}
 {{/if}}
 
 {{#if (eq rustAuth "oauth2")}}
@@ -692,6 +742,18 @@ mod cache;
 {{#if (ne rustAuth "none")}}
 mod auth;
 {{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+mod meilisearch;
+{{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
@@ -823,6 +885,9 @@ fn graphiql() -> RawHtml<String> {
 async fn rocket() -> _ {
     // Load environment variables
     dotenvy::dotenv().ok();
+{{#if (eq observability "sentry")}}
+    let _sentry_guard = observability::init_sentry();
+{{/if}}
 {{#if (eq rustErrorHandling "eyre")}}
 
     // Install color-eyre error handler
@@ -854,6 +919,18 @@ async fn rocket() -> _ {
     // Initialize Redis client
     let _redis_client = cache::create_redis_client();
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Redis client initialized");{{else}}    println!("Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    // Initialize Upstash Redis client helper
+    let _upstash_client = upstash_cache::create_client()
+        .expect("Failed to create Upstash Redis client");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Upstash Redis client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Upstash Redis client initialized");{{else}}    println!("Upstash Redis client initialized");{{/if}}
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    // Initialize Meilisearch client helper
+    let _meilisearch_client = meilisearch::create_client()
+        .expect("Failed to create Meilisearch client");
+{{#if (eq rustLogging "tracing")}}    tracing::info!("Meilisearch client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("Meilisearch client initialized");{{else}}    println!("Meilisearch client initialized");{{/if}}
 {{/if}}
 {{#if (eq rustAuth "oauth2")}}
     // Initialize OAuth2 client
@@ -973,6 +1050,9 @@ mod cache;
 {{/if}}
 {{#if (ne rustAuth "none")}}
 mod auth;
+{{/if}}
+{{#if (eq email "resend")}}
+mod email;
 {{/if}}
 {{#if (eq rustLogging "tracing")}}
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};

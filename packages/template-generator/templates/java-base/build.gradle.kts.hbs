@@ -3,6 +3,9 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
+{{else if isJavaQuarkus}}
+	java
+	id("io.quarkus") version "3.35.2"
 {{else}}
 	java
 	application
@@ -12,7 +15,7 @@ plugins {
 group = "{{javaGroupId}}"
 version = "0.0.1-SNAPSHOT"
 
-{{#unless isJavaSpringBoot}}
+{{#if isJavaPlainJava}}
 application {
 	mainClass = "{{javaPackageName}}.Application"
 }
@@ -22,7 +25,7 @@ tasks.jar {
 		attributes["Main-Class"] = "{{javaPackageName}}.Application"
 	}
 }
-{{/unless}}
+{{/if}}
 
 java {
 	toolchain {
@@ -35,6 +38,18 @@ repositories {
 }
 
 dependencies {
+{{#if (eq email "resend")}}
+	implementation("com.resend:resend-java:4.13.0")
+{{/if}}
+{{#if (eq observability "sentry")}}
+	implementation("io.sentry:sentry:8.16.0")
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+	implementation("redis.clients:jedis:7.5.0")
+{{/if}}
+{{#if (eq search "meilisearch")}}
+	implementation("com.meilisearch.sdk:meilisearch-java:0.14.4")
+{{/if}}
 {{#if isJavaSpringBoot}}
 {{#if hasJavaJpa}}
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -49,10 +64,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 {{/if}}
 {{#if hasJavaFlyway}}
-	implementation("org.flywaydb:flyway-core")
+	implementation("org.springframework.boot:spring-boot-starter-flyway")
 {{/if}}
 {{#if hasJavaLiquibase}}
-	implementation("org.liquibase:liquibase-core")
+	implementation("org.springframework.boot:spring-boot-starter-liquibase")
 {{/if}}
 {{#if hasJavaSpringdocOpenapi}}
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
@@ -71,6 +86,30 @@ dependencies {
 {{#if hasJavaCaffeine}}
 	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("com.github.ben-manes.caffeine:caffeine")
+{{/if}}
+{{#if hasJavaResilience4j}}
+	implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")
+{{/if}}
+{{#if hasJavaWebflux}}
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+{{/if}}
+{{#if hasJavaBatch}}
+	implementation("org.springframework.boot:spring-boot-starter-batch")
+{{/if}}
+{{#if hasJavaKafka}}
+	implementation("org.springframework.kafka:spring-kafka")
+{{/if}}
+{{#if hasJavaMail}}
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+{{/if}}
+{{#if hasJavaDevtools}}
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+{{/if}}
+{{#if hasJavaMicrometerPrometheus}}
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+{{/if}}
+{{#if hasJavaThymeleaf}}
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 {{/if}}
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 {{#if hasJavaJpa}}
@@ -108,6 +147,12 @@ dependencies {
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 {{/if}}
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+{{/if}}
+{{else if isJavaQuarkus}}
+	implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.35.2"))
+	implementation("io.quarkus:quarkus-rest")
+{{#if hasJavaTests}}
+	testImplementation("io.quarkus:quarkus-junit5")
 {{/if}}
 {{else}}
 {{#if hasJavaTests}}

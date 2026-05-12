@@ -71,6 +71,7 @@ export function createCliDefaultProjectConfigBase(
     pythonValidation: "pydantic",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "ruff",

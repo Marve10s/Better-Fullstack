@@ -16,11 +16,12 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | **New Ecosystems** | |
 | [new-ecosystems.md](new-ecosystems.md) | Index — links to individual ecosystem files below |
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
-| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
+| [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir: Phoenix, Ecto, LiveView, Oban, Absinthe, etc. |
 | [dotnet-ecosystem.md](dotnet-ecosystem.md) | C#: ASP.NET Core, EF Core, Dapper, SignalR, etc. |
 | **Platform & Infra** | |
 | [platform-features.md](platform-features.md) | CLI features: dry-run, cross-ecosystem, template preview (MCP/add/history done) |
+| [mcp-incremental-library-updates.md](mcp-incremental-library-updates.md) | Future MCP stack mutation layer for adding scaffold-time libraries to existing projects |
 | [docker-and-devcontainers.md](docker-and-devcontainers.md) | Dockerfile gen, docker-compose, DevContainers, non-monorepo mode |
 | [payment-providers-expansion.md](payment-providers-expansion.md) | Creem.io, Autumn, Commet, Better Auth orgs plugin |
 | [community-requested-integrations.md](community-requested-integrations.md) | Cloudinary, SWR, shadcn-svelte, REST API, InstantDB, Intlayer, Plasmo, etc. |
@@ -50,9 +51,9 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [x] Add `elasticsearch` ✅
 
 ### Feature Flags
-- [ ] Add `unleash`
-- [ ] Add `flagsmith`
-- [ ] Add `launchdarkly`
+- [x] Add `unleash`
+- [x] Add `flagsmith`
+- [x] Add `launchdarkly`
 
 ### Observability
 - [ ] Add `axiom`
@@ -129,7 +130,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 
 ### New Language Ecosystems
 - [x] Add `java` foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries/testing ✅
-- [ ] Expand Java with Quarkus, Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
+- [ ] Expand Java with Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
 - [ ] Add `elixir` (Phoenix, LiveView)
 - [ ] Add `c#/aspnet` (ASP.NET Core, EF Core)
 
@@ -156,4 +157,5 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [x] `history` command ✅
 - [x] Project config (`bts.jsonc`) ✅
 - [x] `--dry-run` flag ✅
+- [ ] MCP stack updates for adding scaffold-time libraries to existing projects
 - [ ] Cross-ecosystem stacks (research)

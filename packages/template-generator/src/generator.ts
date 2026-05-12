@@ -109,6 +109,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
 
     if (config.ecosystem !== "typescript") {
       await processAddonTemplates(vfs, templates, config);
+      processEnvVariables(vfs, config);
     }
 
     processReadme(vfs, config);

@@ -581,6 +581,7 @@ export function validateJavaConstraints(
   if (config.ecosystem !== "java") return;
 
   const hasSpringBoot = config.javaWebFramework === "spring-boot";
+  const hasJavaWebFramework = config.javaWebFramework !== "none";
   const hasNoBuildTool = config.javaBuildTool === "none";
   const hasJavaLibraries = (config.javaLibraries ?? []).some((library) => library !== "none");
   const hasJavaTestingLibraries = (config.javaTestingLibraries ?? []).some(
@@ -591,21 +592,21 @@ export function validateJavaConstraints(
     config.javaAuth !== "none" ||
     hasJavaLibraries;
 
-  if (hasNoBuildTool && hasSpringBoot) {
+  if (hasNoBuildTool && hasJavaWebFramework) {
     incompatibilityError({
-      message: "Spring Boot requires Maven or Gradle in the Java scaffold.",
+      message: "Java web frameworks require Maven or Gradle in the Java scaffold.",
       provided: {
         "java-web-framework": config.javaWebFramework ?? "none",
         "java-build-tool": config.javaBuildTool ?? "none",
       },
       suggestions: [
-        "Use --java-build-tool maven or --java-build-tool gradle with Spring Boot",
+        "Use --java-build-tool maven or --java-build-tool gradle with Java web frameworks",
         "Use --java-web-framework none for a plain Java source-only scaffold",
       ],
     });
   }
 
-  if ((config.javaWebFramework === "none" || hasNoBuildTool) && hasSpringOnlyFeatures) {
+  if ((!hasSpringBoot || hasNoBuildTool) && hasSpringOnlyFeatures) {
     incompatibilityError({
       message: "Spring-only Java features require the Spring Boot scaffold with Maven or Gradle.",
       provided: {
@@ -617,7 +618,7 @@ export function validateJavaConstraints(
       },
       suggestions: [
         "Use --java-web-framework spring-boot and a real build tool for Spring features",
-        "Clear --java-orm, --java-auth, and --java-libraries when using plain Java",
+        "Clear --java-orm, --java-auth, and --java-libraries when using plain Java or Quarkus",
       ],
     });
   }
@@ -633,6 +634,97 @@ export function validateJavaConstraints(
         "Use --java-build-tool maven or --java-build-tool gradle to enable JUnit/Mockito/Testcontainers",
         "Set --java-testing-libraries none for a source-only plain Java scaffold",
       ],
+    });
+  }
+}
+
+export function validateEmailConstraints(config: Partial<ProjectConfig>) {
+  if (!config.email || config.email === "none") return;
+  if (config.ecosystem !== "typescript" && config.email !== "resend") {
+    incompatibilityError({
+      message: "Only Resend email is available for non-TypeScript ecosystems.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", email: config.email },
+      suggestions: ["Use --email resend", "Use --email none"],
+    });
+  }
+  if (
+    config.ecosystem === "java" &&
+    config.email === "resend" &&
+    config.javaBuildTool === "none"
+  ) {
+    incompatibilityError({
+      message: "Resend email for Java requires Maven or Gradle to manage the SDK dependency.",
+      provided: { "java-build-tool": "none", email: "resend" },
+      suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
+    });
+  }
+}
+
+export function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
+  if (!config.observability || config.observability === "none") return;
+  if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
+    incompatibilityError({
+      message: "Only Sentry observability is available for non-TypeScript ecosystems.",
+      provided: {
+        ecosystem: config.ecosystem ?? "typescript",
+        observability: config.observability,
+      },
+      suggestions: ["Use --observability sentry", "Use --observability none"],
+    });
+  }
+  if (
+    config.ecosystem === "java" &&
+    config.observability === "sentry" &&
+    config.javaBuildTool === "none"
+  ) {
+    incompatibilityError({
+      message: "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency.",
+      provided: { "java-build-tool": "none", observability: "sentry" },
+      suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
+    });
+  }
+}
+
+export function validateCachingConstraints(config: Partial<ProjectConfig>) {
+  if (!config.caching || config.caching === "none") return;
+  if (config.ecosystem !== "typescript" && config.caching !== "upstash-redis") {
+    incompatibilityError({
+      message: "Only Upstash Redis caching is available for non-TypeScript ecosystems.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", caching: config.caching },
+      suggestions: ["Use --caching upstash-redis", "Use --caching none"],
+    });
+  }
+  if (
+    config.ecosystem === "java" &&
+    config.caching === "upstash-redis" &&
+    config.javaBuildTool === "none"
+  ) {
+    incompatibilityError({
+      message: "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency.",
+      provided: { "java-build-tool": "none", caching: "upstash-redis" },
+      suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
+    });
+  }
+}
+
+export function validateSearchConstraints(config: Partial<ProjectConfig>) {
+  if (!config.search || config.search === "none") return;
+  if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
+    incompatibilityError({
+      message: "Only Meilisearch search is available for non-TypeScript ecosystems.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", search: config.search },
+      suggestions: ["Use --search meilisearch", "Use --search none"],
+    });
+  }
+  if (
+    config.ecosystem === "java" &&
+    config.search === "meilisearch" &&
+    config.javaBuildTool === "none"
+  ) {
+    incompatibilityError({
+      message: "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency.",
+      provided: { "java-build-tool": "none", search: "meilisearch" },
+      suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
     });
   }
 }
@@ -673,6 +765,27 @@ export function validateShadcnConstraints(
   }
 }
 
+export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
+  if (
+    config.ecosystem === "python" &&
+    config.pythonApi &&
+    config.pythonApi !== "none" &&
+    config.pythonWebFramework !== "django"
+  ) {
+    incompatibilityError({
+      message: "Python API frameworks require --python-web-framework django.",
+      provided: {
+        "python-web-framework": config.pythonWebFramework || "none",
+        "python-api": config.pythonApi,
+      },
+      suggestions: [
+        "Use --python-web-framework django with --python-api django-rest-framework or django-ninja",
+        "Set --python-api none for FastAPI, Flask, Litestar, or no Python web framework",
+      ],
+    });
+  }
+}
+
 export function validateFullConfig(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
@@ -692,6 +805,11 @@ export function validateFullConfig(
   validateFrontendConstraints(config, providedFlags);
 
   validateApiConstraints(config, options);
+  validatePythonApiConstraints(config);
+  validateEmailConstraints(config);
+  validateObservabilityConstraints(config);
+  validateCachingConstraints(config);
+  validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
 
   validateServerDeployRequiresBackend(config.serverDeploy, config.backend);
@@ -781,6 +899,11 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
+    validatePythonApiConstraints(config);
+    validateEmailConstraints(config);
+    validateObservabilityConstraints(config);
+    validateCachingConstraints(config);
+    validateSearchConstraints(config);
     validateJavaConstraints(config);
 
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);

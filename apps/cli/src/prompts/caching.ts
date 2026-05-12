@@ -1,4 +1,4 @@
-import type { Backend, Caching } from "../types";
+import type { Backend, Caching, Ecosystem } from "../types";
 
 import { exitCancelled } from "../utils/errors";
 import type { PromptSingleResolution } from "./prompt-contract";
@@ -20,11 +20,28 @@ const CACHING_PROMPT_OPTIONS = [
 type CachingPromptContext = {
   caching?: Caching;
   backend?: Backend;
+  ecosystem?: Ecosystem;
 };
 
 export function resolveCachingPrompt(
   context: CachingPromptContext = {},
 ): PromptSingleResolution<Caching> {
+  if (context.ecosystem && context.ecosystem !== "typescript") {
+    return context.caching !== undefined
+      ? {
+          shouldPrompt: false,
+          mode: "single",
+          options: CACHING_PROMPT_OPTIONS,
+          autoValue: context.caching,
+        }
+      : {
+          shouldPrompt: true,
+          mode: "single",
+          options: CACHING_PROMPT_OPTIONS,
+          initialValue: "none",
+        };
+  }
+
   if (context.backend === "none" || context.backend === "convex") {
     return {
       shouldPrompt: false,
@@ -49,8 +66,8 @@ export function resolveCachingPrompt(
       };
 }
 
-export async function getCachingChoice(caching?: Caching, backend?: Backend) {
-  const resolution = resolveCachingPrompt({ caching, backend });
+export async function getCachingChoice(caching?: Caching, backend?: Backend, ecosystem?: Ecosystem) {
+  const resolution = resolveCachingPrompt({ caching, backend, ecosystem });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

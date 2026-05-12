@@ -217,6 +217,13 @@ describe("Python Ecosystem Tab", () => {
       expect(crewaiOption?.name).toBe("CrewAI");
     });
 
+    it("should have Haystack option for pythonAi", () => {
+      const options = TECH_OPTIONS.pythonAi;
+      const haystackOption = options.find((o) => o.id === "haystack");
+      expect(haystackOption).toBeDefined();
+      expect(haystackOption?.name).toBe("Haystack");
+    });
+
     it("should have none as default for pythonAi", () => {
       const options = TECH_OPTIONS.pythonAi;
       const noneOption = options.find((o) => o.id === "none");
@@ -230,6 +237,17 @@ describe("Python Ecosystem Tab", () => {
       expect(celeryOption).toBeDefined();
       expect(celeryOption?.name).toBe("Celery");
       expect(celeryOption?.description).toContain("task queue");
+    });
+
+    it("should have additional python task queue options", () => {
+      const options = TECH_OPTIONS.pythonTaskQueue;
+      expect(options.find((o) => o.id === "dramatiq")?.name).toBe("Dramatiq");
+      expect(options.find((o) => o.id === "huey")?.name).toBe("Huey");
+    });
+
+    it("should have Ariadne option for pythonGraphql", () => {
+      const options = TECH_OPTIONS.pythonGraphql;
+      expect(options.find((o) => o.id === "ariadne")?.name).toBe("Ariadne");
     });
 
     it("should have none as default for pythonTaskQueue", () => {
@@ -246,6 +264,19 @@ describe("Python Ecosystem Tab", () => {
       expect(ruffOption?.default).toBe(true);
       expect(ruffOption?.name).toBe("Ruff");
       expect(ruffOption?.description).toContain("linter");
+    });
+
+    it("should have Python type checker options for pythonQuality", () => {
+      const options = TECH_OPTIONS.pythonQuality;
+      const mypyOption = options.find((o) => o.id === "mypy");
+      const pyrightOption = options.find((o) => o.id === "pyright");
+
+      expect(mypyOption).toBeDefined();
+      expect(mypyOption?.name).toBe("mypy");
+      expect(mypyOption?.description).toContain("Static type checker");
+      expect(pyrightOption).toBeDefined();
+      expect(pyrightOption?.name).toBe("Pyright");
+      expect(pyrightOption?.description).toContain("type checker");
     });
   });
 
@@ -282,6 +313,7 @@ describe("Python Ecosystem Tab", () => {
         pythonOrm: "sqlalchemy",
         pythonValidation: "pydantic",
         pythonAi: ["langchain"],
+        pythonApi: "none",
         pythonTaskQueue: "celery",
         pythonQuality: "ruff",
       };
@@ -289,6 +321,7 @@ describe("Python Ecosystem Tab", () => {
       expect(stack.pythonOrm).toBe("sqlalchemy");
       expect(stack.pythonValidation).toBe("pydantic");
       expect(stack.pythonAi).toEqual(["langchain"]);
+      expect(stack.pythonApi).toBe("none");
       expect(stack.pythonTaskQueue).toBe("celery");
       expect(stack.pythonQuality).toBe("ruff");
     });

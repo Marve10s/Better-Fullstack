@@ -48,9 +48,14 @@ export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectC
       packagePath: webPath,
       devDependencies: ["less"],
     });
+  } else if (cssFramework === "tailwind" && frontend.includes("astro")) {
+    addPackageDependency({
+      vfs,
+      packagePath: webPath,
+      dependencies: ["tw-animate-css"],
+    });
   }
-  // tailwind, postcss-only, and none don't need extra dependencies
-  // tailwind is already included in the base templates
+  // Tailwind and postcss-only are included in the base templates.
 }
 
 /**
@@ -101,6 +106,12 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
         break;
       case "remixicon":
         iconDeps.push("@remixicon/react");
+        break;
+      case "heroicons":
+        iconDeps.push("@heroicons/react");
+        break;
+      case "react-icons":
+        iconDeps.push("react-icons");
         break;
     }
 
@@ -181,6 +192,18 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
       }
       break;
 
+    case "mui":
+      if (hasReactWeb || hasAstroReact) {
+        deps.push("@mui/material", "@emotion/react", "@emotion/styled");
+      }
+      break;
+
+    case "antd":
+      if (hasReactWeb || hasAstroReact) {
+        deps.push("antd");
+      }
+      break;
+
     case "base-ui":
       if (hasReactWeb || hasAstroReact) {
         deps.push("@base-ui-components/react");
@@ -256,6 +279,12 @@ function processShadcnDeps(vfs: VirtualFileSystem, config: ProjectConfig): void 
       break;
     case "remixicon":
       deps.push("@remixicon/react");
+      break;
+    case "heroicons":
+      deps.push("@heroicons/react");
+      break;
+    case "react-icons":
+      deps.push("react-icons");
       break;
   }
 

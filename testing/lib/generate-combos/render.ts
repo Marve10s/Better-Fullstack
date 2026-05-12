@@ -48,6 +48,7 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       Array.isArray(fingerprint.pythonAi)
         ? fingerprint.pythonAi.filter((value) => value !== "none").join("-")
         : undefined,
+      typeof fingerprint.pythonApi === "string" ? fingerprint.pythonApi : undefined,
       typeof fingerprint.pythonTaskQueue === "string" ? fingerprint.pythonTaskQueue : undefined,
       typeof fingerprint.pythonGraphql === "string" ? fingerprint.pythonGraphql : undefined,
       typeof fingerprint.pythonQuality === "string" ? fingerprint.pythonQuality : undefined,
@@ -134,6 +135,13 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["server-deploy", config.serverDeploy],
   ];
 
+  const sharedServiceFlags: Array<[string, string | readonly string[]]> = [
+    ["email", config.email],
+    ["observability", config.observability],
+    ["caching", config.caching],
+    ["search", config.search],
+  ];
+
   const rustFlags: Array<[string, string | readonly string[]]> = [
     ["rust-web-framework", config.rustWebFramework],
     ["rust-frontend", config.rustFrontend],
@@ -153,6 +161,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-validation", config.pythonValidation],
     ["python-ai", withExplicitNone(config.pythonAi)],
     ["python-auth", config.pythonAuth],
+    ["python-api", config.pythonApi],
     ["python-task-queue", config.pythonTaskQueue],
     ["python-graphql", config.pythonGraphql],
     ["python-quality", config.pythonQuality],
@@ -199,16 +208,16 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       if (config.shadcnRadius) orderedFlags.push(["shadcn-radius", config.shadcnRadius]);
       break;
     case "rust":
-      orderedFlags.push(...rustFlags);
+      orderedFlags.push(...sharedServiceFlags, ...rustFlags);
       break;
     case "python":
-      orderedFlags.push(...pythonFlags);
+      orderedFlags.push(...sharedServiceFlags, ...pythonFlags);
       break;
     case "go":
-      orderedFlags.push(...goFlags);
+      orderedFlags.push(...sharedServiceFlags, ...goFlags);
       break;
     case "java":
-      orderedFlags.push(...javaFlags);
+      orderedFlags.push(...sharedServiceFlags, ...javaFlags);
       break;
   }
 

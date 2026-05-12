@@ -19,10 +19,31 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v1.7.1",
+    publishedAt: "2026-05-08T13:21:17Z",
+    displayDate: "May 8, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v1.7.1`,
+    title: "Expanded ecosystem tools",
+    summary:
+      "This release broadens the stack builder and CLI with new UI, Python, Rust, Go, and Java options, plus generator safeguards for the new Python API and type-checking paths.",
+    highlights: [
+      "Added TypeScript UI options for MUI and Ant Design, plus new shadcn/ui Luma and Sera styles with Heroicons and React Icons support.",
+      "Expanded Python with Haystack, Django REST Framework, Django Ninja, RQ, Dramatiq, Huey, Ariadne, mypy, and Pyright, including Django-only API validation and a generated mypy config that matches scaffolded code.",
+      "Expanded Rust, Go, and Java with uuid, Chrono, Reqwest, config, DashMap, parking_lot, Secrecy, Tokio Util, utoipa, Proptest, Insta, urfave/cli, Logrus, Quarkus, Resilience4j, Spring WebFlux, Spring Batch, Spring Kafka, Spring Mail, Spring Boot DevTools, Micrometer Prometheus, and Thymeleaf.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "A close-up of computer hardware and cables",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v1.7.0",
     publishedAt: "2026-05-07T13:52:15Z",
     displayDate: "May 7, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.7.0`,
     title: "Shared stack translation, steadier scaffolds",
     summary:

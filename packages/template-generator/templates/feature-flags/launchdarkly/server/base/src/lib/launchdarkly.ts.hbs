@@ -1,0 +1,47 @@
+import { init, type LDClient, type LDContext, type LDFlagValue } from "@launchdarkly/node-server-sdk";
+
+const sdkKey = process.env.LAUNCHDARKLY_SDK_KEY || "";
+
+let clientPromise: Promise<LDClient> | undefined;
+
+export function getLaunchDarklyClient(): Promise<LDClient> {
+  if (!clientPromise) {
+    const client = init(sdkKey);
+    clientPromise = client.waitForInitialization({ timeout: 5 }).then(() => client);
+  }
+
+  return clientPromise;
+}
+
+export async function isFeatureEnabled(
+  flagKey: string,
+  context: LDContext,
+  defaultValue = false,
+): Promise<boolean> {
+  if (!sdkKey) return defaultValue;
+
+  const client = await getLaunchDarklyClient();
+  return client.variation(flagKey, context, defaultValue);
+}
+
+export async function getFeatureValue<T extends LDFlagValue>(
+  flagKey: string,
+  context: LDContext,
+  defaultValue: T,
+): Promise<T> {
+  if (!sdkKey) return defaultValue;
+
+  const client = await getLaunchDarklyClient();
+  return client.variation(flagKey, context, defaultValue) as Promise<T>;
+}
+
+export async function closeLaunchDarkly(): Promise<void> {
+  if (!clientPromise) return;
+
+  const client = await clientPromise;
+  await client.flush();
+  client.close();
+  clientPromise = undefined;
+}
+
+export type { LDClient, LDContext, LDFlagValue };

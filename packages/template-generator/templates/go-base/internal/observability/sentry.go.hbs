@@ -1,0 +1,37 @@
+{{#if (eq observability "sentry")}}
+package observability
+
+import (
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/getsentry/sentry-go"
+)
+
+// InitSentry initializes Sentry when SENTRY_DSN is configured.
+func InitSentry() {
+	dsn := os.Getenv("SENTRY_DSN")
+	if dsn == "" {
+		return
+	}
+
+	tracesSampleRate, err := strconv.ParseFloat(os.Getenv("SENTRY_TRACES_SAMPLE_RATE"), 64)
+	if err != nil {
+		tracesSampleRate = 1.0
+	}
+
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:              dsn,
+		Environment:      os.Getenv("SENTRY_ENVIRONMENT"),
+		TracesSampleRate: tracesSampleRate,
+	}); err != nil {
+		panic(err)
+	}
+}
+
+// FlushSentry waits briefly for queued events to be delivered.
+func FlushSentry() {
+	sentry.Flush(2 * time.Second)
+}
+{{/if}}

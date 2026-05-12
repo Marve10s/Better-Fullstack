@@ -71,6 +71,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonValidation: "none",
     pythonAi: [],
     pythonAuth: "none",
+    pythonApi: "none",
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
@@ -92,6 +93,16 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
 }
 
 describe("generateReproducibleCommand", () => {
+  it("generates TypeScript commands with feature flag selections", () => {
+    const command = generateReproducibleCommand(
+      makeConfig({
+        featureFlags: "flagsmith",
+      }),
+    );
+
+    expect(command).toContain("--feature-flags flagsmith");
+  });
+
   it("generates a Python command with explicit none selections", () => {
     const config = makeConfig({
       ecosystem: "python",
@@ -131,6 +142,7 @@ describe("generateReproducibleCommand", () => {
       pythonValidation: "pydantic",
       pythonAi: [],
       pythonAuth: "none",
+      pythonApi: "none",
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
@@ -145,9 +157,14 @@ describe("generateReproducibleCommand", () => {
         "--python-validation pydantic " +
         "--python-ai none " +
         "--python-auth none " +
+        "--python-api none " +
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--email none " +
+        "--observability none " +
+        "--caching none " +
+        "--search none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +
@@ -199,6 +216,7 @@ describe("generateReproducibleCommand", () => {
       pythonValidation: "pydantic",
       pythonAi: ["langchain", "openai-sdk"],
       pythonAuth: "none",
+      pythonApi: "none",
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
@@ -215,9 +233,14 @@ describe("generateReproducibleCommand", () => {
         "--python-validation pydantic " +
         "--python-ai langchain openai-sdk " +
         "--python-auth none " +
+        "--python-api none " +
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--email none " +
+        "--observability none " +
+        "--caching none " +
+        "--search none " +
         "--addons skills " +
         "--examples none " +
         "--db-setup none " +
@@ -263,6 +286,10 @@ describe("generateReproducibleCommand", () => {
         "--rust-error-handling anyhow-thiserror " +
         "--rust-caching none " +
         "--rust-auth none " +
+        "--email none " +
+        "--observability none " +
+        "--caching none " +
+        "--search none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +
@@ -303,6 +330,10 @@ describe("generateReproducibleCommand", () => {
         "--go-logging zap " +
         "--go-auth none " +
         "--auth go-better-auth " +
+        "--email none " +
+        "--observability none " +
+        "--caching none " +
+        "--search none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +
@@ -386,6 +417,10 @@ describe("generateReproducibleCommand", () => {
         "--java-auth spring-security " +
         "--java-libraries spring-actuator flyway " +
         "--java-testing-libraries junit5 mockito " +
+        "--email none " +
+        "--observability none " +
+        "--caching none " +
+        "--search none " +
         "--addons none " +
         "--examples none " +
         "--db-setup none " +

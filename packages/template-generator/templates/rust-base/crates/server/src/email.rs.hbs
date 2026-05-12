@@ -1,0 +1,15 @@
+{{#if (eq email "resend")}}
+use resend_rs::types::CreateEmailBaseOptions;
+use resend_rs::{Resend, Result};
+
+/// Send an HTML email through Resend.
+pub async fn send_email(to: impl IntoIterator<Item = String>, subject: &str, html: &str) -> Result<String> {
+    let resend = Resend::default();
+    let from = std::env::var("RESEND_FROM_EMAIL")
+        .unwrap_or_else(|_| "Acme <onboarding@resend.dev>".to_string());
+    let recipients: Vec<String> = to.into_iter().collect();
+    let email = CreateEmailBaseOptions::new(from, recipients, subject).with_html(html);
+    let sent = resend.emails.send(email).await?;
+    Ok(sent.id.to_string())
+}
+{{/if}}
