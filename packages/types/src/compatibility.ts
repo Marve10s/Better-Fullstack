@@ -1085,17 +1085,8 @@ export const analyzeStackCompatibility = (
   }
 
   // React-only UI libraries - check frontend compatibility
-<<<<<<< HEAD
   const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
-=======
-<<<<<<< vinext-template
-  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui"];
->>>>>>> 56dba5a1d13016dde81d68596718b4531d8bdae2
   const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"];
-=======
-  const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
-  const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
->>>>>>> main
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
     const hasAstroReact =
@@ -2962,7 +2953,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
     ["pythonApi", input.pythonApi],
-    ["javaWebFramework", input.javaWebFramework],
+   ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
     ["javaAuth", input.javaAuth],
