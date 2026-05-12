@@ -1,0 +1,49 @@
+---
+title: Django REST API Starter
+description: Create a Python backend with Django, Django REST Framework, SQLAlchemy, Pydantic, and Ruff using Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+Use this stack when you want Django conventions with an API-focused project shape.
+
+```bash
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## What this creates
+
+- A Python project using Django.
+- Django REST Framework as the Python API option.
+- SQLAlchemy and Pydantic selections.
+- Ruff for code quality.
+
+## When to choose it
+
+Choose Django when conventions, admin-oriented structure, and ecosystem depth matter more than a minimal API surface.
+
+## Tradeoffs
+
+For a smaller API service, use [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/). For Django conventions, this stack is a better fit.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff).
+- Read the [Python ecosystem docs](/docs/ecosystems/python/).

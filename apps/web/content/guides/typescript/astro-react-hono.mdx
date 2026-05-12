@@ -1,0 +1,58 @@
+---
+title: Astro with React and Hono
+description: Create an Astro app with React integration, Hono, tRPC, Drizzle, SQLite, Better Auth, Tailwind CSS, and DaisyUI using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - astro
+  - react
+  - hono
+  - drizzle
+keywords:
+  - astro react hono
+  - astro trpc starter
+  - astro drizzle starter
+  - create astro fullstack app
+  - astro react api starter
+---
+
+Use this stack when you want Astro for content-heavy pages and islands, plus a TypeScript API server.
+
+```bash
+npm create better-fullstack@latest my-astro-app -- \
+  --ecosystem typescript \
+  --frontend astro \
+  --astro-integration react \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library daisyui \
+  --package-manager bun
+```
+
+## What this creates
+
+- An Astro frontend with React integration.
+- A Hono backend running on Bun.
+- SQLite and Drizzle.
+- Better Auth.
+- tRPC, because this Astro setup uses React integration.
+- Tailwind CSS and DaisyUI.
+
+## Compatibility notes
+
+Astro API compatibility depends on the selected UI integration. This page uses `--astro-integration react`, which keeps tRPC available. For non-React Astro integrations, prefer oRPC.
+
+## When to choose it
+
+Choose Astro when content, docs, marketing pages, or partial hydration are central to the app, but you still need a generated backend and database setup.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=astro&ai=react&be=hono&rt=bun&db=sqlite&orm=drizzle&au=better-auth&api=trpc&ui=daisyui).
+- Read the [TypeScript ecosystem docs](/docs/ecosystems/typescript/).
+- Compare with [SvelteKit with Hono and Drizzle](/guides/typescript/sveltekit-hono-drizzle/).

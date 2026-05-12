@@ -1,0 +1,53 @@
+---
+title: FastAPI with PostgreSQL and SQLAlchemy
+description: Create a Python API project with FastAPI, PostgreSQL, SQLAlchemy, Pydantic, and Ruff using Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - postgres
+  - sqlalchemy
+  - pydantic
+keywords:
+  - fastapi postgres starter
+  - fastapi sqlalchemy starter
+  - python api boilerplate
+  - create fastapi project
+  - fastapi pydantic postgres
+---
+
+Use this stack when you want a Python API with a familiar async-friendly web framework and a relational database.
+
+```bash
+npm create better-fullstack@latest my-fastapi-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Python project using FastAPI.
+- PostgreSQL as the database option.
+- SQLAlchemy for database access.
+- Pydantic for validation.
+- Ruff for Python code quality.
+- A Better Fullstack configuration file for repeatable scaffolding.
+
+## When to choose it
+
+Choose FastAPI for APIs, AI-adjacent services, internal platforms, and backend services where Python ecosystem access matters.
+
+## Tradeoffs
+
+FastAPI is a strong API default. If you need a more batteries-included web framework and admin-style conventions, compare it with Django.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff).
+- Read the [Python ecosystem docs](/docs/ecosystems/python/).
+- Review the [CLI create flags](/docs/cli/create/).

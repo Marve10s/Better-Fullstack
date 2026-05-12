@@ -1,0 +1,48 @@
+---
+title: Rust CLI with Ratatui
+description: Create a Rust terminal UI app with Ratatui using Better Fullstack's Rust CLI project scaffolding.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+Use this stack when you want to build a terminal UI instead of a web service.
+
+```bash
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## What this creates
+
+- A Rust CLI project.
+- Ratatui as the terminal UI option.
+- No web framework, frontend, ORM, or API layer.
+
+## Compatibility notes
+
+CLI projects should avoid unrelated web framework and database choices unless you explicitly need them. This guide keeps those flags set to `none`.
+
+## When to choose it
+
+Choose Ratatui for dashboards, developer tools, infrastructure tools, and terminal-first workflows.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).

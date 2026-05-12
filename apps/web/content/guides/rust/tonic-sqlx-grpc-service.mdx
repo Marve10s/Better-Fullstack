@@ -1,0 +1,51 @@
+---
+title: Rust gRPC Service with Tonic and SQLx
+description: Create a Rust gRPC service with Axum, Tonic, SQLx, tracing, and structured error handling using Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - tonic
+  - grpc
+  - sqlx
+keywords:
+  - rust grpc starter
+  - tonic sqlx starter
+  - axum tonic grpc
+  - create rust grpc service
+  - rust microservice boilerplate
+---
+
+Use this stack when you need a Rust backend shaped for service-to-service APIs and typed gRPC contracts.
+
+```bash
+npm create better-fullstack@latest my-rust-grpc -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sqlx \
+  --rust-api tonic \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## What this creates
+
+- A Rust service using Axum.
+- Tonic for gRPC.
+- SQLx for database access.
+- Tracing and structured error handling.
+
+## When to choose it
+
+Choose this for internal services, microservices, and backend systems where gRPC contracts are a better fit than JSON routes.
+
+## Tradeoffs
+
+gRPC is excellent for strongly typed service boundaries, but it adds protocol and tooling expectations. For browser-facing HTTP APIs, start with [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/).
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).

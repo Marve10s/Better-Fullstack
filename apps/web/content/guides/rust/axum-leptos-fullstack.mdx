@@ -1,0 +1,52 @@
+---
+title: Fullstack Rust with Axum and Leptos
+description: Create a fullstack Rust app with Axum, Leptos, SeaORM, and Better Fullstack's Rust project scaffolding.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+Use this stack when you want Rust on both the server and frontend side of the generated app.
+
+```bash
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## What this creates
+
+- An Axum-based Rust server.
+- Leptos as the Rust frontend option.
+- SeaORM for database access.
+- Tracing and structured error handling defaults.
+
+## Compatibility notes
+
+This guide uses Rust-specific flags instead of TypeScript frontend/backend flags. Keep Rust frontend choices under `--rust-frontend`.
+
+## When to choose it
+
+Choose this when the project benefits from a Rust-first architecture across the app boundary and your team is comfortable with Rust's compile-time model.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Compare with [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).

@@ -1,0 +1,58 @@
+---
+title: Create a TanStack Start Project
+description: Create a TanStack Start fullstack app with Better Fullstack, including routing, API routes, Drizzle, SQLite, Better Auth, Tailwind CSS, and shadcn/ui.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - react
+  - drizzle
+  - better-auth
+keywords:
+  - create tanstack start project
+  - tanstack start starter
+  - tanstack start boilerplate
+  - tanstack start fullstack app
+  - tanstack start drizzle
+---
+
+Use this stack when you want a React fullstack app built around TanStack Router and TanStack Start's server route model.
+
+```bash
+npm create better-fullstack@latest my-tanstack-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A TanStack Start web app with file-based routes.
+- Fullstack routing through the framework's built-in server layer.
+- SQLite and Drizzle for a small local relational database setup.
+- Better Auth wired into the generated app.
+- Tailwind CSS and shadcn/ui for the frontend.
+- A reproducible stack configuration in `bts.jsonc`.
+
+## When to choose it
+
+Choose TanStack Start when you want React, typed routing, colocated fullstack behavior, and a smaller framework surface than a large batteries-included application framework.
+
+This is a good fit for dashboards, internal tools, SaaS prototypes, and apps where route type safety matters.
+
+## Tradeoffs
+
+TanStack Start is a better fit when you want to lean into the TanStack ecosystem. If you want the largest hosting and documentation ecosystem, compare it with [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=trpc).
+- Read the [TypeScript ecosystem docs](/docs/ecosystems/typescript/).
+- Check the [CLI create reference](/docs/cli/create/).

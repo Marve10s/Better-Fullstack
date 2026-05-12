@@ -1,0 +1,52 @@
+---
+title: Expo Uniwind Native App
+description: Create an Expo native app with Uniwind and a minimal Better Fullstack configuration for mobile-first projects.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+Use this stack when you want a mobile-first Expo app and do not need a generated backend in the same scaffold.
+
+```bash
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --orm none \
+  --auth none \
+  --api none \
+  --package-manager bun
+```
+
+## What this creates
+
+- An Expo native app using Uniwind.
+- No web frontend.
+- No backend, database, ORM, auth, or API layer by default.
+- A mobile-first project shape that can be paired with an API later.
+
+## Compatibility notes
+
+Native frontends are treated as app platform choices rather than web server frameworks. Keep backend choices explicit if you later add an API service.
+
+## When to choose it
+
+Choose this for mobile prototypes, companion apps, and native app foundations where the API may be created separately.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=none&fe-n=native-uniwind&be=none&db=none&orm=none&au=none&api=none).
+- Review the [CLI create reference](/docs/cli/create/).
+- Compare with [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/) if your app also needs web and agent tooling.

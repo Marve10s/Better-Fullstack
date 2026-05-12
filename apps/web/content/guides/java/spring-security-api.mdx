@@ -1,0 +1,57 @@
+---
+title: Secure Spring Boot API
+description: Create a secure Java API with Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5, and Testcontainers.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - spring security api starter
+  - secure spring boot starter
+  - spring boot testcontainers
+  - spring boot flyway jpa
+  - java secure api boilerplate
+---
+
+Use this stack when you want a Spring Boot backend with persistence, security, database migrations, and integration-test tooling.
+
+```bash
+npm create better-fullstack@latest my-secure-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## What this creates
+
+- A Spring Boot Java API.
+- Gradle as the build tool.
+- Spring Data JPA.
+- Spring Security.
+- Spring Actuator and Flyway.
+- JUnit 5 and Testcontainers.
+
+## Compatibility notes
+
+Spring Security, JPA, and Spring libraries require Spring Boot with a Java build tool. Flyway is paired with the Spring Data JPA path in Better Fullstack.
+
+## When to choose it
+
+Choose this for production-oriented Java APIs where security, migrations, and integration tests should be present early.
+
+## Tradeoffs
+
+This is heavier than a minimal Spring Boot API. If you want a smaller starting point, use [Spring Boot with PostgreSQL and JPA](/guides/java/spring-boot-postgres-jpa/) or remove optional libraries in the builder.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=gradle&db=postgres&jorm=spring-data-jpa&jauth=spring-security&jlib=spring-actuator,flyway&jtest=junit5,testcontainers).
+- Read the [Java ecosystem docs](/docs/ecosystems/java/).

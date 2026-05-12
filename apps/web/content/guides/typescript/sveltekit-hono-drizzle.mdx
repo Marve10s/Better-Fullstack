@@ -1,0 +1,51 @@
+---
+title: SvelteKit with Hono and Drizzle
+description: Create a SvelteKit app with a Hono API, oRPC, Drizzle, PostgreSQL, Tailwind CSS, and Better Auth using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - sveltekit
+  - hono
+  - orpc
+  - drizzle
+keywords:
+  - sveltekit hono
+  - sveltekit drizzle starter
+  - sveltekit postgres boilerplate
+  - sveltekit orpc
+  - create sveltekit fullstack app
+---
+
+Use this stack when you want SvelteKit on the frontend and a small TypeScript API server alongside it.
+
+```bash
+npm create better-fullstack@latest my-sveltekit-app -- \
+  --ecosystem typescript \
+  --frontend svelte \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A SvelteKit frontend.
+- A Hono backend on Bun.
+- oRPC for typed API contracts across non-React frontend choices.
+- PostgreSQL and Drizzle.
+- Better Auth where the selected database and ORM support it.
+
+## When to choose it
+
+Choose this when your team prefers SvelteKit but still wants an explicit API server and typed contracts. It is useful for apps that may grow into separate frontend and backend deployments.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=svelte&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=orpc).
+- Compare with the [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/) React stack.
+- Read the [compatibility reference](/docs/reference/compatibility/).

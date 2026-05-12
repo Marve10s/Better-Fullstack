@@ -1,0 +1,59 @@
+---
+title: TanStack Start and Resend
+description: Create a TanStack Start app with Resend email support, Better Auth, Drizzle, SQLite, Tailwind CSS, and shadcn/ui using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - resend
+  - email
+  - better-auth
+keywords:
+  - tanstack start resend
+  - tanstack start email
+  - tanstack start transactional email
+  - create tanstack start resend app
+  - resend fullstack starter
+---
+
+Use this stack when your TanStack Start app needs transactional email for sign-in flows, product notifications, invites, or onboarding messages.
+
+```bash
+npm create better-fullstack@latest my-email-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --email resend \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A TanStack Start app with its own server route layer.
+- Resend as the email provider option.
+- Better Auth with relational database support.
+- Drizzle and SQLite for local development.
+- Tailwind CSS and shadcn/ui for the interface.
+
+## When to choose it
+
+Choose this when email is part of the product workflow, not an afterthought. Resend is a strong fit for developer-focused transactional email and keeps the generated stack straightforward.
+
+## Common use cases
+
+- Magic links and verification emails.
+- Team invites.
+- Trial or onboarding emails.
+- Product notifications from server actions or API routes.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc).
+- Compare email options in the [CLI create reference](/docs/cli/create/).
+- Start from the broader [TanStack Start guide](/guides/typescript/create-tanstack-start-project/).

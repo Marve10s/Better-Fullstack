@@ -1,0 +1,55 @@
+---
+title: Nuxt with Prisma and Better Auth
+description: Create a Nuxt fullstack app with PostgreSQL, Prisma, Better Auth, oRPC, Tailwind CSS, and a generated Better Fullstack project structure.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+Use this stack when you want a Vue/Nuxt fullstack app with relational data, authentication, and typed API contracts.
+
+```bash
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Nuxt app in fullstack mode.
+- PostgreSQL and Prisma.
+- Better Auth.
+- oRPC for typed API contracts.
+- Tailwind CSS.
+- A reproducible `bts.jsonc` stack configuration.
+
+## Compatibility notes
+
+Nuxt uses oRPC in Better Fullstack for typed contracts. tRPC is reserved for React-based TypeScript frontends, so this guide intentionally uses `--api orpc`.
+
+## When to choose it
+
+Choose Nuxt when your team prefers Vue, wants server-capable routing, and needs a fullstack app shape rather than a separate frontend and API server.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc).
+- Compare with [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+- Read the [compatibility reference](/docs/reference/compatibility/).

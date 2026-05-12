@@ -1,0 +1,48 @@
+---
+title: Go CLI with Bubble Tea
+description: Create a Go terminal application with Bubble Tea using Better Fullstack's Go CLI project scaffolding.
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - cli
+  - bubbletea
+keywords:
+  - go bubble tea starter
+  - go cli boilerplate
+  - create go cli
+  - bubbletea terminal app
+  - go tui starter
+---
+
+Use this stack when you want a Go terminal UI instead of a web API.
+
+```bash
+npm create better-fullstack@latest my-go-cli -- \
+  --ecosystem go \
+  --go-web-framework none \
+  --go-orm none \
+  --go-api none \
+  --go-cli bubbletea \
+  --go-logging none \
+  --go-auth none
+```
+
+## What this creates
+
+- A Go CLI project.
+- Bubble Tea as the terminal UI option.
+- No web framework, ORM, gRPC, or auth add-on.
+
+## Compatibility notes
+
+CLI projects should keep server-only categories set to `none` unless they are intentionally hybrid tools.
+
+## When to choose it
+
+Choose Bubble Tea for terminal dashboards, developer tools, and command-line interfaces where interactivity matters.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=none&gorm=none&gapi=none&gcli=bubbletea&glog=none&gauth=none).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).

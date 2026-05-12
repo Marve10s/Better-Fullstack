@@ -1,0 +1,51 @@
+---
+title: Axum with PostgreSQL and SeaORM
+description: Create a Rust API project with Axum, PostgreSQL, SeaORM, tracing, and structured error handling using Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - axum
+  - postgres
+  - seaorm
+  - tracing
+keywords:
+  - axum postgres starter
+  - rust api boilerplate
+  - axum seaorm starter
+  - create rust api project
+  - rust postgres api
+---
+
+Use this stack when you want a Rust backend with a modern HTTP framework, relational persistence, logging, and explicit error handling.
+
+```bash
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## What this creates
+
+- A Rust API project using Axum.
+- PostgreSQL as the database option.
+- SeaORM for database access.
+- Tracing for structured logging.
+- Anyhow and Thiserror style error handling.
+
+## When to choose it
+
+Choose Axum when performance, correctness, and explicit server code matter. It is a good fit for APIs, backend services, and systems where Rust's type system is part of the product strategy.
+
+## Tradeoffs
+
+Rust usually asks for more upfront type modeling than TypeScript, Python, or Go. In return, you get strong compile-time checks and predictable runtime behavior.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=axum&db=postgres&rorm=sea-orm&rlog=tracing&reh=anyhow-thiserror).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).
+- Review the [CLI create reference](/docs/cli/create/).

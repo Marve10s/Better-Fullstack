@@ -1,0 +1,50 @@
+---
+title: Echo with SQLC
+description: Create a Go API project with Echo, SQLC, Zap logging, and Better Fullstack's Go project scaffolding.
+updated: 2026-05-12
+category: Go
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+Use this stack when you want a Go API with Echo and SQL-first database access.
+
+```bash
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## What this creates
+
+- A Go API project using Echo.
+- SQLC as the Go ORM/database access option.
+- Zap for logging.
+- No gRPC, CLI, or Go auth add-on by default.
+
+## When to choose it
+
+Choose Echo with SQLC when you want explicit SQL and generated Go types without adopting a higher-level ORM.
+
+## Tradeoffs
+
+SQLC keeps database behavior visible, but you own more SQL. If you want a more conventional ORM flow, use [Gin with PostgreSQL and GORM](/guides/go/gin-postgres-gorm/).
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).

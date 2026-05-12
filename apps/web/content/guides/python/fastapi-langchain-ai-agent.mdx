@@ -1,0 +1,50 @@
+---
+title: FastAPI AI Agent with LangChain
+description: Create a Python AI API with FastAPI, LangChain, SQLModel, Pydantic, and Ruff using Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - langchain
+  - ai
+  - sqlmodel
+keywords:
+  - fastapi langchain starter
+  - python ai agent starter
+  - fastapi ai api
+  - create langchain api
+  - python ai boilerplate
+---
+
+Use this stack when you want a Python API prepared for AI application code.
+
+```bash
+npm create better-fullstack@latest my-python-ai-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-ai langchain \
+  --python-quality ruff
+```
+
+## What this creates
+
+- A FastAPI project.
+- LangChain as the Python AI library option.
+- SQLModel and Pydantic.
+- Ruff for code quality.
+
+## When to choose it
+
+Choose this for AI APIs, retrieval workflows, agent backends, and Python services that need a web boundary around model or tool orchestration.
+
+## Compatibility notes
+
+Python AI options are selected through `--python-ai`. This is separate from the TypeScript `--ai` flag used by web app AI SDK choices.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff).
+- Compare with [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/).
+- Read the [Python ecosystem docs](/docs/ecosystems/python/).

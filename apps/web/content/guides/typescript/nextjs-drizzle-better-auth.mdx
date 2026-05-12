@@ -1,0 +1,56 @@
+---
+title: Next.js with Drizzle and Better Auth
+description: Create a Next.js fullstack app with Drizzle, PostgreSQL, Better Auth, Tailwind CSS, shadcn/ui, and tRPC using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+Use this stack when you want a mainstream React fullstack app with relational data, authentication, and a typed API layer.
+
+```bash
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Next.js app in fullstack mode.
+- PostgreSQL as the relational database.
+- Drizzle as the TypeScript ORM.
+- Better Auth for authentication.
+- tRPC for end-to-end typed APIs.
+- Tailwind CSS and shadcn/ui for frontend styling.
+
+## When to choose it
+
+Choose this for SaaS apps, account-based products, dashboards, admin portals, and projects where Next.js hosting familiarity matters.
+
+## Why Drizzle and Better Auth
+
+Drizzle keeps database access close to TypeScript. Better Auth gives the app a modern auth layer without forcing a hosted identity provider by default.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Compare this with [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/).
+- Read the [compatibility reference](/docs/reference/compatibility/).

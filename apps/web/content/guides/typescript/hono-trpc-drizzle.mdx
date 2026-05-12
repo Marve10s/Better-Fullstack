@@ -1,0 +1,57 @@
+---
+title: Hono with tRPC and Drizzle
+description: Create a TypeScript fullstack app with Hono, tRPC, Drizzle, PostgreSQL, TanStack Router, Tailwind CSS, and Better Auth.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+Use this stack when you want a fast TypeScript API server and a separate React frontend with typed client-server calls.
+
+```bash
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A TanStack Router frontend.
+- A Hono backend running on Bun.
+- PostgreSQL and Drizzle.
+- Better Auth.
+- tRPC between the web app and API.
+- A monorepo structure for frontend and server packages.
+
+## When to choose it
+
+Choose Hono when the backend should stay small, fast, and explicit. This setup works well for API-first products, dashboards, internal tools, and services that may later split frontend and backend deployment.
+
+## Tradeoffs
+
+If you want a single framework to own the whole app, use [TanStack Start](/guides/typescript/create-tanstack-start-project/) or [Next.js](/guides/typescript/nextjs-drizzle-better-auth/). If you want a separate API boundary, Hono is the cleaner default.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Read the [TypeScript ecosystem docs](/docs/ecosystems/typescript/).
+- Review the [CLI create flags](/docs/cli/create/).

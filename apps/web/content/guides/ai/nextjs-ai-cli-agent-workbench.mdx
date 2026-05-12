@@ -1,0 +1,59 @@
+---
+title: Next.js AI CLI Agent Workbench
+description: Create a Next.js app with AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite, and agent documentation using Better Fullstack.
+updated: 2026-05-12
+category: AI Tools
+tags:
+  - nextjs
+  - ai-cli
+  - mcp
+  - agents
+keywords:
+  - nextjs ai cli starter
+  - ai agent workbench starter
+  - mcp nextjs starter
+  - create ai app nextjs
+  - ai coding agent project
+---
+
+Use this stack when you want a Next.js project prepared for AI-assisted development workflows, local MCP tooling, and generated agent documentation.
+
+```bash
+npm create better-fullstack@latest my-agent-workbench -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons mcp skills \
+  --ai-docs claude-md agents-md cursorrules \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Next.js app with a local fullstack setup.
+- SQLite and Drizzle.
+- Better Auth.
+- AI CLI configuration.
+- MCP and Skills add-ons.
+- Agent-facing documentation files such as `CLAUDE.md`, `AGENTS.md`, or `.cursorrules` depending on selected flags.
+
+## When to choose it
+
+Choose this when the repository itself should be easy for coding agents to understand and modify. It is useful for teams standardizing agent workflows, MCP tools, and generated project context.
+
+## Tradeoffs
+
+This stack is more opinionated than a minimal Next.js starter. If you only need a product app without agent tooling, use [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+
+## Next steps
+
+- Open the [Stack Builder](/new?preset=ai-cli-agent-workbench&view=command).
+- Read the [AI agents docs](/docs/ai/overview/).
+- Learn how the [Better Fullstack MCP server](/mcp) works.

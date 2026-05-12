@@ -102,6 +102,11 @@ export default defineConfig({
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
             },
           },
+          "/guides/**": {
+            headers: {
+              "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            },
+          },
           "/sitemap.xml": {
             headers: {
               "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",

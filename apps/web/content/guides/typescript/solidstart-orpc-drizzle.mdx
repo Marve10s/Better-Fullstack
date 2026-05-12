@@ -1,0 +1,54 @@
+---
+title: SolidStart with oRPC and Drizzle
+description: Create a SolidStart fullstack app with oRPC, Drizzle, SQLite, Better Auth, and Tailwind CSS using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+Use this stack when you want Solid's fine-grained reactivity with a fullstack framework and typed API contracts.
+
+```bash
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A SolidStart fullstack app.
+- SQLite and Drizzle.
+- Better Auth.
+- oRPC for typed contracts.
+- Tailwind CSS.
+
+## Compatibility notes
+
+SolidStart uses oRPC in Better Fullstack. tRPC is React-oriented, so this stack intentionally keeps `--api orpc`.
+
+## When to choose it
+
+Choose SolidStart when you want Solid's runtime model but still need a generated fullstack project with database, auth, and typed API wiring.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc).
+- Compare with [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/).
+- Read the [compatibility reference](/docs/reference/compatibility/).

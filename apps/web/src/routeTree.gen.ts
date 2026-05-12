@@ -15,7 +15,9 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as EffectsRouteImport } from './routes/effects'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as GuidesSplatRouteImport } from './routes/guides/$'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
@@ -50,9 +52,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesIndexRoute = GuidesIndexRouteImport.update({
+  id: '/guides/',
+  path: '/guides/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesSplatRoute = GuidesSplatRouteImport.update({
+  id: '/guides/$',
+  path: '/guides/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
@@ -81,7 +93,9 @@ export interface FileRoutesByFullPath {
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
+  '/guides/$': typeof GuidesSplatRoute
   '/docs/': typeof DocsIndexRoute
+  '/guides/': typeof GuidesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +107,9 @@ export interface FileRoutesByTo {
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
+  '/guides/$': typeof GuidesSplatRoute
   '/docs': typeof DocsIndexRoute
+  '/guides': typeof GuidesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +122,9 @@ export interface FileRoutesById {
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
+  '/guides/$': typeof GuidesSplatRoute
   '/docs/': typeof DocsIndexRoute
+  '/guides/': typeof GuidesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +138,9 @@ export interface FileRouteTypes {
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
+    | '/guides/$'
     | '/docs/'
+    | '/guides/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,7 +152,9 @@ export interface FileRouteTypes {
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
+    | '/guides/$'
     | '/docs'
+    | '/guides'
   id:
     | '__root__'
     | '/'
@@ -144,7 +166,9 @@ export interface FileRouteTypes {
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
+    | '/guides/$'
     | '/docs/'
+    | '/guides/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,7 +181,9 @@ export interface RootRouteChildren {
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
   DocsSplatRoute: typeof DocsSplatRoute
+  GuidesSplatRoute: typeof GuidesSplatRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  GuidesIndexRoute: typeof GuidesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -204,11 +230,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/': {
+      id: '/guides/'
+      path: '/guides'
+      fullPath: '/guides/'
+      preLoaderRoute: typeof GuidesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/': {
       id: '/docs/'
       path: '/docs'
       fullPath: '/docs/'
       preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/$': {
+      id: '/guides/$'
+      path: '/guides/$'
+      fullPath: '/guides/$'
+      preLoaderRoute: typeof GuidesSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/$': {
@@ -245,7 +285,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
   DocsSplatRoute: DocsSplatRoute,
+  GuidesSplatRoute: GuidesSplatRoute,
   DocsIndexRoute: DocsIndexRoute,
+  GuidesIndexRoute: GuidesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

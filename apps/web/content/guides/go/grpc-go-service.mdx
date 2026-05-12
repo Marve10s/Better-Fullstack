@@ -1,0 +1,50 @@
+---
+title: Go gRPC Service
+description: Create a Go backend with Gin, gRPC-Go, GORM, Zap logging, and Better Fullstack's Go service scaffolding.
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - grpc
+  - gin
+  - gorm
+keywords:
+  - go grpc starter
+  - grpc-go boilerplate
+  - gin grpc service
+  - create go grpc service
+  - go microservice starter
+---
+
+Use this stack when your Go service needs gRPC contracts alongside a generated backend project shape.
+
+```bash
+npm create better-fullstack@latest my-go-grpc -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-api grpc-go \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## What this creates
+
+- A Go backend using Gin.
+- gRPC-Go as the API option.
+- GORM for database access.
+- Zap for logging.
+
+## When to choose it
+
+Choose this for backend services where strongly typed service contracts matter more than browser-facing JSON routes.
+
+## Tradeoffs
+
+gRPC adds contract and client-generation workflow. For a simpler HTTP API, start with [Gin with PostgreSQL and GORM](/guides/go/gin-postgres-gorm/).
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).

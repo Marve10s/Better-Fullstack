@@ -1,0 +1,51 @@
+---
+title: Spring Boot with PostgreSQL and JPA
+description: Create a Java API project with Spring Boot, PostgreSQL, Maven, JPA, JUnit 5, and optional Spring libraries using Better Fullstack.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - postgres
+  - jpa
+  - java
+keywords:
+  - spring boot postgres starter
+  - spring boot jpa boilerplate
+  - java api starter
+  - create spring boot project
+  - spring boot postgresql api
+---
+
+Use this stack when you want a Java API with the Spring ecosystem and relational persistence.
+
+```bash
+npm create better-fullstack@latest my-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-testing-libraries junit5
+```
+
+## What this creates
+
+- A Java project using Spring Boot.
+- Maven as the build tool.
+- PostgreSQL as the database option.
+- JPA for persistence.
+- JUnit 5 for testing.
+
+## When to choose it
+
+Choose Spring Boot when you want a conventional Java backend with a large ecosystem, common enterprise integrations, and predictable application structure.
+
+## Tradeoffs
+
+Spring Boot is heavier than minimal API frameworks, but it pays off when you need established conventions, library depth, and long-lived backend maintainability.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=maven&db=postgres&jorm=spring-data-jpa&jtest=junit5).
+- Read the [Java ecosystem docs](/docs/ecosystems/java/).
+- Review the [CLI create reference](/docs/cli/create/).

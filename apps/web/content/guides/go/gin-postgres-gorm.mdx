@@ -1,0 +1,50 @@
+---
+title: Gin with PostgreSQL and GORM
+description: Create a Go API project with Gin, PostgreSQL, GORM, Zap logging, and a clean Better Fullstack project structure.
+updated: 2026-05-12
+category: Go
+tags:
+  - gin
+  - postgres
+  - gorm
+  - go
+keywords:
+  - gin postgres starter
+  - go api boilerplate
+  - gin gorm starter
+  - create go api project
+  - go postgres api
+---
+
+Use this stack when you want a Go HTTP API with a familiar router, relational database access, and pragmatic project structure.
+
+```bash
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap
+```
+
+## What this creates
+
+- A Go API project using Gin.
+- PostgreSQL as the database option.
+- GORM for database access.
+- Zap for structured logging.
+- A generated project layout ready for backend development.
+
+## When to choose it
+
+Choose Gin when you want a direct Go API with common middleware patterns and low framework overhead.
+
+## Tradeoffs
+
+Gin and GORM are familiar choices for many Go teams. If you prefer a smaller router surface or different API style, compare the other Go framework options in the builder.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=gin&db=postgres&gorm=gorm&glog=zap).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).
+- Review the [CLI create reference](/docs/cli/create/).

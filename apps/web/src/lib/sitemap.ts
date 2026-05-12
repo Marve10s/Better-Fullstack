@@ -1,4 +1,5 @@
 import { getAllPages } from "@/lib/docs/source";
+import { getAllGuidePages } from "@/lib/guides/source";
 import { canonicalUrl } from "@/lib/seo";
 
 type SitemapEntry = {
@@ -28,6 +29,10 @@ function docsPath(slug: string[]) {
   return slug.length ? `/docs/${slug.join("/")}` : "/docs";
 }
 
+function guidesPath(slug: string[]) {
+  return slug.length ? `/guides/${slug.join("/")}` : "/guides";
+}
+
 export function getSitemapEntries(): SitemapEntry[] {
   const docsEntries = getAllPages().map((page): SitemapEntry => {
     return {
@@ -38,8 +43,17 @@ export function getSitemapEntries(): SitemapEntry[] {
     };
   });
 
+  const guideEntries = getAllGuidePages().map((page): SitemapEntry => {
+    return {
+      path: guidesPath(page.slug),
+      changefreq: "weekly",
+      lastmod: page.frontmatter.updated,
+      priority: page.slug.length === 0 ? 0.85 : 0.7,
+    };
+  });
+
   const entriesByUrl = new Map<string, SitemapEntry>();
-  for (const entry of [...staticEntries, ...docsEntries]) {
+  for (const entry of [...staticEntries, ...docsEntries, ...guideEntries]) {
     entriesByUrl.set(canonicalUrl(entry.path), entry);
   }
 
