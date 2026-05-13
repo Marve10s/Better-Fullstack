@@ -3,11 +3,12 @@ import { Link } from "@tanstack/react-router";
 
 import { mdxComponents } from "@/components/docs/mdx";
 import { TableOfContents } from "@/components/docs/table-of-contents";
-import type { GuidePage } from "@/lib/guides/source";
+import { getRelatedGuidePages, type GuidePage } from "@/lib/guides/source";
 
 export function GuidePageContent({ page }: { page: GuidePage }) {
   const Content = page.Component;
   const isIndex = page.slug.length === 0;
+  const relatedGuides = getRelatedGuidePages(page);
 
   return (
     <main className="mx-auto grid w-full max-w-[88rem] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_14rem]">
@@ -32,6 +33,11 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
           {page.frontmatter.description ? (
             <p className="mt-3 text-muted-foreground">{page.frontmatter.description}</p>
           ) : null}
+          {page.frontmatter.updated && !isIndex ? (
+            <p className="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">
+              Updated {page.frontmatter.updated}
+            </p>
+          ) : null}
           {page.frontmatter.tags?.length ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {page.frontmatter.tags.map((tag) => (
@@ -51,6 +57,33 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
             <Content components={mdxComponents} />
           </MDXProvider>
         </div>
+
+        {relatedGuides.length ? (
+          <nav className="mt-12 border-t border-border pt-8" aria-labelledby="related-guides">
+            <h2 id="related-guides" className="font-semibold text-xl tracking-tight">
+              Related guides
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {relatedGuides.map((guide) => (
+                <Link
+                  key={guide.url}
+                  to="/guides/$"
+                  params={{ _splat: guide.slug.join("/") }}
+                  className="rounded-md border border-border p-4 transition-colors hover:border-muted-foreground/40 hover:bg-muted/30"
+                >
+                  <span className="block font-medium text-sm text-foreground">
+                    {guide.frontmatter.title ?? guide.url}
+                  </span>
+                  {guide.frontmatter.description ? (
+                    <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs">
+                      {guide.frontmatter.description}
+                    </span>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        ) : null}
       </article>
       <aside className="hidden lg:block">
         <TableOfContents toc={page.toc} />

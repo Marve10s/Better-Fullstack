@@ -82,3 +82,40 @@ export function getAllGuidePages(): GuidePage[] {
 export function getGuideListPages(): GuidePage[] {
   return getAllGuidePages().filter((page) => page.slug.length > 0);
 }
+
+export function getRelatedGuidePages(page: GuidePage, limit = 4): GuidePage[] {
+  if (page.slug.length === 0) return [];
+
+  const currentTags = new Set(page.frontmatter.tags ?? []);
+  const currentKeywords = new Set(page.frontmatter.keywords ?? []);
+  const currentCategory = page.frontmatter.category;
+
+  return getGuideListPages()
+    .filter((candidate) => candidate.url !== page.url)
+    .map((candidate) => {
+      let score = 0;
+
+      if (currentCategory && candidate.frontmatter.category === currentCategory) {
+        score += 3;
+      }
+
+      for (const tag of candidate.frontmatter.tags ?? []) {
+        if (currentTags.has(tag)) score += 2;
+      }
+
+      for (const keyword of candidate.frontmatter.keywords ?? []) {
+        if (currentKeywords.has(keyword)) score += 1;
+      }
+
+      return { candidate, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.candidate.frontmatter.title ?? a.candidate.url).localeCompare(
+        b.candidate.frontmatter.title ?? b.candidate.url,
+      );
+    })
+    .slice(0, limit)
+    .map((entry) => entry.candidate);
+}

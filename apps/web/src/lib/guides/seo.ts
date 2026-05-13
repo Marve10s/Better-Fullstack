@@ -36,7 +36,7 @@ function guideImage(page: Pick<GuidePage, "frontmatter">) {
 
 function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
   const url = canonicalUrl(page.url);
-  const jsonLd: Record<string, unknown> = {
+  const article: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
     headline: page.frontmatter.title ?? SITE_NAME,
@@ -54,17 +54,55 @@ function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
       url: SITE_URL,
     },
     image: guideImage(page),
+    audience: {
+      "@type": "Audience",
+      audienceType: "Software developers",
+    },
+    about: page.frontmatter.tags?.length ? page.frontmatter.tags : undefined,
   };
 
   if (page.frontmatter.updated) {
-    jsonLd.dateModified = page.frontmatter.updated;
+    article.datePublished = page.frontmatter.updated;
+    article.dateModified = page.frontmatter.updated;
   }
 
   if (page.frontmatter.keywords?.length) {
-    jsonLd.keywords = page.frontmatter.keywords.join(", ");
+    article.keywords = page.frontmatter.keywords.join(", ");
   }
 
-  return jsonLd;
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: SITE_NAME,
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Guides",
+        item: canonicalUrl("/guides"),
+      },
+      ...(page.frontmatter.title
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: page.frontmatter.title,
+              item: url,
+            },
+          ]
+        : []),
+    ],
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [article, breadcrumbs],
+  };
 }
 
 export function guidePageHead(page: Pick<GuidePage, "url" | "frontmatter">) {
