@@ -264,10 +264,9 @@ export function validateClerkCompatibility(
     }
 
     const hasNextJs = frontends.includes("next");
-    const hasVinext = frontends.includes("vinext");
     const hasTanStackStart = frontends.includes("tanstack-start");
 
-    if (!hasNextJs && !hasVinext && !hasTanStackStart) {
+    if (!hasNextJs && !hasTanStackStart) {
       if (frontends.includes("astro")) {
         exitWithError(
           "In Better-Fullstack, Clerk is not yet supported for Astro fullstack projects. Please use '--frontend next' or '--frontend tanstack-start' with '--backend self', or choose a different auth provider.",
@@ -309,11 +308,10 @@ export function validateNextAuthCompatibility(
   if (auth !== "nextauth") return;
 
   const hasNextJs = frontends.includes("next");
-  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Auth.js (NextAuth) is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Auth.js (NextAuth) is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -332,11 +330,10 @@ export function validateStackAuthCompatibility(
   if (auth !== "stack-auth") return;
 
   const hasNextJs = frontends.includes("next");
-  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Stack Auth is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Stack Auth is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -355,11 +352,10 @@ export function validateSupabaseAuthCompatibility(
   if (auth !== "supabase-auth") return;
 
   const hasNextJs = frontends.includes("next");
-  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
@@ -378,11 +374,10 @@ export function validateAuth0Compatibility(
   if (auth !== "auth0") return;
 
   const hasNextJs = frontends.includes("next");
-  const hasVinext = frontends.includes("vinext");
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Auth0 is currently supported only with the 'self' backend (fullstack Next.js or Vinext). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Auth0 is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
