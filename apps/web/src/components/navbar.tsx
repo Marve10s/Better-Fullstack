@@ -50,14 +50,6 @@ export function Navbar() {
               MCP
             </Link>
             <Link
-              to="/guides"
-              activeOptions={DOCS_ACTIVE_OPTIONS}
-              className={NAV_LINK_CLASS}
-              activeProps={DOCS_ACTIVE_PROPS}
-            >
-              Guides
-            </Link>
-            <Link
               to="/docs"
               activeOptions={DOCS_ACTIVE_OPTIONS}
               className={NAV_LINK_CLASS}

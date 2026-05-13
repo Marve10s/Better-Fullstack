@@ -3,6 +3,15 @@ import { useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";
 
+const GUIDE_LINKS = [
+  { label: "TanStack Start", slug: "typescript/create-tanstack-start-project" },
+  { label: "Next.js + Drizzle", slug: "typescript/nextjs-drizzle-better-auth" },
+  { label: "FastAPI + Postgres", slug: "python/fastapi-postgres-sqlalchemy" },
+  { label: "Axum + SeaORM", slug: "rust/axum-postgres-seaorm" },
+  { label: "Gin + GORM", slug: "go/gin-postgres-gorm" },
+  { label: "Spring Boot", slug: "java/spring-boot-postgres-jpa" },
+] as const;
+
 export default function Footer() {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
@@ -32,6 +41,12 @@ export default function Footer() {
           >
             Compare
           </Link>
+          <Link
+            to="/guides"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Guides
+          </Link>
           <button
             type="button"
             onClick={() => setIsChangelogOpen(true)}
@@ -47,6 +62,24 @@ export default function Footer() {
           >
             MIT License
           </a>
+        </div>
+
+        <div className="mt-8 border-t border-border pt-6">
+          <p className="text-center font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+            Popular guides
+          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+            {GUIDE_LINKS.map((link) => (
+              <Link
+                key={link.slug}
+                to="/guides/$"
+                params={{ _splat: link.slug }}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
