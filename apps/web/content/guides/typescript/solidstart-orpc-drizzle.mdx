@@ -1,0 +1,127 @@
+---
+title: SolidStart with oRPC and Drizzle
+description: Create a SolidStart fullstack app with oRPC, Drizzle, SQLite, Better Auth, and Tailwind CSS using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+Use this stack when you want Solid's fine-grained reactivity with a fullstack framework and typed API contracts.
+
+```bash
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A SolidStart fullstack app.
+- SQLite and Drizzle.
+- Better Auth.
+- oRPC for typed contracts.
+- Tailwind CSS.
+
+## Generated shape
+
+This stack keeps SolidStart as the fullstack framework. The app can render Solid UI, call typed server contracts, and persist data through Drizzle without introducing a separate backend service.
+
+Representative shape:
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+Use this tree as an ownership map. UI code belongs in Solid components and routes; database and auth code should remain server-only.
+
+## Example route component
+
+SolidStart routes can stay focused on rendering while server code handles data access:
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+Keep server mutations behind validated functions so the UI does not become the only source of truth for input rules.
+
+## Example Drizzle model
+
+SQLite is a practical default for small SolidStart apps and local development:
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Move to PostgreSQL when multiple deployed instances need to share durable relational data.
+
+## Compatibility notes
+
+SolidStart uses oRPC in Better Fullstack. tRPC is React-oriented, so this stack intentionally keeps `--api orpc`.
+
+`--backend self` means SolidStart owns the server layer. Do not add Hono unless you intentionally want a separate API deployment.
+
+## When to choose it
+
+Choose SolidStart when you want Solid's runtime model but still need a generated fullstack project with database, auth, and typed API wiring.
+
+## Deployment notes
+
+Set Better Auth secrets, the app URL, and the database path or connection string for the target environment. If your deployment platform does not provide persistent disk, do not rely on file-backed SQLite for production data.
+
+For small internal tools, SQLite can be enough. For SaaS-style multi-user production apps, PostgreSQL is usually easier to operate across deployments.
+
+## Troubleshooting
+
+- If oRPC calls fail after deploy, check the route base path and whether the deployment adapter handles server routes as expected.
+- If auth sessions disappear, review cookie security settings and app URL values.
+- If SQLite data resets, confirm whether the host provides persistent storage.
+- If Solid components accidentally import server modules, move the call behind a server function or API contract.
+
+## Comparison notes
+
+Choose this over TanStack Start when Solid's fine-grained reactivity is the reason for the project. Choose [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/) when React and TanStack Router are preferred.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc).
+- Compare with [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/).
+- Read the [compatibility reference](/docs/reference/compatibility/).

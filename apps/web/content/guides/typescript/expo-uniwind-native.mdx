@@ -1,0 +1,120 @@
+---
+title: Expo Uniwind Native App
+description: Create an Expo native app with Uniwind and a minimal Better Fullstack configuration for mobile-first projects.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+Use this stack when you want a mobile-first Expo app and do not need a generated backend in the same scaffold.
+
+```bash
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --orm none \
+  --auth none \
+  --api none \
+  --package-manager bun
+```
+
+## What this creates
+
+- An Expo native app using Uniwind.
+- No web frontend.
+- No backend, database, ORM, auth, or API layer by default.
+- A mobile-first project shape that can be paired with an API later.
+
+## Generated shape
+
+This command creates a native frontend foundation rather than a fullstack web app. It keeps backend decisions out of the initial scaffold so the mobile app can later point at an existing API or a separately generated service.
+
+Representative shape:
+
+```txt
+my-mobile-app/
+  bts.jsonc
+  app/
+  components/
+  package.json
+```
+
+Exact Expo paths can depend on the template version, but the ownership is straightforward: native screens and components live in the app, while server concerns are intentionally absent.
+
+## Example screen
+
+Uniwind lets you use utility-style classes in React Native components:
+
+```tsx
+import { Text, View } from "react-native";
+
+export default function HomeScreen() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white px-6">
+      <Text className="text-2xl font-semibold text-slate-950">
+        Mobile app
+      </Text>
+      <Text className="mt-2 text-center text-slate-600">
+        Connect an API when the product contract is ready.
+      </Text>
+    </View>
+  );
+}
+```
+
+Keep API clients behind a small module when you add a backend. That makes it easier to swap local, staging, and production API origins without changing screens.
+
+## Compatibility notes
+
+Native frontends are treated as app platform choices rather than web server frameworks. Keep backend choices explicit if you later add an API service.
+
+This guide intentionally uses `--backend none`, `--database none`, `--orm none`, `--auth none`, and `--api none`. Mobile authentication, push notifications, and offline storage need platform-specific decisions that are better made after the product requirements are clear.
+
+## When to choose it
+
+Choose this for mobile prototypes, companion apps, and native app foundations where the API may be created separately.
+
+## Adding an API later
+
+Common next steps are a Hono API for a lightweight TypeScript backend, a Next.js or TanStack Start web app if you also need a web surface, or a dedicated backend that already exists outside Better Fullstack.
+
+When adding an API, decide how the native app will handle:
+
+- Environment-specific API base URLs.
+- Auth session storage on device.
+- Refresh tokens or session renewal.
+- Offline behavior and optimistic updates.
+- Native build profiles for development, preview, and production.
+
+## Deployment notes
+
+Expo deployment is different from web deployment. Plan for native build profiles, app identifiers, signing credentials, and environment variables used at build time. Do not put server secrets into the mobile bundle; native apps should call a backend that holds secrets server-side.
+
+## Troubleshooting
+
+- If generated web files are absent, that is expected: this stack uses a native frontend and no web frontend.
+- If backend routes are absent, the command explicitly selects `--backend none`.
+- If styling does not apply, verify the Uniwind setup and class scanning configuration in the generated app.
+- If API calls work in simulator but not on device, check whether the API base URL points at a host reachable from the device.
+
+## Comparison notes
+
+Use this stack for mobile-first work. Use [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) when the product starts as a web SaaS app, or [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/) when the repository itself needs generated AI-agent guidance.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=none&fe-n=native-uniwind&be=none&db=none&orm=none&au=none&api=none).
+- Review the [CLI create reference](/docs/cli/create/).
+- Compare with [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/) if your app also needs web and agent tooling.

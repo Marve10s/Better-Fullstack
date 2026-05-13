@@ -1,0 +1,167 @@
+---
+title: Rust CLI with Ratatui
+description: Create a Rust terminal UI app with Ratatui using Better Fullstack's Rust CLI project scaffolding.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+Use this stack when you want to build a terminal UI instead of a web service.
+
+```bash
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## What this creates
+
+- A Rust CLI project.
+- Ratatui as the terminal UI option.
+- No web framework, frontend, ORM, or API layer.
+
+## Generated shape
+
+This stack creates a terminal application rather than a server. Ratatui handles rendering widgets into the terminal, while your app code owns state, events, and command behavior.
+
+The useful mental model is a loop:
+
+- Read keyboard or terminal events.
+- Update application state.
+- Render the current state into Ratatui widgets.
+- Exit cleanly when the user asks to quit.
+
+## Representative file tree
+
+```txt
+my-rust-cli/
+  Cargo.toml
+  src/
+    main.rs
+    app.rs
+    event.rs
+    ui.rs
+```
+
+Keep `app.rs` focused on state transitions, `event.rs` focused on input handling, and `ui.rs` focused on drawing. That split makes terminal behavior easier to test.
+
+## CLI and UI examples
+
+A small app state type keeps UI rendering deterministic:
+
+```rust
+#[derive(Debug, Default)]
+pub struct App {
+    pub should_quit: bool,
+    pub selected_index: usize,
+    pub items: Vec<String>,
+}
+
+impl App {
+    pub fn quit(&mut self) {
+        self.should_quit = true;
+    }
+
+    pub fn next(&mut self) {
+        if !self.items.is_empty() {
+            self.selected_index = (self.selected_index + 1) % self.items.len();
+        }
+    }
+}
+```
+
+The draw function should receive state and render it, without mutating application behavior:
+
+```rust
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
+    Frame,
+};
+
+use crate::app::App;
+
+pub fn draw(frame: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(frame.area());
+
+    let items = app.items.iter().map(|item| ListItem::new(item.as_str()));
+    let list = List::new(items).block(Block::default().title("Tasks").borders(Borders::ALL));
+    let help = Paragraph::new("q: quit  j/k: move");
+
+    frame.render_widget(list, chunks[0]);
+    frame.render_widget(help, chunks[1]);
+}
+```
+
+Event handling can stay small and explicit:
+
+```rust
+use crossterm::event::{KeyCode, KeyEvent};
+
+use crate::app::App;
+
+pub fn handle_key(app: &mut App, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('q') => app.quit(),
+        KeyCode::Char('j') | KeyCode::Down => app.next(),
+        _ => {}
+    }
+}
+```
+
+## Compatibility notes
+
+CLI projects should avoid unrelated web framework and database choices unless you explicitly need them. This guide keeps those flags set to `none`.
+
+Keep `--rust-cli ratatui` and the web/API/database flags set to `none` for a terminal-first project. If you later add a backend or database, treat that as a hybrid app and introduce clear module boundaries instead of mixing network calls into rendering code.
+
+## When to choose it
+
+Choose Ratatui for dashboards, developer tools, infrastructure tools, and terminal-first workflows.
+
+It is especially useful when users spend most of their day in a shell and need a focused interface for repeated operations.
+
+## Testing and deployment notes
+
+Most Ratatui logic is easiest to test below the terminal layer. Unit test state transitions and command parsing directly:
+
+```bash
+cargo test
+```
+
+For release builds, use Cargo's normal optimized build:
+
+```bash
+cargo build --release
+```
+
+When distributing the binary, document terminal expectations such as color support, keyboard shortcuts, config file locations, and any environment variables the tool reads.
+
+## Troubleshooting
+
+- If the terminal stays in an unusual mode after a crash, make sure the app restores raw mode and leaves the alternate screen during shutdown.
+- If rendering flickers, check that the event loop is not redrawing aggressively without input or ticks.
+- If text clips unexpectedly, test with narrow terminal widths and use Ratatui layout constraints instead of hard-coded coordinates.
+- If keyboard shortcuts do not work in a remote shell, compare terminal emulator behavior before changing app logic.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).

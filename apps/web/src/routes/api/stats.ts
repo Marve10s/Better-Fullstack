@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { NOINDEX_ROBOTS } from "@/lib/robots";
+
 type StatsPayload = {
   github: {
     stars: number;
@@ -96,6 +98,7 @@ export const Route = createFileRoute("/api/stats")({
         const headers = {
           "Cache-Control": CACHE_CONTROL,
           "Content-Type": "application/json",
+          "X-Robots-Tag": NOINDEX_ROBOTS,
         };
 
         try {

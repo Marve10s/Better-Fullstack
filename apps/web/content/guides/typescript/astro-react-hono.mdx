@@ -1,0 +1,128 @@
+---
+title: Astro with React and Hono
+description: Create an Astro app with React integration, Hono, tRPC, Drizzle, SQLite, Better Auth, Tailwind CSS, and DaisyUI using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - astro
+  - react
+  - hono
+  - drizzle
+keywords:
+  - astro react hono
+  - astro trpc starter
+  - astro drizzle starter
+  - create astro fullstack app
+  - astro react api starter
+---
+
+Use this stack when you want Astro for content-heavy pages and islands, plus a TypeScript API server.
+
+```bash
+npm create better-fullstack@latest my-astro-app -- \
+  --ecosystem typescript \
+  --frontend astro \
+  --astro-integration react \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library daisyui \
+  --package-manager bun
+```
+
+## What this creates
+
+- An Astro frontend with React integration.
+- A Hono backend running on Bun.
+- SQLite and Drizzle.
+- Better Auth.
+- tRPC, because this Astro setup uses React integration.
+- Tailwind CSS and DaisyUI.
+
+## Generated shape
+
+This stack combines Astro's content-first frontend with a separate Hono API server. React islands are enabled through `--astro-integration react`, which is why tRPC is available in this guide.
+
+Representative shape:
+
+```txt
+my-astro-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Astro pages should stay focused on routing, content, and island composition. Hono should own API routes, auth-aware server behavior, and database access.
+
+## Example Astro island
+
+Use Astro for the page shell and React only where interactivity is needed:
+
+```astro
+---
+import ProjectPicker from "../components/ProjectPicker.tsx";
+---
+
+<main class="mx-auto max-w-5xl p-6">
+  <h1 class="text-3xl font-semibold">Project docs</h1>
+  <ProjectPicker client:load />
+</main>
+```
+
+That keeps static or mostly-static pages cheap while still allowing interactive React components to call the typed API.
+
+## Example Hono endpoint
+
+Health checks and simple service endpoints belong in Hono:
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => c.json({ ok: true }));
+
+export default app;
+```
+
+For database-backed endpoints, keep Drizzle queries behind server-only helpers and expose them through tRPC procedures or Hono routes.
+
+## Compatibility notes
+
+Astro API compatibility depends on the selected UI integration. This page uses `--astro-integration react`, which keeps tRPC available. For non-React Astro integrations, prefer oRPC.
+
+DaisyUI is selected as the UI library in this command. If you switch to shadcn/ui later, make sure the Astro React integration and Tailwind setup still match the component library you choose.
+
+## When to choose it
+
+Choose Astro when content, docs, marketing pages, or partial hydration are central to the app, but you still need a generated backend and database setup.
+
+## Deployment notes
+
+Plan for the Astro frontend and Hono API to have clearly configured origins. The frontend needs the public API URL. The Hono service needs database and auth secrets. SQLite can be fine for local development, but production hosting must provide persistent storage if you keep SQLite.
+
+If the frontend and API are deployed separately, configure CORS and auth cookies for the final domains rather than relying on localhost behavior.
+
+## Troubleshooting
+
+- If React islands do not hydrate, check the Astro client directive and whether the component imports browser-only code safely.
+- If tRPC is unavailable after changing integrations, confirm the Astro integration is still React.
+- If API calls fail from deployed pages, verify the public API origin and CORS settings.
+- If SQLite data disappears after deploy, confirm your hosting platform supports persistent writable storage.
+
+## Comparison notes
+
+Choose this when content pages and selective interactivity matter more than a full React app shell. Choose [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/) when the frontend should be a dedicated TanStack Router React app.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=astro&ai=react&be=hono&rt=bun&db=sqlite&orm=drizzle&au=better-auth&api=trpc&ui=daisyui).
+- Read the [TypeScript ecosystem docs](/docs/ecosystems/typescript/).
+- Compare with [SvelteKit with Hono and Drizzle](/guides/typescript/sveltekit-hono-drizzle/).

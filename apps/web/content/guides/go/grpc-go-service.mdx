@@ -1,0 +1,179 @@
+---
+title: Go gRPC Service
+description: Create a Go backend with Gin, gRPC-Go, GORM, Zap logging, and Better Fullstack's Go service scaffolding.
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - grpc
+  - gin
+  - gorm
+keywords:
+  - go grpc starter
+  - grpc-go boilerplate
+  - gin grpc service
+  - create go grpc service
+  - go microservice starter
+---
+
+Use this stack when your Go service needs gRPC contracts alongside a generated backend project shape.
+
+```bash
+npm create better-fullstack@latest my-go-grpc -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-api grpc-go \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## What this creates
+
+- A Go backend using Gin.
+- gRPC-Go as the API option.
+- GORM for database access.
+- Zap for logging.
+
+## Generated shape
+
+This stack creates a Go service with a typed gRPC boundary. Gin can still serve health or operational HTTP endpoints, while gRPC-Go owns the service contract used by other backend clients.
+
+The service is easiest to maintain when:
+
+- Protobuf files define request and response contracts.
+- gRPC handlers translate transport input into service calls.
+- GORM models stay in the persistence layer.
+- Gin routes stay separate from the gRPC service surface.
+
+## Representative file tree
+
+```txt
+my-go-grpc/
+  go.mod
+  proto/
+    users/v1/users.proto
+  cmd/
+    server/
+      main.go
+  internal/
+    grpc/
+      users.go
+    http/
+      health.go
+    models/
+      user.go
+    services/
+      users.go
+```
+
+Keep generated protobuf output in the location the scaffold expects, and avoid editing generated files directly.
+
+## Proto and service examples
+
+A protobuf service should model the contract clients actually need:
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "my-go-grpc/internal/gen/users/v1;usersv1";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+The Go implementation should map domain errors into gRPC status codes:
+
+```go
+package grpc
+
+import (
+	"context"
+
+	usersv1 "my-go-grpc/internal/gen/users/v1"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type UserServer struct {
+	usersv1.UnimplementedUserServiceServer
+	Users *UserService
+}
+
+func (s *UserServer) GetUser(
+	ctx context.Context,
+	req *usersv1.GetUserRequest,
+) (*usersv1.User, error) {
+	user, err := s.Users.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
+	return &usersv1.User{
+		Id:    user.ID,
+		Email: user.Email,
+		Name:  user.Name,
+	}, nil
+}
+```
+
+Use Gin for operational endpoints when needed:
+
+```go
+func RegisterHTTP(router *gin.Engine) {
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+}
+```
+
+## Compatibility notes
+
+Keep `--go-api grpc-go` when you want generated gRPC wiring. If you change `--go-api none`, this becomes a normal HTTP backend and the protobuf flow is no longer part of the scaffold. `--go-cli none` keeps the project as a service rather than a command-line tool.
+
+## When to choose it
+
+Choose this for backend services where strongly typed service contracts matter more than browser-facing JSON routes.
+
+## Tradeoffs
+
+gRPC adds contract and client-generation workflow. For a simpler HTTP API, start with [Gin with PostgreSQL and GORM](/guides/go/gin-postgres-gorm/).
+
+GORM keeps persistence approachable, but protobuf contracts should not mirror database models blindly. Treat the `.proto` files as public service contracts and the GORM models as internal storage details.
+
+## Testing and deployment notes
+
+Test service methods directly, then add gRPC integration tests with a test server for important client-facing behavior.
+
+```bash
+go test ./...
+```
+
+In deployment, expose the gRPC port expected by clients and keep HTTP health checks on the port your platform probes. If protobuf generation is part of the build, make sure the required generator tools are installed in CI.
+
+## Troubleshooting
+
+- If clients receive `unknown service`, confirm the gRPC server registers the generated service implementation.
+- If generated protobuf packages do not import cleanly, check the `go_package` option and the scaffold's output path.
+- If health checks pass but gRPC fails, verify that the container or platform exposes the gRPC listener, not only the Gin listener.
+- If database errors leak to clients, map them to `codes.NotFound`, `codes.InvalidArgument`, or `codes.Internal` deliberately.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).

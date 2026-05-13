@@ -1,0 +1,190 @@
+---
+title: Axum with PostgreSQL and SeaORM
+description: Create a Rust API project with Axum, PostgreSQL, SeaORM, tracing, and structured error handling using Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - axum
+  - postgres
+  - seaorm
+  - tracing
+keywords:
+  - axum postgres starter
+  - rust api boilerplate
+  - axum seaorm starter
+  - create rust api project
+  - rust postgres api
+---
+
+Use this stack when you want a Rust backend with a modern HTTP framework, relational persistence, logging, and explicit error handling.
+
+```bash
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The boundaries to preserve as the Rust service grows."
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Typed extractors, shared router state, and explicit handlers." },
+    { label: "Data", value: "PostgreSQL + SeaORM", detail: "Entity-style database access and active models." },
+    { label: "Observability", value: "tracing", detail: "Structured logs from startup through request handling." },
+    { label: "Errors", value: "Anyhow + Thiserror", detail: "Domain errors converted into HTTP responses at the edge." },
+  ]}
+/>
+
+## What this creates
+
+- A Rust API project using Axum.
+- PostgreSQL as the database option.
+- SeaORM for database access.
+- Tracing for structured logging.
+- Anyhow and Thiserror style error handling.
+
+## Generated shape
+
+This stack is meant to produce a backend service, not a fullstack app. The generated project gives you a typed HTTP boundary in Axum, a database layer owned by SeaORM, and request-scoped logging through `tracing`.
+
+The important implementation boundaries are:
+
+- Routes stay thin and translate HTTP input into application calls.
+- SeaORM models and entities own database mapping.
+- Errors are modeled explicitly, then converted into HTTP responses at the edge.
+- Configuration is read once at startup so database pools, routers, and logging can be wired predictably.
+
+## Representative file tree
+
+The exact filenames may change as the generator evolves, but this is the shape to expect from an Axum API with PostgreSQL and SeaORM:
+
+```txt
+my-rust-api/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    config.rs
+    error.rs
+    routes/
+      mod.rs
+      health.rs
+      users.rs
+    entities/
+      mod.rs
+      prelude.rs
+      user.rs
+    services/
+      mod.rs
+      users.rs
+```
+
+Use `routes/` for HTTP mechanics, `services/` for application behavior, and `entities/` for SeaORM's generated or maintained database model types.
+
+## Route and model examples
+
+An Axum handler should usually accept extracted state and typed request data, then return a result that your shared error type can convert into a response:
+
+```rust
+use axum::{extract::State, Json};
+use serde::{Deserialize, Serialize};
+
+use crate::{error::AppError, services::users::UserService, AppState};
+
+#[derive(Debug, Deserialize)]
+pub struct CreateUserRequest {
+    pub email: String,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UserResponse {
+    pub id: i32,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn create_user(
+    State(state): State<AppState>,
+    Json(input): Json<CreateUserRequest>,
+) -> Result<Json<UserResponse>, AppError> {
+    let user = UserService::new(state.db)
+        .create(input.email, input.name)
+        .await?;
+
+    Ok(Json(UserResponse {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+    }))
+}
+```
+
+SeaORM keeps inserts explicit through active models:
+
+```rust
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
+
+use crate::entities::user;
+
+pub async fn create_user(
+    db: &DatabaseConnection,
+    email: String,
+    name: String,
+) -> Result<user::Model, sea_orm::DbErr> {
+    user::ActiveModel {
+        email: Set(email),
+        name: Set(name),
+        ..Default::default()
+    }
+    .insert(db)
+    .await
+}
+```
+
+## Compatibility notes
+
+<GuideCompatibilityNote kind="supported" title="Compatibility rule">
+  Keep `--rust-web-framework axum`, `--database postgres`, and `--rust-orm sea-orm` together when you want this guide's shape. If you switch the ORM to `sqlx`, expect more handwritten SQL and fewer entity-style model types. If you set `--rust-web-framework none`, the route examples in this guide no longer apply.
+</GuideCompatibilityNote>
+
+## When to choose it
+
+Choose Axum when performance, correctness, and explicit server code matter. It is a good fit for APIs, backend services, and systems where Rust's type system is part of the product strategy.
+
+## Tradeoffs
+
+Rust usually asks for more upfront type modeling than TypeScript, Python, or Go. In return, you get strong compile-time checks and predictable runtime behavior.
+
+SeaORM is productive when your team wants generated entity types and composable query builders. It can feel heavier than SQLx for query-heavy services where hand-written SQL is part of the design.
+
+## Testing and deployment notes
+
+Start by testing handlers and services separately. Handler tests can build an Axum router with test state, while service tests can run against a disposable PostgreSQL database.
+
+```bash
+cargo test
+```
+
+Before deployment, make sure the runtime environment provides a PostgreSQL connection string and any migration step your project uses. For production, keep `RUST_LOG` explicit so tracing output is useful without being too noisy:
+
+```bash
+RUST_LOG=info cargo run
+```
+
+## Troubleshooting
+
+- If the app starts but database calls fail, verify the generated `.env.example` keys match the variables set in your shell or deployment platform.
+- If SeaORM types do not match the database, rerun the project's entity or migration workflow instead of manually editing generated code.
+- If errors return as generic 500 responses, check the shared error type and its `IntoResponse` implementation.
+- If logs are missing request context, confirm the tracing subscriber is initialized before the router starts serving traffic.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=rust&rwf=axum&db=postgres&rorm=sea-orm&rlog=tracing&reh=anyhow-thiserror).
+- Read the [Rust ecosystem docs](/docs/ecosystems/rust/).
+- Review the [CLI create reference](/docs/cli/create/).

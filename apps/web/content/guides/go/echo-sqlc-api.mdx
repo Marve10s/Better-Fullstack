@@ -1,0 +1,163 @@
+---
+title: Echo with SQLC
+description: Create a Go API project with Echo, SQLC, Zap logging, and Better Fullstack's Go project scaffolding.
+updated: 2026-05-12
+category: Go
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+Use this stack when you want a Go API with Echo and SQL-first database access.
+
+```bash
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## What this creates
+
+- A Go API project using Echo.
+- SQLC as the Go ORM/database access option.
+- Zap for logging.
+- No gRPC, CLI, or Go auth add-on by default.
+
+## Generated shape
+
+This stack is a SQL-first Go API. Echo provides the HTTP layer, SQLC generates typed Go methods from SQL, and Zap handles structured logging.
+
+The main design goal is keeping database behavior visible:
+
+- SQL files define the queries.
+- SQLC generates Go types and query methods.
+- Handlers call services or stores rather than embedding SQL.
+- Echo middleware handles request concerns such as logging, recovery, and CORS.
+
+## Representative file tree
+
+```txt
+my-echo-api/
+  go.mod
+  sqlc.yaml
+  queries/
+    users.sql
+  migrations/
+    001_create_users.sql
+  cmd/
+    server/
+      main.go
+  internal/
+    db/
+      generated/
+    handlers/
+      users.go
+    services/
+      users.go
+```
+
+Keep SQL under version control and review query changes with the same care as Go code. SQLC makes the Go side safer, but it does not replace schema design.
+
+## Query and handler examples
+
+A SQLC query file is the source of truth for generated methods:
+
+```sql
+-- name: GetUser :one
+select id, email, name, created_at
+from users
+where id = $1;
+
+-- name: CreateUser :one
+insert into users (email, name)
+values ($1, $2)
+returning id, email, name, created_at;
+```
+
+An Echo handler can bind JSON and call the generated query layer through a service:
+
+```go
+package handlers
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/labstack/echo/v4"
+)
+
+func (h *UserHandler) Get(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	user, err := h.Users.Get(c.Request().Context(), id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "user not found")
+	}
+
+	return c.JSON(http.StatusOK, user)
+}
+```
+
+Register routes close to startup so the API surface is easy to scan:
+
+```go
+func RegisterRoutes(e *echo.Echo, users *UserHandler) {
+	e.GET("/health", Health)
+
+	api := e.Group("/api")
+	api.GET("/users/:id", users.Get)
+	api.POST("/users", users.Create)
+}
+```
+
+## Compatibility notes
+
+This guide intentionally uses `--go-api none`, `--go-cli none`, and `--go-auth none` so the scaffold stays focused on an HTTP API. Keep `--go-orm sqlc` when you want generated query code from SQL. Use the gRPC guide if the service boundary should be protobuf rather than JSON.
+
+## When to choose it
+
+Choose Echo with SQLC when you want explicit SQL and generated Go types without adopting a higher-level ORM.
+
+## Tradeoffs
+
+SQLC keeps database behavior visible, but you own more SQL. If you want a more conventional ORM flow, use [Gin with PostgreSQL and GORM](/guides/go/gin-postgres-gorm/).
+
+Echo is lightweight and flexible, so your project conventions matter. Be consistent about where request validation, service calls, and error mapping live.
+
+## Testing and deployment notes
+
+Run Go tests for handlers and services, and include database-backed integration tests for important SQL queries.
+
+```bash
+go test ./...
+```
+
+When SQL changes, regenerate SQLC output using the command documented in the generated project before trusting compiler feedback. In deployment, run migrations before starting the API so generated query types match the live schema.
+
+## Troubleshooting
+
+- If generated SQLC code is stale, rerun the project's SQLC generation command and commit both SQL and generated Go changes if the scaffold tracks generated files.
+- If a query compiles but returns unexpected data, check the SQL first; SQLC validates types, not product semantics.
+- If Echo returns plain text errors, centralize HTTP error handling so responses stay consistent.
+- If `go test ./...` fails only in database tests, verify the test database URL and migration state.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none).
+- Read the [Go ecosystem docs](/docs/ecosystems/go/).

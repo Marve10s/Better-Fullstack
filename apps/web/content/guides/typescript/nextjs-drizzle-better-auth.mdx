@@ -1,0 +1,140 @@
+---
+title: Next.js with Drizzle and Better Auth
+description: Create a Next.js fullstack app with Drizzle, PostgreSQL, Better Auth, Tailwind CSS, shadcn/ui, and tRPC using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+Use this stack when you want a mainstream React fullstack app with relational data, authentication, and a typed API layer.
+
+```bash
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Next.js app in fullstack mode.
+- PostgreSQL as the relational database.
+- Drizzle as the TypeScript ORM.
+- Better Auth for authentication.
+- tRPC for end-to-end typed APIs.
+- Tailwind CSS and shadcn/ui for frontend styling.
+
+## Generated shape
+
+The generated app uses Next.js as the web and server boundary. PostgreSQL and Drizzle sit behind server-only modules, while tRPC provides typed calls for client components that need application data.
+
+Representative shape:
+
+```txt
+my-next-app/
+  bts.jsonc
+  app/
+  components/
+  lib/
+    auth/
+    db/
+    trpc/
+```
+
+Exact paths can vary by generator version, but the intended split is consistent: UI components render the product experience, route handlers and server code own request boundaries, and database access stays out of browser bundles.
+
+## Example Drizzle model
+
+Keep product tables explicit and easy to migrate:
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Better Auth should own authentication tables and session behavior. Product tables should reference user IDs and avoid copying session fields into application models.
+
+## Example typed procedure
+
+Use tRPC for operations where the frontend benefits from inferred input and output types:
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Keep the authorization check close to the mutation. A workspace create operation should prove there is a signed-in user before inserting anything.
+
+## When to choose it
+
+Choose this for SaaS apps, account-based products, dashboards, admin portals, and projects where Next.js hosting familiarity matters.
+
+## Why Drizzle and Better Auth
+
+Drizzle keeps database access close to TypeScript. Better Auth gives the app a modern auth layer without forcing a hosted identity provider by default.
+
+## Compatibility notes
+
+- `--backend self` means Next.js owns the server boundary; do not add a separate backend unless you want an explicit service split.
+- `--database postgres` pairs well with production hosting, pooled connections, and managed database providers.
+- `--api trpc` is a good fit for this React-based stack. Non-React TypeScript frontends in Better Fullstack commonly use oRPC instead.
+- shadcn/ui expects Tailwind and React. Keep those choices aligned if you later regenerate or add components.
+
+## Deployment notes
+
+Set the PostgreSQL connection string, Better Auth secrets, and app base URL in the deployment environment. Run migrations before sending production traffic to new code that expects new columns or tables.
+
+On serverless hosting, check the database provider's pooling recommendation. Direct PostgreSQL connections can exhaust limits quickly when many serverless instances start at once.
+
+## Troubleshooting
+
+- If auth works locally but not in production, verify callback URLs, trusted origins, cookies, and the production app URL.
+- If migrations run but the app still sees old schema errors, confirm the app and migration command point at the same database.
+- If client components import server-only database modules, move the query behind a route handler, server action, or typed API procedure.
+- If tRPC types do not update, restart the TypeScript server and rerun the targeted app typecheck.
+
+## Comparison notes
+
+Choose this stack over TanStack Start when you want the broadest Next.js deployment examples and ecosystem familiarity. Choose [TanStack Start](/guides/typescript/create-tanstack-start-project/) when TanStack Router and a smaller React fullstack framework are more important than Next.js conventions.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Compare this with [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/).
+- Read the [compatibility reference](/docs/reference/compatibility/).
