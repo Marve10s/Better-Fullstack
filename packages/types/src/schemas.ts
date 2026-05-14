@@ -40,6 +40,7 @@ export const FrontendSchema = z
     "react-vite",
     "tanstack-start",
     "next",
+    "vinext",
     "nuxt",
     "native-bare",
     "native-uniwind",

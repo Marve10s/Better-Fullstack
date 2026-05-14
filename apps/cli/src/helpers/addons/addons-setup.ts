@@ -22,11 +22,12 @@ export async function setupAddons(config: ProjectConfig): Promise<string[]> {
     frontend.includes("react-router") ||
     frontend.includes("react-vite") ||
     frontend.includes("tanstack-router") ||
-    frontend.includes("next");
+    frontend.includes("next") ||
+    frontend.includes("vinext");
   const hasNuxtFrontend = frontend.includes("nuxt");
   const hasSvelteFrontend = frontend.includes("svelte");
   const hasSolidFrontend = frontend.includes("solid");
-  const hasNextFrontend = frontend.includes("next");
+  const hasNextFrontend = frontend.includes("next") || frontend.includes("vinext");
 
   if (
     addons.includes("tauri") &&

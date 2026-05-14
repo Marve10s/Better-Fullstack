@@ -10,6 +10,7 @@ const REACT_FRONTENDS = new Set([
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
 ]);
 
 function getCMSVariant(frontend: readonly string[]): string | null {
@@ -30,7 +31,8 @@ export async function processCMSTemplates(
 
   if (config.cms === "payload") {
     if (config.frontend.includes("next")) {
-      processTemplatesFromPrefix(vfs, templates, "cms/payload/web/next", "apps/web", config);
+      const nextFramework = "next";
+      processTemplatesFromPrefix(vfs, templates, `cms/payload/web/${nextFramework}`, "apps/web", config);
     }
     return;
   }

@@ -65,7 +65,7 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
   const { uiLibrary, frontend, backend } = config;
 
   const hasReactWeb = frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "redwood"].includes(f),
   );
   const hasNuxt = frontend.includes("nuxt");
   const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");

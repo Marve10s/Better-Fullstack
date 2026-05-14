@@ -20,6 +20,7 @@ const REACT_FRONTENDS: Frontend[] = [
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
   "redwood",
 ];
 
@@ -92,7 +93,8 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const hasViteReactFrontend =
     config.frontend.includes("react-router") ||
     config.frontend.includes("react-vite") ||
-    config.frontend.includes("tanstack-router");
+    config.frontend.includes("tanstack-router") ||
+    config.frontend.includes("vinext");
   const hasReactFrontend = config.frontend.some((f) => REACT_FRONTENDS.includes(f));
   const hasAstroReact = config.frontend.includes("astro") && config.astroIntegration === "react";
   const hasAstroSolid = config.frontend.includes("astro") && config.astroIntegration === "solid";
@@ -165,7 +167,7 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
         config.frontend.includes("tanstack-router") ||
         config.frontend.includes("react-router") ||
         config.frontend.includes("react-vite");
-      const hasNext = config.frontend.includes("next");
+      const hasNext = config.frontend.includes("next") || config.frontend.includes("vinext");
       const hasVue = config.frontend.includes("nuxt");
       const hasSvelte = config.frontend.includes("svelte");
       const hasSolid = config.frontend.includes("solid");

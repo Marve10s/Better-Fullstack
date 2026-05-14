@@ -479,7 +479,7 @@ function getClerkInstructions(backend: Backend, frontend: Frontend[]) {
     return `${pc.bold("Clerk Authentication Setup:")}\n${pc.cyan("•")} Follow the guide: ${pc.underline("https://docs.convex.dev/auth/clerk")}\n${pc.cyan("•")} Set CLERK_JWT_ISSUER_DOMAIN in Convex Dashboard\n${pc.cyan("•")} Set CLERK_PUBLISHABLE_KEY in apps/*/.env`;
   }
 
-  if (backend === "self" && (frontend.includes("next") || frontend.includes("tanstack-start"))) {
+  if (backend === "self" && (frontend.includes("next") || frontend.includes("vinext") || frontend.includes("tanstack-start"))) {
     const publishableKeyVar = frontend.includes("next")
       ? "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
       : "VITE_CLERK_PUBLISHABLE_KEY";

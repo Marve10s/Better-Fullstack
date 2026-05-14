@@ -8,6 +8,7 @@ import { isCancel, navigableSelect } from "./navigable";
 // Frontends with built-in server capabilities for backend="self"
 const FULLSTACK_FRONTENDS: readonly Frontend[] = [
   "next",
+  "vinext",
   "tanstack-start",
   "astro",
   "nuxt",

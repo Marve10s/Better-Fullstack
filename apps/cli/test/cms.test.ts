@@ -645,4 +645,185 @@ describe("CMS Options", () => {
       expectSuccess(result);
     });
   });
+
+  describe("Payload CMS with Vinext", () => {
+    test("payload with Vinext and SQLite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "payload-vinext-sqlite",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          cms: "payload",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("payload with Vinext and PostgreSQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "payload-vinext-postgres",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          cms: "payload",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("payload with Vinext and MongoDB", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "payload-vinext-mongodb",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "mongodb",
+          orm: "mongoose",
+          cms: "payload",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Sanity CMS with Vinext", () => {
+    test("sanity with Vinext and SQLite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sanity-vinext-sqlite",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("sanity with Vinext and PostgreSQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sanity-vinext-postgres",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("sanity with Vinext and MongoDB", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "sanity-vinext-mongodb",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "mongodb",
+          orm: "mongoose",
+          cms: "sanity",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("Strapi CMS with Vinext", () => {
+    test("strapi with Vinext and SQLite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-vinext-sqlite",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("strapi with Vinext and PostgreSQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-vinext-postgres",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("strapi with Vinext and MongoDB", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "strapi-vinext-mongodb",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "mongodb",
+          orm: "mongoose",
+          cms: "strapi",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("TinaCMS with Vinext", () => {
+    test("tinacms with Vinext and SQLite", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-vinext-sqlite",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          cms: "tinacms",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("tinacms with Vinext and PostgreSQL", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-vinext-postgres",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "postgres",
+          cms: "tinacms",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("tinacms with Vinext and MongoDB", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tinacms-vinext-mongodb",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "mongodb",
+          orm: "mongoose",
+          cms: "tinacms",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
 });
+

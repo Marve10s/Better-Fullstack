@@ -52,7 +52,8 @@ function hasReactBasedFrontend(frontend: ProjectConfig["frontend"]): boolean {
     frontend.includes("react-vite") ||
     frontend.includes("tanstack-router") ||
     frontend.includes("tanstack-start") ||
-    frontend.includes("next")
+    frontend.includes("next") ||
+    frontend.includes("vinext")
   );
 }
 
@@ -106,7 +107,7 @@ function getRecommendedMcpServers(config: ProjectConfig): McpServerDef[] {
     });
   }
 
-  if (config.frontend.includes("next")) {
+  if (config.frontend.includes("next") || config.frontend.includes("vinext")) {
     servers.push({
       key: "next-devtools",
       label: "Next Devtools",

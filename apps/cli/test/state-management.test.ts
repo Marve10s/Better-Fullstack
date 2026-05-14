@@ -39,6 +39,19 @@ describe("State Management Options", () => {
       expectSuccess(result);
     });
 
+    test("redux-toolkit with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "redux-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "redux-toolkit",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("redux-toolkit with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -116,6 +129,19 @@ describe("State Management Options", () => {
         createCustomConfig({
           projectName: "mobx-nextjs",
           frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "mobx",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("mobx with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "mobx-vinext",
+          frontend: ["vinext"],
           backend: "self",
           runtime: "none",
           stateManagement: "mobx",
@@ -212,6 +238,19 @@ describe("State Management Options", () => {
       expectSuccess(result);
     });
 
+    test("xstate with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "xstate-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "xstate",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("xstate with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -280,6 +319,19 @@ describe("State Management Options", () => {
         createCustomConfig({
           projectName: "valtio-nextjs",
           frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "valtio",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("valtio with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "valtio-vinext",
+          frontend: ["vinext"],
           backend: "self",
           runtime: "none",
           stateManagement: "valtio",
@@ -364,6 +416,19 @@ describe("State Management Options", () => {
       expectSuccess(result);
     });
 
+    test("tanstack-store with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "tanstack-store-vinext",
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "tanstack-store",
+        }),
+      );
+      expectSuccess(result);
+    });
+
     test("tanstack-store with TanStack Start", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -432,6 +497,19 @@ describe("State Management Options", () => {
         createCustomConfig({
           projectName: "legend-state-nextjs",
           frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          stateManagement: "legend-state",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("legend-state with Vinext", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "legend-state-vinext",
+          frontend: ["vinext"],
           backend: "self",
           runtime: "none",
           stateManagement: "legend-state",

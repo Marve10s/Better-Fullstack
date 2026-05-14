@@ -5,7 +5,7 @@ services:
   web:
     build:
       context: .
-{{#if (includes frontend "next")}}
+{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
       dockerfile: apps/web/Dockerfile.next
 {{else}}
       dockerfile: apps/web/Dockerfile.vite

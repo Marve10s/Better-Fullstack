@@ -25,6 +25,25 @@ describe("processFrontendTemplates", () => {
     expect(vfs.fileExists("apps/web/src/app/page.tsx")).toBe(true);
   });
 
+  it("routes React web base and framework-specific templates for vinext", async () => {
+    const templates = makeTemplates({
+      "frontend/react/web-base/src/index.css.hbs": "base",
+      "frontend/react/vinext/src/app/page.tsx.hbs": "framework",
+    });
+    const vfs = new VirtualFileSystem();
+
+    await processFrontendTemplates(
+      vfs,
+      templates,
+      makeConfig({
+        frontend: ["vinext"],
+      }),
+    );
+
+    expect(vfs.fileExists("apps/web/src/index.css")).toBe(true);
+    expect(vfs.fileExists("apps/web/src/app/page.tsx")).toBe(true);
+  });
+
   it("routes Astro templates while excluding unrelated integrations", async () => {
     const templates = makeTemplates({
       "frontend/astro/src/layouts/Layout.astro.hbs": "layout",

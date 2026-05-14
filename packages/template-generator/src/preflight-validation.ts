@@ -33,6 +33,7 @@ const REACT_FRONTENDS = new Set([
   "react-vite",
   "tanstack-start",
   "next",
+  "vinext",
 ]);
 
 const SOLID_FRONTENDS = new Set(["solid", "solid-start"]);

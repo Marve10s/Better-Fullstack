@@ -43,7 +43,7 @@ export const PEER_DEPENDENCY_CONFLICTS: PeerDependencyConflict[] = [
     severity: "warning",
     resolution: "Consider using zustand or jotai for React 19 projects, or ensure react-redux v9+",
     triggeredBy: [{ optionKey: "stateManagement", values: ["redux-toolkit"] }],
-    conflictsWithOptions: [{ optionKey: "frontend", values: ["next"] }], // Next 15 uses React 19
+    conflictsWithOptions: [{ optionKey: "frontend", values: ["next", "vinext"] }], // Next 15 and Vinext use React 19
   },
 
   // 2. Effect ecosystem with Zod
@@ -87,6 +87,6 @@ export const PEER_DEPENDENCY_CONFLICTS: PeerDependencyConflict[] = [
     severity: "warning",
     resolution: "The CLI uses motion (framer-motion v12+) which supports React 19",
     triggeredBy: [{ optionKey: "animation", values: ["framer-motion"] }],
-    conflictsWithOptions: [{ optionKey: "frontend", values: ["next"] }],
+    conflictsWithOptions: [{ optionKey: "frontend", values: ["next", "vinext"] }],
   },
 ];

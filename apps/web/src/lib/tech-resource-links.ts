@@ -34,6 +34,7 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/TanStack/router",
   },
   next: { docsUrl: "https://nextjs.org/docs", githubUrl: "https://github.com/vercel/next.js" },
+  vinext: { docsUrl: "https://vinext.io", githubUrl: "https://github.com/cloudflare/vinext" },
   nuxt: { docsUrl: "https://nuxt.com/docs", githubUrl: "https://github.com/nuxt/nuxt" },
   svelte: { docsUrl: "https://svelte.dev/docs/kit", githubUrl: "https://github.com/sveltejs/kit" },
   solid: { docsUrl: "https://docs.solidjs.com/", githubUrl: "https://github.com/solidjs/solid" },
@@ -88,6 +89,10 @@ const BASE_LINKS: LinkMap = {
   "self-next": {
     docsUrl: "https://nextjs.org/docs",
     githubUrl: "https://github.com/vercel/next.js",
+  },
+  "self-vinext": {
+    docsUrl: "https://vinext.io",
+    githubUrl: "https://github.com/cloudflare/vinext",
   },
   "self-tanstack-start": {
     docsUrl: "https://tanstack.com/start/latest",

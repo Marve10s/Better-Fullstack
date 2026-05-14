@@ -79,6 +79,7 @@ export function ensureSingleWebAndNative(frontends: Frontend[]) {
 // Frontends with built-in server capabilities for backend="self"
 const FULLSTACK_FRONTENDS: readonly Frontend[] = [
   "next",
+  "vinext",
   "tanstack-start",
   "astro",
   "nuxt",
@@ -100,7 +101,7 @@ export function validateSelfBackendCompatibility(
 
     if (!hasSupportedWeb) {
       exitWithError(
-        "Backend 'self' (fullstack) only supports Next.js, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, or --frontend solid-start.",
+        "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, or --frontend solid-start.",
       );
     }
 
@@ -114,7 +115,7 @@ export function validateSelfBackendCompatibility(
   const hasFullstackFrontend = frontends.some((f) => FULLSTACK_FRONTENDS.includes(f));
   if (providedFlags.has("backend") && !hasFullstackFrontend && backend === "self") {
     exitWithError(
-      "Backend 'self' (fullstack) only supports Next.js, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or choose a different backend.",
+      "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or choose a different backend.",
     );
   }
 }
@@ -468,13 +469,13 @@ export function validateAddonCompatibility(
       return {
         isCompatible: false,
         reason:
-          "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro",
+          "Docker Compose currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro",
       };
     }
-    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next")) {
+    if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next") && !frontend.includes("vinext")) {
       return {
         isCompatible: false,
-        reason: "Docker Compose self-backend support currently requires Next.js",
+        reason: "Docker Compose self-backend support currently requires Next.js or Vinext",
       };
     }
     if (ecosystem === "rust" && rustFrontend && rustFrontend !== "none") {

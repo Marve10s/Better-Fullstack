@@ -16,7 +16,7 @@ type FrontendType = {
 function getFrontendType(frontend: Frontend[]): FrontendType {
   return {
     hasReactWeb: frontend.some((f) =>
-      ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"].includes(f),
+      ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
     ),
     hasNuxtWeb: frontend.includes("nuxt"),
     hasSvelteWeb: frontend.includes("svelte"),
@@ -104,8 +104,8 @@ function addApiPackageDeps(
     });
   }
 
-  // Add next dep for api package when backend is self and frontend includes next
-  if (backend === "self" && frontend.includes("next")) {
+  // Add next dep for api package when backend is self and frontend includes next or vinext
+  if (backend === "self" && (frontend.includes("next") || frontend.includes("vinext"))) {
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["next"] });
   }
 

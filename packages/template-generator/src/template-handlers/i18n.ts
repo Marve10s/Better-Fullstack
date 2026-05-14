@@ -26,7 +26,7 @@ export async function processI18nTemplates(
   if (config.i18n === "i18next") {
     // i18next: check which frontend families are present
     const hasReactWeb = config.frontend.some((f) =>
-      ["next", "tanstack-router", "react-router", "tanstack-start", "react-vite"].includes(f),
+      ["next", "vinext", "tanstack-router", "react-router", "tanstack-start", "react-vite"].includes(f),
     );
 
     // Shared i18next config

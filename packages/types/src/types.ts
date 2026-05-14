@@ -187,6 +187,7 @@ export type WebFrontend = Extract<
   | "react-vite"
   | "tanstack-start"
   | "next"
+  | "vinext"
   | "nuxt"
   | "svelte"
   | "solid"

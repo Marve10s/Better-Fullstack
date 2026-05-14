@@ -28,7 +28,7 @@ function setupChatSdkDependencies(vfs: VirtualFileSystem, config: ProjectConfig)
   const webExists = vfs.exists(webPkgPath);
   const serverExists = vfs.exists(serverPkgPath);
 
-  const isSelfNext = backend === "self" && frontend.includes("next");
+  const isSelfNext = backend === "self" && (frontend.includes("next") || frontend.includes("vinext"));
   const isSelfTanStackStart = backend === "self" && frontend.includes("tanstack-start");
   const isSelfNuxt = backend === "self" && frontend.includes("nuxt");
   const isHonoNode = backend === "hono" && runtime === "node";
@@ -86,7 +86,7 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
   const convexBackendExists = vfs.exists(convexBackendPkgPath);
 
   const hasReactWeb = frontend.some((f) =>
-    ["react-router", "react-vite", "tanstack-router", "next", "tanstack-start"].includes(f),
+    ["react-router", "react-vite", "tanstack-router", "next", "vinext", "tanstack-start"].includes(f),
   );
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");

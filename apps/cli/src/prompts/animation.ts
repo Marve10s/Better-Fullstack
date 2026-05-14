@@ -33,7 +33,7 @@ export function resolveAnimationPrompt(
   }
 
   const isReact = web.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "redwood"].includes(f),
   );
   const isFresh = web.includes("fresh");
   const options: Array<{ value: Animation; label: string; hint: string }> = [];

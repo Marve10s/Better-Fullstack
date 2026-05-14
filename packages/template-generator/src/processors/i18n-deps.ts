@@ -35,7 +35,7 @@ export function processI18nDeps(vfs: VirtualFileSystem, config: ProjectConfig): 
 
       // Add React bindings for React-based frontends
       const hasReactWeb = frontend.some((f) =>
-        ["next", "tanstack-router", "react-router", "tanstack-start", "react-vite"].includes(f),
+        ["next", "vinext", "tanstack-router", "react-router", "tanstack-start", "react-vite"].includes(f),
       );
 
       if (hasReactWeb) {

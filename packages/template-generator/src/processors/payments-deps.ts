@@ -11,6 +11,7 @@ const REACT_WEB_FRONTENDS: Frontend[] = [
   "tanstack-router",
   "tanstack-start",
   "next",
+  "vinext",
   "redwood",
 ];
 
@@ -42,7 +43,7 @@ export function processPaymentsDeps(vfs: VirtualFileSystem, config: ProjectConfi
 
       if (vfs.exists(webPath)) {
         const hasReactWebFrontend = frontend.some((f) =>
-          ["react-router", "tanstack-router", "tanstack-start", "next"].includes(f),
+          ["react-router", "tanstack-router", "tanstack-start", "next", "vinext"].includes(f),
         );
         if (hasReactWebFrontend) {
           addPackageDependency({
