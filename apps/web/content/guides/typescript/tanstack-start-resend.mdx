@@ -1,0 +1,162 @@
+---
+title: TanStack Start and Resend
+description: Create a TanStack Start app with Resend email support, Better Auth, Drizzle, SQLite, Tailwind CSS, and shadcn/ui using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - resend
+  - email
+  - better-auth
+keywords:
+  - tanstack start resend
+  - tanstack start email
+  - tanstack start transactional email
+  - create tanstack start resend app
+  - resend fullstack starter
+---
+
+Use this stack when your TanStack Start app needs transactional email for sign-in flows, product notifications, invites, or onboarding messages.
+
+```bash
+npm create better-fullstack@latest my-email-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --email resend \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What this creates
+
+- A TanStack Start app with its own server route layer.
+- Resend as the email provider option.
+- Better Auth with relational database support.
+- Drizzle and SQLite for local development.
+- Tailwind CSS and shadcn/ui for the interface.
+
+## Generated shape
+
+This stack starts from the TanStack Start fullstack shape and adds email provider configuration. The email provider is selected with `--email resend`; the rest of the app still uses `--backend self`, so you do not need a separate API server just to send mail.
+
+Representative shape:
+
+```txt
+my-email-app/
+  bts.jsonc
+  src/
+    routes/
+    lib/
+      auth/
+      db/
+      email/
+```
+
+Treat the tree above as a guide to ownership rather than a promise of exact generated paths. Email delivery code should live behind a small server-only helper so React components never import provider secrets.
+
+## Example email helper
+
+A good first abstraction is a narrow function for each product email. That keeps Resend-specific details out of auth callbacks, onboarding flows, and route handlers:
+
+```ts
+type SendInviteEmailInput = {
+  to: string;
+  inviterName: string;
+  inviteUrl: string;
+};
+
+export async function sendInviteEmail(input: SendInviteEmailInput) {
+  const subject = `${input.inviterName} invited you`;
+
+  return sendTransactionalEmail({
+    to: input.to,
+    subject,
+    html: `
+      <p>${input.inviterName} invited you to join their workspace.</p>
+      <p><a href="${input.inviteUrl}">Accept the invite</a></p>
+    `,
+  });
+}
+```
+
+The concrete `sendTransactionalEmail` implementation should read the Resend API key from server environment variables and should not be imported from client components.
+
+## Example route usage
+
+Send mail after the database transaction that creates the durable product state. For invites, create the invite record first, then send the email:
+
+```ts
+import { z } from "zod";
+
+const inviteInput = z.object({
+  email: z.string().email(),
+  workspaceId: z.string().min(1),
+});
+
+export async function inviteMember(rawInput: unknown) {
+  const input = inviteInput.parse(rawInput);
+
+  const invite = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    workspaceId: input.workspaceId,
+  };
+
+  await sendInviteEmail({
+    to: invite.email,
+    inviterName: "A teammate",
+    inviteUrl: `https://example.com/invites/${invite.id}`,
+  });
+
+  return invite;
+}
+```
+
+For production systems, consider a job queue or retry table for emails that must be delivered even if the provider has a temporary failure.
+
+## When to choose it
+
+Choose this when email is part of the product workflow, not an afterthought. Resend is a strong fit for developer-focused transactional email and keeps the generated stack straightforward.
+
+## Common use cases
+
+- Magic links and verification emails.
+- Team invites.
+- Trial or onboarding emails.
+- Product notifications from server actions or API routes.
+
+## Compatibility notes
+
+- `--email resend` is additive. It does not replace `--auth better-auth`, `--api trpc`, or `--backend self`.
+- Email delivery must run on the server side. Never expose the Resend API key through public environment variables or browser bundles.
+- SQLite is convenient for local development. If email workflows depend on durable audit trails, retries, or team-scale records, PostgreSQL may be a better production database.
+- Better Auth email flows and product notification flows should share provider configuration but stay separate at the function level.
+
+## Deployment notes
+
+Configure the Resend API key, sender domain, Better Auth secrets, and app URL in the deployment environment. Domain verification should be completed before relying on production mail delivery.
+
+For preview deployments, use a restricted sender or a test recipient allowlist if your app can trigger emails from untrusted preview traffic.
+
+## Troubleshooting
+
+- If emails do not arrive, check provider logs before changing application code.
+- If links point to localhost, update the production app URL used when building callback or invite links.
+- If auth emails work but product emails fail, verify both paths use the same server-only provider configuration.
+- If local tests accidentally send real email, add a development transport or guard around non-production environments.
+
+## Comparison notes
+
+Use the broader [TanStack Start guide](/guides/typescript/create-tanstack-start-project/) when you do not need email yet. Choose this page's command when transactional email is part of the initial product contract, because it records that decision in `bts.jsonc` from day one.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc).
+- Compare email options in the [CLI create reference](/docs/cli/create/).
+- Start from the broader [TanStack Start guide](/guides/typescript/create-tanstack-start-project/).

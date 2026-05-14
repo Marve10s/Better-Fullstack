@@ -1,0 +1,177 @@
+---
+title: Create a TanStack Start Project
+description: Create a TanStack Start fullstack app with Better Fullstack, including routing, API routes, Drizzle, SQLite, Better Auth, Tailwind CSS, and shadcn/ui.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - react
+  - drizzle
+  - better-auth
+keywords:
+  - create tanstack start project
+  - tanstack start starter
+  - tanstack start boilerplate
+  - tanstack start fullstack app
+  - tanstack start drizzle
+---
+
+Use this stack when you want a React fullstack app built around TanStack Router and TanStack Start's server route model.
+
+```bash
+npm create better-fullstack@latest my-tanstack-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The key choices Better Fullstack records for this TanStack Start project."
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React, file routes, and server routes in one deployable app." },
+    { label: "Backend", value: "Self-hosted app server", detail: "Use TanStack Start's server layer instead of a separate API package." },
+    { label: "API", value: "tRPC", detail: "Typed procedures for React routes and server-side mutations." },
+    { label: "Data", value: "SQLite + Drizzle", detail: "Local relational schema with a clear path to PostgreSQL later." },
+  ]}
+/>
+
+## What this creates
+
+- A TanStack Start web app with file-based routes.
+- Fullstack routing through the framework's built-in server layer.
+- SQLite and Drizzle for a small local relational database setup.
+- Better Auth wired into the generated app.
+- Tailwind CSS and shadcn/ui for the frontend.
+- A reproducible stack configuration in `bts.jsonc`.
+
+## Generated shape
+
+The generated project is intended to be a single deployable web app instead of a split frontend/API workspace. TanStack Start owns routing, server functions, and request handling, while Drizzle owns the database schema and queries.
+
+Representative shape:
+
+```txt
+my-tanstack-app/
+  bts.jsonc
+  package.json
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      trpc/
+```
+
+Exact filenames can change as the generator evolves, but the important boundary is stable: route code stays with the TanStack Start app, database code stays behind Drizzle helpers, and API procedures are exposed through the selected `--api trpc` layer.
+
+## Example route and API pattern
+
+A typical route keeps UI state in React and calls a typed API helper instead of manually building fetch URLs:
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardPage,
+});
+
+function DashboardPage() {
+  return (
+    <main className="mx-auto max-w-5xl p-6">
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <p className="text-muted-foreground">
+        Load account data through the generated server API layer.
+      </p>
+    </main>
+  );
+}
+```
+
+For new API work, add narrow procedures around use cases rather than exposing table-shaped CRUD immediately:
+
+```ts
+import { z } from "zod";
+
+export const projectInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createProject(input: z.infer<typeof projectInput>) {
+  const values = projectInput.parse(input);
+
+  return {
+    id: crypto.randomUUID(),
+    name: values.name,
+  };
+}
+```
+
+## Database model example
+
+Drizzle works best when schema definitions are small and explicit. A representative SQLite table might look like this:
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const project = sqliteTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Keep auth-owned tables separate from product tables. Better Auth may generate or expect its own schema depending on the selected adapter; product models should reference the user identifier rather than duplicating auth state.
+
+## When to choose it
+
+Choose TanStack Start when you want React, typed routing, colocated fullstack behavior, and a smaller framework surface than a large batteries-included application framework.
+
+This is a good fit for dashboards, internal tools, SaaS prototypes, and apps where route type safety matters.
+
+## Compatibility notes
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Compatibility rule"
+  items={[
+    "`--backend self` is the right choice here because TanStack Start provides the app server layer.",
+    "`--api trpc` is compatible with this React stack and gives end-to-end typed calls.",
+    "SQLite is a good default for local development and small deployments. Move to PostgreSQL when you need managed production databases, pooling, replicas, or stronger operational tooling.",
+    "shadcn/ui assumes a Tailwind-based React UI. If you remove Tailwind later, revisit generated component imports and class names together.",
+  ]}
+/>
+
+## Deployment notes
+
+Before deploying, make sure production environment variables are defined for the database, Better Auth secret values, and the public application URL used by auth callbacks. For SQLite deployments, confirm your host supports persistent writable storage; many serverless platforms do not.
+
+If you target a serverless platform, PostgreSQL is usually the safer production database choice than a local SQLite file. Keep `bts.jsonc` committed so future teammates and agents can reconstruct the intended stack.
+
+## Troubleshooting
+
+- If auth callbacks redirect to the wrong host, check the app base URL and Better Auth environment variables first.
+- If database queries work locally but fail after deploy, verify the production database URL and whether migrations were run against the deployed database.
+- If generated route types look stale, restart the framework type generation process and rerun the smallest relevant typecheck.
+- If tRPC client calls fail with 404s, confirm the generated API route is still mounted where the client expects it.
+
+## Tradeoffs
+
+TanStack Start is a better fit when you want to lean into the TanStack ecosystem. If you want the largest hosting and documentation ecosystem, compare it with [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+
+Compared with a separate Hono backend, this stack has fewer deployable services and less cross-origin setup. Compared with Next.js, it gives you a TanStack Router-first mental model and a smaller framework footprint, but a younger ecosystem.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=trpc).
+- Read the [TypeScript ecosystem docs](/docs/ecosystems/typescript/).
+- Check the [CLI create reference](/docs/cli/create/).

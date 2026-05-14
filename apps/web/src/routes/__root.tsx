@@ -112,7 +112,6 @@ export const Route = createRootRoute({
       { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
     ],
     links: [
-      { rel: "canonical", href: canonicalUrl("/") },
       { rel: "icon", href: "/favicon/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
       { rel: "apple-touch-icon", href: "/favicon/apple-touch-icon.png" },

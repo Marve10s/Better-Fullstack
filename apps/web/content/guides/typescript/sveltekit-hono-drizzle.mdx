@@ -1,0 +1,124 @@
+---
+title: SvelteKit with Hono and Drizzle
+description: Create a SvelteKit app with a Hono API, oRPC, Drizzle, PostgreSQL, Tailwind CSS, and Better Auth using Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - sveltekit
+  - hono
+  - orpc
+  - drizzle
+keywords:
+  - sveltekit hono
+  - sveltekit drizzle starter
+  - sveltekit postgres boilerplate
+  - sveltekit orpc
+  - create sveltekit fullstack app
+---
+
+Use this stack when you want SvelteKit on the frontend and a small TypeScript API server alongside it.
+
+```bash
+npm create better-fullstack@latest my-sveltekit-app -- \
+  --ecosystem typescript \
+  --frontend svelte \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A SvelteKit frontend.
+- A Hono backend on Bun.
+- oRPC for typed API contracts across non-React frontend choices.
+- PostgreSQL and Drizzle.
+- Better Auth where the selected database and ORM support it.
+
+## Generated shape
+
+This is a split TypeScript stack: SvelteKit handles the frontend experience, Hono handles the API server, and oRPC is the typed boundary between them.
+
+Representative shape:
+
+```txt
+my-sveltekit-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+The specific workspace names may evolve, but keep the ownership clear. Svelte components should not import database modules directly; they should call typed server operations.
+
+## Example SvelteKit call pattern
+
+A page or load function should talk to the generated API client instead of hardcoding request payloads throughout the app:
+
+```ts
+export async function load() {
+  return {
+    title: "Projects",
+  };
+}
+```
+
+For mutations, keep validation and authorization on the Hono side even if the SvelteKit UI already validates form inputs.
+
+## Example Drizzle model
+
+PostgreSQL plus Drizzle gives you explicit table definitions:
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const project = pgTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Use small server functions around queries so Hono handlers and oRPC procedures do not become a dumping ground for business rules.
+
+## When to choose it
+
+Choose this when your team prefers SvelteKit but still wants an explicit API server and typed contracts. It is useful for apps that may grow into separate frontend and backend deployments.
+
+## Compatibility notes
+
+- This guide uses `--api orpc` because SvelteKit is not a React frontend.
+- `--backend hono` and `--runtime bun` create a separate API service instead of relying only on SvelteKit server routes.
+- Better Auth requires the selected database and ORM path to stay compatible. Keep auth schema changes and Drizzle migrations in sync.
+- If you later remove the separate backend, revisit API client setup, CORS, and auth cookie handling together.
+
+## Deployment notes
+
+Expect separate web and API environment variables. The SvelteKit app needs the public API origin. The Hono server needs PostgreSQL and auth secrets. If they deploy on different domains, configure CORS and cookies intentionally.
+
+Run database migrations before deploying API code that expects new tables or columns.
+
+## Troubleshooting
+
+- If requests fail from the browser but work with curl, check CORS and cookie credentials.
+- If SvelteKit renders without data, verify the API origin used by server-side and browser-side code.
+- If auth is inconsistent across domains, review cookie domain, same-site, and secure settings.
+- If Drizzle schema changes do not appear, confirm migrations were generated and applied to the target PostgreSQL database.
+
+## Comparison notes
+
+Compared with a Nuxt or SolidStart self-backend stack, this guide gives you a more explicit API boundary. Compared with [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/), it uses oRPC because the frontend is SvelteKit rather than React.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=svelte&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=orpc).
+- Compare with the [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/) React stack.
+- Read the [compatibility reference](/docs/reference/compatibility/).

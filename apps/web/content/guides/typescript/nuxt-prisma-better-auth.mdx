@@ -1,0 +1,130 @@
+---
+title: Nuxt with Prisma and Better Auth
+description: Create a Nuxt fullstack app with PostgreSQL, Prisma, Better Auth, oRPC, Tailwind CSS, and a generated Better Fullstack project structure.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+Use this stack when you want a Vue/Nuxt fullstack app with relational data, authentication, and typed API contracts.
+
+```bash
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --package-manager bun
+```
+
+## What this creates
+
+- A Nuxt app in fullstack mode.
+- PostgreSQL and Prisma.
+- Better Auth.
+- oRPC for typed API contracts.
+- Tailwind CSS.
+- A reproducible `bts.jsonc` stack configuration.
+
+## Generated shape
+
+This stack keeps the application inside Nuxt's fullstack model. Prisma owns database schema and migrations, Better Auth owns authentication behavior, and oRPC gives typed contracts without assuming a React frontend.
+
+Representative shape:
+
+```txt
+my-nuxt-app/
+  bts.jsonc
+  app/
+  server/
+  prisma/
+    schema.prisma
+```
+
+Treat this as a representative layout. The important boundary is that server-only database and auth code stays in Nuxt server modules or API handlers, while Vue components call typed server contracts.
+
+## Example Prisma model
+
+A small product model can start like this:
+
+```prisma
+model Workspace {
+  id        String   @id
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+```
+
+Keep Better Auth's required models aligned with the adapter documentation and separate from application-specific tables. Product tables should reference auth users by identifier rather than duplicating login data.
+
+## Example oRPC contract shape
+
+Use oRPC to describe validated server operations for the Nuxt app:
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Place authorization checks in the server implementation, not only in Vue components. Client-side guards improve UX but do not protect data.
+
+## Compatibility notes
+
+Nuxt uses oRPC in Better Fullstack for typed contracts. tRPC is reserved for React-based TypeScript frontends, so this guide intentionally uses `--api orpc`.
+
+`--backend self` is the correct Nuxt fullstack choice. If you want a separately deployed API server, use a backend option such as Hono in a stack that supports that pairing.
+
+## When to choose it
+
+Choose Nuxt when your team prefers Vue, wants server-capable routing, and needs a fullstack app shape rather than a separate frontend and API server.
+
+## Deployment notes
+
+Set the PostgreSQL connection string, Better Auth secrets, and public app URL in the deployment environment. Run Prisma migrations before deploying code that depends on new schema.
+
+For serverless platforms, review how your Prisma client is generated and how database connections are pooled. Managed PostgreSQL providers often document the safest connection string for serverless runtimes.
+
+## Troubleshooting
+
+- If Prisma Client types are stale, regenerate the client after changing `schema.prisma`.
+- If oRPC calls fail only in production, verify the server route base URL and deployment adapter behavior.
+- If auth redirects loop, check trusted origins, cookies, and the app URL used by Better Auth.
+- If migrations point at the wrong database, inspect the environment variable used by both local commands and deployed runtime.
+
+## Comparison notes
+
+Use this stack when Vue and Nuxt conventions are the main priority. Choose [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) for a React-first stack, or [SvelteKit with Hono and Drizzle](/guides/typescript/sveltekit-hono-drizzle/) when you want a separate Hono backend.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc).
+- Compare with [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+- Read the [compatibility reference](/docs/reference/compatibility/).

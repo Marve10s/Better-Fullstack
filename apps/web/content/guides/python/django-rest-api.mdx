@@ -1,0 +1,181 @@
+---
+title: Django REST API Starter
+description: Create a Python backend with Django, Django REST Framework, SQLAlchemy, Pydantic, and Ruff using Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+Use this stack when you want Django conventions with an API-focused project shape.
+
+```bash
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## What this creates
+
+- A Python project using Django.
+- Django REST Framework as the Python API option.
+- SQLAlchemy and Pydantic selections.
+- Ruff for code quality.
+
+## Generated shape
+
+This stack is for developers who want the Django ecosystem but an API-first starting point. The generated project records `--python-api django-rest-framework`, includes Django and DRF dependencies, wires a minimal Django settings module inside the app entrypoint, and exposes a health-style API response.
+
+```txt
+my-django-api/
+├── pyproject.toml
+├── alembic.ini
+├── migrations/
+│   ├── env.py
+│   └── versions/
+├── src/app/
+│   ├── main.py
+│   ├── settings.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── database.py
+│   └── crud.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+The SQLAlchemy and Pydantic selections are still useful when you want explicit Python data models and service-layer validation around a Django HTTP surface. If your team wants the most idiomatic Django path, plan whether to migrate persistence toward Django models and DRF serializers as the project grows.
+
+## When to choose it
+
+Choose Django when conventions, admin-oriented structure, and ecosystem depth matter more than a minimal API surface.
+
+Choose this over the FastAPI guide when you expect to add Django admin, Django auth, conventional middleware, or multiple Django apps. Choose FastAPI when the service should stay small, route-focused, and easy to embed beside AI or data-processing code.
+
+| Decision point | Django REST API | FastAPI service |
+| --- | --- | --- |
+| Team expectation | Django conventions and ecosystem | Explicit Python modules and route functions |
+| API layer | Django REST Framework | FastAPI + Pydantic |
+| Back-office/admin | Natural extension point | Add a separate tool |
+| Middleware/auth | Django-native path | Compose explicitly |
+| Startup complexity | More framework structure | Smaller initial surface |
+
+## Representative snippets
+
+The generated DRF endpoint is intentionally small. Expand from this by moving view functions into app modules once the API grows.
+
+```python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+def api_status(request):
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+```
+
+For a practical resource endpoint, add a serializer-like boundary even if you keep SQLAlchemy as the persistence tool.
+
+```python
+from pydantic import BaseModel, EmailStr
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str | None = None
+
+
+@api_view(["POST"])
+def create_user(request):
+    payload = UserCreate.model_validate(request.data)
+    user = user_service.create_user(email=payload.email, name=payload.name)
+    return Response({"id": user.id, "email": user.email}, status=201)
+```
+
+If you later move toward idiomatic DRF serializers, keep the same boundary: validate request data, call application logic, and return a stable response shape.
+
+```python
+from rest_framework import serializers
+
+
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField()
+    name = serializers.CharField(required=False, allow_blank=True)
+```
+
+## Migrations and tests
+
+Use Django migrations if you adopt Django models. Use Alembic if you keep SQLAlchemy as the persistence source of truth. Avoid running both migration systems against the same tables unless you have a clear ownership split.
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+For Django-model persistence in a conventional Django project layout:
+
+```bash
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+```
+
+For SQLAlchemy persistence:
+
+```bash
+uv run alembic revision --autogenerate -m "add users"
+uv run alembic upgrade head
+```
+
+Route tests should use Django's test client or DRF's API test client and assert the JSON contract, not only view implementation details.
+
+## Compatibility notes
+
+- `--python-api django-rest-framework` requires `--python-web-framework django`.
+- Do not add `--python-api django-rest-framework` to a FastAPI stack; the CLI validation rejects that combination.
+- `--python-orm sqlalchemy` is available in the Python ecosystem, but Django's built-in admin and generic views are designed around Django models.
+- `--python-validation pydantic` is useful for service-layer payload validation, while DRF serializers are the conventional request/response tool inside DRF views.
+
+## Deployment notes
+
+Django deployments need the usual production settings pass: configure `SECRET_KEY`, `ALLOWED_HOSTS`, trusted origins, database credentials, and static asset handling. If the generated app is still minimal, treat it as a starting point and move settings into explicit environment-driven modules before production.
+
+```bash
+HOST=0.0.0.0 PORT="${PORT:-8000}" uv run python -m app.main
+```
+
+If you stay with the generated lightweight entrypoint instead of a full Django project layout, document where settings are loaded so future Django contributors do not assume the default `settings.py` and `manage.py` structure exists unchanged. Before production, add the WSGI/ASGI server and deployment settings your platform expects.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| DRF imports fail | Confirm the project was created with `--python-api django-rest-framework`. |
+| Django settings are not configured | Ensure `DJANGO_SETTINGS_MODULE` is set before importing Django models or views. |
+| Migration confusion | Pick Django migrations or Alembic as the owner for each table. |
+| FastAPI examples do not apply | This stack uses Django/DRF routing, not FastAPI decorators. |
+
+## Tradeoffs
+
+For a smaller API service, use [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/). For Django conventions, this stack is a better fit.
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff).
+- Read the [Python ecosystem docs](/docs/ecosystems/python/).

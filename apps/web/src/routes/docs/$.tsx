@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { DocsPageContent } from "@/components/docs/docs-page";
+import { docsPageHead } from "@/lib/docs/seo";
 import { getNeighbors, getPage } from "@/lib/docs/source";
 
 /**
@@ -21,14 +22,13 @@ export const Route = createFileRoute("/docs/$")({
       neighbors: getNeighbors(page.slug),
     };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: loaderData?.frontmatter.title ?? "Docs" },
-      ...(loaderData?.frontmatter.description
-        ? [{ name: "description", content: loaderData.frontmatter.description }]
-        : []),
-    ],
-  }),
+  head: ({ loaderData }) =>
+    loaderData
+      ? docsPageHead({
+          url: `/docs/${loaderData.slug.join("/")}`,
+          frontmatter: loaderData.frontmatter,
+        })
+      : docsPageHead({ url: "/docs", frontmatter: { title: "Docs" } }),
   component: DocsSplatPage,
 });
 

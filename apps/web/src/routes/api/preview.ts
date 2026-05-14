@@ -4,6 +4,7 @@ import type { StackState } from "@/lib/stack-defaults";
 
 import { isStackPreviewEnabledServer } from "@/lib/feature-flags";
 import { stackStateToProjectConfig } from "@/lib/preview-config";
+import { NOINDEX_ROBOTS } from "@/lib/robots";
 
 // VirtualNode type definition for transformed output
 interface VirtualNode {
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/api/preview")({
     handlers: {
       POST: async ({ request }) => {
         const noIndexHeaders = {
-          "X-Robots-Tag": "noindex, nofollow, noarchive",
+          "X-Robots-Tag": NOINDEX_ROBOTS,
           "Cache-Control": "no-store",
         };
 
