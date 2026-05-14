@@ -414,6 +414,7 @@ describe("Example Configurations", () => {
       expect(routeFile).toContain("chatBot.webhooks");
       expect(botFile).toContain("createSlackAdapter");
       expect(botFile).toContain("SLACK_SIGNING_SECRET");
+      expect(botFile).toContain("requiredEnv");
       expect(botFile).toContain("Card({");
       expect(botFile).toContain('Button({ id: "hello", label: "Say Hello", style: "primary" })');
       expect(botFile).toContain("if (!event.thread) return;");
@@ -454,6 +455,7 @@ describe("Example Configurations", () => {
       expect(routeFile).toContain("chatBot.webhooks");
       expect(botFile).toContain("Card({");
       expect(botFile).toContain("SLACK_SIGNING_SECRET");
+      expect(botFile).toContain("requiredEnv");
       expect(botFile).toContain("if (!event.thread) return;");
       expect(botFile).not.toContain("<Card");
       expect(webPkg.dependencies["@chat-adapter/slack"]).toBeDefined();
@@ -491,6 +493,7 @@ describe("Example Configurations", () => {
 
       expect(botFile).toContain("createDiscordAdapter");
       expect(botFile).toContain("DISCORD_PUBLIC_KEY");
+      expect(botFile).toContain("requiredEnv");
       expect(botFile).toContain("Card({");
       expect(botFile).toContain('Button({ id: "escalate", label: "Escalate to Human", style: "danger" })');
       expect(botFile).toContain("if (!event.thread) return;");

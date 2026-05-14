@@ -4,15 +4,25 @@ import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { Actions, Button, Card, CardText as Text, Chat, Divider } from "chat";
 
+function requiredEnv(name: string, buildFallback: string) {
+  const value = process.env[name];
+  if (value) return value;
+  if (process.env.npm_lifecycle_event === "build") {
+    return buildFallback;
+  }
+  throw new Error(`${name} is required for the Discord Chat SDK adapter.`);
+}
+
 export const chatBot = new Chat({
   userName: process.env.BOT_USERNAME || "support-bot",
   adapters: {
     discord: createDiscordAdapter({
-      applicationId: process.env.DISCORD_APPLICATION_ID || "000000000000000000",
-      botToken: process.env.DISCORD_BOT_TOKEN || "development-bot-token",
-      publicKey:
-        process.env.DISCORD_PUBLIC_KEY ||
+      applicationId: requiredEnv("DISCORD_APPLICATION_ID", "000000000000000000"),
+      botToken: requiredEnv("DISCORD_BOT_TOKEN", "development-bot-token"),
+      publicKey: requiredEnv(
+        "DISCORD_PUBLIC_KEY",
         "0000000000000000000000000000000000000000000000000000000000000000",
+      ),
     }),
   },
   state: createMemoryState(),

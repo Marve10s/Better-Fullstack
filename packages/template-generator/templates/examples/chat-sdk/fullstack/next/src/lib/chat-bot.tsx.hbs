@@ -2,11 +2,20 @@ import { createMemoryState } from "@chat-adapter/state-memory";
 import { createSlackAdapter } from "@chat-adapter/slack";
 import { Actions, Button, Card, CardText as Text, Chat, Divider } from "chat";
 
+function requiredEnv(name: string, buildFallback: string) {
+  const value = process.env[name];
+  if (value) return value;
+  if (process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build") {
+    return buildFallback;
+  }
+  throw new Error(`${name} is required for the Slack Chat SDK adapter.`);
+}
+
 export const chatBot = new Chat({
   userName: process.env.BOT_USERNAME || "mybot",
   adapters: {
     slack: createSlackAdapter({
-      signingSecret: process.env.SLACK_SIGNING_SECRET || "development-signing-secret",
+      signingSecret: requiredEnv("SLACK_SIGNING_SECRET", "development-signing-secret"),
     }),
   },
   state: createMemoryState(),
