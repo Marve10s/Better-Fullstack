@@ -344,6 +344,7 @@ export function SavedStacksPanel({
                           render={
                             <button
                               type="button"
+                              aria-label={`Open actions for ${entry.name}`}
                               className="flex h-6 w-6 items-center justify-center rounded-sm text-muted-foreground/40 transition-all duration-200 hover:text-foreground"
                             />
                           }

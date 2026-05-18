@@ -60,6 +60,8 @@ function TraditionalForm() {
             {field === "confirmPassword" ? "Confirm Password" : field}
           </label>
           <input
+            id={`traditional-${field}`}
+            aria-label={field === "confirmPassword" ? "Confirm Password" : field}
             type={field.includes("password") || field.includes("Password") ? "password" : "text"}
             value={values[field]}
             onChange={(e) => handleChange(field, e.target.value)}
@@ -119,8 +121,10 @@ function TanStackFormDemo() {
       >
         {(field) => (
           <div>
-            <label className="mb-1 block text-xs font-medium">Name</label>
+            <label htmlFor="tanstack-name" className="mb-1 block text-xs font-medium">Name</label>
             <input
+              id="tanstack-name"
+              aria-label="Name"
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
@@ -147,8 +151,10 @@ function TanStackFormDemo() {
       >
         {(field) => (
           <div>
-            <label className="mb-1 block text-xs font-medium">Email</label>
+            <label htmlFor="tanstack-email" className="mb-1 block text-xs font-medium">Email</label>
             <input
+              id="tanstack-email"
+              aria-label="Email"
               type="text"
               value={field.state.value}
               onBlur={field.handleBlur}
@@ -176,8 +182,10 @@ function TanStackFormDemo() {
       >
         {(field) => (
           <div>
-            <label className="mb-1 block text-xs font-medium">Password</label>
+            <label htmlFor="tanstack-password" className="mb-1 block text-xs font-medium">Password</label>
             <input
+              id="tanstack-password"
+              aria-label="Password"
               type="password"
               value={field.state.value}
               onBlur={field.handleBlur}
@@ -206,10 +214,12 @@ function TanStackFormDemo() {
       >
         {(field) => (
           <div>
-            <label className="mb-1 block text-xs font-medium">
+            <label htmlFor="tanstack-confirm-password" className="mb-1 block text-xs font-medium">
               Confirm Password
             </label>
             <input
+              id="tanstack-confirm-password"
+              aria-label="Confirm Password"
               type="password"
               value={field.state.value}
               onBlur={field.handleBlur}
