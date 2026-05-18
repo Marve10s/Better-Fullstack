@@ -40,7 +40,7 @@ export const dependencyVersionMap = {
 
   // Auth0 — templates use v3 API (handleAuth, withMiddlewareAuthRequired,
   // UserProvider from /client). v4 requires a full template migration.
-  "@auth0/nextjs-auth0": "^4.20.0",
+  "@auth0/nextjs-auth0": "^3.8.0",
 
   "drizzle-orm": "^0.45.2",
   "drizzle-kit": "^0.31.10",
