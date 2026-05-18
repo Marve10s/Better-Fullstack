@@ -20,6 +20,7 @@ export function PresetDropdown({ onApplyPreset }: PresetDropdownProps) {
         render={
           <button
             type="button"
+            aria-label="Open preset menu"
             className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-fd-background px-2 py-1.5 text-muted-foreground transition-all hover:border-muted-foreground/30 hover:bg-muted hover:text-foreground"
           />
         }
