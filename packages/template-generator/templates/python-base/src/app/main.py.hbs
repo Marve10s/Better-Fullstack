@@ -2,6 +2,13 @@
 
 import os
 
+{{#if (eq pythonWebFramework "fastapi")}}
+from contextlib import asynccontextmanager
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+from typing import Annotated
+{{/if}}
+
+{{/if}}
 from dotenv import load_dotenv
 
 {{#if (eq observability "sentry")}}
@@ -9,16 +16,8 @@ from app.observability import init_sentry
 
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, Depends, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
-{{#if (eq pythonValidation "pydantic")}}
-from app.settings import get_settings
-{{#if (eq pythonOrm "none")}}
-from app.schemas import ItemCreate, ItemResponse, MessageCreate, MessageResponse
-{{/if}}
-{{/if}}
 {{#if (eq pythonOrm "sqlalchemy")}}
 from sqlalchemy.orm import Session
 
@@ -41,6 +40,12 @@ from app.models import (
     UserResponse,
     UserUpdate,
 )
+{{/if}}
+{{#if (and (eq pythonValidation "pydantic") (eq pythonOrm "none"))}}
+from app.schemas import ItemCreate, ItemResponse, MessageCreate, MessageResponse
+{{/if}}
+{{#if (eq pythonValidation "pydantic")}}
+from app.settings import get_settings
 {{/if}}
 {{#if (eq pythonOrm "tortoise-orm")}}
 from app import crud
@@ -173,6 +178,11 @@ from app.graphql_schema import schema as graphql_schema
 from ariadne.asgi import GraphQL
 
 from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+DbSession = Annotated[Session, Depends(get_db)]
+
 {{/if}}
 
 load_dotenv()
@@ -793,7 +803,7 @@ async def send_message(message: MessageCreate):
 # User endpoints
 {{#if (eq pythonValidation "pydantic")}}
 @app.post("/users", response_model=UserResponse, status_code=201)
-async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+async def create_user(user: UserCreate, db: DbSession):
     """Create a new user."""
     existing = crud.get_user_by_email(db, user.email)
     if existing:
@@ -802,13 +812,13 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/users", response_model=list[UserResponse])
-async def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_users(db: DbSession, skip: int = 0, limit: int = 100):
     """List all users."""
     return crud.get_users(db, skip=skip, limit=limit)
 
 
 @app.get("/users/{user_id}", response_model=UserResponse)
-async def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: DbSession):
     """Get a user by ID."""
     user = crud.get_user(db, user_id)
     if user is None:
@@ -817,7 +827,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+async def update_user(user_id: int, user: UserUpdate, db: DbSession):
     """Update a user."""
     updated = crud.update_user(db, user_id, user)
     if updated is None:
@@ -826,7 +836,7 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
 
 
 @app.delete("/users/{user_id}", status_code=204)
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+async def delete_user(user_id: int, db: DbSession):
     """Delete a user."""
     if not crud.delete_user(db, user_id):
         raise HTTPException(status_code=404, detail="User not found")
@@ -834,7 +844,7 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 # Post endpoints
 @app.post("/posts", response_model=PostResponse, status_code=201)
-async def create_post(post: PostCreate, db: Session = Depends(get_db)):
+async def create_post(post: PostCreate, db: DbSession):
     """Create a new post."""
     # Verify author exists
     if crud.get_user(db, post.author_id) is None:
@@ -843,13 +853,13 @@ async def create_post(post: PostCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/posts", response_model=list[PostResponse])
-async def list_posts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_posts(db: DbSession, skip: int = 0, limit: int = 100):
     """List all posts."""
     return crud.get_posts(db, skip=skip, limit=limit)
 
 
 @app.get("/posts/{post_id}", response_model=PostResponse)
-async def get_post(post_id: int, db: Session = Depends(get_db)):
+async def get_post(post_id: int, db: DbSession):
     """Get a post by ID."""
     post = crud.get_post(db, post_id)
     if post is None:
@@ -858,7 +868,7 @@ async def get_post(post_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/posts/{post_id}", response_model=PostResponse)
-async def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_db)):
+async def update_post(post_id: int, post: PostUpdate, db: DbSession):
     """Update a post."""
     updated = crud.update_post(db, post_id, post)
     if updated is None:
@@ -867,7 +877,7 @@ async def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_
 
 
 @app.delete("/posts/{post_id}", status_code=204)
-async def delete_post(post_id: int, db: Session = Depends(get_db)):
+async def delete_post(post_id: int, db: DbSession):
     """Delete a post."""
     if not crud.delete_post(db, post_id):
         raise HTTPException(status_code=404, detail="Post not found")
@@ -877,7 +887,7 @@ async def delete_post(post_id: int, db: Session = Depends(get_db)):
 
 # User endpoints
 @app.post("/users", response_model=UserResponse, status_code=201)
-async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+async def create_user(user: UserCreate, db: DbSession):
     """Create a new user."""
     existing = crud.get_user_by_email(db, user.email)
     if existing:
@@ -886,13 +896,13 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/users", response_model=list[UserResponse])
-async def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_users(db: DbSession, skip: int = 0, limit: int = 100):
     """List all users."""
     return crud.get_users(db, skip=skip, limit=limit)
 
 
 @app.get("/users/{user_id}", response_model=UserResponse)
-async def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: DbSession):
     """Get a user by ID."""
     user = crud.get_user(db, user_id)
     if user is None:
@@ -901,7 +911,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+async def update_user(user_id: int, user: UserUpdate, db: DbSession):
     """Update a user."""
     updated = crud.update_user(db, user_id, user)
     if updated is None:
@@ -910,7 +920,7 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
 
 
 @app.delete("/users/{user_id}", status_code=204)
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+async def delete_user(user_id: int, db: DbSession):
     """Delete a user."""
     if not crud.delete_user(db, user_id):
         raise HTTPException(status_code=404, detail="User not found")
@@ -918,7 +928,7 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 # Post endpoints
 @app.post("/posts", response_model=PostResponse, status_code=201)
-async def create_post(post: PostCreate, db: Session = Depends(get_db)):
+async def create_post(post: PostCreate, db: DbSession):
     """Create a new post."""
     # Verify author exists
     if crud.get_user(db, post.author_id) is None:
@@ -927,13 +937,13 @@ async def create_post(post: PostCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/posts", response_model=list[PostResponse])
-async def list_posts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_posts(db: DbSession, skip: int = 0, limit: int = 100):
     """List all posts."""
     return crud.get_posts(db, skip=skip, limit=limit)
 
 
 @app.get("/posts/{post_id}", response_model=PostResponse)
-async def get_post(post_id: int, db: Session = Depends(get_db)):
+async def get_post(post_id: int, db: DbSession):
     """Get a post by ID."""
     post = crud.get_post(db, post_id)
     if post is None:
@@ -942,7 +952,7 @@ async def get_post(post_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/posts/{post_id}", response_model=PostResponse)
-async def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_db)):
+async def update_post(post_id: int, post: PostUpdate, db: DbSession):
     """Update a post."""
     updated = crud.update_post(db, post_id, post)
     if updated is None:
@@ -951,7 +961,7 @@ async def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_
 
 
 @app.delete("/posts/{post_id}", status_code=204)
-async def delete_post(post_id: int, db: Session = Depends(get_db)):
+async def delete_post(post_id: int, db: DbSession):
     """Delete a post."""
     if not crud.delete_post(db, post_id):
         raise HTTPException(status_code=404, detail="Post not found")

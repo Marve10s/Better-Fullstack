@@ -1,9 +1,10 @@
-import { Check, Pencil, Zap } from "lucide-react";
+import { BookOpen, Check, Pencil, Terminal, Zap } from "lucide-react";
 
 import type { StackState } from "@/lib/constant";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK } from "@/lib/stack-defaults";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
+import { getStarterTracksForEcosystem } from "@/lib/starter-tracks";
 import { cn } from "@/lib/utils";
 
 interface PresetsPanelProps {
@@ -87,6 +88,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
   const filteredPresets = PRESET_TEMPLATES.filter((p) =>
     filteredCategories.some((c) => c.id === p.category),
   );
+  const starterTracks = getStarterTracksForEcosystem(ecosystem);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -100,6 +102,82 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
 
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
         <div className="space-y-6">
+          {starterTracks.length > 0 && (
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <h2 className="font-mono text-sm font-medium">Starter tracks</h2>
+                <span className="text-xs text-muted-foreground">
+                  {starterTracks.length}
+                </span>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {starterTracks.map((track) => {
+                  const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
+                  const active = preset ? isPresetActive(preset.stack, stack) : false;
+
+                  return (
+                    <article
+                      key={track.id}
+                      className={cn(
+                        "group flex min-h-[230px] flex-col rounded-md border p-4 transition-all",
+                        active
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                          : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background">
+                          <TechIcon techId={track.icon} name={track.name} className="h-4 w-4" />
+                        </div>
+                        <span className="rounded-md border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {track.intent}
+                        </span>
+                      </div>
+
+                      <div className="mt-4">
+                        <h3 className="font-mono text-sm font-medium">{track.name}</h3>
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          {track.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {track.highlights.slice(0, 4).map((highlight) => (
+                          <span
+                            key={highlight}
+                            className="rounded-md border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                          >
+                            {highlight}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="mt-auto flex items-center gap-2 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => onApplyPreset(track.presetId)}
+                          className="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground transition-all group-hover:gap-2"
+                        >
+                          <Terminal className="h-3.5 w-3.5" />
+                          Apply
+                        </button>
+                        <a
+                          href={track.guideHref}
+                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium transition-colors hover:border-muted-foreground/40 hover:bg-muted"
+                        >
+                          <BookOpen className="h-3.5 w-3.5" />
+                          Guide
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {filteredCategories.map((category) => {
             const categoryPresets = filteredPresets.filter(
               (p) => p.category === category.id,
