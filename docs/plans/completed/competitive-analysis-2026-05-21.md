@@ -1,5 +1,7 @@
 # Competitive Analysis — better-t-stack
 
+Moved to completed on May 21, 2026 because this is now a historical snapshot rather than active planned work. Several gaps called out below have since shipped or changed status; verify current support against schemas, CLI helpers, and release notes before using this as a roadmap source.
+
 Analysis of create-better-t-stack (5.2k stars, v3.27.0) as of April 2026.
 
 ---

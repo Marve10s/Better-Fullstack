@@ -69,9 +69,9 @@ No desktop app support. better-t-stack has Tauri and Electrobun.
 
 ## Browser Extension (new category)
 
-No browser extension scaffolding. better-t-stack has WXT.
+Browser extension scaffolding is now exposed through the WXT addon path.
 
-- [ ] Add `wxt` — cross-browser extension framework. Supports vanilla, Vue, React, Solid, Svelte templates. Manifest v3.
+- [x] Add `wxt` ✅ — cross-browser extension framework. Supports vanilla, Vue, React, Solid, Svelte templates. Manifest v3.
 
 ### Implementation
 - Add as addon in `AppPlatformsSchema`
@@ -82,9 +82,9 @@ No browser extension scaffolding. better-t-stack has WXT.
 
 ## PWA (new addon)
 
-No Progressive Web App support.
+Progressive Web App support is now exposed as an addon for compatible web frontends.
 
-- [ ] Add `pwa` addon — service worker, web app manifest, offline support.
+- [x] Add `pwa` addon ✅ — service worker, web app manifest, offline support.
 
 ### Implementation
 - Add to `AppPlatformsSchema`
@@ -96,10 +96,10 @@ No Progressive Web App support.
 
 ## Docs Site (new addon)
 
-No documentation site scaffolding.
+Documentation site scaffolding is now exposed through docs-site addons.
 
-- [ ] Add `fumadocs` — docs framework with multiple template variants (next-mdx, waku, react-router, tanstack-start, etc.).
-- [ ] Add `starlight` — Astro-based documentation site. Simple, fast, built-in search.
+- [x] Add `fumadocs` ✅ — docs framework with multiple template variants (next-mdx, waku, react-router, tanstack-start, etc.).
+- [x] Add `starlight` ✅ — Astro-based documentation site. Simple, fast, built-in search.
 
 ### Implementation
 - Already listed in `AppPlatformsSchema` (starlight, fumadocs)
@@ -122,6 +122,5 @@ WXT is already tracked above. Plasmo is a more batteries-included alternative.
 2. **i18n** (paraglide + i18next + intlayer) — common production requirement
 3. **Rate Limiting** (upstash-ratelimit + arcjet) — security essential
 4. **Tauri** — desktop app support, competitive gap
-5. **PWA** — simple high-value addon
-6. **WXT / Plasmo** — browser extensions
-7. **Docs site** — fumadocs/starlight scaffolding
+5. **Plasmo** — browser extensions
+6. **Electrobun** — desktop app alternative

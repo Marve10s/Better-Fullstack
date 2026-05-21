@@ -34,7 +34,7 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 
 ## Deployment Guides
 
-- [ ] Add deployment walkthroughs for Cloudflare, Fly, Railway, Docker, SST, and Vercel
+- [x] Add deployment walkthroughs for Cloudflare, Fly, Railway, Docker, SST, and Vercel
 - [ ] Add environment-variable setup per provider
 - [ ] Add database provisioning guides for Turso, Neon, Supabase, PlanetScale, and other supported providers
 

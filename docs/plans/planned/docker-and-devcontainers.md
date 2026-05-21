@@ -1,4 +1,4 @@
-# Docker & DevContainers
+# Docker Follow-Ups & DevContainers
 
 Highly requested across both Better-Fullstack (#76 non-monorepo) and better-t-stack (#557, #806, #821). Docker is essential for self-hosted deployments and consistent dev environments.
 
@@ -6,7 +6,7 @@ Highly requested across both Better-Fullstack (#76 non-monorepo) and better-t-st
 
 ## Dockerfile Generation
 
-- [ ] Generate `Dockerfile` per app in the monorepo
+- [x] Generate `Dockerfile` per app for supported deploy targets and docker-compose addon paths
   - Multi-stage builds: `deps → build → runtime`
   - Runtime-aware: Node.js (alpine), Bun, Deno, Rust (distroless), Python (slim), Go (scratch)
   - Proper `.dockerignore` generation
@@ -26,7 +26,7 @@ Highly requested across both Better-Fullstack (#76 non-monorepo) and better-t-st
 
 ## Docker Compose
 
-- [ ] Generate `docker-compose.yml` at monorepo root
+- [x] Generate `docker-compose.yml` at monorepo root for supported addon stacks
   - Services: web app, API server, database, cache, search
   - Database service based on `--database` choice:
     - PostgreSQL: `postgres:16-alpine`
@@ -107,8 +107,8 @@ Related request from GitHub (#76, better-t-stack #678): scaffold a single app wi
 
 ## Implementation Notes
 
-- Docker generation should be opt-in: `--docker` flag or addon
-- Integrate with existing deploy targets (fly.io, railway use Dockerfiles)
+- Docker generation is opt-in through deploy targets or the `docker-compose` addon
+- Existing deploy targets such as Fly.io and Railway use Dockerfiles where applicable
 - DevContainers are always optional — generate alongside Docker when `--devcontainer` is passed
 - Consider generating a `Makefile` or `justfile` with common Docker commands
 
@@ -116,7 +116,9 @@ Related request from GitHub (#76, better-t-stack #678): scaffold a single app wi
 
 ## Priority Order
 
-1. **Dockerfile per app** — most basic, highest value
-2. **docker-compose.yml** — local dev environment
-3. **DevContainers** — onboarding DX
-4. **Non-monorepo mode** — architectural change, larger effort
+1. **DevContainers** — onboarding DX
+2. **Non-monorepo mode** — architectural change, larger effort
+
+## Completed Reference
+
+See `docs/plans/completed/deployment-docs-and-docker-foundation-2026-05-21.md` for the verified Docker/deployment foundation.

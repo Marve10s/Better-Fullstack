@@ -1,0 +1,30 @@
+---
+title: Fly.io
+description: Deploy Docker-backed Better Fullstack apps to Fly.io.
+---
+
+Fly.io works well for Docker-backed web and server apps that need long-running processes, regional placement, or a platform close to self-hosted Docker operations.
+
+## Create with Fly config
+
+```bash
+npm create better-fullstack@latest my-app -- \
+  --frontend next \
+  --backend hono \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --web-deploy fly \
+  --server-deploy fly
+```
+
+The generator emits Fly configuration and Dockerfiles for supported web and server templates.
+
+## Before deploying
+
+- Create or attach production services such as Postgres outside the generated local Docker Compose setup.
+- Set secrets with the Fly CLI or dashboard.
+- Confirm the app port in generated config matches the service that should receive traffic.
+- Run migrations against the production database before release.
+
+Fly deployments are a good fit when your selected backend expects a persistent server process instead of only serverless functions.

@@ -25,7 +25,6 @@ Task planning documents are organized by state:
 - `docs/plans/planned/new-ecosystems.md` - future language ecosystems after Java
 - `docs/plans/planned/elixir-ecosystem.md` - Elixir/Phoenix plan
 - `docs/plans/planned/dotnet-ecosystem.md` - .NET/ASP.NET plan
-- `docs/plans/planned/competitive-analysis.md` - Better T Stack gap analysis
 
 ## Completed
 
@@ -37,3 +36,5 @@ Task planning documents are organized by state:
 - `docs/plans/completed/codebase-issues-2026-04-04.md`
 - `docs/plans/completed/documentation-site-2026-04-29.md`
 - `docs/plans/completed/java-ecosystem-foundation-2026-04-29.md`
+- `docs/plans/completed/competitive-analysis-2026-05-21.md`
+- `docs/plans/completed/deployment-docs-and-docker-foundation-2026-05-21.md`
