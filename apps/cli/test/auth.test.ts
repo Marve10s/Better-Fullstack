@@ -301,6 +301,34 @@ describe("Authentication Configurations", () => {
         expectSuccess(result);
       });
     }
+
+    it("should scaffold better-auth + vinext without a missing user-menu import", async () => {
+      const result = await runTRPCTest({
+        projectName: "better-auth-vinext",
+        auth: "better-auth",
+        backend: "elysia",
+        runtime: "bun",
+        database: "postgres",
+        orm: "kysely",
+        api: "graphql-yoga",
+        frontend: ["vinext"],
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "docker",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const projectDir = result.projectDir;
+      const headerFile = await readFile(
+        join(projectDir, "apps/web/src/components/header.tsx"),
+        "utf-8",
+      );
+      expect(headerFile).not.toContain("./user-menu");
+    });
   });
 
   describe("Auth.js (NextAuth) Provider", () => {
