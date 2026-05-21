@@ -1,0 +1,28 @@
+---
+title: Cloudflare
+description: Use Cloudflare deployment targets with Workers-compatible Better Fullstack stacks.
+---
+
+Cloudflare deployment is intended for Workers-compatible stacks. In Better Fullstack, Cloudflare server deployment currently pairs with the Workers runtime and supported Hono server templates.
+
+## Create a Workers server
+
+```bash
+npm create better-fullstack@latest my-worker -- \
+  --frontend none \
+  --backend hono \
+  --runtime workers \
+  --database none \
+  --orm none \
+  --server-deploy cloudflare
+```
+
+The compatibility layer will reject Cloudflare server deployment for server runtimes that do not target Workers.
+
+## Database and service notes
+
+Workers deployments should use edge-compatible services. Docker database setup and Docker Compose are not compatible with Workers runtime stacks. Use Cloudflare-native storage or a hosted provider that works from Workers.
+
+## Auth notes
+
+When deploying auth-enabled Workers projects, update production app URLs and cookie settings for the deployed domain. Generated comments in Better Auth templates call out Cloudflare `*.workers.dev` cookie considerations where relevant.

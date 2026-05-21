@@ -22,15 +22,15 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | **Platform & Infra** | |
 | [platform-features.md](platform-features.md) | CLI features: dry-run, cross-ecosystem, template preview (MCP/add/history done) |
 | [mcp-incremental-library-updates.md](mcp-incremental-library-updates.md) | Future MCP stack mutation layer for adding scaffold-time libraries to existing projects |
-| [docker-and-devcontainers.md](docker-and-devcontainers.md) | Dockerfile gen, docker-compose, DevContainers, non-monorepo mode |
+| [docker-and-devcontainers.md](docker-and-devcontainers.md) | Remaining Docker follow-ups: DevContainers and non-monorepo mode |
 | [payment-providers-expansion.md](payment-providers-expansion.md) | Creem.io, Autumn, Commet, Better Auth orgs plugin |
 | [community-requested-integrations.md](community-requested-integrations.md) | Cloudinary, SWR, shadcn-svelte, REST API, InstantDB, Intlayer, Plasmo, etc. |
 | [mobile-react-native.md](mobile-react-native.md) | Navigation, mobile UI libs, testing, push, Capacitor, OTA updates |
 | [../completed/documentation-site-2026-04-29.md](../completed/documentation-site-2026-04-29.md) | ✅ Initial user-facing `/docs` site |
-| [documentation-follow-ups.md](documentation-follow-ups.md) | Remaining docs: roadmap, compatibility matrix, full CLI reference, deployment guides |
+| [documentation-follow-ups.md](documentation-follow-ups.md) | Remaining docs: generated flag data, env/provider examples, stack guides |
 | [ci-and-quality.md](ci-and-quality.md) | Remaining quality backlog: cross-browser testing (CI/security foundation + Phase 1 hardening completed) |
 | **Reference** | |
-| [competitive-analysis.md](competitive-analysis.md) | Gap analysis vs better-t-stack |
+| [../completed/competitive-analysis-2026-05-21.md](../completed/competitive-analysis-2026-05-21.md) | Historical gap analysis vs better-t-stack |
 | [../completed/codebase-issues-2026-04-04.md](../completed/codebase-issues-2026-04-04.md) | ✅ Bugs and quality issues from April 2026 audit (all resolved) |
 
 ## Quick Reference — All Pending Items
@@ -103,13 +103,13 @@ Master tracking file. Detailed plans live in dedicated files per area.
 
 ### Desktop / Extensions / Mobile
 - [x] Add `tauri` ✅
-- [ ] Add `wxt` (browser extensions)
+- [x] Add `wxt` (browser extensions) ✅
 - [ ] Add `plasmo` (browser extensions)
-- [ ] Add `pwa` addon
+- [x] Add `pwa` addon ✅
 
 ### Infra / DevOps
-- [ ] Dockerfile generation per app
-- [ ] `docker-compose.yml` generation
+- [x] Dockerfile generation for supported deploy/addon stacks ✅
+- [x] `docker-compose.yml` generation for supported addon stacks ✅
 - [ ] DevContainer support
 - [ ] Non-monorepo / single-app mode
 
@@ -147,6 +147,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 - [x] Interactive compatibility matrix ✅
 - [x] Public roadmap page ✅
 - [x] MCP tools reference ✅
+- [x] Deployment target docs ✅
 
 ### CI / Quality
 - [x] Phase 1 quality hardening ✅
