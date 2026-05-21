@@ -321,6 +321,11 @@ function getInstallCommand(
   }
 }
 
+
+function mcpInputSchema<T extends Record<string, unknown>>(schema: T): Record<string, unknown> {
+  return schema;
+}
+
 function filterCompatibilityResult(result: { adjustedStack: CompatibilityInput | null; notes: Record<string, unknown>; changes: { category: string; message: string }[] }, ecosystem: string) {
   const { adjustedStack, changes } = result;
   if (!adjustedStack) return { adjustedStack: null, changes };
@@ -671,10 +676,17 @@ export async function startMcpServer() {
     { instructions: INSTRUCTIONS, capabilities: { logging: {} } },
   );
 
-  server.tool(
+  const registerTool = server.tool.bind(server) as unknown as (
+    name: string,
+    description: string,
+    inputSchema: Record<string, unknown>,
+    cb: (input: any) => unknown,
+  ) => void;
+
+  registerTool(
     "bfs_get_guidance",
     "Returns workflow rules, field semantics, ambiguity rules, and critical constraints. Call this FIRST before using other tools.",
-    {},
+    mcpInputSchema({}),
     async () => {
       const guidance = getGuidance();
       return {
@@ -683,14 +695,14 @@ export async function startMcpServer() {
     },
   );
 
-  server.tool(
+  registerTool(
     "bfs_get_schema",
     "Returns valid options for a specific category (e.g., 'database', 'frontend', 'backend') or ALL categories. Use ecosystem to filter to relevant categories only.",
-    {
+    mcpInputSchema({
       category: z.string().optional().describe("Category name (e.g., 'database', 'orm', 'frontend'). Omit for all categories."),
       ecosystem: EcosystemSchema.optional().describe("Filter categories to this ecosystem (e.g., 'rust' returns only Rust + shared categories)."),
-    },
-    async ({ category, ecosystem }) => {
+    }),
+    async ({ category, ecosystem }: { category?: string; ecosystem?: ProjectConfig["ecosystem"] }) => {
       const result = getSchemaOptions(category, ecosystem);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -698,10 +710,10 @@ export async function startMcpServer() {
     },
   );
 
-  server.tool(
+  registerTool(
     "bfs_check_compatibility",
     "Validates a stack combination and returns auto-adjusted selections with warnings. Call BEFORE creating a project to avoid invalid combinations.",
-    {
+    mcpInputSchema({
       ecosystem: EcosystemSchema.describe("Language ecosystem"),
       frontend: z.array(z.string()).optional().describe("Web frontend frameworks (TypeScript only)"),
       backend: z.string().optional().describe("Backend framework"),
@@ -776,12 +788,12 @@ export async function startMcpServer() {
         .array(JavaTestingLibrariesSchema)
         .optional()
         .describe("Java testing libraries"),
-    },
-    async (input) => {
+    }),
+    async (input: Record<string, unknown>) => {
       try {
         const compatInput = buildCompatibilityInput(input);
         const result = analyzeStackCompatibility(compatInput);
-        const filtered = filterCompatibilityResult(result, input.ecosystem);
+        const filtered = filterCompatibilityResult(result, input.ecosystem as string);
         return {
           content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }],
         };
@@ -870,11 +882,11 @@ export async function startMcpServer() {
       .describe("Java testing libraries"),
   };
 
-  server.tool(
+  registerTool(
     "bfs_plan_project",
     "Dry-run: generates a project in-memory and returns the file tree WITHOUT writing to disk. Use this to preview what would be created.",
-    planCreateSchema,
-    async (input) => {
+    mcpInputSchema(planCreateSchema),
+    async (input: Record<string, unknown>) => {
       try {
         const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import("@better-fullstack/template-generator");
         const config = buildProjectConfig(input);
@@ -899,11 +911,11 @@ export async function startMcpServer() {
     },
   );
 
-  server.tool(
+  registerTool(
     "bfs_create_project",
     "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
-    { ...planCreateSchema, projectName: z.string().describe("Project name (kebab-case). Will be the directory name.") },
-    async (input) => {
+    mcpInputSchema({ ...planCreateSchema, projectName: z.string().describe("Project name (kebab-case). Will be the directory name.") }),
+    async (input: Record<string, unknown> & { projectName: string }) => {
       try {
         const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import("@better-fullstack/template-generator");
         const { writeTreeToFilesystem } = await import("@better-fullstack/template-generator/fs-writer");
@@ -938,7 +950,7 @@ export async function startMcpServer() {
         const installCmd = getInstallCommand(
           ecosystem,
           projectName,
-          input.packageManager,
+          input.packageManager as string | undefined,
           input.javaBuildTool as string | undefined,
           input.javaWebFramework as string | undefined,
         );
@@ -963,16 +975,16 @@ export async function startMcpServer() {
     },
   );
 
-  server.tool(
+  registerTool(
     "bfs_plan_addition",
     "Validates what would be added to an existing project. Reads the project config (bts.jsonc) and checks which addons are new.",
-    {
+    mcpInputSchema({
       projectDir: z.string().describe("Absolute path to the existing project directory"),
       addons: z.array(AddonsSchema).optional().describe("Addons to add"),
       webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
       serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
-    },
-    async ({ projectDir, addons, webDeploy, serverDeploy }) => {
+    }),
+    async ({ projectDir, addons, webDeploy, serverDeploy }: { projectDir: string; addons?: ProjectConfig["addons"]; webDeploy?: ProjectConfig["webDeploy"]; serverDeploy?: ProjectConfig["serverDeploy"] }) => {
       try {
         const safePath = sanitizePath(projectDir);
         const config = await readBtsConfig(safePath);
@@ -1028,28 +1040,28 @@ export async function startMcpServer() {
     },
   );
 
-  server.tool(
+  registerTool(
     "bfs_add_feature",
     "Adds addons/features to an existing Better-Fullstack project. Dependencies are NOT installed. Call bfs_plan_addition first to validate.",
-    {
+    mcpInputSchema({
       projectDir: z.string().describe("Absolute path to the existing project directory"),
       addons: z.array(AddonsSchema).optional().describe("Addons to add"),
       webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
       serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
       packageManager: PackageManagerSchema.optional().describe("Package manager to use"),
-    },
-    async (input) => {
+    }),
+    async (input: Record<string, unknown> & { projectDir: string }) => {
       try {
         const safePath = sanitizePath(input.projectDir);
         const { add } = await import("./index.js");
 
         const addInput: AddInput = {
-          addons: input.addons,
-          webDeploy: input.webDeploy,
-          serverDeploy: input.serverDeploy,
+          addons: input.addons as ProjectConfig["addons"] | undefined,
+          webDeploy: input.webDeploy as ProjectConfig["webDeploy"] | undefined,
+          serverDeploy: input.serverDeploy as ProjectConfig["serverDeploy"] | undefined,
           projectDir: safePath,
           install: false,
-          packageManager: input.packageManager,
+          packageManager: input.packageManager as ProjectConfig["packageManager"] | undefined,
         };
 
         const result = await add(addInput);
@@ -1060,7 +1072,7 @@ export async function startMcpServer() {
           const installCmd = getInstallCommand(
             ecosystem,
             dirName,
-            input.packageManager,
+            input.packageManager as string | undefined,
             existingConfig?.javaBuildTool,
             existingConfig?.javaWebFramework,
           );

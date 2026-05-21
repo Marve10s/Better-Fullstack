@@ -40,6 +40,7 @@ function TraditionalDebounce() {
         Manual useEffect + useRef + clearTimeout
       </p>
       <input
+        aria-label="Search items"
         value={rawInput}
         onChange={(e) => setRawInput(e.target.value)}
         placeholder="Type to search..."
@@ -101,6 +102,7 @@ function PacerDebounce() {
         One hook — useDebouncer with configurable wait
       </p>
       <input
+        aria-label="Search items with TanStack Pacer"
         value={rawInput}
         onChange={(e) => handleChange(e.target.value)}
         placeholder="Type to search..."
