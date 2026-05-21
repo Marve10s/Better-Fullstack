@@ -129,8 +129,8 @@ export function DocsSearchDialog({
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => onOpenChange(false)}
           />
-          <motion.div
-            role="dialog"
+          <motion.dialog
+            open
             aria-modal="true"
             aria-label="Search docs"
             className="relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
@@ -233,7 +233,7 @@ export function DocsSearchDialog({
               </span>
               <span>{searchSections.length} sections indexed</span>
             </div>
-          </motion.div>
+          </motion.dialog>
         </motion.div>
       ) : null}
     </AnimatePresence>

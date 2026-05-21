@@ -1253,6 +1253,7 @@ const StackBuilder = () => {
                             setSavePresetName(nextVisible ? stack.projectName || "" : "");
                           }}
                           title="Save current preset"
+                          aria-label="Save current preset"
                           className={cn(
                             "rounded-md p-1.5 transition-colors",
                             isSaveInputVisible
@@ -1273,6 +1274,7 @@ const StackBuilder = () => {
                           type="button"
                           onClick={resetStack}
                           title="Reset to defaults"
+                          aria-label="Reset to defaults"
                           data-testid="btn-reset"
                           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         />
@@ -1289,6 +1291,7 @@ const StackBuilder = () => {
                           type="button"
                           onClick={getRandomStack}
                           title="Generate a random stack"
+                          aria-label="Generate a random stack"
                           data-testid="btn-random"
                           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         />
