@@ -1,0 +1,59 @@
+---
+title: Create a Java API
+description: Create a Java API with Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5, and Testcontainers.
+updated: 2026-05-21
+category: Packs
+tags:
+  - java
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - create java api
+  - spring boot api starter
+  - java rest api starter
+  - spring security api
+  - spring boot jpa starter
+---
+
+Use the Java API pack when you want a Spring service with security, persistence, migrations, and tests included from the start.
+
+<StarterPackCta id="java-api" />
+
+## Generate the Java API starter
+
+Open the [Java API pack in the Stack Builder](/new?preset=java-secure&view=command&file=), or run:
+
+```bash
+bun create better-fullstack@latest my-java-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## What the pack includes
+
+- Spring Boot for the API application.
+- Spring Security for protected routes.
+- Spring Data JPA for persistence.
+- Flyway for database migrations.
+- Gradle for builds.
+- JUnit 5 and Testcontainers for tests.
+
+## First things to customize
+
+1. Replace sample entities with your aggregate roots and repositories.
+2. Configure Spring Security around your real authentication model.
+3. Add Flyway migrations before relying on generated schema behavior.
+4. Keep Testcontainers close to the API contract tests.
+
+## When this is the right pack
+
+Choose this for enterprise APIs, team-owned backend services, secure admin systems, and projects where the Java/Spring ecosystem is the expected production foundation.
+
+For the stack-level walkthrough, read [Secure Spring Boot API](/guides/java/spring-security-api/).

@@ -10,6 +10,7 @@ import { GuideFileTree } from "./guide-file-tree";
 import { GuideStackSnapshot } from "./guide-stack-snapshot";
 import { CategoryCount, OptionCount } from "./option-stats";
 import { PMTabs } from "./pm-tabs";
+import { StarterPackCta, StarterPackHub } from "./starter-pack-cta";
 
 /**
  * Registry of components passed to `<MDXProvider>` (or directly via the
@@ -36,4 +37,6 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   GuideStackSnapshot,
   OptionCount,
   PMTabs,
+  StarterPackCta,
+  StarterPackHub,
 };

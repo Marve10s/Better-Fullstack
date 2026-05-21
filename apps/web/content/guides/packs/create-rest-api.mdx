@@ -1,0 +1,56 @@
+---
+title: Create a REST API
+description: Create a REST API with FastAPI, PostgreSQL, SQLAlchemy, Pydantic, and Ruff using the Better Fullstack REST API pack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - rest-api
+  - fastapi
+  - python
+  - sqlalchemy
+  - pydantic
+keywords:
+  - create rest api
+  - build rest api
+  - fastapi rest api starter
+  - python api starter
+  - fastapi postgres sqlalchemy
+---
+
+Use the REST API pack when you need a focused backend service: routes, validation, persistence, and linting without a frontend.
+
+<StarterPackCta id="rest-api" />
+
+## Generate the REST API starter
+
+Open the [REST API pack in the Stack Builder](/new?preset=python-fastapi&view=command&file=), or run:
+
+```bash
+bun create better-fullstack@latest my-rest-api \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff
+```
+
+## What the pack includes
+
+- FastAPI for REST endpoints and OpenAPI docs.
+- SQLAlchemy for database models and queries.
+- Pydantic for request and response validation.
+- Ruff for Python linting and formatting.
+- A small project layout that is easy to deploy as an API service.
+
+## First things to customize
+
+1. Replace sample resources with your domain models.
+2. Add authentication if the API is not public.
+3. Decide which routes are read-only and which mutate data.
+4. Add integration tests for the routes that define your contract.
+
+## When this is the right pack
+
+Choose this for public APIs, service backends, internal platform APIs, webhook receivers, and products where a frontend will be built separately.
+
+For a stack-level walkthrough, read [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/).

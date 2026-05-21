@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Copy, MousePointer2 } from "lucide-react";
+import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { lazy, Suspense, useState } from "react";
 
@@ -23,12 +23,6 @@ const COMMANDS: Record<PM, string> = {
 
 const ACCENT_TEXT = "text-black dark:text-[#bef264]";
 const RELEASE_BADGE = `v${__BFS_CLI_VERSION__} · ${__BFS_BUILD_DATE__}`;
-const BUILDER_SEARCH = { view: "command" as const, file: "" };
-const HERO_STATS = [
-  ["7", "starter tracks"],
-  ["5", "ecosystems"],
-  ["1", "command"],
-] as const;
 
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
@@ -155,7 +149,7 @@ export default function HeroSection() {
             ACCENT_TEXT,
           )}
         >
-          ✦ build from intent
+          ✦ the cli
         </motion.p>
 
         <motion.h1
@@ -170,7 +164,7 @@ export default function HeroSection() {
             lineHeight: 0.94,
           }}
         >
-          Pick the outcome.
+          Stop wiring.
           <br />
           <span className={cn("italic", ACCENT_TEXT)}>Start shipping.</span>
         </motion.h1>
@@ -184,31 +178,10 @@ export default function HeroSection() {
             "dark:text-[#a3a3a3]",
           )}
         >
-          Start from a proven track for SaaS, AI agents, APIs, mobile, or internal
-          tools. Better Fullstack turns that choice into a production-ready scaffold you
-          can still customize down to the stack.
+          A CLI that scaffolds production-ready fullstack apps across five language
+          ecosystems. Pick your stack — frontend, database, auth, payments, AI — and run
+          one command.
         </motion.p>
-
-        <motion.dl
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.26 }}
-          className="relative z-10 mt-7 grid max-w-xl grid-cols-3 border-y border-[#d9e8c6] dark:border-[#1f1f1f]"
-        >
-          {HERO_STATS.map(([value, label]) => (
-            <div
-              key={label}
-              className="border-r border-[#d9e8c6] py-3 last:border-r-0 dark:border-[#1f1f1f]"
-            >
-              <dt className="font-mono text-2xl font-black leading-none tracking-[-0.04em] text-[#14532d] dark:text-[#fafafa] sm:text-3xl">
-                {value}
-              </dt>
-              <dd className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[#4d7c0f] dark:text-[#7a7a7a]">
-                {label}
-              </dd>
-            </div>
-          ))}
-        </motion.dl>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -216,20 +189,10 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="relative z-10 mt-10 flex flex-wrap items-center gap-3"
         >
-          <a
-            href="#starter-tracks"
-            className="group inline-flex items-center gap-1.5 rounded-md bg-[#bef264] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
-          >
-            <MousePointer2 className="h-4 w-4" />
-            Choose a starter track
-          </a>
           <Link
             to="/new"
-            search={BUILDER_SEARCH}
-            className={cn(
-              "group inline-flex items-center gap-1.5 rounded-md border border-[#d9e8c6] px-5 py-2.5 text-sm font-medium text-[#14532d] transition-all hover:gap-2.5 hover:bg-[#f5fbea]",
-              "dark:border-[#1f1f1f] dark:text-[#fafafa] dark:hover:bg-[#111111]",
-            )}
+            search={{ view: "command", file: "" }}
+            className="group inline-flex items-center gap-1.5 rounded-md bg-[#bef264] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
             Open the builder
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

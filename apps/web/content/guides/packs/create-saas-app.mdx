@@ -1,0 +1,67 @@
+---
+title: Create a SaaS App
+description: Learn how to create a SaaS app with Next.js, Better Auth, Stripe, PostgreSQL, Drizzle, React Email, Tailwind CSS, and shadcn/ui using Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - saas
+  - nextjs
+  - stripe
+  - better-auth
+  - drizzle
+keywords:
+  - create saas app
+  - how to make saas app
+  - build saas app
+  - create sass app
+  - nextjs saas starter
+  - saas boilerplate
+---
+
+If you are searching for how to create a SaaS app, start with the SaaS pack. It gives you the pieces most subscription products need before the first customer signs up: accounts, database tables, billing, email, UI, and a typed app structure.
+
+<StarterPackCta id="saas-app" />
+
+## Generate the SaaS starter
+
+Open the [SaaS pack in the Stack Builder](/new?preset=nextjs-saas&view=command&file=), or run the command below.
+
+```bash
+bun create better-fullstack@latest my-saas-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --email react-email \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## What the pack includes
+
+- Next.js as the web and server boundary.
+- PostgreSQL with Drizzle for relational product data.
+- Better Auth for sign-in, sessions, and account flows.
+- Stripe for subscription billing.
+- React Email for transactional email templates.
+- Tailwind CSS and shadcn/ui for the product interface.
+- tRPC for typed calls between React UI and server code.
+
+## First things to customize
+
+1. Replace the generated product name, metadata, and navigation.
+2. Add your core product tables next to the Drizzle schema.
+3. Configure Better Auth secrets and trusted origins.
+4. Create Stripe products and map them to your app plans.
+5. Add transactional emails for signup, billing, and team invites.
+
+## When this is the right pack
+
+Use this pack for subscription products, B2B dashboards, paid developer tools, team workspaces, and products where auth plus billing must be part of the first working version.
+
+For a stack-level walkthrough, read [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).

@@ -1,5 +1,12 @@
 export type StarterTrack = {
-  id: string;
+  id:
+    | "saas-app"
+    | "ai-agent-app"
+    | "rest-api"
+    | "java-api"
+    | "rust-backend"
+    | "mobile-app"
+    | "internal-tool";
   name: string;
   intent: string;
   description: string;
@@ -23,7 +30,7 @@ export const STARTER_TRACKS = [
     presetId: "nextjs-saas",
     ecosystem: "typescript",
     icon: "stripe",
-    guideHref: "/guides/typescript/nextjs-drizzle-better-auth/",
+    guideHref: "/guides/packs/create-saas-app/",
     docsHref: "/docs/deployment/vercel/",
     highlights: ["Next.js", "Better Auth", "Stripe", "Drizzle"],
     audience: "Founders validating paid products",
@@ -38,7 +45,7 @@ export const STARTER_TRACKS = [
     presetId: "ai-cli-agent-workbench",
     ecosystem: "typescript",
     icon: "ai-cli",
-    guideHref: "/guides/ai/nextjs-ai-cli-agent-workbench/",
+    guideHref: "/guides/packs/create-ai-agent-app/",
     docsHref: "/docs/ai/overview/",
     highlights: ["Next.js", "AI CLI", "MCP", "Skills"],
     audience: "Teams building agent-assisted products",
@@ -53,7 +60,7 @@ export const STARTER_TRACKS = [
     presetId: "python-fastapi",
     ecosystem: "python",
     icon: "fastapi",
-    guideHref: "/guides/python/fastapi-postgres-sqlalchemy/",
+    guideHref: "/guides/packs/create-rest-api/",
     docsHref: "/docs/deployment/docker/",
     highlights: ["FastAPI", "PostgreSQL", "SQLAlchemy", "Pydantic"],
     audience: "Backend teams exposing typed services",
@@ -68,7 +75,7 @@ export const STARTER_TRACKS = [
     presetId: "java-secure",
     ecosystem: "java",
     icon: "java",
-    guideHref: "/guides/java/spring-security-api/",
+    guideHref: "/guides/packs/create-java-api/",
     docsHref: "/docs/ecosystems/java/",
     highlights: ["Spring Boot", "Security", "JPA", "Testcontainers"],
     audience: "Java teams shipping secure APIs",
@@ -83,7 +90,7 @@ export const STARTER_TRACKS = [
     presetId: "rust-api",
     ecosystem: "rust",
     icon: "rust",
-    guideHref: "/guides/rust/axum-postgres-seaorm/",
+    guideHref: "/guides/packs/create-rust-backend/",
     docsHref: "/docs/ecosystems/rust/",
     highlights: ["Axum", "SeaORM", "PostgreSQL", "Tracing"],
     audience: "Systems-minded backend developers",
@@ -98,7 +105,7 @@ export const STARTER_TRACKS = [
     presetId: "uniwind",
     ecosystem: "typescript",
     icon: "native-uniwind",
-    guideHref: "/guides/typescript/expo-uniwind-native/",
+    guideHref: "/guides/packs/create-mobile-app/",
     docsHref: "/docs/ecosystems/typescript/",
     highlights: ["Expo", "Uniwind", "React Native", "Mobile"],
     audience: "Product teams starting native first",
@@ -113,7 +120,7 @@ export const STARTER_TRACKS = [
     presetId: "tanstack-hono",
     ecosystem: "typescript",
     icon: "hono",
-    guideHref: "/guides/typescript/hono-trpc-drizzle/",
+    guideHref: "/guides/packs/create-internal-tool/",
     docsHref: "/docs/deployment/docker/",
     highlights: ["TanStack Router", "Hono", "Drizzle", "tRPC"],
     audience: "Teams building dashboards and admin tools",
@@ -132,4 +139,8 @@ export function getStarterTrackBuilderSearch(track: StarterTrack) {
 
 export function getStarterTracksForEcosystem(ecosystem: string) {
   return STARTER_TRACKS.filter((track) => track.ecosystem === ecosystem);
+}
+
+export function getStarterTrackById(id: string) {
+  return STARTER_TRACKS.find((track) => track.id === id);
 }

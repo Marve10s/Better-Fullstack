@@ -58,7 +58,9 @@ function applyResolvedTheme(resolvedTheme: ResolvedTheme) {
 
 function getInitialResolvedTheme(): ResolvedTheme {
   if (typeof document !== "undefined") {
-    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+    const theme = document.documentElement.dataset.theme;
+    if (theme === "dark" || theme === "light") return theme;
+    return document.documentElement.classList.contains("dark") ? "dark" : resolveTheme(getStoredTheme());
   }
   return "light";
 }
