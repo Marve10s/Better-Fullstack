@@ -37,8 +37,8 @@ describe("Java Ecosystem Tab", () => {
       expect(javaEcosystem?.description).toBe("Modern Java ecosystem");
     });
 
-    it("should have exactly 5 ecosystems", () => {
-      expect(ECOSYSTEMS).toHaveLength(5);
+    it("should list every ecosystem category", () => {
+      expect(ECOSYSTEMS).toHaveLength(Object.keys(ECOSYSTEM_CATEGORIES).length);
     });
 
     it("should use the Java language icon for Java presets", () => {

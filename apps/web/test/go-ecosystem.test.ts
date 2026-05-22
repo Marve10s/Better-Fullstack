@@ -35,8 +35,8 @@ describe("Go Ecosystem Tab", () => {
       expect(goEcosystem?.description).toBe("High-performance Go ecosystem");
     });
 
-    it("should have exactly 5 ecosystems", () => {
-      expect(ECOSYSTEMS).toHaveLength(5);
+    it("should list every ecosystem category", () => {
+      expect(ECOSYSTEMS).toHaveLength(Object.keys(ECOSYSTEM_CATEGORIES).length);
     });
   });
 
