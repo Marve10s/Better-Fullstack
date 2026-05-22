@@ -1,0 +1,17 @@
+defmodule {{elixirModuleName}}Web.GraphQL.Schema do
+  use Absinthe.Schema
+
+  alias {{elixirModuleName}}Web.GraphQL.Resolvers
+
+  object :item do
+    field :id, non_null(:id)
+    field :name, non_null(:string)
+    field :description, :string
+  end
+
+  query do
+    field :items, non_null(list_of(non_null(:item))) do
+      resolve(&Resolvers.Catalog.items/3)
+    end
+  end
+end

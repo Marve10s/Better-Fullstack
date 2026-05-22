@@ -88,7 +88,22 @@ export type CompatibilityCategory =
   | "javaOrm"
   | "javaAuth"
   | "javaLibraries"
-  | "javaTestingLibraries";
+  | "javaTestingLibraries"
+  | "elixirWebFramework"
+  | "elixirOrm"
+  | "elixirAuth"
+  | "elixirApi"
+  | "elixirRealtime"
+  | "elixirJobs"
+  | "elixirValidation"
+  | "elixirHttp"
+  | "elixirJson"
+  | "elixirEmail"
+  | "elixirCaching"
+  | "elixirObservability"
+  | "elixirTesting"
+  | "elixirQuality"
+  | "elixirDeploy";
 
 export type CompatibilityIssue = {
   code: string;
@@ -109,7 +124,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go" | "java";
+  ecosystem: "typescript" | "rust" | "python" | "go" | "java" | "elixir";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -194,6 +209,21 @@ export type CompatibilityInput = {
   javaAuth: string;
   javaLibraries: string[];
   javaTestingLibraries: string[];
+  elixirWebFramework: string;
+  elixirOrm: string;
+  elixirAuth: string;
+  elixirApi: string;
+  elixirRealtime: string;
+  elixirJobs: string;
+  elixirValidation: string;
+  elixirHttp: string;
+  elixirJson: string;
+  elixirEmail: string;
+  elixirCaching: string;
+  elixirObservability: string;
+  elixirTesting: string;
+  elixirQuality: string;
+  elixirDeploy: string;
 };
 
 const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
@@ -272,6 +302,21 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "javaAuth",
   "javaLibraries",
   "javaTestingLibraries",
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
 ];
 
 const DEFAULT_RUNTIME = "bun";
@@ -385,6 +430,24 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     javaTestingLibraries: "Java Testing Libraries",
   };
 
+  const elixirCategoryNames: Record<string, string> = {
+    elixirWebFramework: "Elixir Web Framework",
+    elixirOrm: "Elixir ORM / Database",
+    elixirAuth: "Elixir Auth",
+    elixirApi: "Elixir API Layer",
+    elixirRealtime: "Elixir Realtime",
+    elixirJobs: "Elixir Jobs",
+    elixirValidation: "Elixir Validation",
+    elixirHttp: "Elixir HTTP Client",
+    elixirJson: "Elixir JSON",
+    elixirEmail: "Elixir Email",
+    elixirCaching: "Elixir Caching",
+    elixirObservability: "Elixir Observability",
+    elixirTesting: "Elixir Testing",
+    elixirQuality: "Elixir Code Quality",
+    elixirDeploy: "Elixir Deploy",
+  };
+
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
   }
@@ -399,6 +462,10 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
 
   if (javaCategoryNames[categoryKey]) {
     return javaCategoryNames[categoryKey];
+  }
+
+  if (elixirCategoryNames[categoryKey]) {
+    return elixirCategoryNames[categoryKey];
   }
 
   // Custom display names for TypeScript categories
@@ -1383,6 +1450,87 @@ export const analyzeStackCompatibility = (
   }
 
   // ============================================
+  // ELIXIR ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "elixir") {
+    if (nextStack.elixirWebFramework === "none") {
+      const dependentKeys: Array<keyof CompatibilityInput> = [
+        "elixirOrm",
+        "elixirAuth",
+        "elixirApi",
+        "elixirRealtime",
+        "elixirJobs",
+        "elixirValidation",
+        "elixirHttp",
+        "elixirJson",
+        "elixirEmail",
+        "elixirCaching",
+        "elixirObservability",
+        "elixirTesting",
+        "elixirQuality",
+        "elixirDeploy",
+      ];
+
+      for (const key of dependentKeys) {
+        if (nextStack[key] !== "none") {
+          nextStack[key] = "none" as never;
+          changed = true;
+          changes.push({
+            category: "elixirWebFramework",
+            message: `${getCategoryDisplayName(key)} set to 'None' (no Phoenix project selected)`,
+          });
+        }
+      }
+    }
+
+    if (nextStack.elixirWebFramework === "phoenix-live-view" && nextStack.elixirApi === "none") {
+      nextStack.elixirRealtime = "live-view-streams";
+      changed = true;
+      changes.push({
+        category: "elixirRealtime",
+        message: "Elixir realtime set to 'LiveView Streams' (Phoenix LiveView selected)",
+      });
+    }
+
+    if (nextStack.elixirOrm === "none") {
+      if (nextStack.elixirJobs === "oban") {
+        nextStack.elixirJobs = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+        });
+      }
+      if (nextStack.elixirAuth === "phx-gen-auth") {
+        nextStack.elixirAuth = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir auth set to 'None' (phx.gen.auth requires Ecto)",
+        });
+      }
+      if (nextStack.elixirApi === "absinthe") {
+        nextStack.elixirApi = "rest";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir API set to 'REST' (the generated Absinthe resolver needs Ecto)",
+        });
+      }
+    }
+
+    if (nextStack.elixirJobs === "oban" && nextStack.elixirOrm !== "ecto-sql") {
+      nextStack.elixirJobs = "none";
+      changed = true;
+      changes.push({
+        category: "elixirJobs",
+        message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+      });
+    }
+  }
+
+  // ============================================
   // DEPLOYMENT CONSTRAINTS
   // ============================================
 
@@ -2341,6 +2489,106 @@ export const getDisabledReason = (
     }
   }
 
+  // ============================================
+  // ELIXIR ECOSYSTEM RULES
+  // ============================================
+  const elixirCategories = new Set<CompatibilityCategory>([
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+  ]);
+
+  if (elixirCategories.has(category) && optionId !== "none") {
+    if (currentStack.ecosystem !== "elixir") {
+      return "Elixir options only apply when the Elixir ecosystem is selected";
+    }
+    if (currentStack.elixirWebFramework === "none") {
+      return "Elixir options require a Phoenix project";
+    }
+  }
+
+  if (category === "elixirWebFramework" && optionId !== "none" && currentStack.ecosystem !== "elixir") {
+    return "Phoenix is available only in the Elixir ecosystem";
+  }
+
+  if (
+    category === "elixirWebFramework" &&
+    optionId === "none" &&
+    currentStack.ecosystem === "elixir"
+  ) {
+    return "The generated Elixir scaffold currently targets Phoenix projects";
+  }
+
+  const elixirNotYetGenerated: Partial<Record<CompatibilityCategory, Record<string, string>>> = {
+    elixirOrm: {
+      ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
+    },
+    elixirAuth: {
+      ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
+      guardian: "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
+    },
+    elixirValidation: {
+      "nimble-options": "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
+    },
+    elixirJson: {
+      none: "Phoenix JSON scaffolds require Jason",
+    },
+    elixirCaching: {
+      nebulex: "Nebulex cache modules are not generated yet; use Cachex or no cache",
+    },
+    elixirObservability: {
+      opentelemetry: "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
+      prom_ex: "PromEx setup is not generated yet; use Phoenix telemetry or no extra observability",
+    },
+    elixirTesting: {
+      mox: "Mox-specific test boundaries are not generated yet; use ExUnit",
+      bypass: "Bypass-specific HTTP tests are not generated yet; use ExUnit",
+      wallaby: "Wallaby browser tests are not generated yet; use ExUnit",
+      none: "Generated Phoenix projects include ExUnit tests",
+    },
+    elixirDeploy: {
+      fly: "Fly.io config is not generated yet; use Docker or mix releases",
+      gigalixir: "Gigalixir config is not generated yet; use Docker or mix releases",
+    },
+  };
+
+  const unsupportedElixirReason = elixirNotYetGenerated[category]?.[optionId];
+  if (currentStack.ecosystem === "elixir" && unsupportedElixirReason) {
+    return unsupportedElixirReason;
+  }
+
+  if (category === "elixirAuth") {
+    if (optionId === "phx-gen-auth" && currentStack.elixirOrm === "none") {
+      return "phx.gen.auth requires Ecto";
+    }
+    if ((optionId === "ueberauth" || optionId === "guardian") && currentStack.elixirWebFramework === "none") {
+      return "Elixir auth libraries require Phoenix";
+    }
+  }
+
+  if (category === "elixirJobs" && optionId === "oban" && currentStack.elixirOrm !== "ecto-sql") {
+    return "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold";
+  }
+
+  if (category === "elixirApi" && optionId === "absinthe" && currentStack.elixirOrm === "none") {
+    return "Absinthe GraphQL requires Ecto in the current Phoenix scaffold";
+  }
+
+  if (category === "elixirRealtime" && optionId === "live-view-streams" && currentStack.elixirWebFramework !== "phoenix-live-view") {
+    return "LiveView Streams require Phoenix LiveView";
+  }
+
   return null;
 };
 
@@ -2957,6 +3205,21 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
     ["javaAuth", input.javaAuth],
+    ["elixirWebFramework", input.elixirWebFramework],
+    ["elixirOrm", input.elixirOrm],
+    ["elixirAuth", input.elixirAuth],
+    ["elixirApi", input.elixirApi],
+    ["elixirRealtime", input.elixirRealtime],
+    ["elixirJobs", input.elixirJobs],
+    ["elixirValidation", input.elixirValidation],
+    ["elixirHttp", input.elixirHttp],
+    ["elixirJson", input.elixirJson],
+    ["elixirEmail", input.elixirEmail],
+    ["elixirCaching", input.elixirCaching],
+    ["elixirObservability", input.elixirObservability],
+    ["elixirTesting", input.elixirTesting],
+    ["elixirQuality", input.elixirQuality],
+    ["elixirDeploy", input.elixirDeploy],
   ];
 
   for (const [category, optionId] of scalarChecks) {

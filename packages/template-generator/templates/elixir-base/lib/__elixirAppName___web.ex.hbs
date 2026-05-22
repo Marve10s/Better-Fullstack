@@ -1,0 +1,72 @@
+defmodule {{elixirModuleName}}Web do
+  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+
+  def controller do
+    quote do
+      use Phoenix.Controller, formats: [:html, :json]
+      import Plug.Conn
+      unquote(verified_routes())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+      import Phoenix.Controller, only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+      unquote(verified_routes())
+    end
+  end
+
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+  def live_view do
+    quote do
+      use Phoenix.LiveView
+      unquote(html_helpers())
+    end
+  end
+
+  def live_component do
+    quote do
+      use Phoenix.LiveComponent
+      unquote(html_helpers())
+    end
+  end
+{{/if}}
+
+  def channel do
+    quote do
+      use Phoenix.Channel
+    end
+  end
+
+  def router do
+    quote do
+      use Phoenix.Router, helpers: false
+      import Plug.Conn
+      import Phoenix.Controller
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+      import Phoenix.LiveView.Router
+{{/if}}
+    end
+  end
+
+  defp html_helpers do
+    quote do
+      import Phoenix.HTML
+      unquote(verified_routes())
+    end
+  end
+
+  def verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: {{elixirModuleName}}Web.Endpoint,
+        router: {{elixirModuleName}}Web.Router,
+        statics: {{elixirModuleName}}Web.static_paths()
+    end
+  end
+
+  defmacro __using__(which) when is_atom(which) do
+    apply(__MODULE__, which, [])
+  end
+end

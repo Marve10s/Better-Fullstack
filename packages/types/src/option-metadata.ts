@@ -8,6 +8,21 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   CACHING_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_JSON_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
+  ELIXIR_REALTIME_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
   I18N_VALUES,
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
@@ -158,7 +173,22 @@ export type OptionCategory =
   | "javaOrm"
   | "javaAuth"
   | "javaLibraries"
-  | "javaTestingLibraries";
+  | "javaTestingLibraries"
+  | "elixirWebFramework"
+  | "elixirOrm"
+  | "elixirAuth"
+  | "elixirApi"
+  | "elixirRealtime"
+  | "elixirJobs"
+  | "elixirValidation"
+  | "elixirHttp"
+  | "elixirJson"
+  | "elixirEmail"
+  | "elixirCaching"
+  | "elixirObservability"
+  | "elixirTesting"
+  | "elixirQuality"
+  | "elixirDeploy";
 
 export type OptionSelectionMode = "single" | "multiple";
 
@@ -351,6 +381,21 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   javaAuth: JAVA_AUTH_VALUES,
   javaLibraries: JAVA_LIBRARIES_VALUES,
   javaTestingLibraries: JAVA_TESTING_LIBRARIES_VALUES,
+  elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
+  elixirOrm: ELIXIR_ORM_VALUES,
+  elixirAuth: ELIXIR_AUTH_VALUES,
+  elixirApi: ELIXIR_API_VALUES,
+  elixirRealtime: ELIXIR_REALTIME_VALUES,
+  elixirJobs: ELIXIR_JOBS_VALUES,
+  elixirValidation: ELIXIR_VALIDATION_VALUES,
+  elixirHttp: ELIXIR_HTTP_VALUES,
+  elixirJson: ELIXIR_JSON_VALUES,
+  elixirEmail: ELIXIR_EMAIL_VALUES,
+  elixirCaching: ELIXIR_CACHING_VALUES,
+  elixirObservability: ELIXIR_OBSERVABILITY_VALUES,
+  elixirTesting: ELIXIR_TESTING_VALUES,
+  elixirQuality: ELIXIR_QUALITY_VALUES,
+  elixirDeploy: ELIXIR_DEPLOY_VALUES,
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
@@ -755,6 +800,73 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     archunit: "ArchUnit",
     jqwik: "jqwik",
   },
+  elixirWebFramework: {
+    phoenix: "Phoenix",
+    "phoenix-live-view": "Phoenix LiveView",
+  },
+  elixirOrm: {
+    ecto: "Ecto",
+    "ecto-sql": "Ecto SQL",
+  },
+  elixirAuth: {
+    "phx-gen-auth": "phx.gen.auth",
+    ueberauth: "Ueberauth",
+    guardian: "Guardian",
+  },
+  elixirApi: {
+    rest: "Phoenix REST",
+    absinthe: "Absinthe GraphQL",
+  },
+  elixirRealtime: {
+    channels: "Phoenix Channels",
+    presence: "Phoenix Presence",
+    pubsub: "Phoenix PubSub",
+    "live-view-streams": "LiveView Streams",
+  },
+  elixirJobs: {
+    oban: "Oban",
+    quantum: "Quantum",
+  },
+  elixirValidation: {
+    "ecto-changesets": "Ecto Changesets",
+    "nimble-options": "NimbleOptions",
+  },
+  elixirHttp: {
+    req: "Req",
+    finch: "Finch",
+  },
+  elixirJson: {
+    jason: "Jason",
+  },
+  elixirEmail: {
+    swoosh: "Swoosh",
+  },
+  elixirCaching: {
+    cachex: "Cachex",
+    nebulex: "Nebulex",
+  },
+  elixirObservability: {
+    telemetry: "Telemetry",
+    opentelemetry: "OpenTelemetry",
+    prom_ex: "PromEx",
+  },
+  elixirTesting: {
+    ex_unit: "ExUnit",
+    mox: "Mox",
+    bypass: "Bypass",
+    wallaby: "Wallaby",
+  },
+  elixirQuality: {
+    credo: "Credo",
+    dialyxir: "Dialyxir",
+    sobelow: "Sobelow",
+  },
+  elixirDeploy: {
+    docker: "Docker",
+    fly: "Fly.io",
+    gigalixir: "Gigalixir",
+    "mix-release": "Mix Release",
+  },
 };
 
 const OPTION_ALIASES: Partial<Record<OptionCategory, Partial<Record<string, readonly string[]>>>> =
@@ -920,6 +1032,21 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   javaAuth: buildCategoryMetadata("javaAuth"),
   javaLibraries: buildCategoryMetadata("javaLibraries"),
   javaTestingLibraries: buildCategoryMetadata("javaTestingLibraries"),
+  elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
+  elixirOrm: buildCategoryMetadata("elixirOrm"),
+  elixirAuth: buildCategoryMetadata("elixirAuth"),
+  elixirApi: buildCategoryMetadata("elixirApi"),
+  elixirRealtime: buildCategoryMetadata("elixirRealtime"),
+  elixirJobs: buildCategoryMetadata("elixirJobs"),
+  elixirValidation: buildCategoryMetadata("elixirValidation"),
+  elixirHttp: buildCategoryMetadata("elixirHttp"),
+  elixirJson: buildCategoryMetadata("elixirJson"),
+  elixirEmail: buildCategoryMetadata("elixirEmail"),
+  elixirCaching: buildCategoryMetadata("elixirCaching"),
+  elixirObservability: buildCategoryMetadata("elixirObservability"),
+  elixirTesting: buildCategoryMetadata("elixirTesting"),
+  elixirQuality: buildCategoryMetadata("elixirQuality"),
+  elixirDeploy: buildCategoryMetadata("elixirDeploy"),
 };
 
 const OPTION_LOOKUP = Object.fromEntries(

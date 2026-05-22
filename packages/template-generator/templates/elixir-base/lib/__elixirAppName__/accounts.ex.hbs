@@ -1,0 +1,10 @@
+defmodule {{elixirModuleName}}.Accounts do
+  alias {{elixirModuleName}}.Accounts.User
+  alias {{elixirModuleName}}.Repo
+
+  def create_user(attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+  end
+end

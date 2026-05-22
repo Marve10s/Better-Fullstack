@@ -54,6 +54,7 @@ import { usesVirtualNoneSelection } from "@/lib/stack-contract";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   CATEGORY_ORDER,
+  ELIXIR_CATEGORY_ORDER,
   generateStackCommand,
   generateStackSharingUrl,
   GO_CATEGORY_ORDER,
@@ -549,6 +550,8 @@ const StackBuilder = () => {
         return GO_CATEGORY_ORDER;
       case "java":
         return JAVA_CATEGORY_ORDER;
+      case "elixir":
+        return ELIXIR_CATEGORY_ORDER;
       default:
         return TYPESCRIPT_CATEGORY_ORDER;
     }

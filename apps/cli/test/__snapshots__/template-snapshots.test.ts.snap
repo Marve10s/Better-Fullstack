@@ -15533,3 +15533,441 @@ CORS_ORIGIN=http://localhost:3001"
   ],
 }
 `;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-ecto-rest 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "config/config.exs",
+  "config/dev.exs",
+  "config/runtime.exs",
+  "config/test.exs",
+  "lib/snapshot_elixir_phoenix_ecto_rest.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/application.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/catalog.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/catalog/item.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/http_client.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/repo.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/scheduler.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/room_channel.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/user_socket.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts/root.html.heex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_html.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_json.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/item_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/page_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/endpoint.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/router.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/telemetry.ex",
+  "mix.exs",
+  "priv/repo/migrations/20260101000000_create_items.exs",
+  "priv/repo/migrations/20260101000001_create_users.exs",
+  "priv/repo/seeds.exs",
+  "test/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller_test.exs",
+  "test/support/conn_case.ex",
+  "test/test_helper.exs",
+]
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-liveview-full 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "Dockerfile",
+  "README.md",
+  "config/config.exs",
+  "config/dev.exs",
+  "config/runtime.exs",
+  "config/test.exs",
+  "lib/snapshot_elixir_phoenix_liveview_full.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/accounts.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/accounts/user.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/application.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/catalog.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/catalog/item.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/http_client.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/mailer.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/scheduler.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/workers/sample_worker.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/presence.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/room_channel.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/user_socket.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts/root.html.heex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_html.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_json.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/item_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/page_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/endpoint.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/resolvers/catalog.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/router.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/telemetry.ex",
+  "mix.exs",
+  "priv/repo/migrations/20260101000000_create_items.exs",
+  "priv/repo/migrations/20260101000001_create_users.exs",
+  "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+  "priv/repo/seeds.exs",
+  "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
+  "test/support/conn_case.ex",
+  "test/test_helper.exs",
+]
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
+{
+  "fileCount": 35,
+  "files": [
+    {
+      "content": 
+"PHX_HOST=localhost
+PORT=4000
+SECRET_KEY_BASE=replace-with-mix-phx-gen-secret
+DATABASE_URL=ecto://postgres:postgres@localhost/snapshot_elixir_phoenix_ecto_rest_prod
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_DB=snapshot_elixir_phoenix_ecto_rest_dev
+POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test
+CORS_ORIGIN=http://localhost:3001"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/config.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/runtime.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/room_channel.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/user_socket.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts/root.html.heex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_html.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_json.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/item_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/page_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/endpoint.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/router.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/telemetry.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/application.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/catalog/item.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/http_client.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/repo.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/scheduler.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "mix.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000000_create_items.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000001_create_users.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/seeds.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller_test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/support/conn_case.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/test_helper.exs",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
+{
+  "fileCount": 45,
+  "files": [
+    {
+      "content": 
+"PHX_HOST=localhost
+PORT=4000
+SECRET_KEY_BASE=replace-with-mix-phx-gen-secret
+DATABASE_URL=ecto://postgres:postgres@localhost/snapshot_elixir_phoenix_liveview_full_prod
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_DB=snapshot_elixir_phoenix_liveview_full_dev
+POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test
+CORS_ORIGIN=http://localhost:3001"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/config.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/runtime.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "Dockerfile",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/presence.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/room_channel.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/user_socket.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts/root.html.heex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_html.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_json.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/item_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/page_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/endpoint.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/resolvers/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/router.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/telemetry.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/accounts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/accounts/user.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/application.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/catalog/item.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/http_client.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/mailer.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/scheduler.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/workers/sample_worker.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "mix.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000000_create_items.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000001_create_users.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/seeds.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/support/conn_case.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/test_helper.exs",
+    },
+  ],
+}
+`;

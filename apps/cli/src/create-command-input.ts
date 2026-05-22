@@ -17,6 +17,21 @@ import {
   DatabaseSetupSchema,
   DirectoryConflictSchema,
   EcosystemSchema,
+  ElixirApiSchema,
+  ElixirAuthSchema,
+  ElixirCachingSchema,
+  ElixirDeploySchema,
+  ElixirEmailSchema,
+  ElixirHttpSchema,
+  ElixirJobsSchema,
+  ElixirJsonSchema,
+  ElixirObservabilitySchema,
+  ElixirOrmSchema,
+  ElixirQualitySchema,
+  ElixirRealtimeSchema,
+  ElixirTestingSchema,
+  ElixirValidationSchema,
+  ElixirWebFrameworkSchema,
   EffectSchema,
   EmailSchema,
   ExamplesSchema,
@@ -98,7 +113,7 @@ export const CreateCommandOptionsSchema = z.object({
     .optional()
     .default(false)
     .describe("Preview generated file tree without writing to disk"),
-  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, go, or java)"),
+  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, go, java, or elixir)"),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),
   auth: AuthSchema.optional(),
@@ -219,6 +234,39 @@ export const CreateCommandOptionsSchema = z.object({
     .array(JavaTestingLibrariesSchema)
     .optional()
     .describe("Java testing libraries"),
+  elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
+    "Elixir web framework (phoenix, phoenix-live-view, none)",
+  ),
+  elixirOrm: ElixirOrmSchema.optional().describe("Elixir ORM/database (ecto, ecto-sql, none)"),
+  elixirAuth: ElixirAuthSchema.optional().describe(
+    "Elixir auth (phx-gen-auth, ueberauth, guardian, none)",
+  ),
+  elixirApi: ElixirApiSchema.optional().describe("Elixir API layer (rest, absinthe, none)"),
+  elixirRealtime: ElixirRealtimeSchema.optional().describe(
+    "Elixir realtime (channels, presence, pubsub, live-view-streams, none)",
+  ),
+  elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs (oban, quantum, none)"),
+  elixirValidation: ElixirValidationSchema.optional().describe(
+    "Elixir validation (ecto-changesets, nimble-options, none)",
+  ),
+  elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client (req, finch, none)"),
+  elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library (jason, none)"),
+  elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library (swoosh, none)"),
+  elixirCaching: ElixirCachingSchema.optional().describe(
+    "Elixir caching (cachex, nebulex, none)",
+  ),
+  elixirObservability: ElixirObservabilitySchema.optional().describe(
+    "Elixir observability (telemetry, opentelemetry, prom_ex, none)",
+  ),
+  elixirTesting: ElixirTestingSchema.optional().describe(
+    "Elixir testing (ex_unit, mox, bypass, wallaby, none)",
+  ),
+  elixirQuality: ElixirQualitySchema.optional().describe(
+    "Elixir code quality (credo, dialyxir, sobelow, none)",
+  ),
+  elixirDeploy: ElixirDeploySchema.optional().describe(
+    "Elixir deploy target (docker, fly, gigalixir, mix-release, none)",
+  ),
   aiDocs: z
     .array(AiDocsSchema)
     .optional()

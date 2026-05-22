@@ -1,0 +1,8 @@
+defmodule {{elixirModuleName}}Web.HealthControllerTest do
+  use {{elixirModuleName}}Web.ConnCase, async: true
+
+  test "GET /api/health", %{conn: conn} do
+    conn = get(conn, ~p"/api/health")
+    assert %{"status" => "ok"} = json_response(conn, 200)
+  end
+end

@@ -74,10 +74,53 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
     content = generateGoReadmeContent(config);
   } else if (config.ecosystem === "java") {
     content = generateJavaReadmeContent(config);
+  } else if (config.ecosystem === "elixir") {
+    content = generateElixirReadmeContent(config);
   } else {
     content = generateReadmeContent(config);
   }
   vfs.writeFile("README.md", content);
+}
+
+function generateElixirReadmeContent(config: ProjectConfig): string {
+  const features = [
+    config.elixirWebFramework === "phoenix-live-view" ? "Phoenix LiveView" : "Phoenix",
+    config.elixirOrm !== "none" ? `${config.elixirOrm} with PostgreSQL` : null,
+    config.elixirApi !== "none" ? `API: ${config.elixirApi}` : null,
+    config.elixirRealtime !== "none" ? `Realtime: ${config.elixirRealtime}` : null,
+    config.elixirJobs !== "none" ? `Jobs: ${config.elixirJobs}` : null,
+    config.elixirAuth !== "none" ? `Auth: ${config.elixirAuth}` : null,
+    config.elixirDeploy !== "none" ? `Deploy: ${config.elixirDeploy}` : null,
+  ].filter(Boolean) as string[];
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) for the Elixir/Phoenix ecosystem.
+
+## Stack
+
+${features.map((feature) => `- ${feature}`).join("\n")}
+
+## Getting Started
+
+Make sure Elixir, Erlang/OTP, and PostgreSQL are installed.
+
+\`\`\`sh
+mix deps.get
+mix ecto.setup
+mix phx.server
+\`\`\`
+
+Open http://localhost:4000.
+
+## Tests
+
+\`\`\`sh
+mix test
+\`\`\`
+
+Copy \`.env.example\` values into your environment before production release builds.
+`;
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {

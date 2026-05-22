@@ -73,6 +73,28 @@ Handlebars.registerHelper("projectNameWithClosingBrace", function (this: Project
   return `${this.projectName ?? ""}}`;
 });
 
+Handlebars.registerHelper("elixirAppName", function (this: ProjectConfig) {
+  return String(this.projectName ?? "my_app")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "my_app";
+});
+
+Handlebars.registerHelper("elixirModuleName", function (this: ProjectConfig) {
+  const appName = String(this.projectName ?? "my_app")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "my_app";
+
+  return appName
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+});
+
 /** Returns the CSS font-family string for the chosen shadcn font. */
 Handlebars.registerHelper("shadcnFontFamily", function (this: ProjectConfig) {
   const font = this.shadcnFont ?? "inter";

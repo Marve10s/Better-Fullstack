@@ -1,0 +1,20 @@
+FROM hexpm/elixir:1.16.3-erlang-26.2.5-debian-bookworm-20240423-slim AS build
+
+RUN apt-get update -y && apt-get install -y build-essential git && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+ENV MIX_ENV=prod
+
+RUN mix local.hex --force && mix local.rebar --force
+COPY mix.exs mix.lock* ./
+RUN mix deps.get --only $MIX_ENV
+COPY config config
+COPY lib lib
+COPY priv priv
+RUN mix release
+
+FROM debian:bookworm-20240423-slim AS app
+RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+ENV MIX_ENV=prod
+COPY --from=build /app/_build/prod/rel/{{elixirAppName}} ./
+CMD ["/app/bin/{{elixirAppName}}", "start"]

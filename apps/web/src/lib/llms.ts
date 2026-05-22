@@ -38,6 +38,7 @@ export function generateLlmsTxt({
       "/docs/ecosystems/python",
       "/docs/ecosystems/go",
       "/docs/ecosystems/java",
+      "/docs/ecosystems/elixir",
     ].includes(page.url),
   );
 

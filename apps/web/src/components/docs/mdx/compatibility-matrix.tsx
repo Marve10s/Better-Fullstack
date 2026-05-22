@@ -27,6 +27,7 @@ const ECOSYSTEMS: Array<{ id: Ecosystem; label: string }> = [
   { id: "python", label: "Python" },
   { id: "go", label: "Go" },
   { id: "java", label: "Java" },
+  { id: "elixir", label: "Elixir" },
 ];
 
 const TYPESCRIPT_CATEGORIES: SelectCategory[] = [
@@ -133,6 +134,25 @@ const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
     "packageManager",
     "versionChannel",
   ],
+  elixir: [
+    "elixirWebFramework",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+    "packageManager",
+    "versionChannel",
+  ],
 };
 
 const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
@@ -175,6 +195,13 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "javaBuildTool", label: "Build tool" },
     { category: "javaOrm", label: "ORM" },
     { category: "javaAuth", label: "Auth" },
+  ],
+  elixir: [
+    { category: "elixirWebFramework", label: "Framework" },
+    { category: "elixirOrm", label: "Persistence" },
+    { category: "elixirAuth", label: "Auth" },
+    { category: "elixirApi", label: "API" },
+    { category: "elixirRealtime", label: "Realtime" },
   ],
 };
 

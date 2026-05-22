@@ -1,0 +1,7 @@
+defmodule {{elixirModuleName}}Web.HealthController do
+  use {{elixirModuleName}}Web, :controller
+
+  def show(conn, _params) do
+    json(conn, %{status: "ok", app: "{{projectName}}"})
+  end
+end

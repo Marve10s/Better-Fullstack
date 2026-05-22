@@ -1,0 +1,47 @@
+defmodule {{elixirModuleName}}Web.ItemLive.Index do
+  use {{elixirModuleName}}Web, :live_view
+
+  alias {{elixirModuleName}}.Catalog
+
+  @impl true
+  def mount(_params, _session, socket) do
+    socket =
+      socket
+      |> assign(:form, to_form(%{"name" => "", "description" => ""}))
+      |> stream(:items, Catalog.list_items())
+
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("create", %{"name" => name, "description" => description}, socket) do
+    case Catalog.create_item(%{"name" => name, "description" => description}) do
+      {:ok, item} ->
+        {:noreply, stream_insert(socket, :items, item)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :form, to_form(changeset))}
+    end
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <main style="font-family: system-ui; max-width: 760px; margin: 4rem auto;">
+      <h1>Items</h1>
+      <form phx-submit="create" style="display: grid; gap: .75rem; margin-bottom: 2rem;">
+        <input name="name" placeholder="Name" />
+        <input name="description" placeholder="Description" />
+        <button>Create</button>
+      </form>
+      <ul id="items" phx-update="stream">
+        <%= for {id, item} <- @streams.items do %>
+          <li id={id}>
+            <strong>{item.name}</strong> {item.description}
+          </li>
+        <% end %>
+      </ul>
+    </main>
+    """
+  end
+end

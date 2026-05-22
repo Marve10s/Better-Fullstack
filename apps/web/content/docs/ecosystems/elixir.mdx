@@ -1,0 +1,68 @@
+---
+title: Elixir
+description: Phoenix scaffolds with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, realtime, jobs, tests, and deployment files.
+---
+
+Elixir projects generate standalone Phoenix applications. The scaffold follows Mix and Phoenix conventions instead of the TypeScript monorepo layout used by the default ecosystem.
+
+## Prerequisites
+
+- Elixir and Erlang/OTP compatible with Phoenix 1.7.
+- PostgreSQL when using `ecto-sql`, `phx-gen-auth`, or `oban`.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```bash
+bun create better-fullstack@latest my-phoenix-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth phx-gen-auth \
+  --elixir-api absinthe \
+  --elixir-realtime presence \
+  --elixir-jobs oban \
+  --elixir-http req \
+  --elixir-json jason \
+  --elixir-observability telemetry \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## Elixir categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `phoenix` `phoenix-live-view` |
+| Persistence | `ecto-sql` `none` |
+| Auth | `phx-gen-auth` `none` |
+| API | `rest` `absinthe` `none` |
+| Realtime | `channels` `presence` `pubsub` `live-view-streams` `none` |
+| Jobs | `oban` `quantum` `none` |
+| HTTP | `req` `finch` `none` |
+| JSON | `jason` |
+| Email | `swoosh` `none` |
+| Caching | `cachex` `none` |
+| Observability | `telemetry` `none` |
+| Testing | `ex_unit` |
+| Quality | `credo` `dialyxir` `sobelow` `none` |
+| Deploy | `docker` `mix-release` `none` |
+
+## Compatibility notes
+
+- Elixir options only apply with `--ecosystem elixir`.
+- Phoenix and Phoenix LiveView are standalone Elixir web frameworks; TypeScript frontend and backend options are ignored.
+- `phx-gen-auth` and Oban require Ecto SQL because the generated code needs a Repo and migrations.
+- Oban targets PostgreSQL-backed Ecto SQL projects.
+- LiveView streams require `phoenix-live-view`.
+- Dep-only choices that do not yet generate real Phoenix code, such as Ueberauth, Guardian, Nebulex, PromEx, OpenTelemetry, Wallaby, Fly.io, and Gigalixir, are rejected by the CLI and disabled in the builder until matching templates exist.
+
+## Generated behavior
+
+- The project includes `mix.exs`, Phoenix config, router, endpoint, controllers, tests, `.env.example`, and setup notes.
+- Ecto SQL selections include a Repo, migrations, schema/context code, and PostgreSQL config.
+- Optional selections add working Phoenix files for LiveView, Channels/Presence, Oban or Quantum jobs, Absinthe schema/resolvers, Req/Finch HTTP clients, Swoosh mailer, Cachex, Dockerfile, and release config.

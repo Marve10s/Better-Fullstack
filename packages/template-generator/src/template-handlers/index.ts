@@ -4,6 +4,7 @@ export { processRustBaseTemplate } from "./rust-base";
 export { processPythonBaseTemplate } from "./python-base";
 export { processGoBaseTemplate } from "./go-base";
 export { processJavaBaseTemplate } from "./java-base";
+export { processElixirBaseTemplate } from "./elixir-base";
 export { processFrontendTemplates } from "./frontend";
 export { processBackendTemplates } from "./backend";
 export { processDbTemplates } from "./database";

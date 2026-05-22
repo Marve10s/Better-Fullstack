@@ -95,6 +95,23 @@ export async function getinstallChoice(
     return response;
   }
 
+  if (ecosystem === "elixir") {
+    const mixInstalled = await commandExists("mix");
+    if (!mixInstalled) {
+      log.warn("Mix is not installed. Please install Elixir from https://elixir-lang.org/install.html");
+      return false;
+    }
+
+    const response = await navigableConfirm({
+      message: "Run mix deps.get and mix compile?",
+      initialValue: DEFAULT_CONFIG.install,
+    });
+
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+    return response;
+  }
+
   // For TypeScript: existing behavior
   const response = await navigableConfirm({
     message: "Install dependencies?",

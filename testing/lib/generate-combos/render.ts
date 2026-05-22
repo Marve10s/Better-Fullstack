@@ -73,6 +73,17 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
         ? fingerprint.javaTestingLibraries.filter((value) => value !== "none").join("-")
         : undefined,
     ],
+    elixir: [
+      typeof fingerprint.elixirWebFramework === "string"
+        ? fingerprint.elixirWebFramework
+        : undefined,
+      typeof fingerprint.elixirOrm === "string" ? fingerprint.elixirOrm : undefined,
+      typeof fingerprint.elixirAuth === "string" ? fingerprint.elixirAuth : undefined,
+      typeof fingerprint.elixirApi === "string" ? fingerprint.elixirApi : undefined,
+      typeof fingerprint.elixirRealtime === "string" ? fingerprint.elixirRealtime : undefined,
+      typeof fingerprint.elixirJobs === "string" ? fingerprint.elixirJobs : undefined,
+      typeof fingerprint.elixirDeploy === "string" ? fingerprint.elixirDeploy : undefined,
+    ],
   } as const;
 
   const ecosystemTokens =
@@ -186,6 +197,24 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["java-testing-libraries", withExplicitNone(config.javaTestingLibraries)],
   ];
 
+  const elixirFlags: Array<[string, string | readonly string[]]> = [
+    ["elixir-web-framework", config.elixirWebFramework],
+    ["elixir-orm", config.elixirOrm],
+    ["elixir-auth", config.elixirAuth],
+    ["elixir-api", config.elixirApi],
+    ["elixir-realtime", config.elixirRealtime],
+    ["elixir-jobs", config.elixirJobs],
+    ["elixir-validation", config.elixirValidation],
+    ["elixir-http", config.elixirHttp],
+    ["elixir-json", config.elixirJson],
+    ["elixir-email", config.elixirEmail],
+    ["elixir-caching", config.elixirCaching],
+    ["elixir-observability", config.elixirObservability],
+    ["elixir-testing", config.elixirTesting],
+    ["elixir-quality", config.elixirQuality],
+    ["elixir-deploy", config.elixirDeploy],
+  ];
+
   const orderedFlags = [...commonFlags];
   switch (config.ecosystem) {
     case "typescript":
@@ -218,6 +247,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "java":
       orderedFlags.push(...sharedServiceFlags, ...javaFlags);
+      break;
+    case "elixir":
+      orderedFlags.push(...elixirFlags);
       break;
   }
 

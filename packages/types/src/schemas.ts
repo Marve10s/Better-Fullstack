@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const EcosystemSchema = z
-  .enum(["typescript", "rust", "python", "go", "java"])
-  .describe("Language ecosystem (typescript, rust, python, go, or java)");
+  .enum(["typescript", "rust", "python", "go", "java", "elixir"])
+  .describe("Language ecosystem (typescript, rust, python, go, java, or elixir)");
 
 export const DatabaseSchema = z
   .enum(["none", "sqlite", "postgres", "mysql", "mongodb", "edgedb", "redis"])
@@ -447,6 +447,61 @@ export const JavaTestingLibrariesSchema = z
   ])
   .describe("Java testing libraries");
 
+// Elixir ecosystem schemas
+export const ElixirWebFrameworkSchema = z
+  .enum(["phoenix", "phoenix-live-view", "none"])
+  .describe("Elixir web framework");
+
+export const ElixirOrmSchema = z
+  .enum(["ecto", "ecto-sql", "none"])
+  .describe("Elixir database layer");
+
+export const ElixirAuthSchema = z
+  .enum(["phx-gen-auth", "ueberauth", "guardian", "none"])
+  .describe("Elixir authentication library");
+
+export const ElixirApiSchema = z
+  .enum(["rest", "absinthe", "none"])
+  .describe("Elixir API layer");
+
+export const ElixirRealtimeSchema = z
+  .enum(["channels", "presence", "pubsub", "live-view-streams", "none"])
+  .describe("Elixir realtime feature");
+
+export const ElixirJobsSchema = z
+  .enum(["oban", "quantum", "none"])
+  .describe("Elixir jobs and scheduling");
+
+export const ElixirValidationSchema = z
+  .enum(["ecto-changesets", "nimble-options", "none"])
+  .describe("Elixir validation and data contracts");
+
+export const ElixirHttpSchema = z.enum(["req", "finch", "none"]).describe("Elixir HTTP client");
+
+export const ElixirJsonSchema = z.enum(["jason", "none"]).describe("Elixir JSON library");
+
+export const ElixirEmailSchema = z.enum(["swoosh", "none"]).describe("Elixir email library");
+
+export const ElixirCachingSchema = z
+  .enum(["cachex", "nebulex", "none"])
+  .describe("Elixir caching library");
+
+export const ElixirObservabilitySchema = z
+  .enum(["telemetry", "opentelemetry", "prom_ex", "none"])
+  .describe("Elixir observability library");
+
+export const ElixirTestingSchema = z
+  .enum(["ex_unit", "mox", "bypass", "wallaby", "none"])
+  .describe("Elixir testing library");
+
+export const ElixirQualitySchema = z
+  .enum(["credo", "dialyxir", "sobelow", "none"])
+  .describe("Elixir code quality tool");
+
+export const ElixirDeploySchema = z
+  .enum(["docker", "fly", "gigalixir", "mix-release", "none"])
+  .describe("Elixir deployment target");
+
 export const AiDocsSchema = z
   .enum(["claude-md", "agents-md", "cursorrules", "none"])
   .describe("AI documentation files (CLAUDE.md, Agents.md, .cursorrules)");
@@ -649,6 +704,22 @@ export const CreateInputSchema = z.object({
   javaAuth: JavaAuthSchema.optional(),
   javaLibraries: z.array(JavaLibrariesSchema).optional(),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema).optional(),
+  // Elixir ecosystem options
+  elixirWebFramework: ElixirWebFrameworkSchema.optional(),
+  elixirOrm: ElixirOrmSchema.optional(),
+  elixirAuth: ElixirAuthSchema.optional(),
+  elixirApi: ElixirApiSchema.optional(),
+  elixirRealtime: ElixirRealtimeSchema.optional(),
+  elixirJobs: ElixirJobsSchema.optional(),
+  elixirValidation: ElixirValidationSchema.optional(),
+  elixirHttp: ElixirHttpSchema.optional(),
+  elixirJson: ElixirJsonSchema.optional(),
+  elixirEmail: ElixirEmailSchema.optional(),
+  elixirCaching: ElixirCachingSchema.optional(),
+  elixirObservability: ElixirObservabilitySchema.optional(),
+  elixirTesting: ElixirTestingSchema.optional(),
+  elixirQuality: ElixirQualitySchema.optional(),
+  elixirDeploy: ElixirDeploySchema.optional(),
   // AI documentation files
   aiDocs: z.array(AiDocsSchema).optional(),
 });
@@ -753,6 +824,22 @@ export const ProjectConfigSchema = z.object({
   javaAuth: JavaAuthSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
+  // Elixir ecosystem options
+  elixirWebFramework: ElixirWebFrameworkSchema,
+  elixirOrm: ElixirOrmSchema,
+  elixirAuth: ElixirAuthSchema,
+  elixirApi: ElixirApiSchema,
+  elixirRealtime: ElixirRealtimeSchema,
+  elixirJobs: ElixirJobsSchema,
+  elixirValidation: ElixirValidationSchema,
+  elixirHttp: ElixirHttpSchema,
+  elixirJson: ElixirJsonSchema,
+  elixirEmail: ElixirEmailSchema,
+  elixirCaching: ElixirCachingSchema,
+  elixirObservability: ElixirObservabilitySchema,
+  elixirTesting: ElixirTestingSchema,
+  elixirQuality: ElixirQualitySchema,
+  elixirDeploy: ElixirDeploySchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
 });
@@ -841,6 +928,22 @@ export const BetterTStackConfigSchema = z.object({
   javaAuth: JavaAuthSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
+  // Elixir ecosystem options
+  elixirWebFramework: ElixirWebFrameworkSchema,
+  elixirOrm: ElixirOrmSchema,
+  elixirAuth: ElixirAuthSchema,
+  elixirApi: ElixirApiSchema,
+  elixirRealtime: ElixirRealtimeSchema,
+  elixirJobs: ElixirJobsSchema,
+  elixirValidation: ElixirValidationSchema,
+  elixirHttp: ElixirHttpSchema,
+  elixirJson: ElixirJsonSchema,
+  elixirEmail: ElixirEmailSchema,
+  elixirCaching: ElixirCachingSchema,
+  elixirObservability: ElixirObservabilitySchema,
+  elixirTesting: ElixirTestingSchema,
+  elixirQuality: ElixirQualitySchema,
+  elixirDeploy: ElixirDeploySchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
 });
@@ -939,6 +1042,21 @@ export const JAVA_ORM_VALUES = JavaOrmSchema.options;
 export const JAVA_AUTH_VALUES = JavaAuthSchema.options;
 export const JAVA_LIBRARIES_VALUES = JavaLibrariesSchema.options;
 export const JAVA_TESTING_LIBRARIES_VALUES = JavaTestingLibrariesSchema.options;
+export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
+export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
+export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;
+export const ELIXIR_API_VALUES = ElixirApiSchema.options;
+export const ELIXIR_REALTIME_VALUES = ElixirRealtimeSchema.options;
+export const ELIXIR_JOBS_VALUES = ElixirJobsSchema.options;
+export const ELIXIR_VALIDATION_VALUES = ElixirValidationSchema.options;
+export const ELIXIR_HTTP_VALUES = ElixirHttpSchema.options;
+export const ELIXIR_JSON_VALUES = ElixirJsonSchema.options;
+export const ELIXIR_EMAIL_VALUES = ElixirEmailSchema.options;
+export const ELIXIR_CACHING_VALUES = ElixirCachingSchema.options;
+export const ELIXIR_OBSERVABILITY_VALUES = ElixirObservabilitySchema.options;
+export const ELIXIR_TESTING_VALUES = ElixirTestingSchema.options;
+export const ELIXIR_QUALITY_VALUES = ElixirQualitySchema.options;
+export const ELIXIR_DEPLOY_VALUES = ElixirDeploySchema.options;
 export const AI_DOCS_VALUES = AiDocsSchema.options;
 export const SHADCN_BASE_VALUES = ShadcnBaseSchema.options;
 export const SHADCN_STYLE_VALUES = ShadcnStyleSchema.options;

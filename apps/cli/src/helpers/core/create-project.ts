@@ -23,6 +23,7 @@ import {
   runMavenTests,
   runUvSync,
   runGoModTidy,
+  runMixCompile,
 } from "./install-dependencies";
 import { displayPostInstallInstructions } from "./post-installation";
 
@@ -100,6 +101,10 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       } else {
         await runMavenTests({ projectDir });
       }
+    }
+
+    if (options.install && options.ecosystem === "elixir") {
+      await runMixCompile({ projectDir });
     }
 
     await initializeGit(projectDir, options.git);

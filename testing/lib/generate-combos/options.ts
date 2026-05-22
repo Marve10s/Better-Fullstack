@@ -14,6 +14,21 @@ import {
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
   EFFECT_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_JSON_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
+  ELIXIR_REALTIME_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
   EXAMPLES_VALUES,
   FILE_STORAGE_VALUES,
@@ -425,6 +440,51 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
+  const elixirWebFramework = sampleScalar(ELIXIR_WEB_FRAMEWORK_VALUES, 0.08, "elixirWebFramework");
+  const usesPhoenix = elixirWebFramework !== "none";
+  const elixirOrm = usesPhoenix ? sampleScalar(ELIXIR_ORM_VALUES, 0.15, "elixirOrm") : "none";
+  const hasEcto = elixirOrm !== "none";
+
+  return {
+    ecosystem: "elixir",
+    options: {
+      ...createCommonOptions("elixir", args),
+      elixirWebFramework,
+      elixirOrm,
+      elixirAuth: hasEcto ? sampleScalar(ELIXIR_AUTH_VALUES, 0.55, "elixirAuth") : "none",
+      elixirApi: usesPhoenix ? sampleScalar(ELIXIR_API_VALUES, 0.2, "elixirApi") : "none",
+      elixirRealtime: usesPhoenix
+        ? sampleScalar(ELIXIR_REALTIME_VALUES, 0.25, "elixirRealtime")
+        : "none",
+      elixirJobs: elixirOrm === "ecto-sql"
+        ? sampleScalar(ELIXIR_JOBS_VALUES, 0.55, "elixirJobs")
+        : "none",
+      elixirValidation: hasEcto
+        ? sampleScalar(ELIXIR_VALIDATION_VALUES, 0.2, "elixirValidation")
+        : "none",
+      elixirHttp: usesPhoenix ? sampleScalar(ELIXIR_HTTP_VALUES, 0.25, "elixirHttp") : "none",
+      elixirJson: usesPhoenix ? sampleScalar(ELIXIR_JSON_VALUES, 0.05, "elixirJson") : "none",
+      elixirEmail: usesPhoenix ? sampleScalar(ELIXIR_EMAIL_VALUES, 0.7, "elixirEmail") : "none",
+      elixirCaching: usesPhoenix
+        ? sampleScalar(ELIXIR_CACHING_VALUES, 0.75, "elixirCaching")
+        : "none",
+      elixirObservability: usesPhoenix
+        ? sampleScalar(ELIXIR_OBSERVABILITY_VALUES, 0.35, "elixirObservability")
+        : "none",
+      elixirTesting: usesPhoenix
+        ? sampleScalar(ELIXIR_TESTING_VALUES, 0.15, "elixirTesting")
+        : "none",
+      elixirQuality: usesPhoenix
+        ? sampleScalar(ELIXIR_QUALITY_VALUES, 0.25, "elixirQuality")
+        : "none",
+      elixirDeploy: usesPhoenix
+        ? sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy")
+        : "none",
+    },
+  };
+}
+
 function buildProvidedFlags(options: CLIInput): Set<string> {
   const providedFlags = new Set<string>();
 
@@ -526,6 +586,21 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaAuth: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
+    elixirWebFramework: "none",
+    elixirOrm: "none",
+    elixirAuth: "none",
+    elixirApi: "none",
+    elixirRealtime: "none",
+    elixirJobs: "none",
+    elixirValidation: "none",
+    elixirHttp: "none",
+    elixirJson: "none",
+    elixirEmail: "none",
+    elixirCaching: "none",
+    elixirObservability: "none",
+    elixirTesting: "none",
+    elixirQuality: "none",
+    elixirDeploy: "none",
     aiDocs: [],
     packageManager: "bun",
     git: false,
@@ -592,6 +667,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
       return makeGoDraft(args);
     case "java":
       return makeJavaDraft(args);
+    case "elixir":
+      return makeElixirDraft(args);
   }
 }
 

@@ -60,6 +60,11 @@ export async function displayPostInstallInstructions(
     return;
   }
 
+  if (ecosystem === "elixir") {
+    displayElixirInstructions(config);
+    return;
+  }
+
   const isConvex = backend === "convex";
   const isBackendSelf = backend === "self";
   const runCmd =
@@ -1254,6 +1259,53 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `\n${pc.bold("Enjoying Better Fullstack?")} Help us grow — star the repo!\n`;
   output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
   output += pc.dim("Your star helps other developers discover the project.");
+
+  consola.box(output);
+}
+
+function displayElixirInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
+  const {
+    relativePath,
+    depsInstalled,
+    elixirWebFramework,
+    elixirOrm,
+    elixirApi,
+    elixirRealtime,
+    elixirJobs,
+    elixirAuth,
+    elixirDeploy,
+  } = config;
+
+  let output = `${pc.bold("Project created successfully!")}\n\n`;
+
+  output += `${pc.bold("Next steps:")}\n`;
+  output += `${pc.cyan("1.")} cd ${relativePath}\n`;
+  if (!depsInstalled) {
+    output += `${pc.cyan("2.")} mix deps.get\n`;
+    output += `${pc.cyan("3.")} mix ecto.setup\n`;
+    output += `${pc.cyan("4.")} mix phx.server\n`;
+  } else {
+    output += `${pc.cyan("2.")} mix ecto.setup\n`;
+    output += `${pc.cyan("3.")} mix phx.server\n`;
+  }
+
+  output += `\n${pc.bold("Selected Elixir stack:")}\n`;
+  output += `${pc.cyan("•")} Web: ${elixirWebFramework}\n`;
+  output += `${pc.cyan("•")} Database: ${elixirOrm}\n`;
+  output += `${pc.cyan("•")} API: ${elixirApi}\n`;
+  output += `${pc.cyan("•")} Realtime: ${elixirRealtime}\n`;
+  output += `${pc.cyan("•")} Jobs: ${elixirJobs}\n`;
+  output += `${pc.cyan("•")} Auth: ${elixirAuth}\n`;
+  output += `${pc.cyan("•")} Deploy: ${elixirDeploy}\n`;
+
+  output += `\n${pc.bold("Common Mix commands:")}\n`;
+  output += `${pc.cyan("•")} Run: mix phx.server\n`;
+  output += `${pc.cyan("•")} Test: mix test\n`;
+  output += `${pc.cyan("•")} Format: mix format\n`;
+  output += `${pc.cyan("•")} Compile: mix compile\n`;
+
+  output += `\n${pc.bold("Your Phoenix app will be available at:")}\n`;
+  output += `${pc.cyan("•")} Web: http://localhost:4000\n`;
 
   consola.box(output);
 }

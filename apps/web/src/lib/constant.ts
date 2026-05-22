@@ -3587,6 +3587,102 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  // Elixir ecosystem options
+  elixirWebFramework: [
+    {
+      id: "phoenix",
+      name: "Phoenix",
+      description: "Productive Elixir web framework",
+      icon: "https://cdn.simpleicons.org/phoenixframework/FD4F00",
+      color: "from-orange-500 to-fuchsia-600",
+      default: true,
+    },
+    {
+      id: "phoenix-live-view",
+      name: "Phoenix LiveView",
+      description: "Realtime server-rendered UI with Phoenix",
+      icon: "https://cdn.simpleicons.org/phoenixframework/FD4F00",
+      color: "from-fuchsia-500 to-rose-600",
+    },
+    { id: "none", name: "No Web Framework", description: "Skip Phoenix", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirOrm: [
+    { id: "ecto-sql", name: "Ecto SQL", description: "Ecto with SQL adapters and migrations", icon: "", color: "from-violet-500 to-indigo-600", default: true },
+    { id: "ecto", name: "Ecto", description: "Schemas and changesets without SQL repo wiring", icon: "", color: "from-purple-500 to-violet-600" },
+    { id: "none", name: "No ORM", description: "Skip database layer", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirAuth: [
+    { id: "phx-gen-auth", name: "phx.gen.auth", description: "Phoenix account and session scaffold", icon: "", color: "from-emerald-500 to-teal-600" },
+    { id: "ueberauth", name: "Ueberauth", description: "OAuth strategy foundation", icon: "", color: "from-blue-500 to-cyan-600" },
+    { id: "guardian", name: "Guardian", description: "JWT authentication foundation", icon: "", color: "from-amber-500 to-orange-600" },
+    { id: "none", name: "No Auth", description: "Skip auth", icon: "", color: "from-gray-400 to-gray-600", default: true },
+  ],
+  elixirApi: [
+    { id: "rest", name: "Phoenix REST", description: "JSON controllers and resources", icon: "", color: "from-sky-500 to-cyan-600", default: true },
+    { id: "absinthe", name: "Absinthe GraphQL", description: "GraphQL schema and resolvers", icon: "https://cdn.simpleicons.org/graphql/E10098", color: "from-pink-500 to-violet-600" },
+    { id: "none", name: "No API", description: "Skip API routes", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirRealtime: [
+    { id: "channels", name: "Phoenix Channels", description: "WebSocket channel endpoint", icon: "", color: "from-cyan-500 to-blue-600", default: true },
+    { id: "presence", name: "Phoenix Presence", description: "Presence tracking over PubSub", icon: "", color: "from-teal-500 to-emerald-600" },
+    { id: "pubsub", name: "Phoenix PubSub", description: "PubSub foundation", icon: "", color: "from-blue-500 to-indigo-600" },
+    { id: "live-view-streams", name: "LiveView Streams", description: "Realtime LiveView stream UI", icon: "", color: "from-fuchsia-500 to-pink-600" },
+    { id: "none", name: "No Realtime", description: "Skip realtime feature", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirJobs: [
+    { id: "oban", name: "Oban", description: "PostgreSQL-backed jobs and workers", icon: "", color: "from-indigo-500 to-violet-600" },
+    { id: "quantum", name: "Quantum", description: "Cron-like scheduler", icon: "", color: "from-amber-500 to-yellow-600" },
+    { id: "none", name: "No Jobs", description: "Skip jobs layer", icon: "", color: "from-gray-400 to-gray-600", default: true },
+  ],
+  elixirValidation: [
+    { id: "ecto-changesets", name: "Ecto Changesets", description: "Data validation with Ecto", icon: "", color: "from-purple-500 to-indigo-600", default: true },
+    { id: "nimble-options", name: "NimbleOptions", description: "Declarative option validation", icon: "", color: "from-lime-500 to-emerald-600" },
+    { id: "none", name: "No Validation", description: "Skip validation helper", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirHttp: [
+    { id: "req", name: "Req", description: "High-level HTTP client", icon: "", color: "from-green-500 to-teal-600", default: true },
+    { id: "finch", name: "Finch", description: "Pooled HTTP client", icon: "", color: "from-sky-500 to-blue-600" },
+    { id: "none", name: "No HTTP Client", description: "Skip HTTP client", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirJson: [
+    { id: "jason", name: "Jason", description: "Phoenix JSON library", icon: "", color: "from-yellow-500 to-orange-600", default: true },
+    { id: "none", name: "No JSON", description: "Skip JSON library", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirEmail: [
+    { id: "swoosh", name: "Swoosh", description: "Phoenix email library", icon: "", color: "from-rose-500 to-pink-600" },
+    { id: "none", name: "No Email", description: "Skip email", icon: "", color: "from-gray-400 to-gray-600", default: true },
+  ],
+  elixirCaching: [
+    { id: "cachex", name: "Cachex", description: "In-memory cache", icon: "", color: "from-teal-500 to-cyan-600" },
+    { id: "nebulex", name: "Nebulex", description: "Cache abstraction", icon: "", color: "from-blue-500 to-violet-600" },
+    { id: "none", name: "No Cache", description: "Skip cache layer", icon: "", color: "from-gray-400 to-gray-600", default: true },
+  ],
+  elixirObservability: [
+    { id: "telemetry", name: "Telemetry", description: "Phoenix telemetry metrics", icon: "", color: "from-cyan-500 to-blue-600", default: true },
+    { id: "opentelemetry", name: "OpenTelemetry", description: "Distributed tracing", icon: "https://cdn.simpleicons.org/opentelemetry/000000", color: "from-orange-500 to-red-600" },
+    { id: "prom_ex", name: "PromEx", description: "Prometheus metrics for Phoenix", icon: "https://cdn.simpleicons.org/prometheus/E6522C", color: "from-orange-500 to-amber-600" },
+    { id: "none", name: "No Observability", description: "Skip observability", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirTesting: [
+    { id: "ex_unit", name: "ExUnit", description: "Standard Elixir tests", icon: "", color: "from-green-500 to-emerald-600", default: true },
+    { id: "mox", name: "Mox", description: "Concurrent-safe mocks", icon: "", color: "from-violet-500 to-purple-600" },
+    { id: "bypass", name: "Bypass", description: "HTTP service fakes", icon: "", color: "from-sky-500 to-cyan-600" },
+    { id: "wallaby", name: "Wallaby", description: "Browser acceptance tests", icon: "", color: "from-pink-500 to-rose-600" },
+    { id: "none", name: "No Testing", description: "Skip test library", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirQuality: [
+    { id: "credo", name: "Credo", description: "Static code analysis", icon: "", color: "from-amber-500 to-yellow-600", default: true },
+    { id: "dialyxir", name: "Dialyxir", description: "Dialyzer integration", icon: "", color: "from-indigo-500 to-blue-600" },
+    { id: "sobelow", name: "Sobelow", description: "Phoenix security analysis", icon: "", color: "from-red-500 to-rose-600" },
+    { id: "none", name: "No Quality Tool", description: "Skip code quality", icon: "", color: "from-gray-400 to-gray-600" },
+  ],
+  elixirDeploy: [
+    { id: "docker", name: "Docker", description: "Dockerfile for Phoenix releases", icon: "https://cdn.simpleicons.org/docker/2496ED", color: "from-blue-500 to-cyan-600" },
+    { id: "fly", name: "Fly.io", description: "Fly.io-ready release structure", icon: "", color: "from-violet-500 to-indigo-600" },
+    { id: "gigalixir", name: "Gigalixir", description: "Gigalixir release notes", icon: "", color: "from-purple-500 to-fuchsia-600" },
+    { id: "mix-release", name: "Mix Release", description: "Release-ready runtime config", icon: "", color: "from-slate-500 to-zinc-600" },
+    { id: "none", name: "No Deploy Files", description: "Skip deploy files", icon: "", color: "from-gray-400 to-gray-600", default: true },
+  ],
   // Java ecosystem options
   javaWebFramework: [
     {
@@ -3950,6 +4046,13 @@ export const ECOSYSTEMS: {
     icon: "/icon/java.svg",
     color: "from-red-500 to-orange-600",
   },
+  {
+    id: "elixir",
+    name: "Elixir",
+    description: "Phoenix full-stack ecosystem",
+    icon: "https://cdn.simpleicons.org/elixir/4B275F",
+    color: "from-purple-500 to-fuchsia-600",
+  },
 ];
 
 // Categories available for each ecosystem
@@ -4058,6 +4161,26 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "git",
     "install",
   ],
+  elixir: [
+    "elixirWebFramework",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+    "aiDocs",
+    "git",
+    "install",
+  ],
 };
 
 export const PRESET_CATEGORIES = [
@@ -4076,6 +4199,7 @@ export const PRESET_CATEGORIES = [
   { id: "python", name: "Python", icon: "fastapi", ecosystem: "python" },
   { id: "go", name: "Go", icon: "gin", ecosystem: "go" },
   { id: "java", name: "Java", icon: "java", ecosystem: "java" },
+  { id: "elixir", name: "Elixir", icon: "phoenix", ecosystem: "elixir" },
 ] as const;
 
 export type PresetCategory = (typeof PRESET_CATEGORIES)[number]["id"];

@@ -1125,6 +1125,123 @@ const CATEGORY_LINKS: LinkMap = {
     githubUrl: "https://github.com/react-icons/react-icons",
   },
 
+  // ─── Elixir / Phoenix ─────────────────────────────────────────────────────
+  "elixirWebFramework:phoenix": {
+    docsUrl: "https://hexdocs.pm/phoenix/",
+    githubUrl: "https://github.com/phoenixframework/phoenix",
+  },
+  "elixirWebFramework:phoenix-live-view": {
+    docsUrl: "https://hexdocs.pm/phoenix_live_view/",
+    githubUrl: "https://github.com/phoenixframework/phoenix_live_view",
+  },
+  "elixirOrm:ecto-sql": {
+    docsUrl: "https://hexdocs.pm/ecto_sql/",
+    githubUrl: "https://github.com/elixir-ecto/ecto_sql",
+  },
+  "elixirOrm:ecto": {
+    docsUrl: "https://hexdocs.pm/ecto/",
+    githubUrl: "https://github.com/elixir-ecto/ecto",
+  },
+  "elixirAuth:phx-gen-auth": { docsUrl: "https://hexdocs.pm/phoenix/mix_phx_gen_auth.html" },
+  "elixirAuth:ueberauth": {
+    docsUrl: "https://hexdocs.pm/ueberauth/",
+    githubUrl: "https://github.com/ueberauth/ueberauth",
+  },
+  "elixirAuth:guardian": {
+    docsUrl: "https://hexdocs.pm/guardian/",
+    githubUrl: "https://github.com/ueberauth/guardian",
+  },
+  "elixirApi:rest": { docsUrl: "https://hexdocs.pm/phoenix/controllers.html" },
+  "elixirApi:absinthe": {
+    docsUrl: "https://hexdocs.pm/absinthe/",
+    githubUrl: "https://github.com/absinthe-graphql/absinthe",
+  },
+  "elixirRealtime:channels": { docsUrl: "https://hexdocs.pm/phoenix/channels.html" },
+  "elixirRealtime:presence": { docsUrl: "https://hexdocs.pm/phoenix/Phoenix.Presence.html" },
+  "elixirRealtime:pubsub": {
+    docsUrl: "https://hexdocs.pm/phoenix_pubsub/",
+    githubUrl: "https://github.com/phoenixframework/phoenix_pubsub",
+  },
+  "elixirRealtime:live-view-streams": {
+    docsUrl: "https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#stream/4",
+    githubUrl: "https://github.com/phoenixframework/phoenix_live_view",
+  },
+  "elixirJobs:oban": {
+    docsUrl: "https://hexdocs.pm/oban/",
+    githubUrl: "https://github.com/sorentwo/oban",
+  },
+  "elixirJobs:quantum": {
+    docsUrl: "https://hexdocs.pm/quantum/",
+    githubUrl: "https://github.com/quantum-elixir/quantum-core",
+  },
+  "elixirValidation:ecto-changesets": {
+    docsUrl: "https://hexdocs.pm/ecto/Ecto.Changeset.html",
+    githubUrl: "https://github.com/elixir-ecto/ecto",
+  },
+  "elixirValidation:nimble-options": {
+    docsUrl: "https://hexdocs.pm/nimble_options/",
+    githubUrl: "https://github.com/dashbitco/nimble_options",
+  },
+  "elixirHttp:req": {
+    docsUrl: "https://hexdocs.pm/req/",
+    githubUrl: "https://github.com/wojtekmach/req",
+  },
+  "elixirHttp:finch": {
+    docsUrl: "https://hexdocs.pm/finch/",
+    githubUrl: "https://github.com/sneako/finch",
+  },
+  "elixirJson:jason": {
+    docsUrl: "https://hexdocs.pm/jason/",
+    githubUrl: "https://github.com/michalmuskala/jason",
+  },
+  "elixirEmail:swoosh": {
+    docsUrl: "https://hexdocs.pm/swoosh/",
+    githubUrl: "https://github.com/swoosh/swoosh",
+  },
+  "elixirCaching:cachex": {
+    docsUrl: "https://hexdocs.pm/cachex/",
+    githubUrl: "https://github.com/whitfin/cachex",
+  },
+  "elixirCaching:nebulex": {
+    docsUrl: "https://hexdocs.pm/nebulex/",
+    githubUrl: "https://github.com/cabol/nebulex",
+  },
+  "elixirObservability:telemetry": {
+    docsUrl: "https://hexdocs.pm/telemetry/",
+    githubUrl: "https://github.com/beam-telemetry/telemetry",
+  },
+  "elixirObservability:prom_ex": {
+    docsUrl: "https://hexdocs.pm/prom_ex/",
+    githubUrl: "https://github.com/akoutmos/prom_ex",
+  },
+  "elixirTesting:ex_unit": { docsUrl: "https://hexdocs.pm/ex_unit/" },
+  "elixirTesting:mox": {
+    docsUrl: "https://hexdocs.pm/mox/",
+    githubUrl: "https://github.com/dashbitco/mox",
+  },
+  "elixirTesting:bypass": {
+    docsUrl: "https://hexdocs.pm/bypass/",
+    githubUrl: "https://github.com/PSPDFKit-labs/bypass",
+  },
+  "elixirTesting:wallaby": {
+    docsUrl: "https://hexdocs.pm/wallaby/",
+    githubUrl: "https://github.com/elixir-wallaby/wallaby",
+  },
+  "elixirQuality:credo": {
+    docsUrl: "https://hexdocs.pm/credo/",
+    githubUrl: "https://github.com/rrrene/credo",
+  },
+  "elixirQuality:dialyxir": {
+    docsUrl: "https://hexdocs.pm/dialyxir/",
+    githubUrl: "https://github.com/jeremyjh/dialyxir",
+  },
+  "elixirQuality:sobelow": {
+    docsUrl: "https://hexdocs.pm/sobelow/",
+    githubUrl: "https://github.com/nccgroup/sobelow",
+  },
+  "elixirDeploy:gigalixir": { docsUrl: "https://gigalixir.readthedocs.io/" },
+  "elixirDeploy:mix-release": { docsUrl: "https://hexdocs.pm/mix/Mix.Tasks.Release.html" },
+
   // ─── shadcn Color Themes────────────────────
   "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },
 

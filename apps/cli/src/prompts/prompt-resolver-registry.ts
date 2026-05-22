@@ -10,6 +10,21 @@ import {
   CSS_FRAMEWORK_VALUES,
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_JSON_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
+  ELIXIR_REALTIME_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
@@ -68,6 +83,23 @@ import { resolveCMSPrompt } from "./cms";
 import { resolveCSSFrameworkPrompt } from "./css-framework";
 import { resolveDatabasePrompt } from "./database";
 import { resolveDBSetupPrompt } from "./database-setup";
+import {
+  resolveElixirApiPrompt,
+  resolveElixirAuthPrompt,
+  resolveElixirCachingPrompt,
+  resolveElixirDeployPrompt,
+  resolveElixirEmailPrompt,
+  resolveElixirHttpPrompt,
+  resolveElixirJobsPrompt,
+  resolveElixirJsonPrompt,
+  resolveElixirObservabilityPrompt,
+  resolveElixirOrmPrompt,
+  resolveElixirQualityPrompt,
+  resolveElixirRealtimePrompt,
+  resolveElixirTestingPrompt,
+  resolveElixirValidationPrompt,
+  resolveElixirWebFrameworkPrompt,
+} from "./elixir-ecosystem";
 import { resolveEmailPrompt } from "./email";
 import { resolveFileUploadPrompt } from "./file-upload";
 import { resolveFrontendPrompt } from "./frontend";
@@ -441,5 +473,80 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     resolve: ({ value }: { value?: string[] } = {}) =>
       resolveJavaTestingLibrariesPrompt(value as any),
     coverageContexts: [{}, { value: ["none"] }],
+  },
+  elixirWebFramework: {
+    schemaValues: ELIXIR_WEB_FRAMEWORK_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirWebFrameworkPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirOrm: {
+    schemaValues: ELIXIR_ORM_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirOrmPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirAuth: {
+    schemaValues: ELIXIR_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirAuthPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirApi: {
+    schemaValues: ELIXIR_API_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirApiPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirRealtime: {
+    schemaValues: ELIXIR_REALTIME_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirRealtimePrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirJobs: {
+    schemaValues: ELIXIR_JOBS_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirJobsPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirValidation: {
+    schemaValues: ELIXIR_VALIDATION_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirValidationPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirHttp: {
+    schemaValues: ELIXIR_HTTP_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirHttpPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirJson: {
+    schemaValues: ELIXIR_JSON_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirJsonPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirEmail: {
+    schemaValues: ELIXIR_EMAIL_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirEmailPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirCaching: {
+    schemaValues: ELIXIR_CACHING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirCachingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirObservability: {
+    schemaValues: ELIXIR_OBSERVABILITY_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirObservabilityPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirTesting: {
+    schemaValues: ELIXIR_TESTING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirTestingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirQuality: {
+    schemaValues: ELIXIR_QUALITY_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirQualityPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirDeploy: {
+    schemaValues: ELIXIR_DEPLOY_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirDeployPrompt(value as any),
+    coverageContexts: [{}],
   },
 };

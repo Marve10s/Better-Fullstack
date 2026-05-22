@@ -11,6 +11,21 @@ import type {
   Caching,
   CMS,
   CSSFramework,
+  ElixirApi,
+  ElixirAuth,
+  ElixirCaching,
+  ElixirDeploy,
+  ElixirEmail,
+  ElixirHttp,
+  ElixirJobs,
+  ElixirJson,
+  ElixirObservability,
+  ElixirOrm,
+  ElixirQuality,
+  ElixirRealtime,
+  ElixirTesting,
+  ElixirValidation,
+  ElixirWebFramework,
   I18n,
   Database,
   DatabaseSetup,
@@ -88,6 +103,23 @@ import { getCMSChoice } from "./cms";
 import { getCSSFrameworkChoice } from "./css-framework";
 import { getDatabaseChoice } from "./database";
 import { getDBSetupChoice } from "./database-setup";
+import {
+  getElixirApiChoice,
+  getElixirAuthChoice,
+  getElixirCachingChoice,
+  getElixirDeployChoice,
+  getElixirEmailChoice,
+  getElixirHttpChoice,
+  getElixirJobsChoice,
+  getElixirJsonChoice,
+  getElixirObservabilityChoice,
+  getElixirOrmChoice,
+  getElixirQualityChoice,
+  getElixirRealtimeChoice,
+  getElixirTestingChoice,
+  getElixirValidationChoice,
+  getElixirWebFrameworkChoice,
+} from "./elixir-ecosystem";
 import { getEcosystemChoice } from "./ecosystem";
 import { getEffectChoice } from "./effect";
 import { getEmailChoice } from "./email";
@@ -232,6 +264,22 @@ type PromptGroupResults = {
   javaAuth: JavaAuth;
   javaLibraries: JavaLibraries[];
   javaTestingLibraries: JavaTestingLibraries[];
+  // Elixir ecosystem
+  elixirWebFramework: ElixirWebFramework;
+  elixirOrm: ElixirOrm;
+  elixirAuth: ElixirAuth;
+  elixirApi: ElixirApi;
+  elixirRealtime: ElixirRealtime;
+  elixirJobs: ElixirJobs;
+  elixirValidation: ElixirValidation;
+  elixirHttp: ElixirHttp;
+  elixirJson: ElixirJson;
+  elixirEmail: ElixirEmail;
+  elixirCaching: ElixirCaching;
+  elixirObservability: ElixirObservability;
+  elixirTesting: ElixirTesting;
+  elixirQuality: ElixirQuality;
+  elixirDeploy: ElixirDeploy;
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
@@ -618,6 +666,67 @@ export async function gatherConfig(
         }
         return getJavaTestingLibrariesChoice(flags.javaTestingLibraries);
       },
+      // Elixir ecosystem prompts (skip if not Elixir)
+      elixirWebFramework: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
+        return getElixirWebFrameworkChoice(flags.elixirWebFramework);
+      },
+      elixirOrm: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirOrm);
+        return getElixirOrmChoice(flags.elixirOrm);
+      },
+      elixirAuth: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirAuth);
+        return getElixirAuthChoice(flags.elixirAuth);
+      },
+      elixirApi: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirApi);
+        return getElixirApiChoice(flags.elixirApi);
+      },
+      elixirRealtime: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirRealtime);
+        return getElixirRealtimeChoice(flags.elixirRealtime);
+      },
+      elixirJobs: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJobs);
+        return getElixirJobsChoice(flags.elixirJobs);
+      },
+      elixirValidation: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirValidation);
+        return getElixirValidationChoice(flags.elixirValidation);
+      },
+      elixirHttp: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirHttp);
+        return getElixirHttpChoice(flags.elixirHttp);
+      },
+      elixirJson: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirJson);
+        return getElixirJsonChoice(flags.elixirJson);
+      },
+      elixirEmail: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirEmail);
+        return getElixirEmailChoice(flags.elixirEmail);
+      },
+      elixirCaching: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirCaching);
+        return getElixirCachingChoice(flags.elixirCaching);
+      },
+      elixirObservability: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirObservability);
+        return getElixirObservabilityChoice(flags.elixirObservability);
+      },
+      elixirTesting: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirTesting);
+        return getElixirTestingChoice(flags.elixirTesting);
+      },
+      elixirQuality: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirQuality);
+        return getElixirQualityChoice(flags.elixirQuality);
+      },
+      elixirDeploy: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
+        return getElixirDeployChoice(flags.elixirDeploy);
+      },
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
@@ -627,7 +736,8 @@ export async function gatherConfig(
           results.ecosystem === "rust" ||
           results.ecosystem === "python" ||
           results.ecosystem === "go" ||
-          results.ecosystem === "java"
+          results.ecosystem === "java" ||
+          results.ecosystem === "elixir"
         )
           return Promise.resolve(flags.packageManager ?? getUserPkgManager());
         return getPackageManagerChoice(flags.packageManager);
@@ -722,6 +832,22 @@ export async function gatherConfig(
     javaAuth: result.javaAuth,
     javaLibraries: result.javaLibraries,
     javaTestingLibraries: result.javaTestingLibraries,
+    // Elixir ecosystem options
+    elixirWebFramework: result.elixirWebFramework,
+    elixirOrm: result.elixirOrm,
+    elixirAuth: result.elixirAuth,
+    elixirApi: result.elixirApi,
+    elixirRealtime: result.elixirRealtime,
+    elixirJobs: result.elixirJobs,
+    elixirValidation: result.elixirValidation,
+    elixirHttp: result.elixirHttp,
+    elixirJson: result.elixirJson,
+    elixirEmail: result.elixirEmail,
+    elixirCaching: result.elixirCaching,
+    elixirObservability: result.elixirObservability,
+    elixirTesting: result.elixirTesting,
+    elixirQuality: result.elixirQuality,
+    elixirDeploy: result.elixirDeploy,
     // AI documentation files
     aiDocs: result.aiDocs,
   };

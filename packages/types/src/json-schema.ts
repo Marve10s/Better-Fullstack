@@ -21,6 +21,21 @@ import {
   ProjectConfigSchema,
   BetterTStackConfigSchema,
   InitResultSchema,
+  ElixirApiSchema,
+  ElixirAuthSchema,
+  ElixirCachingSchema,
+  ElixirDeploySchema,
+  ElixirEmailSchema,
+  ElixirHttpSchema,
+  ElixirJobsSchema,
+  ElixirJsonSchema,
+  ElixirObservabilitySchema,
+  ElixirOrmSchema,
+  ElixirQualitySchema,
+  ElixirRealtimeSchema,
+  ElixirTestingSchema,
+  ElixirValidationSchema,
+  ElixirWebFrameworkSchema,
   JavaAuthSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
@@ -134,6 +149,66 @@ export function getJavaTestingLibrariesJsonSchema() {
   return z.toJSONSchema(JavaTestingLibrariesSchema);
 }
 
+export function getElixirWebFrameworkJsonSchema() {
+  return z.toJSONSchema(ElixirWebFrameworkSchema);
+}
+
+export function getElixirOrmJsonSchema() {
+  return z.toJSONSchema(ElixirOrmSchema);
+}
+
+export function getElixirAuthJsonSchema() {
+  return z.toJSONSchema(ElixirAuthSchema);
+}
+
+export function getElixirApiJsonSchema() {
+  return z.toJSONSchema(ElixirApiSchema);
+}
+
+export function getElixirRealtimeJsonSchema() {
+  return z.toJSONSchema(ElixirRealtimeSchema);
+}
+
+export function getElixirJobsJsonSchema() {
+  return z.toJSONSchema(ElixirJobsSchema);
+}
+
+export function getElixirValidationJsonSchema() {
+  return z.toJSONSchema(ElixirValidationSchema);
+}
+
+export function getElixirHttpJsonSchema() {
+  return z.toJSONSchema(ElixirHttpSchema);
+}
+
+export function getElixirJsonJsonSchema() {
+  return z.toJSONSchema(ElixirJsonSchema);
+}
+
+export function getElixirEmailJsonSchema() {
+  return z.toJSONSchema(ElixirEmailSchema);
+}
+
+export function getElixirCachingJsonSchema() {
+  return z.toJSONSchema(ElixirCachingSchema);
+}
+
+export function getElixirObservabilityJsonSchema() {
+  return z.toJSONSchema(ElixirObservabilitySchema);
+}
+
+export function getElixirTestingJsonSchema() {
+  return z.toJSONSchema(ElixirTestingSchema);
+}
+
+export function getElixirQualityJsonSchema() {
+  return z.toJSONSchema(ElixirQualitySchema);
+}
+
+export function getElixirDeployJsonSchema() {
+  return z.toJSONSchema(ElixirDeploySchema);
+}
+
 // Get all JSON schemas as a single object
 export function getAllJsonSchemas() {
   return {
@@ -159,6 +234,21 @@ export function getAllJsonSchemas() {
     javaAuth: getJavaAuthJsonSchema(),
     javaLibraries: getJavaLibrariesJsonSchema(),
     javaTestingLibraries: getJavaTestingLibrariesJsonSchema(),
+    elixirWebFramework: getElixirWebFrameworkJsonSchema(),
+    elixirOrm: getElixirOrmJsonSchema(),
+    elixirAuth: getElixirAuthJsonSchema(),
+    elixirApi: getElixirApiJsonSchema(),
+    elixirRealtime: getElixirRealtimeJsonSchema(),
+    elixirJobs: getElixirJobsJsonSchema(),
+    elixirValidation: getElixirValidationJsonSchema(),
+    elixirHttp: getElixirHttpJsonSchema(),
+    elixirJson: getElixirJsonJsonSchema(),
+    elixirEmail: getElixirEmailJsonSchema(),
+    elixirCaching: getElixirCachingJsonSchema(),
+    elixirObservability: getElixirObservabilityJsonSchema(),
+    elixirTesting: getElixirTestingJsonSchema(),
+    elixirQuality: getElixirQualityJsonSchema(),
+    elixirDeploy: getElixirDeployJsonSchema(),
     createInput: getCreateInputJsonSchema(),
     projectConfig: getProjectConfigJsonSchema(),
     betterTStackConfig: getBetterTStackConfigJsonSchema(),

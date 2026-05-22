@@ -191,6 +191,30 @@ function getJavaFlags(config: ProjectConfig) {
   return flags;
 }
 
+function getElixirFlags(config: ProjectConfig) {
+  const flags = ["--ecosystem elixir"];
+
+  flags.push(`--elixir-web-framework ${config.elixirWebFramework}`);
+  flags.push(`--elixir-orm ${config.elixirOrm}`);
+  flags.push(`--elixir-auth ${config.elixirAuth}`);
+  flags.push(`--elixir-api ${config.elixirApi}`);
+  flags.push(`--elixir-realtime ${config.elixirRealtime}`);
+  flags.push(`--elixir-jobs ${config.elixirJobs}`);
+  flags.push(`--elixir-validation ${config.elixirValidation}`);
+  flags.push(`--elixir-http ${config.elixirHttp}`);
+  flags.push(`--elixir-json ${config.elixirJson}`);
+  flags.push(`--elixir-email ${config.elixirEmail}`);
+  flags.push(`--elixir-caching ${config.elixirCaching}`);
+  flags.push(`--elixir-observability ${config.elixirObservability}`);
+  flags.push(`--elixir-testing ${config.elixirTesting}`);
+  flags.push(`--elixir-quality ${config.elixirQuality}`);
+  flags.push(`--elixir-deploy ${config.elixirDeploy}`);
+
+  appendCommonFlags(flags, config);
+
+  return flags;
+}
+
 export function generateReproducibleCommand(config: ProjectConfig) {
   let flags: string[];
 
@@ -206,6 +230,9 @@ export function generateReproducibleCommand(config: ProjectConfig) {
       break;
     case "java":
       flags = getJavaFlags(config);
+      break;
+    case "elixir":
+      flags = getElixirFlags(config);
       break;
     case "typescript":
     default:

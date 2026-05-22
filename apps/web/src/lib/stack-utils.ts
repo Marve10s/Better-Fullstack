@@ -138,6 +138,27 @@ const JAVA_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "install",
 ];
 
+const ELIXIR_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+  "aiDocs",
+  "git",
+  "install",
+];
+
 // Combined category order for backwards compatibility
 const CATEGORY_ORDER = [
   ...new Set([
@@ -146,6 +167,7 @@ const CATEGORY_ORDER = [
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
     ...JAVA_CATEGORY_ORDER,
+    ...ELIXIR_CATEGORY_ORDER,
   ]),
 ] as Array<keyof typeof TECH_OPTIONS>;
 
@@ -203,4 +225,5 @@ export {
   PYTHON_CATEGORY_ORDER,
   GO_CATEGORY_ORDER,
   JAVA_CATEGORY_ORDER,
+  ELIXIR_CATEGORY_ORDER,
 };
