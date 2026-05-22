@@ -43,6 +43,13 @@ import type {
   Analytics,
   FeatureFlags,
   AiDocs,
+  MobileNavigation,
+  MobileUI,
+  MobileStorage,
+  MobileTesting,
+  MobilePush,
+  MobileOTA,
+  MobileDeepLinking,
 } from "../src/types";
 
 import { create } from "../src/index";
@@ -165,6 +172,13 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
     "jobQueue",
     "analytics",
     "featureFlags",
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
     "aiDocs",
   ];
   const hasSpecificCoreConfig = coreStackFlags.some((flag) => config[flag] !== undefined);
@@ -215,6 +229,13 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
         jobQueue: "none" as JobQueue,
         analytics: "none" as Analytics,
         featureFlags: "none" as FeatureFlags,
+        mobileNavigation: "none" as MobileNavigation,
+        mobileUI: "none" as MobileUI,
+        mobileStorage: "none" as MobileStorage,
+        mobileTesting: "none" as MobileTesting,
+        mobilePush: "none" as MobilePush,
+        mobileOTA: "none" as MobileOTA,
+        mobileDeepLinking: "none" as MobileDeepLinking,
         aiDocs: [] as AiDocs[],
       };
 
