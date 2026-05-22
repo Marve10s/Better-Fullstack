@@ -6,11 +6,27 @@ import type { TemplateData } from "./utils";
 import { isBinaryFile, processTemplateString, transformFilename } from "../core/template-processor";
 
 function getElixirAppName(config: ProjectConfig) {
-  return String(config.projectName ?? "my_app")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "my_app";
+  const rawName = String(config.projectName ?? "my_app").toLowerCase();
+  const parts: string[] = [];
+  let pendingSeparator = false;
+
+  for (const char of rawName) {
+    const code = char.charCodeAt(0);
+    const isLowercaseLetter = code >= 97 && code <= 122;
+    const isDigit = code >= 48 && code <= 57;
+
+    if (isLowercaseLetter || isDigit) {
+      if (pendingSeparator && parts.length > 0) {
+        parts.push("_");
+      }
+      parts.push(char);
+      pendingSeparator = false;
+    } else {
+      pendingSeparator = parts.length > 0;
+    }
+  }
+
+  return parts.join("") || "my_app";
 }
 
 export async function processElixirBaseTemplate(
