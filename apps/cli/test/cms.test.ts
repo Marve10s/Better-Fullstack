@@ -1,4 +1,4 @@
-import { describe, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
 
@@ -488,6 +488,12 @@ describe("CMS Options", () => {
         }),
       );
       expectSuccess(result);
+
+      const imageHelper = await Bun.file(
+        `${result.projectDir}/apps/web/src/sanity/lib/image.ts`,
+      ).text();
+      expect(imageHelper).toContain('import type { SanityImageSource } from "@sanity/image-url";');
+      expect(imageHelper).not.toContain("@sanity/image-url/lib/types/types");
     });
 
     test("sanity with Astro", async () => {
@@ -826,4 +832,3 @@ describe("CMS Options", () => {
     });
   });
 });
-

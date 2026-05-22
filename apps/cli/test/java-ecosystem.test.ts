@@ -478,6 +478,9 @@ describe("Java Ecosystem", () => {
       expect(gradleContent).toContain('mainClass = "com.example.javaplaingradletests.Application"');
       expect(gradleContent).toContain('testImplementation(platform("org.junit:junit-bom:5.12.2"))');
       expect(gradleContent).toContain(
+        'testRuntimeOnly("org.junit.platform:junit-platform-launcher")',
+      );
+      expect(gradleContent).toContain(
         'testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")',
       );
       expect(gradleContent).toContain(
