@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Tabs } from "expo-router";
 import { useUnistyles } from "react-native-unistyles";
 
@@ -37,3 +38,4 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+{{/if}}

@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { TabBarIcon } from "@/components/tabbar-icon";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Tabs } from "expo-router";
@@ -38,4 +39,4 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
+{{/if}}

@@ -209,6 +209,24 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
   {
+    name: "native-mobile-integrations",
+    config: {
+      frontend: ["native-bare"],
+      backend: "hono",
+      api: "orpc",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      mobileNavigation: "react-navigation",
+      mobileUI: "gluestack-ui",
+      mobileStorage: "mmkv",
+      mobileTesting: "maestro-react-native-testing-library",
+      mobilePush: "expo-notifications",
+      mobileOTA: "expo-updates",
+      mobileDeepLinking: "expo-linking",
+    },
+  },
+  {
     name: "java-spring-boot-jpa-security",
     config: {
       ecosystem: "java",
@@ -273,6 +291,13 @@ const DEFAULT_CONFIG: Partial<ProjectConfig> = {
   cms: "none",
   ai: "none",
   jobQueue: "none",
+  mobileNavigation: "expo-router",
+  mobileUI: "none",
+  mobileStorage: "none",
+  mobileTesting: "none",
+  mobilePush: "none",
+  mobileOTA: "none",
+  mobileDeepLinking: "expo-linking",
 };
 
 describe("Template Snapshots", () => {

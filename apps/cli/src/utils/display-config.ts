@@ -104,8 +104,48 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Observability:")} ${String(config.observability)}`);
   }
 
+  if (config.featureFlags !== undefined) {
+    configDisplay.push(`${pc.blue("Feature Flags:")} ${String(config.featureFlags)}`);
+  }
+
+  if (config.analytics !== undefined) {
+    configDisplay.push(`${pc.blue("Analytics:")} ${String(config.analytics)}`);
+  }
+
+  if (config.mobileNavigation !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile Navigation:")} ${String(config.mobileNavigation)}`);
+  }
+
+  if (config.mobileUI !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile UI:")} ${String(config.mobileUI)}`);
+  }
+
+  if (config.mobileStorage !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile Storage:")} ${String(config.mobileStorage)}`);
+  }
+
+  if (config.mobileTesting !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile Testing:")} ${String(config.mobileTesting)}`);
+  }
+
+  if (config.mobilePush !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile Push:")} ${String(config.mobilePush)}`);
+  }
+
+  if (config.mobileOTA !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile OTA:")} ${String(config.mobileOTA)}`);
+  }
+
+  if (config.mobileDeepLinking !== undefined) {
+    configDisplay.push(`${pc.blue("Mobile Deep Linking:")} ${String(config.mobileDeepLinking)}`);
+  }
+
   if (config.caching !== undefined) {
     configDisplay.push(`${pc.blue("Caching:")} ${String(config.caching)}`);
+  }
+
+  if (config.i18n !== undefined) {
+    configDisplay.push(`${pc.blue("i18n:")} ${String(config.i18n)}`);
   }
 
   if (config.cms !== undefined) {
@@ -131,6 +171,12 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     const examplesText =
       examples.length > 0 && examples[0] !== undefined ? examples.join(", ") : "none";
     configDisplay.push(`${pc.blue("Examples:")} ${examplesText}`);
+  }
+
+  if (config.aiDocs !== undefined) {
+    const aiDocs = Array.isArray(config.aiDocs) ? config.aiDocs : [config.aiDocs];
+    const aiDocsText = aiDocs.length > 0 && aiDocs[0] !== undefined ? aiDocs.join(", ") : "none";
+    configDisplay.push(`${pc.blue("AI Docs:")} ${aiDocsText}`);
   }
 
   if (config.git !== undefined) {

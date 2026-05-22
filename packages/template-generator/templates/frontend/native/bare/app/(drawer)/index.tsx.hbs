@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Container } from "@/components/container";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -232,3 +233,4 @@ marginBottom: 8,
 fontWeight: "bold",
 },
 });
+{{/if}}

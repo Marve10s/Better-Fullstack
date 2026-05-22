@@ -14,6 +14,13 @@ import {
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
   FRONTEND_VALUES,
+  MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_OTA_VALUES,
+  MOBILE_PUSH_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
   GO_CLI_VALUES,
@@ -90,6 +97,15 @@ import {
 } from "./java-ecosystem";
 import { resolveJobQueuePrompt } from "./job-queue";
 import { resolveLoggingPrompt } from "./logging";
+import {
+  resolveMobileDeepLinkingPrompt,
+  resolveMobileNavigationPrompt,
+  resolveMobileOTAPrompt,
+  resolveMobilePushPrompt,
+  resolveMobileStoragePrompt,
+  resolveMobileTestingPrompt,
+  resolveMobileUIPrompt,
+} from "./mobile";
 import { resolveObservabilityPrompt } from "./observability";
 import { resolveORMPrompt } from "./orm";
 import { resolvePaymentsPrompt } from "./payments";
@@ -264,6 +280,43 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   testing: {
     schemaValues: TESTING_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveTestingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileNavigation: {
+    schemaValues: MOBILE_NAVIGATION_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveMobileNavigationPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileUI: {
+    schemaValues: MOBILE_UI_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveMobileUIPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileStorage: {
+    schemaValues: MOBILE_STORAGE_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveMobileStoragePrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileTesting: {
+    schemaValues: MOBILE_TESTING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveMobileTestingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobilePush: {
+    schemaValues: MOBILE_PUSH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveMobilePushPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileOTA: {
+    schemaValues: MOBILE_OTA_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveMobileOTAPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  mobileDeepLinking: {
+    schemaValues: MOBILE_DEEP_LINKING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveMobileDeepLinkingPrompt(value as any),
     coverageContexts: [{}],
   },
   uiLibrary: {

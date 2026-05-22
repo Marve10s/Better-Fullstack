@@ -43,6 +43,13 @@ import type {
   ObservabilitySchema,
   FeatureFlagsSchema,
   AnalyticsSchema,
+  MobileNavigationSchema,
+  MobileUISchema,
+  MobileStorageSchema,
+  MobileTestingSchema,
+  MobilePushSchema,
+  MobileOTASchema,
+  MobileDeepLinkingSchema,
   CMSSchema,
   CachingSchema,
   I18nSchema,
@@ -127,6 +134,13 @@ export type Logging = z.infer<typeof LoggingSchema>;
 export type Observability = z.infer<typeof ObservabilitySchema>;
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;
+export type MobileNavigation = z.infer<typeof MobileNavigationSchema>;
+export type MobileUI = z.infer<typeof MobileUISchema>;
+export type MobileStorage = z.infer<typeof MobileStorageSchema>;
+export type MobileTesting = z.infer<typeof MobileTestingSchema>;
+export type MobilePush = z.infer<typeof MobilePushSchema>;
+export type MobileOTA = z.infer<typeof MobileOTASchema>;
+export type MobileDeepLinking = z.infer<typeof MobileDeepLinkingSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
 export type I18n = z.infer<typeof I18nSchema>;

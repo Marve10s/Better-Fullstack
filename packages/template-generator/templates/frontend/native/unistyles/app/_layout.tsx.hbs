@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 {{#if (includes examples "ai")}}
 import "@/polyfills";
 {{/if}}
@@ -43,6 +44,14 @@ const convex = new ConvexReactClient(env.EXPO_PUBLIC_CONVEX_URL, {
 {{/if}}
 
 export default function RootLayout() {
+  {{#if (eq mobileOTA "expo-updates")}}
+  useUpdateCheck();
+  {{/if}}
+  React.useEffect(() => {
+    {{#if (eq mobilePush "expo-notifications")}}
+    registerForPushNotificationsAsync().catch(console.warn);
+    {{/if}}
+  }, []);
   const { theme } = useUnistyles();
 
   return (
@@ -167,3 +176,4 @@ export default function RootLayout() {
     {{/if}}
   );
 }
+{{/if}}

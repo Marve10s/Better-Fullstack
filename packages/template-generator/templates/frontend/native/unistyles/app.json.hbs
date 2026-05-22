@@ -5,11 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mybettertapp",
+    "scheme": "{{projectName}}",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.betterfullstack.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,14 +21,29 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mybettertapp"
+      "package": "com.betterfullstack.app"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    {{#if (eq mobileOTA "expo-updates")}}
+    "updates": {
+      "url": "https://u.expo.dev/your-eas-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    {{/if}}
     "plugins": [
+      {{#if (eq mobileNavigation "expo-router")}}
       "expo-router",
+      {{/if}}
       [
         "expo-splash-screen",
         {
@@ -39,7 +55,15 @@
             "backgroundColor": "#000000"
           }
         }
+      ]{{#if (eq mobilePush "expo-notifications")}},
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#111827"
+        }
       ]
+      {{/if}}
     ],
     "experiments": {
       "typedRoutes": true,

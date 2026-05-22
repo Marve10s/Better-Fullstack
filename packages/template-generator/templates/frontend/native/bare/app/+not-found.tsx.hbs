@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Container } from "@/components/container";
 import { Link, Stack } from "expo-router";
 import { Text, View, StyleSheet } from "react-native";
@@ -62,4 +63,4 @@ const styles = StyleSheet.create({
     padding: 12,
   },
 });
-
+{{/if}}

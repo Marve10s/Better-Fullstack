@@ -120,6 +120,58 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.unistyl.es/v3/start/introduction",
     githubUrl: "https://github.com/jpudysz/react-native-unistyles",
   },
+  "expo-router": {
+    docsUrl: "https://docs.expo.dev/router/introduction/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "react-navigation": {
+    docsUrl: "https://reactnavigation.org/docs/getting-started",
+    githubUrl: "https://github.com/react-navigation/react-navigation",
+  },
+  tamagui: {
+    docsUrl: "https://tamagui.dev/docs/intro/introduction",
+    githubUrl: "https://github.com/tamagui/tamagui",
+  },
+  "gluestack-ui": {
+    docsUrl: "https://gluestack.io/ui/docs/home/overview/introduction",
+    githubUrl: "https://github.com/gluestack/gluestack-ui",
+  },
+  uniwind: {
+    docsUrl: "https://www.uniwind.dev/",
+    githubUrl: "https://github.com/uniwind/uniwind",
+  },
+  unistyles: {
+    docsUrl: "https://www.unistyl.es/v3/start/introduction",
+    githubUrl: "https://github.com/jpudysz/react-native-unistyles",
+  },
+  mmkv: {
+    docsUrl: "https://github.com/mrousavy/react-native-mmkv",
+    githubUrl: "https://github.com/mrousavy/react-native-mmkv",
+  },
+  maestro: {
+    docsUrl: "https://docs.maestro.dev/",
+    githubUrl: "https://github.com/mobile-dev-inc/Maestro",
+  },
+  "react-native-testing-library": {
+    docsUrl: "https://callstack.github.io/react-native-testing-library/",
+    githubUrl: "https://github.com/callstack/react-native-testing-library",
+  },
+  "maestro-react-native-testing-library": {
+    docsUrl: "https://callstack.github.io/react-native-testing-library/",
+    githubUrl: "https://github.com/callstack/react-native-testing-library",
+  },
+  "expo-notifications": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/notifications/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "expo-updates": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/updates/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "expo-linking": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/linking/",
+    githubUrl: "https://github.com/expo/expo",
+  },
   sqlite: {
     docsUrl: "https://www.sqlite.org/docs.html",
     githubUrl: "https://github.com/sqlite/sqlite",

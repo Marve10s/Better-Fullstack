@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import { Container } from "@/components/container";
@@ -331,3 +332,4 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.mutedForeground,
   },
 }));
+{{/if}}

@@ -1,2 +1,9 @@
-import 'expo-router/entry';
 import './unistyles';
+{{#if (eq mobileNavigation "react-navigation")}}
+import { registerRootComponent } from 'expo';
+import App from './App';
+
+registerRootComponent(App);
+{{else}}
+import 'expo-router/entry';
+{{/if}}

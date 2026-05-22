@@ -51,6 +51,13 @@ export type CompatibilityCategory =
   | "cms"
   | "featureFlags"
   | "analytics"
+  | "mobileNavigation"
+  | "mobileUI"
+  | "mobileStorage"
+  | "mobileTesting"
+  | "mobilePush"
+  | "mobileOTA"
+  | "mobileDeepLinking"
   | "codeQuality"
   | "documentation"
   | "appPlatforms"
@@ -149,6 +156,13 @@ export type CompatibilityInput = {
   i18n: string;
   search: string;
   fileStorage: string;
+  mobileNavigation: string;
+  mobileUI: string;
+  mobileStorage: string;
+  mobileTesting: string;
+  mobilePush: string;
+  mobileOTA: string;
+  mobileDeepLinking: string;
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -230,6 +244,13 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "i18n",
   "search",
   "fileStorage",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "animation",
   "cms",
   "codeQuality",
@@ -404,6 +425,13 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
   // Custom display names for TypeScript categories
   const tsCategoryNames: Record<string, string> = {
     i18n: "Internationalization (i18n)",
+    mobileNavigation: "Mobile Navigation",
+    mobileUI: "Mobile UI",
+    mobileStorage: "Mobile Storage",
+    mobileTesting: "Mobile Testing",
+    mobilePush: "Mobile Push",
+    mobileOTA: "Mobile OTA",
+    mobileDeepLinking: "Mobile Deep Linking",
   };
 
   if (tsCategoryNames[categoryKey]) {
@@ -1068,6 +1096,67 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "uiLibrary",
         message: "UI library set to 'None' (no web frontend)",
+      });
+    }
+  }
+
+  const hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+
+  if (!hasNativeFrontend) {
+    const nativeOnlyCategories = [
+      ["mobileNavigation", "none", "Mobile navigation set to 'None' (no native frontend)"],
+      ["mobileUI", "none", "Mobile UI set to 'None' (no native frontend)"],
+      ["mobileStorage", "none", "Mobile storage set to 'None' (no native frontend)"],
+      ["mobileTesting", "none", "Mobile testing set to 'None' (no native frontend)"],
+      ["mobilePush", "none", "Mobile push set to 'None' (no native frontend)"],
+      ["mobileOTA", "none", "Mobile OTA set to 'None' (no native frontend)"],
+      ["mobileDeepLinking", "none", "Mobile deep linking set to 'None' (no native frontend)"],
+    ] as const;
+
+    for (const [category, value, message] of nativeOnlyCategories) {
+      if (nextStack[category] !== value) {
+        nextStack[category] = value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+  } else {
+    if (nextStack.mobileNavigation === "none") {
+      nextStack.mobileNavigation = "expo-router";
+      changed = true;
+      changes.push({
+        category: "mobileNavigation",
+        message: "Mobile navigation set to 'Expo Router' (native frontend selected)",
+      });
+    }
+
+    if (nextStack.mobileDeepLinking === "none" && nextStack.auth !== "none") {
+      nextStack.mobileDeepLinking = "expo-linking";
+      changed = true;
+      changes.push({
+        category: "mobileDeepLinking",
+        message: "Mobile deep linking set to 'Expo Linking' (required for mobile auth redirects)",
+      });
+    }
+
+    if (nextStack.nativeFrontend.includes("native-uniwind") && nextStack.mobileUI !== "uniwind") {
+      nextStack.mobileUI = "uniwind";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Uniwind' (required by Expo + Uniwind)",
+      });
+    }
+
+    if (
+      nextStack.nativeFrontend.includes("native-unistyles") &&
+      nextStack.mobileUI !== "unistyles"
+    ) {
+      nextStack.mobileUI = "unistyles";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Unistyles' (required by Expo + Unistyles)",
       });
     }
   }
@@ -2112,6 +2201,50 @@ export const getDisabledReason = (
     const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(currentStack.uiLibrary);
     if (requiresTailwind && optionId !== "tailwind") {
       return `${currentStack.uiLibrary === "shadcn-ui" ? "shadcn/ui" : currentStack.uiLibrary === "daisyui" ? "daisyUI" : "NextUI"} requires Tailwind CSS`;
+    }
+  }
+
+  const mobileCategories = new Set([
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
+  ]);
+
+  if (mobileCategories.has(category)) {
+    const hasNativeFrontend = currentStack.nativeFrontend.some((f) => f !== "none");
+    if (!hasNativeFrontend && optionId !== "none") {
+      return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
+    }
+
+    if (category === "mobileNavigation" && optionId === "react-navigation") {
+      return null;
+    }
+
+    if (category === "mobileUI") {
+      if (optionId === "uniwind" && !currentStack.nativeFrontend.includes("native-uniwind")) {
+        return "Uniwind mobile UI requires Expo + Uniwind frontend";
+      }
+      if (optionId === "unistyles" && !currentStack.nativeFrontend.includes("native-unistyles")) {
+        return "Unistyles mobile UI requires Expo + Unistyles frontend";
+      }
+      if (
+        ["tamagui", "gluestack-ui"].includes(optionId) &&
+        currentStack.nativeFrontend.some((f) => ["native-uniwind", "native-unistyles"].includes(f))
+      ) {
+        return "Tamagui and Gluestack UI require Expo + Bare to avoid conflicting styling setup";
+      }
+    }
+
+    if (
+      (category === "mobilePush" && optionId === "expo-notifications") ||
+      (category === "mobileOTA" && optionId === "expo-updates") ||
+      (category === "mobileDeepLinking" && optionId === "expo-linking")
+    ) {
+      return null;
     }
   }
 

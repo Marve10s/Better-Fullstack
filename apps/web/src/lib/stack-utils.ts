@@ -11,6 +11,13 @@ import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "webFrontend",
   "nativeFrontend",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "astroIntegration",
   "cssFramework",
   "uiLibrary",

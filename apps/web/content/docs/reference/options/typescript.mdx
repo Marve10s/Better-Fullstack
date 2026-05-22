@@ -17,6 +17,13 @@ The tables list valid option values, not every valid combination. tRPC is React-
 | --- | --- | --- |
 | Web frontend | multiple | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
 | Native frontend | multiple | `native-bare` `native-uniwind` `native-unistyles` `none` |
+| Mobile navigation | single | `expo-router` `react-navigation` `none` |
+| Mobile UI | single | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| Mobile storage | single | `mmkv` `none` |
+| Mobile testing | single | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| Mobile push | single | `expo-notifications` `none` |
+| Mobile OTA | single | `expo-updates` `none` |
+| Mobile deep linking | single | `expo-linking` `none` |
 | Astro integration | single | `react` `vue` `svelte` `solid` `none` |
 | Backend | single | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
 | Runtime | single | `bun` `node` `workers` `none` |
@@ -27,6 +34,8 @@ The tables list valid option values, not every valid combination. tRPC is React-
 | Auth | single | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
 
 `dbSetup: upstash` is a Redis setup path. GoBetterAuth is documented on the [Go Options](/docs/reference/options/go/) page because it targets Go projects.
+
+Mobile options only apply when a native Expo frontend is selected. Expo Router and React Navigation are mutually exclusive navigation setups. Tamagui and Gluestack UI target `native-bare`; `native-uniwind` and `native-unistyles` keep their aligned styling systems. Push, OTA, and deep linking emit Expo config plus helper code rather than package-only installs.
 
 ## Services And Integrations
 

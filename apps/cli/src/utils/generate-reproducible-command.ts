@@ -97,6 +97,13 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
   flags.push(`--file-storage ${config.fileStorage}`);
+  flags.push(`--mobile-navigation ${config.mobileNavigation}`);
+  flags.push(`--mobile-ui ${config.mobileUI}`);
+  flags.push(`--mobile-storage ${config.mobileStorage}`);
+  flags.push(`--mobile-testing ${config.mobileTesting}`);
+  flags.push(`--mobile-push ${config.mobilePush}`);
+  flags.push(`--mobile-ota ${config.mobileOTA}`);
+  flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
 
   if (config.addons && config.addons.length > 0) {
     flags.push(`--addons ${config.addons.join(" ")}`);

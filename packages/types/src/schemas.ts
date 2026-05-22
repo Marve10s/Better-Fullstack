@@ -274,6 +274,34 @@ export const AnalyticsSchema = z
   .enum(["plausible", "umami", "none"])
   .describe("Privacy-focused analytics provider");
 
+export const MobileNavigationSchema = z
+  .enum(["expo-router", "react-navigation", "none"])
+  .describe("Mobile navigation system");
+
+export const MobileUISchema = z
+  .enum(["tamagui", "gluestack-ui", "uniwind", "unistyles", "none"])
+  .describe("Mobile UI and styling system");
+
+export const MobileStorageSchema = z
+  .enum(["mmkv", "none"])
+  .describe("Mobile device storage library");
+
+export const MobileTestingSchema = z
+  .enum(["maestro", "react-native-testing-library", "maestro-react-native-testing-library", "none"])
+  .describe("Mobile testing setup");
+
+export const MobilePushSchema = z
+  .enum(["expo-notifications", "none"])
+  .describe("Mobile push notification setup");
+
+export const MobileOTASchema = z
+  .enum(["expo-updates", "none"])
+  .describe("Mobile over-the-air update setup");
+
+export const MobileDeepLinkingSchema = z
+  .enum(["expo-linking", "none"])
+  .describe("Mobile deep linking setup");
+
 // Rust ecosystem schemas
 export const RustWebFrameworkSchema = z
   .enum(["axum", "actix-web", "rocket", "none"])
@@ -614,6 +642,13 @@ export const CreateInputSchema = z.object({
   i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
   fileStorage: FileStorageSchema.optional(),
+  mobileNavigation: MobileNavigationSchema.optional(),
+  mobileUI: MobileUISchema.optional(),
+  mobileStorage: MobileStorageSchema.optional(),
+  mobileTesting: MobileTestingSchema.optional(),
+  mobilePush: MobilePushSchema.optional(),
+  mobileOTA: MobileOTASchema.optional(),
+  mobileDeepLinking: MobileDeepLinkingSchema.optional(),
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema.optional(),
   rustFrontend: RustFrontendSchema.optional(),
@@ -718,6 +753,13 @@ export const ProjectConfigSchema = z.object({
   i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
+  mobileNavigation: MobileNavigationSchema,
+  mobileUI: MobileUISchema,
+  mobileStorage: MobileStorageSchema,
+  mobileTesting: MobileTestingSchema,
+  mobilePush: MobilePushSchema,
+  mobileOTA: MobileOTASchema,
+  mobileDeepLinking: MobileDeepLinkingSchema,
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -806,6 +848,13 @@ export const BetterTStackConfigSchema = z.object({
   i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
+  mobileNavigation: MobileNavigationSchema,
+  mobileUI: MobileUISchema,
+  mobileStorage: MobileStorageSchema,
+  mobileTesting: MobileTestingSchema,
+  mobilePush: MobilePushSchema,
+  mobileOTA: MobileOTASchema,
+  mobileDeepLinking: MobileDeepLinkingSchema,
   // Rust ecosystem options
   rustWebFramework: RustWebFrameworkSchema,
   rustFrontend: RustFrontendSchema,
@@ -902,6 +951,13 @@ export const LOGGING_VALUES = LoggingSchema.options;
 export const OBSERVABILITY_VALUES = ObservabilitySchema.options;
 export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
+export const MOBILE_NAVIGATION_VALUES = MobileNavigationSchema.options;
+export const MOBILE_UI_VALUES = MobileUISchema.options;
+export const MOBILE_STORAGE_VALUES = MobileStorageSchema.options;
+export const MOBILE_TESTING_VALUES = MobileTestingSchema.options;
+export const MOBILE_PUSH_VALUES = MobilePushSchema.options;
+export const MOBILE_OTA_VALUES = MobileOTASchema.options;
+export const MOBILE_DEEP_LINKING_VALUES = MobileDeepLinkingSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
 export const I18N_VALUES = I18nSchema.options;

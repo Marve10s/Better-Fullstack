@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Text, View } from "react-native";
 import { Container } from "@/components/container";
 {{#if (eq api "orpc")}}
@@ -189,3 +190,4 @@ return (
 </Container>
 );
 }
+{{/if}}

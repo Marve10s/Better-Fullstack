@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Link, Stack } from "expo-router";
 import { Button, Surface } from "heroui-native";
 import { Text, View } from "react-native";
@@ -25,3 +26,4 @@ export default function NotFoundScreen() {
 		</>
 	);
 }
+{{/if}}

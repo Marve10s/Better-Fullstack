@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Text, View, Pressable } from "react-native";
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
@@ -121,3 +122,4 @@ return (
 </Container>
 );
 }
+{{/if}}
