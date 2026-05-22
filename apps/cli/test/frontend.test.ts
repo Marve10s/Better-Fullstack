@@ -476,8 +476,13 @@ describe("Frontend Configurations", () => {
         const legacyLayout = Bun.file(`${result.projectDir}/apps/web/src/routes/_layout.tsx`);
 
         expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.2.0"');
-        expect(denoJson).toContain('"build": "vite build"');
-        expect(webPkg.scripts["check-types"]).toBe("deno check");
+        expect(denoJson).toContain(
+          '"build": "deno run --node-modules-dir=auto -A npm:vite build"',
+        );
+        expect(webPkg.scripts["check-types"]).toBe(
+          "deno check --node-modules-dir=auto main.ts client.ts",
+        );
+        expect(webPkg.dependencies["@opentelemetry/api"]).toBeDefined();
         expect(webPkg.dependencies["@preact/signals"]).toBeDefined();
         expect(webPkg.dependencies.preact).toBeDefined();
         expect(webPkg.dependencies.vite).toBeDefined();

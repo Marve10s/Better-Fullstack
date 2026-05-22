@@ -8,9 +8,10 @@
     "build": "deno task build",
     "start": "deno task start",
     "check": "deno task check",
-    "check-types": "deno check"
+    "check-types": "deno check --node-modules-dir=auto main.ts client.ts"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
     "@preact/signals": "^2.5.0",
     "preact": "^10.27.2",
     "vite": "^7.3.1"{{#if (eq cssFramework "tailwind")}},
