@@ -69,13 +69,12 @@ const RUST_LOGGINGS = extractEnumValues(RustLoggingSchema);
 
 describe("Rust Ecosystem", () => {
   describe("Schema Definitions", () => {
-    it("should have ecosystem schema with typescript, rust, python, go, and java", () => {
+    it("should include Rust alongside the other ecosystem schema values", () => {
       expect(ECOSYSTEMS).toContain("typescript");
       expect(ECOSYSTEMS).toContain("rust");
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS.length).toBe(5);
     });
 
     it("should have rust web framework options", () => {

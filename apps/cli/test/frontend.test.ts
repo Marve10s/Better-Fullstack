@@ -478,6 +478,9 @@ describe("Frontend Configurations", () => {
         expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.2.0"');
         expect(denoJson).toContain('"build": "vite build"');
         expect(webPkg.scripts["check-types"]).toBe("deno check");
+        expect(webPkg.dependencies["@preact/signals"]).toBeDefined();
+        expect(webPkg.dependencies.preact).toBeDefined();
+        expect(webPkg.dependencies.vite).toBeDefined();
         expect(readme).toContain("http://localhost:5173");
         expect(await viteConfig.exists()).toBe(true);
         expect(await clientEntry.exists()).toBe(true);
