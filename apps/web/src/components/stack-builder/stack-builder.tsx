@@ -1,5 +1,6 @@
-
+import { isMultiSelectCategory, type OptionCategory } from "@better-fullstack/types";
 import {
+  ArrowUp,
   Bookmark,
   BookOpen,
   Check,
@@ -11,27 +12,22 @@ import {
   Hammer,
   InfoIcon,
   Link,
-  List,
+  PanelLeft,
+  Pencil,
   RefreshCw,
   Save,
   Settings,
   Shuffle,
   Terminal,
+  X,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Suspense, lazy, startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { isMultiSelectCategory, type OptionCategory } from "@better-fullstack/types";
 
 import type { Ecosystem } from "@/lib/types";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,8 +36,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DEFAULT_STACK,
@@ -50,6 +51,12 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/constant";
+import {
+  buildSavedStackEntry,
+  loadSavedStacks,
+  saveSavedStacks,
+  type SavedStackEntry,
+} from "@/lib/saved-stacks";
 import { usesVirtualNoneSelection } from "@/lib/stack-contract";
 import { useStackState } from "@/lib/stack-url-state";
 import {
@@ -80,16 +87,8 @@ import {
   validateProjectName,
 } from "./utils";
 import { YoloToggle } from "./yolo-toggle";
-import {
-  buildSavedStackEntry,
-  loadSavedStacks,
-  saveSavedStacks,
-  type SavedStackEntry,
-} from "@/lib/saved-stacks";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-type MobileTab = "summary" | "configure";
 
 function formatProjectName(name: string): string {
   return name.replace(/\s+/g, "-");
@@ -252,19 +251,6 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
   );
 }
 
-function NewToolLabel({ compact = false }: { compact?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "bg-[#bef264] font-mono font-semibold uppercase leading-none text-[#0a0a0a]",
-        compact ? "px-1 py-0.5 text-[8px]" : "px-1.5 py-0.5 text-[9px]",
-      )}
-    >
-      New
-    </span>
-  );
-}
-
 function DisabledReasonInline({ reason, compact = false }: { reason: string; compact?: boolean }) {
   return (
     <div
@@ -284,9 +270,9 @@ function CategoryHint({ categoryKey }: { categoryKey: string }) {
 
   return (
     <div className="mb-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">Grouped add-ons:</span> platforms,
-      integrations, AI agents, and TanStack extras are split below. MCP and Skills still add the
-      addon flags first, then the CLI asks follow-up questions to configure them.
+      <span className="font-medium text-foreground">Grouped add-ons:</span> platforms, integrations,
+      AI agents, and TanStack extras are split below. MCP and Skills still add the addon flags
+      first, then the CLI asks follow-up questions to configure them.
     </div>
   );
 }
@@ -333,131 +319,6 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
     return selectedValues.includes(techId);
   }
   return currentValue === techId;
-}
-
-// ─── SidebarAccordionItem ────────────────────────────────────────────────────
-
-function SidebarAccordionItem({
-  category,
-  isOpen,
-  onToggle,
-  stack,
-  handleTechSelect,
-  compatibilityNotes,
-}: {
-  category: keyof typeof TECH_OPTIONS;
-  isOpen: boolean;
-  onToggle: () => void;
-  stack: StackState;
-  handleTechSelect: (cat: keyof typeof TECH_OPTIONS, techId: string) => void;
-  compatibilityNotes?: CompatibilityNotes;
-}) {
-  const optionGroups = getCategoryRenderGroups(stack, category);
-  const options = optionGroups.flatMap((group) =>
-    group.options.map((option) => ({ option, category: group.category })),
-  );
-  if (options.length === 0) return null;
-
-  const count = getSelectedCount(category, stack);
-  const displayName = getCategoryDisplayName(category);
-
-  return (
-    <div className="border-b border-border/50 last:border-b-0">
-      <button
-        type="button"
-        onClick={onToggle}
-        data-testid={`sidebar-category-toggle-${category}`}
-        className={cn(
-          "flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors",
-          isOpen
-            ? "bg-muted/80 text-foreground font-medium"
-            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-        )}
-      >
-        <span className="truncate pr-2 font-mono">{displayName}</span>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {compatibilityNotes?.hasIssue && <InfoIcon className="h-3.5 w-3.5 text-amber-500" />}
-          {count > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-              {count}
-            </span>
-          )}
-          <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown className="h-3.5 w-3.5" />
-          </motion.div>
-        </div>
-      </button>
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-0.5 px-2 py-1.5">
-              {options.map(({ option, category: optionCategory }) => {
-                const selected = isSelectedCheck(stack, optionCategory, option.id);
-                const disabled = !isOptionCompatible(stack, optionCategory, option.id);
-                const disabledReason = disabled
-                  ? getDisabledReason(stack, optionCategory, option.id)
-                  : null;
-
-                return (
-                  <button
-                    key={`${optionCategory}-${option.id}`}
-                    type="button"
-                    data-testid={`sidebar-option-${optionCategory}-${option.id}`}
-                    onClick={() => {
-                      if (!disabled) {
-                        handleTechSelect(optionCategory, option.id);
-                      }
-                    }}
-                    disabled={disabled}
-                    title={disabledReason || option.description}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
-                      selected
-                        ? "bg-primary/10 text-foreground"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                      disabled && "opacity-40 cursor-not-allowed",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-                        selected ? "border-primary bg-primary" : "border-border bg-background",
-                      )}
-                    >
-                      {selected && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                    </div>
-                    {option.icon !== undefined && (
-                      <TechIcon
-                        techId={option.id}
-                        icon={option.icon}
-                        name={option.name}
-                        className="h-4 w-4"
-                      />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <span className="block truncate">{option.name}</span>
-                      {disabledReason && <DisabledReasonInline reason={disabledReason} compact />}
-                    </div>
-                    {option.default && !selected && (
-                      <span className="ml-auto shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
-                        default
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
 }
 
 // ─── Collapsible section config ──────────────────────────────────────────────
@@ -509,13 +370,13 @@ const StackBuilder = () => {
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [savedStacks, setSavedStacks] = useState<SavedStackEntry[]>(() => loadSavedStacks());
   const [, setLastChanges] = useState<Array<{ category: string; message: string }>>([]);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("configure");
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     const initial = new Set(INITIALLY_COLLAPSED_SET);
     for (const cat of INITIALLY_COLLAPSED_SET) {
@@ -528,8 +389,12 @@ const StackBuilder = () => {
   });
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
-  const mainScrollRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const lastAppliedStackString = useRef<string>("");
+
+  const scrollToTop = () => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const compatibilityAnalysis = analyzeStackCompatibility(stack);
   const adjustedStack = useMemo<StackState | null>(() => {
@@ -557,56 +422,7 @@ const StackBuilder = () => {
     }
   }, [stack.ecosystem]);
 
-  const sidebarCategories = useMemo(() => {
-    const cats: (keyof typeof TECH_OPTIONS)[] = [];
-    for (const cat of categoryOrder) {
-      if (cat === "astroIntegration") {
-        if (stack.webFrontend.includes("astro")) {
-          cats.push(cat);
-        }
-        continue;
-      }
-
-      if (SHADCN_SUB_CATEGORIES.has(cat)) {
-        continue;
-      }
-
-      if (stack.ecosystem === "go" && cat === "auth") {
-        continue;
-      }
-
-      cats.push(cat);
-    }
-    return cats;
-  }, [categoryOrder, stack.ecosystem, stack.webFrontend]);
-
-  // Open first category when ecosystem changes
-  const prevEcosystem = useRef(stack.ecosystem);
-  useEffect(() => {
-    if (prevEcosystem.current !== stack.ecosystem) {
-      prevEcosystem.current = stack.ecosystem;
-      if (
-        sidebarCategories.length > 0 &&
-        !sidebarCategories.includes(openCategory as keyof typeof TECH_OPTIONS)
-      ) {
-        setOpenCategory(sidebarCategories[0] || null);
-      }
-    }
-  }, [stack.ecosystem, sidebarCategories, openCategory]);
-
-  // Get the main scroll viewport for scrollIntoView
-  useEffect(() => {
-    if (mainScrollRef.current) {
-      const viewport = mainScrollRef.current.querySelector<HTMLDivElement>(
-        '[data-slot="scroll-area-viewport"]',
-      );
-      if (viewport) {
-        mainScrollRef.current = viewport;
-      }
-    }
-  }, []);
-
-  // ─── URL & command generation ───────────────────────────────────────────
+  // ─── URL generation ──────────────────────────────────────────────────────
 
   const getStackUrl = (): string => {
     const stackToUse = adjustedStack || stack;
@@ -660,6 +476,12 @@ const StackBuilder = () => {
   }, [stack, adjustedStack]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
     if (!isOptionCompatible(stack, category, techId)) return;
@@ -743,12 +565,6 @@ const StackBuilder = () => {
         return Object.keys(update).length > 0 ? update : {};
       });
     });
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(command);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const resetStack = () => {
@@ -902,21 +718,6 @@ const StackBuilder = () => {
       ? null
       : savedStacks.find((entry) => entry.id === pendingUpdateEntryId) || null;
 
-  const handleAccordionToggle = (category: string) => {
-    setOpenCategory((prev) => (prev === category ? null : category));
-    setCollapsedSections((prev) => {
-      if (!prev.has(category)) return prev;
-      const next = new Set(prev);
-      next.delete(category);
-      return next;
-    });
-    // Scroll to the corresponding section in main content
-    const sectionEl = sectionRefs.current[category];
-    if (sectionEl) {
-      sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   const toggleSection = (categoryKey: string) => {
     setCollapsedSections((prev) => {
       const next = new Set(prev);
@@ -926,6 +727,36 @@ const StackBuilder = () => {
         next.add(categoryKey);
       }
       return next;
+    });
+  };
+
+  // Sections shown in the navigation drawer — mirrors the rendered category sections.
+  const navSections = useMemo(
+    () =>
+      categoryOrder
+        .filter((categoryKey) => {
+          if (categoryKey === "astroIntegration") return false;
+          if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return false;
+          if (stack.ecosystem === "go" && categoryKey === "auth") return false;
+          return (
+            getCategoryRenderGroups(stack, categoryKey as keyof typeof TECH_OPTIONS).length > 0
+          );
+        })
+        .map((categoryKey) => ({ key: categoryKey, name: getCategoryDisplayName(categoryKey) })),
+    [categoryOrder, stack],
+  );
+
+  const goToSection = (categoryKey: string) => {
+    // Expand the section if collapsed, then scroll it into view.
+    setCollapsedSections((prev) => {
+      if (!prev.has(categoryKey)) return prev;
+      const next = new Set(prev);
+      next.delete(categoryKey);
+      return next;
+    });
+    setSidebarOpen(false);
+    requestAnimationFrame(() => {
+      sectionRefs.current[categoryKey]?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
@@ -960,1010 +791,1019 @@ const StackBuilder = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="flex h-full w-full flex-col overflow-hidden border-border text-foreground">
-        {/* Mobile tab navigation */}
-        <div className="flex border-b border-border bg-fd-background pl-2 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileTab("summary")}
-            data-testid="mobile-tab-summary"
-            aria-pressed={mobileTab === "summary"}
-            data-state={mobileTab === "summary" ? "active" : "inactive"}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-2 border-b-2 px-1 py-3 text-xs font-medium transition-all hover:bg-muted/50",
-              mobileTab === "summary"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <List className="h-4 w-4" />
-            <span>Categories</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab("configure")}
-            data-testid="mobile-tab-configure"
-            aria-pressed={mobileTab === "configure"}
-            data-state={mobileTab === "configure" ? "active" : "inactive"}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-2 border-b-2 px-1 py-3 text-xs font-medium transition-all hover:bg-muted/50",
-              mobileTab === "configure"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Terminal className="h-4 w-4" />
-            <span>Configure</span>
-          </button>
-        </div>
+      <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
+        {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={(e) => {
+            const next = e.currentTarget.scrollTop > 120;
+            setShowScrollTop((prev) => (prev === next ? prev : next));
+          }}
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+        >
+          {/* ─── Ecosystem Header Bar ─────────────────────────────────────── */}
+          <div className="relative shrink-0 border-b border-border bg-fd-background">
+            <div className="grid grid-cols-5">
+              {ECOSYSTEMS.map((eco) => {
+                const isActive = stack.ecosystem === eco.id;
+                return (
+                  <button
+                    key={eco.id}
+                    type="button"
+                    data-testid={`ecosystem-${eco.id}`}
+                    onClick={() => {
+                      startTransition(() => {
+                        setStack({ ecosystem: eco.id as Ecosystem });
+                      });
+                    }}
+                    className={cn(
+                      "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
+                      isActive
+                        ? "bg-muted/40 text-foreground"
+                        : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+                    )}
+                  >
+                    {/* Active underline */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="ecosystem-indicator"
+                        className={cn(
+                          "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
+                          eco.color,
+                        )}
+                        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                      />
+                    )}
 
-        {/* ─── Ecosystem Header Bar ─────────────────────────────────────── */}
-        <div className="relative border-b border-border bg-fd-background">
-          <div className="grid grid-cols-5">
-            {ECOSYSTEMS.map((eco) => {
-              const isActive = stack.ecosystem === eco.id;
-              return (
-                <button
-                  key={eco.id}
-                  type="button"
-                  data-testid={`ecosystem-${eco.id}`}
-                  onClick={() => {
-                    startTransition(() => {
-                      setStack({ ecosystem: eco.id as Ecosystem });
-                    });
-                  }}
+                    <TechIcon
+                      techId={eco.id}
+                      icon={eco.icon}
+                      name={eco.name}
+                      className={cn(
+                        "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
+                        isActive ? "scale-110" : "opacity-50 group-hover:opacity-75",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
+                        isActive ? "font-bold" : "",
+                      )}
+                    >
+                      {eco.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div
+            className={cn("flex", viewMode === "command" ? "" : "min-h-0 flex-1 overflow-hidden")}
+          >
+            {/* ─── Main Content Area ──────────────────────────────────────────── */}
+            <main
+              className={cn(
+                "flex min-w-0 flex-1 flex-col",
+                viewMode === "command" ? "" : "overflow-hidden",
+              )}
+            >
+              <div className="flex shrink-0 items-center gap-1 border-border border-b bg-fd-background px-2 py-2 sm:gap-2 sm:px-4">
+                {/* ─── Project name field ─────────────────────────────────────── */}
+                <label
+                  htmlFor="project-name"
                   className={cn(
-                    "group relative flex items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
-                    isActive
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+                    "group relative inline-flex h-9 w-40 min-w-0 cursor-text items-center gap-2 rounded-none border bg-background/40 px-3 transition-colors hover:bg-card focus-within:bg-card sm:w-60",
+                    projectNameError
+                      ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
+                      : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
                   )}
                 >
-                  {/* Active underline */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="ecosystem-indicator"
-                      className={cn(
-                        "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
-                        eco.color,
-                      )}
-                      transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                    />
-                  )}
-
-                  <TechIcon
-                    techId={eco.id}
-                    icon={eco.icon}
-                    name={eco.name}
+                  <span className="pointer-events-none absolute -top-[7px] left-3 bg-fd-background px-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Project name
+                  </span>
+                  <input
+                    id="project-name"
+                    value={stack.projectName || ""}
+                    onChange={(e) => setStack({ projectName: e.target.value })}
+                    placeholder="my-app"
+                    aria-label="Project name"
+                    aria-invalid={projectNameError ? true : undefined}
+                    title={
+                      projectNameError ||
+                      ((stack.projectName || "my-app").includes(" ")
+                        ? `Will be saved as: ${(stack.projectName || "my-app").replace(/\s+/g, "-")}`
+                        : undefined)
+                    }
                     className={cn(
-                      "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
-                      isActive ? "scale-110" : "opacity-50 group-hover:opacity-75",
+                      "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
+                      projectNameError && "text-destructive",
                     )}
                   />
-                  <span
-                    className={cn(
-                      "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
-                      isActive ? "font-bold" : "",
-                    )}
-                  >
-                    {eco.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
+                </label>
 
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          {/* ─── Left Sidebar ───────────────────────────────────────────────── */}
-          <aside
-            className={cn(
-              "flex h-full w-full shrink-0 flex-col overflow-hidden border-r border-border bg-background lg:w-[270px]",
-              mobileTab === "summary" ? "flex" : "hidden lg:flex",
-            )}
-          >
-            {/* Category Accordion */}
-            <div className="relative min-h-0 flex-1">
-              <div className="absolute inset-0">
-                <ScrollArea className="h-full">
-                  <div className="py-1">
-                    {sidebarCategories.map((category) => (
-                      <SidebarAccordionItem
-                        key={category}
-                        category={category}
-                        isOpen={openCategory === category}
-                        onToggle={() => handleAccordionToggle(category)}
-                        stack={stack}
-                        handleTechSelect={handleTechSelect}
-                        compatibilityNotes={
-                          stack.ecosystem === "go" && category === "goAuth"
-                            ? mergeCompatibilityNotes(
-                                compatibilityAnalysis.notes.goAuth,
-                                compatibilityAnalysis.notes.auth,
-                              )
-                            : compatibilityAnalysis.notes[category]
-                        }
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
-            </div>
+                <div className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-2" aria-hidden="true" />
 
-            {/* Sidebar Command (Option 2) */}
-            <div className="relative z-10 border-t border-border bg-background px-3 pt-2 pb-1">
-              <div className="rounded-md border border-border bg-fd-background p-2">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <Terminal className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-mono text-[10px] text-muted-foreground">Command</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={copyToClipboard}
-                    className={cn(
-                      "flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors",
-                      copied
-                        ? "text-green-600"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-2.5 w-2.5" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardCopy className="h-2.5 w-2.5" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-                <code data-testid="command-output" className="block break-all text-muted-foreground text-[11px] leading-relaxed max-h-32 overflow-y-auto">
-                  <span className="select-none text-chart-4">$ </span>
-                  {command}
-                </code>
-              </div>
-            </div>
-
-          </aside>
-
-          {/* ─── Main Content Area ──────────────────────────────────────────── */}
-          <main
-            className={cn(
-              "flex min-w-0 flex-1 flex-col overflow-hidden",
-              mobileTab === "summary" ? "hidden lg:flex" : "flex",
-            )}
-          >
-            <div className="flex items-center gap-1 border-border border-b bg-fd-background px-2 py-2 sm:gap-2 sm:px-4">
-              <button
-                type="button"
-                onClick={() => setViewMode("command")}
-                data-testid="tab-builder"
-                aria-pressed={viewMode === "command"}
-                data-state={viewMode === "command" ? "active" : "inactive"}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                  viewMode === "command"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Hammer className="h-3 w-3" />
-                <span className="hidden min-[480px]:inline">Builder</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("presets")}
-                data-testid="tab-presets"
-                aria-pressed={viewMode === "presets"}
-                data-state={viewMode === "presets" ? "active" : "inactive"}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                  viewMode === "presets"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Zap className="h-3 w-3" />
-                <span className="hidden min-[480px]:inline">Presets</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("preview")}
-                data-testid="tab-preview"
-                aria-pressed={viewMode === "preview"}
-                data-state={viewMode === "preview" ? "active" : "inactive"}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                  viewMode === "preview"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Eye className="h-3 w-3" />
-                <span className="hidden min-[480px]:inline">Preview</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("saved")}
-                data-testid="tab-saved"
-                aria-pressed={viewMode === "saved"}
-                data-state={viewMode === "saved" ? "active" : "inactive"}
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                  viewMode === "saved"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Bookmark className="h-3 w-3" />
-                <span className="hidden min-[480px]:inline">Saved</span>
-              </button>
-
-              <div className="ml-auto flex items-center gap-1">
-                {/* Desktop action buttons */}
-                <AnimatePresence initial={false}>
-                  {isSaveInputVisible && (
-                    <motion.div
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: 220, opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                      className="hidden overflow-hidden sm:block"
-                    >
-                      <div className="flex items-center gap-1 pr-1">
-                        <Input
-                          value={savePresetName}
-                          onChange={(e) => setSavePresetName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              saveCurrentStack(savePresetName || stack.projectName || "Untitled preset");
-                            }
-                            if (e.key === "Escape") {
-                              setIsSaveInputVisible(false);
-                              setSavePresetName("");
-                            }
-                          }}
-                          placeholder={stack.projectName || "My preset"}
-                          className="h-8 min-w-0"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            saveCurrentStack(savePresetName || stack.projectName || "Untitled preset")
-                          }
-                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          title="Save preset"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </motion.div>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("command")}
+                  data-testid="tab-builder"
+                  aria-pressed={viewMode === "command"}
+                  data-state={viewMode === "command" ? "active" : "inactive"}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                    viewMode === "command"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
-                </AnimatePresence>
-                <div className="hidden items-center gap-1 sm:flex">
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const nextVisible = !isSaveInputVisible;
-                            setIsSaveInputVisible(nextVisible);
-                            setSavePresetName(nextVisible ? stack.projectName || "" : "");
-                          }}
-                          title="Save current preset"
-                          aria-label="Save current preset"
-                          className={cn(
-                            "rounded-md p-1.5 transition-colors",
-                            isSaveInputVisible
-                              ? "bg-primary/15 text-primary"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                          )}
-                        />
-                      }
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                    </TooltipTrigger>
-                    <TooltipContent>Save the current stack as a named preset</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <button
-                          type="button"
-                          onClick={resetStack}
-                          title="Reset to defaults"
-                          aria-label="Reset to defaults"
-                          data-testid="btn-reset"
-                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        />
-                      }
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                    </TooltipTrigger>
-                    <TooltipContent>Reset all builder options to defaults</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <button
-                          type="button"
-                          onClick={getRandomStack}
-                          title="Generate a random stack"
-                          aria-label="Generate a random stack"
-                          data-testid="btn-random"
-                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        />
-                      }
-                    >
-                      <Shuffle className="h-3.5 w-3.5" />
-                    </TooltipTrigger>
-                    <TooltipContent>Generate a random stack configuration</TooltipContent>
-                  </Tooltip>
-                  <ShareButton stackUrl={getStackUrl()} />
+                >
+                  <Hammer className="h-3 w-3" />
+                  <span className="hidden min-[480px]:inline">Builder</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("presets")}
+                  data-testid="tab-presets"
+                  aria-pressed={viewMode === "presets"}
+                  data-state={viewMode === "presets" ? "active" : "inactive"}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                    viewMode === "presets"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Zap className="h-3 w-3" />
+                  <span className="hidden min-[480px]:inline">Presets</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("preview")}
+                  data-testid="tab-preview"
+                  aria-pressed={viewMode === "preview"}
+                  data-state={viewMode === "preview" ? "active" : "inactive"}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                    viewMode === "preview"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Eye className="h-3 w-3" />
+                  <span className="hidden min-[480px]:inline">Preview</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("saved")}
+                  data-testid="tab-saved"
+                  aria-pressed={viewMode === "saved"}
+                  data-state={viewMode === "saved" ? "active" : "inactive"}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                    viewMode === "saved"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Bookmark className="h-3 w-3" />
+                  <span className="hidden min-[480px]:inline">Saved</span>
+                </button>
+
+                <div className="ml-auto flex items-center gap-1">
+                  {/* Desktop action buttons */}
+                  <AnimatePresence initial={false}>
+                    {isSaveInputVisible && (
+                      <motion.div
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 220, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="hidden overflow-hidden sm:block"
+                      >
+                        <div className="flex items-center gap-1 pr-1">
+                          <Input
+                            value={savePresetName}
+                            onChange={(e) => setSavePresetName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                saveCurrentStack(
+                                  savePresetName || stack.projectName || "Untitled preset",
+                                );
+                              }
+                              if (e.key === "Escape") {
+                                setIsSaveInputVisible(false);
+                                setSavePresetName("");
+                              }
+                            }}
+                            placeholder={stack.projectName || "My preset"}
+                            className="h-8 min-w-0"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              saveCurrentStack(
+                                savePresetName || stack.projectName || "Untitled preset",
+                              )
+                            }
+                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            title="Save preset"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="hidden items-center gap-1 sm:flex">
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextVisible = !isSaveInputVisible;
+                              setIsSaveInputVisible(nextVisible);
+                              setSavePresetName(nextVisible ? stack.projectName || "" : "");
+                            }}
+                            title="Save current preset"
+                            aria-label="Save current preset"
+                            className={cn(
+                              "cursor-pointer rounded-md p-1.5 transition-colors",
+                              isSaveInputVisible
+                                ? "bg-primary/15 text-primary"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            )}
+                          />
+                        }
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                      </TooltipTrigger>
+                      <TooltipContent>Save the current stack as a named preset</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <button
+                            type="button"
+                            onClick={resetStack}
+                            title="Reset to defaults"
+                            aria-label="Reset to defaults"
+                            data-testid="btn-reset"
+                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          />
+                        }
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      </TooltipTrigger>
+                      <TooltipContent>Reset all builder options to defaults</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <button
+                            type="button"
+                            onClick={getRandomStack}
+                            title="Generate a random stack"
+                            aria-label="Generate a random stack"
+                            data-testid="btn-random"
+                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          />
+                        }
+                      >
+                        <Shuffle className="h-3.5 w-3.5" />
+                      </TooltipTrigger>
+                      <TooltipContent>Generate a random stack configuration</TooltipContent>
+                    </Tooltip>
+                    <ShareButton stackUrl={getStackUrl()} />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <button
+                            type="button"
+                            aria-label="Builder settings"
+                            title="Builder settings"
+                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          />
+                        }
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                        <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Mobile three-dot menu */}
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={
                         <button
                           type="button"
-                          aria-label="Builder settings"
-                          title="Builder settings"
-                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          aria-label="More actions"
+                          title="More actions"
+                          className="flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
                         />
                       }
                     >
-                      <Settings className="h-3.5 w-3.5" />
+                      <EllipsisVertical className="h-4 w-4" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                      <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                    <DropdownMenuContent
+                      align="end"
+                      sideOffset={8}
+                      className="w-48 bg-fd-background"
+                    >
+                      <DropdownMenuItem
+                        onClick={() => {
+                          saveCurrentStack(stack.projectName || "Untitled preset");
+                        }}
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                        Save Preset
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={resetStack}>
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Reset to Defaults
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={getRandomStack}>
+                        <Shuffle className="h-3.5 w-3.5" />
+                        Random Stack
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(getStackUrl());
+                            toast.success("Share link copied!");
+                          } catch {
+                            toast.error("Failed to copy link");
+                          }
+                        }}
+                      >
+                        <Link className="h-3.5 w-3.5" />
+                        Copy Share Link
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-
-                {/* Mobile three-dot menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <button
-                        type="button"
-                        aria-label="More actions"
-                        title="More actions"
-                        className="flex items-center justify-center rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
-                      />
-                    }
-                  >
-                    <EllipsisVertical className="h-4 w-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-fd-background">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        saveCurrentStack(stack.projectName || "Untitled preset");
-                      }}
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      Save Preset
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={resetStack}>
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Reset to Defaults
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={getRandomStack}>
-                      <Shuffle className="h-3.5 w-3.5" />
-                      Random Stack
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(getStackUrl());
-                          toast.success("Share link copied!");
-                        } catch {
-                          toast.error("Failed to copy link");
-                        }
-                      }}
-                    >
-                      <Link className="h-3.5 w-3.5" />
-                      Copy Share Link
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
-            </div>
 
-            {viewMode === "command" ? (
-              <div className="relative min-h-0 flex-1">
-                <div className="absolute inset-0">
-                  <ScrollArea ref={mainScrollRef} className="h-full">
-                    <div className="p-3 sm:p-4">
-                      <div className="mb-6">
-                        <label
-                          htmlFor="project-name"
-                          className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+              {viewMode === "command" ? (
+                <div className="p-3 pb-24 sm:p-4 sm:pb-28">
+                  {/* Category sections - all options for each category */}
+                  {categoryOrder.map((categoryKey) => {
+                    // Skip astroIntegration - rendered conditionally after webFrontend
+                    if (categoryKey === "astroIntegration") return null;
+
+                    // Skip shadcn sub-categories - rendered conditionally after uiLibrary
+                    if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
+
+                    if (stack.ecosystem === "go" && categoryKey === "auth") return null;
+
+                    const categoryOptionGroups = getCategoryRenderGroups(
+                      stack,
+                      categoryKey as keyof typeof TECH_OPTIONS,
+                    );
+                    const categoryDisplayName = getCategoryDisplayName(categoryKey);
+                    const sectionCompatibilityNotes =
+                      stack.ecosystem === "go" && categoryKey === "goAuth"
+                        ? mergeCompatibilityNotes(
+                            compatibilityAnalysis.notes.goAuth,
+                            compatibilityAnalysis.notes.auth,
+                          )
+                        : compatibilityAnalysis.notes[categoryKey];
+
+                    if (categoryOptionGroups.length === 0) return null;
+
+                    const isSectionCollapsed = collapsedSections.has(categoryKey);
+                    const sectionSelectedCount = getSelectedCount(
+                      categoryKey as keyof typeof TECH_OPTIONS,
+                      stack,
+                    );
+
+                    return (
+                      <div key={categoryKey}>
+                        <section
+                          ref={(el) => {
+                            sectionRefs.current[categoryKey] = el;
+                          }}
+                          id={`section-${categoryKey}`}
+                          data-testid={`category-${categoryKey}`}
+                          className="mb-6 scroll-mt-4 sm:mb-8"
                         >
-                          Project Name
-                        </label>
-                        <Input
-                          id="project-name"
-                          value={stack.projectName || ""}
-                          onChange={(e) => setStack({ projectName: e.target.value })}
-                          placeholder="my-app"
-                          className={cn(
-                            "max-w-sm",
-                            projectNameError
-                              ? "border-destructive bg-destructive/10 text-destructive-foreground"
-                              : "focus-visible:border-primary",
-                          )}
-                        />
-                        {projectNameError && (
-                          <p className="mt-1 text-destructive text-xs">{projectNameError}</p>
-                        )}
-                        {(stack.projectName || "my-app").includes(" ") && (
-                          <p className="mt-1 text-muted-foreground text-xs">
-                            Will be saved as:{" "}
-                            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                              {(stack.projectName || "my-app").replace(/\s+/g, "-")}
-                            </code>
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Category sections - all options for each category */}
-                      {categoryOrder.map((categoryKey) => {
-                        // Skip astroIntegration - rendered conditionally after webFrontend
-                        if (categoryKey === "astroIntegration") return null;
-
-                        // Skip shadcn sub-categories - rendered conditionally after uiLibrary
-                        if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
-
-                        if (stack.ecosystem === "go" && categoryKey === "auth") return null;
-
-                        const categoryOptionGroups = getCategoryRenderGroups(
-                          stack,
-                          categoryKey as keyof typeof TECH_OPTIONS,
-                        );
-                        const categoryDisplayName = getCategoryDisplayName(categoryKey);
-                        const sectionCompatibilityNotes =
-                          stack.ecosystem === "go" && categoryKey === "goAuth"
-                            ? mergeCompatibilityNotes(
-                                compatibilityAnalysis.notes.goAuth,
-                                compatibilityAnalysis.notes.auth,
-                              )
-                            : compatibilityAnalysis.notes[categoryKey];
-
-                        if (categoryOptionGroups.length === 0) return null;
-
-                        const isSectionCollapsed = collapsedSections.has(categoryKey);
-                        const sectionSelectedCount = getSelectedCount(
-                          categoryKey as keyof typeof TECH_OPTIONS,
-                          stack,
-                        );
-
-                        return (
-                          <div key={categoryKey}>
-                            <section
-                              ref={(el) => {
-                                sectionRefs.current[categoryKey] = el;
-                              }}
-                              id={`section-${categoryKey}`}
-                              data-testid={`category-${categoryKey}`}
-                              className="mb-6 scroll-mt-4 sm:mb-8"
-                            >
-                              <button
-                                type="button"
-                                onClick={() => toggleSection(categoryKey)}
-                                data-testid={`category-toggle-${categoryKey}`}
-                                className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
-                              >
-                                <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                                  {categoryDisplayName}
-                                </h2>
-                                {sectionCompatibilityNotes?.hasIssue && (
-                                  <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                                )}
-                                {isSectionCollapsed && sectionSelectedCount > 0 && (
-                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-                                    {sectionSelectedCount}
-                                  </span>
-                                )}
-                                <motion.div
-                                  animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
-                                  transition={{ duration: 0.2 }}
-                                >
-                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                </motion.div>
-                              </button>
-                              <AnimatePresence initial={false}>
-                                {!isSectionCollapsed && (
-                                  <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                                    className="overflow-hidden"
-                                  >
-                                    <CategoryHint categoryKey={categoryKey} />
-                                    <div className="space-y-4">
-                                      {categoryOptionGroups.map((group) => (
-                                        <div key={group.key}>
-                                          {group.heading && (
-                                            <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                                              {group.heading}
-                                            </h3>
-                                          )}
-                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                            {group.options.map((tech) => {
-                                              const isSelected = isSelectedCheck(
-                                                stack,
-                                                group.category,
-                                                tech.id,
-                                              );
-                                              const isDisabled = !isOptionCompatible(
-                                                stack,
-                                                group.category,
-                                                tech.id,
-                                              );
-                                              const disabledReason = isDisabled
-                                                ? getDisabledReason(
-                                                    stack,
-                                                    group.category,
-                                                    tech.id,
-                                                  )
-                                                : null;
-
-                                              return (
-                                                <motion.div
-                                                  key={tech.id}
-                                                  data-testid={`option-${group.category}-${tech.id}`}
-                                                  className={cn(
-                                                    "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                                    isSelected
-                                                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                      : isDisabled
-                                                        ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                        : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                  )}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleTechSelect(group.category, tech.id);
-                                                  }}
-                                                  title={disabledReason || undefined}
-                                                >
-                                                  <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                    <TechResourceButtons
-                                                      category={group.category}
-                                                      techId={tech.id}
-                                                    />
-                                                    {tech.default && !isSelected && (
-                                                      <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                        Default
-                                                      </span>
-                                                    )}
-                                                    {tech.legacy && (
-                                                      <Tooltip>
-                                                        <TooltipTrigger
-                                                          onClick={(e) => e.stopPropagation()}
-                                                          className="cursor-default"
-                                                        >
-                                                          <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                            Legacy
-                                                          </span>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                          No longer actively maintained
-                                                        </TooltipContent>
-                                                      </Tooltip>
-                                                    )}
-                                                  </div>
-                                                  <div className="flex items-start gap-3">
-                                                    {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                                      <div className="flex shrink-0 flex-col items-center gap-1">
-                                                        <div
-                                                          className={cn(
-                                                            "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                            isSelected
-                                                              ? "bg-primary/10"
-                                                              : "bg-muted/50 group-hover:bg-muted",
-                                                          )}
-                                                        >
-                                                          <TechIcon
-                                                            techId={tech.id}
-                                                            icon={tech.icon}
-                                                            name={tech.name}
-                                                            className="h-5 w-5"
-                                                          />
-                                                        </div>
-                                                        {tech.isNew && <NewToolLabel />}
-                                                      </div>
-                                                    )}
-                                                    <div className="min-w-0 flex-1 pt-0.5">
-                                                      <span
-                                                        className={cn(
-                                                          "block font-semibold text-sm",
-                                                          isSelected
-                                                            ? "text-primary"
-                                                            : "text-foreground",
-                                                        )}
-                                                      >
-                                                        {tech.name}
-                                                      </span>
-                                                      <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                        {tech.description}
-                                                      </p>
-                                                      {isDisabled && disabledReason && (
-                                                        <DisabledReasonInline
-                                                          reason={disabledReason}
-                                                        />
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                </motion.div>
-                                              );
-                                            })}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </section>
-
-                            {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
-                            {categoryKey === "uiLibrary" && (
-                              <AnimatePresence>
-                                {stack.uiLibrary === "shadcn-ui" && (
-                                  <motion.section
-                                    ref={(el) => {
-                                      sectionRefs.current.shadcnBase = el;
-                                    }}
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    data-testid="category-shadcnBase"
-                                    className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                                  >
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleSection("shadcnBase")}
-                                      data-testid="category-toggle-shadcnBase"
-                                      className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
-                                    >
-                                      <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                      <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                                        shadcn/ui Configuration
-                                      </h2>
-                                      <motion.div
-                                        animate={{
-                                          rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
-                                        }}
-                                        transition={{ duration: 0.2 }}
-                                      >
-                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                      </motion.div>
-                                    </button>
-                                    <AnimatePresence initial={false}>
-                                      {!collapsedSections.has("shadcnBase") && (
-                                        <motion.div
-                                          initial={{ height: 0, opacity: 0 }}
-                                          animate={{ height: "auto", opacity: 1 }}
-                                          exit={{ height: 0, opacity: 0 }}
-                                          transition={{ duration: 0.25, ease: "easeInOut" }}
-                                          className="overflow-hidden"
-                                        >
-                                          <div className="space-y-4">
-                                            {(
-                                              [
-                                                {
-                                                  key: "shadcnBase" as const,
-                                                  label: "Base Library",
-                                                },
-                                                {
-                                                  key: "shadcnStyle" as const,
-                                                  label: "Visual Style",
-                                                },
-                                                {
-                                                  key: "shadcnIconLibrary" as const,
-                                                  label: "Icon Library",
-                                                },
-                                                {
-                                                  key: "shadcnColorTheme" as const,
-                                                  label: "Color Theme",
-                                                },
-                                                {
-                                                  key: "shadcnBaseColor" as const,
-                                                  label: "Base Color",
-                                                },
-                                                { key: "shadcnFont" as const, label: "Font" },
-                                                {
-                                                  key: "shadcnRadius" as const,
-                                                  label: "Border Radius",
-                                                },
-                                              ] as const
-                                            ).map(({ key, label }) => (
-                                              <div key={key}>
-                                                <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                                                  {label}
-                                                </h3>
-                                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
-                                                  {(TECH_OPTIONS[key] || []).map((tech) => {
-                                                    const isSelected =
-                                                      stack[key as keyof StackState] === tech.id;
-                                                    return (
-                                                      <motion.div
-                                                        key={tech.id}
-                                                        data-testid={`option-${key}-${tech.id}`}
-                                                        className={cn(
-                                                          "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
-                                                          isSelected
-                                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                        )}
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleTechSelect(key, tech.id);
-                                                        }}
-                                                      >
-                                                        <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-                                                          <TechResourceButtons
-                                                            category={key}
-                                                            techId={tech.id}
-                                                          />
-                                                          {tech.default && !isSelected && (
-                                                            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
-                                                              Default
-                                                            </span>
-                                                          )}
-                                                        </div>
-                                                        <div className="flex items-start gap-2.5">
-                                                          {key === "shadcnColorTheme" ||
-                                                          key === "shadcnBaseColor" ? (
-                                                            <div className="flex shrink-0 flex-col items-center gap-1">
-                                                              <div
-                                                                className={cn(
-                                                                  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                                  isSelected
-                                                                    ? "bg-primary/10"
-                                                                    : "bg-muted/50 group-hover:bg-muted",
-                                                                )}
-                                                              >
-                                                                <div
-                                                                  className={cn(
-                                                                    "h-4 w-4 rounded-full bg-gradient-to-br",
-                                                                    tech.color,
-                                                                  )}
-                                                                />
-                                                              </div>
-                                                              {tech.isNew && <NewToolLabel compact />}
-                                                            </div>
-                                                          ) : (
-                                                            (tech.icon !== "" ||
-                                                              ICON_REGISTRY[tech.id]) && (
-                                                              <div className="flex shrink-0 flex-col items-center gap-1">
-                                                                <div
-                                                                  className={cn(
-                                                                    "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                                    isSelected
-                                                                      ? "bg-primary/10"
-                                                                      : "bg-muted/50 group-hover:bg-muted",
-                                                                  )}
-                                                                >
-                                                                  <TechIcon
-                                                                    techId={tech.id}
-                                                                    icon={tech.icon}
-                                                                    name={tech.name}
-                                                                    className="h-4 w-4"
-                                                                  />
-                                                                </div>
-                                                                {tech.isNew && <NewToolLabel compact />}
-                                                              </div>
-                                                            )
-                                                          )}
-                                                          <div className="min-w-0 flex-1">
-                                                            <span
-                                                              className={cn(
-                                                                "block font-semibold text-xs sm:text-sm",
-                                                                isSelected
-                                                                  ? "text-primary"
-                                                                  : "text-foreground",
-                                                              )}
-                                                            >
-                                                              {tech.name}
-                                                            </span>
-                                                            <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
-                                                              {tech.description}
-                                                            </p>
-                                                          </div>
-                                                        </div>
-                                                      </motion.div>
-                                                    );
-                                                  })}
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </motion.section>
-                                )}
-                              </AnimatePresence>
+                          <button
+                            type="button"
+                            onClick={() => toggleSection(categoryKey)}
+                            data-testid={`category-toggle-${categoryKey}`}
+                            className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                          >
+                            <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                            <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                              {categoryDisplayName}
+                            </h2>
+                            {sectionCompatibilityNotes?.hasIssue && (
+                              <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
                             )}
+                            {isSectionCollapsed && sectionSelectedCount > 0 && (
+                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
+                                {sectionSelectedCount}
+                              </span>
+                            )}
+                            <motion.div
+                              animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            </motion.div>
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {!isSectionCollapsed && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                              >
+                                <CategoryHint categoryKey={categoryKey} />
+                                <div className="space-y-4">
+                                  {categoryOptionGroups.map((group) => (
+                                    <div key={group.key}>
+                                      {group.heading && (
+                                        <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                                          {group.heading}
+                                        </h3>
+                                      )}
+                                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                        {group.options.map((tech) => {
+                                          const isSelected = isSelectedCheck(
+                                            stack,
+                                            group.category,
+                                            tech.id,
+                                          );
+                                          const isDisabled = !isOptionCompatible(
+                                            stack,
+                                            group.category,
+                                            tech.id,
+                                          );
+                                          const disabledReason = isDisabled
+                                            ? getDisabledReason(stack, group.category, tech.id)
+                                            : null;
 
-                            {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
-                            {categoryKey === "webFrontend" && (
-                              <AnimatePresence>
-                                {stack.webFrontend.includes("astro") && (
-                                  <motion.section
-                                    ref={(el) => {
-                                      sectionRefs.current.astroIntegration = el;
-                                    }}
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    data-testid="category-astroIntegration"
-                                    className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                                  >
-                                    <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
-                                      <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                      <h2 className="font-mono text-foreground text-sm sm:text-base">
-                                        Astro Integration
-                                      </h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                      {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
-                                        const isSelected = stack.astroIntegration === tech.id;
-                                        const isDisabled = !isOptionCompatible(
-                                          stack,
-                                          "astroIntegration",
-                                          tech.id,
-                                        );
-                                        const disabledReason = isDisabled
-                                          ? getDisabledReason(stack, "astroIntegration", tech.id)
-                                          : null;
-
-                                        return (
-                                          <motion.div
-                                            key={tech.id}
-                                            data-testid={`option-astroIntegration-${tech.id}`}
-                                            className={cn(
-                                              "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                              isSelected
-                                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                : isDisabled
-                                                  ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                  : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                            )}
-                                            whileHover={{ scale: 1.01 }}
-                                            whileTap={{ scale: 0.99 }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleTechSelect("astroIntegration", tech.id);
-                                            }}
-                                            title={disabledReason || undefined}
-                                          >
-                                            {tech.default && !isSelected && (
-                                              <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                Default
-                                              </span>
-                                            )}
-                                            {tech.legacy && (
-                                              <Tooltip>
-                                                <TooltipTrigger
-                                                  onClick={(e) => e.stopPropagation()}
-                                                  className="absolute top-2 right-2 cursor-default"
-                                                >
-                                                  <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                    Legacy
-                                                  </span>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                  No longer actively maintained
-                                                </TooltipContent>
-                                              </Tooltip>
-                                            )}
-                                            <div className="flex items-start gap-3">
-                                              {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                                <div className="flex shrink-0 flex-col items-center gap-1">
-                                                  <div
-                                                    className={cn(
-                                                      "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                      isSelected
-                                                        ? "bg-primary/10"
-                                                        : "bg-muted/50 group-hover:bg-muted",
-                                                    )}
-                                                  >
-                                                    <TechIcon
-                                                      techId={tech.id}
-                                                      icon={tech.icon}
-                                                      name={tech.name}
-                                                      className="h-5 w-5"
-                                                    />
-                                                  </div>
-                                                  {tech.isNew && <NewToolLabel />}
-                                                </div>
+                                          return (
+                                            <motion.div
+                                              key={tech.id}
+                                              data-testid={`option-${group.category}-${tech.id}`}
+                                              className={cn(
+                                                "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                                isSelected
+                                                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                  : isDisabled
+                                                    ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                    : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
                                               )}
-                                              <div className="min-w-0 flex-1 pt-0.5">
-                                                <span
-                                                  className={cn(
-                                                    "block font-semibold text-sm",
-                                                    isSelected ? "text-primary" : "text-foreground",
-                                                  )}
-                                                >
-                                                  {tech.name}
-                                                </span>
-                                                <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                  {tech.description}
-                                                </p>
-                                                {isDisabled && disabledReason && (
-                                                  <DisabledReasonInline reason={disabledReason} />
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleTechSelect(group.category, tech.id);
+                                              }}
+                                              title={disabledReason || undefined}
+                                            >
+                                              <div className="absolute top-2 right-2 flex items-center gap-1">
+                                                <TechResourceButtons
+                                                  category={group.category}
+                                                  techId={tech.id}
+                                                />
+                                                {tech.default && !isSelected && (
+                                                  <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                                    Default
+                                                  </span>
+                                                )}
+                                                {tech.legacy && (
+                                                  <Tooltip>
+                                                    <TooltipTrigger
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="cursor-default"
+                                                    >
+                                                      <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                        Legacy
+                                                      </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                      No longer actively maintained
+                                                    </TooltipContent>
+                                                  </Tooltip>
                                                 )}
                                               </div>
-                                            </div>
-                                          </motion.div>
-                                        );
-                                      })}
+                                              <div className="flex items-start gap-3">
+                                                {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+                                                  <div className="flex shrink-0 flex-col items-center gap-1">
+                                                    <div
+                                                      className={cn(
+                                                        "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                                                        isSelected
+                                                          ? "bg-primary/10"
+                                                          : "bg-muted/50 group-hover:bg-muted",
+                                                      )}
+                                                    >
+                                                      <TechIcon
+                                                        techId={tech.id}
+                                                        icon={tech.icon}
+                                                        name={tech.name}
+                                                        className="h-5 w-5"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                <div className="min-w-0 flex-1 pt-0.5">
+                                                  <span
+                                                    className={cn(
+                                                      "block font-semibold text-sm",
+                                                      isSelected
+                                                        ? "text-primary"
+                                                        : "text-foreground",
+                                                    )}
+                                                  >
+                                                    {tech.name}
+                                                  </span>
+                                                  <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                    {tech.description}
+                                                  </p>
+                                                  {isDisabled && disabledReason && (
+                                                    <DisabledReasonInline reason={disabledReason} />
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </motion.div>
+                                          );
+                                        })}
+                                      </div>
                                     </div>
-                                  </motion.section>
-                                )}
-                              </AnimatePresence>
+                                  ))}
+                                </div>
+                              </motion.div>
                             )}
-                          </div>
-                        );
-                      })}
+                          </AnimatePresence>
+                        </section>
 
-                      <div className="h-10" />
-                    </div>
-                  </ScrollArea>
+                        {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
+                        {categoryKey === "uiLibrary" && (
+                          <AnimatePresence>
+                            {stack.uiLibrary === "shadcn-ui" && (
+                              <motion.section
+                                ref={(el) => {
+                                  sectionRefs.current.shadcnBase = el;
+                                }}
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                data-testid="category-shadcnBase"
+                                className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSection("shadcnBase")}
+                                  data-testid="category-toggle-shadcnBase"
+                                  className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                                >
+                                  <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                  <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                                    shadcn/ui Configuration
+                                  </h2>
+                                  <motion.div
+                                    animate={{
+                                      rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
+                                    }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                  </motion.div>
+                                </button>
+                                <AnimatePresence initial={false}>
+                                  {!collapsedSections.has("shadcnBase") && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: "auto", opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="space-y-4">
+                                        {(
+                                          [
+                                            {
+                                              key: "shadcnBase" as const,
+                                              label: "Base Library",
+                                            },
+                                            {
+                                              key: "shadcnStyle" as const,
+                                              label: "Visual Style",
+                                            },
+                                            {
+                                              key: "shadcnIconLibrary" as const,
+                                              label: "Icon Library",
+                                            },
+                                            {
+                                              key: "shadcnColorTheme" as const,
+                                              label: "Color Theme",
+                                            },
+                                            {
+                                              key: "shadcnBaseColor" as const,
+                                              label: "Base Color",
+                                            },
+                                            { key: "shadcnFont" as const, label: "Font" },
+                                            {
+                                              key: "shadcnRadius" as const,
+                                              label: "Border Radius",
+                                            },
+                                          ] as const
+                                        ).map(({ key, label }) => (
+                                          <div key={key}>
+                                            <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                              {label}
+                                            </h3>
+                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
+                                              {(TECH_OPTIONS[key] || []).map((tech) => {
+                                                const isSelected =
+                                                  stack[key as keyof StackState] === tech.id;
+                                                return (
+                                                  <motion.div
+                                                    key={tech.id}
+                                                    data-testid={`option-${key}-${tech.id}`}
+                                                    className={cn(
+                                                      "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                      isSelected
+                                                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                        : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                    )}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      handleTechSelect(key, tech.id);
+                                                    }}
+                                                  >
+                                                    <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                      <TechResourceButtons
+                                                        category={key}
+                                                        techId={tech.id}
+                                                      />
+                                                      {tech.default && !isSelected && (
+                                                        <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                          Default
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                    <div className="flex items-start gap-2.5">
+                                                      {key === "shadcnColorTheme" ||
+                                                      key === "shadcnBaseColor" ? (
+                                                        <div className="flex shrink-0 flex-col items-center gap-1">
+                                                          <div
+                                                            className={cn(
+                                                              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                              isSelected
+                                                                ? "bg-primary/10"
+                                                                : "bg-muted/50 group-hover:bg-muted",
+                                                            )}
+                                                          >
+                                                            <div
+                                                              className={cn(
+                                                                "h-4 w-4 rounded-full bg-gradient-to-br",
+                                                                tech.color,
+                                                              )}
+                                                            />
+                                                          </div>
+                                                        </div>
+                                                      ) : (
+                                                        (tech.icon !== "" ||
+                                                          ICON_REGISTRY[tech.id]) && (
+                                                          <div className="flex shrink-0 flex-col items-center gap-1">
+                                                            <div
+                                                              className={cn(
+                                                                "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                                isSelected
+                                                                  ? "bg-primary/10"
+                                                                  : "bg-muted/50 group-hover:bg-muted",
+                                                              )}
+                                                            >
+                                                              <TechIcon
+                                                                techId={tech.id}
+                                                                icon={tech.icon}
+                                                                name={tech.name}
+                                                                className="h-4 w-4"
+                                                              />
+                                                            </div>
+                                                          </div>
+                                                        )
+                                                      )}
+                                                      <div className="min-w-0 flex-1">
+                                                        <span
+                                                          className={cn(
+                                                            "block font-semibold text-xs sm:text-sm",
+                                                            isSelected
+                                                              ? "text-primary"
+                                                              : "text-foreground",
+                                                          )}
+                                                        >
+                                                          {tech.name}
+                                                        </span>
+                                                        <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                          {tech.description}
+                                                        </p>
+                                                      </div>
+                                                    </div>
+                                                  </motion.div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </motion.section>
+                            )}
+                          </AnimatePresence>
+                        )}
+
+                        {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
+                        {categoryKey === "webFrontend" && (
+                          <AnimatePresence>
+                            {stack.webFrontend.includes("astro") && (
+                              <motion.section
+                                ref={(el) => {
+                                  sectionRefs.current.astroIntegration = el;
+                                }}
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                data-testid="category-astroIntegration"
+                                className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                              >
+                                <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
+                                  <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                  <h2 className="font-mono text-foreground text-sm sm:text-base">
+                                    Astro Integration
+                                  </h2>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                  {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
+                                    const isSelected = stack.astroIntegration === tech.id;
+                                    const isDisabled = !isOptionCompatible(
+                                      stack,
+                                      "astroIntegration",
+                                      tech.id,
+                                    );
+                                    const disabledReason = isDisabled
+                                      ? getDisabledReason(stack, "astroIntegration", tech.id)
+                                      : null;
+
+                                    return (
+                                      <motion.div
+                                        key={tech.id}
+                                        data-testid={`option-astroIntegration-${tech.id}`}
+                                        className={cn(
+                                          "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                          isSelected
+                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                            : isDisabled
+                                              ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                              : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                        )}
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleTechSelect("astroIntegration", tech.id);
+                                        }}
+                                        title={disabledReason || undefined}
+                                      >
+                                        {tech.default && !isSelected && (
+                                          <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                            Default
+                                          </span>
+                                        )}
+                                        {tech.legacy && (
+                                          <Tooltip>
+                                            <TooltipTrigger
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="absolute top-2 right-2 cursor-default"
+                                            >
+                                              <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                Legacy
+                                              </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              No longer actively maintained
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        )}
+                                        <div className="flex items-start gap-3">
+                                          {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+                                            <div className="flex shrink-0 flex-col items-center gap-1">
+                                              <div
+                                                className={cn(
+                                                  "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                                                  isSelected
+                                                    ? "bg-primary/10"
+                                                    : "bg-muted/50 group-hover:bg-muted",
+                                                )}
+                                              >
+                                                <TechIcon
+                                                  techId={tech.id}
+                                                  icon={tech.icon}
+                                                  name={tech.name}
+                                                  className="h-5 w-5"
+                                                />
+                                              </div>
+                                            </div>
+                                          )}
+                                          <div className="min-w-0 flex-1 pt-0.5">
+                                            <span
+                                              className={cn(
+                                                "block font-semibold text-sm",
+                                                isSelected ? "text-primary" : "text-foreground",
+                                              )}
+                                            >
+                                              {tech.name}
+                                            </span>
+                                            <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                              {tech.description}
+                                            </p>
+                                            {isDisabled && disabledReason && (
+                                              <DisabledReasonInline reason={disabledReason} />
+                                            )}
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.section>
+                            )}
+                          </AnimatePresence>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <div className="h-10" />
                 </div>
-              </div>
-            ) : viewMode === "preview" ? (
-              <div className="min-h-0 flex-1 overflow-hidden">
-                <Suspense
-                  fallback={
-                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                      Loading preview...
-                    </div>
-                  }
-                >
-                  <PreviewPanel
+              ) : viewMode === "preview" ? (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                        Loading preview...
+                      </div>
+                    }
+                  >
+                    <PreviewPanel
+                      stack={adjustedStack || stack}
+                      selectedFilePath={selectedFile || null}
+                      onSelectFile={setSelectedFile}
+                    />
+                  </Suspense>
+                </div>
+              ) : viewMode === "presets" ? (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <PresetsPanel
                     stack={adjustedStack || stack}
-                    selectedFilePath={selectedFile || null}
-                    onSelectFile={setSelectedFile}
+                    ecosystem={stack.ecosystem}
+                    onApplyPreset={applyPreset}
+                    onCustomizePreset={(presetId) => {
+                      applyPreset(presetId);
+                      setViewMode("command");
+                    }}
                   />
-                </Suspense>
-              </div>
-            ) : viewMode === "presets" ? (
-              <div className="min-h-0 flex-1 overflow-hidden">
-                <PresetsPanel
-                  stack={adjustedStack || stack}
-                  ecosystem={stack.ecosystem}
-                  onApplyPreset={applyPreset}
-                  onCustomizePreset={(presetId) => {
-                    applyPreset(presetId);
-                    setViewMode("command");
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="min-h-0 flex-1 overflow-hidden">
-                <SavedStacksPanel
-                  entries={savedStacks}
-                  onLoadEntry={loadSavedStack}
-                  onOverwriteEntry={overwriteSavedStack}
-                  onDeleteEntry={deleteSavedStack}
-                  onRenameEntry={renameSavedStack}
-                  onDuplicateEntry={duplicateSavedStack}
-                />
-              </div>
-            )}
-          </main>
+                </div>
+              ) : (
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <SavedStacksPanel
+                    entries={savedStacks}
+                    onLoadEntry={loadSavedStack}
+                    onOverwriteEntry={overwriteSavedStack}
+                    onDeleteEntry={deleteSavedStack}
+                    onRenameEntry={renameSavedStack}
+                    onDuplicateEntry={duplicateSavedStack}
+                  />
+                </div>
+              )}
+            </main>
+          </div>
         </div>
+
+        {/* ─── Floating command bar ─────────────────────────────────────────── */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5">
+          <div className="pointer-events-auto mx-auto flex w-full max-w-5xl items-center">
+            {viewMode === "command" && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen((open) => !open)}
+                aria-label="Toggle section navigation"
+                aria-pressed={sidebarOpen}
+                title="Section navigation"
+                className="mr-2.5 flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-colors hover:bg-[#26262b] dark:border-white/10 dark:bg-[#1a1a1a] dark:hover:bg-[#242429]"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
+            )}
+            <div className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-[14px] border border-transparent bg-[#18181B] pr-1.5 pl-4 font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]">
+              <span className="shrink-0 font-medium text-[#C6E853] select-none">$</span>
+              <code
+                data-testid="command-output"
+                className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[rgba(250,250,247,0.88)]"
+              >
+                {command}
+              </code>
+              <button
+                type="button"
+                onClick={copyToClipboard}
+                aria-label={copied ? "Command copied" : "Copy command"}
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[9px] bg-[#C6E853] px-3 font-mono text-[11.5px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
+              >
+                {copied ? <Check className="h-3 w-3" /> : <ClipboardCopy className="h-3 w-3" />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            {viewMode === "command" && (
+              <button
+                type="button"
+                onClick={scrollToTop}
+                aria-label="Scroll to top"
+                title="Scroll to top"
+                tabIndex={showScrollTop ? 0 : -1}
+                aria-hidden={!showScrollTop}
+                className={cn(
+                  "ml-2.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-all duration-200 ease-out dark:border-white/10 dark:bg-[#1a1a1a]",
+                  showScrollTop
+                    ? "scale-100 cursor-pointer opacity-100 hover:bg-[#26262b] dark:hover:bg-[#242429]"
+                    : "pointer-events-none scale-90 opacity-0",
+                )}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Section navigation drawer (toggled, builder view only) ──────── */}
+        {viewMode === "command" && (
+          <>
+            <button
+              type="button"
+              aria-label="Close section navigation"
+              tabIndex={sidebarOpen ? 0 : -1}
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "absolute inset-0 z-50 bg-black/30 transition-opacity duration-200",
+                sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
+              )}
+            />
+            <aside
+              aria-label="Section navigation"
+              inert={!sidebarOpen}
+              className={cn(
+                "absolute inset-y-0 left-0 z-50 flex w-64 max-w-[80%] flex-col border-border border-r bg-fd-background shadow-xl transition-transform duration-200 ease-out",
+                sidebarOpen ? "translate-x-0" : "-translate-x-full",
+              )}
+            >
+              <div className="flex shrink-0 items-center justify-between border-border border-b px-4 py-3">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Sections
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSidebarOpen(false)}
+                  aria-label="Close section navigation"
+                  className="cursor-pointer rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto py-1.5">
+                {navSections.map((section) => {
+                  const count = getSelectedCount(section.key as keyof typeof TECH_OPTIONS, stack);
+                  return (
+                    <button
+                      key={section.key}
+                      type="button"
+                      onClick={() => goToSection(section.key)}
+                      className="flex w-full cursor-pointer items-center justify-between gap-2 px-4 py-2 text-left font-mono text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <span className="truncate">{section.name}</span>
+                      {count > 0 && (
+                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 font-mono font-semibold text-[10px] text-primary-foreground">
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </aside>
+          </>
+        )}
       </div>
     </TooltipProvider>
   );

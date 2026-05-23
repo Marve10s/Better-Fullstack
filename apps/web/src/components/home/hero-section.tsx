@@ -21,7 +21,7 @@ const COMMANDS: Record<PM, string> = {
   yarn: "yarn create better-fullstack@latest",
 };
 
-const ACCENT_TEXT = "text-black dark:text-[#bef264]";
+const ACCENT_TEXT = "text-black dark:text-[#C6E853]";
 const RELEASE_BADGE = `v${__BFS_CLI_VERSION__} · ${__BFS_BUILD_DATE__}`;
 
 export default function HeroSection() {
@@ -53,12 +53,7 @@ export default function HeroSection() {
         )}
       >
         <div className="flex items-baseline justify-between">
-          <span
-            className={cn(
-              "font-mono text-[11px] uppercase tracking-[0.22em]",
-              ACCENT_TEXT,
-            )}
-          >
+          <span className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
             ✦ install
           </span>
           <span
@@ -80,11 +75,7 @@ export default function HeroSection() {
             "dark:border-[#1f1f1f] dark:bg-[#111111]",
           )}
         >
-          <div
-            className={cn(
-              "flex border-b border-[#e5e5e5] dark:border-[#1f1f1f]",
-            )}
-          >
+          <div className={cn("flex border-b border-[#e5e5e5] dark:border-[#1f1f1f]")}>
             {PMS.map((p) => (
               <button
                 key={p}
@@ -94,7 +85,7 @@ export default function HeroSection() {
                   "flex cursor-pointer items-center gap-1.5 border-r border-[#e5e5e5] px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4",
                   "dark:border-[#1f1f1f]",
                   pm === p
-                    ? "bg-[#bef264] text-[#0a0a0a]"
+                    ? "bg-[#C6E853] text-[#0a0a0a]"
                     : "bg-transparent text-[#3f6212] dark:text-[#a3a3a3]",
                 )}
               >
@@ -113,9 +104,7 @@ export default function HeroSection() {
               aria-label="Copy command"
               className={cn(
                 "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
-                copied
-                  ? "text-black dark:text-[#bef264]"
-                  : "text-[#3f6212] dark:text-[#a3a3a3]",
+                copied ? "text-black dark:text-[#C6E853]" : "text-[#3f6212] dark:text-[#a3a3a3]",
               )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -178,9 +167,8 @@ export default function HeroSection() {
             "dark:text-[#a3a3a3]",
           )}
         >
-          A CLI that scaffolds production-ready fullstack apps across five language
-          ecosystems. Pick your stack — frontend, database, auth, payments, AI — and run
-          one command.
+          A CLI that scaffolds production-ready fullstack apps across five language ecosystems. Pick
+          your stack — frontend, database, auth, payments, AI — and run one command.
         </motion.p>
 
         <motion.div
@@ -192,7 +180,7 @@ export default function HeroSection() {
           <Link
             to="/new"
             search={{ view: "command", file: "" }}
-            className="group inline-flex items-center gap-1.5 rounded-md bg-[#bef264] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
+            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
             Open the builder
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

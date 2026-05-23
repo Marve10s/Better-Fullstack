@@ -1,12 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import {
-  clickVisibleTestId,
-  commandOutput,
-  gotoAppPage,
-  openBuilder,
-  visibleTestId,
-} from "./test-helpers";
+import { commandOutput, gotoAppPage, openBuilder, visibleTestId } from "./test-helpers";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -26,11 +20,8 @@ test.describe("Stack Builder - Mobile", () => {
   });
 
   test("CLI command is visible on mobile", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
+    // The command bar is pinned and always visible (no mobile tab toggle anymore).
     await openBuilder(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(visibleTestId(page, "mobile-tab-summary")).toBeVisible();
-    await clickVisibleTestId(page, "mobile-tab-summary");
     const mobileCommand = commandOutput(page);
     await expect(mobileCommand).toBeVisible();
     await expect(mobileCommand).toContainText("bun create better-fullstack");

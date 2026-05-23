@@ -77,13 +77,12 @@ test.describe("Builder parity", () => {
   });
 
   test("disabled options do not mutate the command output", async ({ page }) => {
-    await clickVisibleTestId(page, "sidebar-category-toggle-cms");
+    await clickVisibleTestId(page, "category-toggle-cms");
     const command = commandOutput(page);
     const initialCommand = await command.textContent();
 
-    const payloadOption = visibleTestId(page, "sidebar-option-cms-payload");
+    const payloadOption = visibleTestId(page, "option-cms-payload");
     await expect(payloadOption).toContainText("Unavailable");
-    await expect(payloadOption).toBeDisabled();
     await payloadOption.click({ force: true });
 
     await expect(command).toHaveText(initialCommand ?? "");

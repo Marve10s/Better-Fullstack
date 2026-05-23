@@ -9,6 +9,8 @@ public/analytics-minimal.json
 
 # test & build
 /coverage
+/test-results/
+/playwright-report/
 /.next/
 /out/
 /build
