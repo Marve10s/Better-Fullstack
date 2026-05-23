@@ -3,31 +3,12 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import type { VirtualFileSystem } from "../core/virtual-fs";
 import type { TemplateData } from "./utils";
 
-import { isBinaryFile, processTemplateString, transformFilename } from "../core/template-processor";
-
-function getElixirAppName(config: ProjectConfig) {
-  const rawName = String(config.projectName ?? "my_app").toLowerCase();
-  const parts: string[] = [];
-  let pendingSeparator = false;
-
-  for (const char of rawName) {
-    const code = char.charCodeAt(0);
-    const isLowercaseLetter = code >= 97 && code <= 122;
-    const isDigit = code >= 48 && code <= 57;
-
-    if (isLowercaseLetter || isDigit) {
-      if (pendingSeparator && parts.length > 0) {
-        parts.push("_");
-      }
-      parts.push(char);
-      pendingSeparator = false;
-    } else {
-      pendingSeparator = parts.length > 0;
-    }
-  }
-
-  return parts.join("") || "my_app";
-}
+import {
+  isBinaryFile,
+  normalizeElixirAppName,
+  processTemplateString,
+  transformFilename,
+} from "../core/template-processor";
 
 export async function processElixirBaseTemplate(
   vfs: VirtualFileSystem,
@@ -43,6 +24,7 @@ export async function processElixirBaseTemplate(
   const hasChannels = config.elixirRealtime === "channels" || config.elixirRealtime === "presence";
   const hasPresence = config.elixirRealtime === "presence";
   const hasOban = config.elixirJobs === "oban";
+  const hasQuantum = config.elixirJobs === "quantum";
   const hasAbsinthe = config.elixirApi === "absinthe" && hasEcto;
   const hasEmail = config.elixirEmail === "swoosh";
   const hasDocker = ["docker", "fly", "gigalixir", "mix-release"].includes(config.elixirDeploy);
@@ -58,6 +40,7 @@ export async function processElixirBaseTemplate(
     if (!hasPresence && templatePath.includes("/channels/presence")) continue;
     if (!hasOban && templatePath.includes("/workers/")) continue;
     if (!hasOban && templatePath.includes("add_oban_jobs")) continue;
+    if (!hasQuantum && templatePath.includes("/scheduler.ex")) continue;
     if (!hasAbsinthe && templatePath.includes("/graphql/")) continue;
     if (!hasEmail && templatePath.includes("/mailer.ex")) continue;
     if (!hasDocker && templatePath.includes("Dockerfile")) continue;
@@ -66,7 +49,7 @@ export async function processElixirBaseTemplate(
     const relativePath = templatePath.slice(prefix.length);
     const outputPath = transformFilename(relativePath).replace(
       /__elixirAppName__/g,
-      getElixirAppName(config),
+      normalizeElixirAppName(config.projectName),
     );
 
     let processedContent: string;

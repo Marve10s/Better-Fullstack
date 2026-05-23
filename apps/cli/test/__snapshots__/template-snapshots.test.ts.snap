@@ -15549,7 +15549,6 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "lib/snapshot_elixir_phoenix_ecto_rest/catalog/item.ex",
   "lib/snapshot_elixir_phoenix_ecto_rest/http_client.ex",
   "lib/snapshot_elixir_phoenix_ecto_rest/repo.ex",
-  "lib/snapshot_elixir_phoenix_ecto_rest/scheduler.ex",
   "lib/snapshot_elixir_phoenix_ecto_rest_web.ex",
   "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/room_channel.ex",
   "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/user_socket.ex",
@@ -15592,7 +15591,6 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "lib/snapshot_elixir_phoenix_liveview_full/http_client.ex",
   "lib/snapshot_elixir_phoenix_liveview_full/mailer.ex",
   "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
-  "lib/snapshot_elixir_phoenix_liveview_full/scheduler.ex",
   "lib/snapshot_elixir_phoenix_liveview_full/workers/sample_worker.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web/channels/presence.ex",
@@ -15624,7 +15622,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
 {
-  "fileCount": 35,
+  "fileCount": 34,
   "files": [
     {
       "content": 
@@ -15739,10 +15737,6 @@ CORS_ORIGIN=http://localhost:3001"
     },
     {
       "content": "[exists]",
-      "path": "lib/snapshot_elixir_phoenix_ecto_rest/scheduler.ex",
-    },
-    {
-      "content": "[exists]",
       "path": "mix.exs",
     },
     {
@@ -15779,7 +15773,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 44,
   "files": [
     {
       "content": 
@@ -15923,10 +15917,6 @@ CORS_ORIGIN=http://localhost:3001"
     {
       "content": "[exists]",
       "path": "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
-    },
-    {
-      "content": "[exists]",
-      "path": "lib/snapshot_elixir_phoenix_liveview_full/scheduler.ex",
     },
     {
       "content": "[exists]",

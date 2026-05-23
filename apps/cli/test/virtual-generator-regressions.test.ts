@@ -24,6 +24,23 @@ function readJsonFromTree(
   return undefined;
 }
 
+function readTextFromTree(
+  tree: NonNullable<Awaited<ReturnType<typeof createVirtual>>["tree"]>,
+  targetPath: string,
+) {
+  const stack = [...tree.root.children];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.type === "file" && node.path === targetPath) {
+      return node.content;
+    }
+    if (node.type === "directory") {
+      stack.push(...node.children);
+    }
+  }
+  return undefined;
+}
+
 describe("Virtual Generator Regressions", () => {
   const packageManagers = ["npm", "pnpm", "bun", "yarn"] as const;
 
@@ -110,5 +127,57 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:video"]).toBe("ai video");
     expect(rootPackageJson?.scripts?.["ai:models"]).toBe("ai models");
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
+  });
+
+  it("omits the Quantum scheduler unless Quantum jobs are selected", async () => {
+    const result = await createVirtual({
+      projectName: "elixir-no-quantum",
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+      elixirJobs: "none",
+    });
+
+    expect(result.success).toBe(true);
+    expect(readTextFromTree(result.tree!, "lib/elixir_no_quantum/scheduler.ex")).toBeUndefined();
+  });
+
+  it("keeps Phoenix LiveView demos self-contained without Ecto", async () => {
+    const result = await createVirtual({
+      projectName: "elixir-live-no-ecto",
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix-live-view",
+      elixirOrm: "none",
+      elixirApi: "none",
+      elixirRealtime: "live-view-streams",
+    });
+
+    expect(result.success).toBe(true);
+
+    const liveView = readTextFromTree(
+      result.tree!,
+      "lib/elixir_live_no_ecto_web/live/item_live/index.ex",
+    );
+    expect(liveView).toContain("System.unique_integer");
+    expect(liveView).not.toContain("Catalog.");
+    expect(readTextFromTree(result.tree!, "lib/elixir_live_no_ecto/catalog.ex")).toBeUndefined();
+  });
+
+  it("normalizes Elixir app and module names that start with digits", async () => {
+    const result = await createVirtual({
+      projectName: "123-app",
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+    });
+
+    expect(result.success).toBe(true);
+
+    const mixProject = readTextFromTree(result.tree!, "mix.exs");
+    expect(mixProject).toContain("defmodule App123App.MixProject do");
+    expect(mixProject).toContain("app: :app_123_app");
+    expect(readTextFromTree(result.tree!, "lib/app_123_app/application.ex")).toContain(
+      "defmodule App123App.Application do",
+    );
   });
 });
