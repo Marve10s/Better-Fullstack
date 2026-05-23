@@ -32,7 +32,7 @@ Configure your stack visually — pick every option from a UI, preview your choi
 ## Features
 
 - **425 options** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **6 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java
+- **7 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java, Elixir
 - **Visual builder** — configure your stack in the browser
 - **Wired for you** — every picked integration is preconfigured and working out of the box
 
@@ -42,7 +42,7 @@ Configure your stack visually — pick every option from a UI, preview your choi
 --yes              # Accept all defaults
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
---ecosystem <lang> # Start in typescript, react-native, rust, python, go, or java mode
+--ecosystem <lang> # Start in typescript, react-native, rust, python, go, java, or elixir mode
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation

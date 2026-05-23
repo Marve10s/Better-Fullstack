@@ -16,7 +16,7 @@
 
 <div align="center">
 
-**Scaffold production-ready fullstack apps in seconds. Browse 450+ tools across six ecosystems — the CLI wires everything together.**
+**Scaffold production-ready fullstack apps in seconds. Browse 450+ tools across seven ecosystems — the CLI wires everything together.**
 
 <br>
 
@@ -35,7 +35,7 @@
 Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
 
 - **450+ tools** — frontend, backend, database, auth, payments, AI, DevOps, and more
-- **6 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java — with more coming
+- **7 ecosystems** — TypeScript, React Native, Rust, Python, Go, Java, Elixir — with more coming
 - **Visual builder** — configure your stack in the browser, get a ready-to-run CLI command
 - **Wired for you** — no manual glue code; every picked integration is preconfigured and working out of the box
 
@@ -113,8 +113,8 @@ Better Fullstack is organized around the decisions that matter: pick an ecosyste
 Only the relevant options surface for the stack you pick.
 </td>
 <td width="33%">
-<strong>6 ecosystems</strong><br>
-TypeScript, React Native, Rust, Python, Go, Java.
+<strong>7 ecosystems</strong><br>
+TypeScript, React Native, Rust, Python, Go, Java, Elixir.
 </td>
 <td width="33%">
 <strong>One command</strong><br>
