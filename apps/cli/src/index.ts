@@ -433,6 +433,10 @@ export async function createVirtual(
   try {
     const ecosystem = options.ecosystem || "typescript";
     const isReactNative = ecosystem === "react-native";
+    const frontend = options.frontend || (isReactNative ? ["native-bare"] : ["tanstack-router"]);
+    const hasNativeFrontend = frontend.some((item) =>
+      item === "native-bare" || item === "native-uniwind" || item === "native-unistyles"
+    );
     const config: ProjectConfig = {
       ecosystem,
       projectName: options.projectName || "my-project",
@@ -442,7 +446,7 @@ export async function createVirtual(
       orm: options.orm || "none",
       backend: options.backend || (isReactNative ? "none" : "hono"),
       runtime: options.runtime || (isReactNative ? "none" : "bun"),
-      frontend: options.frontend || (isReactNative ? ["native-bare"] : ["tanstack-router"]),
+      frontend,
       addons: options.addons || [],
       examples: options.examples || [],
       auth: options.auth || "none",
@@ -479,13 +483,13 @@ export async function createVirtual(
       observability: options.observability || "none",
       featureFlags: options.featureFlags || "none",
       analytics: options.analytics || "none",
-      mobileNavigation: options.mobileNavigation || "expo-router",
+      mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
       mobileUI: options.mobileUI || "none",
       mobileStorage: options.mobileStorage || "none",
       mobileTesting: options.mobileTesting || "none",
       mobilePush: options.mobilePush || "none",
       mobileOTA: options.mobileOTA || "none",
-      mobileDeepLinking: options.mobileDeepLinking || "expo-linking",
+      mobileDeepLinking: options.mobileDeepLinking || (hasNativeFrontend ? "expo-linking" : "none"),
       cms: options.cms || "none",
       caching: options.caching || "none",
       i18n: options.i18n || "none",
