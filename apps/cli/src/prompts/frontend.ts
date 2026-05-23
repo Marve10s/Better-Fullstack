@@ -259,3 +259,20 @@ export async function getFrontendChoice(
     return result;
   }
 }
+
+export async function getNativeFrontendChoice(frontendOptions?: Frontend[]): Promise<Frontend[] | symbol> {
+  if (frontendOptions !== undefined) {
+    return frontendOptions.filter((frontend) => frontend.startsWith("native-"));
+  }
+
+  const nativeFramework = await navigableSelect<Frontend>({
+    message: "Choose React Native app type",
+    options: NATIVE_FRONTEND_PROMPT_OPTIONS,
+    initialValue: "native-bare",
+  });
+
+  if (isGoBack(nativeFramework)) return GO_BACK_SYMBOL;
+  if (isCancel(nativeFramework)) return exitCancelled("Operation cancelled");
+
+  return [nativeFramework as Frontend];
+}

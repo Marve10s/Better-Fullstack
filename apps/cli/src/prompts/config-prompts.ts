@@ -102,7 +102,7 @@ import { getExamplesChoice } from "./examples";
 import { getFileStorageChoice } from "./file-storage";
 import { getFileUploadChoice } from "./file-upload";
 import { getFormsChoice } from "./forms";
-import { getFrontendChoice } from "./frontend";
+import { getFrontendChoice, getNativeFrontendChoice } from "./frontend";
 import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
@@ -274,6 +274,9 @@ export async function gatherConfig(
       ecosystem: () => getEcosystemChoice(flags.ecosystem),
       // TypeScript ecosystem prompts (skip if Rust or Python)
       frontend: ({ results }) => {
+        if (results.ecosystem === "react-native") {
+          return getNativeFrontendChoice(flags.frontend);
+        }
         if (results.ecosystem !== "typescript") return Promise.resolve([] as Frontend[]);
         return getFrontendChoice(flags.frontend, flags.backend, flags.auth);
       },
@@ -349,6 +352,9 @@ export async function gatherConfig(
         if (results.ecosystem === "typescript") {
           return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript");
         }
+        if (results.ecosystem === "react-native") {
+          return Promise.resolve((flags.auth ?? "none") as Auth);
+        }
         if (results.ecosystem === "go") {
           return getAuthChoice(flags.auth, undefined, undefined, "go");
         }
@@ -359,6 +365,7 @@ export async function gatherConfig(
         return getPaymentsChoice(flags.payments, results.auth, results.backend, results.frontend);
       },
       email: ({ results }) => {
+        if (results.ecosystem === "react-native") return Promise.resolve("none" as Email);
         return getEmailChoice(flags.email, results.backend, results.ecosystem);
       },
       effect: ({ results }) => {
@@ -466,6 +473,7 @@ export async function gatherConfig(
         return getLoggingChoice(flags.logging, results.backend);
       },
       observability: ({ results }) => {
+        if (results.ecosystem === "react-native") return Promise.resolve("none" as Observability);
         return getObservabilityChoice(
           flags.observability,
           results.backend,
@@ -485,6 +493,7 @@ export async function gatherConfig(
         return getCMSChoice(flags.cms, results.backend);
       },
       caching: ({ results }) => {
+        if (results.ecosystem === "react-native") return Promise.resolve("none" as Caching);
         return getCachingChoice(flags.caching, results.backend, results.ecosystem);
       },
       i18n: ({ results }) => {
@@ -492,6 +501,7 @@ export async function gatherConfig(
         return getI18nChoice(flags.i18n, results.frontend);
       },
       search: ({ results }) => {
+        if (results.ecosystem === "react-native") return Promise.resolve("none" as Search);
         return getSearchChoice(flags.search, results.backend, results.ecosystem);
       },
       fileStorage: ({ results }) => {
@@ -499,14 +509,18 @@ export async function gatherConfig(
         return getFileStorageChoice(flags.fileStorage, results.backend);
       },
       mobileNavigation: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileNavigation);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileNavigation);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileNavigation);
         }
         return getMobileNavigationChoice(flags.mobileNavigation);
       },
       mobileUI: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileUI);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileUI);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileUI);
         }
@@ -517,35 +531,45 @@ export async function gatherConfig(
         return getMobileUIChoice(flags.mobileUI);
       },
       mobileStorage: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileStorage);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileStorage);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileStorage);
         }
         return getMobileStorageChoice(flags.mobileStorage);
       },
       mobileTesting: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileTesting);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileTesting);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileTesting);
         }
         return getMobileTestingChoice(flags.mobileTesting);
       },
       mobilePush: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobilePush);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobilePush);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobilePush);
         }
         return getMobilePushChoice(flags.mobilePush);
       },
       mobileOTA: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileOTA);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileOTA);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileOTA);
         }
         return getMobileOTAChoice(flags.mobileOTA);
       },
       mobileDeepLinking: ({ results }) => {
-        if (results.ecosystem !== "typescript") return Promise.resolve("none" as MobileDeepLinking);
+        if (results.ecosystem !== "typescript" && results.ecosystem !== "react-native") {
+          return Promise.resolve("none" as MobileDeepLinking);
+        }
         if (!results.frontend?.some((frontend) => frontend.startsWith("native-"))) {
           return Promise.resolve("none" as MobileDeepLinking);
         }

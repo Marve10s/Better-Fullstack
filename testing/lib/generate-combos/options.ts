@@ -33,6 +33,13 @@ import {
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_OTA_VALUES,
+  MOBILE_PUSH_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
@@ -316,6 +323,41 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeReactNativeDraft(args: GeneratorArgs): CandidateDraft {
+  const frontend = [sampleOne(NATIVE_FRONTENDS.filter((value) => value !== "none"))];
+  const mobileUI = frontend.includes("native-uniwind")
+    ? "uniwind"
+    : frontend.includes("native-unistyles")
+      ? "unistyles"
+      : sampleScalar(MOBILE_UI_VALUES, 0.55, "mobileUI");
+
+  return {
+    ecosystem: "react-native",
+    options: {
+      ...createCommonOptions("react-native", args),
+      frontend,
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      dbSetup: "none",
+      auth: "none",
+      cssFramework: "none",
+      uiLibrary: "none",
+      forms: "none",
+      testing: "none",
+      mobileNavigation: sampleScalar(MOBILE_NAVIGATION_VALUES, 0.05, "mobileNavigation"),
+      mobileUI,
+      mobileStorage: sampleScalar(MOBILE_STORAGE_VALUES, 0.55, "mobileStorage"),
+      mobileTesting: sampleScalar(MOBILE_TESTING_VALUES, 0.45, "mobileTesting"),
+      mobilePush: sampleScalar(MOBILE_PUSH_VALUES, 0.7, "mobilePush"),
+      mobileOTA: sampleScalar(MOBILE_OTA_VALUES, 0.7, "mobileOTA"),
+      mobileDeepLinking: sampleScalar(MOBILE_DEEP_LINKING_VALUES, 0.35, "mobileDeepLinking"),
+    },
+  };
+}
+
 function makeRustDraft(args: GeneratorArgs): CandidateDraft {
   return {
     ecosystem: "rust",
@@ -452,7 +494,12 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     projectDir: path.resolve(process.cwd(), projectName),
     relativePath: projectName,
     ecosystem: draft.ecosystem,
-    frontend: draft.ecosystem === "typescript" ? getDefaultConfig().frontend : [],
+    frontend:
+      draft.ecosystem === "typescript"
+        ? getDefaultConfig().frontend
+        : draft.ecosystem === "react-native"
+          ? ["native-bare"]
+          : [],
     backend: "none",
     runtime: "none",
     database: "none",
@@ -534,7 +581,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
 }
 
 function applyDerivedMobileDefaults(config: ProjectConfig, providedFlags: Set<string>) {
-  if (config.ecosystem !== "typescript") return;
+  if (config.ecosystem !== "typescript" && config.ecosystem !== "react-native") return;
 
   const hasNativeFrontend = config.frontend.some((frontend) => frontend.startsWith("native-"));
   if (!hasNativeFrontend) {
@@ -622,6 +669,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
   switch (ecosystem) {
     case "typescript":
       return makeTypeScriptDraft(args);
+    case "react-native":
+      return makeReactNativeDraft(args);
     case "rust":
       return makeRustDraft(args);
     case "python":

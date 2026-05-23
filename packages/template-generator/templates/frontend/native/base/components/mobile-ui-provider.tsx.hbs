@@ -11,7 +11,11 @@ import { GluestackUIProvider } from "@gluestack-ui/themed";
 
 export function MobileUIProvider({ children }: PropsWithChildren) {
   {{#if (eq mobileUI "tamagui")}}
-  return <TamaguiProvider config={tamaguiConfig}>{children}</TamaguiProvider>;
+  return (
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+      {children}
+    </TamaguiProvider>
+  );
   {{else if (eq mobileUI "gluestack-ui")}}
   return <GluestackUIProvider>{children}</GluestackUIProvider>;
   {{else}}

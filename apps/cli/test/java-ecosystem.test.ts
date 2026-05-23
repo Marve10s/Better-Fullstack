@@ -150,7 +150,7 @@ describe("Java Ecosystem", () => {
   describe("Schema Definitions", () => {
     it("should expose java as a valid ecosystem", () => {
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS).toHaveLength(5);
+      expect(ECOSYSTEMS).toHaveLength(6);
     });
 
     it("should expose scaffolded Java web framework values", () => {

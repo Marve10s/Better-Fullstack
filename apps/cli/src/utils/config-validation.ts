@@ -559,6 +559,32 @@ export function validateFrontendConstraints(
   const { frontend } = config;
 
   if (frontend && frontend.length > 0) {
+    if (
+      config.ecosystem === "react-native" &&
+      frontend.some((item) => !item.startsWith("native-") && item !== "none")
+    ) {
+      incompatibilityError({
+        message: "React Native ecosystem only supports native Expo frontends.",
+        provided: { ecosystem: "react-native", frontend: frontend.join(" ") },
+        suggestions: [
+          "Use --frontend native-bare",
+          "Use --frontend native-uniwind",
+          "Use --frontend native-unistyles",
+        ],
+      });
+    }
+
+    if (
+      config.ecosystem === "typescript" &&
+      frontend.some((item) => item.startsWith("native-"))
+    ) {
+      incompatibilityError({
+        message: "Native Expo frontends now belong to the React Native ecosystem.",
+        provided: { ecosystem: "typescript", frontend: frontend.join(" ") },
+        suggestions: ["Use --ecosystem react-native with --frontend native-bare"],
+      });
+    }
+
     ensureSingleWebAndNative(frontend);
 
     if (providedFlags.has("api") && providedFlags.has("frontend") && config.api) {

@@ -10,14 +10,6 @@ import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "webFrontend",
-  "nativeFrontend",
-  "mobileNavigation",
-  "mobileUI",
-  "mobileStorage",
-  "mobileTesting",
-  "mobilePush",
-  "mobileOTA",
-  "mobileDeepLinking",
   "astroIntegration",
   "cssFramework",
   "uiLibrary",
@@ -65,6 +57,23 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "examples",
   "aiDocs",
   "versionChannel",
+  "git",
+  "install",
+];
+
+// React Native ecosystem category order
+const REACT_NATIVE_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "nativeFrontend",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "auth",
+  "packageManager",
+  "aiDocs",
   "git",
   "install",
 ];
@@ -149,6 +158,7 @@ const JAVA_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 const CATEGORY_ORDER = [
   ...new Set([
     ...TYPESCRIPT_CATEGORY_ORDER,
+    ...REACT_NATIVE_CATEGORY_ORDER,
     ...RUST_CATEGORY_ORDER,
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
@@ -206,6 +216,7 @@ export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
 export {
   CATEGORY_ORDER,
   TYPESCRIPT_CATEGORY_ORDER,
+  REACT_NATIVE_CATEGORY_ORDER,
   RUST_CATEGORY_ORDER,
   PYTHON_CATEGORY_ORDER,
   GO_CATEGORY_ORDER,

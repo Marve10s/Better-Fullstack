@@ -665,6 +665,23 @@ const JAVA_CONFIG_KEYS = [
   "javaTestingLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
+const REACT_NATIVE_CONFIG_KEYS = [
+  "frontend",
+  "backend",
+  "runtime",
+  "database",
+  "orm",
+  "api",
+  "auth",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
 const COMMAND_ADDONS = new Set([
   "pwa",
   "tauri",
@@ -952,12 +969,13 @@ export function isCliDefaultStackSelection(
     relativePath: projectName,
   };
   const ignoredKeys =
-    selection.ecosystem === "typescript"
+    selection.ecosystem === "typescript" || selection.ecosystem === "react-native"
       ? new Set<keyof CliDefaultProjectConfigBase>([
           ...RUST_CONFIG_KEYS,
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
           ...JAVA_CONFIG_KEYS,
+          ...(selection.ecosystem === "typescript" ? REACT_NATIVE_CONFIG_KEYS : []),
         ])
       : new Set<keyof CliDefaultProjectConfigBase>();
 
@@ -1064,6 +1082,35 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
   return `${base} ${projectName} ${flags.join(" ")}`;
 }
 
+function generateReactNativeCommand(selection: StackSelectionInput, projectName: string) {
+  const flags = [
+    "--ecosystem react-native",
+    `--frontend ${
+      selection.nativeFrontend
+        .filter((value, _, values) => value !== "none" || values.length === 1)
+        .join(" ") || "native-bare"
+    }`,
+    `--auth ${selection.auth}`,
+    `--mobile-navigation ${selection.mobileNavigation}`,
+    `--mobile-ui ${selection.mobileUI}`,
+    `--mobile-storage ${selection.mobileStorage}`,
+    `--mobile-testing ${selection.mobileTesting}`,
+    `--mobile-push ${selection.mobilePush}`,
+    `--mobile-ota ${selection.mobileOTA}`,
+    `--mobile-deep-linking ${selection.mobileDeepLinking}`,
+    `--package-manager ${selection.packageManager}`,
+    selection.git === "false" ? "--no-git" : "--git",
+    selection.install === "false" ? "--no-install" : "--install",
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.yolo === "true") {
+    flags.push("--yolo");
+  }
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
+}
+
 function generateRustCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem rust",
@@ -1164,6 +1211,8 @@ export function generateStackSelectionCommand(selection: StackSelectionInput): s
   const projectName = getProjectName(selection);
 
   switch (selection.ecosystem) {
+    case "react-native":
+      return generateReactNativeCommand(selection, projectName);
     case "rust":
       return generateRustCommand(selection, projectName);
     case "python":

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const EcosystemSchema = z
-  .enum(["typescript", "rust", "python", "go", "java"])
-  .describe("Language ecosystem (typescript, rust, python, go, or java)");
+  .enum(["typescript", "react-native", "rust", "python", "go", "java"])
+  .describe("Language ecosystem (typescript, react-native, rust, python, go, or java)");
 
 export const DatabaseSchema = z
   .enum(["none", "sqlite", "postgres", "mysql", "mongodb", "edgedb", "redis"])

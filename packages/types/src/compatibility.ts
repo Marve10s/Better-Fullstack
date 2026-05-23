@@ -116,7 +116,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go" | "java";
+  ecosystem: "typescript" | "react-native" | "rust" | "python" | "go" | "java";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -1100,7 +1100,79 @@ export const analyzeStackCompatibility = (
     }
   }
 
-  const hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+  let hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+
+  if (nextStack.ecosystem === "react-native") {
+    const reactNativeOnlyCategories = [
+      ["webFrontend", ["none"], "Web frontend set to 'None' (React Native ecosystem)"],
+      ["backend", "none", "Backend set to 'None' (React Native ecosystem)"],
+      ["runtime", "none", "Runtime set to 'None' (React Native ecosystem)"],
+      ["api", "none", "API set to 'None' (React Native ecosystem)"],
+      ["database", "none", "Database set to 'None' (React Native ecosystem)"],
+      ["orm", "none", "ORM set to 'None' (React Native ecosystem)"],
+      ["dbSetup", "none", "Database setup set to 'None' (React Native ecosystem)"],
+      ["webDeploy", "none", "Web deployment set to 'None' (React Native ecosystem)"],
+      ["serverDeploy", "none", "Server deployment set to 'None' (React Native ecosystem)"],
+      ["cssFramework", "none", "CSS framework set to 'None' (React Native ecosystem)"],
+      ["uiLibrary", "none", "UI library set to 'None' (React Native ecosystem)"],
+      ["testing", "none", "Web testing set to 'None' (React Native ecosystem)"],
+      ["forms", "none", "Web forms set to 'None' (React Native ecosystem)"],
+      ["stateManagement", "none", "Web state management set to 'None' (React Native ecosystem)"],
+      ["animation", "none", "Web animation set to 'None' (React Native ecosystem)"],
+      ["realtime", "none", "Realtime set to 'None' (React Native ecosystem)"],
+      ["jobQueue", "none", "Job queue set to 'None' (React Native ecosystem)"],
+      ["fileUpload", "none", "File upload set to 'None' (React Native ecosystem)"],
+      ["payments", "none", "Payments set to 'None' (React Native ecosystem)"],
+      ["email", "none", "Email set to 'None' (React Native ecosystem)"],
+      ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
+      ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
+      ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
+      ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
+      ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
+      ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
+      ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
+      ["examples", [], "Examples cleared (React Native ecosystem)"],
+    ] as const;
+
+    for (const [category, value, message] of reactNativeOnlyCategories) {
+      const currentValue = nextStack[category];
+      const isSameArray =
+        Array.isArray(currentValue) &&
+        Array.isArray(value) &&
+        currentValue.length === value.length &&
+        currentValue.every((entry, index) => entry === value[index]);
+      if (Array.isArray(value) ? !isSameArray : currentValue !== value) {
+        (nextStack as Record<string, unknown>)[category] = Array.isArray(value) ? [...value] : value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+
+    if (!hasNativeFrontend) {
+      nextStack.nativeFrontend = ["native-bare"];
+      hasNativeFrontend = true;
+      changed = true;
+      changes.push({
+        category: "nativeFrontend",
+        message: "Native frontend set to 'Expo + Bare' (React Native ecosystem)",
+      });
+    }
+  }
+
+  if (
+    nextStack.ecosystem === "typescript" &&
+    nextStack.nativeFrontend.some((frontend) => frontend !== "none")
+  ) {
+    nextStack.nativeFrontend = ["none"];
+    hasNativeFrontend = false;
+    changed = true;
+    changes.push({
+      category: "nativeFrontend",
+      message: "Native frontend set to 'None' (use React Native ecosystem for Expo apps)",
+    });
+  }
 
   if (!hasNativeFrontend) {
     const nativeOnlyCategories = [
@@ -1581,6 +1653,32 @@ export const getDisabledReason = (
         return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
       }
     }
+  }
+
+  if (currentStack.ecosystem === "react-native") {
+    const reactNativeCategories = new Set([
+      "nativeFrontend",
+      "mobileNavigation",
+      "mobileUI",
+      "mobileStorage",
+      "mobileTesting",
+      "mobilePush",
+      "mobileOTA",
+      "mobileDeepLinking",
+      "auth",
+      "packageManager",
+      "aiDocs",
+      "git",
+      "install",
+    ]);
+
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+      return "React Native ecosystem only supports native mobile options";
+    }
+  }
+
+  if (currentStack.ecosystem === "typescript" && category === "nativeFrontend" && optionId !== "none") {
+    return "Use the React Native ecosystem for native Expo frontends";
   }
 
   // ============================================

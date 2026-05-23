@@ -10,7 +10,7 @@ type AuthPromptContext = {
   auth?: Auth;
   backend?: Backend;
   frontend?: string[];
-  ecosystem?: "typescript" | "go";
+  ecosystem?: "typescript" | "react-native" | "go";
 };
 
 export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingleResolution<Auth> {
@@ -75,7 +75,7 @@ export async function getAuthChoice(
   auth: Auth | undefined,
   backend?: Backend,
   frontend?: string[],
-  ecosystem: "typescript" | "go" = "typescript",
+  ecosystem: "typescript" | "react-native" | "go" = "typescript",
 ) {
   const resolution = resolveAuthPrompt({
     auth,

@@ -105,7 +105,9 @@ export const CreateCommandOptionsSchema = z.object({
     .optional()
     .default(false)
     .describe("Preview generated file tree without writing to disk"),
-  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, go, or java)"),
+  ecosystem: EcosystemSchema.optional().describe(
+    "Language ecosystem (typescript, react-native, rust, python, go, or java)",
+  ),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),
   auth: AuthSchema.optional(),

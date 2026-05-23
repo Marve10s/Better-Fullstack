@@ -82,7 +82,7 @@ describe("Python Language Support", () => {
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS.length).toBe(5);
+      expect(ECOSYSTEMS.length).toBe(6);
     });
 
     it("should have python web framework options", () => {

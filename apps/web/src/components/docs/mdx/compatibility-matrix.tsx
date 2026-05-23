@@ -23,6 +23,7 @@ type BaselineControl = {
 
 const ECOSYSTEMS: Array<{ id: Ecosystem; label: string }> = [
   { id: "typescript", label: "TypeScript" },
+  { id: "react-native", label: "React Native" },
   { id: "rust", label: "Rust" },
   { id: "python", label: "Python" },
   { id: "go", label: "Go" },
@@ -69,6 +70,18 @@ const TYPESCRIPT_CATEGORIES: SelectCategory[] = [
 
 const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
   typescript: TYPESCRIPT_CATEGORIES,
+  "react-native": [
+    "nativeFrontend",
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
+    "auth",
+    "packageManager",
+  ],
   rust: [
     "rustWebFramework",
     "rustFrontend",
@@ -146,6 +159,13 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "auth", label: "Auth" },
     { category: "cssFramework", label: "CSS" },
     { category: "uiLibrary", label: "UI library" },
+  ],
+  "react-native": [
+    { category: "nativeFrontend", label: "Expo app" },
+    { category: "mobileNavigation", label: "Navigation" },
+    { category: "mobileUI", label: "Mobile UI" },
+    { category: "mobileStorage", label: "Storage" },
+    { category: "mobileTesting", label: "Testing" },
   ],
   rust: [
     { category: "rustWebFramework", label: "Framework" },

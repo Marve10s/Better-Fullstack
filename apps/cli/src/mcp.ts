@@ -93,7 +93,7 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   0,
 );
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, Python, and Java ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, and Java ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -111,7 +111,7 @@ CRITICAL RULES:
 - Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", and "javaTestingLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
-- TypeScript-specific fields (frontend, backend, orm, etc.) are IGNORED for rust/python/go/java ecosystems.
+- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java ecosystems.
 - The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
@@ -126,7 +126,9 @@ function getGuidance() {
     ],
     ecosystems: {
       typescript:
-        "Full-featured: frontend + backend + database + ORM + auth + payments + 20+ feature categories.",
+        "Full-featured web: frontend + backend + database + ORM + auth + payments + 20+ feature categories.",
+      "react-native":
+        "Mobile: Expo/React Native frontend variants plus mobile navigation, UI, storage, testing, push, OTA, and deep linking.",
       rust: "Backend/CLI: web framework (axum/actix-web), ORM (sea-orm/sqlx), gRPC, GraphQL, CLI tools.",
       python:
         "Backend/AI: web framework (fastapi/django), ORM (sqlalchemy/sqlmodel), AI/ML integrations, task queues.",
@@ -267,9 +269,11 @@ const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
     "email", "fileUpload", "effect", "ai", "stateManagement", "forms", "validation",
     "testing", "cssFramework", "uiLibrary", "realtime", "jobQueue", "animation",
     "logging", "observability", "featureFlags", "analytics", "cms", "caching",
-    "i18n", "search", "fileStorage", "astroIntegration", "mobileNavigation",
-    "mobileUI", "mobileStorage", "mobileTesting", "mobilePush", "mobileOTA",
-    "mobileDeepLinking",
+    "i18n", "search", "fileStorage", "astroIntegration",
+  ],
+  "react-native": [
+    "frontend", "auth", "mobileNavigation", "mobileUI", "mobileStorage",
+    "mobileTesting", "mobilePush", "mobileOTA", "mobileDeepLinking",
   ],
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching", "rustAuth", "email", "observability", "caching", "search"],
   python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonAuth", "pythonApi", "pythonTaskQueue", "pythonGraphql", "pythonQuality", "email", "observability", "caching", "search"],
@@ -363,17 +367,24 @@ function buildProjectConfig(
   overrides?: { projectDir: string },
 ): ProjectConfig {
   const projectName = (input.projectName as string) ?? "my-project";
+  const ecosystem = (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript";
   return {
     projectName,
     projectDir: overrides?.projectDir ?? "/virtual",
     relativePath: overrides ? `./${projectName}` : "./virtual",
-    ecosystem: (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript",
-    frontend: (input.frontend as ProjectConfig["frontend"]) ?? ["tanstack-router"],
-    backend: (input.backend as ProjectConfig["backend"]) ?? "hono",
-    runtime: (input.runtime as ProjectConfig["runtime"]) ?? "bun",
+    ecosystem,
+    frontend:
+      (input.frontend as ProjectConfig["frontend"]) ??
+      (ecosystem === "react-native" ? ["native-bare"] : ["tanstack-router"]),
+    backend:
+      (input.backend as ProjectConfig["backend"]) ??
+      (ecosystem === "react-native" ? "none" : "hono"),
+    runtime:
+      (input.runtime as ProjectConfig["runtime"]) ??
+      (ecosystem === "react-native" ? "none" : "bun"),
     database: (input.database as ProjectConfig["database"]) ?? "none",
     orm: (input.orm as ProjectConfig["orm"]) ?? "none",
-    api: (input.api as ProjectConfig["api"]) ?? "none",
+    api: (input.api as ProjectConfig["api"]) ?? (ecosystem === "react-native" ? "none" : "none"),
     auth: (input.auth as ProjectConfig["auth"]) ?? "none",
     payments: (input.payments as ProjectConfig["payments"]) ?? "none",
     email: (input.email as ProjectConfig["email"]) ?? "none",
@@ -384,7 +395,9 @@ function buildProjectConfig(
     forms: (input.forms as ProjectConfig["forms"]) ?? "none",
     validation: (input.validation as ProjectConfig["validation"]) ?? "none",
     testing: (input.testing as ProjectConfig["testing"]) ?? "none",
-    cssFramework: (input.cssFramework as ProjectConfig["cssFramework"]) ?? "tailwind",
+    cssFramework:
+      (input.cssFramework as ProjectConfig["cssFramework"]) ??
+      (ecosystem === "react-native" ? "none" : "tailwind"),
     uiLibrary: (input.uiLibrary as ProjectConfig["uiLibrary"]) ?? "none",
     shadcnBase: "radix",
     shadcnStyle: "nova",

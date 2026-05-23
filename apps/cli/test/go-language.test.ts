@@ -72,7 +72,7 @@ describe("Go Language Support", () => {
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS.length).toBe(5);
+      expect(ECOSYSTEMS.length).toBe(6);
     });
 
     it("should include GoBetterAuth in auth options", () => {
