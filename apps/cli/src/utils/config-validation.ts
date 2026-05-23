@@ -559,6 +559,21 @@ export function validateFrontendConstraints(
   const { frontend } = config;
 
   if (frontend && frontend.length > 0) {
+    if (
+      config.ecosystem === "react-native" &&
+      frontend.some((item) => !item.startsWith("native-") && item !== "none")
+    ) {
+      incompatibilityError({
+        message: "React Native ecosystem only supports native Expo frontends.",
+        provided: { ecosystem: "react-native", frontend: frontend.join(" ") },
+        suggestions: [
+          "Use --frontend native-bare",
+          "Use --frontend native-uniwind",
+          "Use --frontend native-unistyles",
+        ],
+      });
+    }
+
     ensureSingleWebAndNative(frontend);
 
     if (providedFlags.has("api") && providedFlags.has("frontend") && config.api) {

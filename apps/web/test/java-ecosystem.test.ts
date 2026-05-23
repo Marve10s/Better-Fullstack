@@ -24,7 +24,7 @@ import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER, generateStackCommand } from "../sr
 describe("Java Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {
     it("should have java as a valid ecosystem value", () => {
-      const ecosystems: Ecosystem[] = ["typescript", "rust", "python", "go", "java"];
+      const ecosystems: Ecosystem[] = ["typescript", "react-native", "rust", "python", "go", "java", "elixir"];
       expect(ecosystems).toContain("java");
     });
   });

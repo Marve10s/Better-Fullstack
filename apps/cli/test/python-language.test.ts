@@ -82,6 +82,8 @@ describe("Python Language Support", () => {
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
+      expect(ECOSYSTEMS).toContain("react-native");
+      expect(ECOSYSTEMS).toContain("elixir");
     });
 
     it("should have python web framework options", () => {

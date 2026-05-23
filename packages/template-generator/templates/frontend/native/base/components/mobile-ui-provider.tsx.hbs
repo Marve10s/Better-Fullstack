@@ -1,0 +1,24 @@
+import type { PropsWithChildren } from "react";
+{{#if (eq mobileUI "tamagui")}}
+import { TamaguiProvider, createTamagui } from "tamagui";
+import { config } from "@tamagui/config/v3";
+
+const tamaguiConfig = createTamagui(config);
+{{/if}}
+{{#if (eq mobileUI "gluestack-ui")}}
+import { GluestackUIProvider } from "@gluestack-ui/themed";
+{{/if}}
+
+export function MobileUIProvider({ children }: PropsWithChildren) {
+  {{#if (eq mobileUI "tamagui")}}
+  return (
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+      {children}
+    </TamaguiProvider>
+  );
+  {{else if (eq mobileUI "gluestack-ui")}}
+  return <GluestackUIProvider>{children}</GluestackUIProvider>;
+  {{else}}
+  return <>{children}</>;
+  {{/if}}
+}

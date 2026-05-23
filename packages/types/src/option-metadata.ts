@@ -34,6 +34,13 @@ import {
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
   FORMS_VALUES,
+  MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_OTA_VALUES,
+  MOBILE_PUSH_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   GO_API_VALUES,
   GO_CLI_VALUES,
   GO_AUTH_VALUES,
@@ -125,6 +132,13 @@ export type OptionCategory =
   | "cms"
   | "featureFlags"
   | "analytics"
+  | "mobileNavigation"
+  | "mobileUI"
+  | "mobileStorage"
+  | "mobileTesting"
+  | "mobilePush"
+  | "mobileOTA"
+  | "mobileDeepLinking"
   | "codeQuality"
   | "documentation"
   | "appPlatforms"
@@ -332,6 +346,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   cms: CMS_VALUES,
   featureFlags: FEATURE_FLAGS_VALUES,
   analytics: ANALYTICS_VALUES,
+  mobileNavigation: MOBILE_NAVIGATION_VALUES,
+  mobileUI: MOBILE_UI_VALUES,
+  mobileStorage: MOBILE_STORAGE_VALUES,
+  mobileTesting: MOBILE_TESTING_VALUES,
+  mobilePush: MOBILE_PUSH_VALUES,
+  mobileOTA: MOBILE_OTA_VALUES,
+  mobileDeepLinking: MOBILE_DEEP_LINKING_VALUES,
   codeQuality: CODE_QUALITY_VALUES,
   documentation: DOCUMENTATION_VALUES,
   appPlatforms: APP_PLATFORM_VALUES,
@@ -524,6 +545,33 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   analytics: {
     plausible: "Plausible",
     umami: "Umami",
+  },
+  mobileNavigation: {
+    "expo-router": "Expo Router",
+    "react-navigation": "React Navigation",
+  },
+  mobileUI: {
+    tamagui: "Tamagui",
+    "gluestack-ui": "Gluestack UI",
+    uniwind: "Uniwind",
+    unistyles: "Unistyles",
+  },
+  mobileStorage: {
+    mmkv: "MMKV",
+  },
+  mobileTesting: {
+    maestro: "Maestro",
+    "react-native-testing-library": "React Native Testing Library",
+    "maestro-react-native-testing-library": "Maestro + RN Testing Library",
+  },
+  mobilePush: {
+    "expo-notifications": "Expo Notifications",
+  },
+  mobileOTA: {
+    "expo-updates": "Expo Updates",
+  },
+  mobileDeepLinking: {
+    "expo-linking": "Expo Linking",
   },
   codeQuality: {
     biome: "Biome",
@@ -983,6 +1031,13 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   cms: buildCategoryMetadata("cms"),
   featureFlags: buildCategoryMetadata("featureFlags"),
   analytics: buildCategoryMetadata("analytics"),
+  mobileNavigation: buildCategoryMetadata("mobileNavigation"),
+  mobileUI: buildCategoryMetadata("mobileUI"),
+  mobileStorage: buildCategoryMetadata("mobileStorage"),
+  mobileTesting: buildCategoryMetadata("mobileTesting"),
+  mobilePush: buildCategoryMetadata("mobilePush"),
+  mobileOTA: buildCategoryMetadata("mobileOTA"),
+  mobileDeepLinking: buildCategoryMetadata("mobileDeepLinking"),
   codeQuality: buildCategoryMetadata("codeQuality"),
   documentation: buildCategoryMetadata("documentation"),
   appPlatforms: buildCategoryMetadata("appPlatforms"),

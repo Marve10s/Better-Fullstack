@@ -48,6 +48,13 @@ import {
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_OTA_VALUES,
+  MOBILE_PUSH_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
@@ -194,11 +201,6 @@ function sampleTypeScriptFrontends(): CLIInput["frontend"] {
     picked.push(web);
   }
 
-  const native = sampleScalar(NATIVE_FRONTENDS, picked.length === 0 ? 0.85 : 0.95);
-  if (native !== "none") {
-    picked.push(native);
-  }
-
   if (picked.length === 0 && _rng() > 0.25) {
     picked.push(sampleOne(WEB_FRONTENDS.filter((value) => value !== "none")));
   }
@@ -327,6 +329,41 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       shadcnBaseColor: usesShadcn ? sampleScalar(SHADCN_BASE_COLOR_VALUES, 0) : undefined,
       shadcnFont: usesShadcn ? sampleScalar(SHADCN_FONT_VALUES, 0) : undefined,
       shadcnRadius: usesShadcn ? sampleScalar(SHADCN_RADIUS_VALUES, 0) : undefined,
+    },
+  };
+}
+
+function makeReactNativeDraft(args: GeneratorArgs): CandidateDraft {
+  const frontend = [sampleOne(NATIVE_FRONTENDS.filter((value) => value !== "none"))];
+  const mobileUI = frontend.includes("native-uniwind")
+    ? "uniwind"
+    : frontend.includes("native-unistyles")
+      ? "unistyles"
+      : sampleScalar(MOBILE_UI_VALUES, 0.55, "mobileUI");
+
+  return {
+    ecosystem: "react-native",
+    options: {
+      ...createCommonOptions("react-native", args),
+      frontend,
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      dbSetup: "none",
+      auth: "none",
+      cssFramework: "none",
+      uiLibrary: "none",
+      forms: "none",
+      testing: "none",
+      mobileNavigation: sampleScalar(MOBILE_NAVIGATION_VALUES, 0.05, "mobileNavigation"),
+      mobileUI,
+      mobileStorage: sampleScalar(MOBILE_STORAGE_VALUES, 0.55, "mobileStorage"),
+      mobileTesting: sampleScalar(MOBILE_TESTING_VALUES, 0.45, "mobileTesting"),
+      mobilePush: sampleScalar(MOBILE_PUSH_VALUES, 0.7, "mobilePush"),
+      mobileOTA: sampleScalar(MOBILE_OTA_VALUES, 0.7, "mobileOTA"),
+      mobileDeepLinking: sampleScalar(MOBILE_DEEP_LINKING_VALUES, 0.35, "mobileDeepLinking"),
     },
   };
 }
@@ -512,7 +549,12 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     projectDir: path.resolve(process.cwd(), projectName),
     relativePath: projectName,
     ecosystem: draft.ecosystem,
-    frontend: draft.ecosystem === "typescript" ? getDefaultConfig().frontend : [],
+    frontend:
+      draft.ecosystem === "typescript"
+        ? getDefaultConfig().frontend
+        : draft.ecosystem === "react-native"
+          ? ["native-bare"]
+          : [],
     backend: "none",
     runtime: "none",
     database: "none",
@@ -608,6 +650,42 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
   };
 }
 
+function applyDerivedMobileDefaults(config: ProjectConfig, providedFlags: Set<string>) {
+  if (config.ecosystem !== "typescript" && config.ecosystem !== "react-native") return;
+
+  const hasNativeFrontend = config.frontend.some((frontend) => frontend.startsWith("native-"));
+  if (!hasNativeFrontend) {
+    config.mobileNavigation = "none";
+    config.mobileUI = "none";
+    config.mobileStorage = "none";
+    config.mobileTesting = "none";
+    config.mobilePush = "none";
+    config.mobileOTA = "none";
+    config.mobileDeepLinking = "none";
+    return;
+  }
+
+  if (!providedFlags.has("mobileNavigation") && config.mobileNavigation === "none") {
+    config.mobileNavigation = "expo-router";
+  }
+
+  if (!providedFlags.has("mobileUI")) {
+    if (config.frontend.includes("native-uniwind")) {
+      config.mobileUI = "uniwind";
+    } else if (config.frontend.includes("native-unistyles")) {
+      config.mobileUI = "unistyles";
+    }
+  }
+
+  if (
+    !providedFlags.has("mobileDeepLinking") &&
+    config.mobileDeepLinking === "none" &&
+    config.auth !== "none"
+  ) {
+    config.mobileDeepLinking = "expo-linking";
+  }
+}
+
 function validateDraft(draft: CandidateDraft, projectName: string): ProjectConfig {
   const providedFlags = buildProvidedFlags(draft.options);
   const processed = processFlags({ ...draft.options, projectName } as CLIInput, projectName);
@@ -618,6 +696,8 @@ function validateDraft(draft: CandidateDraft, projectName: string): ProjectConfi
     relativePath: projectName,
     projectDir: path.resolve(process.cwd(), projectName),
   } as ProjectConfig;
+
+  applyDerivedMobileDefaults(config, providedFlags);
 
   runWithContext({ silent: true }, () => {
     validateFullConfig(config, providedFlags, { ...draft.options, projectName } as CLIInput);
@@ -659,6 +739,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
   switch (ecosystem) {
     case "typescript":
       return makeTypeScriptDraft(args);
+    case "react-native":
+      return makeReactNativeDraft(args);
     case "rust":
       return makeRustDraft(args);
     case "python":

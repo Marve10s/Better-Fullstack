@@ -61,14 +61,9 @@ import { usesVirtualNoneSelection } from "@/lib/stack-contract";
 import { useStackState } from "@/lib/stack-url-state";
 import {
   CATEGORY_ORDER,
-  ELIXIR_CATEGORY_ORDER,
   generateStackCommand,
   generateStackSharingUrl,
-  GO_CATEGORY_ORDER,
-  JAVA_CATEGORY_ORDER,
-  PYTHON_CATEGORY_ORDER,
-  RUST_CATEGORY_ORDER,
-  TYPESCRIPT_CATEGORY_ORDER,
+  getCategoryOrderForEcosystem,
 } from "@/lib/stack-utils";
 import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
@@ -406,20 +401,7 @@ const StackBuilder = () => {
   // ─── Derived state ──────────────────────────────────────────────────────
 
   const categoryOrder = useMemo(() => {
-    switch (stack.ecosystem) {
-      case "rust":
-        return RUST_CATEGORY_ORDER;
-      case "python":
-        return PYTHON_CATEGORY_ORDER;
-      case "go":
-        return GO_CATEGORY_ORDER;
-      case "java":
-        return JAVA_CATEGORY_ORDER;
-      case "elixir":
-        return ELIXIR_CATEGORY_ORDER;
-      default:
-        return TYPESCRIPT_CATEGORY_ORDER;
-    }
+    return getCategoryOrderForEcosystem(stack.ecosystem);
   }, [stack.ecosystem]);
 
   // ─── URL generation ──────────────────────────────────────────────────────

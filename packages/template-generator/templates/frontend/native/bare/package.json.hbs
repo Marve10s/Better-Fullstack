@@ -1,20 +1,30 @@
 {
   "name": "native",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "{{#if (eq mobileNavigation 'react-navigation')}}index.js{{else}}expo-router/entry{{/if}}",
   "scripts": {
     "dev": "expo start --clear",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
-    "web": "expo start --web"
+    "web": "expo start --web"{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}},
+    "test": "jest"
+    {{/if}}
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/drawer": "^7.10.2",
     "@react-navigation/native": "^7.2.4",
+    "@react-navigation/native-stack": "^7.8.1",
     "@tanstack/react-form": "^1.32.0",
+    {{#if (eq mobileUI "tamagui")}}
+    "@tamagui/config": "^2.0.0-rc.42",
+    "tamagui": "^2.0.0-rc.42",
+    {{/if}}
+    {{#if (eq mobileUI "gluestack-ui")}}
+    "@gluestack-ui/themed": "^1.1.73",
+    {{/if}}
     "@tanstack/react-query": "^5.100.10",
     {{#if (includes examples "ai")}}
     "@stardazed/streams-text-encoding": "^1.0.2",
@@ -22,19 +32,35 @@
     {{/if}}
 		"expo": "^55.0.24",
     "expo-constants": "^55.0.16",
+    {{#if (eq mobilePush "expo-notifications")}}
+    "expo-device": "^8.0.9",
+    {{/if}}
     "expo-crypto": "^55.0.15",
+    {{#if (eq mobileDeepLinking "expo-linking")}}
     "expo-linking": "^55.0.15",
+    {{/if}}
     "expo-navigation-bar": "^55.0.13",
     "expo-network": "^55.0.14",
+    {{#if (eq mobilePush "expo-notifications")}}
+    "expo-notifications": "^56.0.12",
+    {{/if}}
+    {{#if (eq mobileNavigation "expo-router")}}
     "expo-router": "^55.0.14",
+    {{/if}}
     "expo-secure-store": "^55.0.14",
     "expo-splash-screen": "^55.0.21",
     "expo-status-bar": "^55.0.6",
     "expo-system-ui": "^55.0.18",
+    {{#if (eq mobileOTA "expo-updates")}}
+    "expo-updates": "^56.0.15",
+    {{/if}}
     "expo-web-browser": "^55.0.16",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-native": "^0.85.3",
+    {{#if (eq mobileStorage "mmkv")}}
+    "react-native-mmkv": "^4.1.0",
+    {{/if}}
     "react-native-gesture-handler": "^2.31.2",
     "react-native-reanimated": "^4.3.1",
     "react-native-safe-area-context": "^5.7.0",
@@ -44,8 +70,14 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@types/react": "^19.2.14"
+    "@types/react": "^19.2.14"{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}},
+    "@types/jest": "^29.5.14",
+    "@testing-library/react-native": "^13.3.3",
+    "@react-native/jest-preset": "^0.85.3",
+    "jest": "^29.7.0",
+    "jest-expo": "^55.0.18",
+    "react-test-renderer": "^19.2.6"
+    {{/if}}
   },
   "private": true
 }
-

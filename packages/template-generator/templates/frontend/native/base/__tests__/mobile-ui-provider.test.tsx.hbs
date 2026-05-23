@@ -1,0 +1,33 @@
+{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}}
+/// <reference types="jest" />
+
+import type { ReactNode } from "react";
+import { render } from "@testing-library/react-native";
+import { Text } from "react-native";
+
+{{#if (eq mobileUI "gluestack-ui")}}
+jest.mock("@gluestack-ui/themed", () => ({
+  GluestackUIProvider: ({ children }: { children: ReactNode }) => children,
+}));
+
+{{/if}}
+{{#if (eq mobileUI "tamagui")}}
+jest.mock("@tamagui/config/v3", () => ({ config: {} }));
+jest.mock("tamagui", () => ({
+  createTamagui: (config: unknown) => config,
+  TamaguiProvider: ({ children }: { children: ReactNode }) => children,
+}));
+
+{{/if}}
+import { MobileUIProvider } from "@/components/mobile-ui-provider";
+
+test("renders children inside the mobile provider", () => {
+  const screen = render(
+    <MobileUIProvider>
+      <Text>Mobile ready</Text>
+    </MobileUIProvider>,
+  );
+
+  expect(screen.getByText("Mobile ready")).toBeTruthy();
+});
+{{/if}}

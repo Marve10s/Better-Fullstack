@@ -13,6 +13,7 @@
     "test": "bun test ./test/*.test.ts",
     "typecheck": "tsc --noEmit",
     "validate:tech-links": "bun run scripts/validate-tech-resource-links.ts",
+    "validate:tech-icons": "bun run scripts/validate-tech-icons.ts",
     "perf:check": "node scripts/check-performance-budget.mjs",
     "perf:baseline": "node scripts/check-performance-budget.mjs --update-baseline",
     "test:e2e": "playwright test",

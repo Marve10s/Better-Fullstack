@@ -97,6 +97,13 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
   flags.push(`--file-storage ${config.fileStorage}`);
+  flags.push(`--mobile-navigation ${config.mobileNavigation}`);
+  flags.push(`--mobile-ui ${config.mobileUI}`);
+  flags.push(`--mobile-storage ${config.mobileStorage}`);
+  flags.push(`--mobile-testing ${config.mobileTesting}`);
+  flags.push(`--mobile-push ${config.mobilePush}`);
+  flags.push(`--mobile-ota ${config.mobileOTA}`);
+  flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
 
   if (config.addons && config.addons.length > 0) {
     flags.push(`--addons ${config.addons.join(" ")}`);
@@ -113,6 +120,29 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--db-setup ${config.dbSetup}`);
   flags.push(`--web-deploy ${config.webDeploy}`);
   flags.push(`--server-deploy ${config.serverDeploy}`);
+
+  appendCommonFlags(flags, config);
+
+  return flags;
+}
+
+function getReactNativeFlags(config: ProjectConfig) {
+  const flags = ["--ecosystem react-native"];
+
+  if (config.frontend && config.frontend.length > 0) {
+    flags.push(`--frontend ${config.frontend.join(" ")}`);
+  } else {
+    flags.push("--frontend native-bare");
+  }
+
+  flags.push(`--auth ${config.auth}`);
+  flags.push(`--mobile-navigation ${config.mobileNavigation}`);
+  flags.push(`--mobile-ui ${config.mobileUI}`);
+  flags.push(`--mobile-storage ${config.mobileStorage}`);
+  flags.push(`--mobile-testing ${config.mobileTesting}`);
+  flags.push(`--mobile-push ${config.mobilePush}`);
+  flags.push(`--mobile-ota ${config.mobileOTA}`);
+  flags.push(`--mobile-deep-linking ${config.mobileDeepLinking}`);
 
   appendCommonFlags(flags, config);
 
@@ -219,6 +249,9 @@ export function generateReproducibleCommand(config: ProjectConfig) {
   let flags: string[];
 
   switch (config.ecosystem) {
+    case "react-native":
+      flags = getReactNativeFlags(config);
+      break;
     case "rust":
       flags = getRustFlags(config);
       break;

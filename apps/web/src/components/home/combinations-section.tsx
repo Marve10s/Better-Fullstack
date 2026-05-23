@@ -9,7 +9,7 @@ const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScien
 const funFacts = [
   `${universeLifetimesScientific.mantissa} × 10^${universeLifetimesScientific.exponent} universe lifetimes to test all combinations`,
   `${combinationsMetrics.universeSandRatioScientific.mantissa} × 10^${combinationsMetrics.universeSandRatioScientific.exponent}× more combinations than grains of sand in the observable universe`,
-  "Across TypeScript, Rust, Python, Go, and Java",
+  "Across TypeScript, React Native, Rust, Python, Go, and Java",
   "Each combination scaffolds a unique, production-ready app",
   "YOLO mode doubles every single one of them",
 ];

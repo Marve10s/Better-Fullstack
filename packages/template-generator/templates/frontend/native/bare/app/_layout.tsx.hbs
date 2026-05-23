@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 {{#if (includes examples "ai")}}
 import "@/polyfills";
 {{/if}}
@@ -43,6 +44,13 @@ import React, { useRef } from "react";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Platform, StyleSheet } from "react-native";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
+import { MobileUIProvider } from "@/components/mobile-ui-provider";
+{{#if (eq mobilePush "expo-notifications")}}
+import { registerForPushNotificationsAsync } from "@/lib/notifications";
+{{/if}}
+{{#if (eq mobileOTA "expo-updates")}}
+import { useUpdateCheck } from "@/lib/updates";
+{{/if}}
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -75,6 +83,14 @@ const styles = StyleSheet.create({
 });
 
 export default function RootLayout() {
+  {{#if (eq mobileOTA "expo-updates")}}
+  useUpdateCheck();
+  {{/if}}
+  React.useEffect(() => {
+    {{#if (eq mobilePush "expo-notifications")}}
+    registerForPushNotificationsAsync().catch(console.warn);
+    {{/if}}
+  }, []);
   const hasMounted = useRef(false);
   const { colorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
@@ -101,11 +117,13 @@ export default function RootLayout() {
               <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
                 <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
                 <GestureHandlerRootView style={styles.container}>
+                  <MobileUIProvider>
                   <Stack>
                     <Stack.Screen name="(drawer)" options=\{{ headerShown: false }} />
                     <Stack.Screen name="(auth)" options=\{{ headerShown: false }} />
                     <Stack.Screen name="modal" options=\{{ title: "Modal", presentation: "modal" }} />
                   </Stack>
+                </MobileUIProvider>
                 </GestureHandlerRootView>
               </ThemeProvider>
             </ConvexProviderWithClerk>
@@ -115,10 +133,12 @@ export default function RootLayout() {
             <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
               <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
               <GestureHandlerRootView style={styles.container}>
-                <Stack>
+                <MobileUIProvider>
+                  <Stack>
                   <Stack.Screen name="(drawer)" options=\{{ headerShown: false }} />
                   <Stack.Screen name="modal" options=\{{ title: "Modal", presentation: "modal" }} />
                 </Stack>
+                </MobileUIProvider>
               </GestureHandlerRootView>
             </ThemeProvider>
           </ConvexBetterAuthProvider>
@@ -127,10 +147,12 @@ export default function RootLayout() {
             <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
               <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
               <GestureHandlerRootView style={styles.container}>
-                <Stack>
+                <MobileUIProvider>
+                  <Stack>
                   <Stack.Screen name="(drawer)" options=\{{ headerShown: false }} />
                   <Stack.Screen name="modal" options=\{{ title: "Modal", presentation: "modal" }} />
                 </Stack>
+                </MobileUIProvider>
               </GestureHandlerRootView>
             </ThemeProvider>
           </ConvexProvider>
@@ -141,10 +163,12 @@ export default function RootLayout() {
             <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
               <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
               <GestureHandlerRootView style={styles.container}>
-                <Stack>
+                <MobileUIProvider>
+                  <Stack>
                   <Stack.Screen name="(drawer)" options=\{{ headerShown: false }} />
                   <Stack.Screen name="modal" options=\{{ title: "Modal", presentation: "modal" }} />
                 </Stack>
+                </MobileUIProvider>
               </GestureHandlerRootView>
             </ThemeProvider>
           </QueryClientProvider>
@@ -152,10 +176,12 @@ export default function RootLayout() {
           <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
             <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
             <GestureHandlerRootView style={styles.container}>
-              <Stack>
+              <MobileUIProvider>
+                  <Stack>
                 <Stack.Screen name="(drawer)" options=\{{ headerShown: false }} />
                 <Stack.Screen name="modal" options=\{{ title: "Modal", presentation: "modal" }} />
               </Stack>
+                </MobileUIProvider>
             </GestureHandlerRootView>
           </ThemeProvider>
         {{/unless}}
@@ -163,3 +189,4 @@ export default function RootLayout() {
     </>
   );
 }
+{{/if}}

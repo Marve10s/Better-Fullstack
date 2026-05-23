@@ -39,6 +39,13 @@ import {
   FileStorageSchema,
   FileUploadSchema,
   FormsSchema,
+  MobileDeepLinkingSchema,
+  MobileNavigationSchema,
+  MobileOTASchema,
+  MobilePushSchema,
+  MobileStorageSchema,
+  MobileTestingSchema,
+  MobileUISchema,
   FrontendSchema,
   GoApiSchema,
   GoAuthSchema,
@@ -113,7 +120,9 @@ export const CreateCommandOptionsSchema = z.object({
     .optional()
     .default(false)
     .describe("Preview generated file tree without writing to disk"),
-  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (typescript, rust, python, go, java, or elixir)"),
+  ecosystem: EcosystemSchema.optional().describe(
+    "Language ecosystem (typescript, react-native, rust, python, go, java, or elixir)",
+  ),
   database: DatabaseSchema.optional(),
   orm: ORMSchema.optional(),
   auth: AuthSchema.optional(),
@@ -138,6 +147,13 @@ export const CreateCommandOptionsSchema = z.object({
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
+  mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation (expo-router, react-navigation)"),
+  mobileUI: MobileUISchema.optional().describe("Mobile UI (tamagui, gluestack-ui, uniwind, unistyles)"),
+  mobileStorage: MobileStorageSchema.optional().describe("Mobile storage (mmkv)"),
+  mobileTesting: MobileTestingSchema.optional().describe("Mobile testing (maestro, react-native-testing-library)"),
+  mobilePush: MobilePushSchema.optional().describe("Mobile push notifications (expo-notifications)"),
+  mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates (expo-updates)"),
+  mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking (expo-linking)"),
   frontend: z.array(FrontendSchema).optional(),
   astroIntegration: AstroIntegrationSchema.optional().describe(
     "Astro UI framework integration (react, vue, svelte, solid)",

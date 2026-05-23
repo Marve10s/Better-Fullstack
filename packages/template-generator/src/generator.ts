@@ -76,7 +76,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       // Elixir ecosystem - use Mix and Phoenix project structure
       await processElixirBaseTemplate(vfs, templates, config);
     } else {
-      // TypeScript ecosystem - use package.json and TypeScript project structure
+      // TypeScript and React Native ecosystems use package.json and TS project structure.
       await processBaseTemplate(vfs, templates, config);
       await processFrontendTemplates(vfs, templates, config);
       await processBackendTemplates(vfs, templates, config);
@@ -111,7 +111,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       processCatalogs(vfs, config);
     }
 
-    if (config.ecosystem !== "typescript") {
+    if (config.ecosystem !== "typescript" && config.ecosystem !== "react-native") {
       await processAddonTemplates(vfs, templates, config);
       processEnvVariables(vfs, config);
     }

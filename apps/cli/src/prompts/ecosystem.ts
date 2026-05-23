@@ -10,7 +10,12 @@ export async function getEcosystemChoice(ecosystem?: Ecosystem) {
     {
       value: "typescript" as const,
       label: "TypeScript",
-      hint: "Full-stack TypeScript with React, Vue, Svelte, and more",
+      hint: "Full-stack TypeScript web with React, Vue, Svelte, and more",
+    },
+    {
+      value: "react-native" as const,
+      label: "React Native",
+      hint: "Expo and React Native mobile apps with native integrations",
     },
     {
       value: "rust" as const,
@@ -26,6 +31,11 @@ export async function getEcosystemChoice(ecosystem?: Ecosystem) {
       value: "go" as const,
       label: "Go",
       hint: "Go ecosystem with Gin, Echo, GORM, and more",
+    },
+    {
+      value: "java" as const,
+      label: "Java",
+      hint: "Java ecosystem with Spring Boot, Maven, Gradle, and more",
     },
   ];
 

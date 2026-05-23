@@ -512,6 +512,8 @@ function buildNativeVars(
   frontend: string[],
   backend: ProjectConfig["backend"],
   auth: ProjectConfig["auth"],
+  mobilePush: ProjectConfig["mobilePush"],
+  mobileDeepLinking: ProjectConfig["mobileDeepLinking"],
 ): EnvVariable[] {
   let envVarName = "EXPO_PUBLIC_SERVER_URL";
   let serverUrl = "http://localhost:3000";
@@ -547,6 +549,24 @@ function buildNativeVars(
       key: "EXPO_PUBLIC_CONVEX_SITE_URL",
       value: "https://your-convex-url.convex.cloud",
       condition: true,
+    });
+  }
+
+  if (auth !== "none" && mobileDeepLinking === "expo-linking") {
+    vars.push({
+      key: "EXPO_PUBLIC_AUTH_REDIRECT_PATH",
+      value: "auth/callback",
+      condition: true,
+      comment: "Mobile auth callback path used with expo-linking",
+    });
+  }
+
+  if (mobilePush === "expo-notifications") {
+    vars.push({
+      key: "EXPO_PUBLIC_EAS_PROJECT_ID",
+      value: "your-eas-project-id",
+      condition: true,
+      comment: "EAS project ID for Expo push notification tokens",
     });
   }
 
@@ -1672,8 +1692,15 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     const nativeDir = "apps/native";
     if (vfs.directoryExists(nativeDir)) {
       const envPath = `${nativeDir}/.env`;
-      const nativeVars = buildNativeVars(frontend, backend, auth);
+      const nativeVars = buildNativeVars(
+        frontend,
+        backend,
+        auth,
+        config.mobilePush,
+        config.mobileDeepLinking,
+      );
       writeEnvFile(vfs, envPath, nativeVars);
+      writeEnvFile(vfs, `${nativeDir}/.env.example`, nativeVars);
     }
   }
 

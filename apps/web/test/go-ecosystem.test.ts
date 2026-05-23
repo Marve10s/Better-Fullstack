@@ -21,7 +21,7 @@ import {
 describe("Go Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {
     it("should have go as a valid ecosystem value", () => {
-      const ecosystems: Ecosystem[] = ["typescript", "rust", "python", "go", "java"];
+      const ecosystems: Ecosystem[] = ["typescript", "react-native", "rust", "python", "go", "java", "elixir"];
       expect(ecosystems).toContain("go");
     });
   });

@@ -1,0 +1,25 @@
+{{#if (eq mobileDeepLinking "expo-linking")}}
+import * as Linking from "expo-linking";
+
+export const appScheme = "{{projectName}}";
+
+export const linking = {
+  prefixes: [Linking.createURL("/"), `${appScheme}://`],
+  config: {
+    screens: {
+      Main: "",
+      Modal: "modal",
+      Home: "",
+      Settings: "settings",
+    },
+  },
+};
+
+export function getAuthRedirectUri(path = "auth/callback") {
+  return Linking.createURL(path);
+}
+
+export function getDeepLinkUrl(path = "") {
+  return Linking.createURL(path);
+}
+{{/if}}

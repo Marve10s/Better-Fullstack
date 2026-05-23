@@ -1,0 +1,61 @@
+---
+title: React Native
+description: Expo and React Native mobile scaffolds with production-minded integrations.
+---
+
+React Native is the dedicated mobile ecosystem for Better Fullstack. It scaffolds runnable Expo projects and keeps mobile choices separate from TypeScript web frontend categories.
+
+## Prerequisites
+
+- Node.js 20+.
+- npm, pnpm, Yarn, or Bun.
+- Expo-compatible iOS/Android tooling when you want simulator or device validation.
+
+## Scripted example
+
+```bash
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --package-manager npm \
+  --ai-docs none \
+  --no-install
+```
+
+## Mobile scaffold categories
+
+| Category | Values |
+| --- | --- |
+| Native frontend | `native-bare` `native-uniwind` `native-unistyles` |
+| Navigation | `expo-router` `react-navigation` `none` |
+| UI | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| Storage | `mmkv` `none` |
+| Testing | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| Push | `expo-notifications` `none` |
+| OTA | `expo-updates` `none` |
+| Deep linking | `expo-linking` `none` |
+
+## Generated integrations
+
+- Expo config with scheme/runtime settings when deep linking or OTA is selected.
+- Expo Router route files or a React Navigation entrypoint, depending on navigation.
+- Mobile UI provider/theme files for Tamagui, Gluestack UI, Uniwind, or Unistyles.
+- MMKV client helpers when storage is selected.
+- Jest Expo and React Native Testing Library examples, Maestro flows, or both.
+- Push notification registration helpers for Expo Notifications.
+- OTA update helpers for Expo Updates.
+- `.env.example` with `EXPO_PUBLIC_` conventions for mobile client configuration.
+
+## Compatibility notes
+
+- React Native does not expose TypeScript web frontend, backend, database, web UI, web deploy, or server deploy categories.
+- Uniwind and Unistyles UI modes are tied to their matching Expo frontend variants.
+- Tamagui and Gluestack UI use the bare Expo variant to avoid conflicting styling setup.
+- Deep linking is enabled automatically when a mobile auth flow requires redirect URI examples.

@@ -15,6 +15,12 @@ export const env = createEnv({
 {{else}}
 		EXPO_PUBLIC_SERVER_URL: z.url(),
 {{/if}}
+{{#if (and (ne auth "none") (eq mobileDeepLinking "expo-linking"))}}
+		EXPO_PUBLIC_AUTH_REDIRECT_PATH: z.string().default("auth/callback"),
+{{/if}}
+{{#if (eq mobilePush "expo-notifications")}}
+		EXPO_PUBLIC_EAS_PROJECT_ID: z.string().optional(),
+{{/if}}
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

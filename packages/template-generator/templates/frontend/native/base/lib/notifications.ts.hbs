@@ -1,0 +1,52 @@
+{{#if (eq mobilePush "expo-notifications")}}
+import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+export async function registerForPushNotificationsAsync() {
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+    });
+  }
+
+  if (!Device.isDevice) {
+    return null;
+  }
+
+  const existing = (await Notifications.getPermissionsAsync()) as {
+    granted?: boolean;
+    status?: string;
+  };
+  const existingGranted = existing.granted ?? existing.status === "granted";
+  const requested = existingGranted
+    ? existing
+    : ((await Notifications.requestPermissionsAsync()) as {
+        granted?: boolean;
+        status?: string;
+      });
+  const finalStatus =
+    (requested.granted ?? requested.status === "granted") ? "granted" : "denied";
+
+  if (finalStatus !== "granted") {
+    return null;
+  }
+
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+  const token = await Notifications.getExpoPushTokenAsync(
+    projectId ? { projectId } : undefined,
+  );
+  return token.data;
+}
+{{/if}}

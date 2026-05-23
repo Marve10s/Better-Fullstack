@@ -1,5 +1,4 @@
 {
-  "lock": false,
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check --node-modules-dir=auto main.ts client.ts",
     "dev": "deno run --node-modules-dir=auto -A npm:vite",
@@ -22,7 +21,11 @@
     "@/": "./",
     "fresh": "jsr:@fresh/core@^2.2.0",
     "preact": "npm:preact@^10.27.2",
+    "preact/": "npm:preact@^10.27.2/",
+    "preact/jsx-runtime": "npm:preact@^10.27.2/jsx-runtime",
+    "preact/jsx-dev-runtime": "npm:preact@^10.27.2/jsx-dev-runtime",
     "@preact/signals": "npm:@preact/signals@^2.5.0",
+    "@preact/signals/": "npm:@preact/signals@^2.5.0/",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
     "vite": "npm:vite@^7.3.1"{{#if (eq cssFramework "tailwind")}},
     "tailwindcss": "npm:tailwindcss@^4.1.12",
@@ -37,7 +40,7 @@
       "deno.ns"
     ],
     "jsx": "precompile",
-    "jsxImportSource": "preact",
+    "jsxImportSource": "npm:preact@^10.27.2",
     "jsxPrecompileSkipElements": [
       "a",
       "img",
@@ -57,6 +60,5 @@
     "types": [
       "vite/client"
     ]
-  },
-  "nodeModulesDir": "auto"
+  }
 }

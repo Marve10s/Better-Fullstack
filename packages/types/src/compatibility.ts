@@ -51,6 +51,13 @@ export type CompatibilityCategory =
   | "cms"
   | "featureFlags"
   | "analytics"
+  | "mobileNavigation"
+  | "mobileUI"
+  | "mobileStorage"
+  | "mobileTesting"
+  | "mobilePush"
+  | "mobileOTA"
+  | "mobileDeepLinking"
   | "codeQuality"
   | "documentation"
   | "appPlatforms"
@@ -124,7 +131,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go" | "java" | "elixir";
+  ecosystem: "typescript" | "react-native" | "rust" | "python" | "go" | "java" | "elixir";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -164,6 +171,13 @@ export type CompatibilityInput = {
   i18n: string;
   search: string;
   fileStorage: string;
+  mobileNavigation: string;
+  mobileUI: string;
+  mobileStorage: string;
+  mobileTesting: string;
+  mobilePush: string;
+  mobileOTA: string;
+  mobileDeepLinking: string;
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -260,6 +274,13 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "i18n",
   "search",
   "fileStorage",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "animation",
   "cms",
   "codeQuality",
@@ -471,6 +492,13 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
   // Custom display names for TypeScript categories
   const tsCategoryNames: Record<string, string> = {
     i18n: "Internationalization (i18n)",
+    mobileNavigation: "Mobile Navigation",
+    mobileUI: "Mobile UI",
+    mobileStorage: "Mobile Storage",
+    mobileTesting: "Mobile Testing",
+    mobilePush: "Mobile Push",
+    mobileOTA: "Mobile OTA",
+    mobileDeepLinking: "Mobile Deep Linking",
   };
 
   if (tsCategoryNames[categoryKey]) {
@@ -1139,6 +1167,139 @@ export const analyzeStackCompatibility = (
     }
   }
 
+  let hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+
+  if (nextStack.ecosystem === "react-native") {
+    const reactNativeOnlyCategories = [
+      ["webFrontend", ["none"], "Web frontend set to 'None' (React Native ecosystem)"],
+      ["backend", "none", "Backend set to 'None' (React Native ecosystem)"],
+      ["runtime", "none", "Runtime set to 'None' (React Native ecosystem)"],
+      ["api", "none", "API set to 'None' (React Native ecosystem)"],
+      ["database", "none", "Database set to 'None' (React Native ecosystem)"],
+      ["orm", "none", "ORM set to 'None' (React Native ecosystem)"],
+      ["dbSetup", "none", "Database setup set to 'None' (React Native ecosystem)"],
+      ["webDeploy", "none", "Web deployment set to 'None' (React Native ecosystem)"],
+      ["serverDeploy", "none", "Server deployment set to 'None' (React Native ecosystem)"],
+      ["cssFramework", "none", "CSS framework set to 'None' (React Native ecosystem)"],
+      ["uiLibrary", "none", "UI library set to 'None' (React Native ecosystem)"],
+      ["testing", "none", "Web testing set to 'None' (React Native ecosystem)"],
+      ["forms", "none", "Web forms set to 'None' (React Native ecosystem)"],
+      ["stateManagement", "none", "Web state management set to 'None' (React Native ecosystem)"],
+      ["animation", "none", "Web animation set to 'None' (React Native ecosystem)"],
+      ["realtime", "none", "Realtime set to 'None' (React Native ecosystem)"],
+      ["jobQueue", "none", "Job queue set to 'None' (React Native ecosystem)"],
+      ["fileUpload", "none", "File upload set to 'None' (React Native ecosystem)"],
+      ["payments", "none", "Payments set to 'None' (React Native ecosystem)"],
+      ["email", "none", "Email set to 'None' (React Native ecosystem)"],
+      ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
+      ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
+      ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
+      ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
+      ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
+      ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
+      ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
+      ["examples", [], "Examples cleared (React Native ecosystem)"],
+    ] as const;
+
+    for (const [category, value, message] of reactNativeOnlyCategories) {
+      const currentValue = nextStack[category];
+      const isSameArray =
+        Array.isArray(currentValue) &&
+        Array.isArray(value) &&
+        currentValue.length === value.length &&
+        currentValue.every((entry, index) => entry === value[index]);
+      if (Array.isArray(value) ? !isSameArray : currentValue !== value) {
+        (nextStack as Record<string, unknown>)[category] = Array.isArray(value) ? [...value] : value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+
+    if (!hasNativeFrontend) {
+      nextStack.nativeFrontend = ["native-bare"];
+      hasNativeFrontend = true;
+      changed = true;
+      changes.push({
+        category: "nativeFrontend",
+        message: "Native frontend set to 'Expo + Bare' (React Native ecosystem)",
+      });
+    }
+  }
+
+  if (
+    nextStack.ecosystem === "typescript" &&
+    nextStack.nativeFrontend.some((frontend) => frontend !== "none")
+  ) {
+    nextStack.nativeFrontend = ["none"];
+    hasNativeFrontend = false;
+    changed = true;
+    changes.push({
+      category: "nativeFrontend",
+      message: "Native frontend set to 'None' (use React Native ecosystem for Expo apps)",
+    });
+  }
+
+  if (!hasNativeFrontend) {
+    const nativeOnlyCategories = [
+      ["mobileNavigation", "none", "Mobile navigation set to 'None' (no native frontend)"],
+      ["mobileUI", "none", "Mobile UI set to 'None' (no native frontend)"],
+      ["mobileStorage", "none", "Mobile storage set to 'None' (no native frontend)"],
+      ["mobileTesting", "none", "Mobile testing set to 'None' (no native frontend)"],
+      ["mobilePush", "none", "Mobile push set to 'None' (no native frontend)"],
+      ["mobileOTA", "none", "Mobile OTA set to 'None' (no native frontend)"],
+      ["mobileDeepLinking", "none", "Mobile deep linking set to 'None' (no native frontend)"],
+    ] as const;
+
+    for (const [category, value, message] of nativeOnlyCategories) {
+      if (nextStack[category] !== value) {
+        nextStack[category] = value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+  } else {
+    if (nextStack.mobileNavigation === "none") {
+      nextStack.mobileNavigation = "expo-router";
+      changed = true;
+      changes.push({
+        category: "mobileNavigation",
+        message: "Mobile navigation set to 'Expo Router' (native frontend selected)",
+      });
+    }
+
+    if (nextStack.mobileDeepLinking === "none" && nextStack.auth !== "none") {
+      nextStack.mobileDeepLinking = "expo-linking";
+      changed = true;
+      changes.push({
+        category: "mobileDeepLinking",
+        message: "Mobile deep linking set to 'Expo Linking' (required for mobile auth redirects)",
+      });
+    }
+
+    if (nextStack.nativeFrontend.includes("native-uniwind") && nextStack.mobileUI !== "uniwind") {
+      nextStack.mobileUI = "uniwind";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Uniwind' (required by Expo + Uniwind)",
+      });
+    }
+
+    if (
+      nextStack.nativeFrontend.includes("native-unistyles") &&
+      nextStack.mobileUI !== "unistyles"
+    ) {
+      nextStack.mobileUI = "unistyles";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Unistyles' (required by Expo + Unistyles)",
+      });
+    }
+  }
+
   // UI libraries requiring Tailwind - auto-adjust CSS framework or clear UI library
   const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(nextStack.uiLibrary);
   if (requiresTailwind && nextStack.cssFramework !== "tailwind") {
@@ -1639,6 +1800,28 @@ export const getDisabledReason = (
         );
         return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
       }
+    }
+  }
+
+  if (currentStack.ecosystem === "react-native") {
+    const reactNativeCategories = new Set([
+      "nativeFrontend",
+      "mobileNavigation",
+      "mobileUI",
+      "mobileStorage",
+      "mobileTesting",
+      "mobilePush",
+      "mobileOTA",
+      "mobileDeepLinking",
+      "auth",
+      "packageManager",
+      "aiDocs",
+      "git",
+      "install",
+    ]);
+
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+      return "React Native ecosystem only supports native mobile options";
     }
   }
 
@@ -2260,6 +2443,50 @@ export const getDisabledReason = (
     const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(currentStack.uiLibrary);
     if (requiresTailwind && optionId !== "tailwind") {
       return `${currentStack.uiLibrary === "shadcn-ui" ? "shadcn/ui" : currentStack.uiLibrary === "daisyui" ? "daisyUI" : "NextUI"} requires Tailwind CSS`;
+    }
+  }
+
+  const mobileCategories = new Set([
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
+  ]);
+
+  if (mobileCategories.has(category)) {
+    const hasNativeFrontend = currentStack.nativeFrontend.some((f) => f !== "none");
+    if (!hasNativeFrontend && optionId !== "none") {
+      return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
+    }
+
+    if (category === "mobileNavigation" && optionId === "react-navigation") {
+      return null;
+    }
+
+    if (category === "mobileUI") {
+      if (optionId === "uniwind" && !currentStack.nativeFrontend.includes("native-uniwind")) {
+        return "Uniwind mobile UI requires Expo + Uniwind frontend";
+      }
+      if (optionId === "unistyles" && !currentStack.nativeFrontend.includes("native-unistyles")) {
+        return "Unistyles mobile UI requires Expo + Unistyles frontend";
+      }
+      if (
+        ["tamagui", "gluestack-ui"].includes(optionId) &&
+        currentStack.nativeFrontend.some((f) => ["native-uniwind", "native-unistyles"].includes(f))
+      ) {
+        return "Tamagui and Gluestack UI require Expo + Bare to avoid conflicting styling setup";
+      }
+    }
+
+    if (
+      (category === "mobilePush" && optionId === "expo-notifications") ||
+      (category === "mobileOTA" && optionId === "expo-updates") ||
+      (category === "mobileDeepLinking" && optionId === "expo-linking")
+    ) {
+      return null;
     }
   }
 

@@ -786,6 +786,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "CLAUDE.md",
   "README.md",
   "apps/native/.env",
+  "apps/native/.env.example",
   "apps/native/app.json",
   "apps/native/app/(drawer)/(tabs)/_layout.tsx",
   "apps/native/app/(drawer)/(tabs)/index.tsx",
@@ -797,9 +798,11 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "apps/native/app/modal.tsx",
   "apps/native/components/container.tsx",
   "apps/native/components/header-button.tsx",
+  "apps/native/components/mobile-ui-provider.tsx",
   "apps/native/components/tabbar-icon.tsx",
   "apps/native/lib/android-navigation-bar.tsx",
   "apps/native/lib/constants.ts",
+  "apps/native/lib/deep-linking.ts",
   "apps/native/lib/use-color-scheme.ts",
   "apps/native/metro.config.js",
   "apps/native/package.json",
@@ -824,6 +827,56 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
   "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
+exports[`Template Snapshots File Structure Snapshots file structure: native-mobile-integrations 1`] = `
+[
+  "CLAUDE.md",
+  "README.md",
+  "apps/native/.env",
+  "apps/native/.env.example",
+  "apps/native/.maestro/home.yaml",
+  "apps/native/App.tsx",
+  "apps/native/__tests__/mobile-ui-provider.test.tsx",
+  "apps/native/app.json",
+  "apps/native/components/container.tsx",
+  "apps/native/components/header-button.tsx",
+  "apps/native/components/mobile-ui-provider.tsx",
+  "apps/native/components/tabbar-icon.tsx",
+  "apps/native/index.js",
+  "apps/native/jest.config.js",
+  "apps/native/lib/android-navigation-bar.tsx",
+  "apps/native/lib/constants.ts",
+  "apps/native/lib/deep-linking.ts",
+  "apps/native/lib/mobile-storage.ts",
+  "apps/native/lib/notifications.ts",
+  "apps/native/lib/updates.ts",
+  "apps/native/lib/use-color-scheme.ts",
+  "apps/native/metro.config.js",
+  "apps/native/navigation/native-navigation.tsx",
+  "apps/native/package.json",
+  "apps/native/tsconfig.json",
+  "apps/native/utils/orpc.ts",
+  "apps/server/.env",
+  "apps/server/package.json",
+  "apps/server/src/index.ts",
+  "apps/server/tsconfig.json",
+  "apps/server/tsdown.config.ts",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
   "packages/env/src/server.ts",
@@ -11234,11 +11287,15 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 62,
+  "fileCount": 65,
   "files": [
     {
       "content": "[exists]",
       "path": "apps/native/.env",
+    },
+    {
+      "content": "EXPO_PUBLIC_SERVER_URL=http://localhost:3000",
+      "path": "apps/native/.env.example",
     },
     {
       "content": "[exists]",
@@ -11300,7 +11357,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 "
 ,
       "path": "apps/native/app/(drawer)/(tabs)/index.tsx",
@@ -11448,6 +11504,10 @@ fontWeight: "bold",
     },
     {
       "content": "[exists]",
+      "path": "apps/native/components/mobile-ui-provider.tsx",
+    },
+    {
+      "content": "[exists]",
       "path": "apps/native/components/tabbar-icon.tsx",
     },
     {
@@ -11457,6 +11517,10 @@ fontWeight: "bold",
     {
       "content": "[exists]",
       "path": "apps/native/lib/constants.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/deep-linking.ts",
     },
     {
       "content": "[exists]",
@@ -11484,6 +11548,7 @@ fontWeight: "bold",
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/drawer": "^7.10.2",
     "@react-navigation/native": "^7.2.4",
+    "@react-navigation/native-stack": "^7.8.1",
     "@tanstack/react-form": "^1.32.0",
     "@tanstack/react-query": "^5.100.10",
     "expo": "^55.0.24",
@@ -12012,6 +12077,647 @@ export const db = drizzle({ client, schema });
       "content": 
 "{
   "extends": "@snapshot-native-react-native/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: native-mobile-integrations 1`] = `
+{
+  "fileCount": 59,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "apps/native/__tests__/mobile-ui-provider.test.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/.env",
+    },
+    {
+      "content": 
+"EXPO_PUBLIC_SERVER_URL=http://localhost:3000
+# EAS project ID for Expo push notification tokens
+EXPO_PUBLIC_EAS_PROJECT_ID=your-eas-project-id"
+,
+      "path": "apps/native/.env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/.maestro/home.yaml",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/app.json",
+    },
+    {
+      "content": 
+"
+import { QueryClientProvider } from "@tanstack/react-query";
+import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import { MobileUIProvider } from "@/components/mobile-ui-provider";
+import { linking } from "@/lib/deep-linking";
+import { queryClient } from "@/utils/orpc";
+import { RootNavigator } from "@/navigation/native-navigation";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+
+function AppShell() {
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider>
+        <MobileUIProvider>
+          <NavigationContainer linking={linking}>
+            <StatusBar style="auto" />
+            <RootNavigator />
+          </NavigationContainer>
+        </MobileUIProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppShell />
+    </QueryClientProvider>
+  );
+}
+"
+,
+      "path": "apps/native/App.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/container.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/header-button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/mobile-ui-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/tabbar-icon.tsx",
+    },
+    {
+      "content": 
+"import { registerRootComponent } from "expo";
+
+import App from "./App";
+
+registerRootComponent(App);
+"
+,
+      "path": "apps/native/index.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/jest.config.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/android-navigation-bar.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/constants.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/deep-linking.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/mobile-storage.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/notifications.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/updates.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/use-color-scheme.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/metro.config.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/navigation/native-navigation.tsx",
+    },
+    {
+      "content": 
+"{
+  "name": "native",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start --clear",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild",
+    "web": "expo start --web",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-navigation/bottom-tabs": "^7.16.1",
+    "@react-navigation/drawer": "^7.10.2",
+    "@react-navigation/native": "^7.2.4",
+    "@react-navigation/native-stack": "^7.8.1",
+    "@tanstack/react-form": "^1.32.0",
+    "@gluestack-ui/themed": "^1.1.73",
+    "@tanstack/react-query": "^5.100.10",
+    "expo": "^55.0.24",
+    "expo-constants": "^55.0.16",
+    "expo-device": "^8.0.9",
+    "expo-crypto": "^55.0.15",
+    "expo-linking": "^55.0.15",
+    "expo-navigation-bar": "^55.0.13",
+    "expo-network": "^55.0.14",
+    "expo-notifications": "^56.0.12",
+    "expo-secure-store": "^55.0.14",
+    "expo-splash-screen": "^55.0.21",
+    "expo-status-bar": "^55.0.6",
+    "expo-system-ui": "^55.0.18",
+    "expo-updates": "^56.0.15",
+    "expo-web-browser": "^55.0.16",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-native": "^0.85.3",
+    "react-native-mmkv": "^4.1.0",
+    "react-native-gesture-handler": "^2.31.2",
+    "react-native-reanimated": "^4.3.1",
+    "react-native-safe-area-context": "^5.7.0",
+    "react-native-screens": "^4.25.0",
+    "react-native-web": "^0.21.2",
+    "react-native-worklets": "^0.8.3",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@snapshot-native-mobile-integrations/api": "workspace:*",
+    "@orpc/tanstack-query": "^1.14.3",
+    "@orpc/client": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@types/react": "^19.2.14",
+    "@types/jest": "^29.5.14",
+    "@testing-library/react-native": "^13.3.3",
+    "@react-native/jest-preset": "^0.85.3",
+    "jest": "^29.7.0",
+    "jest-expo": "^55.0.18",
+    "react-test-renderer": "^19.2.6",
+    "typescript": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  },
+  "private": true
+}
+"
+,
+      "path": "apps/native/package.json",
+    },
+    {
+      "content": 
+"{
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"strict": true,
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}
+
+"
+,
+      "path": "apps/native/tsconfig.json",
+    },
+    {
+      "content": 
+"import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import type { AppRouterClient } from "@snapshot-native-mobile-integrations/api/routers/index";
+import { env } from "@snapshot-native-mobile-integrations/env/native";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.log(error)
+		},
+	}),
+});
+
+export const link = new RPCLink({
+	url: \`\${env.EXPO_PUBLIC_SERVER_URL}/rpc\`,
+});
+
+export const client: AppRouterClient = createORPCClient(link);
+
+export const orpc = createTanstackQueryUtils(client);
+"
+,
+      "path": "apps/native/utils/orpc.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/.env",
+    },
+    {
+      "content": 
+"{
+  "name": "server",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@snapshot-native-mobile-integrations/api": "workspace:*",
+    "hono": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsdown": "^0.22.0",
+    "@snapshot-native-mobile-integrations/config": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
+"
+,
+      "path": "apps/server/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-native-mobile-integrations/env/server";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { RPCHandler } from "@orpc/server/fetch";
+import { onError } from "@orpc/server";
+import { createContext } from "@snapshot-native-mobile-integrations/api/context";
+import { appRouter } from "@snapshot-native-mobile-integrations/api/routers/index";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+app.use(logger());
+app.use(
+	"/*",
+	cors({
+		origin: env.CORS_ORIGIN,
+		allowMethods: ["GET", "POST", "OPTIONS"],
+	})
+);
+
+
+export const apiHandler = new OpenAPIHandler(appRouter, {
+	plugins: [
+		new OpenAPIReferencePlugin({
+			schemaConverters: [new ZodToJsonSchemaConverter()],
+		}),
+	],
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
+});
+
+export const rpcHandler = new RPCHandler(appRouter, {
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
+});
+
+app.use("/*", async (c, next) => {
+	const context = await createContext({ context: c });
+
+	const rpcResult = await rpcHandler.handle(c.req.raw, {
+		prefix: "/rpc",
+		context: context,
+	});
+
+	if (rpcResult.matched) {
+		return c.newResponse(rpcResult.response.body, rpcResult.response);
+	}
+
+	const apiResult = await apiHandler.handle(c.req.raw, {
+		prefix: "/api-reference",
+		context: context,
+	});
+
+	if (apiResult.matched) {
+		return c.newResponse(apiResult.response.body, apiResult.response);
+	}
+
+	await next();
+});
+
+
+
+
+app.get("/", (c) => {
+	return c.text("OK");
+});
+
+export default app;
+"
+,
+      "path": "apps/server/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+		"outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  }
+}
+"
+,
+      "path": "apps/server/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/tsdown.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-native-mobile-integrations",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "typescript": "^6.0.3",
+      "@types/bun": "^1.3.14",
+      "hono": "^4.12.19",
+      "@orpc/server": "^1.14.3",
+      "@orpc/openapi": "^1.14.3",
+      "@orpc/zod": "^1.14.3",
+      "@orpc/client": "^1.14.3"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev"
+  },
+  "packageManager": "bun@1.3.5",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:",
+    "hono": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { os } from "@orpc/server";
+import type { Context } from "./context";
+
+export const o = os.$context<Context>();
+
+export const publicProcedure = o;
+
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import { publicProcedure } from "../index";
+import type { RouterClient } from "@orpc/server";
+
+export const appRouter = {
+  healthCheck: publicProcedure.handler(() => {
+    return "OK";
+  }),
+};
+export type AppRouter = typeof appRouter;
+export type AppRouterClient = RouterClient<typeof appRouter>;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./native": "./src/native.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
 }
 "
 ,

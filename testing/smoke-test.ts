@@ -2,8 +2,7 @@
 
 import type { Ecosystem } from "@better-fullstack/types";
 
-import { existsSync } from "node:fs";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
@@ -68,7 +67,7 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         i++;
         break;
       case "--ecosystem":
-        if (next && ["typescript", "rust", "python", "go", "java"].includes(next)) {
+        if (next && ["typescript", "react-native", "rust", "python", "go", "java"].includes(next)) {
           args.ecosystem = next as Ecosystem;
         }
         i++;
@@ -163,7 +162,9 @@ function generateCombos(args: SmokeTestArgs) {
 
   const generatorArgs: GeneratorArgs = {
     count: args.count,
-    ecosystems: args.ecosystem ? [args.ecosystem] : ["typescript", "rust", "python", "go", "java"],
+    ecosystems: args.ecosystem
+      ? [args.ecosystem]
+      : ["typescript", "react-native", "rust", "python", "go", "java"],
     installMode: "no-install",
     rng,
     forceOptions: args.forceOptions,

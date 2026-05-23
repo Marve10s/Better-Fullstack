@@ -10,7 +10,9 @@ export async function processFrontendTemplates(
   config: ProjectConfig,
 ): Promise<void> {
   const hasReactWeb = config.frontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(
+      f,
+    ),
   );
   const hasNuxtWeb = config.frontend.includes("nuxt");
   const hasSvelteWeb = config.frontend.includes("svelte");
@@ -42,7 +44,14 @@ export async function processFrontendTemplates(
       processTemplatesFromPrefix(vfs, templates, "frontend/react/web-base", "apps/web", config);
 
       const reactFramework = config.frontend.find((f) =>
-        ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"].includes(f),
+        [
+          "tanstack-router",
+          "react-router",
+          "react-vite",
+          "tanstack-start",
+          "next",
+          "vinext",
+        ].includes(f),
       );
       if (reactFramework) {
         processTemplatesFromPrefix(
@@ -86,6 +95,7 @@ export async function processFrontendTemplates(
       processTemplatesFromPrefix(vfs, templates, "frontend/redwood", ".", config);
     } else if (hasFreshWeb) {
       // Fresh (Deno) outputs to apps/web like other frameworks
+      processTemplatesFromPrefix(vfs, templates, "frontend/fresh-root", ".", config);
       processTemplatesFromPrefix(vfs, templates, "frontend/fresh", "apps/web", config);
     }
   }

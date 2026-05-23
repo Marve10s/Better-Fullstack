@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      issues: read
+      issues: write
       pull-requests: write
     concurrency:
       group: pr-size-${{ github.event.pull_request.number }}

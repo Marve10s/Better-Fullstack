@@ -20,12 +20,13 @@ export type GeneratorArgs = {
 
 export const DEFAULT_ARGS: GeneratorArgs = {
   count: 10,
-  ecosystems: ["typescript", "rust", "python", "go", "java", "elixir"],
+  ecosystems: ["typescript", "react-native", "rust", "python", "go", "java", "elixir"],
   installMode: "install",
 };
 
 export const DEFAULT_ECOSYSTEM_WEIGHTS: Record<Ecosystem, number> = {
   typescript: 4,
+  "react-native": 2,
   rust: 2,
   python: 2,
   go: 2,
@@ -72,6 +73,13 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "caching",
   "search",
   "fileStorage",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "addons",
   "examples",
   "aiDocs",

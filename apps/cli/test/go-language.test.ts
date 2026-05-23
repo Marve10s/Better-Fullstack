@@ -72,6 +72,8 @@ describe("Go Language Support", () => {
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
+      expect(ECOSYSTEMS).toContain("react-native");
+      expect(ECOSYSTEMS).toContain("elixir");
     });
 
     it("should include GoBetterAuth in auth options", () => {
@@ -575,6 +577,13 @@ describe("Go Language Support", () => {
         api: "none",
         webDeploy: "none",
         serverDeploy: "none",
+        mobileNavigation: "none",
+        mobileUI: "none",
+        mobileStorage: "none",
+        mobileTesting: "none",
+        mobilePush: "none",
+        mobileOTA: "none",
+        mobileDeepLinking: "none",
         yolo: "false",
         rustWebFramework: "none",
         rustFrontend: "none",

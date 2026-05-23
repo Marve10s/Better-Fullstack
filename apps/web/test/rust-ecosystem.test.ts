@@ -21,7 +21,7 @@ import {
 describe("Rust Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {
     it("should have typescript and rust as valid ecosystem values", () => {
-      const ecosystems: Ecosystem[] = ["typescript", "rust"];
+      const ecosystems: Ecosystem[] = ["typescript", "react-native", "rust", "python", "go", "java", "elixir"];
       expect(ecosystems).toContain("typescript");
       expect(ecosystems).toContain("rust");
     });

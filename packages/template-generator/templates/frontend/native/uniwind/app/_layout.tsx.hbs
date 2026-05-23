@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 {{#if (includes examples "ai")}}
 import "@/polyfills";
 {{/if}}
@@ -28,8 +29,15 @@ import "@/global.css";
 
 import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+{{#if (eq mobilePush "expo-notifications")}}
+import { registerForPushNotificationsAsync } from "@/lib/notifications";
+{{/if}}
+{{#if (eq mobileOTA "expo-updates")}}
+import { useUpdateCheck } from "@/lib/updates";
+{{/if}}
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 
 {{#if (eq api "trpc")}}
@@ -62,6 +70,14 @@ function StackLayout() {
 }
 
 export default function Layout() {
+  {{#if (eq mobileOTA "expo-updates")}}
+  useUpdateCheck();
+  {{/if}}
+  useEffect(() => {
+    {{#if (eq mobilePush "expo-notifications")}}
+    registerForPushNotificationsAsync().catch(console.warn);
+    {{/if}}
+  }, []);
   return (
     {{#if (eq backend "convex")}}
       {{#if (eq auth "clerk")}}
@@ -130,3 +146,4 @@ export default function Layout() {
     {{/if}}
   );
 }
+{{/if}}

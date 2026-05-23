@@ -78,7 +78,7 @@ export default function FeaturesSection() {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
-              ✦ six ecosystems
+              ✦ seven ecosystems
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -90,8 +90,8 @@ export default function FeaturesSection() {
               Not just TypeScript. <span className="italic text-muted-foreground">Everything.</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              TypeScript, Rust, Python, Go, Java, Elixir — one CLI scaffolds production-ready apps
-              across all six. Pick your ecosystem, pick your stack.
+              TypeScript, React Native, Rust, Python, Go, Java, Elixir — one CLI scaffolds
+              production-ready apps across all seven. Pick your ecosystem, pick your stack.
             </p>
           </div>
 
@@ -289,7 +289,7 @@ function TotalBlock() {
               </span>
             </motion.div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
-              options across 6 ecosystems · ts · rust · go · python · java · elixir
+              options across 7 ecosystems · ts · rn · rust · go · python · java · elixir
             </p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -65,3 +66,4 @@ export default function Page() {
     </View>
   );
 }
+{{/if}}

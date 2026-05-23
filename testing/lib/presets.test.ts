@@ -30,6 +30,8 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-react-vite-hono",
   "preset-solid-start-express",
   "preset-angular-fets",
+  "preset-vinext-minimal",
+  "preset-vinext-basic",
 ];
 
 describe("preset groups", () => {
@@ -50,5 +52,11 @@ describe("preset groups", () => {
       ...PR_CORE_PRESET_NAMES,
       ...PR_BROAD_PRESET_NAMES,
     ]);
+  });
+
+  it("renders complete CLI commands for all presets", () => {
+    for (const combo of getPresetCombos("all")) {
+      expect(combo.command).not.toContain(" undefined");
+    }
   });
 });

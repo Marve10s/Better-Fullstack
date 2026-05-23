@@ -30,7 +30,7 @@ With `npm create`, pass Better Fullstack flags after `--`. Generated reproducibl
 
 | Flag | Values |
 | --- | --- |
-| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `native-bare` `native-uniwind` `native-unistyles` `redwood` `fresh` `none` |
+| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
 | `--backend` | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
 | `--runtime` | `node` `bun` `workers` `none` |
 | `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
@@ -137,11 +137,26 @@ Go also supports the global `--auth go-better-auth` option for GoBetterAuth. Tha
 
 Spring Boot requires Maven or Gradle. Java ORM, auth, and libraries require Spring Boot plus a build tool. Flyway requires Spring Data JPA.
 
+## React Native flags
+
+Use `--ecosystem react-native` for Expo/React Native mobile projects.
+
+| Flag | Values |
+| --- | --- |
+| `--frontend` | `native-bare` `native-uniwind` `native-unistyles` |
+| `--mobile-navigation` | `expo-router` `react-navigation` `none` |
+| `--mobile-ui` | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| `--mobile-storage` | `mmkv` `none` |
+| `--mobile-testing` | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| `--mobile-push` | `expo-notifications` `none` |
+| `--mobile-ota` | `expo-updates` `none` |
+| `--mobile-deep-linking` | `expo-linking` `none` |
+
 ## Global flags
 
 | Flag | Description |
 | --- | --- |
-| `--ecosystem` | `typescript` `rust` `python` `go` `java`. Defaults to `typescript`. |
+| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java`. Defaults to `typescript`. |
 | `--template` | `t3` `mern` `pern` `uniwind` `none`. |
 | `--addons` | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none`. |
 | `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`. |

@@ -204,6 +204,16 @@ function skippedStep(step: string): StepResult {
   return { step, success: true, durationMs: 0, skipped: true };
 }
 
+function templateFailure(step: string, stderr: string): StepResult {
+  return {
+    step,
+    success: false,
+    durationMs: 0,
+    stderr,
+    classification: "template",
+  };
+}
+
 async function runAdvisoryStep(
   step: string,
   command: string,
@@ -309,6 +319,54 @@ export async function verifyTypeScript(
   }
 
   return wrapResult("typescript", comboName, projectDir, steps);
+}
+
+export async function verifyReactNative(
+  comboName: string,
+  projectDir: string,
+  options?: VerifyOptions,
+): Promise<VerifyResult> {
+  const steps: StepResult[] = [];
+  const nativeDir = join(projectDir, "apps", "native");
+
+  if (!existsSync(nativeDir)) {
+    steps.push(templateFailure("structure", "Expected React Native app at apps/native"));
+    return wrapResult("react-native", comboName, projectDir, steps);
+  }
+
+  for (const requiredFile of ["package.json", "app.json", "tsconfig.json"]) {
+    if (!existsSync(join(nativeDir, requiredFile))) {
+      steps.push(templateFailure("structure", `Expected apps/native/${requiredFile}`));
+      return wrapResult("react-native", comboName, projectDir, steps);
+    }
+  }
+
+  steps.push(await runStep("install", "bun", ["install"], projectDir));
+  if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
+
+  steps.push(
+    await runStep(
+      "typecheck",
+      "bunx",
+      ["tsc", "-p", "apps/native/tsconfig.json", "--noEmit"],
+      projectDir,
+    ),
+  );
+  if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
+
+  if (
+    hasPackageScript(nativeDir, "test") &&
+    (options?.config?.mobileTesting === "react-native-testing-library" ||
+      options?.config?.mobileTesting === "maestro-react-native-testing-library")
+  ) {
+    steps.push(await runStep("test", "bun", ["run", "test", "--runInBand"], nativeDir));
+  } else {
+    steps.push(skippedStep("test"));
+  }
+
+  steps.push(skippedStep("simulator"));
+
+  return wrapResult("react-native", comboName, projectDir, steps);
 }
 
 export async function verifyRust(comboName: string, projectDir: string): Promise<VerifyResult> {
@@ -428,6 +486,8 @@ export function getVerifier(
   switch (ecosystem) {
     case "typescript":
       return verifyTypeScript;
+    case "react-native":
+      return verifyReactNative;
     case "rust":
       return verifyRust;
     case "python":

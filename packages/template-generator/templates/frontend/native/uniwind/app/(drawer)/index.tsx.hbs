@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { Text, View } from "react-native";
 import { Container } from "@/components/container";
 {{#if (eq api "orpc")}}
@@ -27,7 +28,7 @@ import { api } from "@{{projectName}}/backend/convex/_generated/api";
 {{#unless (or (eq backend "none") (and (eq backend "convex") (eq auth "better-auth")))}}
 import { Ionicons } from "@expo/vector-icons";
 {{/unless}}
-import { Button, Chip, Divider, Spinner, Surface, useThemeColor } from "heroui-native";
+import { Button, Chip, Spinner, Surface, useThemeColor } from "heroui-native";
 
 export default function Home() {
 {{#if (eq api "orpc")}}
@@ -82,7 +83,7 @@ return (
       </Chip>
     </View>
 
-    <Divider className="mb-3" />
+    <View className="h-px bg-border mb-3" />
 
     <Surface variant="tertiary" className="p-3 rounded-md">
       <View className="flex-row items-center">
@@ -189,3 +190,4 @@ return (
 </Container>
 );
 }
+{{/if}}
