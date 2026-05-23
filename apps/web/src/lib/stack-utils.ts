@@ -166,6 +166,25 @@ const CATEGORY_ORDER = [
   ]),
 ] as Array<keyof typeof TECH_OPTIONS>;
 
+export function getCategoryOrderForEcosystem(
+  ecosystem: StackState["ecosystem"],
+): Array<keyof typeof TECH_OPTIONS> {
+  switch (ecosystem) {
+    case "react-native":
+      return REACT_NATIVE_CATEGORY_ORDER;
+    case "rust":
+      return RUST_CATEGORY_ORDER;
+    case "python":
+      return PYTHON_CATEGORY_ORDER;
+    case "go":
+      return GO_CATEGORY_ORDER;
+    case "java":
+      return JAVA_CATEGORY_ORDER;
+    case "typescript":
+      return TYPESCRIPT_CATEGORY_ORDER;
+  }
+}
+
 export function generateStackSummary(stack: StackState) {
   const selectedTechs = CATEGORY_ORDER.flatMap((category) => {
     const options = TECH_OPTIONS[category];

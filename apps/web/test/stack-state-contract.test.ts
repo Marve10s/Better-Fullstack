@@ -3,7 +3,13 @@ import { describe, expect, it } from "bun:test";
 
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
 import { NON_OPTION_STACK_KEYS, STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../src/lib/stack-contract";
+import { ECOSYSTEM_CATEGORIES } from "../src/lib/constant";
 import { normalizeStackStateSelections } from "../src/lib/stack-option-normalization";
+import {
+  getCategoryOrderForEcosystem,
+  REACT_NATIVE_CATEGORY_ORDER,
+  TYPESCRIPT_CATEGORY_ORDER,
+} from "../src/lib/stack-utils";
 import { stackUrlKeys } from "../src/lib/stack-url-keys";
 import {
   createStackSearchParams,
@@ -114,5 +120,16 @@ describe("StackState contract", () => {
     expect(normalized.rustLibraries).toEqual([]);
     expect(normalized.pythonAi).toEqual([]);
     expect(normalized.aiDocs).toEqual([]);
+  });
+
+  it("uses React Native categories when the React Native ecosystem is selected", () => {
+    expect(getCategoryOrderForEcosystem("react-native")).toBe(REACT_NATIVE_CATEGORY_ORDER);
+    expect(getCategoryOrderForEcosystem("react-native")).not.toBe(TYPESCRIPT_CATEGORY_ORDER);
+    expect(getCategoryOrderForEcosystem("react-native")).toContain("nativeFrontend");
+    expect(getCategoryOrderForEcosystem("react-native")).toContain("mobileNavigation");
+    expect(getCategoryOrderForEcosystem("react-native")).not.toContain("webFrontend");
+    expect(getCategoryOrderForEcosystem("react-native")).toEqual(
+      expect.arrayContaining(ECOSYSTEM_CATEGORIES["react-native"]),
+    );
   });
 });
