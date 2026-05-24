@@ -997,6 +997,8 @@ export const BetterTStackConfigSchema = z.object({
   aiDocs: z.array(AiDocsSchema),
 });
 
+export const BetterFullstackConfigSchema = BetterTStackConfigSchema;
+
 export const BetterTStackConfigFileSchema = z
   .object({
     $schema: z.string().optional().describe("JSON Schema reference for validation"),
@@ -1007,6 +1009,8 @@ export const BetterTStackConfigFileSchema = z
     title: "Better Fullstack Configuration",
     description: "Configuration file for Better Fullstack projects",
   });
+
+export const BetterFullstackConfigFileSchema = BetterTStackConfigFileSchema;
 
 export const InitResultSchema = z.object({
   success: z.boolean(),

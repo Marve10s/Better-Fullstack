@@ -23,6 +23,7 @@ import type {
   AddInputSchema,
   CLIInputSchema,
   ProjectConfigSchema,
+  BetterFullstackConfigSchema,
   BetterTStackConfigSchema,
   InitResultSchema,
   AstroIntegrationSchema,
@@ -221,6 +222,7 @@ export type CreateInput = z.infer<typeof CreateInputSchema>;
 export type AddInput = z.infer<typeof AddInputSchema>;
 export type CLIInput = z.infer<typeof CLIInputSchema>;
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
+export type BetterFullstackConfig = z.infer<typeof BetterFullstackConfigSchema>;
 export type BetterTStackConfig = z.infer<typeof BetterTStackConfigSchema>;
 export type InitResult = z.infer<typeof InitResultSchema>;
 

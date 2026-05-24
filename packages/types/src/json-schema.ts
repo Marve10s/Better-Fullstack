@@ -19,6 +19,7 @@ import {
   TemplateSchema,
   CreateInputSchema,
   ProjectConfigSchema,
+  BetterFullstackConfigSchema,
   BetterTStackConfigSchema,
   InitResultSchema,
   ElixirApiSchema,
@@ -119,6 +120,10 @@ export function getProjectConfigJsonSchema() {
 
 export function getBetterTStackConfigJsonSchema() {
   return z.toJSONSchema(BetterTStackConfigSchema);
+}
+
+export function getBetterFullstackConfigJsonSchema() {
+  return z.toJSONSchema(BetterFullstackConfigSchema);
 }
 
 export function getInitResultJsonSchema() {
@@ -251,6 +256,7 @@ export function getAllJsonSchemas() {
     elixirDeploy: getElixirDeployJsonSchema(),
     createInput: getCreateInputJsonSchema(),
     projectConfig: getProjectConfigJsonSchema(),
+    betterFullstackConfig: getBetterFullstackConfigJsonSchema(),
     betterTStackConfig: getBetterTStackConfigJsonSchema(),
     initResult: getInitResultJsonSchema(),
   };
