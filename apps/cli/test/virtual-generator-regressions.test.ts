@@ -1,6 +1,8 @@
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
+import { runWithContext } from "../src/utils/context";
+import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
 
 function readJsonFromTree(
   tree: NonNullable<Awaited<ReturnType<typeof createVirtual>>["tree"]>,
@@ -174,6 +176,45 @@ describe("Virtual Generator Regressions", () => {
     expect(readme).not.toContain("mix phx.server");
     expect(readTextFromTree(result.tree!, "lib/plain_elixir_web/router.ex")).toBeUndefined();
     expect(readTextFromTree(result.tree!, "test/support/conn_case.ex")).toBeUndefined();
+  });
+
+  it("allows CLI validation for generated plain Elixir worker projects", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          projectName: "plain-elixir",
+          ecosystem: "elixir",
+          elixirWebFramework: "none",
+          elixirOrm: "none",
+          elixirAuth: "none",
+          elixirApi: "none",
+          elixirRealtime: "none",
+          elixirJobs: "quantum",
+          elixirValidation: "none",
+          elixirHttp: "req",
+          elixirJson: "jason",
+          elixirEmail: "none",
+          elixirCaching: "cachex",
+          elixirObservability: "none",
+          elixirTesting: "ex_unit",
+          elixirQuality: "credo",
+          elixirDeploy: "mix-release",
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it("continues to reject Phoenix-only Elixir features without Phoenix", () => {
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({
+          projectName: "plain-elixir-auth",
+          ecosystem: "elixir",
+          elixirWebFramework: "none",
+          elixirAuth: "phx-gen-auth",
+        }),
+      ),
+    ).toThrow("Elixir auth scaffolds require Phoenix.");
   });
 
   it("keeps Phoenix LiveView demos self-contained without Ecto", async () => {

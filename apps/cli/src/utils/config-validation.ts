@@ -659,17 +659,6 @@ export function validateElixirConstraints(config: Partial<ProjectConfig>) {
   const hasPhoenix = config.elixirWebFramework !== "none";
   const hasEcto = config.elixirOrm !== "none";
 
-  if (!hasPhoenix) {
-    incompatibilityError({
-      message: "The generated Elixir scaffold currently targets Phoenix projects.",
-      provided: { "elixir-web-framework": config.elixirWebFramework ?? "none" },
-      suggestions: [
-        "Use --elixir-web-framework phoenix",
-        "Use --elixir-web-framework phoenix-live-view",
-      ],
-    });
-  }
-
   const unsupportedSelections = [
     {
       flag: "elixir-orm",
@@ -693,13 +682,6 @@ export function validateElixirConstraints(config: Partial<ProjectConfig>) {
       suggestions: ["Use --elixir-validation ecto-changesets", "Use --elixir-validation none"],
     },
     {
-      flag: "elixir-json",
-      value: config.elixirJson,
-      unsupported: ["none"],
-      message: "Phoenix JSON scaffolds require Jason.",
-      suggestions: ["Use --elixir-json jason"],
-    },
-    {
       flag: "elixir-caching",
       value: config.elixirCaching,
       unsupported: ["nebulex"],
@@ -716,7 +698,7 @@ export function validateElixirConstraints(config: Partial<ProjectConfig>) {
     {
       flag: "elixir-testing",
       value: config.elixirTesting,
-      unsupported: ["mox", "bypass", "wallaby", "none"],
+      unsupported: ["mox", "bypass", "wallaby"],
       message: "Generated Phoenix projects currently include ExUnit tests only.",
       suggestions: ["Use --elixir-testing ex_unit"],
     },
@@ -740,33 +722,48 @@ export function validateElixirConstraints(config: Partial<ProjectConfig>) {
   }
 
   if (!hasPhoenix) {
-    const hasPhoenixFeature = [
-      config.elixirOrm,
-      config.elixirAuth,
-      config.elixirApi,
-      config.elixirRealtime,
-      config.elixirJobs,
-      config.elixirValidation,
-      config.elixirHttp,
-      config.elixirJson,
-      config.elixirEmail,
-      config.elixirCaching,
-      config.elixirObservability,
-      config.elixirTesting,
-      config.elixirQuality,
-      config.elixirDeploy,
-    ].some((value) => value !== undefined && value !== "none");
+    const phoenixOnlySelections = [
+      {
+        flag: "elixir-auth",
+        value: config.elixirAuth,
+        message: "Elixir auth scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-api",
+        value: config.elixirApi,
+        message: "Elixir API scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-realtime",
+        value: config.elixirRealtime,
+        message: "Elixir realtime scaffolds require Phoenix.",
+      },
+    ];
 
-    if (hasPhoenixFeature) {
+    for (const selection of phoenixOnlySelections) {
+      if (!selection.value || selection.value === "none") continue;
+
       incompatibilityError({
-        message: "Elixir feature options require a Phoenix project.",
-        provided: { "elixir-web-framework": config.elixirWebFramework ?? "none" },
+        message: selection.message,
+        provided: {
+          "elixir-web-framework": config.elixirWebFramework ?? "none",
+          [selection.flag]: selection.value,
+        },
         suggestions: [
           "Use --elixir-web-framework phoenix",
           "Use --elixir-web-framework phoenix-live-view",
+          `Use --${selection.flag} none`,
         ],
       });
     }
+  }
+
+  if (hasPhoenix && config.elixirJson === "none") {
+    incompatibilityError({
+      message: "Phoenix JSON scaffolds require Jason.",
+      provided: { "elixir-json": "none" },
+      suggestions: ["Use --elixir-json jason"],
+    });
   }
 
   if (config.elixirAuth === "phx-gen-auth" && !hasEcto) {
