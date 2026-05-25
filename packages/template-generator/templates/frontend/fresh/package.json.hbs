@@ -11,12 +11,12 @@
     "check-types": "deno check --node-modules-dir=auto main.ts client.ts"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.9.0",
-    "@preact/signals": "^2.5.0",
-    "preact": "^10.27.2",
-    "vite": "^7.3.1"{{#if (eq cssFramework "tailwind")}},
+    "@opentelemetry/api": "^1.9.1",
+    "@preact/signals": "^2.9.1",
+    "preact": "^10.29.2",
+    "vite": "^8.0.14"{{#if (eq cssFramework "tailwind")}},
     "@tailwindcss/vite": "^4.1.12",
     "tailwindcss": "^4.1.12"{{#if (eq uiLibrary "daisyui")}},
-    "daisyui": "^5.5.19"{{/if}}{{/if}}
+    "daisyui": "^5.5.20"{{/if}}{{/if}}
   }
 }
