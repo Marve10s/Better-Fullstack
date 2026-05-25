@@ -319,7 +319,6 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
 // ─── Collapsible section config ──────────────────────────────────────────────
 
 const INITIALLY_COLLAPSED_SET = new Set([
-  "nativeFrontend",
   "payments",
   "email",
   "fileUpload",
@@ -386,6 +385,8 @@ const StackBuilder = () => {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const lastAppliedStackString = useRef<string>("");
+  const lastAppliedEcosystemRef = useRef<Ecosystem>(stack.ecosystem);
+  const suppressCompatibilityToastRef = useRef(false);
 
   const scrollToTop = () => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -426,12 +427,21 @@ const StackBuilder = () => {
   // ─── Side effects ──────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (stack.ecosystem !== lastAppliedEcosystemRef.current) {
+      suppressCompatibilityToastRef.current = true;
+    }
+  }, [stack.ecosystem]);
+
+  useEffect(() => {
     if (adjustedStack) {
       const adjustedStackString = JSON.stringify(adjustedStack);
 
       if (lastAppliedStackString.current !== adjustedStackString) {
         startTransition(() => {
-          if (compatibilityAnalysis.changes.length > 0) {
+          if (
+            !suppressCompatibilityToastRef.current &&
+            compatibilityAnalysis.changes.length > 0
+          ) {
             if (compatibilityAnalysis.changes.length === 1) {
               toast.info(compatibilityAnalysis.changes[0].message, { duration: 4000 });
             } else if (compatibilityAnalysis.changes.length > 1) {
@@ -439,11 +449,13 @@ const StackBuilder = () => {
               toast.info(message, { duration: 5000 });
             }
           }
+          suppressCompatibilityToastRef.current = false;
           setLastChanges(compatibilityAnalysis.changes);
           if (adjustedStack) {
             setStack(adjustedStack);
           }
           lastAppliedStackString.current = adjustedStackString;
+          lastAppliedEcosystemRef.current = adjustedStack.ecosystem;
         });
       }
     }

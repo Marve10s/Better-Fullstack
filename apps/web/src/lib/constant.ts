@@ -209,7 +209,7 @@ export const TECH_OPTIONS: Record<
   nativeFrontend: [
     {
       id: "native-bare",
-      name: "Expo + Bare",
+      name: "Expo + StyleSheet",
       description: "Expo with StyleSheet (no styling library)",
       icon: "https://cdn.simpleicons.org/expo",
       color: "from-blue-400 to-blue-600",

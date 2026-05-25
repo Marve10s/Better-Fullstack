@@ -1223,7 +1223,7 @@ export const analyzeStackCompatibility = (
       changed = true;
       changes.push({
         category: "nativeFrontend",
-        message: "Native frontend set to 'Expo + Bare' (React Native ecosystem)",
+        message: "Native frontend set to 'Expo + StyleSheet' (React Native ecosystem)",
       });
     }
   }
@@ -2473,7 +2473,7 @@ export const getDisabledReason = (
         ["tamagui", "gluestack-ui"].includes(optionId) &&
         currentStack.nativeFrontend.some((f) => ["native-uniwind", "native-unistyles"].includes(f))
       ) {
-        return "Tamagui and Gluestack UI require Expo + Bare to avoid conflicting styling setup";
+        return "Tamagui and Gluestack UI require Expo + StyleSheet to avoid conflicting styling setup";
       }
     }
 

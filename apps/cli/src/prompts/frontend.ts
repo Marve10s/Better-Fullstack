@@ -95,8 +95,8 @@ const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
 const NATIVE_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
   {
     value: "native-bare",
-    label: "Bare",
-    hint: "Bare Expo without styling library",
+    label: "StyleSheet",
+    hint: "Expo with StyleSheet (no styling library)",
   },
   {
     value: "native-uniwind",

@@ -32,6 +32,13 @@ export const changelogReleases: ChangelogRelease[] = [
       "Added React Native as a standalone Expo ecosystem with navigation, UI, storage, testing, push notifications, OTA updates, and deep-linking options.",
       "Expanded release safety with PostgreSQL-backed smoke lanes, BEAM setup, strict core/broad generated-app checks, Playwright builder tests, and package-manager coverage.",
     ],
+    image: {
+      src: "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract diagonal motion blur in pink, coral, and teal tones",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
   },
   {
     version: "v1.7.1",
