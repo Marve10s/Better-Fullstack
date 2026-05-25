@@ -429,7 +429,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     redwood: "RedwoodJS",
   },
   nativeFrontend: {
-    "native-bare": "Expo + Bare",
+    "native-bare": "Expo + StyleSheet",
     "native-uniwind": "Expo + Uniwind",
     "native-unistyles": "Expo + Unistyles",
   },
