@@ -69,14 +69,14 @@ describe("mobile native scaffolding", () => {
 
     expect(pkg.main).toBe("index.js");
     expect(pkg.dependencies).toMatchObject({
-      "@react-navigation/native-stack": "^7.8.1",
+      "@react-navigation/native-stack": "^7.15.1",
       "@gluestack-ui/themed": "^1.1.73",
-      "react-native-mmkv": "^4.1.0",
-      "expo-notifications": "^56.0.12",
-      "expo-updates": "^56.0.15",
+      "react-native-mmkv": "^4.3.1",
+      "expo-notifications": "^56.0.13",
+      "expo-updates": "^56.0.16",
     });
     expect(pkg.dependencies["expo-router"]).toBeUndefined();
-    expect(pkg.devDependencies["babel-preset-expo"]).toBe("^55.0.0");
+    expect(pkg.devDependencies["babel-preset-expo"]).toBe("^56.0.12");
     expect(pkg.scripts.test).toBe("jest");
 
     expect(appConfig.expo.plugins).not.toContain("expo-router");
@@ -109,7 +109,7 @@ describe("mobile native scaffolding", () => {
     const appConfig = JSON.parse(getFile(root, "apps/native/app.json"));
 
     expect(pkg.main).toBe("expo-router/entry");
-    expect(pkg.dependencies["expo-router"]).toBe("^55.0.14");
+    expect(pkg.dependencies["expo-router"]).toBe("^56.2.6");
     expect(appConfig.expo.plugins).toContain("expo-router");
   });
 
@@ -223,11 +223,14 @@ describe("mobile native scaffolding", () => {
     const root = result.tree!.root;
     const appConfig = JSON.parse(getFile(root, "apps/native/app.json"));
     const maestro = getFile(root, "apps/native/.maestro/home.yaml");
+    const tabLayout = getFile(root, "apps/native/app/(drawer)/(tabs)/_layout.tsx");
 
     expect(appConfig.expo.ios.bundleIdentifier).toBe("com.betterfullstack.mobile.maestro");
     expect(appConfig.expo.android.package).toBe("com.betterfullstack.mobile.maestro");
     expect(maestro).toContain("appId: com.betterfullstack.mobile.maestro");
     expect(maestro).toContain('assertVisible: "Better Fullstack"');
     expect(getFile(root, "apps/native/tsconfig.json")).toContain("uniwind-types.d.ts");
+    expect(tabLayout).toContain("tabBarIcon: ({ color, size }) =>");
+    expect(tabLayout).not.toContain("color: string");
   });
 });

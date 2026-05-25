@@ -481,14 +481,14 @@ describe("Frontend Configurations", () => {
           nodeModulesDir: "auto",
           workspace: ["./apps/web"],
         });
-        expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.2.0"');
+        expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.3.3"');
         expect(denoJson).toContain(
           '"build": "deno run --node-modules-dir=auto -A npm:vite build"',
         );
-        expect(denoJson).toContain('"preact/": "npm:preact@^10.27.2/"');
-        expect(denoJson).toContain('"preact/jsx-runtime": "npm:preact@^10.27.2/jsx-runtime"');
-        expect(denoJson).toContain('"preact/jsx-dev-runtime": "npm:preact@^10.27.2/jsx-dev-runtime"');
-        expect(denoJson).toContain('"@preact/signals/": "npm:@preact/signals@^2.5.0/"');
+        expect(denoJson).toContain('"preact/": "npm:preact@^10.29.2/"');
+        expect(denoJson).toContain('"preact/jsx-runtime": "npm:preact@^10.29.2/jsx-runtime"');
+        expect(denoJson).toContain('"preact/jsx-dev-runtime": "npm:preact@^10.29.2/jsx-dev-runtime"');
+        expect(denoJson).toContain('"@preact/signals/": "npm:@preact/signals@^2.9.1/"');
         expect(webPkg.scripts["check-types"]).toBe(
           "deno check --node-modules-dir=auto main.ts client.ts",
         );
