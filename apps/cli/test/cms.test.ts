@@ -23,6 +23,31 @@ describe("CMS Options", () => {
       expect(pkg).toContain('"@directus/sdk"');
       expect(env).toContain("VITE_DIRECTUS_URL");
     });
+
+    test("directus with Nuxt exposes runtime config", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "directus-nuxt",
+          frontend: ["nuxt"],
+          backend: "hono",
+          runtime: "bun",
+          api: "orpc",
+          cms: "directus",
+        }),
+      );
+
+      expectSuccess(result);
+      const client = await Bun.file(`${result.projectDir}/apps/web/src/directus/client.ts`).text();
+      const nuxtConfig = await Bun.file(`${result.projectDir}/apps/web/nuxt.config.ts`).text();
+      const env = await Bun.file(`${result.projectDir}/apps/web/.env`).text();
+
+      expect(client).toContain("config.public.directusUrl");
+      expect(client).toContain("config.directusStaticToken");
+      expect(nuxtConfig).toContain("directusStaticToken: process.env.DIRECTUS_STATIC_TOKEN");
+      expect(nuxtConfig).toContain("directusUrl: process.env.NUXT_PUBLIC_DIRECTUS_URL");
+      expect(env).toContain("NUXT_PUBLIC_DIRECTUS_URL");
+      expect(env).toContain("DIRECTUS_STATIC_TOKEN");
+    });
   });
 
   describe("Payload CMS with Next.js", () => {

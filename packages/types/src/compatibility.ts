@@ -3042,7 +3042,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   wxt: [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
-  swr: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro", "redwood"],
+  swr: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro", "redwood"],
   "tanstack-query": [
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",

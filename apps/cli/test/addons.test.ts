@@ -62,6 +62,29 @@ describe("Addon Configurations", () => {
         const pkg = readFileSync(join(result.projectDir!, "apps/web/package.json"), "utf-8");
         expect(pkg).toContain('"swr"');
       });
+
+      it("should work with SWR + Vinext frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "swr-vinext",
+          addons: ["swr"],
+          frontend: ["vinext"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const pkg = readFileSync(join(result.projectDir!, "apps/web/package.json"), "utf-8");
+        expect(pkg).toContain('"swr"');
+      });
     });
 
     describe("PWA Addon", () => {
