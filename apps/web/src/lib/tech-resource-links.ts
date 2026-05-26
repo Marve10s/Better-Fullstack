@@ -33,6 +33,7 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://tanstack.com/start/latest",
     githubUrl: "https://github.com/TanStack/router",
   },
+  swr: { docsUrl: "https://swr.vercel.app/", githubUrl: "https://github.com/vercel/swr" },
   next: { docsUrl: "https://nextjs.org/docs", githubUrl: "https://github.com/vercel/next.js" },
   vinext: { docsUrl: "https://vinext.io", githubUrl: "https://github.com/cloudflare/vinext" },
   nuxt: { docsUrl: "https://nuxt.com/docs", githubUrl: "https://github.com/nuxt/nuxt" },
@@ -445,6 +446,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/jqwik-team/jqwik",
   },
   pino: { docsUrl: "https://getpino.io/#/", githubUrl: "https://github.com/pinojs/pino" },
+  evlog: {
+    docsUrl: "https://github.com/hugorcd/evlog",
+    githubUrl: "https://github.com/hugorcd/evlog",
+  },
   winston: {
     docsUrl: "https://github.com/winstonjs/winston#readme",
     githubUrl: "https://github.com/winstonjs/winston",
@@ -614,6 +619,10 @@ const BASE_LINKS: LinkMap = {
   "shadcn-ui": {
     docsUrl: "https://ui.shadcn.com/docs",
     githubUrl: "https://github.com/shadcn-ui/ui",
+  },
+  "shadcn-svelte": {
+    docsUrl: "https://www.shadcn-svelte.com/",
+    githubUrl: "https://github.com/huntabyte/shadcn-svelte",
   },
   daisyui: {
     docsUrl: "https://daisyui.com/docs/",
@@ -800,6 +809,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://developers.cloudflare.com/r2/",
     githubUrl: "https://github.com/cloudflare/workers-sdk",
   },
+  cloudinary: {
+    docsUrl: "https://cloudinary.com/documentation/node_integration",
+    githubUrl: "https://github.com/cloudinary/cloudinary_npm",
+  },
   "framer-motion": {
     docsUrl: "https://motion.dev/docs",
     githubUrl: "https://github.com/motiondivision/motion",
@@ -843,6 +856,10 @@ const BASE_LINKS: LinkMap = {
   },
   strapi: { docsUrl: "https://docs.strapi.io/", githubUrl: "https://github.com/strapi/strapi" },
   tinacms: { docsUrl: "https://tina.io/docs", githubUrl: "https://github.com/tinacms/tinacms" },
+  directus: {
+    docsUrl: "https://directus.io/docs",
+    githubUrl: "https://github.com/directus/directus",
+  },
   axum: {
     docsUrl: "https://docs.rs/axum/latest/axum/",
     githubUrl: "https://github.com/tokio-rs/axum",

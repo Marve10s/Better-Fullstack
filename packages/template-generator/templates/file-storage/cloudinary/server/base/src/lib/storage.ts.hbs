@@ -1,0 +1,33 @@
+import { v2 as cloudinary, type UploadApiOptions, type UploadApiResponse } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+  secure: true,
+});
+
+export async function uploadFile(
+  file: string,
+  options: UploadApiOptions = {},
+): Promise<UploadApiResponse> {
+  return cloudinary.uploader.upload(file, options);
+}
+
+export async function deleteFile(publicId: string): Promise<void> {
+  await cloudinary.uploader.destroy(publicId);
+}
+
+export function getOptimizedUrl(
+  publicId: string,
+  options: Record<string, unknown> = {},
+): string {
+  return cloudinary.url(publicId, {
+    fetch_format: "auto",
+    quality: "auto",
+    secure: true,
+    ...options,
+  });
+}
+
+export { cloudinary };

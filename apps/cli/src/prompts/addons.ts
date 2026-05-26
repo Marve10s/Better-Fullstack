@@ -90,6 +90,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Storybook";
       hint = "Component development and testing workshop";
       break;
+    case "swr":
+      label = "SWR";
+      hint = "React Hooks for data fetching and caching";
+      break;
     case "tanstack-query":
       label = "TanStack Query";
       hint = "Powerful async state management & data fetching";
@@ -122,14 +126,25 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
   return { label, hint };
 }
 
-const ADDON_GROUPS = {
+const ADDON_GROUPS: Record<string, Addons[]> = {
   Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
   Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
   Integrations: ["msw", "storybook"],
   "AI Agents": ["mcp", "skills"],
+  "Data Fetching": ["swr"],
   TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
 };
+
+function createGroupedAddonOptions() {
+  return Object.fromEntries(
+    Object.keys(ADDON_GROUPS).map((group) => [group, [] as AddonOption[]]),
+  ) as Record<string, AddonOption[]>;
+}
+
+function getAddonGroup(addon: Addons) {
+  return Object.entries(ADDON_GROUPS).find(([, addons]) => addons.includes(addon))?.[0];
+}
 
 function validateAddonCompatibilityForPrompt(
   addon: Addons,
@@ -162,14 +177,7 @@ export async function getAddonsChoice(
   if (addons !== undefined) return addons;
 
   const allAddons = AddonsSchema.options.filter((addon) => addon !== "none");
-  const groupedOptions: Record<string, AddonOption[]> = {
-    Tooling: [],
-    Documentation: [],
-    Extensions: [],
-    Integrations: [],
-    "AI Agents": [],
-    TanStack: [],
-  };
+  const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
 
   const frontendsArray = frontends || [];
 
@@ -186,19 +194,8 @@ export async function getAddonsChoice(
     const { label, hint } = getAddonDisplay(addon);
     const option = { value: addon, label, hint };
 
-    if (ADDON_GROUPS.Tooling.includes(addon)) {
-      groupedOptions.Tooling.push(option);
-    } else if (ADDON_GROUPS.Documentation.includes(addon)) {
-      groupedOptions.Documentation.push(option);
-    } else if (ADDON_GROUPS.Extensions.includes(addon)) {
-      groupedOptions.Extensions.push(option);
-    } else if (ADDON_GROUPS.Integrations.includes(addon)) {
-      groupedOptions.Integrations.push(option);
-    } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
-      groupedOptions["AI Agents"].push(option);
-    } else if (ADDON_GROUPS.TanStack.includes(addon)) {
-      groupedOptions.TanStack.push(option);
-    }
+    const group = getAddonGroup(addon);
+    if (group) groupedOptions[group].push(option);
   }
 
   Object.keys(groupedOptions).forEach((group) => {
@@ -239,14 +236,7 @@ export async function getAddonsToAdd(
   backend?: Backend,
   runtime?: Runtime,
 ) {
-  const groupedOptions: Record<string, AddonOption[]> = {
-    Tooling: [],
-    Documentation: [],
-    Extensions: [],
-    Integrations: [],
-    "AI Agents": [],
-    TanStack: [],
-  };
+  const groupedOptions: Record<string, AddonOption[]> = createGroupedAddonOptions();
 
   const frontendArray = frontend || [];
 
@@ -263,19 +253,8 @@ export async function getAddonsToAdd(
     const { label, hint } = getAddonDisplay(addon);
     const option = { value: addon, label, hint };
 
-    if (ADDON_GROUPS.Tooling.includes(addon)) {
-      groupedOptions.Tooling.push(option);
-    } else if (ADDON_GROUPS.Documentation.includes(addon)) {
-      groupedOptions.Documentation.push(option);
-    } else if (ADDON_GROUPS.Extensions.includes(addon)) {
-      groupedOptions.Extensions.push(option);
-    } else if (ADDON_GROUPS.Integrations.includes(addon)) {
-      groupedOptions.Integrations.push(option);
-    } else if (ADDON_GROUPS["AI Agents"].includes(addon)) {
-      groupedOptions["AI Agents"].push(option);
-    } else if (ADDON_GROUPS.TanStack.includes(addon)) {
-      groupedOptions.TanStack.push(option);
-    }
+    const group = getAddonGroup(addon);
+    if (group) groupedOptions[group].push(option);
   }
 
   Object.keys(groupedOptions).forEach((group) => {

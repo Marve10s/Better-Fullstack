@@ -1301,7 +1301,7 @@ export const analyzeStackCompatibility = (
   }
 
   // UI libraries requiring Tailwind - auto-adjust CSS framework or clear UI library
-  const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(nextStack.uiLibrary);
+  const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(nextStack.uiLibrary);
   if (requiresTailwind && nextStack.cssFramework !== "tailwind") {
     // Auto-set Tailwind when selecting a Tailwind-dependent UI library
     nextStack.cssFramework = "tailwind";
@@ -1327,6 +1327,20 @@ export const analyzeStackCompatibility = (
         category: "uiLibrary",
         message:
           "UI library changed to 'daisyUI' (React-only library incompatible with this frontend)",
+      });
+    }
+  }
+
+  if (nextStack.uiLibrary === "shadcn-svelte") {
+    const hasSvelteFrontend = nextStack.webFrontend.includes("svelte");
+    const hasAstroSvelte =
+      nextStack.webFrontend.includes("astro") && nextStack.astroIntegration === "svelte";
+    if (!hasSvelteFrontend && !hasAstroSvelte && nextStack.webFrontend.some((f) => f !== "none")) {
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message: "UI library changed to 'daisyUI' (shadcn-svelte requires SvelteKit or Astro + Svelte)",
       });
     }
   }
@@ -2436,9 +2450,17 @@ export const getDisabledReason = (
       }
     }
     // Some UI libraries require Tailwind
-    const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(currentStack.uiLibrary);
+    const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(currentStack.uiLibrary);
     if (requiresTailwind && optionId !== "tailwind") {
-      return `${currentStack.uiLibrary === "shadcn-ui" ? "shadcn/ui" : currentStack.uiLibrary === "daisyui" ? "daisyUI" : "NextUI"} requires Tailwind CSS`;
+      const libraryName =
+        currentStack.uiLibrary === "shadcn-ui"
+          ? "shadcn/ui"
+          : currentStack.uiLibrary === "shadcn-svelte"
+            ? "shadcn-svelte"
+            : currentStack.uiLibrary === "daisyui"
+              ? "daisyUI"
+              : "NextUI";
+      return `${libraryName} requires Tailwind CSS`;
     }
   }
 
@@ -2523,6 +2545,16 @@ export const getDisabledReason = (
       }
     }
 
+    if (optionId === "shadcn-svelte") {
+      const hasSvelteFrontend = currentStack.webFrontend.includes("svelte");
+      const hasAstroSvelte =
+        currentStack.webFrontend.includes("astro") &&
+        currentStack.astroIntegration === "svelte";
+      if (!hasSvelteFrontend && !hasAstroSvelte) {
+        return "shadcn-svelte requires SvelteKit or Astro with Svelte integration";
+      }
+    }
+
     // Headless UI works with React and Vue
     if (optionId === "headless-ui") {
       const hasReactFrontend = currentStack.webFrontend.some((f) => reactFrontends.includes(f));
@@ -2555,10 +2587,16 @@ export const getDisabledReason = (
     }
 
     // UI libraries requiring Tailwind
-    if (["shadcn-ui", "daisyui", "nextui"].includes(optionId)) {
+    if (["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(optionId)) {
       if (currentStack.cssFramework !== "tailwind") {
         const libraryName =
-          optionId === "shadcn-ui" ? "shadcn/ui" : optionId === "daisyui" ? "daisyUI" : "NextUI";
+          optionId === "shadcn-ui"
+            ? "shadcn/ui"
+            : optionId === "shadcn-svelte"
+              ? "shadcn-svelte"
+              : optionId === "daisyui"
+                ? "daisyUI"
+                : "NextUI";
         return `${libraryName} requires Tailwind CSS`;
       }
     }
@@ -2865,6 +2903,10 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
     cssFrameworks: ["tailwind"],
   },
+  "shadcn-svelte": {
+    frontends: ["svelte", "astro"],
+    cssFrameworks: ["tailwind"],
+  },
   daisyui: {
     frontends: [
       "tanstack-router",
@@ -3000,6 +3042,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   wxt: [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  swr: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro", "redwood"],
   "tanstack-query": [
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",

@@ -1,5 +1,8 @@
 {{#if (eq cssFramework "tailwind")}}
 @import "tailwindcss";
+{{#if (eq uiLibrary "shadcn-svelte")}}
+@import "tw-animate-css";
+{{/if}}
 {{#if (eq uiLibrary "daisyui")}}
 @plugin "daisyui";
 {{/if}}

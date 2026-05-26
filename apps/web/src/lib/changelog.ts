@@ -19,10 +19,31 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v1.8.1",
+    publishedAt: "2026-05-26T18:05:00Z",
+    displayDate: "May 26, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v1.8.1`,
+    title: "Requested stack options",
+    summary:
+      "This release adds the requested TypeScript stack options across the CLI, web builder, compatibility rules, generated templates, and end-to-end scaffold coverage.",
+    highlights: [
+      "Added shadcn-svelte for SvelteKit UI, evlog logging, Directus CMS, Cloudinary file storage, and SWR data fetching as first-class stack choices.",
+      "Wired the new options through metadata, search, resource links, dependency generation, env output, template handlers, and CLI/web parity paths.",
+      "Expanded regression coverage for generated projects, including Directus, Cloudinary, evlog, SWR, shadcn-svelte, Nuxt runtime config, and Vinext compatibility.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract diagonal motion blur in pink, coral, and teal tones",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v1.8.0",
     publishedAt: "2026-05-24T13:38:37Z",
     displayDate: "May 24, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.8.0`,
     title: "Elixir and React Native ecosystems",
     summary:

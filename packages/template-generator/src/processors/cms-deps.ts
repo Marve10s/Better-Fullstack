@@ -55,6 +55,14 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     });
   }
 
+  if (cms === "directus") {
+    addPackageDependency({
+      vfs,
+      packagePath: webPath,
+      dependencies: ["@directus/sdk"],
+    });
+  }
+
   if (cms === "tinacms") {
     addPackageDependency({
       vfs,

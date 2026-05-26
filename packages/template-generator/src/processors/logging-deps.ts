@@ -48,4 +48,12 @@ export function processLoggingDeps(vfs: VirtualFileSystem, config: ProjectConfig
       dependencies: ["winston"],
     });
   }
+
+  if (logging === "evlog") {
+    addPackageDependency({
+      vfs,
+      packagePath: targetPath,
+      dependencies: ["evlog"],
+    });
+  }
 }
