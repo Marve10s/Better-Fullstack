@@ -50,12 +50,14 @@ defmodule {{elixirModuleName}}Web do
     end
   end
 
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
   defp html_helpers do
     quote do
       import Phoenix.HTML
       unquote(verified_routes())
     end
   end
+{{/if}}
 
   def verified_routes do
     quote do

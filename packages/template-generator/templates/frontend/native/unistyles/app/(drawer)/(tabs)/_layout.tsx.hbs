@@ -6,13 +6,15 @@ import { TabBarIcon } from "@/components/tabbar-icon";
 
 export default function TabLayout() {
   const { theme } = useUnistyles();
+  const tabBarActiveTintColor = String(theme.colors.primary);
+  const tabBarInactiveTintColor = String(theme.colors.mutedForeground);
 
   return (
     <Tabs
       screenOptions=\{{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.mutedForeground,
+        tabBarActiveTintColor,
+        tabBarInactiveTintColor,
         tabBarStyle: {
           backgroundColor: theme.colors.background,
           borderTopColor: theme.colors.border,
