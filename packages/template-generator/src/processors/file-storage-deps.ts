@@ -52,6 +52,9 @@ function getFileStorageDeps(fileStorage: ProjectConfig["fileStorage"]): Availabl
     case "r2":
       deps.push("@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner");
       break;
+    case "cloudinary":
+      deps.push("cloudinary");
+      break;
   }
 
   return deps;

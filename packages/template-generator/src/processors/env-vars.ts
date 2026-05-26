@@ -1160,8 +1160,8 @@ function buildServerVars(
     {
       key: "LOG_LEVEL",
       value: "info",
-      condition: logging === "pino",
-      comment: "Pino log level - trace, debug, info, warn, error, or fatal",
+      condition: logging === "pino" || logging === "winston" || logging === "evlog",
+      comment: "Log level - trace, debug, info, warn, error, or fatal",
     },
     {
       key: "OTEL_SERVICE_NAME",
@@ -1487,6 +1487,24 @@ function buildServerVars(
       condition: fileStorage === "r2",
       comment: "R2 bucket name for file storage",
     },
+    {
+      key: "CLOUDINARY_CLOUD_NAME",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary cloud name",
+    },
+    {
+      key: "CLOUDINARY_API_KEY",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary API key",
+    },
+    {
+      key: "CLOUDINARY_API_SECRET",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary API secret",
+    },
   ];
 }
 
@@ -1617,6 +1635,23 @@ function buildCMSVars(
         value: "",
         condition: true,
         comment: "TinaCMS read-only token - get from tina.io (optional for local dev)",
+      },
+    );
+  }
+
+  if (cms === "directus") {
+    vars.push(
+      {
+        key: `${prefix}DIRECTUS_URL`,
+        value: "http://localhost:8055",
+        condition: true,
+        comment: "Directus instance URL",
+      },
+      {
+        key: "DIRECTUS_STATIC_TOKEN",
+        value: "",
+        condition: true,
+        comment: "Directus static token for authenticated server-side requests (optional)",
       },
     );
   }

@@ -286,6 +286,7 @@ const APP_PLATFORM_VALUES = [
   "skills",
   "msw",
   "storybook",
+  "swr",
   "tanstack-query",
   "tanstack-table",
   "tanstack-virtual",
@@ -460,7 +461,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
   serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
-  cms: { tinacms: "TinaCMS" },
+  cms: { tinacms: "TinaCMS", directus: "Directus" },
   auth: {},
   payments: {
     "lemon-squeezy": "Lemon Squeezy",
@@ -520,9 +521,18 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     elasticsearch: "Elasticsearch",
     algolia: "Algolia",
   },
+  fileStorage: {
+    s3: "AWS S3",
+    r2: "Cloudflare R2",
+    cloudinary: "Cloudinary",
+  },
+  logging: {
+    evlog: "evlog",
+  },
   cssFramework: { tailwind: "Tailwind CSS", scss: "SCSS", "postcss-only": "PostCSS Only" },
   uiLibrary: {
     "shadcn-ui": "shadcn/ui",
+    "shadcn-svelte": "shadcn-svelte",
     daisyui: "daisyUI",
     "radix-ui": "Radix UI",
     "headless-ui": "Headless UI",
@@ -591,6 +601,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     opentui: "OpenTUI",
     mcp: "MCP",
     msw: "MSW",
+    swr: "SWR",
     "tanstack-query": "TanStack Query",
     "tanstack-table": "TanStack Table",
     "tanstack-virtual": "TanStack Virtual",

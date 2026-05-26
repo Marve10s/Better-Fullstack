@@ -184,6 +184,100 @@ const CASES: RoundtripCase[] = [
       expect(config.frontend).toEqual(["next"]);
     },
   },
+  {
+    name: "requested-typescript-options",
+    stack: {
+      ...DEFAULT_STACK,
+      projectName: "roundtrip-requested-options",
+      webFrontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      auth: "none",
+      uiLibrary: "none",
+      forms: "none",
+      logging: "evlog",
+      cms: "directus",
+      fileStorage: "cloudinary",
+      appPlatforms: ["swr"],
+      aiDocs: [],
+      git: "false",
+      install: "false",
+    },
+    assertConfig: (config) => {
+      expect(config.frontend).toEqual(["tanstack-router"]);
+      expect(config.logging).toBe("evlog");
+      expect(config.cms).toBe("directus");
+      expect(config.fileStorage).toBe("cloudinary");
+      expect(config.addons).toEqual(["swr"]);
+    },
+    assertMarkers: (projectDir) => {
+      const serverPackageJson = JSON.parse(
+        readFileSync(join(projectDir, "apps", "server", "package.json"), "utf8"),
+      ) as {
+        dependencies: Record<string, string>;
+      };
+      const webPackageJson = JSON.parse(
+        readFileSync(join(projectDir, "apps", "web", "package.json"), "utf8"),
+      ) as {
+        dependencies: Record<string, string>;
+      };
+      const serverEnv = readFileSync(join(projectDir, "apps", "server", ".env"), "utf8");
+      const webEnv = readFileSync(join(projectDir, "apps", "web", ".env"), "utf8");
+
+      expect(serverPackageJson.dependencies.evlog).toBeDefined();
+      expect(serverPackageJson.dependencies.cloudinary).toBeDefined();
+      expect(webPackageJson.dependencies["@directus/sdk"]).toBeDefined();
+      expect(webPackageJson.dependencies.swr).toBeDefined();
+      expect(existsSync(join(projectDir, "apps", "server", "src", "lib", "logger.ts"))).toBe(true);
+      expect(existsSync(join(projectDir, "apps", "server", "src", "lib", "storage.ts"))).toBe(true);
+      expect(existsSync(join(projectDir, "apps", "web", "src", "directus", "client.ts"))).toBe(true);
+      expect(webEnv).toContain("VITE_DIRECTUS_URL");
+      expect(serverEnv).toContain("CLOUDINARY_CLOUD_NAME");
+    },
+  },
+  {
+    name: "svelte-shadcn-svelte",
+    stack: {
+      ...DEFAULT_STACK,
+      projectName: "roundtrip-shadcn-svelte",
+      webFrontend: ["svelte"],
+      backend: "hono",
+      runtime: "bun",
+      auth: "none",
+      api: "orpc",
+      uiLibrary: "shadcn-svelte",
+      forms: "none",
+      appPlatforms: [],
+      aiDocs: [],
+      git: "false",
+      install: "false",
+    },
+    assertConfig: (config) => {
+      expect(config.frontend).toEqual(["svelte"]);
+      expect(config.uiLibrary).toBe("shadcn-svelte");
+      expect(config.cssFramework).toBe("tailwind");
+    },
+    assertMarkers: (projectDir) => {
+      const webPackageJson = JSON.parse(
+        readFileSync(join(projectDir, "apps", "web", "package.json"), "utf8"),
+      ) as {
+        dependencies: Record<string, string>;
+        devDependencies: Record<string, string>;
+      };
+      const componentsJson = readFileSync(join(projectDir, "apps", "web", "components.json"), "utf8");
+      const appCss = readFileSync(join(projectDir, "apps", "web", "src", "app.css"), "utf8");
+      const utils = readFileSync(join(projectDir, "apps", "web", "src", "lib", "utils.ts"), "utf8");
+
+      expect(webPackageJson.dependencies["bits-ui"]).toBeDefined();
+      expect(webPackageJson.dependencies["lucide-svelte"]).toBeDefined();
+      expect(webPackageJson.dependencies.clsx).toBeDefined();
+      expect(webPackageJson.dependencies["tailwind-merge"]).toBeDefined();
+      expect(webPackageJson.dependencies["shadcn-svelte"]).toBeDefined();
+      expect(componentsJson).toContain("\"aliases\"");
+      expect(appCss).toContain("@import \"tw-animate-css\"");
+      expect(utils).toContain("export function cn");
+    },
+  },
 ];
 
 describe("Web command roundtrip", () => {

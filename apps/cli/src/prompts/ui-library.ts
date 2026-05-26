@@ -11,6 +11,10 @@ const UI_LIBRARY_OPTIONS: Record<UILibrary, { label: string; hint: string }> = {
     label: "shadcn/ui",
     hint: "Beautifully designed components built with Radix UI and Tailwind CSS",
   },
+  "shadcn-svelte": {
+    label: "shadcn-svelte",
+    hint: "Svelte component collection styled with Tailwind CSS",
+  },
   daisyui: {
     label: "daisyUI",
     hint: "Tailwind CSS component library with semantic class names",

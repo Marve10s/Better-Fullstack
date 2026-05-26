@@ -100,6 +100,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Web Frontend ──────────────────────────────────────────────────────────
   "tanstack-router": { type: "local", src: "/icon/tanstack.png" },
   "tanstack-start": { type: "local", src: "/icon/tanstack.png" },
+  "tanstack-query": { type: "local", src: "/icon/tanstack.png" },
+  swr: { type: "si", slug: "vercel", hex: "000000" },
   "react-router": { type: "local", src: "/icon/react-router.svg" },
   next: { type: "si", slug: "nextdotjs", hex: "000000" },
   vinext: { type: "si", slug: "nextdotjs", hex: "000000" },
@@ -239,6 +241,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── UI Library ────────────────────────────────────────────────────────────
   "shadcn-ui": { type: "si", slug: "shadcnui", hex: "000000" },
+  "shadcn-svelte": { type: "si", slug: "shadcnui", hex: "000000" },
   daisyui: { type: "si", slug: "daisyui", hex: "1AD1A5" },
   "radix-ui": { type: "si", slug: "radixui", hex: "161618" },
   "headless-ui": { type: "si", slug: "headlessui", hex: "66E3FF" },
@@ -248,6 +251,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mui: { type: "si", slug: "mui", hex: "007FFF" },
   antd: { type: "si", slug: "antdesign", hex: "0170FE" },
   "base-ui": { type: "local", src: "/icon/base-ui.svg", needsInvert: "dark" },
+  evlog: { type: "si", slug: "typescript", hex: "3178C6" },
 
   // ─── shadcn Base Libraries ───────────────────────────────────────────────────
   radix: { type: "si", slug: "radixui", hex: "161618" },
@@ -333,6 +337,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },
   r2: { type: "si", slug: "cloudflare", hex: "F38020" },
+  cloudinary: { type: "si", slug: "cloudinary", hex: "3448C5" },
 
   // ─── Animation ─────────────────────────────────────────────────────────────
   "framer-motion": { type: "si", slug: "framer", hex: "0055FF" },
@@ -352,6 +357,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   sanity: { type: "si", slug: "sanity", hex: "F03E2F" },
   strapi: { type: "si", slug: "strapi", hex: "4945FF" },
   tinacms: { type: "local", src: "/icon/tinacms.svg" },
+  directus: { type: "si", slug: "directus", hex: "263238" },
 
   // ─── Rust ──────────────────────────────────────────────────────────────────
   axum: { type: "local", src: "/icon/axum.svg" },

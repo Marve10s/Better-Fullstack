@@ -3,6 +3,28 @@ import { describe, expect, test } from "bun:test";
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("CMS Options", () => {
+  describe("Directus CMS", () => {
+    test("directus with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "directus-tanstack",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          cms: "directus",
+        }),
+      );
+
+      expectSuccess(result);
+      const client = await Bun.file(`${result.projectDir}/apps/web/src/directus/client.ts`).text();
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const env = await Bun.file(`${result.projectDir}/apps/web/.env`).text();
+
+      expect(client).toContain("@directus/sdk");
+      expect(pkg).toContain('"@directus/sdk"');
+      expect(env).toContain("VITE_DIRECTUS_URL");
+    });
+  });
+
   describe("Payload CMS with Next.js", () => {
     test("payload with Next.js and SQLite", async () => {
       const result = await runTRPCTest(

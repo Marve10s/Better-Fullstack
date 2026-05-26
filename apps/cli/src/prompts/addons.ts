@@ -90,6 +90,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Storybook";
       hint = "Component development and testing workshop";
       break;
+    case "swr":
+      label = "SWR";
+      hint = "React Hooks for data fetching and caching";
+      break;
     case "tanstack-query":
       label = "TanStack Query";
       hint = "Powerful async state management & data fetching";
@@ -128,6 +132,7 @@ const ADDON_GROUPS = {
   Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
   Integrations: ["msw", "storybook"],
   "AI Agents": ["mcp", "skills"],
+  "Data Fetching": ["swr"],
   TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
 };
 

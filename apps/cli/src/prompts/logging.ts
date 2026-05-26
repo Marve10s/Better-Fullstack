@@ -16,6 +16,11 @@ const LOGGING_PROMPT_OPTIONS = [
     hint: "Flexible logging library with multiple transports",
   },
   {
+    value: "evlog" as const,
+    label: "evlog",
+    hint: "Typed event-based logging for TypeScript",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip logging framework setup",

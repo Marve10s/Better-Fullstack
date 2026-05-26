@@ -440,6 +440,9 @@ export const dependencyVersionMap = {
   "react-aria-components": "^1.17.0",
 
   daisyui: "^5.5.19",
+  "shadcn-svelte": "^1.2.7",
+  "bits-ui": "^2.18.1",
+  "lucide-svelte": "^0.545.0",
 
   // Qwik
   "@builder.io/qwik": "^1.19.2",
@@ -639,6 +642,7 @@ export const dependencyVersionMap = {
   "pino-pretty": "^13.1.3",
   "pino-http": "^11.0.0",
   winston: "^3.19.0",
+  evlog: "^2.18.1",
 
   // OpenTelemetry
   "@opentelemetry/api": "^1.9.1",
@@ -678,9 +682,18 @@ export const dependencyVersionMap = {
   "@strapi/client": "^1.6.1",
   qs: "^6.15.2",
 
+  // Headless CMS - Directus
+  "@directus/sdk": "^21.3.0",
+
   // Headless CMS - TinaCMS
   tinacms: "^3.8.1",
   "@tinacms/cli": "^2.3.1",
+
+  // File Storage - Cloudinary
+  cloudinary: "^2.10.0",
+
+  // React data fetching
+  swr: "^2.4.1",
 
   // Caching - Upstash Redis
   "@upstash/redis": "^1.38.0",

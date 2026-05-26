@@ -39,6 +39,31 @@ describe("Addon Configurations", () => {
   });
 
   describe("Frontend-Specific Addons", () => {
+    describe("SWR Addon", () => {
+      it("should work with SWR + React frontend", async () => {
+        const result = await runTRPCTest({
+          projectName: "swr-react",
+          addons: ["swr"],
+          frontend: ["react-vite"],
+          backend: "hono",
+          runtime: "bun",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const pkg = readFileSync(join(result.projectDir!, "apps/web/package.json"), "utf-8");
+        expect(pkg).toContain('"swr"');
+      });
+    });
+
     describe("PWA Addon", () => {
       const pwaCompatibleFrontends = ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext"];
 

@@ -1,0 +1,9 @@
+import { PUBLIC_DIRECTUS_URL } from "$env/static/public";
+import { createDirectus, readItems, rest } from "@directus/sdk";
+
+export const directus = createDirectus(PUBLIC_DIRECTUS_URL || "http://localhost:8055")
+  .with(rest());
+
+export async function getDirectusItems(collection: string) {
+  return directus.request(readItems(collection));
+}

@@ -81,6 +81,7 @@ export const ADDON_COMPATIBILITY = {
   "docker-compose": [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "vinext", "nuxt", "svelte", "solid"],
+  swr: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro", "redwood"],
   "tanstack-query": [
     "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext",
     "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
@@ -117,6 +118,10 @@ export const UI_LIBRARY_COMPATIBILITY: Record<
 > = {
   "shadcn-ui": {
     frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    cssFrameworks: ["tailwind"],
+  },
+  "shadcn-svelte": {
+    frontends: ["svelte", "astro"],
     cssFrameworks: ["tailwind"],
   },
   daisyui: {

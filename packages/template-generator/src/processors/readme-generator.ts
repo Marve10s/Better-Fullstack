@@ -862,6 +862,7 @@ function generateFeaturesList(
 
     const uiNames: Record<string, string> = {
       "shadcn-ui": "shadcn/ui",
+      "shadcn-svelte": "shadcn-svelte",
       daisyui: "daisyUI",
       mantine: "Mantine",
       "radix-ui": "Radix UI",
@@ -945,6 +946,7 @@ function generateFeaturesList(
     turborepo: "- **Turborepo** - Optimized monorepo build system",
     msw: "- **MSW** - Mock Service Worker for API mocking",
     storybook: "- **Storybook** - Component development and testing",
+    swr: "- **SWR** - React Hooks for data fetching and caching",
     "tanstack-query": "- **TanStack Query** - Async state management & data fetching",
     "tanstack-table": "- **TanStack Table** - Headless table with sorting, filtering & pagination",
     "tanstack-virtual": "- **TanStack Virtual** - Virtualized lists & grids for 60fps performance",
