@@ -25,6 +25,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     email: "none",
     fileUpload: "none",
     logging: "none",
+    backendUtils: "none",
     observability: "none",
     featureFlags: "none",
     analytics: "none",

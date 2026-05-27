@@ -41,6 +41,7 @@ import type {
   AnimationSchema,
   FileUploadSchema,
   LoggingSchema,
+  BackendUtilsSchema,
   ObservabilitySchema,
   FeatureFlagsSchema,
   AnalyticsSchema,
@@ -147,6 +148,7 @@ export type JobQueue = z.infer<typeof JobQueueSchema>;
 export type Animation = z.infer<typeof AnimationSchema>;
 export type FileUpload = z.infer<typeof FileUploadSchema>;
 export type Logging = z.infer<typeof LoggingSchema>;
+export type BackendUtils = z.infer<typeof BackendUtilsSchema>;
 export type Observability = z.infer<typeof ObservabilitySchema>;
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;

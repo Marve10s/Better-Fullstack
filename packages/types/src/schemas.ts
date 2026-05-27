@@ -263,6 +263,11 @@ export const LoggingSchema = z
   .enum(["pino", "winston", "evlog", "none"])
   .describe("Server-side logging framework");
 
+export const BackendUtilsSchema = z
+  .enum(["backend-utils", "none"])
+  .describe("Backend utility scaffolding (asyncHandler, ApiResponse, error middleware)");
+
+
 export const ObservabilitySchema = z
   .enum(["opentelemetry", "sentry", "grafana", "none"])
   .describe("Observability and distributed tracing");
@@ -691,6 +696,7 @@ export const CreateInputSchema = z.object({
   animation: AnimationSchema.optional(),
   fileUpload: FileUploadSchema.optional(),
   logging: LoggingSchema.optional(),
+  backendUtils: BackendUtilsSchema.optional(),
   observability: ObservabilitySchema.optional(),
   featureFlags: FeatureFlagsSchema.optional(),
   analytics: AnalyticsSchema.optional(),
@@ -818,6 +824,7 @@ export const ProjectConfigSchema = z.object({
   animation: AnimationSchema,
   fileUpload: FileUploadSchema,
   logging: LoggingSchema,
+  backendUtils: BackendUtilsSchema,
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
   analytics: AnalyticsSchema,
@@ -929,6 +936,7 @@ export const BetterTStackConfigSchema = z.object({
   animation: AnimationSchema,
   fileUpload: FileUploadSchema,
   logging: LoggingSchema,
+  backendUtils: BackendUtilsSchema.optional(),
   observability: ObservabilitySchema,
   featureFlags: FeatureFlagsSchema,
   analytics: AnalyticsSchema,
@@ -1057,6 +1065,7 @@ export const JOB_QUEUE_VALUES = JobQueueSchema.options;
 export const ANIMATION_VALUES = AnimationSchema.options;
 export const FILE_UPLOAD_VALUES = FileUploadSchema.options;
 export const LOGGING_VALUES = LoggingSchema.options;
+export const BACKEND_UTILS_VALUES = BackendUtilsSchema.options;
 export const OBSERVABILITY_VALUES = ObservabilitySchema.options;
 export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;

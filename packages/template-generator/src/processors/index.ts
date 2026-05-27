@@ -29,6 +29,7 @@ import { processFormsDeps } from "./forms-deps";
 import { processInfraDeps } from "./infra-deps";
 import { processJobQueueDeps } from "./job-queue-deps";
 import { processLoggingDeps } from "./logging-deps";
+import { processBackendUtilsDeps } from "./backend-utils-deps";
 import { processObservabilityDeps } from "./observability-deps";
 import { processPaymentsDeps } from "./payments-deps";
 import { processPwaPlugins } from "./pwa-plugins";
@@ -67,6 +68,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processAnimationDeps(vfs, config);
   processTestingDeps(vfs, config);
   processLoggingDeps(vfs, config);
+  processBackendUtilsDeps(vfs, config);
   processObservabilityDeps(vfs, config);
   processFeatureFlagsDeps(vfs, config);
   processAnalyticsDeps(vfs, config);
@@ -104,6 +106,7 @@ export {
   processInfraDeps,
   processJobQueueDeps,
   processLoggingDeps,
+  processBackendUtilsDeps,
   processObservabilityDeps,
   processFeatureFlagsDeps,
   processPaymentsDeps,

@@ -34,6 +34,7 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "email",
   "fileUpload",
   "logging",
+  "backendUtils",
   "observability",
   "featureFlags",
   "analytics",

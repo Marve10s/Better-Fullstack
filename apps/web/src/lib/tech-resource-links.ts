@@ -450,6 +450,9 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://github.com/hugorcd/evlog",
     githubUrl: "https://github.com/hugorcd/evlog",
   },
+  "backend-utils": {
+    docsUrl: "https://expressjs.com/en/guide/error-handling.html",
+  },
   winston: {
     docsUrl: "https://github.com/winstonjs/winston#readme",
     githubUrl: "https://github.com/winstonjs/winston",

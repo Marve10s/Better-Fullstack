@@ -1,0 +1,182 @@
+{{#if (eq backend "hono")}}
+import type { Context } from "hono";
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Hono global error handler middleware
+ */
+export const errorHandler = (err: Error, c: Context) => {
+  console.error("Global Error:", err);
+
+  const error = err as { status?: number; statusCode?: number; errors?: unknown };
+  const statusCode = error.status || error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = err.message || "Internal Server Error";
+
+  return c.json(
+    ApiResponse.error(message, statusCode, error.errors || null),
+    statusCode as Parameters<Context["json"]>[1]
+  );
+};
+{{else if (eq backend "express")}}
+import type { Request, Response, NextFunction } from "express";
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Express global error handling middleware
+ */
+export const errorHandler = (
+  err: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.error("Global Error:", err);
+
+  const error = err as { status?: number; statusCode?: number; errors?: unknown; message?: string };
+  const statusCode = error.status || error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = error.message || "Internal Server Error";
+
+  res.status(statusCode).json(
+    ApiResponse.error(message, statusCode, error.errors || null)
+  );
+};
+{{else if (eq backend "fastify")}}
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Fastify global error handler hook
+ */
+export const errorHandler = (
+  error: unknown,
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  request.log.error(error);
+
+  const err = error as { statusCode?: number; status?: number; errors?: unknown; validation?: unknown; message?: string };
+  const statusCode = err.statusCode || err.status || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = err.message || "Internal Server Error";
+
+  reply.status(statusCode).send(
+    ApiResponse.error(message, statusCode, err.validation || err.errors || null)
+  );
+};
+{{else if (eq backend "elysia")}}
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Elysia error lifecycle handler
+ */
+export const errorHandler = ({ error, code, set }: { error: Error & { errors?: unknown }; code: string; set: { status?: number } }) => {
+  console.error("Global Error:", error);
+
+  let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+  if (code === "NOT_FOUND") statusCode = HttpStatus.NOT_FOUND;
+  if (code === "VALIDATION") statusCode = HttpStatus.BAD_REQUEST;
+
+  set.status = statusCode;
+  return ApiResponse.error(
+    error.message || "Internal Server Error",
+    statusCode,
+    error.errors || null
+  );
+};
+{{else if (eq backend "nestjs")}}
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus as NestHttpStatus,
+} from "@nestjs/common";
+import type { Response } from "express";
+import { ApiResponse } from "./api-response";
+
+/**
+ * NestJS global exception filter
+ */
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : NestHttpStatus.INTERNAL_SERVER_ERROR;
+
+    const message =
+      exception instanceof HttpException
+        ? exception.message
+        : "Internal Server Error";
+
+    const error = exception as { response?: unknown };
+
+    response.status(status).json(
+      ApiResponse.error(message, status, error.response || null)
+    );
+  }
+}
+{{else if (eq backend "fets")}}
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * feTS global error formatting helper
+ */
+export const errorHandler = (err: unknown) => {
+  console.error("Global Error:", err);
+  
+  const error = err as { status?: number; statusCode?: number; errors?: unknown; message?: string };
+  const statusCode = error.status || error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = error.message || "Internal Server Error";
+  
+  return Response.json(
+    ApiResponse.error(message, statusCode, error.errors || null),
+    { status: statusCode }
+  );
+};
+{{else if (eq backend "self")}}
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Fullstack API routes global error response helper
+ */
+export const errorHandler = (err: unknown) => {
+  console.error("Global Error:", err);
+
+  const error = err as { status?: number; statusCode?: number; errors?: unknown; message?: string };
+  const statusCode = error.status || error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = error.message || "Internal Server Error";
+
+  return new Response(
+    JSON.stringify(ApiResponse.error(message, statusCode, error.errors || null)),
+    {
+      status: statusCode,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+};
+{{else}}
+import { ApiResponse, HttpStatus } from "./api-response";
+
+/**
+ * Default global error response helper
+ */
+export const errorHandler = (err: unknown) => {
+  console.error("Global Error:", err);
+
+  const error = err as { status?: number; statusCode?: number; errors?: unknown; message?: string };
+  const statusCode = error.status || error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message = error.message || "Internal Server Error";
+
+  return new Response(
+    JSON.stringify(ApiResponse.error(message, statusCode, error.errors || null)),
+    {
+      status: statusCode,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+};
+{{/if}}

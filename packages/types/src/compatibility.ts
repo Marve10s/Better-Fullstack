@@ -33,6 +33,7 @@ export type CompatibilityCategory =
   | "email"
   | "fileUpload"
   | "logging"
+  | "backendUtils"
   | "observability"
   | "backendLibraries"
   | "stateManagement"
@@ -146,6 +147,7 @@ export type CompatibilityInput = {
   email: string;
   fileUpload: string;
   logging: string;
+  backendUtils: string;
   observability: string;
   featureFlags: string;
   analytics: string;
@@ -260,6 +262,7 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "email",
   "fileUpload",
   "logging",
+  "backendUtils",
   "observability",
   "featureFlags",
   "analytics",
@@ -499,6 +502,7 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     mobilePush: "Mobile Push",
     mobileOTA: "Mobile OTA",
     mobileDeepLinking: "Mobile Deep Linking",
+    backendUtils: "Backend Utils",
   };
 
   if (tsCategoryNames[categoryKey]) {
@@ -651,6 +655,19 @@ export const analyzeStackCompatibility = (
       nextStack.examples = ["none"];
       changed = true;
       changes.push({ category: "backend", message: "Examples cleared (no backend)" });
+    }
+  }
+
+  // Backend Utils Constraints
+  if (nextStack.backendUtils === "backend-utils") {
+    const incompatibleBackends = ["none", "convex", "adonisjs", "nitro", "encore"];
+    if (incompatibleBackends.includes(nextStack.backend)) {
+      nextStack.backendUtils = "none";
+      changed = true;
+      changes.push({
+        category: "backendUtils",
+        message: "Backend utilities set to 'None' (not supported by this backend framework)",
+      });
     }
   }
 
@@ -1766,6 +1783,17 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (category === "backendUtils" && optionId === "backend-utils") {
+    if (currentStack.backend === "none") {
+      return "Requires a backend framework";
+    }
+    if (currentStack.backend === "convex") {
+      return "Convex handles its own data access and utilities";
+    }
+    if (["adonisjs", "nitro", "encore"].includes(currentStack.backend)) {
+      return `${getCategoryDisplayName("backend")} has built-in global error handling and utilities`;
+    }
+  }
   // ============================================
   // CONVEX BACKEND - locks down many options
   // ============================================

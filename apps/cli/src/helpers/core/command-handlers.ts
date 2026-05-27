@@ -202,6 +202,7 @@ export async function createProjectHandler(
               jobQueue: "none",
               animation: "none",
               logging: "none",
+              backendUtils: "none",
               observability: "none",
               rustWebFramework: "none",
               rustFrontend: "none",

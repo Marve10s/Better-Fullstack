@@ -1095,6 +1095,24 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  backendUtils: [
+    {
+      id: "backend-utils",
+      name: "Backend Utils",
+      description: "Scaffold production server utilities (asyncHandler, ApiResponse, error middleware)",
+      icon: "",
+      color: "from-purple-500 to-indigo-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "None",
+      description: "Skip scaffolding backend utility files",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   observability: [
     {
       id: "opentelemetry",
@@ -4290,6 +4308,7 @@ export const ECOSYSTEM_CATEGORIES: Record<Ecosystem, TechCategory[]> = {
     "email",
     "fileUpload",
     "logging",
+    "backendUtils",
     "observability",
     "featureFlags",
     "caching",

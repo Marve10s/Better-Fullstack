@@ -55,6 +55,7 @@ import {
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  BACKEND_UTILS_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PACKAGE_MANAGER_VALUES,
@@ -114,6 +115,7 @@ export type OptionCategory =
   | "email"
   | "fileUpload"
   | "logging"
+  | "backendUtils"
   | "observability"
   | "backendLibraries"
   | "stateManagement"
@@ -329,6 +331,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   email: EMAIL_VALUES,
   fileUpload: FILE_UPLOAD_VALUES,
   logging: LOGGING_VALUES,
+  backendUtils: BACKEND_UTILS_VALUES,
   observability: OBSERVABILITY_VALUES,
   backendLibraries: EFFECT_VALUES,
   stateManagement: STATE_MANAGEMENT_VALUES,
@@ -1024,6 +1027,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   email: buildCategoryMetadata("email"),
   fileUpload: buildCategoryMetadata("fileUpload"),
   logging: buildCategoryMetadata("logging"),
+  backendUtils: buildCategoryMetadata("backendUtils"),
   observability: buildCategoryMetadata("observability"),
   backendLibraries: buildCategoryMetadata("backendLibraries"),
   stateManagement: buildCategoryMetadata("stateManagement"),

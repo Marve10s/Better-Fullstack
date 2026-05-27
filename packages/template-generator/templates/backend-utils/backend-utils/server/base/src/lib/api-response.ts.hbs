@@ -1,0 +1,96 @@
+/**
+ * Common HTTP status codes
+ */
+export enum HttpStatus {
+  OK = 200,
+  CREATED = 201,
+  ACCEPTED = 202,
+  NO_CONTENT = 204,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  CONFLICT = 409,
+  UNPROCESSABLE_ENTITY = 422,
+  TOO_MANY_REQUESTS = 429,
+  INTERNAL_SERVER_ERROR = 500,
+}
+
+/**
+ * Standard API Response structure
+ */
+export class ApiResponse<T = unknown> {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: T | null;
+  errors: unknown | null;
+  timestamp: string;
+
+  constructor(
+    statusCode: number,
+    message: string,
+    data: T | null = null,
+    errors: unknown = null
+  ) {
+    this.success = statusCode >= 200 && statusCode < 300;
+    this.statusCode = statusCode;
+    this.message = message;
+    this.data = data;
+    this.errors = errors;
+    this.timestamp = new Date().toISOString();
+  }
+
+  /**
+   * Helper to create a successful (200 OK) response
+   */
+  static success<T>(data: T, message: string = "Success"): ApiResponse<T> {
+    return new ApiResponse<T>(HttpStatus.OK, message, data);
+  }
+
+  /**
+   * Helper to create a resource creation (201 Created) response
+   */
+  static created<T>(data: T, message: string = "Resource created successfully"): ApiResponse<T> {
+    return new ApiResponse<T>(HttpStatus.CREATED, message, data);
+  }
+
+  /**
+   * Helper to create a bad request (400 Bad Request) error response
+   */
+  static badRequest(message: string = "Bad request", errors: unknown = null): ApiResponse<null> {
+    return new ApiResponse<null>(HttpStatus.BAD_REQUEST, message, null, errors);
+  }
+
+  /**
+   * Helper to create an unauthorized (401 Unauthorized) error response
+   */
+  static unauthorized(message: string = "Unauthorized"): ApiResponse<null> {
+    return new ApiResponse<null>(HttpStatus.UNAUTHORIZED, message, null, null);
+  }
+
+  /**
+   * Helper to create a forbidden (403 Forbidden) error response
+   */
+  static forbidden(message: string = "Forbidden"): ApiResponse<null> {
+    return new ApiResponse<null>(HttpStatus.FORBIDDEN, message, null, null);
+  }
+
+  /**
+   * Helper to create a not found (404 Not Found) error response
+   */
+  static notFound(message: string = "Resource not found"): ApiResponse<null> {
+    return new ApiResponse<null>(HttpStatus.NOT_FOUND, message, null, null);
+  }
+
+  /**
+   * Helper to create a generic error response with custom status code
+   */
+  static error(
+    message: string = "An error occurred",
+    statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR,
+    errors: unknown = null
+  ): ApiResponse<null> {
+    return new ApiResponse<null>(statusCode, message, null, errors);
+  }
+}

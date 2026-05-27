@@ -18,6 +18,7 @@ export { processExampleTemplates } from "./examples";
 export { processExtrasTemplates } from "./extras";
 export { processDeployTemplates } from "./deploy";
 export { processLoggingTemplates } from "./logging";
+export { processBackendUtilsTemplates } from "./backend-utils";
 export { processObservabilityTemplates } from "./observability";
 export { processFeatureFlagsTemplates } from "./feature-flags";
 export { processAnalyticsTemplates } from "./analytics";

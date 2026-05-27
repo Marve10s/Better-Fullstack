@@ -434,4 +434,5 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   },
   archunit: { type: "local", src: "https://www.archunit.org/assets/ArchUnit-Logo.png" },
   jqwik: { type: "local", src: "https://jqwik.net/assets/images/favicon.ico" },
+  "backend-utils": { type: "si", slug: "typescript", hex: "3178C6" },
 };

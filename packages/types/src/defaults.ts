@@ -48,6 +48,7 @@ export function createCliDefaultProjectConfigBase(
     jobQueue: "none",
     animation: "none",
     logging: "none",
+    backendUtils: "none",
     observability: "none",
     featureFlags: "none",
     analytics: "none",

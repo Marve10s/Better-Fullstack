@@ -90,6 +90,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--realtime ${config.realtime}`);
   flags.push(`--job-queue ${config.jobQueue}`);
   flags.push(`--logging ${config.logging}`);
+  flags.push(`--backend-utils ${config.backendUtils}`);
   flags.push(`--observability ${config.observability}`);
   flags.push(`--feature-flags ${config.featureFlags}`);
   flags.push(`--caching ${config.caching}`);

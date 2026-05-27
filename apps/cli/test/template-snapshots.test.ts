@@ -286,6 +286,7 @@ const DEFAULT_CONFIG: Partial<ProjectConfig> = {
   realtime: "none",
   animation: "none",
   logging: "none",
+  backendUtils: "none",
   observability: "none",
   caching: "none",
   cms: "none",
@@ -422,7 +423,7 @@ describe("Template Snapshots - Rust Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-rust-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -439,7 +440,7 @@ describe("Template Snapshots - Rust Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-rust-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -569,7 +570,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-go-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -586,7 +587,7 @@ describe("Template Snapshots - Go Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-go-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -686,7 +687,7 @@ describe("Template Snapshots - Python Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-python-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -703,7 +704,7 @@ describe("Template Snapshots - Python Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-python-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -767,7 +768,7 @@ describe("Template Snapshots - Elixir Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-elixir-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();
@@ -784,7 +785,7 @@ describe("Template Snapshots - Elixir Ecosystem", () => {
         const result = await createVirtual({
           projectName: `snapshot-elixir-${name}`,
           ...config,
-        });
+        } as unknown as Partial<ProjectConfig>);
 
         expect(result.success).toBe(true);
         expect(result.tree).toBeDefined();

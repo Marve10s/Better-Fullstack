@@ -18,6 +18,7 @@ const CORE_STACK_FLAGS = new Set([
   "dbSetup",
   "payments",
   "email",
+  "backendUtils",
   "api",
   "webDeploy",
   "serverDeploy",

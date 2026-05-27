@@ -7,6 +7,7 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   BACKEND_VALUES,
+  BACKEND_UTILS_VALUES,
   CACHING_VALUES,
   I18N_VALUES,
   CMS_VALUES,
@@ -282,6 +283,7 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       email: backend === "none" ? "none" : sampleScalar(EMAIL_VALUES, 0.75),
       fileUpload: sampleScalar(FILE_UPLOAD_VALUES, 0.82),
       logging: backend === "none" ? "none" : sampleScalar(LOGGING_VALUES, 0.65),
+      backendUtils: backend === "none" || backend === "convex" || backend === "adonisjs" || backend === "nitro" || backend === "encore" ? "none" : sampleScalar(BACKEND_UTILS_VALUES, 0.65),
       observability: sampleScalar(OBSERVABILITY_VALUES, 0.85),
       featureFlags: sampleScalar(
         ["growthbook", "posthog", "launchdarkly", "flagsmith", "unleash", "none"] as const,
@@ -577,6 +579,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     fileStorage: "none",
     animation: "none",
     logging: "none",
+    backendUtils: "none",
     observability: "none",
     featureFlags: "none",
     analytics: "none",

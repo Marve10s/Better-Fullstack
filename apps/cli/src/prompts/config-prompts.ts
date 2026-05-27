@@ -8,6 +8,7 @@ import type {
   AstroIntegration,
   Auth,
   Backend,
+  BackendUtils,
   Caching,
   CMS,
   CSSFramework,
@@ -156,6 +157,7 @@ import {
 } from "./java-ecosystem";
 import { getJobQueueChoice } from "./job-queue";
 import { getLoggingChoice } from "./logging";
+import { getBackendUtilsChoice } from "./backend-utils";
 import {
   getMobileDeepLinkingChoice,
   getMobileNavigationChoice,
@@ -237,6 +239,7 @@ type PromptGroupResults = {
   jobQueue: JobQueue;
   fileUpload: FileUpload;
   logging: Logging;
+  backendUtils: BackendUtils;
   observability: Observability;
   featureFlags: FeatureFlags;
   analytics: Analytics;
@@ -521,6 +524,10 @@ export async function gatherConfig(
       logging: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as Logging);
         return getLoggingChoice(flags.logging, results.backend);
+      },
+      backendUtils: ({ results }) => {
+        if (results.ecosystem !== "typescript") return Promise.resolve("none" as BackendUtils);
+        return getBackendUtilsChoice(flags.backendUtils, results.backend);
       },
       observability: ({ results }) => {
         if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
@@ -895,6 +902,7 @@ export async function gatherConfig(
     animation: result.animation,
     fileUpload: result.fileUpload,
     logging: result.logging,
+    backendUtils: result.backendUtils,
     observability: result.observability,
     featureFlags: result.featureFlags,
     analytics: result.analytics,

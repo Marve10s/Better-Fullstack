@@ -33,6 +33,7 @@ import {
   processExtrasTemplates,
   processDeployTemplates,
   processLoggingTemplates,
+  processBackendUtilsTemplates,
   processObservabilityTemplates,
   processFeatureFlagsTemplates,
   processAnalyticsTemplates,
@@ -92,6 +93,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processExtrasTemplates(vfs, templates, config);
       await processDeployTemplates(vfs, templates, config);
       await processLoggingTemplates(vfs, templates, config);
+      await processBackendUtilsTemplates(vfs, templates, config);
       await processObservabilityTemplates(vfs, templates, config);
       await processFeatureFlagsTemplates(vfs, templates, config);
       await processAnalyticsTemplates(vfs, templates, config);

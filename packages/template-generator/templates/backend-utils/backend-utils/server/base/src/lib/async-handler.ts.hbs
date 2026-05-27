@@ -1,0 +1,116 @@
+{{#if (eq backend "hono")}}
+import type { Context } from "hono";
+
+/**
+ * Wraps an async Hono route handler to guarantee any errors are forwarded
+ */
+export const asyncHandler = <T = unknown>(
+  fn: (c: Context) => Promise<T> | T
+) => {
+  return async (c: Context) => {
+    try {
+      return await fn(c);
+    } catch (error) {
+      c.error = error as Error;
+      throw error;
+    }
+  };
+};
+{{else if (eq backend "express")}}
+import type { Request, Response, NextFunction } from "express";
+
+/**
+ * Wraps an async Express route handler to catch unhandled rejections and forward them to the next middleware
+ */
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown> | unknown
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+};
+{{else if (eq backend "fastify")}}
+import type { FastifyRequest, FastifyReply } from "fastify";
+
+/**
+ * Wraps an async Fastify route handler to catch errors and forward them
+ */
+export const asyncHandler = (
+  fn: (request: FastifyRequest, reply: FastifyReply) => Promise<unknown> | unknown
+) => {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      return await fn(request, reply);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{else if (eq backend "elysia")}}
+/**
+ * Wraps an async Elysia route handler to catch errors and forward them
+ */
+export const asyncHandler = (
+  fn: (context: any) => Promise<unknown> | unknown
+) => {
+  return async (context: any) => {
+    try {
+      return await fn(context);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{else if (eq backend "nestjs")}}
+/**
+ * Wraps an async function to catch and bubble up errors (NestJS natively supports async handlers)
+ */
+export const asyncHandler = (fn: Function) => {
+  return async (...args: unknown[]) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{else if (eq backend "fets")}}
+/**
+ * Wraps an async feTS route handler to catch and bubble up errors
+ */
+export const asyncHandler = (fn: Function) => {
+  return async (...args: unknown[]) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{else if (eq backend "self")}}
+/**
+ * Wraps an async fullstack API route handler to catch and bubble up errors
+ */
+export const asyncHandler = (fn: Function) => {
+  return async (...args: unknown[]) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{else}}
+/**
+ * Default asynchronous handler wrapper
+ */
+export const asyncHandler = (fn: Function) => {
+  return async (...args: unknown[]) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+{{/if}}
