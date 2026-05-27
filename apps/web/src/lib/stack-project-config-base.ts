@@ -19,6 +19,7 @@ function normalizeInputStack(input: Partial<StackState>): StackState {
     aiDocs: input.aiDocs ?? DEFAULT_STACK.aiDocs,
     javaLibraries: input.javaLibraries ?? DEFAULT_STACK.javaLibraries,
     javaTestingLibraries: input.javaTestingLibraries ?? DEFAULT_STACK.javaTestingLibraries,
+    backendUtils: input.backendUtils ?? DEFAULT_STACK.backendUtils,
   });
 }
 

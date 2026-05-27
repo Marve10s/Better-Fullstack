@@ -532,6 +532,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   logging: {
     evlog: "evlog",
   },
+  backendUtils: {
+    "backend-utils": "Backend Utils",
+  },
   cssFramework: { tailwind: "Tailwind CSS", scss: "SCSS", "postcss-only": "PostCSS Only" },
   uiLibrary: {
     "shadcn-ui": "shadcn/ui",
