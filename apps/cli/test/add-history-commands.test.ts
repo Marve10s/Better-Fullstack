@@ -28,11 +28,23 @@ async function runCli(
   let attempt = 0;
   let lastResult: Awaited<ReturnType<typeof execa>> | undefined;
 
+  const baseEnv = { ...process.env };
+  if (options.env) {
+    for (const key of Object.keys(options.env)) {
+      const upperKey = key.toUpperCase();
+      for (const envKey of Object.keys(baseEnv)) {
+        if (envKey.toUpperCase() === upperKey) {
+          delete baseEnv[envKey];
+        }
+      }
+    }
+  }
+
   while (attempt < maxAttempts) {
     const result = await execa(BUN_EXECUTABLE, ["run", CLI_ENTRY, ...args], {
       cwd: options.cwd,
       env: {
-        ...process.env,
+        ...baseEnv,
         CI: "true",
         ...options.env,
       },
@@ -137,6 +149,7 @@ describe("CLI history command", () => {
       XDG_CONFIG_HOME: join(homeDir, ".config"),
       XDG_DATA_HOME: join(homeDir, ".local", "share"),
       APPDATA: join(homeDir, "AppData", "Roaming"),
+      LOCALAPPDATA: join(homeDir, "AppData", "Local"),
     };
 
     const createResult = await runCli(
@@ -193,6 +206,7 @@ describe("CLI history command", () => {
       XDG_CONFIG_HOME: join(homeDir, ".config"),
       XDG_DATA_HOME: join(homeDir, ".local", "share"),
       APPDATA: join(homeDir, "AppData", "Roaming"),
+      LOCALAPPDATA: join(homeDir, "AppData", "Local"),
     };
 
     const expectedCommand =

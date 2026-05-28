@@ -17,6 +17,7 @@ import { CLIError, UserCancelledError } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
+import { extractAndValidateProjectName } from "../../utils/project-name-validation";
 import { renderTitle } from "../../utils/render-title";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
@@ -130,6 +131,11 @@ export async function createProjectHandler(
         currentPathInput = defaultName;
       } else {
         currentPathInput = await getProjectName(input.projectName);
+      }
+
+      // Early validation of project name to avoid OS-specific file/directory creation failures
+      if (!input.yolo) {
+        extractAndValidateProjectName(currentPathInput, undefined, true);
       }
 
       const versionChannel = shouldPromptForVersionChannel(input)

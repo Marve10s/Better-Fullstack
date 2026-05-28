@@ -1,6 +1,29 @@
 import { afterAll, beforeAll } from "bun:test";
 import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
+
+// Isolate environment paths for tests to avoid writing to the user's real configuration/history directory.
+// This is critical on Windows where env-paths checks LOCALAPPDATA/APPDATA.
+const isolatedHome = join(tmpdir(), `bfs-test-home-${Math.random().toString(36).slice(2, 9)}`);
+
+const envToOverride = {
+  HOME: isolatedHome,
+  XDG_CONFIG_HOME: join(isolatedHome, ".config"),
+  XDG_DATA_HOME: join(isolatedHome, ".local", "share"),
+  APPDATA: join(isolatedHome, "AppData", "Roaming"),
+  LOCALAPPDATA: join(isolatedHome, "AppData", "Local"),
+};
+
+for (const [key, value] of Object.entries(envToOverride)) {
+  const upperKey = key.toUpperCase();
+  for (const envKey of Object.keys(process.env)) {
+    if (envKey.toUpperCase() === upperKey) {
+      delete process.env[envKey];
+    }
+  }
+  process.env[key] = value;
+}
 
 const TEST_RUN_ID = process.env.BFS_TEST_RUN_ID ?? `${process.pid}`;
 export const SMOKE_DIR = process.env.BFS_SMOKE_DIR ?? join(import.meta.dir, "..", ".smoke", TEST_RUN_ID);
