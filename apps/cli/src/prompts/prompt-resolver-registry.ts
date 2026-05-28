@@ -5,6 +5,7 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   BACKEND_VALUES,
+  BACKEND_UTILS_VALUES,
   CACHING_VALUES,
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
@@ -85,6 +86,7 @@ import { resolveApiPrompt } from "./api";
 import { resolveAstroIntegrationPrompt } from "./astro-integration";
 import { resolveAuthPrompt } from "./auth";
 import { resolveBackendPrompt } from "./backend";
+import { resolveBackendUtilsPrompt } from "./backend-utils";
 import { resolveCachingPrompt } from "./caching";
 import { resolveCMSPrompt } from "./cms";
 import { resolveCSSFrameworkPrompt } from "./css-framework";
@@ -193,6 +195,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: BACKEND_VALUES,
     resolve: resolveBackendPrompt,
     coverageContexts: [{ frontends: ["next"] }],
+  },
+  backendUtils: {
+    schemaValues: BACKEND_UTILS_VALUES,
+    resolve: resolveBackendUtilsPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   ai: {
     schemaValues: AI_VALUES,

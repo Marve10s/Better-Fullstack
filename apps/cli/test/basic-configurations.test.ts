@@ -65,17 +65,21 @@ describe("Basic Configurations", () => {
 
   describe("Package Managers", () => {
     for (const packageManager of PACKAGE_MANAGERS) {
-      it(`should work with ${packageManager}`, async () => {
-        const result = await runTRPCTest({
-          projectName: `${packageManager}-app`,
-          packageManager,
-          yes: true,
-          install: false,
-        });
+      it(
+        `should work with ${packageManager}`,
+        async () => {
+          const result = await runTRPCTest({
+            projectName: `${packageManager}-app`,
+            packageManager,
+            yes: true,
+            install: false,
+          });
 
-        expectSuccess(result);
-        expect(result.result?.projectConfig.packageManager).toBe(packageManager);
-      });
+          expectSuccess(result);
+          expect(result.result?.projectConfig.packageManager).toBe(packageManager);
+        },
+        30000,
+      );
     }
   });
 

@@ -51,6 +51,7 @@ const DEFAULT_CONFIG = {
   animation: "none",
   fileUpload: "none",
   logging: "none",
+  backendUtils: "none",
   observability: "none",
   featureFlags: "none",
   analytics: "none",

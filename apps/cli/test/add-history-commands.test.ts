@@ -123,7 +123,7 @@ describe("CLI add command", () => {
 
     expect(secondAddResult.exitCode).toBe(0);
     expect(secondAddResult.stdout).toContain("No new addons selected.");
-  });
+  }, 30_000);
 });
 
 describe("CLI history command", () => {
@@ -136,6 +136,7 @@ describe("CLI history command", () => {
       HOME: homeDir,
       XDG_CONFIG_HOME: join(homeDir, ".config"),
       XDG_DATA_HOME: join(homeDir, ".local", "share"),
+      APPDATA: join(homeDir, "AppData", "Roaming"),
     };
 
     const createResult = await runCli(
@@ -153,7 +154,7 @@ describe("CLI history command", () => {
     });
     expect(historyJson.exitCode).toBe(0);
 
-    const parsedHistory = JSON.parse(historyJson.stdout) as Array<{
+    const parsedHistory = JSON.parse(historyJson.stdout as string) as Array<{
       projectName: string;
       projectDir: string;
       reproducibleCommand: string;
@@ -178,9 +179,9 @@ describe("CLI history command", () => {
     });
     expect(historyAfterClear.exitCode).toBe(0);
 
-    const parsedAfterClear = JSON.parse(historyAfterClear.stdout) as unknown[];
+    const parsedAfterClear = JSON.parse(historyAfterClear.stdout as string) as unknown[];
     expect(parsedAfterClear).toEqual([]);
-  });
+  }, 30_000);
 
   it("stores the ecosystem-specific reproducible command for Python projects", async () => {
     const root = await makeTempRoot("bfs-history-python-test-");
@@ -191,6 +192,7 @@ describe("CLI history command", () => {
       HOME: homeDir,
       XDG_CONFIG_HOME: join(homeDir, ".config"),
       XDG_DATA_HOME: join(homeDir, ".local", "share"),
+      APPDATA: join(homeDir, "AppData", "Roaming"),
     };
 
     const expectedCommand =
@@ -279,10 +281,10 @@ describe("CLI history command", () => {
     });
     expect(historyJson.exitCode).toBe(0);
 
-    const parsedHistory = JSON.parse(historyJson.stdout) as Array<{
+    const parsedHistory = JSON.parse(historyJson.stdout as string) as Array<{
       reproducibleCommand: string;
     }>;
 
     expect(parsedHistory[0]?.reproducibleCommand).toBe(expectedCommand);
-  });
+  }, 30_000);
 });

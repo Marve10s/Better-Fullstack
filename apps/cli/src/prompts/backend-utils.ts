@@ -2,6 +2,7 @@ import type { Backend, BackendUtils } from "../types";
 import { exitCancelled } from "../utils/errors";
 import type { PromptSingleResolution } from "./prompt-contract";
 import { isCancel, navigableSelect } from "./navigable";
+import { canPromptInteractively } from "../utils/prompt-environment";
 
 const BACKEND_UTILS_PROMPT_OPTIONS = [
   {
@@ -34,19 +35,30 @@ export function resolveBackendUtilsPrompt(
     };
   }
 
-  return context.backendUtils !== undefined
-    ? {
-        shouldPrompt: false,
-        mode: "single",
-        options: BACKEND_UTILS_PROMPT_OPTIONS,
-        autoValue: context.backendUtils,
-      }
-    : {
-        shouldPrompt: true,
-        mode: "single",
-        options: BACKEND_UTILS_PROMPT_OPTIONS,
-        initialValue: "none",
-      };
+  if (context.backendUtils !== undefined) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: BACKEND_UTILS_PROMPT_OPTIONS,
+      autoValue: context.backendUtils,
+    };
+  }
+
+  if (!canPromptInteractively()) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: BACKEND_UTILS_PROMPT_OPTIONS,
+      autoValue: "none",
+    };
+  }
+
+  return {
+    shouldPrompt: true,
+    mode: "single",
+    options: BACKEND_UTILS_PROMPT_OPTIONS,
+    initialValue: "none",
+  };
 }
 
 export async function getBackendUtilsChoice(backendUtils?: BackendUtils, backend?: Backend) {

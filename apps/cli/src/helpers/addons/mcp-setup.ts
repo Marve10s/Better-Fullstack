@@ -222,11 +222,15 @@ function filterAgentsForScope(scope: InstallScope): AgentOption[] {
 }
 
 export async function setupMcp(config: ProjectConfig): Promise<void> {
+  const skipExternalCommands = shouldSkipExternalCommands();
+  if (skipExternalCommands) {
+    return;
+  }
+
   const { packageManager, projectDir } = config;
   log.info("Setting up MCP servers...");
 
-  const skipExternalCommands = shouldSkipExternalCommands();
-  const canPrompt = canPromptInteractively() && !skipExternalCommands;
+  const canPrompt = canPromptInteractively();
   const recommendedServers = getRecommendedMcpServers(config);
   if (recommendedServers.length === 0) {
     return;
