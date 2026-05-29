@@ -136,6 +136,7 @@ export const AddonsSchema = z
     "wxt",
     "msw",
     "storybook",
+    "swr",
     "tanstack-query",
     "tanstack-table",
     "tanstack-virtual",
@@ -285,7 +286,7 @@ export const JobQueueSchema = z
   .describe("Job queue/background worker solution");
 
 export const CMSSchema = z
-  .enum(["payload", "sanity", "strapi", "tinacms", "none"])
+  .enum(["payload", "sanity", "strapi", "tinacms", "directus", "none"])
   .describe("Headless CMS solution");
 
 export const CachingSchema = z
@@ -303,8 +304,8 @@ export const SearchSchema = z
   );
 
 export const FileStorageSchema = z
-  .enum(["s3", "r2", "none"])
-  .describe("File storage solution (AWS S3 or Cloudflare R2 for object storage)");
+  .enum(["s3", "r2", "cloudinary", "none"])
+  .describe("File storage solution (AWS S3, Cloudflare R2, or Cloudinary)");
 
 export const AnimationSchema = z
   .enum(["framer-motion", "gsap", "react-spring", "auto-animate", "lottie", "none"])
@@ -315,7 +316,7 @@ export const FileUploadSchema = z
   .describe("File upload solution");
 
 export const LoggingSchema = z
-  .enum(["pino", "winston", "none"])
+  .enum(["pino", "winston", "evlog", "none"])
   .describe("Server-side logging framework");
 
 export const ObservabilitySchema = z
@@ -595,6 +596,7 @@ export const CSSFrameworkSchema = z
 export const UILibrarySchema = z
   .enum([
     "shadcn-ui",
+    "shadcn-svelte",
     "daisyui",
     "radix-ui",
     "headless-ui",

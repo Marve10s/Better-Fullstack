@@ -10,7 +10,7 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"astro": "^6.3.3"
+		"astro": "^6.3.7"
 {{#if (eq astroIntegration "react")}}
 		,"@astrojs/react": "^5.0.5"
 		,"react": "^19.2.6"
@@ -27,7 +27,7 @@
 {{/if}}
 {{#if (eq astroIntegration "svelte")}}
 		,"@astrojs/svelte": "^8.1.1"
-		,"svelte": "^5.55.7"
+		,"svelte": "^5.55.9"
 {{/if}}
 {{#if (eq astroIntegration "solid")}}
 		,"@astrojs/solid-js": "^6.0.1"
@@ -37,14 +37,14 @@
 		,"@astrojs/node": "^10.1.1"
 {{/if}}
 {{#if (eq runtime "workers")}}
-		,"@astrojs/cloudflare": "^13.5.1"
+		,"@astrojs/cloudflare": "^13.5.4"
 {{/if}}
 	},
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.3.0",
 		"tailwindcss": "^4.3.0"
 {{#if (eq astroIntegration "react")}}
-		,"@types/react": "^19.2.14"
+		,"@types/react": "^19.2.15"
 		,"@types/react-dom": "^19.1.5"
 {{/if}}
 	}

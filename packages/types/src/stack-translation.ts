@@ -788,6 +788,7 @@ const COMMAND_ADDONS = new Set([
   "wxt",
   "msw",
   "storybook",
+  "swr",
   "tanstack-query",
   "tanstack-table",
   "tanstack-virtual",

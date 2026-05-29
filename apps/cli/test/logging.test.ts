@@ -1,8 +1,40 @@
 import { describe, it, expect } from "bun:test";
+import { readFile } from "node:fs/promises";
 
 import { expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("Logging Configurations", () => {
+  describe("evlog Logger", () => {
+    it("should work with evlog + hono backend", async () => {
+      const result = await runTRPCTest({
+        projectName: "evlog-hono",
+        logging: "evlog",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        auth: "none",
+        frontend: ["tanstack-router"],
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const logger = await readFile(`${result.projectDir}/apps/server/src/lib/logger.ts`, "utf-8");
+      const pkg = await readFile(`${result.projectDir}/apps/server/package.json`, "utf-8");
+      const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf-8");
+
+      expect(logger).toContain('from "evlog"');
+      expect(pkg).toContain('"evlog"');
+      expect(env).toContain("LOG_LEVEL");
+    });
+  });
+
   describe("Pino Logger", () => {
     it("should work with pino + hono backend", async () => {
       const result = await runTRPCTest({

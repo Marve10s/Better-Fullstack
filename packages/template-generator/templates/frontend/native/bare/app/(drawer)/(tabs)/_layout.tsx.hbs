@@ -7,13 +7,15 @@ import { NAV_THEME } from "@/lib/constants";
 export default function TabLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const theme = isDarkColorScheme ? NAV_THEME.dark : NAV_THEME.light;
+  const tabBarActiveTintColor = String(theme.primary);
+  const tabBarInactiveTintColor = String(theme.text);
 
   return (
     <Tabs
       screenOptions=\{{
         headerShown: false,
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.text,
+        tabBarActiveTintColor,
+        tabBarInactiveTintColor,
         tabBarStyle: {
           backgroundColor: theme.background,
           borderTopColor: theme.border,

@@ -1079,6 +1079,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "evlog",
+      name: "evlog",
+      description: "Typed event-based logging for TypeScript",
+      icon: "",
+      color: "from-emerald-400 to-cyan-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No Logging",
       description: "Skip logging framework setup",
@@ -1479,6 +1487,15 @@ export const TECH_OPTIONS: Record<
       icon: "https://cdn.simpleicons.org/shadcnui",
       color: "from-gray-600 to-gray-800",
       default: true,
+      className: "invert-0 dark:invert",
+    },
+    {
+      id: "shadcn-svelte",
+      name: "shadcn-svelte",
+      description: "Svelte components styled with Tailwind CSS",
+      icon: "https://cdn.simpleicons.org/shadcnui",
+      color: "from-orange-500 to-rose-600",
+      default: false,
       className: "invert-0 dark:invert",
     },
     {
@@ -2223,6 +2240,15 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "swr",
+      name: "SWR",
+      description: "React Hooks for data fetching and caching",
+      icon: "https://cdn.simpleicons.org/vercel",
+      color: "from-neutral-500 to-neutral-800",
+      default: false,
+      className: "invert-0 dark:invert",
+    },
+    {
       id: "tanstack-table",
       name: "TanStack Table",
       description: "Headless table with sorting, filtering & pagination",
@@ -2611,6 +2637,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "cloudinary",
+      name: "Cloudinary",
+      description: "Image and media storage with transformations",
+      icon: "https://cdn.simpleicons.org/cloudinary/3448C5",
+      color: "from-blue-500 to-cyan-600",
+      default: false,
+    },
+    {
       id: "none",
       name: "No File Storage",
       description: "Skip file storage setup",
@@ -2751,6 +2785,14 @@ export const TECH_OPTIONS: Record<
       description: "Git-backed headless CMS with visual editing",
       icon: "/icon/tinacms.svg",
       color: "from-orange-400 to-orange-600",
+      default: false,
+    },
+    {
+      id: "directus",
+      name: "Directus",
+      description: "Open data platform and headless CMS for SQL databases",
+      icon: "https://cdn.simpleicons.org/directus/263238",
+      color: "from-violet-500 to-fuchsia-600",
       default: false,
     },
     {

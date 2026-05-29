@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { processAuthDeps } from "../../src/processors/auth-deps";
+import { dependencyVersionMap } from "../../src/utils/add-deps";
 import { makeConfig } from "../_fixtures/config-factory";
 import { createSeededVFS, getDeps } from "../_fixtures/vfs-factory";
 
@@ -165,4 +166,8 @@ describe("processAuthDeps", () => {
       expectIncludesAll(getDeps(vfs, "apps/web/package.json").deps, expected);
     });
   }
+
+  it("keeps Auth0 on the v3 SDK until the templates migrate", () => {
+    expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toBe("^3.8.0");
+  });
 });

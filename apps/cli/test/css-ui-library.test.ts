@@ -72,6 +72,36 @@ describe("CSS Framework and UI Library Configurations", () => {
       });
     }
 
+    it("should work with shadcn-svelte + SvelteKit", async () => {
+      const result = await runTRPCTest({
+        projectName: "shadcn-svelte",
+        uiLibrary: "shadcn-svelte",
+        cssFramework: "tailwind",
+        frontend: ["svelte"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        api: "orpc",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const utils = await Bun.file(`${result.projectDir}/apps/web/src/lib/utils.ts`).text();
+      const components = await Bun.file(`${result.projectDir}/apps/web/components.json`).text();
+
+      expect(pkg).toContain('"shadcn-svelte"');
+      expect(utils).toContain("tailwind-merge");
+      expect(components).toContain("shadcn-svelte.com/schema.json");
+    });
+
     for (const shadcnIconLibrary of ["heroicons", "react-icons", "hugeicons"] as const) {
       it(`should generate shadcn-ui with ${shadcnIconLibrary}`, async () => {
         const result = await runTRPCTest({

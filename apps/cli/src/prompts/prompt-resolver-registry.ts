@@ -356,6 +356,7 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     resolve: resolveUILibraryPrompt,
     coverageContexts: [
       { frontends: ["react-vite"] },
+      { frontends: ["svelte"] },
       { frontends: ["solid"] },
       { frontends: ["vue"] },
     ],
