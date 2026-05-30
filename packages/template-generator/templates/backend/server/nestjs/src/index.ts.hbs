@@ -5,9 +5,16 @@ import { AppModule } from "./app.module";
 {{#if (eq auth "better-auth")}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
+{{#if (eq backendUtils "backend-utils")}}
+import { GlobalExceptionFilter } from "./lib/error-handler";
+{{/if}}
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+
+{{#if (eq backendUtils "backend-utils")}}
+	app.useGlobalFilters(new GlobalExceptionFilter());
+{{/if}}
 
 	app.enableCors({
 		origin: env.CORS_ORIGIN,

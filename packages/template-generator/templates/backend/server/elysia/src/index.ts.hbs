@@ -4,6 +4,10 @@ import { node } from "@elysiajs/node";
 {{/if}}
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
+{{#if (eq backendUtils "backend-utils")}}
+import health from "./routes/health";
+import { errorHandler } from "./lib/error-handler";
+{{/if}}
 {{#if (includes examples "ai")}}
 import { google } from "@ai-sdk/google";
 import { convertToModelMessages, streamText, wrapLanguageModel } from "ai";
@@ -64,6 +68,10 @@ new Elysia()
 {{/if}}
 		}),
 	)
+{{#if (eq backendUtils "backend-utils")}}
+	.onError(errorHandler)
+	.use(health)
+{{/if}}
 {{#if (eq auth "better-auth")}}
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;

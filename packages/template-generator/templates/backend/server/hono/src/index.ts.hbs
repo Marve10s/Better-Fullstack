@@ -19,6 +19,10 @@ import { auth } from "@{{projectName}}/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+{{#if (eq backendUtils "backend-utils")}}
+import health from "./routes/health";
+import { errorHandler } from "./lib/error-handler";
+{{/if}}
 {{#if (and (includes examples "chat-sdk") (eq runtime "node"))}}
 import { bot as chatSdkBot } from "./bot";
 {{/if}}
@@ -36,6 +40,9 @@ import { devToolsMiddleware } from "@ai-sdk/devtools";
 const app = new Hono();
 
 app.use(logger());
+{{#if (eq backendUtils "backend-utils")}}
+app.onError(errorHandler);
+{{/if}}
 app.use(
 	"/*",
 	cors({
@@ -47,6 +54,10 @@ app.use(
 {{/if}}
 	})
 );
+
+{{#if (eq backendUtils "backend-utils")}}
+app.route("/health", health);
+{{/if}}
 
 {{#if (eq auth "better-auth")}}
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));

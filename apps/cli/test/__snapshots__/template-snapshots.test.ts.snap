@@ -1008,6 +1008,7 @@ app.use(
 
 
 
+
 app.use(
 	"/trpc/*",
 	trpcServer({
@@ -3575,9 +3576,11 @@ app.use(
 app.use(express.json());
 
 
+
 app.get("/", (_req, res) => {
 	res.status(200).send("OK");
 });
+
 
 app.listen(3000, () => {
 	console.log("Server is running on http://localhost:3000");
@@ -4309,6 +4312,7 @@ app.use(
 		allowMethods: ["GET", "POST", "OPTIONS"],
 	})
 );
+
 
 
 export const apiHandler = new OpenAPIHandler(appRouter, {
@@ -5117,6 +5121,7 @@ app.use(
 		credentials: true,
 	})
 );
+
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
@@ -7933,6 +7938,7 @@ app.use(
 
 
 
+
 app.use(
 	"/trpc/*",
 	trpcServer({
@@ -8650,6 +8656,7 @@ app.use(
 		allowMethods: ["GET", "POST", "OPTIONS"],
 	})
 );
+
 
 
 
@@ -9394,6 +9401,7 @@ app.use(
 		allowMethods: ["GET", "POST", "OPTIONS"],
 	})
 );
+
 
 
 
@@ -10173,6 +10181,7 @@ app.use(
 		allowMethods: ["GET", "POST", "OPTIONS"],
 	})
 );
+
 
 
 
@@ -11698,6 +11707,7 @@ app.use(
 
 
 
+
 app.use(
 	"/trpc/*",
 	trpcServer({
@@ -12410,6 +12420,7 @@ app.use(
 		allowMethods: ["GET", "POST", "OPTIONS"],
 	})
 );
+
 
 
 export const apiHandler = new OpenAPIHandler(appRouter, {

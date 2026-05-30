@@ -15,6 +15,10 @@ import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
 import cors from "cors";
 import express from "express";
+{{#if (eq backendUtils "backend-utils")}}
+import health from "./routes/health";
+import { errorHandler } from "./lib/error-handler";
+{{/if}}
 {{#if (includes examples "ai")}}
 import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
@@ -107,9 +111,17 @@ app.post("/ai", async (req, res) => {
 });
 {{/if}}
 
+{{#if (eq backendUtils "backend-utils")}}
+app.use("/health", health);
+{{/if}}
+
 app.get("/", (_req, res) => {
 	res.status(200).send("OK");
 });
+
+{{#if (eq backendUtils "backend-utils")}}
+app.use(errorHandler);
+{{/if}}
 
 app.listen(3000, () => {
 	console.log("Server is running on http://localhost:3000");

@@ -10,6 +10,9 @@ import { OrpcModule } from "./orpc/orpc.module";
 {{#if (includes examples "ai")}}
 import { AiModule } from "./ai/ai.module";
 {{/if}}
+{{#if (eq backendUtils "backend-utils")}}
+import { HealthController } from "./routes/health";
+{{/if}}
 
 @Module({
 	imports: [
@@ -23,7 +26,12 @@ import { AiModule } from "./ai/ai.module";
 		AiModule,
 {{/if}}
 	],
-	controllers: [AppController],
+	controllers: [
+		AppController,
+{{#if (eq backendUtils "backend-utils")}}
+		HealthController,
+{{/if}}
+	],
 	providers: [AppService],
 })
 export class AppModule {}

@@ -100,6 +100,10 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Logging:")} ${String(config.logging)}`);
   }
 
+  if (config.backendUtils !== undefined) {
+    configDisplay.push(`${pc.blue("Backend Utils:")} ${String(config.backendUtils)}`);
+  }
+
   if (config.observability !== undefined) {
     configDisplay.push(`${pc.blue("Observability:")} ${String(config.observability)}`);
   }

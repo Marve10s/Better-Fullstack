@@ -1,0 +1,199 @@
+{{#if (eq backend "hono")}}
+import { Hono } from "hono";
+import { asyncHandler } from "../lib/async-handler";
+import { ApiResponse } from "../lib/api-response";
+
+const health = new Hono();
+
+/**
+ * Health check route demonstrating backend utilities:
+ * - asyncHandler: wraps async handlers to catch errors automatically
+ * - ApiResponse: standardized JSON response with status codes and timestamps
+ * - errorHandler: global error middleware (wired in your main server entry)
+ */
+health.get(
+  "/",
+  asyncHandler(async (c) => {
+    const healthData = {
+      status: "healthy",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development",
+      memoryUsage: {
+        heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`,
+      },
+    };
+
+    return c.json(ApiResponse.success(healthData, "Service is healthy"));
+  })
+);
+
+health.get(
+  "/ready",
+  asyncHandler(async (c) => {
+    // Simulate a readiness check (e.g. database, cache, external services)
+    const checks = {
+      database: true,
+      cache: true,
+    };
+
+    const allReady = Object.values(checks).every(Boolean);
+
+    if (!allReady) {
+      return c.json(ApiResponse.error("Service is not ready", 503), 503);
+    }
+
+    return c.json(ApiResponse.success(checks, "All systems ready"));
+  })
+);
+
+export default health;
+{{else if (eq backend "express")}}
+import { Router } from "express";
+import { asyncHandler } from "../lib/async-handler";
+import { ApiResponse } from "../lib/api-response";
+
+const health = Router();
+
+/**
+ * Health check route demonstrating backend utilities:
+ * - asyncHandler: wraps async handlers to catch errors automatically
+ * - ApiResponse: standardized JSON response with status codes and timestamps
+ * - errorHandler: global error middleware (wired in your main server entry)
+ */
+health.get(
+  "/",
+  asyncHandler(async (_req, res) => {
+    const healthData = {
+      status: "healthy",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development",
+      memoryUsage: {
+        heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`,
+      },
+    };
+
+    res.json(ApiResponse.success(healthData, "Service is healthy"));
+  })
+);
+
+health.get(
+  "/ready",
+  asyncHandler(async (_req, res) => {
+    // Simulate a readiness check (e.g. database, cache, external services)
+    const checks = {
+      database: true,
+      cache: true,
+    };
+
+    const allReady = Object.values(checks).every(Boolean);
+
+    if (!allReady) {
+      res.status(503).json(ApiResponse.error("Service is not ready", 503));
+      return;
+    }
+
+    res.json(ApiResponse.success(checks, "All systems ready"));
+  })
+);
+
+export default health;
+{{else if (eq backend "elysia")}}
+import { Elysia } from "elysia";
+import { asyncHandler } from "../lib/async-handler";
+import { ApiResponse } from "../lib/api-response";
+
+/**
+ * Health check route demonstrating backend utilities:
+ * - asyncHandler: wraps async handlers to catch errors automatically
+ * - ApiResponse: standardized JSON response with status codes and timestamps
+ * - errorHandler: global error lifecycle handler (wired in your main server entry)
+ */
+const health = new Elysia({ prefix: "/health" })
+  .get(
+    "/",
+    asyncHandler(async () => {
+      const healthData = {
+        status: "healthy",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        memoryUsage: {
+          heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+          heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`,
+        },
+      };
+
+      return ApiResponse.success(healthData, "Service is healthy");
+    })
+  )
+  .get(
+    "/ready",
+    asyncHandler(async () => {
+      // Simulate a readiness check (e.g. database, cache, external services)
+      const checks = {
+        database: true,
+        cache: true,
+      };
+
+      const allReady = Object.values(checks).every(Boolean);
+
+      if (!allReady) {
+        return ApiResponse.error("Service is not ready", 503);
+      }
+
+      return ApiResponse.success(checks, "All systems ready");
+    })
+  );
+
+export default health;
+{{else if (eq backend "nestjs")}}
+import { Controller, Get } from "@nestjs/common";
+import { ApiResponse } from "../lib/api-response";
+
+/**
+ * Health check controller demonstrating backend utilities:
+ * - ApiResponse: standardized JSON response with status codes and timestamps
+ * - GlobalExceptionFilter: global error handling (wired in your main.ts bootstrap)
+ *
+ * NestJS natively handles async errors, so asyncHandler is not needed here.
+ */
+@Controller("health")
+export class HealthController {
+  @Get()
+  async check() {
+    const healthData = {
+      status: "healthy",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development",
+      memoryUsage: {
+        heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`,
+      },
+    };
+
+    return ApiResponse.success(healthData, "Service is healthy");
+  }
+
+  @Get("ready")
+  async ready() {
+    // Simulate a readiness check (e.g. database, cache, external services)
+    const checks = {
+      database: true,
+      cache: true,
+    };
+
+    const allReady = Object.values(checks).every(Boolean);
+
+    if (!allReady) {
+      return ApiResponse.error("Service is not ready", 503);
+    }
+
+    return ApiResponse.success(checks, "All systems ready");
+  }
+}
+{{/if}}
