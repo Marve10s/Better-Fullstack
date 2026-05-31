@@ -251,7 +251,7 @@ export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
 export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
   const origin = baseUrl || "https://better-fullstack-web.vercel.app";
 
-  const stackParams = createStackSearchParams(stack, { includeDefaults: true });
+  const stackParams = createStackSearchParams(stack);
   const searchString = stackParams.toString();
   return `${origin}/stack${searchString ? `?${searchString}` : ""}`;
 }

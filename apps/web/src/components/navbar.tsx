@@ -1,10 +1,11 @@
-import { Link, useMatchRoute } from "@tanstack/react-router";
+import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Check, ClipboardCopy, Github } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
+import { parseStackShareSlug } from "@/lib/stack-share-paths";
 import { parseStackFromUrlRecord } from "@/lib/stack-url-state.shared";
 import { generateStackCommand } from "@/lib/stack-utils";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,10 @@ const DOCS_ACTIVE_PROPS = { className: "active" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
+
+function getFirstPathSegment(pathname: string): string {
+  return pathname.split("/").find(Boolean) ?? "";
+}
 
 // On the builder page the "Try now" CTA (which links to /new) is redundant, so it
 // becomes a Copy button. The builder syncs the live stack to the URL via
@@ -32,7 +37,10 @@ function HeaderCopyButton() {
         const values = sp.getAll(key);
         record[key] = values.length > 1 ? values : (values[0] ?? "");
       }
-      const stack = parseStackFromUrlRecord(record);
+      const pathSlug = getFirstPathSegment(window.location.pathname);
+      const stack =
+        sp.size === 0 && pathSlug ? parseStackShareSlug(pathSlug) : parseStackFromUrlRecord(record);
+      if (!stack) return;
       await navigator.clipboard.writeText(generateStackCommand(stack));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -108,7 +116,13 @@ function StackModeToggle({
 
 export function Navbar() {
   const matchRoute = useMatchRoute();
-  const onBuilder = Boolean(matchRoute({ to: "/new" }));
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const shareSlug = pathSegments[0] ?? "";
+  const onBuilder =
+    Boolean(matchRoute({ to: "/new" })) ||
+    pathname === "/stack" ||
+    (pathSegments.length === 1 && Boolean(parseStackShareSlug(shareSlug)));
   const builderMode = useBuilderMode();
   const showModeToggle = onBuilder && builderMode.active;
 

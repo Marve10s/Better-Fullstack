@@ -6,11 +6,21 @@ import type { StackSearchParams } from "@/lib/stack-search-schema";
 import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
+import { getStackSharePath } from "@/lib/stack-share-paths";
 import {
   createStackSearchParams,
   parseStackFromSearch,
   parseStackFromUrlRecord,
 } from "@/lib/stack-url-state.shared";
+
+type BuilderViewMode = "command" | "preview" | "presets" | "saved";
+
+type InitialBuilderState = {
+  stack: StackState;
+  viewMode: BuilderViewMode;
+  selectedFile: string;
+  initialized: boolean;
+};
 
 export function loadStackParams(
   searchParams:
@@ -39,6 +49,30 @@ function searchToStack(search: StackSearchParams | undefined): StackState {
   return parseStackFromSearch(search);
 }
 
+export function getInitialBuilderState(
+  search: StackSearchParams | undefined,
+  fallbackStack?: StackState,
+): InitialBuilderState {
+  if (!search) {
+    return {
+      stack: fallbackStack ?? DEFAULT_STACK,
+      viewMode: "command",
+      selectedFile: "",
+      initialized: Boolean(fallbackStack),
+    };
+  }
+
+  const presetId = search.preset;
+  const preset = presetId ? PRESET_TEMPLATES.find((t) => t.id === presetId) : undefined;
+
+  return {
+    stack: preset ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState) : searchToStack(search),
+    viewMode: search.view || "command",
+    selectedFile: search.file || "",
+    initialized: true,
+  };
+}
+
 function createLiveBuilderSearchParams(
   stack: StackState,
   viewMode: "command" | "preview" | "presets" | "saved",
@@ -57,36 +91,28 @@ function createLiveBuilderSearchParams(
   return params;
 }
 
-export function useStackState() {
-  const [stack, setStackState] = useState<StackState>(DEFAULT_STACK);
-  const [viewMode, setViewModeState] = useState<"command" | "preview" | "presets" | "saved">(
-    "command",
-  );
-  const [selectedFile, setSelectedFileState] = useState<string>("");
-  const initialized = useRef(false);
+export function useStackState(fallbackStack?: StackState) {
+  const search = useSearch({ strict: false }) as StackSearchParams | undefined;
+  const initialState = useRef<InitialBuilderState | null>(null);
+  if (!initialState.current) {
+    initialState.current = getInitialBuilderState(search, fallbackStack);
+  }
 
-  // @ts-expect-error - route path typing with strict: false
-  const search = useSearch({ from: "/new", strict: false }) as StackSearchParams | undefined;
+  const [stack, setStackState] = useState<StackState>(initialState.current.stack);
+  const [viewMode, setViewModeState] = useState<BuilderViewMode>(initialState.current.viewMode);
+  const [selectedFile, setSelectedFileState] = useState<string>(initialState.current.selectedFile);
+  const initialized = useRef(initialState.current.initialized);
 
   useEffect(() => {
     if (!initialized.current && search) {
       initialized.current = true;
 
-      const presetId = search.preset;
-      const preset = presetId
-        ? PRESET_TEMPLATES.find((t) => t.id === presetId)
-        : undefined;
-
-      if (preset) {
-        setStackState({ ...DEFAULT_STACK, ...preset.stack } as StackState);
-      } else {
-        setStackState(searchToStack(search));
-      }
-
-      setViewModeState(search.view || "command");
-      setSelectedFileState(search.file || "");
+      const nextInitialState = getInitialBuilderState(search, fallbackStack);
+      setStackState(nextInitialState.stack);
+      setViewModeState(nextInitialState.viewMode);
+      setSelectedFileState(nextInitialState.selectedFile);
     }
-  }, [search]);
+  }, [fallbackStack, search]);
 
   // Sync view mode when search params change after initial mount (e.g. navbar links)
   useEffect(() => {
@@ -99,9 +125,21 @@ export function useStackState() {
     if (!initialized.current) return;
 
     const url = new URL(window.location.href);
+    const sharePath = getStackSharePath(stack);
+    if (
+      sharePath &&
+      url.pathname.toLowerCase() === sharePath.toLowerCase() &&
+      !url.search &&
+      viewMode === "command" &&
+      !selectedFile
+    ) {
+      return;
+    }
+
     const nextParams = createLiveBuilderSearchParams(stack, viewMode, selectedFile);
     const nextSearch = nextParams.toString();
-    const nextUrl = nextSearch ? `${url.pathname}?${nextSearch}` : url.pathname;
+    const basePath = url.pathname === "/stack" || url.pathname === "/new" ? url.pathname : "/new";
+    const nextUrl = nextSearch ? `${basePath}?${nextSearch}` : basePath;
     const currentUrl = `${url.pathname}${url.search}`;
 
     if (nextUrl !== currentUrl) {

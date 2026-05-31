@@ -39,6 +39,7 @@ import {
   Suspense,
   lazy,
   startTransition,
+  type ReactNode,
   useEffect,
   useMemo,
   useRef,
@@ -280,7 +281,7 @@ const MULTI_STACK_STEPS: Array<{
   { id: "backend", label: "Backend", description: "Server language, framework, and services" },
   { id: "database", label: "Database", description: "Standalone data service" },
   { id: "mobile", label: "Mobile", description: "Native app and mobile libraries" },
-  { id: "finalize", label: "Finalize", description: "Package manager, docs, and version" },
+  { id: "finalize", label: "Finalize", description: "Package manager" },
 ];
 
 const MULTI_FRONTEND_LIBRARY_GROUPS: Array<{
@@ -1211,6 +1212,7 @@ function CreationModeComposer({
     icon?: string;
   }) => {
     const hasIcon = Boolean(icon) || (iconTechId ? Boolean(ICON_REGISTRY[iconTechId]) : false);
+    const ecosystemMeta = iconTechId ? ECOSYSTEMS.find((eco) => eco.id === iconTechId) : undefined;
 
     return (
       <button
@@ -1219,28 +1221,60 @@ function CreationModeComposer({
         aria-pressed={selected}
         onClick={onClick}
         className={cn(
-          "group flex min-w-[88px] flex-1 cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all sm:flex-none",
+          "group relative flex min-h-16 cursor-pointer items-center justify-center gap-3 px-3 py-3 transition-all sm:min-h-18 sm:px-4",
           selected
-            ? "border-primary/40 bg-primary/5 shadow-sm ring-1 ring-primary/15"
-            : "border-border/60 bg-background hover:border-primary/30 hover:bg-muted/30 hover:shadow-sm",
+            ? "bg-muted/40 text-foreground"
+            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
         )}
       >
-        {hasIcon && (
-          <span
+        {selected && (
+          <motion.div
+            layoutId={`multi-language-indicator-${testId}`}
             className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-              selected ? "bg-primary/10" : "bg-muted/60 group-hover:bg-muted",
+              "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
+              ecosystemMeta?.color ?? "from-primary to-primary/60",
             )}
-          >
-            <TechIcon techId={iconTechId} icon={icon} name={label} className="h-4.5 w-4.5" />
-          </span>
+            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+          />
+        )}
+        {hasIcon && (
+          <TechIcon
+            techId={iconTechId}
+            icon={icon}
+            name={label}
+            className={cn(
+              "relative h-5.5 w-5.5 shrink-0 transition-all sm:h-6 sm:w-6",
+              selected ? "scale-110" : "opacity-55 group-hover:opacity-80",
+            )}
+          />
         )}
         <span
-          className={cn("text-[13px] font-medium", selected ? "text-primary" : "text-foreground")}
+          className={cn(
+            "relative font-mono text-xs uppercase tracking-wide transition-all sm:text-sm",
+            selected && "font-bold",
+          )}
         >
           {label}
         </span>
       </button>
+    );
+  };
+
+  const renderLanguagePicker = ({
+    gridClassName,
+    children,
+    optionCount,
+  }: {
+    gridClassName?: string;
+    children: ReactNode;
+    optionCount: number;
+  }) => {
+    if (optionCount <= 1) return null;
+
+    return (
+      <div className="-mx-4 -mt-4 mb-5 overflow-hidden rounded-t-xl border-b border-border/60 sm:-mx-5 sm:-mt-5">
+        <div className={cn("grid bg-fd-background sm:grid-cols-2", gridClassName)}>{children}</div>
+      </div>
     );
   };
 
@@ -1275,37 +1309,33 @@ function CreationModeComposer({
       case "frontend":
         return (
           <div className="space-y-5">
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Main Language
-              </h3>
-              <div className="flex flex-wrap gap-2.5">
-                {GRAPH_FRONTEND_CONFIGS.map((config) =>
-                  renderLanguageButton({
-                    selected: graphSelection.frontendEcosystem === config.ecosystem,
-                    testId: `multi-frontend-language-${config.ecosystem}`,
-                    label: config.label,
-                    iconTechId: config.ecosystem,
-                    onClick: () => {
-                      const frontend = getDefaultGraphTool(
-                        config.frameworkCategory,
-                        "frontend",
-                        config.ecosystem,
-                        "none",
-                      );
-                      updateGraphSelection({
-                        frontendEcosystem: config.ecosystem,
-                        frontend,
-                        ...reconcileBackendCapabilities(
-                          { ...graphSelection, frontendEcosystem: config.ecosystem, frontend },
-                          backendConfig,
-                        ),
-                      });
-                    },
-                  }),
-                )}
-              </div>
-            </div>
+            {renderLanguagePicker({
+              optionCount: GRAPH_FRONTEND_CONFIGS.length,
+              children: GRAPH_FRONTEND_CONFIGS.map((config) =>
+                renderLanguageButton({
+                  selected: graphSelection.frontendEcosystem === config.ecosystem,
+                  testId: `multi-frontend-language-${config.ecosystem}`,
+                  label: config.label,
+                  iconTechId: config.ecosystem,
+                  onClick: () => {
+                    const frontend = getDefaultGraphTool(
+                      config.frameworkCategory,
+                      "frontend",
+                      config.ecosystem,
+                      "none",
+                    );
+                    updateGraphSelection({
+                      frontendEcosystem: config.ecosystem,
+                      frontend,
+                      ...reconcileBackendCapabilities(
+                        { ...graphSelection, frontendEcosystem: config.ecosystem, frontend },
+                        backendConfig,
+                      ),
+                    });
+                  },
+                }),
+              ),
+            })}
 
             <GraphOptionGroup
               label={`${frontendConfig.label} Frontend`}
@@ -1336,42 +1366,39 @@ function CreationModeComposer({
       case "backend":
         return (
           <div className="space-y-5">
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Main Language
-              </h3>
-              <div className="flex flex-wrap gap-2.5">
-                {GRAPH_BACKEND_CONFIGS.map((config) =>
-                  renderLanguageButton({
-                    selected: graphSelection.backendEcosystem === config.ecosystem,
-                    testId: `multi-backend-language-${config.ecosystem}`,
-                    label: config.label,
-                    iconTechId: config.ecosystem,
-                    onClick: () => {
-                      const backend = getDefaultGraphTool(
-                        config.frameworkCategory,
-                        "backend",
-                        config.ecosystem,
-                        "none",
-                      );
-                      const nextSelection: GraphSelection = {
-                        ...graphSelection,
-                        backendEcosystem: config.ecosystem,
-                        backend,
-                        backendOrm: "none",
-                        backendApi: "none",
-                        backendAuth: "none",
-                      };
-                      updateGraphSelection({
-                        backendEcosystem: config.ecosystem,
-                        backend,
-                        ...reconcileBackendCapabilities(nextSelection, config),
-                      });
-                    },
-                  }),
-                )}
-              </div>
-            </div>
+            {renderLanguagePicker({
+              optionCount: GRAPH_BACKEND_CONFIGS.length,
+              gridClassName: "lg:grid-cols-3",
+              children: GRAPH_BACKEND_CONFIGS.map((config) =>
+                renderLanguageButton({
+                  selected: graphSelection.backendEcosystem === config.ecosystem,
+                  testId: `multi-backend-language-${config.ecosystem}`,
+                  label: config.label,
+                  iconTechId: config.ecosystem,
+                  onClick: () => {
+                    const backend = getDefaultGraphTool(
+                      config.frameworkCategory,
+                      "backend",
+                      config.ecosystem,
+                      "none",
+                    );
+                    const nextSelection: GraphSelection = {
+                      ...graphSelection,
+                      backendEcosystem: config.ecosystem,
+                      backend,
+                      backendOrm: "none",
+                      backendApi: "none",
+                      backendAuth: "none",
+                    };
+                    updateGraphSelection({
+                      backendEcosystem: config.ecosystem,
+                      backend,
+                      ...reconcileBackendCapabilities(nextSelection, config),
+                    });
+                  },
+                }),
+              ),
+            })}
 
             <GraphOptionGroup
               label={`${backendConfig.label} Backend`}
@@ -1433,19 +1460,15 @@ function CreationModeComposer({
       case "database":
         return (
           <div className="space-y-5">
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Main Scope
-              </h3>
-              <div className="flex flex-wrap gap-2.5">
-                {renderLanguageButton({
-                  selected: true,
-                  testId: "multi-database-language-universal",
-                  label: "Universal",
-                  onClick: () => undefined,
-                })}
-              </div>
-            </div>
+            {renderLanguagePicker({
+              optionCount: 1,
+              children: renderLanguageButton({
+                selected: true,
+                testId: "multi-database-language-universal",
+                label: "Universal",
+                onClick: () => undefined,
+              }),
+            })}
 
             <GraphOptionGroup
               label="Standalone Database"
@@ -1464,20 +1487,16 @@ function CreationModeComposer({
       case "mobile":
         return (
           <div className="space-y-5">
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Main Ecosystem
-              </h3>
-              <div className="flex flex-wrap gap-2.5">
-                {renderLanguageButton({
-                  selected: true,
-                  testId: "multi-mobile-language-react-native",
-                  label: "React Native",
-                  icon: "https://cdn.simpleicons.org/react/61DAFB",
-                  onClick: () => undefined,
-                })}
-              </div>
-            </div>
+            {renderLanguagePicker({
+              optionCount: 1,
+              children: renderLanguageButton({
+                selected: true,
+                testId: "multi-mobile-language-react-native",
+                label: "React Native",
+                icon: "https://cdn.simpleicons.org/react/61DAFB",
+                onClick: () => undefined,
+              }),
+            })}
 
             <GraphOptionGroup
               label="Mobile App"
@@ -1500,23 +1519,7 @@ function CreationModeComposer({
           </div>
         );
       case "finalize":
-        return (
-          <div
-            data-testid="multi-finalize-intro"
-            className="flex items-start gap-3 rounded-lg border border-primary/15 bg-primary/5 p-3.5"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Check className="h-4.5 w-4.5 text-primary" />
-            </span>
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-foreground">Finalize your project</h3>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                Pick the package manager, AI docs, version channel, and git options below, then copy
-                the command to scaffold your stack.
-              </p>
-            </div>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -1530,7 +1533,7 @@ function CreationModeComposer({
       className="mb-6 rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm sm:mb-8 sm:p-5"
     >
       <div className="space-y-5">
-        <div className="flex items-start overflow-x-auto pb-1">
+        <div className="flex items-start overflow-x-auto px-10 pb-12">
           {MULTI_STACK_STEPS.map((step, index) => {
             const selected = activeStep === step.id;
             const isFinalize = step.id === "finalize";
@@ -1546,7 +1549,7 @@ function CreationModeComposer({
                   data-testid={`multi-step-${step.id}`}
                   aria-pressed={selected}
                   onClick={() => onActiveStepChange(step.id)}
-                  className="group flex shrink-0 cursor-pointer flex-col items-start gap-2.5 text-left"
+                  className="group relative flex w-12 shrink-0 cursor-pointer flex-col items-center text-center"
                 >
                   <span
                     className={cn(
@@ -1558,7 +1561,7 @@ function CreationModeComposer({
                   >
                     {stepNumber}
                   </span>
-                  <span className="flex max-w-[140px] flex-col">
+                  <span className="absolute top-14 left-1/2 flex w-28 -translate-x-1/2 flex-col">
                     <span
                       className={cn(
                         "truncate text-[13px] transition-colors",
@@ -1583,9 +1586,11 @@ function CreationModeComposer({
           })}
         </div>
 
-        <div className="space-y-6 rounded-xl border border-border/60 bg-background p-4 sm:p-5">
-          {renderActiveStep()}
-        </div>
+        {activeStep !== "finalize" && (
+          <div className="space-y-6 rounded-xl border border-border/60 bg-background p-4 sm:p-5">
+            {renderActiveStep()}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -1593,8 +1598,9 @@ function CreationModeComposer({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-const StackBuilder = () => {
-  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] = useStackState();
+const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
+  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] =
+    useStackState(initialStack);
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
@@ -1651,8 +1657,9 @@ const StackBuilder = () => {
     0,
     MULTI_STACK_STEPS.findIndex((step) => step.id === multiActiveStep),
   );
+  const isMultiMode = stack.stackMode === "multi";
   const isFinalMultiStep = multiActiveStepIndex >= MULTI_STACK_STEPS.length - 1;
-  const isMultiCreationInProgress = stack.stackMode === "multi" && viewMode === "command";
+  const isMultiCreationInProgress = isMultiMode && viewMode === "command";
 
   // ─── URL generation ──────────────────────────────────────────────────────
 
@@ -1716,10 +1723,16 @@ const StackBuilder = () => {
   }, [stack, adjustedStack]);
 
   useEffect(() => {
-    if (stack.stackMode !== "multi") {
+    if (!isMultiMode) {
       setMultiActiveStep("frontend");
     }
-  }, [stack.stackMode]);
+  }, [isMultiMode]);
+
+  useEffect(() => {
+    if (isMultiMode && (viewMode === "presets" || viewMode === "saved")) {
+      setViewMode("command");
+    }
+  }, [isMultiMode, setViewMode, viewMode]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -2223,22 +2236,24 @@ const StackBuilder = () => {
                   <Hammer className="h-3 w-3" />
                   <span className="hidden min-[480px]:inline">Builder</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("presets")}
-                  data-testid="tab-presets"
-                  aria-pressed={viewMode === "presets"}
-                  data-state={viewMode === "presets" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "presets"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Zap className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Presets</span>
-                </button>
+                {!isMultiMode && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("presets")}
+                    data-testid="tab-presets"
+                    aria-pressed={viewMode === "presets"}
+                    data-state={viewMode === "presets" ? "active" : "inactive"}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                      viewMode === "presets"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Zap className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">Presets</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setViewMode("preview")}
@@ -2255,27 +2270,29 @@ const StackBuilder = () => {
                   <Eye className="h-3 w-3" />
                   <span className="hidden min-[480px]:inline">Preview</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("saved")}
-                  data-testid="tab-saved"
-                  aria-pressed={viewMode === "saved"}
-                  data-state={viewMode === "saved" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "saved"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Bookmark className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Saved</span>
-                </button>
+                {!isMultiMode && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("saved")}
+                    data-testid="tab-saved"
+                    aria-pressed={viewMode === "saved"}
+                    data-state={viewMode === "saved" ? "active" : "inactive"}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                      viewMode === "saved"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Bookmark className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">Saved</span>
+                  </button>
+                )}
 
                 <div className="ml-auto flex items-center gap-1">
                   {/* Desktop action buttons */}
                   <AnimatePresence initial={false}>
-                    {isSaveInputVisible && (
+                    {!isMultiMode && isSaveInputVisible && (
                       <motion.div
                         initial={{ width: 0, opacity: 0 }}
                         animate={{ width: 220, opacity: 1 }}
@@ -2318,83 +2335,89 @@ const StackBuilder = () => {
                     )}
                   </AnimatePresence>
                   <div className="hidden items-center gap-1 sm:flex">
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextVisible = !isSaveInputVisible;
-                              setIsSaveInputVisible(nextVisible);
-                              setSavePresetName(nextVisible ? stack.projectName || "" : "");
-                            }}
-                            title="Save current preset"
-                            aria-label="Save current preset"
-                            className={cn(
-                              "cursor-pointer rounded-md p-1.5 transition-colors",
-                              isSaveInputVisible
-                                ? "bg-primary/15 text-primary"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                            )}
-                          />
-                        }
-                      >
-                        <Save className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Save the current stack as a named preset</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={resetStack}
-                            title="Reset to defaults"
-                            aria-label="Reset to defaults"
-                            data-testid="btn-reset"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Reset all builder options to defaults</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={getRandomStack}
-                            title="Generate a random stack"
-                            aria-label="Generate a random stack"
-                            data-testid="btn-random"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <Shuffle className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Generate a random stack configuration</TooltipContent>
-                    </Tooltip>
+                    {!isMultiMode && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const nextVisible = !isSaveInputVisible;
+                                  setIsSaveInputVisible(nextVisible);
+                                  setSavePresetName(nextVisible ? stack.projectName || "" : "");
+                                }}
+                                title="Save current preset"
+                                aria-label="Save current preset"
+                                className={cn(
+                                  "cursor-pointer rounded-md p-1.5 transition-colors",
+                                  isSaveInputVisible
+                                    ? "bg-primary/15 text-primary"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                )}
+                              />
+                            }
+                          >
+                            <Save className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Save the current stack as a named preset</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={resetStack}
+                                title="Reset to defaults"
+                                aria-label="Reset to defaults"
+                                data-testid="btn-reset"
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              />
+                            }
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Reset all builder options to defaults</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={getRandomStack}
+                                title="Generate a random stack"
+                                aria-label="Generate a random stack"
+                                data-testid="btn-random"
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              />
+                            }
+                          >
+                            <Shuffle className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Generate a random stack configuration</TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
                     <ShareButton stackUrl={getStackUrl()} />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <button
-                            type="button"
-                            aria-label="Builder settings"
-                            title="Builder settings"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <Settings className="h-3.5 w-3.5" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                        <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!isMultiMode && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <button
+                              type="button"
+                              aria-label="Builder settings"
+                              title="Builder settings"
+                              className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            />
+                          }
+                        >
+                          <Settings className="h-3.5 w-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                          <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
 
                   {/* Mobile three-dot menu */}
@@ -2416,22 +2439,26 @@ const StackBuilder = () => {
                       sideOffset={8}
                       className="w-48 bg-fd-background"
                     >
-                      <DropdownMenuItem
-                        onClick={() => {
-                          saveCurrentStack(stack.projectName || "Untitled preset");
-                        }}
-                      >
-                        <Save className="h-3.5 w-3.5" />
-                        Save Preset
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={resetStack}>
-                        <RefreshCw className="h-3.5 w-3.5" />
-                        Reset to Defaults
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={getRandomStack}>
-                        <Shuffle className="h-3.5 w-3.5" />
-                        Random Stack
-                      </DropdownMenuItem>
+                      {!isMultiMode && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              saveCurrentStack(stack.projectName || "Untitled preset");
+                            }}
+                          >
+                            <Save className="h-3.5 w-3.5" />
+                            Save Preset
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={resetStack}>
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            Reset to Defaults
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={getRandomStack}>
+                            <Shuffle className="h-3.5 w-3.5" />
+                            Random Stack
+                          </DropdownMenuItem>
+                        </>
+                      )}
                       <DropdownMenuItem
                         onClick={async () => {
                           try {
@@ -3080,10 +3107,13 @@ const StackBuilder = () => {
                     type="button"
                     data-testid="multi-step-next"
                     onClick={handleMultiNextStep}
-                    className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-[9px] bg-[#C6E853] px-3.5 text-[11.5px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
+                    className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
                   >
-                    <span className="hidden min-[420px]:inline">Next</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                      <span className="hidden min-[420px]:inline">Next step</span>
+                      <span className="min-[420px]:hidden">Next</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
                   </button>
                 </>
               ) : (
@@ -3091,10 +3121,16 @@ const StackBuilder = () => {
                   type="button"
                   onClick={copyToClipboard}
                   aria-label={copied ? "Command copied" : "Copy command"}
-                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[9px] bg-[#C6E853] px-3 text-[11.5px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
+                  className="border-beam inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
                 >
-                  {copied ? <Check className="h-3 w-3" /> : <ClipboardCopy className="h-3 w-3" />}
-                  {copied ? "Copied" : "Copy"}
+                  <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <ClipboardCopy className="h-3.5 w-3.5" />
+                    )}
+                    <span>{copied ? "Copied" : "Copy"}</span>
+                  </span>
                 </button>
               )}
             </div>

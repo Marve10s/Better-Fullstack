@@ -9,11 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StackRouteImport } from './routes/stack'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as StackShareRouteImport } from './routes/$stackShare'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
@@ -22,6 +24,11 @@ import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
 
+const StackRoute = StackRouteImport.update({
+  id: '/stack',
+  path: '/stack',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -45,6 +52,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StackShareRoute = StackShareRouteImport.update({
+  id: '/$stackShare',
+  path: '/$stackShare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -85,11 +97,13 @@ const ApiPreviewRoute = ApiPreviewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$stackShare': typeof StackShareRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -99,11 +113,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$stackShare': typeof StackShareRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -114,11 +130,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$stackShare': typeof StackShareRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -130,11 +148,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$stackShare'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
     | '/new'
     | '/sitemap.xml'
+    | '/stack'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -144,11 +164,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$stackShare'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
     | '/new'
     | '/sitemap.xml'
+    | '/stack'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -158,11 +180,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$stackShare'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
     | '/new'
     | '/sitemap.xml'
+    | '/stack'
     | '/api/preview'
     | '/api/stats'
     | '/docs/$'
@@ -173,11 +197,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  StackShareRoute: typeof StackShareRoute
   CompareRoute: typeof CompareRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StackRoute: typeof StackRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
   DocsSplatRoute: typeof DocsSplatRoute
@@ -188,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stack': {
+      id: '/stack'
+      path: '/stack'
+      fullPath: '/stack'
+      preLoaderRoute: typeof StackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -221,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$stackShare': {
+      id: '/$stackShare'
+      path: '/$stackShare'
+      fullPath: '/$stackShare'
+      preLoaderRoute: typeof StackShareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -277,11 +317,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  StackShareRoute: StackShareRoute,
   CompareRoute: CompareRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StackRoute: StackRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
   DocsSplatRoute: DocsSplatRoute,
