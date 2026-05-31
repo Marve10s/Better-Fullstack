@@ -10,6 +10,11 @@ type PackageJson = {
   workspaces?: string[] | { packages?: string[]; catalog?: Record<string, string> };
   packageManager?: string;
   exports?: Record<string, string>;
+  overrides?: Record<string, string>;
+  resolutions?: Record<string, string>;
+  pnpm?: {
+    overrides?: Record<string, string>;
+  };
 };
 
 describe("processPackageConfigs", () => {
@@ -114,6 +119,33 @@ describe("processPackageConfigs", () => {
     });
     expect(db?.scripts?.["db:studio"]).toBeUndefined();
     expect(db?.scripts?.["db:migrate"]).toBeUndefined();
+  });
+
+  it("pins Better Auth's Kysely peer with the package-manager override field", () => {
+    for (const [packageManager, expected] of [
+      ["bun", { overrides: { kysely: "0.28.17" } }],
+      ["npm", { overrides: { kysely: "0.28.17" } }],
+      ["pnpm", { pnpm: { overrides: { kysely: "0.28.17" } } }],
+      ["yarn", { resolutions: { kysely: "0.28.17" } }],
+    ] as const) {
+      const vfs = createSeededVFS();
+      vfs.writeJson("package.json", {
+        name: "starter",
+        scripts: {},
+        workspaces: [],
+      });
+
+      processPackageConfigs(
+        vfs,
+        makeConfig({
+          projectName: `better-auth-${packageManager}`,
+          packageManager,
+          auth: "better-auth",
+        }),
+      );
+
+      expect(vfs.readJson<PackageJson>("package.json")).toMatchObject(expected);
+    }
   });
 
   it("handles convex workspaces and backend naming", () => {

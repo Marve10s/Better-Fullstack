@@ -9,6 +9,7 @@ import {
   generateStackSelectionCommand,
   isCliDefaultStackSelection,
   isStackSelectionDefault,
+  cliInputToProjectConfigPartial,
   normalizeStackSelection,
   parseStackSelectionFromUrlRecord,
   stackSelectionToProjectConfig,
@@ -110,6 +111,17 @@ describe("stack selection translation", () => {
     expect(command).toContain("--no-install");
     expect(command).not.toContain("--ecosystem typescript");
     expect(command).not.toContain("--backend");
+  });
+
+  it("keeps partial CLI preselection flags out of stackParts until config is complete", () => {
+    expect(cliInputToProjectConfigPartial({ orm: "prisma" })).toEqual({
+      orm: "prisma",
+    });
+    expect(
+      cliInputToProjectConfigPartial({
+        part: ["frontend:typescript:next", "backend:go:gin", "backend.orm:go:gorm"],
+      }).stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`),
+    ).toEqual(["frontend:typescript:next", "backend:go:gin", "orm:go:gorm"]);
   });
 
   it("derives ProjectConfig stackParts from graph URL state", () => {

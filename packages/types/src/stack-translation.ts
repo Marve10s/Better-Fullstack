@@ -959,11 +959,6 @@ export function cliInputToProjectConfigPartial(
   if (Array.isArray(input.part) && input.part.length > 0) {
     const stackParts = parseStackPartSpecs(input.part, "selected");
     Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
-  } else if (!config.stackParts) {
-    const stackParts = legacyProjectConfigToStackParts(config, "legacy");
-    if (stackParts.length > 0) {
-      config.stackParts = stackParts;
-    }
   }
 
   return config;

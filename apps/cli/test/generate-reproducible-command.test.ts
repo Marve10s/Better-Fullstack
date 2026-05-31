@@ -479,4 +479,44 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--mobile-testing maestro");
     expect(command).not.toContain("--backend");
   });
+
+  it("preserves non-graph selections when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.orm:typescript:drizzle",
+      "database:universal:postgres",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        database: "postgres",
+        payments: "stripe",
+        email: "resend",
+        fileUpload: "uploadthing",
+        addons: ["turborepo", "pwa"],
+        examples: ["ai"],
+        dbSetup: "docker",
+        webDeploy: "vercel",
+        serverDeploy: "railway",
+        shadcnStyle: "luma",
+        shadcnFont: "geist",
+      }),
+    );
+
+    expect(command).toContain("--part frontend:typescript:next");
+    expect(command).toContain("--payments stripe");
+    expect(command).toContain("--email resend");
+    expect(command).toContain("--file-upload uploadthing");
+    expect(command).toContain("--addons turborepo pwa");
+    expect(command).toContain("--examples ai");
+    expect(command).toContain("--db-setup docker");
+    expect(command).toContain("--web-deploy vercel");
+    expect(command).toContain("--server-deploy railway");
+    expect(command).toContain("--shadcn-style luma");
+    expect(command).toContain("--shadcn-font geist");
+    expect(command).not.toContain("--backend");
+  });
 });
