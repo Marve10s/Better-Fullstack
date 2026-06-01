@@ -537,9 +537,9 @@ export const dependencyVersionMap = {
   cypress: "^15.16.0",
 
   // Testing - Vitest
-  vitest: "^4.1.8",
-  "@vitest/ui": "^4.1.8",
-  "@vitest/coverage-v8": "^4.1.8",
+  vitest: "^4.1.7",
+  "@vitest/ui": "^4.1.7",
+  "@vitest/coverage-v8": "^4.1.7",
   jsdom: "^29.1.1",
   "happy-dom": "^20.9.0",
 
