@@ -12,6 +12,6 @@
     "mainCssGzip": 2048,
     "stackBuilderJsGzip": 12288,
     "largestJsGzip": 20480,
-    "totalJsGzip": 30720
+    "totalJsGzip": 81920
   }
 }

@@ -297,7 +297,7 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("<quarkus.platform.version>3.35.2</quarkus.platform.version>");
       expect(pomContent).toContain("<artifactId>quarkus-rest</artifactId>");
       expect(pomContent).toContain("<artifactId>quarkus-junit5</artifactId>");
-      expect(pomContent).toContain("<artifactId>wiremock</artifactId>");
+      expect(pomContent).toContain("<artifactId>wiremock-jetty12</artifactId>");
       expect(pomContent).toContain("<artifactId>archunit-junit5</artifactId>");
       expect(pomContent).toContain("<artifactId>mockito-junit-jupiter</artifactId>");
       expect(pomContent).toContain("<artifactId>quarkus-maven-plugin</artifactId>");
@@ -344,7 +344,7 @@ describe("Java Ecosystem", () => {
       );
       expect(gradleContent).toContain('implementation("io.quarkus:quarkus-rest")');
       expect(gradleContent).toContain('testImplementation("io.quarkus:quarkus-junit5")');
-      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
+      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock-jetty12:3.13.2")');
       expect(gradleContent).toContain(
         'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
@@ -504,7 +504,7 @@ describe("Java Ecosystem", () => {
       );
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
-      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
+      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock-jetty12:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
       expect(gradleContent).toContain(
         'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
@@ -828,7 +828,7 @@ describe("Java Ecosystem", () => {
       );
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
-      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock:3.13.2")');
+      expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock-jetty12:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
       expect(gradleContent).not.toContain("mockito-junit-jupiter");
       expect(gradleContent).toContain(
