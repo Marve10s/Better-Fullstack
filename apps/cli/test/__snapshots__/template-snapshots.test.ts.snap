@@ -1107,7 +1107,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -3673,7 +3673,7 @@ app.listen(3000, () => {
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -4457,7 +4457,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -5232,7 +5232,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -6136,7 +6136,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-convex-clerk/config": "workspace:*"
   }
@@ -7262,7 +7262,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "jsdom": "^29.1.1",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "web-vitals": "^5.3.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*",
@@ -8052,7 +8052,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -8773,7 +8773,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -9522,7 +9522,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -10297,7 +10297,7 @@ export default app;
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.100.14"
@@ -10963,7 +10963,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.16",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-frontend-only-no-backend/config": "workspace:*"
   }
