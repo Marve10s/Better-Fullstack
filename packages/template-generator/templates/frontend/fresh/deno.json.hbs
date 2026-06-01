@@ -1,8 +1,8 @@
 {
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check --node-modules-dir=auto main.ts client.ts",
-    "dev": "deno run --node-modules-dir=auto -A npm:vite",
-    "build": "deno run --node-modules-dir=auto -A npm:vite build",
+    "dev": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1",
+    "build": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1 build",
     "start": "deno serve -A _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },

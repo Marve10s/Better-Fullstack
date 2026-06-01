@@ -483,7 +483,7 @@ describe("Frontend Configurations", () => {
         });
         expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.3.3"');
         expect(denoJson).toContain(
-          '"build": "deno run --node-modules-dir=auto -A npm:vite build"',
+          '"build": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1 build"',
         );
         expect(denoJson).toContain('"preact/": "npm:preact@^10.29.2/"');
         expect(denoJson).toContain('"preact/jsx-runtime": "npm:preact@^10.29.2/jsx-runtime"');
