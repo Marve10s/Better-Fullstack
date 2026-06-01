@@ -464,6 +464,7 @@ export async function createVirtual(
       api: options.api || (isReactNative ? "none" : "trpc"),
       webDeploy: options.webDeploy || "none",
       serverDeploy: options.serverDeploy || "none",
+      astroIntegration: options.astroIntegration || "none",
       cssFramework: options.cssFramework || (isReactNative ? "none" : "tailwind"),
       uiLibrary: options.uiLibrary || (isReactNative ? "none" : "shadcn-ui"),
       shadcnBase: options.shadcnBase ?? "radix",

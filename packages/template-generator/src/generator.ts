@@ -15,6 +15,7 @@ import {
   processEnvVariables,
 } from "./processors";
 import { processAiDocs } from "./processors/ai-docs-generator";
+import { processGraphBackendConnection } from "./processors/graph-backend-connection";
 import {
   type TemplateData,
   processBaseTemplate,
@@ -179,6 +180,7 @@ async function processGraphTemplates(
     processPackageConfigs(vfs, tsConfig);
     processDependencies(vfs, tsConfig);
     processEnvVariables(vfs, tsConfig);
+    processGraphBackendConnection(vfs, tsConfig);
     await processAuthPlugins(vfs, tsConfig);
     await processAlchemyPlugins(vfs, tsConfig);
     await processPwaPlugins(vfs, tsConfig);

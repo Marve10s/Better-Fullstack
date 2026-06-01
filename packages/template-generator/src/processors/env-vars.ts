@@ -1,6 +1,7 @@
 import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
 
 export interface EnvVariable {
   key: string;
@@ -37,15 +38,21 @@ function generateAuthSecret() {
   return generateRandomString(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 }
 
-function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"]) {
+function getClientServerVar(
+  frontend: string[],
+  backend: ProjectConfig["backend"],
+  serverUrlOverride?: string,
+) {
   const hasNextJs = frontend.includes("next");
   const hasVinext = frontend.includes("vinext");
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
+  const hasAstro = frontend.includes("astro");
+  const hasRedwood = frontend.includes("redwood");
   const hasTanstackStart = frontend.includes("tanstack-start");
 
   // For fullstack self, no base URL is needed (same-origin)
-  if (backend === "self") {
+  if (backend === "self" && !serverUrlOverride) {
     return { key: "", value: "", write: false } as const;
   }
 
@@ -53,10 +60,11 @@ function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"
   if (hasNextJs) key = "NEXT_PUBLIC_SERVER_URL";
   else if (hasVinext) key = "VITE_SERVER_URL";
   else if (hasNuxt) key = "NUXT_PUBLIC_SERVER_URL";
-  else if (hasSvelte) key = "PUBLIC_SERVER_URL";
+  else if (hasSvelte || hasAstro) key = "PUBLIC_SERVER_URL";
+  else if (hasRedwood) key = "REDWOOD_ENV_SERVER_URL";
   else if (hasTanstackStart) key = "VITE_SERVER_URL";
 
-  return { key, value: "http://localhost:3000", write: true } as const;
+  return { key, value: serverUrlOverride ?? "http://localhost:3000", write: true } as const;
 }
 
 function getConvexVar(frontend: string[]) {
@@ -122,6 +130,7 @@ function buildClientVars(
   payments: ProjectConfig["payments"],
   featureFlags: ProjectConfig["featureFlags"],
   analytics: ProjectConfig["analytics"],
+  serverUrlOverride?: string,
 ): EnvVariable[] {
   const hasNextJs = frontend.includes("next");
   const hasVinext = frontend.includes("vinext");
@@ -132,7 +141,7 @@ function buildClientVars(
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
 
-  const baseVar = getClientServerVar(frontend, backend);
+  const baseVar = getClientServerVar(frontend, backend, serverUrlOverride);
   const envVarName = backend === "convex" ? getConvexVar(frontend) : baseVar.key;
   const serverUrl = backend === "convex" ? "https://your-convex-url.convex.cloud" : baseVar.value;
 
@@ -1686,7 +1695,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
   const hasSolid = frontend.includes("solid");
-  const hasWebFrontend =
+  const hasKnownWebFrontend =
     hasReactRouter ||
     hasReactVite ||
     hasTanStackRouter ||
@@ -1696,16 +1705,19 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     hasNuxt ||
     hasSolid ||
     hasSvelte;
+  const shouldWriteClientEnv = hasKnownWebFrontend || hasWebFrontend(config);
 
   if (config.ai === "ai-cli") {
     writeEnvFile(vfs, ".env", buildAICLIEnvVars(config.ai));
   }
 
   // --- Client App .env ---
-  if (hasWebFrontend) {
-    const clientDir = "apps/web";
-    if (vfs.directoryExists(clientDir)) {
-      const envPath = `${clientDir}/.env`;
+  if (shouldWriteClientEnv) {
+    const usesRedwoodRoot = frontend.includes("redwood") && vfs.directoryExists("web");
+    const clientDir = usesRedwoodRoot ? "" : "apps/web";
+    if (usesRedwoodRoot || vfs.directoryExists(clientDir)) {
+      const envPath = usesRedwoodRoot ? ".env" : `${clientDir}/.env`;
+      const graphBackend = getGraphBackendConnection(config);
       const clientVars = buildClientVars(
         frontend,
         backend,
@@ -1713,6 +1725,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
         payments,
         config.featureFlags,
         config.analytics,
+        graphBackend?.serverUrl,
       );
       writeEnvFile(vfs, envPath, clientVars);
     }

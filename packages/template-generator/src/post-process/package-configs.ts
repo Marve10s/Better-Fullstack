@@ -6,6 +6,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import { getGraphBackendConnection } from "../utils/graph-backend";
 
 type PackageJson = {
   name?: string;
@@ -88,14 +89,26 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const isD1Alchemy = dbSetup === "d1" && serverDeploy === "cloudflare";
 
   const pmConfig = getPackageManagerConfig(packageManager, hasTurborepo);
+  const graphBackend = getGraphBackendConnection(config);
 
-  scripts.dev = pmConfig.dev;
+  scripts.dev = graphBackend ? pmConfig.filter("web", "dev") : pmConfig.dev;
   scripts.build = pmConfig.build;
   scripts["check-types"] = pmConfig.checkTypes;
   scripts["dev:native"] = pmConfig.filter("native", "dev");
   scripts["dev:web"] = pmConfig.filter("web", "dev");
 
-  if (backend !== "self" && backend !== "none") {
+  if (graphBackend) {
+    scripts["dev:server"] = graphBackend.devCommand;
+    if (graphBackend.setupCommand) {
+      scripts["setup:server"] = graphBackend.setupCommand;
+    }
+    if (graphBackend.checkCommand) {
+      scripts["check:server"] = graphBackend.checkCommand;
+    }
+    if (graphBackend.testCommand) {
+      scripts["test:server"] = graphBackend.testCommand;
+    }
+  } else if (backend !== "self" && backend !== "none") {
     scripts["dev:server"] = pmConfig.filter(backendPackageName, "dev");
   }
 
