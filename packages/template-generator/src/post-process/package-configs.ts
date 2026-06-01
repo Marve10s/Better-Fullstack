@@ -13,6 +13,12 @@ type PackageJson = {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   workspaces?: string[] | { packages?: string[]; catalog?: Record<string, string> };
+  overrides?: Record<string, string>;
+  resolutions?: Record<string, string>;
+  pnpm?: {
+    overrides?: Record<string, string>;
+    [key: string]: unknown;
+  };
   packageManager?: string;
   [key: string]: unknown;
 };
@@ -30,6 +36,8 @@ const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], 
   bun: "1.3.5",
   yarn: "4.12.0",
 };
+
+const BETTER_AUTH_KYSELY_OVERRIDE = "0.28.17";
 
 /**
  * Update all package.json files with proper names, scripts, and workspaces
@@ -140,6 +148,10 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   // the actual local version after scaffolding.
   pkgJson.packageManager = `${packageManager}@${VIRTUAL_PACKAGE_MANAGER_VERSIONS[packageManager]}`;
 
+  if (config.auth === "better-auth") {
+    applyBetterAuthKyselyOverride(pkgJson);
+  }
+
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
       workspaces.push("packages/*");
@@ -158,6 +170,24 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   }
 
   vfs.writeJson("package.json", pkgJson);
+}
+
+function applyBetterAuthKyselyOverride(pkgJson: PackageJson): void {
+  pkgJson.overrides = {
+    ...pkgJson.overrides,
+    kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+  };
+  pkgJson.resolutions = {
+    ...pkgJson.resolutions,
+    kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+  };
+  pkgJson.pnpm = {
+    ...pkgJson.pnpm,
+    overrides: {
+      ...pkgJson.pnpm?.overrides,
+      kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+    },
+  };
 }
 
 function getPackageManagerConfig(

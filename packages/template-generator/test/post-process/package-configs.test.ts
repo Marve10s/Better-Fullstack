@@ -8,6 +8,9 @@ type PackageJson = {
   name?: string;
   scripts?: Record<string, string>;
   workspaces?: string[] | { packages?: string[]; catalog?: Record<string, string> };
+  overrides?: Record<string, string>;
+  resolutions?: Record<string, string>;
+  pnpm?: { overrides?: Record<string, string> };
   packageManager?: string;
   exports?: Record<string, string>;
 };
@@ -183,5 +186,27 @@ describe("processPackageConfigs", () => {
       "./web": "./src/web.ts",
       "./native": "./src/native.ts",
     });
+  });
+
+  it("pins Kysely for Better Auth adapter compatibility across package managers", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: [],
+    });
+
+    processPackageConfigs(
+      vfs,
+      makeConfig({
+        auth: "better-auth",
+      }),
+    );
+
+    const root = vfs.readJson<PackageJson>("package.json");
+
+    expect(root?.overrides?.kysely).toBe("0.28.17");
+    expect(root?.resolutions?.kysely).toBe("0.28.17");
+    expect(root?.pnpm?.overrides?.kysely).toBe("0.28.17");
   });
 });
