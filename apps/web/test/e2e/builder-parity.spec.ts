@@ -16,6 +16,15 @@ test.describe("Builder parity", () => {
     await expect(page).toHaveURL(/be=fastify/);
   });
 
+  test("selecting an AI option updates command and URL", async ({ page }) => {
+    await clickVisibleTestId(page, "category-toggle-ai");
+    await clickVisibleTestId(page, "option-ai-vercel-ai");
+
+    await expect(commandOutput(page)).toContainText("--ai vercel-ai");
+    await expect(commandOutput(page)).not.toContainText("--ai none");
+    await expect(page).toHaveURL(/aisdk=vercel-ai/);
+  });
+
   test("selecting and removing multi-select addons updates the command", async ({ page }) => {
     await clickVisibleTestId(page, "option-codeQuality-biome");
     await expect(commandOutput(page)).toContainText("--addons biome turborepo");

@@ -5,7 +5,7 @@ import {
   createStackSearchParams,
   parseStackFromUrlRecord,
 } from "../src/lib/stack-url-state.shared";
-import { generateStackCommand } from "../src/lib/stack-utils";
+import { generateStackCommand, generateStackSummary } from "../src/lib/stack-utils";
 
 describe("generateStackCommand", () => {
   it("includes version channel flags when using non-stable releases", () => {
@@ -47,6 +47,15 @@ describe("generateStackCommand", () => {
     });
 
     expect(command).toContain("--search elasticsearch");
+  });
+
+  it("summarizes AI selections through the aiSdk stack field", () => {
+    const summary = generateStackSummary({
+      ...DEFAULT_STACK,
+      aiSdk: "vercel-ai",
+    });
+
+    expect(summary).toContain("Vercel AI SDK");
   });
 
   it("uses --part flags when the builder is in multi-ecosystem mode", () => {

@@ -7,6 +7,11 @@ import { TECH_OPTIONS } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
+function getStackKeyForCategory(category: keyof typeof TECH_OPTIONS): keyof StackState {
+  if (category === "ai") return "aiSdk";
+  return category as keyof StackState;
+}
+
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "webFrontend",
@@ -212,7 +217,7 @@ export function getCategoryOrderForEcosystem(
 export function generateStackSummary(stack: StackState) {
   const selectedTechs = CATEGORY_ORDER.flatMap((category) => {
     const options = TECH_OPTIONS[category];
-    const selectedValue = stack[category as keyof StackState];
+    const selectedValue = stack[getStackKeyForCategory(category)];
 
     if (!options) return [];
 

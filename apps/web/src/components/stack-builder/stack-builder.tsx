@@ -365,12 +365,17 @@ function getOptionName(category: keyof typeof TECH_OPTIONS, optionId: string) {
   return TECH_OPTIONS[category]?.find((option) => option.id === optionId)?.name ?? optionId;
 }
 
+function getStackKeyForCategory(category: keyof typeof TECH_OPTIONS): keyof StackState {
+  if (category === "ai") return "aiSdk";
+  return category as keyof StackState;
+}
+
 function getStackStringValue(
   stack: StackState,
   category: keyof typeof TECH_OPTIONS,
   fallback = "none",
 ) {
-  const value = stack[category as keyof StackState];
+  const value = stack[getStackKeyForCategory(category)];
 
   if (Array.isArray(value)) {
     return getSelectedOptionId(value, fallback);
@@ -774,17 +779,18 @@ function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState
     );
   }
 
-  const catKey = category as keyof StackState;
+  const catKey = getStackKeyForCategory(category);
   return getSelectionCountForValue(category, stack[catKey]);
 }
 
 function isSelectedCheck(stack: StackState, categoryKey: string, techId: string): boolean {
-  const category = categoryKey as keyof StackState;
-  const currentValue = stack[category];
+  const category = categoryKey as keyof typeof TECH_OPTIONS;
+  const stackKey = getStackKeyForCategory(category);
+  const currentValue = stack[stackKey];
   if (isMultiSelectCategory(categoryKey as OptionCategory)) {
     const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
-    if (techId === "none" && usesVirtualNoneSelection(category)) {
+    if (techId === "none" && usesVirtualNoneSelection(stackKey)) {
       return selectedValues.length === 0 || selectedValues.includes("none");
     }
 
@@ -1053,7 +1059,7 @@ function CreationModeComposer({
   };
 
   const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
-    onChange({ [category]: optionId } as Partial<StackState>);
+    onChange({ [getStackKeyForCategory(category)]: optionId } as Partial<StackState>);
   };
 
   const getPrimaryToolIdsForSelection = (
@@ -1747,7 +1753,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
     startTransition(() => {
       setStack((currentStack: StackState) => {
-        const catKey = category as keyof StackState;
+        const catKey = getStackKeyForCategory(category);
         const update: Partial<StackState> = {};
         const currentValue = currentStack[catKey];
 
@@ -1891,7 +1897,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
         TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] || [],
       );
       if (options.length === 0) continue;
-      const catKey = category as keyof StackState;
+      const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
       if (isMultiSelectCategory(category as OptionCategory)) {
         if (catKey === "webFrontend" || catKey === "nativeFrontend") {
           const randomIndex = Math.floor(Math.random() * options.length);
