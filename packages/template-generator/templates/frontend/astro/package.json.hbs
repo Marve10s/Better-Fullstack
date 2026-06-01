@@ -10,9 +10,9 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"astro": "^6.3.7"
+		"astro": "^6.4.2"
 {{#if (eq astroIntegration "react")}}
-		,"@astrojs/react": "^5.0.5"
+		,"@astrojs/react": "^5.0.6"
 		,"react": "^19.2.6"
 		,"react-dom": "^19.2.6"
 {{#if (eq uiLibrary "shadcn-ui")}}
@@ -23,21 +23,21 @@
 {{/if}}
 {{#if (eq astroIntegration "vue")}}
 		,"@astrojs/vue": "^6.0.1"
-		,"vue": "^3.5.34"
+		,"vue": "^3.5.35"
 {{/if}}
 {{#if (eq astroIntegration "svelte")}}
-		,"@astrojs/svelte": "^8.1.1"
-		,"svelte": "^5.55.9"
+		,"@astrojs/svelte": "^8.1.2"
+		,"svelte": "^5.56.0"
 {{/if}}
 {{#if (eq astroIntegration "solid")}}
 		,"@astrojs/solid-js": "^6.0.1"
 		,"solid-js": "^1.9.13"
 {{/if}}
 {{#if (eq backend "self")}}
-		,"@astrojs/node": "^10.1.1"
+		,"@astrojs/node": "^10.1.2"
 {{/if}}
 {{#if (eq runtime "workers")}}
-		,"@astrojs/cloudflare": "^13.5.4"
+		,"@astrojs/cloudflare": "^13.6.0"
 {{/if}}
 	},
 	"devDependencies": {
