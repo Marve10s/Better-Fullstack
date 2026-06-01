@@ -14,11 +14,13 @@ type PackageJson = {
 export const dependencyVersionMap = {
   typescript: "^6.0.3",
 
-  "better-auth": "^1.6.11",
-  "@better-auth/expo": "^1.6.11",
-  "@better-auth/drizzle-adapter": "^1.6.11",
-  "@better-auth/prisma-adapter": "^1.6.11",
-  "@better-auth/mongo-adapter": "^1.6.11",
+  // Keep Better Auth pinned until the Kysely adapter supports Kysely 0.29+
+  // and the 1.6.13 adapter packages are no longer quarantined by Yarn.
+  "better-auth": "1.6.12",
+  "@better-auth/expo": "1.6.12",
+  "@better-auth/drizzle-adapter": "1.6.12",
+  "@better-auth/prisma-adapter": "1.6.12",
+  "@better-auth/mongo-adapter": "1.6.12",
 
   "@clerk/nextjs": "^7.4.1",
   "@clerk/clerk-react": "^5.61.3",
@@ -75,7 +77,7 @@ export const dependencyVersionMap = {
   "@types/better-sqlite3": "^7.6.13",
 
   // Kysely
-  kysely: "^0.29.2",
+  kysely: "^0.28.17",
 
   // MikroORM
   "@mikro-orm/core": "^7.1.1",
