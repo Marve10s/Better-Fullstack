@@ -105,8 +105,7 @@ function StackModeToggle({
               "relative cursor-pointer rounded-[7px] px-3.5 py-1.5 text-center text-xs font-medium transition-colors duration-200",
               active ? "text-[#0c0c0e]" : "text-muted-foreground hover:text-foreground",
               isMulti &&
-                "isolate overflow-hidden border border-transparent shadow-[0_0_18px_-10px_rgba(198,232,83,0.95)] before:absolute before:inset-[-18px] before:z-0 before:bg-[conic-gradient(from_90deg,#101011,#402fb5_10%,#101011_36%,#cf30aa_58%,#C6E853_76%,#101011_92%)] before:opacity-55 before:blur-[3px] before:transition-all before:duration-700 hover:before:rotate-180 hover:before:opacity-95 focus-visible:before:rotate-[240deg] focus-visible:before:opacity-95 after:absolute after:inset-[1px] after:z-[1] after:rounded-[6px] after:bg-background/95 after:transition-colors after:duration-200",
-              isMulti && active && "before:opacity-100 after:bg-[#C6E853]",
+                "border-beam border border-transparent bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]",
             )}
           >
             {active && (
