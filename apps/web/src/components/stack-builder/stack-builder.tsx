@@ -291,6 +291,7 @@ const MULTI_FRONTEND_LIBRARY_GROUPS: Array<{
   { label: "CSS Framework", category: "cssFramework" },
   { label: "UI Library", category: "uiLibrary" },
   { label: "State Management", category: "stateManagement" },
+  { label: "App Platforms", category: "appPlatforms" },
   { label: "Forms", category: "forms" },
   { label: "Validation", category: "validation" },
   { label: "Testing", category: "testing" },
@@ -364,10 +365,6 @@ const GRAPH_RUST_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "rustLogging",
   "rustErrorHandling",
   "rustCaching",
-  "email",
-  "observability",
-  "caching",
-  "search",
 ];
 
 const GRAPH_PYTHON_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
@@ -376,29 +373,17 @@ const GRAPH_PYTHON_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
-  "email",
-  "observability",
-  "caching",
-  "search",
 ];
 
 const GRAPH_GO_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "goCli",
   "goLogging",
-  "email",
-  "observability",
-  "caching",
-  "search",
 ];
 
 const GRAPH_JAVA_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "javaBuildTool",
   "javaLibraries",
   "javaTestingLibraries",
-  "email",
-  "observability",
-  "caching",
-  "search",
 ];
 
 const GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
@@ -418,11 +403,6 @@ const GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
 const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "codeQuality",
   "documentation",
-  "appPlatforms",
-  "examples",
-  "dbSetup",
-  "webDeploy",
-  "serverDeploy",
   "packageManager",
   "aiDocs",
   "versionChannel",
@@ -654,15 +634,8 @@ function getGraphBackendAdvancedCategoryOrder(
   }
 }
 
-function getMultiFinalizeCategoryOrder(
-  selection: GraphSelection,
-): Array<keyof typeof TECH_OPTIONS> {
-  const backendCategories =
-    selection.backend === "none"
-      ? []
-      : getGraphBackendAdvancedCategoryOrder(selection.backendEcosystem);
-
-  return [...new Set([...backendCategories, ...GRAPH_COMMON_CATEGORY_ORDER])];
+function getMultiFinalizeCategoryOrder(): Array<keyof typeof TECH_OPTIONS> {
+  return GRAPH_COMMON_CATEGORY_ORDER;
 }
 
 function getGraphBackendAdvancedResetPatch(
@@ -967,6 +940,84 @@ function isSelectedCheck(stack: StackState, categoryKey: string, techId: string)
   return currentValue === techId;
 }
 
+function getStackOptionUpdate(
+  currentStack: StackState,
+  category: keyof typeof TECH_OPTIONS,
+  techId: string,
+): Partial<StackState> {
+  const catKey = getStackKeyForCategory(category);
+  const update: Partial<StackState> = {};
+  const currentValue = currentStack[catKey];
+
+  if (isMultiSelectCategory(category as OptionCategory)) {
+    const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
+    let nextArray = [...currentArray];
+    const isSelected = currentArray.includes(techId);
+    const isVirtualNoneCategory = usesVirtualNoneSelection(catKey);
+
+    if (catKey === "webFrontend") {
+      if (techId === "none") {
+        nextArray = ["none"];
+      } else if (isSelected) {
+        if (currentArray.length > 1) {
+          nextArray = nextArray.filter((id) => id !== techId);
+        } else {
+          nextArray = ["none"];
+        }
+      } else {
+        nextArray = [techId];
+      }
+    } else if (catKey === "nativeFrontend") {
+      if (techId === "none") {
+        nextArray = ["none"];
+      } else if (isSelected) {
+        nextArray = ["none"];
+      } else {
+        nextArray = [techId];
+      }
+    } else {
+      if (isVirtualNoneCategory && techId === "none") {
+        nextArray = [];
+      } else if (isSelected) {
+        nextArray = nextArray.filter((id) => id !== techId);
+      } else {
+        nextArray.push(techId);
+      }
+
+      if (nextArray.length > 1) {
+        nextArray = nextArray.filter((id) => id !== "none");
+      }
+      if (
+        nextArray.length === 0 &&
+        (catKey === "codeQuality" ||
+          catKey === "documentation" ||
+          catKey === "appPlatforms" ||
+          catKey === "examples" ||
+          isVirtualNoneCategory)
+      ) {
+        // These categories can be empty.
+      } else if (nextArray.length === 0) {
+        nextArray = ["none"];
+      }
+    }
+
+    const uniqueNext = [...new Set(nextArray)].sort();
+    const uniqueCurrent = [...new Set(currentArray)].sort();
+
+    if (JSON.stringify(uniqueNext) !== JSON.stringify(uniqueCurrent)) {
+      (update as Record<string, unknown>)[catKey] = uniqueNext;
+    }
+  } else if (currentValue !== techId) {
+    (update as Record<string, string>)[catKey] = techId;
+  } else if ((category === "git" || category === "install") && techId === "false") {
+    (update as Record<string, string>)[catKey] = "true";
+  } else if ((category === "git" || category === "install") && techId === "true") {
+    (update as Record<string, string>)[catKey] = "false";
+  }
+
+  return update;
+}
+
 // ─── Collapsible section config ──────────────────────────────────────────────
 
 const INITIALLY_COLLAPSED_SET = new Set([
@@ -1080,6 +1131,8 @@ function GraphOptionGroup({
   label,
   options,
   selectedId,
+  selectedCount,
+  isOptionSelected,
   testIdPrefix,
   defaultCollapsed = false,
   getDisabledReasonForOption,
@@ -1088,13 +1141,15 @@ function GraphOptionGroup({
   label: string;
   options: TechOption[];
   selectedId: string;
+  selectedCount?: number;
+  isOptionSelected?: (optionId: string) => boolean;
   testIdPrefix: string;
   defaultCollapsed?: boolean;
   getDisabledReasonForOption?: (optionId: string) => string | null;
   onSelect: (id: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  const hasSelection = Boolean(selectedId) && selectedId !== "none";
+  const selectionCount = selectedCount ?? (Boolean(selectedId) && selectedId !== "none" ? 1 : 0);
 
   return (
     <section className="min-w-0">
@@ -1107,9 +1162,9 @@ function GraphOptionGroup({
       >
         <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
         <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">{label}</h2>
-        {collapsed && hasSelection && (
+        {collapsed && selectionCount > 0 && (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-            1
+            {selectionCount}
           </span>
         )}
         <motion.div animate={{ rotate: collapsed ? 0 : 180 }} transition={{ duration: 0.2 }}>
@@ -1128,12 +1183,15 @@ function GraphOptionGroup({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
               {options.map((option) => {
                 const disabledReason = getDisabledReasonForOption?.(option.id) ?? null;
+                const selected = isOptionSelected
+                  ? isOptionSelected(option.id)
+                  : selectedId === option.id;
 
                 return (
                   <GraphOptionButton
                     key={option.id}
                     option={option}
-                    selected={selectedId === option.id}
+                    selected={selected}
                     testId={`${testIdPrefix}-${option.id}`}
                     disabledReason={disabledReason}
                     onSelect={() => onSelect(option.id)}
@@ -1213,6 +1271,14 @@ function CreationModeComposer({
         backendCapabilityContext,
       )
     : [];
+  const backendAdvancedCategories =
+    graphSelection.backend === "none"
+      ? []
+      : getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
+  const backendCompatibilityStack: StackState = {
+    ...stack,
+    ecosystem: graphSelection.backendEcosystem as Ecosystem,
+  };
 
   const applyGraphSelection = (nextSelection: GraphSelection) => {
     const specs = graphSelectionToSpecs(nextSelection);
@@ -1227,7 +1293,7 @@ function CreationModeComposer({
   };
 
   const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
-    onChange({ [getStackKeyForCategory(category)]: optionId } as Partial<StackState>);
+    onChange((current) => getStackOptionUpdate(current, category, optionId));
   };
 
   const getPrimaryToolIdsForSelection = (
@@ -1456,23 +1522,31 @@ function CreationModeComposer({
     label,
     category,
     testIdPrefix,
+    defaultCollapsed,
+    compatibilityStack = stack,
   }: {
     label: string;
     category: keyof typeof TECH_OPTIONS;
     testIdPrefix: string;
+    defaultCollapsed?: boolean;
+    compatibilityStack?: StackState;
   }) => (
     <GraphOptionGroup
       label={label}
-      options={getVisibleOptions(stack, category, TECH_OPTIONS[category] || [])}
+      options={getVisibleOptions(compatibilityStack, category, TECH_OPTIONS[category] || [])}
       selectedId={getStackStringValue(stack, category)}
+      selectedCount={getSelectedCount(category, stack)}
+      isOptionSelected={(optionId) => isSelectedCheck(stack, category, optionId)}
       testIdPrefix={testIdPrefix}
+      defaultCollapsed={defaultCollapsed}
       getDisabledReasonForOption={(optionId) =>
-        isOptionCompatible(stack, category, optionId)
+        isOptionCompatible(compatibilityStack, category, optionId)
           ? null
-          : (getDisabledReason(stack, category, optionId) ?? "Not compatible with current stack")
+          : (getDisabledReason(compatibilityStack, category, optionId) ??
+            "Not compatible with current stack")
       }
       onSelect={(optionId) => {
-        if (!isOptionCompatible(stack, category, optionId)) return;
+        if (!isOptionCompatible(compatibilityStack, category, optionId)) return;
         updateStackOption(category, optionId);
       }}
     />
@@ -1629,6 +1703,18 @@ function CreationModeComposer({
                 onSelect={(backendAuth) => updateGraphSelection({ backendAuth })}
               />
             )}
+
+            {backendAdvancedCategories.map((category) => (
+              <div key={category}>
+                {renderStackOptionGroup({
+                  label: getCategoryDisplayName(category),
+                  category,
+                  testIdPrefix: `multi-backend-${category}`,
+                  defaultCollapsed: true,
+                  compatibilityStack: backendCompatibilityStack,
+                })}
+              </div>
+            ))}
           </div>
         );
       case "database":
@@ -1823,10 +1909,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const displayedCategoryOrder = useMemo(() => {
     if (stack.stackMode !== "multi") return categoryOrder;
-    return getMultiFinalizeCategoryOrder(graphSelection).filter(
+    return getMultiFinalizeCategoryOrder().filter(
       (categoryKey) => !GRAPH_MANAGED_CATEGORY_SET.has(categoryKey),
     );
-  }, [categoryOrder, graphSelection, stack.stackMode]);
+  }, [categoryOrder, stack.stackMode]);
   const multiActiveStepIndex = Math.max(
     0,
     MULTI_STACK_STEPS.findIndex((step) => step.id === multiActiveStep),
@@ -1939,80 +2025,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
     startTransition(() => {
       setStack((currentStack: StackState) => {
-        const catKey = getStackKeyForCategory(category);
-        const update: Partial<StackState> = {};
-        const currentValue = currentStack[catKey];
-
-        if (isMultiSelectCategory(category as OptionCategory)) {
-          const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
-          let nextArray = [...currentArray];
-          const isSelected = currentArray.includes(techId);
-          const isVirtualNoneCategory = usesVirtualNoneSelection(catKey);
-
-          if (catKey === "webFrontend") {
-            if (techId === "none") {
-              nextArray = ["none"];
-            } else if (isSelected) {
-              if (currentArray.length > 1) {
-                nextArray = nextArray.filter((id) => id !== techId);
-              } else {
-                nextArray = ["none"];
-              }
-            } else {
-              nextArray = [techId];
-            }
-          } else if (catKey === "nativeFrontend") {
-            if (techId === "none") {
-              nextArray = ["none"];
-            } else if (isSelected) {
-              nextArray = ["none"];
-            } else {
-              nextArray = [techId];
-            }
-          } else {
-            if (isVirtualNoneCategory && techId === "none") {
-              nextArray = [];
-            } else if (isSelected) {
-              nextArray = nextArray.filter((id) => id !== techId);
-            } else {
-              nextArray.push(techId);
-            }
-
-            if (nextArray.length > 1) {
-              nextArray = nextArray.filter((id) => id !== "none");
-            }
-            if (
-              nextArray.length === 0 &&
-              (catKey === "codeQuality" ||
-                catKey === "documentation" ||
-                catKey === "appPlatforms" ||
-                catKey === "examples" ||
-                isVirtualNoneCategory)
-            ) {
-              // These categories can be empty
-            } else if (nextArray.length === 0) {
-              nextArray = ["none"];
-            }
-          }
-
-          const uniqueNext = [...new Set(nextArray)].sort();
-          const uniqueCurrent = [...new Set(currentArray)].sort();
-
-          if (JSON.stringify(uniqueNext) !== JSON.stringify(uniqueCurrent)) {
-            (update as Record<string, unknown>)[catKey] = uniqueNext;
-          }
-        } else {
-          if (currentValue !== techId) {
-            (update as Record<string, string>)[catKey] = techId;
-          } else {
-            if ((category === "git" || category === "install") && techId === "false") {
-              (update as Record<string, string>)[catKey] = "true";
-            } else if ((category === "git" || category === "install") && techId === "true") {
-              (update as Record<string, string>)[catKey] = "false";
-            }
-          }
-        }
-
+        const update = getStackOptionUpdate(currentStack, category, techId);
         return Object.keys(update).length > 0 ? update : {};
       });
     });
