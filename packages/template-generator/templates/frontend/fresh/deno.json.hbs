@@ -1,9 +1,8 @@
 {
-  "lock": false,
   "tasks": {
-    "check": "deno fmt --check . && deno lint . && deno check",
-    "dev": "vite",
-    "build": "vite build",
+    "check": "deno fmt --check . && deno lint . && deno check --node-modules-dir=auto main.ts client.ts",
+    "dev": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1",
+    "build": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1 build",
     "start": "deno serve -A _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },
@@ -20,10 +19,14 @@
   ],
   "imports": {
     "@/": "./",
-    "fresh": "jsr:@fresh/core@^2.2.0",
-    "preact": "npm:preact@^10.27.2",
-    "@preact/signals": "npm:@preact/signals@^2.5.0",
-    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
+    "fresh": "jsr:@fresh/core@^2.3.3",
+    "preact": "npm:preact@^10.29.2",
+    "preact/": "npm:preact@^10.29.2/",
+    "preact/jsx-runtime": "npm:preact@^10.29.2/jsx-runtime",
+    "preact/jsx-dev-runtime": "npm:preact@^10.29.2/jsx-dev-runtime",
+    "@preact/signals": "npm:@preact/signals@^2.9.1",
+    "@preact/signals/": "npm:@preact/signals@^2.9.1/",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.1.2",
     "vite": "npm:vite@^7.3.1"{{#if (eq cssFramework "tailwind")}},
     "tailwindcss": "npm:tailwindcss@^4.1.12",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12"{{#if (eq uiLibrary "daisyui")}},
@@ -57,6 +60,5 @@
     "types": [
       "vite/client"
     ]
-  },
-  "nodeModulesDir": "auto"
+  }
 }

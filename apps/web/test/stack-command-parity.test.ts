@@ -26,6 +26,22 @@ describe("generateStackCommand parity", () => {
     expect(command).toContain("--feature-flags launchdarkly");
   });
 
+  it("does not treat core TypeScript stack selections as React Native-only defaults", () => {
+    const backendCommand = generateStackCommand({
+      ...DEFAULT_STACK,
+      backend: "fastify",
+    });
+    const frontendCommand = generateStackCommand({
+      ...DEFAULT_STACK,
+      webFrontend: ["next"],
+    });
+
+    expect(backendCommand).not.toContain("--yes");
+    expect(backendCommand).toContain("--backend fastify");
+    expect(frontendCommand).not.toContain("--yes");
+    expect(frontendCommand).toContain("--frontend next");
+  });
+
   it("maps builder-only aliases to CLI flags", () => {
     const command = generateStackCommand({
       ...DEFAULT_STACK,
@@ -39,14 +55,19 @@ describe("generateStackCommand parity", () => {
     expect(command).toContain("--ai langgraph");
   });
 
-  it("serializes merged frontend selections into a single --frontend flag", () => {
+  it("serializes React Native frontend selections through the mobile ecosystem", () => {
     const command = generateStackCommand({
       ...DEFAULT_STACK,
-      webFrontend: ["next"],
+      ecosystem: "react-native",
+      webFrontend: ["none"],
       nativeFrontend: ["native-bare"],
+      mobileNavigation: "expo-router",
     });
 
-    expect(command).toContain("--frontend next native-bare");
+    expect(command).toContain("--ecosystem react-native");
+    expect(command).toContain("--frontend native-bare");
+    expect(command).toContain("--mobile-navigation expo-router");
+    expect(command).not.toContain("--backend");
   });
 
   it("serializes addons from codeQuality, documentation, and appPlatforms", () => {

@@ -42,6 +42,10 @@
       "types": "./dist/stack-translation.d.mts",
       "default": "./dist/stack-translation.mjs"
     },
+    "./stack-graph": {
+      "types": "./dist/stack-graph.d.mts",
+      "default": "./dist/stack-graph.mjs"
+    },
     "./types": {
       "types": "./dist/types.d.mts",
       "default": "./dist/types.mjs"

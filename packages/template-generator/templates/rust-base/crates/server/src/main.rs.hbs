@@ -186,7 +186,8 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 
 {{#if (eq rustAuth "oauth2")}}
     // Initialize OAuth2 client
-    let _oauth2_client = auth::create_oauth2_client();
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
 {{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
@@ -548,7 +549,8 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 
 {{#if (eq rustAuth "oauth2")}}
     // Initialize OAuth2 client
-    let _oauth2_client = auth::create_oauth2_client();
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
 {{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
@@ -934,7 +936,8 @@ async fn rocket() -> _ {
 {{/if}}
 {{#if (eq rustAuth "oauth2")}}
     // Initialize OAuth2 client
-    let _oauth2_client = auth::create_oauth2_client();
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
 {{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 
@@ -1096,7 +1099,8 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 
 {{#if (eq rustAuth "oauth2")}}
     // Initialize OAuth2 client
-    let _oauth2_client = auth::create_oauth2_client();
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
 {{#if (eq rustLogging "tracing")}}    tracing::info!("OAuth2 client initialized");{{else if (eq rustLogging "env-logger")}}    log::info!("OAuth2 client initialized");{{else}}    println!("OAuth2 client initialized");{{/if}}
 {{/if}}
 

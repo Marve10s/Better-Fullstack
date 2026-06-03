@@ -206,7 +206,7 @@ const router: Router<any, any, any> = createRouter({
 				model,
 				messages: await convertToModelMessages(uiMessages),
 			});
-			return result.toUIMessageStreamResponse();
+			return result.toUIMessageStreamResponse() as any;
 		},
 	})
 {{/if}}
@@ -228,7 +228,7 @@ const router: Router<any, any, any> = createRouter({
 				model,
 				messages: await convertToModelMessages(uiMessages),
 			});
-			return result.toUIMessageStreamResponse();
+			return result.toUIMessageStreamResponse() as any;
 		},
 	})
 {{/if}};

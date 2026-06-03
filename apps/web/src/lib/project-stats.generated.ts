@@ -6,5 +6,13 @@ export const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce
   0,
 );
 export const CATEGORY_COUNT = Object.keys(OPTION_CATEGORY_METADATA).length;
-export const ECOSYSTEM_COUNT = 5;
-export const ECOSYSTEM_NAMES = ["TypeScript", "Rust", "Python", "Go", "Java"] as const;
+export const ECOSYSTEM_COUNT = 7;
+export const ECOSYSTEM_NAMES = [
+  "TypeScript",
+  "React Native",
+  "Rust",
+  "Python",
+  "Go",
+  "Java",
+  "Elixir",
+] as const;

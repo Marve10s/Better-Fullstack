@@ -28,16 +28,22 @@ That release lane currently covers:
 - `apps/cli` lint already includes the sync test, so a parity regression can appear as a lint failure.
 - Not every generated frontend template defines `check-types`. Root commands should use `--if-present` semantics when filtering across packages.
 - `apps/web` route changes can require a build to regenerate `routeTree.gen.ts` before type checks settle.
+- CLI parity and generator tests exercise built workspace packages in a few places. After changing `packages/types/src/*` or `packages/template-generator/src/*`, rebuild those packages before trusting CLI builder-sync, ecosystem generator tests, or scaffold output.
+- `packages/template-generator/tsconfig.json` includes `src/**/*`; tests under `packages/template-generator/test/` need their own TypeScript coverage or an expanded include set.
+- The broad legacy runtime matrix in `apps/cli/test/e2e/e2e.e2e.ts` is not the PR-stable runtime contract. PR runtime confidence should come from `testing/smoke-test.ts --dev-check --strict`, Playwright builder tests, and `apps/cli/test/e2e/web-command-roundtrip.test.ts`.
 
 ## Release workflow expectations
 
 - `.github/workflows/test.yaml` runs a dedicated `Release Guard` job before broader build checks.
 - `.github/workflows/release.yaml` also runs the release verification lane before publishing packages.
 - Published packages are versioned independently inside the release workflow. Do not hand-edit version bumps casually during unrelated feature work.
+- Keep Bun pinned for deterministic release verification, but prefer the Node/npm publish path for actual package publishing. Treat publish-tooling changes in `.github/workflows/release.yaml` as release-sensitive.
 
 ## CI build-order notes
 
 - The CI lint job builds `@better-fullstack/types` before running `validate:tech-links`, so workspace alias imports work in `apps/web`. If a new pre-build CI step is added that touches web source, ensure types are built first.
+- Scaffold and smoke harnesses should resolve the CLI binary from `apps/cli/package.json` and self-build needed workspace packages instead of assuming `apps/cli/dist/cli.mjs` already exists.
+- Preserve structured CLI scaffold diagnostics, expected-file checks, and CI artifact uploads in `testing/lib/cli-scaffold.ts`-based harnesses; they are what make web-command round-trip and package-manager failures debuggable.
 
 ## Upstream maintenance
 

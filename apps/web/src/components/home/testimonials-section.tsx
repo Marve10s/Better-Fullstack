@@ -55,7 +55,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
       className="group relative flex h-full flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
     >
       <Quote
-        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-lime-700/40"
+        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-lime-800/40 dark:group-hover:text-[#C6E853]/40"
         aria-hidden
       />
       <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
@@ -97,7 +97,7 @@ export default function TestimonialsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
               ✦ on the record
             </p>
             <h2
@@ -117,7 +117,7 @@ export default function TestimonialsSection() {
                 href="https://app.daily.dev/posts/a42eCYoJk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-700"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-800 dark:hover:text-[#C6E853]"
               >
                 daily.dev
               </a>{" "}
@@ -126,7 +126,7 @@ export default function TestimonialsSection() {
                 href="https://x.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-700"
+                className="text-foreground underline underline-offset-4 transition-colors hover:text-lime-800 dark:hover:text-[#C6E853]"
               >
                 X
               </a>{" "}
@@ -155,7 +155,7 @@ export default function TestimonialsSection() {
         <div className="mt-16 border-t border-border pt-10">
           <div className="grid grid-cols-12 gap-x-4 gap-y-4">
             <div className="col-span-12 sm:col-span-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
                 ✦ liked on x
               </p>
               <p className="mt-2 text-xs text-muted-foreground">Builders who hearted the launch.</p>

@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Container } from "@/components/container";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -53,7 +54,7 @@ return (
   <ScrollView style={styles.scrollView}>
     <View style={styles.content}>
       <Text style={[styles.title, { color: theme.text }]}>
-        BETTER T STACK
+        Better Fullstack
       </Text>
 
       {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
@@ -232,3 +233,4 @@ marginBottom: 8,
 fontWeight: "bold",
 },
 });
+{{/if}}

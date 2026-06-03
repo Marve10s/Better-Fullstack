@@ -23,6 +23,7 @@ import {
   runMavenTests,
   runUvSync,
   runGoModTidy,
+  runMixCompile,
 } from "./install-dependencies";
 import { displayPostInstallInstructions } from "./post-installation";
 
@@ -66,8 +67,11 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 
-    // Skip npm/pnpm/bun install for Rust/Python projects (they use cargo/uv)
-    if (options.install && options.ecosystem === "typescript") {
+    // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
+    if (
+      options.install &&
+      (options.ecosystem === "typescript" || options.ecosystem === "react-native")
+    ) {
       await installDependencies({
         projectDir,
         packageManager: options.packageManager,
@@ -100,6 +104,10 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       } else {
         await runMavenTests({ projectDir });
       }
+    }
+
+    if (options.install && options.ecosystem === "elixir") {
+      await runMixCompile({ projectDir });
     }
 
     await initializeGit(projectDir, options.git);

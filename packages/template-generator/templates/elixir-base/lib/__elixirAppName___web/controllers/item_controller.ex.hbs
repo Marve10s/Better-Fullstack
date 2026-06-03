@@ -1,0 +1,25 @@
+defmodule {{elixirModuleName}}Web.ItemController do
+  use {{elixirModuleName}}Web, :controller
+
+  alias {{elixirModuleName}}.Catalog
+
+  def index(conn, _params) do
+    json(conn, %{data: Enum.map(Catalog.list_items(), &item_json/1)})
+  end
+
+  def show(conn, %{"id" => id}) do
+    json(conn, %{data: item_json(Catalog.get_item!(id))})
+  end
+
+  def create(conn, %{"item" => attrs}) do
+    with {:ok, item} <- Catalog.create_item(attrs) do
+      conn
+      |> put_status(:created)
+      |> json(%{data: item_json(item)})
+    end
+  end
+
+  defp item_json(item) do
+    %{id: item.id, name: item.name, description: item.description}
+  end
+end

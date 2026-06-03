@@ -45,11 +45,28 @@ const hasSolid = (f: readonly string[]) => f.some((x) => SOLID_FRONTENDS.has(x))
 const hasAnyWebFrontend = (f: readonly string[]) =>
   hasReact(f) || hasSvelte(f) || hasNuxt(f) || hasSolid(f);
 
-const needsStandaloneServer = (backend: string) =>
-  backend === "convex" || backend === "none" || backend === "self";
+const hasGraphBackend = (config: ProjectConfig) =>
+  config.stackParts?.some(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  ) ?? false;
 
-const needsAnyServer = (backend: string) =>
-  backend === "convex" || backend === "none";
+const hasGraphOrm = (config: ProjectConfig) =>
+  config.stackParts?.some(
+    (part) => part.role === "orm" && part.source !== "provided",
+  ) ?? false;
+
+const needsStandaloneServer = (config: ProjectConfig) =>
+  !hasGraphBackend(config) &&
+  (config.backend === "convex" || config.backend === "none" || config.backend === "self");
+
+const needsAnyServer = (config: ProjectConfig) =>
+  !hasGraphBackend(config) && (config.backend === "convex" || config.backend === "none");
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -61,7 +78,7 @@ const serverFeature = (
   id,
   featureKey,
   displayName,
-  willSkip: (c) => (c[featureKey] as string) !== "none" && needsStandaloneServer(c.backend),
+  willSkip: (c) => (c[featureKey] as string) !== "none" && needsStandaloneServer(c),
   reason: `${displayName} requires a standalone server backend (e.g., Hono, Express).`,
   suggestions: ["Switch to a standalone backend like Hono", `Remove ${displayName.toLowerCase()}`],
 });
@@ -74,7 +91,7 @@ const backendFeature = (
   id,
   featureKey,
   displayName,
-  willSkip: (c) => (c[featureKey] as string) !== "none" && needsAnyServer(c.backend),
+  willSkip: (c) => (c[featureKey] as string) !== "none" && needsAnyServer(c),
   reason: `${displayName} requires a backend server. Convex and no-backend modes are not supported.`,
   suggestions: ["Switch to a server backend like Hono or a fullstack framework", `Remove ${displayName.toLowerCase()}`],
 });
@@ -124,7 +141,7 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
     willSkip: (c) => {
       if (c.featureFlags === "none") return false;
       const react = hasReact(c.frontend);
-      const standalone = !needsStandaloneServer(c.backend);
+      const standalone = !needsStandaloneServer(c);
       const selfReact = c.backend === "self" && react;
       return !react && !standalone && !selfReact;
     },
@@ -150,7 +167,8 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       c.database !== "edgedb" &&
       c.database !== "redis" &&
       c.backend !== "convex" &&
-      c.orm === "none",
+      c.orm === "none" &&
+      !hasGraphOrm(c),
     reason: "This database requires an ORM to generate setup templates. EdgeDB and Redis work without one.",
     suggestions: ["Select an ORM like Drizzle or Prisma", "Use EdgeDB or Redis instead", "Remove database"],
   },

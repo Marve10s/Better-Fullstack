@@ -24,7 +24,7 @@ import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER, generateStackCommand } from "../sr
 describe("Java Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {
     it("should have java as a valid ecosystem value", () => {
-      const ecosystems: Ecosystem[] = ["typescript", "rust", "python", "go", "java"];
+      const ecosystems: Ecosystem[] = ["typescript", "react-native", "rust", "python", "go", "java", "elixir"];
       expect(ecosystems).toContain("java");
     });
   });
@@ -37,8 +37,8 @@ describe("Java Ecosystem Tab", () => {
       expect(javaEcosystem?.description).toBe("Modern Java ecosystem");
     });
 
-    it("should have exactly 5 ecosystems", () => {
-      expect(ECOSYSTEMS).toHaveLength(5);
+    it("should list every ecosystem category", () => {
+      expect(ECOSYSTEMS).toHaveLength(Object.keys(ECOSYSTEM_CATEGORIES).length);
     });
 
     it("should use the Java language icon for Java presets", () => {

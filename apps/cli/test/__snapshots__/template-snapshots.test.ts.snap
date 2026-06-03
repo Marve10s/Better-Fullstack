@@ -126,7 +126,9 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
   "apps/web/.npmrc",
   "apps/web/astro.config.mjs",
   "apps/web/package.json",
+  "apps/web/src/components/Counter.tsx",
   "apps/web/src/components/Header.astro",
+  "apps/web/src/components/ModeToggle.tsx",
   "apps/web/src/env.d.ts",
   "apps/web/src/layouts/Layout.astro",
   "apps/web/src/pages/api/rpc/[...rest].ts",
@@ -786,6 +788,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "CLAUDE.md",
   "README.md",
   "apps/native/.env",
+  "apps/native/.env.example",
   "apps/native/app.json",
   "apps/native/app/(drawer)/(tabs)/_layout.tsx",
   "apps/native/app/(drawer)/(tabs)/index.tsx",
@@ -797,9 +800,11 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "apps/native/app/modal.tsx",
   "apps/native/components/container.tsx",
   "apps/native/components/header-button.tsx",
+  "apps/native/components/mobile-ui-provider.tsx",
   "apps/native/components/tabbar-icon.tsx",
   "apps/native/lib/android-navigation-bar.tsx",
   "apps/native/lib/constants.ts",
+  "apps/native/lib/deep-linking.ts",
   "apps/native/lib/use-color-scheme.ts",
   "apps/native/metro.config.js",
   "apps/native/package.json",
@@ -833,6 +838,56 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: native-mobile-integrations 1`] = `
+[
+  "CLAUDE.md",
+  "README.md",
+  "apps/native/.env",
+  "apps/native/.env.example",
+  "apps/native/.maestro/home.yaml",
+  "apps/native/App.tsx",
+  "apps/native/__tests__/mobile-ui-provider.test.tsx",
+  "apps/native/app.json",
+  "apps/native/components/container.tsx",
+  "apps/native/components/header-button.tsx",
+  "apps/native/components/mobile-ui-provider.tsx",
+  "apps/native/components/tabbar-icon.tsx",
+  "apps/native/index.js",
+  "apps/native/jest.config.js",
+  "apps/native/lib/android-navigation-bar.tsx",
+  "apps/native/lib/constants.ts",
+  "apps/native/lib/deep-linking.ts",
+  "apps/native/lib/mobile-storage.ts",
+  "apps/native/lib/notifications.ts",
+  "apps/native/lib/updates.ts",
+  "apps/native/lib/use-color-scheme.ts",
+  "apps/native/metro.config.js",
+  "apps/native/navigation/native-navigation.tsx",
+  "apps/native/package.json",
+  "apps/native/tsconfig.json",
+  "apps/native/utils/orpc.ts",
+  "apps/server/.env",
+  "apps/server/package.json",
+  "apps/server/src/index.ts",
+  "apps/server/tsconfig.json",
+  "apps/server/tsdown.config.ts",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
 exports[`Template Snapshots File Structure Snapshots file structure: java-spring-boot-jpa-security 1`] = `
 [
   ".env.example",
@@ -854,6 +909,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
   "src/main/resources/application.yml",
   "src/main/resources/db/migration/V1__init.sql",
   "src/test/java/com/example/snapshotjavaspringbootjpasecurity/ApplicationTests.java",
+  "src/test/java/com/example/snapshotjavaspringbootjpasecurity/MockitoSmokeTest.java",
   "src/test/java/com/example/snapshotjavaspringbootjpasecurity/service/AppUserServiceTest.java",
 ]
 `;
@@ -922,7 +978,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: tanstack-route
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -1020,7 +1076,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -1028,7 +1084,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -1040,23 +1096,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -1331,7 +1387,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
@@ -1700,7 +1756,7 @@ export default nextConfig;
     "start": "next start"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -1719,20 +1775,20 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.17.0",
-    "@tanstack/react-query": "^5.100.10",
+    "@tanstack/react-query": "^5.100.14",
     "better-auth": "catalog:",
-    "@tanstack/react-form": "^1.32.0",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-form": "^1.33.0",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
     "tailwindcss": "^4.3.0",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-next-self-fullstack/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -1954,7 +2010,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "next": "^16.2.6",
       "@trpc/server": "^11.17.0",
       "@trpc/client": "^11.17.0",
-      "better-auth": "^1.6.11"
+      "better-auth": "1.6.12"
     }
   },
   "scripts": {
@@ -1969,6 +2025,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "db:migrate": "bun run --filter @snapshot-next-self-fullstack/db db:migrate"
   },
   "packageManager": "bun@1.3.5",
+  "overrides": {
+    "kysely": "0.28.17"
+  },
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -2116,7 +2175,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "@snapshot-next-self-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.11"
+    "@better-auth/drizzle-adapter": "1.6.12"
   }
 }
 "
@@ -2267,7 +2326,7 @@ export default defineConfig({
     "zod": "catalog:",
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.20.0"
+    "pg": "^8.21.0"
   }
 }
 "
@@ -2476,7 +2535,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 39,
+  "fileCount": 41,
   "files": [
     {
       "content": "[exists]",
@@ -2504,19 +2563,25 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.3.3",
-    "@astrojs/node": "^10.1.1",
+    "astro": "^6.4.2",
+    "@astrojs/react": "^5.0.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "@astrojs/node": "^10.1.2",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "tw-animate-css": "^1.4.0"
+    "tw-animate-css": "^1.4.0",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "tailwindcss": "^4.3.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.1.5",
     "typescript": "catalog:",
     "@snapshot-astro-react-integration/config": "workspace:*"
   }
@@ -2527,7 +2592,15 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     },
     {
       "content": "[exists]",
+      "path": "apps/web/src/components/Counter.tsx",
+    },
+    {
+      "content": "[exists]",
       "path": "apps/web/src/components/Header.astro",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ModeToggle.tsx",
     },
     {
       "content": "[exists]",
@@ -2551,16 +2624,33 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     },
     {
       "content": 
-"import { createORPCClient } from '@orpc/client';
-import { RPCLink } from '@orpc/client/fetch';
-import type { appRouter } from '@snapshot-astro-react-integration/api/routers/index';
+"import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { AppRouterClient } from "@snapshot-astro-react-integration/api/routers/index";
 
-const link = new RPCLink({
-	url: '/api/rpc',
-	headers: () => ({}),
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error, query) => {
+			toast.error(\`Error: \${error.message}\`, {
+				action: {
+					label: "retry",
+					onClick: query.invalidate,
+				},
+			});
+		},
+	}),
 });
 
-export const client = createORPCClient<typeof appRouter>(link);
+export const link = new RPCLink({
+	url: \`\${env.VITE_SERVER_URL}/rpc\`,
+});
+
+export const client: AppRouterClient = createORPCClient(link)
+
+export const orpc = createTanstackQueryUtils(client)
 "
 ,
       "path": "apps/web/src/utils/orpc.ts",
@@ -2573,6 +2663,8 @@ export const client = createORPCClient<typeof appRouter>(link);
 		"paths": {
 			"@/*": ["./src/*"]
 		}
+		,"jsx": "react-jsx",
+		"jsxImportSource": "react"
 	},
 	"include": ["src/**/*", "env.d.ts"]
 }
@@ -2655,10 +2747,10 @@ export const client = createORPCClient<typeof appRouter>(link);
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/db": "workspace:*",
-    "@orpc/server": "^1.14.3",
-    "@orpc/client": "^1.14.3",
-    "@orpc/openapi": "^1.14.3",
-    "@orpc/zod": "^1.14.3"
+    "@orpc/server": "^1.14.4",
+    "@orpc/client": "^1.14.4",
+    "@orpc/openapi": "^1.14.4",
+    "@orpc/zod": "^1.14.4"
   }
 }
 "
@@ -3028,12 +3120,12 @@ export default defineNuxtConfig({
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.7.1",
-    "@nuxt/content": "^3.13.0",
+    "@nuxt/ui": "^4.8.1",
+    "@nuxt/content": "^3.14.0",
     "@nuxtjs/mdc": "^0.22.0",
     "nuxt": "^4.4.6",
-    "vue": "^3.5.34",
-    "vue-router": "^5.0.7",
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-nuxt-standalone/env": "workspace:*",
@@ -3044,15 +3136,15 @@ export default defineNuxtConfig({
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@tanstack/vue-query": "^5.100.10",
-    "@orpc/tanstack-query": "^1.14.3"
+    "@tanstack/vue-query": "^5.100.14",
+    "@orpc/tanstack-query": "^1.14.4"
   },
   "devDependencies": {
     "tailwindcss": "^4.3.0",
-    "@iconify-json/lucide": "^1.2.108",
+    "@iconify-json/lucide": "^1.2.111",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
-    "@tanstack/vue-query-devtools": "^6.1.29"
+    "@tanstack/vue-query-devtools": "^6.1.33"
   }
 }
 "
@@ -3118,10 +3210,10 @@ export default defineNuxtConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.3",
-      "@orpc/client": "^1.14.3",
-      "@orpc/openapi": "^1.14.3",
-      "@orpc/zod": "^1.14.3"
+      "@orpc/server": "^1.14.4",
+      "@orpc/client": "^1.14.4",
+      "@orpc/openapi": "^1.14.4",
+      "@orpc/zod": "^1.14.4"
     }
   },
   "scripts": {
@@ -3478,11 +3570,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: express-node-t
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@types/express": "catalog:",
     "@types/cors": "^2.8.19",
-    "tsx": "^4.22.1",
+    "tsx": "^4.22.4",
     "@types/node": "catalog:"
   }
 }
@@ -3576,7 +3668,7 @@ app.listen(3000, () => {
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -3584,7 +3676,7 @@ app.listen(3000, () => {
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -3595,23 +3687,23 @@ app.listen(3000, () => {
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
     "@types/node": "catalog:",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -3885,7 +3977,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/node": "^25.8.0",
+      "@types/node": "^25.9.1",
       "@trpc/server": "^11.17.0",
       "@types/express": "^5.0.6",
       "@prisma/client": "^7.8.0",
@@ -4078,7 +4170,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-express-node-trpc/env": "workspace:*",
     "@prisma/client": "catalog:",
     "@prisma/adapter-pg": "^7.8.0",
-    "pg": "^8.20.0"
+    "pg": "^8.21.0"
   }
 }
 "
@@ -4222,7 +4314,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -4359,7 +4451,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -4367,7 +4459,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -4376,26 +4468,26 @@ export default app;
     "@snapshot-hono-bun-orpc/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@orpc/tanstack-query": "^1.14.3",
+    "@orpc/tanstack-query": "^1.14.4",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -4666,13 +4758,13 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
-      "@orpc/server": "^1.14.3",
-      "@orpc/openapi": "^1.14.3",
-      "@orpc/zod": "^1.14.3",
+      "hono": "^4.12.23",
+      "@orpc/server": "^1.14.4",
+      "@orpc/openapi": "^1.14.4",
+      "@orpc/zod": "^1.14.4",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/client": "^1.14.3"
+      "@orpc/client": "^1.14.4"
     }
   },
   "scripts": {
@@ -5031,7 +5123,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: better-auth-fu
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-better-auth-full/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -5133,7 +5225,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -5141,7 +5233,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -5152,25 +5244,25 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
+    "@tanstack/react-query": "^5.100.14",
     "better-auth": "catalog:",
-    "@tanstack/react-form": "^1.32.0",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-form": "^1.33.0",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -5475,9 +5567,9 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
-      "better-auth": "^1.6.11",
+      "better-auth": "1.6.12",
       "@trpc/client": "^11.17.0"
     }
   },
@@ -5494,6 +5586,9 @@ export default defineConfig({
     "db:migrate": "bun run --filter @snapshot-better-auth-full/db db:migrate"
   },
   "packageManager": "bun@1.3.5",
+  "overrides": {
+    "kysely": "0.28.17"
+  },
   "dependencies": {
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -5641,7 +5736,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-better-auth-full/env": "workspace:*",
     "@snapshot-better-auth-full/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "^1.6.11"
+    "@better-auth/drizzle-adapter": "1.6.12"
   }
 }
 "
@@ -5798,7 +5893,7 @@ export default defineConfig({
     "zod": "catalog:",
     "@snapshot-better-auth-full/env": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.20.0"
+    "pg": "^8.21.0"
   }
 }
 "
@@ -6031,7 +6126,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -6039,7 +6134,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -6048,19 +6143,19 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@snapshot-convex-clerk/backend": "workspace:*",
     "convex": "catalog:",
     "@clerk/clerk-react": "^5.61.3",
-    "lucide-react": "^1.16.0"
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
     "@types/node": "catalog:",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-convex-clerk/config": "workspace:*"
   }
@@ -6311,7 +6406,7 @@ export default defineConfig({
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "convex": "^1.39.1",
-      "@types/node": "^25.8.0"
+      "@types/node": "^25.9.1"
     }
   },
   "scripts": {
@@ -6572,7 +6667,7 @@ export default nextConfig;
     "start": "next start"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -6592,19 +6687,19 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.17.0",
-    "@tanstack/react-query": "^5.100.10",
-    "@clerk/nextjs": "^7.3.5",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "@clerk/nextjs": "^7.4.2",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
     "tailwindcss": "^4.3.0",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-self-next-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -7146,7 +7241,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "dev": "vite dev"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -7155,11 +7250,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@tailwindcss/vite": "^4.3.0",
     "tailwindcss": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-query": "^5.100.10",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-router": "^1.170.10",
     "@tanstack/react-router-with-query": "^1.130.17",
-    "@tanstack/react-start": "^1.168.6",
-    "@tanstack/router-plugin": "^1.168.6",
+    "@tanstack/react-start": "^1.168.18",
+    "@tanstack/router-plugin": "^1.168.13",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "vite-tsconfig-paths": "^6.1.1",
@@ -7173,24 +7268,24 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@orpc/tanstack-query": "^1.14.3",
-    "@clerk/tanstack-react-start": "^1.2.5",
-    "srvx": "^0.11.15",
-    "lucide-react": "^1.16.0"
+    "@orpc/tanstack-query": "^1.14.4",
+    "@clerk/tanstack-react-start": "^1.3.2",
+    "srvx": "^0.11.16",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "jsdom": "^29.1.1",
-    "vite": "^8.0.13",
-    "web-vitals": "^5.2.0",
+    "vite": "^8.0.14",
+    "web-vitals": "^5.3.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -7489,10 +7584,10 @@ export default defineConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.3",
-      "@orpc/client": "^1.14.3",
-      "@orpc/openapi": "^1.14.3",
-      "@orpc/zod": "^1.14.3"
+      "@orpc/server": "^1.14.4",
+      "@orpc/client": "^1.14.4",
+      "@orpc/openapi": "^1.14.4",
+      "@orpc/zod": "^1.14.4"
     }
   },
   "scripts": {
@@ -7847,7 +7942,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoo
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -7945,7 +8040,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -7953,7 +8048,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -7963,23 +8058,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -8254,7 +8349,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@trpc/client": "^11.17.0"
     }
@@ -8431,7 +8526,7 @@ export type AppRouter = typeof appRouter;
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-mongodb-mongoose/env": "workspace:*",
-    "mongoose": "^9.6.2"
+    "mongoose": "^9.6.3"
   }
 }
 "
@@ -8567,7 +8662,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: postgres-prism
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -8665,7 +8760,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -8673,7 +8768,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -8684,23 +8779,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -8975,7 +9070,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@prisma/client": "^7.8.0",
       "@trpc/client": "^11.17.0"
@@ -9167,7 +9262,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-postgres-prisma/env": "workspace:*",
     "@prisma/client": "catalog:",
     "@prisma/adapter-pg": "^7.8.0",
-    "pg": "^8.20.0"
+    "pg": "^8.21.0"
   }
 }
 "
@@ -9307,11 +9402,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: algolia-search
     "hono": "catalog:",
     "@trpc/server": "catalog:",
     "@hono/trpc-server": "^0.4.2",
-    "algoliasearch": "^5.52.1"
+    "algoliasearch": "^5.53.0"
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-algolia-search-hono/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -9413,7 +9508,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -9421,7 +9516,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -9433,23 +9528,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -9724,7 +9819,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
@@ -10090,7 +10185,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-to
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -10188,7 +10283,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -10196,7 +10291,7 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
@@ -10208,23 +10303,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.10",
-    "lucide-react": "^1.16.0"
+    "@tanstack/react-query": "^5.100.14",
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.10"
+    "@tanstack/react-query-devtools": "^5.100.14"
   }
 }
 "
@@ -10499,7 +10594,7 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
@@ -10534,7 +10629,7 @@ export default defineConfig({
     "typescript": "catalog:",
     "@types/bun": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
-    "ai-cli": "^0.2.1"
+    "ai-cli": "^0.3.0"
   }
 }
 "
@@ -10861,7 +10956,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
+    "@base-ui/react": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -10869,25 +10964,25 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.4",
+    "@tanstack/react-router": "^1.170.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-frontend-only-no-backend/env": "workspace:*",
-    "lucide-react": "^1.16.0"
+    "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.5",
-    "@tanstack/router-plugin": "^1.168.6",
-    "@types/node": "^25.8.0",
-    "@types/react": "^19.2.14",
+    "@tanstack/router-cli": "^1.167.12",
+    "@tanstack/router-plugin": "^1.168.13",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.13",
+    "vite": "^8.0.14",
     "typescript": "catalog:",
     "@snapshot-frontend-only-no-backend/config": "workspace:*"
   }
@@ -11234,11 +11329,15 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 62,
+  "fileCount": 65,
   "files": [
     {
       "content": "[exists]",
       "path": "apps/native/.env",
+    },
+    {
+      "content": "EXPO_PUBLIC_SERVER_URL=http://localhost:3000",
+      "path": "apps/native/.env.example",
     },
     {
       "content": "[exists]",
@@ -11300,7 +11399,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 "
 ,
       "path": "apps/native/app/(drawer)/(tabs)/index.tsx",
@@ -11328,7 +11426,7 @@ return (
   <ScrollView style={styles.scrollView}>
     <View style={styles.content}>
       <Text style={[styles.title, { color: theme.text }]}>
-        BETTER T STACK
+        Better Fullstack
       </Text>
 
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -11448,6 +11546,10 @@ fontWeight: "bold",
     },
     {
       "content": "[exists]",
+      "path": "apps/native/components/mobile-ui-provider.tsx",
+    },
+    {
+      "content": "[exists]",
       "path": "apps/native/components/tabbar-icon.tsx",
     },
     {
@@ -11457,6 +11559,10 @@ fontWeight: "bold",
     {
       "content": "[exists]",
       "path": "apps/native/lib/constants.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/deep-linking.ts",
     },
     {
       "content": "[exists]",
@@ -11481,32 +11587,33 @@ fontWeight: "bold",
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.16.1",
-    "@react-navigation/drawer": "^7.10.2",
-    "@react-navigation/native": "^7.2.4",
-    "@tanstack/react-form": "^1.32.0",
-    "@tanstack/react-query": "^5.100.10",
-    "expo": "^55.0.24",
-    "expo-constants": "^55.0.16",
-    "expo-crypto": "^55.0.15",
-    "expo-linking": "^55.0.15",
-    "expo-navigation-bar": "^55.0.13",
-    "expo-network": "^55.0.14",
-    "expo-router": "^55.0.14",
-    "expo-secure-store": "^55.0.14",
-    "expo-splash-screen": "^55.0.21",
-    "expo-status-bar": "^55.0.6",
-    "expo-system-ui": "^55.0.18",
-    "expo-web-browser": "^55.0.16",
+    "@react-navigation/bottom-tabs": "^7.16.2",
+    "@react-navigation/drawer": "^7.10.3",
+    "@react-navigation/native": "^7.2.5",
+    "@react-navigation/native-stack": "^7.16.0",
+    "@tanstack/react-form": "^1.33.0",
+    "@tanstack/react-query": "^5.100.14",
+    "expo": "^56.0.8",
+    "expo-constants": "^56.0.16",
+    "expo-crypto": "^56.0.4",
+    "expo-linking": "^56.0.13",
+    "expo-navigation-bar": "^56.0.3",
+    "expo-network": "^56.0.4",
+    "expo-router": "^56.2.8",
+    "expo-secure-store": "^56.0.4",
+    "expo-splash-screen": "^56.0.10",
+    "expo-status-bar": "^56.0.4",
+    "expo-system-ui": "^56.0.5",
+    "expo-web-browser": "^56.0.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-native": "^0.85.3",
-    "react-native-gesture-handler": "^2.31.2",
-    "react-native-reanimated": "^4.3.1",
-    "react-native-safe-area-context": "^5.7.0",
-    "react-native-screens": "^4.25.0",
+    "react-native-gesture-handler": "^3.0.0",
+    "react-native-reanimated": "^4.4.0",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.8.3",
+    "react-native-worklets": "^0.9.1",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-native-react-native/env": "workspace:*",
@@ -11516,8 +11623,9 @@ fontWeight: "bold",
     "@trpc/server": "catalog:"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@types/react": "^19.2.14",
+    "@babel/core": "^7.29.7",
+    "babel-preset-expo": "^56.0.14",
+    "@types/react": "^19.2.15",
     "typescript": "catalog:",
     "@snapshot-native-react-native/config": "workspace:*"
   },
@@ -11599,7 +11707,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.0",
+    "tsdown": "^0.22.1",
     "@snapshot-native-react-native/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -11694,7 +11802,7 @@ export default app;
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "hono": "^4.12.19",
+      "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
       "@trpc/client": "^11.17.0"
     }
@@ -12021,9 +12129,651 @@ export const db = drizzle({ client, schema });
 }
 `;
 
+exports[`Template Snapshots Key File Content Snapshots key files: native-mobile-integrations 1`] = `
+{
+  "fileCount": 59,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "apps/native/__tests__/mobile-ui-provider.test.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/.env",
+    },
+    {
+      "content": 
+"EXPO_PUBLIC_SERVER_URL=http://localhost:3000
+# EAS project ID for Expo push notification tokens
+EXPO_PUBLIC_EAS_PROJECT_ID=your-eas-project-id"
+,
+      "path": "apps/native/.env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/.maestro/home.yaml",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/app.json",
+    },
+    {
+      "content": 
+"
+import { QueryClientProvider } from "@tanstack/react-query";
+import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import { MobileUIProvider } from "@/components/mobile-ui-provider";
+import { linking } from "@/lib/deep-linking";
+import { queryClient } from "@/utils/orpc";
+import { RootNavigator } from "@/navigation/native-navigation";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+
+function AppShell() {
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider>
+        <MobileUIProvider>
+          <NavigationContainer linking={linking}>
+            <StatusBar style="auto" />
+            <RootNavigator />
+          </NavigationContainer>
+        </MobileUIProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppShell />
+    </QueryClientProvider>
+  );
+}
+"
+,
+      "path": "apps/native/App.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/container.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/header-button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/mobile-ui-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/components/tabbar-icon.tsx",
+    },
+    {
+      "content": 
+"import { registerRootComponent } from "expo";
+
+import App from "./App";
+
+registerRootComponent(App);
+"
+,
+      "path": "apps/native/index.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/jest.config.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/android-navigation-bar.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/constants.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/deep-linking.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/mobile-storage.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/notifications.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/updates.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/lib/use-color-scheme.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/metro.config.js",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/native/navigation/native-navigation.tsx",
+    },
+    {
+      "content": 
+"{
+  "name": "native",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start --clear",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild",
+    "web": "expo start --web",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-navigation/bottom-tabs": "^7.16.2",
+    "@react-navigation/drawer": "^7.10.3",
+    "@react-navigation/native": "^7.2.5",
+    "@react-navigation/native-stack": "^7.16.0",
+    "@tanstack/react-form": "^1.33.0",
+    "@gluestack-ui/themed": "^1.1.73",
+    "@tanstack/react-query": "^5.100.14",
+    "expo": "^56.0.8",
+    "expo-constants": "^56.0.16",
+    "expo-device": "^56.0.4",
+    "expo-crypto": "^56.0.4",
+    "expo-linking": "^56.0.13",
+    "expo-navigation-bar": "^56.0.3",
+    "expo-network": "^56.0.4",
+    "expo-notifications": "^56.0.15",
+    "expo-secure-store": "^56.0.4",
+    "expo-splash-screen": "^56.0.10",
+    "expo-status-bar": "^56.0.4",
+    "expo-system-ui": "^56.0.5",
+    "expo-updates": "^56.0.17",
+    "expo-web-browser": "^56.0.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-native": "^0.85.3",
+    "react-native-mmkv": "^4.3.1",
+    "react-native-gesture-handler": "^3.0.0",
+    "react-native-reanimated": "^4.4.0",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
+    "react-native-web": "^0.21.2",
+    "react-native-worklets": "^0.9.1",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@snapshot-native-mobile-integrations/api": "workspace:*",
+    "@orpc/tanstack-query": "^1.14.4",
+    "@orpc/client": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "babel-preset-expo": "^56.0.14",
+    "@types/react": "^19.2.15",
+    "@types/jest": "^30.0.0",
+    "@testing-library/react-native": "^13.3.3",
+    "@react-native/jest-preset": "^0.85.3",
+    "jest": "^29.7.0",
+    "jest-expo": "^56.0.4",
+    "react-test-renderer": "^19.2.6",
+    "typescript": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  },
+  "private": true
+}
+"
+,
+      "path": "apps/native/package.json",
+    },
+    {
+      "content": 
+"{
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"strict": true,
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}
+
+"
+,
+      "path": "apps/native/tsconfig.json",
+    },
+    {
+      "content": 
+"import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import type { AppRouterClient } from "@snapshot-native-mobile-integrations/api/routers/index";
+import { env } from "@snapshot-native-mobile-integrations/env/native";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.log(error)
+		},
+	}),
+});
+
+export const link = new RPCLink({
+	url: \`\${env.EXPO_PUBLIC_SERVER_URL}/rpc\`,
+});
+
+export const client: AppRouterClient = createORPCClient(link);
+
+export const orpc = createTanstackQueryUtils(client);
+"
+,
+      "path": "apps/native/utils/orpc.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/.env",
+    },
+    {
+      "content": 
+"{
+  "name": "server",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@snapshot-native-mobile-integrations/api": "workspace:*",
+    "hono": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsdown": "^0.22.1",
+    "@snapshot-native-mobile-integrations/config": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
+"
+,
+      "path": "apps/server/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-native-mobile-integrations/env/server";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { RPCHandler } from "@orpc/server/fetch";
+import { onError } from "@orpc/server";
+import { createContext } from "@snapshot-native-mobile-integrations/api/context";
+import { appRouter } from "@snapshot-native-mobile-integrations/api/routers/index";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+app.use(logger());
+app.use(
+	"/*",
+	cors({
+		origin: env.CORS_ORIGIN,
+		allowMethods: ["GET", "POST", "OPTIONS"],
+	})
+);
+
+
+export const apiHandler = new OpenAPIHandler(appRouter, {
+	plugins: [
+		new OpenAPIReferencePlugin({
+			schemaConverters: [new ZodToJsonSchemaConverter()],
+		}),
+	],
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
+});
+
+export const rpcHandler = new RPCHandler(appRouter, {
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
+});
+
+app.use("/*", async (c, next) => {
+	const context = await createContext({ context: c });
+
+	const rpcResult = await rpcHandler.handle(c.req.raw, {
+		prefix: "/rpc",
+		context: context,
+	});
+
+	if (rpcResult.matched) {
+		return c.newResponse(rpcResult.response.body, rpcResult.response);
+	}
+
+	const apiResult = await apiHandler.handle(c.req.raw, {
+		prefix: "/api-reference",
+		context: context,
+	});
+
+	if (apiResult.matched) {
+		return c.newResponse(apiResult.response.body, apiResult.response);
+	}
+
+	await next();
+});
+
+
+
+
+app.get("/", (c) => {
+	return c.text("OK");
+});
+
+export default app;
+"
+,
+      "path": "apps/server/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+		"outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  }
+}
+"
+,
+      "path": "apps/server/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/tsdown.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-native-mobile-integrations",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "typescript": "^6.0.3",
+      "@types/bun": "^1.3.14",
+      "hono": "^4.12.23",
+      "@orpc/server": "^1.14.4",
+      "@orpc/openapi": "^1.14.4",
+      "@orpc/zod": "^1.14.4",
+      "@orpc/client": "^1.14.4"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:native": "bun run --filter native dev",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev"
+  },
+  "packageManager": "bun@1.3.5",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-native-mobile-integrations/env": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/zod": "catalog:",
+    "hono": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { os } from "@orpc/server";
+import type { Context } from "./context";
+
+export const o = os.$context<Context>();
+
+export const publicProcedure = o;
+
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import { publicProcedure } from "../index";
+import type { RouterClient } from "@orpc/server";
+
+export const appRouter = {
+  healthCheck: publicProcedure.handler(() => {
+    return "OK";
+  }),
+};
+export type AppRouter = typeof appRouter;
+export type AppRouterClient = RouterClient<typeof appRouter>;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-native-mobile-integrations/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./native": "./src/native.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-native-mobile-integrations/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-native-mobile-integrations/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
 exports[`Template Snapshots Key File Content Snapshots key files: java-spring-boot-jpa-security 1`] = `
 {
-  "fileCount": 22,
+  "fileCount": 23,
   "files": [
     {
       "content": 
@@ -12106,6 +12856,10 @@ CORS_ORIGIN=http://localhost:3001"
     {
       "content": "[exists]",
       "path": "src/test/java/com/example/snapshotjavaspringbootjpasecurity/ApplicationTests.java",
+    },
+    {
+      "content": "[exists]",
+      "path": "src/test/java/com/example/snapshotjavaspringbootjpasecurity/MockitoSmokeTest.java",
     },
     {
       "content": "[exists]",
@@ -15529,6 +16283,434 @@ CORS_ORIGIN=http://localhost:3001"
     {
       "content": "[exists]",
       "path": "tests/test_main.py",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-ecto-rest 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "README.md",
+  "config/config.exs",
+  "config/dev.exs",
+  "config/runtime.exs",
+  "config/test.exs",
+  "lib/snapshot_elixir_phoenix_ecto_rest.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/application.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/catalog.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/catalog/item.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/http_client.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest/repo.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/room_channel.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/user_socket.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts/root.html.heex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_html.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_json.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/item_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/page_controller.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/endpoint.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/router.ex",
+  "lib/snapshot_elixir_phoenix_ecto_rest_web/telemetry.ex",
+  "mix.exs",
+  "priv/repo/migrations/20260101000000_create_items.exs",
+  "priv/repo/seeds.exs",
+  "test/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller_test.exs",
+  "test/support/conn_case.ex",
+  "test/test_helper.exs",
+]
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-liveview-full 1`] = `
+[
+  ".env.example",
+  "CLAUDE.md",
+  "Dockerfile",
+  "README.md",
+  "config/config.exs",
+  "config/dev.exs",
+  "config/runtime.exs",
+  "config/test.exs",
+  "lib/snapshot_elixir_phoenix_liveview_full.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/accounts.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/accounts/user.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/application.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/catalog.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/catalog/item.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/http_client.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/mailer.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full/workers/sample_worker.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/presence.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/room_channel.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/channels/user_socket.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts/root.html.heex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_html.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_json.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/item_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/page_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/user_session_controller.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/endpoint.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/resolvers/catalog.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/router.ex",
+  "lib/snapshot_elixir_phoenix_liveview_full_web/telemetry.ex",
+  "mix.exs",
+  "priv/repo/migrations/20260101000000_create_items.exs",
+  "priv/repo/migrations/20260101000001_create_users.exs",
+  "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+  "priv/repo/seeds.exs",
+  "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
+  "test/support/conn_case.ex",
+  "test/test_helper.exs",
+]
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
+{
+  "fileCount": 33,
+  "files": [
+    {
+      "content": 
+"PHX_HOST=localhost
+PORT=4000
+SECRET_KEY_BASE=replace-with-mix-phx-gen-secret
+DATABASE_URL=ecto://postgres:postgres@localhost/snapshot_elixir_phoenix_ecto_rest_prod
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_DB=snapshot_elixir_phoenix_ecto_rest_dev
+POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test
+CORS_ORIGIN=http://localhost:3001"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/config.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/runtime.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/room_channel.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/channels/user_socket.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/components/layouts/root.html.heex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_html.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/error_json.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/item_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/controllers/page_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/endpoint.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/router.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest_web/telemetry.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/application.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/catalog/item.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/http_client.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_ecto_rest/repo.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "mix.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000000_create_items.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/seeds.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/snapshot_elixir_phoenix_ecto_rest_web/controllers/health_controller_test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/support/conn_case.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/test_helper.exs",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
+{
+  "fileCount": 45,
+  "files": [
+    {
+      "content": 
+"PHX_HOST=localhost
+PORT=4000
+SECRET_KEY_BASE=replace-with-mix-phx-gen-secret
+DATABASE_URL=ecto://postgres:postgres@localhost/snapshot_elixir_phoenix_liveview_full_prod
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_DB=snapshot_elixir_phoenix_liveview_full_dev
+POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test
+CORS_ORIGIN=http://localhost:3001"
+,
+      "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/config.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/runtime.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "Dockerfile",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/presence.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/room_channel.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/channels/user_socket.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/components/layouts/root.html.heex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_html.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/error_json.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/item_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/page_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/controllers/user_session_controller.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/endpoint.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/resolvers/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/router.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/telemetry.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/accounts.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/accounts/user.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/application.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/catalog.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/catalog/item.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/http_client.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/mailer.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/repo.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "lib/snapshot_elixir_phoenix_liveview_full/workers/sample_worker.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "mix.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000000_create_items.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000001_create_users.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/seeds.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/support/conn_case.ex",
+    },
+    {
+      "content": "[exists]",
+      "path": "test/test_helper.exs",
     },
   ],
 }

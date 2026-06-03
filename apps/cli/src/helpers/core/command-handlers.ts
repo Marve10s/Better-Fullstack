@@ -1,3 +1,8 @@
+import {
+  validatePreflightConfig,
+  generateVirtualProject,
+  EMBEDDED_TEMPLATES,
+} from "@better-fullstack/template-generator";
 import { intro, log, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
@@ -15,8 +20,11 @@ import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { generateReproducibleCommand } from "../../utils/generate-reproducible-command";
+import { runGeneratedChecks } from "../../utils/generated-checks";
+import { displayPreflightWarnings } from "../../utils/preflight-display";
 import { handleDirectoryConflict, setupProjectDirectory } from "../../utils/project-directory";
 import { addToHistory } from "../../utils/project-history";
+import { canPromptInteractively } from "../../utils/prompt-environment";
 import { renderTitle } from "../../utils/render-title";
 import { getTemplateConfig, getTemplateDescription } from "../../utils/templates";
 import {
@@ -25,18 +33,64 @@ import {
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
 } from "../../validation";
-import { validatePreflightConfig, generateVirtualProject, EMBEDDED_TEMPLATES } from "@better-fullstack/template-generator";
-
-import { displayPreflightWarnings } from "../../utils/preflight-display";
-import { canPromptInteractively } from "../../utils/prompt-environment";
 import { createProject } from "./create-project";
 
 export interface CreateHandlerOptions {
   silent?: boolean;
 }
 
+function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
+  const baseConfig = getDefaultConfig();
+
+  if (flagConfig.ecosystem !== "react-native") {
+    return baseConfig;
+  }
+
+  return {
+    ...baseConfig,
+    backend: "none",
+    runtime: "none",
+    frontend: ["native-bare"],
+    addons: [],
+    examples: [],
+    auth: "none",
+    payments: "none",
+    email: "none",
+    fileUpload: "none",
+    effect: "none",
+    dbSetup: "none",
+    api: "none",
+    webDeploy: "none",
+    serverDeploy: "none",
+    cssFramework: "none",
+    uiLibrary: "none",
+    stateManagement: "none",
+    forms: "none",
+    testing: "none",
+    realtime: "none",
+    jobQueue: "none",
+    animation: "none",
+    logging: "none",
+    observability: "none",
+    featureFlags: "none",
+    analytics: "none",
+    cms: "none",
+    caching: "none",
+    i18n: "none",
+    search: "none",
+    fileStorage: "none",
+    mobileNavigation: "expo-router",
+    mobileUI: "none",
+    mobileStorage: "none",
+    mobileTesting: "none",
+    mobilePush: "none",
+    mobileOTA: "none",
+    mobileDeepLinking: "none",
+  };
+}
+
 function shouldPromptForVersionChannel(input: CreateInput & { projectName?: string }): boolean {
-  if (input.yes || input.versionChannel !== undefined || isSilent()) {
+  if (input.yes || input.part?.length || input.versionChannel !== undefined || isSilent()) {
     return false;
   }
 
@@ -170,6 +224,13 @@ export async function createProjectHandler(
               featureFlags: "none",
               analytics: "none",
               fileStorage: "none",
+              mobileNavigation: "none",
+              mobileUI: "none",
+              mobileStorage: "none",
+              mobileTesting: "none",
+              mobilePush: "none",
+              mobileOTA: "none",
+              mobileDeepLinking: "none",
               pythonWebFramework: "none",
               pythonOrm: "none",
               pythonValidation: "none",
@@ -191,6 +252,21 @@ export async function createProjectHandler(
               javaAuth: "none",
               javaLibraries: [],
               javaTestingLibraries: [],
+              elixirWebFramework: "none",
+              elixirOrm: "none",
+              elixirAuth: "none",
+              elixirApi: "none",
+              elixirRealtime: "none",
+              elixirJobs: "none",
+              elixirValidation: "none",
+              elixirHttp: "none",
+              elixirJson: "none",
+              elixirEmail: "none",
+              elixirCaching: "none",
+              elixirObservability: "none",
+              elixirTesting: "none",
+              elixirQuality: "none",
+              elixirDeploy: "none",
               aiDocs: [],
             } satisfies ProjectConfig,
             reproducibleCommand: "",
@@ -242,11 +318,11 @@ export async function createProjectHandler(
       }
 
       let config: ProjectConfig;
-      if (cliInput.yes) {
+      if (cliInput.yes || cliInput.part?.length) {
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
         config = {
-          ...getDefaultConfig(),
+          ...getYesBaseConfig(flagConfig),
           ...flagConfig,
           projectName: finalBaseName,
           projectDir: finalResolvedPath,
@@ -282,6 +358,7 @@ export async function createProjectHandler(
           currentPathInput,
         );
         config = { ...gatheredConfig, versionChannel };
+        validateConfigCompatibility(config, providedFlags, cliInput);
       }
 
       const preflight = validatePreflightConfig(config);
@@ -363,6 +440,10 @@ export async function createProjectHandler(
       await createProject(config, {
         manualDb: cliInput.manualDb ?? input.manualDb,
       });
+
+      if (cliInput.verify ?? input.verify) {
+        await runGeneratedChecks(config);
+      }
 
       const reproducibleCommand = generateReproducibleCommand(config);
       if (!isSilent()) {

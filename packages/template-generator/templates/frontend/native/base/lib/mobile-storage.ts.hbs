@@ -1,0 +1,15 @@
+{{#if (eq mobileStorage "mmkv")}}
+import { createMMKV } from "react-native-mmkv";
+
+export const mobileStorage = createMMKV({
+  id: "{{projectName}}.storage",
+});
+
+export function getStoredString(key: string) {
+  return mobileStorage.getString(key) ?? null;
+}
+
+export function setStoredString(key: string, value: string) {
+  mobileStorage.set(key, value);
+}
+{{/if}}

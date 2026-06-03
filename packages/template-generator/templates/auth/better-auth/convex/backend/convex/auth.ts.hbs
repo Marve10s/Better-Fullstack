@@ -19,7 +19,7 @@ const siteUrl = process.env.SITE_URL!;
 const siteUrl = process.env.SITE_URL!;
 {{/if}}
 {{#if (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles"))}}
-const nativeAppUrl = process.env.NATIVE_APP_URL || "mybettertapp://";
+const nativeAppUrl = process.env.NATIVE_APP_URL || "mybetterfullstackapp://";
 {{/if}}
 
 export const authComponent = createClient<DataModel>(components.betterAuth);

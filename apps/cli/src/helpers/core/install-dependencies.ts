@@ -163,3 +163,28 @@ export async function runGradleTests({ projectDir }: { projectDir: string }) {
     }
   }
 }
+
+export async function runMixCompile({ projectDir }: { projectDir: string }) {
+  const s = spinner();
+
+  try {
+    s.start("Running mix deps.get and mix compile...");
+
+    await $({
+      cwd: projectDir,
+      stderr: "inherit",
+    })`mix deps.get`;
+
+    await $({
+      cwd: projectDir,
+      stderr: "inherit",
+    })`mix compile`;
+
+    s.stop("Elixir dependencies installed and project compiled");
+  } catch (error) {
+    s.stop(pc.red("mix compile failed"));
+    if (error instanceof Error) {
+      consola.error(pc.red(`Mix error: ${error.message}`));
+    }
+  }
+}

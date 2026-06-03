@@ -85,12 +85,12 @@ export default function Footer() {
         <p className="mt-8 text-center text-xs text-muted-foreground">
           Originally inspired by{" "}
           <a
-            href="https://github.com/better-t-stack/create-better-t-stack"
+            href="https://github.com/AmanVarshney01/create-better-t-stack"
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground underline underline-offset-4"
           >
-            create-better-t-stack
+            Aman Varshney's original upstream project
           </a>
         </p>
 

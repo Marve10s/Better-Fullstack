@@ -22,11 +22,13 @@ export function CollapsibleSection({
   const prefersReducedMotion = useRef(false);
 
   useEffect(() => {
-    prefersReducedMotion.current =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    prefersReducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }, []);
 
-  const sectionSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const sectionSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
   const headingId = `section-heading-${sectionSlug}`;
   const contentId = `section-content-${sectionSlug}`;
 
@@ -82,8 +84,7 @@ export function CollapsibleSection({
             style={{
               width: 300,
               height: 300,
-              background:
-                "radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, transparent 70%)",
+              background: "radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, transparent 70%)",
             }}
           />
 
@@ -95,9 +96,7 @@ export function CollapsibleSection({
             <ChevronRight
               className={cn(
                 "h-5 w-5 shrink-0 transition-colors duration-200",
-                isOpen
-                  ? "text-primary"
-                  : "text-muted-foreground/40 group-hover:text-primary",
+                isOpen ? "text-primary" : "text-muted-foreground/40 group-hover:text-primary",
               )}
             />
           </motion.div>
@@ -106,17 +105,13 @@ export function CollapsibleSection({
               id={headingId}
               className={cn(
                 "font-pixel text-lg font-bold transition-colors duration-200 sm:text-xl",
-                isOpen
-                  ? "text-foreground"
-                  : "text-foreground/70 group-hover:text-foreground",
+                isOpen ? "text-foreground" : "text-foreground/70 group-hover:text-foreground",
               )}
             >
               {title}
             </h2>
             {subtitle && (
-              <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-                {subtitle}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground sm:text-base">{subtitle}</p>
             )}
           </div>
         </button>
@@ -132,9 +127,7 @@ export function CollapsibleSection({
               transition={reduced ? { duration: 0 } : { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               className="overflow-hidden"
             >
-              <div className="pb-8 sm:pb-12">
-                {children}
-              </div>
+              <div className="pb-8 sm:pb-12">{children}</div>
             </motion.section>
           )}
         </AnimatePresence>

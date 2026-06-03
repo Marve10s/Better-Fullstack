@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import { Container } from "@/components/container";
@@ -53,7 +54,7 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.heroTitle}>
-          BETTER T STACK
+          Better Fullstack
         </Text>
 
         {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
@@ -331,3 +332,4 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.mutedForeground,
   },
 }));
+{{/if}}

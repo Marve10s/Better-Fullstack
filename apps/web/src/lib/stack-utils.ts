@@ -7,10 +7,14 @@ import { TECH_OPTIONS } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
 import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
+function getStackKeyForCategory(category: keyof typeof TECH_OPTIONS): keyof StackState {
+  if (category === "ai") return "aiSdk";
+  return category as keyof StackState;
+}
+
 // TypeScript ecosystem category order
 const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "webFrontend",
-  "nativeFrontend",
   "astroIntegration",
   "cssFramework",
   "uiLibrary",
@@ -58,6 +62,23 @@ const TYPESCRIPT_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "examples",
   "aiDocs",
   "versionChannel",
+  "git",
+  "install",
+];
+
+// React Native ecosystem category order
+const REACT_NATIVE_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "nativeFrontend",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "auth",
+  "packageManager",
+  "aiDocs",
   "git",
   "install",
 ];
@@ -138,21 +159,65 @@ const JAVA_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
   "install",
 ];
 
+const ELIXIR_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+  "aiDocs",
+  "git",
+  "install",
+];
+
 // Combined category order for backwards compatibility
 const CATEGORY_ORDER = [
   ...new Set([
     ...TYPESCRIPT_CATEGORY_ORDER,
+    ...REACT_NATIVE_CATEGORY_ORDER,
     ...RUST_CATEGORY_ORDER,
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
     ...JAVA_CATEGORY_ORDER,
+    ...ELIXIR_CATEGORY_ORDER,
   ]),
 ] as Array<keyof typeof TECH_OPTIONS>;
+
+export function getCategoryOrderForEcosystem(
+  ecosystem: StackState["ecosystem"],
+): Array<keyof typeof TECH_OPTIONS> {
+  switch (ecosystem) {
+    case "react-native":
+      return REACT_NATIVE_CATEGORY_ORDER;
+    case "rust":
+      return RUST_CATEGORY_ORDER;
+    case "python":
+      return PYTHON_CATEGORY_ORDER;
+    case "go":
+      return GO_CATEGORY_ORDER;
+    case "java":
+      return JAVA_CATEGORY_ORDER;
+    case "elixir":
+      return ELIXIR_CATEGORY_ORDER;
+    case "typescript":
+      return TYPESCRIPT_CATEGORY_ORDER;
+  }
+}
 
 export function generateStackSummary(stack: StackState) {
   const selectedTechs = CATEGORY_ORDER.flatMap((category) => {
     const options = TECH_OPTIONS[category];
-    const selectedValue = stack[category as keyof StackState];
+    const selectedValue = stack[getStackKeyForCategory(category)];
 
     if (!options) return [];
 
@@ -191,7 +256,7 @@ export function generateStackUrlFromState(stack: StackState, baseUrl?: string) {
 export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
   const origin = baseUrl || "https://better-fullstack-web.vercel.app";
 
-  const stackParams = createStackSearchParams(stack, { includeDefaults: true });
+  const stackParams = createStackSearchParams(stack);
   const searchString = stackParams.toString();
   return `${origin}/stack${searchString ? `?${searchString}` : ""}`;
 }
@@ -199,8 +264,10 @@ export function generateStackSharingUrl(stack: StackState, baseUrl?: string) {
 export {
   CATEGORY_ORDER,
   TYPESCRIPT_CATEGORY_ORDER,
+  REACT_NATIVE_CATEGORY_ORDER,
   RUST_CATEGORY_ORDER,
   PYTHON_CATEGORY_ORDER,
   GO_CATEGORY_ORDER,
   JAVA_CATEGORY_ORDER,
+  ELIXIR_CATEGORY_ORDER,
 };

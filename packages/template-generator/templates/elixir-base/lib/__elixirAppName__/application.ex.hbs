@@ -1,0 +1,49 @@
+defmodule {{elixirModuleName}}.Application do
+  use Application
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+{{#if (ne elixirOrm "none")}}
+      {{elixirModuleName}}.Repo,
+{{/if}}
+{{#if (ne elixirWebFramework "none")}}
+      {Phoenix.PubSub, name: {{elixirModuleName}}.PubSub},
+{{/if}}
+{{#if (eq elixirRealtime "presence")}}
+      {{elixirModuleName}}Web.Presence,
+{{/if}}
+{{#if (eq elixirHttp "finch")}}
+      {Finch, name: {{elixirModuleName}}.Finch},
+{{/if}}
+{{#if (eq elixirEmail "swoosh")}}
+      {Finch, name: Swoosh.Finch},
+{{/if}}
+{{#if (eq elixirCaching "cachex")}}
+      {Cachex, name: :{{elixirAppName}}_cache},
+{{/if}}
+{{#if (eq elixirJobs "oban")}}
+      {Oban, Application.fetch_env!(:{{elixirAppName}}, Oban)},
+{{/if}}
+{{#if (eq elixirJobs "quantum")}}
+      {{elixirModuleName}}.Scheduler,
+{{/if}}
+{{#if (ne elixirWebFramework "none")}}
+      {{elixirModuleName}}Web.Endpoint
+{{/if}}
+    ]
+
+    opts = [strategy: :one_for_one, name: {{elixirModuleName}}.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  @impl true
+  def config_change(changed, _new, removed) do
+{{#if (ne elixirWebFramework "none")}}
+    {{elixirModuleName}}Web.Endpoint.config_change(changed, removed)
+{{else}}
+    _ = {changed, removed}
+{{/if}}
+    :ok
+  end
+end

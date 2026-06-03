@@ -9,6 +9,7 @@ export async function processGoBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
   // Only process Go templates if ecosystem is "go"
   if (config.ecosystem !== "go") return;
@@ -33,6 +34,7 @@ export async function processGoBaseTemplate(
 
     const relativePath = templatePath.slice(prefix.length);
     const outputPath = transformFilename(relativePath);
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
 
     let processedContent: string;
     if (isBinaryFile(templatePath)) {
@@ -48,6 +50,6 @@ export async function processGoBaseTemplate(
 
     // Pass original template path for binary files
     const sourcePath = isBinaryFile(templatePath) ? templatePath : undefined;
-    vfs.writeFile(outputPath, processedContent, sourcePath);
+    vfs.writeFile(destPath, processedContent, sourcePath);
   }
 }

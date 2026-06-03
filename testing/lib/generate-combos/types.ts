@@ -20,16 +20,18 @@ export type GeneratorArgs = {
 
 export const DEFAULT_ARGS: GeneratorArgs = {
   count: 10,
-  ecosystems: ["typescript", "rust", "python", "go", "java"],
+  ecosystems: ["typescript", "react-native", "rust", "python", "go", "java", "elixir"],
   installMode: "install",
 };
 
 export const DEFAULT_ECOSYSTEM_WEIGHTS: Record<Ecosystem, number> = {
   typescript: 4,
+  "react-native": 2,
   rust: 2,
   python: 2,
   go: 2,
   java: 2,
+  elixir: 2,
 };
 
 export const TEMPLATE_FINGERPRINT_KEYS = [
@@ -71,6 +73,13 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "caching",
   "search",
   "fileStorage",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "addons",
   "examples",
   "aiDocs",
@@ -105,6 +114,21 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "javaAuth",
   "javaLibraries",
   "javaTestingLibraries",
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
 ] as const;
 
 export type TemplateFingerprintKey = (typeof TEMPLATE_FINGERPRINT_KEYS)[number];

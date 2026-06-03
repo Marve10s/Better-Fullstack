@@ -1,0 +1,4 @@
+ExUnit.start()
+{{#if (ne elixirOrm "none")}}
+Ecto.Adapters.SQL.Sandbox.mode({{elixirModuleName}}.Repo, :manual)
+{{/if}}

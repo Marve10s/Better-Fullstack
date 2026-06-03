@@ -14,6 +14,21 @@ import {
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
   EFFECT_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_JSON_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
+  ELIXIR_REALTIME_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
   EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
@@ -164,6 +179,27 @@ const goSingleSelectCounts = [
   2, // install
 ] as const;
 
+const elixirSingleSelectCounts = [
+  ELIXIR_WEB_FRAMEWORK_VALUES.length,
+  ELIXIR_ORM_VALUES.length,
+  ELIXIR_AUTH_VALUES.length,
+  ELIXIR_API_VALUES.length,
+  ELIXIR_REALTIME_VALUES.length,
+  ELIXIR_JOBS_VALUES.length,
+  ELIXIR_VALIDATION_VALUES.length,
+  ELIXIR_HTTP_VALUES.length,
+  ELIXIR_JSON_VALUES.length,
+  ELIXIR_EMAIL_VALUES.length,
+  ELIXIR_CACHING_VALUES.length,
+  ELIXIR_OBSERVABILITY_VALUES.length,
+  ELIXIR_TESTING_VALUES.length,
+  ELIXIR_QUALITY_VALUES.length,
+  ELIXIR_DEPLOY_VALUES.length,
+  PACKAGE_MANAGER_VALUES.length,
+  2, // git
+  2, // install
+] as const;
+
 const typescriptCombinations =
   multiplyCounts(typescriptSingleSelectCounts) *
   powerSetSize(FRONTEND_VALUES) *
@@ -178,7 +214,10 @@ const pythonCombinations = multiplyCounts(pythonSingleSelectCounts) * powerSetSi
 
 const goCombinations = multiplyCounts(goSingleSelectCounts) * powerSetSize(AI_DOCS_VALUES);
 
-const totalCombinations = typescriptCombinations + rustCombinations + pythonCombinations + goCombinations;
+const elixirCombinations = multiplyCounts(elixirSingleSelectCounts) * powerSetSize(AI_DOCS_VALUES);
+
+const totalCombinations =
+  typescriptCombinations + rustCombinations + pythonCombinations + goCombinations + elixirCombinations;
 const yoloCombinations = totalCombinations * 2n;
 
 const yearsAtOneMillisecondPerCombination = Number(totalCombinations) / MILLISECONDS_PER_YEAR;

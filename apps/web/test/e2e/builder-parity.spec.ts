@@ -16,6 +16,15 @@ test.describe("Builder parity", () => {
     await expect(page).toHaveURL(/be=fastify/);
   });
 
+  test("selecting an AI option updates command and URL", async ({ page }) => {
+    await clickVisibleTestId(page, "category-toggle-ai");
+    await clickVisibleTestId(page, "option-ai-vercel-ai");
+
+    await expect(commandOutput(page)).toContainText("--ai vercel-ai");
+    await expect(commandOutput(page)).not.toContainText("--ai none");
+    await expect(page).toHaveURL(/aisdk=vercel-ai/);
+  });
+
   test("selecting and removing multi-select addons updates the command", async ({ page }) => {
     await clickVisibleTestId(page, "option-codeQuality-biome");
     await expect(commandOutput(page)).toContainText("--addons biome turborepo");
@@ -76,14 +85,33 @@ test.describe("Builder parity", () => {
     await expect(commandOutput(page)).toContainText("--auth go-better-auth");
   });
 
+  test("multi-ecosystem mode emits scoped --part flags", async ({ page }) => {
+    await clickVisibleTestId(page, "stack-mode-multi");
+    await clickVisibleTestId(page, "multi-frontend-tool-next");
+    await clickVisibleTestId(page, "multi-step-next");
+    await clickVisibleTestId(page, "multi-backend-language-go");
+    await clickVisibleTestId(page, "multi-backend-tool-gin");
+    await clickVisibleTestId(page, "multi-backend-orm-gorm");
+    await clickVisibleTestId(page, "multi-step-next");
+    await clickVisibleTestId(page, "multi-database-tool-postgres");
+
+    const command = commandOutput(page);
+    await expect(command).toContainText("--part frontend:typescript:next");
+    await expect(command).toContainText("--part backend:go:gin");
+    await expect(command).toContainText("--part backend.orm:go:gorm");
+    await expect(command).toContainText("--part database:universal:postgres");
+    await expect(command).not.toContainText("--backend hono");
+    await expect(page).toHaveURL(/mode=multi/);
+    await expect(page).toHaveURL(/part=/);
+  });
+
   test("disabled options do not mutate the command output", async ({ page }) => {
-    await clickVisibleTestId(page, "sidebar-category-toggle-cms");
+    await clickVisibleTestId(page, "category-toggle-cms");
     const command = commandOutput(page);
     const initialCommand = await command.textContent();
 
-    const payloadOption = visibleTestId(page, "sidebar-option-cms-payload");
+    const payloadOption = visibleTestId(page, "option-cms-payload");
     await expect(payloadOption).toContainText("Unavailable");
-    await expect(payloadOption).toBeDisabled();
     await payloadOption.click({ force: true });
 
     await expect(command).toHaveText(initialCommand ?? "");

@@ -1,0 +1,7 @@
+defmodule {{elixirModuleName}}Web.GraphQL.Resolvers.Catalog do
+  alias {{elixirModuleName}}.Catalog
+
+  def items(_parent, _args, _resolution) do
+    {:ok, Catalog.list_items()}
+  end
+end

@@ -144,6 +144,21 @@ import {
   type JavaAuth,
   JavaTestingLibrariesSchema,
   type JavaTestingLibraries,
+  type ElixirWebFramework,
+  type ElixirOrm,
+  type ElixirAuth,
+  type ElixirApi,
+  type ElixirRealtime,
+  type ElixirJobs,
+  type ElixirValidation,
+  type ElixirHttp,
+  type ElixirJson,
+  type ElixirEmail,
+  type ElixirCaching,
+  type ElixirObservability,
+  type ElixirTesting,
+  type ElixirQuality,
+  type ElixirDeploy,
   OPTION_CATEGORY_METADATA,
   AiDocsSchema,
   type AiDocs,
@@ -205,15 +220,17 @@ export const router = os.router({
       log.message(`Please visit ${DOCS_URL}`);
     }
   }),
-  builder: os.meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" }).handler(async () => {
-    const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
-    try {
-      await openUrl(BUILDER_URL);
-      log.success(pc.blue("Opened builder in your default browser."));
-    } catch {
-      log.message(`Please visit ${BUILDER_URL}`);
-    }
-  }),
+  builder: os
+    .meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" })
+    .handler(async () => {
+      const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
+      try {
+        await openUrl(BUILDER_URL);
+        log.success(pc.blue("Opened builder in your default browser."));
+      } catch {
+        log.message(`Please visit ${BUILDER_URL}`);
+      }
+    }),
   add: os
     .meta({
       description:
@@ -416,16 +433,22 @@ export async function createVirtual(
   options: Partial<Omit<ProjectConfig, "projectDir" | "relativePath">>,
 ): Promise<{ success: boolean; tree?: VirtualFileTree; error?: string }> {
   try {
+    const ecosystem = options.ecosystem || "typescript";
+    const isReactNative = ecosystem === "react-native";
+    const frontend = options.frontend || (isReactNative ? ["native-bare"] : ["tanstack-router"]);
+    const hasNativeFrontend = frontend.some(
+      (item) => item === "native-bare" || item === "native-uniwind" || item === "native-unistyles",
+    );
     const config: ProjectConfig = {
+      ecosystem,
       projectName: options.projectName || "my-project",
       projectDir: "/virtual",
       relativePath: "./virtual",
-      ecosystem: options.ecosystem || "typescript",
       database: options.database || "none",
       orm: options.orm || "none",
-      backend: options.backend || "hono",
-      runtime: options.runtime || "bun",
-      frontend: options.frontend || ["tanstack-router"],
+      backend: options.backend || (isReactNative ? "none" : "hono"),
+      runtime: options.runtime || (isReactNative ? "none" : "bun"),
+      frontend,
       addons: options.addons || [],
       examples: options.examples || [],
       auth: options.auth || "none",
@@ -438,11 +461,12 @@ export async function createVirtual(
       versionChannel: options.versionChannel || "stable",
       install: false,
       dbSetup: options.dbSetup || "none",
-      api: options.api || "trpc",
+      api: options.api || (isReactNative ? "none" : "trpc"),
       webDeploy: options.webDeploy || "none",
       serverDeploy: options.serverDeploy || "none",
-      cssFramework: options.cssFramework || "tailwind",
-      uiLibrary: options.uiLibrary || "shadcn-ui",
+      astroIntegration: options.astroIntegration || "none",
+      cssFramework: options.cssFramework || (isReactNative ? "none" : "tailwind"),
+      uiLibrary: options.uiLibrary || (isReactNative ? "none" : "shadcn-ui"),
       shadcnBase: options.shadcnBase ?? "radix",
       shadcnStyle: options.shadcnStyle ?? "nova",
       shadcnIconLibrary: options.shadcnIconLibrary ?? "lucide",
@@ -452,8 +476,8 @@ export async function createVirtual(
       shadcnRadius: options.shadcnRadius ?? "default",
       ai: options.ai || "none",
       stateManagement: options.stateManagement || "none",
-      forms: options.forms || "react-hook-form",
-      testing: options.testing || "vitest",
+      forms: options.forms || (isReactNative ? "none" : "react-hook-form"),
+      testing: options.testing || (isReactNative ? "none" : "vitest"),
       validation: options.validation || "zod",
       realtime: options.realtime || "none",
       jobQueue: options.jobQueue || "none",
@@ -462,6 +486,13 @@ export async function createVirtual(
       observability: options.observability || "none",
       featureFlags: options.featureFlags || "none",
       analytics: options.analytics || "none",
+      mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
+      mobileUI: options.mobileUI || "none",
+      mobileStorage: options.mobileStorage || "none",
+      mobileTesting: options.mobileTesting || "none",
+      mobilePush: options.mobilePush || "none",
+      mobileOTA: options.mobileOTA || "none",
+      mobileDeepLinking: options.mobileDeepLinking || (hasNativeFrontend ? "expo-linking" : "none"),
       cms: options.cms || "none",
       caching: options.caching || "none",
       i18n: options.i18n || "none",
@@ -475,7 +506,8 @@ export async function createVirtual(
       rustCli: options.rustCli || "none",
       rustLibraries: options.rustLibraries || [],
       rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
-      rustErrorHandling: options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
+      rustErrorHandling:
+        options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       rustCaching: options.rustCaching || "none",
       rustAuth: options.rustAuth || "none",
       // Python ecosystem options
@@ -495,15 +527,39 @@ export async function createVirtual(
       goCli: options.goCli || "none",
       goLogging: options.goLogging || "none",
       goAuth: options.goAuth || "none",
-      javaWebFramework: options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
+      javaWebFramework:
+        options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),
       javaOrm: options.javaOrm || "none",
       javaAuth: options.javaAuth || "none",
       javaLibraries: options.javaLibraries || [],
-      javaTestingLibraries: options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
+      javaTestingLibraries:
+        options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
+      elixirWebFramework:
+        options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
+      elixirOrm: options.elixirOrm || (options.ecosystem === "elixir" ? "ecto-sql" : "none"),
+      elixirAuth: options.elixirAuth || "none",
+      elixirApi: options.elixirApi || (options.ecosystem === "elixir" ? "rest" : "none"),
+      elixirRealtime:
+        options.elixirRealtime || (options.ecosystem === "elixir" ? "channels" : "none"),
+      elixirJobs: options.elixirJobs || "none",
+      elixirValidation:
+        options.elixirValidation || (options.ecosystem === "elixir" ? "ecto-changesets" : "none"),
+      elixirHttp: options.elixirHttp || (options.ecosystem === "elixir" ? "req" : "none"),
+      elixirJson: options.elixirJson || (options.ecosystem === "elixir" ? "jason" : "none"),
+      elixirEmail: options.elixirEmail || "none",
+      elixirCaching: options.elixirCaching || "none",
+      elixirObservability:
+        options.elixirObservability || (options.ecosystem === "elixir" ? "telemetry" : "none"),
+      elixirTesting: options.elixirTesting || (options.ecosystem === "elixir" ? "ex_unit" : "none"),
+      elixirQuality: options.elixirQuality || (options.ecosystem === "elixir" ? "credo" : "none"),
+      elixirDeploy: options.elixirDeploy || "none",
       // AI documentation files
       aiDocs: options.aiDocs || ["claude-md"],
     };
+    if (options.stackParts) {
+      config.stackParts = options.stackParts;
+    }
 
     const result = await generate({
       config,
@@ -579,6 +635,21 @@ export type {
   JavaOrm,
   JavaAuth,
   JavaTestingLibraries,
+  ElixirWebFramework,
+  ElixirOrm,
+  ElixirAuth,
+  ElixirApi,
+  ElixirRealtime,
+  ElixirJobs,
+  ElixirValidation,
+  ElixirHttp,
+  ElixirJson,
+  ElixirEmail,
+  ElixirCaching,
+  ElixirObservability,
+  ElixirTesting,
+  ElixirQuality,
+  ElixirDeploy,
   AiDocs,
   AddResult,
 };

@@ -466,6 +466,7 @@ describe("Frontend Configurations", () => {
       expectSuccess(result);
 
       if (result.projectDir) {
+        const rootDenoJson = await Bun.file(`${result.projectDir}/deno.json`).json();
         const denoJson = await Bun.file(`${result.projectDir}/apps/web/deno.json`).text();
         const webPkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
         const readme = await Bun.file(`${result.projectDir}/README.md`).text();
@@ -475,9 +476,26 @@ describe("Frontend Configurations", () => {
         const modernApp = Bun.file(`${result.projectDir}/apps/web/routes/_app.tsx`);
         const legacyLayout = Bun.file(`${result.projectDir}/apps/web/src/routes/_layout.tsx`);
 
-        expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.2.0"');
-        expect(denoJson).toContain('"build": "vite build"');
-        expect(webPkg.scripts["check-types"]).toBe("deno check");
+        expect(rootDenoJson).toMatchObject({
+          lock: false,
+          nodeModulesDir: "auto",
+          workspace: ["./apps/web"],
+        });
+        expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.3.3"');
+        expect(denoJson).toContain(
+          '"build": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1 build"',
+        );
+        expect(denoJson).toContain('"preact/": "npm:preact@^10.29.2/"');
+        expect(denoJson).toContain('"preact/jsx-runtime": "npm:preact@^10.29.2/jsx-runtime"');
+        expect(denoJson).toContain('"preact/jsx-dev-runtime": "npm:preact@^10.29.2/jsx-dev-runtime"');
+        expect(denoJson).toContain('"@preact/signals/": "npm:@preact/signals@^2.9.1/"');
+        expect(webPkg.scripts["check-types"]).toBe(
+          "deno check --node-modules-dir=auto main.ts client.ts",
+        );
+        expect(webPkg.dependencies["@opentelemetry/api"]).toBeDefined();
+        expect(webPkg.dependencies["@preact/signals"]).toBeDefined();
+        expect(webPkg.dependencies.preact).toBeDefined();
+        expect(webPkg.dependencies.vite).toBeDefined();
         expect(readme).toContain("http://localhost:5173");
         expect(await viteConfig.exists()).toBe(true);
         expect(await clientEntry.exists()).toBe(true);
@@ -487,32 +505,36 @@ describe("Frontend Configurations", () => {
       }
     });
 
-    it.skipIf(!hasDeno)("should pass Deno check and build for Fresh", async () => {
-      const result = await runTRPCTest({
-        projectName: "fresh-runtime-smoke",
-        frontend: ["fresh"],
-        backend: "none",
-        runtime: "none",
-        database: "none",
-        orm: "none",
-        auth: "none",
-        api: "none",
-        addons: ["none"],
-        examples: ["none"],
-        dbSetup: "none",
-        webDeploy: "none",
-        serverDeploy: "none",
-        install: true,
-      });
+    it.skipIf(!hasDeno)(
+      "should pass Deno check and build for Fresh",
+      async () => {
+        const result = await runTRPCTest({
+          projectName: "fresh-runtime-smoke",
+          frontend: ["fresh"],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: true,
+        });
 
-      expectSuccess(result);
-      expect(result.projectDir).toBeDefined();
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
 
-      const projectDir = result.projectDir!;
+        const projectDir = result.projectDir!;
 
-      await execa("bun", ["run", "--filter", "web", "check-types"], { cwd: projectDir });
-      await execa("bun", ["run", "--filter", "web", "build"], { cwd: projectDir });
-    }, 120000);
+        await execa("bun", ["run", "--filter", "web", "check-types"], { cwd: projectDir });
+        await execa("bun", ["run", "--filter", "web", "build"], { cwd: projectDir });
+      },
+      120000,
+    );
 
     it("should fail Fresh with tRPC API", async () => {
       const result = await runTRPCTest({

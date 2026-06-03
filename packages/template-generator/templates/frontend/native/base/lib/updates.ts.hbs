@@ -1,0 +1,30 @@
+{{#if (eq mobileOTA "expo-updates")}}
+import * as Updates from "expo-updates";
+import { useEffect, useState } from "react";
+
+export function useUpdateCheck() {
+  const [isChecking, setIsChecking] = useState(false);
+  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsChecking(true);
+    Updates.checkForUpdateAsync()
+      .then((result) => {
+        if (isMounted) setIsUpdateAvailable(result.isAvailable);
+      })
+      .catch(() => {
+        if (isMounted) setIsUpdateAvailable(false);
+      })
+      .finally(() => {
+        if (isMounted) setIsChecking(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { isChecking, isUpdateAvailable };
+}
+{{/if}}

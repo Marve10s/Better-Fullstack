@@ -76,13 +76,14 @@ const PYTHON_QUALITIES = extractEnumValues(PythonQualitySchema);
 
 describe("Python Language Support", () => {
   describe("Schema Definitions", () => {
-    it("should have ecosystem schema with typescript, rust, python, go, and java", () => {
+    it("should include Python alongside the other ecosystem schema values", () => {
       expect(ECOSYSTEMS).toContain("typescript");
       expect(ECOSYSTEMS).toContain("rust");
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS.length).toBe(5);
+      expect(ECOSYSTEMS).toContain("react-native");
+      expect(ECOSYSTEMS).toContain("elixir");
     });
 
     it("should have python web framework options", () => {
@@ -2080,6 +2081,7 @@ describe("Python Language Support", () => {
       const clientContent = getFileContent(root, "src/app/anthropic_client.py");
       expect(clientContent).toBeDefined();
       expect(clientContent).toContain("import anthropic");
+      expect(clientContent).toContain("from collections.abc import AsyncIterator");
       expect(clientContent).toContain("def get_client");
       expect(clientContent).toContain("async def chat");
       expect(clientContent).toContain("async def chat_stream");
@@ -3091,6 +3093,31 @@ describe("Python Language Support", () => {
       expect(pyprojectContent).toContain("[tool.ruff]");
       expect(pyprojectContent).toContain("[tool.ruff.lint]");
       expect(pyprojectContent).toContain("[tool.ruff.format]");
+    });
+
+    it("should emit ruff-compatible Django, SQLAlchemy, Anthropic, and JWT files", async () => {
+      const result = await createVirtual({
+        projectName: "python-django-ruff-compatible",
+        ecosystem: "python",
+        pythonWebFramework: "django",
+        pythonOrm: "sqlalchemy",
+        pythonValidation: "none",
+        pythonAi: ["anthropic-sdk"],
+        pythonAuth: "jwt",
+        pythonTaskQueue: "rq",
+        pythonQuality: "ruff",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      expect(getFileContent(root, "src/app/main.py")).toContain("# ruff: noqa: I001");
+      expect(getFileContent(root, "migrations/env.py")).toContain("from app.models import Base  # noqa: E402");
+      expect(getFileContent(root, "src/app/auth.py")).toContain("from datetime import UTC, datetime, timedelta");
+      expect(getFileContent(root, "src/app/auth.py")).toContain("datetime.now(UTC)");
+      expect(getFileContent(root, "src/app/anthropic_client.py")).toContain("from collections.abc import AsyncIterator");
+      expect(getFileContent(root, "src/app/rq_tasks.py")).toContain("from datetime import UTC, datetime");
+      expect(getFileContent(root, "src/app/rq_tasks.py")).toContain("datetime.now(UTC)");
     });
   });
 

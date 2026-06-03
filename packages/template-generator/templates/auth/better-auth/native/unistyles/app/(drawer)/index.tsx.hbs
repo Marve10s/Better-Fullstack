@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import { authClient } from "@/lib/auth-client";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
@@ -29,7 +30,7 @@ export default function Home() {
     <Container>
       <ScrollView>
         <View style={styles.pageContainer}>
-          <Text style={styles.headerTitle}>BETTER T STACK</Text>
+          <Text style={styles.headerTitle}>Better Fullstack</Text>
           {session?.user ? (
             <View style={styles.sessionInfoCard}>
               <View style={styles.sessionUserRow}>
@@ -185,3 +186,4 @@ const styles = StyleSheet.create((theme) => ({
     padding: 16,
   },
 }));
+{{/if}}

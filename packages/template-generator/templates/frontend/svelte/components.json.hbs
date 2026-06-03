@@ -1,0 +1,18 @@
+{{#if (eq uiLibrary "shadcn-svelte")}}
+{
+  "$schema": "https://www.shadcn-svelte.com/schema.json",
+  "style": "new-york",
+  "tailwind": {
+    "config": "",
+    "css": "src/app.css",
+    "baseColor": "slate"
+  },
+  "aliases": {
+    "components": "$lib/components",
+    "utils": "$lib/utils",
+    "ui": "$lib/components/ui",
+    "hooks": "$lib/hooks"
+  },
+  "typescript": true
+}
+{{/if}}

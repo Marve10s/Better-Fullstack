@@ -6,18 +6,19 @@ import {
 } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
+import { TECH_OPTIONS } from "../../web/src/lib/constant";
+import { STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../../web/src/lib/stack-contract";
+import { stackStateKeys } from "../../web/src/lib/stack-url-state.shared";
+import { DEFAULT_CONFIG } from "../src/constants";
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
-import { PROMPT_RESOLVER_REGISTRY } from "../src/prompts/prompt-resolver-registry";
 import {
   resolveJavaLibrariesPrompt,
   resolveJavaTestingLibrariesPrompt,
 } from "../src/prompts/java-ecosystem";
+import { PROMPT_RESOLVER_REGISTRY } from "../src/prompts/prompt-resolver-registry";
 import { resolveRustLibrariesPrompt } from "../src/prompts/rust-ecosystem";
-import { DEFAULT_CONFIG } from "../src/constants";
+import { resolveSearchPrompt } from "../src/prompts/search";
 import { validateArrayOptions } from "../src/utils/config-processing";
-import { STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../../web/src/lib/stack-contract";
-import { TECH_OPTIONS } from "../../web/src/lib/constant";
-import { stackStateKeys } from "../../web/src/lib/stack-url-state.shared";
 
 const BUILDER_CATEGORY_TO_CLI_OPTION_KEY: Partial<
   Record<keyof typeof TECH_OPTIONS, keyof typeof CreateCommandOptionsSchema.shape>
@@ -38,10 +39,12 @@ const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
   "yolo",
   "verbose",
   "dryRun",
+  "verify",
   "directoryConflict",
   "renderTitle",
   "disableAnalytics",
   "manualDb",
+  "part",
 ]);
 
 const createOptionKeys = Object.keys(CreateCommandOptionsSchema.shape);
@@ -254,6 +257,32 @@ describe("CLI prompts vs schemas parity", () => {
       "go-better-auth",
     );
     expect(goResolution.options.map((option) => option.value)).toContain("go-better-auth");
+  });
+
+  it("auto-resolves shared service prompts for ecosystems that do not use them", () => {
+    for (const prompt of ["email", "observability", "caching"] as const) {
+      const reactNativeResolution = PROMPT_RESOLVER_REGISTRY[prompt].resolve({
+        ecosystem: "react-native",
+        backend: "none",
+      });
+      const elixirResolution = PROMPT_RESOLVER_REGISTRY[prompt].resolve({
+        ecosystem: "elixir",
+        backend: "none",
+      });
+
+      expect(reactNativeResolution.shouldPrompt).toBe(false);
+      expect(reactNativeResolution.autoValue).toBe("none");
+      expect(elixirResolution.shouldPrompt).toBe(false);
+      expect(elixirResolution.autoValue).toBe("none");
+    }
+
+    const searchResolution = resolveSearchPrompt({
+      ecosystem: "elixir",
+      backend: "none",
+    });
+
+    expect(searchResolution.shouldPrompt).toBe(false);
+    expect(searchResolution.autoValue).toBe("none");
   });
 
   it("keeps the Rust libraries prompt default aligned with CLI defaults", () => {

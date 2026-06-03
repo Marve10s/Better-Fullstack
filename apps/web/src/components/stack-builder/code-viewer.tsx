@@ -21,7 +21,7 @@ interface CodeViewerProps {
 }
 
 // Map file extensions to Shiki language IDs
-function getLanguage(extension: string): BundledLanguage {
+export function getLanguage(extension: string): BundledLanguage {
   const languageMap: Record<string, BundledLanguage> = {
     ts: "typescript",
     tsx: "tsx",
@@ -40,6 +40,10 @@ function getLanguage(extension: string): BundledLanguage {
     yml: "yaml",
     toml: "toml",
     sql: "sql",
+    ex: "elixir",
+    exs: "elixir",
+    eex: "elixir",
+    heex: "elixir",
     prisma: "prisma",
     graphql: "graphql",
     sh: "bash",

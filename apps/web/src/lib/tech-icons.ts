@@ -3,7 +3,7 @@
 //   SiConfig  → rendered from cdn.simpleicons.org with auto-computed colour
 //   LocalConfig → rendered from a local /public/icon/* file or external URL
 
-export type SiConfig = { type: "si"; slug: string; hex: string };
+export type SiConfig = { type: "si"; slug: string; hex: string; needsInvert?: "dark" | "light" };
 export type LocalConfig = {
   type: "local";
   src: string;
@@ -53,10 +53,44 @@ export function getInvertClass(needsInvert?: "dark" | "light" | "both"): string 
 export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Ecosystems ────────────────────────────────────────────────────────────
   typescript: { type: "si", slug: "typescript", hex: "3178C6" },
-  rust: { type: "si", slug: "rust", hex: "000000" },
+  rust: { type: "si", slug: "rust", hex: "000000", needsInvert: "dark" },
   python: { type: "si", slug: "python", hex: "3776AB" },
   go: { type: "si", slug: "go", hex: "00ADD8" },
   java: { type: "local", src: "/icon/java.svg" },
+  elixir: { type: "si", slug: "elixir", hex: "4B275F" },
+  phoenix: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  "phoenix-live-view": { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  "ecto-sql": { type: "si", slug: "postgresql", hex: "4169E1" },
+  ecto: { type: "si", slug: "elixir", hex: "4B275F" },
+  "phx-gen-auth": { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  ueberauth: { type: "si", slug: "openid", hex: "000000" },
+  guardian: { type: "si", slug: "jsonwebtokens", hex: "000000" },
+  absinthe: { type: "si", slug: "graphql", hex: "E10098" },
+  channels: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  presence: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  pubsub: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  "live-view-streams": { type: "si", slug: "phoenixframework", hex: "FD4F00" },
+  oban: { type: "si", slug: "postgresql", hex: "4169E1" },
+  quantum: { type: "si", slug: "elixir", hex: "4B275F" },
+  "ecto-changesets": { type: "si", slug: "elixir", hex: "4B275F" },
+  "nimble-options": { type: "si", slug: "elixir", hex: "4B275F" },
+  req: { type: "si", slug: "elixir", hex: "4B275F" },
+  finch: { type: "si", slug: "elixir", hex: "4B275F" },
+  jason: { type: "si", slug: "elixir", hex: "4B275F" },
+  swoosh: { type: "si", slug: "elixir", hex: "4B275F" },
+  cachex: { type: "si", slug: "elixir", hex: "4B275F" },
+  nebulex: { type: "si", slug: "elixir", hex: "4B275F" },
+  telemetry: { type: "si", slug: "elixir", hex: "4B275F" },
+  prom_ex: { type: "si", slug: "prometheus", hex: "E6522C" },
+  ex_unit: { type: "si", slug: "elixir", hex: "4B275F" },
+  mox: { type: "si", slug: "elixir", hex: "4B275F" },
+  bypass: { type: "si", slug: "elixir", hex: "4B275F" },
+  wallaby: { type: "si", slug: "elixir", hex: "4B275F" },
+  credo: { type: "si", slug: "elixir", hex: "4B275F" },
+  dialyxir: { type: "si", slug: "elixir", hex: "4B275F" },
+  sobelow: { type: "si", slug: "elixir", hex: "4B275F" },
+  "mix-release": { type: "si", slug: "elixir", hex: "4B275F" },
+  gigalixir: { type: "si", slug: "elixir", hex: "4B275F" },
 
   // ─── API ───────────────────────────────────────────────────────────────────
   trpc: { type: "si", slug: "trpc", hex: "398CCB" },
@@ -66,6 +100,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Web Frontend ──────────────────────────────────────────────────────────
   "tanstack-router": { type: "local", src: "/icon/tanstack.png" },
   "tanstack-start": { type: "local", src: "/icon/tanstack.png" },
+  "tanstack-query": { type: "local", src: "/icon/tanstack.png" },
+  swr: { type: "si", slug: "vercel", hex: "000000" },
   "react-router": { type: "local", src: "/icon/react-router.svg" },
   next: { type: "si", slug: "nextdotjs", hex: "000000" },
   vinext: { type: "si", slug: "nextdotjs", hex: "000000" },
@@ -127,7 +163,6 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   kysely: { type: "local", src: "https://kysely.dev/img/logo.svg" },
   mikroorm: { type: "local", src: "https://mikro-orm.io/img/logo.svg" },
   sequelize: { type: "si", slug: "sequelize", hex: "52B0E7" },
-  "tortoise-orm": { type: "local", src: "/icon/python.svg" },
 
   // ─── DB Setup ──────────────────────────────────────────────────────────────
   turso: { type: "si", slug: "turso", hex: "4FF8D2" },
@@ -184,11 +219,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
 
   // ─── Feature Flags ─────────────────────────────────────────────────────────
-  growthbook: { type: "si", slug: "growthbook", hex: "4E00DF" },
   posthog: { type: "si", slug: "posthog", hex: "F54E00" },
-  launchdarkly: { type: "si", slug: "launchdarkly", hex: "405BFF" },
-  flagsmith: { type: "si", slug: "flagsmith", hex: "1A1A1A" },
-  unleash: { type: "si", slug: "unleash", hex: "1D4ED8" },
 
   // ─── State Management ──────────────────────────────────────────────────────
   "redux-toolkit": { type: "si", slug: "redux", hex: "764ABC" },
@@ -210,6 +241,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── UI Library ────────────────────────────────────────────────────────────
   "shadcn-ui": { type: "si", slug: "shadcnui", hex: "000000" },
+  "shadcn-svelte": { type: "si", slug: "shadcnui", hex: "000000" },
   daisyui: { type: "si", slug: "daisyui", hex: "1AD1A5" },
   "radix-ui": { type: "si", slug: "radixui", hex: "161618" },
   "headless-ui": { type: "si", slug: "headlessui", hex: "66E3FF" },
@@ -219,6 +251,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mui: { type: "si", slug: "mui", hex: "007FFF" },
   antd: { type: "si", slug: "antdesign", hex: "0170FE" },
   "base-ui": { type: "local", src: "/icon/base-ui.svg", needsInvert: "dark" },
+  evlog: { type: "si", slug: "typescript", hex: "3178C6" },
 
   // ─── shadcn Base Libraries ───────────────────────────────────────────────────
   radix: { type: "si", slug: "radixui", hex: "161618" },
@@ -304,6 +337,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },
   r2: { type: "si", slug: "cloudflare", hex: "F38020" },
+  cloudinary: { type: "si", slug: "cloudinary", hex: "3448C5" },
 
   // ─── Animation ─────────────────────────────────────────────────────────────
   "framer-motion": { type: "si", slug: "framer", hex: "0055FF" },
@@ -323,6 +357,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   sanity: { type: "si", slug: "sanity", hex: "F03E2F" },
   strapi: { type: "si", slug: "strapi", hex: "4945FF" },
   tinacms: { type: "local", src: "/icon/tinacms.svg" },
+  directus: { type: "si", slug: "directus", hex: "263238" },
 
   // ─── Rust ──────────────────────────────────────────────────────────────────
   axum: { type: "local", src: "/icon/axum.svg" },
@@ -353,7 +388,6 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   ariadne: { type: "si", slug: "graphql", hex: "E10098" },
   ruff: { type: "si", slug: "ruff", hex: "D7FF64" },
   mypy: { type: "si", slug: "python", hex: "3776AB" },
-  pyright: { type: "si", slug: "microsoft", hex: "5E5E5E" },
 
   // ─── Go ────────────────────────────────────────────────────────────────────
   gin: { type: "si", slug: "gin", hex: "00ADD8" },
@@ -391,8 +425,6 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "micrometer-prometheus": { type: "si", slug: "prometheus", hex: "E6522C" },
   thymeleaf: { type: "si", slug: "thymeleaf", hex: "005F0F" },
   junit5: { type: "si", slug: "junit5", hex: "25A162" },
-  mockito: { type: "si", slug: "mockito", hex: "78A641" },
-  testcontainers: { type: "si", slug: "testcontainers", hex: "2496ED" },
   assertj: { type: "local", src: "https://assertj.github.io/doc/images/favicon.png" },
   "rest-assured": { type: "local", src: "https://rest-assured.io/img/logo-transparent.png" },
   wiremock: { type: "local", src: "https://wiremock.org/images/favicon.svg" },

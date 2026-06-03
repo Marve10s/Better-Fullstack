@@ -75,6 +75,9 @@ jobs:
       - name: Validate Builder Tech Links
         run: bun run --cwd apps/web validate:tech-links
 
+      - name: Validate Builder Tech Icons
+        run: bun run --cwd apps/web validate:tech-icons
+
       - name: Run Lint
         run: bun run lint
 

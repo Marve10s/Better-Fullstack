@@ -1,0 +1,52 @@
+import Config
+
+{{#if (ne elixirOrm "none")}}
+config :{{elixirAppName}},
+  ecto_repos: [{{elixirModuleName}}.Repo],
+  generators: [timestamp_type: :utc_datetime]
+{{else}}
+config :{{elixirAppName}},
+  generators: [timestamp_type: :utc_datetime]
+{{/if}}
+
+{{#if (ne elixirWebFramework "none")}}
+config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
+  url: [host: "localhost"],
+  render_errors: [
+    formats: [html: {{elixirModuleName}}Web.ErrorHTML, json: {{elixirModuleName}}Web.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: {{elixirModuleName}}.PubSub,
+  live_view: [signing_salt: "change-me"]
+{{/if}}
+
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+{{#if (ne elixirWebFramework "none")}}
+config :phoenix, :json_library, Jason
+{{/if}}
+
+{{#if (eq elixirJobs "oban")}}
+config :{{elixirAppName}}, Oban,
+  repo: {{elixirModuleName}}.Repo,
+  queues: [default: 10],
+  plugins: [Oban.Plugins.Pruner]
+{{/if}}
+
+{{#if (eq elixirJobs "quantum")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.Scheduler,
+  jobs: [
+    heartbeat: [
+      schedule: "@hourly",
+      task: fn -> :ok end
+    ]
+  ]
+{{/if}}
+
+{{#if (eq elixirEmail "swoosh")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.Mailer, adapter: Swoosh.Adapters.Local
+{{/if}}
+
+import_config "#{config_env()}.exs"

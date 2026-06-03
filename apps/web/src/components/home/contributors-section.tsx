@@ -52,7 +52,7 @@ function ContributorCard({ contributor, index }: { contributor: Contributor; ind
         src={`https://github.com/${contributor.username}.png`}
         alt={contributor.name}
         loading="lazy"
-        className="h-14 w-14 rounded-full border-2 border-border transition-colors group-hover:border-lime-500/50"
+        className="h-14 w-14 rounded-full border-2 border-border transition-colors group-hover:border-[#C6E853]/50"
       />
       <div className="min-w-0 flex-1">
         <span className="block truncate font-medium text-foreground">{contributor.name}</span>
@@ -74,7 +74,7 @@ export default function ContributorsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
               ✦ contributors
             </p>
             <h2

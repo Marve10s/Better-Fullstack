@@ -23,10 +23,12 @@ type BaselineControl = {
 
 const ECOSYSTEMS: Array<{ id: Ecosystem; label: string }> = [
   { id: "typescript", label: "TypeScript" },
+  { id: "react-native", label: "React Native" },
   { id: "rust", label: "Rust" },
   { id: "python", label: "Python" },
   { id: "go", label: "Go" },
   { id: "java", label: "Java" },
+  { id: "elixir", label: "Elixir" },
 ];
 
 const TYPESCRIPT_CATEGORIES: SelectCategory[] = [
@@ -69,6 +71,18 @@ const TYPESCRIPT_CATEGORIES: SelectCategory[] = [
 
 const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
   typescript: TYPESCRIPT_CATEGORIES,
+  "react-native": [
+    "nativeFrontend",
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
+    "auth",
+    "packageManager",
+  ],
   rust: [
     "rustWebFramework",
     "rustFrontend",
@@ -133,6 +147,25 @@ const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
     "packageManager",
     "versionChannel",
   ],
+  elixir: [
+    "elixirWebFramework",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+    "packageManager",
+    "versionChannel",
+  ],
 };
 
 const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
@@ -146,6 +179,13 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "auth", label: "Auth" },
     { category: "cssFramework", label: "CSS" },
     { category: "uiLibrary", label: "UI library" },
+  ],
+  "react-native": [
+    { category: "nativeFrontend", label: "Expo app" },
+    { category: "mobileNavigation", label: "Navigation" },
+    { category: "mobileUI", label: "Mobile UI" },
+    { category: "mobileStorage", label: "Storage" },
+    { category: "mobileTesting", label: "Testing" },
   ],
   rust: [
     { category: "rustWebFramework", label: "Framework" },
@@ -175,6 +215,13 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "javaBuildTool", label: "Build tool" },
     { category: "javaOrm", label: "ORM" },
     { category: "javaAuth", label: "Auth" },
+  ],
+  elixir: [
+    { category: "elixirWebFramework", label: "Framework" },
+    { category: "elixirOrm", label: "Persistence" },
+    { category: "elixirAuth", label: "Auth" },
+    { category: "elixirApi", label: "API" },
+    { category: "elixirRealtime", label: "Realtime" },
   ],
 };
 

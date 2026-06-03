@@ -1,21 +1,26 @@
-import {
-  analyzeStackCompatibility,
-  type CompatibilityInput,
-} from "./compatibility";
-import {
-  createCliDefaultProjectConfigBase,
-  type CliDefaultProjectConfigBase,
-} from "./defaults";
-import {
-  normalizeOptionId,
-  type OptionCategory,
-} from "./option-metadata";
 import type { CLIInput, ProjectConfig } from "./types";
 
-export type StackSelectionInput = CompatibilityInput;
+import { analyzeStackCompatibility, type CompatibilityInput } from "./compatibility";
+import { createCliDefaultProjectConfigBase, type CliDefaultProjectConfigBase } from "./defaults";
+import { normalizeOptionId, type OptionCategory } from "./option-metadata";
+import {
+  formatStackPartSpec,
+  legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+  validateStackParts,
+} from "./stack-graph";
+
+export type StackSelectionMode = "solo" | "multi";
+export type StackSelectionInput = CompatibilityInput & {
+  stackMode: StackSelectionMode;
+  stackPartSpecs: string[];
+};
 export type StackSelectionState = StackSelectionInput;
 
 export const DEFAULT_STACK_SELECTION: StackSelectionState = {
+  stackMode: "solo",
+  stackPartSpecs: [],
   ecosystem: "typescript",
   projectName: "my-app",
   webFrontend: ["tanstack-router"],
@@ -34,6 +39,13 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   observability: "none",
   featureFlags: "none",
   analytics: "none",
+  mobileNavigation: "none",
+  mobileUI: "none",
+  mobileStorage: "none",
+  mobileTesting: "none",
+  mobilePush: "none",
+  mobileOTA: "none",
+  mobileDeepLinking: "none",
   backendLibraries: "none",
   stateManagement: "none",
   forms: "react-hook-form",
@@ -101,6 +113,21 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   javaAuth: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
+  elixirWebFramework: "phoenix",
+  elixirOrm: "ecto-sql",
+  elixirAuth: "none",
+  elixirApi: "rest",
+  elixirRealtime: "channels",
+  elixirJobs: "none",
+  elixirValidation: "ecto-changesets",
+  elixirHttp: "req",
+  elixirJson: "jason",
+  elixirEmail: "none",
+  elixirCaching: "none",
+  elixirObservability: "telemetry",
+  elixirTesting: "ex_unit",
+  elixirQuality: "credo",
+  elixirDeploy: "none",
 };
 
 export type StackSelectionKey = keyof StackSelectionState;
@@ -108,7 +135,13 @@ export type StackSelectionKey = keyof StackSelectionState;
 type StackSelectionUrlValue = string | string[] | null | undefined;
 type StackSelectionUrlRecord = Record<string, StackSelectionUrlValue>;
 
-export const NON_OPTION_STACK_SELECTION_KEYS = ["ecosystem", "projectName", "yolo"] as const;
+export const NON_OPTION_STACK_SELECTION_KEYS = [
+  "stackMode",
+  "stackPartSpecs",
+  "ecosystem",
+  "projectName",
+  "yolo",
+] as const;
 
 export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   Exclude<StackSelectionKey, (typeof NON_OPTION_STACK_SELECTION_KEYS)[number]>,
@@ -130,6 +163,13 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   observability: "observability",
   featureFlags: "featureFlags",
   analytics: "analytics",
+  mobileNavigation: "mobileNavigation",
+  mobileUI: "mobileUI",
+  mobileStorage: "mobileStorage",
+  mobileTesting: "mobileTesting",
+  mobilePush: "mobilePush",
+  mobileOTA: "mobileOTA",
+  mobileDeepLinking: "mobileDeepLinking",
   backendLibraries: "backendLibraries",
   stateManagement: "stateManagement",
   forms: "forms",
@@ -196,6 +236,21 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   javaAuth: "javaAuth",
   javaLibraries: "javaLibraries",
   javaTestingLibraries: "javaTestingLibraries",
+  elixirWebFramework: "elixirWebFramework",
+  elixirOrm: "elixirOrm",
+  elixirAuth: "elixirAuth",
+  elixirApi: "elixirApi",
+  elixirRealtime: "elixirRealtime",
+  elixirJobs: "elixirJobs",
+  elixirValidation: "elixirValidation",
+  elixirHttp: "elixirHttp",
+  elixirJson: "elixirJson",
+  elixirEmail: "elixirEmail",
+  elixirCaching: "elixirCaching",
+  elixirObservability: "elixirObservability",
+  elixirTesting: "elixirTesting",
+  elixirQuality: "elixirQuality",
+  elixirDeploy: "elixirDeploy",
 };
 
 export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
@@ -213,6 +268,8 @@ export function usesVirtualNoneStackSelection(
 }
 
 export const STACK_SELECTION_URL_KEYS = {
+  stackMode: "mode",
+  stackPartSpecs: "part",
   ecosystem: "eco",
   projectName: "name",
   webFrontend: "fe-w",
@@ -231,6 +288,13 @@ export const STACK_SELECTION_URL_KEYS = {
   observability: "obs",
   featureFlags: "ff",
   analytics: "an",
+  mobileNavigation: "mn",
+  mobileUI: "mui",
+  mobileStorage: "mst",
+  mobileTesting: "mte",
+  mobilePush: "mpu",
+  mobileOTA: "mota",
+  mobileDeepLinking: "mdl",
   backendLibraries: "bl",
   stateManagement: "sm",
   forms: "frm",
@@ -298,11 +362,24 @@ export const STACK_SELECTION_URL_KEYS = {
   javaAuth: "jauth",
   javaLibraries: "jlib",
   javaTestingLibraries: "jtest",
+  elixirWebFramework: "ewf",
+  elixirOrm: "eorm",
+  elixirAuth: "eauth",
+  elixirApi: "eapi",
+  elixirRealtime: "ert",
+  elixirJobs: "ejob",
+  elixirValidation: "eval",
+  elixirHttp: "ehttp",
+  elixirJson: "ejson",
+  elixirEmail: "emailx",
+  elixirCaching: "ecache",
+  elixirObservability: "eobs",
+  elixirTesting: "etest",
+  elixirQuality: "eq",
+  elixirDeploy: "edeploy",
 } as const satisfies Record<StackSelectionKey, string>;
 
-export const STACK_SELECTION_KEYS = Object.keys(
-  STACK_SELECTION_URL_KEYS,
-) as StackSelectionKey[];
+export const STACK_SELECTION_KEYS = Object.keys(STACK_SELECTION_URL_KEYS) as StackSelectionKey[];
 
 const stackSelectionArrayKeySet = new Set<StackSelectionKey>(
   STACK_SELECTION_KEYS.filter((key) => Array.isArray(DEFAULT_STACK_SELECTION[key])),
@@ -359,8 +436,13 @@ export function normalizeStackSelectionValue<K extends StackSelectionKey>(
   return value;
 }
 
+function normalizeStackSelectionMode(value: unknown): StackSelectionMode {
+  return value === "multi" || value === "graph" ? "multi" : "solo";
+}
+
 export function normalizeStackSelection(selection: StackSelectionState): StackSelectionState {
   const normalized: Record<string, unknown> = { ...selection };
+  normalized.stackMode = normalizeStackSelectionMode(normalized.stackMode);
 
   for (const key of Object.keys(STACK_SELECTION_OPTION_CATEGORY_BY_KEY) as StackSelectionKey[]) {
     normalized[key] = normalizeStackSelectionValue(
@@ -514,6 +596,13 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["search", "search"],
   ["fileStorage", "fileStorage"],
   ["analytics", "analytics"],
+  ["mobileNavigation", "mobileNavigation"],
+  ["mobileUI", "mobileUI"],
+  ["mobileStorage", "mobileStorage"],
+  ["mobileTesting", "mobileTesting"],
+  ["mobilePush", "mobilePush"],
+  ["mobileOTA", "mobileOTA"],
+  ["mobileDeepLinking", "mobileDeepLinking"],
   ["featureFlags", "featureFlags"],
   ["fileUpload", "fileUpload"],
   ["git", "git"],
@@ -561,6 +650,21 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["javaBuildTool", "javaBuildTool"],
   ["javaOrm", "javaOrm"],
   ["javaAuth", "javaAuth"],
+  ["elixirWebFramework", "elixirWebFramework"],
+  ["elixirOrm", "elixirOrm"],
+  ["elixirAuth", "elixirAuth"],
+  ["elixirApi", "elixirApi"],
+  ["elixirRealtime", "elixirRealtime"],
+  ["elixirJobs", "elixirJobs"],
+  ["elixirValidation", "elixirValidation"],
+  ["elixirHttp", "elixirHttp"],
+  ["elixirJson", "elixirJson"],
+  ["elixirEmail", "elixirEmail"],
+  ["elixirCaching", "elixirCaching"],
+  ["elixirObservability", "elixirObservability"],
+  ["elixirTesting", "elixirTesting"],
+  ["elixirQuality", "elixirQuality"],
+  ["elixirDeploy", "elixirDeploy"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
 const CLI_NON_EMPTY_ARRAY_CONFIG_FIELDS = [
@@ -637,6 +741,34 @@ const JAVA_CONFIG_KEYS = [
   "javaTestingLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
+const ELIXIR_CONFIG_KEYS = [
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const REACT_NATIVE_CONFIG_KEYS = [
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
 const COMMAND_ADDONS = new Set([
   "pwa",
   "tauri",
@@ -656,6 +788,7 @@ const COMMAND_ADDONS = new Set([
   "wxt",
   "msw",
   "storybook",
+  "swr",
   "tanstack-query",
   "tanstack-table",
   "tanstack-virtual",
@@ -683,24 +816,188 @@ function formatArrayFlag(flag: string, values: readonly string[]) {
 }
 
 function formatTypeScriptAddonsFlag(selection: StackSelectionInput) {
-  const addons = [
-    ...selection.codeQuality,
-    ...selection.documentation,
-    ...selection.appPlatforms,
-  ];
+  const addons = [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms];
 
   if (addons.length === 0) return "--addons none";
 
   return `--addons ${addons.filter((addon) => COMMAND_ADDONS.has(addon)).join(" ") || "none"}`;
 }
 
+type StackSelectionStringKey = {
+  [K in keyof StackSelectionState]: StackSelectionState[K] extends string ? K : never;
+}[keyof StackSelectionState];
+
+const GRAPH_TYPESCRIPT_FRONTEND_FLAG_KEYS = [
+  ["cssFramework", "css-framework"],
+  ["uiLibrary", "ui-library"],
+  ["stateManagement", "state-management"],
+  ["forms", "forms"],
+  ["validation", "validation"],
+  ["testing", "testing"],
+  ["animation", "animation"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_SHADCN_FLAG_KEYS = [
+  ["shadcnBase", "shadcn-base"],
+  ["shadcnStyle", "shadcn-style"],
+  ["shadcnIconLibrary", "shadcn-icon-library"],
+  ["shadcnColorTheme", "shadcn-color-theme"],
+  ["shadcnBaseColor", "shadcn-base-color"],
+  ["shadcnFont", "shadcn-font"],
+  ["shadcnRadius", "shadcn-radius"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_MOBILE_FLAG_KEYS = [
+  ["mobileNavigation", "mobile-navigation"],
+  ["mobileUI", "mobile-ui"],
+  ["mobileStorage", "mobile-storage"],
+  ["mobileTesting", "mobile-testing"],
+  ["mobilePush", "mobile-push"],
+  ["mobileOTA", "mobile-ota"],
+  ["mobileDeepLinking", "mobile-deep-linking"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_GLOBAL_FLAG_KEYS = [
+  ["dbSetup", "db-setup"],
+  ["webDeploy", "web-deploy"],
+  ["serverDeploy", "server-deploy"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS = [
+  ["payments", "payments"],
+  ["email", "email"],
+  ["fileUpload", "file-upload"],
+  ["backendLibraries", "effect"],
+  ["aiSdk", "ai"],
+  ["realtime", "realtime"],
+  ["jobQueue", "job-queue"],
+  ["logging", "logging"],
+  ["observability", "observability"],
+  ["featureFlags", "feature-flags"],
+  ["caching", "caching"],
+  ["i18n", "i18n"],
+  ["cms", "cms"],
+  ["search", "search"],
+  ["fileStorage", "file-storage"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
+  ["email", "email"],
+  ["observability", "observability"],
+  ["caching", "caching"],
+  ["search", "search"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_RUST_BACKEND_FLAG_KEYS = [
+  ["rustCli", "rust-cli"],
+  ["rustLogging", "rust-logging"],
+  ["rustErrorHandling", "rust-error-handling"],
+  ["rustCaching", "rust-caching"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_PYTHON_BACKEND_FLAG_KEYS = [
+  ["pythonValidation", "python-validation"],
+  ["pythonTaskQueue", "python-task-queue"],
+  ["pythonGraphql", "python-graphql"],
+  ["pythonQuality", "python-quality"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_GO_BACKEND_FLAG_KEYS = [
+  ["goCli", "go-cli"],
+  ["goLogging", "go-logging"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_JAVA_BACKEND_FLAG_KEYS = [
+  ["javaBuildTool", "java-build-tool"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [
+  ["elixirRealtime", "elixir-realtime"],
+  ["elixirJobs", "elixir-jobs"],
+  ["elixirValidation", "elixir-validation"],
+  ["elixirHttp", "elixir-http"],
+  ["elixirJson", "elixir-json"],
+  ["elixirEmail", "elixir-email"],
+  ["elixirCaching", "elixir-caching"],
+  ["elixirObservability", "elixir-observability"],
+  ["elixirTesting", "elixir-testing"],
+  ["elixirQuality", "elixir-quality"],
+  ["elixirDeploy", "elixir-deploy"],
+] as const satisfies readonly [StackSelectionStringKey, string][];
+
+function formatChangedStringFlag(
+  selection: StackSelectionInput,
+  key: StackSelectionStringKey,
+  flag: string,
+) {
+  return selection[key] === DEFAULT_STACK_SELECTION[key] ? undefined : `--${flag} ${selection[key]}`;
+}
+
+type StackSelectionArrayKey = {
+  [K in keyof StackSelectionState]: StackSelectionState[K] extends string[] ? K : never;
+}[keyof StackSelectionState];
+
+function formatChangedArraySelectionFlag(
+  selection: StackSelectionInput,
+  key: StackSelectionArrayKey,
+  flag: string,
+) {
+  return areStringArraysEqual(selection[key], DEFAULT_STACK_SELECTION[key])
+    ? undefined
+    : formatArrayFlag(flag, selection[key]);
+}
+
+function formatChangedStringFlags(
+  selection: StackSelectionInput,
+  keys: readonly [StackSelectionStringKey, string][],
+) {
+  return keys.flatMap(([key, flag]) => {
+    const formattedFlag = formatChangedStringFlag(selection, key, flag);
+    return formattedFlag ? [formattedFlag] : [];
+  });
+}
+
+function hasGraphPrimaryPart(
+  parts: readonly { role: string; ecosystem: string; toolId?: string; ownerPartId?: string }[],
+  role: "frontend" | "backend" | "mobile" | "database",
+  ecosystem?: string,
+  toolId?: string,
+) {
+  return parts.some(
+    (part) =>
+      part.role === role &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem) &&
+      (!toolId || part.toolId === toolId),
+  );
+}
+
 function mapBackendToCli(backend: string) {
   return SELF_BACKENDS.has(backend) ? "self" : backend;
 }
 
+export function isGraphStackSelection(
+  selection: Pick<StackSelectionInput, "stackMode" | "stackPartSpecs">,
+): boolean {
+  return (
+    (selection.stackMode === "multi" || String(selection.stackMode) === "graph") &&
+    selection.stackPartSpecs.length > 0
+  );
+}
+
+function getGraphStackParts(selection: StackSelectionInput) {
+  const stackParts = parseStackPartSpecs(selection.stackPartSpecs, "selected");
+  const validation = validateStackParts(stackParts);
+  if (validation.issues.length > 0) {
+    throw new Error(validation.issues.map((issue) => issue.message).join("\n"));
+  }
+  return stackParts;
+}
+
 function getAdjustedSelection(selection: StackSelectionInput): StackSelectionInput {
   const compatibility = analyzeStackCompatibility(selection);
-  return compatibility.adjustedStack ?? selection;
+  if (!compatibility.adjustedStack) return selection;
+  return { ...selection, ...compatibility.adjustedStack };
 }
 
 function getProjectName(selection: StackSelectionInput, projectName?: string) {
@@ -715,6 +1012,10 @@ function areStringArraysEqual(left: readonly string[], right: readonly string[])
     sortedLeft.length === sortedRight.length &&
     sortedLeft.every((value, index) => value === sortedRight[index])
   );
+}
+
+function isStringArray(value: readonly unknown[]): value is readonly string[] {
+  return value.every((item) => typeof item === "string");
 }
 
 export function isStackSelectionDefault<K extends keyof StackSelectionState>(
@@ -772,6 +1073,11 @@ export function cliInputToProjectConfigPartial(
     }
   }
 
+  if (Array.isArray(input.part) && input.part.length > 0) {
+    const stackParts = parseStackPartSpecs(input.part, "selected");
+    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+  }
+
   return config;
 }
 
@@ -786,8 +1092,7 @@ function buildProjectConfigBase(
     ...toUniqueNonNoneArray(stack.webFrontend),
     ...toUniqueNonNoneArray(stack.nativeFrontend),
   ] as ProjectConfig["frontend"];
-
-  return {
+  const baseConfig: CliDefaultProjectConfigBase = {
     projectName,
     relativePath,
     ecosystem: stack.ecosystem as ProjectConfig["ecosystem"],
@@ -837,6 +1142,13 @@ function buildProjectConfigBase(
     observability: stack.observability as ProjectConfig["observability"],
     featureFlags: stack.featureFlags as ProjectConfig["featureFlags"],
     analytics: stack.analytics as ProjectConfig["analytics"],
+    mobileNavigation: stack.mobileNavigation as ProjectConfig["mobileNavigation"],
+    mobileUI: stack.mobileUI as ProjectConfig["mobileUI"],
+    mobileStorage: stack.mobileStorage as ProjectConfig["mobileStorage"],
+    mobileTesting: stack.mobileTesting as ProjectConfig["mobileTesting"],
+    mobilePush: stack.mobilePush as ProjectConfig["mobilePush"],
+    mobileOTA: stack.mobileOTA as ProjectConfig["mobileOTA"],
+    mobileDeepLinking: stack.mobileDeepLinking as ProjectConfig["mobileDeepLinking"],
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
     i18n: stack.i18n as ProjectConfig["i18n"],
@@ -875,7 +1187,42 @@ function buildProjectConfigBase(
     javaTestingLibraries: toUniqueNonNoneArray(
       stack.javaTestingLibraries,
     ) as ProjectConfig["javaTestingLibraries"],
+    elixirWebFramework: stack.elixirWebFramework as ProjectConfig["elixirWebFramework"],
+    elixirOrm: stack.elixirOrm as ProjectConfig["elixirOrm"],
+    elixirAuth: stack.elixirAuth as ProjectConfig["elixirAuth"],
+    elixirApi: stack.elixirApi as ProjectConfig["elixirApi"],
+    elixirRealtime: stack.elixirRealtime as ProjectConfig["elixirRealtime"],
+    elixirJobs: stack.elixirJobs as ProjectConfig["elixirJobs"],
+    elixirValidation: stack.elixirValidation as ProjectConfig["elixirValidation"],
+    elixirHttp: stack.elixirHttp as ProjectConfig["elixirHttp"],
+    elixirJson: stack.elixirJson as ProjectConfig["elixirJson"],
+    elixirEmail: stack.elixirEmail as ProjectConfig["elixirEmail"],
+    elixirCaching: stack.elixirCaching as ProjectConfig["elixirCaching"],
+    elixirObservability: stack.elixirObservability as ProjectConfig["elixirObservability"],
+    elixirTesting: stack.elixirTesting as ProjectConfig["elixirTesting"],
+    elixirQuality: stack.elixirQuality as ProjectConfig["elixirQuality"],
+    elixirDeploy: stack.elixirDeploy as ProjectConfig["elixirDeploy"],
     aiDocs: toUniqueNonNoneArray(stack.aiDocs) as ProjectConfig["aiDocs"],
+  };
+
+  if (!isGraphStackSelection(stack)) {
+    return baseConfig;
+  }
+
+  const stackParts = getGraphStackParts(stack);
+  const loweredGraphConfig = stackPartsToLegacyProjectConfigPartial(stackParts);
+
+  return {
+    ...baseConfig,
+    ...loweredGraphConfig,
+    projectName,
+    relativePath,
+    git: stack.git === "true",
+    packageManager: stack.packageManager as ProjectConfig["packageManager"],
+    versionChannel: stack.versionChannel as ProjectConfig["versionChannel"],
+    install,
+    aiDocs: toUniqueNonNoneArray(stack.aiDocs) as ProjectConfig["aiDocs"],
+    stackParts,
   };
 }
 
@@ -896,18 +1243,15 @@ export function stackSelectionToCliComparableConfig(
   selection: StackSelectionInput,
   projectName = getProjectName(selection),
 ): CliDefaultProjectConfigBase {
-  return buildProjectConfigBase(
-    selection,
-    projectName,
-    projectName,
-    selection.install === "true",
-  );
+  return buildProjectConfigBase(selection, projectName, projectName, selection.install === "true");
 }
 
 export function isCliDefaultStackSelection(
   selection: StackSelectionInput,
   projectName = getProjectName(selection),
 ): boolean {
+  if (isGraphStackSelection(selection)) return false;
+
   const comparableConfig = stackSelectionToCliComparableConfig(selection, projectName);
   const cliDefaults = {
     ...createCliDefaultProjectConfigBase(
@@ -917,12 +1261,14 @@ export function isCliDefaultStackSelection(
     relativePath: projectName,
   };
   const ignoredKeys =
-    selection.ecosystem === "typescript"
+    selection.ecosystem === "typescript" || selection.ecosystem === "react-native"
       ? new Set<keyof CliDefaultProjectConfigBase>([
           ...RUST_CONFIG_KEYS,
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
           ...JAVA_CONFIG_KEYS,
+          ...ELIXIR_CONFIG_KEYS,
+          ...(selection.ecosystem === "typescript" ? REACT_NATIVE_CONFIG_KEYS : []),
         ])
       : new Set<keyof CliDefaultProjectConfigBase>();
 
@@ -933,7 +1279,12 @@ export function isCliDefaultStackSelection(
     const defaultValue = cliDefaults[key];
 
     if (Array.isArray(currentValue) && Array.isArray(defaultValue)) {
-      return areStringArraysEqual(currentValue, defaultValue);
+      const currentArray: readonly unknown[] = currentValue;
+      const defaultArray: readonly unknown[] = defaultValue;
+      if (isStringArray(currentArray) && isStringArray(defaultArray)) {
+        return areStringArraysEqual(currentArray, defaultArray);
+      }
+      return JSON.stringify(currentValue) === JSON.stringify(defaultValue);
     }
 
     return currentValue === defaultValue;
@@ -945,6 +1296,94 @@ function getBaseCommand(selection: StackSelectionInput) {
     PACKAGE_MANAGER_COMMANDS[selection.packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ??
     PACKAGE_MANAGER_COMMANDS.bun
   );
+}
+
+function generateGraphCommand(selection: StackSelectionInput, projectName: string) {
+  const stackParts = getGraphStackParts(selection);
+  const hasTypeScriptFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript");
+  const hasAstroFrontend = hasGraphPrimaryPart(stackParts, "frontend", "typescript", "astro");
+  const hasTypeScriptBackend = hasGraphPrimaryPart(stackParts, "backend", "typescript");
+  const hasRustBackend = hasGraphPrimaryPart(stackParts, "backend", "rust");
+  const hasPythonBackend = hasGraphPrimaryPart(stackParts, "backend", "python");
+  const hasGoBackend = hasGraphPrimaryPart(stackParts, "backend", "go");
+  const hasJavaBackend = hasGraphPrimaryPart(stackParts, "backend", "java");
+  const hasElixirBackend = hasGraphPrimaryPart(stackParts, "backend", "elixir");
+  const hasNonTypeScriptBackend =
+    hasRustBackend || hasPythonBackend || hasGoBackend || hasJavaBackend || hasElixirBackend;
+  const hasMobile = hasGraphPrimaryPart(stackParts, "mobile");
+  const flags = [
+    ...stackParts
+      .filter((part) => part.source !== "provided")
+      .map((part) => `--part ${formatStackPartSpec(part, stackParts)}`),
+    ...(hasTypeScriptFrontend
+      ? formatChangedStringFlags(selection, GRAPH_TYPESCRIPT_FRONTEND_FLAG_KEYS)
+      : []),
+    ...(hasAstroFrontend && selection.astroIntegration !== "none"
+      ? [`--astro-integration ${selection.astroIntegration}`]
+      : []),
+    ...(hasTypeScriptFrontend && selection.uiLibrary === "shadcn-ui"
+      ? formatChangedStringFlags(selection, GRAPH_SHADCN_FLAG_KEYS)
+      : []),
+    ...(hasTypeScriptBackend
+      ? formatChangedStringFlags(selection, GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS)
+      : []),
+    ...(hasNonTypeScriptBackend
+      ? formatChangedStringFlags(selection, GRAPH_SHARED_BACKEND_FLAG_KEYS)
+      : []),
+    ...(hasRustBackend
+      ? [
+          ...formatChangedStringFlags(selection, GRAPH_RUST_BACKEND_FLAG_KEYS),
+          formatChangedArraySelectionFlag(selection, "rustLibraries", "rust-libraries"),
+        ].filter((flag): flag is string => Boolean(flag))
+      : []),
+    ...(hasPythonBackend
+      ? [
+          ...formatChangedStringFlags(selection, GRAPH_PYTHON_BACKEND_FLAG_KEYS),
+          formatChangedArraySelectionFlag(selection, "pythonAi", "python-ai"),
+        ].filter((flag): flag is string => Boolean(flag))
+      : []),
+    ...(hasGoBackend ? formatChangedStringFlags(selection, GRAPH_GO_BACKEND_FLAG_KEYS) : []),
+    ...(hasJavaBackend
+      ? [
+          ...formatChangedStringFlags(selection, GRAPH_JAVA_BACKEND_FLAG_KEYS),
+          formatChangedArraySelectionFlag(selection, "javaLibraries", "java-libraries"),
+          formatChangedArraySelectionFlag(
+            selection,
+            "javaTestingLibraries",
+            "java-testing-libraries",
+          ),
+        ].filter((flag): flag is string => Boolean(flag))
+      : []),
+    ...(hasElixirBackend
+      ? formatChangedStringFlags(selection, GRAPH_ELIXIR_BACKEND_FLAG_KEYS)
+      : []),
+    ...(hasMobile
+      ? formatChangedStringFlags(selection, GRAPH_MOBILE_FLAG_KEYS)
+      : []),
+    ...formatChangedStringFlags(selection, GRAPH_GLOBAL_FLAG_KEYS),
+    ...(areStringArraysEqual(
+      [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms],
+      [...DEFAULT_STACK_SELECTION.codeQuality, ...DEFAULT_STACK_SELECTION.documentation, ...DEFAULT_STACK_SELECTION.appPlatforms],
+    )
+      ? []
+      : [formatTypeScriptAddonsFlag(selection)]),
+    ...(areStringArraysEqual(selection.examples, DEFAULT_STACK_SELECTION.examples)
+      ? []
+      : [formatArrayFlag("examples", selection.examples)]),
+    `--package-manager ${selection.packageManager}`,
+    ...(selection.versionChannel !== "stable"
+      ? [`--version-channel ${selection.versionChannel}`]
+      : []),
+    selection.git === "false" ? "--no-git" : "--git",
+    selection.install === "false" ? "--no-install" : "--install",
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.yolo === "true") {
+    flags.push("--yolo");
+  }
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
 }
 
 function generateTypeScriptCommand(selection: StackSelectionInput, projectName: string) {
@@ -1027,6 +1466,35 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
   }
 
   return `${base} ${projectName} ${flags.join(" ")}`;
+}
+
+function generateReactNativeCommand(selection: StackSelectionInput, projectName: string) {
+  const flags = [
+    "--ecosystem react-native",
+    `--frontend ${
+      selection.nativeFrontend
+        .filter((value, _, values) => value !== "none" || values.length === 1)
+        .join(" ") || "native-bare"
+    }`,
+    `--auth ${selection.auth}`,
+    `--mobile-navigation ${selection.mobileNavigation}`,
+    `--mobile-ui ${selection.mobileUI}`,
+    `--mobile-storage ${selection.mobileStorage}`,
+    `--mobile-testing ${selection.mobileTesting}`,
+    `--mobile-push ${selection.mobilePush}`,
+    `--mobile-ota ${selection.mobileOTA}`,
+    `--mobile-deep-linking ${selection.mobileDeepLinking}`,
+    `--package-manager ${selection.packageManager}`,
+    selection.git === "false" ? "--no-git" : "--git",
+    selection.install === "false" ? "--no-install" : "--install",
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.yolo === "true") {
+    flags.push("--yolo");
+  }
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
 }
 
 function generateRustCommand(selection: StackSelectionInput, projectName: string) {
@@ -1125,10 +1593,43 @@ function generateJavaCommand(selection: StackSelectionInput, projectName: string
   return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
 }
 
+function generateElixirCommand(selection: StackSelectionInput, projectName: string) {
+  const flags: string[] = [
+    "--ecosystem elixir",
+    `--elixir-web-framework ${selection.elixirWebFramework}`,
+    `--elixir-orm ${selection.elixirOrm}`,
+    `--elixir-auth ${selection.elixirAuth}`,
+    `--elixir-api ${selection.elixirApi}`,
+    `--elixir-realtime ${selection.elixirRealtime}`,
+    `--elixir-jobs ${selection.elixirJobs}`,
+    `--elixir-validation ${selection.elixirValidation}`,
+    `--elixir-http ${selection.elixirHttp}`,
+    `--elixir-json ${selection.elixirJson}`,
+    `--elixir-email ${selection.elixirEmail}`,
+    `--elixir-caching ${selection.elixirCaching}`,
+    `--elixir-observability ${selection.elixirObservability}`,
+    `--elixir-testing ${selection.elixirTesting}`,
+    `--elixir-quality ${selection.elixirQuality}`,
+    `--elixir-deploy ${selection.elixirDeploy}`,
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.git === "false") flags.push("--no-git");
+  if (selection.install === "false") flags.push("--no-install");
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
+}
+
 export function generateStackSelectionCommand(selection: StackSelectionInput): string {
   const projectName = getProjectName(selection);
 
+  if (isGraphStackSelection(selection)) {
+    return generateGraphCommand(selection, projectName);
+  }
+
   switch (selection.ecosystem) {
+    case "react-native":
+      return generateReactNativeCommand(selection, projectName);
     case "rust":
       return generateRustCommand(selection, projectName);
     case "python":
@@ -1137,6 +1638,8 @@ export function generateStackSelectionCommand(selection: StackSelectionInput): s
       return generateGoCommand(selection, projectName);
     case "java":
       return generateJavaCommand(selection, projectName);
+    case "elixir":
+      return generateElixirCommand(selection, projectName);
     case "typescript":
     default:
       return generateTypeScriptCommand(selection, projectName);

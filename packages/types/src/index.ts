@@ -7,3 +7,4 @@ export * from "./option-metadata";
 export * from "./local-dev";
 export * from "./defaults";
 export * from "./stack-translation";
+export * from "./stack-graph";

@@ -101,8 +101,7 @@ export const ROW_2: Testimonial[] = [
     name: "Phlisg",
     avatar:
       "https://media.daily.dev/image/upload/s--FN_ynnjb--/f_auto/v1755006303/avatars/avatar_Y1klcvmY0LiikjVFthCLU",
-    comment:
-      "Great project! Would love to see more frameworks proposed. Awesome work!",
+    comment: "Great project! Would love to see more frameworks proposed. Awesome work!",
   },
   {
     name: "Dani",

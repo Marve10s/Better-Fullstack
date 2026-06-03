@@ -9,7 +9,7 @@ const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScien
 const funFacts = [
   `${universeLifetimesScientific.mantissa} × 10^${universeLifetimesScientific.exponent} universe lifetimes to test all combinations`,
   `${combinationsMetrics.universeSandRatioScientific.mantissa} × 10^${combinationsMetrics.universeSandRatioScientific.exponent}× more combinations than grains of sand in the observable universe`,
-  "Across TypeScript, Rust, Python, Go, and Java",
+  "Across TypeScript, React Native, Rust, Python, Go, and Java",
   "Each combination scaffolds a unique, production-ready app",
   "YOLO mode doubles every single one of them",
 ];
@@ -29,7 +29,7 @@ export default function CombinationsSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 items-end gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
               ✦ combinatorics
             </p>
             <h2
@@ -68,7 +68,7 @@ export default function CombinationsSection() {
                 ×&nbsp;10
               </span>
               <span
-                className="font-mono font-bold leading-none text-black dark:text-[#bef264]"
+                className="font-mono font-bold leading-none text-black dark:text-[#C6E853]"
                 style={{ fontSize: "clamp(1.5rem, 4vw, 3rem)" }}
               >
                 {totalScientific.exponent}
@@ -101,7 +101,7 @@ export default function CombinationsSection() {
                 <sup>{yearsAtOneMillisecondScientific.exponent}</sup> years
               </span>{" "}
               <span className="text-muted-foreground">— that&rsquo;s</span>{" "}
-              <span className="font-mono font-semibold text-lime-700">
+              <span className="font-mono font-semibold text-lime-800 dark:text-[#C6E853]">
                 {universeLifetimesScientific.mantissa} × 10
                 <sup>{universeLifetimesScientific.exponent}</sup> universe lifetimes
               </span>

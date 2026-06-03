@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 import React, { useCallback } from "react";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
@@ -75,3 +76,4 @@ function DrawerLayout() {
 }
 
 export default DrawerLayout;
+{{/if}}

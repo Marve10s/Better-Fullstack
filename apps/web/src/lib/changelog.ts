@@ -19,10 +19,73 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.0.0",
+    publishedAt: "2026-06-03T14:11:44Z",
+    displayDate: "June 3, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.0.0`,
+    title: "Multi-ecosystem support",
+    summary:
+      "Better Fullstack 2.0 introduces multi-ecosystem project generation, a new stack graph model, scoped CLI parts, and a redesigned builder for composing full products across frontend, backend, database, and mobile roles.",
+    highlights: [
+      "Added the stack graph foundation so projects can model connected frontend, backend, database, mobile, and ecosystem-specific parts instead of one flat stack.",
+      "Added scoped CLI part parsing, validation, and reproducible command output for multi-ecosystem generation.",
+      "Redesigned the web builder around Frontend, Backend, Database, Mobile, and Finalize steps with a first-class Multi-Ecosystem mode.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract diagonal motion blur in pink, coral, and teal tones",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
+    version: "v1.8.1",
+    publishedAt: "2026-05-26T18:05:00Z",
+    displayDate: "May 26, 2026",
+    href: `${RELEASE_BASE_URL}/v1.8.1`,
+    title: "Requested stack options",
+    summary:
+      "This release adds the requested TypeScript stack options across the CLI, web builder, compatibility rules, generated templates, and end-to-end scaffold coverage.",
+    highlights: [
+      "Added shadcn-svelte for SvelteKit UI, evlog logging, Directus CMS, Cloudinary file storage, and SWR data fetching as first-class stack choices.",
+      "Wired the new options through metadata, search, resource links, dependency generation, env output, template handlers, and CLI/web parity paths.",
+      "Expanded regression coverage for generated projects, including Directus, Cloudinary, evlog, SWR, shadcn-svelte, Nuxt runtime config, and Vinext compatibility.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract diagonal motion blur in pink, coral, and teal tones",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
+    version: "v1.8.0",
+    publishedAt: "2026-05-24T13:38:37Z",
+    displayDate: "May 24, 2026",
+    href: `${RELEASE_BASE_URL}/v1.8.0`,
+    title: "Elixir and React Native ecosystems",
+    summary:
+      "This release adds Elixir as a first-class Phoenix ecosystem, splits React Native into a dedicated mobile ecosystem, and hardens generated-app CI with PostgreSQL, BEAM, strict smoke tests, and Playwright coverage.",
+    highlights: [
+      "Added Phoenix and Phoenix LiveView scaffolds with Ecto/PostgreSQL, auth, REST, Absinthe, realtime, jobs, email, caching, testing, Docker, and release setup.",
+      "Added React Native as a standalone Expo ecosystem with navigation, UI, storage, testing, push notifications, OTA updates, and deep-linking options.",
+      "Expanded release safety with PostgreSQL-backed smoke lanes, BEAM setup, strict core/broad generated-app checks, Playwright builder tests, and package-manager coverage.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract diagonal motion blur in pink, coral, and teal tones",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1779446183287-4c75bbaae734?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v1.7.1",
     publishedAt: "2026-05-08T13:21:17Z",
     displayDate: "May 8, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v1.7.1`,
     title: "Expanded ecosystem tools",
     summary:

@@ -17,6 +17,21 @@ import {
   DatabaseSchema,
   DatabaseSetupSchema,
   EcosystemSchema,
+  ElixirApiSchema,
+  ElixirAuthSchema,
+  ElixirCachingSchema,
+  ElixirDeploySchema,
+  ElixirEmailSchema,
+  ElixirHttpSchema,
+  ElixirJobsSchema,
+  ElixirJsonSchema,
+  ElixirObservabilitySchema,
+  ElixirOrmSchema,
+  ElixirQualitySchema,
+  ElixirRealtimeSchema,
+  ElixirTestingSchema,
+  ElixirValidationSchema,
+  ElixirWebFrameworkSchema,
   EffectSchema,
   EmailSchema,
   ExamplesSchema,
@@ -25,6 +40,13 @@ import {
   FileUploadSchema,
   FormsSchema,
   FrontendSchema,
+  MobileDeepLinkingSchema,
+  MobileNavigationSchema,
+  MobileOTASchema,
+  MobilePushSchema,
+  MobileStorageSchema,
+  MobileTestingSchema,
+  MobileUISchema,
   GoApiSchema,
   GoCliSchema,
   GoAuthSchema,
@@ -86,7 +108,7 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   0,
 );
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, Rust, Go, Python, and Java ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -104,7 +126,7 @@ CRITICAL RULES:
 - Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", and "javaTestingLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
-- TypeScript-specific fields (frontend, backend, orm, etc.) are IGNORED for rust/python/go/java ecosystems.
+- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/elixir ecosystems.
 - The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
@@ -119,13 +141,17 @@ function getGuidance() {
     ],
     ecosystems: {
       typescript:
-        "Full-featured: frontend + backend + database + ORM + auth + payments + 20+ feature categories.",
+        "Full-featured web: frontend + backend + database + ORM + auth + payments + 20+ feature categories.",
+      "react-native":
+        "Mobile: Expo/React Native frontend variants plus mobile navigation, UI, storage, testing, push, OTA, and deep linking.",
       rust: "Backend/CLI: web framework (axum/actix-web), ORM (sea-orm/sqlx), gRPC, GraphQL, CLI tools.",
       python:
         "Backend/AI: web framework (fastapi/django), ORM (sqlalchemy/sqlmodel), AI/ML integrations, task queues.",
       go: "Backend/CLI: web framework (gin/echo), ORM (gorm/sqlc), gRPC, CLI tools, logging.",
       java:
         "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
+      elixir:
+        "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, and Mix releases/Docker.",
     },
     fieldRules: {
       projectName:
@@ -207,6 +233,13 @@ const SCHEMA_MAP: Record<string, z.ZodType> = {
   i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
+  mobileNavigation: MobileNavigationSchema,
+  mobileUI: MobileUISchema,
+  mobileStorage: MobileStorageSchema,
+  mobileTesting: MobileTestingSchema,
+  mobilePush: MobilePushSchema,
+  mobileOTA: MobileOTASchema,
+  mobileDeepLinking: MobileDeepLinkingSchema,
   addons: AddonsSchema,
   examples: ExamplesSchema,
   packageManager: PackageManagerSchema,
@@ -244,7 +277,22 @@ const SCHEMA_MAP: Record<string, z.ZodType> = {
   javaOrm: JavaOrmSchema,
   javaAuth: JavaAuthSchema,
   javaLibraries: JavaLibrariesSchema,
-  javaTestingLibraries: JavaTestingLibrariesSchema,
+      javaTestingLibraries: JavaTestingLibrariesSchema,
+  elixirWebFramework: ElixirWebFrameworkSchema,
+  elixirOrm: ElixirOrmSchema,
+  elixirAuth: ElixirAuthSchema,
+  elixirApi: ElixirApiSchema,
+  elixirRealtime: ElixirRealtimeSchema,
+  elixirJobs: ElixirJobsSchema,
+  elixirValidation: ElixirValidationSchema,
+  elixirHttp: ElixirHttpSchema,
+  elixirJson: ElixirJsonSchema,
+  elixirEmail: ElixirEmailSchema,
+  elixirCaching: ElixirCachingSchema,
+  elixirObservability: ElixirObservabilitySchema,
+  elixirTesting: ElixirTestingSchema,
+  elixirQuality: ElixirQualitySchema,
+  elixirDeploy: ElixirDeploySchema,
 };
 
 const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
@@ -254,6 +302,10 @@ const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
     "testing", "cssFramework", "uiLibrary", "realtime", "jobQueue", "animation",
     "logging", "observability", "featureFlags", "analytics", "cms", "caching",
     "i18n", "search", "fileStorage", "astroIntegration",
+  ],
+  "react-native": [
+    "frontend", "auth", "mobileNavigation", "mobileUI", "mobileStorage",
+    "mobileTesting", "mobilePush", "mobileOTA", "mobileDeepLinking",
   ],
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching", "rustAuth", "email", "observability", "caching", "search"],
   python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonAuth", "pythonApi", "pythonTaskQueue", "pythonGraphql", "pythonQuality", "email", "observability", "caching", "search"],
@@ -269,6 +321,23 @@ const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
     "observability",
     "caching",
     "search",
+  ],
+  elixir: [
+    "elixirWebFramework",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
   ],
   shared: ["ecosystem", "packageManager", "addons", "examples", "webDeploy", "serverDeploy", "dbSetup"],
 };
@@ -308,6 +377,7 @@ function getInstallCommand(
     case "rust": return `cd ${projectName} && cargo build`;
     case "python": return `cd ${projectName} && uv sync`;
     case "go": return `cd ${projectName} && go mod tidy`;
+    case "elixir": return `cd ${projectName} && mix deps.get && mix compile && mix test`;
     case "java":
       if (javaWebFramework === "quarkus") {
         return javaBuildTool === "gradle"
@@ -347,14 +417,24 @@ function buildProjectConfig(
   overrides?: { projectDir: string },
 ): ProjectConfig {
   const projectName = (input.projectName as string) ?? "my-project";
+  const ecosystem = (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript";
+  const frontend =
+    (input.frontend as ProjectConfig["frontend"]) ??
+    (ecosystem === "react-native" ? ["native-bare"] : ["tanstack-router"]);
+  const hasNativeFrontend = frontend.some((item) => item.startsWith("native-"));
+  const hasMobileProject = ecosystem === "react-native" || hasNativeFrontend;
   return {
     projectName,
     projectDir: overrides?.projectDir ?? "/virtual",
     relativePath: overrides ? `./${projectName}` : "./virtual",
-    ecosystem: (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript",
-    frontend: (input.frontend as ProjectConfig["frontend"]) ?? ["tanstack-router"],
-    backend: (input.backend as ProjectConfig["backend"]) ?? "hono",
-    runtime: (input.runtime as ProjectConfig["runtime"]) ?? "bun",
+    ecosystem,
+    frontend,
+    backend:
+      (input.backend as ProjectConfig["backend"]) ??
+      (ecosystem === "react-native" ? "none" : "hono"),
+    runtime:
+      (input.runtime as ProjectConfig["runtime"]) ??
+      (ecosystem === "react-native" ? "none" : "bun"),
     database: (input.database as ProjectConfig["database"]) ?? "none",
     orm: (input.orm as ProjectConfig["orm"]) ?? "none",
     api: (input.api as ProjectConfig["api"]) ?? "none",
@@ -362,13 +442,15 @@ function buildProjectConfig(
     payments: (input.payments as ProjectConfig["payments"]) ?? "none",
     email: (input.email as ProjectConfig["email"]) ?? "none",
     fileUpload: (input.fileUpload as ProjectConfig["fileUpload"]) ?? "none",
-    effect: "none",
+    effect: (input.effect as ProjectConfig["effect"]) ?? "none",
     ai: (input.ai as ProjectConfig["ai"]) ?? "none",
     stateManagement: (input.stateManagement as ProjectConfig["stateManagement"]) ?? "none",
     forms: (input.forms as ProjectConfig["forms"]) ?? "none",
     validation: (input.validation as ProjectConfig["validation"]) ?? "none",
     testing: (input.testing as ProjectConfig["testing"]) ?? "none",
-    cssFramework: (input.cssFramework as ProjectConfig["cssFramework"]) ?? "tailwind",
+    cssFramework:
+      (input.cssFramework as ProjectConfig["cssFramework"]) ??
+      (ecosystem === "react-native" ? "none" : "tailwind"),
     uiLibrary: (input.uiLibrary as ProjectConfig["uiLibrary"]) ?? "none",
     shadcnBase: "radix",
     shadcnStyle: "nova",
@@ -383,7 +465,18 @@ function buildProjectConfig(
     logging: (input.logging as ProjectConfig["logging"]) ?? "none",
     observability: (input.observability as ProjectConfig["observability"]) ?? "none",
     featureFlags: (input.featureFlags as ProjectConfig["featureFlags"]) ?? "none",
-    analytics: "none",
+    analytics: (input.analytics as ProjectConfig["analytics"]) ?? "none",
+    mobileNavigation:
+      (input.mobileNavigation as ProjectConfig["mobileNavigation"]) ??
+      (hasMobileProject ? "expo-router" : "none"),
+    mobileUI: (input.mobileUI as ProjectConfig["mobileUI"]) ?? "none",
+    mobileStorage: (input.mobileStorage as ProjectConfig["mobileStorage"]) ?? "none",
+    mobileTesting: (input.mobileTesting as ProjectConfig["mobileTesting"]) ?? "none",
+    mobilePush: (input.mobilePush as ProjectConfig["mobilePush"]) ?? "none",
+    mobileOTA: (input.mobileOTA as ProjectConfig["mobileOTA"]) ?? "none",
+    mobileDeepLinking:
+      (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
+      (hasMobileProject ? "expo-linking" : "none"),
     cms: (input.cms as ProjectConfig["cms"]) ?? "none",
     caching: (input.caching as ProjectConfig["caching"]) ?? "none",
     i18n: (input.i18n as ProjectConfig["i18n"]) ?? "none",
@@ -433,6 +526,24 @@ function buildProjectConfig(
     javaLibraries: (input.javaLibraries as ProjectConfig["javaLibraries"]) ?? [],
     javaTestingLibraries:
       (input.javaTestingLibraries as ProjectConfig["javaTestingLibraries"]) ?? ["junit5"],
+    elixirWebFramework:
+      (input.elixirWebFramework as ProjectConfig["elixirWebFramework"]) ?? "phoenix",
+    elixirOrm: (input.elixirOrm as ProjectConfig["elixirOrm"]) ?? "ecto-sql",
+    elixirAuth: (input.elixirAuth as ProjectConfig["elixirAuth"]) ?? "none",
+    elixirApi: (input.elixirApi as ProjectConfig["elixirApi"]) ?? "rest",
+    elixirRealtime: (input.elixirRealtime as ProjectConfig["elixirRealtime"]) ?? "channels",
+    elixirJobs: (input.elixirJobs as ProjectConfig["elixirJobs"]) ?? "none",
+    elixirValidation:
+      (input.elixirValidation as ProjectConfig["elixirValidation"]) ?? "ecto-changesets",
+    elixirHttp: (input.elixirHttp as ProjectConfig["elixirHttp"]) ?? "req",
+    elixirJson: (input.elixirJson as ProjectConfig["elixirJson"]) ?? "jason",
+    elixirEmail: (input.elixirEmail as ProjectConfig["elixirEmail"]) ?? "none",
+    elixirCaching: (input.elixirCaching as ProjectConfig["elixirCaching"]) ?? "none",
+    elixirObservability:
+      (input.elixirObservability as ProjectConfig["elixirObservability"]) ?? "telemetry",
+    elixirTesting: (input.elixirTesting as ProjectConfig["elixirTesting"]) ?? "ex_unit",
+    elixirQuality: (input.elixirQuality as ProjectConfig["elixirQuality"]) ?? "credo",
+    elixirDeploy: (input.elixirDeploy as ProjectConfig["elixirDeploy"]) ?? "none",
   };
 }
 
@@ -450,7 +561,11 @@ function sanitizePath(input: string): string {
 
 function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityInput {
   const frontend = input.frontend as string[] | undefined;
+  const webFrontend = (frontend ?? []).filter((item) => !item.startsWith("native-"));
+  const nativeFrontend = (frontend ?? []).filter((item) => item.startsWith("native-"));
   const addons = (input.addons as string[] | undefined) ?? [];
+  const ecosystem = (input.ecosystem as CompatibilityInput["ecosystem"]) ?? "typescript";
+  const hasMobileProject = ecosystem === "react-native" || nativeFrontend.length > 0;
 
   const codeQuality = addons.filter((a) =>
     ["biome", "oxlint", "ultracite", "lefthook", "husky", "ruler"].includes(a),
@@ -462,10 +577,10 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
   );
 
   return {
-    ecosystem: (input.ecosystem as CompatibilityInput["ecosystem"]) ?? "typescript",
+    ecosystem,
     projectName: (input.projectName as string) ?? null,
-    webFrontend: frontend ?? [],
-    nativeFrontend: [],
+    webFrontend,
+    nativeFrontend,
     astroIntegration: (input.astroIntegration as string) ?? "none",
     runtime: (input.runtime as string) ?? "bun",
     backend: (input.backend as string) ?? "hono",
@@ -502,6 +617,15 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     cms: (input.cms as string) ?? "none",
     search: (input.search as string) ?? "none",
     fileStorage: (input.fileStorage as string) ?? "none",
+    mobileNavigation:
+      (input.mobileNavigation as string) ?? (hasMobileProject ? "expo-router" : "none"),
+    mobileUI: (input.mobileUI as string) ?? "none",
+    mobileStorage: (input.mobileStorage as string) ?? "none",
+    mobileTesting: (input.mobileTesting as string) ?? "none",
+    mobilePush: (input.mobilePush as string) ?? "none",
+    mobileOTA: (input.mobileOTA as string) ?? "none",
+    mobileDeepLinking:
+      (input.mobileDeepLinking as string) ?? (hasMobileProject ? "expo-linking" : "none"),
     codeQuality,
     documentation,
     appPlatforms,
@@ -547,6 +671,21 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     javaAuth: (input.javaAuth as string) ?? "none",
     javaLibraries: (input.javaLibraries as string[]) ?? [],
     javaTestingLibraries: (input.javaTestingLibraries as string[]) ?? ["junit5"],
+    elixirWebFramework: (input.elixirWebFramework as string) ?? "phoenix",
+    elixirOrm: (input.elixirOrm as string) ?? "ecto-sql",
+    elixirAuth: (input.elixirAuth as string) ?? "none",
+    elixirApi: (input.elixirApi as string) ?? "rest",
+    elixirRealtime: (input.elixirRealtime as string) ?? "channels",
+    elixirJobs: (input.elixirJobs as string) ?? "none",
+    elixirValidation: (input.elixirValidation as string) ?? "ecto-changesets",
+    elixirHttp: (input.elixirHttp as string) ?? "req",
+    elixirJson: (input.elixirJson as string) ?? "jason",
+    elixirEmail: (input.elixirEmail as string) ?? "none",
+    elixirCaching: (input.elixirCaching as string) ?? "none",
+    elixirObservability: (input.elixirObservability as string) ?? "telemetry",
+    elixirTesting: (input.elixirTesting as string) ?? "ex_unit",
+    elixirQuality: (input.elixirQuality as string) ?? "credo",
+    elixirDeploy: (input.elixirDeploy as string) ?? "none",
   };
 }
 
@@ -607,7 +746,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 - Java Sentry requires Maven or Gradle so the generated project can manage the SDK dependency.
 
 ## Ecosystem Isolation
-- Rust, Python, Go, and Java ecosystems are independent — TypeScript fields are ignored.
+- Rust, Python, Go, Java, and Elixir ecosystems are independent — TypeScript fields are ignored.
 - Each ecosystem generates a standalone project with its own build system.
 `;
 
@@ -664,6 +803,16 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-java-app && ./mvnw test && ./mvnw spring-boot:run
 
+## Quick Start — Elixir Project
+1. Call bfs_create_project with:
+   - projectName: "my-elixir-app"
+   - ecosystem: "elixir"
+   - elixirWebFramework: "phoenix"
+   - elixirOrm: "ecto-sql"
+   - elixirApi: "rest"
+   - elixirRealtime: "channels"
+2. Tell the user to run: cd my-elixir-app && mix deps.get && mix phx.server
+
 ## Adding Features to Existing Projects
 1. Call bfs_add_feature with projectDir pointing to the project root.
 2. Provide addons array with features to add (e.g., ["biome", "turborepo"]).
@@ -676,11 +825,11 @@ export async function startMcpServer() {
     { instructions: INSTRUCTIONS, capabilities: { logging: {} } },
   );
 
-  const registerTool = server.tool.bind(server) as unknown as (
+  const registerTool = server.tool.bind(server) as unknown as <Input extends Record<string, unknown>>(
     name: string,
     description: string,
     inputSchema: Record<string, unknown>,
-    cb: (input: any) => unknown,
+    cb: (input: Input) => unknown,
   ) => void;
 
   registerTool(
@@ -742,6 +891,13 @@ export async function startMcpServer() {
       i18n: I18nSchema.optional().describe("Internationalization library"),
       search: SearchSchema.optional().describe("Search engine"),
       fileStorage: FileStorageSchema.optional().describe("File storage"),
+      mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
+      mobileUI: MobileUISchema.optional().describe("Mobile UI"),
+      mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
+      mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
+      mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
+      mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
+      mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
       dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
       webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
       serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
@@ -788,6 +944,21 @@ export async function startMcpServer() {
         .array(JavaTestingLibrariesSchema)
         .optional()
         .describe("Java testing libraries"),
+      elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
+      elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
+      elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
+      elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
+      elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
+      elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
+      elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
+      elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
+      elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
+      elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
+      elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
+      elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
+      elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
+      elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
+      elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
     }),
     async (input: Record<string, unknown>) => {
       try {
@@ -839,6 +1010,13 @@ export async function startMcpServer() {
     i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
     cms: CMSSchema.optional().describe("CMS"),
     fileStorage: FileStorageSchema.optional().describe("File storage"),
+    mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
+    mobileUI: MobileUISchema.optional().describe("Mobile UI"),
+    mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
+    mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
+    mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
+    mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
+    mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
     fileUpload: FileUploadSchema.optional().describe("File upload"),
     webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
     serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
@@ -880,6 +1058,21 @@ export async function startMcpServer() {
       .array(JavaTestingLibrariesSchema)
       .optional()
       .describe("Java testing libraries"),
+    elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
+    elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
+    elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
+    elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
+    elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
+    elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
+    elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
+    elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
+    elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
+    elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
+    elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
+    elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
+    elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
+    elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
+    elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
   };
 
   registerTool(

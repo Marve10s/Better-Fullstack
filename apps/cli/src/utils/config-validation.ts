@@ -3,6 +3,7 @@ import pc from "picocolors";
 
 import type { CLIInput, Database, DatabaseSetup, ProjectConfig, Runtime } from "../types";
 
+import { normalizeCapabilitySelection, validateStackParts } from "../types";
 import {
   ensureSingleWebAndNative,
   isWebFrontend,
@@ -22,12 +23,22 @@ import { isSilent } from "./context";
 import { constraintError, incompatibilityError, missingRequirementError } from "./error-formatter";
 import { exitWithError } from "./errors";
 import { validatePeerDependencies } from "./peer-dependency-validator";
-import { normalizeCapabilitySelection } from "../types";
 
 export function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
   const db = cfg.database;
   const orm = cfg.orm;
   const has = (k: string) => (flags ? flags.has(k) : true);
+  const hasGraphOrm = cfg.stackParts?.some(
+    (part) => part.role === "orm" && part.source !== "provided",
+  );
+  const ecosystemOrm = getEcosystemOrm(cfg);
+  const hasEcosystemOrm = ecosystemOrm !== undefined && ecosystemOrm !== "none";
+  const isNonTypeScriptSqliteDefault =
+    cfg.ecosystem !== undefined &&
+    cfg.ecosystem !== "typescript" &&
+    cfg.ecosystem !== "react-native" &&
+    db === "sqlite" &&
+    !hasEcosystemOrm;
 
   if (has("orm") && has("database") && orm === "mongoose" && db !== "mongodb") {
     incompatibilityError({
@@ -118,7 +129,10 @@ export function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set
     db !== "none" &&
     db !== "edgedb" &&
     db !== "redis" &&
-    orm === "none"
+    orm === "none" &&
+    !hasGraphOrm &&
+    !hasEcosystemOrm &&
+    !isNonTypeScriptSqliteDefault
   ) {
     missingRequirementError({
       message: "Database selection requires an ORM.",
@@ -166,6 +180,48 @@ export function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set
         "Set --orm none",
       ],
     });
+  }
+}
+
+function getEcosystemOrm(cfg: Partial<ProjectConfig>) {
+  switch (cfg.ecosystem) {
+    case "rust":
+      return cfg.rustOrm;
+    case "python":
+      return cfg.pythonOrm;
+    case "go":
+      return cfg.goOrm;
+    case "java":
+      return cfg.javaOrm;
+    case "elixir":
+      return cfg.elixirOrm;
+    default:
+      return undefined;
+  }
+}
+
+function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
+  switch (cfg.ecosystem) {
+    case "rust":
+      return cfg.rustWebFramework && cfg.rustWebFramework !== "none"
+        ? cfg.rustWebFramework
+        : undefined;
+    case "python":
+      return cfg.pythonWebFramework && cfg.pythonWebFramework !== "none"
+        ? cfg.pythonWebFramework
+        : undefined;
+    case "go":
+      return cfg.goWebFramework && cfg.goWebFramework !== "none" ? cfg.goWebFramework : undefined;
+    case "java":
+      return cfg.javaWebFramework && cfg.javaWebFramework !== "none"
+        ? cfg.javaWebFramework
+        : undefined;
+    case "elixir":
+      return cfg.elixirWebFramework && cfg.elixirWebFramework !== "none"
+        ? cfg.elixirWebFramework
+        : undefined;
+    default:
+      return undefined;
   }
 }
 
@@ -373,7 +429,6 @@ export function validateConvexConstraints(
       suggestions: ["Remove --server-deploy flag", "Set --server-deploy none"],
     });
   }
-
 }
 
 export function validateBackendNoneConstraints(
@@ -381,8 +436,18 @@ export function validateBackendNoneConstraints(
   providedFlags: Set<string>,
 ) {
   const { backend } = config;
+  const hasGraphBackend = config.stackParts?.some(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  );
+  const hasEcosystemBackend = getEcosystemBackend(config) !== undefined;
 
-  if (backend !== "none") {
+  if (backend !== "none" || hasGraphBackend || hasEcosystemBackend) {
     return;
   }
 
@@ -559,6 +624,21 @@ export function validateFrontendConstraints(
   const { frontend } = config;
 
   if (frontend && frontend.length > 0) {
+    if (
+      config.ecosystem === "react-native" &&
+      frontend.some((item) => !item.startsWith("native-") && item !== "none")
+    ) {
+      incompatibilityError({
+        message: "React Native ecosystem only supports native Expo frontends.",
+        provided: { ecosystem: "react-native", frontend: frontend.join(" ") },
+        suggestions: [
+          "Use --frontend native-bare",
+          "Use --frontend native-uniwind",
+          "Use --frontend native-unistyles",
+        ],
+      });
+    }
+
     ensureSingleWebAndNative(frontend);
 
     if (providedFlags.has("api") && providedFlags.has("frontend") && config.api) {
@@ -588,9 +668,7 @@ export function validateJavaConstraints(
     (library) => library !== "none",
   );
   const hasSpringOnlyFeatures =
-    config.javaOrm !== "none" ||
-    config.javaAuth !== "none" ||
-    hasJavaLibraries;
+    config.javaOrm !== "none" || config.javaAuth !== "none" || hasJavaLibraries;
 
   if (hasNoBuildTool && hasJavaWebFramework) {
     incompatibilityError({
@@ -638,6 +716,170 @@ export function validateJavaConstraints(
   }
 }
 
+export function validateElixirConstraints(config: Partial<ProjectConfig>) {
+  if (config.ecosystem !== "elixir") return;
+
+  const hasPhoenix = config.elixirWebFramework !== "none";
+  const hasEcto = config.elixirOrm !== "none";
+
+  const unsupportedSelections = [
+    {
+      flag: "elixir-orm",
+      value: config.elixirOrm,
+      unsupported: ["ecto"],
+      message: "Plain Ecto without SQL Repo wiring is not generated yet.",
+      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-orm none"],
+    },
+    {
+      flag: "elixir-auth",
+      value: config.elixirAuth,
+      unsupported: ["ueberauth", "guardian"],
+      message: "Only phx.gen.auth currently generates Phoenix auth files.",
+      suggestions: ["Use --elixir-auth phx-gen-auth", "Use --elixir-auth none"],
+    },
+    {
+      flag: "elixir-validation",
+      value: config.elixirValidation,
+      unsupported: ["nimble-options"],
+      message: "NimbleOptions is not generated yet.",
+      suggestions: ["Use --elixir-validation ecto-changesets", "Use --elixir-validation none"],
+    },
+    {
+      flag: "elixir-caching",
+      value: config.elixirCaching,
+      unsupported: ["nebulex"],
+      message: "Nebulex cache modules are not generated yet.",
+      suggestions: ["Use --elixir-caching cachex", "Use --elixir-caching none"],
+    },
+    {
+      flag: "elixir-observability",
+      value: config.elixirObservability,
+      unsupported: ["opentelemetry", "prom_ex"],
+      message: "OpenTelemetry and PromEx setup are not generated yet.",
+      suggestions: ["Use --elixir-observability telemetry", "Use --elixir-observability none"],
+    },
+    {
+      flag: "elixir-testing",
+      value: config.elixirTesting,
+      unsupported: ["mox", "bypass", "wallaby"],
+      message: "Generated Phoenix projects currently include ExUnit tests only.",
+      suggestions: ["Use --elixir-testing ex_unit"],
+    },
+    {
+      flag: "elixir-deploy",
+      value: config.elixirDeploy,
+      unsupported: ["fly", "gigalixir"],
+      message: "Fly.io and Gigalixir config files are not generated yet.",
+      suggestions: ["Use --elixir-deploy docker", "Use --elixir-deploy mix-release"],
+    },
+  ];
+
+  for (const selection of unsupportedSelections) {
+    if (selection.value && selection.unsupported.includes(selection.value)) {
+      incompatibilityError({
+        message: selection.message,
+        provided: { [selection.flag]: selection.value },
+        suggestions: selection.suggestions,
+      });
+    }
+  }
+
+  if (!hasPhoenix) {
+    const phoenixOnlySelections = [
+      {
+        flag: "elixir-auth",
+        value: config.elixirAuth,
+        message: "Elixir auth scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-api",
+        value: config.elixirApi,
+        message: "Elixir API scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-realtime",
+        value: config.elixirRealtime,
+        message: "Elixir realtime scaffolds require Phoenix.",
+      },
+    ];
+
+    for (const selection of phoenixOnlySelections) {
+      if (!selection.value || selection.value === "none") continue;
+
+      incompatibilityError({
+        message: selection.message,
+        provided: {
+          "elixir-web-framework": config.elixirWebFramework ?? "none",
+          [selection.flag]: selection.value,
+        },
+        suggestions: [
+          "Use --elixir-web-framework phoenix",
+          "Use --elixir-web-framework phoenix-live-view",
+          `Use --${selection.flag} none`,
+        ],
+      });
+    }
+  }
+
+  if (hasPhoenix && config.elixirJson === "none") {
+    incompatibilityError({
+      message: "Phoenix JSON scaffolds require Jason.",
+      provided: { "elixir-json": "none" },
+      suggestions: ["Use --elixir-json jason"],
+    });
+  }
+
+  if (config.elixirAuth === "phx-gen-auth" && !hasEcto) {
+    incompatibilityError({
+      message: "phx.gen.auth requires Ecto in the generated Phoenix scaffold.",
+      provided: {
+        "elixir-auth": "phx-gen-auth",
+        "elixir-orm": config.elixirOrm ?? "none",
+      },
+      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-auth none"],
+    });
+  }
+
+  if (config.elixirJobs === "oban" && config.elixirOrm !== "ecto-sql") {
+    incompatibilityError({
+      message: "Oban requires Ecto SQL with PostgreSQL in the generated Phoenix scaffold.",
+      provided: {
+        "elixir-jobs": "oban",
+        "elixir-orm": config.elixirOrm ?? "none",
+      },
+      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-jobs none"],
+    });
+  }
+
+  if (
+    config.elixirRealtime === "live-view-streams" &&
+    config.elixirWebFramework !== "phoenix-live-view"
+  ) {
+    incompatibilityError({
+      message: "LiveView Streams require Phoenix LiveView.",
+      provided: {
+        "elixir-realtime": "live-view-streams",
+        "elixir-web-framework": config.elixirWebFramework ?? "none",
+      },
+      suggestions: [
+        "Use --elixir-web-framework phoenix-live-view",
+        "Use --elixir-realtime channels",
+      ],
+    });
+  }
+
+  if (config.elixirApi === "absinthe" && !hasEcto) {
+    incompatibilityError({
+      message: "Absinthe GraphQL requires Ecto in the current generated Phoenix scaffold.",
+      provided: {
+        "elixir-api": "absinthe",
+        "elixir-orm": config.elixirOrm ?? "none",
+      },
+      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-api rest"],
+    });
+  }
+}
+
 export function validateEmailConstraints(config: Partial<ProjectConfig>) {
   if (!config.email || config.email === "none") return;
   if (config.ecosystem !== "typescript" && config.email !== "resend") {
@@ -647,11 +889,7 @@ export function validateEmailConstraints(config: Partial<ProjectConfig>) {
       suggestions: ["Use --email resend", "Use --email none"],
     });
   }
-  if (
-    config.ecosystem === "java" &&
-    config.email === "resend" &&
-    config.javaBuildTool === "none"
-  ) {
+  if (config.ecosystem === "java" && config.email === "resend" && config.javaBuildTool === "none") {
     incompatibilityError({
       message: "Resend email for Java requires Maven or Gradle to manage the SDK dependency.",
       provided: { "java-build-tool": "none", email: "resend" },
@@ -678,7 +916,8 @@ export function validateObservabilityConstraints(config: Partial<ProjectConfig>)
     config.javaBuildTool === "none"
   ) {
     incompatibilityError({
-      message: "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency.",
+      message:
+        "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency.",
       provided: { "java-build-tool": "none", observability: "sentry" },
       suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
     });
@@ -700,7 +939,8 @@ export function validateCachingConstraints(config: Partial<ProjectConfig>) {
     config.javaBuildTool === "none"
   ) {
     incompatibilityError({
-      message: "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency.",
+      message:
+        "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency.",
       provided: { "java-build-tool": "none", caching: "upstash-redis" },
       suggestions: ["Use --java-build-tool maven", "Use --java-build-tool gradle"],
     });
@@ -791,6 +1031,13 @@ export function validateFullConfig(
   providedFlags: Set<string>,
   options: CLIInput,
 ) {
+  if (config.stackParts && !options.yolo) {
+    const graphValidation = validateStackParts(config.stackParts);
+    if (graphValidation.issues.length > 0) {
+      exitWithError(graphValidation.issues.map((issue) => issue.message).join("\n"));
+    }
+  }
+
   validateEcosystemAuthCompatibility(config, providedFlags);
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
@@ -811,8 +1058,32 @@ export function validateFullConfig(
   validateCachingConstraints(config);
   validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
+  validateElixirConstraints(config);
 
-  validateServerDeployRequiresBackend(config.serverDeploy, config.backend);
+  const hasGraphBackend = config.stackParts?.some(
+    (part) =>
+      part.role === "backend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.ecosystem !== "typescript" &&
+      part.ecosystem !== "react-native" &&
+      part.ecosystem !== "universal",
+  );
+  const shouldDeferInteractiveServerDeployValidation =
+    providedFlags.has("serverDeploy") &&
+    !options.yes &&
+    !options.part?.length &&
+    options.ecosystem === undefined &&
+    options.backend === undefined &&
+    config.stackParts === undefined;
+
+  if (!shouldDeferInteractiveServerDeployValidation) {
+    validateServerDeployRequiresBackend(
+      config.serverDeploy,
+      config.backend,
+      Boolean(hasGraphBackend),
+    );
+  }
 
   validateSelfBackendCompatibility(providedFlags, options, config);
   validateWorkersCompatibility(providedFlags, options, config);
@@ -834,7 +1105,10 @@ export function validateFullConfig(
   }
 
   // Vercel serverDeploy incompatible with persistent backends
-  if (config.serverDeploy === "vercel" && ["nestjs", "adonisjs", "encore"].includes(config.backend!)) {
+  if (
+    config.serverDeploy === "vercel" &&
+    ["nestjs", "adonisjs", "encore"].includes(config.backend!)
+  ) {
     incompatibilityError({
       message: "Vercel serverless functions cannot host persistent-process backends",
       provided: { backend: config.backend!, serverDeploy: config.serverDeploy },
@@ -891,6 +1165,13 @@ export function validateFullConfig(
 
 export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>) {
   try {
+    if (config.stackParts) {
+      const graphValidation = validateStackParts(config.stackParts);
+      if (graphValidation.issues.length > 0) {
+        throw new Error(graphValidation.issues.map((issue) => issue.message).join("\n"));
+      }
+    }
+
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);
 
@@ -905,6 +1186,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateCachingConstraints(config);
     validateSearchConstraints(config);
     validateJavaConstraints(config);
+    validateElixirConstraints(config);
 
     validatePaymentsCompatibility(config.payments, config.auth, config.backend, config.frontend);
 

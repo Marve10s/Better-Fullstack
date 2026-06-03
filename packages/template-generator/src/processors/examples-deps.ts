@@ -102,6 +102,10 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
   const useGoogleADK = ai === "google-adk";
   const useModelFusion = ai === "modelfusion";
   const sharedAIExampleServerDeps: AvailableDependencies[] = ["ai", "@ai-sdk/google", "@ai-sdk/devtools"];
+  const modelFusionServerDeps: AvailableDependencies[] =
+    backend === "nitro" || backend === "self"
+      ? ["modelfusion"]
+      : ["modelfusion", ...sharedAIExampleServerDeps];
 
   if (backend === "convex" && convexBackendExists) {
     addPackageDependency({
@@ -160,7 +164,7 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["modelfusion"],
+        dependencies: modelFusionServerDeps,
       });
     } else {
       addPackageDependency({
@@ -219,7 +223,7 @@ function setupAIDependencies(vfs: VirtualFileSystem, config: ProjectConfig): voi
       addPackageDependency({
         vfs,
         packagePath: serverPkgPath,
-        dependencies: ["modelfusion"],
+        dependencies: modelFusionServerDeps,
       });
     } else {
       addPackageDependency({

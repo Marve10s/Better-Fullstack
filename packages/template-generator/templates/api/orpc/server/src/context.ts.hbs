@@ -138,7 +138,6 @@ export async function createContext(_opts: CreateContextOptions) {
 {{else if (eq backend 'express')}}
 import type { Request } from "express";
 {{#if (eq auth "better-auth")}}
-import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -147,9 +146,21 @@ interface CreateContextOptions {
 }
 
 {{#if (eq auth "better-auth")}}
+function nodeHeadersToHeaders(headers: Request["headers"]) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
 export async function createContext(opts: CreateContextOptions) {
 	const session = await auth.api.getSession({
-		headers: fromNodeHeaders(opts.req.headers),
+		headers: nodeHeadersToHeaders(opts.req.headers),
 	});
 	return {
 		session,
@@ -166,14 +177,25 @@ export async function createContext(_opts: CreateContextOptions) {
 {{else if (eq backend 'fastify')}}
 import type { IncomingHttpHeaders } from "node:http";
 {{#if (eq auth "better-auth")}}
-import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
 {{#if (eq auth "better-auth")}}
+function nodeHeadersToHeaders(headers: IncomingHttpHeaders) {
+  const webHeaders = new Headers();
+  for (const [key, value] of Object.entries(headers)) {
+    if (Array.isArray(value)) {
+      for (const item of value) webHeaders.append(key, item);
+    } else if (typeof value === "string") {
+      webHeaders.set(key, value);
+    }
+  }
+  return webHeaders;
+}
+
 export async function createContext(req: IncomingHttpHeaders) {
   const session = await auth.api.getSession({
-    headers: fromNodeHeaders(req),
+    headers: nodeHeadersToHeaders(req),
   });
   return {
     session,

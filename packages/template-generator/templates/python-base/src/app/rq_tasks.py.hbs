@@ -1,7 +1,7 @@
 {{#if (eq pythonTaskQueue "rq")}}
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -10,6 +10,6 @@ def example_task(payload: dict[str, Any]) -> dict[str, Any]:
     return {
         "status": "processed",
         "payload": payload,
-        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "processed_at": datetime.now(UTC).isoformat(),
     }
 {{/if}}

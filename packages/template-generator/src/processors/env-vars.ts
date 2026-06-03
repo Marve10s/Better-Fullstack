@@ -1,6 +1,7 @@
 import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
 
 export interface EnvVariable {
   key: string;
@@ -37,15 +38,21 @@ function generateAuthSecret() {
   return generateRandomString(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 }
 
-function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"]) {
+function getClientServerVar(
+  frontend: string[],
+  backend: ProjectConfig["backend"],
+  serverUrlOverride?: string,
+) {
   const hasNextJs = frontend.includes("next");
   const hasVinext = frontend.includes("vinext");
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
+  const hasAstro = frontend.includes("astro");
+  const hasRedwood = frontend.includes("redwood");
   const hasTanstackStart = frontend.includes("tanstack-start");
 
   // For fullstack self, no base URL is needed (same-origin)
-  if (backend === "self") {
+  if (backend === "self" && !serverUrlOverride) {
     return { key: "", value: "", write: false } as const;
   }
 
@@ -53,10 +60,11 @@ function getClientServerVar(frontend: string[], backend: ProjectConfig["backend"
   if (hasNextJs) key = "NEXT_PUBLIC_SERVER_URL";
   else if (hasVinext) key = "VITE_SERVER_URL";
   else if (hasNuxt) key = "NUXT_PUBLIC_SERVER_URL";
-  else if (hasSvelte) key = "PUBLIC_SERVER_URL";
+  else if (hasSvelte || hasAstro) key = "PUBLIC_SERVER_URL";
+  else if (hasRedwood) key = "REDWOOD_ENV_SERVER_URL";
   else if (hasTanstackStart) key = "VITE_SERVER_URL";
 
-  return { key, value: "http://localhost:3000", write: true } as const;
+  return { key, value: serverUrlOverride ?? "http://localhost:3000", write: true } as const;
 }
 
 function getConvexVar(frontend: string[]) {
@@ -122,6 +130,7 @@ function buildClientVars(
   payments: ProjectConfig["payments"],
   featureFlags: ProjectConfig["featureFlags"],
   analytics: ProjectConfig["analytics"],
+  serverUrlOverride?: string,
 ): EnvVariable[] {
   const hasNextJs = frontend.includes("next");
   const hasVinext = frontend.includes("vinext");
@@ -132,7 +141,7 @@ function buildClientVars(
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
 
-  const baseVar = getClientServerVar(frontend, backend);
+  const baseVar = getClientServerVar(frontend, backend, serverUrlOverride);
   const envVarName = backend === "convex" ? getConvexVar(frontend) : baseVar.key;
   const serverUrl = backend === "convex" ? "https://your-convex-url.convex.cloud" : baseVar.value;
 
@@ -512,6 +521,8 @@ function buildNativeVars(
   frontend: string[],
   backend: ProjectConfig["backend"],
   auth: ProjectConfig["auth"],
+  mobilePush: ProjectConfig["mobilePush"],
+  mobileDeepLinking: ProjectConfig["mobileDeepLinking"],
 ): EnvVariable[] {
   let envVarName = "EXPO_PUBLIC_SERVER_URL";
   let serverUrl = "http://localhost:3000";
@@ -547,6 +558,24 @@ function buildNativeVars(
       key: "EXPO_PUBLIC_CONVEX_SITE_URL",
       value: "https://your-convex-url.convex.cloud",
       condition: true,
+    });
+  }
+
+  if (auth !== "none" && mobileDeepLinking === "expo-linking") {
+    vars.push({
+      key: "EXPO_PUBLIC_AUTH_REDIRECT_PATH",
+      value: "auth/callback",
+      condition: true,
+      comment: "Mobile auth callback path used with expo-linking",
+    });
+  }
+
+  if (mobilePush === "expo-notifications") {
+    vars.push({
+      key: "EXPO_PUBLIC_EAS_PROJECT_ID",
+      value: "your-eas-project-id",
+      condition: true,
+      comment: "EAS project ID for Expo push notification tokens",
     });
   }
 
@@ -1140,8 +1169,8 @@ function buildServerVars(
     {
       key: "LOG_LEVEL",
       value: "info",
-      condition: logging === "pino",
-      comment: "Pino log level - trace, debug, info, warn, error, or fatal",
+      condition: logging === "pino" || logging === "winston" || logging === "evlog",
+      comment: "Log level - trace, debug, info, warn, error, or fatal",
     },
     {
       key: "OTEL_SERVICE_NAME",
@@ -1467,6 +1496,24 @@ function buildServerVars(
       condition: fileStorage === "r2",
       comment: "R2 bucket name for file storage",
     },
+    {
+      key: "CLOUDINARY_CLOUD_NAME",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary cloud name",
+    },
+    {
+      key: "CLOUDINARY_API_KEY",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary API key",
+    },
+    {
+      key: "CLOUDINARY_API_SECRET",
+      value: "",
+      condition: fileStorage === "cloudinary",
+      comment: "Cloudinary API secret",
+    },
   ];
 }
 
@@ -1601,6 +1648,23 @@ function buildCMSVars(
     );
   }
 
+  if (cms === "directus") {
+    vars.push(
+      {
+        key: `${prefix}DIRECTUS_URL`,
+        value: "http://localhost:8055",
+        condition: true,
+        comment: "Directus instance URL",
+      },
+      {
+        key: "DIRECTUS_STATIC_TOKEN",
+        value: "",
+        condition: true,
+        comment: "Directus static token for authenticated server-side requests (optional)",
+      },
+    );
+  }
+
   return vars;
 }
 
@@ -1631,7 +1695,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
   const hasNuxt = frontend.includes("nuxt");
   const hasSvelte = frontend.includes("svelte");
   const hasSolid = frontend.includes("solid");
-  const hasWebFrontend =
+  const hasKnownWebFrontend =
     hasReactRouter ||
     hasReactVite ||
     hasTanStackRouter ||
@@ -1641,16 +1705,19 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     hasNuxt ||
     hasSolid ||
     hasSvelte;
+  const shouldWriteClientEnv = hasKnownWebFrontend || hasWebFrontend(config);
 
   if (config.ai === "ai-cli") {
     writeEnvFile(vfs, ".env", buildAICLIEnvVars(config.ai));
   }
 
   // --- Client App .env ---
-  if (hasWebFrontend) {
-    const clientDir = "apps/web";
-    if (vfs.directoryExists(clientDir)) {
-      const envPath = `${clientDir}/.env`;
+  if (shouldWriteClientEnv) {
+    const usesRedwoodRoot = frontend.includes("redwood") && vfs.directoryExists("web");
+    const clientDir = usesRedwoodRoot ? "" : "apps/web";
+    if (usesRedwoodRoot || vfs.directoryExists(clientDir)) {
+      const envPath = usesRedwoodRoot ? ".env" : `${clientDir}/.env`;
+      const graphBackend = getGraphBackendConnection(config);
       const clientVars = buildClientVars(
         frontend,
         backend,
@@ -1658,6 +1725,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
         payments,
         config.featureFlags,
         config.analytics,
+        graphBackend?.serverUrl,
       );
       writeEnvFile(vfs, envPath, clientVars);
     }
@@ -1672,8 +1740,15 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     const nativeDir = "apps/native";
     if (vfs.directoryExists(nativeDir)) {
       const envPath = `${nativeDir}/.env`;
-      const nativeVars = buildNativeVars(frontend, backend, auth);
+      const nativeVars = buildNativeVars(
+        frontend,
+        backend,
+        auth,
+        config.mobilePush,
+        config.mobileDeepLinking,
+      );
       writeEnvFile(vfs, envPath, nativeVars);
+      writeEnvFile(vfs, `${nativeDir}/.env.example`, nativeVars);
     }
   }
 

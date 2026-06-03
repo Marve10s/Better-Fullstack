@@ -14,7 +14,7 @@ import {
   setIsFirstPrompt,
 } from "./navigable";
 
-const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
+export const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
   {
     value: "tanstack-router",
     label: "TanStack Router",
@@ -95,8 +95,8 @@ const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
 const NATIVE_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
   {
     value: "native-bare",
-    label: "Bare",
-    hint: "Bare Expo without styling library",
+    label: "StyleSheet",
+    hint: "Expo with StyleSheet (no styling library)",
   },
   {
     value: "native-uniwind",
@@ -258,4 +258,21 @@ export async function getFrontendChoice(
 
     return result;
   }
+}
+
+export async function getNativeFrontendChoice(frontendOptions?: Frontend[]): Promise<Frontend[] | symbol> {
+  if (frontendOptions !== undefined) {
+    return frontendOptions.filter((frontend) => frontend.startsWith("native-"));
+  }
+
+  const nativeFramework = await navigableSelect<Frontend>({
+    message: "Choose React Native app type",
+    options: NATIVE_FRONTEND_PROMPT_OPTIONS,
+    initialValue: "native-bare",
+  });
+
+  if (isGoBack(nativeFramework)) return GO_BACK_SYMBOL;
+  if (isCancel(nativeFramework)) return exitCancelled("Operation cancelled");
+
+  return [nativeFramework as Frontend];
 }

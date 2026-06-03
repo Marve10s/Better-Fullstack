@@ -21,8 +21,14 @@ export default defineNuxtConfig({
   },
   {{else}}
   runtimeConfig: {
+    {{#if (eq cms "directus")}}
+    directusStaticToken: process.env.DIRECTUS_STATIC_TOKEN,
+    {{/if}}
     public: {
       serverUrl: process.env.NUXT_PUBLIC_SERVER_URL,
+      {{#if (eq cms "directus")}}
+      directusUrl: process.env.NUXT_PUBLIC_DIRECTUS_URL,
+      {{/if}}
     }
   },
   {{/if}}

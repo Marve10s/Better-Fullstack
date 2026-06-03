@@ -104,14 +104,25 @@ export async function createContext(_opts: CreateContextOptions) {
 {{else if (eq backend 'express')}}
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 {{#if (eq auth "better-auth")}}
-import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
 {{#if (eq auth "better-auth")}}
+function nodeHeadersToHeaders(headers: CreateExpressContextOptions["req"]["headers"]) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
 export async function createContext(opts: CreateExpressContextOptions) {
 	const session = await auth.api.getSession({
-		headers: fromNodeHeaders(opts.req.headers),
+		headers: nodeHeadersToHeaders(opts.req.headers),
 	});
 	return {
 		session,
@@ -120,6 +131,41 @@ export async function createContext(opts: CreateExpressContextOptions) {
 {{else}}
 export async function createContext(_opts: CreateExpressContextOptions) {
   // No auth configured
+	return {
+		session: null,
+	};
+}
+{{/if}}
+
+{{else if (eq backend 'adonisjs')}}
+import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+{{#if (eq auth "better-auth")}}
+import { auth } from "@{{projectName}}/auth";
+{{/if}}
+
+{{#if (eq auth "better-auth")}}
+function nodeHeadersToHeaders(headers: CreateExpressContextOptions["req"]["headers"]) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
+export async function createContext(opts: CreateExpressContextOptions) {
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(opts.req.headers),
+	});
+	return {
+		session,
+	};
+}
+{{else}}
+export async function createContext(_opts: CreateExpressContextOptions) {
 	return {
 		session: null,
 	};
@@ -156,14 +202,25 @@ export async function createContext(_opts: CreateContextOptions) {
 {{else if (eq backend 'fastify')}}
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 {{#if (eq auth "better-auth")}}
-import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
 {{#if (eq auth "better-auth")}}
+function nodeHeadersToHeaders(headers: CreateFastifyContextOptions["req"]["headers"]) {
+  const webHeaders = new Headers();
+  for (const [key, value] of Object.entries(headers)) {
+    if (Array.isArray(value)) {
+      for (const item of value) webHeaders.append(key, item);
+    } else if (typeof value === "string") {
+      webHeaders.set(key, value);
+    }
+  }
+  return webHeaders;
+}
+
 export async function createContext({ req }: CreateFastifyContextOptions) {
   const session = await auth.api.getSession({
-    headers: fromNodeHeaders(req.headers),
+    headers: nodeHeadersToHeaders(req.headers),
   });
   return { session };
 }

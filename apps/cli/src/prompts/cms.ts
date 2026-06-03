@@ -26,6 +26,11 @@ const CMS_PROMPT_OPTIONS = [
     hint: "Git-backed headless CMS with visual editing",
   },
   {
+    value: "directus" as const,
+    label: "Directus",
+    hint: "Open data platform and headless CMS for SQL databases",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip headless CMS setup",

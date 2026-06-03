@@ -4,13 +4,16 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.jboss.resteasy.reactive.RestResponse;
 
 @Path("/hello")
 public class GreetingResource {
 
   @GET
   @Produces(MediaType.TEXT_PLAIN)
-  public String hello() {
-    return "Hello from {{projectName}}";
+  public RestResponse<String> hello() {
+    return RestResponse.ResponseBuilder.ok("Hello from {{projectName}}")
+      .header("Access-Control-Allow-Origin", "*")
+      .build();
   }
 }

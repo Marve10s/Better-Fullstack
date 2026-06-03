@@ -131,10 +131,13 @@ dependencies {
 	testImplementation("io.rest-assured:rest-assured:6.0.0")
 {{/if}}
 {{#if hasJavaWireMock}}
-	testImplementation("org.wiremock:wiremock:3.13.2")
+	testImplementation("org.wiremock:wiremock-jetty12:3.13.2")
 {{/if}}
 {{#if hasJavaAwaitility}}
 	testImplementation("org.awaitility:awaitility:4.3.0")
+{{/if}}
+{{#if hasJavaMockito}}
+	testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")
 {{/if}}
 {{#if hasJavaArchunit}}
 	testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
@@ -144,7 +147,8 @@ dependencies {
 {{/if}}
 {{#if hasJavaTestcontainers}}
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
-	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+	testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+	testImplementation("org.testcontainers:junit-jupiter")
 {{/if}}
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 {{/if}}
@@ -168,7 +172,7 @@ dependencies {
 	testImplementation("io.rest-assured:rest-assured:6.0.0")
 {{/if}}
 {{#if hasJavaWireMock}}
-	testImplementation("org.wiremock:wiremock:3.13.2")
+	testImplementation("org.wiremock:wiremock-jetty12:3.13.2")
 {{/if}}
 {{#if hasJavaAwaitility}}
 	testImplementation("org.awaitility:awaitility:4.3.0")
@@ -184,6 +188,7 @@ dependencies {
 {{#if hasJavaTests}}
 	testImplementation(platform("org.junit:junit-bom:5.12.2"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 {{#if hasJavaAssertj}}
 	testImplementation("org.assertj:assertj-core:3.27.7")
 {{/if}}
@@ -199,7 +204,7 @@ dependencies {
 	testImplementation("io.rest-assured:rest-assured:6.0.0")
 {{/if}}
 {{#if hasJavaWireMock}}
-	testImplementation("org.wiremock:wiremock:3.13.2")
+	testImplementation("org.wiremock:wiremock-jetty12:3.13.2")
 {{/if}}
 {{#if hasJavaAwaitility}}
 	testImplementation("org.awaitility:awaitility:4.3.0")

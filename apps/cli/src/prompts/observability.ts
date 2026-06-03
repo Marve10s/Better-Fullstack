@@ -40,6 +40,15 @@ type ObservabilityPromptContext = {
 export function resolveObservabilityPrompt(
   context: ObservabilityPromptContext = {},
 ): PromptSingleResolution<Observability> {
+  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   const options =
     context.ecosystem && context.ecosystem !== "typescript"
       ? NON_TYPESCRIPT_OBSERVABILITY_PROMPT_OPTIONS

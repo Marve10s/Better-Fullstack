@@ -1,0 +1,17 @@
+import { createLogger } from "evlog";
+
+const logLevel = process.env.LOG_LEVEL || "info";
+
+export const logger = createLogger({
+  env: process.env.NODE_ENV || "development",
+  level: logLevel,
+});
+
+export function logEvent<T extends Record<string, unknown>>(
+  event: string,
+  payload?: T,
+): void {
+  logger.info(event, payload);
+}
+
+export default logger;

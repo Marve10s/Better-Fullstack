@@ -17,6 +17,20 @@ jobs:
     name: Typecheck ${{ matrix.preset }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     strategy:
       fail-fast: false
       matrix:
@@ -36,6 +50,8 @@ jobs:
           - java-spring-maven
           - java-spring-gradle-jpa
           - java-plain-cli
+          - elixir-phoenix-api
+          - elixir-plain-worker
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -65,6 +81,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+
+      - name: Setup Elixir
+        if: startsWith(matrix.preset, 'elixir-')
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.18"
 
       - name: Cache Dependencies
         uses: actions/cache@v4

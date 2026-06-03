@@ -33,6 +33,7 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://tanstack.com/start/latest",
     githubUrl: "https://github.com/TanStack/router",
   },
+  swr: { docsUrl: "https://swr.vercel.app/", githubUrl: "https://github.com/vercel/swr" },
   next: { docsUrl: "https://nextjs.org/docs", githubUrl: "https://github.com/vercel/next.js" },
   vinext: { docsUrl: "https://vinext.io", githubUrl: "https://github.com/cloudflare/vinext" },
   nuxt: { docsUrl: "https://nuxt.com/docs", githubUrl: "https://github.com/nuxt/nuxt" },
@@ -119,6 +120,58 @@ const BASE_LINKS: LinkMap = {
   "native-unistyles": {
     docsUrl: "https://www.unistyl.es/v3/start/introduction",
     githubUrl: "https://github.com/jpudysz/react-native-unistyles",
+  },
+  "expo-router": {
+    docsUrl: "https://docs.expo.dev/router/introduction/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "react-navigation": {
+    docsUrl: "https://reactnavigation.org/docs/getting-started",
+    githubUrl: "https://github.com/react-navigation/react-navigation",
+  },
+  tamagui: {
+    docsUrl: "https://tamagui.dev/docs/intro/introduction",
+    githubUrl: "https://github.com/tamagui/tamagui",
+  },
+  "gluestack-ui": {
+    docsUrl: "https://gluestack.io/ui/docs/home/overview/introduction",
+    githubUrl: "https://github.com/gluestack/gluestack-ui",
+  },
+  uniwind: {
+    docsUrl: "https://www.uniwind.dev/",
+    githubUrl: "https://github.com/uniwind/uniwind",
+  },
+  unistyles: {
+    docsUrl: "https://www.unistyl.es/v3/start/introduction",
+    githubUrl: "https://github.com/jpudysz/react-native-unistyles",
+  },
+  mmkv: {
+    docsUrl: "https://github.com/mrousavy/react-native-mmkv",
+    githubUrl: "https://github.com/mrousavy/react-native-mmkv",
+  },
+  maestro: {
+    docsUrl: "https://docs.maestro.dev/",
+    githubUrl: "https://github.com/mobile-dev-inc/Maestro",
+  },
+  "react-native-testing-library": {
+    docsUrl: "https://callstack.github.io/react-native-testing-library/",
+    githubUrl: "https://github.com/callstack/react-native-testing-library",
+  },
+  "maestro-react-native-testing-library": {
+    docsUrl: "https://callstack.github.io/react-native-testing-library/",
+    githubUrl: "https://github.com/callstack/react-native-testing-library",
+  },
+  "expo-notifications": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/notifications/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "expo-updates": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/updates/",
+    githubUrl: "https://github.com/expo/expo",
+  },
+  "expo-linking": {
+    docsUrl: "https://docs.expo.dev/versions/latest/sdk/linking/",
+    githubUrl: "https://github.com/expo/expo",
   },
   sqlite: {
     docsUrl: "https://www.sqlite.org/docs.html",
@@ -393,6 +446,10 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/jqwik-team/jqwik",
   },
   pino: { docsUrl: "https://getpino.io/#/", githubUrl: "https://github.com/pinojs/pino" },
+  evlog: {
+    docsUrl: "https://github.com/hugorcd/evlog",
+    githubUrl: "https://github.com/hugorcd/evlog",
+  },
   winston: {
     docsUrl: "https://github.com/winstonjs/winston#readme",
     githubUrl: "https://github.com/winstonjs/winston",
@@ -562,6 +619,10 @@ const BASE_LINKS: LinkMap = {
   "shadcn-ui": {
     docsUrl: "https://ui.shadcn.com/docs",
     githubUrl: "https://github.com/shadcn-ui/ui",
+  },
+  "shadcn-svelte": {
+    docsUrl: "https://www.shadcn-svelte.com/",
+    githubUrl: "https://github.com/huntabyte/shadcn-svelte",
   },
   daisyui: {
     docsUrl: "https://daisyui.com/docs/",
@@ -748,6 +809,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://developers.cloudflare.com/r2/",
     githubUrl: "https://github.com/cloudflare/workers-sdk",
   },
+  cloudinary: {
+    docsUrl: "https://cloudinary.com/documentation/node_integration",
+    githubUrl: "https://github.com/cloudinary/cloudinary_npm",
+  },
   "framer-motion": {
     docsUrl: "https://motion.dev/docs",
     githubUrl: "https://github.com/motiondivision/motion",
@@ -791,6 +856,10 @@ const BASE_LINKS: LinkMap = {
   },
   strapi: { docsUrl: "https://docs.strapi.io/", githubUrl: "https://github.com/strapi/strapi" },
   tinacms: { docsUrl: "https://tina.io/docs", githubUrl: "https://github.com/tinacms/tinacms" },
+  directus: {
+    docsUrl: "https://directus.io/docs",
+    githubUrl: "https://github.com/directus/directus",
+  },
   axum: {
     docsUrl: "https://docs.rs/axum/latest/axum/",
     githubUrl: "https://github.com/tokio-rs/axum",
@@ -1124,6 +1193,123 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://react-icons.github.io/react-icons/",
     githubUrl: "https://github.com/react-icons/react-icons",
   },
+
+  // ─── Elixir / Phoenix ─────────────────────────────────────────────────────
+  "elixirWebFramework:phoenix": {
+    docsUrl: "https://hexdocs.pm/phoenix/",
+    githubUrl: "https://github.com/phoenixframework/phoenix",
+  },
+  "elixirWebFramework:phoenix-live-view": {
+    docsUrl: "https://hexdocs.pm/phoenix_live_view/",
+    githubUrl: "https://github.com/phoenixframework/phoenix_live_view",
+  },
+  "elixirOrm:ecto-sql": {
+    docsUrl: "https://hexdocs.pm/ecto_sql/",
+    githubUrl: "https://github.com/elixir-ecto/ecto_sql",
+  },
+  "elixirOrm:ecto": {
+    docsUrl: "https://hexdocs.pm/ecto/",
+    githubUrl: "https://github.com/elixir-ecto/ecto",
+  },
+  "elixirAuth:phx-gen-auth": { docsUrl: "https://hexdocs.pm/phoenix/mix_phx_gen_auth.html" },
+  "elixirAuth:ueberauth": {
+    docsUrl: "https://hexdocs.pm/ueberauth/",
+    githubUrl: "https://github.com/ueberauth/ueberauth",
+  },
+  "elixirAuth:guardian": {
+    docsUrl: "https://hexdocs.pm/guardian/",
+    githubUrl: "https://github.com/ueberauth/guardian",
+  },
+  "elixirApi:rest": { docsUrl: "https://hexdocs.pm/phoenix/controllers.html" },
+  "elixirApi:absinthe": {
+    docsUrl: "https://hexdocs.pm/absinthe/",
+    githubUrl: "https://github.com/absinthe-graphql/absinthe",
+  },
+  "elixirRealtime:channels": { docsUrl: "https://hexdocs.pm/phoenix/channels.html" },
+  "elixirRealtime:presence": { docsUrl: "https://hexdocs.pm/phoenix/Phoenix.Presence.html" },
+  "elixirRealtime:pubsub": {
+    docsUrl: "https://hexdocs.pm/phoenix_pubsub/",
+    githubUrl: "https://github.com/phoenixframework/phoenix_pubsub",
+  },
+  "elixirRealtime:live-view-streams": {
+    docsUrl: "https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#stream/4",
+    githubUrl: "https://github.com/phoenixframework/phoenix_live_view",
+  },
+  "elixirJobs:oban": {
+    docsUrl: "https://hexdocs.pm/oban/",
+    githubUrl: "https://github.com/sorentwo/oban",
+  },
+  "elixirJobs:quantum": {
+    docsUrl: "https://hexdocs.pm/quantum/",
+    githubUrl: "https://github.com/quantum-elixir/quantum-core",
+  },
+  "elixirValidation:ecto-changesets": {
+    docsUrl: "https://hexdocs.pm/ecto/Ecto.Changeset.html",
+    githubUrl: "https://github.com/elixir-ecto/ecto",
+  },
+  "elixirValidation:nimble-options": {
+    docsUrl: "https://hexdocs.pm/nimble_options/",
+    githubUrl: "https://github.com/dashbitco/nimble_options",
+  },
+  "elixirHttp:req": {
+    docsUrl: "https://hexdocs.pm/req/",
+    githubUrl: "https://github.com/wojtekmach/req",
+  },
+  "elixirHttp:finch": {
+    docsUrl: "https://hexdocs.pm/finch/",
+    githubUrl: "https://github.com/sneako/finch",
+  },
+  "elixirJson:jason": {
+    docsUrl: "https://hexdocs.pm/jason/",
+    githubUrl: "https://github.com/michalmuskala/jason",
+  },
+  "elixirEmail:swoosh": {
+    docsUrl: "https://hexdocs.pm/swoosh/",
+    githubUrl: "https://github.com/swoosh/swoosh",
+  },
+  "elixirCaching:cachex": {
+    docsUrl: "https://hexdocs.pm/cachex/",
+    githubUrl: "https://github.com/whitfin/cachex",
+  },
+  "elixirCaching:nebulex": {
+    docsUrl: "https://hexdocs.pm/nebulex/",
+    githubUrl: "https://github.com/cabol/nebulex",
+  },
+  "elixirObservability:telemetry": {
+    docsUrl: "https://hexdocs.pm/telemetry/",
+    githubUrl: "https://github.com/beam-telemetry/telemetry",
+  },
+  "elixirObservability:prom_ex": {
+    docsUrl: "https://hexdocs.pm/prom_ex/",
+    githubUrl: "https://github.com/akoutmos/prom_ex",
+  },
+  "elixirTesting:ex_unit": { docsUrl: "https://hexdocs.pm/ex_unit/" },
+  "elixirTesting:mox": {
+    docsUrl: "https://hexdocs.pm/mox/",
+    githubUrl: "https://github.com/dashbitco/mox",
+  },
+  "elixirTesting:bypass": {
+    docsUrl: "https://hexdocs.pm/bypass/",
+    githubUrl: "https://github.com/PSPDFKit-labs/bypass",
+  },
+  "elixirTesting:wallaby": {
+    docsUrl: "https://hexdocs.pm/wallaby/",
+    githubUrl: "https://github.com/elixir-wallaby/wallaby",
+  },
+  "elixirQuality:credo": {
+    docsUrl: "https://hexdocs.pm/credo/",
+    githubUrl: "https://github.com/rrrene/credo",
+  },
+  "elixirQuality:dialyxir": {
+    docsUrl: "https://hexdocs.pm/dialyxir/",
+    githubUrl: "https://github.com/jeremyjh/dialyxir",
+  },
+  "elixirQuality:sobelow": {
+    docsUrl: "https://hexdocs.pm/sobelow/",
+    githubUrl: "https://github.com/nccgroup/sobelow",
+  },
+  "elixirDeploy:gigalixir": { docsUrl: "https://gigalixir.readthedocs.io/" },
+  "elixirDeploy:mix-release": { docsUrl: "https://hexdocs.pm/mix/Mix.Tasks.Release.html" },
 
   // ─── shadcn Color Themes────────────────────
   "shadcnColorTheme:neutral": { docsUrl: "https://ui.shadcn.com/themes" },

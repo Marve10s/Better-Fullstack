@@ -1,0 +1,130 @@
+defmodule {{elixirModuleName}}.MixProject do
+  use Mix.Project
+
+  def project do
+    [
+      app: :{{elixirAppName}},
+      version: "0.1.0",
+      elixir: "~> 1.16",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
+      deps: deps(),
+      releases: [{{elixirAppName}}: [include_executables_for: [:unix]]]
+    ]
+  end
+
+  def application do
+    [
+      mod: { {{elixirModuleName}}.Application, []},
+      extra_applications: [:logger, :runtime_tools]
+    ]
+  end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp deps do
+    [
+{{#if (ne elixirWebFramework "none")}}
+      {:phoenix, "~> 1.7.21"},
+      {:phoenix_html, "~> 4.2"},
+      {:phoenix_live_reload, "~> 1.5", only: :dev},
+      {:phoenix_live_dashboard, "~> 0.8"},
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+      {:phoenix_live_view, "~> 1.0"},
+{{/if}}
+{{/if}}
+{{#if (ne elixirOrm "none")}}
+      {:ecto_sql, "~> 3.12"},
+      {:postgrex, ">= 0.0.0"},
+{{/if}}
+{{#if (eq elixirAuth "ueberauth")}}
+      {:ueberauth, "~> 0.10"},
+{{/if}}
+{{#if (eq elixirAuth "guardian")}}
+      {:guardian, "~> 2.3"},
+{{/if}}
+{{#if (eq elixirAuth "phx-gen-auth")}}
+      {:bcrypt_elixir, "~> 3.0"},
+{{/if}}
+{{#if (eq elixirJobs "oban")}}
+      {:oban, "~> 2.19"},
+{{/if}}
+{{#if (eq elixirJobs "quantum")}}
+      {:quantum, "~> 3.5"},
+{{/if}}
+{{#if (eq elixirApi "absinthe")}}
+      {:absinthe, "~> 1.7"},
+      {:absinthe_plug, "~> 1.5"},
+{{/if}}
+{{#if (eq elixirValidation "nimble-options")}}
+      {:nimble_options, "~> 1.1"},
+{{/if}}
+{{#if (eq elixirHttp "req")}}
+      {:req, "~> 0.5"},
+{{/if}}
+{{#if (eq elixirHttp "finch")}}
+      {:finch, "~> 0.19"},
+{{/if}}
+{{#if (or (ne elixirWebFramework "none") (eq elixirJson "jason"))}}
+      {:jason, "~> 1.4"},
+{{/if}}
+{{#if (eq elixirEmail "swoosh")}}
+      {:swoosh, "~> 1.17"},
+      {:finch, "~> 0.19"},
+{{/if}}
+{{#if (eq elixirCaching "cachex")}}
+      {:cachex, "~> 4.0"},
+{{/if}}
+{{#if (eq elixirCaching "nebulex")}}
+      {:nebulex, "~> 2.6"},
+{{/if}}
+{{#if (eq elixirObservability "opentelemetry")}}
+      {:opentelemetry_api, "~> 1.4"},
+      {:opentelemetry, "~> 1.5"},
+      {:opentelemetry_phoenix, "~> 1.2"},
+{{/if}}
+{{#if (eq elixirObservability "prom_ex")}}
+      {:prom_ex, "~> 1.11"},
+{{/if}}
+{{#if (eq elixirTesting "mox")}}
+      {:mox, "~> 1.2", only: :test},
+{{/if}}
+{{#if (eq elixirTesting "bypass")}}
+      {:bypass, "~> 2.1", only: :test},
+{{/if}}
+{{#if (eq elixirTesting "wallaby")}}
+      {:wallaby, "~> 0.30", only: :test},
+{{/if}}
+{{#if (eq elixirQuality "credo")}}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+{{/if}}
+{{#if (eq elixirQuality "dialyxir")}}
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+{{/if}}
+{{#if (eq elixirQuality "sobelow")}}
+      {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false},
+{{/if}}
+{{#if (ne elixirWebFramework "none")}}
+      {:plug_cowboy, "~> 2.7"}
+{{else}}
+      {:telemetry, "~> 1.3"}
+{{/if}}
+    ]
+  end
+
+  defp aliases do
+    [
+{{#if (ne elixirOrm "none")}}
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+{{else}}
+      setup: ["deps.get"],
+      test: ["test"]
+{{/if}}
+    ]
+  end
+end

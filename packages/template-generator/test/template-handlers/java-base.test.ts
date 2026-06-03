@@ -32,6 +32,7 @@ const JAVA_TEMPLATES = {
   "java-base/src/main/resources/application.yml.hbs": "spring:",
   "java-base/src/main/resources/db/migration/V1__init.sql.hbs": "-- migration",
   "java-base/src/test/java/__javaPackagePath__/ApplicationTests.java.hbs": "test",
+  "java-base/src/test/java/__javaPackagePath__/MockitoSmokeTest.java.hbs": "mockito test",
   "java-base/src/test/java/__javaPackagePath__/ArchitectureTest.java.hbs": "arch test",
   "java-base/src/test/java/__javaPackagePath__/PropertyBasedTest.java.hbs": "property test",
   "java-base/src/test/java/__javaPackagePath__/mapper/AppUserMapperTest.java.hbs": "mapper test",
@@ -341,6 +342,9 @@ describe("processJavaBaseTemplate", () => {
     expect(withoutSelections.exists("src/test/java/com/example/myapp/PropertyBasedTest.java")).toBe(
       false,
     );
+    expect(withoutSelections.exists("src/test/java/com/example/myapp/MockitoSmokeTest.java")).toBe(
+      false,
+    );
 
     const withSelections = new VirtualFileSystem();
     await processJavaBaseTemplate(
@@ -354,7 +358,7 @@ describe("processJavaBaseTemplate", () => {
         javaOrm: "none",
         javaAuth: "none",
         javaLibraries: ["caffeine"],
-        javaTestingLibraries: ["junit5", "archunit", "jqwik"],
+        javaTestingLibraries: ["junit5", "archunit", "jqwik", "mockito"],
       }),
     );
 
@@ -368,6 +372,9 @@ describe("processJavaBaseTemplate", () => {
       true,
     );
     expect(withSelections.exists("src/test/java/com/example/myapp/PropertyBasedTest.java")).toBe(
+      true,
+    );
+    expect(withSelections.exists("src/test/java/com/example/myapp/MockitoSmokeTest.java")).toBe(
       true,
     );
   });

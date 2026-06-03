@@ -2,7 +2,8 @@
 """LangGraph client for building stateful AI agent workflows."""
 
 import os
-from typing import AsyncIterator, Literal
+from collections.abc import AsyncIterator
+from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI

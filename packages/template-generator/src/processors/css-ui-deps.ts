@@ -138,6 +138,12 @@ export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConf
       });
       break;
 
+    case "shadcn-svelte":
+      if (hasSvelte || hasAstroSvelte) {
+        deps.push("shadcn-svelte", "bits-ui", "clsx", "tailwind-merge", "tw-animate-css", "lucide-svelte");
+      }
+      break;
+
     case "radix-ui":
       if (hasReactWeb || hasAstroReact) {
         deps.push(

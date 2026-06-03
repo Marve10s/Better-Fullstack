@@ -2,8 +2,7 @@
 
 import type { Ecosystem } from "@better-fullstack/types";
 
-import { existsSync } from "node:fs";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
@@ -24,6 +23,16 @@ import {
 } from "./lib/major-dep-combos";
 import { getPresetCombos } from "./lib/presets";
 import { getVerifier, type VerifyResult } from "./lib/verify";
+
+const SUPPORTED_SMOKE_ECOSYSTEMS: readonly Ecosystem[] = [
+  "typescript",
+  "react-native",
+  "rust",
+  "python",
+  "go",
+  "java",
+  "elixir",
+];
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -68,7 +77,7 @@ function parseArgs(argv: string[]): SmokeTestArgs {
         i++;
         break;
       case "--ecosystem":
-        if (next && ["typescript", "rust", "python", "go", "java"].includes(next)) {
+        if (next && SUPPORTED_SMOKE_ECOSYSTEMS.includes(next as Ecosystem)) {
           args.ecosystem = next as Ecosystem;
         }
         i++;
@@ -163,7 +172,7 @@ function generateCombos(args: SmokeTestArgs) {
 
   const generatorArgs: GeneratorArgs = {
     count: args.count,
-    ecosystems: args.ecosystem ? [args.ecosystem] : ["typescript", "rust", "python", "go", "java"],
+    ecosystems: args.ecosystem ? [args.ecosystem] : SUPPORTED_SMOKE_ECOSYSTEMS,
     installMode: "no-install",
     rng,
     forceOptions: args.forceOptions,

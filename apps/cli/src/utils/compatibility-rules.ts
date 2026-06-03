@@ -429,8 +429,14 @@ export function validateWebDeployRequiresWebFrontend(
 export function validateServerDeployRequiresBackend(
   serverDeploy: ServerDeploy | undefined,
   backend: Backend | undefined,
+  hasGraphBackend = false,
 ) {
-  if (serverDeploy && serverDeploy !== "none" && (!backend || backend === "none")) {
+  if (
+    serverDeploy &&
+    serverDeploy !== "none" &&
+    !hasGraphBackend &&
+    (!backend || backend === "none")
+  ) {
     exitWithError(
       "'--server-deploy' requires a backend. Please select a backend or set '--server-deploy none'.",
     );

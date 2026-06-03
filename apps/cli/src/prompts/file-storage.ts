@@ -23,6 +23,11 @@ export async function getFileStorageChoice(fileStorage?: FileStorage, backend?: 
       hint: "S3-compatible storage with zero egress fees",
     },
     {
+      value: "cloudinary" as const,
+      label: "Cloudinary",
+      hint: "Image and media storage with transformations",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "Skip file storage setup",

@@ -1,15 +1,31 @@
 import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
+import { ECOSYSTEM_CATEGORIES } from "../src/lib/constant";
+import {
+  NON_OPTION_STACK_KEYS,
+  STACK_STATE_OPTION_CATEGORY_BY_KEY,
+} from "../src/lib/stack-contract";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
-import { NON_OPTION_STACK_KEYS, STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../src/lib/stack-contract";
 import { normalizeStackStateSelections } from "../src/lib/stack-option-normalization";
+import {
+  createDefaultMultiEcosystemShareStack,
+  getStackSharePath,
+  parseStackShareSlug,
+} from "../src/lib/stack-share-paths";
 import { stackUrlKeys } from "../src/lib/stack-url-keys";
+import { getInitialBuilderState } from "../src/lib/stack-url-state";
 import {
   createStackSearchParams,
   parseStackFromUrlRecord,
   stackStateKeys,
 } from "../src/lib/stack-url-state.shared";
+import {
+  getCategoryOrderForEcosystem,
+  generateStackSharingUrl,
+  REACT_NATIVE_CATEGORY_ORDER,
+  TYPESCRIPT_CATEGORY_ORDER,
+} from "../src/lib/stack-utils";
 
 type MappedStackStateKey = keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY;
 
@@ -27,7 +43,9 @@ describe("StackState contract", () => {
     for (const key of stackStateKeys) {
       if (NON_OPTION_STACK_KEYS.includes(key as (typeof NON_OPTION_STACK_KEYS)[number])) {
         expect(
-          STACK_STATE_OPTION_CATEGORY_BY_KEY[key as keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY],
+          STACK_STATE_OPTION_CATEGORY_BY_KEY[
+            key as keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY
+          ],
         ).toBeUndefined();
         continue;
       }
@@ -42,9 +60,9 @@ describe("StackState contract", () => {
   });
 
   it("keeps default value shapes aligned with category selection mode", () => {
-    for (const [stackKey, category] of Object.entries(
-      STACK_STATE_OPTION_CATEGORY_BY_KEY,
-    ) as Array<[keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY, keyof typeof OPTION_CATEGORY_METADATA]>) {
+    for (const [stackKey, category] of Object.entries(STACK_STATE_OPTION_CATEGORY_BY_KEY) as Array<
+      [keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY, keyof typeof OPTION_CATEGORY_METADATA]
+    >) {
       const metadata = OPTION_CATEGORY_METADATA[category];
       const defaultValue = DEFAULT_STACK[stackKey];
 
@@ -82,6 +100,49 @@ describe("StackState contract", () => {
     expect(parsed).toEqual(input);
   });
 
+  it("derives multi-ecosystem mode from URL state before the builder first renders", () => {
+    const params = createStackSearchParams({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:typescript:tanstack-router", "backend:python:fastapi"],
+    });
+    params.set("view", "preview");
+    params.set("file", "bts.jsonc");
+
+    const initialState = getInitialBuilderState(Object.fromEntries(params.entries()));
+
+    expect(initialState.initialized).toBe(true);
+    expect(initialState.stack.stackMode).toBe("multi");
+    expect(initialState.stack.stackPartSpecs).toEqual([
+      "frontend:typescript:tanstack-router",
+      "backend:python:fastapi",
+    ]);
+    expect(initialState.viewMode).toBe("preview");
+    expect(initialState.selectedFile).toBe("bts.jsonc");
+  });
+
+  it("supports compact share paths for exact ecosystem and default multi stacks", () => {
+    const elixirStack = parseStackShareSlug("Elixir");
+    const multiStack = createDefaultMultiEcosystemShareStack();
+
+    expect(elixirStack?.ecosystem).toBe("elixir");
+    expect(getStackSharePath(elixirStack as typeof DEFAULT_STACK)).toBe("/Elixir");
+    expect(getStackSharePath(multiStack)).toBe("/multi-ecosystem");
+    expect(parseStackShareSlug("multi-ecosystem")).toEqual(multiStack);
+  });
+
+  it("keeps compact share paths out of default generated share URLs", () => {
+    const elixirStack = parseStackShareSlug("Elixir");
+    const multiStack = createDefaultMultiEcosystemShareStack();
+
+    expect(
+      generateStackSharingUrl(elixirStack as typeof DEFAULT_STACK, "https://example.com"),
+    ).toBe("https://example.com/stack?eco=elixir&au=none");
+    expect(generateStackSharingUrl(multiStack, "https://example.com")).toContain(
+      "https://example.com/stack?mode=multi",
+    );
+  });
+
   it("normalizes invalid none-plus-real combinations for array categories", () => {
     const normalized = normalizeStackStateSelections({
       ...DEFAULT_STACK,
@@ -114,5 +175,16 @@ describe("StackState contract", () => {
     expect(normalized.rustLibraries).toEqual([]);
     expect(normalized.pythonAi).toEqual([]);
     expect(normalized.aiDocs).toEqual([]);
+  });
+
+  it("uses React Native categories when the React Native ecosystem is selected", () => {
+    expect(getCategoryOrderForEcosystem("react-native")).toBe(REACT_NATIVE_CATEGORY_ORDER);
+    expect(getCategoryOrderForEcosystem("react-native")).not.toBe(TYPESCRIPT_CATEGORY_ORDER);
+    expect(getCategoryOrderForEcosystem("react-native")).toContain("nativeFrontend");
+    expect(getCategoryOrderForEcosystem("react-native")).toContain("mobileNavigation");
+    expect(getCategoryOrderForEcosystem("react-native")).not.toContain("webFrontend");
+    expect(getCategoryOrderForEcosystem("react-native")).toEqual(
+      expect.arrayContaining(ECOSYSTEM_CATEGORIES["react-native"]),
+    );
   });
 });

@@ -13,6 +13,10 @@ function renderFlag(flag: string, value: string | readonly string[]): string {
   return `--${flag} ${formatted}`;
 }
 
+function withExplicitScalar(value: string | undefined, fallback = "none"): string {
+  return value ?? fallback;
+}
+
 export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): string {
   const ecosystem = typeof fingerprint.ecosystem === "string" ? fingerprint.ecosystem : "combo";
 
@@ -28,6 +32,20 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.auth === "string" ? fingerprint.auth : undefined,
       typeof fingerprint.cssFramework === "string" ? fingerprint.cssFramework : undefined,
       typeof fingerprint.uiLibrary === "string" ? fingerprint.uiLibrary : undefined,
+    ],
+    "react-native": [
+      Array.isArray(fingerprint.frontend)
+        ? fingerprint.frontend.filter((value) => value !== "none").join("-")
+        : undefined,
+      typeof fingerprint.mobileNavigation === "string" ? fingerprint.mobileNavigation : undefined,
+      typeof fingerprint.mobileUI === "string" ? fingerprint.mobileUI : undefined,
+      typeof fingerprint.mobileStorage === "string" ? fingerprint.mobileStorage : undefined,
+      typeof fingerprint.mobileTesting === "string" ? fingerprint.mobileTesting : undefined,
+      typeof fingerprint.mobilePush === "string" ? fingerprint.mobilePush : undefined,
+      typeof fingerprint.mobileOTA === "string" ? fingerprint.mobileOTA : undefined,
+      typeof fingerprint.mobileDeepLinking === "string"
+        ? fingerprint.mobileDeepLinking
+        : undefined,
     ],
     rust: [
       typeof fingerprint.rustWebFramework === "string" ? fingerprint.rustWebFramework : undefined,
@@ -72,6 +90,17 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       Array.isArray(fingerprint.javaTestingLibraries)
         ? fingerprint.javaTestingLibraries.filter((value) => value !== "none").join("-")
         : undefined,
+    ],
+    elixir: [
+      typeof fingerprint.elixirWebFramework === "string"
+        ? fingerprint.elixirWebFramework
+        : undefined,
+      typeof fingerprint.elixirOrm === "string" ? fingerprint.elixirOrm : undefined,
+      typeof fingerprint.elixirAuth === "string" ? fingerprint.elixirAuth : undefined,
+      typeof fingerprint.elixirApi === "string" ? fingerprint.elixirApi : undefined,
+      typeof fingerprint.elixirRealtime === "string" ? fingerprint.elixirRealtime : undefined,
+      typeof fingerprint.elixirJobs === "string" ? fingerprint.elixirJobs : undefined,
+      typeof fingerprint.elixirDeploy === "string" ? fingerprint.elixirDeploy : undefined,
     ],
   } as const;
 
@@ -131,6 +160,13 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["i18n", config.i18n],
     ["search", config.search],
     ["file-storage", config.fileStorage],
+    ["mobile-navigation", withExplicitScalar(config.mobileNavigation)],
+    ["mobile-ui", withExplicitScalar(config.mobileUI)],
+    ["mobile-storage", withExplicitScalar(config.mobileStorage)],
+    ["mobile-testing", withExplicitScalar(config.mobileTesting)],
+    ["mobile-push", withExplicitScalar(config.mobilePush)],
+    ["mobile-ota", withExplicitScalar(config.mobileOTA)],
+    ["mobile-deep-linking", withExplicitScalar(config.mobileDeepLinking)],
     ["web-deploy", config.webDeploy],
     ["server-deploy", config.serverDeploy],
   ];
@@ -140,6 +176,18 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["observability", config.observability],
     ["caching", config.caching],
     ["search", config.search],
+  ];
+
+  const reactNativeFlags: Array<[string, string | readonly string[]]> = [
+    ["frontend", withExplicitNone(config.frontend)],
+    ["auth", config.auth],
+    ["mobile-navigation", withExplicitScalar(config.mobileNavigation)],
+    ["mobile-ui", withExplicitScalar(config.mobileUI)],
+    ["mobile-storage", withExplicitScalar(config.mobileStorage)],
+    ["mobile-testing", withExplicitScalar(config.mobileTesting)],
+    ["mobile-push", withExplicitScalar(config.mobilePush)],
+    ["mobile-ota", withExplicitScalar(config.mobileOTA)],
+    ["mobile-deep-linking", withExplicitScalar(config.mobileDeepLinking)],
   ];
 
   const rustFlags: Array<[string, string | readonly string[]]> = [
@@ -186,6 +234,24 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["java-testing-libraries", withExplicitNone(config.javaTestingLibraries)],
   ];
 
+  const elixirFlags: Array<[string, string | readonly string[]]> = [
+    ["elixir-web-framework", config.elixirWebFramework],
+    ["elixir-orm", config.elixirOrm],
+    ["elixir-auth", config.elixirAuth],
+    ["elixir-api", config.elixirApi],
+    ["elixir-realtime", config.elixirRealtime],
+    ["elixir-jobs", config.elixirJobs],
+    ["elixir-validation", config.elixirValidation],
+    ["elixir-http", config.elixirHttp],
+    ["elixir-json", config.elixirJson],
+    ["elixir-email", config.elixirEmail],
+    ["elixir-caching", config.elixirCaching],
+    ["elixir-observability", config.elixirObservability],
+    ["elixir-testing", config.elixirTesting],
+    ["elixir-quality", config.elixirQuality],
+    ["elixir-deploy", config.elixirDeploy],
+  ];
+
   const orderedFlags = [...commonFlags];
   switch (config.ecosystem) {
     case "typescript":
@@ -207,6 +273,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       if (config.shadcnFont) orderedFlags.push(["shadcn-font", config.shadcnFont]);
       if (config.shadcnRadius) orderedFlags.push(["shadcn-radius", config.shadcnRadius]);
       break;
+    case "react-native":
+      orderedFlags.push(...reactNativeFlags);
+      break;
     case "rust":
       orderedFlags.push(...sharedServiceFlags, ...rustFlags);
       break;
@@ -218,6 +287,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "java":
       orderedFlags.push(...sharedServiceFlags, ...javaFlags);
+      break;
+    case "elixir":
+      orderedFlags.push(...elixirFlags);
       break;
   }
 

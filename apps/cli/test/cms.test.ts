@@ -1,8 +1,55 @@
-import { describe, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("CMS Options", () => {
+  describe("Directus CMS", () => {
+    test("directus with TanStack Router", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "directus-tanstack",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          cms: "directus",
+        }),
+      );
+
+      expectSuccess(result);
+      const client = await Bun.file(`${result.projectDir}/apps/web/src/directus/client.ts`).text();
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const env = await Bun.file(`${result.projectDir}/apps/web/.env`).text();
+
+      expect(client).toContain("@directus/sdk");
+      expect(pkg).toContain('"@directus/sdk"');
+      expect(env).toContain("VITE_DIRECTUS_URL");
+    });
+
+    test("directus with Nuxt exposes runtime config", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "directus-nuxt",
+          frontend: ["nuxt"],
+          backend: "hono",
+          runtime: "bun",
+          api: "orpc",
+          cms: "directus",
+        }),
+      );
+
+      expectSuccess(result);
+      const client = await Bun.file(`${result.projectDir}/apps/web/src/directus/client.ts`).text();
+      const nuxtConfig = await Bun.file(`${result.projectDir}/apps/web/nuxt.config.ts`).text();
+      const env = await Bun.file(`${result.projectDir}/apps/web/.env`).text();
+
+      expect(client).toContain("config.public.directusUrl");
+      expect(client).toContain("config.directusStaticToken");
+      expect(nuxtConfig).toContain("directusStaticToken: process.env.DIRECTUS_STATIC_TOKEN");
+      expect(nuxtConfig).toContain("directusUrl: process.env.NUXT_PUBLIC_DIRECTUS_URL");
+      expect(env).toContain("NUXT_PUBLIC_DIRECTUS_URL");
+      expect(env).toContain("DIRECTUS_STATIC_TOKEN");
+    });
+  });
+
   describe("Payload CMS with Next.js", () => {
     test("payload with Next.js and SQLite", async () => {
       const result = await runTRPCTest(
@@ -488,6 +535,12 @@ describe("CMS Options", () => {
         }),
       );
       expectSuccess(result);
+
+      const imageHelper = await Bun.file(
+        `${result.projectDir}/apps/web/src/sanity/lib/image.ts`,
+      ).text();
+      expect(imageHelper).toContain('import type { SanityImageSource } from "@sanity/image-url";');
+      expect(imageHelper).not.toContain("@sanity/image-url/lib/types/types");
     });
 
     test("sanity with Astro", async () => {
@@ -826,4 +879,3 @@ describe("CMS Options", () => {
     });
   });
 });
-

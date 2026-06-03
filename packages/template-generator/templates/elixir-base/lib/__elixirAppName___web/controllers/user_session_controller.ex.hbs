@@ -1,0 +1,54 @@
+defmodule {{elixirModuleName}}Web.UserSessionController do
+  use {{elixirModuleName}}Web, :controller
+
+  alias {{elixirModuleName}}.Accounts
+
+  def register(conn, %{"user" => user_params}) do
+    case Accounts.create_user(user_params) do
+      {:ok, user} ->
+        conn
+        |> configure_session(renew: true)
+        |> put_session(:user_id, user.id)
+        |> put_status(:created)
+        |> json(%{data: user_json(user)})
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: errors_json(changeset)})
+    end
+  end
+
+  def login(conn, %{"user" => %{"email" => email, "password" => password}}) do
+    case Accounts.get_user_by_email_and_password(email, password) do
+      nil ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{errors: %{credentials: ["are invalid"]}})
+
+      user ->
+        conn
+        |> configure_session(renew: true)
+        |> put_session(:user_id, user.id)
+        |> json(%{data: user_json(user)})
+    end
+  end
+
+  def logout(conn, _params) do
+    conn
+    |> configure_session(drop: true)
+    |> json(%{data: %{ok: true}})
+  end
+
+  defp user_json(user) do
+    %{id: user.id, email: user.email}
+  end
+
+  defp errors_json(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Enum.reduce(opts, message, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+  end
+end

@@ -1,0 +1,17 @@
+defmodule {{elixirModuleName}}.HttpClient do
+  @moduledoc """
+  Small outbound HTTP boundary used by generated code and tests.
+  """
+
+{{#if (eq elixirHttp "req")}}
+  def get!(url, opts \\ []) do
+    Req.get!(url, opts)
+  end
+{{/if}}
+{{#if (eq elixirHttp "finch")}}
+  def get!(url, headers \\ []) do
+    Finch.build(:get, url, headers)
+    |> Finch.request!({{elixirModuleName}}.Finch)
+  end
+{{/if}}
+end

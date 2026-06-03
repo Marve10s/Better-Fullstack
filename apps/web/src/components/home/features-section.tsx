@@ -34,17 +34,18 @@ const LAYERS: ReadonlyArray<Layer> = [
       "pythonWebFramework",
       "goWebFramework",
       "javaWebFramework",
+      "elixirWebFramework",
     ],
     word: "BACKEND FRAMEWORKS",
   },
   {
     type: "categories",
-    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm"],
+    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm", "elixirOrm"],
     word: "DATABASE ORMs",
   },
   {
     type: "categories",
-    categories: ["auth", "rustAuth", "pythonAuth", "goAuth", "javaAuth"],
+    categories: ["auth", "rustAuth", "pythonAuth", "goAuth", "javaAuth", "elixirAuth"],
     word: "AUTH PROVIDERS",
   },
   {
@@ -76,8 +77,8 @@ export default function FeaturesSection() {
       <div className="relative overflow-hidden border-b border-border">
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]">
-              ✦ five ecosystems
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
+              ✦ seven ecosystems
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -86,12 +87,11 @@ export default function FeaturesSection() {
                 lineHeight: 0.94,
               }}
             >
-              Not just TypeScript.{" "}
-              <span className="italic text-muted-foreground">Everything.</span>
+              Not just TypeScript. <span className="italic text-muted-foreground">Everything.</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              TypeScript, Rust, Python, Go, Java — one CLI scaffolds production-ready
-              apps across all five. Pick your ecosystem, pick your stack.
+              TypeScript, React Native, Rust, Python, Go, Java, Elixir — one CLI scaffolds
+              production-ready apps across all seven. Pick your ecosystem, pick your stack.
             </p>
           </div>
 
@@ -188,7 +188,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             />
           </motion.div>
           <div
-            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#bef264]"
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]"
             style={{ direction: "ltr" }}
           >
             ✦ {String(index + 1).padStart(2, "0")}
@@ -229,9 +229,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
                   className="flex flex-col items-center gap-2"
                 >
                   <TechIcon techId={opt.id} name={opt.name} className="size-12 sm:size-14" />
-                  <span className="font-mono text-xs font-medium text-foreground">
-                    {opt.name}
-                  </span>
+                  <span className="font-mono text-xs font-medium text-foreground">{opt.name}</span>
                 </motion.div>
               ) : (
                 <motion.span
@@ -265,12 +263,12 @@ function TotalBlock() {
       <ContainerScroll className="px-4 py-12 sm:px-8 sm:py-16">
         <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-4">
           <div className="col-span-12 sm:col-span-4 lg:col-span-3">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-300">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
               ✦ total
             </p>
             <p className="mt-2 max-w-[26ch] text-pretty text-sm text-background/70">
-              Multiply this by every database, every CSS framework, every AI SDK, and you get
-              more combinations than there are grains of sand.
+              Multiply this by every database, every CSS framework, every AI SDK, and you get more
+              combinations than there are grains of sand.
             </p>
           </div>
           <div className="col-span-12 sm:col-span-8 lg:col-span-9">
@@ -286,12 +284,12 @@ function TotalBlock() {
                   transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
                 />
               </span>
-              <span className="text-lime-300" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
+              <span className="text-[#C6E853]" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
                 ✦
               </span>
             </motion.div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
-              options across 5 ecosystems · ts · rust · go · python · java
+              options across 7 ecosystems · ts · rn · rust · go · python · java · elixir
             </p>
           </div>
         </div>

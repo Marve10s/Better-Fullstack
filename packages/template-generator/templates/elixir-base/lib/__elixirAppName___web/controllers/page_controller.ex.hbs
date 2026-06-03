@@ -1,0 +1,12 @@
+defmodule {{elixirModuleName}}Web.PageController do
+  use {{elixirModuleName}}Web, :controller
+
+  def home(conn, _params) do
+    html(conn, """
+    <main style="font-family: system-ui; max-width: 760px; margin: 4rem auto; line-height: 1.5">
+      <h1>{{projectName}}</h1>
+      <p>Phoenix is running. Visit <a href="/api/health">/api/health</a> for JSON output.</p>
+    </main>
+    """)
+  end
+end

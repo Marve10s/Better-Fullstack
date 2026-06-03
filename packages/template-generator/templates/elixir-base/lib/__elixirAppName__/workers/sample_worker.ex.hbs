@@ -1,0 +1,10 @@
+defmodule {{elixirModuleName}}.Workers.SampleWorker do
+  use Oban.Worker, queue: :default, max_attempts: 3
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{args: args}) do
+    require Logger
+    Logger.info("Processed Oban job with args=#{inspect(args)}")
+    :ok
+  end
+end

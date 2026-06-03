@@ -1,3 +1,4 @@
+{{#if (eq mobileNavigation "expo-router")}}
 {{#if (includes examples "ai")}}
 import "@/polyfills";
 {{/if}}
@@ -28,9 +29,16 @@ import { QueryClientProvider } from "@tanstack/react-query";
   {{/unless}}
 {{/if}}
 import { Stack } from "expo-router";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useUnistyles } from "react-native-unistyles";
 import { StatusBar } from "expo-status-bar";
+{{#if (eq mobilePush "expo-notifications")}}
+import { registerForPushNotificationsAsync } from "@/lib/notifications";
+{{/if}}
+{{#if (eq mobileOTA "expo-updates")}}
+import { useUpdateCheck } from "@/lib/updates";
+{{/if}}
 
 export const unstable_settings = {
   initialRouteName: "(drawer)",
@@ -43,6 +51,14 @@ const convex = new ConvexReactClient(env.EXPO_PUBLIC_CONVEX_URL, {
 {{/if}}
 
 export default function RootLayout() {
+  {{#if (eq mobileOTA "expo-updates")}}
+  useUpdateCheck();
+  {{/if}}
+  useEffect(() => {
+    {{#if (eq mobilePush "expo-notifications")}}
+    registerForPushNotificationsAsync().catch(console.warn);
+    {{/if}}
+  }, []);
   const { theme } = useUnistyles();
 
   return (
@@ -167,3 +183,4 @@ export default function RootLayout() {
     {{/if}}
   );
 }
+{{/if}}

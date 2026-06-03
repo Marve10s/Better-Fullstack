@@ -2,7 +2,7 @@
 """Authentication module using Authlib."""
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from authlib.jose import JsonWebToken
 
@@ -16,10 +16,10 @@ _jwt = JsonWebToken(["HS256"])
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Create a JWT access token using Authlib."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC)})
     header = {"alg": ALGORITHM}
     return _jwt.serialize_compact(header, to_encode, SECRET_KEY).decode("utf-8")
 
@@ -37,7 +37,7 @@ def verify_token(token: str) -> dict | None:
 """Authentication module using python-jose JWT."""
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 
@@ -49,10 +49,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Create a JWT access token using python-jose."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC)})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 

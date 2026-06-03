@@ -45,6 +45,15 @@ type SearchPromptContext = {
 export function resolveSearchPrompt(
   context: SearchPromptContext = {},
 ): PromptSingleResolution<Search> {
+  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   const options =
     context.ecosystem && context.ecosystem !== "typescript"
       ? NON_TYPESCRIPT_SEARCH_PROMPT_OPTIONS

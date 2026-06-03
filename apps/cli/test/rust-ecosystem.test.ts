@@ -69,13 +69,14 @@ const RUST_LOGGINGS = extractEnumValues(RustLoggingSchema);
 
 describe("Rust Ecosystem", () => {
   describe("Schema Definitions", () => {
-    it("should have ecosystem schema with typescript, rust, python, go, and java", () => {
+    it("should include Rust alongside the other ecosystem schema values", () => {
       expect(ECOSYSTEMS).toContain("typescript");
       expect(ECOSYSTEMS).toContain("rust");
       expect(ECOSYSTEMS).toContain("python");
       expect(ECOSYSTEMS).toContain("go");
       expect(ECOSYSTEMS).toContain("java");
-      expect(ECOSYSTEMS.length).toBe(5);
+      expect(ECOSYSTEMS).toContain("react-native");
+      expect(ECOSYSTEMS).toContain("elixir");
     });
 
     it("should have rust web framework options", () => {
@@ -1026,6 +1027,8 @@ describe("Rust Ecosystem", () => {
       expect(grpcContent).toContain("async fn say_hello");
       expect(grpcContent).toContain("async fn say_hello_stream");
       expect(grpcContent).toContain("pub fn create_grpc_server()");
+      expect(grpcContent).toContain("GreeterServer::new(GreeterService)");
+      expect(grpcContent).not.toContain("GreeterService::default()");
     });
 
     it("should work with tonic and no web framework", async () => {
@@ -3002,6 +3005,8 @@ describe("Rust Ecosystem", () => {
 
       const mainContent = getFileContent(root, "crates/server/src/main.rs");
       expect(mainContent).toContain("mod auth;");
+      expect(mainContent).toContain("let oauth2_client = auth::create_oauth2_client();");
+      expect(mainContent).toContain("auth::authorize_url(&oauth2_client)");
 
       const authContent = getFileContent(root, "crates/server/src/auth.rs");
       expect(authContent).toContain("BasicClient");
@@ -3030,7 +3035,8 @@ describe("Rust Ecosystem", () => {
 
       const mainContent = getFileContent(root, "crates/server/src/main.rs");
       expect(mainContent).toContain("mod auth;");
-      expect(mainContent).toContain("_oauth2_client");
+      expect(mainContent).toContain("let oauth2_client = auth::create_oauth2_client();");
+      expect(mainContent).toContain("auth::authorize_url(&oauth2_client)");
     });
 
     it("should include oauth2 with rocket", async () => {

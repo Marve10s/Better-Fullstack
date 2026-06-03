@@ -1,0 +1,18 @@
+package {{javaPackageName}};
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.Test;
+
+class MockitoSmokeTest {
+
+  @Test
+  void verifiesMockInteractions() {
+    Runnable task = mock(Runnable.class);
+
+    task.run();
+
+    verify(task).run();
+  }
+}

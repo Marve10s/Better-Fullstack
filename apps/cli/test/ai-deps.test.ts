@@ -195,6 +195,56 @@ describe("AI SDK Dependencies", () => {
     }
   });
 
+  it("should install standalone server example deps for ModelFusion AI examples", async () => {
+    const result = await runTRPCTest({
+      projectName: "ai-deps-modelfusion-example-fets",
+      ecosystem: "typescript",
+      frontend: ["react-vite"],
+      backend: "fets",
+      runtime: "node",
+      database: "redis",
+      orm: "none",
+      api: "ts-rest",
+      auth: "none",
+      payments: "none",
+      addons: ["none"],
+      examples: ["ai"],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      ai: "modelfusion",
+      cssFramework: "tailwind",
+      uiLibrary: "none",
+      effect: "none",
+      email: "none",
+      stateManagement: "valtio",
+      forms: "none",
+      testing: "none",
+      validation: "typebox",
+      realtime: "socket-io",
+      jobQueue: "none",
+      animation: "react-spring",
+      logging: "none",
+      observability: "opentelemetry",
+      analytics: "plausible",
+      cms: "none",
+      caching: "none",
+      fileUpload: "none",
+      fileStorage: "none",
+      packageManager: "bun",
+    });
+    expectSuccess(result);
+
+    if (result.projectDir) {
+      const serverPkg = await Bun.file(`${result.projectDir}/apps/server/package.json`).json();
+
+      expect(serverPkg.dependencies["modelfusion"]).toBeDefined();
+      expect(serverPkg.dependencies["ai"]).toBeDefined();
+      expect(serverPkg.dependencies["@ai-sdk/google"]).toBeDefined();
+      expect(serverPkg.dependencies["@ai-sdk/devtools"]).toBeDefined();
+    }
+  });
+
   it("should install llamaindex SDK when selected", async () => {
     const result = await runTRPCTest({
       projectName: "ai-deps-llamaindex",

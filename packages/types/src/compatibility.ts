@@ -11,10 +11,8 @@ import type {
   Runtime,
   UILibrary,
 } from "./types";
-import {
-  getCapabilityDisabledReason,
-  normalizeCapabilitySelection,
-} from "./capabilities";
+
+import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "./capabilities";
 
 export type CompatibilityCategory =
   | "api"
@@ -51,6 +49,13 @@ export type CompatibilityCategory =
   | "cms"
   | "featureFlags"
   | "analytics"
+  | "mobileNavigation"
+  | "mobileUI"
+  | "mobileStorage"
+  | "mobileTesting"
+  | "mobilePush"
+  | "mobileOTA"
+  | "mobileDeepLinking"
   | "codeQuality"
   | "documentation"
   | "appPlatforms"
@@ -88,7 +93,22 @@ export type CompatibilityCategory =
   | "javaOrm"
   | "javaAuth"
   | "javaLibraries"
-  | "javaTestingLibraries";
+  | "javaTestingLibraries"
+  | "elixirWebFramework"
+  | "elixirOrm"
+  | "elixirAuth"
+  | "elixirApi"
+  | "elixirRealtime"
+  | "elixirJobs"
+  | "elixirValidation"
+  | "elixirHttp"
+  | "elixirJson"
+  | "elixirEmail"
+  | "elixirCaching"
+  | "elixirObservability"
+  | "elixirTesting"
+  | "elixirQuality"
+  | "elixirDeploy";
 
 export type CompatibilityIssue = {
   code: string;
@@ -109,7 +129,7 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "rust" | "python" | "go" | "java";
+  ecosystem: "typescript" | "react-native" | "rust" | "python" | "go" | "java" | "elixir";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -149,6 +169,13 @@ export type CompatibilityInput = {
   i18n: string;
   search: string;
   fileStorage: string;
+  mobileNavigation: string;
+  mobileUI: string;
+  mobileStorage: string;
+  mobileTesting: string;
+  mobilePush: string;
+  mobileOTA: string;
+  mobileDeepLinking: string;
   codeQuality: string[];
   documentation: string[];
   appPlatforms: string[];
@@ -194,6 +221,21 @@ export type CompatibilityInput = {
   javaAuth: string;
   javaLibraries: string[];
   javaTestingLibraries: string[];
+  elixirWebFramework: string;
+  elixirOrm: string;
+  elixirAuth: string;
+  elixirApi: string;
+  elixirRealtime: string;
+  elixirJobs: string;
+  elixirValidation: string;
+  elixirHttp: string;
+  elixirJson: string;
+  elixirEmail: string;
+  elixirCaching: string;
+  elixirObservability: string;
+  elixirTesting: string;
+  elixirQuality: string;
+  elixirDeploy: string;
 };
 
 const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
@@ -230,6 +272,13 @@ const TYPESCRIPT_CATEGORY_ORDER: CompatibilityCategory[] = [
   "i18n",
   "search",
   "fileStorage",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
   "animation",
   "cms",
   "codeQuality",
@@ -272,6 +321,21 @@ const CATEGORY_ORDER: CompatibilityCategory[] = [
   "javaAuth",
   "javaLibraries",
   "javaTestingLibraries",
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
 ];
 
 const DEFAULT_RUNTIME = "bun";
@@ -300,23 +364,41 @@ export function validateProjectName(name: string): string | undefined {
 
 export const hasPWACompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
+      f,
+    ),
   );
 
 export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "nuxt", "svelte", "solid", "next", "vinext", "astro"].includes(f),
+    [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "nuxt",
+      "svelte",
+      "solid",
+      "next",
+      "vinext",
+      "astro",
+    ].includes(f),
   );
 
 export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
   webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(f),
+    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
+      f,
+    ),
   );
 
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
   if (stack.ecosystem !== "typescript") return false;
 
-  if (stack.backend === "self-next" || stack.backend === "self-vinext" || stack.backend === "self-tanstack-start") {
+  if (
+    stack.backend === "self-next" ||
+    stack.backend === "self-vinext" ||
+    stack.backend === "self-tanstack-start"
+  ) {
     return true;
   }
 
@@ -385,6 +467,24 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     javaTestingLibraries: "Java Testing Libraries",
   };
 
+  const elixirCategoryNames: Record<string, string> = {
+    elixirWebFramework: "Elixir Web Framework",
+    elixirOrm: "Elixir ORM / Database",
+    elixirAuth: "Elixir Auth",
+    elixirApi: "Elixir API Layer",
+    elixirRealtime: "Elixir Realtime",
+    elixirJobs: "Elixir Jobs",
+    elixirValidation: "Elixir Validation",
+    elixirHttp: "Elixir HTTP Client",
+    elixirJson: "Elixir JSON",
+    elixirEmail: "Elixir Email",
+    elixirCaching: "Elixir Caching",
+    elixirObservability: "Elixir Observability",
+    elixirTesting: "Elixir Testing",
+    elixirQuality: "Elixir Code Quality",
+    elixirDeploy: "Elixir Deploy",
+  };
+
   if (rustCategoryNames[categoryKey]) {
     return rustCategoryNames[categoryKey];
   }
@@ -401,9 +501,20 @@ export const getCategoryDisplayName = (categoryKey: string): string => {
     return javaCategoryNames[categoryKey];
   }
 
+  if (elixirCategoryNames[categoryKey]) {
+    return elixirCategoryNames[categoryKey];
+  }
+
   // Custom display names for TypeScript categories
   const tsCategoryNames: Record<string, string> = {
     i18n: "Internationalization (i18n)",
+    mobileNavigation: "Mobile Navigation",
+    mobileUI: "Mobile UI",
+    mobileStorage: "Mobile Storage",
+    mobileTesting: "Mobile Testing",
+    mobilePush: "Mobile Push",
+    mobileOTA: "Mobile OTA",
+    mobileDeepLinking: "Mobile Deep Linking",
   };
 
   if (tsCategoryNames[categoryKey]) {
@@ -515,7 +626,6 @@ export const analyzeStackCompatibility = (
         });
       }
     }
-
   }
 
   if (nextStack.backend === "none") {
@@ -1072,8 +1182,130 @@ export const analyzeStackCompatibility = (
     }
   }
 
+  let hasNativeFrontend = nextStack.nativeFrontend.some((f) => f !== "none");
+
+  if (nextStack.ecosystem === "react-native") {
+    const reactNativeOnlyCategories = [
+      ["webFrontend", ["none"], "Web frontend set to 'None' (React Native ecosystem)"],
+      ["backend", "none", "Backend set to 'None' (React Native ecosystem)"],
+      ["runtime", "none", "Runtime set to 'None' (React Native ecosystem)"],
+      ["api", "none", "API set to 'None' (React Native ecosystem)"],
+      ["database", "none", "Database set to 'None' (React Native ecosystem)"],
+      ["orm", "none", "ORM set to 'None' (React Native ecosystem)"],
+      ["dbSetup", "none", "Database setup set to 'None' (React Native ecosystem)"],
+      ["webDeploy", "none", "Web deployment set to 'None' (React Native ecosystem)"],
+      ["serverDeploy", "none", "Server deployment set to 'None' (React Native ecosystem)"],
+      ["cssFramework", "none", "CSS framework set to 'None' (React Native ecosystem)"],
+      ["uiLibrary", "none", "UI library set to 'None' (React Native ecosystem)"],
+      ["testing", "none", "Web testing set to 'None' (React Native ecosystem)"],
+      ["forms", "none", "Web forms set to 'None' (React Native ecosystem)"],
+      ["stateManagement", "none", "Web state management set to 'None' (React Native ecosystem)"],
+      ["animation", "none", "Web animation set to 'None' (React Native ecosystem)"],
+      ["realtime", "none", "Realtime set to 'None' (React Native ecosystem)"],
+      ["jobQueue", "none", "Job queue set to 'None' (React Native ecosystem)"],
+      ["fileUpload", "none", "File upload set to 'None' (React Native ecosystem)"],
+      ["payments", "none", "Payments set to 'None' (React Native ecosystem)"],
+      ["email", "none", "Email set to 'None' (React Native ecosystem)"],
+      ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
+      ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
+      ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
+      ["i18n", "none", "i18n set to 'None' (React Native ecosystem)"],
+      ["featureFlags", "none", "Feature flags set to 'None' (React Native ecosystem)"],
+      ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
+      ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
+      ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
+      ["examples", [], "Examples cleared (React Native ecosystem)"],
+    ] as const;
+
+    for (const [category, value, message] of reactNativeOnlyCategories) {
+      const currentValue = nextStack[category];
+      const isSameArray =
+        Array.isArray(currentValue) &&
+        Array.isArray(value) &&
+        currentValue.length === value.length &&
+        currentValue.every((entry, index) => entry === value[index]);
+      if (Array.isArray(value) ? !isSameArray : currentValue !== value) {
+        (nextStack as Record<string, unknown>)[category] = Array.isArray(value)
+          ? [...value]
+          : value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+
+    if (!hasNativeFrontend) {
+      nextStack.nativeFrontend = ["native-bare"];
+      hasNativeFrontend = true;
+      changed = true;
+      changes.push({
+        category: "nativeFrontend",
+        message: "Native frontend set to 'Expo + StyleSheet' (React Native ecosystem)",
+      });
+    }
+  }
+
+  if (!hasNativeFrontend) {
+    const nativeOnlyCategories = [
+      ["mobileNavigation", "none", "Mobile navigation set to 'None' (no native frontend)"],
+      ["mobileUI", "none", "Mobile UI set to 'None' (no native frontend)"],
+      ["mobileStorage", "none", "Mobile storage set to 'None' (no native frontend)"],
+      ["mobileTesting", "none", "Mobile testing set to 'None' (no native frontend)"],
+      ["mobilePush", "none", "Mobile push set to 'None' (no native frontend)"],
+      ["mobileOTA", "none", "Mobile OTA set to 'None' (no native frontend)"],
+      ["mobileDeepLinking", "none", "Mobile deep linking set to 'None' (no native frontend)"],
+    ] as const;
+
+    for (const [category, value, message] of nativeOnlyCategories) {
+      if (nextStack[category] !== value) {
+        nextStack[category] = value;
+        changed = true;
+        changes.push({ category, message });
+      }
+    }
+  } else {
+    if (nextStack.mobileNavigation === "none") {
+      nextStack.mobileNavigation = "expo-router";
+      changed = true;
+      changes.push({
+        category: "mobileNavigation",
+        message: "Mobile navigation set to 'Expo Router' (native frontend selected)",
+      });
+    }
+
+    if (nextStack.mobileDeepLinking === "none" && nextStack.auth !== "none") {
+      nextStack.mobileDeepLinking = "expo-linking";
+      changed = true;
+      changes.push({
+        category: "mobileDeepLinking",
+        message: "Mobile deep linking set to 'Expo Linking' (required for mobile auth redirects)",
+      });
+    }
+
+    if (nextStack.nativeFrontend.includes("native-uniwind") && nextStack.mobileUI !== "uniwind") {
+      nextStack.mobileUI = "uniwind";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Uniwind' (required by Expo + Uniwind)",
+      });
+    }
+
+    if (
+      nextStack.nativeFrontend.includes("native-unistyles") &&
+      nextStack.mobileUI !== "unistyles"
+    ) {
+      nextStack.mobileUI = "unistyles";
+      changed = true;
+      changes.push({
+        category: "mobileUI",
+        message: "Mobile UI set to 'Unistyles' (required by Expo + Unistyles)",
+      });
+    }
+  }
+
   // UI libraries requiring Tailwind - auto-adjust CSS framework or clear UI library
-  const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(nextStack.uiLibrary);
+  const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(nextStack.uiLibrary);
   if (requiresTailwind && nextStack.cssFramework !== "tailwind") {
     // Auto-set Tailwind when selecting a Tailwind-dependent UI library
     nextStack.cssFramework = "tailwind";
@@ -1086,7 +1318,14 @@ export const analyzeStackCompatibility = (
 
   // React-only UI libraries - check frontend compatibility
   const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
-  const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext"];
+  const reactFrontends = [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "vinext",
+  ];
   if (reactOnlyLibraries.includes(nextStack.uiLibrary)) {
     const hasReactFrontend = nextStack.webFrontend.some((f) => reactFrontends.includes(f));
     const hasAstroReact =
@@ -1099,6 +1338,20 @@ export const analyzeStackCompatibility = (
         category: "uiLibrary",
         message:
           "UI library changed to 'daisyUI' (React-only library incompatible with this frontend)",
+      });
+    }
+  }
+
+  if (nextStack.uiLibrary === "shadcn-svelte") {
+    const hasSvelteFrontend = nextStack.webFrontend.includes("svelte");
+    const hasAstroSvelte =
+      nextStack.webFrontend.includes("astro") && nextStack.astroIntegration === "svelte";
+    if (!hasSvelteFrontend && !hasAstroSvelte && nextStack.webFrontend.some((f) => f !== "none")) {
+      nextStack.uiLibrary = "daisyui";
+      changed = true;
+      changes.push({
+        category: "uiLibrary",
+        message: "UI library changed to 'daisyUI' (shadcn-svelte requires SvelteKit or Astro + Svelte)",
       });
     }
   }
@@ -1316,7 +1569,8 @@ export const analyzeStackCompatibility = (
         changed = true;
         changes.push({
           category: "javaBuildTool",
-          message: "Java testing libraries cleared (a build tool is required for test dependencies)",
+          message:
+            "Java testing libraries cleared (a build tool is required for test dependencies)",
         });
       }
     }
@@ -1379,6 +1633,81 @@ export const analyzeStackCompatibility = (
           message: "Liquibase cleared (Flyway and Liquibase cannot be combined)",
         });
       }
+    }
+  }
+
+  // ============================================
+  // ELIXIR ECOSYSTEM CONSTRAINTS
+  // ============================================
+
+  if (nextStack.ecosystem === "elixir") {
+    if (nextStack.elixirWebFramework === "none") {
+      const dependentKeys: Array<keyof CompatibilityInput> = [
+        "elixirAuth",
+        "elixirApi",
+        "elixirRealtime",
+        "elixirObservability",
+      ];
+
+      for (const key of dependentKeys) {
+        const value = nextStack[key];
+        const shouldClear =
+          key !== "elixirObservability" ? value !== "none" : value === "phoenix-telemetry";
+
+        if (shouldClear) {
+          nextStack[key] = "none" as never;
+          changed = true;
+          changes.push({
+            category: "elixirWebFramework",
+            message: `${getCategoryDisplayName(key)} set to 'None' (requires Phoenix)`,
+          });
+        }
+      }
+    }
+
+    if (nextStack.elixirWebFramework === "phoenix-live-view" && nextStack.elixirApi === "none") {
+      nextStack.elixirRealtime = "live-view-streams";
+      changed = true;
+      changes.push({
+        category: "elixirRealtime",
+        message: "Elixir realtime set to 'LiveView Streams' (Phoenix LiveView selected)",
+      });
+    }
+
+    if (nextStack.elixirOrm === "none") {
+      if (nextStack.elixirJobs === "oban") {
+        nextStack.elixirJobs = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+        });
+      }
+      if (nextStack.elixirAuth === "phx-gen-auth") {
+        nextStack.elixirAuth = "none";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir auth set to 'None' (phx.gen.auth requires Ecto)",
+        });
+      }
+      if (nextStack.elixirApi === "absinthe") {
+        nextStack.elixirApi = "rest";
+        changed = true;
+        changes.push({
+          category: "elixirOrm",
+          message: "Elixir API set to 'REST' (the generated Absinthe resolver needs Ecto)",
+        });
+      }
+    }
+
+    if (nextStack.elixirJobs === "oban" && nextStack.elixirOrm !== "ecto-sql") {
+      nextStack.elixirJobs = "none";
+      changed = true;
+      changes.push({
+        category: "elixirJobs",
+        message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
+      });
     }
   }
 
@@ -1491,6 +1820,28 @@ export const getDisabledReason = (
         );
         return `Convex AI example only supports React-based frontends including React + Vite (not ${frontendName})`;
       }
+    }
+  }
+
+  if (currentStack.ecosystem === "react-native") {
+    const reactNativeCategories = new Set([
+      "nativeFrontend",
+      "mobileNavigation",
+      "mobileUI",
+      "mobileStorage",
+      "mobileTesting",
+      "mobilePush",
+      "mobileOTA",
+      "mobileDeepLinking",
+      "auth",
+      "packageManager",
+      "aiDocs",
+      "git",
+      "install",
+    ]);
+
+    if (!reactNativeCategories.has(category) && optionId !== "none" && optionId !== "false") {
+      return "React Native ecosystem only supports native mobile options";
     }
   }
 
@@ -1939,8 +2290,14 @@ export const getDisabledReason = (
   // TanStack AI: React and Solid only (client adapter). Server-side core works anywhere.
   if (category === "ai" && optionId === "tanstack-ai") {
     const compatibleFrontends = [
-      "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
-      "solid", "solid-start",
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "redwood",
+      "solid",
+      "solid-start",
     ];
     const hasCompatible = currentStack.webFrontend.some((f) => compatibleFrontends.includes(f));
 
@@ -1998,7 +2355,13 @@ export const getDisabledReason = (
       return "TanStack Query is already included via your API layer";
     }
     // TanStack addons with Astro require a UI framework integration
-    const tanstackAddons = ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"];
+    const tanstackAddons = [
+      "tanstack-query",
+      "tanstack-table",
+      "tanstack-virtual",
+      "tanstack-db",
+      "tanstack-pacer",
+    ];
     if (
       tanstackAddons.includes(optionId) &&
       currentStack.webFrontend.length === 1 &&
@@ -2048,7 +2411,11 @@ export const getDisabledReason = (
       ) {
         return "Chat SDK self backend profile supports Next.js, TanStack Start, or Nuxt in v1";
       }
-      if (currentStack.backend === "self-next" || currentStack.backend === "self-vinext" || currentStack.backend === "self-tanstack-start") {
+      if (
+        currentStack.backend === "self-next" ||
+        currentStack.backend === "self-vinext" ||
+        currentStack.backend === "self-tanstack-start"
+      ) {
         return null;
       }
       if (currentStack.backend === "self-nuxt") {
@@ -2109,9 +2476,61 @@ export const getDisabledReason = (
       }
     }
     // Some UI libraries require Tailwind
-    const requiresTailwind = ["shadcn-ui", "daisyui", "nextui"].includes(currentStack.uiLibrary);
+    const requiresTailwind = ["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(currentStack.uiLibrary);
     if (requiresTailwind && optionId !== "tailwind") {
-      return `${currentStack.uiLibrary === "shadcn-ui" ? "shadcn/ui" : currentStack.uiLibrary === "daisyui" ? "daisyUI" : "NextUI"} requires Tailwind CSS`;
+      const libraryName =
+        currentStack.uiLibrary === "shadcn-ui"
+          ? "shadcn/ui"
+          : currentStack.uiLibrary === "shadcn-svelte"
+            ? "shadcn-svelte"
+            : currentStack.uiLibrary === "daisyui"
+              ? "daisyUI"
+              : "NextUI";
+      return `${libraryName} requires Tailwind CSS`;
+    }
+  }
+
+  const mobileCategories = new Set([
+    "mobileNavigation",
+    "mobileUI",
+    "mobileStorage",
+    "mobileTesting",
+    "mobilePush",
+    "mobileOTA",
+    "mobileDeepLinking",
+  ]);
+
+  if (mobileCategories.has(category)) {
+    const hasNativeFrontend = currentStack.nativeFrontend.some((f) => f !== "none");
+    if (!hasNativeFrontend && optionId !== "none") {
+      return `${getCategoryDisplayName(category)} requires a native Expo frontend`;
+    }
+
+    if (category === "mobileNavigation" && optionId === "react-navigation") {
+      return null;
+    }
+
+    if (category === "mobileUI") {
+      if (optionId === "uniwind" && !currentStack.nativeFrontend.includes("native-uniwind")) {
+        return "Uniwind mobile UI requires Expo + Uniwind frontend";
+      }
+      if (optionId === "unistyles" && !currentStack.nativeFrontend.includes("native-unistyles")) {
+        return "Unistyles mobile UI requires Expo + Unistyles frontend";
+      }
+      if (
+        ["tamagui", "gluestack-ui"].includes(optionId) &&
+        currentStack.nativeFrontend.some((f) => ["native-uniwind", "native-unistyles"].includes(f))
+      ) {
+        return "Tamagui and Gluestack UI require Expo + StyleSheet to avoid conflicting styling setup";
+      }
+    }
+
+    if (
+      (category === "mobilePush" && optionId === "expo-notifications") ||
+      (category === "mobileOTA" && optionId === "expo-updates") ||
+      (category === "mobileDeepLinking" && optionId === "expo-linking")
+    ) {
+      return null;
     }
   }
 
@@ -2128,7 +2547,13 @@ export const getDisabledReason = (
 
     // React-only UI libraries
     const reactOnlyLibraries = ["shadcn-ui", "radix-ui", "chakra-ui", "nextui", "mui", "antd"];
-    const reactFrontends = ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next"];
+    const reactFrontends = [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+    ];
 
     if (reactOnlyLibraries.includes(optionId)) {
       const hasReactFrontend = currentStack.webFrontend.some((f) => reactFrontends.includes(f));
@@ -2149,6 +2574,16 @@ export const getDisabledReason = (
                     ? "Ant Design"
                     : "NextUI";
         return `${libraryName} requires a React-based frontend`;
+      }
+    }
+
+    if (optionId === "shadcn-svelte") {
+      const hasSvelteFrontend = currentStack.webFrontend.includes("svelte");
+      const hasAstroSvelte =
+        currentStack.webFrontend.includes("astro") &&
+        currentStack.astroIntegration === "svelte";
+      if (!hasSvelteFrontend && !hasAstroSvelte) {
+        return "shadcn-svelte requires SvelteKit or Astro with Svelte integration";
       }
     }
 
@@ -2184,10 +2619,16 @@ export const getDisabledReason = (
     }
 
     // UI libraries requiring Tailwind
-    if (["shadcn-ui", "daisyui", "nextui"].includes(optionId)) {
+    if (["shadcn-ui", "shadcn-svelte", "daisyui", "nextui"].includes(optionId)) {
       if (currentStack.cssFramework !== "tailwind") {
         const libraryName =
-          optionId === "shadcn-ui" ? "shadcn/ui" : optionId === "daisyui" ? "daisyUI" : "NextUI";
+          optionId === "shadcn-ui"
+            ? "shadcn/ui"
+            : optionId === "shadcn-svelte"
+              ? "shadcn-svelte"
+              : optionId === "daisyui"
+                ? "daisyUI"
+                : "NextUI";
         return `${libraryName} requires Tailwind CSS`;
       }
     }
@@ -2202,7 +2643,7 @@ export const getDisabledReason = (
     }
     if (optionId === "vercel") {
       // These frontends don't have Vercel templates
-      if (currentStack.webFrontend.some(f => ["redwood", "fresh"].includes(f))) {
+      if (currentStack.webFrontend.some((f) => ["redwood", "fresh"].includes(f))) {
         return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
       }
     }
@@ -2341,6 +2782,128 @@ export const getDisabledReason = (
     }
   }
 
+  // ============================================
+  // ELIXIR ECOSYSTEM RULES
+  // ============================================
+  const elixirCategories = new Set<CompatibilityCategory>([
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+  ]);
+
+  if (elixirCategories.has(category) && optionId !== "none") {
+    if (currentStack.ecosystem !== "elixir") {
+      return "Elixir options only apply when the Elixir ecosystem is selected";
+    }
+  }
+
+  if (
+    category === "elixirWebFramework" &&
+    optionId !== "none" &&
+    currentStack.ecosystem !== "elixir"
+  ) {
+    return "Elixir web frameworks are available only in the Elixir ecosystem";
+  }
+
+  const elixirNotYetGenerated: Partial<Record<CompatibilityCategory, Record<string, string>>> = {
+    elixirOrm: {
+      ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
+    },
+    elixirAuth: {
+      ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
+      guardian: "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
+    },
+    elixirValidation: {
+      "nimble-options":
+        "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
+    },
+    elixirCaching: {
+      nebulex: "Nebulex cache modules are not generated yet; use Cachex or no cache",
+    },
+    elixirObservability: {
+      opentelemetry:
+        "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
+      prom_ex: "PromEx setup is not generated yet; use Phoenix telemetry or no extra observability",
+    },
+    elixirTesting: {
+      mox: "Mox-specific test boundaries are not generated yet; use ExUnit",
+      bypass: "Bypass-specific HTTP tests are not generated yet; use ExUnit",
+      wallaby: "Wallaby browser tests are not generated yet; use ExUnit",
+    },
+    elixirDeploy: {
+      fly: "Fly.io config is not generated yet; use Docker or mix releases",
+      gigalixir: "Gigalixir config is not generated yet; use Docker or mix releases",
+    },
+  };
+
+  const unsupportedElixirReason = elixirNotYetGenerated[category]?.[optionId];
+  if (currentStack.ecosystem === "elixir" && unsupportedElixirReason) {
+    return unsupportedElixirReason;
+  }
+
+  if (currentStack.ecosystem === "elixir" && currentStack.elixirWebFramework === "none") {
+    if (category === "elixirAuth" && optionId !== "none") {
+      return "Elixir auth scaffolds require Phoenix";
+    }
+    if (category === "elixirApi" && optionId !== "none") {
+      return "Elixir API scaffolds require Phoenix";
+    }
+    if (category === "elixirRealtime" && optionId !== "none") {
+      return "Elixir realtime scaffolds require Phoenix";
+    }
+    if (category === "elixirObservability" && optionId === "phoenix-telemetry") {
+      return "Phoenix telemetry requires Phoenix";
+    }
+  }
+
+  if (
+    category === "elixirJson" &&
+    optionId === "none" &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirWebFramework !== "none"
+  ) {
+    return "Phoenix JSON scaffolds require Jason";
+  }
+
+  if (category === "elixirAuth") {
+    if (optionId === "phx-gen-auth" && currentStack.elixirOrm === "none") {
+      return "phx.gen.auth requires Ecto";
+    }
+    if (
+      (optionId === "ueberauth" || optionId === "guardian") &&
+      currentStack.elixirWebFramework === "none"
+    ) {
+      return "Elixir auth libraries require Phoenix";
+    }
+  }
+
+  if (category === "elixirJobs" && optionId === "oban" && currentStack.elixirOrm !== "ecto-sql") {
+    return "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold";
+  }
+
+  if (category === "elixirApi" && optionId === "absinthe" && currentStack.elixirOrm === "none") {
+    return "Absinthe GraphQL requires Ecto in the current Phoenix scaffold";
+  }
+
+  if (
+    category === "elixirRealtime" &&
+    optionId === "live-view-streams" &&
+    currentStack.elixirWebFramework !== "phoenix-live-view"
+  ) {
+    return "LiveView Streams require Phoenix LiveView";
+  }
+
   return null;
 };
 
@@ -2382,7 +2945,19 @@ const UI_LIBRARY_COMPATIBILITY: Record<
   }
 > = {
   "shadcn-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
+    cssFrameworks: ["tailwind"],
+  },
+  "shadcn-svelte": {
+    frontends: ["svelte", "astro"],
     cssFrameworks: ["tailwind"],
   },
   daisyui: {
@@ -2406,11 +2981,28 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind"],
   },
   "radix-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "headless-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "nuxt", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "nuxt",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "park-ui": {
@@ -2429,15 +3021,39 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only"],
   },
   "chakra-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   nextui: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind"],
   },
   mantine: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   mui: {
@@ -2449,7 +3065,15 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "base-ui": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "ark-ui": {
@@ -2468,7 +3092,15 @@ const UI_LIBRARY_COMPATIBILITY: Record<
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   "react-aria": {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro"],
+    frontends: [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "vinext",
+      "astro",
+    ],
     cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
   },
   none: {
@@ -2520,25 +3152,75 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   wxt: [],
   msw: [],
   storybook: ["tanstack-router", "react-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  swr: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "astro", "redwood"],
   "tanstack-query": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
   ],
   "tanstack-table": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
   ],
   "tanstack-virtual": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
   ],
   "tanstack-db": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "solid-start", "astro", "redwood",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "astro",
+    "redwood",
   ],
   "tanstack-pacer": [
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next",
-    "nuxt", "svelte", "solid", "solid-start", "angular", "astro", "redwood",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+    "angular",
+    "astro",
+    "redwood",
   ],
   "docker-compose": [],
   none: [],
@@ -2613,10 +3295,7 @@ export function getApiFrontendCompatibilityIssue(
   const includesSolidStart = frontends.includes("solid-start");
   const isReactOnlyApi = api === "trpc" || api === "ts-rest" || api === "garph";
 
-  if (
-    (includesNuxt || includesSvelte || includesSolid || includesSolidStart) &&
-    isReactOnlyApi
-  ) {
+  if ((includesNuxt || includesSvelte || includesSolid || includesSolidStart) && isReactOnlyApi) {
     const incompatibleFrontend = includesNuxt
       ? "nuxt"
       : includesSvelte
@@ -2683,12 +3362,7 @@ export function getApiFrontendCompatibilityIssue(
     };
   }
 
-  if (
-    includesAstro &&
-    astroIntegration &&
-    astroIntegration !== "react" &&
-    isReactOnlyApi
-  ) {
+  if (includesAstro && astroIntegration && astroIntegration !== "react" && isReactOnlyApi) {
     return {
       code: "ASTRO_API_REQUIRES_REACT_INTEGRATION",
       message: `${getReactOnlyApiDisplayName(api)} API requires React integration with Astro.`,
@@ -2713,8 +3387,14 @@ export function getAIFrontendCompatibilityIssue(
   if (!ai || ai !== "tanstack-ai") return undefined;
 
   const compatibleFrontends = new Set<Frontend>([
-    "tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "redwood",
-    "solid", "solid-start",
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "redwood",
+    "solid",
+    "solid-start",
   ]);
   const hasCompatible = frontends.some((frontend) => compatibleFrontends.has(frontend));
 
@@ -2880,7 +3560,14 @@ export function getCompatibleUILibraries(
     if (webFrontend === "astro") {
       if (astroIntegration === "react") {
         return compatibility.frontends.some((f) =>
-          ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"].includes(f),
+          [
+            "tanstack-router",
+            "react-router",
+            "react-vite",
+            "tanstack-start",
+            "next",
+            "astro",
+          ].includes(f),
         );
       }
       return compatibility.frontends.some((f) =>
@@ -2953,10 +3640,25 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["stateManagement", input.stateManagement],
     ["animation", input.animation],
     ["pythonApi", input.pythonApi],
-   ["javaWebFramework", input.javaWebFramework],
+    ["javaWebFramework", input.javaWebFramework],
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
     ["javaAuth", input.javaAuth],
+    ["elixirWebFramework", input.elixirWebFramework],
+    ["elixirOrm", input.elixirOrm],
+    ["elixirAuth", input.elixirAuth],
+    ["elixirApi", input.elixirApi],
+    ["elixirRealtime", input.elixirRealtime],
+    ["elixirJobs", input.elixirJobs],
+    ["elixirValidation", input.elixirValidation],
+    ["elixirHttp", input.elixirHttp],
+    ["elixirJson", input.elixirJson],
+    ["elixirEmail", input.elixirEmail],
+    ["elixirCaching", input.elixirCaching],
+    ["elixirObservability", input.elixirObservability],
+    ["elixirTesting", input.elixirTesting],
+    ["elixirQuality", input.elixirQuality],
+    ["elixirDeploy", input.elixirDeploy],
   ];
 
   for (const [category, optionId] of scalarChecks) {

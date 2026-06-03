@@ -5,7 +5,7 @@ use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
 
 /// Implementation of the Greeter gRPC service.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct GreeterService;
 
 #[tonic::async_trait]
@@ -67,5 +67,5 @@ impl Greeter for GreeterService {
 
 /// Create and configure the gRPC server.
 pub fn create_grpc_server() -> GreeterServer<GreeterService> {
-    GreeterServer::new(GreeterService::default())
+    GreeterServer::new(GreeterService)
 }

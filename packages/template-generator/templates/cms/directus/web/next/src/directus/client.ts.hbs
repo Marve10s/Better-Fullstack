@@ -1,0 +1,12 @@
+import { createDirectus, readItems, rest, staticToken } from "@directus/sdk";
+
+const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || "http://localhost:8055";
+const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
+
+const client = createDirectus(directusUrl).with(rest());
+
+export const directus = directusToken ? client.with(staticToken(directusToken)) : client;
+
+export async function getDirectusItems(collection: string) {
+  return directus.request(readItems(collection));
+}

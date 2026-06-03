@@ -1,8 +1,31 @@
-import { describe, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
 
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("File Storage Options", () => {
+  describe("Cloudinary storage", () => {
+    test("cloudinary with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "cloudinary-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          fileStorage: "cloudinary",
+        }),
+      );
+
+      expectSuccess(result);
+      const storage = await readFile(`${result.projectDir}/apps/server/src/lib/storage.ts`, "utf-8");
+      const pkg = await readFile(`${result.projectDir}/apps/server/package.json`, "utf-8");
+      const env = await readFile(`${result.projectDir}/apps/server/.env`, "utf-8");
+
+      expect(storage).toContain("cloudinary");
+      expect(pkg).toContain('"cloudinary"');
+      expect(env).toContain("CLOUDINARY_CLOUD_NAME");
+    });
+  });
+
   describe("AWS S3 with different backends", () => {
     test("s3 with Hono backend", async () => {
       const result = await runTRPCTest(

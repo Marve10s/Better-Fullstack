@@ -1,4 +1,5 @@
-import { describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import { readFile } from "node:fs/promises";
 
 import type { API, Backend, Database, Examples, Frontend, ORM, Runtime } from "../src/types";
 
@@ -155,6 +156,38 @@ describe("API Configurations", () => {
         expectSuccess(result);
       });
     }
+
+    it("should generate AdonisJS tRPC auth context and Prisma imports for NodeNext", async () => {
+      const result = await runTRPCTest({
+        projectName: "trpc-adonis-better-auth-prisma",
+        api: "trpc",
+        backend: "adonisjs",
+        runtime: "node",
+        frontend: ["react-vite"],
+        database: "sqlite",
+        orm: "prisma",
+        auth: "better-auth",
+        logging: "evlog",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const context = await readFile(`${result.projectDir}/packages/api/src/context.ts`, "utf-8");
+      const db = await readFile(`${result.projectDir}/packages/db/src/index.ts`, "utf-8");
+      const logger = await readFile(`${result.projectDir}/apps/server/src/lib/logger.ts`, "utf-8");
+
+      expect(context).toContain('from "@trpc/server/adapters/express"');
+      expect(context).not.toContain("better-auth/node");
+      expect(context).toContain("nodeHeadersToHeaders(opts.req.headers)");
+      expect(db).toContain('from "../prisma/generated/client.js"');
+      expect(logger).toContain("logger.info(event, payload)");
+    });
   });
 
   describe("ts-rest API", () => {

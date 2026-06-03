@@ -209,6 +209,24 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
   {
+    name: "native-mobile-integrations",
+    config: {
+      frontend: ["native-bare"],
+      backend: "hono",
+      api: "orpc",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      mobileNavigation: "react-navigation",
+      mobileUI: "gluestack-ui",
+      mobileStorage: "mmkv",
+      mobileTesting: "maestro-react-native-testing-library",
+      mobilePush: "expo-notifications",
+      mobileOTA: "expo-updates",
+      mobileDeepLinking: "expo-linking",
+    },
+  },
+  {
     name: "java-spring-boot-jpa-security",
     config: {
       ecosystem: "java",
@@ -273,6 +291,13 @@ const DEFAULT_CONFIG: Partial<ProjectConfig> = {
   cms: "none",
   ai: "none",
   jobQueue: "none",
+  mobileNavigation: "expo-router",
+  mobileUI: "none",
+  mobileStorage: "none",
+  mobileTesting: "none",
+  mobilePush: "none",
+  mobileOTA: "none",
+  mobileDeepLinking: "expo-linking",
 };
 
 describe("Template Snapshots", () => {
@@ -677,6 +702,87 @@ describe("Template Snapshots - Python Ecosystem", () => {
       it(`key files: ${name}`, async () => {
         const result = await createVirtual({
           projectName: `snapshot-python-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const snapshot = treeToSnapshot(result.tree!);
+        expect(snapshot).toMatchSnapshot();
+      });
+    }
+  });
+});
+
+describe("Template Snapshots - Elixir Ecosystem", () => {
+  const ELIXIR_CONFIGS = [
+    {
+      name: "phoenix-ecto-rest",
+      config: {
+        ecosystem: "elixir" as const,
+        elixirWebFramework: "phoenix" as const,
+        elixirOrm: "ecto-sql" as const,
+        elixirAuth: "none" as const,
+        elixirApi: "rest" as const,
+        elixirRealtime: "channels" as const,
+        elixirJobs: "none" as const,
+        elixirValidation: "ecto-changesets" as const,
+        elixirHttp: "req" as const,
+        elixirJson: "jason" as const,
+        elixirEmail: "none" as const,
+        elixirCaching: "none" as const,
+        elixirObservability: "telemetry" as const,
+        elixirTesting: "ex_unit" as const,
+        elixirQuality: "credo" as const,
+        elixirDeploy: "none" as const,
+      },
+    },
+    {
+      name: "phoenix-liveview-full",
+      config: {
+        ecosystem: "elixir" as const,
+        elixirWebFramework: "phoenix-live-view" as const,
+        elixirOrm: "ecto-sql" as const,
+        elixirAuth: "phx-gen-auth" as const,
+        elixirApi: "absinthe" as const,
+        elixirRealtime: "presence" as const,
+        elixirJobs: "oban" as const,
+        elixirValidation: "ecto-changesets" as const,
+        elixirHttp: "req" as const,
+        elixirJson: "jason" as const,
+        elixirEmail: "swoosh" as const,
+        elixirCaching: "cachex" as const,
+        elixirObservability: "telemetry" as const,
+        elixirTesting: "ex_unit" as const,
+        elixirQuality: "sobelow" as const,
+        elixirDeploy: "docker" as const,
+      },
+    },
+  ];
+
+  describe("Elixir File Structure Snapshots", () => {
+    for (const { name, config } of ELIXIR_CONFIGS) {
+      it(`file structure: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-elixir-${name}`,
+          ...config,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.tree).toBeDefined();
+
+        const fileList = treeToFileList(result.tree!);
+        expect(fileList).toMatchSnapshot();
+      });
+    }
+  });
+
+  describe("Elixir Key File Content Snapshots", () => {
+    for (const { name, config } of ELIXIR_CONFIGS) {
+      it(`key files: ${name}`, async () => {
+        const result = await createVirtual({
+          projectName: `snapshot-elixir-${name}`,
           ...config,
         });
 

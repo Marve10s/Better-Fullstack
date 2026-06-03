@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { ProjectConfig } from "../src/types";
 
+import { parseStackPartSpecs } from "../src/types";
 import { generateReproducibleCommand } from "../src/utils/generate-reproducible-command";
 
 function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
@@ -268,7 +269,7 @@ describe("generateReproducibleCommand", () => {
       rustCli: "clap",
       rustLogging: "tracing",
       rustErrorHandling: "anyhow-thiserror",
-    rustCaching: "none",
+      rustCaching: "none",
       rustLibraries: ["serde", "validator"],
       aiDocs: [],
     });
@@ -432,5 +433,90 @@ describe("generateReproducibleCommand", () => {
         "--no-install",
     );
     expect(command).not.toContain("--auth ");
+  });
+
+  it("generates canonical --part flags when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:go:gin",
+      "backend.orm:go:gorm",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "none",
+        goWebFramework: "gin",
+        goOrm: "gorm",
+      }),
+    );
+
+    expect(command).toContain("--part frontend:typescript:next");
+    expect(command).toContain("--part backend:go:gin");
+    expect(command).toContain("--part backend.orm:go:gorm");
+    expect(command).not.toContain("--backend");
+  });
+
+  it("preserves graph section library flags when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "mobile:react-native:native-bare",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next", "native-bare"],
+        cssFramework: "scss",
+        mobileNavigation: "react-navigation",
+        mobileTesting: "maestro",
+      }),
+    );
+
+    expect(command).toContain("--part frontend:typescript:next");
+    expect(command).toContain("--part mobile:react-native:native-bare");
+    expect(command).toContain("--css-framework scss");
+    expect(command).toContain("--mobile-navigation react-navigation");
+    expect(command).toContain("--mobile-testing maestro");
+    expect(command).not.toContain("--backend");
+  });
+
+  it("preserves non-graph selections when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.orm:typescript:drizzle",
+      "database:universal:postgres",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        database: "postgres",
+        payments: "stripe",
+        email: "resend",
+        fileUpload: "uploadthing",
+        addons: ["turborepo", "pwa"],
+        examples: ["ai"],
+        dbSetup: "docker",
+        webDeploy: "vercel",
+        serverDeploy: "railway",
+        shadcnStyle: "luma",
+        shadcnFont: "geist",
+      }),
+    );
+
+    expect(command).toContain("--part frontend:typescript:next");
+    expect(command).toContain("--payments stripe");
+    expect(command).toContain("--email resend");
+    expect(command).toContain("--file-upload uploadthing");
+    expect(command).toContain("--addons turborepo pwa");
+    expect(command).toContain("--examples ai");
+    expect(command).toContain("--db-setup docker");
+    expect(command).toContain("--web-deploy vercel");
+    expect(command).toContain("--server-deploy railway");
+    expect(command).toContain("--shadcn-style luma");
+    expect(command).toContain("--shadcn-font geist");
+    expect(command).not.toContain("--backend");
   });
 });

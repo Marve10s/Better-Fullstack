@@ -1,9 +1,11 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  analyzeStackCompatibility,
   evaluateCompatibility,
   getAIFrontendCompatibilityIssue,
   getApiFrontendCompatibilityIssue,
+  getDisabledReason,
 } from "../src/compatibility";
 import { DEFAULT_STACK_SELECTION } from "../src/stack-translation";
 
@@ -62,5 +64,51 @@ describe("compatibility issue helpers", () => {
     expect(result.issues.map((issue) => issue.code)).toContain(
       "TANSTACK_AI_REQUIRES_REACT_OR_SOLID_FRONTEND",
     );
+  });
+
+  it("allows plain Elixir projects while blocking Phoenix-specific scaffolds", () => {
+    const stack = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "none",
+    };
+
+    expect(getDisabledReason(stack, "elixirWebFramework", "none")).toBeNull();
+    expect(getDisabledReason(stack, "elixirJobs", "quantum")).toBeNull();
+    expect(getDisabledReason(stack, "elixirHttp", "req")).toBeNull();
+    expect(getDisabledReason(stack, "elixirAuth", "phx-gen-auth")).toBe(
+      "Elixir auth scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(stack, "elixirApi", "rest")).toBe(
+      "Elixir API scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(stack, "elixirRealtime", "channels")).toBe(
+      "Elixir realtime scaffolds require Phoenix",
+    );
+  });
+
+  it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
+    const result = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "none",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "phx-gen-auth",
+      elixirApi: "rest",
+      elixirRealtime: "channels",
+      elixirJobs: "quantum",
+      elixirHttp: "req",
+      elixirObservability: "phoenix-telemetry",
+    });
+
+    expect(result.adjustedStack).toMatchObject({
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirRealtime: "none",
+      elixirJobs: "quantum",
+      elixirHttp: "req",
+      elixirObservability: "none",
+    });
   });
 });

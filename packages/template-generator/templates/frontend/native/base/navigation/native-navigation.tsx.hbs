@@ -1,0 +1,153 @@
+{{#if (eq mobileNavigation "react-navigation")}}
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Text, View, Pressable, StyleSheet } from "react-native";
+{{#if (eq auth "clerk")}}
+import { useUser } from "@clerk/clerk-expo";
+{{/if}}
+{{#if (eq mobilePush "expo-notifications")}}
+import { registerForPushNotificationsAsync } from "@/lib/notifications";
+{{/if}}
+{{#if (eq mobileOTA "expo-updates")}}
+import { useUpdateCheck } from "@/lib/updates";
+{{/if}}
+{{#if (eq mobileStorage "mmkv")}}
+import { mobileStorage } from "@/lib/mobile-storage";
+{{/if}}
+{{#if (eq mobileDeepLinking "expo-linking")}}
+import { getAuthRedirectUri } from "@/lib/deep-linking";
+{{/if}}
+import { useEffect } from "react";
+
+type RootStackParamList = {
+  Main: undefined;
+  Modal: undefined;
+};
+
+type TabParamList = {
+  Home: undefined;
+  Settings: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
+
+function HomeScreen() {
+  {{#if (eq auth "clerk")}}
+  const { user } = useUser();
+  {{/if}}
+  {{#if (eq mobileOTA "expo-updates")}}
+  const { isChecking, isUpdateAvailable } = useUpdateCheck();
+  {{/if}}
+
+  useEffect(() => {
+    {{#if (eq mobilePush "expo-notifications")}}
+    registerForPushNotificationsAsync().catch(console.warn);
+    {{/if}}
+    {{#if (eq mobileStorage "mmkv")}}
+    mobileStorage.set("lastOpenedAt", new Date().toISOString());
+    {{/if}}
+  }, []);
+
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.eyebrow}>Better Fullstack Mobile</Text>
+      <Text style={styles.title}>Production-minded Expo starter</Text>
+      {{#if (eq auth "clerk")}}
+      <Text style={styles.body}>{user ? `Signed in as ${user.primaryEmailAddress?.emailAddress}` : "Auth routes are ready for Clerk."}</Text>
+      {{/if}}
+      {{#if (eq auth "better-auth")}}
+      {{#if (eq mobileDeepLinking "expo-linking")}}
+      <Text style={styles.body}>Use {getAuthRedirectUri()} as the Better Auth mobile callback URL.</Text>
+      {{else}}
+      <Text style={styles.body}>Better Auth mobile routes are ready for your callback URL.</Text>
+      {{/if}}
+      {{/if}}
+      {{#if (eq mobileOTA "expo-updates")}}
+      <Text style={styles.body}>{isChecking ? "Checking for updates..." : isUpdateAvailable ? "An update is ready." : "App is up to date."}</Text>
+      {{/if}}
+    </View>
+  );
+}
+
+function SettingsScreen() {
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.title}>Mobile integrations</Text>
+      {{#if (eq mobileDeepLinking "expo-linking")}}
+      <Text style={styles.body}>Deep link redirect URI: {getAuthRedirectUri()}</Text>
+      {{/if}}
+      {{#if (eq mobileStorage "mmkv")}}
+      <Text style={styles.body}>MMKV is configured in lib/mobile-storage.ts.</Text>
+      {{/if}}
+    </View>
+  );
+}
+
+function ModalScreen({ navigation }: { navigation: { goBack: () => void } }) {
+  return (
+    <View style={styles.screen}>
+      <Text style={styles.title}>Modal</Text>
+      <Pressable onPress={() => navigation.goBack()} style={styles.button}>
+        <Text style={styles.buttonText}>Close</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function Tabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export function RootNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Main" component={Tabs} options=\{{ headerShown: false }} />
+      <Stack.Screen name="Modal" component={ModalScreen} options=\{{ presentation: "modal" }} />
+    </Stack.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 12,
+    padding: 24,
+    backgroundColor: "#f8fafc",
+  },
+  eyebrow: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0,
+    textTransform: "uppercase",
+    color: "#2563eb",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#475569",
+  },
+  button: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    backgroundColor: "#111827",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+  },
+});
+{{/if}}

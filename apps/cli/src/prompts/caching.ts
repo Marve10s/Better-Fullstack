@@ -26,6 +26,15 @@ type CachingPromptContext = {
 export function resolveCachingPrompt(
   context: CachingPromptContext = {},
 ): PromptSingleResolution<Caching> {
+  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
   if (context.ecosystem && context.ecosystem !== "typescript") {
     return context.caching !== undefined
       ? {

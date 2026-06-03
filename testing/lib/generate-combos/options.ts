@@ -14,6 +14,21 @@ import {
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
   EFFECT_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_JSON_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
+  ELIXIR_REALTIME_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
   EXAMPLES_VALUES,
   FILE_STORAGE_VALUES,
@@ -33,6 +48,13 @@ import {
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  MOBILE_DEEP_LINKING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_OTA_VALUES,
+  MOBILE_PUSH_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
@@ -179,11 +201,6 @@ function sampleTypeScriptFrontends(): CLIInput["frontend"] {
     picked.push(web);
   }
 
-  const native = sampleScalar(NATIVE_FRONTENDS, picked.length === 0 ? 0.85 : 0.95);
-  if (native !== "none") {
-    picked.push(native);
-  }
-
   if (picked.length === 0 && _rng() > 0.25) {
     picked.push(sampleOne(WEB_FRONTENDS.filter((value) => value !== "none")));
   }
@@ -316,6 +333,41 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeReactNativeDraft(args: GeneratorArgs): CandidateDraft {
+  const frontend = [sampleOne(NATIVE_FRONTENDS.filter((value) => value !== "none"))];
+  const mobileUI = frontend.includes("native-uniwind")
+    ? "uniwind"
+    : frontend.includes("native-unistyles")
+      ? "unistyles"
+      : sampleScalar(MOBILE_UI_VALUES, 0.55, "mobileUI");
+
+  return {
+    ecosystem: "react-native",
+    options: {
+      ...createCommonOptions("react-native", args),
+      frontend,
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      dbSetup: "none",
+      auth: "none",
+      cssFramework: "none",
+      uiLibrary: "none",
+      forms: "none",
+      testing: "none",
+      mobileNavigation: sampleScalar(MOBILE_NAVIGATION_VALUES, 0.05, "mobileNavigation"),
+      mobileUI,
+      mobileStorage: sampleScalar(MOBILE_STORAGE_VALUES, 0.55, "mobileStorage"),
+      mobileTesting: sampleScalar(MOBILE_TESTING_VALUES, 0.45, "mobileTesting"),
+      mobilePush: sampleScalar(MOBILE_PUSH_VALUES, 0.7, "mobilePush"),
+      mobileOTA: sampleScalar(MOBILE_OTA_VALUES, 0.7, "mobileOTA"),
+      mobileDeepLinking: sampleScalar(MOBILE_DEEP_LINKING_VALUES, 0.35, "mobileDeepLinking"),
+    },
+  };
+}
+
 function makeRustDraft(args: GeneratorArgs): CandidateDraft {
   return {
     ecosystem: "rust",
@@ -425,6 +477,51 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
+  const elixirWebFramework = sampleScalar(ELIXIR_WEB_FRAMEWORK_VALUES, 0.08, "elixirWebFramework");
+  const usesPhoenix = elixirWebFramework !== "none";
+  const elixirOrm = usesPhoenix ? sampleScalar(ELIXIR_ORM_VALUES, 0.15, "elixirOrm") : "none";
+  const hasEcto = elixirOrm !== "none";
+
+  return {
+    ecosystem: "elixir",
+    options: {
+      ...createCommonOptions("elixir", args),
+      elixirWebFramework,
+      elixirOrm,
+      elixirAuth: hasEcto ? sampleScalar(ELIXIR_AUTH_VALUES, 0.55, "elixirAuth") : "none",
+      elixirApi: usesPhoenix ? sampleScalar(ELIXIR_API_VALUES, 0.2, "elixirApi") : "none",
+      elixirRealtime: usesPhoenix
+        ? sampleScalar(ELIXIR_REALTIME_VALUES, 0.25, "elixirRealtime")
+        : "none",
+      elixirJobs: elixirOrm === "ecto-sql"
+        ? sampleScalar(ELIXIR_JOBS_VALUES, 0.55, "elixirJobs")
+        : "none",
+      elixirValidation: hasEcto
+        ? sampleScalar(ELIXIR_VALIDATION_VALUES, 0.2, "elixirValidation")
+        : "none",
+      elixirHttp: usesPhoenix ? sampleScalar(ELIXIR_HTTP_VALUES, 0.25, "elixirHttp") : "none",
+      elixirJson: usesPhoenix ? sampleScalar(ELIXIR_JSON_VALUES, 0.05, "elixirJson") : "none",
+      elixirEmail: usesPhoenix ? sampleScalar(ELIXIR_EMAIL_VALUES, 0.7, "elixirEmail") : "none",
+      elixirCaching: usesPhoenix
+        ? sampleScalar(ELIXIR_CACHING_VALUES, 0.75, "elixirCaching")
+        : "none",
+      elixirObservability: usesPhoenix
+        ? sampleScalar(ELIXIR_OBSERVABILITY_VALUES, 0.35, "elixirObservability")
+        : "none",
+      elixirTesting: usesPhoenix
+        ? sampleScalar(ELIXIR_TESTING_VALUES, 0.15, "elixirTesting")
+        : "none",
+      elixirQuality: usesPhoenix
+        ? sampleScalar(ELIXIR_QUALITY_VALUES, 0.25, "elixirQuality")
+        : "none",
+      elixirDeploy: usesPhoenix
+        ? sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy")
+        : "none",
+    },
+  };
+}
+
 function buildProvidedFlags(options: CLIInput): Set<string> {
   const providedFlags = new Set<string>();
 
@@ -452,7 +549,12 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     projectDir: path.resolve(process.cwd(), projectName),
     relativePath: projectName,
     ecosystem: draft.ecosystem,
-    frontend: draft.ecosystem === "typescript" ? getDefaultConfig().frontend : [],
+    frontend:
+      draft.ecosystem === "typescript"
+        ? getDefaultConfig().frontend
+        : draft.ecosystem === "react-native"
+          ? ["native-bare"]
+          : [],
     backend: "none",
     runtime: "none",
     database: "none",
@@ -526,11 +628,62 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaAuth: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
+    elixirWebFramework: "none",
+    elixirOrm: "none",
+    elixirAuth: "none",
+    elixirApi: "none",
+    elixirRealtime: "none",
+    elixirJobs: "none",
+    elixirValidation: "none",
+    elixirHttp: "none",
+    elixirJson: "none",
+    elixirEmail: "none",
+    elixirCaching: "none",
+    elixirObservability: "none",
+    elixirTesting: "none",
+    elixirQuality: "none",
+    elixirDeploy: "none",
     aiDocs: [],
     packageManager: "bun",
     git: false,
     install: draft.options.install ?? true,
   };
+}
+
+function applyDerivedMobileDefaults(config: ProjectConfig, providedFlags: Set<string>) {
+  if (config.ecosystem !== "typescript" && config.ecosystem !== "react-native") return;
+
+  const hasNativeFrontend = config.frontend.some((frontend) => frontend.startsWith("native-"));
+  if (!hasNativeFrontend) {
+    config.mobileNavigation = "none";
+    config.mobileUI = "none";
+    config.mobileStorage = "none";
+    config.mobileTesting = "none";
+    config.mobilePush = "none";
+    config.mobileOTA = "none";
+    config.mobileDeepLinking = "none";
+    return;
+  }
+
+  if (!providedFlags.has("mobileNavigation") && config.mobileNavigation === "none") {
+    config.mobileNavigation = "expo-router";
+  }
+
+  if (!providedFlags.has("mobileUI")) {
+    if (config.frontend.includes("native-uniwind")) {
+      config.mobileUI = "uniwind";
+    } else if (config.frontend.includes("native-unistyles")) {
+      config.mobileUI = "unistyles";
+    }
+  }
+
+  if (
+    !providedFlags.has("mobileDeepLinking") &&
+    config.mobileDeepLinking === "none" &&
+    config.auth !== "none"
+  ) {
+    config.mobileDeepLinking = "expo-linking";
+  }
 }
 
 function validateDraft(draft: CandidateDraft, projectName: string): ProjectConfig {
@@ -543,6 +696,8 @@ function validateDraft(draft: CandidateDraft, projectName: string): ProjectConfi
     relativePath: projectName,
     projectDir: path.resolve(process.cwd(), projectName),
   } as ProjectConfig;
+
+  applyDerivedMobileDefaults(config, providedFlags);
 
   runWithContext({ silent: true }, () => {
     validateFullConfig(config, providedFlags, { ...draft.options, projectName } as CLIInput);
@@ -584,6 +739,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
   switch (ecosystem) {
     case "typescript":
       return makeTypeScriptDraft(args);
+    case "react-native":
+      return makeReactNativeDraft(args);
     case "rust":
       return makeRustDraft(args);
     case "python":
@@ -592,6 +749,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
       return makeGoDraft(args);
     case "java":
       return makeJavaDraft(args);
+    case "elixir":
+      return makeElixirDraft(args);
   }
 }
 

@@ -4,14 +4,24 @@ import path from "node:path";
 
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import {
+  compareLegacyConfigToStackParts,
+  legacyProjectConfigToStackParts,
+  stackPartsToLegacyProjectConfigPartial,
+} from "../types";
+import { getEffectiveStack, getGraphSummary } from "./graph-summary";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
 
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
+  const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
+  const graphSummary = projectConfig.stackParts ? getGraphSummary({ stackParts }) : null;
+  const effectiveStack = projectConfig.stackParts ? getEffectiveStack({ stackParts }) : undefined;
   const btsConfig: BetterTStackConfig = {
     version: getLatestCLIVersion(),
     createdAt: new Date().toISOString(),
+    ...(graphSummary ? { graphSummary, effectiveStack } : {}),
     ecosystem: projectConfig.ecosystem,
     database: projectConfig.database,
     orm: projectConfig.orm,
@@ -45,6 +55,13 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     observability: projectConfig.observability,
     featureFlags: projectConfig.featureFlags,
     analytics: projectConfig.analytics,
+    mobileNavigation: projectConfig.mobileNavigation,
+    mobileUI: projectConfig.mobileUI,
+    mobileStorage: projectConfig.mobileStorage,
+    mobileTesting: projectConfig.mobileTesting,
+    mobilePush: projectConfig.mobilePush,
+    mobileOTA: projectConfig.mobileOTA,
+    mobileDeepLinking: projectConfig.mobileDeepLinking,
     cms: projectConfig.cms,
     caching: projectConfig.caching,
     i18n: projectConfig.i18n,
@@ -81,13 +98,35 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     javaAuth: projectConfig.javaAuth,
     javaLibraries: projectConfig.javaLibraries,
     javaTestingLibraries: projectConfig.javaTestingLibraries,
+    elixirWebFramework: projectConfig.elixirWebFramework,
+    elixirOrm: projectConfig.elixirOrm,
+    elixirAuth: projectConfig.elixirAuth,
+    elixirApi: projectConfig.elixirApi,
+    elixirRealtime: projectConfig.elixirRealtime,
+    elixirJobs: projectConfig.elixirJobs,
+    elixirValidation: projectConfig.elixirValidation,
+    elixirHttp: projectConfig.elixirHttp,
+    elixirJson: projectConfig.elixirJson,
+    elixirEmail: projectConfig.elixirEmail,
+    elixirCaching: projectConfig.elixirCaching,
+    elixirObservability: projectConfig.elixirObservability,
+    elixirTesting: projectConfig.elixirTesting,
+    elixirQuality: projectConfig.elixirQuality,
+    elixirDeploy: projectConfig.elixirDeploy,
     aiDocs: projectConfig.aiDocs,
+    stackParts,
   };
 
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
     createdAt: btsConfig.createdAt,
+    ...(btsConfig.graphSummary
+      ? {
+          graphSummary: btsConfig.graphSummary,
+          effectiveStack: btsConfig.effectiveStack,
+        }
+      : {}),
     ecosystem: btsConfig.ecosystem,
     database: btsConfig.database,
     orm: btsConfig.orm,
@@ -121,6 +160,13 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     observability: btsConfig.observability,
     featureFlags: btsConfig.featureFlags,
     analytics: btsConfig.analytics,
+    mobileNavigation: btsConfig.mobileNavigation,
+    mobileUI: btsConfig.mobileUI,
+    mobileStorage: btsConfig.mobileStorage,
+    mobileTesting: btsConfig.mobileTesting,
+    mobilePush: btsConfig.mobilePush,
+    mobileOTA: btsConfig.mobileOTA,
+    mobileDeepLinking: btsConfig.mobileDeepLinking,
     cms: btsConfig.cms,
     caching: btsConfig.caching,
     i18n: btsConfig.i18n,
@@ -157,7 +203,23 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     javaAuth: btsConfig.javaAuth,
     javaLibraries: btsConfig.javaLibraries,
     javaTestingLibraries: btsConfig.javaTestingLibraries,
+    elixirWebFramework: btsConfig.elixirWebFramework,
+    elixirOrm: btsConfig.elixirOrm,
+    elixirAuth: btsConfig.elixirAuth,
+    elixirApi: btsConfig.elixirApi,
+    elixirRealtime: btsConfig.elixirRealtime,
+    elixirJobs: btsConfig.elixirJobs,
+    elixirValidation: btsConfig.elixirValidation,
+    elixirHttp: btsConfig.elixirHttp,
+    elixirJson: btsConfig.elixirJson,
+    elixirEmail: btsConfig.elixirEmail,
+    elixirCaching: btsConfig.elixirCaching,
+    elixirObservability: btsConfig.elixirObservability,
+    elixirTesting: btsConfig.elixirTesting,
+    elixirQuality: btsConfig.elixirQuality,
+    elixirDeploy: btsConfig.elixirDeploy,
     aiDocs: btsConfig.aiDocs,
+    stackParts: btsConfig.stackParts,
   };
 
   let configContent = JSON.stringify(baseContent);
@@ -170,8 +232,12 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
   configContent = JSONC.applyEdits(configContent, formatResult);
 
+  const graphNote = graphSummary
+    ? "// For multi-ecosystem projects, graphSummary/effectiveStack and stackParts are the source of truth.\n// Legacy fields such as backend/orm may stay as compatibility fallbacks.\n"
+    : "";
   const finalContent = `// Better Fullstack configuration file
 // safe to delete
+${graphNote}
 
 ${configContent}`;
   const configPath = path.join(projectConfig.projectDir, BTS_CONFIG_FILE);
@@ -199,7 +265,27 @@ export async function readBtsConfig(projectDir: string) {
       return null;
     }
 
-    return config;
+    if (config.stackParts && config.stackParts.length > 0) {
+      const diagnostics = compareLegacyConfigToStackParts(config, config.stackParts);
+      if (diagnostics.length > 0) {
+        console.warn(
+          `Warning: bts.jsonc legacy fields differ from stackParts; using stackParts for ${diagnostics
+            .map((diagnostic) => diagnostic.path)
+            .filter(Boolean)
+            .join(", ")}.`,
+        );
+      }
+      return {
+        ...config,
+        ...stackPartsToLegacyProjectConfigPartial(config.stackParts),
+        stackParts: config.stackParts,
+      } as BetterTStackConfig;
+    }
+
+    return {
+      ...config,
+      stackParts: legacyProjectConfigToStackParts(config),
+    } as BetterTStackConfig;
   } catch {
     return null;
   }

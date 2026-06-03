@@ -1,0 +1,12 @@
+defmodule {{elixirModuleName}}Web.RoomChannel do
+  use {{elixirModuleName}}Web, :channel
+
+  @impl true
+  def join("room:lobby", _payload, socket), do: {:ok, socket}
+  def join("room:" <> _room_id, _payload, socket), do: {:ok, socket}
+
+  @impl true
+  def handle_in("ping", payload, socket) do
+    {:reply, {:ok, Map.put(payload, "pong", true)}, socket}
+  end
+end
