@@ -58,10 +58,10 @@ export function MultiEcosystemUpdateModal() {
       <DialogContent
         className="block gap-0 overflow-visible border-0 bg-transparent p-0 shadow-none sm:max-w-md"
       >
-        <Card className="max-h-screen w-full gap-0 overflow-y-auto rounded-3xl p-4 text-left sm:p-5">
+        <Card className="max-h-screen w-full gap-0 overflow-y-auto rounded-2xl p-4 text-left sm:p-5">
           {/* Hero panel */}
           <div
-            className="aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-white/5 ring-inset"
+            className="aspect-video w-full overflow-hidden rounded-2xl"
             style={heroGradientStyle}
             aria-hidden="true"
           />
