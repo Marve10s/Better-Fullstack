@@ -220,15 +220,17 @@ export const router = os.router({
       log.message(`Please visit ${DOCS_URL}`);
     }
   }),
-  builder: os.meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" }).handler(async () => {
-    const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
-    try {
-      await openUrl(BUILDER_URL);
-      log.success(pc.blue("Opened builder in your default browser."));
-    } catch {
-      log.message(`Please visit ${BUILDER_URL}`);
-    }
-  }),
+  builder: os
+    .meta({ description: "Open the interactive web-based stack builder at better-fullstack.dev" })
+    .handler(async () => {
+      const BUILDER_URL = "https://better-fullstack-web.vercel.app/new";
+      try {
+        await openUrl(BUILDER_URL);
+        log.success(pc.blue("Opened builder in your default browser."));
+      } catch {
+        log.message(`Please visit ${BUILDER_URL}`);
+      }
+    }),
   add: os
     .meta({
       description:
@@ -434,8 +436,8 @@ export async function createVirtual(
     const ecosystem = options.ecosystem || "typescript";
     const isReactNative = ecosystem === "react-native";
     const frontend = options.frontend || (isReactNative ? ["native-bare"] : ["tanstack-router"]);
-    const hasNativeFrontend = frontend.some((item) =>
-      item === "native-bare" || item === "native-uniwind" || item === "native-unistyles"
+    const hasNativeFrontend = frontend.some(
+      (item) => item === "native-bare" || item === "native-uniwind" || item === "native-unistyles",
     );
     const config: ProjectConfig = {
       ecosystem,
@@ -462,6 +464,7 @@ export async function createVirtual(
       api: options.api || (isReactNative ? "none" : "trpc"),
       webDeploy: options.webDeploy || "none",
       serverDeploy: options.serverDeploy || "none",
+      astroIntegration: options.astroIntegration || "none",
       cssFramework: options.cssFramework || (isReactNative ? "none" : "tailwind"),
       uiLibrary: options.uiLibrary || (isReactNative ? "none" : "shadcn-ui"),
       shadcnBase: options.shadcnBase ?? "radix",
@@ -503,7 +506,8 @@ export async function createVirtual(
       rustCli: options.rustCli || "none",
       rustLibraries: options.rustLibraries || [],
       rustLogging: options.rustLogging || (options.ecosystem === "rust" ? "tracing" : "none"),
-      rustErrorHandling: options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
+      rustErrorHandling:
+        options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       rustCaching: options.rustCaching || "none",
       rustAuth: options.rustAuth || "none",
       // Python ecosystem options
@@ -523,30 +527,39 @@ export async function createVirtual(
       goCli: options.goCli || "none",
       goLogging: options.goLogging || "none",
       goAuth: options.goAuth || "none",
-      javaWebFramework: options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
+      javaWebFramework:
+        options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),
       javaOrm: options.javaOrm || "none",
       javaAuth: options.javaAuth || "none",
       javaLibraries: options.javaLibraries || [],
-      javaTestingLibraries: options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
-      elixirWebFramework: options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
+      javaTestingLibraries:
+        options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
+      elixirWebFramework:
+        options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
       elixirOrm: options.elixirOrm || (options.ecosystem === "elixir" ? "ecto-sql" : "none"),
       elixirAuth: options.elixirAuth || "none",
       elixirApi: options.elixirApi || (options.ecosystem === "elixir" ? "rest" : "none"),
-      elixirRealtime: options.elixirRealtime || (options.ecosystem === "elixir" ? "channels" : "none"),
+      elixirRealtime:
+        options.elixirRealtime || (options.ecosystem === "elixir" ? "channels" : "none"),
       elixirJobs: options.elixirJobs || "none",
-      elixirValidation: options.elixirValidation || (options.ecosystem === "elixir" ? "ecto-changesets" : "none"),
+      elixirValidation:
+        options.elixirValidation || (options.ecosystem === "elixir" ? "ecto-changesets" : "none"),
       elixirHttp: options.elixirHttp || (options.ecosystem === "elixir" ? "req" : "none"),
       elixirJson: options.elixirJson || (options.ecosystem === "elixir" ? "jason" : "none"),
       elixirEmail: options.elixirEmail || "none",
       elixirCaching: options.elixirCaching || "none",
-      elixirObservability: options.elixirObservability || (options.ecosystem === "elixir" ? "telemetry" : "none"),
+      elixirObservability:
+        options.elixirObservability || (options.ecosystem === "elixir" ? "telemetry" : "none"),
       elixirTesting: options.elixirTesting || (options.ecosystem === "elixir" ? "ex_unit" : "none"),
       elixirQuality: options.elixirQuality || (options.ecosystem === "elixir" ? "credo" : "none"),
       elixirDeploy: options.elixirDeploy || "none",
       // AI documentation files
       aiDocs: options.aiDocs || ["claude-md"],
     };
+    if (options.stackParts) {
+      config.stackParts = options.stackParts;
+    }
 
     const result = await generate({
       config,

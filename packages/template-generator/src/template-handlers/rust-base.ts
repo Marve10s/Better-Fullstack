@@ -9,6 +9,7 @@ export async function processRustBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
   // Only process Rust templates if ecosystem is "rust"
   if (config.ecosystem !== "rust") return;
@@ -47,6 +48,7 @@ export async function processRustBaseTemplate(
 
     const relativePath = templatePath.slice(prefix.length);
     const outputPath = transformFilename(relativePath);
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
 
     let processedContent: string;
     if (isBinaryFile(templatePath)) {
@@ -59,6 +61,6 @@ export async function processRustBaseTemplate(
 
     // Pass original template path for binary files
     const sourcePath = isBinaryFile(templatePath) ? templatePath : undefined;
-    vfs.writeFile(outputPath, processedContent, sourcePath);
+    vfs.writeFile(destPath, processedContent, sourcePath);
   }
 }

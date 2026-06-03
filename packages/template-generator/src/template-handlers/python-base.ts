@@ -9,6 +9,7 @@ export async function processPythonBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
   // Only process Python templates if ecosystem is "python"
   if (config.ecosystem !== "python") return;
@@ -20,6 +21,7 @@ export async function processPythonBaseTemplate(
 
     const relativePath = templatePath.slice(prefix.length);
     const outputPath = transformFilename(relativePath);
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
 
     let processedContent: string;
     if (isBinaryFile(templatePath)) {
@@ -35,6 +37,6 @@ export async function processPythonBaseTemplate(
 
     // Pass original template path for binary files
     const sourcePath = isBinaryFile(templatePath) ? templatePath : undefined;
-    vfs.writeFile(outputPath, processedContent, sourcePath);
+    vfs.writeFile(destPath, processedContent, sourcePath);
   }
 }

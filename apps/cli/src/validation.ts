@@ -91,6 +91,12 @@ export function processProvidedFlagsWithoutValidation(options: CLIInput, project
   if (!options.yolo) {
     const providedFlags = getProvidedFlags(options);
     validateYesFlagCombination(options, providedFlags);
+
+    try {
+      validateArrayOptions(options);
+    } catch (error) {
+      exitWithError(error instanceof Error ? error.message : String(error));
+    }
   }
 
   const config = processFlags(options, projectName);

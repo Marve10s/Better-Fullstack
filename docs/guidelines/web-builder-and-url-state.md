@@ -9,6 +9,7 @@ Use this guide for changes in `apps/web` that affect stack selection, builder st
 - `apps/web/src/lib/stack-url-state.shared.ts` parses and serializes stack state.
 - `apps/web/src/lib/stack-option-normalization.ts` normalizes aliases and canonical option IDs across parsed state.
 - `apps/web/src/lib/preview-config.ts` converts normalized stack state into preview data.
+- Some UI category keys intentionally differ from stack keys. The TypeScript AI category is rendered as `TECH_OPTIONS.ai`, but stack state and command generation use `aiSdk`; map the category to the stack key anywhere selection state is read or written.
 
 If URL parsing changes without normalization, alias handling usually breaks somewhere between shared links and preview rendering.
 
@@ -17,6 +18,9 @@ If URL parsing changes without normalization, alias handling usually breaks some
 - Do not move heavy search parsing or schema validation into eager route code on `apps/web/src/routes/new.tsx` unless you have measured the bundle cost.
 - Route-level `validateSearch` can pull `zod` and search-schema code into the main client bundle. Prefer parsing inside the lazy-loaded builder path.
 - After adding or removing route files, `apps/web/src/routeTree.gen.ts` can be stale until a route-generator run such as `vite build`.
+- TanStack Start route ignore settings are read from `tanstackStart({ router: ... })` in `apps/web/vite.config.ts`. Scratch or design route files under `apps/web/src/routes` must match `routeFileIgnorePrefix` or `routeFileIgnorePattern` or they will be pulled into `routeTree.gen.ts`.
+- Docs content lives in `apps/web/content/docs`; `import.meta.glob` calls from `apps/web/src/lib/docs/*` should use `../../../content/docs/**` paths.
+- TanStack Start loaders must stay serializable. Docs routes should return slug/frontmatter from loaders and resolve MDX components inside route components.
 
 ## Editing guidance
 
@@ -24,6 +28,7 @@ If URL parsing changes without normalization, alias handling usually breaks some
 - Keep builder labels aligned with canonical metadata from `packages/types` unless there is a deliberate UX reason to diverge.
 - Before cleaning up homepage sections, check whether a component is actually imported by `apps/web/src/routes/index.tsx`. The home component directory can contain dead marketing sections.
 - For SvelteKit or SolidStart with Tailwind + DaisyUI, plugin activation lives in `apps/web/src/app.css` via `@plugin "daisyui";`, not in `tailwind.config.ts`.
+- Keep `apps/web/src/lib/stack-search-schema.ts` on the shared `EcosystemSchema` when adding or renaming ecosystems so URL parsing does not drift from `@better-fullstack/types`.
 
 ## Ecosystem and auth rendering
 
@@ -36,3 +41,4 @@ If URL parsing changes without normalization, alias handling usually breaks some
 - `bun run --cwd apps/web lint`
 - `bun test apps/web/test/preview-config.test.ts`
 - `bun run build:web` when route generation, bundling, or preview wiring changed
+- For Builder Playwright tests, click option cards directly unless a section is in `INITIALLY_COLLAPSED_SET`; clicking an already-open `category-toggle-*` collapses it. Scope `command-output` locators to visible elements.

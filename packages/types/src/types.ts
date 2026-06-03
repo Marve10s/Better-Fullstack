@@ -111,6 +111,10 @@ import type {
   ShadcnBaseColorSchema,
   ShadcnFontSchema,
   ShadcnRadiusSchema,
+  StackPartEcosystemSchema,
+  StackPartRoleSchema,
+  StackPartSchema,
+  StackPartSourceSchema,
 } from "./schemas";
 
 // Inferred types from Zod schemas
@@ -217,6 +221,10 @@ export type ShadcnColorTheme = z.infer<typeof ShadcnColorThemeSchema>;
 export type ShadcnBaseColor = z.infer<typeof ShadcnBaseColorSchema>;
 export type ShadcnFont = z.infer<typeof ShadcnFontSchema>;
 export type ShadcnRadius = z.infer<typeof ShadcnRadiusSchema>;
+export type StackPartEcosystem = z.infer<typeof StackPartEcosystemSchema>;
+export type StackPartRole = z.infer<typeof StackPartRoleSchema>;
+export type StackPartSource = z.infer<typeof StackPartSourceSchema>;
+export type StackPart = z.infer<typeof StackPartSchema>;
 
 export type CreateInput = z.infer<typeof CreateInputSchema>;
 export type AddInput = z.infer<typeof AddInputSchema>;

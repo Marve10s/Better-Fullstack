@@ -1,6 +1,32 @@
 import pc from "picocolors";
+import { formatStackPartSpec } from "@better-fullstack/types";
 
 import type { ProjectConfig } from "../types";
+
+function getSelectedGraphPart(
+  config: Partial<ProjectConfig>,
+  role: string,
+  ownerPartId?: string,
+) {
+  return config.stackParts?.find(
+    (part) =>
+      part.role === role &&
+      part.ownerPartId === ownerPartId &&
+      part.source !== "provided",
+  );
+}
+
+function getGraphDisplayValue(config: Partial<ProjectConfig>, role: string): string | null {
+  const primaryBackend = getSelectedGraphPart(config, "backend");
+  const part =
+    role === "backend"
+      ? primaryBackend
+      : getSelectedGraphPart(config, role, primaryBackend?.id) ??
+        getSelectedGraphPart(config, role);
+
+  if (!part) return null;
+  return `${part.ecosystem}:${part.toolId}`;
+}
 
 export function displayConfig(config: Partial<ProjectConfig>) {
   const configDisplay: string[] = [];
@@ -25,7 +51,9 @@ export function displayConfig(config: Partial<ProjectConfig>) {
   }
 
   if (config.backend !== undefined) {
-    configDisplay.push(`${pc.blue("Backend:")} ${String(config.backend)}`);
+    const graphBackend =
+      config.backend === "none" ? getGraphDisplayValue(config, "backend") : null;
+    configDisplay.push(`${pc.blue("Backend:")} ${graphBackend ?? String(config.backend)}`);
   }
 
   if (config.runtime !== undefined) {
@@ -33,7 +61,8 @@ export function displayConfig(config: Partial<ProjectConfig>) {
   }
 
   if (config.api !== undefined) {
-    configDisplay.push(`${pc.blue("API:")} ${String(config.api)}`);
+    const graphApi = config.api === "none" ? getGraphDisplayValue(config, "api") : null;
+    configDisplay.push(`${pc.blue("API:")} ${graphApi ?? String(config.api)}`);
   }
 
   if (config.database !== undefined) {
@@ -41,7 +70,8 @@ export function displayConfig(config: Partial<ProjectConfig>) {
   }
 
   if (config.orm !== undefined) {
-    configDisplay.push(`${pc.blue("ORM:")} ${String(config.orm)}`);
+    const graphOrm = config.orm === "none" ? getGraphDisplayValue(config, "orm") : null;
+    configDisplay.push(`${pc.blue("ORM:")} ${graphOrm ?? String(config.orm)}`);
   }
 
   if (config.auth !== undefined) {
@@ -53,7 +83,8 @@ export function displayConfig(config: Partial<ProjectConfig>) {
   }
 
   if (config.email !== undefined) {
-    configDisplay.push(`${pc.blue("Email:")} ${String(config.email)}`);
+    const graphEmail = config.email === "none" ? getGraphDisplayValue(config, "email") : null;
+    configDisplay.push(`${pc.blue("Email:")} ${graphEmail ?? String(config.email)}`);
   }
 
   if (config.fileUpload !== undefined) {
@@ -98,6 +129,101 @@ export function displayConfig(config: Partial<ProjectConfig>) {
 
   if (config.logging !== undefined) {
     configDisplay.push(`${pc.blue("Logging:")} ${String(config.logging)}`);
+  }
+
+  const graphBackendPart = getSelectedGraphPart(config, "backend");
+  if (graphBackendPart?.ecosystem === "go") {
+    if (config.goCli && config.goCli !== "none") {
+      configDisplay.push(`${pc.blue("Go CLI:")} ${String(config.goCli)}`);
+    }
+    if (config.goLogging && config.goLogging !== "none") {
+      configDisplay.push(`${pc.blue("Go Logging:")} ${String(config.goLogging)}`);
+    }
+  }
+
+  if (graphBackendPart?.ecosystem === "rust") {
+    if (config.rustCli && config.rustCli !== "none") {
+      configDisplay.push(`${pc.blue("Rust CLI:")} ${String(config.rustCli)}`);
+    }
+    if (config.rustLibraries && config.rustLibraries.length > 0) {
+      configDisplay.push(`${pc.blue("Rust Libraries:")} ${config.rustLibraries.join(", ")}`);
+    }
+    if (config.rustLogging && config.rustLogging !== "none") {
+      configDisplay.push(`${pc.blue("Rust Logging:")} ${String(config.rustLogging)}`);
+    }
+    if (config.rustErrorHandling && config.rustErrorHandling !== "none") {
+      configDisplay.push(`${pc.blue("Rust Error Handling:")} ${String(config.rustErrorHandling)}`);
+    }
+    if (config.rustCaching && config.rustCaching !== "none") {
+      configDisplay.push(`${pc.blue("Rust Caching:")} ${String(config.rustCaching)}`);
+    }
+  }
+
+  if (graphBackendPart?.ecosystem === "python") {
+    if (config.pythonValidation && config.pythonValidation !== "none") {
+      configDisplay.push(`${pc.blue("Python Validation:")} ${String(config.pythonValidation)}`);
+    }
+    if (config.pythonAi && config.pythonAi.length > 0) {
+      configDisplay.push(`${pc.blue("Python AI:")} ${config.pythonAi.join(", ")}`);
+    }
+    if (config.pythonTaskQueue && config.pythonTaskQueue !== "none") {
+      configDisplay.push(`${pc.blue("Python Task Queue:")} ${String(config.pythonTaskQueue)}`);
+    }
+    if (config.pythonGraphql && config.pythonGraphql !== "none") {
+      configDisplay.push(`${pc.blue("Python GraphQL:")} ${String(config.pythonGraphql)}`);
+    }
+    if (config.pythonQuality && config.pythonQuality !== "none") {
+      configDisplay.push(`${pc.blue("Python Quality:")} ${String(config.pythonQuality)}`);
+    }
+  }
+
+  if (graphBackendPart?.ecosystem === "java") {
+    if (config.javaBuildTool && config.javaBuildTool !== "none") {
+      configDisplay.push(`${pc.blue("Java Build Tool:")} ${String(config.javaBuildTool)}`);
+    }
+    if (config.javaLibraries && config.javaLibraries.length > 0) {
+      configDisplay.push(`${pc.blue("Java Libraries:")} ${config.javaLibraries.join(", ")}`);
+    }
+    if (config.javaTestingLibraries && config.javaTestingLibraries.length > 0) {
+      configDisplay.push(
+        `${pc.blue("Java Testing Libraries:")} ${config.javaTestingLibraries.join(", ")}`,
+      );
+    }
+  }
+
+  if (graphBackendPart?.ecosystem === "elixir") {
+    if (config.elixirRealtime && config.elixirRealtime !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Realtime:")} ${String(config.elixirRealtime)}`);
+    }
+    if (config.elixirJobs && config.elixirJobs !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Jobs:")} ${String(config.elixirJobs)}`);
+    }
+    if (config.elixirValidation && config.elixirValidation !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Validation:")} ${String(config.elixirValidation)}`);
+    }
+    if (config.elixirHttp && config.elixirHttp !== "none") {
+      configDisplay.push(`${pc.blue("Elixir HTTP:")} ${String(config.elixirHttp)}`);
+    }
+    if (config.elixirJson && config.elixirJson !== "none") {
+      configDisplay.push(`${pc.blue("Elixir JSON:")} ${String(config.elixirJson)}`);
+    }
+    if (config.elixirCaching && config.elixirCaching !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Caching:")} ${String(config.elixirCaching)}`);
+    }
+    if (config.elixirObservability && config.elixirObservability !== "none") {
+      configDisplay.push(
+        `${pc.blue("Elixir Observability:")} ${String(config.elixirObservability)}`,
+      );
+    }
+    if (config.elixirTesting && config.elixirTesting !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Testing:")} ${String(config.elixirTesting)}`);
+    }
+    if (config.elixirQuality && config.elixirQuality !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Quality:")} ${String(config.elixirQuality)}`);
+    }
+    if (config.elixirDeploy && config.elixirDeploy !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Deploy:")} ${String(config.elixirDeploy)}`);
+    }
   }
 
   if (config.observability !== undefined) {
@@ -213,6 +339,15 @@ export function displayConfig(config: Partial<ProjectConfig>) {
 
   if (config.serverDeploy !== undefined) {
     configDisplay.push(`${pc.blue("Server Deployment:")} ${String(config.serverDeploy)}`);
+  }
+
+  if (config.stackParts?.length) {
+    const stackParts = config.stackParts
+      .filter((part) => part.source !== "provided")
+      .map((part) => formatStackPartSpec(part, config.stackParts ?? []));
+    if (stackParts.length > 0) {
+      configDisplay.push(`${pc.blue("Stack Parts:")} ${stackParts.join(", ")}`);
+    }
   }
 
   if (configDisplay.length === 0) {

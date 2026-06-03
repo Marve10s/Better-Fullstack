@@ -8,6 +8,7 @@ export async function processBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
-  processTemplatesFromPrefix(vfs, templates, "base", "", config);
+  processTemplatesFromPrefix(vfs, templates, "base", targetPath, config);
 }

@@ -1,5 +1,5 @@
 {{#if (eq runtime "workers")}}
-import { PrismaClient } from "../prisma/generated/client";
+import { PrismaClient } from "../prisma/generated/client{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import { env } from "@{{projectName}}/env/server";
 
 {{#if (eq dbSetup "planetscale")}}
@@ -26,7 +26,7 @@ const prisma = new PrismaClient({ adapter });
 
 export default prisma;
 {{else}}
-import { PrismaClient } from "../prisma/generated/client";
+import { PrismaClient } from "../prisma/generated/client{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import { env } from "@{{projectName}}/env/server";
 
 {{#if (eq dbSetup "planetscale")}}

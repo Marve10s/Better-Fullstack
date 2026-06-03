@@ -23,6 +23,7 @@ With `npm create`, pass Better Fullstack flags after `--`. Generated reproducibl
 - Explicit flags skip only the categories they cover.
 - Use `none` to disable optional categories, including `--ai-docs none`.
 - `--dry-run` previews the generated file tree without writing files.
+- `--verify` runs generated project checks after scaffolding without starting dev servers.
 
 ## TypeScript flags
 
@@ -137,6 +138,26 @@ Go also supports the global `--auth go-better-auth` option for GoBetterAuth. Tha
 
 Spring Boot requires Maven or Gradle. Java ORM, auth, and libraries require Spring Boot plus a build tool. Flyway requires Spring Data JPA.
 
+### Elixir
+
+| Flag | Values |
+| --- | --- |
+| `--elixir-web-framework` | `phoenix` `phoenix-live-view` `none` |
+| `--elixir-orm` | `ecto` `ecto-sql` `none` |
+| `--elixir-auth` | `phx-gen-auth` `ueberauth` `guardian` `none` |
+| `--elixir-api` | `rest` `absinthe` `none` |
+| `--elixir-realtime` | `channels` `presence` `pubsub` `live-view-streams` `none` |
+| `--elixir-jobs` | `oban` `quantum` `none` |
+| `--elixir-validation` | `ecto-changesets` `nimble-options` `none` |
+| `--elixir-http` | `req` `finch` `none` |
+| `--elixir-json` | `jason` `none` |
+| `--elixir-email` | `swoosh` `none` |
+| `--elixir-caching` | `cachex` `nebulex` `none` |
+| `--elixir-observability` | `telemetry` `opentelemetry` `prom_ex` `none` |
+| `--elixir-testing` | `ex_unit` `mox` `bypass` `wallaby` `none` |
+| `--elixir-quality` | `credo` `dialyxir` `sobelow` `none` |
+| `--elixir-deploy` | `docker` `fly` `gigalixir` `mix-release` `none` |
+
 ## React Native flags
 
 Use `--ecosystem react-native` for Expo/React Native mobile projects.
@@ -156,7 +177,8 @@ Use `--ecosystem react-native` for Expo/React Native mobile projects.
 
 | Flag | Description |
 | --- | --- |
-| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java`. Defaults to `typescript`. |
+| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java` `elixir`. Defaults to `typescript`. |
+| `--part` | Add a multi-ecosystem stack part, e.g. `frontend:typescript:next` or `backend.orm:go:gorm`. Repeat for each selected app or capability. |
 | `--template` | `t3` `mern` `pern` `uniwind` `none`. |
 | `--addons` | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none`. |
 | `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`. |
@@ -167,12 +189,27 @@ Use `--ecosystem react-native` for Expo/React Native mobile projects.
 | `--version-channel` | `stable` `latest` `beta`. |
 | `--directory-conflict` | Conflict strategy for an existing target directory. |
 | `--dry-run` | Preview without writing files. |
+| `--verify` | Run generated backend checks after scaffolding without starting dev servers: Go `go test`, Rust `cargo check`, Python `ruff`, and Elixir compile when available. |
 | `--yes` | Accept defaults; incompatible with core stack flags. |
 | `--yolo` | Skip safety confirmations where supported. |
 | `--no-install` | Skip dependency installation. |
 | `--no-git` | Skip Git initialization. |
 | `--disable-analytics` | Opt out of anonymous analytics. |
 | `--verbose` | Print detailed scaffold output. |
+
+## Multi-ecosystem example
+
+Repeat `--part` to bind each generated app or owned capability.
+
+```bash
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part database:universal:postgres \
+  --addons turborepo docker-compose \
+  --package-manager bun
+```
 
 ## Scripted TypeScript example
 

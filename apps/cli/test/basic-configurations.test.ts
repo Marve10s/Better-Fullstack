@@ -1,8 +1,21 @@
 import { describe, expect, it } from "bun:test";
 
+import { ECOSYSTEM_PROMPT_OPTIONS } from "../src/prompts/ecosystem";
 import { expectError, expectSuccess, PACKAGE_MANAGERS, runTRPCTest } from "./test-utils";
 
 describe("Basic Configurations", () => {
+  it("lists every supported ecosystem in the interactive CLI picker", () => {
+    expect(ECOSYSTEM_PROMPT_OPTIONS.map((option) => option.value)).toEqual([
+      "typescript",
+      "react-native",
+      "rust",
+      "python",
+      "go",
+      "java",
+      "elixir",
+    ]);
+  });
+
   describe("Default Configuration", () => {
     it("should create project with --yes flag (default config)", async () => {
       const result = await runTRPCTest({
@@ -60,6 +73,96 @@ describe("Basic Configurations", () => {
       expect(result.result?.projectConfig.backend).toBe("self");
       expect(result.result?.projectConfig.runtime).toBe("none");
       expect(result.result?.projectConfig.frontend).toEqual(["next"]);
+    });
+
+    it("should accept graph part bindings without prompting", async () => {
+      const result = await runTRPCTest({
+        projectName: "graph-parts",
+        part: [
+          "frontend:typescript:next",
+          "mobile:react-native:native-bare",
+          "backend:go:gin",
+          "backend.orm:go:gorm",
+          "database:universal:postgres",
+        ],
+        dryRun: true,
+        dbSetup: "docker",
+        serverDeploy: "railway",
+        install: false,
+      });
+
+      expectSuccess(result);
+      expect(result.result?.projectConfig.stackParts?.map((part) => part.role)).toContain(
+        "backend",
+      );
+      expect(result.result?.projectConfig.goWebFramework).toBe("gin");
+      expect(result.result?.projectConfig.database).toBe("postgres");
+      expect(result.result?.projectConfig.dbSetup).toBe("docker");
+      expect(result.result?.projectConfig.serverDeploy).toBe("railway");
+      expect(result.result?.files).toContain("apps/native/package.json");
+      expect(result.result?.files).toContain("apps/server/go.mod");
+      expect(result.result?.files).toContain("packages/database/README.md");
+    });
+
+    it("should reject invalid graph part role bindings", async () => {
+      const result = await runTRPCTest({
+        projectName: "bad-graph-parts",
+        part: ["frontend:typescript:hono"],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "not a valid typescript tool for role 'frontend'");
+    });
+
+    it("should reject graph capabilities from a different owner ecosystem", async () => {
+      const result = await runTRPCTest({
+        projectName: "bad-graph-owner-ecosystem",
+        part: ["backend:go:gin", "backend.orm:typescript:drizzle"],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "uses the typescript adapter but its owner uses go");
+    });
+
+    it("should reject graph capabilities that do not support the owning framework", async () => {
+      const result = await runTRPCTest({
+        projectName: "bad-graph-owner-tool",
+        part: ["backend:python:fastapi", "backend.api:python:django-rest-framework"],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "can only be selected for a Django backend");
+    });
+
+    it("should reject graph capabilities that the selected framework cannot generate", async () => {
+      const result = await runTRPCTest({
+        projectName: "bad-graph-elixir-live-view",
+        part: ["backend:elixir:phoenix", "backend.api:elixir:live-view-streams"],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "can only be selected for a Phoenix LiveView backend");
+    });
+
+    it("should validate array flag exclusivity when graph part bindings skip prompts", async () => {
+      const result = await runTRPCTest({
+        projectName: "bad-graph-python-ai",
+        part: ["backend:python:fastapi"],
+        pythonAi: ["none", "langchain"],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, "Cannot combine 'none' with other python ai libraries");
     });
   });
 

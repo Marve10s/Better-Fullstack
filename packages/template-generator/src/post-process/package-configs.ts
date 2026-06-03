@@ -6,6 +6,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import { getGraphBackendConnection } from "../utils/graph-backend";
 
 type PackageJson = {
   name?: string;
@@ -90,14 +91,26 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const isD1Alchemy = dbSetup === "d1" && serverDeploy === "cloudflare";
 
   const pmConfig = getPackageManagerConfig(packageManager, hasTurborepo);
+  const graphBackend = getGraphBackendConnection(config);
 
-  scripts.dev = pmConfig.dev;
+  scripts.dev = graphBackend ? pmConfig.filter("web", "dev") : pmConfig.dev;
   scripts.build = pmConfig.build;
   scripts["check-types"] = pmConfig.checkTypes;
   scripts["dev:native"] = pmConfig.filter("native", "dev");
   scripts["dev:web"] = pmConfig.filter("web", "dev");
 
-  if (backend !== "self" && backend !== "none") {
+  if (graphBackend) {
+    scripts["dev:server"] = graphBackend.devCommand;
+    if (graphBackend.setupCommand) {
+      scripts["setup:server"] = graphBackend.setupCommand;
+    }
+    if (graphBackend.checkCommand) {
+      scripts["check:server"] = graphBackend.checkCommand;
+    }
+    if (graphBackend.testCommand) {
+      scripts["test:server"] = graphBackend.testCommand;
+    }
+  } else if (backend !== "self" && backend !== "none") {
     scripts["dev:server"] = pmConfig.filter(backendPackageName, "dev");
   }
 
@@ -148,9 +161,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   // the actual local version after scaffolding.
   pkgJson.packageManager = `${packageManager}@${VIRTUAL_PACKAGE_MANAGER_VERSIONS[packageManager]}`;
 
-  if (config.auth === "better-auth") {
-    applyBetterAuthKyselyOverride(pkgJson);
-  }
+  applyBetterAuthKyselyOverride(pkgJson, config);
 
   if (backend === "convex") {
     if (!workspaces.includes("packages/*")) {
@@ -172,22 +183,37 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   vfs.writeJson("package.json", pkgJson);
 }
 
-function applyBetterAuthKyselyOverride(pkgJson: PackageJson): void {
-  pkgJson.overrides = {
-    ...pkgJson.overrides,
-    kysely: BETTER_AUTH_KYSELY_OVERRIDE,
-  };
-  pkgJson.resolutions = {
-    ...pkgJson.resolutions,
-    kysely: BETTER_AUTH_KYSELY_OVERRIDE,
-  };
-  pkgJson.pnpm = {
-    ...pkgJson.pnpm,
-    overrides: {
-      ...pkgJson.pnpm?.overrides,
-      kysely: BETTER_AUTH_KYSELY_OVERRIDE,
-    },
-  };
+function applyBetterAuthKyselyOverride(pkgJson: PackageJson, config: ProjectConfig): void {
+  if (config.auth !== "better-auth") return;
+
+  // Better Auth 1.6.x imports migration exports removed in Kysely 0.29.
+  // Pin the transitive peer until Better Auth supports the newer Kysely API.
+  switch (config.packageManager) {
+    case "pnpm":
+      pkgJson.pnpm = pkgJson.pnpm || {};
+      pkgJson.pnpm.overrides = {
+        ...pkgJson.pnpm.overrides,
+        kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+      };
+      break;
+    case "yarn":
+      pkgJson.resolutions = {
+        ...pkgJson.resolutions,
+        kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+      };
+      break;
+    case "bun":
+    case "npm":
+      pkgJson.overrides = {
+        ...pkgJson.overrides,
+        kysely: BETTER_AUTH_KYSELY_OVERRIDE,
+      };
+      break;
+    default: {
+      const _exhaustive: never = config.packageManager;
+      throw new Error(`Unknown package manager: ${_exhaustive}`);
+    }
+  }
 }
 
 function getPackageManagerConfig(

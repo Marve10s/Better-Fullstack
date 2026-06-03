@@ -14,6 +14,7 @@ export async function processElixirBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
   if (config.ecosystem !== "elixir") return;
 
@@ -22,7 +23,8 @@ export async function processElixirBaseTemplate(
   const hasLiveView = config.elixirWebFramework === "phoenix-live-view";
   const hasEcto = config.elixirOrm !== "none";
   const hasAuth = hasPhoenix && config.elixirAuth === "phx-gen-auth" && hasEcto;
-  const hasChannels = hasPhoenix && (config.elixirRealtime === "channels" || config.elixirRealtime === "presence");
+  const hasChannels =
+    hasPhoenix && (config.elixirRealtime === "channels" || config.elixirRealtime === "presence");
   const hasPresence = config.elixirRealtime === "presence";
   const hasOban = config.elixirJobs === "oban";
   const hasQuantum = config.elixirJobs === "quantum";
@@ -36,9 +38,14 @@ export async function processElixirBaseTemplate(
     if (!hasPhoenix && templatePath.includes("___web")) continue;
     if (!hasPhoenix && templatePath.includes("test/support/conn_case")) continue;
     if (!hasLiveView && templatePath.includes("/live/")) continue;
-    if (!hasEcto && (templatePath.includes("/repo.ex") || templatePath.includes("/migrations/"))) continue;
+    if (!hasEcto && (templatePath.includes("/repo.ex") || templatePath.includes("/migrations/")))
+      continue;
     if (!hasEcto && templatePath.includes("priv/repo/seeds.exs")) continue;
-    if (!hasEcto && (templatePath.includes("/catalog") || templatePath.includes("/item_controller"))) continue;
+    if (
+      !hasEcto &&
+      (templatePath.includes("/catalog") || templatePath.includes("/item_controller"))
+    )
+      continue;
     if (!hasAuth && templatePath.includes("/accounts")) continue;
     if (!hasAuth && templatePath.includes("create_users")) continue;
     if (!hasAuth && templatePath.includes("/user_session_controller")) continue;
@@ -58,6 +65,7 @@ export async function processElixirBaseTemplate(
       /__elixirAppName__/g,
       normalizeElixirAppName(config.projectName),
     );
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
 
     let processedContent: string;
     if (isBinaryFile(templatePath)) {
@@ -71,6 +79,6 @@ export async function processElixirBaseTemplate(
     if (processedContent.trim() === "") continue;
 
     const sourcePath = isBinaryFile(templatePath) ? templatePath : undefined;
-    vfs.writeFile(outputPath, processedContent, sourcePath);
+    vfs.writeFile(destPath, processedContent, sourcePath);
   }
 }

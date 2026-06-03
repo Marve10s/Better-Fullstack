@@ -7,6 +7,7 @@ Use this guide when the task involves non-interactive project generation, matrix
 - Do not combine `--yes` with explicit core stack flags like `--frontend`, `--css-framework`, or `--ui-library`. If you need explicit stack choices, skip `--yes`.
 - Pass `--ai-docs none` if the run must avoid AI-doc prompts completely.
 - When using `--ui-library shadcn-ui`, also pass explicit shadcn sub-options. At minimum include `--shadcn-base`, and ideally provide the full `--shadcn-*` set used by the test.
+- Scripted scaffolds, smoke tests, and `create()` silent mode must not fall through to Clack prompts. Addon-specific setup paths should use deterministic defaults when prompt interactivity is disabled.
 
 ## Validation expectations
 
@@ -20,6 +21,14 @@ Use this guide when the task involves non-interactive project generation, matrix
 - Redwood combinations need special care: `api=none`, backend-aware path expectations, and limited UI-library support.
 - `shadcn-ui` is intentionally incompatible with `svelte` and `solid-start`.
 - For SvelteKit and SolidStart, prefer `daisyui`, `ark-ui`, `park-ui` (SolidStart only), or `none` when building valid non-shadcn matrices.
+- Curated smoke presets intentionally install generated TypeScript apps with `bun install` regardless of the preset package manager. Package-manager correctness belongs in `apps/cli/test/e2e/default-package-manager-matrix.test.ts`.
+- Keep Yarn package-manager inference and GitHub Actions hardened/immutable install behavior covered in the package-manager matrix.
+
+## Prompt environment
+
+- Prompt resolver coverage should import the actual prompt resolver modules, not recreate coverage from raw schema values.
+- Conditional prompt defaults must always be present in the resolved option set after frontend or ecosystem filtering.
+- When injecting prompt environment state, resolve CI defaults explicitly so `ci: undefined` remains an override instead of inheriting ambient `process.env.CI`.
 
 ## Recommended command style
 

@@ -362,6 +362,7 @@ export async function processJavaBaseTemplate(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
+  targetPath = "",
 ): Promise<void> {
   if (config.ecosystem !== "java") return;
 
@@ -374,6 +375,7 @@ export async function processJavaBaseTemplate(
 
     const relativePath = templatePath.slice(prefix.length);
     const outputPath = transformJavaOutputPath(relativePath, context);
+    const destPath = targetPath ? `${targetPath}/${outputPath}` : outputPath;
 
     let processedContent: string;
     if (isBinaryFile(templatePath)) {
@@ -387,6 +389,6 @@ export async function processJavaBaseTemplate(
     if (!isBinaryFile(templatePath) && processedContent.trim() === "") continue;
 
     const sourcePath = isBinaryFile(templatePath) ? templatePath : undefined;
-    vfs.writeFile(outputPath, processedContent, sourcePath);
+    vfs.writeFile(destPath, processedContent, sourcePath);
   }
 }

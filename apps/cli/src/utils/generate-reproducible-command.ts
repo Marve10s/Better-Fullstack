@@ -1,5 +1,8 @@
 import type { ProjectConfig } from "../types";
 
+import { formatStackPartSpec } from "../types";
+import { hasGraphPart } from "./graph-summary";
+
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
   switch (packageManager) {
     case "bun":
@@ -37,6 +40,170 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
     flags.push(`--version-channel ${config.versionChannel}`);
   }
   flags.push(config.install ? "--install" : "--no-install");
+}
+
+function hasGraphPrimaryPart(
+  config: ProjectConfig,
+  role: "frontend" | "backend" | "mobile" | "database",
+  ecosystem?: string,
+) {
+  return config.stackParts?.some(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === role &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem),
+  );
+}
+
+function appendChangedStringFlag(
+  flags: string[],
+  flag: string,
+  value: string,
+  defaultValue: string,
+) {
+  if (value !== defaultValue) {
+    flags.push(`--${flag} ${value}`);
+  }
+}
+
+function appendChangedArrayFlag(
+  flags: string[],
+  flag: string,
+  values: string[],
+  defaultValues: string[],
+) {
+  if (
+    values.length !== defaultValues.length ||
+    values.some((value, index) => value !== defaultValues[index])
+  ) {
+    flags.push(formatArrayFlag(flag, values));
+  }
+}
+
+function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
+  appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
+  appendChangedArrayFlag(flags, "examples", config.examples, []);
+  appendChangedStringFlag(flags, "db-setup", config.dbSetup, "none");
+  appendChangedStringFlag(flags, "web-deploy", config.webDeploy, "none");
+  appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
+
+  if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
+    appendChangedStringFlag(flags, "css-framework", config.cssFramework, "tailwind");
+    appendChangedStringFlag(flags, "ui-library", config.uiLibrary, "shadcn-ui");
+    if (config.uiLibrary === "shadcn-ui") {
+      appendChangedStringFlag(flags, "shadcn-base", config.shadcnBase ?? "radix", "radix");
+      appendChangedStringFlag(flags, "shadcn-style", config.shadcnStyle ?? "nova", "nova");
+      appendChangedStringFlag(
+        flags,
+        "shadcn-icon-library",
+        config.shadcnIconLibrary ?? "lucide",
+        "lucide",
+      );
+      appendChangedStringFlag(
+        flags,
+        "shadcn-color-theme",
+        config.shadcnColorTheme ?? "neutral",
+        "neutral",
+      );
+      appendChangedStringFlag(
+        flags,
+        "shadcn-base-color",
+        config.shadcnBaseColor ?? "neutral",
+        "neutral",
+      );
+      appendChangedStringFlag(flags, "shadcn-font", config.shadcnFont ?? "inter", "inter");
+      appendChangedStringFlag(
+        flags,
+        "shadcn-radius",
+        config.shadcnRadius ?? "default",
+        "default",
+      );
+    }
+    appendChangedStringFlag(flags, "state-management", config.stateManagement, "none");
+    appendChangedStringFlag(flags, "forms", config.forms, "react-hook-form");
+    appendChangedStringFlag(flags, "validation", config.validation, "zod");
+    appendChangedStringFlag(flags, "testing", config.testing, "vitest");
+    appendChangedStringFlag(flags, "animation", config.animation, "none");
+  }
+
+  if (
+    hasGraphPrimaryPart(config, "frontend", "typescript") ||
+    hasGraphPrimaryPart(config, "backend", "typescript")
+  ) {
+    appendChangedStringFlag(flags, "payments", config.payments, "none");
+    appendChangedStringFlag(flags, "email", config.email, "none");
+    appendChangedStringFlag(flags, "file-upload", config.fileUpload, "none");
+    appendChangedStringFlag(flags, "effect", config.effect, "none");
+    appendChangedStringFlag(flags, "ai", config.ai, "none");
+    appendChangedStringFlag(flags, "realtime", config.realtime, "none");
+    appendChangedStringFlag(flags, "job-queue", config.jobQueue, "none");
+    appendChangedStringFlag(flags, "logging", config.logging, "none");
+    appendChangedStringFlag(flags, "observability", config.observability, "none");
+    appendChangedStringFlag(flags, "feature-flags", config.featureFlags, "none");
+    appendChangedStringFlag(flags, "caching", config.caching, "none");
+    appendChangedStringFlag(flags, "i18n", config.i18n, "none");
+    appendChangedStringFlag(flags, "cms", config.cms, "none");
+    appendChangedStringFlag(flags, "search", config.search, "none");
+    appendChangedStringFlag(flags, "file-storage", config.fileStorage, "none");
+  }
+
+  if (hasGraphPrimaryPart(config, "mobile")) {
+    appendChangedStringFlag(flags, "mobile-navigation", config.mobileNavigation, "expo-router");
+    appendChangedStringFlag(flags, "mobile-ui", config.mobileUI, "none");
+    appendChangedStringFlag(flags, "mobile-storage", config.mobileStorage, "none");
+    appendChangedStringFlag(flags, "mobile-testing", config.mobileTesting, "none");
+    appendChangedStringFlag(flags, "mobile-push", config.mobilePush, "none");
+    appendChangedStringFlag(flags, "mobile-ota", config.mobileOTA, "none");
+    appendChangedStringFlag(flags, "mobile-deep-linking", config.mobileDeepLinking, "none");
+  }
+
+  if (hasGraphPrimaryPart(config, "frontend", "rust")) {
+    appendChangedStringFlag(flags, "rust-frontend", config.rustFrontend, "none");
+  }
+  if (hasGraphPrimaryPart(config, "backend", "rust")) {
+    appendChangedStringFlag(flags, "rust-cli", config.rustCli, "none");
+    appendChangedArrayFlag(flags, "rust-libraries", config.rustLibraries, []);
+    appendChangedStringFlag(flags, "rust-logging", config.rustLogging, "tracing");
+    appendChangedStringFlag(
+      flags,
+      "rust-error-handling",
+      config.rustErrorHandling,
+      "anyhow-thiserror",
+    );
+    appendChangedStringFlag(flags, "rust-caching", config.rustCaching, "none");
+  }
+  if (hasGraphPrimaryPart(config, "backend", "python")) {
+    appendChangedStringFlag(flags, "python-validation", config.pythonValidation, "none");
+    appendChangedArrayFlag(flags, "python-ai", config.pythonAi, []);
+    appendChangedStringFlag(flags, "python-task-queue", config.pythonTaskQueue, "none");
+    appendChangedStringFlag(flags, "python-graphql", config.pythonGraphql, "none");
+    appendChangedStringFlag(flags, "python-quality", config.pythonQuality, "none");
+  }
+  if (hasGraphPrimaryPart(config, "backend", "go")) {
+    appendChangedStringFlag(flags, "go-cli", config.goCli, "none");
+    appendChangedStringFlag(flags, "go-logging", config.goLogging, "none");
+  }
+  if (hasGraphPrimaryPart(config, "backend", "java")) {
+    appendChangedStringFlag(flags, "java-build-tool", config.javaBuildTool, "maven");
+    appendChangedArrayFlag(flags, "java-libraries", config.javaLibraries, []);
+    appendChangedArrayFlag(flags, "java-testing-libraries", config.javaTestingLibraries, ["junit5"]);
+  }
+  if (hasGraphPrimaryPart(config, "backend", "elixir")) {
+    appendChangedStringFlag(flags, "elixir-realtime", config.elixirRealtime, "channels");
+    appendChangedStringFlag(flags, "elixir-jobs", config.elixirJobs, "none");
+    appendChangedStringFlag(flags, "elixir-validation", config.elixirValidation, "ecto-changesets");
+    appendChangedStringFlag(flags, "elixir-http", config.elixirHttp, "req");
+    appendChangedStringFlag(flags, "elixir-json", config.elixirJson, "jason");
+    if (!hasGraphPart(config, "email", "elixir")) {
+      appendChangedStringFlag(flags, "elixir-email", config.elixirEmail, "none");
+    }
+    appendChangedStringFlag(flags, "elixir-caching", config.elixirCaching, "none");
+    appendChangedStringFlag(flags, "elixir-observability", config.elixirObservability, "telemetry");
+    appendChangedStringFlag(flags, "elixir-testing", config.elixirTesting, "ex_unit");
+    appendChangedStringFlag(flags, "elixir-quality", config.elixirQuality, "credo");
+    appendChangedStringFlag(flags, "elixir-deploy", config.elixirDeploy, "none");
+  }
 }
 
 function appendSharedNonTypeScriptFlags(flags: string[], config: ProjectConfig) {
@@ -247,6 +414,17 @@ function getElixirFlags(config: ProjectConfig) {
 
 export function generateReproducibleCommand(config: ProjectConfig) {
   let flags: string[];
+
+  if (config.stackParts && config.stackParts.length > 0) {
+    flags = config.stackParts
+      .filter((part) => part.source !== "provided")
+      .map((part) => `--part ${formatStackPartSpec(part, config.stackParts ?? [])}`);
+    appendGraphExtraFlags(flags, config);
+    appendCommonFlags(flags, config);
+    const baseCommand = getBaseCommand(config.packageManager);
+    const projectPathArg = config.relativePath ? ` ${config.relativePath}` : "";
+    return `${baseCommand}${projectPathArg} ${flags.join(" ")}`;
+  }
 
   switch (config.ecosystem) {
     case "react-native":

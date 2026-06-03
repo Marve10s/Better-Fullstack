@@ -16,6 +16,7 @@ Use this guide when the task changes supported technologies, stack names, compat
 - Put display-only naming changes in metadata and builder labels, not in schema IDs.
 - Use `normalizeOptionId()` for alias handling instead of duplicating ad hoc normalization logic.
 - Multi-select behavior is defined centrally in `OPTION_CATEGORY_METADATA`; do not re-encode category selection semantics in local components.
+- Keep selection mode aligned across schema values, CLI project-config fields, and web `StackState`. Ecosystem-specific arrays such as `pythonAi` and `rustLibraries` should stay arrays everywhere they are modeled.
 
 Current examples:
 
@@ -37,6 +38,7 @@ Current examples:
 - `shadcn-ui` is intentionally incompatible with `svelte` and `solid-start`.
 - Redwood currently requires `api=none` and only supports `daisyui` or `none` for `uiLibrary`.
 - Backend-aware path rules matter for Redwood: `web/api` only applies when Redwood owns both layers.
+- Before trusting older files under `docs/plans/planned/`, verify roadmap or competitive-analysis claims against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and CLI addon helpers. Planned docs can lag behind shipped addon support.
 
 ## Sync-test discipline
 

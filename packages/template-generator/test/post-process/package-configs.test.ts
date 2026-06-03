@@ -119,6 +119,33 @@ describe("processPackageConfigs", () => {
     expect(db?.scripts?.["db:migrate"]).toBeUndefined();
   });
 
+  it("pins Better Auth's Kysely peer with the package-manager override field", () => {
+    for (const [packageManager, expected] of [
+      ["bun", { overrides: { kysely: "0.28.17" } }],
+      ["npm", { overrides: { kysely: "0.28.17" } }],
+      ["pnpm", { pnpm: { overrides: { kysely: "0.28.17" } } }],
+      ["yarn", { resolutions: { kysely: "0.28.17" } }],
+    ] as const) {
+      const vfs = createSeededVFS();
+      vfs.writeJson("package.json", {
+        name: "starter",
+        scripts: {},
+        workspaces: [],
+      });
+
+      processPackageConfigs(
+        vfs,
+        makeConfig({
+          projectName: `better-auth-${packageManager}`,
+          packageManager,
+          auth: "better-auth",
+        }),
+      );
+
+      expect(vfs.readJson<PackageJson>("package.json")).toMatchObject(expected);
+    }
+  });
+
   it("handles convex workspaces and backend naming", () => {
     const vfs = createSeededVFS(["package.json", "packages/backend/package.json"]);
     vfs.writeJson("package.json", {
@@ -186,27 +213,5 @@ describe("processPackageConfigs", () => {
       "./web": "./src/web.ts",
       "./native": "./src/native.ts",
     });
-  });
-
-  it("pins Kysely for Better Auth adapter compatibility across package managers", () => {
-    const vfs = createSeededVFS();
-    vfs.writeJson("package.json", {
-      name: "starter",
-      scripts: {},
-      workspaces: [],
-    });
-
-    processPackageConfigs(
-      vfs,
-      makeConfig({
-        auth: "better-auth",
-      }),
-    );
-
-    const root = vfs.readJson<PackageJson>("package.json");
-
-    expect(root?.overrides?.kysely).toBe("0.28.17");
-    expect(root?.resolutions?.kysely).toBe("0.28.17");
-    expect(root?.pnpm?.overrides?.kysely).toBe("0.28.17");
   });
 });

@@ -114,12 +114,21 @@ export const CreateCommandOptionsSchema = z.object({
     .optional()
     .default(false)
     .describe("(WARNING - NOT RECOMMENDED) Bypass validations and compatibility checks"),
+  part: z
+    .array(z.string())
+    .optional()
+    .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
   verbose: z.boolean().optional().default(false).describe("Show detailed result information"),
   dryRun: z
     .boolean()
     .optional()
     .default(false)
     .describe("Preview generated file tree without writing to disk"),
+  verify: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe("Run generated project checks after scaffolding without starting dev servers"),
   ecosystem: EcosystemSchema.optional().describe(
     "Language ecosystem (typescript, react-native, rust, python, go, java, or elixir)",
   ),
@@ -147,13 +156,23 @@ export const CreateCommandOptionsSchema = z.object({
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
-  mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation (expo-router, react-navigation)"),
-  mobileUI: MobileUISchema.optional().describe("Mobile UI (tamagui, gluestack-ui, uniwind, unistyles)"),
+  mobileNavigation: MobileNavigationSchema.optional().describe(
+    "Mobile navigation (expo-router, react-navigation)",
+  ),
+  mobileUI: MobileUISchema.optional().describe(
+    "Mobile UI (tamagui, gluestack-ui, uniwind, unistyles)",
+  ),
   mobileStorage: MobileStorageSchema.optional().describe("Mobile storage (mmkv)"),
-  mobileTesting: MobileTestingSchema.optional().describe("Mobile testing (maestro, react-native-testing-library)"),
-  mobilePush: MobilePushSchema.optional().describe("Mobile push notifications (expo-notifications)"),
+  mobileTesting: MobileTestingSchema.optional().describe(
+    "Mobile testing (maestro, react-native-testing-library)",
+  ),
+  mobilePush: MobilePushSchema.optional().describe(
+    "Mobile push notifications (expo-notifications)",
+  ),
   mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates (expo-updates)"),
-  mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking (expo-linking)"),
+  mobileDeepLinking: MobileDeepLinkingSchema.optional().describe(
+    "Mobile deep linking (expo-linking)",
+  ),
   frontend: z.array(FrontendSchema).optional(),
   astroIntegration: AstroIntegrationSchema.optional().describe(
     "Astro UI framework integration (react, vue, svelte, solid)",
@@ -224,9 +243,7 @@ export const CreateCommandOptionsSchema = z.object({
     "Python API framework (django-rest-framework, django-ninja)",
   ),
   pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue (celery)"),
-  pythonGraphql: PythonGraphqlSchema.optional().describe(
-    "Python GraphQL framework (strawberry)",
-  ),
+  pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework (strawberry)"),
   pythonQuality: PythonQualitySchema.optional().describe(
     "Python code quality (ruff, mypy, pyright)",
   ),
@@ -242,10 +259,7 @@ export const CreateCommandOptionsSchema = z.object({
   javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool (maven, gradle, none)"),
   javaOrm: JavaOrmSchema.optional().describe("Java ORM/database (spring-data-jpa)"),
   javaAuth: JavaAuthSchema.optional().describe("Java auth (spring-security)"),
-  javaLibraries: z
-    .array(JavaLibrariesSchema)
-    .optional()
-    .describe("Java application libraries"),
+  javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
   javaTestingLibraries: z
     .array(JavaTestingLibrariesSchema)
     .optional()
@@ -268,9 +282,7 @@ export const CreateCommandOptionsSchema = z.object({
   elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client (req, finch, none)"),
   elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library (jason, none)"),
   elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library (swoosh, none)"),
-  elixirCaching: ElixirCachingSchema.optional().describe(
-    "Elixir caching (cachex, nebulex, none)",
-  ),
+  elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching (cachex, nebulex, none)"),
   elixirObservability: ElixirObservabilitySchema.optional().describe(
     "Elixir observability (telemetry, opentelemetry, prom_ex, none)",
   ),

@@ -4,14 +4,24 @@ import path from "node:path";
 
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import {
+  compareLegacyConfigToStackParts,
+  legacyProjectConfigToStackParts,
+  stackPartsToLegacyProjectConfigPartial,
+} from "../types";
+import { getEffectiveStack, getGraphSummary } from "./graph-summary";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
 
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
+  const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
+  const graphSummary = projectConfig.stackParts ? getGraphSummary({ stackParts }) : null;
+  const effectiveStack = projectConfig.stackParts ? getEffectiveStack({ stackParts }) : undefined;
   const btsConfig: BetterTStackConfig = {
     version: getLatestCLIVersion(),
     createdAt: new Date().toISOString(),
+    ...(graphSummary ? { graphSummary, effectiveStack } : {}),
     ecosystem: projectConfig.ecosystem,
     database: projectConfig.database,
     orm: projectConfig.orm,
@@ -104,12 +114,19 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     elixirQuality: projectConfig.elixirQuality,
     elixirDeploy: projectConfig.elixirDeploy,
     aiDocs: projectConfig.aiDocs,
+    stackParts,
   };
 
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
     createdAt: btsConfig.createdAt,
+    ...(btsConfig.graphSummary
+      ? {
+          graphSummary: btsConfig.graphSummary,
+          effectiveStack: btsConfig.effectiveStack,
+        }
+      : {}),
     ecosystem: btsConfig.ecosystem,
     database: btsConfig.database,
     orm: btsConfig.orm,
@@ -202,6 +219,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     elixirQuality: btsConfig.elixirQuality,
     elixirDeploy: btsConfig.elixirDeploy,
     aiDocs: btsConfig.aiDocs,
+    stackParts: btsConfig.stackParts,
   };
 
   let configContent = JSON.stringify(baseContent);
@@ -214,8 +232,12 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
   configContent = JSONC.applyEdits(configContent, formatResult);
 
+  const graphNote = graphSummary
+    ? "// For multi-ecosystem projects, graphSummary/effectiveStack and stackParts are the source of truth.\n// Legacy fields such as backend/orm may stay as compatibility fallbacks.\n"
+    : "";
   const finalContent = `// Better Fullstack configuration file
 // safe to delete
+${graphNote}
 
 ${configContent}`;
   const configPath = path.join(projectConfig.projectDir, BTS_CONFIG_FILE);
@@ -243,7 +265,27 @@ export async function readBtsConfig(projectDir: string) {
       return null;
     }
 
-    return config;
+    if (config.stackParts && config.stackParts.length > 0) {
+      const diagnostics = compareLegacyConfigToStackParts(config, config.stackParts);
+      if (diagnostics.length > 0) {
+        console.warn(
+          `Warning: bts.jsonc legacy fields differ from stackParts; using stackParts for ${diagnostics
+            .map((diagnostic) => diagnostic.path)
+            .filter(Boolean)
+            .join(", ")}.`,
+        );
+      }
+      return {
+        ...config,
+        ...stackPartsToLegacyProjectConfigPartial(config.stackParts),
+        stackParts: config.stackParts,
+      } as BetterTStackConfig;
+    }
+
+    return {
+      ...config,
+      stackParts: legacyProjectConfigToStackParts(config),
+    } as BetterTStackConfig;
   } catch {
     return null;
   }

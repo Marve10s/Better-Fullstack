@@ -14,7 +14,7 @@ import {
   setIsFirstPrompt,
 } from "./navigable";
 
-const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
+export const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
   {
     value: "tanstack-router",
     label: "TanStack Router",

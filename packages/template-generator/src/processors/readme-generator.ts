@@ -1,6 +1,7 @@
 import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
+import { getGraphBackendConnection, hasWebFrontend } from "../utils/graph-backend";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
@@ -66,7 +67,9 @@ const JAVA_RESERVED_WORDS = new Set([
 
 export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): void {
   let content: string;
-  if (config.ecosystem === "rust") {
+  if (config.stackParts?.length) {
+    content = generateGraphReadmeContent(config);
+  } else if (config.ecosystem === "rust") {
     content = generateRustReadmeContent(config);
   } else if (config.ecosystem === "python") {
     content = generatePythonReadmeContent(config);
@@ -80,6 +83,68 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
     content = generateReadmeContent(config);
   }
   vfs.writeFile("README.md", content);
+}
+
+function generateGraphReadmeContent(config: ProjectConfig): string {
+  const graphBackend = getGraphBackendConnection(config);
+  const frontendPart = (config.stackParts ?? []).find(
+    (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
+  );
+  const frontendLabel = frontendPart?.toolId ?? config.frontend.find((entry) => entry !== "none");
+  const setupLine = graphBackend?.setupCommand
+    ? `\n\`\`\`sh\n${graphBackend.setupCommand}\n\`\`\`\n`
+    : "";
+  const serverScripts = graphBackend
+    ? [
+        "- `dev:server` starts the generated backend.",
+        graphBackend.setupCommand ? "- `setup:server` installs or prepares backend dependencies." : null,
+        graphBackend.checkCommand ? "- `check:server` runs the backend compile/check lane." : null,
+        graphBackend.testCommand ? "- `test:server` runs backend tests." : null,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "- `dev:server` starts the generated TypeScript backend when one is selected.";
+
+  return `# ${config.projectName}
+
+This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) using the multi-ecosystem project graph.
+
+## Stack
+
+- Frontend: ${frontendLabel ?? "not selected"}${frontendPart ? ` (${frontendPart.ecosystem})` : ""}
+${graphBackend ? `- Backend: ${graphBackend.label} (${graphBackend.ecosystem})` : "- Backend: not selected"}
+
+## Project Structure
+
+\`\`\`text
+${config.projectName}/
+├── apps/
+${hasWebFrontend(config) ? "│   ├── web/         # Frontend application\n" : ""}${graphBackend ? "│   └── server/      # Backend application\n" : ""}└── package.json     # Root scripts for the generated graph
+\`\`\`
+
+## Local Development
+
+Run the frontend and backend in separate terminals so each ecosystem keeps its native watcher and logs.
+
+\`\`\`sh
+bun run dev:web
+\`\`\`
+
+${graphBackend ? `\`\`\`sh\n${graphBackend.devCommand}\n\`\`\`` : ""}
+${setupLine}
+${graphBackend ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check targets \`${graphBackend.healthUrl}\`, and the web environment file contains the matching public server URL.\n` : ""}
+## Root Scripts
+
+- \`dev\` starts the web workspace for graph projects.
+- \`dev:web\` starts the frontend workspace.
+${serverScripts}
+
+## Compatibility Notes
+
+- TypeScript frontends can be generated with Elixir Phoenix backends; Phoenix runs on port 4000 and exposes \`/api/health\`.
+- Astro frontends can be generated with Rust backends; Rust web servers run on port 3000 and expose \`/health\`.
+- Cross-ecosystem graph projects share an HTTP boundary. Framework-specific API clients such as tRPC are not assumed across language boundaries; the scaffold wires the frontend to the backend base URL and health endpoint.
+`;
 }
 
 function generateElixirReadmeContent(config: ProjectConfig): string {

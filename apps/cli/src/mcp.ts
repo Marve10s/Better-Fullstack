@@ -803,6 +803,16 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-java-app && ./mvnw test && ./mvnw spring-boot:run
 
+## Quick Start — Elixir Project
+1. Call bfs_create_project with:
+   - projectName: "my-elixir-app"
+   - ecosystem: "elixir"
+   - elixirWebFramework: "phoenix"
+   - elixirOrm: "ecto-sql"
+   - elixirApi: "rest"
+   - elixirRealtime: "channels"
+2. Tell the user to run: cd my-elixir-app && mix deps.get && mix phx.server
+
 ## Adding Features to Existing Projects
 1. Call bfs_add_feature with projectDir pointing to the project root.
 2. Provide addons array with features to add (e.g., ["biome", "turborepo"]).

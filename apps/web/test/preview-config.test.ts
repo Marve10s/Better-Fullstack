@@ -58,4 +58,30 @@ describe("stackStateToProjectConfig", () => {
     expect(config.versionChannel).toBe("stable");
     expect(config.install).toBe(false);
   });
+
+  it("maps graph-mode stack parts into preview project config", () => {
+    const config = stackStateToProjectConfig({
+      projectName: "graph-preview",
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:go:gin",
+        "backend.orm:go:gorm",
+        "database:universal:postgres",
+      ],
+    });
+
+    expect(config.stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`)).toEqual(
+      expect.arrayContaining([
+        "frontend:typescript:next",
+        "backend:go:gin",
+        "orm:go:gorm",
+        "database:universal:postgres",
+      ]),
+    );
+    expect(config.frontend).toEqual(["next"]);
+    expect(config.goWebFramework).toBe("gin");
+    expect(config.goOrm).toBe("gorm");
+    expect(config.database).toBe("postgres");
+  });
 });

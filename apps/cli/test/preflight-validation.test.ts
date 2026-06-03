@@ -114,6 +114,26 @@ describe("preflight validation", () => {
         expect(ruleIds(config({ [key]: value, backend: "hono" }))).not.toContain(ruleId);
       });
 
+      test(`${key} passes with graph backend`, () => {
+        expect(
+          ruleIds(
+            config({
+              [key]: value,
+              backend: "none",
+              stackParts: [
+                {
+                  id: "backend:go:gin",
+                  role: "backend",
+                  toolId: "gin",
+                  ecosystem: "go",
+                  source: "selected",
+                },
+              ],
+            }),
+          ),
+        ).not.toContain(ruleId);
+      });
+
       test(`${key}=none produces no warning`, () => {
         expect(ruleIds(config({ [key]: "none", backend: "convex" }))).not.toContain(ruleId);
       });
@@ -142,6 +162,26 @@ describe("preflight validation", () => {
 
       test(`${key} passes with hono backend`, () => {
         expect(ruleIds(config({ [key]: value, backend: "hono" }))).not.toContain(ruleId);
+      });
+
+      test(`${key} passes with graph backend`, () => {
+        expect(
+          ruleIds(
+            config({
+              [key]: value,
+              backend: "none",
+              stackParts: [
+                {
+                  id: "backend:go:gin",
+                  role: "backend",
+                  toolId: "gin",
+                  ecosystem: "go",
+                  source: "selected",
+                },
+              ],
+            }),
+          ),
+        ).not.toContain(ruleId);
       });
     }
   });
@@ -221,6 +261,37 @@ describe("preflight validation", () => {
 
     test("passes with hono backend", () => {
       expect(ruleIds(config({ api: "trpc", backend: "hono" }))).not.toContain("api-skipped-convex");
+    });
+  });
+
+  describe("database ORM", () => {
+    test("passes when database ORM is graph-owned", () => {
+      expect(
+        ruleIds(
+          config({
+            backend: "none",
+            database: "postgres",
+            orm: "none",
+            stackParts: [
+              {
+                id: "backend:go:gin",
+                role: "backend",
+                toolId: "gin",
+                ecosystem: "go",
+                source: "selected",
+              },
+              {
+                id: "backend:go:gin.orm:go:gorm",
+                role: "orm",
+                toolId: "gorm",
+                ecosystem: "go",
+                ownerPartId: "backend:go:gin",
+                source: "selected",
+              },
+            ],
+          }),
+        ),
+      ).not.toContain("database-no-orm");
     });
   });
 

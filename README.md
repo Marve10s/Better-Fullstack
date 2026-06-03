@@ -90,10 +90,12 @@ yarn create better-fullstack@latest
 --yes              # Accept all defaults
 --yolo             # Scaffold a random stack — good for exploring
 --template <name>  # Use a preset (t3, mern, pern, uniwind)
---ecosystem <lang> # Start in rust, python, or go mode
+--ecosystem <lang> # Start in typescript, react-native, rust, python, go, java, or elixir mode
+--part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
 --version-channel  # Dependency channel: stable, latest, beta
 --no-git           # Skip git initialization
 --no-install       # Skip dependency installation
+--verify           # Run generated project checks without starting dev servers
 --verbose          # Show detailed output
 ```
 
@@ -127,16 +129,18 @@ Visual builder or CLI, same generated output.
 <br>
 
 <details>
-<summary><strong>Ecosystem Surface</strong> — TypeScript · Rust · Python · Go · Java</summary>
+<summary><strong>Ecosystem Surface</strong> — TypeScript · React Native · Rust · Python · Go · Java · Elixir</summary>
 <br>
 
 | | |
 | --- | --- |
 | **TypeScript** | The default — all integrations below are available |
+| **React Native** | Expo · native-bare · Uniwind · Unistyles · mobile navigation, storage, testing, push, OTA, and deep linking |
 | **Rust** | Axum · Actix Web · Leptos · Dioxus · SeaORM · SQLx · tonic · async-graphql |
 | **Python** | FastAPI · Django · SQLAlchemy · SQLModel · Pydantic · LangChain · CrewAI · Celery |
 | **Go** | Gin · Echo · GORM · sqlc · gRPC · Cobra · BubbleTea · Zap |
 | **Java** | Spring Boot · Maven · Gradle · Spring Data JPA · Spring Security · JUnit · Testcontainers |
+| **Elixir** | Phoenix · Phoenix LiveView · Ecto SQL · Absinthe · Channels · Oban · Swoosh · Credo |
 
 </details>
 

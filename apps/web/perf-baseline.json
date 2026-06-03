@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-05-12T19:28:39.683Z",
+  "updatedAt": "2026-05-31T13:24:20.148Z",
   "metrics": {
-    "mainJsGzip": 307,
-    "mainCssGzip": 25215,
-    "stackBuilderJsGzip": 60669,
-    "largestJsGzip": 532593,
-    "totalJsGzip": 1325241
+    "mainJsGzip": 282,
+    "mainCssGzip": 26090,
+    "stackBuilderJsGzip": 61813,
+    "largestJsGzip": 531679,
+    "totalJsGzip": 1392482
   },
   "budgets": {
     "mainJsGzip": 4096,
-    "mainCssGzip": 2048,
+    "mainCssGzip": 2560,
     "stackBuilderJsGzip": 12288,
     "largestJsGzip": 20480,
     "totalJsGzip": 81920

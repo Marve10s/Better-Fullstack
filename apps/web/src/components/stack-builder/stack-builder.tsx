@@ -1,5 +1,16 @@
-import { isMultiSelectCategory, type OptionCategory } from "@better-fullstack/types";
 import {
+  getStackPartOptions,
+  isMultiSelectCategory,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+  type OptionCategory,
+  type StackPartEcosystem,
+  type StackPartOptionContext,
+  type StackPartRole,
+} from "@better-fullstack/types";
+import {
+  ArrowLeft,
+  ArrowRight,
   ArrowUp,
   Bookmark,
   BookOpen,
@@ -23,7 +34,17 @@ import {
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { Suspense, lazy, startTransition, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  Suspense,
+  lazy,
+  startTransition,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
 import type { Ecosystem } from "@/lib/types";
@@ -44,6 +65,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { clearBuilderMode, publishBuilderMode } from "@/lib/builder-mode-bridge";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
@@ -97,6 +119,58 @@ type RenderOptionGroup = {
   category: keyof typeof TECH_OPTIONS;
   options: TechOption[];
 };
+type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
+type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust">;
+type GraphBackendEcosystem = Extract<
+  StackPartEcosystem,
+  "typescript" | "rust" | "python" | "go" | "java" | "elixir"
+>;
+type GraphSelection = {
+  frontendEcosystem: GraphFrontendEcosystem;
+  frontend: string;
+  mobile: string;
+  backendEcosystem: GraphBackendEcosystem;
+  backend: string;
+  database: string;
+  backendOrm: string;
+  backendApi: string;
+  backendAuth: string;
+};
+type GraphFrontendConfig = {
+  ecosystem: GraphFrontendEcosystem;
+  label: string;
+  frameworkCategory: keyof typeof TECH_OPTIONS;
+  frameworkStackKey: keyof StackState;
+};
+type GraphBackendConfig = {
+  ecosystem: GraphBackendEcosystem;
+  label: string;
+  frameworkCategory: keyof typeof TECH_OPTIONS;
+  ormCategory: keyof typeof TECH_OPTIONS;
+  apiCategory?: keyof typeof TECH_OPTIONS;
+  authCategory?: keyof typeof TECH_OPTIONS;
+  frameworkStackKey: keyof StackState;
+  ormStackKey: keyof StackState;
+  apiStackKey?: keyof StackState;
+  authStackKey?: keyof StackState;
+};
+
+type MultiStackStepId = "frontend" | "backend" | "database" | "mobile" | "finalize";
+
+const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
+  {
+    ecosystem: "typescript",
+    label: "TypeScript",
+    frameworkCategory: "webFrontend",
+    frameworkStackKey: "webFrontend",
+  },
+  {
+    ecosystem: "rust",
+    label: "Rust",
+    frameworkCategory: "rustFrontend",
+    frameworkStackKey: "rustFrontend",
+  },
+];
 
 const APP_PLATFORM_OPTION_GROUPS = [
   {
@@ -116,6 +190,555 @@ const APP_PLATFORM_OPTION_GROUPS = [
     ids: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
   },
 ] as const;
+
+const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
+  {
+    ecosystem: "typescript",
+    label: "TypeScript",
+    frameworkCategory: "backend",
+    ormCategory: "orm",
+    apiCategory: "api",
+    authCategory: "auth",
+    frameworkStackKey: "backend",
+    ormStackKey: "orm",
+    apiStackKey: "api",
+    authStackKey: "auth",
+  },
+  {
+    ecosystem: "go",
+    label: "Go",
+    frameworkCategory: "goWebFramework",
+    ormCategory: "goOrm",
+    apiCategory: "goApi",
+    authCategory: "goAuth",
+    frameworkStackKey: "goWebFramework",
+    ormStackKey: "goOrm",
+    apiStackKey: "goApi",
+    authStackKey: "goAuth",
+  },
+  {
+    ecosystem: "rust",
+    label: "Rust",
+    frameworkCategory: "rustWebFramework",
+    ormCategory: "rustOrm",
+    apiCategory: "rustApi",
+    authCategory: "rustAuth",
+    frameworkStackKey: "rustWebFramework",
+    ormStackKey: "rustOrm",
+    apiStackKey: "rustApi",
+    authStackKey: "rustAuth",
+  },
+  {
+    ecosystem: "python",
+    label: "Python",
+    frameworkCategory: "pythonWebFramework",
+    ormCategory: "pythonOrm",
+    apiCategory: "pythonApi",
+    authCategory: "pythonAuth",
+    frameworkStackKey: "pythonWebFramework",
+    ormStackKey: "pythonOrm",
+    apiStackKey: "pythonApi",
+    authStackKey: "pythonAuth",
+  },
+  {
+    ecosystem: "java",
+    label: "Java",
+    frameworkCategory: "javaWebFramework",
+    ormCategory: "javaOrm",
+    authCategory: "javaAuth",
+    frameworkStackKey: "javaWebFramework",
+    ormStackKey: "javaOrm",
+    authStackKey: "javaAuth",
+  },
+  {
+    ecosystem: "elixir",
+    label: "Elixir",
+    frameworkCategory: "elixirWebFramework",
+    ormCategory: "elixirOrm",
+    apiCategory: "elixirApi",
+    authCategory: "elixirAuth",
+    frameworkStackKey: "elixirWebFramework",
+    ormStackKey: "elixirOrm",
+    apiStackKey: "elixirApi",
+    authStackKey: "elixirAuth",
+  },
+];
+
+const GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM = Object.fromEntries(
+  GRAPH_FRONTEND_CONFIGS.map((config) => [config.ecosystem, config]),
+) as Record<GraphFrontendEcosystem, GraphFrontendConfig>;
+
+const GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM = Object.fromEntries(
+  GRAPH_BACKEND_CONFIGS.map((config) => [config.ecosystem, config]),
+) as Record<GraphBackendEcosystem, GraphBackendConfig>;
+
+const MULTI_STACK_STEPS: Array<{
+  id: MultiStackStepId;
+  label: string;
+  description: string;
+}> = [
+  { id: "frontend", label: "Frontend", description: "Web UI language and libraries" },
+  { id: "backend", label: "Backend", description: "Server language, framework, and services" },
+  { id: "database", label: "Database", description: "Standalone data service" },
+  { id: "mobile", label: "Mobile", description: "Native app and mobile libraries" },
+  { id: "finalize", label: "Finalize", description: "Package manager" },
+];
+
+const MULTI_FRONTEND_LIBRARY_GROUPS: Array<{
+  label: string;
+  category: keyof typeof TECH_OPTIONS;
+}> = [
+  { label: "CSS Framework", category: "cssFramework" },
+  { label: "UI Library", category: "uiLibrary" },
+  { label: "State Management", category: "stateManagement" },
+  { label: "App Platforms", category: "appPlatforms" },
+  { label: "Forms", category: "forms" },
+  { label: "Validation", category: "validation" },
+  { label: "Testing", category: "testing" },
+  { label: "Animation", category: "animation" },
+];
+
+const MULTI_MOBILE_LIBRARY_GROUPS: Array<{
+  label: string;
+  category: keyof typeof TECH_OPTIONS;
+}> = [
+  { label: "Navigation", category: "mobileNavigation" },
+  { label: "UI", category: "mobileUI" },
+  { label: "Storage", category: "mobileStorage" },
+  { label: "Testing", category: "mobileTesting" },
+  { label: "Push", category: "mobilePush" },
+  { label: "OTA", category: "mobileOTA" },
+  { label: "Deep Linking", category: "mobileDeepLinking" },
+];
+
+const GRAPH_MANAGED_CATEGORY_SET = new Set<keyof typeof TECH_OPTIONS>([
+  "webFrontend",
+  "rustFrontend",
+  "nativeFrontend",
+  "backend",
+  "database",
+  "orm",
+  "api",
+  "auth",
+  "rustWebFramework",
+  "rustOrm",
+  "rustApi",
+  "rustAuth",
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonApi",
+  "pythonAuth",
+  "goWebFramework",
+  "goOrm",
+  "goApi",
+  "goAuth",
+  "javaWebFramework",
+  "javaOrm",
+  "javaAuth",
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirApi",
+  "elixirAuth",
+]);
+
+const GRAPH_TYPESCRIPT_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "payments",
+  "email",
+  "fileUpload",
+  "backendLibraries",
+  "ai",
+  "realtime",
+  "jobQueue",
+  "logging",
+  "observability",
+  "featureFlags",
+  "caching",
+  "i18n",
+  "cms",
+  "search",
+  "fileStorage",
+];
+
+const GRAPH_RUST_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "rustCli",
+  "rustLibraries",
+  "rustLogging",
+  "rustErrorHandling",
+  "rustCaching",
+];
+
+const GRAPH_PYTHON_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "pythonValidation",
+  "pythonAi",
+  "pythonTaskQueue",
+  "pythonGraphql",
+  "pythonQuality",
+];
+
+const GRAPH_GO_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "goCli",
+  "goLogging",
+];
+
+const GRAPH_JAVA_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "javaBuildTool",
+  "javaLibraries",
+  "javaTestingLibraries",
+];
+
+const GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+];
+
+const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "codeQuality",
+  "documentation",
+  "packageManager",
+  "aiDocs",
+  "versionChannel",
+  "git",
+  "install",
+];
+
+const GRAPH_BACKEND_ADVANCED_STACK_KEYS_BY_ECOSYSTEM = {
+  typescript: [
+    "payments",
+    "fileUpload",
+    "backendLibraries",
+    "aiSdk",
+    "realtime",
+    "jobQueue",
+    "logging",
+    "featureFlags",
+    "i18n",
+    "cms",
+    "fileStorage",
+  ],
+  rust: ["rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
+  python: ["pythonValidation", "pythonAi", "pythonTaskQueue", "pythonGraphql", "pythonQuality"],
+  go: ["goCli", "goLogging"],
+  java: ["javaBuildTool", "javaLibraries", "javaTestingLibraries"],
+  elixir: [
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirValidation",
+    "elixirHttp",
+    "elixirJson",
+    "elixirEmail",
+    "elixirCaching",
+    "elixirObservability",
+    "elixirTesting",
+    "elixirQuality",
+    "elixirDeploy",
+  ],
+} as const satisfies Record<GraphBackendEcosystem, readonly (keyof StackState)[]>;
+
+function isGraphBackendEcosystem(
+  ecosystem: StackPartEcosystem,
+): ecosystem is GraphBackendEcosystem {
+  return ecosystem in GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM;
+}
+
+function isGraphFrontendEcosystem(
+  ecosystem: StackPartEcosystem,
+): ecosystem is GraphFrontendEcosystem {
+  return ecosystem in GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM;
+}
+
+function getOptionName(category: keyof typeof TECH_OPTIONS, optionId: string) {
+  if (optionId === "none") return "None";
+  return TECH_OPTIONS[category]?.find((option) => option.id === optionId)?.name ?? optionId;
+}
+
+function getStackKeyForCategory(category: keyof typeof TECH_OPTIONS): keyof StackState {
+  if (category === "ai") return "aiSdk";
+  return category as keyof StackState;
+}
+
+function getStackStringValue(
+  stack: StackState,
+  category: keyof typeof TECH_OPTIONS,
+  fallback = "none",
+) {
+  const value = stack[getStackKeyForCategory(category)];
+
+  if (Array.isArray(value)) {
+    return getSelectedOptionId(value, fallback);
+  }
+
+  return typeof value === "string" ? value : fallback;
+}
+
+function getGraphToolOptions(
+  category: keyof typeof TECH_OPTIONS,
+  role: StackPartRole,
+  ecosystem: StackPartEcosystem,
+  context: GraphOptionContext = {},
+): TechOption[] {
+  const allowedIds = new Set(getStackPartOptions({ role, ecosystem, ...context }));
+  return (TECH_OPTIONS[category] || []).filter(
+    (option) => option.id === "none" || allowedIds.has(option.id),
+  );
+}
+
+function getSelectedOptionId(values: readonly string[], fallback = "none") {
+  return values.find((value) => value !== "none") ?? fallback;
+}
+
+function getDefaultGraphTool(
+  category: keyof typeof TECH_OPTIONS,
+  role: StackPartRole,
+  ecosystem: StackPartEcosystem,
+  fallback = "none",
+  options: { allowNoneDefault?: boolean } = {},
+  context: GraphOptionContext = {},
+) {
+  const toolOptions = getGraphToolOptions(category, role, ecosystem, context);
+  const defaultOption = toolOptions.find((option) => option.default);
+
+  if (defaultOption && (options.allowNoneDefault || defaultOption.id !== "none")) {
+    return defaultOption.id;
+  }
+
+  return toolOptions.find((option) => option.id !== "none")?.id ?? fallback;
+}
+
+function getSoloBackendSelection(stack: StackState): GraphSelection {
+  const currentEcosystem = isGraphBackendEcosystem(stack.ecosystem)
+    ? stack.ecosystem
+    : "typescript";
+  const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[currentEcosystem];
+  const backendValue = stack[backendConfig.frameworkStackKey];
+  const ormValue = stack[backendConfig.ormStackKey];
+  const apiValue = backendConfig.apiStackKey ? stack[backendConfig.apiStackKey] : "none";
+  const authValue = backendConfig.authStackKey ? stack[backendConfig.authStackKey] : "none";
+  const frontendEcosystem =
+    stack.ecosystem === "rust" && stack.rustFrontend !== "none" ? "rust" : "typescript";
+
+  return {
+    frontendEcosystem,
+    frontend:
+      frontendEcosystem === "rust"
+        ? stack.rustFrontend
+        : getSelectedOptionId(stack.webFrontend, "tanstack-router"),
+    mobile: getSelectedOptionId(stack.nativeFrontend),
+    backendEcosystem: currentEcosystem,
+    backend:
+      typeof backendValue === "string" && backendValue !== "none"
+        ? backendValue
+        : getDefaultGraphTool(backendConfig.frameworkCategory, "backend", currentEcosystem, "none"),
+    database: stack.database !== "none" ? stack.database : "none",
+    backendOrm: typeof ormValue === "string" ? ormValue : "none",
+    backendApi: typeof apiValue === "string" ? apiValue : "none",
+    backendAuth: typeof authValue === "string" ? authValue : "none",
+  };
+}
+
+function getGraphSelection(stack: StackState): GraphSelection {
+  if (stack.stackPartSpecs.length === 0) {
+    return getSoloBackendSelection(stack);
+  }
+
+  try {
+    const parts = parseStackPartSpecs(stack.stackPartSpecs, "selected");
+    const selectedParts = parts.filter((part) => part.source !== "provided");
+    const frontend = selectedParts.find(
+      (part) =>
+        part.role === "frontend" && !part.ownerPartId && isGraphFrontendEcosystem(part.ecosystem),
+    );
+    const frontendEcosystem =
+      frontend && isGraphFrontendEcosystem(frontend.ecosystem) ? frontend.ecosystem : "typescript";
+    const mobile = selectedParts.find((part) => part.role === "mobile" && !part.ownerPartId);
+    const backend = selectedParts.find((part) => part.role === "backend" && !part.ownerPartId);
+    const backendEcosystem =
+      backend && isGraphBackendEcosystem(backend.ecosystem) ? backend.ecosystem : "typescript";
+    const database = selectedParts.find((part) => part.role === "database" && !part.ownerPartId);
+    const backendOrm = backend
+      ? selectedParts.find((part) => part.role === "orm" && part.ownerPartId === backend.id)
+      : undefined;
+    const backendApi = backend
+      ? selectedParts.find((part) => part.role === "api" && part.ownerPartId === backend.id)
+      : undefined;
+    const backendAuth = backend
+      ? selectedParts.find((part) => part.role === "auth" && part.ownerPartId === backend.id)
+      : undefined;
+
+    return {
+      frontendEcosystem,
+      frontend: frontend?.toolId ?? "none",
+      mobile: mobile?.toolId ?? "none",
+      backendEcosystem,
+      backend: backend?.toolId ?? "none",
+      database: database?.toolId ?? "none",
+      backendOrm: backendOrm?.toolId ?? "none",
+      backendApi: backendApi?.toolId ?? "none",
+      backendAuth: backendAuth?.toolId ?? "none",
+    };
+  } catch {
+    return getSoloBackendSelection(stack);
+  }
+}
+
+function graphSelectionToSpecs(selection: GraphSelection): string[] {
+  const specs: string[] = [];
+  if (selection.frontend !== "none") {
+    specs.push(`frontend:${selection.frontendEcosystem}:${selection.frontend}`);
+  }
+  if (selection.mobile !== "none") {
+    specs.push(`mobile:react-native:${selection.mobile}`);
+  }
+  if (selection.backend !== "none") {
+    specs.push(`backend:${selection.backendEcosystem}:${selection.backend}`);
+  }
+  if (selection.backend !== "none" && selection.backendOrm !== "none") {
+    specs.push(`backend.orm:${selection.backendEcosystem}:${selection.backendOrm}`);
+  }
+  if (selection.backend !== "none" && selection.backendApi !== "none") {
+    specs.push(`backend.api:${selection.backendEcosystem}:${selection.backendApi}`);
+  }
+  if (selection.backend !== "none" && selection.backendAuth !== "none") {
+    specs.push(`backend.auth:${selection.backendEcosystem}:${selection.backendAuth}`);
+  }
+  if (selection.database !== "none") {
+    specs.push(`database:universal:${selection.database}`);
+  }
+  return specs;
+}
+
+function getGraphBackendAdvancedCategoryOrder(
+  ecosystem: GraphBackendEcosystem,
+): Array<keyof typeof TECH_OPTIONS> {
+  switch (ecosystem) {
+    case "typescript":
+      return GRAPH_TYPESCRIPT_BACKEND_CATEGORY_ORDER;
+    case "rust":
+      return GRAPH_RUST_BACKEND_CATEGORY_ORDER;
+    case "python":
+      return GRAPH_PYTHON_BACKEND_CATEGORY_ORDER;
+    case "go":
+      return GRAPH_GO_BACKEND_CATEGORY_ORDER;
+    case "java":
+      return GRAPH_JAVA_BACKEND_CATEGORY_ORDER;
+    case "elixir":
+      return GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER;
+  }
+}
+
+function getMultiFinalizeCategoryOrder(): Array<keyof typeof TECH_OPTIONS> {
+  return GRAPH_COMMON_CATEGORY_ORDER;
+}
+
+function getGraphBackendAdvancedResetPatch(
+  selectedBackendEcosystem: GraphBackendEcosystem | undefined,
+): Partial<StackState> {
+  const patch: Partial<StackState> = {};
+
+  for (const [ecosystem, keys] of Object.entries(GRAPH_BACKEND_ADVANCED_STACK_KEYS_BY_ECOSYSTEM)) {
+    if (ecosystem === selectedBackendEcosystem) continue;
+
+    for (const key of keys) {
+      patch[key] = DEFAULT_STACK[key] as never;
+    }
+  }
+
+  return patch;
+}
+
+function stackPatchFromGraphSpecs(specs: string[]): Partial<StackState> {
+  const patch: Partial<StackState> = {
+    stackMode: "multi",
+    stackPartSpecs: specs,
+  };
+
+  try {
+    const parts = parseStackPartSpecs(specs, "selected");
+    const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+    const selectedParts = parts.filter((part) => part.source !== "provided");
+    const frontend = selectedParts.find((part) => part.role === "frontend" && !part.ownerPartId);
+    const mobile = selectedParts.find((part) => part.role === "mobile" && !part.ownerPartId);
+    const backend = selectedParts.find((part) => part.role === "backend" && !part.ownerPartId);
+    const database = selectedParts.find((part) => part.role === "database" && !part.ownerPartId);
+
+    patch.ecosystem = (lowered.ecosystem ?? "typescript") as Ecosystem;
+    patch.webFrontend = ["none"];
+    patch.rustFrontend = "none";
+    if (frontend?.ecosystem === "typescript") {
+      patch.webFrontend = [frontend.toolId];
+    }
+    if (frontend?.ecosystem === "rust") {
+      patch.rustFrontend = frontend.toolId;
+    }
+    patch.nativeFrontend = [mobile?.toolId ?? "none"];
+    patch.database = database?.toolId ?? "none";
+    patch.backend = "none";
+    patch.orm = "none";
+    patch.api = "none";
+    patch.auth = "none";
+    patch.rustWebFramework = "none";
+    patch.rustOrm = "none";
+    patch.rustApi = "none";
+    patch.rustAuth = "none";
+    patch.pythonWebFramework = "none";
+    patch.pythonOrm = "none";
+    patch.pythonApi = "none";
+    patch.pythonAuth = "none";
+    patch.goWebFramework = "none";
+    patch.goOrm = "none";
+    patch.goApi = "none";
+    patch.goAuth = "none";
+    patch.javaWebFramework = "none";
+    patch.javaOrm = "none";
+    patch.javaAuth = "none";
+    patch.elixirWebFramework = "none";
+    patch.elixirOrm = "none";
+    patch.elixirApi = "none";
+    patch.elixirAuth = "none";
+
+    if (backend && isGraphBackendEcosystem(backend.ecosystem)) {
+      const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[backend.ecosystem];
+      (patch as Record<string, unknown>)[backendConfig.frameworkStackKey] = backend.toolId;
+      const backendOrm = selectedParts.find(
+        (part) => part.role === "orm" && part.ownerPartId === backend.id,
+      );
+      if (backendOrm) {
+        (patch as Record<string, unknown>)[backendConfig.ormStackKey] = backendOrm.toolId;
+      }
+      const backendApi = selectedParts.find(
+        (part) => part.role === "api" && part.ownerPartId === backend.id,
+      );
+      if (backendApi && backendConfig.apiStackKey) {
+        (patch as Record<string, unknown>)[backendConfig.apiStackKey] = backendApi.toolId;
+      }
+      const backendAuth = selectedParts.find(
+        (part) => part.role === "auth" && part.ownerPartId === backend.id,
+      );
+      if (backendAuth && backendConfig.authStackKey) {
+        (patch as Record<string, unknown>)[backendConfig.authStackKey] = backendAuth.toolId;
+      }
+    }
+
+    Object.assign(
+      patch,
+      getGraphBackendAdvancedResetPatch(
+        backend && isGraphBackendEcosystem(backend.ecosystem) ? backend.ecosystem : undefined,
+      ),
+    );
+  } catch {
+    return patch;
+  }
+
+  return patch;
+}
 
 function getCategoryOptionGroups(
   categoryKey: string,
@@ -297,23 +920,102 @@ function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState
     );
   }
 
-  const catKey = category as keyof StackState;
+  const catKey = getStackKeyForCategory(category);
   return getSelectionCountForValue(category, stack[catKey]);
 }
 
 function isSelectedCheck(stack: StackState, categoryKey: string, techId: string): boolean {
-  const category = categoryKey as keyof StackState;
-  const currentValue = stack[category];
+  const category = categoryKey as keyof typeof TECH_OPTIONS;
+  const stackKey = getStackKeyForCategory(category);
+  const currentValue = stack[stackKey];
   if (isMultiSelectCategory(categoryKey as OptionCategory)) {
     const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
-    if (techId === "none" && usesVirtualNoneSelection(category)) {
+    if (techId === "none" && usesVirtualNoneSelection(stackKey)) {
       return selectedValues.length === 0 || selectedValues.includes("none");
     }
 
     return selectedValues.includes(techId);
   }
   return currentValue === techId;
+}
+
+function getStackOptionUpdate(
+  currentStack: StackState,
+  category: keyof typeof TECH_OPTIONS,
+  techId: string,
+): Partial<StackState> {
+  const catKey = getStackKeyForCategory(category);
+  const update: Partial<StackState> = {};
+  const currentValue = currentStack[catKey];
+
+  if (isMultiSelectCategory(category as OptionCategory)) {
+    const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
+    let nextArray = [...currentArray];
+    const isSelected = currentArray.includes(techId);
+    const isVirtualNoneCategory = usesVirtualNoneSelection(catKey);
+
+    if (catKey === "webFrontend") {
+      if (techId === "none") {
+        nextArray = ["none"];
+      } else if (isSelected) {
+        if (currentArray.length > 1) {
+          nextArray = nextArray.filter((id) => id !== techId);
+        } else {
+          nextArray = ["none"];
+        }
+      } else {
+        nextArray = [techId];
+      }
+    } else if (catKey === "nativeFrontend") {
+      if (techId === "none") {
+        nextArray = ["none"];
+      } else if (isSelected) {
+        nextArray = ["none"];
+      } else {
+        nextArray = [techId];
+      }
+    } else {
+      if (isVirtualNoneCategory && techId === "none") {
+        nextArray = [];
+      } else if (isSelected) {
+        nextArray = nextArray.filter((id) => id !== techId);
+      } else {
+        nextArray.push(techId);
+      }
+
+      if (nextArray.length > 1) {
+        nextArray = nextArray.filter((id) => id !== "none");
+      }
+      if (
+        nextArray.length === 0 &&
+        (catKey === "codeQuality" ||
+          catKey === "documentation" ||
+          catKey === "appPlatforms" ||
+          catKey === "examples" ||
+          isVirtualNoneCategory)
+      ) {
+        // These categories can be empty.
+      } else if (nextArray.length === 0) {
+        nextArray = ["none"];
+      }
+    }
+
+    const uniqueNext = [...new Set(nextArray)].sort();
+    const uniqueCurrent = [...new Set(currentArray)].sort();
+
+    if (JSON.stringify(uniqueNext) !== JSON.stringify(uniqueCurrent)) {
+      (update as Record<string, unknown>)[catKey] = uniqueNext;
+    }
+  } else if (currentValue !== techId) {
+    (update as Record<string, string>)[catKey] = techId;
+  } else if ((category === "git" || category === "install") && techId === "false") {
+    (update as Record<string, string>)[catKey] = "true";
+  } else if ((category === "git" || category === "install") && techId === "true") {
+    (update as Record<string, string>)[catKey] = "false";
+  }
+
+  return update;
 }
 
 // ─── Collapsible section config ──────────────────────────────────────────────
@@ -357,10 +1059,809 @@ const PreviewPanel = lazy(async () => {
   return { default: module.PreviewPanel };
 });
 
+function GraphOptionButton({
+  option,
+  selected,
+  testId,
+  disabledReason,
+  onSelect,
+}: {
+  option: TechOption;
+  selected: boolean;
+  testId: string;
+  disabledReason?: string | null;
+  onSelect: () => void;
+}) {
+  const isDisabled = Boolean(disabledReason);
+
+  return (
+    <button
+      type="button"
+      data-testid={testId}
+      aria-pressed={selected}
+      aria-disabled={isDisabled}
+      disabled={isDisabled}
+      title={disabledReason || undefined}
+      onClick={isDisabled ? undefined : onSelect}
+      className={cn(
+        "group relative cursor-pointer rounded-lg border p-3 text-left transition-all sm:p-4",
+        selected
+          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+          : isDisabled
+            ? "cursor-not-allowed border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        {(option.icon !== "" || ICON_REGISTRY[option.id]) && (
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+              selected ? "bg-primary/10" : "bg-muted/50 group-hover:bg-muted",
+            )}
+          >
+            <TechIcon
+              techId={option.id}
+              icon={option.icon}
+              name={option.name}
+              className="h-5 w-5"
+            />
+          </div>
+        )}
+        <div className="min-w-0 flex-1 pt-0.5">
+          <span
+            className={cn(
+              "block font-semibold text-sm",
+              selected ? "text-primary" : "text-foreground",
+            )}
+          >
+            {option.name}
+          </span>
+          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+            {option.description}
+          </p>
+          {disabledReason && <DisabledReasonInline reason={disabledReason} />}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function GraphOptionGroup({
+  label,
+  options,
+  selectedId,
+  selectedCount,
+  isOptionSelected,
+  testIdPrefix,
+  defaultCollapsed = false,
+  getDisabledReasonForOption,
+  onSelect,
+}: {
+  label: string;
+  options: TechOption[];
+  selectedId: string;
+  selectedCount?: number;
+  isOptionSelected?: (optionId: string) => boolean;
+  testIdPrefix: string;
+  defaultCollapsed?: boolean;
+  getDisabledReasonForOption?: (optionId: string) => string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const selectionCount = selectedCount ?? (Boolean(selectedId) && selectedId !== "none" ? 1 : 0);
+
+  return (
+    <section className="min-w-0">
+      <button
+        type="button"
+        onClick={() => setCollapsed((prev) => !prev)}
+        data-testid={`${testIdPrefix}-toggle`}
+        aria-expanded={!collapsed}
+        className="mb-3 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+      >
+        <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+        <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">{label}</h2>
+        {collapsed && selectionCount > 0 && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
+            {selectionCount}
+          </span>
+        )}
+        <motion.div animate={{ rotate: collapsed ? 0 : 180 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </motion.div>
+      </button>
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+              {options.map((option) => {
+                const disabledReason = getDisabledReasonForOption?.(option.id) ?? null;
+                const selected = isOptionSelected
+                  ? isOptionSelected(option.id)
+                  : selectedId === option.id;
+
+                return (
+                  <GraphOptionButton
+                    key={option.id}
+                    option={option}
+                    selected={selected}
+                    testId={`${testIdPrefix}-${option.id}`}
+                    disabledReason={disabledReason}
+                    onSelect={() => onSelect(option.id)}
+                  />
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
+
+function CreationModeComposer({
+  stack,
+  onChange,
+  activeStep,
+  onActiveStepChange,
+}: {
+  stack: StackState;
+  onChange: (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => void;
+  activeStep: MultiStackStepId;
+  onActiveStepChange: (stepId: MultiStackStepId) => void;
+}) {
+  const graphSelection = getGraphSelection(stack);
+  const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
+  const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[graphSelection.backendEcosystem];
+  const primaryToolIdsByRole: GraphOptionContext["primaryToolIdsByRole"] = {
+    frontend: graphSelection.frontend !== "none" ? graphSelection.frontend : undefined,
+    backend: graphSelection.backend !== "none" ? graphSelection.backend : undefined,
+    mobile: graphSelection.mobile !== "none" ? graphSelection.mobile : undefined,
+    database: graphSelection.database !== "none" ? graphSelection.database : undefined,
+  };
+  const backendCapabilityContext: GraphOptionContext = {
+    ownerRole: "backend",
+    ownerToolId: graphSelection.backend !== "none" ? graphSelection.backend : undefined,
+    ownerEcosystem: graphSelection.backendEcosystem,
+    siblingToolIdsByRole: {
+      orm: graphSelection.backendOrm,
+      api: graphSelection.backendApi,
+      auth: graphSelection.backendAuth,
+    },
+    primaryToolIdsByRole,
+  };
+  const frontendOptions = getGraphToolOptions(
+    frontendConfig.frameworkCategory,
+    "frontend",
+    graphSelection.frontendEcosystem,
+  );
+  const mobileOptions = getGraphToolOptions("nativeFrontend", "mobile", "react-native");
+  const backendOptions = getGraphToolOptions(
+    backendConfig.frameworkCategory,
+    "backend",
+    graphSelection.backendEcosystem,
+  );
+  const databaseOptions = getGraphToolOptions("database", "database", "universal");
+  const backendOrmOptions = getGraphToolOptions(
+    backendConfig.ormCategory,
+    "orm",
+    graphSelection.backendEcosystem,
+    backendCapabilityContext,
+  );
+  const backendApiOptions = backendConfig.apiCategory
+    ? getGraphToolOptions(
+        backendConfig.apiCategory,
+        "api",
+        graphSelection.backendEcosystem,
+        backendCapabilityContext,
+      )
+    : [];
+  const backendAuthOptions = backendConfig.authCategory
+    ? getGraphToolOptions(
+        backendConfig.authCategory,
+        "auth",
+        graphSelection.backendEcosystem,
+        backendCapabilityContext,
+      )
+    : [];
+  const backendAdvancedCategories =
+    graphSelection.backend === "none"
+      ? []
+      : getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
+  const backendCompatibilityStack: StackState = {
+    ...stack,
+    ecosystem: graphSelection.backendEcosystem as Ecosystem,
+  };
+
+  const applyGraphSelection = (nextSelection: GraphSelection) => {
+    const specs = graphSelectionToSpecs(nextSelection);
+    onChange((current) => ({
+      ...stackPatchFromGraphSpecs(specs),
+      projectName: current.projectName,
+    }));
+  };
+
+  const updateGraphSelection = (updates: Partial<GraphSelection>) => {
+    applyGraphSelection({ ...graphSelection, ...updates });
+  };
+
+  const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
+    onChange((current) => getStackOptionUpdate(current, category, optionId));
+  };
+
+  const getPrimaryToolIdsForSelection = (
+    selection: GraphSelection,
+  ): GraphOptionContext["primaryToolIdsByRole"] => ({
+    frontend: selection.frontend !== "none" ? selection.frontend : undefined,
+    backend: selection.backend !== "none" ? selection.backend : undefined,
+    mobile: selection.mobile !== "none" ? selection.mobile : undefined,
+    database: selection.database !== "none" ? selection.database : undefined,
+  });
+
+  const getBackendContextForSelection = (selection: GraphSelection): GraphOptionContext => ({
+    ownerRole: "backend",
+    ownerToolId: selection.backend !== "none" ? selection.backend : undefined,
+    ownerEcosystem: selection.backendEcosystem,
+    siblingToolIdsByRole: {
+      orm: selection.backendOrm,
+      api: selection.backendApi,
+      auth: selection.backendAuth,
+    },
+    primaryToolIdsByRole: getPrimaryToolIdsForSelection(selection),
+  });
+
+  const getDefaultBackendCapability = (
+    config: GraphBackendConfig,
+    role: Extract<StackPartRole, "api" | "auth">,
+    selection: GraphSelection,
+  ) => {
+    const category = role === "api" ? config.apiCategory : config.authCategory;
+    if (!category) return "none";
+
+    return getDefaultGraphTool(
+      category,
+      role,
+      config.ecosystem,
+      "none",
+      {
+        allowNoneDefault: true,
+      },
+      getBackendContextForSelection(selection),
+    );
+  };
+
+  const reconcileBackendCapabilities = (
+    selection: GraphSelection,
+    config: GraphBackendConfig,
+  ): Pick<GraphSelection, "backendOrm" | "backendApi" | "backendAuth"> => {
+    if (selection.backend === "none") {
+      return { backendOrm: "none", backendApi: "none", backendAuth: "none" };
+    }
+
+    const ormOptions = getGraphToolOptions(
+      config.ormCategory,
+      "orm",
+      config.ecosystem,
+      getBackendContextForSelection(selection),
+    );
+    const backendOrm = ormOptions.some((option) => option.id === selection.backendOrm)
+      ? selection.backendOrm
+      : getDefaultGraphTool(
+          config.ormCategory,
+          "orm",
+          config.ecosystem,
+          "none",
+          {},
+          getBackendContextForSelection(selection),
+        );
+
+    const withOrm = { ...selection, backendOrm };
+    const backendApi = config.apiCategory
+      ? (() => {
+          const apiOptions = getGraphToolOptions(
+            config.apiCategory,
+            "api",
+            config.ecosystem,
+            getBackendContextForSelection(withOrm),
+          );
+          return apiOptions.some((option) => option.id === selection.backendApi)
+            ? selection.backendApi
+            : getDefaultBackendCapability(config, "api", withOrm);
+        })()
+      : "none";
+
+    const withApi = { ...withOrm, backendApi };
+    const backendAuth = config.authCategory
+      ? (() => {
+          const authOptions = getGraphToolOptions(
+            config.authCategory,
+            "auth",
+            config.ecosystem,
+            getBackendContextForSelection(withApi),
+          );
+          return authOptions.some((option) => option.id === selection.backendAuth)
+            ? selection.backendAuth
+            : getDefaultBackendCapability(config, "auth", withApi);
+        })()
+      : "none";
+
+    return { backendOrm, backendApi, backendAuth };
+  };
+
+  const getStepSelection = (
+    stepId: MultiStackStepId,
+  ): { scopeLabel: string; toolId: string; toolName: string } | null => {
+    switch (stepId) {
+      case "frontend":
+        return graphSelection.frontend === "none"
+          ? null
+          : {
+              scopeLabel: frontendConfig.label,
+              toolId: graphSelection.frontend,
+              toolName: getOptionName(frontendConfig.frameworkCategory, graphSelection.frontend),
+            };
+      case "backend":
+        return graphSelection.backend === "none"
+          ? null
+          : {
+              scopeLabel: backendConfig.label,
+              toolId: graphSelection.backend,
+              toolName: getOptionName(backendConfig.frameworkCategory, graphSelection.backend),
+            };
+      case "database":
+        return graphSelection.database === "none"
+          ? null
+          : {
+              scopeLabel: "Universal",
+              toolId: graphSelection.database,
+              toolName: getOptionName("database", graphSelection.database),
+            };
+      case "mobile":
+        return graphSelection.mobile === "none"
+          ? null
+          : {
+              scopeLabel: "React Native",
+              toolId: graphSelection.mobile,
+              toolName: getOptionName("nativeFrontend", graphSelection.mobile),
+            };
+      case "finalize":
+        return null;
+    }
+  };
+
+  const renderLanguageButton = ({
+    selected,
+    testId,
+    label,
+    onClick,
+    iconTechId,
+    icon,
+  }: {
+    selected: boolean;
+    testId: string;
+    label: string;
+    onClick: () => void;
+    iconTechId?: string;
+    icon?: string;
+  }) => {
+    const hasIcon = Boolean(icon) || (iconTechId ? Boolean(ICON_REGISTRY[iconTechId]) : false);
+    const ecosystemMeta = iconTechId ? ECOSYSTEMS.find((eco) => eco.id === iconTechId) : undefined;
+
+    return (
+      <button
+        type="button"
+        data-testid={testId}
+        aria-pressed={selected}
+        onClick={onClick}
+        className={cn(
+          "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
+          selected
+            ? "bg-muted/40 text-foreground"
+            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+        )}
+      >
+        {selected && (
+          <motion.div
+            layoutId={`multi-language-indicator-${testId}`}
+            className={cn(
+              "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
+              ecosystemMeta?.color ?? "from-primary to-primary/60",
+            )}
+            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+          />
+        )}
+        {hasIcon && (
+          <TechIcon
+            techId={iconTechId}
+            icon={icon}
+            name={label}
+            className={cn(
+              "relative h-4.5 w-4.5 shrink-0 transition-all sm:h-5 sm:w-5",
+              selected ? "scale-110" : "opacity-50 group-hover:opacity-75",
+            )}
+          />
+        )}
+        <span
+          className={cn(
+            "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
+            selected && "font-bold",
+          )}
+        >
+          {label}
+        </span>
+      </button>
+    );
+  };
+
+  const renderLanguagePicker = ({
+    gridClassName,
+    children,
+    optionCount,
+  }: {
+    gridClassName?: string;
+    children: ReactNode;
+    optionCount: number;
+  }) => {
+    if (optionCount <= 1) return null;
+
+    return (
+      <div className="-mx-4 -mt-4 mb-5 overflow-hidden rounded-t-xl border-b border-border/60 sm:-mx-5 sm:-mt-5">
+        <div className={cn("grid bg-fd-background", gridClassName)}>{children}</div>
+      </div>
+    );
+  };
+
+  const renderStackOptionGroup = ({
+    label,
+    category,
+    testIdPrefix,
+    defaultCollapsed,
+    compatibilityStack = stack,
+  }: {
+    label: string;
+    category: keyof typeof TECH_OPTIONS;
+    testIdPrefix: string;
+    defaultCollapsed?: boolean;
+    compatibilityStack?: StackState;
+  }) => (
+    <GraphOptionGroup
+      label={label}
+      options={getVisibleOptions(compatibilityStack, category, TECH_OPTIONS[category] || [])}
+      selectedId={getStackStringValue(stack, category)}
+      selectedCount={getSelectedCount(category, stack)}
+      isOptionSelected={(optionId) => isSelectedCheck(stack, category, optionId)}
+      testIdPrefix={testIdPrefix}
+      defaultCollapsed={defaultCollapsed}
+      getDisabledReasonForOption={(optionId) =>
+        isOptionCompatible(compatibilityStack, category, optionId)
+          ? null
+          : (getDisabledReason(compatibilityStack, category, optionId) ??
+            "Not compatible with current stack")
+      }
+      onSelect={(optionId) => {
+        if (!isOptionCompatible(compatibilityStack, category, optionId)) return;
+        updateStackOption(category, optionId);
+      }}
+    />
+  );
+
+  const renderActiveStep = () => {
+    switch (activeStep) {
+      case "frontend":
+        return (
+          <div className="space-y-5">
+            {renderLanguagePicker({
+              optionCount: GRAPH_FRONTEND_CONFIGS.length,
+              gridClassName: "grid-cols-2",
+              children: GRAPH_FRONTEND_CONFIGS.map((config) =>
+                renderLanguageButton({
+                  selected: graphSelection.frontendEcosystem === config.ecosystem,
+                  testId: `multi-frontend-language-${config.ecosystem}`,
+                  label: config.label,
+                  iconTechId: config.ecosystem,
+                  onClick: () => {
+                    const frontend = getDefaultGraphTool(
+                      config.frameworkCategory,
+                      "frontend",
+                      config.ecosystem,
+                      "none",
+                    );
+                    updateGraphSelection({
+                      frontendEcosystem: config.ecosystem,
+                      frontend,
+                      ...reconcileBackendCapabilities(
+                        { ...graphSelection, frontendEcosystem: config.ecosystem, frontend },
+                        backendConfig,
+                      ),
+                    });
+                  },
+                }),
+              ),
+            })}
+
+            <GraphOptionGroup
+              label={`${frontendConfig.label} Frontend`}
+              options={frontendOptions}
+              selectedId={graphSelection.frontend}
+              testIdPrefix="multi-frontend-tool"
+              onSelect={(frontend) =>
+                updateGraphSelection({
+                  frontend,
+                  ...reconcileBackendCapabilities({ ...graphSelection, frontend }, backendConfig),
+                })
+              }
+            />
+
+            {graphSelection.frontendEcosystem === "typescript" &&
+              graphSelection.frontend !== "none" &&
+              MULTI_FRONTEND_LIBRARY_GROUPS.map((group) => (
+                <div key={group.category}>
+                  {renderStackOptionGroup({
+                    label: group.label,
+                    category: group.category,
+                    testIdPrefix: `multi-frontend-${group.category}`,
+                  })}
+                </div>
+              ))}
+          </div>
+        );
+      case "backend":
+        return (
+          <div className="space-y-5">
+            {renderLanguagePicker({
+              optionCount: GRAPH_BACKEND_CONFIGS.length,
+              gridClassName: "grid-cols-3 lg:grid-cols-6",
+              children: GRAPH_BACKEND_CONFIGS.map((config) =>
+                renderLanguageButton({
+                  selected: graphSelection.backendEcosystem === config.ecosystem,
+                  testId: `multi-backend-language-${config.ecosystem}`,
+                  label: config.label,
+                  iconTechId: config.ecosystem,
+                  onClick: () => {
+                    const backend = getDefaultGraphTool(
+                      config.frameworkCategory,
+                      "backend",
+                      config.ecosystem,
+                      "none",
+                    );
+                    const nextSelection: GraphSelection = {
+                      ...graphSelection,
+                      backendEcosystem: config.ecosystem,
+                      backend,
+                      backendOrm: "none",
+                      backendApi: "none",
+                      backendAuth: "none",
+                    };
+                    updateGraphSelection({
+                      backendEcosystem: config.ecosystem,
+                      backend,
+                      ...reconcileBackendCapabilities(nextSelection, config),
+                    });
+                  },
+                }),
+              ),
+            })}
+
+            <GraphOptionGroup
+              label={`${backendConfig.label} Backend`}
+              options={backendOptions}
+              selectedId={graphSelection.backend}
+              testIdPrefix="multi-backend-tool"
+              onSelect={(backend) => {
+                const nextSelection: GraphSelection = {
+                  ...graphSelection,
+                  backend,
+                  backendOrm: backend === "none" ? "none" : graphSelection.backendOrm,
+                  backendApi: backend === "none" ? "none" : graphSelection.backendApi,
+                  backendAuth: backend === "none" ? "none" : graphSelection.backendAuth,
+                };
+                updateGraphSelection({
+                  backend,
+                  ...reconcileBackendCapabilities(nextSelection, backendConfig),
+                });
+              }}
+            />
+
+            {graphSelection.backend !== "none" && backendOrmOptions.length > 0 && (
+              <GraphOptionGroup
+                label={`${backendConfig.label} ORM`}
+                options={backendOrmOptions}
+                selectedId={graphSelection.backendOrm}
+                testIdPrefix="multi-backend-orm"
+                onSelect={(backendOrm) => {
+                  const nextSelection: GraphSelection = { ...graphSelection, backendOrm };
+                  updateGraphSelection(reconcileBackendCapabilities(nextSelection, backendConfig));
+                }}
+              />
+            )}
+
+            {graphSelection.backend !== "none" && backendApiOptions.length > 0 && (
+              <GraphOptionGroup
+                label={`${backendConfig.label} API`}
+                options={backendApiOptions}
+                selectedId={graphSelection.backendApi}
+                testIdPrefix="multi-backend-api"
+                onSelect={(backendApi) => {
+                  const nextSelection: GraphSelection = { ...graphSelection, backendApi };
+                  updateGraphSelection(reconcileBackendCapabilities(nextSelection, backendConfig));
+                }}
+              />
+            )}
+
+            {graphSelection.backend !== "none" && backendAuthOptions.length > 0 && (
+              <GraphOptionGroup
+                label={`${backendConfig.label} Auth`}
+                options={backendAuthOptions}
+                selectedId={graphSelection.backendAuth}
+                testIdPrefix="multi-backend-auth"
+                onSelect={(backendAuth) => updateGraphSelection({ backendAuth })}
+              />
+            )}
+
+            {backendAdvancedCategories.map((category) => (
+              <div key={category}>
+                {renderStackOptionGroup({
+                  label: getCategoryDisplayName(category),
+                  category,
+                  testIdPrefix: `multi-backend-${category}`,
+                  defaultCollapsed: true,
+                  compatibilityStack: backendCompatibilityStack,
+                })}
+              </div>
+            ))}
+          </div>
+        );
+      case "database":
+        return (
+          <div className="space-y-5">
+            {renderLanguagePicker({
+              optionCount: 1,
+              children: renderLanguageButton({
+                selected: true,
+                testId: "multi-database-language-universal",
+                label: "Universal",
+                onClick: () => undefined,
+              }),
+            })}
+
+            <GraphOptionGroup
+              label="Standalone Database"
+              options={databaseOptions}
+              selectedId={graphSelection.database}
+              testIdPrefix="multi-database-tool"
+              onSelect={(database) =>
+                updateGraphSelection({
+                  database,
+                  ...reconcileBackendCapabilities({ ...graphSelection, database }, backendConfig),
+                })
+              }
+            />
+          </div>
+        );
+      case "mobile":
+        return (
+          <div className="space-y-5">
+            {renderLanguagePicker({
+              optionCount: 1,
+              children: renderLanguageButton({
+                selected: true,
+                testId: "multi-mobile-language-react-native",
+                label: "React Native",
+                icon: "https://cdn.simpleicons.org/react/61DAFB",
+                onClick: () => undefined,
+              }),
+            })}
+
+            <GraphOptionGroup
+              label="Mobile App"
+              options={mobileOptions}
+              selectedId={graphSelection.mobile}
+              testIdPrefix="multi-mobile-tool"
+              onSelect={(mobile) => updateGraphSelection({ mobile })}
+            />
+
+            {graphSelection.mobile !== "none" &&
+              MULTI_MOBILE_LIBRARY_GROUPS.map((group) => (
+                <div key={group.category}>
+                  {renderStackOptionGroup({
+                    label: group.label,
+                    category: group.category,
+                    testIdPrefix: `multi-mobile-${group.category}`,
+                  })}
+                </div>
+              ))}
+          </div>
+        );
+      case "finalize":
+        return null;
+    }
+  };
+
+  if (stack.stackMode !== "multi") {
+    return null;
+  }
+
+  return (
+    <section
+      data-testid="stack-graph-composer"
+      className="mb-6 rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm sm:mb-8 sm:p-5"
+    >
+      <div className="space-y-5">
+        <div className="flex items-start overflow-x-auto px-10 pb-12">
+          {MULTI_STACK_STEPS.map((step, index) => {
+            const selected = activeStep === step.id;
+            const isFinalize = step.id === "finalize";
+            const isLast = index === MULTI_STACK_STEPS.length - 1;
+            const selection = isFinalize ? null : getStepSelection(step.id);
+            const subLabel = isFinalize ? "setup" : (selection?.toolName ?? "None");
+            const stepNumber = String(index + 1).padStart(2, "0");
+
+            return (
+              <Fragment key={step.id}>
+                <button
+                  type="button"
+                  data-testid={`multi-step-${step.id}`}
+                  aria-pressed={selected}
+                  onClick={() => onActiveStepChange(step.id)}
+                  className="group relative flex w-12 shrink-0 cursor-pointer flex-col items-center text-center"
+                >
+                  <span
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-full border font-mono text-sm font-semibold transition-all",
+                      selected
+                        ? "border-2 border-[#C6E853] text-[#C6E853]"
+                        : "border-border/60 bg-muted/40 text-muted-foreground group-hover:border-[#C6E853]/40 group-hover:text-foreground",
+                    )}
+                  >
+                    {stepNumber}
+                  </span>
+                  <span className="absolute top-14 left-1/2 flex w-28 -translate-x-1/2 flex-col">
+                    <span
+                      className={cn(
+                        "truncate text-[13px] transition-colors",
+                        selected
+                          ? "font-semibold text-foreground"
+                          : "font-medium text-muted-foreground group-hover:text-foreground",
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                    <span className="truncate text-[11px] text-muted-foreground/70">
+                      {subLabel}
+                    </span>
+                  </span>
+                </button>
+
+                {!isLast && (
+                  <div aria-hidden="true" className="mt-6 h-px min-w-8 flex-1 bg-border/60" />
+                )}
+              </Fragment>
+            );
+          })}
+        </div>
+
+        {activeStep !== "finalize" && (
+          <div className="space-y-6 rounded-xl border border-border/60 bg-background p-4 sm:p-5">
+            {renderActiveStep()}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-const StackBuilder = () => {
-  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] = useStackState();
+const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
+  const [stack, setStack, viewMode, setViewMode, selectedFile, setSelectedFile] =
+    useStackState(initialStack);
 
   const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
@@ -371,6 +1872,7 @@ const StackBuilder = () => {
   const [isSaveInputVisible, setIsSaveInputVisible] = useState(false);
   const [savePresetName, setSavePresetName] = useState("");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
+  const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     const initial = new Set(INITIALLY_COLLAPSED_SET);
     for (const cat of INITIALLY_COLLAPSED_SET) {
@@ -404,6 +1906,21 @@ const StackBuilder = () => {
   const categoryOrder = useMemo(() => {
     return getCategoryOrderForEcosystem(stack.ecosystem);
   }, [stack.ecosystem]);
+  const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
+
+  const displayedCategoryOrder = useMemo(() => {
+    if (stack.stackMode !== "multi") return categoryOrder;
+    return getMultiFinalizeCategoryOrder().filter(
+      (categoryKey) => !GRAPH_MANAGED_CATEGORY_SET.has(categoryKey),
+    );
+  }, [categoryOrder, stack.stackMode]);
+  const multiActiveStepIndex = Math.max(
+    0,
+    MULTI_STACK_STEPS.findIndex((step) => step.id === multiActiveStep),
+  );
+  const isMultiMode = stack.stackMode === "multi";
+  const isFinalMultiStep = multiActiveStepIndex >= MULTI_STACK_STEPS.length - 1;
+  const isMultiCreationInProgress = isMultiMode && viewMode === "command";
 
   // ─── URL generation ──────────────────────────────────────────────────────
 
@@ -438,10 +1955,7 @@ const StackBuilder = () => {
 
       if (lastAppliedStackString.current !== adjustedStackString) {
         startTransition(() => {
-          if (
-            !suppressCompatibilityToastRef.current &&
-            compatibilityAnalysis.changes.length > 0
-          ) {
+          if (!suppressCompatibilityToastRef.current && compatibilityAnalysis.changes.length > 0) {
             if (compatibilityAnalysis.changes.length === 1) {
               toast.info(compatibilityAnalysis.changes[0].message, { duration: 4000 });
             } else if (compatibilityAnalysis.changes.length > 1) {
@@ -469,6 +1983,18 @@ const StackBuilder = () => {
     setCommand(cmd);
   }, [stack, adjustedStack]);
 
+  useEffect(() => {
+    if (!isMultiMode) {
+      setMultiActiveStep("frontend");
+    }
+  }, [isMultiMode]);
+
+  useEffect(() => {
+    if (isMultiMode && (viewMode === "presets" || viewMode === "saved")) {
+      setViewMode("command");
+    }
+  }, [isMultiMode, setViewMode, viewMode]);
+
   // ─── Handlers ───────────────────────────────────────────────────────────
 
   const copyToClipboard = () => {
@@ -477,89 +2003,84 @@ const StackBuilder = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const getCompatibilityStackForCategory = (category: keyof typeof TECH_OPTIONS): StackState => {
+    if (stack.stackMode !== "multi" || multiActiveStep !== "finalize") return stack;
+    if (graphSelection.backend === "none") return stack;
+
+    const backendCategories = getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
+    const stackWithGraphBackend = {
+      ...stack,
+      backend: stack.backend === "none" ? ("hono" as StackState["backend"]) : stack.backend,
+    };
+
+    if (!backendCategories.includes(category)) return stackWithGraphBackend;
+
+    return {
+      ...stackWithGraphBackend,
+      ecosystem: graphSelection.backendEcosystem as Ecosystem,
+    };
+  };
+
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
-    if (!isOptionCompatible(stack, category, techId)) return;
+    if (!isOptionCompatible(getCompatibilityStackForCategory(category), category, techId)) return;
 
     startTransition(() => {
       setStack((currentStack: StackState) => {
-        const catKey = category as keyof StackState;
-        const update: Partial<StackState> = {};
-        const currentValue = currentStack[catKey];
-
-        if (isMultiSelectCategory(category as OptionCategory)) {
-          const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
-          let nextArray = [...currentArray];
-          const isSelected = currentArray.includes(techId);
-          const isVirtualNoneCategory = usesVirtualNoneSelection(catKey);
-
-          if (catKey === "webFrontend") {
-            if (techId === "none") {
-              nextArray = ["none"];
-            } else if (isSelected) {
-              if (currentArray.length > 1) {
-                nextArray = nextArray.filter((id) => id !== techId);
-              } else {
-                nextArray = ["none"];
-              }
-            } else {
-              nextArray = [techId];
-            }
-          } else if (catKey === "nativeFrontend") {
-            if (techId === "none") {
-              nextArray = ["none"];
-            } else if (isSelected) {
-              nextArray = ["none"];
-            } else {
-              nextArray = [techId];
-            }
-          } else {
-            if (isVirtualNoneCategory && techId === "none") {
-              nextArray = [];
-            } else if (isSelected) {
-              nextArray = nextArray.filter((id) => id !== techId);
-            } else {
-              nextArray.push(techId);
-            }
-
-            if (nextArray.length > 1) {
-              nextArray = nextArray.filter((id) => id !== "none");
-            }
-            if (
-              nextArray.length === 0 &&
-              (catKey === "codeQuality" ||
-                catKey === "documentation" ||
-                catKey === "appPlatforms" ||
-                catKey === "examples" ||
-                isVirtualNoneCategory)
-            ) {
-              // These categories can be empty
-            } else if (nextArray.length === 0) {
-              nextArray = ["none"];
-            }
-          }
-
-          const uniqueNext = [...new Set(nextArray)].sort();
-          const uniqueCurrent = [...new Set(currentArray)].sort();
-
-          if (JSON.stringify(uniqueNext) !== JSON.stringify(uniqueCurrent)) {
-            (update as Record<string, unknown>)[catKey] = uniqueNext;
-          }
-        } else {
-          if (currentValue !== techId) {
-            (update as Record<string, string>)[catKey] = techId;
-          } else {
-            if ((category === "git" || category === "install") && techId === "false") {
-              (update as Record<string, string>)[catKey] = "true";
-            } else if ((category === "git" || category === "install") && techId === "true") {
-              (update as Record<string, string>)[catKey] = "false";
-            }
-          }
-        }
-
+        const update = getStackOptionUpdate(currentStack, category, techId);
         return Object.keys(update).length > 0 ? update : {};
       });
     });
   };
+
+  const handleMultiActiveStepChange = (stepId: MultiStackStepId) => {
+    setMultiActiveStep(stepId);
+  };
+
+  const handleMultiPreviousStep = () => {
+    const previousStep = MULTI_STACK_STEPS[multiActiveStepIndex - 1];
+    if (previousStep) {
+      handleMultiActiveStepChange(previousStep.id);
+    }
+  };
+
+  const handleMultiNextStep = () => {
+    const nextStep = MULTI_STACK_STEPS[multiActiveStepIndex + 1];
+    if (nextStep) {
+      handleMultiActiveStepChange(nextStep.id);
+    }
+  };
+
+  const enableMultiMode = () => {
+    const specs = graphSelectionToSpecs(getGraphSelection(stack));
+    setStack((current) => ({
+      ...stackPatchFromGraphSpecs(specs),
+      projectName: current.projectName,
+    }));
+  };
+
+  const disableMultiMode = () => {
+    setStack({ stackMode: "solo", stackPartSpecs: [] });
+  };
+
+  // Publish the creation mode to the global Navbar (which renders the
+  // Solo / Multi-Ecosystem toggle in the header) and clear it on unmount.
+  // Handlers are read through refs so the toggle always acts on the latest
+  // stack, while we only re-publish when the mode itself changes.
+  const enableMultiModeRef = useRef(enableMultiMode);
+  const disableMultiModeRef = useRef(disableMultiMode);
+  enableMultiModeRef.current = enableMultiMode;
+  disableMultiModeRef.current = disableMultiMode;
+
+  useEffect(() => {
+    publishBuilderMode(stack.stackMode === "multi" ? "multi" : "solo", (mode) => {
+      if (mode === "multi") {
+        enableMultiModeRef.current();
+      } else {
+        disableMultiModeRef.current();
+      }
+    });
+    return () => clearBuilderMode();
+  }, [stack.stackMode]);
 
   const resetStack = () => {
     startTransition(() => {
@@ -576,7 +2097,7 @@ const StackBuilder = () => {
         TECH_OPTIONS[category as keyof typeof TECH_OPTIONS] || [],
       );
       if (options.length === 0) continue;
-      const catKey = category as keyof StackState;
+      const catKey = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
       if (isMultiSelectCategory(category as OptionCategory)) {
         if (catKey === "webFrontend" || catKey === "nativeFrontend") {
           const randomIndex = Math.floor(Math.random() * options.length);
@@ -605,6 +2126,8 @@ const StackBuilder = () => {
       setStack({
         ...(randomStack as StackState),
         projectName: stack.projectName || "my-app",
+        stackMode: "solo",
+        stackPartSpecs: [],
       });
     });
   };
@@ -727,7 +2250,7 @@ const StackBuilder = () => {
   // Sections shown in the navigation drawer — mirrors the rendered category sections.
   const navSections = useMemo(
     () =>
-      categoryOrder
+      displayedCategoryOrder
         .filter((categoryKey) => {
           if (categoryKey === "astroIntegration") return false;
           if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return false;
@@ -737,7 +2260,7 @@ const StackBuilder = () => {
           );
         })
         .map((categoryKey) => ({ key: categoryKey, name: getCategoryDisplayName(categoryKey) })),
-    [categoryOrder, stack],
+    [displayedCategoryOrder, stack],
   );
 
   const goToSection = (categoryKey: string) => {
@@ -795,62 +2318,66 @@ const StackBuilder = () => {
           }}
           className="flex min-h-0 flex-1 flex-col overflow-y-auto"
         >
-          {/* ─── Ecosystem Header Bar ─────────────────────────────────────── */}
-          <div className="relative shrink-0 border-b border-border bg-fd-background">
-            <div className="grid grid-cols-5">
-              {ECOSYSTEMS.map((eco) => {
-                const isActive = stack.ecosystem === eco.id;
-                return (
-                  <button
-                    key={eco.id}
-                    type="button"
-                    data-testid={`ecosystem-${eco.id}`}
-                    onClick={() => {
-                      startTransition(() => {
-                        setStack({ ecosystem: eco.id as Ecosystem });
-                      });
-                    }}
-                    className={cn(
-                      "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
-                      isActive
-                        ? "bg-muted/40 text-foreground"
-                        : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
-                    )}
-                  >
-                    {/* Active underline */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="ecosystem-indicator"
-                        className={cn(
-                          "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
-                          eco.color,
-                        )}
-                        transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                      />
-                    )}
-
-                    <TechIcon
-                      techId={eco.id}
-                      icon={eco.icon}
-                      name={eco.name}
+          {stack.stackMode !== "multi" && (
+            <div className="relative shrink-0 border-b border-border/60 bg-fd-background">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7">
+                {ECOSYSTEMS.map((eco) => {
+                  const isActive = stack.ecosystem === eco.id;
+                  return (
+                    <button
+                      key={eco.id}
+                      type="button"
+                      data-testid={`ecosystem-${eco.id}`}
+                      onClick={() => {
+                        startTransition(() => {
+                          setStack({
+                            ecosystem: eco.id as Ecosystem,
+                            stackMode: "solo",
+                            stackPartSpecs: [],
+                          });
+                        });
+                      }}
                       className={cn(
-                        "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
-                        isActive ? "scale-110" : "opacity-50 group-hover:opacity-75",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
-                        isActive ? "font-bold" : "",
+                        "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
+                        isActive
+                          ? "bg-muted/40 text-foreground"
+                          : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
                       )}
                     >
-                      {eco.name}
-                    </span>
-                  </button>
-                );
-              })}
+                      {isActive && (
+                        <motion.div
+                          layoutId="ecosystem-indicator"
+                          className={cn(
+                            "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
+                            eco.color,
+                          )}
+                          transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                        />
+                      )}
+
+                      <TechIcon
+                        techId={eco.id}
+                        icon={eco.icon}
+                        name={eco.name}
+                        className={cn(
+                          "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
+                          isActive ? "scale-110" : "opacity-50 group-hover:opacity-75",
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
+                          isActive ? "font-bold" : "",
+                        )}
+                      >
+                        {eco.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           <div
             className={cn("flex", viewMode === "command" ? "" : "min-h-0 flex-1 overflow-hidden")}
@@ -915,22 +2442,24 @@ const StackBuilder = () => {
                   <Hammer className="h-3 w-3" />
                   <span className="hidden min-[480px]:inline">Builder</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("presets")}
-                  data-testid="tab-presets"
-                  aria-pressed={viewMode === "presets"}
-                  data-state={viewMode === "presets" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "presets"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Zap className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Presets</span>
-                </button>
+                {!isMultiMode && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("presets")}
+                    data-testid="tab-presets"
+                    aria-pressed={viewMode === "presets"}
+                    data-state={viewMode === "presets" ? "active" : "inactive"}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                      viewMode === "presets"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Zap className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">Presets</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setViewMode("preview")}
@@ -947,27 +2476,29 @@ const StackBuilder = () => {
                   <Eye className="h-3 w-3" />
                   <span className="hidden min-[480px]:inline">Preview</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("saved")}
-                  data-testid="tab-saved"
-                  aria-pressed={viewMode === "saved"}
-                  data-state={viewMode === "saved" ? "active" : "inactive"}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
-                    viewMode === "saved"
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Bookmark className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Saved</span>
-                </button>
+                {!isMultiMode && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("saved")}
+                    data-testid="tab-saved"
+                    aria-pressed={viewMode === "saved"}
+                    data-state={viewMode === "saved" ? "active" : "inactive"}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[11px]",
+                      viewMode === "saved"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Bookmark className="h-3 w-3" />
+                    <span className="hidden min-[480px]:inline">Saved</span>
+                  </button>
+                )}
 
                 <div className="ml-auto flex items-center gap-1">
                   {/* Desktop action buttons */}
                   <AnimatePresence initial={false}>
-                    {isSaveInputVisible && (
+                    {!isMultiMode && isSaveInputVisible && (
                       <motion.div
                         initial={{ width: 0, opacity: 0 }}
                         animate={{ width: 220, opacity: 1 }}
@@ -1010,83 +2541,89 @@ const StackBuilder = () => {
                     )}
                   </AnimatePresence>
                   <div className="hidden items-center gap-1 sm:flex">
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextVisible = !isSaveInputVisible;
-                              setIsSaveInputVisible(nextVisible);
-                              setSavePresetName(nextVisible ? stack.projectName || "" : "");
-                            }}
-                            title="Save current preset"
-                            aria-label="Save current preset"
-                            className={cn(
-                              "cursor-pointer rounded-md p-1.5 transition-colors",
-                              isSaveInputVisible
-                                ? "bg-primary/15 text-primary"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                            )}
-                          />
-                        }
-                      >
-                        <Save className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Save the current stack as a named preset</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={resetStack}
-                            title="Reset to defaults"
-                            aria-label="Reset to defaults"
-                            data-testid="btn-reset"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Reset all builder options to defaults</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <button
-                            type="button"
-                            onClick={getRandomStack}
-                            title="Generate a random stack"
-                            aria-label="Generate a random stack"
-                            data-testid="btn-random"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <Shuffle className="h-3.5 w-3.5" />
-                      </TooltipTrigger>
-                      <TooltipContent>Generate a random stack configuration</TooltipContent>
-                    </Tooltip>
+                    {!isMultiMode && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const nextVisible = !isSaveInputVisible;
+                                  setIsSaveInputVisible(nextVisible);
+                                  setSavePresetName(nextVisible ? stack.projectName || "" : "");
+                                }}
+                                title="Save current preset"
+                                aria-label="Save current preset"
+                                className={cn(
+                                  "cursor-pointer rounded-md p-1.5 transition-colors",
+                                  isSaveInputVisible
+                                    ? "bg-primary/15 text-primary"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                )}
+                              />
+                            }
+                          >
+                            <Save className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Save the current stack as a named preset</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={resetStack}
+                                title="Reset to defaults"
+                                aria-label="Reset to defaults"
+                                data-testid="btn-reset"
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              />
+                            }
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Reset all builder options to defaults</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={getRandomStack}
+                                title="Generate a random stack"
+                                aria-label="Generate a random stack"
+                                data-testid="btn-random"
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              />
+                            }
+                          >
+                            <Shuffle className="h-3.5 w-3.5" />
+                          </TooltipTrigger>
+                          <TooltipContent>Generate a random stack configuration</TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
                     <ShareButton stackUrl={getStackUrl()} />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <button
-                            type="button"
-                            aria-label="Builder settings"
-                            title="Builder settings"
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          />
-                        }
-                      >
-                        <Settings className="h-3.5 w-3.5" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                        <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!isMultiMode && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <button
+                              type="button"
+                              aria-label="Builder settings"
+                              title="Builder settings"
+                              className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            />
+                          }
+                        >
+                          <Settings className="h-3.5 w-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                          <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
 
                   {/* Mobile three-dot menu */}
@@ -1108,22 +2645,26 @@ const StackBuilder = () => {
                       sideOffset={8}
                       className="w-48 bg-fd-background"
                     >
-                      <DropdownMenuItem
-                        onClick={() => {
-                          saveCurrentStack(stack.projectName || "Untitled preset");
-                        }}
-                      >
-                        <Save className="h-3.5 w-3.5" />
-                        Save Preset
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={resetStack}>
-                        <RefreshCw className="h-3.5 w-3.5" />
-                        Reset to Defaults
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={getRandomStack}>
-                        <Shuffle className="h-3.5 w-3.5" />
-                        Random Stack
-                      </DropdownMenuItem>
+                      {!isMultiMode && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              saveCurrentStack(stack.projectName || "Untitled preset");
+                            }}
+                          >
+                            <Save className="h-3.5 w-3.5" />
+                            Save Preset
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={resetStack}>
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            Reset to Defaults
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={getRandomStack}>
+                            <Shuffle className="h-3.5 w-3.5" />
+                            Random Stack
+                          </DropdownMenuItem>
+                        </>
+                      )}
                       <DropdownMenuItem
                         onClick={async () => {
                           try {
@@ -1144,331 +2685,328 @@ const StackBuilder = () => {
 
               {viewMode === "command" ? (
                 <div className="p-3 pb-24 sm:p-4 sm:pb-28">
-                  {/* Category sections - all options for each category */}
-                  {categoryOrder.map((categoryKey) => {
-                    // Skip astroIntegration - rendered conditionally after webFrontend
-                    if (categoryKey === "astroIntegration") return null;
+                  <CreationModeComposer
+                    stack={stack}
+                    onChange={setStack}
+                    activeStep={multiActiveStep}
+                    onActiveStepChange={handleMultiActiveStepChange}
+                  />
 
-                    // Skip shadcn sub-categories - rendered conditionally after uiLibrary
-                    if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
+                  {/* Category sections - all options for each category.
+                      In multi mode these general settings are the final "Finalize" step. */}
+                  {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
+                    displayedCategoryOrder.map((categoryKey) => {
+                      // Skip astroIntegration - rendered conditionally after webFrontend
+                      if (categoryKey === "astroIntegration") return null;
 
-                    if (stack.ecosystem === "go" && categoryKey === "auth") return null;
+                      // Skip shadcn sub-categories - rendered conditionally after uiLibrary
+                      if (SHADCN_SUB_CATEGORIES.has(categoryKey)) return null;
 
-                    const categoryOptionGroups = getCategoryRenderGroups(
-                      stack,
-                      categoryKey as keyof typeof TECH_OPTIONS,
-                    );
-                    const categoryDisplayName = getCategoryDisplayName(categoryKey);
-                    const sectionCompatibilityNotes =
-                      stack.ecosystem === "go" && categoryKey === "goAuth"
-                        ? mergeCompatibilityNotes(
-                            compatibilityAnalysis.notes.goAuth,
-                            compatibilityAnalysis.notes.auth,
-                          )
-                        : compatibilityAnalysis.notes[categoryKey];
+                      if (stack.ecosystem === "go" && categoryKey === "auth") return null;
 
-                    if (categoryOptionGroups.length === 0) return null;
+                      const categoryOptionGroups = getCategoryRenderGroups(
+                        stack,
+                        categoryKey as keyof typeof TECH_OPTIONS,
+                      );
+                      const categoryDisplayName = getCategoryDisplayName(categoryKey);
+                      const sectionCompatibilityNotes =
+                        stack.ecosystem === "go" && categoryKey === "goAuth"
+                          ? mergeCompatibilityNotes(
+                              compatibilityAnalysis.notes.goAuth,
+                              compatibilityAnalysis.notes.auth,
+                            )
+                          : compatibilityAnalysis.notes[categoryKey];
 
-                    const isSectionCollapsed = collapsedSections.has(categoryKey);
-                    const sectionSelectedCount = getSelectedCount(
-                      categoryKey as keyof typeof TECH_OPTIONS,
-                      stack,
-                    );
+                      if (categoryOptionGroups.length === 0) return null;
 
-                    return (
-                      <div key={categoryKey}>
-                        <section
-                          ref={(el) => {
-                            sectionRefs.current[categoryKey] = el;
-                          }}
-                          id={`section-${categoryKey}`}
-                          data-testid={`category-${categoryKey}`}
-                          className="mb-6 scroll-mt-4 sm:mb-8"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => toggleSection(categoryKey)}
-                            data-testid={`category-toggle-${categoryKey}`}
-                            className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                      const isSectionCollapsed = collapsedSections.has(categoryKey);
+                      const sectionSelectedCount = getSelectedCount(
+                        categoryKey as keyof typeof TECH_OPTIONS,
+                        stack,
+                      );
+
+                      return (
+                        <div key={categoryKey}>
+                          <section
+                            ref={(el) => {
+                              sectionRefs.current[categoryKey] = el;
+                            }}
+                            id={`section-${categoryKey}`}
+                            data-testid={`category-${categoryKey}`}
+                            className="mb-6 scroll-mt-4 sm:mb-8"
                           >
-                            <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                            <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                              {categoryDisplayName}
-                            </h2>
-                            {sectionCompatibilityNotes?.hasIssue && (
-                              <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                            )}
-                            {isSectionCollapsed && sectionSelectedCount > 0 && (
-                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-                                {sectionSelectedCount}
-                              </span>
-                            )}
-                            <motion.div
-                              animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
-                              transition={{ duration: 0.2 }}
+                            <button
+                              type="button"
+                              onClick={() => toggleSection(categoryKey)}
+                              data-testid={`category-toggle-${categoryKey}`}
+                              className="mb-3 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                             >
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            </motion.div>
-                          </button>
-                          <AnimatePresence initial={false}>
-                            {!isSectionCollapsed && (
+                              <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                              <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                                {categoryDisplayName}
+                              </h2>
+                              {sectionCompatibilityNotes?.hasIssue && (
+                                <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
+                              )}
+                              {isSectionCollapsed && sectionSelectedCount > 0 && (
+                                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
+                                  {sectionSelectedCount}
+                                </span>
+                              )}
                               <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.25, ease: "easeInOut" }}
-                                className="overflow-hidden"
+                                animate={{ rotate: isSectionCollapsed ? 0 : 180 }}
+                                transition={{ duration: 0.2 }}
                               >
-                                <CategoryHint categoryKey={categoryKey} />
-                                <div className="space-y-4">
-                                  {categoryOptionGroups.map((group) => (
-                                    <div key={group.key}>
-                                      {group.heading && (
-                                        <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                                          {group.heading}
-                                        </h3>
-                                      )}
-                                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                        {group.options.map((tech) => {
-                                          const isSelected = isSelectedCheck(
-                                            stack,
-                                            group.category,
-                                            tech.id,
-                                          );
-                                          const isDisabled = !isOptionCompatible(
-                                            stack,
-                                            group.category,
-                                            tech.id,
-                                          );
-                                          const disabledReason = isDisabled
-                                            ? getDisabledReason(stack, group.category, tech.id)
-                                            : null;
+                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              </motion.div>
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {!isSectionCollapsed && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                                  className="overflow-hidden"
+                                >
+                                  <CategoryHint categoryKey={categoryKey} />
+                                  <div className="space-y-4">
+                                    {categoryOptionGroups.map((group) => (
+                                      <div key={group.key}>
+                                        {group.heading && (
+                                          <h3 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                                            {group.heading}
+                                          </h3>
+                                        )}
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                          {group.options.map((tech) => {
+                                            const compatibilityStack =
+                                              getCompatibilityStackForCategory(group.category);
+                                            const isSelected = isSelectedCheck(
+                                              stack,
+                                              group.category,
+                                              tech.id,
+                                            );
+                                            const isDisabled = !isOptionCompatible(
+                                              compatibilityStack,
+                                              group.category,
+                                              tech.id,
+                                            );
+                                            const disabledReason = isDisabled
+                                              ? getDisabledReason(
+                                                  compatibilityStack,
+                                                  group.category,
+                                                  tech.id,
+                                                )
+                                              : null;
 
-                                          return (
-                                            <motion.div
-                                              key={tech.id}
-                                              data-testid={`option-${group.category}-${tech.id}`}
-                                              className={cn(
-                                                "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                                isSelected
-                                                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                  : isDisabled
-                                                    ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                    : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                              )}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleTechSelect(group.category, tech.id);
-                                              }}
-                                              title={disabledReason || undefined}
-                                            >
-                                              <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                <TechResourceButtons
-                                                  category={group.category}
-                                                  techId={tech.id}
-                                                />
-                                                {tech.default && !isSelected && (
-                                                  <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                    Default
-                                                  </span>
+                                            return (
+                                              <motion.div
+                                                key={tech.id}
+                                                data-testid={`option-${group.category}-${tech.id}`}
+                                                className={cn(
+                                                  "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                                  isSelected
+                                                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                    : isDisabled
+                                                      ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                      : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
                                                 )}
-                                                {tech.legacy && (
-                                                  <Tooltip>
-                                                    <TooltipTrigger
-                                                      onClick={(e) => e.stopPropagation()}
-                                                      className="cursor-default"
-                                                    >
-                                                      <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                        Legacy
-                                                      </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                      No longer actively maintained
-                                                    </TooltipContent>
-                                                  </Tooltip>
-                                                )}
-                                              </div>
-                                              <div className="flex items-start gap-3">
-                                                {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                                  <div className="flex shrink-0 flex-col items-center gap-1">
-                                                    <div
-                                                      className={cn(
-                                                        "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                        isSelected
-                                                          ? "bg-primary/10"
-                                                          : "bg-muted/50 group-hover:bg-muted",
-                                                      )}
-                                                    >
-                                                      <TechIcon
-                                                        techId={tech.id}
-                                                        icon={tech.icon}
-                                                        name={tech.name}
-                                                        className="h-5 w-5"
-                                                      />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                <div className="min-w-0 flex-1 pt-0.5">
-                                                  <span
-                                                    className={cn(
-                                                      "block font-semibold text-sm",
-                                                      isSelected
-                                                        ? "text-primary"
-                                                        : "text-foreground",
-                                                    )}
-                                                  >
-                                                    {tech.name}
-                                                  </span>
-                                                  <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                    {tech.description}
-                                                  </p>
-                                                  {isDisabled && disabledReason && (
-                                                    <DisabledReasonInline reason={disabledReason} />
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleTechSelect(group.category, tech.id);
+                                                }}
+                                                title={disabledReason || undefined}
+                                              >
+                                                <div className="absolute top-2 right-2 flex items-center gap-1">
+                                                  <TechResourceButtons
+                                                    category={group.category}
+                                                    techId={tech.id}
+                                                  />
+                                                  {tech.default && !isSelected && (
+                                                    <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                                      Default
+                                                    </span>
+                                                  )}
+                                                  {tech.legacy && (
+                                                    <Tooltip>
+                                                      <TooltipTrigger
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="cursor-default"
+                                                      >
+                                                        <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                          Legacy
+                                                        </span>
+                                                      </TooltipTrigger>
+                                                      <TooltipContent>
+                                                        No longer actively maintained
+                                                      </TooltipContent>
+                                                    </Tooltip>
                                                   )}
                                                 </div>
-                                              </div>
-                                            </motion.div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </section>
-
-                        {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
-                        {categoryKey === "uiLibrary" && (
-                          <AnimatePresence>
-                            {stack.uiLibrary === "shadcn-ui" && (
-                              <motion.section
-                                ref={(el) => {
-                                  sectionRefs.current.shadcnBase = el;
-                                }}
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                                data-testid="category-shadcnBase"
-                                className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => toggleSection("shadcnBase")}
-                                  data-testid="category-toggle-shadcnBase"
-                                  className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
-                                >
-                                  <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                  <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                                    shadcn/ui Configuration
-                                  </h2>
-                                  <motion.div
-                                    animate={{
-                                      rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
-                                    }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                  </motion.div>
-                                </button>
-                                <AnimatePresence initial={false}>
-                                  {!collapsedSections.has("shadcnBase") && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      transition={{ duration: 0.25, ease: "easeInOut" }}
-                                      className="overflow-hidden"
-                                    >
-                                      <div className="space-y-4">
-                                        {(
-                                          [
-                                            {
-                                              key: "shadcnBase" as const,
-                                              label: "Base Library",
-                                            },
-                                            {
-                                              key: "shadcnStyle" as const,
-                                              label: "Visual Style",
-                                            },
-                                            {
-                                              key: "shadcnIconLibrary" as const,
-                                              label: "Icon Library",
-                                            },
-                                            {
-                                              key: "shadcnColorTheme" as const,
-                                              label: "Color Theme",
-                                            },
-                                            {
-                                              key: "shadcnBaseColor" as const,
-                                              label: "Base Color",
-                                            },
-                                            { key: "shadcnFont" as const, label: "Font" },
-                                            {
-                                              key: "shadcnRadius" as const,
-                                              label: "Border Radius",
-                                            },
-                                          ] as const
-                                        ).map(({ key, label }) => (
-                                          <div key={key}>
-                                            <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                                              {label}
-                                            </h3>
-                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
-                                              {(TECH_OPTIONS[key] || []).map((tech) => {
-                                                const isSelected =
-                                                  stack[key as keyof StackState] === tech.id;
-                                                return (
-                                                  <motion.div
-                                                    key={tech.id}
-                                                    data-testid={`option-${key}-${tech.id}`}
-                                                    className={cn(
-                                                      "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
-                                                      isSelected
-                                                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                        : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                    )}
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      handleTechSelect(key, tech.id);
-                                                    }}
-                                                  >
-                                                    <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-                                                      <TechResourceButtons
-                                                        category={key}
-                                                        techId={tech.id}
-                                                      />
-                                                      {tech.default && !isSelected && (
-                                                        <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
-                                                          Default
-                                                        </span>
-                                                      )}
+                                                <div className="flex items-start gap-3">
+                                                  {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+                                                    <div className="flex shrink-0 flex-col items-center gap-1">
+                                                      <div
+                                                        className={cn(
+                                                          "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                                                          isSelected
+                                                            ? "bg-primary/10"
+                                                            : "bg-muted/50 group-hover:bg-muted",
+                                                        )}
+                                                      >
+                                                        <TechIcon
+                                                          techId={tech.id}
+                                                          icon={tech.icon}
+                                                          name={tech.name}
+                                                          className="h-5 w-5"
+                                                        />
+                                                      </div>
                                                     </div>
-                                                    <div className="flex items-start gap-2.5">
-                                                      {key === "shadcnColorTheme" ||
-                                                      key === "shadcnBaseColor" ? (
-                                                        <div className="flex shrink-0 flex-col items-center gap-1">
-                                                          <div
-                                                            className={cn(
-                                                              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                              isSelected
-                                                                ? "bg-primary/10"
-                                                                : "bg-muted/50 group-hover:bg-muted",
-                                                            )}
-                                                          >
-                                                            <div
-                                                              className={cn(
-                                                                "h-4 w-4 rounded-full bg-gradient-to-br",
-                                                                tech.color,
-                                                              )}
-                                                            />
-                                                          </div>
-                                                        </div>
-                                                      ) : (
-                                                        (tech.icon !== "" ||
-                                                          ICON_REGISTRY[tech.id]) && (
+                                                  )}
+                                                  <div className="min-w-0 flex-1 pt-0.5">
+                                                    <span
+                                                      className={cn(
+                                                        "block font-semibold text-sm",
+                                                        isSelected
+                                                          ? "text-primary"
+                                                          : "text-foreground",
+                                                      )}
+                                                    >
+                                                      {tech.name}
+                                                    </span>
+                                                    <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                      {tech.description}
+                                                    </p>
+                                                    {isDisabled && disabledReason && (
+                                                      <DisabledReasonInline
+                                                        reason={disabledReason}
+                                                      />
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </motion.div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </section>
+
+                          {/* shadcn/ui Configuration - shown only when shadcn-ui is selected */}
+                          {categoryKey === "uiLibrary" && (
+                            <AnimatePresence>
+                              {stack.uiLibrary === "shadcn-ui" && (
+                                <motion.section
+                                  ref={(el) => {
+                                    sectionRefs.current.shadcnBase = el;
+                                  }}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                                  data-testid="category-shadcnBase"
+                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleSection("shadcnBase")}
+                                    data-testid="category-toggle-shadcnBase"
+                                    className="mb-3 flex w-full items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+                                  >
+                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                    <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                                      shadcn/ui Configuration
+                                    </h2>
+                                    <motion.div
+                                      animate={{
+                                        rotate: collapsedSections.has("shadcnBase") ? 0 : 180,
+                                      }}
+                                      transition={{ duration: 0.2 }}
+                                    >
+                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    </motion.div>
+                                  </button>
+                                  <AnimatePresence initial={false}>
+                                    {!collapsedSections.has("shadcnBase") && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="space-y-4">
+                                          {(
+                                            [
+                                              {
+                                                key: "shadcnBase" as const,
+                                                label: "Base Library",
+                                              },
+                                              {
+                                                key: "shadcnStyle" as const,
+                                                label: "Visual Style",
+                                              },
+                                              {
+                                                key: "shadcnIconLibrary" as const,
+                                                label: "Icon Library",
+                                              },
+                                              {
+                                                key: "shadcnColorTheme" as const,
+                                                label: "Color Theme",
+                                              },
+                                              {
+                                                key: "shadcnBaseColor" as const,
+                                                label: "Base Color",
+                                              },
+                                              { key: "shadcnFont" as const, label: "Font" },
+                                              {
+                                                key: "shadcnRadius" as const,
+                                                label: "Border Radius",
+                                              },
+                                            ] as const
+                                          ).map(({ key, label }) => (
+                                            <div key={key}>
+                                              <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                                {label}
+                                              </h3>
+                                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
+                                                {(TECH_OPTIONS[key] || []).map((tech) => {
+                                                  const isSelected =
+                                                    stack[key as keyof StackState] === tech.id;
+                                                  return (
+                                                    <motion.div
+                                                      key={tech.id}
+                                                      data-testid={`option-${key}-${tech.id}`}
+                                                      className={cn(
+                                                        "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
+                                                        isSelected
+                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                                          : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                                      )}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTechSelect(key, tech.id);
+                                                      }}
+                                                    >
+                                                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                                        <TechResourceButtons
+                                                          category={key}
+                                                          techId={tech.id}
+                                                        />
+                                                        {tech.default && !isSelected && (
+                                                          <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
+                                                            Default
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                      <div className="flex items-start gap-2.5">
+                                                        {key === "shadcnColorTheme" ||
+                                                        key === "shadcnBaseColor" ? (
                                                           <div className="flex shrink-0 flex-col items-center gap-1">
                                                             <div
                                                               className={cn(
@@ -1478,168 +3016,188 @@ const StackBuilder = () => {
                                                                   : "bg-muted/50 group-hover:bg-muted",
                                                               )}
                                                             >
-                                                              <TechIcon
-                                                                techId={tech.id}
-                                                                icon={tech.icon}
-                                                                name={tech.name}
-                                                                className="h-4 w-4"
+                                                              <div
+                                                                className={cn(
+                                                                  "h-4 w-4 rounded-full bg-gradient-to-br",
+                                                                  tech.color,
+                                                                )}
                                                               />
                                                             </div>
                                                           </div>
-                                                        )
-                                                      )}
-                                                      <div className="min-w-0 flex-1">
-                                                        <span
-                                                          className={cn(
-                                                            "block font-semibold text-xs sm:text-sm",
-                                                            isSelected
-                                                              ? "text-primary"
-                                                              : "text-foreground",
-                                                          )}
-                                                        >
-                                                          {tech.name}
-                                                        </span>
-                                                        <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
-                                                          {tech.description}
-                                                        </p>
+                                                        ) : (
+                                                          (tech.icon !== "" ||
+                                                            ICON_REGISTRY[tech.id]) && (
+                                                            <div className="flex shrink-0 flex-col items-center gap-1">
+                                                              <div
+                                                                className={cn(
+                                                                  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                                                                  isSelected
+                                                                    ? "bg-primary/10"
+                                                                    : "bg-muted/50 group-hover:bg-muted",
+                                                                )}
+                                                              >
+                                                                <TechIcon
+                                                                  techId={tech.id}
+                                                                  icon={tech.icon}
+                                                                  name={tech.name}
+                                                                  className="h-4 w-4"
+                                                                />
+                                                              </div>
+                                                            </div>
+                                                          )
+                                                        )}
+                                                        <div className="min-w-0 flex-1">
+                                                          <span
+                                                            className={cn(
+                                                              "block font-semibold text-xs sm:text-sm",
+                                                              isSelected
+                                                                ? "text-primary"
+                                                                : "text-foreground",
+                                                            )}
+                                                          >
+                                                            {tech.name}
+                                                          </span>
+                                                          <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
+                                                            {tech.description}
+                                                          </p>
+                                                        </div>
                                                       </div>
-                                                    </div>
-                                                  </motion.div>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </motion.section>
-                            )}
-                          </AnimatePresence>
-                        )}
-
-                        {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
-                        {categoryKey === "webFrontend" && (
-                          <AnimatePresence>
-                            {stack.webFrontend.includes("astro") && (
-                              <motion.section
-                                ref={(el) => {
-                                  sectionRefs.current.astroIntegration = el;
-                                }}
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                                data-testid="category-astroIntegration"
-                                className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
-                              >
-                                <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
-                                  <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                                  <h2 className="font-mono text-foreground text-sm sm:text-base">
-                                    Astro Integration
-                                  </h2>
-                                </div>
-                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                  {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
-                                    const isSelected = stack.astroIntegration === tech.id;
-                                    const isDisabled = !isOptionCompatible(
-                                      stack,
-                                      "astroIntegration",
-                                      tech.id,
-                                    );
-                                    const disabledReason = isDisabled
-                                      ? getDisabledReason(stack, "astroIntegration", tech.id)
-                                      : null;
-
-                                    return (
-                                      <motion.div
-                                        key={tech.id}
-                                        data-testid={`option-astroIntegration-${tech.id}`}
-                                        className={cn(
-                                          "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                          isSelected
-                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                            : isDisabled
-                                              ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                              : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                        )}
-                                        whileHover={{ scale: 1.01 }}
-                                        whileTap={{ scale: 0.99 }}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleTechSelect("astroIntegration", tech.id);
-                                        }}
-                                        title={disabledReason || undefined}
-                                      >
-                                        {tech.default && !isSelected && (
-                                          <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                            Default
-                                          </span>
-                                        )}
-                                        {tech.legacy && (
-                                          <Tooltip>
-                                            <TooltipTrigger
-                                              onClick={(e) => e.stopPropagation()}
-                                              className="absolute top-2 right-2 cursor-default"
-                                            >
-                                              <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                Legacy
-                                              </span>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              No longer actively maintained
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        )}
-                                        <div className="flex items-start gap-3">
-                                          {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
-                                            <div className="flex shrink-0 flex-col items-center gap-1">
-                                              <div
-                                                className={cn(
-                                                  "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                  isSelected
-                                                    ? "bg-primary/10"
-                                                    : "bg-muted/50 group-hover:bg-muted",
-                                                )}
-                                              >
-                                                <TechIcon
-                                                  techId={tech.id}
-                                                  icon={tech.icon}
-                                                  name={tech.name}
-                                                  className="h-5 w-5"
-                                                />
+                                                    </motion.div>
+                                                  );
+                                                })}
                                               </div>
                                             </div>
-                                          )}
-                                          <div className="min-w-0 flex-1 pt-0.5">
-                                            <span
-                                              className={cn(
-                                                "block font-semibold text-sm",
-                                                isSelected ? "text-primary" : "text-foreground",
-                                              )}
-                                            >
-                                              {tech.name}
-                                            </span>
-                                            <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                              {tech.description}
-                                            </p>
-                                            {isDisabled && disabledReason && (
-                                              <DisabledReasonInline reason={disabledReason} />
-                                            )}
-                                          </div>
+                                          ))}
                                         </div>
                                       </motion.div>
-                                    );
-                                  })}
-                                </div>
-                              </motion.section>
-                            )}
-                          </AnimatePresence>
-                        )}
-                      </div>
-                    );
-                  })}
+                                    )}
+                                  </AnimatePresence>
+                                </motion.section>
+                              )}
+                            </AnimatePresence>
+                          )}
+
+                          {/* Astro Integration - shown only when Astro is selected, right after webFrontend */}
+                          {categoryKey === "webFrontend" && (
+                            <AnimatePresence>
+                              {stack.webFrontend.includes("astro") && (
+                                <motion.section
+                                  ref={(el) => {
+                                    sectionRefs.current.astroIntegration = el;
+                                  }}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                                  data-testid="category-astroIntegration"
+                                  className="mb-6 scroll-mt-4 sm:mb-8 overflow-hidden"
+                                >
+                                  <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
+                                    <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                                    <h2 className="font-mono text-foreground text-sm sm:text-base">
+                                      Astro Integration
+                                    </h2>
+                                  </div>
+                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+                                    {(TECH_OPTIONS.astroIntegration || []).map((tech) => {
+                                      const isSelected = stack.astroIntegration === tech.id;
+                                      const isDisabled = !isOptionCompatible(
+                                        stack,
+                                        "astroIntegration",
+                                        tech.id,
+                                      );
+                                      const disabledReason = isDisabled
+                                        ? getDisabledReason(stack, "astroIntegration", tech.id)
+                                        : null;
+
+                                      return (
+                                        <motion.div
+                                          key={tech.id}
+                                          data-testid={`option-astroIntegration-${tech.id}`}
+                                          className={cn(
+                                            "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+                                            isSelected
+                                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                              : isDisabled
+                                                ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+                                                : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+                                          )}
+                                          whileHover={{ scale: 1.01 }}
+                                          whileTap={{ scale: 0.99 }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleTechSelect("astroIntegration", tech.id);
+                                          }}
+                                          title={disabledReason || undefined}
+                                        >
+                                          {tech.default && !isSelected && (
+                                            <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+                                              Default
+                                            </span>
+                                          )}
+                                          {tech.legacy && (
+                                            <Tooltip>
+                                              <TooltipTrigger
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="absolute top-2 right-2 cursor-default"
+                                              >
+                                                <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
+                                                  Legacy
+                                                </span>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                No longer actively maintained
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          )}
+                                          <div className="flex items-start gap-3">
+                                            {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+                                              <div className="flex shrink-0 flex-col items-center gap-1">
+                                                <div
+                                                  className={cn(
+                                                    "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                                                    isSelected
+                                                      ? "bg-primary/10"
+                                                      : "bg-muted/50 group-hover:bg-muted",
+                                                  )}
+                                                >
+                                                  <TechIcon
+                                                    techId={tech.id}
+                                                    icon={tech.icon}
+                                                    name={tech.name}
+                                                    className="h-5 w-5"
+                                                  />
+                                                </div>
+                                              </div>
+                                            )}
+                                            <div className="min-w-0 flex-1 pt-0.5">
+                                              <span
+                                                className={cn(
+                                                  "block font-semibold text-sm",
+                                                  isSelected ? "text-primary" : "text-foreground",
+                                                )}
+                                              >
+                                                {tech.name}
+                                              </span>
+                                              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                                                {tech.description}
+                                              </p>
+                                              {isDisabled && disabledReason && (
+                                                <DisabledReasonInline reason={disabledReason} />
+                                              )}
+                                            </div>
+                                          </div>
+                                        </motion.div>
+                                      );
+                                    })}
+                                  </div>
+                                </motion.section>
+                              )}
+                            </AnimatePresence>
+                          )}
+                        </div>
+                      );
+                    })}
 
                   <div className="h-10" />
                 </div>
@@ -1702,23 +3260,98 @@ const StackBuilder = () => {
                 <PanelLeft className="h-4 w-4" />
               </button>
             )}
-            <div className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-[14px] border border-transparent bg-[#18181B] pr-1.5 pl-4 font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]">
+            <div
+              className={cn(
+                "flex h-12 min-w-0 flex-1 items-center rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
+                isMultiCreationInProgress ? "gap-2 pr-1.5 pl-2" : "gap-2.5 pr-1.5 pl-4",
+              )}
+            >
+              {isMultiCreationInProgress && (
+                <>
+                  {multiActiveStepIndex > 0 && (
+                    <button
+                      type="button"
+                      data-testid="multi-step-back"
+                      aria-label="Previous step"
+                      onClick={handleMultiPreviousStep}
+                      className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      <span className="hidden min-[420px]:inline">Back</span>
+                    </button>
+                  )}
+                  {!isFinalMultiStep && (
+                    <span className="shrink-0 text-[11.5px] font-semibold text-[#C6E853] select-none">
+                      {multiActiveStepIndex + 1}/{MULTI_STACK_STEPS.length}
+                    </span>
+                  )}
+                  <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
+                </>
+              )}
               <span className="shrink-0 font-medium text-[#C6E853] select-none">$</span>
               <code
                 data-testid="command-output"
-                className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[rgba(250,250,247,0.88)]"
+                className={cn(
+                  "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
+                  isMultiCreationInProgress && !isFinalMultiStep
+                    ? "text-[11px] text-[rgba(250,250,247,0.5)]"
+                    : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
+                )}
               >
                 {command}
               </code>
-              <button
-                type="button"
-                onClick={copyToClipboard}
-                aria-label={copied ? "Command copied" : "Copy command"}
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[9px] bg-[#C6E853] px-3 font-mono text-[11.5px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
-              >
-                {copied ? <Check className="h-3 w-3" /> : <ClipboardCopy className="h-3 w-3" />}
-                {copied ? "Copied" : "Copy"}
-              </button>
+              {isMultiCreationInProgress && !isFinalMultiStep ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={copyToClipboard}
+                    aria-label={copied ? "Command copied" : "Copy command"}
+                    title="Copy partial command"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <ClipboardCopy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="multi-step-next"
+                    onClick={handleMultiNextStep}
+                    className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
+                  >
+                    <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                      <span className="hidden min-[420px]:inline">Next step</span>
+                      <span className="min-[420px]:hidden">Next</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={copyToClipboard}
+                  aria-label={copied ? "Command copied" : "Copy command"}
+                  className={cn(
+                    "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
+                    // The animated gradient border + glow is a multi-ecosystem
+                    // affordance; solo keeps a plain solid lime copy button.
+                    isMultiMode
+                      ? "border-beam bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]"
+                      : "bg-[#C6E853] hover:bg-[#d2ee72]",
+                  )}
+                >
+                  <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <ClipboardCopy className="h-3.5 w-3.5" />
+                    )}
+                    <span>{copied ? "Copied" : "Copy"}</span>
+                  </span>
+                </button>
+              )}
             </div>
             {viewMode === "command" && (
               <button

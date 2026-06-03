@@ -165,6 +165,10 @@ import {
   getMobileTestingChoice,
   getMobileUIChoice,
 } from "./mobile";
+import {
+  gatherMultiEcosystemConfig,
+  getCompositionModeChoice,
+} from "./multi-ecosystem-composer";
 import { navigableGroup } from "./navigable-group";
 import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
@@ -316,6 +320,13 @@ export async function gatherConfig(
   projectDir: string,
   relativePath: string,
 ) {
+  if (flags.ecosystem === undefined && flags.stackParts === undefined) {
+    const compositionMode = await getCompositionModeChoice();
+    if (compositionMode === "multi") {
+      return gatherMultiEcosystemConfig(flags, projectName, projectDir, relativePath);
+    }
+  }
+
   const result = await navigableGroup<PromptGroupResults>(
     {
       // Ecosystem choice first

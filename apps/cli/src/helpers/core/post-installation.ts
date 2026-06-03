@@ -16,6 +16,14 @@ import type {
 
 import { WEB_FRAMEWORKS } from "../../utils/compatibility";
 import { getDockerStatus } from "../../utils/docker-utils";
+import {
+  getGraphBackendDeployInstructions,
+  getGraphBackendUrl,
+  getGraphPart,
+  getGraphSummary,
+  hasGraphPart,
+} from "../../utils/graph-summary";
+
 export async function displayPostInstallInstructions(
   config: ProjectConfig & { depsInstalled: boolean },
 ) {
@@ -84,8 +92,9 @@ export async function displayPostInstallInstructions(
     addons?.includes("lefthook") ||
     addons?.includes("oxlint");
 
+  const graphOrmPart = getGraphPart(config, "orm");
   const databaseInstructions =
-    !isConvex && database !== "none"
+    !isConvex && database !== "none" && !graphOrmPart
       ? await getDatabaseInstructions(
           database,
           orm,
@@ -95,6 +104,10 @@ export async function displayPostInstallInstructions(
           serverDeploy,
           backend,
         )
+      : "";
+  const graphDatabaseInstructions =
+    !isConvex && database !== "none" && graphOrmPart
+      ? getGraphDatabaseInstructions(database, graphOrmPart.ecosystem, graphOrmPart.toolId)
       : "";
 
   const tauriInstructions = addons?.includes("tauri") ? getTauriInstructions(runCmd) : "";
@@ -133,6 +146,7 @@ export async function displayPostInstallInstructions(
     backend,
   );
   const vercelDeployInstructions = getVercelDeployInstructions(webDeploy, serverDeploy, backend);
+  const graphBackendDeployInstructions = getGraphBackendDeployInstructions(config);
 
   const hasWeb = frontend?.some((f) => WEB_FRAMEWORKS.includes(f));
   const hasNative =
@@ -142,7 +156,10 @@ export async function displayPostInstallInstructions(
 
   const bunWebNativeWarning =
     packageManager === "bun" && hasNative && hasWeb ? getBunWebNativeWarning() : "";
-  const noOrmWarning = !isConvex && database !== "none" && orm === "none" ? getNoOrmWarning() : "";
+  const noOrmWarning =
+    !isConvex && database !== "none" && orm === "none" && !hasGraphPart(config, "orm")
+      ? getNoOrmWarning()
+      : "";
 
   const hasFresh = frontend?.includes("fresh");
   const webPort = String(getLocalWebDevPort(frontend ?? []));
@@ -151,7 +168,9 @@ export async function displayPostInstallInstructions(
       ? getBetterAuthConvexInstructions(hasWeb ?? false, webPort, packageManager)
       : "";
 
-  let output = `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
+  const graphSummary = getGraphSummary(config);
+  let output = graphSummary ? `${pc.bold("Generated:")} ${graphSummary}\n\n` : "";
+  output += `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
   let stepCounter = 2;
 
   if (!depsInstalled) {
@@ -194,7 +213,8 @@ export async function displayPostInstallInstructions(
     }
   }
 
-  const hasStandaloneBackend = backend !== "none";
+  const graphBackendUrl = getGraphBackendUrl(config);
+  const hasStandaloneBackend = backend !== "none" || Boolean(graphBackendUrl);
   const hasAnyService =
     hasWeb || hasStandaloneBackend || addons?.includes("starlight") || addons?.includes("fumadocs");
 
@@ -210,7 +230,7 @@ export async function displayPostInstallInstructions(
     }
 
     if (!isConvex && !isBackendSelf && hasStandaloneBackend) {
-      output += `${pc.cyan("•")} Backend API: http://localhost:3000\n`;
+      output += `${pc.cyan("•")} Backend API: ${graphBackendUrl ?? "http://localhost:3000"}\n`;
 
       if (api === "orpc") {
         output += `${pc.cyan("•")} OpenAPI (Scalar UI): http://localhost:3000/api-reference\n`;
@@ -232,6 +252,7 @@ export async function displayPostInstallInstructions(
 
   if (nativeInstructions) output += `\n${nativeInstructions.trim()}\n`;
   if (databaseInstructions) output += `\n${databaseInstructions.trim()}\n`;
+  if (graphDatabaseInstructions) output += `\n${graphDatabaseInstructions.trim()}\n`;
   if (tauriInstructions) output += `\n${tauriInstructions.trim()}\n`;
   if (huskyInstructions) output += `\n${huskyInstructions.trim()}\n`;
   if (lefthookInstructions) output += `\n${lefthookInstructions.trim()}\n`;
@@ -239,6 +260,7 @@ export async function displayPostInstallInstructions(
   if (pwaInstructions) output += `\n${pwaInstructions.trim()}\n`;
   if (alchemyDeployInstructions) output += `\n${alchemyDeployInstructions.trim()}\n`;
   if (vercelDeployInstructions) output += `\n${vercelDeployInstructions.trim()}\n`;
+  if (graphBackendDeployInstructions) output += `\n${graphBackendDeployInstructions.trim()}\n`;
   if (starlightInstructions) output += `\n${starlightInstructions.trim()}\n`;
   if (clerkInstructions) output += `\n${clerkInstructions.trim()}\n`;
   if (authSetupInstructions) output += `\n${authSetupInstructions.trim()}\n`;
@@ -471,6 +493,14 @@ function getNoOrmWarning() {
   return `\n${pc.yellow(
     "WARNING:",
   )} Database selected without an ORM. Features requiring\n   database access (e.g., examples, auth) need manual setup.`;
+}
+
+function getGraphDatabaseInstructions(database: Database, ecosystem: string, ormTool: string) {
+  return `${pc.bold("Database setup:")}\n${pc.cyan(
+    "•",
+  )} Database: ${database}\n${pc.cyan("•")} ORM: ${ecosystem}:${ormTool}\n${pc.cyan(
+    "•",
+  )} Configure ${pc.white("DATABASE_URL")} in ${pc.white("apps/server/.env")}`;
 }
 
 function getBunWebNativeWarning() {
