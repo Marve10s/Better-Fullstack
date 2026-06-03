@@ -51,6 +51,7 @@ yarn.lock
 .smoke-output
 .smoke-manifest.json
 reports/
+artifacts/demos/
 COMPARISON-PLAN.md
 
 .idea
