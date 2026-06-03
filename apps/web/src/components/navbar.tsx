@@ -102,10 +102,11 @@ function StackModeToggle({
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative cursor-pointer rounded-[7px] px-3.5 py-1.5 text-center text-xs font-medium transition-colors duration-200",
+              "relative cursor-pointer rounded-[7px] text-center text-xs font-medium transition-colors duration-200",
+              !isMulti && "px-3.5 py-1.5",
               active ? "text-[#0c0c0e]" : "text-muted-foreground hover:text-foreground",
               isMulti &&
-                "border-beam border border-transparent bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]",
+                "border-beam border border-transparent bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px shadow-[0_0_24px_rgba(198,232,83,0.22)]",
             )}
           >
             {active && (
@@ -115,7 +116,15 @@ function StackModeToggle({
                 transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
               />
             )}
-            <span className="relative z-10">{option.label}</span>
+            <span
+              className={cn(
+                "relative z-10 block rounded-[6px]",
+                isMulti && "bg-fd-background px-3.5 py-1.5",
+                isMulti && active && "bg-transparent",
+              )}
+            >
+              {option.label}
+            </span>
           </button>
         );
       })}
