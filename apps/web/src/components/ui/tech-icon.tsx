@@ -20,13 +20,16 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
     const config = ICON_REGISTRY[techId];
     if (config) {
       if (config.type === "si") {
+        const src = config.needsInvert
+          ? computeSiUrl(config.slug, config.hex, false)
+          : computeSiUrl(config.slug, config.hex, isDark);
         return (
           <img
-            src={computeSiUrl(config.slug, config.hex, isDark)}
+            src={src}
             alt={`${name} icon`}
             width={20}
             height={20}
-            className={cn("inline-block", className)}
+            className={cn("inline-block", getInvertClass(config.needsInvert), className)}
           />
         );
       }

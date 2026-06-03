@@ -3,7 +3,7 @@
 //   SiConfig  → rendered from cdn.simpleicons.org with auto-computed colour
 //   LocalConfig → rendered from a local /public/icon/* file or external URL
 
-export type SiConfig = { type: "si"; slug: string; hex: string };
+export type SiConfig = { type: "si"; slug: string; hex: string; needsInvert?: "dark" | "light" };
 export type LocalConfig = {
   type: "local";
   src: string;
@@ -53,7 +53,7 @@ export function getInvertClass(needsInvert?: "dark" | "light" | "both"): string 
 export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Ecosystems ────────────────────────────────────────────────────────────
   typescript: { type: "si", slug: "typescript", hex: "3178C6" },
-  rust: { type: "si", slug: "rust", hex: "000000" },
+  rust: { type: "si", slug: "rust", hex: "000000", needsInvert: "dark" },
   python: { type: "si", slug: "python", hex: "3776AB" },
   go: { type: "si", slug: "go", hex: "00ADD8" },
   java: { type: "local", src: "/icon/java.svg" },
