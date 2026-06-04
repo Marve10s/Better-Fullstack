@@ -90,9 +90,23 @@ function generateGraphReadmeContent(config: ProjectConfig): string {
   const frontendPart = (config.stackParts ?? []).find(
     (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
   );
+  const databasePart = (config.stackParts ?? []).find(
+    (part) => part.role === "database" && part.source !== "provided" && part.toolId !== "none",
+  );
   const frontendLabel = frontendPart?.toolId ?? config.frontend.find((entry) => entry !== "none");
+  const installCommand =
+    config.packageManager === "npm"
+      ? "npm install"
+      : config.packageManager === "pnpm"
+        ? "pnpm install"
+        : config.packageManager === "yarn"
+          ? "yarn install"
+          : "bun install";
   const setupLine = graphBackend?.setupCommand
     ? `\n\`\`\`sh\n${graphBackend.setupCommand}\n\`\`\`\n`
+    : "";
+  const databaseNote = databasePart
+    ? `\nDatabase-backed backend selections expect a local ${databasePart.toolId} database or a matching \`DATABASE_URL\` in the backend environment before you start the server. Copy the backend \`.env.example\` to \`.env\` and adjust it for your machine.\n`
     : "";
   const serverScripts = graphBackend
     ? [
@@ -124,6 +138,13 @@ ${hasWebFrontend(config) ? "│   ├── web/         # Frontend application\
 
 ## Local Development
 
+Install the JavaScript workspace dependencies first. If you created the project with \`--no-install\`, this step has not run yet.
+
+\`\`\`sh
+${installCommand}
+\`\`\`
+
+${graphBackend?.setupCommand ? `Prepare the backend dependencies and database state:\n${setupLine}` : ""}${databaseNote}
 Run the frontend and backend in separate terminals so each ecosystem keeps its native watcher and logs.
 
 \`\`\`sh
@@ -131,7 +152,6 @@ bun run dev:web
 \`\`\`
 
 ${graphBackend ? `\`\`\`sh\n${graphBackend.devCommand}\n\`\`\`` : ""}
-${setupLine}
 ${graphBackend ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check targets \`${graphBackend.healthUrl}\`, and the web environment file contains the matching public server URL.\n` : ""}
 ## Root Scripts
 
@@ -1656,12 +1676,12 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   }
 
   scripts += `
-- \`uv run pytest\`: Run tests`;
+- \`uv run --extra dev pytest\`: Run tests`;
 
   if (pythonQuality === "ruff") {
     scripts += `
-- \`uv run ruff check .\`: Run linter
-- \`uv run ruff format .\`: Format code`;
+- \`uv run --extra dev ruff check .\`: Run linter
+- \`uv run --extra dev ruff format .\`: Format code`;
   } else if (pythonQuality === "mypy") {
     scripts += `
 - \`uv run mypy src/app tests\`: Run type checks`;
@@ -1709,7 +1729,7 @@ cp .env.example .env
 Then, install dependencies using uv:
 
 \`\`\`bash
-uv sync
+uv sync --extra dev
 \`\`\`
 
 ${

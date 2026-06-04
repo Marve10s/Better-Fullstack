@@ -50,6 +50,7 @@ dependencies = [
 {{#if (eq pythonValidation "pydantic")}}
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
+    "email-validator>=2.3.0",
 {{/if}}
 {{#if (includes pythonAi "langchain")}}
     "langchain>=0.3.0",
@@ -158,6 +159,9 @@ dev = [
 {{/if}}
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+{{#if (eq pythonWebFramework "fastapi")}}
+    "httpx>=0.28.0",
+{{/if}}
 ]
 
 [build-system]
@@ -184,6 +188,9 @@ select = [
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
+{{#if (eq pythonWebFramework "fastapi")}}
+    "B008",   # FastAPI intentionally uses Depends() in argument defaults
+{{/if}}
 ]
 
 [tool.ruff.format]

@@ -14,106 +14,181 @@ import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
 
+function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
+  if (!stackParts) return projectConfig;
+
+  const legacyConfig = stackPartsToLegacyProjectConfigPartial(stackParts);
+  const selectedEcosystems = new Set(
+    stackParts.filter((part) => part.source !== "provided").map((part) => part.ecosystem),
+  );
+
+  const normalized: ProjectConfig = { ...projectConfig, ...legacyConfig };
+
+  if (!selectedEcosystems.has("rust")) {
+    normalized.rustWebFramework = "none";
+    normalized.rustFrontend = "none";
+    normalized.rustOrm = "none";
+    normalized.rustApi = "none";
+    normalized.rustCli = "none";
+    normalized.rustLibraries = [];
+    normalized.rustLogging = "none";
+    normalized.rustErrorHandling = "none";
+    normalized.rustCaching = "none";
+    normalized.rustAuth = "none";
+  }
+
+  if (!selectedEcosystems.has("python")) {
+    normalized.pythonWebFramework = "none";
+    normalized.pythonOrm = "none";
+    normalized.pythonValidation = "none";
+    normalized.pythonAi = [];
+    normalized.pythonAuth = "none";
+    normalized.pythonApi = "none";
+    normalized.pythonTaskQueue = "none";
+    normalized.pythonGraphql = "none";
+    normalized.pythonQuality = "none";
+  }
+
+  if (!selectedEcosystems.has("go")) {
+    normalized.goWebFramework = "none";
+    normalized.goOrm = "none";
+    normalized.goApi = "none";
+    normalized.goCli = "none";
+    normalized.goLogging = "none";
+    normalized.goAuth = "none";
+  }
+
+  if (!selectedEcosystems.has("java")) {
+    normalized.javaWebFramework = "none";
+    normalized.javaBuildTool = "none";
+    normalized.javaOrm = "none";
+    normalized.javaAuth = "none";
+    normalized.javaLibraries = [];
+    normalized.javaTestingLibraries = [];
+  }
+
+  if (!selectedEcosystems.has("elixir")) {
+    normalized.elixirWebFramework = "none";
+    normalized.elixirOrm = "none";
+    normalized.elixirAuth = "none";
+    normalized.elixirApi = "none";
+    normalized.elixirRealtime = "none";
+    normalized.elixirJobs = "none";
+    normalized.elixirValidation = "none";
+    normalized.elixirHttp = "none";
+    normalized.elixirJson = "none";
+    normalized.elixirEmail = "none";
+    normalized.elixirCaching = "none";
+    normalized.elixirObservability = "none";
+    normalized.elixirTesting = "none";
+    normalized.elixirQuality = "none";
+    normalized.elixirDeploy = "none";
+  }
+
+  return normalized;
+}
+
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
   const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
+  const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, projectConfig.stackParts);
   const graphSummary = projectConfig.stackParts ? getGraphSummary({ stackParts }) : null;
   const effectiveStack = projectConfig.stackParts ? getEffectiveStack({ stackParts }) : undefined;
   const btsConfig: BetterTStackConfig = {
     version: getLatestCLIVersion(),
     createdAt: new Date().toISOString(),
     ...(graphSummary ? { graphSummary, effectiveStack } : {}),
-    ecosystem: projectConfig.ecosystem,
-    database: projectConfig.database,
-    orm: projectConfig.orm,
-    backend: projectConfig.backend,
-    runtime: projectConfig.runtime,
-    frontend: projectConfig.frontend,
-    addons: projectConfig.addons,
-    examples: projectConfig.examples,
-    auth: projectConfig.auth,
-    payments: projectConfig.payments,
-    email: projectConfig.email,
-    fileUpload: projectConfig.fileUpload,
-    effect: projectConfig.effect,
-    ai: projectConfig.ai,
-    stateManagement: projectConfig.stateManagement,
-    validation: projectConfig.validation,
-    forms: projectConfig.forms,
-    testing: projectConfig.testing,
-    packageManager: projectConfig.packageManager,
-    versionChannel: projectConfig.versionChannel,
-    dbSetup: projectConfig.dbSetup,
-    api: projectConfig.api,
-    webDeploy: projectConfig.webDeploy,
-    serverDeploy: projectConfig.serverDeploy,
-    cssFramework: projectConfig.cssFramework,
-    uiLibrary: projectConfig.uiLibrary,
-    realtime: projectConfig.realtime,
-    jobQueue: projectConfig.jobQueue,
-    animation: projectConfig.animation,
-    logging: projectConfig.logging,
-    observability: projectConfig.observability,
-    featureFlags: projectConfig.featureFlags,
-    analytics: projectConfig.analytics,
-    mobileNavigation: projectConfig.mobileNavigation,
-    mobileUI: projectConfig.mobileUI,
-    mobileStorage: projectConfig.mobileStorage,
-    mobileTesting: projectConfig.mobileTesting,
-    mobilePush: projectConfig.mobilePush,
-    mobileOTA: projectConfig.mobileOTA,
-    mobileDeepLinking: projectConfig.mobileDeepLinking,
-    cms: projectConfig.cms,
-    caching: projectConfig.caching,
-    i18n: projectConfig.i18n,
-    search: projectConfig.search,
-    fileStorage: projectConfig.fileStorage,
-    rustWebFramework: projectConfig.rustWebFramework,
-    rustFrontend: projectConfig.rustFrontend,
-    rustOrm: projectConfig.rustOrm,
-    rustApi: projectConfig.rustApi,
-    rustCli: projectConfig.rustCli,
-    rustLibraries: projectConfig.rustLibraries,
-    rustLogging: projectConfig.rustLogging,
-    rustErrorHandling: projectConfig.rustErrorHandling,
-    rustCaching: projectConfig.rustCaching,
-    rustAuth: projectConfig.rustAuth,
-    pythonWebFramework: projectConfig.pythonWebFramework,
-    pythonOrm: projectConfig.pythonOrm,
-    pythonValidation: projectConfig.pythonValidation,
-    pythonAi: projectConfig.pythonAi,
-    pythonAuth: projectConfig.pythonAuth,
-    pythonApi: projectConfig.pythonApi,
-    pythonTaskQueue: projectConfig.pythonTaskQueue,
-    pythonGraphql: projectConfig.pythonGraphql,
-    pythonQuality: projectConfig.pythonQuality,
-    goWebFramework: projectConfig.goWebFramework,
-    goOrm: projectConfig.goOrm,
-    goApi: projectConfig.goApi,
-    goCli: projectConfig.goCli,
-    goLogging: projectConfig.goLogging,
-    goAuth: projectConfig.goAuth,
-    javaWebFramework: projectConfig.javaWebFramework,
-    javaBuildTool: projectConfig.javaBuildTool,
-    javaOrm: projectConfig.javaOrm,
-    javaAuth: projectConfig.javaAuth,
-    javaLibraries: projectConfig.javaLibraries,
-    javaTestingLibraries: projectConfig.javaTestingLibraries,
-    elixirWebFramework: projectConfig.elixirWebFramework,
-    elixirOrm: projectConfig.elixirOrm,
-    elixirAuth: projectConfig.elixirAuth,
-    elixirApi: projectConfig.elixirApi,
-    elixirRealtime: projectConfig.elixirRealtime,
-    elixirJobs: projectConfig.elixirJobs,
-    elixirValidation: projectConfig.elixirValidation,
-    elixirHttp: projectConfig.elixirHttp,
-    elixirJson: projectConfig.elixirJson,
-    elixirEmail: projectConfig.elixirEmail,
-    elixirCaching: projectConfig.elixirCaching,
-    elixirObservability: projectConfig.elixirObservability,
-    elixirTesting: projectConfig.elixirTesting,
-    elixirQuality: projectConfig.elixirQuality,
-    elixirDeploy: projectConfig.elixirDeploy,
-    aiDocs: projectConfig.aiDocs,
+    ecosystem: persistedConfig.ecosystem,
+    database: persistedConfig.database,
+    orm: persistedConfig.orm,
+    backend: persistedConfig.backend,
+    runtime: persistedConfig.runtime,
+    frontend: persistedConfig.frontend,
+    addons: persistedConfig.addons,
+    examples: persistedConfig.examples,
+    auth: persistedConfig.auth,
+    payments: persistedConfig.payments,
+    email: persistedConfig.email,
+    fileUpload: persistedConfig.fileUpload,
+    effect: persistedConfig.effect,
+    ai: persistedConfig.ai,
+    stateManagement: persistedConfig.stateManagement,
+    validation: persistedConfig.validation,
+    forms: persistedConfig.forms,
+    testing: persistedConfig.testing,
+    packageManager: persistedConfig.packageManager,
+    versionChannel: persistedConfig.versionChannel,
+    dbSetup: persistedConfig.dbSetup,
+    api: persistedConfig.api,
+    webDeploy: persistedConfig.webDeploy,
+    serverDeploy: persistedConfig.serverDeploy,
+    cssFramework: persistedConfig.cssFramework,
+    uiLibrary: persistedConfig.uiLibrary,
+    realtime: persistedConfig.realtime,
+    jobQueue: persistedConfig.jobQueue,
+    animation: persistedConfig.animation,
+    logging: persistedConfig.logging,
+    observability: persistedConfig.observability,
+    featureFlags: persistedConfig.featureFlags,
+    analytics: persistedConfig.analytics,
+    mobileNavigation: persistedConfig.mobileNavigation,
+    mobileUI: persistedConfig.mobileUI,
+    mobileStorage: persistedConfig.mobileStorage,
+    mobileTesting: persistedConfig.mobileTesting,
+    mobilePush: persistedConfig.mobilePush,
+    mobileOTA: persistedConfig.mobileOTA,
+    mobileDeepLinking: persistedConfig.mobileDeepLinking,
+    cms: persistedConfig.cms,
+    caching: persistedConfig.caching,
+    i18n: persistedConfig.i18n,
+    search: persistedConfig.search,
+    fileStorage: persistedConfig.fileStorage,
+    rustWebFramework: persistedConfig.rustWebFramework,
+    rustFrontend: persistedConfig.rustFrontend,
+    rustOrm: persistedConfig.rustOrm,
+    rustApi: persistedConfig.rustApi,
+    rustCli: persistedConfig.rustCli,
+    rustLibraries: persistedConfig.rustLibraries,
+    rustLogging: persistedConfig.rustLogging,
+    rustErrorHandling: persistedConfig.rustErrorHandling,
+    rustCaching: persistedConfig.rustCaching,
+    rustAuth: persistedConfig.rustAuth,
+    pythonWebFramework: persistedConfig.pythonWebFramework,
+    pythonOrm: persistedConfig.pythonOrm,
+    pythonValidation: persistedConfig.pythonValidation,
+    pythonAi: persistedConfig.pythonAi,
+    pythonAuth: persistedConfig.pythonAuth,
+    pythonApi: persistedConfig.pythonApi,
+    pythonTaskQueue: persistedConfig.pythonTaskQueue,
+    pythonGraphql: persistedConfig.pythonGraphql,
+    pythonQuality: persistedConfig.pythonQuality,
+    goWebFramework: persistedConfig.goWebFramework,
+    goOrm: persistedConfig.goOrm,
+    goApi: persistedConfig.goApi,
+    goCli: persistedConfig.goCli,
+    goLogging: persistedConfig.goLogging,
+    goAuth: persistedConfig.goAuth,
+    javaWebFramework: persistedConfig.javaWebFramework,
+    javaBuildTool: persistedConfig.javaBuildTool,
+    javaOrm: persistedConfig.javaOrm,
+    javaAuth: persistedConfig.javaAuth,
+    javaLibraries: persistedConfig.javaLibraries,
+    javaTestingLibraries: persistedConfig.javaTestingLibraries,
+    elixirWebFramework: persistedConfig.elixirWebFramework,
+    elixirOrm: persistedConfig.elixirOrm,
+    elixirAuth: persistedConfig.elixirAuth,
+    elixirApi: persistedConfig.elixirApi,
+    elixirRealtime: persistedConfig.elixirRealtime,
+    elixirJobs: persistedConfig.elixirJobs,
+    elixirValidation: persistedConfig.elixirValidation,
+    elixirHttp: persistedConfig.elixirHttp,
+    elixirJson: persistedConfig.elixirJson,
+    elixirEmail: persistedConfig.elixirEmail,
+    elixirCaching: persistedConfig.elixirCaching,
+    elixirObservability: persistedConfig.elixirObservability,
+    elixirTesting: persistedConfig.elixirTesting,
+    elixirQuality: persistedConfig.elixirQuality,
+    elixirDeploy: persistedConfig.elixirDeploy,
+    aiDocs: persistedConfig.aiDocs,
     stackParts,
   };
 

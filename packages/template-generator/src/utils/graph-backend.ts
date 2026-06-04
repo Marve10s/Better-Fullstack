@@ -101,10 +101,10 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         serverUrl: "http://localhost:8000",
         healthPath: "/health",
         healthUrl: "http://localhost:8000/health",
-        setupCommand: `cd ${targetPath} && uv sync`,
+        setupCommand: `cd ${targetPath} && uv sync --extra dev`,
         devCommand,
-        checkCommand: `cd ${targetPath} && uv run ruff check .`,
-        testCommand: `cd ${targetPath} && uv run pytest`,
+        checkCommand: `cd ${targetPath} && uv run --extra dev ruff check .`,
+        testCommand: `cd ${targetPath} && uv run --extra dev pytest`,
       };
     }
     case "go":

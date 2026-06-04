@@ -5,6 +5,7 @@ import { describe, expect, it } from "bun:test";
 import { cliInputToProjectConfigPartial } from "@better-fullstack/types";
 
 import { createVirtual } from "../src/index";
+import { displayConfig } from "../src/utils/display-config";
 
 function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
   if (node.type === "file") {
@@ -196,12 +197,40 @@ describe("Cross-ecosystem graph generation", () => {
 
           if (ecosystem === "python") {
             expect(fileContent(root, "apps/server/README.md")).toContain("Python backend");
+            const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
+              scripts?: Record<string, string>;
+            };
+            expect(rootPackage.scripts?.["setup:server"]).toBe(
+              "cd apps/server && uv sync --extra dev",
+            );
+            expect(rootPackage.scripts?.["check:server"]).toBe(
+              "cd apps/server && uv run --extra dev ruff check .",
+            );
+            expect(rootPackage.scripts?.["test:server"]).toBe(
+              "cd apps/server && uv run --extra dev pytest",
+            );
           }
         }
       }
     },
     30_000,
   );
+
+  it("shows ecosystem auth in the CLI config summary", () => {
+    const output = displayConfig({
+      backend: "none",
+      auth: "none",
+      stackParts: graphParts([
+        "backend:elixir:phoenix",
+        "backend.auth:elixir:phx-gen-auth",
+      ]),
+    });
+
+    expect(output).toContain("Backend:");
+    expect(output).toContain("elixir:phoenix");
+    expect(output).toContain("Auth:");
+    expect(output).toContain("elixir:phx-gen-auth");
+  });
 
   it("adds graph backend status UI to Angular, Qwik, and Redwood", async () => {
     const cases = [
