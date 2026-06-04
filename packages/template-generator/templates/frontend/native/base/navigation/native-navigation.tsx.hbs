@@ -1,12 +1,11 @@
 {{#if (eq mobileNavigation "react-navigation")}}
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Text, View, Pressable, StyleSheet } from "react-native";
+import { Platform, Text, View, Pressable, StyleSheet } from "react-native";
 {{#if (eq auth "clerk")}}
 import { useUser } from "@clerk/clerk-expo";
 {{/if}}
 {{#if (eq mobilePush "expo-notifications")}}
-import { registerForPushNotificationsAsync } from "@/lib/notifications";
 {{/if}}
 {{#if (eq mobileOTA "expo-updates")}}
 import { useUpdateCheck } from "@/lib/updates";
@@ -42,7 +41,11 @@ function HomeScreen() {
 
   useEffect(() => {
     {{#if (eq mobilePush "expo-notifications")}}
-    registerForPushNotificationsAsync().catch(console.warn);
+    if (Platform.OS !== "web") {
+      import("@/lib/notifications")
+        .then(({ registerForPushNotificationsAsync }) => registerForPushNotificationsAsync())
+        .catch(console.warn);
+    }
     {{/if}}
     {{#if (eq mobileStorage "mmkv")}}
     mobileStorage.set("lastOpenedAt", new Date().toISOString());

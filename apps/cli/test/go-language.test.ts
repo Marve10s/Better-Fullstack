@@ -1013,6 +1013,29 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("defer database.Close()");
     });
 
+    it("should mount CRUD handler routes when an ORM is selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-gin-crud-routes",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "gorm",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toContain('"go-gin-crud-routes/internal/handlers"');
+      expect(mainContent).toContain('api := r.Group("/api")');
+      expect(mainContent).toContain('api.GET("/users", handlers.GetUsers)');
+      expect(mainContent).toContain('api.POST("/users", handlers.CreateUser)');
+      expect(mainContent).toContain('api.GET("/posts", handlers.GetPosts)');
+      expect(mainContent).toContain('api.POST("/posts", handlers.CreatePost)');
+    });
+
     it("should not generate sqlc files when GORM is selected", async () => {
       const result = await createVirtual({
         projectName: "go-gorm-no-sqlc",

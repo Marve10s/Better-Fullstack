@@ -570,6 +570,36 @@ describe("Python Language Support", () => {
       expect(databaseContent).toContain("init_db");
     });
 
+    it("should normalize SQLAlchemy Postgres URLs to the installed psycopg driver", async () => {
+      const result = await createVirtual({
+        projectName: "python-sqlalchemy-postgres-url",
+        ecosystem: "python",
+        database: "postgres",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "sqlalchemy",
+        pythonValidation: "pydantic",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "ruff",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const databaseContent = getFileContent(root, "src/app/database.py");
+      expect(databaseContent).toContain("postgresql+psycopg://postgres:postgres");
+      expect(databaseContent).toContain('DATABASE_URL.startswith("postgresql://")');
+      expect(databaseContent).toContain(
+        'DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)',
+      );
+
+      const migrationEnv = getFileContent(root, "migrations/env.py");
+      expect(migrationEnv).toContain("def get_database_url()");
+      expect(migrationEnv).toContain(
+        'database_url.replace("postgresql://", "postgresql+psycopg://", 1)',
+      );
+    });
+
     it("should create SQLAlchemy models module", async () => {
       const result = await createVirtual({
         projectName: "python-sqlalchemy-models",
@@ -827,6 +857,30 @@ describe("Python Language Support", () => {
       expect(databaseContent).toContain("from sqlmodel import Session, SQLModel, create_engine");
       expect(databaseContent).toContain("get_db");
       expect(databaseContent).toContain("init_db");
+    });
+
+    it("should normalize SQLModel Postgres URLs to the installed psycopg driver", async () => {
+      const result = await createVirtual({
+        projectName: "python-sqlmodel-postgres-url",
+        ecosystem: "python",
+        database: "postgres",
+        pythonWebFramework: "fastapi",
+        pythonOrm: "sqlmodel",
+        pythonValidation: "none",
+        pythonAi: [],
+        pythonTaskQueue: "none",
+        pythonQuality: "ruff",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const databaseContent = getFileContent(root, "src/app/database.py");
+      expect(databaseContent).toContain("postgresql+psycopg://postgres:postgres");
+      expect(databaseContent).toContain('DATABASE_URL.startswith("postgresql://")');
+      expect(databaseContent).toContain(
+        'DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)',
+      );
     });
 
     it("should create SQLModel models with built-in schemas", async () => {

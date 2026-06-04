@@ -2,12 +2,14 @@ import type { PackageManager } from "../types";
 
 import { exitCancelled } from "../utils/errors";
 import { getUserPkgManager } from "../utils/get-package-manager";
+import { canPromptInteractively } from "../utils/prompt-environment";
 import { isCancel, navigableSelect } from "./navigable";
 
 export async function getPackageManagerChoice(packageManager?: PackageManager) {
   if (packageManager !== undefined) return packageManager;
 
   const detectedPackageManager = getUserPkgManager();
+  if (!canPromptInteractively()) return detectedPackageManager;
 
   const response = await navigableSelect<PackageManager>({
     message: "Choose package manager",

@@ -67,6 +67,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   // Ensure workspaces is an array
   let workspaces: string[] = [];
+  let workspaceCatalog: Record<string, string> | undefined;
   if (Array.isArray(pkgJson.workspaces)) {
     workspaces = pkgJson.workspaces;
   } else if (
@@ -75,8 +76,8 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     pkgJson.workspaces.packages
   ) {
     workspaces = pkgJson.workspaces.packages;
+    workspaceCatalog = pkgJson.workspaces.catalog;
   }
-  pkgJson.workspaces = workspaces;
 
   const scripts = pkgJson.scripts;
   const { projectName, packageManager, backend, database, orm, dbSetup, serverDeploy, addons } =
@@ -92,12 +93,30 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   const pmConfig = getPackageManagerConfig(packageManager, hasTurborepo);
   const graphBackend = getGraphBackendConnection(config);
+  const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
+  const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
 
-  scripts.dev = graphBackend ? pmConfig.filter("web", "dev") : pmConfig.dev;
+  if (graphBackend && hasWebWorkspace) {
+    scripts.dev = pmConfig.filter("web", "dev");
+  } else if (graphBackend && !hasNativeWorkspace) {
+    scripts.dev = graphBackend.devCommand;
+  } else {
+    scripts.dev = pmConfig.dev;
+  }
   scripts.build = pmConfig.build;
   scripts["check-types"] = pmConfig.checkTypes;
-  scripts["dev:native"] = pmConfig.filter("native", "dev");
-  scripts["dev:web"] = pmConfig.filter("web", "dev");
+
+  if (hasWebWorkspace) {
+    scripts["dev:web"] = pmConfig.filter("web", "dev");
+  } else {
+    delete scripts["dev:web"];
+  }
+
+  if (hasNativeWorkspace) {
+    scripts["dev:native"] = pmConfig.filter("native", "dev");
+  } else {
+    delete scripts["dev:native"];
+  }
 
   if (graphBackend) {
     scripts["dev:server"] = graphBackend.devCommand;
@@ -180,6 +199,10 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     }
   }
 
+  pkgJson.workspaces = workspaceCatalog
+    ? { packages: workspaces, catalog: workspaceCatalog }
+    : workspaces;
+
   vfs.writeJson("package.json", pkgJson);
 }
 
@@ -239,8 +262,8 @@ function getPackageManagerConfig(
       };
     case "npm":
       return {
-        dev: "npm run dev --workspaces",
-        build: "npm run build --workspaces",
+        dev: "npm run dev --workspaces --if-present",
+        build: "npm run build --workspaces --if-present",
         checkTypes: "npm run check-types --workspaces --if-present",
         filter: (workspace, script) => `npm run ${script} --workspace ${workspace}`,
       };

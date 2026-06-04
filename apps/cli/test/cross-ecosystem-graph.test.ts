@@ -92,6 +92,14 @@ function graphDocPathFor(frontend: string) {
   return frontend === "redwood" ? "GRAPH_BACKEND.md" : "apps/web/GRAPH_BACKEND.md";
 }
 
+function componentEnvReferenceFor(frontend: string) {
+  if (frontend === "next") return "NEXT_PUBLIC_SERVER_URL";
+  if (frontend === "nuxt") return "serverUrl";
+  if (frontend === "svelte" || frontend === "astro") return "PUBLIC_SERVER_URL";
+  if (frontend === "redwood") return "REDWOOD_ENV_SERVER_URL";
+  return "VITE_SERVER_URL";
+}
+
 describe("Cross-ecosystem graph generation", () => {
   it("connects a TypeScript Next frontend to an Elixir Phoenix backend", async () => {
     const result = await createVirtual({
@@ -114,7 +122,10 @@ describe("Cross-ecosystem graph generation", () => {
       "NEXT_PUBLIC_SERVER_URL=http://localhost:4000",
     );
     expect(fileContent(root, "apps/web/src/components/graph-backend-status.tsx")).toContain(
-      "http://localhost:4000/api/health",
+      "NEXT_PUBLIC_SERVER_URL",
+    );
+    expect(fileContent(root, "apps/web/src/components/graph-backend-status.tsx")).toContain(
+      "/api/health",
     );
     expect(fileContent(root, "apps/web/src/app/page.tsx")).toContain("<GraphBackendStatus />");
     expect(fileContent(root, "apps/web/GRAPH_BACKEND.md")).toContain(
@@ -148,7 +159,10 @@ describe("Cross-ecosystem graph generation", () => {
 
     expect(fileContent(root, "apps/web/.env")).toContain("PUBLIC_SERVER_URL=http://localhost:3000");
     expect(fileContent(root, "apps/web/src/components/GraphBackendStatus.astro")).toContain(
-      "http://localhost:3000/health",
+      "PUBLIC_SERVER_URL",
+    );
+    expect(fileContent(root, "apps/web/src/components/GraphBackendStatus.astro")).toContain(
+      "/health",
     );
 
     const astroPage = fileContent(root, "apps/web/src/pages/index.astro");
@@ -196,13 +210,25 @@ describe("Cross-ecosystem graph generation", () => {
           expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
 
           if (ecosystem === "python") {
-            expect(fileContent(root, "apps/server/README.md")).toContain("Python backend");
+            const backendReadme = fileContent(root, "apps/server/README.md");
+            expect(backendReadme).toContain("Python backend");
             const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
               scripts?: Record<string, string>;
             };
             expect(rootPackage.scripts?.["setup:server"]).toBe(
               "cd apps/server && uv sync --extra dev",
             );
+            if (backend === "fastapi") {
+              expect(rootPackage.scripts?.["dev:server"]).toBe(
+                "cd apps/server && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}",
+              );
+              expect(backendReadme).toContain("uv run uvicorn app.main:app");
+            } else if (backend === "litestar") {
+              expect(rootPackage.scripts?.["dev:server"]).toBe(
+                "cd apps/server && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
+              );
+              expect(backendReadme).toContain("uv run litestar --app src.app.main:app run");
+            }
             expect(rootPackage.scripts?.["check:server"]).toBe(
               "cd apps/server && uv run --extra dev ruff check .",
             );
@@ -215,6 +241,24 @@ describe("Cross-ecosystem graph generation", () => {
     },
     30_000,
   );
+
+  it("uses the selected package manager in graph README app commands", async () => {
+    const result = await createVirtual({
+      projectName: "npm-next-go",
+      packageManager: "npm",
+      frontend: ["next"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      stackParts: graphParts(["frontend:typescript:next", "backend:go:gin"]),
+    });
+
+    expect(result.success).toBe(true);
+    const readme = fileContent(result.tree!.root, "README.md");
+    expect(readme).toContain("npm install");
+    expect(readme).toContain("npm run dev:web");
+    expect(readme).not.toContain("bun run dev:web");
+  });
 
   it("shows ecosystem auth in the CLI config summary", () => {
     const output = displayConfig({
@@ -263,7 +307,8 @@ describe("Cross-ecosystem graph generation", () => {
 
       expect(result.success).toBe(true);
       const root = result.tree!.root;
-      expect(fileContent(root, componentPath)).toContain("http://localhost:3000/health");
+      expect(fileContent(root, componentPath)).toContain(componentEnvReferenceFor(frontend));
+      expect(fileContent(root, componentPath)).toContain("/health");
       expect(fileContent(root, pagePath)).toContain("GraphBackendStatus");
     }
   });

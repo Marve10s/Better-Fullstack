@@ -81,6 +81,12 @@ function appendChangedArrayFlag(
   }
 }
 
+function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
+  if (config.frontend.includes("astro") && config.astroIntegration !== "none") {
+    flags.push(`--astro-integration ${config.astroIntegration}`);
+  }
+}
+
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
   appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
   appendChangedArrayFlag(flags, "examples", config.examples, []);
@@ -89,6 +95,7 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
   appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
 
   if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
+    appendAstroIntegrationFlag(flags, config);
     appendChangedStringFlag(flags, "css-framework", config.cssFramework, "tailwind");
     appendChangedStringFlag(flags, "ui-library", config.uiLibrary, "shadcn-ui");
     if (config.uiLibrary === "shadcn-ui") {
@@ -226,6 +233,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   } else {
     flags.push("--frontend none");
   }
+  appendAstroIntegrationFlag(flags, config);
 
   flags.push(`--backend ${config.backend}`);
   flags.push(`--runtime ${config.runtime}`);

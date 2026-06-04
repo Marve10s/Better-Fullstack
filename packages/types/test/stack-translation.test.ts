@@ -113,6 +113,32 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--backend");
   });
 
+  it("promotes explicit CLI graph feature flags into scoped stack parts", () => {
+    const config = cliInputToProjectConfigPartial(
+      {
+        part: ["frontend:typescript:react-vite", "backend:java:spring-boot"],
+        database: "postgres",
+        javaOrm: "spring-data-jpa",
+        javaAuth: "spring-security",
+      },
+      "java-graph",
+    );
+
+    const specs = config.stackParts?.map((part) => {
+      const owner = config.stackParts?.find((candidate) => candidate.id === part.ownerPartId);
+      return owner ? `${owner.role}.${part.role}:${part.ecosystem}:${part.toolId}` : `${part.role}:${part.ecosystem}:${part.toolId}`;
+    });
+
+    expect(config.database).toBe("postgres");
+    expect(config.javaOrm).toBe("spring-data-jpa");
+    expect(config.javaAuth).toBe("spring-security");
+    expect(specs).toContain("frontend:typescript:react-vite");
+    expect(specs).toContain("backend:java:spring-boot");
+    expect(specs).toContain("database:universal:postgres");
+    expect(specs).toContain("backend.orm:java:spring-data-jpa");
+    expect(specs).toContain("backend.auth:java:spring-security");
+  });
+
   it("emits changed ecosystem-specific graph flags for multi-ecosystem selections", () => {
     const command = generateStackSelectionCommand({
       ...DEFAULT_SELECTION,

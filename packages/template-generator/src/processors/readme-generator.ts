@@ -87,11 +87,15 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
 
 function generateGraphReadmeContent(config: ProjectConfig): string {
   const graphBackend = getGraphBackendConnection(config);
+  const hasWeb = hasWebFrontend(config);
   const frontendPart = (config.stackParts ?? []).find(
     (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
   );
   const databasePart = (config.stackParts ?? []).find(
     (part) => part.role === "database" && part.source !== "provided" && part.toolId !== "none",
+  );
+  const graphOrmPart = (config.stackParts ?? []).find(
+    (part) => part.role === "orm" && part.source !== "provided",
   );
   const frontendLabel = frontendPart?.toolId ?? config.frontend.find((entry) => entry !== "none");
   const installCommand =
@@ -102,22 +106,33 @@ function generateGraphReadmeContent(config: ProjectConfig): string {
         : config.packageManager === "yarn"
           ? "yarn install"
           : "bun install";
+  const packageManagerRunCommand =
+    config.packageManager === "npm" ? "npm run" : config.packageManager;
   const setupLine = graphBackend?.setupCommand
     ? `\n\`\`\`sh\n${graphBackend.setupCommand}\n\`\`\`\n`
     : "";
-  const databaseNote = databasePart
-    ? `\nDatabase-backed backend selections expect a local ${databasePart.toolId} database or a matching \`DATABASE_URL\` in the backend environment before you start the server. Copy the backend \`.env.example\` to \`.env\` and adjust it for your machine.\n`
+  const databaseNote =
+    databasePart && graphBackend?.ecosystem === "java" && graphOrmPart?.toolId === "spring-data-jpa"
+      ? "\nThe generated Spring Data JPA example uses an embedded H2 dev database. Update `apps/server/src/main/resources/application.yml` when switching to an external database.\n"
+      : databasePart
+        ? `\nDatabase-backed backend selections expect a local ${databasePart.toolId} database or a matching \`DATABASE_URL\` in the backend environment before you start the server. Copy the backend \`.env.example\` to \`.env\` and adjust it for your machine.\n`
+    : "";
+  const hasJavaSpringSecurity = (config.stackParts ?? []).some(
+    (part) => part.role === "auth" && part.ecosystem === "java" && part.toolId === "spring-security",
+  );
+  const authNote = hasJavaSpringSecurity
+    ? "\nSpring Security is enabled. HTTP Basic auth protects application endpoints except `/health`; set `APP_BASIC_USERNAME` and `APP_BASIC_PASSWORD` before running locally if you want credentials other than the dev defaults.\n"
     : "";
   const serverScripts = graphBackend
     ? [
-        "- `dev:server` starts the generated backend.",
         graphBackend.setupCommand ? "- `setup:server` installs or prepares backend dependencies." : null,
+        "- `dev:server` starts the generated backend.",
         graphBackend.checkCommand ? "- `check:server` runs the backend compile/check lane." : null,
         graphBackend.testCommand ? "- `test:server` runs backend tests." : null,
       ]
         .filter(Boolean)
         .join("\n")
-    : "- `dev:server` starts the generated TypeScript backend when one is selected.";
+    : null;
 
   return `# ${config.projectName}
 
@@ -144,20 +159,26 @@ Install the JavaScript workspace dependencies first. If you created the project 
 ${installCommand}
 \`\`\`
 
-${graphBackend?.setupCommand ? `Prepare the backend dependencies and database state:\n${setupLine}` : ""}${databaseNote}
-Run the frontend and backend in separate terminals so each ecosystem keeps its native watcher and logs.
+${graphBackend?.setupCommand ? `Prepare the backend dependencies and database state before starting the server:\n${setupLine}` : ""}${databaseNote}${authNote}
+Run the generated apps in separate terminals so each ecosystem keeps its native watcher and logs.
 
-\`\`\`sh
-bun run dev:web
+${hasWeb ? `\`\`\`sh
+${packageManagerRunCommand} dev:web
 \`\`\`
-
-${graphBackend ? `\`\`\`sh\n${graphBackend.devCommand}\n\`\`\`` : ""}
-${graphBackend ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check targets \`${graphBackend.healthUrl}\`, and the web environment file contains the matching public server URL.\n` : ""}
+` : ""}${config.frontend.some((entry) => entry.startsWith("native-")) ? `\`\`\`sh
+${packageManagerRunCommand} dev:native
+\`\`\`
+` : ""}
+${graphBackend ? `Start the backend:
+\`\`\`sh
+${graphBackend.devCommand}
+\`\`\`` : ""}
+${graphBackend && hasWeb ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check reads the matching public server URL from the web environment file and targets \`${graphBackend.healthPath}\`.\n` : ""}
 ## Root Scripts
 
-- \`dev\` starts the web workspace for graph projects.
-- \`dev:web\` starts the frontend workspace.
-${serverScripts}
+- \`dev\` starts the primary generated workspace for graph projects.
+${hasWeb ? "- `dev:web` starts the frontend workspace.\n" : ""}${config.frontend.some((entry) => entry.startsWith("native-")) ? "- `dev:native` starts the React Native/Expo workspace.\n" : ""}
+${serverScripts ? `${serverScripts}\n` : ""}
 
 ## Compatibility Notes
 
@@ -466,6 +487,7 @@ function generateReadmeContent(options: ProjectConfig): string {
   const hasNative = frontend.some((f) =>
     ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
   );
+  const hasWeb = hasWebFrontend(options);
   const packageManagerRunCmd = `${packageManager} run`;
   const webPort = String(getLocalWebDevPort(frontend));
 
@@ -536,7 +558,7 @@ Then, run the development server:
 ${packageManagerRunCmd} dev
 \`\`\`
 
-${generateRunningInstructions(frontend, backend, webPort, hasNative, isConvex)}
+${generateRunningInstructions(frontend, backend, webPort, hasWeb, hasNative, isConvex)}
 ${
   ai === "ai-cli"
     ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n`
@@ -563,7 +585,7 @@ ${generateProjectStructure(projectName, frontend, backend, addons, isConvex, api
 
 ## Available Scripts
 
-${generateScriptsList(packageManagerRunCmd, database, orm, hasNative, addons, backend, dbSetup)}
+${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, addons, backend, dbSetup)}
 `;
 }
 
@@ -784,14 +806,14 @@ function generateRunningInstructions(
   frontend: ProjectConfig["frontend"],
   backend: ProjectConfig["backend"],
   webPort: string,
+  hasWeb: boolean,
   hasNative: boolean,
   isConvex: boolean,
 ): string {
   const instructions: string[] = [];
-  const hasFrontend = frontend.length > 0 && !frontend.includes("none");
   const isBackendSelf = backend === "self";
 
-  if (hasFrontend) {
+  if (hasWeb) {
     const desc = isBackendSelf ? "fullstack application" : "web application";
     instructions.push(
       `Open [http://localhost:${webPort}](http://localhost:${webPort}) in your browser to see the ${desc}.`,
@@ -821,13 +843,13 @@ function generateProjectStructure(
   auth: ProjectConfig["auth"],
 ): string {
   const structure: string[] = [`${projectName}/`, "├── apps/"];
-  const hasFrontend = frontend.length > 0 && !frontend.includes("none");
+  const hasWeb = hasWebFrontend({ frontend });
   const isBackendSelf = backend === "self";
   const hasNative = frontend.some((f) =>
     ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
   );
 
-  if (hasFrontend) {
+  if (hasWeb) {
     const frontendTypes: Record<string, string> = {
       "tanstack-router": "React + TanStack Router",
       "react-router": "React + React Router",
@@ -848,7 +870,7 @@ function generateProjectStructure(
   }
 
   if (hasNative) {
-    structure.push("│   ├── native/      # Mobile application (React Native, Expo)");
+    structure.push(`│   ${hasWeb ? "├──" : "└──"} native/      # Mobile application (React Native, Expo)`);
   }
 
   if (addons.includes("starlight")) {
@@ -1111,6 +1133,7 @@ function generateScriptsList(
   packageManagerRunCmd: string,
   database: ProjectConfig["database"],
   orm: ProjectConfig["orm"],
+  hasWeb: boolean,
   hasNative: boolean,
   addons: ProjectConfig["addons"],
   backend: ProjectConfig["backend"],
@@ -1122,7 +1145,7 @@ function generateScriptsList(
   let scripts = `- \`${packageManagerRunCmd} dev\`: Start all applications in development mode
 - \`${packageManagerRunCmd} build\`: Build all applications`;
 
-  if (!isBackendSelf) {
+  if (hasWeb && !isBackendSelf) {
     scripts += `\n- \`${packageManagerRunCmd} dev:web\`: Start only the web application`;
   }
 
@@ -1666,8 +1689,8 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   let scripts = `- \`uv run python -m app.main\`: Run the application`;
 
   if (pythonWebFramework === "fastapi") {
-    scripts = `- \`uv run uvicorn app.main:app --reload\`: Start FastAPI dev server
-- \`uv run uvicorn app.main:app\`: Start FastAPI production server`;
+    scripts = `- \`uv run uvicorn app.main:app --reload --host 0.0.0.0 --port \${PORT:-8000}\`: Start FastAPI dev server
+- \`uv run uvicorn app.main:app --host 0.0.0.0 --port \${PORT:-8000}\`: Start FastAPI production server`;
   } else if (pythonWebFramework === "django") {
     scripts = `- \`uv run python -m app.main\`: Start Django dev server`;
   } else if (pythonWebFramework === "flask") {

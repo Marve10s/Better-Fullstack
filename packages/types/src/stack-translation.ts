@@ -1,4 +1,4 @@
-import type { CLIInput, ProjectConfig } from "./types";
+import type { CLIInput, ProjectConfig, StackPart, StackPartEcosystem, StackPartRole } from "./types";
 
 import { analyzeStackCompatibility, type CompatibilityInput } from "./compatibility";
 import { createCliDefaultProjectConfigBase, type CliDefaultProjectConfigBase } from "./defaults";
@@ -1074,11 +1074,73 @@ export function cliInputToProjectConfigPartial(
   }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
-    const stackParts = parseStackPartSpecs(input.part, "selected");
+    const stackParts = getCliGraphStackParts(input);
     Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
   }
 
   return config;
+}
+
+function getCliGraphStackParts(input: CLIInput): StackPart[] {
+  const stackParts = parseStackPartSpecs(input.part ?? [], "selected");
+  const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
+  const stackPartSpecSet = new Set(stackPartSpecs);
+
+  const hasPrimary = (role: StackPartRole, ecosystem: StackPartEcosystem) =>
+    stackParts.some(
+      (part) =>
+        part.role === role &&
+        part.ecosystem === ecosystem &&
+        !part.ownerPartId &&
+        part.source !== "provided",
+    );
+  const hasScoped = (role: StackPartRole, ecosystem: StackPartEcosystem) =>
+    stackParts.some(
+      (part) => part.role === role && part.ecosystem === ecosystem && part.source !== "provided",
+    );
+  const addScopedBackendPart = (
+    ecosystem: Exclude<StackPartEcosystem, "universal" | "react-native">,
+    role: Exclude<StackPartRole, "frontend" | "backend" | "mobile" | "database">,
+    value: string | undefined,
+  ) => {
+    if (!value || value === "none" || !hasPrimary("backend", ecosystem) || hasScoped(role, ecosystem)) {
+      return;
+    }
+    const spec = `backend.${role}:${ecosystem}:${value}`;
+    if (!stackPartSpecSet.has(spec)) {
+      stackPartSpecs.push(spec);
+      stackPartSpecSet.add(spec);
+    }
+  };
+
+  if (input.database && input.database !== "none" && !hasPrimary("database", "universal")) {
+    const spec = `database:universal:${input.database}`;
+    if (!stackPartSpecSet.has(spec)) {
+      stackPartSpecs.push(spec);
+      stackPartSpecSet.add(spec);
+    }
+  }
+
+  addScopedBackendPart("typescript", "orm", input.orm);
+  addScopedBackendPart("typescript", "api", input.api);
+  addScopedBackendPart("typescript", "auth", input.auth);
+  addScopedBackendPart("rust", "orm", input.rustOrm);
+  addScopedBackendPart("rust", "api", input.rustApi);
+  addScopedBackendPart("rust", "auth", input.rustAuth);
+  addScopedBackendPart("python", "orm", input.pythonOrm);
+  addScopedBackendPart("python", "api", input.pythonApi);
+  addScopedBackendPart("python", "api", input.pythonGraphql);
+  addScopedBackendPart("python", "auth", input.pythonAuth);
+  addScopedBackendPart("go", "orm", input.goOrm);
+  addScopedBackendPart("go", "api", input.goApi);
+  addScopedBackendPart("go", "auth", input.goAuth);
+  addScopedBackendPart("java", "orm", input.javaOrm);
+  addScopedBackendPart("java", "auth", input.javaAuth);
+  addScopedBackendPart("elixir", "orm", input.elixirOrm);
+  addScopedBackendPart("elixir", "api", input.elixirApi);
+  addScopedBackendPart("elixir", "auth", input.elixirAuth);
+
+  return parseStackPartSpecs(stackPartSpecs, "selected");
 }
 
 function buildProjectConfigBase(

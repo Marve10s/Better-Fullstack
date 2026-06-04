@@ -32,6 +32,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: tanstack-ro
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -92,6 +93,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: next-self-f
   "apps/web/src/lib/utils.ts",
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -136,6 +138,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
   "apps/web/src/styles/global.css",
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -177,6 +180,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
   "apps/web/public/robots.txt",
   "apps/web/server/tsconfig.json",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -232,6 +236,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: express-nod
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -286,6 +291,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-or
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -347,6 +353,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: better-auth
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -400,6 +407,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: convex-cler
   "apps/web/src/routes/index.tsx",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/backend/convex/README.md",
   "packages/backend/convex/auth.config.ts",
@@ -452,6 +460,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
   "apps/web/src/middleware.ts",
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -504,6 +513,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -559,6 +569,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: mongodb-mon
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -611,6 +622,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: postgres-pr
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -666,6 +678,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: algolia-sea
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -722,6 +735,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: ai-cli-root
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -771,6 +785,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: frontend-on
   "apps/web/src/routes/index.tsx",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/config/package.json",
   "packages/config/tsconfig.base.json",
@@ -815,6 +830,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "apps/server/src/index.ts",
   "apps/server/tsconfig.json",
   "apps/server/tsdown.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -871,6 +887,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-mobi
   "apps/server/src/index.ts",
   "apps/server/tsconfig.json",
   "apps/server/tsdown.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -947,7 +964,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -1369,6 +1386,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -1398,7 +1419,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-tanstack-router-minimal/db db:push",
@@ -1718,7 +1738,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: next-self-fullstack 1`] = `
 {
-  "fileCount": 64,
+  "fileCount": 65,
   "files": [
     {
       "content": "[exists]",
@@ -1990,6 +2010,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -2017,7 +2041,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-next-self-fullstack/db db:push",
     "db:studio": "bun run --filter @snapshot-next-self-fullstack/db db:studio",
@@ -2535,7 +2558,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 41,
+  "fileCount": 42,
   "files": [
     {
       "content": "[exists]",
@@ -2578,8 +2601,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0",
-    "tailwindcss": "^4.3.0",
+    "@tailwindcss/vite": "4.1.12",
+    "tailwindcss": "4.1.12",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.1.5",
     "typescript": "catalog:",
@@ -2674,6 +2697,10 @@ export const orpc = createTanstackQueryUtils(client)
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -2700,7 +2727,6 @@ export const orpc = createTanstackQueryUtils(client)
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-astro-react-integration/db db:push",
     "db:studio": "bun run --filter @snapshot-astro-react-integration/db db:studio",
@@ -3016,7 +3042,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 41,
+  "fileCount": 42,
   "files": [
     {
       "content": "[exists]",
@@ -3190,6 +3216,10 @@ export default defineNuxtConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -3220,7 +3250,6 @@ export default defineNuxtConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-nuxt-standalone/db db:push",
     "db:studio": "bun run --filter @snapshot-nuxt-standalone/db db:studio",
@@ -3538,7 +3567,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: express-node-trpc 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -3960,6 +3989,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -3988,7 +4021,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-express-node-trpc/db db:push",
@@ -4282,7 +4314,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -4740,6 +4772,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -4771,7 +4807,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-hono-bun-orpc/db db:push",
@@ -5090,7 +5125,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: better-auth-full 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
     {
       "content": "[exists]",
@@ -5549,6 +5584,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -5577,7 +5616,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-better-auth-full/db db:push",
@@ -6101,7 +6139,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 46,
   "files": [
     {
       "content": "[exists]",
@@ -6387,6 +6425,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -6413,7 +6455,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter @snapshot-convex-clerk/backend dev",
     "dev:setup": "bun run --filter @snapshot-convex-clerk/backend dev:setup"
@@ -6629,7 +6670,7 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -6875,6 +6916,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -6903,7 +6948,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-self-next-clerk/db db:push",
     "db:studio": "bun run --filter @snapshot-self-next-clerk/db db:studio",
@@ -7223,7 +7267,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 51,
+  "fileCount": 52,
   "files": [
     {
       "content": "[exists]",
@@ -7564,6 +7608,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -7594,7 +7642,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:push",
     "db:studio": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:studio",
@@ -7911,7 +7958,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoose 1`] = `
 {
-  "fileCount": 52,
+  "fileCount": 53,
   "files": [
     {
       "content": "[exists]",
@@ -8331,6 +8378,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -8358,7 +8409,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev"
   },
@@ -8631,7 +8681,7 @@ export { client };
 
 exports[`Template Snapshots Key File Content Snapshots key files: postgres-prisma 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -9052,6 +9102,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -9080,7 +9134,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-postgres-prisma/db db:push",
@@ -9374,7 +9427,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: algolia-search-hono 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
     {
       "content": "[exists]",
@@ -9801,6 +9854,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -9830,7 +9887,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-algolia-search-hono/db db:push",
@@ -10150,7 +10206,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-tooling 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
     {
       "content": "[exists]",
@@ -10576,6 +10632,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -10605,7 +10665,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-ai-cli-root-tooling/db db:push",
@@ -10931,7 +10990,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-no-backend 1`] = `
 {
-  "fileCount": 35,
+  "fileCount": 36,
   "files": [
     {
       "content": "[exists]",
@@ -11179,6 +11238,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -11203,7 +11266,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev"
   },
   "packageManager": "bun@1.3.5",
@@ -11329,7 +11391,7 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
     {
       "content": "[exists]",
@@ -11580,6 +11642,7 @@ fontWeight: "bold",
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start --clear",
+    "build": "expo export",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
@@ -11608,12 +11671,12 @@ fontWeight: "bold",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-native": "^0.85.3",
-    "react-native-gesture-handler": "^3.0.0",
-    "react-native-reanimated": "^4.4.0",
+    "react-native-gesture-handler": "^2.28.0",
+    "react-native-reanimated": "4.3.0",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.9.1",
+    "react-native-worklets": "0.8.3",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-native-react-native/env": "workspace:*",
@@ -11784,6 +11847,10 @@ export default app;
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -11812,7 +11879,6 @@ export default app;
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
     "dev:native": "bun run --filter native dev",
-    "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-native-react-native/db db:push",
     "db:studio": "bun run --filter @snapshot-native-react-native/db db:studio",
@@ -12131,7 +12197,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-mobile-integrations 1`] = `
 {
-  "fileCount": 59,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -12279,6 +12345,7 @@ registerRootComponent(App);
   "main": "index.js",
   "scripts": {
     "dev": "expo start --clear",
+    "build": "expo export",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
@@ -12312,12 +12379,12 @@ registerRootComponent(App);
     "react-dom": "^19.2.6",
     "react-native": "^0.85.3",
     "react-native-mmkv": "^4.3.1",
-    "react-native-gesture-handler": "^3.0.0",
-    "react-native-reanimated": "^4.4.0",
+    "react-native-gesture-handler": "^2.28.0",
+    "react-native-reanimated": "4.3.0",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.9.1",
+    "react-native-worklets": "0.8.3",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-native-mobile-integrations/env": "workspace:*",
@@ -12534,6 +12601,10 @@ export default app;
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -12564,7 +12635,6 @@ export default app;
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
     "dev:native": "bun run --filter native dev",
-    "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev"
   },
   "packageManager": "bun@1.3.5",
