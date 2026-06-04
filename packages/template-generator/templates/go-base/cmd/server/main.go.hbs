@@ -405,7 +405,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
+{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
 	api := r.Group("/api")
 	api.GET("/users", handlers.GetUsers)
@@ -418,6 +418,14 @@ func main() {
 	api.GET("/posts/:id", handlers.GetPost)
 	api.PUT("/posts/:id", handlers.UpdatePost)
 	api.DELETE("/posts/:id", handlers.DeletePost)
+{{else if (eq goOrm "ent")}}
+
+	api := r.Group("/api")
+	api.GET("/users", handlers.GetUsers)
+	api.POST("/users", handlers.CreateUser)
+	api.DELETE("/users/:id", handlers.DeleteUser)
+	api.GET("/posts", handlers.GetPosts)
+	api.POST("/posts", handlers.CreatePost)
 {{/if}}
 
 	// Start server
@@ -472,7 +480,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
+{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
 	e.GET("/api/users", handlers.GetUsers)
 	e.POST("/api/users", handlers.CreateUser)
@@ -484,6 +492,13 @@ func main() {
 	e.GET("/api/posts/:id", handlers.GetPost)
 	e.PUT("/api/posts/:id", handlers.UpdatePost)
 	e.DELETE("/api/posts/:id", handlers.DeletePost)
+{{else if (eq goOrm "ent")}}
+
+	e.GET("/api/users", handlers.GetUsers)
+	e.POST("/api/users", handlers.CreateUser)
+	e.DELETE("/api/users/:id", handlers.DeleteUser)
+	e.GET("/api/posts", handlers.GetPosts)
+	e.POST("/api/posts", handlers.CreatePost)
 {{/if}}
 
 	// Start server
@@ -538,7 +553,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
+{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
 	app.Get("/api/users", handlers.GetUsers)
 	app.Post("/api/users", handlers.CreateUser)
@@ -550,6 +565,13 @@ func main() {
 	app.Get("/api/posts/:id", handlers.GetPost)
 	app.Put("/api/posts/:id", handlers.UpdatePost)
 	app.Delete("/api/posts/:id", handlers.DeletePost)
+{{else if (eq goOrm "ent")}}
+
+	app.Get("/api/users", handlers.GetUsers)
+	app.Post("/api/users", handlers.CreateUser)
+	app.Delete("/api/users/:id", handlers.DeleteUser)
+	app.Get("/api/posts", handlers.GetPosts)
+	app.Post("/api/posts", handlers.CreatePost)
 {{/if}}
 
 	// Start server
@@ -619,7 +641,7 @@ func main() {
 			"message": "Welcome to {{projectName}}!",
 		})
 	})
-{{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
+{{#if (or (eq goOrm "gorm") (eq goOrm "sqlc"))}}
 
 	r.Get("/api/users", handlers.GetUsers)
 	r.Post("/api/users", handlers.CreateUser)
@@ -631,6 +653,13 @@ func main() {
 	r.Get("/api/posts/{id}", handlers.GetPost)
 	r.Put("/api/posts/{id}", handlers.UpdatePost)
 	r.Delete("/api/posts/{id}", handlers.DeletePost)
+{{else if (eq goOrm "ent")}}
+
+	r.Get("/api/users", handlers.GetUsers)
+	r.Post("/api/users", handlers.CreateUser)
+	r.Delete("/api/users/{id}", handlers.DeleteUser)
+	r.Get("/api/posts", handlers.GetPosts)
+	r.Post("/api/posts", handlers.CreatePost)
 {{/if}}
 
 	// Start server
