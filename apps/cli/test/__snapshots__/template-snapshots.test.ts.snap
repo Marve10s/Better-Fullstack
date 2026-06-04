@@ -13012,7 +13012,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -13439,7 +13439,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -13857,7 +13857,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14272,7 +14272,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14533,7 +14533,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14767,7 +14767,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
