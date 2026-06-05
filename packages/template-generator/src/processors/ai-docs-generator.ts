@@ -367,7 +367,7 @@ function generateCommandsSection(config: ProjectConfig): string {
     lines.push(`- \`cargo clippy\` - Run linter`);
     lines.push(`- \`cargo fmt\` - Format code`);
   } else if (config.ecosystem === "python") {
-    lines.push(`- \`uv sync\` - Install dependencies`);
+    lines.push(`- \`uv sync --extra dev\` - Install dependencies`);
     if (config.pythonWebFramework === "fastapi") {
       lines.push(`- \`uv run uvicorn app.main:app --reload\` - Start dev server`);
     } else if (config.pythonWebFramework === "flask") {
@@ -377,10 +377,10 @@ function generateCommandsSection(config: ProjectConfig): string {
     } else {
       lines.push(`- \`uv run python -m app.main\` - Run application`);
     }
-    lines.push(`- \`uv run pytest\` - Run tests`);
+    lines.push(`- \`uv run --extra dev pytest\` - Run tests`);
     if (config.pythonQuality === "ruff") {
-      lines.push(`- \`uv run ruff check .\` - Run linter`);
-      lines.push(`- \`uv run ruff format .\` - Format code`);
+      lines.push(`- \`uv run --extra dev ruff check .\` - Run linter`);
+      lines.push(`- \`uv run --extra dev ruff format .\` - Format code`);
     }
   } else if (config.ecosystem === "go") {
     lines.push(`- \`go mod tidy\` - Install dependencies`);

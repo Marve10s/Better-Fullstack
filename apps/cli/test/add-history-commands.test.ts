@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "bun:test";
-import { execa } from "execa";
+import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdtemp, mkdir, readFile, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
@@ -10,6 +10,10 @@ const CLI_ENTRY = resolve(import.meta.dir, "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
 const BUN_EXECUTABLE = process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
 const TEMP_ROOTS: string[] = [];
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
 
 async function makeTempRoot(prefix: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), prefix));
@@ -26,17 +30,65 @@ async function runCli(
 ) {
   const maxAttempts = 5;
   let attempt = 0;
-  let lastResult: Awaited<ReturnType<typeof execa>> | undefined;
+  let lastResult:
+    | {
+        exitCode: number;
+        stdout: string;
+        stderr: string;
+        all: string;
+      }
+    | undefined;
 
   while (attempt < maxAttempts) {
-    const result = await execa(BUN_EXECUTABLE, ["run", CLI_ENTRY, ...args], {
-      cwd: options.cwd,
-      env: {
-        ...process.env,
-        CI: "true",
-        ...options.env,
-      },
-      reject: false,
+    const outputDir = await mkdtemp(join(tmpdir(), "bfs-cli-output-"));
+    TEMP_ROOTS.push(outputDir);
+    const stdoutPath = join(outputDir, "stdout.log");
+    const stderrPath = join(outputDir, "stderr.log");
+    const command = [
+      shellQuote(BUN_EXECUTABLE),
+      shellQuote(CLI_ENTRY),
+      ...args.map(shellQuote),
+      ">",
+      shellQuote(stdoutPath),
+      "2>",
+      shellQuote(stderrPath),
+    ].join(" ");
+    const result = await new Promise<{
+      exitCode: number;
+      stdout: string;
+      stderr: string;
+      all: string;
+    }>((resolvePromise) => {
+      const subprocess = spawn("/bin/sh", ["-c", command], {
+        cwd: options.cwd,
+        env: {
+          ...process.env,
+          CI: "true",
+          ...options.env,
+        },
+        stdio: "ignore",
+      });
+
+      subprocess.on("close", async (code) => {
+        const [stdout, stderr] = await Promise.all([
+          readFile(stdoutPath, "utf8"),
+          readFile(stderrPath, "utf8"),
+        ]);
+        resolvePromise({
+          exitCode: code ?? 1,
+          stdout,
+          stderr,
+          all: `${stdout}${stderr}`,
+        });
+      });
+      subprocess.on("error", (error) => {
+        resolvePromise({
+          exitCode: 1,
+          stdout: "",
+          stderr: error.message,
+          all: error.message,
+        });
+      });
     });
 
     lastResult = result;
@@ -56,6 +108,10 @@ async function runCli(
   }
 
   return lastResult!;
+}
+
+function cliOutput(result: Awaited<ReturnType<typeof runCli>>): string {
+  return result.all || result.stdout || result.stderr;
 }
 
 async function readJsoncFile(path: string): Promise<unknown> {
@@ -102,7 +158,7 @@ describe("CLI add command", () => {
       addResult.exitCode,
       `add failed\nstdout:\n${addResult.stdout}\nstderr:\n${addResult.stderr}`,
     ).toBe(0);
-    expect(addResult.stdout).toContain("Successfully added: mcp");
+    expect(cliOutput(addResult)).toContain("Successfully added: mcp");
 
     const config = (await readJsoncFile(join(projectDir, "bts.jsonc"))) as {
       addons?: string[];
@@ -122,7 +178,7 @@ describe("CLI add command", () => {
     );
 
     expect(secondAddResult.exitCode).toBe(0);
-    expect(secondAddResult.stdout).toContain("No new addons selected.");
+    expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
   });
 });
 
@@ -153,7 +209,7 @@ describe("CLI history command", () => {
     });
     expect(historyJson.exitCode).toBe(0);
 
-    const parsedHistory = JSON.parse(historyJson.stdout) as Array<{
+    const parsedHistory = JSON.parse(cliOutput(historyJson)) as Array<{
       projectName: string;
       projectDir: string;
       reproducibleCommand: string;
@@ -178,7 +234,7 @@ describe("CLI history command", () => {
     });
     expect(historyAfterClear.exitCode).toBe(0);
 
-    const parsedAfterClear = JSON.parse(historyAfterClear.stdout) as unknown[];
+    const parsedAfterClear = JSON.parse(cliOutput(historyAfterClear)) as unknown[];
     expect(parsedAfterClear).toEqual([]);
   });
 
@@ -270,8 +326,8 @@ describe("CLI history command", () => {
       createResult.exitCode,
       `create failed\nstdout:\n${createResult.stdout}\nstderr:\n${createResult.stderr}`,
     ).toBe(0);
-    expect(createResult.stdout).toContain(expectedCommand);
-    expect(createResult.stdout).not.toContain("--frontend none");
+    expect(cliOutput(createResult)).toContain(expectedCommand);
+    expect(cliOutput(createResult)).not.toContain("--frontend none");
 
     const historyJson = await runCli(["history", "--json", "--limit", "1"], {
       cwd: root,
@@ -279,7 +335,7 @@ describe("CLI history command", () => {
     });
     expect(historyJson.exitCode).toBe(0);
 
-    const parsedHistory = JSON.parse(historyJson.stdout) as Array<{
+    const parsedHistory = JSON.parse(cliOutput(historyJson)) as Array<{
       reproducibleCommand: string;
     }>;
 

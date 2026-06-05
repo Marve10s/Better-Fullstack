@@ -4,6 +4,7 @@
   "main": "{{#if (eq mobileNavigation 'expo-router')}}expo-router/entry{{else}}index.js{{/if}}",
   "scripts": {
     "dev": "expo start --clear",
+    "build": "expo export",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
@@ -61,12 +62,12 @@
     {{#if (eq mobileStorage "mmkv")}}
     "react-native-mmkv": "^4.3.1",
     {{/if}}
-    "react-native-gesture-handler": "^3.0.0",
-    "react-native-reanimated": "^4.4.0",
+    "react-native-gesture-handler": "^2.28.0",
+    "react-native-reanimated": "4.3.0",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.9.1"
+    "react-native-worklets": "0.8.3"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

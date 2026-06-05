@@ -75,7 +75,8 @@ export function displayConfig(config: Partial<ProjectConfig>) {
   }
 
   if (config.auth !== undefined) {
-    configDisplay.push(`${pc.blue("Auth:")} ${String(config.auth)}`);
+    const graphAuth = config.auth === "none" ? getGraphDisplayValue(config, "auth") : null;
+    configDisplay.push(`${pc.blue("Auth:")} ${graphAuth ?? String(config.auth)}`);
   }
 
   if (config.payments !== undefined) {

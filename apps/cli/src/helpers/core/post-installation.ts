@@ -169,6 +169,11 @@ export async function displayPostInstallInstructions(
       : "";
 
   const graphSummary = getGraphSummary(config);
+  const graphBackendUrl = getGraphBackendUrl(config);
+  const graphBackendPart = getGraphPart(config, "backend");
+  const graphBackendNeedsSetup =
+    Boolean(graphBackendUrl) &&
+    ["python", "go", "elixir"].includes(graphBackendPart?.ecosystem ?? "");
   let output = graphSummary ? `${pc.bold("Generated:")} ${graphSummary}\n\n` : "";
   output += `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
   let stepCounter = 2;
@@ -196,6 +201,15 @@ export async function displayPostInstallInstructions(
       "   packages/backend/.env.local",
     )} to ${pc.white("apps/*/.env")}\n`;
     output += `${pc.cyan(`${stepCounter++}.`)} ${runCmd} dev\n\n`;
+  } else if (graphBackendUrl) {
+    if (graphBackendNeedsSetup) {
+      output += `${pc.cyan(`${stepCounter++}.`)} ${runCmd} setup:server\n`;
+    }
+    if (hasWeb) {
+      output += `${pc.cyan(`${stepCounter++}.`)} ${runCmd} dev:web\n`;
+      output += `${pc.dim("   (run the backend in a second terminal)")}\n`;
+    }
+    output += `${pc.cyan(`${stepCounter++}.`)} ${runCmd} dev:server\n`;
   } else if (isBackendSelf) {
     output += `${pc.cyan(`${stepCounter++}.`)} ${runCmd} dev\n`;
   } else {
@@ -213,7 +227,6 @@ export async function displayPostInstallInstructions(
     }
   }
 
-  const graphBackendUrl = getGraphBackendUrl(config);
   const hasStandaloneBackend = backend !== "none" || Boolean(graphBackendUrl);
   const hasAnyService =
     hasWeb || hasStandaloneBackend || addons?.includes("starlight") || addons?.includes("fumadocs");
@@ -496,6 +509,16 @@ function getNoOrmWarning() {
 }
 
 function getGraphDatabaseInstructions(database: Database, ecosystem: string, ormTool: string) {
+  if (ecosystem === "java" && ormTool === "spring-data-jpa") {
+    return `${pc.bold("Database setup:")}\n${pc.cyan(
+      "•",
+    )} Selected database: ${database}\n${pc.cyan("•")} ORM: ${ecosystem}:${ormTool}\n${pc.cyan(
+      "•",
+    )} The generated Spring Data JPA example uses an embedded ${pc.white("H2")} dev database. Update ${pc.white(
+      "apps/server/src/main/resources/application.yml",
+    )} when switching to external ${database}.`;
+  }
+
   return `${pc.bold("Database setup:")}\n${pc.cyan(
     "•",
   )} Database: ${database}\n${pc.cyan("•")} ORM: ${ecosystem}:${ormTool}\n${pc.cyan(

@@ -148,7 +148,11 @@ export function getGraphSummary(config: Pick<ProjectConfig, "stackParts">): stri
   const orm = selectedParts.find((part) => part.role === "orm");
 
   const segments = [labelFor(frontend), labelFor(backend)].filter(Boolean) as string[];
-  const dataLabel = [labelFor(orm), labelFor(database)].filter(Boolean).join("/");
+  const databaseLabel =
+    backend?.ecosystem === "java" && orm?.toolId === "spring-data-jpa"
+      ? "H2 dev database"
+      : labelFor(database);
+  const dataLabel = [labelFor(orm), databaseLabel].filter(Boolean).join("/");
   if (dataLabel) segments.push(dataLabel);
 
   return segments.length > 0

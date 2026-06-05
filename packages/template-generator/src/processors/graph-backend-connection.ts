@@ -43,27 +43,46 @@ The frontend environment file contains the matching public server URL. Keep that
       "react-vite",
     ].includes(frontend)
   ) {
-    writeReactStatus(vfs, connection.healthUrl);
+    writeReactStatus(vfs, frontend, connection.serverUrl, connection.healthPath);
   } else if (frontend === "astro") {
-    writeAstroStatus(vfs, connection.healthUrl);
+    writeAstroStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "svelte") {
-    writeSvelteStatus(vfs, connection.healthUrl);
+    writeSvelteStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "nuxt") {
-    writeNuxtStatus(vfs, connection.healthUrl);
+    writeNuxtStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "solid" || frontend === "solid-start") {
-    writeSolidStatus(vfs, connection.healthUrl);
+    writeSolidStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "fresh") {
-    writeFreshStatus(vfs, connection.healthUrl);
+    writeFreshStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "angular") {
-    writeAngularStatus(vfs, connection.healthUrl);
+    writeAngularStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "qwik") {
-    writeQwikStatus(vfs, connection.healthUrl);
+    writeQwikStatus(vfs, connection.serverUrl, connection.healthPath);
   } else if (frontend === "redwood") {
-    writeRedwoodStatus(vfs, connection.healthUrl);
+    writeRedwoodStatus(vfs, connection.serverUrl, connection.healthPath);
   }
 }
 
-function writeReactStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function viteServerUrlExpression(serverUrl: string): string {
+  return `(import.meta.env.VITE_SERVER_URL ?? "${serverUrl}")`;
+}
+
+function graphHealthUrlExpression(serverUrlExpression: string, healthPath: string): string {
+  return `\`${"${"}${serverUrlExpression}${"}"}${healthPath}\``;
+}
+
+function writeReactStatus(
+  vfs: VirtualFileSystem,
+  frontend: string,
+  serverUrl: string,
+  healthPath: string,
+): void {
+  const serverUrlExpression =
+    frontend === "next"
+      ? `(process.env.NEXT_PUBLIC_SERVER_URL ?? "${serverUrl}")`
+      : viteServerUrlExpression(serverUrl);
+  const healthUrlExpression = graphHealthUrlExpression(serverUrlExpression, healthPath);
+
   vfs.writeFile(
     "apps/web/src/components/graph-backend-status.tsx",
     `"use client";
@@ -77,7 +96,7 @@ export function GraphBackendStatus() {
 
   useEffect(() => {
     let active = true;
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => {
         if (active) setStatus(response.ok ? "connected" : "disconnected");
       })
@@ -133,7 +152,12 @@ export function GraphBackendStatus() {
   }
 }
 
-function writeAstroStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeAstroStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(
+    `(import.meta.env.PUBLIC_SERVER_URL ?? "${serverUrl}")`,
+    healthPath,
+  );
+
   vfs.writeFile(
     "apps/web/src/components/GraphBackendStatus.astro",
     `<section class="mt-8 rounded-lg border border-border bg-card p-6 shadow-sm">
@@ -146,7 +170,7 @@ function writeAstroStatus(vfs: VirtualFileSystem, healthUrl: string): void {
 
 <script>
   const status = document.getElementById("graph-backend-status");
-  fetch("${healthUrl}")
+  fetch(${healthUrlExpression})
     .then((response) => {
       if (!status) return;
       status.innerHTML = response.ok
@@ -175,16 +199,22 @@ function writeAstroStatus(vfs: VirtualFileSystem, healthUrl: string): void {
   vfs.writeFile(path, updated);
 }
 
-function writeSvelteStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeSvelteStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(
+    `(PUBLIC_SERVER_URL || "${serverUrl}")`,
+    healthPath,
+  );
+
   vfs.writeFile(
     "apps/web/src/components/GraphBackendStatus.svelte",
     `<script lang="ts">
+  import { PUBLIC_SERVER_URL } from "$env/static/public";
   import { onMount } from "svelte";
 
   let status: "checking" | "connected" | "disconnected" = "checking";
 
   onMount(() => {
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => {
         status = response.ok ? "connected" : "disconnected";
       })
@@ -220,16 +250,20 @@ function writeSvelteStatus(vfs: VirtualFileSystem, healthUrl: string): void {
   vfs.writeFile(path, updated);
 }
 
-function writeNuxtStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeNuxtStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression("(serverUrl || \"" + serverUrl + "\")", healthPath);
+
   vfs.writeFile(
     "apps/web/app/components/GraphBackendStatus.vue",
     `<script setup lang="ts">
 import { onMounted, ref } from "vue";
 
 const status = ref<"checking" | "connected" | "disconnected">("checking");
+const config = useRuntimeConfig();
+const serverUrl = config.public.serverUrl;
 
 onMounted(() => {
-  fetch("${healthUrl}")
+  fetch(${healthUrlExpression})
     .then((response) => {
       status.value = response.ok ? "connected" : "disconnected";
     })
@@ -265,7 +299,9 @@ onMounted(() => {
   vfs.writeFile(path, updated);
 }
 
-function writeSolidStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeSolidStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+
   vfs.writeFile(
     "apps/web/src/components/graph-backend-status.tsx",
     `import { createSignal, onMount } from "solid-js";
@@ -274,7 +310,7 @@ export function GraphBackendStatus() {
   const [status, setStatus] = createSignal<"checking" | "connected" | "disconnected">("checking");
 
   onMount(() => {
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => setStatus(response.ok ? "connected" : "disconnected"))
       .catch(() => setStatus("disconnected"));
   });
@@ -304,7 +340,9 @@ export function GraphBackendStatus() {
   vfs.writeFile(path, updated);
 }
 
-function writeFreshStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeFreshStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(`"${serverUrl}"`, healthPath);
+
   vfs.writeFile(
     "apps/web/islands/GraphBackendStatus.tsx",
     `/** @jsxImportSource preact */
@@ -314,7 +352,7 @@ export default function GraphBackendStatus() {
   const [status, setStatus] = useState<"checking" | "connected" | "disconnected">("checking");
 
   useEffect(() => {
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => setStatus(response.ok ? "connected" : "disconnected"))
       .catch(() => setStatus("disconnected"));
   }, []);
@@ -340,7 +378,9 @@ export default function GraphBackendStatus() {
   vfs.writeFile(path, updated);
 }
 
-function writeAngularStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeAngularStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+
   vfs.writeFile(
     "apps/web/src/app/components/graph-backend-status.component.ts",
     `import { Component, OnInit } from "@angular/core";
@@ -364,7 +404,7 @@ export class GraphBackendStatusComponent implements OnInit {
   status: Status = "checking";
 
   ngOnInit() {
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => {
         this.status = response.ok ? "connected" : "disconnected";
       })
@@ -394,7 +434,9 @@ export class GraphBackendStatusComponent implements OnInit {
   vfs.writeFile(path, updated);
 }
 
-function writeQwikStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeQwikStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+
   vfs.writeFile(
     "apps/web/src/components/graph-backend-status.tsx",
     `import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
@@ -403,7 +445,7 @@ export const GraphBackendStatus = component$(() => {
   const status = useSignal<"checking" | "connected" | "disconnected">("checking");
 
   useVisibleTask$(() => {
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => {
         status.value = response.ok ? "connected" : "disconnected";
       })
@@ -453,7 +495,12 @@ export const GraphBackendStatus = component$(() => {
   vfs.writeFile(path, updated);
 }
 
-function writeRedwoodStatus(vfs: VirtualFileSystem, healthUrl: string): void {
+function writeRedwoodStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
+  const healthUrlExpression = graphHealthUrlExpression(
+    `(process.env.REDWOOD_ENV_SERVER_URL ?? "${serverUrl}")`,
+    healthPath,
+  );
+
   vfs.writeFile(
     "web/src/components/GraphBackendStatus/GraphBackendStatus.tsx",
     `import { useEffect, useState } from "react";
@@ -465,7 +512,7 @@ const GraphBackendStatus = () => {
 
   useEffect(() => {
     let active = true;
-    fetch("${healthUrl}")
+    fetch(${healthUrlExpression})
       .then((response) => {
         if (active) setStatus(response.ok ? "connected" : "disconnected");
       })

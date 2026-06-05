@@ -224,7 +224,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── File Upload ───────────────────────────────────────────────────────────
   uploadthing: { type: "local", src: "https://uploadthing.com/favicon.ico" },
   filepond: { type: "local", src: "/icon/filepond.svg" },
-  uppy: { type: "local", src: "https://uppy.io/img/logo.svg" },
+  uppy: { type: "local", src: "/icon/uppy.svg" },
 
   // ─── Observability ─────────────────────────────────────────────────────────
   sentry: { type: "si", slug: "sentry", hex: "362D59" },

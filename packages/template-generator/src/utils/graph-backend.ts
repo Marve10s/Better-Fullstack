@@ -91,8 +91,10 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
     case "python": {
       const devCommand =
         backend.toolId === "fastapi"
-          ? `cd ${targetPath} && uv run uvicorn app.main:app --reload`
-          : `cd ${targetPath} && uv run python src/app/main.py`;
+          ? `cd ${targetPath} && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port \${PORT:-8000}`
+          : backend.toolId === "litestar"
+            ? `cd ${targetPath} && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port \${PORT:-8000}`
+            : `cd ${targetPath} && uv run python src/app/main.py`;
       return {
         ecosystem: backend.ecosystem,
         toolId: backend.toolId,
@@ -101,10 +103,10 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         serverUrl: "http://localhost:8000",
         healthPath: "/health",
         healthUrl: "http://localhost:8000/health",
-        setupCommand: `cd ${targetPath} && uv sync`,
+        setupCommand: `cd ${targetPath} && uv sync --extra dev`,
         devCommand,
-        checkCommand: `cd ${targetPath} && uv run ruff check .`,
-        testCommand: `cd ${targetPath} && uv run pytest`,
+        checkCommand: `cd ${targetPath} && uv run --extra dev ruff check .`,
+        testCommand: `cd ${targetPath} && uv run --extra dev pytest`,
       };
     }
     case "go":
@@ -118,8 +120,8 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         healthUrl: "http://localhost:8080/health",
         setupCommand: `cd ${targetPath} && go mod tidy`,
         devCommand: `cd ${targetPath} && go run cmd/server/main.go`,
-        checkCommand: `cd ${targetPath} && go test ./...`,
-        testCommand: `cd ${targetPath} && go test ./...`,
+        checkCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
+        testCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
       };
     case "java": {
       const buildTool = config.javaBuildTool === "gradle" ? "./gradlew" : "./mvnw";

@@ -92,6 +92,22 @@ describe("processCatalogs", () => {
     expect(server?.dependencies?.react).toBe("catalog:");
     expect(server?.devDependencies?.typescript).toBe("catalog:");
     expect(api?.dependencies?.typescript).toBe("catalog:");
+
+    processCatalogs(
+      vfs,
+      makeConfig({
+        projectName: "demo-app",
+        packageManager: "bun",
+      }),
+    );
+
+    expect(vfs.readJson<WorkspaceJson>("package.json")?.workspaces).toEqual({
+      packages: ["apps/*", "packages/*"],
+      catalog: {
+        react: "^19.0.0",
+        typescript: "^5.9.3",
+      },
+    });
   });
 
   it("creates and updates pnpm-workspace catalogs", () => {
