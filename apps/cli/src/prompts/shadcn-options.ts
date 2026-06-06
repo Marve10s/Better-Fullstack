@@ -10,7 +10,7 @@ import type {
 
 import { isSilent } from "../utils/context";
 import { exitCancelled } from "../utils/errors";
-import { isCancel, navigableSelect } from "./navigable";
+import { isCancel, isGoBack, navigableSelect } from "./navigable";
 
 export interface ShadcnOptions {
   shadcnBase: ShadcnBase;
@@ -133,32 +133,45 @@ export async function getShadcnOptions(flags: {
   shadcnBaseColor?: ShadcnBaseColor;
   shadcnFont?: ShadcnFont;
   shadcnRadius?: ShadcnRadius;
-}): Promise<ShadcnOptions> {
+}): Promise<ShadcnOptions | symbol> {
   // In silent/programmatic mode, use defaults for any missing flags
   const fallback = (key: keyof ShadcnOptions) => (isSilent() ? SHADCN_DEFAULTS[key] : undefined);
 
   const shadcnBase =
     flags.shadcnBase ?? (fallback("shadcnBase") as ShadcnBase) ?? (await promptShadcnBase());
+  if (isGoBack(shadcnBase)) return shadcnBase;
+
   const shadcnStyle =
     flags.shadcnStyle ?? (fallback("shadcnStyle") as ShadcnStyle) ?? (await promptShadcnStyle());
+  if (isGoBack(shadcnStyle)) return shadcnStyle;
+
   const shadcnIconLibrary =
     flags.shadcnIconLibrary ??
     (fallback("shadcnIconLibrary") as ShadcnIconLibrary) ??
     (await promptShadcnIconLibrary());
+  if (isGoBack(shadcnIconLibrary)) return shadcnIconLibrary;
+
   const shadcnColorTheme =
     flags.shadcnColorTheme ??
     (fallback("shadcnColorTheme") as ShadcnColorTheme) ??
     (await promptShadcnColorTheme());
+  if (isGoBack(shadcnColorTheme)) return shadcnColorTheme;
+
   const shadcnBaseColor =
     flags.shadcnBaseColor ??
     (fallback("shadcnBaseColor") as ShadcnBaseColor) ??
     (await promptShadcnBaseColor());
+  if (isGoBack(shadcnBaseColor)) return shadcnBaseColor;
+
   const shadcnFont =
     flags.shadcnFont ?? (fallback("shadcnFont") as ShadcnFont) ?? (await promptShadcnFont());
+  if (isGoBack(shadcnFont)) return shadcnFont;
+
   const shadcnRadius =
     flags.shadcnRadius ??
     (fallback("shadcnRadius") as ShadcnRadius) ??
     (await promptShadcnRadius());
+  if (isGoBack(shadcnRadius)) return shadcnRadius;
 
   return {
     shadcnBase,
@@ -171,72 +184,79 @@ export async function getShadcnOptions(flags: {
   };
 }
 
-async function promptShadcnBase(): Promise<ShadcnBase> {
+async function promptShadcnBase(): Promise<ShadcnBase | symbol> {
   const selected = await navigableSelect<ShadcnBase>({
     message: "Select shadcn/ui base library",
     options: BASE_OPTIONS,
     initialValue: "radix" as ShadcnBase,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnStyle(): Promise<ShadcnStyle> {
+async function promptShadcnStyle(): Promise<ShadcnStyle | symbol> {
   const selected = await navigableSelect<ShadcnStyle>({
     message: "Select shadcn/ui visual style",
     options: STYLE_OPTIONS,
     initialValue: "nova" as ShadcnStyle,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnIconLibrary(): Promise<ShadcnIconLibrary> {
+async function promptShadcnIconLibrary(): Promise<ShadcnIconLibrary | symbol> {
   const selected = await navigableSelect<ShadcnIconLibrary>({
     message: "Select shadcn/ui icon library",
     options: ICON_LIBRARY_OPTIONS,
     initialValue: "lucide" as ShadcnIconLibrary,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnColorTheme(): Promise<ShadcnColorTheme> {
+async function promptShadcnColorTheme(): Promise<ShadcnColorTheme | symbol> {
   const selected = await navigableSelect<ShadcnColorTheme>({
     message: "Select shadcn/ui color theme",
     options: COLOR_THEME_OPTIONS,
     initialValue: "neutral" as ShadcnColorTheme,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnBaseColor(): Promise<ShadcnBaseColor> {
+async function promptShadcnBaseColor(): Promise<ShadcnBaseColor | symbol> {
   const selected = await navigableSelect<ShadcnBaseColor>({
     message: "Select shadcn/ui base neutral color",
     options: BASE_COLOR_OPTIONS,
     initialValue: "neutral" as ShadcnBaseColor,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnFont(): Promise<ShadcnFont> {
+async function promptShadcnFont(): Promise<ShadcnFont | symbol> {
   const selected = await navigableSelect<ShadcnFont>({
     message: "Select shadcn/ui font",
     options: FONT_OPTIONS,
     initialValue: "inter" as ShadcnFont,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
 
-async function promptShadcnRadius(): Promise<ShadcnRadius> {
+async function promptShadcnRadius(): Promise<ShadcnRadius | symbol> {
   const selected = await navigableSelect<ShadcnRadius>({
     message: "Select shadcn/ui border radius",
     options: RADIUS_OPTIONS,
     initialValue: "default" as ShadcnRadius,
   });
+  if (isGoBack(selected)) return selected;
   if (isCancel(selected)) return exitCancelled("Operation cancelled");
   return selected;
 }
