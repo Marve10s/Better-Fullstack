@@ -1,8 +1,24 @@
 import { describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const PROMPTS_DIR = join(import.meta.dir, "..", "src", "prompts");
+
+function listTypeScriptFiles(dir: string): string[] {
+  const entries = readdirSync(dir);
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      files.push(...listTypeScriptFiles(path));
+    } else if (path.endsWith(".ts")) {
+      files.push(path);
+    }
+  }
+
+  return files;
+}
 
 describe("prompt back-navigation guards", () => {
   it("propagates go-back from every nested shadcn prompt", () => {
@@ -37,17 +53,12 @@ describe("prompt back-navigation guards", () => {
 
   it("keeps shadcn as the only nested option prompt collector", () => {
     const matches = new Set<string>();
-    const output = Bun.spawnSync({
-      cmd: ["rg", "-n", "export async function get[A-Za-z0-9]+Options\\(", PROMPTS_DIR],
-      stdout: "pipe",
-      stderr: "pipe",
-    });
 
-    expect(output.exitCode).toBe(0);
-
-    for (const line of output.stdout.toString().trim().split("\n")) {
-      const match = line.match(/get[A-Za-z0-9]+Options/);
-      if (match) matches.add(match[0]);
+    for (const file of listTypeScriptFiles(PROMPTS_DIR)) {
+      const source = readFileSync(file, "utf8");
+      for (const match of source.matchAll(/export async function (get[A-Za-z0-9]+Options)\(/g)) {
+        matches.add(match[1]);
+      }
     }
 
     expect([...matches].sort()).toEqual(["getShadcnOptions"]);
