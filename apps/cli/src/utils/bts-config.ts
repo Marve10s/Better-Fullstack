@@ -209,9 +209,9 @@ function syncUpdatedStackParts(
 
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
   const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
-  const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, projectConfig.stackParts);
-  const graphSummary = projectConfig.stackParts ? getGraphSummary({ stackParts }) : null;
-  const effectiveStack = projectConfig.stackParts ? getEffectiveStack({ stackParts }) : undefined;
+  const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, stackParts);
+  const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : null;
+  const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
   const btsConfig: BetterTStackConfig = {
     version: getLatestCLIVersion(),
     createdAt: new Date().toISOString(),
@@ -426,8 +426,8 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
   configContent = JSONC.applyEdits(configContent, formatResult);
 
-  const graphNote = graphSummary
-    ? "// For multi-ecosystem projects, graphSummary/effectiveStack and stackParts are the source of truth.\n// Legacy fields such as backend/orm may stay as compatibility fallbacks.\n"
+  const graphNote = stackParts.length > 0
+    ? "// stackParts is the source of truth; graphSummary/effectiveStack summarize it for humans and tools.\n// Top-level option fields are a derived compatibility cache for older integrations.\n"
     : "";
   const finalContent = `// Better Fullstack configuration file
 // safe to delete

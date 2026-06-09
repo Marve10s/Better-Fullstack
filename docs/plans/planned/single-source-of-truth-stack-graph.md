@@ -1,7 +1,7 @@
 # Single Source of Truth for the Stack Graph
 
 > **Active design doc — keep this updated as decisions land.**
-> Status: **Phase 2 library promotion landed; Phase 3 compatibility consolidation started**
+> Status: **Phase 2 library promotion landed; Phase 3 compatibility consolidation started; Phase 4 storage shape selected**
 > Branch in question: `feat/multi-ecosystem-stack-graph` (shipped in PR #209)
 > Last updated: 2026-06-02
 
@@ -11,6 +11,7 @@
 - **What shipped (PR #209):** the **stack-graph model** (`packages/types/src/stack-graph.ts`), graph-shaped schemas/compatibility/translation, CLI scoped `--part` parsing/emission, graph threading through the template generator, and the multi-ecosystem web builder redesign. The graph currently lives **alongside** the flat `ProjectConfig` (dual representation); it is not yet the sole source of truth.
 - **Direction:** The **graph (`stackParts`) becomes the single source of truth**; the flat `ProjectConfig` becomes a *derived, generator-only projection*. Foundation is in place; the authority flip and library promotion are the remaining work (see Phases 2–4).
 - **Settled decision:** Libraries are **owned by their part** (`ownerPartId`), the same way `orm`/`api`/`auth` already work — not global per-project fields. Phase 2 has promoted the planned backend, frontend, infrastructure, addon/example, mobile, and ecosystem categories into `stackParts`.
+- **Storage decision:** `bts.jsonc` stores `stackParts` as the authoritative graph and keeps top-level option fields as a derived compatibility cache for older integrations and simple readers.
 - **Constraint:** Neither Solo nor Multi is "legacy." Both are first-class creation modes. (See memory: project-creation-modes.) "Legacy" only ever refers to the flat config *data shape*.
 
 ---
@@ -48,9 +49,10 @@ There are **two categories** of configuration data and they behave differently:
 
 | Decision | Choice | Notes |
 |---|---|---|
-| Source of truth | **Graph (`stackParts`)** — tentative, exploring | Flat `ProjectConfig` becomes a derived, generator-only projection. Solo = a one-ecosystem graph with implicit single owners. |
+| Source of truth | **Graph (`stackParts`)** | Flat `ProjectConfig` becomes a derived projection. Solo = a one-ecosystem graph with implicit single owners. |
 | Library scoping | **Owned by their part** (`ownerPartId`) | Solo writes one owner → collapses to today's behavior. Multi can scope per part. Mirrors how `orm`/`api`/`auth` already work. |
 | Mode framing | Both first-class | Neither Solo nor Multi is "legacy." |
+| `bts.jsonc` storage | **Graph + derived cache** | `stackParts` is authoritative when present. Top-level fields remain for backward compatibility and are overwritten from the graph on write/read. |
 
 ## Target Model (proposed)
 
@@ -63,7 +65,7 @@ There are **two categories** of configuration data and they behave differently:
 ## Open Questions (to resolve before implementation)
 
 1. **Migration / phasing:** Promote libraries into the graph in one pass, or land "graph authoritative for structure" first and migrate libraries in a follow-up?
-2. **Storage shape (`bts.jsonc`):** Store only `stackParts` and derive the rest, or keep flat fields persisted as a cache with the graph marked authoritative?
+2. ~~**Storage shape (`bts.jsonc`):** Store only `stackParts` and derive the rest, or keep flat fields persisted as a cache with the graph marked authoritative?~~ Resolved: store `stackParts` plus a derived flat-field cache.
 3. **Solo UI:** Keep editing flat-style fields and translate-through to the graph on write, or re-platform the solo builder onto the graph directly?
 4. **Tool registry cost:** Every library field needs a registration in `STACK_TOOL_DEFINITIONS` with role + ecosystem(s) + compatibility rules. How many library roles, and which ecosystems each supports? (Need an inventory pass.)
 5. **Compatibility rules:** Library compatibility currently lives in `compatibility.ts` (e.g. UI-library/frontend matrices). How do those map onto graph `getStackPartCompatibilityIssue` checks without duplicating logic?
@@ -82,7 +84,7 @@ There are **two categories** of configuration data and they behave differently:
 - **Phase 1 — Graph foundation + structural round-trip (LANDED in PR #209):** the graph model, schemas, compatibility hooks, translation layer, CLI `--part` parsing/emission, generator threading, and the multi-ecosystem builder shipped. The graph and flat config coexist (dual representation); `compareLegacyConfigToStackParts` is still a **runtime** drift guard, not yet demoted to a test-only assertion, and the mode-dependent authority flip is not yet removed. Finishing that flip is the remaining Phase 1 work.
 - **Phase 2 — Promote libraries to owned parts:** register library tools, add `ownerPartId` scoping, extend the importer/exporter, and emit promoted categories as graph `--part` selections. Backend, frontend, infrastructure, addon/example, mobile, and remaining ecosystem batches have landed on PR #220; deferred single-option settings remain flat by design.
 - **Phase 3 — Consolidate compatibility:** route library compatibility through the graph engine; retire duplicated flat rules. Started on PR #220: shared helper data was split out of `compatibility.ts`, graph validation exposes candidate-part checks, and `getDisabledReason` now routes promoted frontend/mobile library disables through graph compatibility before falling back to narrower flat-only edge cases.
-- **Phase 4 — Storage cleanup:** decide final `bts.jsonc` shape (graph-only vs graph+cache). *Not started.*
+- **Phase 4 — Storage cleanup:** final `bts.jsonc` shape is graph + derived cache. Implementation has started: generated configs now emit graph metadata for solo and multi projects, `stackParts` wins over stale top-level cache fields, and `effectiveStack` keys scoped parts by their actual owner role path.
 
 ## Reference Map (files)
 
@@ -103,3 +105,4 @@ There are **two categories** of configuration data and they behave differently:
 - **2026-06-09 (later):** Phase 2 Batch 0 shipped on `feat/stack-graph-phase0-batch0`: the importer now emits backend-owned parts for `rustCaching`, `pythonValidation`, `pythonTaskQueue`, and the seven elixir extras; unsupported elixir tools stay flat-only to keep `validateStackParts` green for existing solo configs. `pythonGraphql`/`elixirRealtime` remain flat-only pending the `realtime` role (Batch 1). Full monorepo suite passes (3,067 CLI tests incl. scaffold regressions).
 - **2026-06-09/10:** Phase 2 Batches 1–5 shipped on PR #220: TypeScript backend singles, frontend singles, deploy/runtime/dbSetup, addons/examples, mobile categories, and remaining Rust/Python/Go/Java/Elixir categories now round-trip as owned graph parts and emit reproducible `--part` specs.
 - **2026-06-10:** Phase 3 compatibility consolidation started: graph-specific compatibility helper data moved into `stack-compatibility-rules.ts`, `validateStackParts` and candidate disabled-reason checks now share graph context construction, and `getDisabledReason` routes promoted frontend/mobile library options plus backend Payments/CMS/AI, Java build-tool/library, shared non-TypeScript email/search/caching/observability, unsupported Elixir generated-tool disables, and Phoenix/Ecto/Oban/LiveView Elixir context disables through graph checks with regression coverage. The remaining Elixir flat disabled-reason branch is the `elixirJson` setting pending the final settings/graph shape.
+- **2026-06-10 (storage):** Phase 4 storage shape selected: `bts.jsonc` remains graph + derived cache rather than graph-only. `writeBtsConfig` derives cache fields from `stackParts` for solo and multi projects, emits `graphSummary`/`effectiveStack` whenever a graph is present, and `readBtsConfig` continues to treat `stackParts` as authoritative over stale top-level fields.

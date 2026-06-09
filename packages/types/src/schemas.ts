@@ -957,17 +957,23 @@ export const ProjectConfigSchema = z.object({
   elixirDeploy: ElixirDeploySchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
-  stackParts: z.array(StackPartSchema).optional(),
+  stackParts: z
+    .array(StackPartSchema)
+    .optional()
+    .describe("Authoritative stack graph when present; flat fields are a derived projection."),
 });
 
 export const BetterTStackConfigSchema = z.object({
   version: z.string().describe("CLI version used to create this project"),
   createdAt: z.string().describe("Timestamp when the project was created"),
-  graphSummary: z.string().optional().describe("Human-readable summary of selected stack parts"),
+  graphSummary: z
+    .string()
+    .optional()
+    .describe("Human-readable summary derived from authoritative stackParts"),
   effectiveStack: z
     .record(z.string(), z.string())
     .optional()
-    .describe("Graph-aware effective stack, keyed by role"),
+    .describe("Graph-aware effective stack derived from stackParts and keyed by owner role path"),
   ecosystem: EcosystemSchema,
   database: DatabaseSchema,
   orm: ORMSchema,
@@ -1074,7 +1080,10 @@ export const BetterTStackConfigSchema = z.object({
   elixirDeploy: ElixirDeploySchema,
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
-  stackParts: z.array(StackPartSchema).optional(),
+  stackParts: z
+    .array(StackPartSchema)
+    .optional()
+    .describe("Authoritative stack graph when present; top-level fields are a derived cache."),
 });
 
 export const BetterFullstackConfigSchema = BetterTStackConfigSchema;
