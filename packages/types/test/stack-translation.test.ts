@@ -118,6 +118,7 @@ describe("stack selection translation", () => {
       {
         part: [
           "frontend:typescript:react-vite",
+          "mobile:react-native:native-uniwind",
           "backend:typescript:hono",
           "backend:java:spring-boot",
           "backend:elixir:phoenix",
@@ -137,11 +138,21 @@ describe("stack selection translation", () => {
         analytics: "plausible",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
+        javaBuildTool: "gradle",
+        javaLibraries: ["spring-actuator", "lombok"],
+        javaTestingLibraries: ["junit5", "mockito"],
         elixirRealtime: "presence",
+        elixirJobs: "oban",
+        elixirHttp: "finch",
+        elixirQuality: "credo",
         runtime: "node",
         dbSetup: "neon",
         webDeploy: "vercel",
         serverDeploy: "railway",
+        mobileNavigation: "react-navigation",
+        mobileUI: "uniwind",
+        mobileStorage: "mmkv",
+        mobileTesting: "maestro",
         addons: ["biome", "fumadocs", "pwa", "tanstack-table", "storybook", "turborepo"],
         examples: ["ai"],
       },
@@ -168,11 +179,21 @@ describe("stack selection translation", () => {
     expect(config.analytics).toBe("plausible");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
+    expect(config.javaBuildTool).toBe("gradle");
+    expect(config.javaLibraries).toEqual(["spring-actuator", "lombok"]);
+    expect(config.javaTestingLibraries).toEqual(["junit5", "mockito"]);
     expect(config.elixirRealtime).toBe("presence");
+    expect(config.elixirJobs).toBe("oban");
+    expect(config.elixirHttp).toBe("finch");
+    expect(config.elixirQuality).toBe("credo");
     expect(config.runtime).toBe("node");
     expect(config.dbSetup).toBe("neon");
     expect(config.webDeploy).toBe("vercel");
     expect(config.serverDeploy).toBe("railway");
+    expect(config.mobileNavigation).toBe("react-navigation");
+    expect(config.mobileUI).toBe("uniwind");
+    expect(config.mobileStorage).toBe("mmkv");
+    expect(config.mobileTesting).toBe("maestro");
     expect(config.addons).toEqual([
       "biome",
       "fumadocs",
@@ -183,6 +204,7 @@ describe("stack selection translation", () => {
     ]);
     expect(config.examples).toEqual(["ai"]);
     expect(specs).toContain("frontend:typescript:react-vite");
+    expect(specs).toContain("mobile:react-native:native-uniwind");
     expect(specs).toContain("backend:typescript:hono");
     expect(specs).toContain("backend:java:spring-boot");
     expect(specs).toContain("backend:elixir:phoenix");
@@ -201,11 +223,23 @@ describe("stack selection translation", () => {
     expect(specs).toContain("frontend.analytics:typescript:plausible");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
+    expect(specs).toContain("backend.buildTool:java:gradle");
+    expect(specs).toContain("backend.libraries:java:spring-actuator");
+    expect(specs).toContain("backend.libraries:java:lombok");
+    expect(specs).toContain("backend.testing:java:junit5");
+    expect(specs).toContain("backend.testing:java:mockito");
     expect(specs).toContain("backend.realtime:elixir:presence");
+    expect(specs).toContain("backend.jobQueue:elixir:oban");
+    expect(specs).toContain("backend.httpClient:elixir:finch");
+    expect(specs).toContain("backend.codeQuality:elixir:credo");
     expect(specs).toContain("backend.runtime:typescript:node");
     expect(specs).toContain("backend.deploy:typescript:railway");
     expect(specs).toContain("frontend.deploy:typescript:vercel");
     expect(specs).toContain("database.dbSetup:universal:neon");
+    expect(specs).toContain("mobile.navigation:react-native:react-navigation");
+    expect(specs).toContain("mobile.ui:react-native:uniwind");
+    expect(specs).toContain("mobile.storage:react-native:mmkv");
+    expect(specs).toContain("mobile.testing:react-native:maestro");
     expect(specs).toContain("codeQuality:universal:biome");
     expect(specs).toContain("documentation:universal:fumadocs");
     expect(specs).toContain("frontend.appPlatform:typescript:pwa");
@@ -235,7 +269,8 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part backend:elixir:phoenix");
     expect(command).toContain("--part backend.realtime:elixir:presence");
     expect(command).not.toContain("--elixir-realtime presence");
-    expect(command).toContain("--elixir-deploy docker");
+    expect(command).toContain("--part backend.deploy:elixir:docker");
+    expect(command).not.toContain("--elixir-deploy docker");
     expect(command).toContain("--part workspaceTooling:universal:turborepo");
     expect(command).toContain("--part workspaceTooling:universal:docker-compose");
     expect(command).toContain("--part examples:universal:ai");
@@ -268,6 +303,86 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part examples:universal:chat-sdk");
     expect(command).not.toContain("--addons");
     expect(command).not.toContain("--examples");
+  });
+
+  it("emits changed mobile graph fields as scoped graph parts", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "mobile-graph-app",
+      stackPartSpecs: ["mobile:react-native:native-bare"],
+      mobileNavigation: "react-navigation",
+      mobileUI: "gluestack-ui",
+      mobileStorage: "mmkv",
+      mobileTesting: "maestro",
+      mobilePush: "expo-notifications",
+    });
+
+    expect(command).toContain("--part mobile:react-native:native-bare");
+    expect(command).toContain("--part mobile.navigation:react-native:react-navigation");
+    expect(command).toContain("--part mobile.ui:react-native:gluestack-ui");
+    expect(command).toContain("--part mobile.storage:react-native:mmkv");
+    expect(command).toContain("--part mobile.testing:react-native:maestro");
+    expect(command).not.toContain("--mobile-navigation react-navigation");
+    expect(command).not.toContain("--mobile-ui gluestack-ui");
+    expect(command).not.toContain("--mobile-storage mmkv");
+    expect(command).not.toContain("--mobile-testing maestro");
+    expect(command).toContain("--mobile-push expo-notifications");
+  });
+
+  it("emits remaining ecosystem graph fields as scoped graph parts", () => {
+    const rustCommand = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "rust-graph-app",
+      stackPartSpecs: ["backend:rust:axum"],
+      rustCli: "clap",
+      rustLibraries: ["serde", "uuid"],
+      rustLogging: "env-logger",
+      rustErrorHandling: "eyre",
+      rustCaching: "moka",
+    });
+    expect(rustCommand).toContain("--part backend.cli:rust:clap");
+    expect(rustCommand).toContain("--part backend.libraries:rust:serde");
+    expect(rustCommand).toContain("--part backend.libraries:rust:uuid");
+    expect(rustCommand).toContain("--part backend.logging:rust:env-logger");
+    expect(rustCommand).toContain("--part backend.errorHandling:rust:eyre");
+    expect(rustCommand).toContain("--part backend.caching:rust:moka");
+    expect(rustCommand).not.toContain("--rust-cli clap");
+    expect(rustCommand).not.toContain("--rust-libraries");
+
+    const pythonCommand = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "python-graph-app",
+      stackPartSpecs: ["backend:python:django"],
+      pythonAi: ["langchain", "openai-sdk"],
+      pythonGraphql: "strawberry",
+      pythonQuality: "ruff",
+    });
+    expect(pythonCommand).toContain("--part backend.ai:python:langchain");
+    expect(pythonCommand).toContain("--part backend.ai:python:openai-sdk");
+    expect(pythonCommand).toContain("--part backend.api:python:strawberry");
+    expect(pythonCommand).toContain("--part backend.codeQuality:python:ruff");
+    expect(pythonCommand).not.toContain("--python-ai");
+    expect(pythonCommand).not.toContain("--python-graphql strawberry");
+
+    const javaCommand = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "java-graph-app",
+      stackPartSpecs: ["backend:java:spring-boot"],
+      javaBuildTool: "gradle",
+      javaLibraries: ["spring-actuator"],
+      javaTestingLibraries: ["junit5", "mockito"],
+    });
+    expect(javaCommand).toContain("--part backend.buildTool:java:gradle");
+    expect(javaCommand).toContain("--part backend.libraries:java:spring-actuator");
+    expect(javaCommand).toContain("--part backend.testing:java:junit5");
+    expect(javaCommand).toContain("--part backend.testing:java:mockito");
+    expect(javaCommand).not.toContain("--java-build-tool gradle");
+    expect(javaCommand).not.toContain("--java-libraries");
+    expect(javaCommand).not.toContain("--java-testing-libraries");
   });
 
   it("emits changed TypeScript backend singles as scoped graph parts", () => {

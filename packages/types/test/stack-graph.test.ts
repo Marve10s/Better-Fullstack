@@ -28,9 +28,11 @@ import {
   ELIXIR_CACHING_VALUES,
   ELIXIR_DEPLOY_VALUES,
   ELIXIR_EMAIL_VALUES,
+  ELIXIR_HTTP_VALUES,
   ELIXIR_JOBS_VALUES,
   ELIXIR_OBSERVABILITY_VALUES,
   ELIXIR_ORM_VALUES,
+  ELIXIR_QUALITY_VALUES,
   ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
@@ -44,19 +46,31 @@ import {
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
+  GO_CLI_VALUES,
+  GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_BUILD_TOOL_VALUES,
+  JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
+  JAVA_TESTING_LIBRARIES_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
   PYTHON_API_VALUES,
+  PYTHON_AI_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
+  PYTHON_GRAPHQL_VALUES,
+  PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -65,7 +79,11 @@ import {
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
+  RUST_CLI_VALUES,
+  RUST_ERROR_HANDLING_VALUES,
   RUST_FRONTEND_VALUES,
+  RUST_LIBRARIES_VALUES,
+  RUST_LOGGING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SERVER_DEPLOY_VALUES,
@@ -838,6 +856,48 @@ describe("stack graph structural round-trip (phase 0)", () => {
     }
   });
 
+  it("round-trips promoted mobile-owned categories without drift", () => {
+    const mobileConfigByValue = {
+      mobileNavigation: {
+        values: MOBILE_NAVIGATION_VALUES,
+        frontendForValue: () => "native-bare",
+      },
+      mobileUI: {
+        values: MOBILE_UI_VALUES,
+        frontendForValue: (value: string) =>
+          value === "uniwind"
+            ? "native-uniwind"
+            : value === "unistyles"
+              ? "native-unistyles"
+              : "native-bare",
+      },
+      mobileStorage: {
+        values: MOBILE_STORAGE_VALUES,
+        frontendForValue: () => "native-bare",
+      },
+      mobileTesting: {
+        values: MOBILE_TESTING_VALUES,
+        frontendForValue: () => "native-bare",
+      },
+    } as const;
+
+    for (const [field, { values, frontendForValue }] of Object.entries(mobileConfigByValue)) {
+      for (const value of values) {
+        const derived = expectNoDrift({
+          ecosystem: "react-native",
+          frontend: [frontendForValue(value)],
+          backend: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "none",
+          [field]: value,
+        });
+        expect(derived[field as keyof ProjectConfig] ?? "none").toBe(value);
+      }
+    }
+  });
+
   it("round-trips every legacy-ecosystem backend and capability value", () => {
     const cases = [
       {
@@ -849,6 +909,12 @@ describe("stack graph structural round-trip (phase 0)", () => {
           rustApi: RUST_API_VALUES,
           rustAuth: RUST_AUTH_VALUES,
           rustCaching: RUST_CACHING_VALUES,
+          rustCli: RUST_CLI_VALUES,
+          rustLogging: RUST_LOGGING_VALUES,
+          rustErrorHandling: RUST_ERROR_HANDLING_VALUES,
+        },
+        arrays: {
+          rustLibraries: RUST_LIBRARIES_VALUES,
         },
       },
       {
@@ -861,19 +927,39 @@ describe("stack graph structural round-trip (phase 0)", () => {
           pythonAuth: PYTHON_AUTH_VALUES,
           pythonValidation: PYTHON_VALIDATION_VALUES,
           pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
+          pythonGraphql: PYTHON_GRAPHQL_VALUES,
+          pythonQuality: PYTHON_QUALITY_VALUES,
+        },
+        arrays: {
+          pythonAi: PYTHON_AI_VALUES,
         },
       },
       {
         ecosystem: "go",
         backendField: "goWebFramework",
         backends: GO_WEB_FRAMEWORK_VALUES,
-        capabilities: { goOrm: GO_ORM_VALUES, goApi: GO_API_VALUES, goAuth: GO_AUTH_VALUES },
+        capabilities: {
+          goOrm: GO_ORM_VALUES,
+          goApi: GO_API_VALUES,
+          goAuth: GO_AUTH_VALUES,
+          goCli: GO_CLI_VALUES,
+          goLogging: GO_LOGGING_VALUES,
+        },
+        arrays: {},
       },
       {
         ecosystem: "java",
         backendField: "javaWebFramework",
         backends: JAVA_WEB_FRAMEWORK_VALUES,
-        capabilities: { javaOrm: JAVA_ORM_VALUES, javaAuth: JAVA_AUTH_VALUES },
+        capabilities: {
+          javaBuildTool: JAVA_BUILD_TOOL_VALUES,
+          javaOrm: JAVA_ORM_VALUES,
+          javaAuth: JAVA_AUTH_VALUES,
+        },
+        arrays: {
+          javaLibraries: JAVA_LIBRARIES_VALUES,
+          javaTestingLibraries: JAVA_TESTING_LIBRARIES_VALUES,
+        },
       },
       {
         ecosystem: "elixir",
@@ -886,32 +972,45 @@ describe("stack graph structural round-trip (phase 0)", () => {
           elixirRealtime: ELIXIR_REALTIME_VALUES,
           elixirJobs: ELIXIR_JOBS_VALUES,
           elixirValidation: ELIXIR_VALIDATION_VALUES,
+          elixirHttp: ELIXIR_HTTP_VALUES,
           elixirEmail: ELIXIR_EMAIL_VALUES,
           elixirCaching: ELIXIR_CACHING_VALUES,
           elixirObservability: ELIXIR_OBSERVABILITY_VALUES,
           elixirTesting: ELIXIR_TESTING_VALUES,
+          elixirQuality: ELIXIR_QUALITY_VALUES,
           elixirDeploy: ELIXIR_DEPLOY_VALUES,
         },
+        arrays: {},
       },
     ] as const;
 
-    // Extras categories (phase 2 batch 0) round-trip like capabilities, except
+    // Extras categories round-trip like capabilities, except
     // elixir tools the scaffold cannot generate stay flat-only by design.
     const EXTRA_CAPABILITY_FIELDS = new Set([
       "rustCaching",
+      "rustCli",
+      "rustLogging",
+      "rustErrorHandling",
       "pythonValidation",
       "pythonTaskQueue",
+      "pythonGraphql",
+      "pythonQuality",
+      "goCli",
+      "goLogging",
+      "javaBuildTool",
       "elixirJobs",
       "elixirRealtime",
       "elixirValidation",
+      "elixirHttp",
       "elixirEmail",
       "elixirCaching",
       "elixirObservability",
       "elixirTesting",
+      "elixirQuality",
       "elixirDeploy",
     ]);
 
-    for (const { ecosystem, backendField, backends, capabilities } of cases) {
+    for (const { ecosystem, backendField, backends, capabilities, arrays } of cases) {
       const anchor = backends.find((value) => value !== "none");
       for (const backend of backends.filter((value) => value !== "none")) {
         const derived = expectNoDrift({ ecosystem, [backendField]: backend });
@@ -932,6 +1031,21 @@ describe("stack graph structural round-trip (phase 0)", () => {
           expect(derived[field as keyof ProjectConfig] ?? "none").toBe(skipped ? "none" : value);
         }
       }
+      for (const [field, values] of Object.entries(arrays)) {
+        for (const value of values) {
+          const derived = expectNoDrift({
+            ecosystem,
+            [backendField]: anchor,
+            [field]: [value],
+          });
+          const lowered = (derived[field as keyof ProjectConfig] ?? []) as string[];
+          if (value === "none") {
+            expect(lowered).toEqual([]);
+          } else {
+            expect(lowered).toContain(value);
+          }
+        }
+      }
     }
   });
 
@@ -946,9 +1060,11 @@ describe("stack graph structural round-trip (phase 0)", () => {
       elixirRealtime: "presence",
       elixirJobs: "oban",
       elixirEmail: "swoosh",
+      elixirHttp: "finch",
       elixirCaching: "cachex",
       elixirObservability: "telemetry",
       elixirTesting: "ex_unit",
+      elixirQuality: "credo",
       elixirDeploy: "docker",
       elixirValidation: "ecto-changesets",
     });
@@ -959,14 +1075,16 @@ describe("stack graph structural round-trip (phase 0)", () => {
         "realtime",
         "jobQueue",
         "email",
+        "httpClient",
         "caching",
         "observability",
         "testing",
+        "codeQuality",
         "deploy",
         "validation",
       ].includes(part.role),
     );
-    expect(extras).toHaveLength(8);
+    expect(extras).toHaveLength(10);
     for (const part of extras) {
       expect(part.ownerPartId).toBe(backend?.id);
     }
@@ -976,6 +1094,8 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(lowered.elixirRealtime).toBe("presence");
     expect(lowered.elixirJobs).toBe("oban");
     expect(lowered.elixirEmail).toBe("swoosh");
+    expect(lowered.elixirHttp).toBe("finch");
+    expect(lowered.elixirQuality).toBe("credo");
     expect(lowered.elixirDeploy).toBe("docker");
   });
 
@@ -1021,16 +1141,27 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(reimported.map(structuralTuple).sort()).toEqual(parts.map(structuralTuple).sort());
   });
 
-  // Remaining importer gap (phase-0 inventory §1): pythonGraphql still collides
-  // with the `api` role and stays flat-only until the GraphQL role decision
-  // lands in a later batch.
-  it("documents the remaining importer gap for the Python GraphQL api-role collision", () => {
+  it("imports Python GraphQL selections into the api role when the api slot is open", () => {
     const pythonParts = legacyProjectConfigToStackParts({
       ecosystem: "python",
       pythonWebFramework: "django",
       pythonGraphql: "strawberry",
     });
-    expect(pythonParts.filter((part) => part.role === "api")).toHaveLength(0);
+    const apiParts = pythonParts.filter((part) => part.role === "api");
+    expect(apiParts).toHaveLength(1);
+    expect(apiParts[0]?.toolId).toBe("strawberry");
+  });
+
+  it("keeps Python GraphQL flat when a Python API part already owns the api role", () => {
+    const pythonParts = legacyProjectConfigToStackParts({
+      ecosystem: "python",
+      pythonWebFramework: "django",
+      pythonApi: "django-ninja",
+      pythonGraphql: "strawberry",
+    });
+    const apiParts = pythonParts.filter((part) => part.role === "api");
+    expect(apiParts).toHaveLength(1);
+    expect(apiParts[0]?.toolId).toBe("django-ninja");
   });
 
   it("imports Elixir realtime selections under the realtime role", () => {

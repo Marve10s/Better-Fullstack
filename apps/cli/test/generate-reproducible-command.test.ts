@@ -621,6 +621,60 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--examples ai");
   });
 
+  it("reproduces graph-owned mobile and ecosystem fields as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "mobile:react-native:native-bare",
+      "mobile.navigation:react-native:react-navigation",
+      "mobile.ui:react-native:gluestack-ui",
+      "mobile.storage:react-native:mmkv",
+      "mobile.testing:react-native:maestro",
+      "backend:rust:axum",
+      "backend.cli:rust:clap",
+      "backend.libraries:rust:serde",
+      "backend.libraries:rust:uuid",
+      "backend.logging:rust:env-logger",
+      "backend.errorHandling:rust:eyre",
+      "backend.caching:rust:moka",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        ecosystem: "rust",
+        frontend: ["native-bare"],
+        mobileNavigation: "react-navigation",
+        mobileUI: "gluestack-ui",
+        mobileStorage: "mmkv",
+        mobileTesting: "maestro",
+        rustWebFramework: "axum",
+        rustCli: "clap",
+        rustLibraries: ["serde", "uuid"],
+        rustLogging: "env-logger",
+        rustErrorHandling: "eyre",
+        rustCaching: "moka",
+      }),
+    );
+
+    expect(command).toContain("--part mobile.navigation:react-native:react-navigation");
+    expect(command).toContain("--part mobile.ui:react-native:gluestack-ui");
+    expect(command).toContain("--part mobile.storage:react-native:mmkv");
+    expect(command).toContain("--part mobile.testing:react-native:maestro");
+    expect(command).toContain("--part backend.cli:rust:clap");
+    expect(command).toContain("--part backend.libraries:rust:serde");
+    expect(command).toContain("--part backend.libraries:rust:uuid");
+    expect(command).toContain("--part backend.logging:rust:env-logger");
+    expect(command).toContain("--part backend.errorHandling:rust:eyre");
+    expect(command).toContain("--part backend.caching:rust:moka");
+    expect(command).not.toContain("--mobile-navigation react-navigation");
+    expect(command).not.toContain("--mobile-ui gluestack-ui");
+    expect(command).not.toContain("--mobile-storage mmkv");
+    expect(command).not.toContain("--mobile-testing maestro");
+    expect(command).not.toContain("--rust-cli clap");
+    expect(command).not.toContain("--rust-libraries");
+    expect(command).not.toContain("--rust-logging env-logger");
+    expect(command).not.toContain("--rust-error-handling eyre");
+    expect(command).not.toContain("--rust-caching moka");
+  });
+
   it("preserves Astro integration when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:astro",

@@ -844,10 +844,6 @@ const GRAPH_SHADCN_FLAG_KEYS = [
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_MOBILE_FLAG_KEYS = [
-  ["mobileNavigation", "mobile-navigation"],
-  ["mobileUI", "mobile-ui"],
-  ["mobileStorage", "mobile-storage"],
-  ["mobileTesting", "mobile-testing"],
   ["mobilePush", "mobile-push"],
   ["mobileOTA", "mobile-ota"],
   ["mobileDeepLinking", "mobile-deep-linking"],
@@ -864,40 +860,8 @@ const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_RUST_BACKEND_FLAG_KEYS = [
-  ["rustCli", "rust-cli"],
-  ["rustLogging", "rust-logging"],
-  ["rustErrorHandling", "rust-error-handling"],
-  ["rustCaching", "rust-caching"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_PYTHON_BACKEND_FLAG_KEYS = [
-  ["pythonValidation", "python-validation"],
-  ["pythonTaskQueue", "python-task-queue"],
-  ["pythonGraphql", "python-graphql"],
-  ["pythonQuality", "python-quality"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_GO_BACKEND_FLAG_KEYS = [
-  ["goCli", "go-cli"],
-  ["goLogging", "go-logging"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_JAVA_BACKEND_FLAG_KEYS = [
-  ["javaBuildTool", "java-build-tool"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [
-  ["elixirJobs", "elixir-jobs"],
-  ["elixirValidation", "elixir-validation"],
-  ["elixirHttp", "elixir-http"],
   ["elixirJson", "elixir-json"],
-  ["elixirEmail", "elixir-email"],
-  ["elixirCaching", "elixir-caching"],
-  ["elixirObservability", "elixir-observability"],
-  ["elixirTesting", "elixir-testing"],
-  ["elixirQuality", "elixir-quality"],
-  ["elixirDeploy", "elixir-deploy"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 function formatChangedStringFlag(
@@ -911,16 +875,6 @@ function formatChangedStringFlag(
 type StackSelectionArrayKey = {
   [K in keyof StackSelectionState]: StackSelectionState[K] extends string[] ? K : never;
 }[keyof StackSelectionState];
-
-function formatChangedArraySelectionFlag(
-  selection: StackSelectionInput,
-  key: StackSelectionArrayKey,
-  flag: string,
-) {
-  return areStringArraysEqual(selection[key], DEFAULT_STACK_SELECTION[key])
-    ? undefined
-    : formatArrayFlag(flag, selection[key]);
-}
 
 function formatChangedStringFlags(
   selection: StackSelectionInput,
@@ -952,8 +906,8 @@ type ScopedStackPartRole = Exclude<
   "frontend" | "backend" | "mobile" | "database"
 >;
 type ScopedStackPartField = {
-  ownerRole?: "frontend" | "backend" | "database";
-  ecosystem: Exclude<StackPartEcosystem, "react-native">;
+  ownerRole?: "frontend" | "backend" | "mobile" | "database";
+  ecosystem: StackPartEcosystem;
   role: ScopedStackPartRole;
   value: string | readonly string[] | undefined;
   allowMultiple?: boolean;
@@ -990,11 +944,63 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
 
 const GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS = [
   ["elixirRealtime", "realtime"],
+  ["elixirJobs", "jobQueue"],
+  ["elixirValidation", "validation"],
+  ["elixirHttp", "httpClient"],
+  ["elixirEmail", "email"],
+  ["elixirCaching", "caching"],
+  ["elixirObservability", "observability"],
+  ["elixirTesting", "testing"],
+  ["elixirQuality", "codeQuality"],
+  ["elixirDeploy", "deploy"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_DATABASE_PART_SELECTION_KEYS = [
   ["dbSetup", "dbSetup"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_MOBILE_PART_SELECTION_KEYS = [
+  ["mobileNavigation", "navigation"],
+  ["mobileUI", "ui"],
+  ["mobileStorage", "storage"],
+  ["mobileTesting", "testing"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_PART_SELECTION_KEYS = [
+  ["rustCli", "cli"],
+  ["rustLogging", "logging"],
+  ["rustErrorHandling", "errorHandling"],
+  ["rustCaching", "caching"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["rustLibraries", "libraries"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS = [
+  ["pythonValidation", "validation"],
+  ["pythonTaskQueue", "jobQueue"],
+  ["pythonGraphql", "api"],
+  ["pythonQuality", "codeQuality"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["pythonAi", "ai"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_GO_BACKEND_PART_SELECTION_KEYS = [
+  ["goCli", "cli"],
+  ["goLogging", "logging"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS = [
+  ["javaBuildTool", "buildTool"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["javaLibraries", "libraries"],
+  ["javaTestingLibraries", "testing"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
   ["webDeploy", "deploy"],
@@ -1027,10 +1033,62 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
 
 const GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS = [
   ["elixirRealtime", "realtime"],
+  ["elixirJobs", "jobQueue"],
+  ["elixirValidation", "validation"],
+  ["elixirHttp", "httpClient"],
+  ["elixirEmail", "email"],
+  ["elixirCaching", "caching"],
+  ["elixirObservability", "observability"],
+  ["elixirTesting", "testing"],
+  ["elixirQuality", "codeQuality"],
+  ["elixirDeploy", "deploy"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_DATABASE_PART_CLI_KEYS = [
   ["dbSetup", "dbSetup"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_MOBILE_PART_CLI_KEYS = [
+  ["mobileNavigation", "navigation"],
+  ["mobileUI", "ui"],
+  ["mobileStorage", "storage"],
+  ["mobileTesting", "testing"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_PART_CLI_KEYS = [
+  ["rustCli", "cli"],
+  ["rustLogging", "logging"],
+  ["rustErrorHandling", "errorHandling"],
+  ["rustCaching", "caching"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["rustLibraries", "libraries"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_PART_CLI_KEYS = [
+  ["pythonValidation", "validation"],
+  ["pythonTaskQueue", "jobQueue"],
+  ["pythonGraphql", "api"],
+  ["pythonQuality", "codeQuality"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["pythonAi", "ai"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_GO_BACKEND_PART_CLI_KEYS = [
+  ["goCli", "cli"],
+  ["goLogging", "logging"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_PART_CLI_KEYS = [
+  ["javaBuildTool", "buildTool"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["javaLibraries", "libraries"],
+  ["javaTestingLibraries", "testing"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
@@ -1040,7 +1098,7 @@ function getAddonScopedPartFields(addons: readonly string[] | undefined): Scoped
     return [
       {
         ownerRole: binding.ownerRole,
-        ecosystem: binding.ecosystem as Exclude<StackPartEcosystem, "react-native">,
+        ecosystem: binding.ecosystem,
         role: binding.role as ScopedStackPartRole,
         value: addon,
         allowMultiple: true,
@@ -1067,7 +1125,7 @@ function expandScopedStackPartSpecs(
   const stackPartSpecSet = new Set(stackPartSpecs);
 
   const getPrimary = (
-    role: "frontend" | "backend" | "database",
+    role: "frontend" | "backend" | "mobile" | "database",
     ecosystem: StackPartEcosystem,
   ) =>
     stackParts.find(
@@ -1144,6 +1202,57 @@ function getSelectionScopedPartFields(
       role,
       value: selection[key],
     })),
+    ...GRAPH_MOBILE_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_RUST_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_RUST_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_GO_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_JAVA_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
     ...GRAPH_DATABASE_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "database" as const,
       ecosystem: "universal" as const,
@@ -1164,6 +1273,10 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
     const value = input[key];
     return typeof value === "string" ? value : undefined;
   };
+  const getArrayValue = (key: keyof CLIInput) => {
+    const value = input[key];
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : undefined;
+  };
 
   return [
     ...GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS.map(([key, role]) => ({
@@ -1183,6 +1296,57 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       ecosystem: "elixir" as const,
       role,
       value: getValue(key),
+    })),
+    ...GRAPH_MOBILE_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_RUST_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_RUST_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_PYTHON_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_GO_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_JAVA_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
     })),
     ...GRAPH_DATABASE_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "database" as const,
@@ -1622,30 +1786,6 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
       : []),
     ...(hasNonTypeScriptBackend
       ? formatChangedStringFlags(selection, GRAPH_SHARED_BACKEND_FLAG_KEYS)
-      : []),
-    ...(hasRustBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_RUST_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "rustLibraries", "rust-libraries"),
-        ].filter((flag): flag is string => Boolean(flag))
-      : []),
-    ...(hasPythonBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_PYTHON_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "pythonAi", "python-ai"),
-        ].filter((flag): flag is string => Boolean(flag))
-      : []),
-    ...(hasGoBackend ? formatChangedStringFlags(selection, GRAPH_GO_BACKEND_FLAG_KEYS) : []),
-    ...(hasJavaBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_JAVA_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "javaLibraries", "java-libraries"),
-          formatChangedArraySelectionFlag(
-            selection,
-            "javaTestingLibraries",
-            "java-testing-libraries",
-          ),
-        ].filter((flag): flag is string => Boolean(flag))
       : []),
     ...(hasElixirBackend
       ? formatChangedStringFlags(selection, GRAPH_ELIXIR_BACKEND_FLAG_KEYS)

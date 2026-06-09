@@ -58,9 +58,10 @@ function hasGraphPrimaryPart(
 
 function hasOwnedGraphPart(
   config: ProjectConfig,
-  ownerRole: "frontend" | "backend" | "database",
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
   role: StackPartRole,
   ecosystem?: string,
+  toolId?: string,
 ) {
   const owner = config.stackParts?.find(
     (part) =>
@@ -77,7 +78,8 @@ function hasOwnedGraphPart(
         part.source !== "provided" &&
         part.role === role &&
         part.ownerPartId === owner.id &&
-        (!ecosystem || part.ecosystem === ecosystem),
+        (!ecosystem || part.ecosystem === ecosystem) &&
+        (!toolId || part.toolId === toolId),
     ),
   );
 }
@@ -169,15 +171,43 @@ function appendChangedGraphStringFlag(
 function appendChangedOwnedGraphStringFlag(
   flags: string[],
   config: ProjectConfig,
-  ownerRole: "frontend" | "backend" | "database",
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
   role: StackPartRole,
   ecosystem: string,
   flag: string,
   value: string,
   defaultValue: string,
 ) {
-  if (hasOwnedGraphPart(config, ownerRole, role, ecosystem)) return;
+  if (hasOwnedGraphPart(config, ownerRole, role, ecosystem, value)) return;
   appendChangedStringFlag(flags, flag, value, defaultValue);
+}
+
+function hasOwnedGraphArrayParts(
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  values: string[],
+) {
+  const normalizedValues = values.filter((value) => value !== "none");
+  if (normalizedValues.length === 0) return false;
+  return normalizedValues.every((value) =>
+    hasOwnedGraphPart(config, ownerRole, role, ecosystem, value),
+  );
+}
+
+function appendChangedOwnedGraphArrayFlag(
+  flags: string[],
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  values: string[],
+  defaultValues: string[],
+) {
+  if (hasOwnedGraphArrayParts(config, ownerRole, role, ecosystem, values)) return;
+  appendChangedArrayFlag(flags, flag, values, defaultValues);
 }
 
 function appendChangedArrayFlag(
@@ -449,10 +479,46 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
   }
 
   if (hasGraphPrimaryPart(config, "mobile")) {
-    appendChangedStringFlag(flags, "mobile-navigation", config.mobileNavigation, "expo-router");
-    appendChangedStringFlag(flags, "mobile-ui", config.mobileUI, "none");
-    appendChangedStringFlag(flags, "mobile-storage", config.mobileStorage, "none");
-    appendChangedStringFlag(flags, "mobile-testing", config.mobileTesting, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "navigation",
+      "react-native",
+      "mobile-navigation",
+      config.mobileNavigation,
+      "expo-router",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "ui",
+      "react-native",
+      "mobile-ui",
+      config.mobileUI,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "storage",
+      "react-native",
+      "mobile-storage",
+      config.mobileStorage,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "testing",
+      "react-native",
+      "mobile-testing",
+      config.mobileTesting,
+      "none",
+    );
     appendChangedStringFlag(flags, "mobile-push", config.mobilePush, "none");
     appendChangedStringFlag(flags, "mobile-ota", config.mobileOTA, "none");
     appendChangedStringFlag(flags, "mobile-deep-linking", config.mobileDeepLinking, "none");
@@ -462,32 +528,162 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedStringFlag(flags, "rust-frontend", config.rustFrontend, "none");
   }
   if (hasGraphPrimaryPart(config, "backend", "rust")) {
-    appendChangedStringFlag(flags, "rust-cli", config.rustCli, "none");
-    appendChangedArrayFlag(flags, "rust-libraries", config.rustLibraries, []);
-    appendChangedStringFlag(flags, "rust-logging", config.rustLogging, "tracing");
-    appendChangedStringFlag(
+    appendChangedOwnedGraphStringFlag(
       flags,
+      config,
+      "backend",
+      "cli",
+      "rust",
+      "rust-cli",
+      config.rustCli,
+      "none",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "libraries",
+      "rust",
+      "rust-libraries",
+      config.rustLibraries,
+      [],
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "logging",
+      "rust",
+      "rust-logging",
+      config.rustLogging,
+      "tracing",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "errorHandling",
+      "rust",
       "rust-error-handling",
       config.rustErrorHandling,
       "anyhow-thiserror",
     );
-    appendChangedStringFlag(flags, "rust-caching", config.rustCaching, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "caching",
+      "rust",
+      "rust-caching",
+      config.rustCaching,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "python")) {
-    appendChangedStringFlag(flags, "python-validation", config.pythonValidation, "none");
-    appendChangedArrayFlag(flags, "python-ai", config.pythonAi, []);
-    appendChangedStringFlag(flags, "python-task-queue", config.pythonTaskQueue, "none");
-    appendChangedStringFlag(flags, "python-graphql", config.pythonGraphql, "none");
-    appendChangedStringFlag(flags, "python-quality", config.pythonQuality, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "validation",
+      "python",
+      "python-validation",
+      config.pythonValidation,
+      "none",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "ai",
+      "python",
+      "python-ai",
+      config.pythonAi,
+      [],
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "jobQueue",
+      "python",
+      "python-task-queue",
+      config.pythonTaskQueue,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "api",
+      "python",
+      "python-graphql",
+      config.pythonGraphql,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "codeQuality",
+      "python",
+      "python-quality",
+      config.pythonQuality,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "go")) {
-    appendChangedStringFlag(flags, "go-cli", config.goCli, "none");
-    appendChangedStringFlag(flags, "go-logging", config.goLogging, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "cli",
+      "go",
+      "go-cli",
+      config.goCli,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "logging",
+      "go",
+      "go-logging",
+      config.goLogging,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "java")) {
-    appendChangedStringFlag(flags, "java-build-tool", config.javaBuildTool, "maven");
-    appendChangedArrayFlag(flags, "java-libraries", config.javaLibraries, []);
-    appendChangedArrayFlag(flags, "java-testing-libraries", config.javaTestingLibraries, ["junit5"]);
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "buildTool",
+      "java",
+      "java-build-tool",
+      config.javaBuildTool,
+      "maven",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "libraries",
+      "java",
+      "java-libraries",
+      config.javaLibraries,
+      [],
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "testing",
+      "java",
+      "java-testing-libraries",
+      config.javaTestingLibraries,
+      ["junit5"],
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "elixir")) {
     appendChangedGraphStringFlag(
@@ -517,7 +713,16 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.elixirValidation,
       "ecto-changesets",
     );
-    appendChangedStringFlag(flags, "elixir-http", config.elixirHttp, "req");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "httpClient",
+      "elixir",
+      "elixir-http",
+      config.elixirHttp,
+      "req",
+    );
     appendChangedStringFlag(flags, "elixir-json", config.elixirJson, "jason");
     appendChangedGraphStringFlag(
       flags,
@@ -555,7 +760,16 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.elixirTesting,
       "ex_unit",
     );
-    appendChangedStringFlag(flags, "elixir-quality", config.elixirQuality, "credo");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "codeQuality",
+      "elixir",
+      "elixir-quality",
+      config.elixirQuality,
+      "credo",
+    );
     appendChangedGraphStringFlag(
       flags,
       config,

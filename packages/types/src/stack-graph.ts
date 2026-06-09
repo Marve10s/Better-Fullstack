@@ -51,20 +51,31 @@ import {
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
+  GO_CLI_VALUES,
+  GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_BUILD_TOOL_VALUES,
+  JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
+  JAVA_TESTING_LIBRARIES_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
+  MOBILE_NAVIGATION_VALUES,
+  MOBILE_STORAGE_VALUES,
+  MOBILE_TESTING_VALUES,
+  MOBILE_UI_VALUES,
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
   PYTHON_API_VALUES,
+  PYTHON_AI_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_GRAPHQL_VALUES,
   PYTHON_ORM_VALUES,
+  PYTHON_QUALITY_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -73,12 +84,18 @@ import {
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
+  RUST_CLI_VALUES,
+  RUST_ERROR_HANDLING_VALUES,
   RUST_FRONTEND_VALUES,
+  RUST_LIBRARIES_VALUES,
+  RUST_LOGGING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
   I18N_VALUES,
+  ELIXIR_HTTP_VALUES,
+  ELIXIR_QUALITY_VALUES,
   StackPartRoleSchema,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
@@ -234,6 +251,24 @@ const LEGACY_DATABASE_SINGLE_CATEGORIES = {
   dbSetup: "dbSetup",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
+const LEGACY_MOBILE_SINGLE_CATEGORIES = {
+  navigation: "mobileNavigation",
+  ui: "mobileUI",
+  storage: "mobileStorage",
+  testing: "mobileTesting",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
+const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
+  rust: { libraries: "rustLibraries" },
+  python: { ai: "pythonAi" },
+  go: {},
+  java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
+  elixir: {},
+} as const satisfies Record<
+  LegacyBackendEcosystem,
+  Partial<Record<StackPartRole, keyof ProjectConfig>>
+>;
+
 const CODE_QUALITY_ADDONS = new Set(["biome", "oxlint", "ultracite", "lefthook", "husky"]);
 const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
 const FRONTEND_APP_PLATFORM_ADDONS = new Set(["pwa", "tauri", "wxt", "opentui"]);
@@ -261,6 +296,14 @@ const LEGACY_ADDON_GRAPH_ROLES = new Set<StackPartRole>([
   "documentation",
   "testing",
   "workspaceTooling",
+]);
+const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
+  "addons",
+  "examples",
+  "rustLibraries",
+  "pythonAi",
+  "javaLibraries",
+  "javaTestingLibraries",
 ]);
 
 export type AddonStackPartBinding = {
@@ -301,11 +344,21 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   ...Object.fromEntries(
     Object.keys(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES).map((role) => [role, ["frontend"]]),
   ),
+  ...Object.fromEntries(
+    Object.keys(LEGACY_MOBILE_SINGLE_CATEGORIES).map((role) => [role, ["mobile"]]),
+  ),
   deploy: ["frontend", "backend"],
   dbSetup: ["database"],
+  ui: ["frontend", "mobile"],
   appPlatform: ["frontend"],
   dataFetching: ["frontend"],
-  testing: ["frontend"],
+  testing: ["frontend", "mobile", "backend"],
+  codeQuality: ["backend"],
+  buildTool: ["backend"],
+  cli: ["backend"],
+  errorHandling: ["backend"],
+  httpClient: ["backend"],
+  libraries: ["backend"],
 } as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
@@ -343,18 +396,30 @@ const NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS = new Set([
 // pythonGraphql still stays flat-only in the legacy importer until the
 // API/GraphQL role split is settled.
 const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
-  rust: { caching: "rustCaching" },
-  python: { validation: "pythonValidation", jobQueue: "pythonTaskQueue" },
-  go: {},
-  java: {},
+  rust: {
+    caching: "rustCaching",
+    cli: "rustCli",
+    logging: "rustLogging",
+    errorHandling: "rustErrorHandling",
+  },
+  python: {
+    validation: "pythonValidation",
+    jobQueue: "pythonTaskQueue",
+    api: "pythonGraphql",
+    codeQuality: "pythonQuality",
+  },
+  go: { cli: "goCli", logging: "goLogging" },
+  java: { buildTool: "javaBuildTool" },
   elixir: {
     realtime: "elixirRealtime",
     jobQueue: "elixirJobs",
     validation: "elixirValidation",
+    httpClient: "elixirHttp",
     email: "elixirEmail",
     caching: "elixirCaching",
     observability: "elixirObservability",
     testing: "elixirTesting",
+    codeQuality: "elixirQuality",
     deploy: "elixirDeploy",
   },
 } as const satisfies Record<
@@ -374,6 +439,13 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
     Object.values(categories),
   ),
   ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+  ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
+  ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
+  ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
+  ...Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES),
+  ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
+    Object.values(categories),
+  ),
 ] as Array<keyof ProjectConfig>;
 
 function defineTools(
@@ -487,26 +559,47 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(AI_VALUES, "ai", "typescript", "ai"),
   ...defineTools(CMS_VALUES, "cms", "typescript", "cms"),
   ...defineTools(AUTH_VALUES, "auth", "react-native", "auth"),
+  ...defineTools(MOBILE_NAVIGATION_VALUES, "navigation", "react-native", "mobileNavigation"),
+  ...defineTools(MOBILE_UI_VALUES, "ui", "react-native", "mobileUI"),
+  ...defineTools(MOBILE_STORAGE_VALUES, "storage", "react-native", "mobileStorage"),
+  ...defineTools(MOBILE_TESTING_VALUES, "testing", "react-native", "mobileTesting"),
   ...defineTools(RUST_WEB_FRAMEWORK_VALUES, "backend", "rust", "rustWebFramework"),
   ...defineTools(RUST_FRONTEND_VALUES, "frontend", "rust", "rustFrontend"),
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
   ...defineTools(RUST_API_VALUES, "api", "rust", "rustApi"),
   ...defineTools(RUST_AUTH_VALUES, "auth", "rust", "rustAuth"),
+  ...defineTools(RUST_CLI_VALUES, "cli", "rust", "rustCli"),
+  ...defineTools(RUST_LIBRARIES_VALUES, "libraries", "rust", "rustLibraries", {
+    allowMultiple: true,
+  }),
+  ...defineTools(RUST_LOGGING_VALUES, "logging", "rust", "rustLogging"),
+  ...defineTools(RUST_ERROR_HANDLING_VALUES, "errorHandling", "rust", "rustErrorHandling"),
   ...defineTools(RUST_CACHING_VALUES, "caching", "rust", "rustCaching"),
   ...defineTools(PYTHON_WEB_FRAMEWORK_VALUES, "backend", "python", "pythonWebFramework"),
   ...defineTools(PYTHON_ORM_VALUES, "orm", "python", "pythonOrm"),
   ...defineTools(PYTHON_VALIDATION_VALUES, "validation", "python", "pythonValidation"),
+  ...defineTools(PYTHON_AI_VALUES, "ai", "python", "pythonAi", { allowMultiple: true }),
   ...defineTools(PYTHON_API_VALUES, "api", "python", "pythonApi"),
   ...defineTools(PYTHON_AUTH_VALUES, "auth", "python", "pythonAuth"),
   ...defineTools(PYTHON_TASK_QUEUE_VALUES, "jobQueue", "python", "pythonTaskQueue"),
   ...defineTools(PYTHON_GRAPHQL_VALUES, "api", "python", "pythonGraphql"),
+  ...defineTools(PYTHON_QUALITY_VALUES, "codeQuality", "python", "pythonQuality"),
   ...defineTools(GO_WEB_FRAMEWORK_VALUES, "backend", "go", "goWebFramework"),
   ...defineTools(GO_ORM_VALUES, "orm", "go", "goOrm"),
   ...defineTools(GO_API_VALUES, "api", "go", "goApi"),
   ...defineTools(GO_AUTH_VALUES, "auth", "go", "goAuth"),
+  ...defineTools(GO_CLI_VALUES, "cli", "go", "goCli"),
+  ...defineTools(GO_LOGGING_VALUES, "logging", "go", "goLogging"),
   ...defineTools(JAVA_WEB_FRAMEWORK_VALUES, "backend", "java", "javaWebFramework"),
+  ...defineTools(JAVA_BUILD_TOOL_VALUES, "buildTool", "java", "javaBuildTool"),
   ...defineTools(JAVA_ORM_VALUES, "orm", "java", "javaOrm"),
   ...defineTools(JAVA_AUTH_VALUES, "auth", "java", "javaAuth"),
+  ...defineTools(JAVA_LIBRARIES_VALUES, "libraries", "java", "javaLibraries", {
+    allowMultiple: true,
+  }),
+  ...defineTools(JAVA_TESTING_LIBRARIES_VALUES, "testing", "java", "javaTestingLibraries", {
+    allowMultiple: true,
+  }),
   ...defineTools(ELIXIR_WEB_FRAMEWORK_VALUES, "backend", "elixir", "elixirWebFramework"),
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
@@ -514,10 +607,12 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(ELIXIR_REALTIME_VALUES, "realtime", "elixir", "elixirRealtime"),
   ...defineTools(ELIXIR_JOBS_VALUES, "jobQueue", "elixir", "elixirJobs"),
   ...defineTools(ELIXIR_VALIDATION_VALUES, "validation", "elixir", "elixirValidation"),
+  ...defineTools(ELIXIR_HTTP_VALUES, "httpClient", "elixir", "elixirHttp"),
   ...defineTools(ELIXIR_EMAIL_VALUES, "email", "elixir", "elixirEmail"),
   ...defineTools(ELIXIR_CACHING_VALUES, "caching", "elixir", "elixirCaching"),
   ...defineTools(ELIXIR_OBSERVABILITY_VALUES, "observability", "elixir", "elixirObservability"),
   ...defineTools(ELIXIR_TESTING_VALUES, "testing", "elixir", "elixirTesting"),
+  ...defineTools(ELIXIR_QUALITY_VALUES, "codeQuality", "elixir", "elixirQuality"),
   ...defineTools(ELIXIR_DEPLOY_VALUES, "deploy", "elixir", "elixirDeploy"),
   {
     toolId: "convex",
@@ -711,6 +806,51 @@ function createTypeScriptFrontendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'${uiTool}' is not compatible with the '${part.toolId}' CSS framework.`,
+      });
+    }
+  }
+
+  return undefined;
+}
+
+function createMobileCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.ecosystem !== "react-native" || context.ownerRole !== "mobile") return undefined;
+
+  if (part.role === "ui") {
+    if (part.toolId === "uniwind" && context.ownerToolId !== "native-uniwind") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Uniwind mobile UI requires the Expo + Uniwind frontend.",
+      });
+    }
+
+    if (part.toolId === "unistyles" && context.ownerToolId !== "native-unistyles") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Unistyles mobile UI requires the Expo + Unistyles frontend.",
+      });
+    }
+
+    if (
+      ["tamagui", "gluestack-ui"].includes(part.toolId) &&
+      ["native-uniwind", "native-unistyles"].includes(context.ownerToolId ?? "")
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message:
+          "Tamagui and Gluestack UI require the base Expo frontend to avoid conflicting styling setup.",
       });
     }
   }
@@ -1124,6 +1264,9 @@ function getStackPartCompatibilityIssue(
   const frontendCompatibilityIssue = createTypeScriptFrontendCompatibilityIssue(part, context);
   if (frontendCompatibilityIssue) return frontendCompatibilityIssue;
 
+  const mobileCompatibilityIssue = createMobileCompatibilityIssue(part, context);
+  if (mobileCompatibilityIssue) return mobileCompatibilityIssue;
+
   const infrastructureCompatibilityIssue = createInfrastructureCompatibilityIssue(part, context);
   if (infrastructureCompatibilityIssue) return infrastructureCompatibilityIssue;
 
@@ -1344,6 +1487,9 @@ export function parseStackPartSpecs(
     );
 
   const primaryByRole = new Map(primaryParts.map((part) => [part.role, part]));
+  const primaryByRoleAndEcosystem = new Map(
+    primaryParts.map((part) => [`${part.role}:${part.ecosystem}`, part]),
+  );
   const scopedParts = unresolved
     .filter(
       (part): part is typeof part & { ownerRole: StackPrimaryRole } =>
@@ -1354,7 +1500,9 @@ export function parseStackPartSpecs(
         role: part.role,
         ecosystem: part.ecosystem,
         toolId: part.toolId,
-        ownerPartId: primaryByRole.get(part.ownerRole)?.id,
+        ownerPartId:
+          primaryByRoleAndEcosystem.get(`${part.ownerRole}:${part.ecosystem}`)?.id ??
+          primaryByRole.get(part.ownerRole)?.id,
         source,
         id: part.customId,
       }),
@@ -1427,20 +1575,23 @@ function addLegacyAddonPart(
 
 function appendUniqueLegacyArrayValue(
   config: Partial<ProjectConfig>,
-  category: "addons" | "examples",
+  category: keyof ProjectConfig,
   value: string,
 ) {
+  if (!LEGACY_ARRAY_CATEGORIES.has(category)) return;
   const current = (config[category] ?? []) as string[];
   if (!current.includes(value)) {
     (config as Record<string, unknown>)[category] = [...current, value];
   }
 }
 
-function getLegacyArrayCategoryForPart(part: StackPart): "addons" | "examples" | undefined {
+function getLegacyArrayCategoryForPart(part: StackPart): keyof ProjectConfig | undefined {
   if (part.role === "examples") return "examples";
   if (LEGACY_ADDON_GRAPH_ROLES.has(part.role) && getAddonStackPartBinding(part.toolId)) {
     return "addons";
   }
+  const legacyCategory = findDefinition(part)?.legacyCategory;
+  if (legacyCategory && LEGACY_ARRAY_CATEGORIES.has(legacyCategory)) return legacyCategory;
   return undefined;
 }
 
@@ -1465,7 +1616,7 @@ export function legacyProjectConfigToStackParts(
   const webFrontend = webFrontends[0];
   const nativeFrontend = nativeFrontends[0];
   const frontendPart = addLegacyPart(parts, "frontend", "typescript", webFrontend, source);
-  addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
+  const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
 
   let backendPart: StackPart | undefined;
   if (
@@ -1492,7 +1643,7 @@ export function legacyProjectConfigToStackParts(
   }
 
   const databasePart = addLegacyPart(parts, "database", "universal", config.database, source);
-  const capabilityOwner = backendPart?.id ?? frontendPart?.id ?? databasePart?.id;
+  const capabilityOwner = backendPart?.id ?? frontendPart?.id ?? mobilePart?.id ?? databasePart?.id;
   if (databasePart) {
     addLegacyPart(parts, "dbSetup", "universal", config.dbSetup, source, databasePart.id);
   }
@@ -1524,9 +1675,9 @@ export function legacyProjectConfigToStackParts(
       capabilityOwner,
     );
 
-    if (frontendPart?.ecosystem === "typescript") {
-      for (const [role, category] of Object.entries(
-        LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES,
+      if (frontendPart?.ecosystem === "typescript") {
+        for (const [role, category] of Object.entries(
+          LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES,
       ) as Array<[StackPartRole, keyof ProjectConfig]>) {
         addLegacyPart(
           parts,
@@ -1536,12 +1687,27 @@ export function legacyProjectConfigToStackParts(
           source,
           frontendPart.id,
         );
+        }
       }
-    }
 
-    if (backendPart?.ecosystem === "typescript") {
-      for (const [role, category] of Object.entries(
-        LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES,
+      if (mobilePart?.ecosystem === "react-native") {
+        for (const [role, category] of Object.entries(LEGACY_MOBILE_SINGLE_CATEGORIES) as Array<
+          [StackPartRole, keyof ProjectConfig]
+        >) {
+          addLegacyPart(
+            parts,
+            role,
+            "react-native",
+            config[category] as string | undefined,
+            source,
+            mobilePart.id,
+          );
+        }
+      }
+
+      if (backendPart?.ecosystem === "typescript") {
+        for (const [role, category] of Object.entries(
+          LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES,
       ) as Array<[StackPartRole, keyof ProjectConfig]>) {
         addLegacyPart(
           parts,
@@ -1592,7 +1758,29 @@ export function legacyProjectConfigToStackParts(
         if (config.ecosystem === "elixir" && toolId && ELIXIR_UNSUPPORTED_GRAPH_TOOLS.has(toolId)) {
           continue;
         }
+        if (
+          parts.some(
+            (part) =>
+              part.ownerPartId === backendPart.id &&
+              part.role === role &&
+              part.ecosystem === config.ecosystem &&
+              part.source !== "provided",
+          )
+        ) {
+          continue;
+        }
         addLegacyPart(parts, role, config.ecosystem, toolId, source, backendPart.id);
+      }
+
+      for (const [role, category] of Object.entries(
+        LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM[config.ecosystem],
+      ) as Array<[StackPartRole, keyof ProjectConfig]>) {
+        const values = config[category];
+        if (!Array.isArray(values)) continue;
+        for (const toolId of values) {
+          if (typeof toolId !== "string") continue;
+          addLegacyPart(parts, role, config.ecosystem, toolId, source, backendPart.id);
+        }
       }
     }
   }
@@ -1630,8 +1818,35 @@ export function stackPartsToLegacyProjectConfigPartial(
       !part.ownerPartId &&
       part.source !== "provided",
   );
+  const hasTypeScriptFrontend = parts.some(
+    (part) =>
+      part.role === "frontend" &&
+      part.ecosystem === "typescript" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
+  const hasMobileFrontend = parts.some(
+    (part) =>
+      part.role === "mobile" &&
+      part.ecosystem === "react-native" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
   if (hasTypeScriptBackend) {
-    for (const category of Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES)) {
+    for (const category of [
+      ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+      ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
+    ]) {
+      (config as Record<string, unknown>)[category] = "none";
+    }
+  }
+  if (hasTypeScriptFrontend) {
+    for (const category of Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES)) {
+      (config as Record<string, unknown>)[category] = "none";
+    }
+  }
+  if (hasMobileFrontend) {
+    for (const category of Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES)) {
       (config as Record<string, unknown>)[category] = "none";
     }
   }
@@ -1844,6 +2059,18 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
+  const mobileScopedPartRoles = new Set<StackPartRole>(["auth"]);
+  for (const part of parts) {
+    if (
+      part.source === "provided" ||
+      part.ownerPartId !== mobile?.id ||
+      mobileScopedPartRoles.has(part.role)
+    ) {
+      continue;
+    }
+    projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
+  }
+
   for (const part of parts) {
     if (part.source === "provided" || part.ownerPartId !== database?.id) {
       continue;
@@ -1884,8 +2111,13 @@ export function compareLegacyConfigToStackParts(
     ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
     ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
     ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
+    ...Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES),
     "addons",
     "examples",
+    "rustLibraries",
+    "pythonAi",
+    "javaLibraries",
+    "javaTestingLibraries",
     ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
       Object.values(categories),
     ),

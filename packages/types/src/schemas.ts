@@ -21,6 +21,7 @@ export const StackPartRoleSchema = z
     "deploy",
     "dbSetup",
     "realtime",
+    "navigation",
     "caching",
     "observability",
     "email",
@@ -35,6 +36,7 @@ export const StackPartRoleSchema = z
     "validation",
     "ui",
     "css",
+    "storage",
     "ai",
     "payments",
     "logging",
@@ -48,6 +50,11 @@ export const StackPartRoleSchema = z
     "dataFetching",
     "workspaceTooling",
     "examples",
+    "buildTool",
+    "cli",
+    "errorHandling",
+    "httpClient",
+    "libraries",
   ])
   .describe("Role a selected tool plays in the stack graph");
 

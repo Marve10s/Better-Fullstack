@@ -89,6 +89,16 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.elixirDeploy = "none";
   }
 
+  if (!selectedEcosystems.has("react-native")) {
+    normalized.mobileNavigation = "none";
+    normalized.mobileUI = "none";
+    normalized.mobileStorage = "none";
+    normalized.mobileTesting = "none";
+    normalized.mobilePush = "none";
+    normalized.mobileOTA = "none";
+    normalized.mobileDeepLinking = "none";
+  }
+
   return normalized;
 }
 
