@@ -1,15 +1,21 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, LayoutGroup } from "motion/react";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  ChromeButton,
+  CREATION_MODE_INDICATOR_ID,
+  CREATION_MODE_INDICATOR_TRANSITION,
+} from "@/components/ui/chrome-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { HandDrawnNewCallout } from "@/components/ui/hand-drawn-new-callout";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { parseStackShareSlug } from "@/lib/stack-share-paths";
 import { parseStackFromUrlRecord } from "@/lib/stack-url-state.shared";
@@ -74,6 +80,9 @@ function HeaderCopyButton() {
 
 // The builder's creation-mode switch, rendered in the header on the builder
 // page. State lives in the StackBuilder and is bridged here via useBuilderMode.
+const TOGGLE_SEGMENT_CLASS =
+  "relative cursor-pointer rounded-full px-4 py-1.5 text-center text-xs font-medium transition-[color,background-color,box-shadow] duration-300 ease-in-out sm:px-5 sm:py-2";
+
 function StackModeToggle({
   mode,
   onChange,
@@ -87,48 +96,62 @@ function StackModeToggle({
   ];
 
   return (
-    <fieldset
-      aria-label="Creation method"
-      className="relative inline-flex rounded-lg bg-muted/40 p-0.5 shadow-sm"
-    >
-      {options.map((option) => {
-        const active = mode === option.value;
-        const isMulti = option.value === "multi";
-        return (
-          <button
-            key={option.value}
-            type="button"
-            data-testid={`stack-mode-${option.value}`}
-            aria-pressed={active}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              "relative cursor-pointer rounded-[7px] text-center text-xs font-medium transition-colors duration-200",
-              !isMulti && "px-3.5 py-1.5",
-              active ? "text-[#0c0c0e]" : "text-muted-foreground hover:text-foreground",
-              isMulti &&
-                "border-beam border border-transparent bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px shadow-[0_0_24px_rgba(198,232,83,0.22)]",
-            )}
-          >
-            {active && (
-              <motion.span
-                layoutId="creation-mode-indicator"
-                className="absolute inset-0 z-[2] rounded-[7px] bg-[#C6E853] shadow-sm"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-              />
-            )}
-            <span
+    <LayoutGroup id="creation-mode-toggle">
+      <fieldset
+        aria-label="Creation method"
+        className="relative inline-flex items-center gap-0.5 overflow-visible rounded-full border border-border/60 bg-muted/30 p-0.5"
+      >
+        {options.map((option) => {
+          const active = mode === option.value;
+
+          if (option.value === "multi") {
+            return (
+              <div key={option.value} className="relative">
+                <ChromeButton
+                  type="button"
+                  data-testid={`stack-mode-${option.value}`}
+                  aria-pressed={active}
+                  onClick={() => onChange(option.value)}
+                  size="toggle"
+                  border="none"
+                  tone={active ? "toggleActive" : "toggleIdle"}
+                  showActiveIndicator={active}
+                  chromeOpacity={active ? "active" : "idle"}
+                >
+                  {option.label}
+                </ChromeButton>
+                <HandDrawnNewCallout className="absolute top-1/2 left-[calc(100%+0.35rem)] z-20 hidden -translate-y-1/2 min-[640px]:block" />
+              </div>
+            );
+          }
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              data-testid={`stack-mode-${option.value}`}
+              aria-pressed={active}
+              onClick={() => onChange(option.value)}
               className={cn(
-                "relative z-10 block rounded-[6px]",
-                isMulti && "bg-fd-background px-3.5 py-1.5",
-                isMulti && active && "bg-transparent",
+                TOGGLE_SEGMENT_CLASS,
+                active
+                  ? "font-semibold text-[#0c0c0e]"
+                  : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
               )}
             >
-              {option.label}
-            </span>
-          </button>
-        );
-      })}
-    </fieldset>
+              {active && (
+                <motion.span
+                  layoutId={CREATION_MODE_INDICATOR_ID}
+                  className="absolute inset-0 rounded-full bg-[#C6E853] shadow-sm ring-1 ring-[#2A3303]/15"
+                  transition={CREATION_MODE_INDICATOR_TRANSITION}
+                />
+              )}
+              <span className="relative z-10 block">{option.label}</span>
+            </button>
+          );
+        })}
+      </fieldset>
+    </LayoutGroup>
   );
 }
 
@@ -240,7 +263,7 @@ export function Navbar() {
         </div>
 
         {showModeToggle && (
-          <div className="absolute left-1/2 -translate-x-1/2">
+          <div className="absolute left-1/2 z-10 -translate-x-1/2 overflow-visible">
             <StackModeToggle mode={builderMode.mode} onChange={builderMode.setMode} />
           </div>
         )}

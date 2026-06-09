@@ -693,9 +693,11 @@ export function validateUILibraryFrontendCompatibility(
   astroIntegration?: AstroIntegration,
 ) {
   if (!uiLibrary || uiLibrary === "none") return;
+  const { web } = splitFrontends(frontends);
+  if (web.length === 0) return;
+
   const compatible = getCompatibleUILibrariesShared(frontends, astroIntegration);
   if (!compatible.includes(uiLibrary)) {
-    const { web } = splitFrontends(frontends);
     const hasAstroWebFrontend = web.includes("astro");
     const isAstroNonReact = hasAstroWebFrontend && astroIntegration !== "react";
     const supportsAstroReact = getCompatibleUILibrariesShared(["astro"], "react").includes(

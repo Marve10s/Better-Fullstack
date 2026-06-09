@@ -93,6 +93,7 @@ function findDuplicateDependencies(
     for (const [depName, version] of Object.entries(allDeps)) {
       if (depName.startsWith(projectScope)) continue;
       if (version.startsWith("workspace:")) continue;
+      if (version.startsWith("catalog:")) continue;
 
       const existing = depCount.get(depName);
       if (existing) {

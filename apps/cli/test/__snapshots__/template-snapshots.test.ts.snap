@@ -32,6 +32,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: tanstack-ro
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -92,6 +93,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: next-self-f
   "apps/web/src/lib/utils.ts",
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -136,6 +138,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
   "apps/web/src/styles/global.css",
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -177,6 +180,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
   "apps/web/public/robots.txt",
   "apps/web/server/tsconfig.json",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -232,6 +236,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: express-nod
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -286,6 +291,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-or
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -347,6 +353,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: better-auth
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -400,6 +407,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: convex-cler
   "apps/web/src/routes/index.tsx",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/backend/convex/README.md",
   "packages/backend/convex/auth.config.ts",
@@ -452,6 +460,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
   "apps/web/src/middleware.ts",
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -504,6 +513,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
   "apps/web/src/utils/orpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -559,6 +569,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: mongodb-mon
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -611,6 +622,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: postgres-pr
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -666,6 +678,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: algolia-sea
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -722,6 +735,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: ai-cli-root
   "apps/web/src/utils/trpc.ts",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -771,6 +785,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: frontend-on
   "apps/web/src/routes/index.tsx",
   "apps/web/tsconfig.json",
   "apps/web/vite.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/config/package.json",
   "packages/config/tsconfig.base.json",
@@ -815,6 +830,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "apps/server/src/index.ts",
   "apps/server/tsconfig.json",
   "apps/server/tsdown.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -871,6 +887,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-mobi
   "apps/server/src/index.ts",
   "apps/server/tsconfig.json",
   "apps/server/tsdown.config.ts",
+  "bunfig.toml",
   "package.json",
   "packages/api/package.json",
   "packages/api/src/context.ts",
@@ -947,7 +964,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -978,7 +995,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: tanstack-route
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -1084,9 +1101,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-tanstack-router-minimal/env": "workspace:*",
@@ -1096,23 +1113,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -1369,6 +1386,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -1398,7 +1419,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-tanstack-router-minimal/db db:push",
@@ -1718,7 +1738,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: next-self-fullstack 1`] = `
 {
-  "fileCount": 64,
+  "fileCount": 65,
   "files": [
     {
       "content": "[exists]",
@@ -1764,8 +1784,8 @@ export default nextConfig;
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "next": "catalog:",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -1775,7 +1795,7 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.17.0",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
     "lucide-react": "^1.17.0"
@@ -1783,12 +1803,12 @@ export default nextConfig;
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
     "tailwindcss": "^4.3.0",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-next-self-fullstack/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -1990,6 +2010,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -2007,17 +2031,16 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "@types/bun": "^1.3.14",
-      "next": "^16.2.6",
+      "next": "^16.2.7",
       "@trpc/server": "^11.17.0",
       "@trpc/client": "^11.17.0",
-      "better-auth": "1.6.12"
+      "better-auth": "^1.6.14"
     }
   },
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-next-self-fullstack/db db:push",
     "db:studio": "bun run --filter @snapshot-next-self-fullstack/db db:studio",
@@ -2175,7 +2198,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "@snapshot-next-self-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "1.6.12"
+    "@better-auth/drizzle-adapter": "^1.6.14"
   }
 }
 "
@@ -2535,7 +2558,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 41,
+  "fileCount": 42,
   "files": [
     {
       "content": "[exists]",
@@ -2563,11 +2586,11 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.4.2",
-    "@astrojs/react": "^5.0.6",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "@astrojs/node": "^10.1.2",
+    "astro": "^6.4.4",
+    "@astrojs/react": "^5.0.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "@astrojs/node": "^10.1.3",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
@@ -2578,9 +2601,9 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0",
-    "tailwindcss": "^4.3.0",
-    "@types/react": "^19.2.15",
+    "@tailwindcss/vite": "4.1.12",
+    "tailwindcss": "4.1.12",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.1.5",
     "typescript": "catalog:",
     "@snapshot-astro-react-integration/config": "workspace:*"
@@ -2674,6 +2697,10 @@ export const orpc = createTanstackQueryUtils(client)
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -2700,7 +2727,6 @@ export const orpc = createTanstackQueryUtils(client)
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-astro-react-integration/db db:push",
     "db:studio": "bun run --filter @snapshot-astro-react-integration/db db:studio",
@@ -2747,10 +2773,10 @@ export const orpc = createTanstackQueryUtils(client)
     "zod": "catalog:",
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/db": "workspace:*",
-    "@orpc/server": "^1.14.4",
-    "@orpc/client": "^1.14.4",
-    "@orpc/openapi": "^1.14.4",
-    "@orpc/zod": "^1.14.4"
+    "@orpc/server": "^1.14.5",
+    "@orpc/client": "^1.14.5",
+    "@orpc/openapi": "^1.14.5",
+    "@orpc/zod": "^1.14.5"
   }
 }
 "
@@ -3016,7 +3042,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 41,
+  "fileCount": 42,
   "files": [
     {
       "content": "[exists]",
@@ -3120,10 +3146,10 @@ export default defineNuxtConfig({
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.8.1",
+    "@nuxt/ui": "^4.8.2",
     "@nuxt/content": "^3.14.0",
     "@nuxtjs/mdc": "^0.22.0",
-    "nuxt": "^4.4.6",
+    "nuxt": "^4.4.7",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0",
     "dotenv": "catalog:",
@@ -3136,15 +3162,15 @@ export default defineNuxtConfig({
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@tanstack/vue-query": "^5.100.14",
-    "@orpc/tanstack-query": "^1.14.4"
+    "@tanstack/vue-query": "^5.101.0",
+    "@orpc/tanstack-query": "^1.14.5"
   },
   "devDependencies": {
     "tailwindcss": "^4.3.0",
     "@iconify-json/lucide": "^1.2.111",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
-    "@tanstack/vue-query-devtools": "^6.1.33"
+    "@tanstack/vue-query-devtools": "^6.1.34"
   }
 }
 "
@@ -3190,6 +3216,10 @@ export default defineNuxtConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -3210,17 +3240,16 @@ export default defineNuxtConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.4",
-      "@orpc/client": "^1.14.4",
-      "@orpc/openapi": "^1.14.4",
-      "@orpc/zod": "^1.14.4"
+      "@orpc/server": "^1.14.5",
+      "@orpc/client": "^1.14.5",
+      "@orpc/openapi": "^1.14.5",
+      "@orpc/zod": "^1.14.5"
     }
   },
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-nuxt-standalone/db db:push",
     "db:studio": "bun run --filter @snapshot-nuxt-standalone/db db:studio",
@@ -3538,7 +3567,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: express-node-trpc 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -3570,7 +3599,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: express-node-t
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@types/express": "catalog:",
     "@types/cors": "^2.8.19",
@@ -3676,9 +3705,9 @@ app.listen(3000, () => {
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-express-node-trpc/env": "workspace:*",
@@ -3687,23 +3716,23 @@ app.listen(3000, () => {
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "catalog:",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -3960,6 +3989,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -3977,7 +4010,7 @@ export default defineConfig({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
-      "@types/node": "^25.9.1",
+      "@types/node": "^25.9.2",
       "@trpc/server": "^11.17.0",
       "@types/express": "^5.0.6",
       "@prisma/client": "^7.8.0",
@@ -3988,7 +4021,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-express-node-trpc/db db:push",
@@ -4282,7 +4314,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -4314,7 +4346,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -4459,35 +4491,35 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-hono-bun-orpc/env": "workspace:*",
     "@snapshot-hono-bun-orpc/api": "workspace:*",
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
-    "@orpc/tanstack-query": "^1.14.4",
+    "@orpc/tanstack-query": "^1.14.5",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -4740,6 +4772,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -4759,19 +4795,18 @@ export default defineConfig({
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.23",
-      "@orpc/server": "^1.14.4",
-      "@orpc/openapi": "^1.14.4",
-      "@orpc/zod": "^1.14.4",
+      "@orpc/server": "^1.14.5",
+      "@orpc/openapi": "^1.14.5",
+      "@orpc/zod": "^1.14.5",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/client": "^1.14.4"
+      "@orpc/client": "^1.14.5"
     }
   },
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-hono-bun-orpc/db db:push",
@@ -5090,7 +5125,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: better-auth-full 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
     {
       "content": "[exists]",
@@ -5123,7 +5158,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: better-auth-fu
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-better-auth-full/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -5233,9 +5268,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-better-auth-full/env": "workspace:*",
@@ -5244,25 +5279,25 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -5549,6 +5584,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -5569,7 +5608,7 @@ export default defineConfig({
       "@types/bun": "^1.3.14",
       "hono": "^4.12.23",
       "@trpc/server": "^11.17.0",
-      "better-auth": "1.6.12",
+      "better-auth": "^1.6.14",
       "@trpc/client": "^11.17.0"
     }
   },
@@ -5577,7 +5616,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-better-auth-full/db db:push",
@@ -5736,7 +5774,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-better-auth-full/env": "workspace:*",
     "@snapshot-better-auth-full/db": "workspace:*",
     "better-auth": "catalog:",
-    "@better-auth/drizzle-adapter": "1.6.12"
+    "@better-auth/drizzle-adapter": "^1.6.14"
   }
 }
 "
@@ -6101,7 +6139,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 46,
   "files": [
     {
       "content": "[exists]",
@@ -6134,9 +6172,9 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-convex-clerk/env": "workspace:*",
@@ -6147,15 +6185,15 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "catalog:",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-convex-clerk/config": "workspace:*"
   }
@@ -6387,6 +6425,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -6405,15 +6447,14 @@ export default defineConfig({
       "zod": "^4.4.3",
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
-      "convex": "^1.39.1",
-      "@types/node": "^25.9.1"
+      "convex": "^1.40.0",
+      "@types/node": "^25.9.2"
     }
   },
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter @snapshot-convex-clerk/backend dev",
     "dev:setup": "bun run --filter @snapshot-convex-clerk/backend dev:setup"
@@ -6629,7 +6670,7 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
     {
       "content": "[exists]",
@@ -6675,8 +6716,8 @@ export default nextConfig;
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "next": "catalog:",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -6687,19 +6728,19 @@ export default nextConfig;
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.17.0",
-    "@tanstack/react-query": "^5.100.14",
-    "@clerk/nextjs": "^7.4.2",
+    "@tanstack/react-query": "^5.101.0",
+    "@clerk/nextjs": "^7.4.3",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
     "tailwindcss": "^4.3.0",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5",
     "@snapshot-self-next-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -6875,6 +6916,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -6892,7 +6937,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
       "@types/bun": "^1.3.14",
-      "next": "^16.2.6",
+      "next": "^16.2.7",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.17.0",
@@ -6903,7 +6948,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-self-next-clerk/db db:push",
     "db:studio": "bun run --filter @snapshot-self-next-clerk/db db:studio",
@@ -7223,7 +7267,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 51,
+  "fileCount": 52,
   "files": [
     {
       "content": "[exists]",
@@ -7250,13 +7294,13 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@tailwindcss/vite": "^4.3.0",
     "tailwindcss": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-query": "^5.100.14",
-    "@tanstack/react-router": "^1.170.10",
+    "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-router": "^1.170.15",
     "@tanstack/react-router-with-query": "^1.130.17",
-    "@tanstack/react-start": "^1.168.18",
-    "@tanstack/router-plugin": "^1.168.13",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-start": "^1.168.25",
+    "@tanstack/router-plugin": "^1.168.18",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "vite-tsconfig-paths": "^6.1.1",
     "dotenv": "catalog:",
     "zod": "catalog:",
@@ -7268,8 +7312,8 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "@orpc/tanstack-query": "^1.14.4",
-    "@clerk/tanstack-react-start": "^1.3.2",
+    "@orpc/tanstack-query": "^1.14.5",
+    "@clerk/tanstack-react-start": "^1.3.3",
     "srvx": "^0.11.16",
     "lucide-react": "^1.17.0"
   },
@@ -7277,15 +7321,15 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@tanstack/react-router-devtools": "^1.167.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "jsdom": "^29.1.1",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "web-vitals": "^5.3.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -7564,6 +7608,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -7584,17 +7632,16 @@ export default defineConfig({
       "@types/bun": "^1.3.14",
       "@libsql/client": "^0.17.3",
       "libsql": "^0.5.29",
-      "@orpc/server": "^1.14.4",
-      "@orpc/client": "^1.14.4",
-      "@orpc/openapi": "^1.14.4",
-      "@orpc/zod": "^1.14.4"
+      "@orpc/server": "^1.14.5",
+      "@orpc/client": "^1.14.5",
+      "@orpc/openapi": "^1.14.5",
+      "@orpc/zod": "^1.14.5"
     }
   },
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "db:push": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:push",
     "db:studio": "bun run --filter @snapshot-self-tanstack-start-clerk/db db:studio",
@@ -7911,7 +7958,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoose 1`] = `
 {
-  "fileCount": 52,
+  "fileCount": 53,
   "files": [
     {
       "content": "[exists]",
@@ -7942,7 +7989,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoo
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -8048,9 +8095,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-mongodb-mongoose/env": "workspace:*",
@@ -8058,23 +8105,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -8331,6 +8378,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -8358,7 +8409,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev"
   },
@@ -8631,7 +8681,7 @@ export { client };
 
 exports[`Template Snapshots Key File Content Snapshots key files: postgres-prisma 1`] = `
 {
-  "fileCount": 54,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -8662,7 +8712,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: postgres-prism
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -8768,9 +8818,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-postgres-prisma/env": "workspace:*",
@@ -8779,23 +8829,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -9052,6 +9102,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -9080,7 +9134,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-postgres-prisma/db db:push",
@@ -9374,7 +9427,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: algolia-search-hono 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
     {
       "content": "[exists]",
@@ -9406,7 +9459,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: algolia-search
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-algolia-search-hono/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -9516,9 +9569,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-algolia-search-hono/env": "workspace:*",
@@ -9528,23 +9581,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -9801,6 +9854,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -9830,7 +9887,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-algolia-search-hono/db db:push",
@@ -10150,7 +10206,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-tooling 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
     {
       "content": "[exists]",
@@ -10185,7 +10241,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-to
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -10291,9 +10347,9 @@ export default app;
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-ai-cli-root-tooling/env": "workspace:*",
@@ -10303,23 +10359,23 @@ export default app;
     "@trpc/tanstack-react-query": "^11.17.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "lucide-react": "^1.17.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.100.14"
+    "@tanstack/react-query-devtools": "^5.101.0"
   }
 }
 "
@@ -10576,6 +10632,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -10605,7 +10665,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-ai-cli-root-tooling/db db:push",
@@ -10629,7 +10688,7 @@ export default defineConfig({
     "typescript": "catalog:",
     "@types/bun": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
-    "ai-cli": "^0.3.0"
+    "ai-cli": "^0.3.1"
   }
 }
 "
@@ -10931,7 +10990,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-no-backend 1`] = `
 {
-  "fileCount": 35,
+  "fileCount": 36,
   "files": [
     {
       "content": "[exists]",
@@ -10964,9 +11023,9 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "tailwind-merge": "^3.6.0",
     "@tailwindcss/vite": "^4.3.0",
     "tw-animate-css": "^1.4.0",
-    "@tanstack/react-router": "^1.170.10",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-frontend-only-no-backend/env": "workspace:*",
@@ -10974,15 +11033,15 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
-    "@tanstack/router-cli": "^1.167.12",
-    "@tanstack/router-plugin": "^1.168.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "typescript": "catalog:",
     "@snapshot-frontend-only-no-backend/config": "workspace:*"
   }
@@ -11179,6 +11238,10 @@ export default defineConfig({
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -11203,7 +11266,6 @@ export default defineConfig({
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev"
   },
   "packageManager": "bun@1.3.5",
@@ -11329,7 +11391,7 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
     {
       "content": "[exists]",
@@ -11580,6 +11642,7 @@ fontWeight: "bold",
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start --clear",
+    "build": "expo export",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
@@ -11587,29 +11650,29 @@ fontWeight: "bold",
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.16.2",
-    "@react-navigation/drawer": "^7.10.3",
-    "@react-navigation/native": "^7.2.5",
-    "@react-navigation/native-stack": "^7.16.0",
+    "@react-navigation/bottom-tabs": "^7.17.0",
+    "@react-navigation/drawer": "^7.11.0",
+    "@react-navigation/native": "^7.2.6",
+    "@react-navigation/native-stack": "^7.17.0",
     "@tanstack/react-form": "^1.33.0",
-    "@tanstack/react-query": "^5.100.14",
-    "expo": "^56.0.8",
-    "expo-constants": "^56.0.16",
+    "@tanstack/react-query": "^5.101.0",
+    "expo": "^56.0.9",
+    "expo-constants": "^56.0.17",
     "expo-crypto": "^56.0.4",
     "expo-linking": "^56.0.13",
     "expo-navigation-bar": "^56.0.3",
-    "expo-network": "^56.0.4",
-    "expo-router": "^56.2.8",
+    "expo-network": "^56.0.5",
+    "expo-router": "^56.2.9",
     "expo-secure-store": "^56.0.4",
     "expo-splash-screen": "^56.0.10",
     "expo-status-bar": "^56.0.4",
     "expo-system-ui": "^56.0.5",
     "expo-web-browser": "^56.0.5",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-native": "^0.85.3",
     "react-native-gesture-handler": "^3.0.0",
-    "react-native-reanimated": "^4.4.0",
+    "react-native-reanimated": "^4.4.1",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
@@ -11625,7 +11688,7 @@ fontWeight: "bold",
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "babel-preset-expo": "^56.0.14",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "typescript": "catalog:",
     "@snapshot-native-react-native/config": "workspace:*"
   },
@@ -11707,7 +11770,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-native-react-native/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -11784,6 +11847,10 @@ export default app;
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -11812,7 +11879,6 @@ export default app;
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
     "dev:native": "bun run --filter native dev",
-    "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
     "db:push": "bun run --filter @snapshot-native-react-native/db db:push",
     "db:studio": "bun run --filter @snapshot-native-react-native/db db:studio",
@@ -12131,7 +12197,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-mobile-integrations 1`] = `
 {
-  "fileCount": 59,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -12279,6 +12345,7 @@ registerRootComponent(App);
   "main": "index.js",
   "scripts": {
     "dev": "expo start --clear",
+    "build": "expo export",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
@@ -12287,33 +12354,33 @@ registerRootComponent(App);
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.16.2",
-    "@react-navigation/drawer": "^7.10.3",
-    "@react-navigation/native": "^7.2.5",
-    "@react-navigation/native-stack": "^7.16.0",
+    "@react-navigation/bottom-tabs": "^7.17.0",
+    "@react-navigation/drawer": "^7.11.0",
+    "@react-navigation/native": "^7.2.6",
+    "@react-navigation/native-stack": "^7.17.0",
     "@tanstack/react-form": "^1.33.0",
     "@gluestack-ui/themed": "^1.1.73",
-    "@tanstack/react-query": "^5.100.14",
-    "expo": "^56.0.8",
-    "expo-constants": "^56.0.16",
+    "@tanstack/react-query": "^5.101.0",
+    "expo": "^56.0.9",
+    "expo-constants": "^56.0.17",
     "expo-device": "^56.0.4",
     "expo-crypto": "^56.0.4",
     "expo-linking": "^56.0.13",
     "expo-navigation-bar": "^56.0.3",
-    "expo-network": "^56.0.4",
-    "expo-notifications": "^56.0.15",
+    "expo-network": "^56.0.5",
+    "expo-notifications": "^56.0.16",
     "expo-secure-store": "^56.0.4",
     "expo-splash-screen": "^56.0.10",
     "expo-status-bar": "^56.0.4",
     "expo-system-ui": "^56.0.5",
-    "expo-updates": "^56.0.17",
+    "expo-updates": "^56.0.18",
     "expo-web-browser": "^56.0.5",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-native": "^0.85.3",
     "react-native-mmkv": "^4.3.1",
     "react-native-gesture-handler": "^3.0.0",
-    "react-native-reanimated": "^4.4.0",
+    "react-native-reanimated": "^4.4.1",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-web": "^0.21.2",
@@ -12322,19 +12389,19 @@ registerRootComponent(App);
     "zod": "catalog:",
     "@snapshot-native-mobile-integrations/env": "workspace:*",
     "@snapshot-native-mobile-integrations/api": "workspace:*",
-    "@orpc/tanstack-query": "^1.14.4",
+    "@orpc/tanstack-query": "^1.14.5",
     "@orpc/client": "catalog:"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "babel-preset-expo": "^56.0.14",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/jest": "^30.0.0",
-    "@testing-library/react-native": "^13.3.3",
+    "@testing-library/react-native": "^14.0.0",
     "@react-native/jest-preset": "^0.85.3",
     "jest": "^29.7.0",
     "jest-expo": "^56.0.4",
-    "react-test-renderer": "^19.2.6",
+    "react-test-renderer": "^19.2.7",
     "typescript": "catalog:",
     "@snapshot-native-mobile-integrations/config": "workspace:*"
   },
@@ -12418,7 +12485,7 @@ export const orpc = createTanstackQueryUtils(client);
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsdown": "^0.22.1",
+    "tsdown": "^0.22.2",
     "@snapshot-native-mobile-integrations/config": "workspace:*",
     "@types/bun": "catalog:"
   }
@@ -12534,6 +12601,10 @@ export default app;
     },
     {
       "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
       "path": "CLAUDE.md",
     },
     {
@@ -12553,10 +12624,10 @@ export default app;
       "typescript": "^6.0.3",
       "@types/bun": "^1.3.14",
       "hono": "^4.12.23",
-      "@orpc/server": "^1.14.4",
-      "@orpc/openapi": "^1.14.4",
-      "@orpc/zod": "^1.14.4",
-      "@orpc/client": "^1.14.4"
+      "@orpc/server": "^1.14.5",
+      "@orpc/openapi": "^1.14.5",
+      "@orpc/zod": "^1.14.5",
+      "@orpc/client": "^1.14.5"
     }
   },
   "scripts": {
@@ -12564,7 +12635,6 @@ export default app;
     "build": "bun run --filter '*' build",
     "check-types": "bun run --if-present --filter '*' check-types",
     "dev:native": "bun run --filter native dev",
-    "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev"
   },
   "packageManager": "bun@1.3.5",
@@ -13012,7 +13082,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -13439,7 +13509,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -13857,7 +13927,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14272,7 +14342,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14533,7 +14603,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)
@@ -14767,7 +14837,7 @@ PORT=3000
 # GRPC_PORT=50051
 
 # Database (if using)
-# DATABASE_URL=postgres://user:password@localhost:5432/dbname
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 # DATABASE_URL=sqlite:./data.db
 
 # JWT Secret (if using jsonwebtoken)

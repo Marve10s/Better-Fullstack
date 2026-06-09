@@ -30,11 +30,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 {{/if}}
 import { Stack } from "expo-router";
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useUnistyles } from "react-native-unistyles";
 import { StatusBar } from "expo-status-bar";
 {{#if (eq mobilePush "expo-notifications")}}
-import { registerForPushNotificationsAsync } from "@/lib/notifications";
 {{/if}}
 {{#if (eq mobileOTA "expo-updates")}}
 import { useUpdateCheck } from "@/lib/updates";
@@ -56,7 +56,11 @@ export default function RootLayout() {
   {{/if}}
   useEffect(() => {
     {{#if (eq mobilePush "expo-notifications")}}
-    registerForPushNotificationsAsync().catch(console.warn);
+    if (Platform.OS !== "web") {
+      import("@/lib/notifications")
+        .then(({ registerForPushNotificationsAsync }) => registerForPushNotificationsAsync())
+        .catch(console.warn);
+    }
     {{/if}}
   }, []);
   const { theme } = useUnistyles();

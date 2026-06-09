@@ -140,7 +140,7 @@ export default function FeaturesSection() {
         </div>
       </div>
 
-      <ul>
+      <ul className="relative">
         {LAYERS.map((layer, i) => (
           <LayerRow key={layer.word} layer={layer} index={i} />
         ))}
@@ -166,7 +166,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
   return (
     <li
       ref={ref}
-      className="group relative overflow-hidden border-b border-border transition-colors hover:bg-muted/40"
+      className="group relative z-10 overflow-hidden border-b border-border transition-colors hover:bg-muted/40"
     >
       <div
         className={`grid grid-cols-12 items-center gap-x-4 gap-y-6 px-4 py-12 sm:gap-x-6 sm:px-8 sm:py-16 ${

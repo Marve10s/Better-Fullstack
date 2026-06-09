@@ -27,7 +27,15 @@ class Settings(BaseSettings):
 
 {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm"))}}
     # Database settings
+{{#if (eq database "postgres")}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+    database_url: str = "postgres://postgres:postgres@localhost:5432/{{projectName}}"
+{{else}}
+    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/{{projectName}}"
+{{/if}}
+{{else}}
     database_url: str = "sqlite:///./app.db"
+{{/if}}
 {{/if}}
 {{#if (includes pythonAi "openai-sdk")}}
     # OpenAI settings

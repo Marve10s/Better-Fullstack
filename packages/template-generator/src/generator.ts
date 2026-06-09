@@ -259,6 +259,10 @@ async function processGraphTemplates(
       );
     }
   }
+
+  processPackageConfigs(vfs, config);
+  processDependencies(vfs, config);
+  processCatalogs(vfs, config);
 }
 
 export async function generateVirtualProject(options: GeneratorOptions): Promise<GeneratorResult> {

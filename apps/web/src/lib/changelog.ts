@@ -19,15 +19,16 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
-    version: "v2.0.0",
-    publishedAt: "2026-06-03T14:11:44Z",
-    displayDate: "June 3, 2026",
+    version: "v2.0.0 + v2.0.1",
+    publishedAt: "2026-06-06T00:00:00Z",
+    displayDate: "June 6, 2026",
     isLatest: true,
-    href: `${RELEASE_BASE_URL}/v2.0.0`,
-    title: "Multi-ecosystem support",
+    href: `${RELEASE_BASE_URL}/v2.0.1`,
+    title: "Multi-ecosystem support + shadcn/ui hotfix",
     summary:
-      "Better Fullstack 2.0 introduces multi-ecosystem project generation, a new stack graph model, scoped CLI parts, and a redesigned builder for composing full products across frontend, backend, database, and mobile roles.",
+      "Better Fullstack 2.0 introduces multi-ecosystem project generation, a new stack graph model, scoped CLI parts, and a redesigned builder for composing full products across frontend, backend, database, and mobile roles. The 2.0.1 hotfix repairs shadcn/ui prompt back-navigation during interactive scaffolds.",
     highlights: [
+      "Fixed a CLI crash when pressing back on nested shadcn/ui prompts, including the color theme step, by propagating prompt navigation instead of storing it as a theme value.",
       "Added the stack graph foundation so projects can model connected frontend, backend, database, mobile, and ecosystem-specific parts instead of one flat stack.",
       "Added scoped CLI part parsing, validation, and reproducible command output for multi-ecosystem generation.",
       "Redesigned the web builder around Frontend, Backend, Database, Mobile, and Finalize steps with a first-class Multi-Ecosystem mode.",

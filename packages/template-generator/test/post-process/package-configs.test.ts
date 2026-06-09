@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
+import { cliInputToProjectConfigPartial } from "@better-fullstack/types";
+
 import { processPackageConfigs } from "../../src/post-process/package-configs";
 import { makeConfig } from "../_fixtures/config-factory";
 import { createSeededVFS } from "../_fixtures/vfs-factory";
@@ -213,5 +215,157 @@ describe("processPackageConfigs", () => {
       "./web": "./src/web.ts",
       "./native": "./src/native.ts",
     });
+  });
+
+  it("only exposes root dev scripts for generated app workspaces", () => {
+    const webOnly = createSeededVFS([
+      "package.json",
+      "apps/web/package.json",
+      "packages/config/package.json",
+      "packages/env/package.json",
+    ]);
+    webOnly.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: {
+        packages: ["apps/*", "packages/*"],
+        catalog: {
+          react: "^19.0.0",
+        },
+      },
+    });
+
+    processPackageConfigs(
+      webOnly,
+      makeConfig({
+        projectName: "web-only",
+        frontend: ["react-vite"],
+        backend: "none",
+        addons: ["turborepo"],
+      }),
+    );
+
+    expect(webOnly.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
+      "dev:web": "turbo -F web dev",
+    });
+    expect(webOnly.readJson<PackageJson>("package.json")?.workspaces).toMatchObject({
+      catalog: {
+        react: "^19.0.0",
+      },
+    });
+    expect(webOnly.readJson<PackageJson>("package.json")?.scripts?.["dev:native"]).toBeUndefined();
+
+    const nativeOnly = createSeededVFS([
+      "package.json",
+      "apps/native/package.json",
+      "packages/config/package.json",
+      "packages/env/package.json",
+    ]);
+    nativeOnly.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: ["apps/*", "packages/*"],
+    });
+
+    processPackageConfigs(
+      nativeOnly,
+      makeConfig({
+        projectName: "native-only",
+        ecosystem: "react-native",
+        frontend: ["native-uniwind"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        addons: ["turborepo"],
+      }),
+    );
+
+    expect(nativeOnly.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
+      "dev:native": "turbo -F native dev",
+    });
+    expect(nativeOnly.readJson<PackageJson>("package.json")?.scripts?.["dev:web"]).toBeUndefined();
+  });
+
+  it("uses npm --if-present for workspace-wide scripts so utility packages can omit scripts", () => {
+    const vfs = createSeededVFS([
+      "package.json",
+      "apps/native/package.json",
+      "packages/config/package.json",
+      "packages/env/package.json",
+    ]);
+    vfs.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: ["apps/*", "packages/*"],
+    });
+
+    processPackageConfigs(
+      vfs,
+      makeConfig({
+        projectName: "npm-native",
+        packageManager: "npm",
+        ecosystem: "react-native",
+        frontend: ["native-uniwind"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        addons: [],
+      }),
+    );
+
+    expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
+      dev: "npm run dev --workspaces --if-present",
+      build: "npm run build --workspaces --if-present",
+      "check-types": "npm run check-types --workspaces --if-present",
+      "dev:native": "npm run dev --workspace native",
+    });
+  });
+
+  it("uses backend scripts as the primary root commands for backend-only graph projects", () => {
+    const backendOnly = createSeededVFS([
+      "package.json",
+      "apps/server/go.mod",
+      "packages/database/README.md",
+    ]);
+    backendOnly.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: ["apps/*", "packages/*"],
+    });
+
+    processPackageConfigs(
+      backendOnly,
+      makeConfig({
+        projectName: "backend-only",
+        ecosystem: "go",
+        frontend: [],
+        backend: "none",
+        runtime: "bun",
+        api: "none",
+        database: "postgres",
+        orm: "none",
+        goWebFramework: "gin",
+        goOrm: "gorm",
+        addons: ["turborepo"],
+        stackParts: cliInputToProjectConfigPartial({
+          part: ["backend:go:gin", "database:universal:postgres", "backend.orm:go:gorm"],
+        }).stackParts,
+      }),
+    );
+
+    const scripts = backendOnly.readJson<PackageJson>("package.json")?.scripts;
+    expect(scripts).toMatchObject({
+      dev: "cd apps/server && go run cmd/server/main.go",
+      "setup:server": "cd apps/server && go mod tidy",
+      "dev:server": "cd apps/server && go run cmd/server/main.go",
+      "check:server": "cd apps/server && go mod tidy && go test ./...",
+      "test:server": "cd apps/server && go mod tidy && go test ./...",
+    });
+    expect(scripts?.["dev:web"]).toBeUndefined();
+    expect(scripts?.["dev:native"]).toBeUndefined();
   });
 });

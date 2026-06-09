@@ -1,4 +1,3 @@
-
 import { computeSiUrl, getInvertClass, ICON_REGISTRY } from "@/lib/tech-icons";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -21,8 +20,8 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
     if (config) {
       if (config.type === "si") {
         const src = config.needsInvert
-          ? computeSiUrl(config.slug, config.hex, false)
-          : computeSiUrl(config.slug, config.hex, isDark);
+          ? computeSiUrl(config.slug, config.hex, false, config.fixedColor)
+          : computeSiUrl(config.slug, config.hex, isDark, config.fixedColor);
         return (
           <img
             src={src}

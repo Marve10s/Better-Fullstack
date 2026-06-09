@@ -13,6 +13,7 @@ import {
   type PromptOption,
 } from "./prompt-contract";
 import { exitCancelled } from "../utils/errors";
+import { canPromptInteractively } from "../utils/prompt-environment";
 import { isCancel, navigableSelect } from "./navigable";
 
 const MOBILE_NAVIGATION_OPTIONS: PromptOption<MobileNavigation>[] = [
@@ -72,6 +73,7 @@ async function promptMobileOption<T extends string>(
 ) {
   const resolution = createStaticSinglePromptResolution(options, defaultValue, selected);
   if (!resolution.shouldPrompt) return resolution.autoValue ?? defaultValue;
+  if (!canPromptInteractively()) return defaultValue;
 
   const response = await navigableSelect<T>({
     message,

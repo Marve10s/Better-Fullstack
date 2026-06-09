@@ -46,7 +46,6 @@ import { Platform, StyleSheet } from "react-native";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { MobileUIProvider } from "@/components/mobile-ui-provider";
 {{#if (eq mobilePush "expo-notifications")}}
-import { registerForPushNotificationsAsync } from "@/lib/notifications";
 {{/if}}
 {{#if (eq mobileOTA "expo-updates")}}
 import { useUpdateCheck } from "@/lib/updates";
@@ -88,7 +87,11 @@ export default function RootLayout() {
   {{/if}}
   React.useEffect(() => {
     {{#if (eq mobilePush "expo-notifications")}}
-    registerForPushNotificationsAsync().catch(console.warn);
+    if (Platform.OS !== "web") {
+      import("@/lib/notifications")
+        .then(({ registerForPushNotificationsAsync }) => registerForPushNotificationsAsync())
+        .catch(console.warn);
+    }
     {{/if}}
   }, []);
   const hasMounted = useRef(false);

@@ -104,6 +104,18 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--feature-flags flagsmith");
   });
 
+  it("preserves Astro integration in TypeScript commands", () => {
+    const command = generateReproducibleCommand(
+      makeConfig({
+        frontend: ["astro"],
+        astroIntegration: "react",
+      }),
+    );
+
+    expect(command).toContain("--frontend astro");
+    expect(command).toContain("--astro-integration react");
+  });
+
   it("generates a Python command with explicit none selections", () => {
     const config = makeConfig({
       ecosystem: "python",
@@ -455,6 +467,26 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--part backend:go:gin");
     expect(command).toContain("--part backend.orm:go:gorm");
     expect(command).not.toContain("--backend");
+  });
+
+  it("preserves Astro integration when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:rust:axum",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["astro"],
+        astroIntegration: "react",
+        backend: "none",
+        runtime: "none",
+        api: "none",
+      }),
+    );
+
+    expect(command).toContain("--part frontend:typescript:astro");
+    expect(command).toContain("--astro-integration react");
   });
 
   it("preserves graph section library flags when stackParts are present", () => {

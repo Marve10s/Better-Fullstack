@@ -21,7 +21,7 @@ function addConfigTarget(targets: Map<string, Set<string>>, owner: string, confi
   if (!config) return;
 
   if (config.type === "si") {
-    addTarget(targets, owner, computeSiUrl(config.slug, config.hex, false));
+    addTarget(targets, owner, computeSiUrl(config.slug, config.hex, false, config.fixedColor));
     return;
   }
 

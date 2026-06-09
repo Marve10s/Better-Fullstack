@@ -1,17 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 
+import { RaycastHeroBackground } from "@/components/ui/raycast-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
 import { cn } from "@/lib/utils";
 
 import PackageIcon from "./icons";
-
-const ShaderLines = lazy(async () => {
-  const m = await import("@/components/effects/shader-lines");
-  return { default: m.ShaderLines };
-});
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
 type PM = (typeof PMS)[number];
@@ -118,38 +114,24 @@ export default function HeroSection() {
 
       <div className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] sm:block"
+          className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2"
           aria-hidden
         >
-          <Suspense fallback={null}>
-            <ShaderLines className="h-full w-full" />
-          </Suspense>
+          <RaycastHeroBackground className="size-full" />
           <div
             className={cn(
-              "absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,#ffffff_18%,transparent_60%,transparent_100%)]",
-              "dark:bg-[linear-gradient(90deg,#0a0a0a_0%,#0a0a0a_18%,transparent_60%,transparent_100%)]",
+              "absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,#ffffff_30%,rgba(255,255,255,0.88)_42%,rgba(255,255,255,0.45)_58%,transparent_78%)]",
+              "dark:bg-[linear-gradient(90deg,#0a0a0a_0%,#0a0a0a_30%,rgba(10,10,10,0.88)_42%,rgba(10,10,10,0.45)_58%,transparent_78%)]",
             )}
           />
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className={cn(
-            "relative z-10 font-mono text-[11px] uppercase tracking-[0.22em]",
-            ACCENT_TEXT,
-          )}
-        >
-          ✦ the cli
-        </motion.p>
 
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
           className={cn(
-            "relative z-10 mt-5 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-[#14532d] dark:text-[#fafafa]",
+            "relative z-10 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-[#14532d] dark:text-[#fafafa]",
           )}
           style={{
             fontSize: "clamp(2.75rem, 9vw, 6.5rem)",

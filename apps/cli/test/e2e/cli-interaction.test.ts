@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll, afterAll } from "bun:test";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
@@ -90,8 +90,37 @@ const OPENTUI_FLAGS = [
   "--no-install",
   "--no-git",
 ] as const;
+const REACT_NATIVE_PARTIAL_FLAGS = [
+  "--ecosystem", "react-native",
+  "--frontend", "native-uniwind",
+  "--mobile-navigation", "expo-router",
+  "--mobile-ui", "uniwind",
+  "--mobile-storage", "mmkv",
+  "--mobile-push", "expo-notifications",
+  "--mobile-ota", "expo-updates",
+  "--mobile-deep-linking", "expo-linking",
+  "--backend", "none",
+  "--runtime", "none",
+  "--api", "none",
+  "--database", "none",
+  "--ai-docs", "none",
+  "--no-install",
+  "--no-git",
+] as const;
+const BACKEND_ONLY_GRAPH_FLAGS = [
+  "--part", "backend:go:gin",
+  "--part", "backend.orm:go:gorm",
+  "--part", "database:universal:postgres",
+  "--package-manager", "bun",
+  "--no-install",
+  "--no-git",
+] as const;
 
-function runCLI(
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+async function runCLI(
   args: string[],
   options?: { timeout?: number; env?: NodeJS.ProcessEnv },
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
@@ -103,28 +132,37 @@ function runCLI(
   const parentDir = projectPath ? join(projectPath, "..") : SMOKE_DIR;
   const projectName = projectPath?.split("/").pop() || "test";
   const restArgs = args.slice(1);
+  const outputDir = await mkdtemp(join(SMOKE_DIR, ".cli-output-"));
+  const stdoutPath = join(outputDir, "stdout.log");
+  const stderrPath = join(outputDir, "stderr.log");
+  const command = [
+    "exec",
+    shellQuote("node"),
+    shellQuote(CLI_PATH),
+    shellQuote(projectName),
+    ...restArgs.map(shellQuote),
+    ">",
+    shellQuote(stdoutPath),
+    "2>",
+    shellQuote(stderrPath),
+  ].join(" ");
 
   return new Promise((resolve) => {
-    let stdout = "";
-    let stderr = "";
     let settled = false;
 
-    const child = spawn("node", [CLI_PATH, projectName, ...restArgs], {
-      stdio: "pipe",
+    const child = spawn("/bin/sh", ["-c", command], {
+      stdio: "ignore",
       cwd: parentDir,
       env: { ...process.env, NO_COLOR: "1", TERM: "dumb", ...options?.env },
     });
 
-    child.stdout?.on("data", (d: Buffer) => {
-      stdout += d.toString();
-    });
-    child.stderr?.on("data", (d: Buffer) => {
-      stderr += d.toString();
-    });
-
-    child.on("close", (code) => {
+    child.on("close", async (code) => {
       if (!settled) {
         settled = true;
+        const [stdout, stderr] = await Promise.all([
+          readFile(stdoutPath, "utf8"),
+          readFile(stderrPath, "utf8"),
+        ]);
         resolve({ exitCode: code ?? 1, stdout, stderr });
       }
     });
@@ -133,7 +171,7 @@ function runCLI(
       if (!settled) {
         settled = true;
         child.kill("SIGTERM");
-        resolve({ exitCode: 1, stdout, stderr: stderr + "\nTimeout" });
+        resolve({ exitCode: 1, stdout: "", stderr: "Timeout" });
       }
     }, timeout);
   });
@@ -198,6 +236,32 @@ describe("CLI Interaction Tests", () => {
       expect(result.stdout).not.toContain("Choose dependency version channel");
       expect(existsSync(join(dir, "bts.jsonc"))).toBe(true);
       expect(existsSync(join(dir, "package.json"))).toBe(true);
+    });
+
+    it("defaults omitted React Native prompts when running without TTY", async () => {
+      const dir = join(SMOKE_DIR, "react-native-partial-no-tty");
+      const result = await runCLI([dir, ...REACT_NATIVE_PARTIAL_FLAGS], {
+        timeout: 120_000,
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).not.toContain("Select mobile testing");
+      expect(result.stdout).not.toContain("Choose package manager");
+      expect(existsSync(join(dir, "bts.jsonc"))).toBe(true);
+      expect(existsSync(join(dir, "apps", "native", "package.json"))).toBe(true);
+    });
+
+    it("scaffolds backend-only graph projects without requiring UI flags", async () => {
+      const dir = join(SMOKE_DIR, "backend-only-graph");
+      const result = await runCLI([dir, ...BACKEND_ONLY_GRAPH_FLAGS], {
+        timeout: 120_000,
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).not.toContain("UI library");
+      expect(existsSync(join(dir, "bts.jsonc"))).toBe(true);
+      expect(existsSync(join(dir, "apps", "server", "go.mod"))).toBe(true);
+      expect(existsSync(join(dir, "apps", "web"))).toBe(false);
     });
   });
 

@@ -183,15 +183,17 @@ export async function gatherMultiEcosystemConfig(
     : "none";
   const shadcnOptions =
     uiLibrary === "shadcn-ui"
-      ? await getShadcnOptions({
-          shadcnBase: flags.shadcnBase,
-          shadcnStyle: flags.shadcnStyle,
-          shadcnIconLibrary: flags.shadcnIconLibrary,
-          shadcnColorTheme: flags.shadcnColorTheme,
-          shadcnBaseColor: flags.shadcnBaseColor,
-          shadcnFont: flags.shadcnFont,
-          shadcnRadius: flags.shadcnRadius,
-        })
+      ? promptValue(
+          await getShadcnOptions({
+            shadcnBase: flags.shadcnBase,
+            shadcnStyle: flags.shadcnStyle,
+            shadcnIconLibrary: flags.shadcnIconLibrary,
+            shadcnColorTheme: flags.shadcnColorTheme,
+            shadcnBaseColor: flags.shadcnBaseColor,
+            shadcnFont: flags.shadcnFont,
+            shadcnRadius: flags.shadcnRadius,
+          }),
+        )
       : undefined;
   const cssFramework = hasWebStyling(frontendList)
     ? promptValue(await getCSSFrameworkChoice(flags.cssFramework, uiLibrary))

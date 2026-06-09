@@ -1013,6 +1013,93 @@ describe("Go Language Support", () => {
       expect(mainContent).toContain("defer database.Close()");
     });
 
+    it("should mount CRUD handler routes when an ORM is selected", async () => {
+      const result = await createVirtual({
+        projectName: "go-gin-crud-routes",
+        ecosystem: "go",
+        goWebFramework: "gin",
+        goOrm: "gorm",
+        goApi: "none",
+        goCli: "none",
+        goLogging: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const root = result.tree!.root;
+
+      const mainContent = getFileContent(root, "cmd/server/main.go");
+      expect(mainContent).toContain('"go-gin-crud-routes/internal/handlers"');
+      expect(mainContent).toContain('api := r.Group("/api")');
+      expect(mainContent).toContain('api.GET("/users", handlers.GetUsers)');
+      expect(mainContent).toContain('api.POST("/users", handlers.CreateUser)');
+      expect(mainContent).toContain('api.GET("/posts", handlers.GetPosts)');
+      expect(mainContent).toContain('api.POST("/posts", handlers.CreatePost)');
+    });
+
+    it("should only mount Ent routes backed by generated handlers", async () => {
+      const cases = [
+        {
+          projectName: "go-fiber-ent-routes",
+          goWebFramework: "fiber" as const,
+          expectedRoutes: [
+            'app.Get("/api/users", handlers.GetUsers)',
+            'app.Post("/api/users", handlers.CreateUser)',
+            'app.Delete("/api/users/:id", handlers.DeleteUser)',
+            'app.Get("/api/posts", handlers.GetPosts)',
+            'app.Post("/api/posts", handlers.CreatePost)',
+          ],
+          missingRoutes: [
+            'app.Get("/api/users/:id", handlers.GetUser)',
+            'app.Put("/api/users/:id", handlers.UpdateUser)',
+            'app.Get("/api/posts/:id", handlers.GetPost)',
+            'app.Put("/api/posts/:id", handlers.UpdatePost)',
+            'app.Delete("/api/posts/:id", handlers.DeletePost)',
+          ],
+        },
+        {
+          projectName: "go-echo-ent-routes",
+          goWebFramework: "echo" as const,
+          expectedRoutes: [
+            'e.GET("/api/users", handlers.GetUsers)',
+            'e.POST("/api/users", handlers.CreateUser)',
+            'e.DELETE("/api/users/:id", handlers.DeleteUser)',
+            'e.GET("/api/posts", handlers.GetPosts)',
+            'e.POST("/api/posts", handlers.CreatePost)',
+          ],
+          missingRoutes: [
+            'e.PUT("/api/users/:id", handlers.UpdateUser)',
+            'e.GET("/api/posts/:id", handlers.GetPost)',
+            'e.PUT("/api/posts/:id", handlers.UpdatePost)',
+            'e.DELETE("/api/posts/:id", handlers.DeletePost)',
+          ],
+        },
+      ];
+
+      for (const testCase of cases) {
+        const result = await createVirtual({
+          projectName: testCase.projectName,
+          ecosystem: "go",
+          goWebFramework: testCase.goWebFramework,
+          goOrm: "ent",
+          goApi: "grpc-go",
+          goCli: "none",
+          goLogging: "none",
+        });
+
+        expect(result.success).toBe(true);
+        const root = result.tree!.root;
+
+        const mainContent = getFileContent(root, "cmd/server/main.go");
+        expect(mainContent).toBeDefined();
+        for (const route of testCase.expectedRoutes) {
+          expect(mainContent).toContain(route);
+        }
+        for (const route of testCase.missingRoutes) {
+          expect(mainContent).not.toContain(route);
+        }
+      }
+    });
+
     it("should not generate sqlc files when GORM is selected", async () => {
       const result = await createVirtual({
         projectName: "go-gorm-no-sqlc",

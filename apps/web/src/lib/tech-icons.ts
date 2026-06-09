@@ -3,7 +3,14 @@
 //   SiConfig  → rendered from cdn.simpleicons.org with auto-computed colour
 //   LocalConfig → rendered from a local /public/icon/* file or external URL
 
-export type SiConfig = { type: "si"; slug: string; hex: string; needsInvert?: "dark" | "light" };
+export type SiConfig = {
+  type: "si";
+  slug: string;
+  hex: string;
+  needsInvert?: "dark" | "light";
+  /** Keep brand hex in every theme (skip luminance-based recoloring). */
+  fixedColor?: boolean;
+};
 export type LocalConfig = {
   type: "local";
   src: string;
@@ -32,8 +39,13 @@ export function computeColor(brandHex: string, isDark: boolean): string {
   return brandHex;
 }
 
-export function computeSiUrl(slug: string, hex: string, isDark: boolean): string {
-  const color = computeColor(hex, isDark);
+export function computeSiUrl(
+  slug: string,
+  hex: string,
+  isDark: boolean,
+  fixedColor = false,
+): string {
+  const color = fixedColor ? hex : computeColor(hex, isDark);
   return `https://cdn.simpleicons.org/${slug}/${color}`;
 }
 
@@ -53,6 +65,7 @@ export function getInvertClass(needsInvert?: "dark" | "light" | "both"): string 
 export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Ecosystems ────────────────────────────────────────────────────────────
   typescript: { type: "si", slug: "typescript", hex: "3178C6" },
+  "react-native": { type: "si", slug: "react", hex: "61DAFB", fixedColor: true },
   rust: { type: "si", slug: "rust", hex: "000000", needsInvert: "dark" },
   python: { type: "si", slug: "python", hex: "3776AB" },
   go: { type: "si", slug: "go", hex: "00ADD8" },
@@ -211,7 +224,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── File Upload ───────────────────────────────────────────────────────────
   uploadthing: { type: "local", src: "https://uploadthing.com/favicon.ico" },
   filepond: { type: "local", src: "/icon/filepond.svg" },
-  uppy: { type: "local", src: "https://uppy.io/img/logo.svg" },
+  uppy: { type: "local", src: "/icon/uppy.svg" },
 
   // ─── Observability ─────────────────────────────────────────────────────────
   sentry: { type: "si", slug: "sentry", hex: "362D59" },
