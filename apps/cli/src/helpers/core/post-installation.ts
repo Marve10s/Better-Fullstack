@@ -146,6 +146,8 @@ export async function displayPostInstallInstructions(
     backend,
   );
   const vercelDeployInstructions = getVercelDeployInstructions(webDeploy, serverDeploy, backend);
+  const renderDeployInstructions = getRenderDeployInstructions(webDeploy, serverDeploy);
+  const netlifyDeployInstructions = getNetlifyDeployInstructions(webDeploy);
   const graphBackendDeployInstructions = getGraphBackendDeployInstructions(config);
 
   const hasWeb = frontend?.some((f) => isWebFrontend(f));
@@ -273,6 +275,8 @@ export async function displayPostInstallInstructions(
   if (pwaInstructions) output += `\n${pwaInstructions.trim()}\n`;
   if (alchemyDeployInstructions) output += `\n${alchemyDeployInstructions.trim()}\n`;
   if (vercelDeployInstructions) output += `\n${vercelDeployInstructions.trim()}\n`;
+  if (renderDeployInstructions) output += `\n${renderDeployInstructions.trim()}\n`;
+  if (netlifyDeployInstructions) output += `\n${netlifyDeployInstructions.trim()}\n`;
   if (graphBackendDeployInstructions) output += `\n${graphBackendDeployInstructions.trim()}\n`;
   if (starlightInstructions) output += `\n${starlightInstructions.trim()}\n`;
   if (clerkInstructions) output += `\n${clerkInstructions.trim()}\n`;
@@ -723,6 +727,46 @@ function getVercelDeployInstructions(
       instructions.push(`${pc.cyan("•")} Deploy server: ${pc.white(`cd apps/server && vercel`)}`);
     }
     instructions.push(`${pc.cyan("•")} Docs: ${pc.underline("https://vercel.com/docs")}`);
+  }
+
+  return instructions.length ? `\n${instructions.join("\n")}` : "";
+}
+
+function getRenderDeployInstructions(webDeploy: WebDeploy, serverDeploy: ServerDeploy) {
+  const instructions: string[] = [];
+
+  if (webDeploy === "render" || serverDeploy === "render") {
+    instructions.push(pc.bold("Deploy with Render:"));
+    instructions.push(
+      `${pc.cyan("\u2022")} Push this repository to GitHub/GitLab, then create a Blueprint at ${pc.underline("https://dashboard.render.com/blueprints")}`,
+    );
+    instructions.push(
+      `${pc.cyan("\u2022")} Render reads ${pc.white("render.yaml")} at the repo root and builds the Dockerfiles`,
+    );
+    instructions.push(
+      `${pc.cyan("\u2022")} Set production env vars (database, auth, CORS) in the Render dashboard`,
+    );
+    instructions.push(`${pc.cyan("\u2022")} Docs: ${pc.underline("https://render.com/docs/blueprint-spec")}`);
+  }
+
+  return instructions.length ? `\n${instructions.join("\n")}` : "";
+}
+
+function getNetlifyDeployInstructions(webDeploy: WebDeploy) {
+  const instructions: string[] = [];
+
+  if (webDeploy === "netlify") {
+    instructions.push(pc.bold("Deploy with Netlify:"));
+    instructions.push(
+      `${pc.cyan("\u2022")} Install Netlify CLI: ${pc.white("npm i -g netlify-cli")}`,
+    );
+    instructions.push(
+      `${pc.cyan("\u2022")} Deploy web: ${pc.white("cd apps/web && netlify deploy --build")}`,
+    );
+    instructions.push(
+      `${pc.cyan("\u2022")} Or connect the repo in the Netlify UI with base directory ${pc.white("apps/web")}`,
+    );
+    instructions.push(`${pc.cyan("\u2022")} Docs: ${pc.underline("https://docs.netlify.com/")}`);
   }
 
   return instructions.length ? `\n${instructions.join("\n")}` : "";

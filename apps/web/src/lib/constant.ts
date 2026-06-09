@@ -822,6 +822,20 @@ export const TECH_OPTIONS: Record<
       color: "from-zinc-700 to-zinc-900",
     },
     {
+      id: "render",
+      name: "Render",
+      description: "Deploy with Render's Blueprint and Docker builds",
+      icon: "https://cdn.simpleicons.org/render/46E3B7",
+      color: "from-teal-400 to-emerald-600",
+    },
+    {
+      id: "netlify",
+      name: "Netlify",
+      description: "Deploy static and SSR frontends to Netlify",
+      icon: "https://cdn.simpleicons.org/netlify/00C7B7",
+      color: "from-cyan-400 to-teal-600",
+    },
+    {
       id: "docker",
       name: "Docker",
       description: "Container-based deployment with Dockerfile",
@@ -872,6 +886,13 @@ export const TECH_OPTIONS: Record<
       description: "Deploy with Railway cloud development platform",
       icon: "https://cdn.simpleicons.org/railway/0B0D0E",
       color: "from-zinc-700 to-zinc-900",
+    },
+    {
+      id: "render",
+      name: "Render",
+      description: "Deploy with Render's Blueprint and Docker builds",
+      icon: "https://cdn.simpleicons.org/render/46E3B7",
+      color: "from-teal-400 to-emerald-600",
     },
     {
       id: "docker",

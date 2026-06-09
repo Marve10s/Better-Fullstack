@@ -1,0 +1,11 @@
+# Netlify configuration for {{projectName}} Next.js app
+# https://docs.netlify.com/frameworks/next-js/overview/
+#
+# In the Netlify dashboard, set the site's base directory to "apps/web".
+
+[build]
+  command = "{{packageManager}} run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

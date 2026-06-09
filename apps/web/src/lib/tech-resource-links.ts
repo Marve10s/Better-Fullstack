@@ -247,6 +247,8 @@ const BASE_LINKS: LinkMap = {
   },
   fly: { docsUrl: "https://fly.io/docs/", githubUrl: "https://github.com/superfly/docs" },
   railway: { docsUrl: "https://docs.railway.com/" },
+  render: { docsUrl: "https://render.com/docs" },
+  netlify: { docsUrl: "https://docs.netlify.com/" },
   sst: { docsUrl: "https://sst.dev/docs/", githubUrl: "https://github.com/sst/sst" },
   vercel: { docsUrl: "https://vercel.com/docs", githubUrl: "https://github.com/vercel/vercel" },
   "better-auth": {

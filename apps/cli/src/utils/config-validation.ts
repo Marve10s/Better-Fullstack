@@ -15,6 +15,7 @@ import {
   validateServerDeployRequiresBackend,
   validateUILibraryCSSFrameworkCompatibility,
   validateUILibraryFrontendCompatibility,
+  validateNetlifyWebDeployFrontends,
   validateWebDeployRequiresWebFrontend,
   validateAIFrontendCompatibility,
   validateWorkersCompatibility,
@@ -648,6 +649,7 @@ function validateFrontendConstraints(
 
   const hasWebFrontendFlag = (frontend ?? []).some((f) => isWebFrontend(f));
   validateWebDeployRequiresWebFrontend(config.webDeploy, hasWebFrontendFlag);
+  validateNetlifyWebDeployFrontends(config.webDeploy, frontend);
 }
 
 function validateApiConstraints(_config: Partial<ProjectConfig>, _options: CLIInput) {

@@ -425,6 +425,27 @@ export function validateWebDeployRequiresWebFrontend(
   }
 }
 
+const NETLIFY_UNSUPPORTED_FRONTENDS: readonly Frontend[] = [
+  "redwood",
+  "fresh",
+  "react-router",
+  "tanstack-start",
+  "solid-start",
+] as const;
+
+export function validateNetlifyWebDeployFrontends(
+  webDeploy: WebDeploy | undefined,
+  frontends: Frontend[] = [],
+) {
+  if (webDeploy !== "netlify") return;
+  const blocked = frontends.find((f) => NETLIFY_UNSUPPORTED_FRONTENDS.includes(f));
+  if (blocked) {
+    exitWithError(
+      `Netlify deployment is not yet wired up for the '${blocked}' frontend. Choose a different web deploy target or frontend.`,
+    );
+  }
+}
+
 export function validateServerDeployRequiresBackend(
   serverDeploy: ServerDeploy | undefined,
   backend: Backend | undefined,

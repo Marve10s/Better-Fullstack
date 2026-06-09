@@ -2361,6 +2361,14 @@ export const getDisabledReason = (
         return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
       }
     }
+    if (optionId === "netlify") {
+      // Netlify v1 covers SPA, Next.js, SvelteKit, and Nuxt builds only
+      const unsupported = ["redwood", "fresh", "react-router", "tanstack-start", "solid-start"];
+      const blocked = currentStack.webFrontend.find((f) => unsupported.includes(f));
+      if (blocked) {
+        return `Netlify deployment is not yet wired up for the '${blocked}' frontend`;
+      }
+    }
   }
 
   if (category === "serverDeploy") {

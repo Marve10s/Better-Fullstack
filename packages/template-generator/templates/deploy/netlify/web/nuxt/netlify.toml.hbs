@@ -1,0 +1,9 @@
+# Netlify configuration for {{projectName}} Nuxt app
+# https://docs.netlify.com/frameworks/nuxt/
+#
+# In the Netlify dashboard, set the site's base directory to "apps/web".
+# Nitro detects Netlify during CI builds and emits serverless functions.
+
+[build]
+  command = "{{packageManager}} run build"
+  publish = "dist"

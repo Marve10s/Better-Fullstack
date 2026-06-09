@@ -11,6 +11,7 @@ export function processDeployDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const isCloudflareServer = serverDeploy === "cloudflare";
   const isFlyWeb = webDeploy === "fly";
   const isRailwayWeb = webDeploy === "railway";
+  const isRenderWeb = webDeploy === "render";
   const isSstWeb = webDeploy === "sst";
   const isSstServer = serverDeploy === "sst";
   const isBackendSelf = backend === "self";
@@ -32,6 +33,21 @@ export function processDeployDeps(vfs: VirtualFileSystem, config: ProjectConfig)
 
   // Handle Railway web deployment dependencies (Docker-based, same as Fly.io)
   if (isRailwayWeb) {
+    const webPkgPath = "apps/web/package.json";
+    if (vfs.exists(webPkgPath)) {
+      // SvelteKit requires node adapter for Docker-based deployments
+      if (frontend.includes("svelte")) {
+        addPackageDependency({
+          vfs,
+          packagePath: webPkgPath,
+          devDependencies: ["@sveltejs/adapter-node"],
+        });
+      }
+    }
+  }
+
+  // Handle Render web deployment dependencies (Docker-based, same as Railway)
+  if (isRenderWeb) {
     const webPkgPath = "apps/web/package.json";
     if (vfs.exists(webPkgPath)) {
       // SvelteKit requires node adapter for Docker-based deployments
