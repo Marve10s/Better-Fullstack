@@ -7,7 +7,7 @@ import type {
   StackPartSource,
 } from "./types";
 
-import { UI_LIBRARY_COMPATIBILITY } from "./compatibility";
+import { getUnsupportedWebDeployFrontend, UI_LIBRARY_COMPATIBILITY } from "./compatibility";
 import {
   API_VALUES,
   AUTH_VALUES,
@@ -19,6 +19,7 @@ import {
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
+  DATABASE_SETUP_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -57,17 +58,20 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   REALTIME_VALUES,
+  RUNTIME_VALUES,
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
+  SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
   I18N_VALUES,
   StackPartRoleSchema,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
+  WEB_DEPLOY_VALUES,
 } from "./schemas";
 
 export type StackPrimaryRole = Extract<
@@ -101,6 +105,7 @@ export type StackPartOptionContext = {
   ownerToolId?: string;
   ownerEcosystem?: StackPartEcosystem;
   siblingToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
+  selectedToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   primaryToolIdsByRole?: Partial<Record<StackPrimaryRole, string | undefined>>;
 };
 
@@ -194,7 +199,13 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   cms: "cms",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
+const LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES = {
+  runtime: "runtime",
+  deploy: "serverDeploy",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
 const LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES = {
+  deploy: "webDeploy",
   css: "cssFramework",
   ui: "uiLibrary",
   forms: "forms",
@@ -205,19 +216,52 @@ const LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES = {
   analytics: "analytics",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
-const TYPESCRIPT_OWNER_ROLE_BY_SCOPED_ROLE = {
+const LEGACY_DATABASE_SINGLE_CATEGORIES = {
+  dbSetup: "dbSetup",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
+const OWNER_ROLES_BY_SCOPED_ROLE = {
   ...Object.fromEntries(
-    Object.keys(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES).map((role) => [role, "backend"]),
+    [
+      ...Object.keys(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+      ...Object.keys(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
+    ].map((role) => [role, ["backend"]]),
   ),
   ...Object.fromEntries(
-    Object.keys(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES).map((role) => [role, "frontend"]),
+    Object.keys(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES).map((role) => [role, ["frontend"]]),
   ),
-} as Partial<Record<StackPartRole, StackPrimaryRole>>;
+  deploy: ["frontend", "backend"],
+  dbSetup: ["database"],
+} as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
   "nanostores",
   "xstate",
   "tanstack-store",
+]);
+const RUNTIMELESS_TYPESCRIPT_BACKENDS = new Set([
+  "convex",
+  "none",
+  "self",
+  "self-next",
+  "self-vinext",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
+]);
+const NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS = new Set([
+  "none",
+  "convex",
+  "self",
+  "self-next",
+  "self-vinext",
+  "self-tanstack-start",
+  "self-astro",
+  "self-nuxt",
+  "self-svelte",
+  "self-solid-start",
 ]);
 
 // Phase 2 Batch 0/1 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
@@ -285,6 +329,10 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ),
   ...defineTools(DATABASE_VALUES, "database", "universal", "database"),
   ...defineTools(DATABASE_VALUES, "database", "typescript", "database"),
+  ...defineTools(DATABASE_SETUP_VALUES, "dbSetup", "universal", "dbSetup"),
+  ...defineTools(RUNTIME_VALUES, "runtime", "typescript", "runtime"),
+  ...defineTools(WEB_DEPLOY_VALUES, "deploy", "typescript"),
+  ...defineTools(SERVER_DEPLOY_VALUES, "deploy", "typescript"),
   ...defineTools(ORM_VALUES, "orm", "typescript", "orm"),
   ...defineTools(API_VALUES, "api", "typescript", "api"),
   ...defineTools(AUTH_VALUES, "auth", "typescript", "auth"),
@@ -540,6 +588,228 @@ function createTypeScriptFrontendCompatibilityIssue(
   return undefined;
 }
 
+function createInfrastructureCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.role === "runtime" && part.ecosystem === "typescript") {
+    if (context.ownerRole !== "backend") return undefined;
+
+    if (RUNTIMELESS_TYPESCRIPT_BACKENDS.has(context.ownerToolId ?? "none")) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${context.ownerToolId}' does not use a separate backend runtime.`,
+      });
+    }
+
+    if (part.toolId === "workers" && context.ownerToolId !== "hono") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Workers runtime currently requires the Hono backend.",
+      });
+    }
+  }
+
+  if (part.role === "deploy" && part.ecosystem === "typescript") {
+    if (context.ownerRole === "frontend") {
+      if (!(WEB_DEPLOY_VALUES as readonly string[]).includes(part.toolId)) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `'${part.toolId}' is not a web deployment target.`,
+        });
+      }
+
+      if (part.toolId === "vercel" && ["redwood", "fresh"].includes(context.ownerToolId ?? "")) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `Vercel deployment is not available for the '${context.ownerToolId}' frontend.`,
+        });
+      }
+
+      const unsupportedFrontend = getUnsupportedWebDeployFrontend(part.toolId, [
+        context.ownerToolId ?? "none",
+      ]);
+      if (unsupportedFrontend) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `'${part.toolId}' web deployment is not wired for the '${unsupportedFrontend}' frontend.`,
+        });
+      }
+    }
+
+    if (context.ownerRole === "backend") {
+      if (!(SERVER_DEPLOY_VALUES as readonly string[]).includes(part.toolId)) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `'${part.toolId}' is not a server deployment target.`,
+        });
+      }
+
+      const backendTool = context.ownerToolId ?? "none";
+      const runtimeTool = context.siblingToolIdsByRole?.runtime ?? "bun";
+
+      if (part.toolId === "cloudflare") {
+        if (runtimeTool !== "workers" || backendTool !== "hono") {
+          return createStackGraphIssue({
+            code: "INCOMPATIBLE_GRAPH_SELECTION",
+            partId: part.id,
+            role: part.role,
+            toolId: part.toolId,
+            message: "Cloudflare server deploy requires Workers runtime with the Hono backend.",
+          });
+        }
+      }
+
+      if (part.toolId === "vercel") {
+        if (["nestjs", "adonisjs"].includes(backendTool)) {
+          return createStackGraphIssue({
+            code: "INCOMPATIBLE_OWNER_TOOL",
+            partId: part.id,
+            role: part.role,
+            toolId: part.toolId,
+            message: "Vercel serverless functions are incompatible with NestJS and AdonisJS.",
+          });
+        }
+        if (backendTool === "encore") {
+          return createStackGraphIssue({
+            code: "INCOMPATIBLE_OWNER_TOOL",
+            partId: part.id,
+            role: part.role,
+            toolId: part.toolId,
+            message: "Encore manages its own deployment infrastructure.",
+          });
+        }
+      }
+
+      if (NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS.has(backendTool)) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: `'${backendTool}' does not use a separate server deployment target.`,
+        });
+      }
+    }
+  }
+
+  if (part.role === "dbSetup") {
+    const databaseTool = context.ownerToolId ?? "none";
+    const runtimeTool = context.selectedToolIdsByRole?.runtime ?? "bun";
+
+    if (part.toolId === "turso" && databaseTool !== "sqlite") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Turso database setup requires SQLite.",
+      });
+    }
+
+    if (part.toolId === "d1") {
+      if (databaseTool !== "sqlite") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "D1 database setup requires SQLite.",
+        });
+      }
+      if (runtimeTool !== "workers") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "D1 database setup requires Workers runtime.",
+        });
+      }
+    }
+
+    if (
+      (part.toolId === "neon" ||
+        part.toolId === "supabase" ||
+        part.toolId === "prisma-postgres") &&
+      databaseTool !== "postgres"
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${part.toolId}' database setup requires PostgreSQL.`,
+      });
+    }
+
+    if (part.toolId === "mongodb-atlas" && databaseTool !== "mongodb") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "MongoDB Atlas setup requires MongoDB.",
+      });
+    }
+
+    if (
+      part.toolId === "planetscale" &&
+      databaseTool !== "postgres" &&
+      databaseTool !== "mysql"
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "PlanetScale setup requires PostgreSQL or MySQL.",
+      });
+    }
+
+    if (part.toolId === "docker") {
+      if (databaseTool === "sqlite") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_OWNER_TOOL",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "SQLite does not need Docker database setup.",
+        });
+      }
+      if (runtimeTool === "workers") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Docker database setup is incompatible with Workers runtime.",
+        });
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -558,20 +828,29 @@ function getStackPartCompatibilityIssue(
     });
   }
 
-  const expectedOwnerRole =
-    part.ecosystem === "typescript" ? TYPESCRIPT_OWNER_ROLE_BY_SCOPED_ROLE[part.role] : undefined;
-  if (expectedOwnerRole && context.ownerRole && context.ownerRole !== expectedOwnerRole) {
+  const expectedOwnerRoles =
+    part.ecosystem === "typescript" || part.role === "dbSetup"
+      ? OWNER_ROLES_BY_SCOPED_ROLE[part.role]
+      : undefined;
+  if (
+    expectedOwnerRoles &&
+    context.ownerRole &&
+    !expectedOwnerRoles.includes(context.ownerRole)
+  ) {
     return createStackGraphIssue({
       code: "INCOMPATIBLE_OWNER_ROLE",
       partId: part.id,
       role: part.role,
       toolId: part.toolId,
-      message: `'${part.toolId}' must be owned by a ${expectedOwnerRole} stack part.`,
+      message: `'${part.toolId}' must be owned by one of: ${expectedOwnerRoles.join(", ")}.`,
     });
   }
 
   const frontendCompatibilityIssue = createTypeScriptFrontendCompatibilityIssue(part, context);
   if (frontendCompatibilityIssue) return frontendCompatibilityIssue;
+
+  const infrastructureCompatibilityIssue = createInfrastructureCompatibilityIssue(part, context);
+  if (infrastructureCompatibilityIssue) return infrastructureCompatibilityIssue;
 
   if (part.ecosystem === "python" && part.role === "api" && DJANGO_API_TOOLS.has(part.toolId)) {
     if (context.ownerToolId !== "django") {
@@ -894,6 +1173,9 @@ export function legacyProjectConfigToStackParts(
 
   const databasePart = addLegacyPart(parts, "database", "universal", config.database, source);
   const capabilityOwner = backendPart?.id ?? frontendPart?.id ?? databasePart?.id;
+  if (databasePart) {
+    addLegacyPart(parts, "dbSetup", "universal", config.dbSetup, source, databasePart.id);
+  }
 
   // The generic `orm`/`api`/`auth` fields only describe TypeScript and React Native
   // stacks. For other ecosystems these are inert TS defaults and the ecosystem-specific
@@ -931,6 +1213,19 @@ export function legacyProjectConfigToStackParts(
     }
 
     if (backendPart?.ecosystem === "typescript") {
+      for (const [role, category] of Object.entries(
+        LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES,
+      ) as Array<[StackPartRole, keyof ProjectConfig]>) {
+        addLegacyPart(
+          parts,
+          role,
+          "typescript",
+          config[category] as string | undefined,
+          source,
+          backendPart.id,
+        );
+      }
+
       for (const [role, category] of Object.entries(
         LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES,
       ) as Array<[StackPartRole, keyof ProjectConfig]>) {
@@ -1030,17 +1325,17 @@ export function stackPartsToLegacyProjectConfigPartial(
           part.toolId as ProjectConfig["frontend"][number],
         ];
       } else {
-        const definition = findDefinition(part);
-        if (definition?.legacyCategory) {
-          (config as Record<string, unknown>)[definition.legacyCategory] = part.toolId;
+        const legacyCategory = getLegacyCategoryForPart(part, parts);
+        if (legacyCategory) {
+          (config as Record<string, unknown>)[legacyCategory] = part.toolId;
         }
       }
       continue;
     }
 
-    const definition = findDefinition(part);
-    if (definition?.legacyCategory) {
-      (config as Record<string, unknown>)[definition.legacyCategory] = part.toolId;
+    const legacyCategory = getLegacyCategoryForPart(part, parts);
+    if (legacyCategory) {
+      (config as Record<string, unknown>)[legacyCategory] = part.toolId;
       continue;
     }
 
@@ -1068,17 +1363,63 @@ function getSelectedScopedPart(
   );
 }
 
+function getLegacyCategoryForPart(
+  part: StackPart,
+  parts: readonly StackPart[],
+): keyof ProjectConfig | undefined {
+  const owner = part.ownerPartId
+    ? parts.find((candidate) => candidate.id === part.ownerPartId)
+    : undefined;
+
+  if (
+    owner?.role === "frontend" &&
+    owner.ecosystem === "typescript" &&
+    part.ecosystem === "typescript"
+  ) {
+    const legacyCategory = LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES[
+      part.role as keyof typeof LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES
+    ];
+    if (legacyCategory) return legacyCategory;
+  }
+
+  if (
+    owner?.role === "backend" &&
+    owner.ecosystem === "typescript" &&
+    part.ecosystem === "typescript"
+  ) {
+    const legacyCategory =
+      LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES[
+        part.role as keyof typeof LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES
+      ] ??
+      LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES[
+        part.role as keyof typeof LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES
+      ];
+    if (legacyCategory) return legacyCategory;
+  }
+
+  if (owner?.role === "database" && part.ecosystem === "universal") {
+    const legacyCategory = LEGACY_DATABASE_SINGLE_CATEGORIES[
+      part.role as keyof typeof LEGACY_DATABASE_SINGLE_CATEGORIES
+    ];
+    if (legacyCategory) return legacyCategory;
+  }
+
+  return findDefinition(part)?.legacyCategory;
+}
+
 function projectLegacyCategoryFromPart(
   config: ProjectConfig,
   part: StackPart | undefined,
   ecosystem: GraphProjectionEcosystem,
+  parts: readonly StackPart[],
 ) {
   if (!part) return;
-  const legacyCategory = findDefinition(part)?.legacyCategory;
+  const legacyCategory = getLegacyCategoryForPart(part, parts);
   if (!legacyCategory || legacyCategory === "frontend") return;
 
   const canProject =
     legacyCategory === "database" ||
+    legacyCategory === "dbSetup" ||
     part.ecosystem === ecosystem ||
     (legacyCategory === "auth" &&
       (ecosystem === "typescript" || ecosystem === "react-native") &&
@@ -1125,12 +1466,12 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     (projected as Record<string, unknown>)[category] = "none";
   }
 
-  projectLegacyCategoryFromPart(projected, backend, ecosystem);
-  projectLegacyCategoryFromPart(projected, frontend, ecosystem);
-  projectLegacyCategoryFromPart(projected, database, ecosystem);
-  projectLegacyCategoryFromPart(projected, orm, ecosystem);
-  projectLegacyCategoryFromPart(projected, api, ecosystem);
-  projectLegacyCategoryFromPart(projected, auth, ecosystem);
+  projectLegacyCategoryFromPart(projected, backend, ecosystem, parts);
+  projectLegacyCategoryFromPart(projected, frontend, ecosystem, parts);
+  projectLegacyCategoryFromPart(projected, database, ecosystem, parts);
+  projectLegacyCategoryFromPart(projected, orm, ecosystem, parts);
+  projectLegacyCategoryFromPart(projected, api, ecosystem, parts);
+  projectLegacyCategoryFromPart(projected, auth, ecosystem, parts);
 
   const backendScopedPartRoles = new Set<StackPartRole>(["database", "orm", "api", "auth"]);
   for (const part of parts) {
@@ -1141,7 +1482,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     ) {
       continue;
     }
-    projectLegacyCategoryFromPart(projected, part, ecosystem);
+    projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
   const frontendScopedPartRoles = new Set<StackPartRole>(["auth"]);
@@ -1153,7 +1494,14 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     ) {
       continue;
     }
-    projectLegacyCategoryFromPart(projected, part, ecosystem);
+    projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
+  }
+
+  for (const part of parts) {
+    if (part.source === "provided" || part.ownerPartId !== database?.id) {
+      continue;
+    }
+    projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
   return projected;
@@ -1179,7 +1527,9 @@ export function compareLegacyConfigToStackParts(
     "javaWebFramework",
     "elixirWebFramework",
     ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+    ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
     ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
+    ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
     ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
       Object.values(categories),
     ),
@@ -1203,10 +1553,15 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
   const issues: StackGraphIssue[] = [];
   const partsById = new Map(parts.map((part) => [part.id, part]));
   const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
+  const selectedToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
 
   for (const role of PRIMARY_ROLES) {
     const primaryPart = getPrimaryPart(parts, role as StackPrimaryRole);
     if (primaryPart) primaryToolIdsByRole[role as StackPrimaryRole] = primaryPart.toolId;
+  }
+
+  for (const part of parts) {
+    if (part.source !== "provided") selectedToolIdsByRole[part.role] = part.toolId;
   }
 
   for (const role of PRIMARY_ROLES) {
@@ -1268,6 +1623,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
         ownerToolId: owner?.toolId,
         ownerEcosystem: owner?.ecosystem,
         siblingToolIdsByRole,
+        selectedToolIdsByRole,
         primaryToolIdsByRole,
       });
 

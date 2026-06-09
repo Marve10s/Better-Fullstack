@@ -20,6 +20,7 @@ import {
   CMS_VALUES,
   CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
+  DATABASE_SETUP_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -57,18 +58,21 @@ import {
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   REALTIME_VALUES,
+  RUNTIME_VALUES,
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
+  SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
   I18N_VALUES,
   ANALYTICS_VALUES,
   ANIMATION_VALUES,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
+  WEB_DEPLOY_VALUES,
 } from "../src/schemas";
 import type { ProjectConfig } from "../src/types";
 
@@ -114,6 +118,26 @@ describe("stack graph", () => {
     expect(lowered.elixirEmail).toBe("swoosh");
     expect(lowered.elixirCaching).toBe("cachex");
     expect(lowered.elixirObservability).toBe("telemetry");
+  });
+
+  it("lowers owner-scoped infrastructure graph parts through their legacy categories", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.deploy:typescript:vercel",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "backend.deploy:typescript:railway",
+      "database:universal:postgres",
+      "database.dbSetup:universal:neon",
+    ]);
+    const result = validateStackParts(stackParts);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+
+    expect(result.issues).toEqual([]);
+    expect(lowered.webDeploy).toBe("vercel");
+    expect(lowered.runtime).toBe("node");
+    expect(lowered.serverDeploy).toBe("railway");
+    expect(lowered.dbSetup).toBe("neon");
   });
 
   it("projects graph-selected ecosystem capabilities through legacy categories", () => {
@@ -298,6 +322,41 @@ describe("stack graph", () => {
     );
     expect(validateStackParts(backendOwnedUiParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_ROLE",
+    );
+  });
+
+  it("rejects incompatible infrastructure graph selections", () => {
+    const backendNetlifyParts = parseStackPartSpecs([
+      "backend:typescript:hono",
+      "backend.deploy:typescript:netlify",
+    ]);
+    const cloudflareWithoutWorkersParts = parseStackPartSpecs([
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.deploy:typescript:cloudflare",
+    ]);
+    const d1WithoutWorkersParts = parseStackPartSpecs([
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "database.dbSetup:universal:d1",
+    ]);
+    const unsupportedWebDeployParts = parseStackPartSpecs([
+      "frontend:typescript:fresh",
+      "frontend.deploy:typescript:render",
+    ]);
+
+    expect(validateStackParts(backendNetlifyParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
+    );
+    expect(
+      validateStackParts(cloudflareWithoutWorkersParts).issues.map((issue) => issue.code),
+    ).toContain("INCOMPATIBLE_GRAPH_SELECTION");
+    expect(validateStackParts(d1WithoutWorkersParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(unsupportedWebDeployParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
     );
   });
 
@@ -505,6 +564,113 @@ describe("stack graph structural round-trip (phase 0)", () => {
         }
         expect(validateStackParts(parts).issues).toEqual([]);
       }
+    }
+  });
+
+  it("round-trips every deploy, runtime, and db setup value as a scoped graph part", () => {
+    for (const runtime of RUNTIME_VALUES) {
+      const config = {
+        ...TS_BASE,
+        backend: runtime === "none" ? "self" : "hono",
+        runtime,
+      };
+      const parts = legacyProjectConfigToStackParts(config);
+      const backend = parts.find(
+        (part) => part.role === "backend" && part.ecosystem === "typescript",
+      );
+      const scopedPart = parts.find(
+        (part) => part.role === "runtime" && part.ecosystem === "typescript",
+      );
+      const derived = expectNoDrift(config);
+
+      expect(derived.runtime ?? "none").toBe(runtime);
+      if (runtime === "none") {
+        expect(scopedPart).toBeUndefined();
+      } else {
+        expect(scopedPart?.ownerPartId).toBe(backend?.id);
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+
+    for (const webDeploy of WEB_DEPLOY_VALUES) {
+      const config = { ...TS_BASE, frontend: ["next"], webDeploy };
+      const parts = legacyProjectConfigToStackParts(config);
+      const frontend = parts.find(
+        (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      );
+      const scopedPart = parts.find(
+        (part) =>
+          part.role === "deploy" &&
+          part.ecosystem === "typescript" &&
+          part.ownerPartId === frontend?.id,
+      );
+      const derived = expectNoDrift(config);
+
+      expect(derived.webDeploy ?? "none").toBe(webDeploy);
+      if (webDeploy === "none") {
+        expect(scopedPart).toBeUndefined();
+      } else {
+        expect(scopedPart?.ownerPartId).toBe(frontend?.id);
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+
+    for (const serverDeploy of SERVER_DEPLOY_VALUES) {
+      const config = {
+        ...TS_BASE,
+        backend: "hono",
+        runtime: serverDeploy === "cloudflare" ? "workers" : "bun",
+        serverDeploy,
+      };
+      const parts = legacyProjectConfigToStackParts(config);
+      const backend = parts.find(
+        (part) => part.role === "backend" && part.ecosystem === "typescript",
+      );
+      const scopedPart = parts.find(
+        (part) =>
+          part.role === "deploy" &&
+          part.ecosystem === "typescript" &&
+          part.ownerPartId === backend?.id,
+      );
+      const derived = expectNoDrift(config);
+
+      expect(derived.serverDeploy ?? "none").toBe(serverDeploy);
+      if (serverDeploy === "none") {
+        expect(scopedPart).toBeUndefined();
+      } else {
+        expect(scopedPart?.ownerPartId).toBe(backend?.id);
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+
+    const dbSetupConfigByValue = {
+      turso: { database: "sqlite", runtime: "bun" },
+      neon: { database: "postgres", runtime: "bun" },
+      "prisma-postgres": { database: "postgres", runtime: "bun" },
+      planetscale: { database: "mysql", runtime: "bun" },
+      "mongodb-atlas": { database: "mongodb", runtime: "bun" },
+      supabase: { database: "postgres", runtime: "bun" },
+      upstash: { database: "redis", runtime: "bun", auth: "none" },
+      d1: { database: "sqlite", runtime: "workers" },
+      docker: { database: "postgres", runtime: "bun" },
+      none: { database: "postgres", runtime: "bun" },
+    } as const;
+
+    for (const dbSetup of DATABASE_SETUP_VALUES) {
+      const base = dbSetupConfigByValue[dbSetup];
+      const config = { ...TS_BASE, ...base, dbSetup };
+      const parts = legacyProjectConfigToStackParts(config);
+      const database = parts.find((part) => part.role === "database");
+      const scopedPart = parts.find((part) => part.role === "dbSetup");
+      const derived = expectNoDrift(config);
+
+      expect(derived.dbSetup ?? "none").toBe(dbSetup);
+      if (dbSetup === "none") {
+        expect(scopedPart).toBeUndefined();
+      } else {
+        expect(scopedPart?.ownerPartId).toBe(database?.id);
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
     }
   });
 

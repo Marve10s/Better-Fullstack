@@ -56,6 +56,32 @@ function hasGraphPrimaryPart(
   );
 }
 
+function hasOwnedGraphPart(
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "database",
+  role: StackPartRole,
+  ecosystem?: string,
+) {
+  const owner = config.stackParts?.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === ownerRole &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem),
+  );
+  if (!owner) return false;
+
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === role &&
+        part.ownerPartId === owner.id &&
+        (!ecosystem || part.ecosystem === ecosystem),
+    ),
+  );
+}
+
 function appendChangedStringFlag(
   flags: string[],
   flag: string,
@@ -77,6 +103,20 @@ function appendChangedGraphStringFlag(
   defaultValue: string,
 ) {
   if (hasGraphPart(config, role, ecosystem)) return;
+  appendChangedStringFlag(flags, flag, value, defaultValue);
+}
+
+function appendChangedOwnedGraphStringFlag(
+  flags: string[],
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  value: string,
+  defaultValue: string,
+) {
+  if (hasOwnedGraphPart(config, ownerRole, role, ecosystem)) return;
   appendChangedStringFlag(flags, flag, value, defaultValue);
 }
 
@@ -103,12 +143,34 @@ function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
   appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
   appendChangedArrayFlag(flags, "examples", config.examples, []);
-  appendChangedStringFlag(flags, "db-setup", config.dbSetup, "none");
-  appendChangedStringFlag(flags, "web-deploy", config.webDeploy, "none");
-  appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
+
+  if (hasGraphPrimaryPart(config, "database")) {
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "database",
+      "dbSetup",
+      "universal",
+      "db-setup",
+      config.dbSetup,
+      "none",
+    );
+  } else {
+    appendChangedStringFlag(flags, "db-setup", config.dbSetup, "none");
+  }
 
   if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
     appendAstroIntegrationFlag(flags, config);
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "frontend",
+      "deploy",
+      "typescript",
+      "web-deploy",
+      config.webDeploy,
+      "none",
+    );
     appendChangedGraphStringFlag(
       flags,
       config,
@@ -210,6 +272,31 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     hasGraphPrimaryPart(config, "frontend", "typescript") ||
     hasGraphPrimaryPart(config, "backend", "typescript")
   ) {
+    if (hasGraphPrimaryPart(config, "backend", "typescript")) {
+      appendChangedOwnedGraphStringFlag(
+        flags,
+        config,
+        "backend",
+        "runtime",
+        "typescript",
+        "runtime",
+        config.runtime,
+        "bun",
+      );
+      appendChangedOwnedGraphStringFlag(
+        flags,
+        config,
+        "backend",
+        "deploy",
+        "typescript",
+        "server-deploy",
+        config.serverDeploy,
+        "none",
+      );
+    } else {
+      appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
+    }
+
     appendChangedGraphStringFlag(
       flags,
       config,

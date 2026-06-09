@@ -138,6 +138,10 @@ describe("stack selection translation", () => {
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
         elixirRealtime: "presence",
+        runtime: "node",
+        dbSetup: "neon",
+        webDeploy: "vercel",
+        serverDeploy: "railway",
       },
       "java-graph",
     );
@@ -163,6 +167,10 @@ describe("stack selection translation", () => {
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
     expect(config.elixirRealtime).toBe("presence");
+    expect(config.runtime).toBe("node");
+    expect(config.dbSetup).toBe("neon");
+    expect(config.webDeploy).toBe("vercel");
+    expect(config.serverDeploy).toBe("railway");
     expect(specs).toContain("frontend:typescript:react-vite");
     expect(specs).toContain("backend:typescript:hono");
     expect(specs).toContain("backend:java:spring-boot");
@@ -183,6 +191,10 @@ describe("stack selection translation", () => {
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
     expect(specs).toContain("backend.realtime:elixir:presence");
+    expect(specs).toContain("backend.runtime:typescript:node");
+    expect(specs).toContain("backend.deploy:typescript:railway");
+    expect(specs).toContain("frontend.deploy:typescript:vercel");
+    expect(specs).toContain("database.dbSetup:universal:neon");
   });
 
   it("emits changed ecosystem-specific graph flags for multi-ecosystem selections", () => {
@@ -271,6 +283,32 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--file-upload uploadthing");
     expect(command).not.toContain("--i18n i18next");
     expect(command).not.toContain("--analytics plausible");
+  });
+
+  it("emits changed graph infrastructure as scoped graph parts", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "infra-graph-app",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:typescript:hono",
+        "database:universal:postgres",
+      ],
+      runtime: "node",
+      webDeploy: "vercel",
+      serverDeploy: "railway",
+      dbSetup: "neon",
+    });
+
+    expect(command).toContain("--part frontend.deploy:typescript:vercel");
+    expect(command).toContain("--part backend.runtime:typescript:node");
+    expect(command).toContain("--part backend.deploy:typescript:railway");
+    expect(command).toContain("--part database.dbSetup:universal:neon");
+    expect(command).not.toContain("--runtime node");
+    expect(command).not.toContain("--web-deploy vercel");
+    expect(command).not.toContain("--server-deploy railway");
+    expect(command).not.toContain("--db-setup neon");
   });
 
   it("preserves TypeScript frontend graph scalar settings", () => {

@@ -852,12 +852,6 @@ const GRAPH_MOBILE_FLAG_KEYS = [
   ["mobileDeepLinking", "mobile-deep-linking"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_GLOBAL_FLAG_KEYS = [
-  ["dbSetup", "db-setup"],
-  ["webDeploy", "web-deploy"],
-  ["serverDeploy", "server-deploy"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
 const GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS = [
   ["backendLibraries", "effect"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
@@ -957,13 +951,14 @@ type ScopedStackPartRole = Exclude<
   "frontend" | "backend" | "mobile" | "database"
 >;
 type ScopedStackPartField = {
-  ownerRole: "frontend" | "backend";
-  ecosystem: Exclude<StackPartEcosystem, "universal" | "react-native">;
+  ownerRole: "frontend" | "backend" | "database";
+  ecosystem: Exclude<StackPartEcosystem, "react-native">;
   role: ScopedStackPartRole;
   value: string | undefined;
 };
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
+  ["webDeploy", "deploy"],
   ["cssFramework", "css"],
   ["uiLibrary", "ui"],
   ["forms", "forms"],
@@ -975,6 +970,8 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
+  ["runtime", "runtime"],
+  ["serverDeploy", "deploy"],
   ["payments", "payments"],
   ["email", "email"],
   ["aiSdk", "ai"],
@@ -993,7 +990,12 @@ const GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS = [
   ["elixirRealtime", "realtime"],
 ] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
 
+const GRAPH_DATABASE_PART_SELECTION_KEYS = [
+  ["dbSetup", "dbSetup"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
 const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
+  ["webDeploy", "deploy"],
   ["cssFramework", "css"],
   ["uiLibrary", "ui"],
   ["forms", "forms"],
@@ -1005,6 +1007,8 @@ const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
+  ["runtime", "runtime"],
+  ["serverDeploy", "deploy"],
   ["payments", "payments"],
   ["email", "email"],
   ["ai", "ai"],
@@ -1023,6 +1027,10 @@ const GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS = [
   ["elixirRealtime", "realtime"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
+const GRAPH_DATABASE_PART_CLI_KEYS = [
+  ["dbSetup", "dbSetup"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
 function expandScopedStackPartSpecs(
   specs: readonly string[],
   fields: readonly ScopedStackPartField[],
@@ -1031,7 +1039,10 @@ function expandScopedStackPartSpecs(
   const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
   const stackPartSpecSet = new Set(stackPartSpecs);
 
-  const getPrimary = (role: "frontend" | "backend", ecosystem: StackPartEcosystem) =>
+  const getPrimary = (
+    role: "frontend" | "backend" | "database",
+    ecosystem: StackPartEcosystem,
+  ) =>
     stackParts.find(
       (part) =>
         part.role === role &&
@@ -1089,6 +1100,12 @@ function getSelectionScopedPartFields(
       role,
       value: selection[key],
     })),
+    ...GRAPH_DATABASE_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "database" as const,
+      ecosystem: "universal" as const,
+      role,
+      value: selection[key],
+    })),
   ];
 }
 
@@ -1114,6 +1131,12 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
     ...GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "elixir" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_DATABASE_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "database" as const,
+      ecosystem: "universal" as const,
       role,
       value: getValue(key),
     })),
@@ -1578,7 +1601,6 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
     ...(hasMobile
       ? formatChangedStringFlags(selection, GRAPH_MOBILE_FLAG_KEYS)
       : []),
-    ...formatChangedStringFlags(selection, GRAPH_GLOBAL_FLAG_KEYS),
     ...(areStringArraysEqual(
       [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms],
       [...DEFAULT_STACK_SELECTION.codeQuality, ...DEFAULT_STACK_SELECTION.documentation, ...DEFAULT_STACK_SELECTION.appPlatforms],

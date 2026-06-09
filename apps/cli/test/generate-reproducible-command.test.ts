@@ -548,6 +548,39 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--analytics plausible");
   });
 
+  it("reproduces graph-owned infrastructure selections as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.deploy:typescript:vercel",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "backend.deploy:typescript:railway",
+      "database:universal:postgres",
+      "database.dbSetup:universal:neon",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        runtime: "node",
+        database: "postgres",
+        webDeploy: "vercel",
+        serverDeploy: "railway",
+        dbSetup: "neon",
+      }),
+    );
+
+    expect(command).toContain("--part frontend.deploy:typescript:vercel");
+    expect(command).toContain("--part backend.runtime:typescript:node");
+    expect(command).toContain("--part backend.deploy:typescript:railway");
+    expect(command).toContain("--part database.dbSetup:universal:neon");
+    expect(command).not.toContain("--runtime node");
+    expect(command).not.toContain("--web-deploy vercel");
+    expect(command).not.toContain("--server-deploy railway");
+    expect(command).not.toContain("--db-setup neon");
+  });
+
   it("preserves Astro integration when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:astro",
