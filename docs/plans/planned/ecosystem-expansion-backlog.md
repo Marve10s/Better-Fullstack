@@ -41,8 +41,8 @@ When updating this file, verify shipped status against `packages/types/src/schem
 
 ### Deploy
 - [x] Add `vercel` ✅
-- [ ] Add `render`
-- [ ] Add `netlify`
+- [x] Add `render` ✅
+- [x] Add `netlify` ✅ (web-only v1)
 
 ### Auth
 - [ ] Add `kinde`
