@@ -2088,55 +2088,6 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   return projected;
 }
 
-export function compareLegacyConfigToStackParts(
-  config: Partial<ProjectConfig>,
-  stackParts: readonly StackPart[],
-): StackGraphDiagnostic[] {
-  const derived = stackPartsToLegacyProjectConfigPartial(stackParts);
-  const diagnostics: StackGraphDiagnostic[] = [];
-  const comparableLegacyKeys: Array<keyof ProjectConfig> = [
-    "ecosystem",
-    "frontend",
-    "backend",
-    "database",
-    "orm",
-    "api",
-    "auth",
-    "rustWebFramework",
-    "pythonWebFramework",
-    "goWebFramework",
-    "javaWebFramework",
-    "elixirWebFramework",
-    ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
-    ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
-    ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
-    ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
-    ...Object.values(LEGACY_MOBILE_SINGLE_CATEGORIES),
-    "addons",
-    "examples",
-    "rustLibraries",
-    "pythonAi",
-    "javaLibraries",
-    "javaTestingLibraries",
-    ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
-      Object.values(categories),
-    ),
-  ];
-  for (const key of comparableLegacyKeys) {
-    const current = config[key];
-    const next = derived[key];
-    if (current === undefined || next === undefined) continue;
-    if (JSON.stringify(current) !== JSON.stringify(next)) {
-      diagnostics.push({
-        code: "LEGACY_CONFIG_MISMATCH",
-        path: key,
-        message: `Legacy field '${key}' differs from stackParts and will be derived from the graph.`,
-      });
-    }
-  }
-  return diagnostics;
-}
-
 export function validateStackParts(parts: readonly StackPart[]): StackGraphValidationResult {
   const issues: StackGraphIssue[] = [];
   const partsById = new Map(parts.map((part) => [part.id, part]));

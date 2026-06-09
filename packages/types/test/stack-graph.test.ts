@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  compareLegacyConfigToStackParts,
   ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
   getAddonStackPartBinding,
   getStackPartOptions,
@@ -96,6 +95,27 @@ import {
   WEB_DEPLOY_VALUES,
 } from "../src/schemas";
 import type { ProjectConfig } from "../src/types";
+
+function compareLegacyConfigToStackParts(
+  config: Partial<ProjectConfig>,
+  stackParts: Parameters<typeof stackPartsToLegacyProjectConfigPartial>[0],
+) {
+  const derived = stackPartsToLegacyProjectConfigPartial(stackParts);
+  const diagnostics = [];
+  for (const key of Object.keys(derived) as Array<keyof ProjectConfig>) {
+    const current = config[key];
+    const next = derived[key];
+    if (current === undefined || next === undefined) continue;
+    if (JSON.stringify(current) !== JSON.stringify(next)) {
+      diagnostics.push({
+        code: "LEGACY_CONFIG_MISMATCH",
+        path: key,
+        message: `Legacy field '${key}' differs from stackParts and will be derived from the graph.`,
+      });
+    }
+  }
+  return diagnostics;
+}
 
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {

@@ -5,7 +5,6 @@ import path from "node:path";
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
 import {
-  compareLegacyConfigToStackParts,
   createStackPart,
   getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
@@ -461,15 +460,6 @@ export async function readBtsConfig(projectDir: string) {
     }
 
     if (config.stackParts && config.stackParts.length > 0) {
-      const diagnostics = compareLegacyConfigToStackParts(config, config.stackParts);
-      if (diagnostics.length > 0) {
-        console.warn(
-          `Warning: bts.jsonc legacy fields differ from stackParts; using stackParts for ${diagnostics
-            .map((diagnostic) => diagnostic.path)
-            .filter(Boolean)
-            .join(", ")}.`,
-        );
-      }
       return {
         ...config,
         ...stackPartsToLegacyProjectConfigPartial(config.stackParts),
