@@ -4,11 +4,17 @@ import { join } from "node:path";
 
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
+function apiForFrontend(frontend: string): TestConfig["api"] {
+  if (["nuxt", "svelte", "solid"].includes(frontend)) return "orpc";
+  return "trpc";
+}
+
 describe("Render Deployment", () => {
   describe("Web Deployment with Render", () => {
     const webFrontends = [
       "tanstack-router",
       "react-router",
+      "react-vite",
       "tanstack-start",
       "next",
       "nuxt",
@@ -28,17 +34,12 @@ describe("Render Deployment", () => {
           database: "sqlite",
           orm: "drizzle",
           auth: "none",
+          api: apiForFrontend(frontend),
           addons: ["none"],
           examples: ["none"],
           dbSetup: "none",
           install: false,
         };
-
-        if (["nuxt", "svelte", "solid"].includes(frontend)) {
-          config.api = "orpc";
-        } else {
-          config.api = "trpc";
-        }
 
         const result = await runTRPCTest(config);
         expectSuccess(result);
@@ -49,6 +50,47 @@ describe("Render Deployment", () => {
         expect(blueprint).toContain("dockerfilePath: ./apps/web/Dockerfile");
         expect(blueprint).not.toContain("./apps/server/Dockerfile");
         expect(existsSync(join(result.projectDir!, "apps", "web", "Dockerfile"))).toBe(true);
+
+        if (frontend === "next") {
+          const nextConfig = readFileSync(
+            join(result.projectDir!, "apps", "web", "next.config.ts"),
+            "utf8",
+          );
+          expect(nextConfig).toContain('output: "standalone"');
+        }
+      });
+    }
+
+    const blockedFrontends = [
+      "vinext",
+      "solid-start",
+      "astro",
+      "qwik",
+      "angular",
+      "redwood",
+      "fresh",
+    ] as const;
+
+    for (const frontend of blockedFrontends) {
+      it(`should reject render for ${frontend}`, async () => {
+        const result = await runTRPCTest({
+          projectName: `render-blocked-${frontend}`,
+          webDeploy: "render",
+          serverDeploy: "none",
+          frontend: [frontend],
+          backend: "none",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          expectError: true,
+        });
+
+        expectError(result, `Render deployment is not yet wired up for the '${frontend}' frontend`);
       });
     }
   });
@@ -181,7 +223,17 @@ describe("Netlify Deployment", () => {
     expect(toml).toContain("@netlify/plugin-nextjs");
   });
 
-  const blockedFrontends = ["react-router", "tanstack-start", "solid-start"] as const;
+  const blockedFrontends = [
+    "react-router",
+    "tanstack-start",
+    "vinext",
+    "solid-start",
+    "astro",
+    "qwik",
+    "angular",
+    "redwood",
+    "fresh",
+  ] as const;
 
   for (const frontend of blockedFrontends) {
     it(`should reject netlify for ${frontend}`, async () => {
@@ -190,12 +242,12 @@ describe("Netlify Deployment", () => {
         webDeploy: "netlify",
         serverDeploy: "none",
         frontend: [frontend],
-        backend: "hono",
-        runtime: "bun",
-        database: "sqlite",
-        orm: "drizzle",
+        backend: "none",
+        runtime: "none",
+        database: "none",
+        orm: "none",
         auth: "none",
-        api: frontend === "solid-start" ? "orpc" : "trpc",
+        api: "none",
         addons: ["none"],
         examples: ["none"],
         dbSetup: "none",

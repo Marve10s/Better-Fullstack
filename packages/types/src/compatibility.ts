@@ -9,6 +9,7 @@ import type {
   Forms,
   Frontend,
   Runtime,
+  WebDeploy,
   UILibrary,
 } from "./types";
 
@@ -2361,12 +2362,11 @@ export const getDisabledReason = (
         return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
       }
     }
-    if (optionId === "netlify") {
-      // Netlify v1 covers SPA, Next.js, SvelteKit, and Nuxt builds only
-      const unsupported = ["redwood", "fresh", "react-router", "tanstack-start", "solid-start"];
-      const blocked = currentStack.webFrontend.find((f) => unsupported.includes(f));
+    if (optionId === "render" || optionId === "netlify") {
+      const blocked = getUnsupportedWebDeployFrontend(optionId, currentStack.webFrontend);
       if (blocked) {
-        return `Netlify deployment is not yet wired up for the '${blocked}' frontend`;
+        const deployName = optionId === "render" ? "Render" : "Netlify";
+        return `${deployName} deployment is not yet wired up for the '${blocked}' frontend`;
       }
     }
   }
@@ -2658,6 +2658,35 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "fresh",
   "none",
 ] as const;
+
+const WEB_DEPLOY_COMPATIBLE_FRONTENDS = {
+  render: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+  ],
+  netlify: ["tanstack-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+} as const satisfies Partial<Record<WebDeploy, readonly Frontend[]>>;
+
+export function getUnsupportedWebDeployFrontend(
+  webDeploy: string | undefined,
+  frontends: readonly string[] = [],
+): string | undefined {
+  const supported = WEB_DEPLOY_COMPATIBLE_FRONTENDS[
+    webDeploy as keyof typeof WEB_DEPLOY_COMPATIBLE_FRONTENDS
+  ];
+  if (!supported) return undefined;
+
+  return frontends.find((frontend) => {
+    if (frontend === "none" || !WEB_FRAMEWORKS.includes(frontend as Frontend)) return false;
+    return !(supported as readonly string[]).includes(frontend);
+  });
+}
 
 const UI_LIBRARY_COMPATIBILITY: Record<
   UILibrary,

@@ -5,6 +5,7 @@ import {
   getCompatibleAddons as getCompatibleAddonsShared,
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
+  getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
   isBackendUtilsCompatibleBackend,
@@ -425,23 +426,15 @@ export function validateWebDeployRequiresWebFrontend(
   }
 }
 
-const NETLIFY_UNSUPPORTED_FRONTENDS: readonly Frontend[] = [
-  "redwood",
-  "fresh",
-  "react-router",
-  "tanstack-start",
-  "solid-start",
-] as const;
-
-export function validateNetlifyWebDeployFrontends(
+export function validateWebDeployFrontendTemplates(
   webDeploy: WebDeploy | undefined,
   frontends: Frontend[] = [],
 ) {
-  if (webDeploy !== "netlify") return;
-  const blocked = frontends.find((f) => NETLIFY_UNSUPPORTED_FRONTENDS.includes(f));
+  const blocked = getUnsupportedWebDeployFrontend(webDeploy, frontends);
   if (blocked) {
+    const deployName = webDeploy === "render" ? "Render" : "Netlify";
     exitWithError(
-      `Netlify deployment is not yet wired up for the '${blocked}' frontend. Choose a different web deploy target or frontend.`,
+      `${deployName} deployment is not yet wired up for the '${blocked}' frontend. Choose a different web deploy target or frontend.`,
     );
   }
 }

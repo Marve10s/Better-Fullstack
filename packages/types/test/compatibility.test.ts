@@ -87,6 +87,29 @@ describe("compatibility issue helpers", () => {
     );
   });
 
+  it("disables web deploy targets for frontends without deploy templates", () => {
+    const unsupportedStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["astro"],
+      nativeFrontend: [],
+      backend: "none",
+      api: "none",
+    };
+    const supportedStack = {
+      ...unsupportedStack,
+      webFrontend: ["react-vite"],
+    };
+
+    expect(getDisabledReason(unsupportedStack, "webDeploy", "render")).toBe(
+      "Render deployment is not yet wired up for the 'astro' frontend",
+    );
+    expect(getDisabledReason(unsupportedStack, "webDeploy", "netlify")).toBe(
+      "Netlify deployment is not yet wired up for the 'astro' frontend",
+    );
+    expect(getDisabledReason(supportedStack, "webDeploy", "render")).toBeNull();
+    expect(getDisabledReason(supportedStack, "webDeploy", "netlify")).toBeNull();
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,
