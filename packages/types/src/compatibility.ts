@@ -2688,7 +2688,7 @@ export function getUnsupportedWebDeployFrontend(
   });
 }
 
-const UI_LIBRARY_COMPATIBILITY: Record<
+export const UI_LIBRARY_COMPATIBILITY: Record<
   UILibrary,
   {
     frontends: readonly Frontend[];

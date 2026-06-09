@@ -29,6 +29,8 @@ export const StackPartRoleSchema = z
     "testing",
     "stateManagement",
     "forms",
+    "animation",
+    "fileUpload",
     "validation",
     "ui",
     "css",

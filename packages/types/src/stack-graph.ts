@@ -7,13 +7,17 @@ import type {
   StackPartSource,
 } from "./types";
 
+import { UI_LIBRARY_COMPATIBILITY } from "./compatibility";
 import {
   API_VALUES,
   AUTH_VALUES,
   AI_VALUES,
+  ANALYTICS_VALUES,
+  ANIMATION_VALUES,
   BACKEND_VALUES,
   CACHING_VALUES,
   CMS_VALUES,
+  CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -30,6 +34,8 @@ import {
   EMAIL_VALUES,
   FEATURE_FLAGS_VALUES,
   FILE_STORAGE_VALUES,
+  FILE_UPLOAD_VALUES,
+  FORMS_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
@@ -58,7 +64,10 @@ import {
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
+  I18N_VALUES,
   StackPartRoleSchema,
+  STATE_MANAGEMENT_VALUES,
+  UI_LIBRARY_VALUES,
 } from "./schemas";
 
 export type StackPrimaryRole = Extract<
@@ -185,6 +194,32 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   cms: "cms",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
+const LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES = {
+  css: "cssFramework",
+  ui: "uiLibrary",
+  forms: "forms",
+  stateManagement: "stateManagement",
+  animation: "animation",
+  fileUpload: "fileUpload",
+  i18n: "i18n",
+  analytics: "analytics",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
+const TYPESCRIPT_OWNER_ROLE_BY_SCOPED_ROLE = {
+  ...Object.fromEntries(
+    Object.keys(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES).map((role) => [role, "backend"]),
+  ),
+  ...Object.fromEntries(
+    Object.keys(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES).map((role) => [role, "frontend"]),
+  ),
+} as Partial<Record<StackPartRole, StackPrimaryRole>>;
+
+const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
+  "nanostores",
+  "xstate",
+  "tanstack-store",
+]);
+
 // Phase 2 Batch 0/1 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
 // registered backend-owned singles/extras that round-trip through the graph.
 // pythonGraphql still stays flat-only in the legacy importer until the
@@ -253,6 +288,14 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(ORM_VALUES, "orm", "typescript", "orm"),
   ...defineTools(API_VALUES, "api", "typescript", "api"),
   ...defineTools(AUTH_VALUES, "auth", "typescript", "auth"),
+  ...defineTools(CSS_FRAMEWORK_VALUES, "css", "typescript", "cssFramework"),
+  ...defineTools(UI_LIBRARY_VALUES, "ui", "typescript", "uiLibrary"),
+  ...defineTools(FORMS_VALUES, "forms", "typescript", "forms"),
+  ...defineTools(STATE_MANAGEMENT_VALUES, "stateManagement", "typescript", "stateManagement"),
+  ...defineTools(ANIMATION_VALUES, "animation", "typescript", "animation"),
+  ...defineTools(FILE_UPLOAD_VALUES, "fileUpload", "typescript", "fileUpload"),
+  ...defineTools(I18N_VALUES, "i18n", "typescript", "i18n"),
+  ...defineTools(ANALYTICS_VALUES, "analytics", "typescript", "analytics"),
   ...defineTools(LOGGING_VALUES, "logging", "typescript", "logging"),
   ...defineTools(EMAIL_VALUES, "email", "typescript", "email"),
   ...defineTools(SEARCH_VALUES, "search", "typescript", "search"),
@@ -395,6 +438,108 @@ function createStackGraphIssue(input: {
   };
 }
 
+function createTypeScriptFrontendCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.ecosystem !== "typescript" || context.ownerRole !== "frontend") return undefined;
+
+  if (context.ownerToolId === "fresh") {
+    if (part.role === "forms" && part.toolId === "tanstack-form") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "'tanstack-form' has no Preact adapter for the Fresh frontend.",
+      });
+    }
+
+    if (
+      part.role === "stateManagement" &&
+      FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS.has(part.toolId)
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${part.toolId}' requires React bindings and is not compatible with Fresh.`,
+      });
+    }
+
+    if (part.role === "animation" && part.toolId === "lottie") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "'lottie' uses lottie-react and is not compatible with Fresh.",
+      });
+    }
+  }
+
+  if (part.role === "i18n" && part.toolId === "next-intl" && context.ownerToolId !== "next") {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "'next-intl' can only be selected for a Next.js frontend.",
+    });
+  }
+
+  if (part.role === "ui") {
+    const compatibility =
+      UI_LIBRARY_COMPATIBILITY[part.toolId as keyof typeof UI_LIBRARY_COMPATIBILITY];
+    if (
+      compatibility &&
+      context.ownerToolId &&
+      !(compatibility.frontends as readonly string[]).includes(context.ownerToolId)
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${part.toolId}' is not compatible with the '${context.ownerToolId}' frontend.`,
+      });
+    }
+
+    const cssTool = context.siblingToolIdsByRole?.css ?? "tailwind";
+    if (compatibility && !(compatibility.cssFrameworks as readonly string[]).includes(cssTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${part.toolId}' is not compatible with the '${cssTool}' CSS framework.`,
+      });
+    }
+  }
+
+  if (part.role === "css") {
+    const uiTool = context.siblingToolIdsByRole?.ui;
+    const compatibility = uiTool
+      ? UI_LIBRARY_COMPATIBILITY[uiTool as keyof typeof UI_LIBRARY_COMPATIBILITY]
+      : undefined;
+    if (
+      compatibility &&
+      !(compatibility.cssFrameworks as readonly string[]).includes(part.toolId)
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'${uiTool}' is not compatible with the '${part.toolId}' CSS framework.`,
+      });
+    }
+  }
+
+  return undefined;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -412,6 +557,21 @@ function getStackPartCompatibilityIssue(
       message: `'${part.toolId}' uses the ${part.ecosystem} adapter but its owner uses ${context.ownerEcosystem}.`,
     });
   }
+
+  const expectedOwnerRole =
+    part.ecosystem === "typescript" ? TYPESCRIPT_OWNER_ROLE_BY_SCOPED_ROLE[part.role] : undefined;
+  if (expectedOwnerRole && context.ownerRole && context.ownerRole !== expectedOwnerRole) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_ROLE",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: `'${part.toolId}' must be owned by a ${expectedOwnerRole} stack part.`,
+    });
+  }
+
+  const frontendCompatibilityIssue = createTypeScriptFrontendCompatibilityIssue(part, context);
+  if (frontendCompatibilityIssue) return frontendCompatibilityIssue;
 
   if (part.ecosystem === "python" && part.role === "api" && DJANGO_API_TOOLS.has(part.toolId)) {
     if (context.ownerToolId !== "django") {
@@ -755,6 +915,21 @@ export function legacyProjectConfigToStackParts(
       capabilityOwner,
     );
 
+    if (frontendPart?.ecosystem === "typescript") {
+      for (const [role, category] of Object.entries(
+        LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES,
+      ) as Array<[StackPartRole, keyof ProjectConfig]>) {
+        addLegacyPart(
+          parts,
+          role,
+          "typescript",
+          config[category] as string | undefined,
+          source,
+          frontendPart.id,
+        );
+      }
+    }
+
     if (backendPart?.ecosystem === "typescript") {
       for (const [role, category] of Object.entries(
         LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES,
@@ -969,6 +1144,18 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem);
   }
 
+  const frontendScopedPartRoles = new Set<StackPartRole>(["auth"]);
+  for (const part of parts) {
+    if (
+      part.source === "provided" ||
+      part.ownerPartId !== frontend?.id ||
+      frontendScopedPartRoles.has(part.role)
+    ) {
+      continue;
+    }
+    projectLegacyCategoryFromPart(projected, part, ecosystem);
+  }
+
   return projected;
 }
 
@@ -992,6 +1179,7 @@ export function compareLegacyConfigToStackParts(
     "javaWebFramework",
     "elixirWebFramework",
     ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+    ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
     ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
       Object.values(categories),
     ),

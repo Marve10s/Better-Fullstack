@@ -109,8 +109,24 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
 
   if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
     appendAstroIntegrationFlag(flags, config);
-    appendChangedStringFlag(flags, "css-framework", config.cssFramework, "tailwind");
-    appendChangedStringFlag(flags, "ui-library", config.uiLibrary, "shadcn-ui");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "css",
+      "typescript",
+      "css-framework",
+      config.cssFramework,
+      "tailwind",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "ui",
+      "typescript",
+      "ui-library",
+      config.uiLibrary,
+      "shadcn-ui",
+    );
     if (config.uiLibrary === "shadcn-ui") {
       appendChangedStringFlag(flags, "shadcn-base", config.shadcnBase ?? "radix", "radix");
       appendChangedStringFlag(flags, "shadcn-style", config.shadcnStyle ?? "nova", "nova");
@@ -140,11 +156,54 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
         "default",
       );
     }
-    appendChangedStringFlag(flags, "state-management", config.stateManagement, "none");
-    appendChangedStringFlag(flags, "forms", config.forms, "react-hook-form");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "stateManagement",
+      "typescript",
+      "state-management",
+      config.stateManagement,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "forms",
+      "typescript",
+      "forms",
+      config.forms,
+      "react-hook-form",
+    );
     appendChangedStringFlag(flags, "validation", config.validation, "zod");
     appendChangedStringFlag(flags, "testing", config.testing, "vitest");
-    appendChangedStringFlag(flags, "animation", config.animation, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "animation",
+      "typescript",
+      "animation",
+      config.animation,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "fileUpload",
+      "typescript",
+      "file-upload",
+      config.fileUpload,
+      "none",
+    );
+    appendChangedGraphStringFlag(flags, config, "i18n", "typescript", "i18n", config.i18n, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "analytics",
+      "typescript",
+      "analytics",
+      config.analytics,
+      "none",
+    );
   }
 
   if (
@@ -169,7 +228,6 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.email,
       "none",
     );
-    appendChangedStringFlag(flags, "file-upload", config.fileUpload, "none");
     appendChangedStringFlag(flags, "effect", config.effect, "none");
     appendChangedGraphStringFlag(flags, config, "ai", "typescript", "ai", config.ai, "none");
     appendChangedGraphStringFlag(
@@ -226,7 +284,6 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.caching,
       "none",
     );
-    appendChangedStringFlag(flags, "i18n", config.i18n, "none");
     appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
     appendChangedGraphStringFlag(flags, config, "search", "typescript", "search", config.search, "none");
     appendChangedGraphStringFlag(

@@ -18,6 +18,7 @@ import {
   BACKEND_VALUES,
   CACHING_VALUES,
   CMS_VALUES,
+  CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -34,6 +35,8 @@ import {
   EMAIL_VALUES,
   FEATURE_FLAGS_VALUES,
   FILE_STORAGE_VALUES,
+  FILE_UPLOAD_VALUES,
+  FORMS_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
@@ -61,6 +64,11 @@ import {
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
+  I18N_VALUES,
+  ANALYTICS_VALUES,
+  ANIMATION_VALUES,
+  STATE_MANAGEMENT_VALUES,
+  UI_LIBRARY_VALUES,
 } from "../src/schemas";
 import type { ProjectConfig } from "../src/types";
 
@@ -260,6 +268,39 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects incompatible frontend-owned TypeScript graph selections", () => {
+    const shadcnScssParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.css:typescript:scss",
+      "frontend.ui:typescript:shadcn-ui",
+    ]);
+    const nextIntlParts = parseStackPartSpecs([
+      "frontend:typescript:react-vite",
+      "frontend.i18n:typescript:next-intl",
+    ]);
+    const freshParts = parseStackPartSpecs([
+      "frontend:typescript:fresh",
+      "frontend.animation:typescript:lottie",
+    ]);
+    const backendOwnedUiParts = parseStackPartSpecs([
+      "backend:typescript:hono",
+      "backend.ui:typescript:shadcn-ui",
+    ]);
+
+    expect(validateStackParts(shadcnScssParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(nextIntlParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
+    );
+    expect(validateStackParts(freshParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
+    );
+    expect(validateStackParts(backendOwnedUiParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_ROLE",
+    );
+  });
+
   it("rejects Elixir graph selections that the current scaffold cannot generate", () => {
     const liveViewParts = parseStackPartSpecs([
       "backend:elixir:phoenix",
@@ -415,6 +456,52 @@ describe("stack graph structural round-trip (phase 0)", () => {
           expect(scopedPart).toBeUndefined();
         } else {
           expect(scopedPart?.ownerPartId).toBe(backend?.id);
+        }
+        expect(validateStackParts(parts).issues).toEqual([]);
+      }
+    }
+  });
+
+  it("round-trips every frontend-owned TypeScript single value as a scoped graph part", () => {
+    const cases = {
+      cssFramework: { role: "css", values: CSS_FRAMEWORK_VALUES },
+      uiLibrary: { role: "ui", values: UI_LIBRARY_VALUES },
+      forms: { role: "forms", values: FORMS_VALUES },
+      stateManagement: { role: "stateManagement", values: STATE_MANAGEMENT_VALUES },
+      animation: { role: "animation", values: ANIMATION_VALUES },
+      fileUpload: { role: "fileUpload", values: FILE_UPLOAD_VALUES },
+      i18n: { role: "i18n", values: I18N_VALUES },
+      analytics: { role: "analytics", values: ANALYTICS_VALUES },
+    } as const;
+
+    for (const [field, { role, values }] of Object.entries(cases)) {
+      for (const value of values) {
+        const frontend =
+          field === "uiLibrary" && value === "shadcn-svelte"
+            ? "svelte"
+            : field === "i18n" && value === "next-intl"
+              ? "next"
+              : "tanstack-router";
+        const config = {
+          ...TS_BASE,
+          frontend: [frontend],
+          api: frontend === "svelte" ? "none" : TS_BASE.api,
+          [field]: value,
+        };
+        const parts = legacyProjectConfigToStackParts(config);
+        const frontendPart = parts.find(
+          (part) => part.role === "frontend" && part.ecosystem === "typescript",
+        );
+        const scopedPart = parts.find(
+          (part) => part.role === role && part.ecosystem === "typescript",
+        );
+        const derived = expectNoDrift(config);
+
+        expect(derived[field as keyof ProjectConfig] ?? "none").toBe(value);
+        if (value === "none") {
+          expect(scopedPart).toBeUndefined();
+        } else {
+          expect(scopedPart?.ownerPartId).toBe(frontendPart?.id);
         }
         expect(validateStackParts(parts).issues).toEqual([]);
       }

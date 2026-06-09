@@ -503,6 +503,51 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--file-storage s3");
   });
 
+  it("reproduces graph-owned TypeScript frontend singles as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.css:typescript:scss",
+      "frontend.ui:typescript:radix-ui",
+      "frontend.forms:typescript:formik",
+      "frontend.stateManagement:typescript:zustand",
+      "frontend.animation:typescript:framer-motion",
+      "frontend.fileUpload:typescript:uploadthing",
+      "frontend.i18n:typescript:i18next",
+      "frontend.analytics:typescript:plausible",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        cssFramework: "scss",
+        uiLibrary: "radix-ui",
+        forms: "formik",
+        stateManagement: "zustand",
+        animation: "framer-motion",
+        fileUpload: "uploadthing",
+        i18n: "i18next",
+        analytics: "plausible",
+      }),
+    );
+
+    expect(command).toContain("--part frontend.css:typescript:scss");
+    expect(command).toContain("--part frontend.ui:typescript:radix-ui");
+    expect(command).toContain("--part frontend.forms:typescript:formik");
+    expect(command).toContain("--part frontend.stateManagement:typescript:zustand");
+    expect(command).toContain("--part frontend.animation:typescript:framer-motion");
+    expect(command).toContain("--part frontend.fileUpload:typescript:uploadthing");
+    expect(command).toContain("--part frontend.i18n:typescript:i18next");
+    expect(command).toContain("--part frontend.analytics:typescript:plausible");
+    expect(command).not.toContain("--css-framework scss");
+    expect(command).not.toContain("--ui-library radix-ui");
+    expect(command).not.toContain("--forms formik");
+    expect(command).not.toContain("--state-management zustand");
+    expect(command).not.toContain("--animation framer-motion");
+    expect(command).not.toContain("--file-upload uploadthing");
+    expect(command).not.toContain("--i18n i18next");
+    expect(command).not.toContain("--analytics plausible");
+  });
+
   it("preserves Astro integration when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:astro",

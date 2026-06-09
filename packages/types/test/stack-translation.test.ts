@@ -127,6 +127,14 @@ describe("stack selection translation", () => {
         email: "resend",
         ai: "langgraph",
         realtime: "socket-io",
+        cssFramework: "scss",
+        uiLibrary: "radix-ui",
+        forms: "formik",
+        stateManagement: "zustand",
+        animation: "framer-motion",
+        fileUpload: "uploadthing",
+        i18n: "i18next",
+        analytics: "plausible",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
         elixirRealtime: "presence",
@@ -144,6 +152,14 @@ describe("stack selection translation", () => {
     expect(config.email).toBe("resend");
     expect(config.ai).toBe("langgraph");
     expect(config.realtime).toBe("socket-io");
+    expect(config.cssFramework).toBe("scss");
+    expect(config.uiLibrary).toBe("radix-ui");
+    expect(config.forms).toBe("formik");
+    expect(config.stateManagement).toBe("zustand");
+    expect(config.animation).toBe("framer-motion");
+    expect(config.fileUpload).toBe("uploadthing");
+    expect(config.i18n).toBe("i18next");
+    expect(config.analytics).toBe("plausible");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
     expect(config.elixirRealtime).toBe("presence");
@@ -156,6 +172,14 @@ describe("stack selection translation", () => {
     expect(specs).toContain("backend.email:typescript:resend");
     expect(specs).toContain("backend.ai:typescript:langgraph");
     expect(specs).toContain("backend.realtime:typescript:socket-io");
+    expect(specs).toContain("frontend.css:typescript:scss");
+    expect(specs).toContain("frontend.ui:typescript:radix-ui");
+    expect(specs).toContain("frontend.forms:typescript:formik");
+    expect(specs).toContain("frontend.stateManagement:typescript:zustand");
+    expect(specs).toContain("frontend.animation:typescript:framer-motion");
+    expect(specs).toContain("frontend.fileUpload:typescript:uploadthing");
+    expect(specs).toContain("frontend.i18n:typescript:i18next");
+    expect(specs).toContain("frontend.analytics:typescript:plausible");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
     expect(specs).toContain("backend.realtime:elixir:presence");
@@ -214,7 +238,42 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--file-storage s3");
   });
 
-  it("emits changed TypeScript frontend graph sub-flags", () => {
+  it("emits changed TypeScript frontend singles as scoped graph parts", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "styled-graph-app",
+      stackPartSpecs: ["frontend:typescript:next", "backend:go:gin"],
+      cssFramework: "scss",
+      uiLibrary: "radix-ui",
+      forms: "formik",
+      stateManagement: "zustand",
+      animation: "framer-motion",
+      fileUpload: "uploadthing",
+      i18n: "i18next",
+      analytics: "plausible",
+    });
+
+    expect(command).toContain("--part frontend:typescript:next");
+    expect(command).toContain("--part frontend.css:typescript:scss");
+    expect(command).toContain("--part frontend.ui:typescript:radix-ui");
+    expect(command).toContain("--part frontend.forms:typescript:formik");
+    expect(command).toContain("--part frontend.stateManagement:typescript:zustand");
+    expect(command).toContain("--part frontend.animation:typescript:framer-motion");
+    expect(command).toContain("--part frontend.fileUpload:typescript:uploadthing");
+    expect(command).toContain("--part frontend.i18n:typescript:i18next");
+    expect(command).toContain("--part frontend.analytics:typescript:plausible");
+    expect(command).not.toContain("--css-framework scss");
+    expect(command).not.toContain("--ui-library radix-ui");
+    expect(command).not.toContain("--forms formik");
+    expect(command).not.toContain("--state-management zustand");
+    expect(command).not.toContain("--animation framer-motion");
+    expect(command).not.toContain("--file-upload uploadthing");
+    expect(command).not.toContain("--i18n i18next");
+    expect(command).not.toContain("--analytics plausible");
+  });
+
+  it("preserves TypeScript frontend graph scalar settings", () => {
     const command = generateStackSelectionCommand({
       ...DEFAULT_SELECTION,
       stackMode: "multi",
