@@ -581,6 +581,46 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--db-setup neon");
   });
 
+  it("reproduces graph-owned addons and examples as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.appPlatform:typescript:pwa",
+      "frontend.dataFetching:typescript:swr",
+      "frontend.testing:typescript:storybook",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "codeQuality:universal:biome",
+      "documentation:universal:fumadocs",
+      "workspaceTooling:universal:turborepo",
+      "workspaceTooling:universal:mcp",
+      "examples:universal:ai",
+      "examples:universal:chat-sdk",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        runtime: "node",
+        api: "none",
+        addons: ["biome", "fumadocs", "pwa", "swr", "storybook", "turborepo", "mcp"],
+        examples: ["ai", "chat-sdk"],
+      }),
+    );
+
+    expect(command).toContain("--part codeQuality:universal:biome");
+    expect(command).toContain("--part documentation:universal:fumadocs");
+    expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
+    expect(command).toContain("--part frontend.dataFetching:typescript:swr");
+    expect(command).toContain("--part frontend.testing:typescript:storybook");
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceTooling:universal:mcp");
+    expect(command).toContain("--part examples:universal:ai");
+    expect(command).toContain("--part examples:universal:chat-sdk");
+    expect(command).not.toContain("--addons biome");
+    expect(command).not.toContain("--examples ai");
+  });
+
   it("preserves Astro integration when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:astro",

@@ -7,8 +7,18 @@ import type {
   StackPartSource,
 } from "./types";
 
-import { getUnsupportedWebDeployFrontend, UI_LIBRARY_COMPATIBILITY } from "./compatibility";
 import {
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  UI_LIBRARY_COMPATIBILITY,
+} from "./compatibility";
+import {
+  ADDONS_VALUES,
   API_VALUES,
   AUTH_VALUES,
   AI_VALUES,
@@ -33,6 +43,7 @@ import {
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
+  EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
@@ -95,6 +106,8 @@ export type ToolDefinition = {
   ecosystems: readonly StackPartEcosystem[];
   legacyCategory?: keyof ProjectConfig;
   selectable?: boolean;
+  allowMultiple?: boolean;
+  ownerless?: boolean;
   provides?: readonly ProvidedCapabilityDefinition[];
 };
 
@@ -107,6 +120,7 @@ export type StackPartOptionContext = {
   siblingToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   selectedToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   primaryToolIdsByRole?: Partial<Record<StackPrimaryRole, string | undefined>>;
+  primaryEcosystemsByRole?: Partial<Record<StackPrimaryRole, StackPartEcosystem | undefined>>;
 };
 
 export type StackGraphIssue = {
@@ -220,6 +234,63 @@ const LEGACY_DATABASE_SINGLE_CATEGORIES = {
   dbSetup: "dbSetup",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
+const CODE_QUALITY_ADDONS = new Set(["biome", "oxlint", "ultracite", "lefthook", "husky"]);
+const DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
+const FRONTEND_APP_PLATFORM_ADDONS = new Set(["pwa", "tauri", "wxt", "opentui"]);
+const FRONTEND_DATA_FETCHING_ADDONS = new Set([
+  "swr",
+  "tanstack-query",
+  "tanstack-table",
+  "tanstack-virtual",
+  "tanstack-db",
+  "tanstack-pacer",
+]);
+const FRONTEND_TESTING_ADDONS = new Set(["msw", "storybook"]);
+const WORKSPACE_TOOLING_ADDONS = new Set([
+  "turborepo",
+  "docker-compose",
+  "ruler",
+  "mcp",
+  "skills",
+  "backend-utils",
+]);
+const LEGACY_ADDON_GRAPH_ROLES = new Set<StackPartRole>([
+  "appPlatform",
+  "codeQuality",
+  "dataFetching",
+  "documentation",
+  "testing",
+  "workspaceTooling",
+]);
+
+export type AddonStackPartBinding = {
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  ownerRole?: "frontend" | "backend" | "database";
+};
+
+export function getAddonStackPartBinding(toolId: string): AddonStackPartBinding | undefined {
+  if (CODE_QUALITY_ADDONS.has(toolId)) {
+    return { role: "codeQuality", ecosystem: "universal" };
+  }
+  if (DOCUMENTATION_ADDONS.has(toolId)) {
+    return { role: "documentation", ecosystem: "universal" };
+  }
+  if (FRONTEND_APP_PLATFORM_ADDONS.has(toolId)) {
+    return { role: "appPlatform", ecosystem: "typescript", ownerRole: "frontend" };
+  }
+  if (FRONTEND_DATA_FETCHING_ADDONS.has(toolId)) {
+    return { role: "dataFetching", ecosystem: "typescript", ownerRole: "frontend" };
+  }
+  if (FRONTEND_TESTING_ADDONS.has(toolId)) {
+    return { role: "testing", ecosystem: "typescript", ownerRole: "frontend" };
+  }
+  if (WORKSPACE_TOOLING_ADDONS.has(toolId)) {
+    return { role: "workspaceTooling", ecosystem: "universal" };
+  }
+  return undefined;
+}
+
 const OWNER_ROLES_BY_SCOPED_ROLE = {
   ...Object.fromEntries(
     [
@@ -232,6 +303,9 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   ),
   deploy: ["frontend", "backend"],
   dbSetup: ["database"],
+  appPlatform: ["frontend"],
+  dataFetching: ["frontend"],
+  testing: ["frontend"],
 } as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
@@ -307,15 +381,25 @@ function defineTools(
   role: StackPartRole,
   ecosystem: StackPartEcosystem,
   legacyCategory?: keyof ProjectConfig,
+  options: Pick<ToolDefinition, "allowMultiple" | "ownerless"> = {},
 ): ToolDefinition[] {
   return values
     .filter((toolId) => toolId !== "none")
-    .map((toolId) => ({
-      toolId,
-      roles: [role],
-      ecosystems: [ecosystem],
-      legacyCategory,
-    }));
+    .map((toolId) => {
+      const definition: ToolDefinition = {
+        toolId,
+        roles: [role],
+        ecosystems: [ecosystem],
+        legacyCategory,
+      };
+      if (options.allowMultiple !== undefined) {
+        definition.allowMultiple = options.allowMultiple;
+      }
+      if (options.ownerless !== undefined) {
+        definition.ownerless = options.ownerless;
+      }
+      return definition;
+    });
 }
 
 export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
@@ -344,6 +428,52 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(FILE_UPLOAD_VALUES, "fileUpload", "typescript", "fileUpload"),
   ...defineTools(I18N_VALUES, "i18n", "typescript", "i18n"),
   ...defineTools(ANALYTICS_VALUES, "analytics", "typescript", "analytics"),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => CODE_QUALITY_ADDONS.has(value)),
+    "codeQuality",
+    "universal",
+    undefined,
+    { allowMultiple: true, ownerless: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => DOCUMENTATION_ADDONS.has(value)),
+    "documentation",
+    "universal",
+    undefined,
+    { allowMultiple: true, ownerless: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => FRONTEND_APP_PLATFORM_ADDONS.has(value)),
+    "appPlatform",
+    "typescript",
+    undefined,
+    { allowMultiple: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => FRONTEND_DATA_FETCHING_ADDONS.has(value)),
+    "dataFetching",
+    "typescript",
+    undefined,
+    { allowMultiple: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => FRONTEND_TESTING_ADDONS.has(value)),
+    "testing",
+    "typescript",
+    undefined,
+    { allowMultiple: true },
+  ),
+  ...defineTools(
+    ADDONS_VALUES.filter((value) => WORKSPACE_TOOLING_ADDONS.has(value)),
+    "workspaceTooling",
+    "universal",
+    undefined,
+    { allowMultiple: true, ownerless: true },
+  ),
+  ...defineTools(EXAMPLES_VALUES, "examples", "universal", undefined, {
+    allowMultiple: true,
+    ownerless: true,
+  }),
   ...defineTools(LOGGING_VALUES, "logging", "typescript", "logging"),
   ...defineTools(EMAIL_VALUES, "email", "typescript", "email"),
   ...defineTools(SEARCH_VALUES, "search", "typescript", "search"),
@@ -810,6 +940,151 @@ function createInfrastructureCompatibilityIssue(
   return undefined;
 }
 
+function createAddonCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  const frontendTool = context.primaryToolIdsByRole?.frontend;
+  const frontendTools = frontendTool ? [frontendTool] : [];
+  const frontendEcosystem = context.primaryEcosystemsByRole?.frontend;
+  const backendTool = context.primaryToolIdsByRole?.backend;
+  const backendEcosystem = context.primaryEcosystemsByRole?.backend;
+  const runtimeTool = context.selectedToolIdsByRole?.runtime ?? "bun";
+  const apiTool = context.selectedToolIdsByRole?.api;
+
+  if (part.role === "appPlatform") {
+    if (part.toolId === "pwa" && !hasPWACompatibleFrontend(frontendTools)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "PWA requires a compatible web frontend.",
+      });
+    }
+    if (part.toolId === "tauri" && !hasTauriCompatibleFrontend(frontendTools)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Tauri requires a compatible web frontend.",
+      });
+    }
+  }
+
+  if (part.role === "dataFetching") {
+    if (part.toolId === "tanstack-query" && apiTool && apiTool !== "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "TanStack Query is already included via the selected API layer.",
+      });
+    }
+  }
+
+  if (part.role === "workspaceTooling") {
+    if (part.toolId === "docker-compose") {
+      if (backendTool === "convex") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Docker Compose is not compatible with Convex backend.",
+        });
+      }
+      if (runtimeTool === "workers") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Docker Compose is not compatible with Cloudflare Workers runtime.",
+        });
+      }
+      if (
+        frontendEcosystem === "typescript" &&
+        frontendTool &&
+        !hasDockerComposeCompatibleFrontend(frontendTools)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Docker Compose is not wired for the selected web frontend.",
+        });
+      }
+      if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Docker Compose self-backend support currently requires Next.js.",
+        });
+      }
+    }
+
+    if (part.toolId === "backend-utils") {
+      if (
+        backendEcosystem !== "typescript" ||
+        !isBackendUtilsCompatibleBackend(backendTool)
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Backend Utils requires a compatible TypeScript server stack.",
+        });
+      }
+    }
+  }
+
+  if (part.role === "examples") {
+    if (
+      part.toolId === "ai" &&
+      !isExampleAIAllowed(
+        backendTool as ProjectConfig["backend"] | undefined,
+        frontendTools as ProjectConfig["frontend"],
+      )
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "AI example is not compatible with the selected graph stack.",
+      });
+    }
+
+    if (part.toolId === "chat-sdk") {
+      if (
+        backendEcosystem !== "typescript" ||
+        !isExampleChatSdkAllowed(
+          backendTool,
+          frontendTools as ProjectConfig["frontend"],
+          runtimeTool,
+        )
+      ) {
+        return createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message: "Chat SDK example is not compatible with the selected graph stack.",
+        });
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -851,6 +1126,9 @@ function getStackPartCompatibilityIssue(
 
   const infrastructureCompatibilityIssue = createInfrastructureCompatibilityIssue(part, context);
   if (infrastructureCompatibilityIssue) return infrastructureCompatibilityIssue;
+
+  const addonCompatibilityIssue = createAddonCompatibilityIssue(part, context);
+  if (addonCompatibilityIssue) return addonCompatibilityIssue;
 
   if (part.ecosystem === "python" && part.role === "api" && DJANGO_API_TOOLS.has(part.toolId)) {
     if (context.ownerToolId !== "django") {
@@ -1009,6 +1287,15 @@ function findDefinition(part: Pick<StackPart, "role" | "toolId" | "ecosystem">) 
   );
 }
 
+function isOwnerlessDefinition(definition: ToolDefinition | undefined) {
+  return definition?.ownerless === true;
+}
+
+function allowsMultipleSelectedParts(parts: readonly StackPart[]) {
+  const selectedParts = parts.filter((part) => part.source !== "provided");
+  return selectedParts.every((part) => findDefinition(part)?.allowMultiple === true);
+}
+
 function parseRolePath(rolePath: string): { role: StackPartRole; ownerRole?: StackPrimaryRole } {
   const segments = rolePath.split(".");
   const rawRole = segments.length === 1 ? segments[0] : segments[segments.length - 1];
@@ -1124,6 +1411,39 @@ function addLegacyPart(
   return part;
 }
 
+function addLegacyAddonPart(
+  parts: StackPart[],
+  toolId: string,
+  source: StackPartSource,
+  frontendPart: StackPart | undefined,
+) {
+  if (!toolId || toolId === "none") return;
+  const binding = getAddonStackPartBinding(toolId);
+  if (!binding) return;
+  const ownerPartId = binding.ownerRole === "frontend" ? frontendPart?.id : undefined;
+  if (binding.ownerRole === "frontend" && !ownerPartId) return;
+  addLegacyPart(parts, binding.role, binding.ecosystem, toolId, source, ownerPartId);
+}
+
+function appendUniqueLegacyArrayValue(
+  config: Partial<ProjectConfig>,
+  category: "addons" | "examples",
+  value: string,
+) {
+  const current = (config[category] ?? []) as string[];
+  if (!current.includes(value)) {
+    (config as Record<string, unknown>)[category] = [...current, value];
+  }
+}
+
+function getLegacyArrayCategoryForPart(part: StackPart): "addons" | "examples" | undefined {
+  if (part.role === "examples") return "examples";
+  if (LEGACY_ADDON_GRAPH_ROLES.has(part.role) && getAddonStackPartBinding(part.toolId)) {
+    return "addons";
+  }
+  return undefined;
+}
+
 export function legacyProjectConfigToStackParts(
   config: Partial<ProjectConfig>,
   source: StackPartSource = "legacy",
@@ -1175,6 +1495,13 @@ export function legacyProjectConfigToStackParts(
   const capabilityOwner = backendPart?.id ?? frontendPart?.id ?? databasePart?.id;
   if (databasePart) {
     addLegacyPart(parts, "dbSetup", "universal", config.dbSetup, source, databasePart.id);
+  }
+
+  for (const addon of config.addons ?? []) {
+    addLegacyAddonPart(parts, addon, source, frontendPart);
+  }
+  for (const example of config.examples ?? []) {
+    addLegacyPart(parts, "examples", "universal", example, source);
   }
 
   // The generic `orm`/`api`/`auth` fields only describe TypeScript and React Native
@@ -1325,11 +1652,23 @@ export function stackPartsToLegacyProjectConfigPartial(
           part.toolId as ProjectConfig["frontend"][number],
         ];
       } else {
+        const legacyArrayCategory = getLegacyArrayCategoryForPart(part);
+        if (legacyArrayCategory) {
+          appendUniqueLegacyArrayValue(config, legacyArrayCategory, part.toolId);
+          continue;
+        }
+
         const legacyCategory = getLegacyCategoryForPart(part, parts);
         if (legacyCategory) {
           (config as Record<string, unknown>)[legacyCategory] = part.toolId;
         }
       }
+      continue;
+    }
+
+    const legacyArrayCategory = getLegacyArrayCategoryForPart(part);
+    if (legacyArrayCategory) {
+      appendUniqueLegacyArrayValue(config, legacyArrayCategory, part.toolId);
       continue;
     }
 
@@ -1414,6 +1753,12 @@ function projectLegacyCategoryFromPart(
   parts: readonly StackPart[],
 ) {
   if (!part) return;
+  const legacyArrayCategory = getLegacyArrayCategoryForPart(part);
+  if (legacyArrayCategory) {
+    appendUniqueLegacyArrayValue(config, legacyArrayCategory, part.toolId);
+    return;
+  }
+
   const legacyCategory = getLegacyCategoryForPart(part, parts);
   if (!legacyCategory || legacyCategory === "frontend") return;
 
@@ -1465,6 +1810,8 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   for (const category of GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES) {
     (projected as Record<string, unknown>)[category] = "none";
   }
+  projected.addons = [];
+  projected.examples = [];
 
   projectLegacyCategoryFromPart(projected, backend, ecosystem, parts);
   projectLegacyCategoryFromPart(projected, frontend, ecosystem, parts);
@@ -1504,6 +1851,13 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
+  for (const part of parts) {
+    if (part.source === "provided" || part.ownerPartId) {
+      continue;
+    }
+    projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
+  }
+
   return projected;
 }
 
@@ -1530,6 +1884,8 @@ export function compareLegacyConfigToStackParts(
     ...Object.values(LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES),
     ...Object.values(LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES),
     ...Object.values(LEGACY_DATABASE_SINGLE_CATEGORIES),
+    "addons",
+    "examples",
     ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
       Object.values(categories),
     ),
@@ -1553,11 +1909,15 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
   const issues: StackGraphIssue[] = [];
   const partsById = new Map(parts.map((part) => [part.id, part]));
   const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
+  const primaryEcosystemsByRole: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {};
   const selectedToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
 
   for (const role of PRIMARY_ROLES) {
     const primaryPart = getPrimaryPart(parts, role as StackPrimaryRole);
-    if (primaryPart) primaryToolIdsByRole[role as StackPrimaryRole] = primaryPart.toolId;
+    if (primaryPart) {
+      primaryToolIdsByRole[role as StackPrimaryRole] = primaryPart.toolId;
+      primaryEcosystemsByRole[role as StackPrimaryRole] = primaryPart.ecosystem;
+    }
   }
 
   for (const part of parts) {
@@ -1587,7 +1947,11 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
       });
     }
 
-    if (!PRIMARY_ROLES.has(part.role) && !part.ownerPartId) {
+    if (
+      !PRIMARY_ROLES.has(part.role) &&
+      !part.ownerPartId &&
+      !isOwnerlessDefinition(definition)
+    ) {
       issues.push({
         code: "MISSING_OWNER_PART",
         partId: part.id,
@@ -1608,7 +1972,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
     }
 
     const owner = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
-    if (definition && (PRIMARY_ROLES.has(part.role) || owner)) {
+    if (definition && (PRIMARY_ROLES.has(part.role) || owner || isOwnerlessDefinition(definition))) {
       const siblingToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
       for (const sibling of parts) {
         if (sibling.ownerPartId !== part.ownerPartId || sibling.source === "provided") continue;
@@ -1625,6 +1989,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
         siblingToolIdsByRole,
         selectedToolIdsByRole,
         primaryToolIdsByRole,
+        primaryEcosystemsByRole,
       });
 
       if (compatibilityIssue) {
@@ -1641,7 +2006,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
 
   for (const scopedParts of byScope.values()) {
     const selectedParts = scopedParts.filter((part) => part.source !== "provided");
-    if (selectedParts.length > 1) {
+    if (selectedParts.length > 1 && !allowsMultipleSelectedParts(scopedParts)) {
       const [first] = selectedParts;
       issues.push({
         code: "DUPLICATE_ROLE_SCOPE",

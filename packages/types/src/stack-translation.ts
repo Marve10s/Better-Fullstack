@@ -5,6 +5,7 @@ import { createCliDefaultProjectConfigBase, type CliDefaultProjectConfigBase } f
 import { normalizeOptionId, type OptionCategory } from "./option-metadata";
 import {
   formatStackPartSpec,
+  getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
@@ -951,10 +952,11 @@ type ScopedStackPartRole = Exclude<
   "frontend" | "backend" | "mobile" | "database"
 >;
 type ScopedStackPartField = {
-  ownerRole: "frontend" | "backend" | "database";
+  ownerRole?: "frontend" | "backend" | "database";
   ecosystem: Exclude<StackPartEcosystem, "react-native">;
   role: ScopedStackPartRole;
-  value: string | undefined;
+  value: string | readonly string[] | undefined;
+  allowMultiple?: boolean;
 };
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
@@ -1031,6 +1033,31 @@ const GRAPH_DATABASE_PART_CLI_KEYS = [
   ["dbSetup", "dbSetup"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
+function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
+  return toUniqueNonNoneArray(addons ?? []).flatMap((addon) => {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) return [];
+    return [
+      {
+        ownerRole: binding.ownerRole,
+        ecosystem: binding.ecosystem as Exclude<StackPartEcosystem, "react-native">,
+        role: binding.role as ScopedStackPartRole,
+        value: addon,
+        allowMultiple: true,
+      },
+    ];
+  });
+}
+
+function getExampleScopedPartFields(examples: readonly string[] | undefined): ScopedStackPartField[] {
+  return toUniqueNonNoneArray(examples ?? []).map((example) => ({
+    ecosystem: "universal" as const,
+    role: "examples" as const,
+    value: example,
+    allowMultiple: true,
+  }));
+}
+
 function expandScopedStackPartSpecs(
   specs: readonly string[],
   fields: readonly ScopedStackPartField[],
@@ -1054,24 +1081,41 @@ function expandScopedStackPartSpecs(
     ownerId: string,
     role: StackPartRole,
     ecosystem: StackPartEcosystem,
+    toolId: string,
+    allowMultiple = false,
   ) =>
     stackParts.some(
       (part) =>
         part.role === role &&
         part.ecosystem === ecosystem &&
         part.ownerPartId === ownerId &&
-        part.source !== "provided",
+        part.source !== "provided" &&
+        (allowMultiple ? part.toolId === toolId : true),
     );
 
-  for (const { ownerRole, ecosystem, role, value } of fields) {
-    const owner = getPrimary(ownerRole, ecosystem);
-    if (!value || value === "none" || !owner || hasScoped(owner.id, role, ecosystem)) {
-      continue;
-    }
-    const spec = `${ownerRole}.${role}:${ecosystem}:${value}`;
-    if (!stackPartSpecSet.has(spec)) {
-      stackPartSpecs.push(spec);
-      stackPartSpecSet.add(spec);
+  for (const { ownerRole, ecosystem, role, value, allowMultiple } of fields) {
+    const values = Array.isArray(value) ? value : [value];
+    for (const toolId of values) {
+      if (!toolId || toolId === "none") continue;
+
+      if (!ownerRole) {
+        const spec = `${role}:${ecosystem}:${toolId}`;
+        if (!stackPartSpecSet.has(spec)) {
+          stackPartSpecs.push(spec);
+          stackPartSpecSet.add(spec);
+        }
+        continue;
+      }
+
+      const owner = getPrimary(ownerRole, ecosystem);
+      if (!owner || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
+        continue;
+      }
+      const spec = `${ownerRole}.${role}:${ecosystem}:${toolId}`;
+      if (!stackPartSpecSet.has(spec)) {
+        stackPartSpecs.push(spec);
+        stackPartSpecSet.add(spec);
+      }
     }
   }
 
@@ -1106,6 +1150,12 @@ function getSelectionScopedPartFields(
       role,
       value: selection[key],
     })),
+    ...getAddonScopedPartFields([
+      ...selection.codeQuality,
+      ...selection.documentation,
+      ...selection.appPlatforms,
+    ]),
+    ...getExampleScopedPartFields(selection.examples),
   ];
 }
 
@@ -1140,6 +1190,8 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       role,
       value: getValue(key),
     })),
+    ...getAddonScopedPartFields(input.addons),
+    ...getExampleScopedPartFields(input.examples),
   ];
 }
 
@@ -1601,15 +1653,6 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
     ...(hasMobile
       ? formatChangedStringFlags(selection, GRAPH_MOBILE_FLAG_KEYS)
       : []),
-    ...(areStringArraysEqual(
-      [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms],
-      [...DEFAULT_STACK_SELECTION.codeQuality, ...DEFAULT_STACK_SELECTION.documentation, ...DEFAULT_STACK_SELECTION.appPlatforms],
-    )
-      ? []
-      : [formatTypeScriptAddonsFlag(selection)]),
-    ...(areStringArraysEqual(selection.examples, DEFAULT_STACK_SELECTION.examples)
-      ? []
-      : [formatArrayFlag("examples", selection.examples)]),
     `--package-manager ${selection.packageManager}`,
     ...(selection.versionChannel !== "stable"
       ? [`--version-channel ${selection.versionChannel}`]

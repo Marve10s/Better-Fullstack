@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   compareLegacyConfigToStackParts,
   ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
+  getAddonStackPartBinding,
   getStackPartOptions,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
@@ -13,6 +14,7 @@ import {
 import { createCliDefaultProjectConfigBase } from "../src/defaults";
 import {
   AI_VALUES,
+  ADDONS_VALUES,
   API_VALUES,
   AUTH_VALUES,
   BACKEND_VALUES,
@@ -34,6 +36,7 @@ import {
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
+  EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
   FILE_STORAGE_VALUES,
   FILE_UPLOAD_VALUES,
@@ -140,6 +143,39 @@ describe("stack graph", () => {
     expect(lowered.dbSetup).toBe("neon");
   });
 
+  it("lowers multi-select addon and example graph parts through legacy arrays", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.appPlatform:typescript:pwa",
+      "frontend.dataFetching:typescript:swr",
+      "frontend.dataFetching:typescript:tanstack-table",
+      "frontend.testing:typescript:storybook",
+      "codeQuality:universal:biome",
+      "documentation:universal:fumadocs",
+      "workspaceTooling:universal:turborepo",
+      "workspaceTooling:universal:mcp",
+      "examples:universal:ai",
+      "examples:universal:chat-sdk",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+    ]);
+    const result = validateStackParts(stackParts);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+
+    expect(result.issues).toEqual([]);
+    expect(lowered.addons).toEqual([
+      "biome",
+      "fumadocs",
+      "turborepo",
+      "mcp",
+      "pwa",
+      "swr",
+      "tanstack-table",
+      "storybook",
+    ]);
+    expect(lowered.examples).toEqual(["ai", "chat-sdk"]);
+  });
+
   it("projects graph-selected ecosystem capabilities through legacy categories", () => {
     const stackParts = parseStackPartSpecs([
       "backend:elixir:phoenix",
@@ -244,6 +280,21 @@ describe("stack graph", () => {
     const result = validateStackParts(stackParts);
 
     expect(result.issues.map((issue) => issue.code)).toContain("DUPLICATE_ROLE_SCOPE");
+  });
+
+  it("allows registry-marked multi-select roles and ownerless workspace tools", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.dataFetching:typescript:swr",
+      "frontend.dataFetching:typescript:tanstack-table",
+      "codeQuality:universal:biome",
+      "codeQuality:universal:oxlint",
+      "workspaceTooling:universal:turborepo",
+      "workspaceTooling:universal:skills",
+    ]);
+    const result = validateStackParts(stackParts);
+
+    expect(result.issues).toEqual([]);
   });
 
   it("rejects scoped capabilities from a different ecosystem than their owner", () => {
@@ -357,6 +408,44 @@ describe("stack graph", () => {
     );
     expect(validateStackParts(unsupportedWebDeployParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_TOOL",
+    );
+  });
+
+  it("rejects incompatible addon and example graph selections", () => {
+    const dockerWorkersParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:workers",
+      "workspaceTooling:universal:docker-compose",
+    ]);
+    const queryWithApiParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.api:typescript:trpc",
+      "frontend.dataFetching:typescript:tanstack-query",
+    ]);
+    const chatSdkBunParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "examples:universal:chat-sdk",
+    ]);
+    const backendUtilsGoParts = parseStackPartSpecs([
+      "backend:go:gin",
+      "workspaceTooling:universal:backend-utils",
+    ]);
+
+    expect(validateStackParts(dockerWorkersParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(queryWithApiParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(chatSdkBunParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(backendUtilsGoParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_GRAPH_SELECTION",
     );
   });
 
@@ -669,6 +758,65 @@ describe("stack graph structural round-trip (phase 0)", () => {
         expect(scopedPart).toBeUndefined();
       } else {
         expect(scopedPart?.ownerPartId).toBe(database?.id);
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+  });
+
+  it("round-trips every addon and example value as multi-select graph parts", () => {
+    for (const addon of ADDONS_VALUES) {
+      const config = {
+        ...TS_BASE,
+        frontend: ["next"],
+        runtime: "bun",
+        api: addon === "tanstack-query" ? "none" : TS_BASE.api,
+        addons: [addon],
+      };
+      const parts = legacyProjectConfigToStackParts(config);
+      const binding = getAddonStackPartBinding(addon);
+      const frontend = parts.find(
+        (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      );
+      const graphPart = binding
+        ? parts.find(
+            (part) =>
+              part.role === binding.role &&
+              part.ecosystem === binding.ecosystem &&
+              part.toolId === addon,
+          )
+        : undefined;
+      const derived = expectNoDrift(config);
+
+      if (addon === "none") {
+        expect(graphPart).toBeUndefined();
+      } else {
+        expect(derived.addons).toContain(addon);
+        expect(graphPart).toBeDefined();
+        expect(graphPart?.ownerPartId).toBe(
+          binding?.ownerRole === "frontend" ? frontend?.id : undefined,
+        );
+      }
+      expect(validateStackParts(parts).issues).toEqual([]);
+    }
+
+    for (const example of EXAMPLES_VALUES) {
+      const config = {
+        ...TS_BASE,
+        frontend: ["next"],
+        runtime: example === "chat-sdk" ? "node" : "bun",
+        examples: [example],
+      };
+      const parts = legacyProjectConfigToStackParts(config);
+      const graphPart = parts.find(
+        (part) => part.role === "examples" && part.toolId === example,
+      );
+      const derived = expectNoDrift(config);
+
+      if (example === "none") {
+        expect(graphPart).toBeUndefined();
+      } else {
+        expect(derived.examples).toContain(example);
+        expect(graphPart?.ownerPartId).toBeUndefined();
       }
       expect(validateStackParts(parts).issues).toEqual([]);
     }

@@ -1,6 +1,6 @@
 import type { ProjectConfig, StackPartRole } from "../types";
 
-import { formatStackPartSpec } from "../types";
+import { formatStackPartSpec, getAddonStackPartBinding } from "../types";
 import { hasGraphPart } from "./graph-summary";
 
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
@@ -82,6 +82,66 @@ function hasOwnedGraphPart(
   );
 }
 
+function hasGraphAddonPart(config: ProjectConfig, addon: string) {
+  const binding = getAddonStackPartBinding(addon);
+  if (!binding) return false;
+
+  if (!binding.ownerRole) {
+    return Boolean(
+      config.stackParts?.some(
+        (part) =>
+          part.source !== "provided" &&
+          part.role === binding.role &&
+          part.ecosystem === binding.ecosystem &&
+          part.toolId === addon &&
+          !part.ownerPartId,
+      ),
+    );
+  }
+
+  const owner = config.stackParts?.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === binding.ownerRole &&
+      !part.ownerPartId &&
+      part.ecosystem === binding.ecosystem,
+  );
+  if (!owner) return false;
+
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === binding.role &&
+        part.ecosystem === binding.ecosystem &&
+        part.toolId === addon &&
+        part.ownerPartId === owner.id,
+    ),
+  );
+}
+
+function hasGraphExamplePart(config: ProjectConfig, example: string) {
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === "examples" &&
+        part.ecosystem === "universal" &&
+        part.toolId === example &&
+        !part.ownerPartId,
+    ),
+  );
+}
+
+function hasGraphArrayParts(
+  config: ProjectConfig,
+  values: string[],
+  hasPart: (config: ProjectConfig, value: string) => boolean,
+) {
+  const normalizedValues = values.filter((value) => value !== "none");
+  return normalizedValues.length > 0 && normalizedValues.every((value) => hasPart(config, value));
+}
+
 function appendChangedStringFlag(
   flags: string[],
   flag: string,
@@ -141,8 +201,12 @@ function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
 }
 
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
-  appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
-  appendChangedArrayFlag(flags, "examples", config.examples, []);
+  if (!hasGraphArrayParts(config, config.addons, hasGraphAddonPart)) {
+    appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
+  }
+  if (!hasGraphArrayParts(config, config.examples, hasGraphExamplePart)) {
+    appendChangedArrayFlag(flags, "examples", config.examples, []);
+  }
 
   if (hasGraphPrimaryPart(config, "database")) {
     appendChangedOwnedGraphStringFlag(

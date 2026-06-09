@@ -6,6 +6,8 @@ import type { BetterTStackConfig, ProjectConfig } from "../types";
 
 import {
   compareLegacyConfigToStackParts,
+  createStackPart,
+  getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
@@ -13,6 +15,8 @@ import { getEffectiveStack, getGraphSummary } from "./graph-summary";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
+
+type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
 
 function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
   if (!stackParts) return projectConfig;
@@ -86,6 +90,112 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
   }
 
   return normalized;
+}
+
+function findSelectedPrimaryPart(
+  stackParts: readonly StackPart[],
+  role: "frontend" | "backend" | "database" | "mobile",
+  ecosystem?: string,
+) {
+  return stackParts.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === role &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem),
+  );
+}
+
+function isAddonGraphPart(part: StackPart) {
+  const binding = getAddonStackPartBinding(part.toolId);
+  return (
+    binding !== undefined &&
+    part.role === binding.role &&
+    part.ecosystem === binding.ecosystem
+  );
+}
+
+function hasMatchingStackPart(stackParts: readonly StackPart[], part: StackPart) {
+  return stackParts.some(
+    (candidate) =>
+      candidate.source !== "provided" &&
+      candidate.role === part.role &&
+      candidate.ecosystem === part.ecosystem &&
+      candidate.toolId === part.toolId &&
+      candidate.ownerPartId === part.ownerPartId,
+  );
+}
+
+function syncAddonStackParts(stackParts: readonly StackPart[], addons: readonly string[]) {
+  const addonSet = new Set(addons.filter((addon) => addon !== "none"));
+  const frontend = findSelectedPrimaryPart(stackParts, "frontend", "typescript");
+  const next = stackParts.filter(
+    (part) => part.source === "provided" || !isAddonGraphPart(part) || addonSet.has(part.toolId),
+  );
+
+  for (const addon of addonSet) {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) continue;
+    const ownerPartId = binding.ownerRole === "frontend" ? frontend?.id : undefined;
+    if (binding.ownerRole === "frontend" && !ownerPartId) continue;
+    const part = createStackPart({
+      role: binding.role,
+      ecosystem: binding.ecosystem,
+      toolId: addon,
+      ownerPartId,
+      source: "selected",
+    });
+    if (!hasMatchingStackPart(next, part)) {
+      next.push(part);
+    }
+  }
+
+  return next;
+}
+
+function syncOwnedDeployStackPart(
+  stackParts: readonly StackPart[],
+  ownerRole: "frontend" | "backend",
+  deployValue: string | undefined,
+) {
+  if (deployValue === undefined) return [...stackParts];
+  const owner = findSelectedPrimaryPart(stackParts, ownerRole, "typescript");
+  const next = stackParts.filter(
+    (part) =>
+      part.source === "provided" ||
+      part.role !== "deploy" ||
+      part.ecosystem !== "typescript" ||
+      part.ownerPartId !== owner?.id,
+  );
+
+  if (!owner || deployValue === "none") return next;
+
+  next.push(
+    createStackPart({
+      role: "deploy",
+      ecosystem: "typescript",
+      toolId: deployValue,
+      ownerPartId: owner.id,
+      source: "selected",
+    }),
+  );
+  return next;
+}
+
+function syncUpdatedStackParts(
+  stackParts: readonly StackPart[] | undefined,
+  updates: Partial<Pick<BetterTStackConfig, "addons" | "webDeploy" | "serverDeploy">>,
+) {
+  if (!stackParts) return undefined;
+  let next = [...stackParts];
+
+  if (updates.addons) {
+    next = syncAddonStackParts(next, updates.addons);
+  }
+  next = syncOwnedDeployStackPart(next, "frontend", updates.webDeploy);
+  next = syncOwnedDeployStackPart(next, "backend", updates.serverDeploy);
+
+  return next;
 }
 
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
@@ -378,10 +488,22 @@ export async function updateBtsConfig(
     }
 
     const configContent = await fs.readFile(configPath, "utf-8");
+    const errors: JSONC.ParseError[] = [];
+    const currentConfig = JSONC.parse(configContent, errors, {
+      allowTrailingComma: true,
+      disallowComments: false,
+    }) as BetterTStackConfig;
 
     let modifiedContent = configContent;
+    const updatedStackParts = errors.length === 0
+      ? syncUpdatedStackParts(currentConfig.stackParts, updates)
+      : undefined;
+    const persistedUpdates = {
+      ...updates,
+      ...(updatedStackParts ? { stackParts: updatedStackParts } : {}),
+    };
 
-    for (const [key, value] of Object.entries(updates)) {
+    for (const [key, value] of Object.entries(persistedUpdates)) {
       const editResult = JSONC.modify(modifiedContent, [key], value, {
         formattingOptions: {
           tabSize: 2,

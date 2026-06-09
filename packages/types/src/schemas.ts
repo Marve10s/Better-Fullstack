@@ -45,6 +45,9 @@ export const StackPartRoleSchema = z
     "documentation",
     "codeQuality",
     "appPlatform",
+    "dataFetching",
+    "workspaceTooling",
+    "examples",
   ])
   .describe("Role a selected tool plays in the stack graph");
 

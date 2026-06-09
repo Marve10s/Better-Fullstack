@@ -142,6 +142,8 @@ describe("stack selection translation", () => {
         dbSetup: "neon",
         webDeploy: "vercel",
         serverDeploy: "railway",
+        addons: ["biome", "fumadocs", "pwa", "tanstack-table", "storybook", "turborepo"],
+        examples: ["ai"],
       },
       "java-graph",
     );
@@ -171,6 +173,15 @@ describe("stack selection translation", () => {
     expect(config.dbSetup).toBe("neon");
     expect(config.webDeploy).toBe("vercel");
     expect(config.serverDeploy).toBe("railway");
+    expect(config.addons).toEqual([
+      "biome",
+      "fumadocs",
+      "turborepo",
+      "pwa",
+      "tanstack-table",
+      "storybook",
+    ]);
+    expect(config.examples).toEqual(["ai"]);
     expect(specs).toContain("frontend:typescript:react-vite");
     expect(specs).toContain("backend:typescript:hono");
     expect(specs).toContain("backend:java:spring-boot");
@@ -195,6 +206,13 @@ describe("stack selection translation", () => {
     expect(specs).toContain("backend.deploy:typescript:railway");
     expect(specs).toContain("frontend.deploy:typescript:vercel");
     expect(specs).toContain("database.dbSetup:universal:neon");
+    expect(specs).toContain("codeQuality:universal:biome");
+    expect(specs).toContain("documentation:universal:fumadocs");
+    expect(specs).toContain("frontend.appPlatform:typescript:pwa");
+    expect(specs).toContain("frontend.dataFetching:typescript:tanstack-table");
+    expect(specs).toContain("frontend.testing:typescript:storybook");
+    expect(specs).toContain("workspaceTooling:universal:turborepo");
+    expect(specs).toContain("examples:universal:ai");
   });
 
   it("emits changed ecosystem-specific graph flags for multi-ecosystem selections", () => {
@@ -218,8 +236,38 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part backend.realtime:elixir:presence");
     expect(command).not.toContain("--elixir-realtime presence");
     expect(command).toContain("--elixir-deploy docker");
-    expect(command).toContain("--addons turborepo docker-compose");
-    expect(command).toContain("--examples ai");
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceTooling:universal:docker-compose");
+    expect(command).toContain("--part examples:universal:ai");
+    expect(command).not.toContain("--addons turborepo docker-compose");
+    expect(command).not.toContain("--examples ai");
+  });
+
+  it("emits changed graph addons and examples as graph parts", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "addons-graph-app",
+      stackPartSpecs: ["frontend:typescript:next", "backend:typescript:hono"],
+      runtime: "node",
+      api: "none",
+      codeQuality: ["biome"],
+      documentation: ["fumadocs"],
+      appPlatforms: ["turborepo", "pwa", "swr", "storybook", "mcp"],
+      examples: ["ai", "chat-sdk"],
+    });
+
+    expect(command).toContain("--part codeQuality:universal:biome");
+    expect(command).toContain("--part documentation:universal:fumadocs");
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceTooling:universal:mcp");
+    expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
+    expect(command).toContain("--part frontend.dataFetching:typescript:swr");
+    expect(command).toContain("--part frontend.testing:typescript:storybook");
+    expect(command).toContain("--part examples:universal:ai");
+    expect(command).toContain("--part examples:universal:chat-sdk");
+    expect(command).not.toContain("--addons");
+    expect(command).not.toContain("--examples");
   });
 
   it("emits changed TypeScript backend singles as scoped graph parts", () => {
