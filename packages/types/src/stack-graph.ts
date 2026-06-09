@@ -178,6 +178,11 @@ const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
+const ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES: Partial<Record<StackPartRole, string>> = {
+  auth: "Elixir auth scaffolds require Phoenix",
+  api: "Elixir API scaffolds require Phoenix",
+  realtime: "Elixir realtime scaffolds require Phoenix",
+};
 const ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES: Record<string, string> = {
   ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
   ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
@@ -1739,9 +1744,9 @@ function getStackPartCompatibilityIssue(
   if (
     part.ecosystem === "elixir" &&
     ELIXIR_ECTO_SQL_REQUIRED_TOOLS.has(part.toolId) &&
-    context.ownerRole === "backend"
+    (!context.ownerRole || context.ownerRole === "backend")
   ) {
-    const ormTool = context.siblingToolIdsByRole?.orm;
+    const ormTool = context.siblingToolIdsByRole?.orm ?? context.selectedToolIdsByRole?.orm;
     if (ormTool !== "ecto-sql") {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
@@ -1779,6 +1784,29 @@ function getStackPartCompatibilityIssue(
       toolId: part.toolId,
       message: unsupportedElixirGraphToolMessage,
     });
+  }
+
+  if (part.ecosystem === "elixir" && !context.ownerRole) {
+    const phoenixRequiredMessage = ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES[part.role];
+    if (phoenixRequiredMessage && part.toolId !== "none") {
+      return createStackGraphIssue({
+        code: "MISSING_OWNER_PART",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: phoenixRequiredMessage,
+      });
+    }
+
+    if (part.role === "observability" && part.toolId === "phoenix-telemetry") {
+      return createStackGraphIssue({
+        code: "MISSING_OWNER_PART",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Phoenix telemetry requires Phoenix",
+      });
+    }
   }
 
   return undefined;

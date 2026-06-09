@@ -672,6 +672,80 @@ describe("stack graph", () => {
     ).toBe("Fly.io config is not generated yet; use Docker or mix releases");
   });
 
+  it("rejects ownerless Elixir Phoenix-context candidates through graph checks", () => {
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.auth:elixir:phx-gen-auth",
+          role: "auth",
+          toolId: "phx-gen-auth",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Elixir auth scaffolds require Phoenix");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.api:elixir:rest",
+          role: "api",
+          toolId: "rest",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Elixir API scaffolds require Phoenix");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.realtime:elixir:channels",
+          role: "realtime",
+          toolId: "channels",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Elixir realtime scaffolds require Phoenix");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.observability:elixir:phoenix-telemetry",
+          role: "observability",
+          toolId: "phoenix-telemetry",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Phoenix telemetry requires Phoenix");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.jobQueue:elixir:oban",
+          role: "jobQueue",
+          toolId: "oban",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:native:backend.auth:elixir:ueberauth",
+          role: "auth",
+          toolId: "ueberauth",
+          ecosystem: "elixir",
+        },
+        [],
+      )?.message,
+    ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+  });
+
   it("materializes provided capabilities and rejects conflicts unless overrideable", () => {
     const stackParts = parseStackPartSpecs([
       "backend:typescript:convex",

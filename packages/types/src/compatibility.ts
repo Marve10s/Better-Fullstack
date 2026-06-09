@@ -2503,21 +2503,6 @@ export const getDisabledReason = (
     return "Elixir web frameworks are available only in the Elixir ecosystem";
   }
 
-  if (currentStack.ecosystem === "elixir" && currentStack.elixirWebFramework === "none") {
-    if (category === "elixirAuth" && optionId !== "none") {
-      return "Elixir auth scaffolds require Phoenix";
-    }
-    if (category === "elixirApi" && optionId !== "none") {
-      return "Elixir API scaffolds require Phoenix";
-    }
-    if (category === "elixirRealtime" && optionId !== "none") {
-      return "Elixir realtime scaffolds require Phoenix";
-    }
-    if (category === "elixirObservability" && optionId === "phoenix-telemetry") {
-      return "Phoenix telemetry requires Phoenix";
-    }
-  }
-
   if (
     category === "elixirJson" &&
     optionId === "none" &&
@@ -2525,34 +2510,6 @@ export const getDisabledReason = (
     currentStack.elixirWebFramework !== "none"
   ) {
     return "Phoenix JSON scaffolds require Jason";
-  }
-
-  if (category === "elixirAuth") {
-    if (optionId === "phx-gen-auth" && currentStack.elixirOrm === "none") {
-      return "phx.gen.auth requires Ecto";
-    }
-    if (
-      (optionId === "ueberauth" || optionId === "guardian") &&
-      currentStack.elixirWebFramework === "none"
-    ) {
-      return "Elixir auth libraries require Phoenix";
-    }
-  }
-
-  if (category === "elixirJobs" && optionId === "oban" && currentStack.elixirOrm !== "ecto-sql") {
-    return "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold";
-  }
-
-  if (category === "elixirApi" && optionId === "absinthe" && currentStack.elixirOrm === "none") {
-    return "Absinthe GraphQL requires Ecto in the current Phoenix scaffold";
-  }
-
-  if (
-    category === "elixirRealtime" &&
-    optionId === "live-view-streams" &&
-    currentStack.elixirWebFramework !== "phoenix-live-view"
-  ) {
-    return "LiveView Streams require Phoenix LiveView";
   }
 
   return null;

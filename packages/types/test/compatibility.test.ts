@@ -85,6 +85,9 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(stack, "elixirRealtime", "channels")).toBe(
       "Elixir realtime scaffolds require Phoenix",
     );
+    expect(getDisabledReason(stack, "elixirObservability", "phoenix-telemetry")).toBe(
+      "Phoenix telemetry requires Phoenix",
+    );
   });
 
   it("disables web deploy targets for frontends without deploy templates", () => {
@@ -358,6 +361,50 @@ describe("compatibility issue helpers", () => {
         "ueberauth",
       ),
     ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+  });
+
+  it("routes Elixir context disabled reasons through graph checks", () => {
+    const plainElixir = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "none",
+      elixirOrm: "none",
+    };
+    const phoenixBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "none",
+    };
+
+    expect(getDisabledReason(plainElixir, "elixirAuth", "phx-gen-auth")).toBe(
+      "Elixir auth scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirApi", "rest")).toBe(
+      "Elixir API scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirRealtime", "channels")).toBe(
+      "Elixir realtime scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirObservability", "phoenix-telemetry")).toBe(
+      "Phoenix telemetry requires Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirJobs", "oban")).toBe(
+      "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold",
+    );
+
+    expect(getDisabledReason(phoenixBase, "elixirAuth", "phx-gen-auth")).toBe(
+      "phx.gen.auth requires Ecto",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirApi", "absinthe")).toBe(
+      "Absinthe GraphQL requires Ecto in the current Phoenix scaffold",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirJobs", "oban")).toBe(
+      "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirRealtime", "live-view-streams")).toBe(
+      "LiveView Streams require Phoenix LiveView",
+    );
   });
 
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
