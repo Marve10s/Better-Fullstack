@@ -12,9 +12,12 @@ import {
 } from "../src/stack-graph";
 import { createCliDefaultProjectConfigBase } from "../src/defaults";
 import {
+  AI_VALUES,
   API_VALUES,
   AUTH_VALUES,
   BACKEND_VALUES,
+  CACHING_VALUES,
+  CMS_VALUES,
   DATABASE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -24,9 +27,13 @@ import {
   ELIXIR_JOBS_VALUES,
   ELIXIR_OBSERVABILITY_VALUES,
   ELIXIR_ORM_VALUES,
+  ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
+  EMAIL_VALUES,
+  FEATURE_FLAGS_VALUES,
+  FILE_STORAGE_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
@@ -35,19 +42,25 @@ import {
   JAVA_AUTH_VALUES,
   JAVA_ORM_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
+  JOB_QUEUE_VALUES,
+  LOGGING_VALUES,
+  OBSERVABILITY_VALUES,
   ORM_VALUES,
+  PAYMENTS_VALUES,
   PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  REALTIME_VALUES,
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
+  SEARCH_VALUES,
 } from "../src/schemas";
 import type { ProjectConfig } from "../src/types";
 
@@ -153,16 +166,16 @@ describe("stack graph", () => {
   });
 
   it("filters Elixir capability options by owner and generated support", () => {
-    const phoenixOptions = getStackPartOptions({
-      role: "api",
+    const phoenixRealtimeOptions = getStackPartOptions({
+      role: "realtime",
       ecosystem: "elixir",
       ownerRole: "backend",
       ownerEcosystem: "elixir",
       ownerToolId: "phoenix",
       siblingToolIdsByRole: { orm: "ecto-sql" },
     });
-    const liveViewOptions = getStackPartOptions({
-      role: "api",
+    const liveViewRealtimeOptions = getStackPartOptions({
+      role: "realtime",
       ecosystem: "elixir",
       ownerRole: "backend",
       ownerEcosystem: "elixir",
@@ -170,8 +183,9 @@ describe("stack graph", () => {
       siblingToolIdsByRole: { orm: "ecto-sql" },
     });
 
-    expect(phoenixOptions).not.toContain("live-view-streams");
-    expect(liveViewOptions).toContain("live-view-streams");
+    expect(phoenixRealtimeOptions).toContain("channels");
+    expect(phoenixRealtimeOptions).not.toContain("live-view-streams");
+    expect(liveViewRealtimeOptions).toContain("live-view-streams");
     expect(getStackPartOptions({ role: "orm", ecosystem: "elixir" })).not.toContain("ecto");
   });
 
@@ -249,7 +263,7 @@ describe("stack graph", () => {
   it("rejects Elixir graph selections that the current scaffold cannot generate", () => {
     const liveViewParts = parseStackPartSpecs([
       "backend:elixir:phoenix",
-      "backend.api:elixir:live-view-streams",
+      "backend.realtime:elixir:live-view-streams",
     ]);
     const obanParts = parseStackPartSpecs([
       "backend:elixir:phoenix",
@@ -295,6 +309,20 @@ describe("stack graph", () => {
 
     expect(diagnostics).toEqual([
       expect.objectContaining({ code: "LEGACY_CONFIG_MISMATCH", path: "frontend" }),
+    ]);
+  });
+
+  it("reports promoted TypeScript backend single drift when graph omits the scoped part", () => {
+    const stackParts = parseStackPartSpecs(["backend:typescript:hono"]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+    const diagnostics = compareLegacyConfigToStackParts(
+      { ecosystem: "typescript", backend: "hono", logging: "pino" },
+      stackParts,
+    );
+
+    expect(lowered.logging).toBe("none");
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ code: "LEGACY_CONFIG_MISMATCH", path: "logging" }),
     ]);
   });
 });
@@ -351,6 +379,45 @@ describe("stack graph structural round-trip (phase 0)", () => {
     }
     for (const auth of AUTH_VALUES) {
       expectNoDrift({ ...TS_BASE, auth });
+    }
+  });
+
+  it("round-trips every backend-owned TypeScript single value as a scoped graph part", () => {
+    const cases = {
+      logging: LOGGING_VALUES,
+      email: EMAIL_VALUES,
+      search: SEARCH_VALUES,
+      caching: CACHING_VALUES,
+      observability: OBSERVABILITY_VALUES,
+      jobQueue: JOB_QUEUE_VALUES,
+      fileStorage: FILE_STORAGE_VALUES,
+      featureFlags: FEATURE_FLAGS_VALUES,
+      payments: PAYMENTS_VALUES,
+      realtime: REALTIME_VALUES,
+      ai: AI_VALUES,
+      cms: CMS_VALUES,
+    } as const;
+
+    for (const [field, values] of Object.entries(cases)) {
+      for (const value of values) {
+        const config = { ...TS_BASE, [field]: value };
+        const parts = legacyProjectConfigToStackParts(config);
+        const backend = parts.find(
+          (part) => part.role === "backend" && part.ecosystem === "typescript",
+        );
+        const scopedPart = parts.find(
+          (part) => part.role === field && part.ecosystem === "typescript",
+        );
+        const derived = expectNoDrift(config);
+
+        expect(derived[field as keyof ProjectConfig] ?? "none").toBe(value);
+        if (value === "none") {
+          expect(scopedPart).toBeUndefined();
+        } else {
+          expect(scopedPart?.ownerPartId).toBe(backend?.id);
+        }
+        expect(validateStackParts(parts).issues).toEqual([]);
+      }
     }
   });
 
@@ -415,6 +482,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
           elixirOrm: ELIXIR_ORM_VALUES,
           elixirApi: ELIXIR_API_VALUES,
           elixirAuth: ELIXIR_AUTH_VALUES,
+          elixirRealtime: ELIXIR_REALTIME_VALUES,
           elixirJobs: ELIXIR_JOBS_VALUES,
           elixirValidation: ELIXIR_VALIDATION_VALUES,
           elixirEmail: ELIXIR_EMAIL_VALUES,
@@ -433,6 +501,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
       "pythonValidation",
       "pythonTaskQueue",
       "elixirJobs",
+      "elixirRealtime",
       "elixirValidation",
       "elixirEmail",
       "elixirCaching",
@@ -473,6 +542,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
     };
     const parts = legacyProjectConfigToStackParts({
       ...elixirBase,
+      elixirRealtime: "presence",
       elixirJobs: "oban",
       elixirEmail: "swoosh",
       elixirCaching: "cachex",
@@ -484,17 +554,25 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     const backend = parts.find((part) => part.role === "backend");
     const extras = parts.filter((part) =>
-      ["jobQueue", "email", "caching", "observability", "testing", "deploy", "validation"].includes(
-        part.role,
-      ),
+      [
+        "realtime",
+        "jobQueue",
+        "email",
+        "caching",
+        "observability",
+        "testing",
+        "deploy",
+        "validation",
+      ].includes(part.role),
     );
-    expect(extras).toHaveLength(7);
+    expect(extras).toHaveLength(8);
     for (const part of extras) {
       expect(part.ownerPartId).toBe(backend?.id);
     }
     expect(validateStackParts(parts).issues).toEqual([]);
 
     const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+    expect(lowered.elixirRealtime).toBe("presence");
     expect(lowered.elixirJobs).toBe("oban");
     expect(lowered.elixirEmail).toBe("swoosh");
     expect(lowered.elixirDeploy).toBe("docker");
@@ -542,23 +620,27 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(reimported.map(structuralTuple).sort()).toEqual(parts.map(structuralTuple).sort());
   });
 
-  // Remaining importer gap (phase-0 inventory §1): pythonGraphql and
-  // elixirRealtime collide with the `api` role and stay flat-only until the
-  // realtime/graphql role decision lands in Batch 1.
-  it("documents the remaining importer gap for api-role collisions", () => {
+  // Remaining importer gap (phase-0 inventory §1): pythonGraphql still collides
+  // with the `api` role and stays flat-only until the GraphQL role decision
+  // lands in a later batch.
+  it("documents the remaining importer gap for the Python GraphQL api-role collision", () => {
     const pythonParts = legacyProjectConfigToStackParts({
       ecosystem: "python",
       pythonWebFramework: "django",
       pythonGraphql: "strawberry",
     });
     expect(pythonParts.filter((part) => part.role === "api")).toHaveLength(0);
+  });
 
+  it("imports Elixir realtime selections under the realtime role", () => {
     const elixirParts = legacyProjectConfigToStackParts({
       ecosystem: "elixir",
       elixirWebFramework: "phoenix-live-view",
       elixirRealtime: "channels",
     });
-    expect(elixirParts.filter((part) => part.role === "api")).toHaveLength(0);
+    const realtimeParts = elixirParts.filter((part) => part.role === "realtime");
+    expect(realtimeParts).toHaveLength(1);
+    expect(realtimeParts[0]?.toolId).toBe("channels");
   });
 
   // Documented limitation: a multi-ecosystem graph lowered to the flat config

@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "../types";
+import type { ProjectConfig, StackPartRole } from "../types";
 
 import { formatStackPartSpec } from "../types";
 import { hasGraphPart } from "./graph-summary";
@@ -65,6 +65,19 @@ function appendChangedStringFlag(
   if (value !== defaultValue) {
     flags.push(`--${flag} ${value}`);
   }
+}
+
+function appendChangedGraphStringFlag(
+  flags: string[],
+  config: ProjectConfig,
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  value: string,
+  defaultValue: string,
+) {
+  if (hasGraphPart(config, role, ecosystem)) return;
+  appendChangedStringFlag(flags, flag, value, defaultValue);
 }
 
 function appendChangedArrayFlag(
@@ -138,21 +151,93 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     hasGraphPrimaryPart(config, "frontend", "typescript") ||
     hasGraphPrimaryPart(config, "backend", "typescript")
   ) {
-    appendChangedStringFlag(flags, "payments", config.payments, "none");
-    appendChangedStringFlag(flags, "email", config.email, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "payments",
+      "typescript",
+      "payments",
+      config.payments,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "email",
+      "typescript",
+      "email",
+      config.email,
+      "none",
+    );
     appendChangedStringFlag(flags, "file-upload", config.fileUpload, "none");
     appendChangedStringFlag(flags, "effect", config.effect, "none");
-    appendChangedStringFlag(flags, "ai", config.ai, "none");
-    appendChangedStringFlag(flags, "realtime", config.realtime, "none");
-    appendChangedStringFlag(flags, "job-queue", config.jobQueue, "none");
-    appendChangedStringFlag(flags, "logging", config.logging, "none");
-    appendChangedStringFlag(flags, "observability", config.observability, "none");
-    appendChangedStringFlag(flags, "feature-flags", config.featureFlags, "none");
-    appendChangedStringFlag(flags, "caching", config.caching, "none");
+    appendChangedGraphStringFlag(flags, config, "ai", "typescript", "ai", config.ai, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "realtime",
+      "typescript",
+      "realtime",
+      config.realtime,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "jobQueue",
+      "typescript",
+      "job-queue",
+      config.jobQueue,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "logging",
+      "typescript",
+      "logging",
+      config.logging,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "observability",
+      "typescript",
+      "observability",
+      config.observability,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "featureFlags",
+      "typescript",
+      "feature-flags",
+      config.featureFlags,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "caching",
+      "typescript",
+      "caching",
+      config.caching,
+      "none",
+    );
     appendChangedStringFlag(flags, "i18n", config.i18n, "none");
-    appendChangedStringFlag(flags, "cms", config.cms, "none");
-    appendChangedStringFlag(flags, "search", config.search, "none");
-    appendChangedStringFlag(flags, "file-storage", config.fileStorage, "none");
+    appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
+    appendChangedGraphStringFlag(flags, config, "search", "typescript", "search", config.search, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "fileStorage",
+      "typescript",
+      "file-storage",
+      config.fileStorage,
+      "none",
+    );
   }
 
   if (hasGraphPrimaryPart(config, "mobile")) {
@@ -197,19 +282,81 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedArrayFlag(flags, "java-testing-libraries", config.javaTestingLibraries, ["junit5"]);
   }
   if (hasGraphPrimaryPart(config, "backend", "elixir")) {
-    appendChangedStringFlag(flags, "elixir-realtime", config.elixirRealtime, "channels");
-    appendChangedStringFlag(flags, "elixir-jobs", config.elixirJobs, "none");
-    appendChangedStringFlag(flags, "elixir-validation", config.elixirValidation, "ecto-changesets");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "realtime",
+      "elixir",
+      "elixir-realtime",
+      config.elixirRealtime,
+      "channels",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "jobQueue",
+      "elixir",
+      "elixir-jobs",
+      config.elixirJobs,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "validation",
+      "elixir",
+      "elixir-validation",
+      config.elixirValidation,
+      "ecto-changesets",
+    );
     appendChangedStringFlag(flags, "elixir-http", config.elixirHttp, "req");
     appendChangedStringFlag(flags, "elixir-json", config.elixirJson, "jason");
-    if (!hasGraphPart(config, "email", "elixir")) {
-      appendChangedStringFlag(flags, "elixir-email", config.elixirEmail, "none");
-    }
-    appendChangedStringFlag(flags, "elixir-caching", config.elixirCaching, "none");
-    appendChangedStringFlag(flags, "elixir-observability", config.elixirObservability, "telemetry");
-    appendChangedStringFlag(flags, "elixir-testing", config.elixirTesting, "ex_unit");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "email",
+      "elixir",
+      "elixir-email",
+      config.elixirEmail,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "caching",
+      "elixir",
+      "elixir-caching",
+      config.elixirCaching,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "observability",
+      "elixir",
+      "elixir-observability",
+      config.elixirObservability,
+      "telemetry",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "testing",
+      "elixir",
+      "elixir-testing",
+      config.elixirTesting,
+      "ex_unit",
+    );
     appendChangedStringFlag(flags, "elixir-quality", config.elixirQuality, "credo");
-    appendChangedStringFlag(flags, "elixir-deploy", config.elixirDeploy, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "deploy",
+      "elixir",
+      "elixir-deploy",
+      config.elixirDeploy,
+      "none",
+    );
   }
 }
 

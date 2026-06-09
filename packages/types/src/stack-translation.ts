@@ -864,21 +864,9 @@ const GRAPH_GLOBAL_FLAG_KEYS = [
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS = [
-  ["payments", "payments"],
-  ["email", "email"],
   ["fileUpload", "file-upload"],
   ["backendLibraries", "effect"],
-  ["aiSdk", "ai"],
-  ["realtime", "realtime"],
-  ["jobQueue", "job-queue"],
-  ["logging", "logging"],
-  ["observability", "observability"],
-  ["featureFlags", "feature-flags"],
-  ["caching", "caching"],
   ["i18n", "i18n"],
-  ["cms", "cms"],
-  ["search", "search"],
-  ["fileStorage", "file-storage"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
@@ -912,7 +900,6 @@ const GRAPH_JAVA_BACKEND_FLAG_KEYS = [
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [
-  ["elixirRealtime", "elixir-realtime"],
   ["elixirJobs", "elixir-jobs"],
   ["elixirValidation", "elixir-validation"],
   ["elixirHttp", "elixir-http"],
@@ -972,6 +959,126 @@ function hasGraphPrimaryPart(
   );
 }
 
+type ScopedBackendStackPartRole = Exclude<
+  StackPartRole,
+  "frontend" | "backend" | "mobile" | "database"
+>;
+type ScopedBackendStackPartField = {
+  ecosystem: Exclude<StackPartEcosystem, "universal" | "react-native">;
+  role: ScopedBackendStackPartRole;
+  value: string | undefined;
+};
+
+const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
+  ["payments", "payments"],
+  ["email", "email"],
+  ["aiSdk", "ai"],
+  ["realtime", "realtime"],
+  ["jobQueue", "jobQueue"],
+  ["logging", "logging"],
+  ["observability", "observability"],
+  ["featureFlags", "featureFlags"],
+  ["caching", "caching"],
+  ["cms", "cms"],
+  ["search", "search"],
+  ["fileStorage", "fileStorage"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedBackendStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS = [
+  ["elixirRealtime", "realtime"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedBackendStackPartRole][];
+
+const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
+  ["payments", "payments"],
+  ["email", "email"],
+  ["ai", "ai"],
+  ["realtime", "realtime"],
+  ["jobQueue", "jobQueue"],
+  ["logging", "logging"],
+  ["observability", "observability"],
+  ["featureFlags", "featureFlags"],
+  ["caching", "caching"],
+  ["cms", "cms"],
+  ["search", "search"],
+  ["fileStorage", "fileStorage"],
+] as const satisfies readonly [keyof CLIInput, ScopedBackendStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS = [
+  ["elixirRealtime", "realtime"],
+] as const satisfies readonly [keyof CLIInput, ScopedBackendStackPartRole][];
+
+function expandScopedBackendStackPartSpecs(
+  specs: readonly string[],
+  fields: readonly ScopedBackendStackPartField[],
+) {
+  const stackParts = parseStackPartSpecs(specs, "selected");
+  const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
+  const stackPartSpecSet = new Set(stackPartSpecs);
+
+  const hasPrimary = (role: StackPartRole, ecosystem: StackPartEcosystem) =>
+    stackParts.some(
+      (part) =>
+        part.role === role &&
+        part.ecosystem === ecosystem &&
+        !part.ownerPartId &&
+        part.source !== "provided",
+    );
+  const hasScoped = (role: StackPartRole, ecosystem: StackPartEcosystem) =>
+    stackParts.some(
+      (part) => part.role === role && part.ecosystem === ecosystem && part.source !== "provided",
+    );
+
+  for (const { ecosystem, role, value } of fields) {
+    if (!value || value === "none" || !hasPrimary("backend", ecosystem) || hasScoped(role, ecosystem)) {
+      continue;
+    }
+    const spec = `backend.${role}:${ecosystem}:${value}`;
+    if (!stackPartSpecSet.has(spec)) {
+      stackPartSpecs.push(spec);
+      stackPartSpecSet.add(spec);
+    }
+  }
+
+  return stackPartSpecs;
+}
+
+function getSelectionScopedBackendPartFields(
+  selection: StackSelectionInput,
+): ScopedBackendStackPartField[] {
+  return [
+    ...GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ecosystem: "typescript" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ecosystem: "elixir" as const,
+      role,
+      value: selection[key],
+    })),
+  ];
+}
+
+function getCliScopedBackendPartFields(input: CLIInput): ScopedBackendStackPartField[] {
+  const getValue = (key: keyof CLIInput) => {
+    const value = input[key];
+    return typeof value === "string" ? value : undefined;
+  };
+
+  return [
+    ...GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ecosystem: "typescript" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ecosystem: "elixir" as const,
+      role,
+      value: getValue(key),
+    })),
+  ];
+}
+
 function mapBackendToCli(backend: string) {
   return SELF_BACKENDS.has(backend) ? "self" : backend;
 }
@@ -986,7 +1093,11 @@ export function isGraphStackSelection(
 }
 
 function getGraphStackParts(selection: StackSelectionInput) {
-  const stackParts = parseStackPartSpecs(selection.stackPartSpecs, "selected");
+  const stackPartSpecs = expandScopedBackendStackPartSpecs(
+    selection.stackPartSpecs,
+    getSelectionScopedBackendPartFields(selection),
+  );
+  const stackParts = parseStackPartSpecs(stackPartSpecs, "selected");
   const validation = validateStackParts(stackParts);
   if (validation.issues.length > 0) {
     throw new Error(validation.issues.map((issue) => issue.message).join("\n"));
@@ -1082,7 +1193,8 @@ export function cliInputToProjectConfigPartial(
 }
 
 function getCliGraphStackParts(input: CLIInput): StackPart[] {
-  const stackParts = parseStackPartSpecs(input.part ?? [], "selected");
+  const inputSpecs = [...(input.part ?? [])];
+  const stackParts = parseStackPartSpecs(inputSpecs, "selected");
   const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
   const stackPartSpecSet = new Set(stackPartSpecs);
 
@@ -1140,7 +1252,10 @@ function getCliGraphStackParts(input: CLIInput): StackPart[] {
   addScopedBackendPart("elixir", "api", input.elixirApi);
   addScopedBackendPart("elixir", "auth", input.elixirAuth);
 
-  return parseStackPartSpecs(stackPartSpecs, "selected");
+  return parseStackPartSpecs(
+    expandScopedBackendStackPartSpecs(stackPartSpecs, getCliScopedBackendPartFields(input)),
+    "selected",
+  );
 }
 
 function buildProjectConfigBase(

@@ -10,7 +10,10 @@ import type {
 import {
   API_VALUES,
   AUTH_VALUES,
+  AI_VALUES,
   BACKEND_VALUES,
+  CACHING_VALUES,
+  CMS_VALUES,
   DATABASE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
@@ -24,6 +27,9 @@ import {
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
+  EMAIL_VALUES,
+  FEATURE_FLAGS_VALUES,
+  FILE_STORAGE_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
@@ -32,7 +38,11 @@ import {
   JAVA_AUTH_VALUES,
   JAVA_ORM_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
+  JOB_QUEUE_VALUES,
+  LOGGING_VALUES,
+  OBSERVABILITY_VALUES,
   ORM_VALUES,
+  PAYMENTS_VALUES,
   PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_GRAPHQL_VALUES,
@@ -40,12 +50,14 @@ import {
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  REALTIME_VALUES,
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
+  SEARCH_VALUES,
   StackPartRoleSchema,
 } from "./schemas";
 
@@ -158,15 +170,32 @@ const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
   Partial<Record<LegacyCapabilityRole, keyof ProjectConfig>>
 >;
 
-// Phase 2 Batch 0 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
-// registered ecosystem extras that round-trip through the graph. pythonGraphql
-// and elixirRealtime stay flat-only until the `api` role collision is resolved.
+const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
+  logging: "logging",
+  email: "email",
+  search: "search",
+  caching: "caching",
+  observability: "observability",
+  jobQueue: "jobQueue",
+  fileStorage: "fileStorage",
+  featureFlags: "featureFlags",
+  payments: "payments",
+  realtime: "realtime",
+  ai: "ai",
+  cms: "cms",
+} as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
+
+// Phase 2 Batch 0/1 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
+// registered backend-owned singles/extras that round-trip through the graph.
+// pythonGraphql still stays flat-only in the legacy importer until the
+// API/GraphQL role split is settled.
 const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
   rust: { caching: "rustCaching" },
   python: { validation: "pythonValidation", jobQueue: "pythonTaskQueue" },
   go: {},
   java: {},
   elixir: {
+    realtime: "elixirRealtime",
     jobQueue: "elixirJobs",
     validation: "elixirValidation",
     email: "elixirEmail",
@@ -191,6 +220,7 @@ const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
   ...Object.values(LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
     Object.values(categories),
   ),
+  ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
 ] as Array<keyof ProjectConfig>;
 
 function defineTools(
@@ -223,6 +253,18 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(ORM_VALUES, "orm", "typescript", "orm"),
   ...defineTools(API_VALUES, "api", "typescript", "api"),
   ...defineTools(AUTH_VALUES, "auth", "typescript", "auth"),
+  ...defineTools(LOGGING_VALUES, "logging", "typescript", "logging"),
+  ...defineTools(EMAIL_VALUES, "email", "typescript", "email"),
+  ...defineTools(SEARCH_VALUES, "search", "typescript", "search"),
+  ...defineTools(CACHING_VALUES, "caching", "typescript", "caching"),
+  ...defineTools(OBSERVABILITY_VALUES, "observability", "typescript", "observability"),
+  ...defineTools(JOB_QUEUE_VALUES, "jobQueue", "typescript", "jobQueue"),
+  ...defineTools(FILE_STORAGE_VALUES, "fileStorage", "typescript", "fileStorage"),
+  ...defineTools(FEATURE_FLAGS_VALUES, "featureFlags", "typescript", "featureFlags"),
+  ...defineTools(PAYMENTS_VALUES, "payments", "typescript", "payments"),
+  ...defineTools(REALTIME_VALUES, "realtime", "typescript", "realtime"),
+  ...defineTools(AI_VALUES, "ai", "typescript", "ai"),
+  ...defineTools(CMS_VALUES, "cms", "typescript", "cms"),
   ...defineTools(AUTH_VALUES, "auth", "react-native", "auth"),
   ...defineTools(RUST_WEB_FRAMEWORK_VALUES, "backend", "rust", "rustWebFramework"),
   ...defineTools(RUST_FRONTEND_VALUES, "frontend", "rust", "rustFrontend"),
@@ -248,7 +290,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
   ...defineTools(ELIXIR_API_VALUES, "api", "elixir", "elixirApi"),
-  ...defineTools(ELIXIR_REALTIME_VALUES, "api", "elixir", "elixirRealtime"),
+  ...defineTools(ELIXIR_REALTIME_VALUES, "realtime", "elixir", "elixirRealtime"),
   ...defineTools(ELIXIR_JOBS_VALUES, "jobQueue", "elixir", "elixirJobs"),
   ...defineTools(ELIXIR_VALIDATION_VALUES, "validation", "elixir", "elixirValidation"),
   ...defineTools(ELIXIR_EMAIL_VALUES, "email", "elixir", "elixirEmail"),
@@ -712,6 +754,21 @@ export function legacyProjectConfigToStackParts(
       source,
       capabilityOwner,
     );
+
+    if (backendPart?.ecosystem === "typescript") {
+      for (const [role, category] of Object.entries(
+        LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES,
+      ) as Array<[StackPartRole, keyof ProjectConfig]>) {
+        addLegacyPart(
+          parts,
+          role,
+          "typescript",
+          config[category] as string | undefined,
+          source,
+          backendPart.id,
+        );
+      }
+    }
   }
   if (isLegacyBackendEcosystem(config.ecosystem)) {
     for (const [role, category] of Object.entries(
@@ -769,6 +826,18 @@ export function stackPartsToLegacyProjectConfigPartial(
     api: "none",
     auth: "none",
   };
+  const hasTypeScriptBackend = parts.some(
+    (part) =>
+      part.role === "backend" &&
+      part.ecosystem === "typescript" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
+  if (hasTypeScriptBackend) {
+    for (const category of Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES)) {
+      (config as Record<string, unknown>)[category] = "none";
+    }
+  }
 
   for (const part of parts) {
     if (part.source === "provided") continue;
@@ -909,7 +978,7 @@ export function compareLegacyConfigToStackParts(
 ): StackGraphDiagnostic[] {
   const derived = stackPartsToLegacyProjectConfigPartial(stackParts);
   const diagnostics: StackGraphDiagnostic[] = [];
-  for (const key of [
+  const comparableLegacyKeys: Array<keyof ProjectConfig> = [
     "ecosystem",
     "frontend",
     "backend",
@@ -922,7 +991,12 @@ export function compareLegacyConfigToStackParts(
     "goWebFramework",
     "javaWebFramework",
     "elixirWebFramework",
-  ] as const) {
+    ...Object.values(LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES),
+    ...Object.values(LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
+      Object.values(categories),
+    ),
+  ];
+  for (const key of comparableLegacyKeys) {
     const current = config[key];
     const next = derived[key];
     if (current === undefined || next === undefined) continue;

@@ -469,6 +469,40 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--backend");
   });
 
+  it("reproduces graph-owned TypeScript backend singles as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.logging:typescript:pino",
+      "backend.payments:typescript:stripe",
+      "backend.ai:typescript:langgraph",
+      "backend.realtime:typescript:socket-io",
+      "backend.fileStorage:typescript:s3",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        logging: "pino",
+        payments: "stripe",
+        ai: "langgraph",
+        realtime: "socket-io",
+        fileStorage: "s3",
+      }),
+    );
+
+    expect(command).toContain("--part backend.logging:typescript:pino");
+    expect(command).toContain("--part backend.payments:typescript:stripe");
+    expect(command).toContain("--part backend.ai:typescript:langgraph");
+    expect(command).toContain("--part backend.realtime:typescript:socket-io");
+    expect(command).toContain("--part backend.fileStorage:typescript:s3");
+    expect(command).not.toContain("--logging pino");
+    expect(command).not.toContain("--payments stripe");
+    expect(command).not.toContain("--ai langgraph");
+    expect(command).not.toContain("--realtime socket-io");
+    expect(command).not.toContain("--file-storage s3");
+  });
+
   it("preserves Astro integration when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:astro",

@@ -456,7 +456,9 @@ export async function gatherMultiEcosystemConfig(
     if (elixirOrm !== "none") stackPartSpecs.push(`backend.orm:elixir:${elixirOrm}`);
     if (elixirAuth !== "none") stackPartSpecs.push(`backend.auth:elixir:${elixirAuth}`);
     if (elixirApi !== "none") stackPartSpecs.push(`backend.api:elixir:${elixirApi}`);
-    if (elixirRealtime !== "none") stackPartSpecs.push(`backend.api:elixir:${elixirRealtime}`);
+    if (elixirRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:elixir:${elixirRealtime}`);
+    }
     if (elixirJobs !== "none") stackPartSpecs.push(`backend.jobQueue:elixir:${elixirJobs}`);
     if (elixirEmail !== "none") stackPartSpecs.push(`backend.email:elixir:${elixirEmail}`);
     if (elixirCaching !== "none") stackPartSpecs.push(`backend.caching:elixir:${elixirCaching}`);

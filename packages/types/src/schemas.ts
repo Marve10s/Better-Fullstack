@@ -19,6 +19,7 @@ export const StackPartRoleSchema = z
     "auth",
     "runtime",
     "deploy",
+    "realtime",
     "caching",
     "observability",
     "email",

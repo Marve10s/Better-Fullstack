@@ -116,10 +116,20 @@ describe("stack selection translation", () => {
   it("promotes explicit CLI graph feature flags into scoped stack parts", () => {
     const config = cliInputToProjectConfigPartial(
       {
-        part: ["frontend:typescript:react-vite", "backend:java:spring-boot"],
+        part: [
+          "frontend:typescript:react-vite",
+          "backend:typescript:hono",
+          "backend:java:spring-boot",
+          "backend:elixir:phoenix",
+        ],
         database: "postgres",
+        logging: "pino",
+        email: "resend",
+        ai: "langgraph",
+        realtime: "socket-io",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
+        elixirRealtime: "presence",
       },
       "java-graph",
     );
@@ -130,13 +140,25 @@ describe("stack selection translation", () => {
     });
 
     expect(config.database).toBe("postgres");
+    expect(config.logging).toBe("pino");
+    expect(config.email).toBe("resend");
+    expect(config.ai).toBe("langgraph");
+    expect(config.realtime).toBe("socket-io");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
+    expect(config.elixirRealtime).toBe("presence");
     expect(specs).toContain("frontend:typescript:react-vite");
+    expect(specs).toContain("backend:typescript:hono");
     expect(specs).toContain("backend:java:spring-boot");
+    expect(specs).toContain("backend:elixir:phoenix");
     expect(specs).toContain("database:universal:postgres");
+    expect(specs).toContain("backend.logging:typescript:pino");
+    expect(specs).toContain("backend.email:typescript:resend");
+    expect(specs).toContain("backend.ai:typescript:langgraph");
+    expect(specs).toContain("backend.realtime:typescript:socket-io");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");
+    expect(specs).toContain("backend.realtime:elixir:presence");
   });
 
   it("emits changed ecosystem-specific graph flags for multi-ecosystem selections", () => {
@@ -157,10 +179,39 @@ describe("stack selection translation", () => {
 
     expect(command).toContain("--part frontend:typescript:next");
     expect(command).toContain("--part backend:elixir:phoenix");
-    expect(command).toContain("--elixir-realtime presence");
+    expect(command).toContain("--part backend.realtime:elixir:presence");
+    expect(command).not.toContain("--elixir-realtime presence");
     expect(command).toContain("--elixir-deploy docker");
     expect(command).toContain("--addons turborepo docker-compose");
     expect(command).toContain("--examples ai");
+  });
+
+  it("emits changed TypeScript backend singles as scoped graph parts", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      projectName: "typed-backend-graph-app",
+      stackPartSpecs: ["frontend:typescript:next", "backend:typescript:hono"],
+      logging: "pino",
+      payments: "stripe",
+      aiSdk: "langgraph",
+      realtime: "socket-io",
+      jobQueue: "inngest",
+      fileStorage: "s3",
+    });
+
+    expect(command).toContain("--part backend.logging:typescript:pino");
+    expect(command).toContain("--part backend.payments:typescript:stripe");
+    expect(command).toContain("--part backend.ai:typescript:langgraph");
+    expect(command).toContain("--part backend.realtime:typescript:socket-io");
+    expect(command).toContain("--part backend.jobQueue:typescript:inngest");
+    expect(command).toContain("--part backend.fileStorage:typescript:s3");
+    expect(command).not.toContain("--logging pino");
+    expect(command).not.toContain("--payments stripe");
+    expect(command).not.toContain("--ai langgraph");
+    expect(command).not.toContain("--realtime socket-io");
+    expect(command).not.toContain("--job-queue inngest");
+    expect(command).not.toContain("--file-storage s3");
   });
 
   it("emits changed TypeScript frontend graph sub-flags", () => {
