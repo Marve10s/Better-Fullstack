@@ -10,6 +10,35 @@ import {
   validateStackParts,
 } from "../src/stack-graph";
 import { createCliDefaultProjectConfigBase } from "../src/defaults";
+import {
+  API_VALUES,
+  AUTH_VALUES,
+  BACKEND_VALUES,
+  DATABASE_VALUES,
+  ELIXIR_API_VALUES,
+  ELIXIR_AUTH_VALUES,
+  ELIXIR_ORM_VALUES,
+  ELIXIR_WEB_FRAMEWORK_VALUES,
+  FRONTEND_VALUES,
+  GO_API_VALUES,
+  GO_AUTH_VALUES,
+  GO_ORM_VALUES,
+  GO_WEB_FRAMEWORK_VALUES,
+  JAVA_AUTH_VALUES,
+  JAVA_ORM_VALUES,
+  JAVA_WEB_FRAMEWORK_VALUES,
+  ORM_VALUES,
+  PYTHON_API_VALUES,
+  PYTHON_AUTH_VALUES,
+  PYTHON_ORM_VALUES,
+  PYTHON_WEB_FRAMEWORK_VALUES,
+  RUST_API_VALUES,
+  RUST_AUTH_VALUES,
+  RUST_FRONTEND_VALUES,
+  RUST_ORM_VALUES,
+  RUST_WEB_FRAMEWORK_VALUES,
+} from "../src/schemas";
+import type { ProjectConfig } from "../src/types";
 
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
@@ -256,5 +285,195 @@ describe("stack graph", () => {
     expect(diagnostics).toEqual([
       expect.objectContaining({ code: "LEGACY_CONFIG_MISMATCH", path: "frontend" }),
     ]);
+  });
+});
+
+function expectNoDrift(config: Partial<ProjectConfig>) {
+  const parts = legacyProjectConfigToStackParts(config);
+  const diagnostics = compareLegacyConfigToStackParts(config, parts);
+  expect(diagnostics).toEqual([]);
+  return stackPartsToLegacyProjectConfigPartial(parts);
+}
+
+function structuralTuple(part: { role: string; ecosystem: string; toolId: string }) {
+  return `${part.role}:${part.ecosystem}:${part.toolId}`;
+}
+
+// Phase 0 of docs/plans/planned/single-source-of-truth-stack-graph.md: prove
+// flat -> graph -> flat is lossless for every structural option value, by
+// asserting the runtime drift guard never fires across the enumerated space.
+describe("stack graph structural round-trip (phase 0)", () => {
+  const NATIVE_FRONTENDS = ["native-bare", "native-uniwind", "native-unistyles"] as const;
+  const WEB_FRONTENDS = FRONTEND_VALUES.filter(
+    (value) => value !== "none" && !NATIVE_FRONTENDS.includes(value as never),
+  );
+
+  const TS_BASE: Partial<ProjectConfig> = {
+    ecosystem: "typescript",
+    frontend: ["tanstack-router"],
+    backend: "hono",
+    database: "sqlite",
+    orm: "drizzle",
+    api: "trpc",
+    auth: "better-auth",
+  };
+
+  it("round-trips every TypeScript web frontend without drift", () => {
+    for (const frontend of WEB_FRONTENDS) {
+      const derived = expectNoDrift({ ...TS_BASE, frontend: [frontend] });
+      expect(derived.frontend).toEqual([frontend]);
+    }
+  });
+
+  it("round-trips every TypeScript backend, database, orm, api, and auth value", () => {
+    for (const backend of BACKEND_VALUES) {
+      expectNoDrift({ ...TS_BASE, backend });
+    }
+    for (const database of DATABASE_VALUES) {
+      expectNoDrift({ ...TS_BASE, database });
+    }
+    for (const orm of ORM_VALUES) {
+      expectNoDrift({ ...TS_BASE, orm });
+    }
+    for (const api of API_VALUES) {
+      expectNoDrift({ ...TS_BASE, api });
+    }
+    for (const auth of AUTH_VALUES) {
+      expectNoDrift({ ...TS_BASE, auth });
+    }
+  });
+
+  it("round-trips every native mobile frontend without drift", () => {
+    for (const frontend of NATIVE_FRONTENDS) {
+      const derived = expectNoDrift({
+        ecosystem: "react-native",
+        frontend: [frontend],
+        backend: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "better-auth",
+      });
+      expect(derived.frontend).toEqual([frontend]);
+      expect(derived.ecosystem).toBe("react-native");
+    }
+  });
+
+  it("round-trips every legacy-ecosystem backend and capability value", () => {
+    const cases = [
+      {
+        ecosystem: "rust",
+        backendField: "rustWebFramework",
+        backends: RUST_WEB_FRAMEWORK_VALUES,
+        capabilities: { rustOrm: RUST_ORM_VALUES, rustApi: RUST_API_VALUES, rustAuth: RUST_AUTH_VALUES },
+      },
+      {
+        ecosystem: "python",
+        backendField: "pythonWebFramework",
+        backends: PYTHON_WEB_FRAMEWORK_VALUES,
+        capabilities: {
+          pythonOrm: PYTHON_ORM_VALUES,
+          pythonApi: PYTHON_API_VALUES,
+          pythonAuth: PYTHON_AUTH_VALUES,
+        },
+      },
+      {
+        ecosystem: "go",
+        backendField: "goWebFramework",
+        backends: GO_WEB_FRAMEWORK_VALUES,
+        capabilities: { goOrm: GO_ORM_VALUES, goApi: GO_API_VALUES, goAuth: GO_AUTH_VALUES },
+      },
+      {
+        ecosystem: "java",
+        backendField: "javaWebFramework",
+        backends: JAVA_WEB_FRAMEWORK_VALUES,
+        capabilities: { javaOrm: JAVA_ORM_VALUES, javaAuth: JAVA_AUTH_VALUES },
+      },
+      {
+        ecosystem: "elixir",
+        backendField: "elixirWebFramework",
+        backends: ELIXIR_WEB_FRAMEWORK_VALUES,
+        capabilities: {
+          elixirOrm: ELIXIR_ORM_VALUES,
+          elixirApi: ELIXIR_API_VALUES,
+          elixirAuth: ELIXIR_AUTH_VALUES,
+        },
+      },
+    ] as const;
+
+    for (const { ecosystem, backendField, backends, capabilities } of cases) {
+      const anchor = backends.find((value) => value !== "none");
+      for (const backend of backends.filter((value) => value !== "none")) {
+        const derived = expectNoDrift({ ecosystem, [backendField]: backend });
+        expect(derived[backendField]).toBe(backend);
+        expect(derived.ecosystem).toBe(ecosystem);
+      }
+      for (const [field, values] of Object.entries(capabilities)) {
+        for (const value of values) {
+          const derived = expectNoDrift({
+            ecosystem,
+            [backendField]: anchor,
+            [field]: value,
+          });
+          expect(derived[field as keyof ProjectConfig] ?? "none").toBe(value);
+        }
+      }
+    }
+  });
+
+  it("round-trips the Rust WASM frontend selections", () => {
+    for (const rustFrontend of RUST_FRONTEND_VALUES.filter((value) => value !== "none")) {
+      const derived = expectNoDrift({
+        ecosystem: "rust",
+        rustWebFramework: "axum",
+        rustFrontend,
+      });
+      expect(derived.rustFrontend).toBe(rustFrontend);
+    }
+  });
+
+  it("keeps single-ecosystem structural graphs stable through flat lowering and re-import", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "database:universal:postgres",
+      "backend.orm:typescript:drizzle",
+      "backend.api:typescript:trpc",
+      "backend.auth:typescript:better-auth",
+    ]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+    const reimported = legacyProjectConfigToStackParts(lowered);
+
+    expect(reimported.map(structuralTuple).sort()).toEqual(parts.map(structuralTuple).sort());
+  });
+
+  // Documented gap (phase-0 inventory §1): these categories are registered in
+  // STACK_TOOL_DEFINITIONS but legacyProjectConfigToStackParts never imports
+  // them. Phase 2 Batch 0 closes this gap and must flip this expectation.
+  it("documents the importer gap for registered ecosystem extras", () => {
+    const parts = legacyProjectConfigToStackParts({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirEmail: "swoosh",
+      elixirCaching: "cachex",
+    });
+    expect(parts.some((part) => part.role === "email")).toBe(false);
+    expect(parts.some((part) => part.role === "caching")).toBe(false);
+  });
+
+  // Documented limitation: a multi-ecosystem graph lowered to the flat config
+  // cannot be re-imported losslessly because the importer keys off the single
+  // `ecosystem` field. This is the authority flip motivation in the design doc.
+  it("documents that multi-ecosystem graphs do not survive flat re-import", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:go:gin",
+      "backend.orm:go:gorm",
+    ]);
+    const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+    expect(lowered.goWebFramework).toBe("gin");
+
+    const reimported = legacyProjectConfigToStackParts(lowered);
+    expect(reimported.some((part) => part.role === "backend")).toBe(false);
   });
 });

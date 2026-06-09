@@ -8,6 +8,7 @@ Task planning documents are organized by state:
 ## Planned
 
 - `docs/plans/planned/single-source-of-truth-stack-graph.md` - active design: make the stack graph the single source of truth (Solo + Multi parity); Phase 1 foundation landed in PR #209, Phases 2–4 remain
+- `docs/plans/planned/stack-graph-phase-0-library-inventory.md` - Phase 0 deliverable: full library-field inventory, role gaps, and batched Phase 2 execution plan
 - `docs/plans/planned/ecosystem-expansion-backlog.md` - master backlog index with shipped-vs-remaining status notes
 - `docs/plans/planned/typescript-category-expansion.md` - expand existing TypeScript categories
 - `docs/plans/planned/typescript-new-categories.md` - add new TypeScript categories
