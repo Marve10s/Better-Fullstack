@@ -25,6 +25,10 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 `bfs_plan_project` is dry-run only. `bfs_create_project` writes a new project to disk. `bfs_add_feature` mutates an existing project. MCP project creation and feature addition do not install dependencies.
 </Callout>
 
+<Callout kind="info" title="Graph metadata">
+Project planning, creation, and addition tools include `graphSummary`, `effectiveStack`, and `stackPartSpecs` so agents can inspect the same graph-derived stack view that `bts.jsonc` persists.
+</Callout>
+
 ## Tool reference
 
 ### `bfs_get_guidance`
@@ -92,7 +96,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 | Writes files | No. |
 | Required inputs | None, but `projectName` and `ecosystem` are recommended. |
 | Optional inputs | Full project stack selections. |
-| Output | JSON success flag plus generated file/directory summary. |
+| Output | JSON success flag plus generated file/directory summary, `graphSummary`, `effectiveStack`, and `stackPartSpecs`. |
 
 ```json
 {
@@ -115,7 +119,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 | Writes files | Yes, creates the project directory and generated files. |
 | Required inputs | `projectName`. |
 | Optional inputs | Full project stack selections. |
-| Output | JSON success flag, project directory, file count, addon warnings, and install command guidance. |
+| Output | JSON success flag, project directory, file count, graph metadata, addon warnings, and install command guidance. |
 
 ```json
 {
@@ -136,7 +140,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 | Writes files | No. |
 | Required inputs | `projectDir`. |
 | Optional inputs | `addons`, `webDeploy`, `serverDeploy`. |
-| Output | Existing config summary, proposed additions, already-present addons, and compatibility warnings. |
+| Output | Existing config summary, proposed additions, graph metadata for both, already-present addons, and compatibility warnings. |
 
 ```json
 {
@@ -154,7 +158,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 | Writes files | Yes, mutates the existing project. |
 | Required inputs | `projectDir`. |
 | Optional inputs | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
-| Output | JSON result from the add handler, including changed files and install guidance when available. |
+| Output | JSON result from the add handler, graph metadata after the update, and install guidance when available. |
 
 ```json
 {

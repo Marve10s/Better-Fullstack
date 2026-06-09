@@ -10,6 +10,7 @@ import {
   AstroIntegrationSchema,
   AuthSchema,
   BackendSchema,
+  type BetterTStackConfig,
   CachingSchema,
   CMSSchema,
   type CompatibilityInput,
@@ -38,6 +39,7 @@ import {
   FeatureFlagsSchema,
   FileStorageSchema,
   FileUploadSchema,
+  formatStackPartSpec,
   FormsSchema,
   FrontendSchema,
   MobileDeepLinkingSchema,
@@ -61,6 +63,7 @@ import {
   JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
+  legacyProjectConfigToStackParts,
   LoggingSchema,
   ObservabilitySchema,
   ORMSchema,
@@ -104,8 +107,9 @@ import {
 } from "@better-fullstack/types";
 import z from "zod";
 
-import { readBtsConfig, writeBtsConfig } from "./utils/bts-config";
+import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
+import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
@@ -631,6 +635,30 @@ function summarizeTree(tree: { fileCount: number; directoryCount: number; root: 
   return { fileCount: tree.fileCount, directoryCount: tree.directoryCount, files: paths };
 }
 
+type McpGraphPreview = {
+  graphSummary?: string;
+  effectiveStack?: Record<string, string>;
+  stackPartSpecs: string[];
+};
+
+export function getMcpGraphPreview(
+  config: Partial<ProjectConfig> | BetterTStackConfig,
+): McpGraphPreview {
+  const stackParts = config.stackParts?.length
+    ? config.stackParts
+    : legacyProjectConfigToStackParts(config);
+  const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : undefined;
+  const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
+  const stackPartSpecs = stackParts
+    .filter((part) => part.source !== "provided")
+    .map((part) => formatStackPartSpec(part, stackParts));
+
+  return {
+    ...(graphSummary ? { graphSummary, effectiveStack } : {}),
+    stackPartSpecs,
+  };
+}
+
 const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 
 ## Backend Constraints
@@ -963,8 +991,9 @@ export async function startMcpServer() {
 
         if (result.success && result.tree) {
           const summary = summarizeTree(result.tree);
+          const graphPreview = getMcpGraphPreview(config);
           return {
-            content: [{ type: "text", text: JSON.stringify({ success: true, ...summary }, null, 2) }],
+            content: [{ type: "text", text: JSON.stringify({ success: true, ...summary, ...graphPreview }, null, 2) }],
           };
         }
         return {
@@ -1008,6 +1037,7 @@ export async function startMcpServer() {
         await writeTreeToFilesystem(result.tree, projectDir);
 
         await writeBtsConfig(config);
+        const graphPreview = getMcpGraphPreview(config);
 
         let addonWarnings: string[] = [];
         if (config.addons.length > 0 && config.addons[0] !== "none") {
@@ -1030,6 +1060,7 @@ export async function startMcpServer() {
               success: true,
               projectDirectory: projectDir,
               fileCount: result.tree.fileCount,
+              ...graphPreview,
               ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
               message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
             }, null, 2),
@@ -1068,6 +1099,13 @@ export async function startMcpServer() {
         const newAddons = (addons ?? []).filter((a) => a !== "none" && !existingAddons.has(a));
 
         const mergedAddons = [...new Set([...(config.addons ?? []), ...newAddons])];
+        const updatePreview = previewBtsConfigUpdate(config, {
+          addons: mergedAddons,
+          webDeploy: webDeploy ?? config.webDeploy,
+          serverDeploy: serverDeploy ?? config.serverDeploy,
+        });
+        const existingGraphPreview = getMcpGraphPreview(config);
+        const proposedGraphPreview = getMcpGraphPreview(updatePreview);
         const compatInput = buildCompatibilityInput({
           ...config,
           addons: mergedAddons,
@@ -1089,11 +1127,17 @@ export async function startMcpServer() {
                 frontend: config.frontend,
                 backend: config.backend,
                 addons: config.addons,
+                graphSummary: existingGraphPreview.graphSummary,
+                effectiveStack: existingGraphPreview.effectiveStack,
+                stackPartSpecs: existingGraphPreview.stackPartSpecs,
               },
               proposedAdditions: {
                 newAddons,
                 webDeploy: webDeploy ?? null,
                 serverDeploy: serverDeploy ?? null,
+                graphSummary: proposedGraphPreview.graphSummary,
+                effectiveStack: proposedGraphPreview.effectiveStack,
+                stackPartSpecs: proposedGraphPreview.stackPartSpecs,
               },
               alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
               ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
@@ -1136,6 +1180,7 @@ export async function startMcpServer() {
         const result = await add(addInput);
         if (result?.success) {
           const existingConfig = await readBtsConfig(safePath);
+          const graphPreview = existingConfig ? getMcpGraphPreview(existingConfig) : undefined;
           const ecosystem = existingConfig?.ecosystem ?? "typescript";
           const dirName = safePath.split("/").pop() ?? "project";
           const installCmd = getInstallCommand(
@@ -1152,6 +1197,7 @@ export async function startMcpServer() {
                 success: true,
                 addedAddons: result.addedAddons,
                 projectDir: result.projectDir,
+                ...graphPreview,
                 message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
               }, null, 2),
             }],

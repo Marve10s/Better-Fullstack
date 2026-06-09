@@ -317,6 +317,25 @@ function buildBtsConfigForPersistence(
   };
 }
 
+export function previewBtsConfigUpdate(
+  currentConfig: BetterTStackConfig,
+  updates: Partial<Pick<BetterTStackConfig, "addons" | "webDeploy" | "serverDeploy">>,
+) {
+  const updatedStackParts = syncUpdatedStackParts(currentConfig.stackParts, updates);
+
+  return buildBtsConfigForPersistence(
+    {
+      ...currentConfig,
+      ...updates,
+      ...(updatedStackParts ? { stackParts: updatedStackParts } : {}),
+    } as unknown as ProjectConfig,
+    {
+      version: currentConfig.version,
+      createdAt: currentConfig.createdAt,
+    },
+  );
+}
+
 export async function writeBtsConfig(projectConfig: ProjectConfig) {
   const btsConfig = buildBtsConfigForPersistence(projectConfig);
   const baseContent = {
@@ -495,24 +514,12 @@ export async function updateBtsConfig(
     }) as BetterTStackConfig;
 
     let modifiedContent = configContent;
-    const updatedStackParts = errors.length === 0
-      ? syncUpdatedStackParts(currentConfig.stackParts, updates)
+    const nextConfig = errors.length === 0
+      ? previewBtsConfigUpdate(currentConfig, updates)
       : undefined;
-    const persistedUpdates = updatedStackParts
+    const persistedUpdates = nextConfig
       ? Object.fromEntries(
-          Object.entries(
-            buildBtsConfigForPersistence(
-              {
-                ...currentConfig,
-                ...updates,
-                stackParts: updatedStackParts,
-              } as unknown as ProjectConfig,
-              {
-                version: currentConfig.version,
-                createdAt: currentConfig.createdAt,
-              },
-            ),
-          ).filter(([key]) => key !== "version" && key !== "createdAt"),
+          Object.entries(nextConfig).filter(([key]) => key !== "version" && key !== "createdAt"),
         )
       : updates;
 
