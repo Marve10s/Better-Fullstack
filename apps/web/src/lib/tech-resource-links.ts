@@ -712,6 +712,9 @@ const BASE_LINKS: LinkMap = {
   },
   skills: { docsUrl: "https://www.npmjs.com/package/skills" },
   msw: { docsUrl: "https://mswjs.io/docs", githubUrl: "https://github.com/mswjs/msw" },
+  "backend-utils": {
+    docsUrl: "https://github.com/Marve10s/Better-Fullstack/issues/208",
+  },
   storybook: {
     docsUrl: "https://storybook.js.org/docs",
     githubUrl: "https://github.com/storybookjs/storybook",

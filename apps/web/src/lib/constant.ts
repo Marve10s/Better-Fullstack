@@ -2283,6 +2283,14 @@ export const TECH_OPTIONS: Record<
       color: "from-sky-500 to-blue-600",
       default: false,
     },
+    {
+      id: "backend-utils",
+      name: "Backend Utils",
+      description: "asyncHandler, ApiResponse & global error handler for your server",
+      icon: "",
+      color: "from-slate-500 to-slate-700",
+      default: false,
+    },
   ],
   examples: [
     {

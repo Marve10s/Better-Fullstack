@@ -561,6 +561,7 @@ const APP_PLATFORM_VALUES = [
   "tanstack-virtual",
   "tanstack-db",
   "tanstack-pacer",
+  "backend-utils",
   "docker-compose",
 ] as const satisfies readonly string[];
 

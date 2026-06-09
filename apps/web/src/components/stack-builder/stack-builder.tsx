@@ -179,7 +179,7 @@ const APP_PLATFORM_OPTION_GROUPS = [
   },
   {
     heading: "Integrations",
-    ids: ["msw", "storybook"],
+    ids: ["msw", "storybook", "backend-utils"],
   },
   {
     heading: "TanStack",

@@ -2057,6 +2057,14 @@ export const getDisabledReason = (
         return "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres";
       }
     }
+    if (optionId === "backend-utils") {
+      if (currentStack.ecosystem !== "typescript") {
+        return "Backend Utils requires a TypeScript server stack";
+      }
+      if (!isBackendUtilsCompatibleBackend(currentStack.backend)) {
+        return "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend";
+      }
+    }
     if (optionId === "tanstack-query" && currentStack.api !== "none") {
       return "TanStack Query is already included via your API layer";
     }
@@ -2928,9 +2936,25 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "astro",
     "redwood",
   ],
+  "backend-utils": [],
   "docker-compose": [],
   none: [],
 };
+
+export const BACKEND_UTILS_COMPATIBLE_BACKENDS = [
+  "hono",
+  "express",
+  "fastify",
+  "elysia",
+  "fets",
+  "nestjs",
+] as const satisfies readonly Backend[];
+
+export function isBackendUtilsCompatibleBackend(backend: string | undefined): boolean {
+  return (
+    backend !== undefined && (BACKEND_UTILS_COMPATIBLE_BACKENDS as readonly string[]).includes(backend)
+  );
+}
 
 export function isWebFrontend(value: Frontend) {
   return WEB_FRAMEWORKS.includes(value);

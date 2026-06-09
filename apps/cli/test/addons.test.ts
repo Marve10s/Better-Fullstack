@@ -2297,3 +2297,107 @@ describe("Addon Configurations", () => {
     });
   });
 });
+
+describe("Backend Utils Addon", () => {
+  const supportedBackends: Array<{
+    backend: TestConfig["backend"];
+    runtime: TestConfig["runtime"];
+    errorHandlerMarker: string;
+  }> = [
+    { backend: "hono", runtime: "bun", errorHandlerMarker: "HTTPException" },
+    { backend: "express", runtime: "node", errorHandlerMarker: "headersSent" },
+    { backend: "fastify", runtime: "node", errorHandlerMarker: "setErrorHandler" },
+    { backend: "elysia", runtime: "bun", errorHandlerMarker: "onError" },
+    { backend: "fets", runtime: "bun", errorHandlerMarker: "globalThis.Response" },
+    { backend: "nestjs", runtime: "node", errorHandlerMarker: "GlobalExceptionFilter" },
+  ];
+
+  for (const { backend, runtime, errorHandlerMarker } of supportedBackends) {
+    it(
+      `generates framework-aligned utils for ${backend}`,
+      async () => {
+        const result = await runTRPCTest({
+          projectName: `backend-utils-${backend}`,
+          addons: ["backend-utils"],
+          frontend: ["none"],
+          backend,
+          runtime,
+          database: "none",
+          orm: "none",
+          auth: "none",
+          api: "none",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const utilsDir = join(result.projectDir!, "apps", "server", "src", "utils");
+        expect(existsSync(join(utilsDir, "api-response.ts"))).toBe(true);
+        expect(existsSync(join(utilsDir, "error-handler.ts"))).toBe(true);
+
+        const apiResponse = readFileSync(join(utilsDir, "api-response.ts"), "utf8");
+        expect(apiResponse).toContain("export class ApiResponse");
+        expect(apiResponse).toContain("export class ApiError");
+
+        const errorHandler = readFileSync(join(utilsDir, "error-handler.ts"), "utf8");
+        expect(errorHandler).toContain(errorHandlerMarker);
+
+        const asyncHandlerPath = join(utilsDir, "async-handler.ts");
+        if (backend === "express") {
+          expect(existsSync(asyncHandlerPath)).toBe(true);
+          expect(readFileSync(asyncHandlerPath, "utf8")).toContain("export function asyncHandler");
+        } else {
+          expect(existsSync(asyncHandlerPath)).toBe(false);
+        }
+      },
+      { timeout: 30_000 },
+    );
+  }
+
+  it("rejects backend-utils without a server backend", async () => {
+    const result = await runTRPCTest({
+      projectName: "backend-utils-no-backend",
+      addons: ["backend-utils"],
+      frontend: ["tanstack-router"],
+      backend: "none",
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      api: "none",
+      examples: ["none"],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      expectError: true,
+    });
+
+    expectError(result, "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend");
+  });
+
+  it("rejects backend-utils for unsupported backends", async () => {
+    const result = await runTRPCTest({
+      projectName: "backend-utils-nitro-fail",
+      addons: ["backend-utils"],
+      frontend: ["tanstack-router"],
+      backend: "nitro",
+      runtime: "node",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      api: "none",
+      examples: ["none"],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      expectError: true,
+    });
+
+    expectError(result, "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend");
+  });
+});

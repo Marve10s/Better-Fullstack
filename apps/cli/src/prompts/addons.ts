@@ -114,6 +114,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "TanStack Pacer";
       hint = "Debounce, throttle, rate-limit & queue utilities (Beta)";
       break;
+    case "backend-utils":
+      label = "Backend Utils";
+      hint = "asyncHandler, ApiResponse & global error handler for your server";
+      break;
     case "docker-compose":
       label = "Docker Compose";
       hint = "Containerize your app for deployment";
@@ -130,7 +134,7 @@ const ADDON_GROUPS: Record<string, Addons[]> = {
   Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
   Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
-  Integrations: ["msw", "storybook"],
+  Integrations: ["msw", "storybook", "backend-utils"],
   "AI Agents": ["mcp", "skills"],
   "Data Fetching": ["swr"],
   TanStack: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],

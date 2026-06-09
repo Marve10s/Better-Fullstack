@@ -7,6 +7,7 @@ import {
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
+  isBackendUtilsCompatibleBackend,
   isExampleAIAllowed as isExampleAIAllowedShared,
   isExampleChatSdkAllowed as isExampleChatSdkAllowedShared,
   isFrontendAllowedWithBackend as isFrontendAllowedWithBackendShared,
@@ -454,6 +455,22 @@ export function validateAddonCompatibility(
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
+
+  // Backend Utils generates framework-specific server helpers.
+  if (addon === "backend-utils") {
+    if (ecosystem !== undefined && ecosystem !== "typescript") {
+      return {
+        isCompatible: false,
+        reason: "Backend Utils requires a TypeScript server stack",
+      };
+    }
+    if (backend !== undefined && !isBackendUtilsCompatibleBackend(backend)) {
+      return {
+        isCompatible: false,
+        reason: "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend",
+      };
+    }
+  }
 
   // Docker Compose targets containerized/self-hosted stacks only.
   if (addon === "docker-compose") {

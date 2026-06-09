@@ -1,0 +1,195 @@
+{{#if (eq backend "hono")}}
+import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
+
+import { ApiError, ApiResponse } from "./api-response";
+
+/**
+ * Global error handler aligned with Hono's lifecycle. Wire it up in
+ * `src/index.ts`:
+ *
+ *   import { errorHandler } from "./utils/error-handler";
+ *   app.onError(errorHandler);
+ */
+export function errorHandler(err: Error, c: Context): Response {
+	if (err instanceof ApiError) {
+		return c.json(ApiResponse.failure(err.status, err.message, err.details), err.status as 500);
+	}
+	if (err instanceof HTTPException) {
+		return c.json(ApiResponse.failure(err.status, err.message), err.status as 500);
+	}
+	console.error("Unhandled error:", err);
+	return c.json(ApiResponse.internal(), 500);
+}
+{{/if}}
+{{#if (eq backend "express")}}
+import type { NextFunction, Request, Response } from "express";
+
+import { ApiError, ApiResponse } from "./api-response";
+
+/**
+ * Global error-handling middleware aligned with Express's lifecycle.
+ * Register it AFTER all routes in `src/index.ts`:
+ *
+ *   import { errorHandler } from "./utils/error-handler";
+ *   app.use(errorHandler);
+ */
+export function errorHandler(
+	err: unknown,
+	_req: Request,
+	res: Response,
+	next: NextFunction,
+): void {
+	if (res.headersSent) {
+		next(err);
+		return;
+	}
+	if (err instanceof ApiError) {
+		res.status(err.status).json(ApiResponse.failure(err.status, err.message, err.details));
+		return;
+	}
+	console.error("Unhandled error:", err);
+	res.status(500).json(ApiResponse.internal());
+}
+{{/if}}
+{{#if (eq backend "fastify")}}
+import type { FastifyReply, FastifyRequest } from "fastify";
+
+import { ApiError, ApiResponse } from "./api-response";
+
+/**
+ * Global error handler aligned with Fastify's lifecycle. Wire it up in
+ * `src/index.ts`:
+ *
+ *   import { errorHandler } from "./utils/error-handler";
+ *   fastify.setErrorHandler(errorHandler);
+ */
+export function errorHandler(error: unknown, _request: FastifyRequest, reply: FastifyReply): void {
+	if (error instanceof ApiError) {
+		void reply
+			.status(error.status)
+			.send(ApiResponse.failure(error.status, error.message, error.details));
+		return;
+	}
+	const status =
+		typeof error === "object" &&
+		error !== null &&
+		"statusCode" in error &&
+		typeof error.statusCode === "number"
+			? error.statusCode
+			: 500;
+	console.error("Unhandled error:", error);
+	void reply
+		.status(status)
+		.send(
+			ApiResponse.failure(
+				status,
+				error instanceof Error ? error.message : "Internal Server Error",
+			),
+		);
+}
+{{/if}}
+{{#if (eq backend "elysia")}}
+import { ApiError, ApiResponse } from "./api-response";
+
+type ErrorContext = {
+	code: string;
+	error: unknown;
+};
+
+/**
+ * Global error handler aligned with Elysia's lifecycle. Wire it up in
+ * `src/index.ts`:
+ *
+ *   import { errorHandler } from "./utils/error-handler";
+ *   new Elysia().onError(errorHandler);
+ */
+export function errorHandler({ code, error }: ErrorContext): Response {
+	if (error instanceof ApiError) {
+		return Response.json(ApiResponse.failure(error.status, error.message, error.details), {
+			status: error.status,
+		});
+	}
+	if (code === "NOT_FOUND") {
+		return Response.json(ApiResponse.notFound(), { status: 404 });
+	}
+	if (code === "VALIDATION") {
+		return Response.json(
+			ApiResponse.badRequest(error instanceof Error ? error.message : "Validation failed"),
+			{ status: 400 },
+		);
+	}
+	console.error("Unhandled error:", error);
+	return Response.json(ApiResponse.internal(), { status: 500 });
+}
+{{/if}}
+{{#if (eq backend "fets")}}
+import { Response } from "fets";
+
+import { ApiError, ApiResponse } from "./api-response";
+
+/**
+ * Normalizes thrown errors into structured JSON responses, aligned with
+ * feTS's fetch-based handlers. Wrap route handlers that can throw:
+ *
+ *   handler: async (request) => {
+ *     try {
+ *       return Response.json(await doWork(request));
+ *     } catch (error) {
+ *       return errorHandler(error);
+ *     }
+ *   }
+ */
+export function errorHandler(error: unknown): globalThis.Response {
+	if (error instanceof ApiError) {
+		return Response.json(ApiResponse.failure(error.status, error.message, error.details), {
+			status: error.status as 500,
+		});
+	}
+	console.error("Unhandled error:", error);
+	return Response.json(ApiResponse.internal(), { status: 500 });
+}
+{{/if}}
+{{#if (eq backend "nestjs")}}
+import {
+	type ArgumentsHost,
+	Catch,
+	type ExceptionFilter,
+	HttpException,
+	HttpStatus,
+} from "@nestjs/common";
+
+import { ApiError, ApiResponse } from "./api-response";
+
+type HttpResponseLike = {
+	status(code: number): { json(body: unknown): unknown };
+};
+
+/**
+ * Global exception filter aligned with NestJS's lifecycle. Wire it up in
+ * `src/main.ts`:
+ *
+ *   import { GlobalExceptionFilter } from "./utils/error-handler";
+ *   app.useGlobalFilters(new GlobalExceptionFilter());
+ */
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+	catch(exception: unknown, host: ArgumentsHost): void {
+		const response = host.switchToHttp().getResponse<HttpResponseLike>();
+
+		if (exception instanceof ApiError) {
+			response
+				.status(exception.status)
+				.json(ApiResponse.failure(exception.status, exception.message, exception.details));
+			return;
+		}
+		if (exception instanceof HttpException) {
+			const status = exception.getStatus();
+			response.status(status).json(ApiResponse.failure(status, exception.message));
+			return;
+		}
+		console.error("Unhandled exception:", exception);
+		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(ApiResponse.internal());
+	}
+}
+{{/if}}

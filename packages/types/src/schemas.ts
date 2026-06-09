@@ -142,6 +142,7 @@ export const AddonsSchema = z
     "tanstack-virtual",
     "tanstack-db",
     "tanstack-pacer",
+    "backend-utils",
     "docker-compose",
     "none",
   ])
