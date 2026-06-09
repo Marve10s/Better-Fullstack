@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import {
   compareLegacyConfigToStackParts,
+  ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
   getStackPartOptions,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
@@ -17,7 +18,14 @@ import {
   DATABASE_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
+  ELIXIR_CACHING_VALUES,
+  ELIXIR_DEPLOY_VALUES,
+  ELIXIR_EMAIL_VALUES,
+  ELIXIR_JOBS_VALUES,
+  ELIXIR_OBSERVABILITY_VALUES,
   ELIXIR_ORM_VALUES,
+  ELIXIR_TESTING_VALUES,
+  ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   FRONTEND_VALUES,
   GO_API_VALUES,
@@ -31,9 +39,12 @@ import {
   PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
   PYTHON_ORM_VALUES,
+  PYTHON_TASK_QUEUE_VALUES,
+  PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
+  RUST_CACHING_VALUES,
   RUST_FRONTEND_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
@@ -365,7 +376,12 @@ describe("stack graph structural round-trip (phase 0)", () => {
         ecosystem: "rust",
         backendField: "rustWebFramework",
         backends: RUST_WEB_FRAMEWORK_VALUES,
-        capabilities: { rustOrm: RUST_ORM_VALUES, rustApi: RUST_API_VALUES, rustAuth: RUST_AUTH_VALUES },
+        capabilities: {
+          rustOrm: RUST_ORM_VALUES,
+          rustApi: RUST_API_VALUES,
+          rustAuth: RUST_AUTH_VALUES,
+          rustCaching: RUST_CACHING_VALUES,
+        },
       },
       {
         ecosystem: "python",
@@ -375,6 +391,8 @@ describe("stack graph structural round-trip (phase 0)", () => {
           pythonOrm: PYTHON_ORM_VALUES,
           pythonApi: PYTHON_API_VALUES,
           pythonAuth: PYTHON_AUTH_VALUES,
+          pythonValidation: PYTHON_VALIDATION_VALUES,
+          pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
         },
       },
       {
@@ -397,9 +415,31 @@ describe("stack graph structural round-trip (phase 0)", () => {
           elixirOrm: ELIXIR_ORM_VALUES,
           elixirApi: ELIXIR_API_VALUES,
           elixirAuth: ELIXIR_AUTH_VALUES,
+          elixirJobs: ELIXIR_JOBS_VALUES,
+          elixirValidation: ELIXIR_VALIDATION_VALUES,
+          elixirEmail: ELIXIR_EMAIL_VALUES,
+          elixirCaching: ELIXIR_CACHING_VALUES,
+          elixirObservability: ELIXIR_OBSERVABILITY_VALUES,
+          elixirTesting: ELIXIR_TESTING_VALUES,
+          elixirDeploy: ELIXIR_DEPLOY_VALUES,
         },
       },
     ] as const;
+
+    // Extras categories (phase 2 batch 0) round-trip like capabilities, except
+    // elixir tools the scaffold cannot generate stay flat-only by design.
+    const EXTRA_CAPABILITY_FIELDS = new Set([
+      "rustCaching",
+      "pythonValidation",
+      "pythonTaskQueue",
+      "elixirJobs",
+      "elixirValidation",
+      "elixirEmail",
+      "elixirCaching",
+      "elixirObservability",
+      "elixirTesting",
+      "elixirDeploy",
+    ]);
 
     for (const { ecosystem, backendField, backends, capabilities } of cases) {
       const anchor = backends.find((value) => value !== "none");
@@ -415,10 +455,65 @@ describe("stack graph structural round-trip (phase 0)", () => {
             [backendField]: anchor,
             [field]: value,
           });
-          expect(derived[field as keyof ProjectConfig] ?? "none").toBe(value);
+          const skipped =
+            EXTRA_CAPABILITY_FIELDS.has(field) &&
+            ecosystem === "elixir" &&
+            ELIXIR_UNSUPPORTED_GRAPH_TOOLS.has(value);
+          expect(derived[field as keyof ProjectConfig] ?? "none").toBe(skipped ? "none" : value);
         }
       }
     }
+  });
+
+  it("imports legacy ecosystem extras as backend-owned parts that validate cleanly", () => {
+    const elixirBase: Partial<ProjectConfig> = {
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+    };
+    const parts = legacyProjectConfigToStackParts({
+      ...elixirBase,
+      elixirJobs: "oban",
+      elixirEmail: "swoosh",
+      elixirCaching: "cachex",
+      elixirObservability: "telemetry",
+      elixirTesting: "ex_unit",
+      elixirDeploy: "docker",
+      elixirValidation: "ecto-changesets",
+    });
+
+    const backend = parts.find((part) => part.role === "backend");
+    const extras = parts.filter((part) =>
+      ["jobQueue", "email", "caching", "observability", "testing", "deploy", "validation"].includes(
+        part.role,
+      ),
+    );
+    expect(extras).toHaveLength(7);
+    for (const part of extras) {
+      expect(part.ownerPartId).toBe(backend?.id);
+    }
+    expect(validateStackParts(parts).issues).toEqual([]);
+
+    const lowered = stackPartsToLegacyProjectConfigPartial(parts);
+    expect(lowered.elixirJobs).toBe("oban");
+    expect(lowered.elixirEmail).toBe("swoosh");
+    expect(lowered.elixirDeploy).toBe("docker");
+  });
+
+  it("keeps unsupported elixir extras flat-only so imported configs never fail validation", () => {
+    const parts = legacyProjectConfigToStackParts({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+      elixirDeploy: "fly",
+      elixirTesting: "mox",
+      elixirCaching: "nebulex",
+    });
+
+    expect(parts.some((part) => part.role === "deploy")).toBe(false);
+    expect(parts.some((part) => part.role === "testing")).toBe(false);
+    expect(parts.some((part) => part.role === "caching")).toBe(false);
+    expect(validateStackParts(parts).issues).toEqual([]);
   });
 
   it("round-trips the Rust WASM frontend selections", () => {
@@ -447,18 +542,23 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(reimported.map(structuralTuple).sort()).toEqual(parts.map(structuralTuple).sort());
   });
 
-  // Documented gap (phase-0 inventory §1): these categories are registered in
-  // STACK_TOOL_DEFINITIONS but legacyProjectConfigToStackParts never imports
-  // them. Phase 2 Batch 0 closes this gap and must flip this expectation.
-  it("documents the importer gap for registered ecosystem extras", () => {
-    const parts = legacyProjectConfigToStackParts({
-      ecosystem: "elixir",
-      elixirWebFramework: "phoenix",
-      elixirEmail: "swoosh",
-      elixirCaching: "cachex",
+  // Remaining importer gap (phase-0 inventory §1): pythonGraphql and
+  // elixirRealtime collide with the `api` role and stay flat-only until the
+  // realtime/graphql role decision lands in Batch 1.
+  it("documents the remaining importer gap for api-role collisions", () => {
+    const pythonParts = legacyProjectConfigToStackParts({
+      ecosystem: "python",
+      pythonWebFramework: "django",
+      pythonGraphql: "strawberry",
     });
-    expect(parts.some((part) => part.role === "email")).toBe(false);
-    expect(parts.some((part) => part.role === "caching")).toBe(false);
+    expect(pythonParts.filter((part) => part.role === "api")).toHaveLength(0);
+
+    const elixirParts = legacyProjectConfigToStackParts({
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix-live-view",
+      elixirRealtime: "channels",
+    });
+    expect(elixirParts.filter((part) => part.role === "api")).toHaveLength(0);
   });
 
   // Documented limitation: a multi-ecosystem graph lowered to the flat config

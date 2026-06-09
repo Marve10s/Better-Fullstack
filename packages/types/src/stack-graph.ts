@@ -117,7 +117,7 @@ const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
-const ELIXIR_UNSUPPORTED_GRAPH_TOOLS = new Set([
+export const ELIXIR_UNSUPPORTED_GRAPH_TOOLS = new Set([
   "ecto",
   "ueberauth",
   "guardian",
@@ -156,6 +156,28 @@ const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
 } as const satisfies Record<
   LegacyBackendEcosystem,
   Partial<Record<LegacyCapabilityRole, keyof ProjectConfig>>
+>;
+
+// Phase 2 Batch 0 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
+// registered ecosystem extras that round-trip through the graph. pythonGraphql
+// and elixirRealtime stay flat-only until the `api` role collision is resolved.
+const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
+  rust: { caching: "rustCaching" },
+  python: { validation: "pythonValidation", jobQueue: "pythonTaskQueue" },
+  go: {},
+  java: {},
+  elixir: {
+    jobQueue: "elixirJobs",
+    validation: "elixirValidation",
+    email: "elixirEmail",
+    caching: "elixirCaching",
+    observability: "elixirObservability",
+    testing: "elixirTesting",
+    deploy: "elixirDeploy",
+  },
+} as const satisfies Record<
+  LegacyBackendEcosystem,
+  Partial<Record<StackPartRole, keyof ProjectConfig>>
 >;
 
 const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
@@ -703,6 +725,21 @@ export function legacyProjectConfigToStackParts(
         source,
         backendPart?.id,
       );
+    }
+
+    // Extras require an owning backend part, and tools the current scaffold
+    // cannot generate stay flat-only so importing a valid legacy config never
+    // produces a graph that validateStackParts rejects.
+    if (backendPart) {
+      for (const [role, category] of Object.entries(
+        LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM[config.ecosystem],
+      ) as Array<[StackPartRole, keyof ProjectConfig]>) {
+        const toolId = config[category] as string | undefined;
+        if (config.ecosystem === "elixir" && toolId && ELIXIR_UNSUPPORTED_GRAPH_TOOLS.has(toolId)) {
+          continue;
+        }
+        addLegacyPart(parts, role, config.ecosystem, toolId, source, backendPart.id);
+      }
     }
   }
 
