@@ -633,6 +633,12 @@ describe("stack graph", () => {
       "backend.orm:elixir:ecto",
       "backend.jobQueue:elixir:oban",
     ]);
+    const phoenixParts = parseStackPartSpecs([
+      "backend:elixir:phoenix",
+      "backend.orm:elixir:ecto-sql",
+    ]);
+    const phoenixBackend = phoenixParts.find((part) => part.role === "backend");
+    expect(phoenixBackend).toBeDefined();
 
     expect(validateStackParts(liveViewParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_TOOL",
@@ -640,6 +646,30 @@ describe("stack graph", () => {
     expect(validateStackParts(obanParts).issues.map((issue) => issue.code)).toEqual(
       expect.arrayContaining(["INCOMPATIBLE_GRAPH_SELECTION", "UNSUPPORTED_GRAPH_TOOL"]),
     );
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:backend.auth:elixir:guardian",
+          role: "auth",
+          toolId: "guardian",
+          ecosystem: "elixir",
+          ownerPartId: phoenixBackend?.id,
+        },
+        phoenixParts,
+      )?.message,
+    ).toBe("Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth");
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:backend.deploy:elixir:fly",
+          role: "deploy",
+          toolId: "fly",
+          ecosystem: "elixir",
+          ownerPartId: phoenixBackend?.id,
+        },
+        phoenixParts,
+      )?.message,
+    ).toBe("Fly.io config is not generated yet; use Docker or mix releases");
   });
 
   it("materializes provided capabilities and rejects conflicts unless overrideable", () => {

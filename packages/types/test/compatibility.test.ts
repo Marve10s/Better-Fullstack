@@ -312,6 +312,54 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(elixirBase, "elixirEmail", "swoosh")).toBeNull();
   });
 
+  it("routes unsupported Elixir generated-tool disabled reasons through graph checks", () => {
+    const elixirBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+    };
+
+    expect(getDisabledReason(elixirBase, "elixirOrm", "ecto")).toBe(
+      "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirAuth", "guardian")).toBe(
+      "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirValidation", "nimble-options")).toBe(
+      "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirCaching", "nebulex")).toBe(
+      "Nebulex cache modules are not generated yet; use Cachex or no cache",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirObservability", "opentelemetry")).toBe(
+      "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirTesting", "mox")).toBe(
+      "Mox-specific test boundaries are not generated yet; use ExUnit",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirDeploy", "fly")).toBe(
+      "Fly.io config is not generated yet; use Docker or mix releases",
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...elixirBase,
+          elixirWebFramework: "none",
+        },
+        "elixirAuth",
+        "ueberauth",
+      ),
+    ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,

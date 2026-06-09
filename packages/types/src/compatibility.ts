@@ -2503,42 +2503,6 @@ export const getDisabledReason = (
     return "Elixir web frameworks are available only in the Elixir ecosystem";
   }
 
-  const elixirNotYetGenerated: Partial<Record<CompatibilityCategory, Record<string, string>>> = {
-    elixirOrm: {
-      ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
-    },
-    elixirAuth: {
-      ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
-      guardian: "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
-    },
-    elixirValidation: {
-      "nimble-options":
-        "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
-    },
-    elixirCaching: {
-      nebulex: "Nebulex cache modules are not generated yet; use Cachex or no cache",
-    },
-    elixirObservability: {
-      opentelemetry:
-        "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
-      prom_ex: "PromEx setup is not generated yet; use Phoenix telemetry or no extra observability",
-    },
-    elixirTesting: {
-      mox: "Mox-specific test boundaries are not generated yet; use ExUnit",
-      bypass: "Bypass-specific HTTP tests are not generated yet; use ExUnit",
-      wallaby: "Wallaby browser tests are not generated yet; use ExUnit",
-    },
-    elixirDeploy: {
-      fly: "Fly.io config is not generated yet; use Docker or mix releases",
-      gigalixir: "Gigalixir config is not generated yet; use Docker or mix releases",
-    },
-  };
-
-  const unsupportedElixirReason = elixirNotYetGenerated[category]?.[optionId];
-  if (currentStack.ecosystem === "elixir" && unsupportedElixirReason) {
-    return unsupportedElixirReason;
-  }
-
   if (currentStack.ecosystem === "elixir" && currentStack.elixirWebFramework === "none") {
     if (category === "elixirAuth" && optionId !== "none") {
       return "Elixir auth scaffolds require Phoenix";
@@ -2614,6 +2578,8 @@ type GraphDisabledReasonBinding = {
   ownerEcosystem?: StackPartEcosystem;
   currentEcosystem?: StackPartEcosystem;
   allowNoneCandidate?: boolean;
+  allowOwnerlessCandidate?: boolean;
+  candidateIdPrefix?: string;
   missingOwnerReason?: string;
 };
 
@@ -2636,6 +2602,40 @@ function getSharedBackendServiceGraphBinding(
     ecosystem: currentStack.ecosystem,
     ownerRole: "backend",
     ownerEcosystem: currentStack.ecosystem,
+  };
+}
+
+const ELIXIR_GRAPH_DISABLED_REASON_ROLES: Partial<Record<CompatibilityCategory, StackPartRole>> = {
+  elixirOrm: "orm",
+  elixirAuth: "auth",
+  elixirApi: "api",
+  elixirRealtime: "realtime",
+  elixirJobs: "jobQueue",
+  elixirValidation: "validation",
+  elixirHttp: "httpClient",
+  elixirEmail: "email",
+  elixirCaching: "caching",
+  elixirObservability: "observability",
+  elixirTesting: "testing",
+  elixirQuality: "codeQuality",
+  elixirDeploy: "deploy",
+};
+
+function getElixirGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  const role = ELIXIR_GRAPH_DISABLED_REASON_ROLES[category];
+  if (!role || currentStack.ecosystem !== "elixir") return undefined;
+
+  return {
+    role,
+    ecosystem: "elixir",
+    ownerRole: "backend",
+    ownerEcosystem: "elixir",
+    currentEcosystem: "elixir",
+    allowOwnerlessCandidate: true,
+    candidateIdPrefix: "candidate:native",
   };
 }
 
@@ -2816,6 +2816,7 @@ function getGraphDisabledReason(
 
   const binding =
     getSharedBackendServiceGraphBinding(currentStack, category) ??
+    getElixirGraphBinding(currentStack, category) ??
     GRAPH_DISABLED_REASON_BINDINGS[category];
   if (!binding) return null;
   if (binding.currentEcosystem && currentStack.ecosystem !== binding.currentEcosystem) return null;
@@ -2837,20 +2838,20 @@ function getGraphDisabledReason(
       (!binding.ownerEcosystem || part.ecosystem === binding.ownerEcosystem),
   );
   if (!owner && optionId === "none") return null;
-  if (!owner) return binding.missingOwnerReason ?? null;
+  if (!owner && !binding.allowOwnerlessCandidate) return binding.missingOwnerReason ?? null;
 
   const issue = getStackPartCompatibilityIssueForPart(
     {
-      id: `candidate:${binding.ownerRole}.${binding.role}:${binding.ecosystem}:${optionId}`,
+      id: `${binding.candidateIdPrefix ?? "candidate"}:${binding.ownerRole}.${binding.role}:${binding.ecosystem}:${optionId}`,
       role: binding.role,
       toolId: optionId,
       ecosystem: binding.ecosystem,
-      ownerPartId: owner.id,
+      ownerPartId: owner?.id,
     },
     parts,
   );
 
-  return issue?.message ?? null;
+  return issue?.message ?? (!owner ? (binding.missingOwnerReason ?? null) : null);
 }
 
 const WEB_FRAMEWORKS: readonly Frontend[] = [
