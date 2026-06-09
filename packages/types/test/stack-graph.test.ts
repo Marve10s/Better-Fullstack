@@ -381,6 +381,37 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects incompatible backend-owned TypeScript AI graph selections", () => {
+    const chatSdkParts = parseStackPartSpecs([
+      "frontend:typescript:nuxt",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "examples:universal:chat-sdk",
+      "examples:universal:ai",
+      "backend.ai:typescript:langchain",
+    ]);
+    const tanstackAiParts = parseStackPartSpecs([
+      "frontend:typescript:svelte",
+      "backend:typescript:hono",
+      "backend.ai:typescript:tanstack-ai",
+    ]);
+
+    expect(validateStackParts(chatSdkParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "ai",
+        toolId: "langchain",
+      }),
+    );
+    expect(validateStackParts(tanstackAiParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "ai",
+        toolId: "tanstack-ai",
+      }),
+    );
+  });
+
   it("rejects incompatible frontend-owned TypeScript graph selections", () => {
     const shadcnScssParts = parseStackPartSpecs([
       "frontend:typescript:next",

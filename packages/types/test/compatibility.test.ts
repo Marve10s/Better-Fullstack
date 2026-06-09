@@ -187,6 +187,29 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(DEFAULT_STACK_SELECTION, "cms", "payload")).toBe(
       "Payload CMS v3 requires a Next.js frontend.",
     );
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          examples: ["chat-sdk"],
+          runtime: "node",
+        },
+        "ai",
+        "langchain",
+      ),
+    ).toBe("Chat SDK example (Nuxt/Hono profile) requires Vercel AI SDK in v1.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["svelte"],
+        },
+        "ai",
+        "tanstack-ai",
+      ),
+    ).toBe("TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet).");
   });
 
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {

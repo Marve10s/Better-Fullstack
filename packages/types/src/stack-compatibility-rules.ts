@@ -320,3 +320,29 @@ export function isExampleChatSdkAllowed(
 
   return false;
 }
+
+export function requiresChatSdkVercelAIForExamples(
+  backend?: Backend | string,
+  runtime?: Runtime | string,
+  examples: readonly string[] = [],
+): boolean {
+  return (
+    examples.includes("chat-sdk") &&
+    (backend === "self-nuxt" || (backend === "hono" && runtime === "node"))
+  );
+}
+
+export function hasTanStackAICompatibleFrontend(frontends: readonly string[] = []): boolean {
+  return frontends.some((frontend) =>
+    [
+      "tanstack-router",
+      "react-router",
+      "react-vite",
+      "tanstack-start",
+      "next",
+      "redwood",
+      "solid",
+      "solid-start",
+    ].includes(frontend),
+  );
+}

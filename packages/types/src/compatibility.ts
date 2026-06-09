@@ -25,10 +25,12 @@ import {
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
   isBackendUtilsCompatibleBackend,
   isExampleAIAllowed,
   isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
 } from "./stack-compatibility-rules";
 import {
@@ -41,10 +43,12 @@ export {
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
   isBackendUtilsCompatibleBackend,
   isExampleAIAllowed,
   isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
 } from "./stack-compatibility-rules";
 
@@ -225,10 +229,7 @@ const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
 };
 
 export const requiresChatSdkVercelAI = (stack: CompatibilityInput): boolean => {
-  return (
-    stack.examples.includes("chat-sdk") &&
-    (stack.backend === "self-nuxt" || (stack.backend === "hono" && stack.runtime === "node"))
-  );
+  return requiresChatSdkVercelAIForExamples(stack.backend, stack.runtime, stack.examples);
 };
 
 export type CompatibilityAnalysisResult = {
@@ -2651,7 +2652,7 @@ type GraphDisabledReasonBinding = {
   ecosystem: StackPartEcosystem;
   ownerRole: GraphDisabledReasonOwnerRole;
   ownerEcosystem?: StackPartEcosystem;
-  missingOwnerReason: string;
+  missingOwnerReason?: string;
 };
 
 const GRAPH_DISABLED_REASON_BINDINGS: Partial<
@@ -2726,6 +2727,12 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "typescript",
     missingOwnerReason: "CMS requires a backend",
+  },
+  ai: {
+    role: "ai",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
   },
   mobileNavigation: {
     role: "navigation",
@@ -2802,7 +2809,7 @@ function getGraphDisabledReason(
       (!binding.ownerEcosystem || part.ecosystem === binding.ownerEcosystem),
   );
   if (!owner && optionId === "none") return null;
-  if (!owner) return binding.missingOwnerReason;
+  if (!owner) return binding.missingOwnerReason ?? null;
 
   const issue = getStackPartCompatibilityIssueForPart(
     {
@@ -3115,19 +3122,7 @@ export function getAIFrontendCompatibilityIssue(
 ): CompatibilityIssue | undefined {
   if (!ai || ai !== "tanstack-ai") return undefined;
 
-  const compatibleFrontends = new Set<Frontend>([
-    "tanstack-router",
-    "react-router",
-    "react-vite",
-    "tanstack-start",
-    "next",
-    "redwood",
-    "solid",
-    "solid-start",
-  ]);
-  const hasCompatible = frontends.some((frontend) => compatibleFrontends.has(frontend));
-
-  if (hasCompatible) return undefined;
+  if (hasTanStackAICompatibleFrontend(frontends)) return undefined;
 
   return {
     code: "TANSTACK_AI_REQUIRES_REACT_OR_SOLID_FRONTEND",

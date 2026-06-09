@@ -11,10 +11,12 @@ import {
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
   isBackendUtilsCompatibleBackend,
   isExampleAIAllowed,
   isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
 } from "./stack-compatibility-rules";
 import {
@@ -136,6 +138,7 @@ export type StackPartOptionContext = {
   ownerEcosystem?: StackPartEcosystem;
   siblingToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   selectedToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
+  selectedToolIdsByRoleList?: Partial<Record<StackPartRole, readonly string[] | undefined>>;
   primaryToolIdsByRole?: Partial<Record<StackPrimaryRole, string | undefined>>;
   primaryEcosystemsByRole?: Partial<Record<StackPrimaryRole, StackPartEcosystem | undefined>>;
 };
@@ -865,6 +868,36 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Payload CMS v3 requires a Next.js frontend.",
+      });
+    }
+  }
+
+  if (part.role === "ai") {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    const frontendTools = frontendTool ? [frontendTool] : [];
+    const examples = context.selectedToolIdsByRoleList?.examples ?? [];
+    const runtimeTool = context.siblingToolIdsByRole?.runtime ?? "bun";
+
+    if (
+      part.toolId !== "vercel-ai" &&
+      requiresChatSdkVercelAIForExamples(context.ownerToolId, runtimeTool, examples)
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Chat SDK example (Nuxt/Hono profile) requires Vercel AI SDK in v1.",
+      });
+    }
+
+    if (part.toolId === "tanstack-ai" && !hasTanStackAICompatibleFrontend(frontendTools)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet).",
       });
     }
   }
@@ -1622,6 +1655,16 @@ function getSelectedToolIdsByRole(parts: readonly StackPart[]) {
   return selectedToolIdsByRole;
 }
 
+function getSelectedToolIdsByRoleList(parts: readonly StackPart[]) {
+  const selectedToolIdsByRoleList: Partial<Record<StackPartRole, string[]>> = {};
+  for (const part of parts) {
+    if (part.source === "provided") continue;
+    selectedToolIdsByRoleList[part.role] ??= [];
+    selectedToolIdsByRoleList[part.role]?.push(part.toolId);
+  }
+  return selectedToolIdsByRoleList;
+}
+
 function getPrimaryToolContext(parts: readonly StackPart[]) {
   const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
   const primaryEcosystemsByRole: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {};
@@ -1666,6 +1709,7 @@ function getStackPartOptionContextForPart(
     ownerEcosystem: owner?.ecosystem,
     siblingToolIdsByRole: getSiblingToolIdsByRole(part, parts),
     selectedToolIdsByRole: getSelectedToolIdsByRole(parts),
+    selectedToolIdsByRoleList: getSelectedToolIdsByRoleList(parts),
     primaryToolIdsByRole,
     primaryEcosystemsByRole,
   };
