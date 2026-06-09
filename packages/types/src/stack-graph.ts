@@ -137,6 +137,7 @@ export type StackPartOptionContext = {
   ownerToolId?: string;
   ownerEcosystem?: StackPartEcosystem;
   siblingToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
+  siblingToolIdsByRoleList?: Partial<Record<StackPartRole, readonly string[] | undefined>>;
   selectedToolIdsByRole?: Partial<Record<StackPartRole, string | undefined>>;
   selectedToolIdsByRoleList?: Partial<Record<StackPartRole, readonly string[] | undefined>>;
   primaryToolIdsByRole?: Partial<Record<StackPrimaryRole, string | undefined>>;
@@ -1317,6 +1318,171 @@ function createAddonCompatibilityIssue(
   return undefined;
 }
 
+function createJavaCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.ecosystem !== "java") return undefined;
+
+  const buildTool = context.siblingToolIdsByRole?.buildTool;
+  const hasBuildTool = !isNoneTool(buildTool);
+  const javaLibraries = context.siblingToolIdsByRoleList?.libraries ?? [];
+
+  if (part.role === "buildTool" && part.toolId === "none") {
+    if (context.ownerToolId && context.ownerToolId !== "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java web frameworks require Maven or Gradle",
+      });
+    }
+
+    if (!isNoneTool(context.siblingToolIdsByRole?.orm)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java ORM support requires Maven or Gradle",
+      });
+    }
+
+    if (!isNoneTool(context.siblingToolIdsByRole?.auth)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java auth support requires Maven or Gradle",
+      });
+    }
+
+    if (javaLibraries.some((library) => library !== "none")) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java libraries require Maven or Gradle",
+      });
+    }
+
+    if ((context.siblingToolIdsByRoleList?.testing ?? []).some((library) => library !== "none")) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java testing libraries require Maven or Gradle",
+      });
+    }
+  }
+
+  if ((part.role === "orm" || part.role === "auth") && part.toolId !== "none") {
+    if (context.ownerToolId !== "spring-boot") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message:
+          part.role === "orm"
+            ? "Java ORM support currently requires Spring Boot"
+            : "Java auth support currently requires Spring Boot",
+      });
+    }
+
+    if (!hasBuildTool) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message:
+          part.role === "orm"
+            ? "Java ORM support requires Maven or Gradle"
+            : "Java auth support requires Maven or Gradle",
+      });
+    }
+  }
+
+  if (part.role === "libraries" && part.toolId !== "none") {
+    if (context.ownerToolId !== "spring-boot") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Spring libraries currently require Spring Boot in the Java scaffold",
+      });
+    }
+
+    if (!hasBuildTool) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Java libraries require Maven or Gradle",
+      });
+    }
+
+    if (part.toolId === "flyway" && context.siblingToolIdsByRole?.orm !== "spring-data-jpa") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Flyway currently requires Spring Data JPA in the Java scaffold",
+      });
+    }
+
+    if (part.toolId === "liquibase" && context.siblingToolIdsByRole?.orm !== "spring-data-jpa") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Liquibase currently requires Spring Data JPA in the Java scaffold",
+      });
+    }
+
+    if (part.toolId === "flyway" && javaLibraries.includes("liquibase")) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Flyway cannot be combined with Liquibase in the current Java scaffold",
+      });
+    }
+
+    if (part.toolId === "liquibase" && javaLibraries.includes("flyway")) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Liquibase cannot be combined with Flyway in the current Java scaffold",
+      });
+    }
+  }
+
+  if (part.role === "testing" && part.toolId !== "none" && !hasBuildTool) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "Java testing libraries require Maven or Gradle",
+    });
+  }
+
+  return undefined;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -1367,6 +1533,9 @@ function getStackPartCompatibilityIssue(
 
   const addonCompatibilityIssue = createAddonCompatibilityIssue(part, context);
   if (addonCompatibilityIssue) return addonCompatibilityIssue;
+
+  const javaCompatibilityIssue = createJavaCompatibilityIssue(part, context);
+  if (javaCompatibilityIssue) return javaCompatibilityIssue;
 
   if (part.ecosystem === "python" && part.role === "api" && DJANGO_API_TOOLS.has(part.toolId)) {
     if (context.ownerToolId !== "django") {
@@ -1692,6 +1861,19 @@ function getSiblingToolIdsByRole(
   return siblingToolIdsByRole;
 }
 
+function getSiblingToolIdsByRoleList(
+  part: Pick<StackPart, "ownerPartId">,
+  parts: readonly StackPart[],
+) {
+  const siblingToolIdsByRoleList: Partial<Record<StackPartRole, string[]>> = {};
+  for (const sibling of parts) {
+    if (sibling.ownerPartId !== part.ownerPartId || sibling.source === "provided") continue;
+    siblingToolIdsByRoleList[sibling.role] ??= [];
+    siblingToolIdsByRoleList[sibling.role]?.push(sibling.toolId);
+  }
+  return siblingToolIdsByRoleList;
+}
+
 function getStackPartOptionContextForPart(
   part: Pick<StackPart, "role" | "ecosystem" | "ownerPartId">,
   parts: readonly StackPart[],
@@ -1708,6 +1890,7 @@ function getStackPartOptionContextForPart(
     ownerToolId: owner?.toolId,
     ownerEcosystem: owner?.ecosystem,
     siblingToolIdsByRole: getSiblingToolIdsByRole(part, parts),
+    siblingToolIdsByRoleList: getSiblingToolIdsByRoleList(part, parts),
     selectedToolIdsByRole: getSelectedToolIdsByRole(parts),
     selectedToolIdsByRoleList: getSelectedToolIdsByRoleList(parts),
     primaryToolIdsByRole,

@@ -212,6 +212,50 @@ describe("compatibility issue helpers", () => {
     ).toBe("TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet).");
   });
 
+  it("routes promoted Java ecosystem disabled reasons through graph checks", () => {
+    const javaBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "java",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: [],
+    };
+
+    expect(getDisabledReason(javaBase, "javaLibraries", "flyway")).toBe(
+      "Flyway currently requires Spring Data JPA in the Java scaffold",
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...javaBase,
+          javaOrm: "spring-data-jpa",
+          javaLibraries: ["flyway"],
+        },
+        "javaLibraries",
+        "liquibase",
+      ),
+    ).toBe("Liquibase cannot be combined with Flyway in the current Java scaffold");
+
+    expect(
+      getDisabledReason(
+        {
+          ...javaBase,
+          javaBuildTool: "none",
+        },
+        "javaTestingLibraries",
+        "junit5",
+      ),
+    ).toBe("Java testing libraries require Maven or Gradle");
+
+    expect(getDisabledReason(javaBase, "javaBuildTool", "none")).toBe(
+      "Java web frameworks require Maven or Gradle",
+    );
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,

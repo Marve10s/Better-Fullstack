@@ -360,6 +360,58 @@ describe("stack graph", () => {
     );
   });
 
+  it("rejects incompatible Java graph selections", () => {
+    const javaOrmWithoutBuildToolParts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.orm:java:spring-data-jpa",
+    ]);
+    const javaMigrationWithoutJpaParts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.buildTool:java:maven",
+      "backend.libraries:java:flyway",
+    ]);
+    const javaMigrationConflictParts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.buildTool:java:maven",
+      "backend.orm:java:spring-data-jpa",
+      "backend.libraries:java:flyway",
+      "backend.libraries:java:liquibase",
+    ]);
+    const javaTestingWithoutBuildToolParts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.testing:java:junit5",
+    ]);
+
+    expect(validateStackParts(javaOrmWithoutBuildToolParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "orm",
+        toolId: "spring-data-jpa",
+      }),
+    );
+    expect(validateStackParts(javaMigrationWithoutJpaParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "libraries",
+        toolId: "flyway",
+      }),
+    );
+    expect(validateStackParts(javaMigrationConflictParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "libraries",
+        toolId: "liquibase",
+      }),
+    );
+    expect(validateStackParts(javaTestingWithoutBuildToolParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "testing",
+        toolId: "junit5",
+      }),
+    );
+  });
+
   it("rejects cross-part graph selections that are not compatible", () => {
     const trpcParts = parseStackPartSpecs([
       "frontend:typescript:svelte",

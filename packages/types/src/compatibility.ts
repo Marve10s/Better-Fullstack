@@ -2652,6 +2652,8 @@ type GraphDisabledReasonBinding = {
   ecosystem: StackPartEcosystem;
   ownerRole: GraphDisabledReasonOwnerRole;
   ownerEcosystem?: StackPartEcosystem;
+  currentEcosystem?: StackPartEcosystem;
+  allowNoneCandidate?: boolean;
   missingOwnerReason?: string;
 };
 
@@ -2762,6 +2764,45 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerEcosystem: "react-native",
     missingOwnerReason: "Mobile testing requires a native Expo frontend",
   },
+  javaBuildTool: {
+    role: "buildTool",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    allowNoneCandidate: true,
+  },
+  javaOrm: {
+    role: "orm",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Java ORM support currently requires Spring Boot",
+  },
+  javaAuth: {
+    role: "auth",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Java auth support currently requires Spring Boot",
+  },
+  javaLibraries: {
+    role: "libraries",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Spring libraries currently require Spring Boot in the Java scaffold",
+  },
+  javaTestingLibraries: {
+    role: "testing",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+  },
 };
 
 function compatibilityInputToGraphProjectConfig(
@@ -2793,7 +2834,10 @@ function getGraphDisabledReason(
 
   const binding = GRAPH_DISABLED_REASON_BINDINGS[category];
   if (!binding) return null;
-  if (optionId === "none" && category !== "cssFramework") return null;
+  if (binding.currentEcosystem && currentStack.ecosystem !== binding.currentEcosystem) return null;
+  if (optionId === "none" && category !== "cssFramework" && !binding.allowNoneCandidate) {
+    return null;
+  }
 
   let parts;
   try {
