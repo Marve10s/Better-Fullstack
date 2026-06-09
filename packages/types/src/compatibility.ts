@@ -1914,16 +1914,6 @@ export const getDisabledReason = (
   // EMAIL CONSTRAINTS
   // ============================================
   if (category === "email" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "resend") {
-      return "Only Resend email is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "resend"
-    ) {
-      return "Resend email for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -1939,16 +1929,6 @@ export const getDisabledReason = (
   // OBSERVABILITY CONSTRAINTS
   // ============================================
   if (category === "observability" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "sentry") {
-      return "Only Sentry observability is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "sentry"
-    ) {
-      return "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -1958,16 +1938,6 @@ export const getDisabledReason = (
   // CACHING CONSTRAINTS
   // ============================================
   if (category === "caching" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "upstash-redis") {
-      return "Only Upstash Redis caching is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "upstash-redis"
-    ) {
-      return "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -1977,16 +1947,6 @@ export const getDisabledReason = (
   // SEARCH CONSTRAINTS
   // ============================================
   if (category === "search" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "meilisearch") {
-      return "Only Meilisearch search is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "meilisearch"
-    ) {
-      return "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -2657,6 +2617,28 @@ type GraphDisabledReasonBinding = {
   missingOwnerReason?: string;
 };
 
+const SHARED_BACKEND_SERVICE_CATEGORIES = new Set<CompatibilityCategory>([
+  "email",
+  "observability",
+  "caching",
+  "search",
+]);
+
+function getSharedBackendServiceGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  if (!SHARED_BACKEND_SERVICE_CATEGORIES.has(category)) return undefined;
+  if (currentStack.ecosystem === "react-native") return undefined;
+
+  return {
+    role: category as StackPartRole,
+    ecosystem: currentStack.ecosystem,
+    ownerRole: "backend",
+    ownerEcosystem: currentStack.ecosystem,
+  };
+}
+
 const GRAPH_DISABLED_REASON_BINDINGS: Partial<
   Record<CompatibilityCategory, GraphDisabledReasonBinding>
 > = {
@@ -2832,7 +2814,9 @@ function getGraphDisabledReason(
 ): string | null {
   if (optionId === "false") return null;
 
-  const binding = GRAPH_DISABLED_REASON_BINDINGS[category];
+  const binding =
+    getSharedBackendServiceGraphBinding(currentStack, category) ??
+    GRAPH_DISABLED_REASON_BINDINGS[category];
   if (!binding) return null;
   if (binding.currentEcosystem && currentStack.ecosystem !== binding.currentEcosystem) return null;
   if (optionId === "none" && category !== "cssFramework" && !binding.allowNoneCandidate) {

@@ -256,6 +256,62 @@ describe("compatibility issue helpers", () => {
     );
   });
 
+  it("routes shared non-TypeScript service disabled reasons through graph checks", () => {
+    const rustBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+    };
+    const javaWithoutBuildTool = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "java",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "none",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: [],
+    };
+    const elixirBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+    };
+
+    expect(getDisabledReason(rustBase, "email", "nodemailer")).toBe(
+      "Only Resend email is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(rustBase, "observability", "grafana")).toBe(
+      "Only Sentry observability is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(rustBase, "search", "algolia")).toBe(
+      "Only Meilisearch search is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "email", "resend")).toBe(
+      "Resend email for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "observability", "sentry")).toBe(
+      "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "caching", "upstash-redis")).toBe(
+      "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "search", "meilisearch")).toBe(
+      "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(elixirBase, "email", "swoosh")).toBe(
+      "Only Resend email is available for non-TypeScript ecosystems",
+    );
+    expect(getDisabledReason(elixirBase, "elixirEmail", "swoosh")).toBeNull();
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,

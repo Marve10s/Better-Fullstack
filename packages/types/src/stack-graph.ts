@@ -395,6 +395,64 @@ const NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS = new Set([
   "self-solid-start",
 ]);
 
+type SharedNonTypeScriptBackendServiceRule = {
+  allowedToolId: string;
+  unsupportedToolMessage: string;
+  javaNoBuildToolMessage: string;
+};
+
+const SHARED_NON_TYPESCRIPT_BACKEND_SERVICE_RULES: Partial<
+  Record<StackPartRole, SharedNonTypeScriptBackendServiceRule>
+> = {
+  email: {
+    allowedToolId: "resend",
+    unsupportedToolMessage: "Only Resend email is available for non-TypeScript ecosystems",
+    javaNoBuildToolMessage:
+      "Resend email for Java requires Maven or Gradle to manage the SDK dependency",
+  },
+  observability: {
+    allowedToolId: "sentry",
+    unsupportedToolMessage: "Only Sentry observability is available for non-TypeScript ecosystems",
+    javaNoBuildToolMessage:
+      "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency",
+  },
+  caching: {
+    allowedToolId: "upstash-redis",
+    unsupportedToolMessage: "Only Upstash Redis caching is available for non-TypeScript ecosystems",
+    javaNoBuildToolMessage:
+      "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency",
+  },
+  search: {
+    allowedToolId: "meilisearch",
+    unsupportedToolMessage: "Only Meilisearch search is available for non-TypeScript ecosystems",
+    javaNoBuildToolMessage:
+      "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency",
+  },
+};
+
+function isNativeEcosystemBackendServiceTool(
+  part: Pick<StackPart, "role" | "toolId" | "ecosystem">,
+) {
+  if (part.role === "email" && part.ecosystem === "elixir") {
+    return (ELIXIR_EMAIL_VALUES as readonly string[]).includes(part.toolId);
+  }
+
+  if (part.role === "caching") {
+    if (part.ecosystem === "elixir") {
+      return (ELIXIR_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "rust") {
+      return (RUST_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
+  }
+
+  if (part.role === "observability" && part.ecosystem === "elixir") {
+    return (ELIXIR_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+  }
+
+  return false;
+}
+
 // Phase 2 Batch 0/1 (docs/plans/planned/stack-graph-phase-0-library-inventory.md):
 // registered backend-owned singles/extras that round-trip through the graph.
 // pythonGraphql still stays flat-only in the legacy importer until the
@@ -901,6 +959,48 @@ function createTypeScriptBackendCompatibilityIssue(
         message: "TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet).",
       });
     }
+  }
+
+  return undefined;
+}
+
+function createSharedBackendServiceCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (
+    part.ecosystem === "typescript" ||
+    part.ecosystem === "react-native" ||
+    context.ownerRole !== "backend" ||
+    part.toolId === "none"
+  ) {
+    return undefined;
+  }
+
+  const rule = SHARED_NON_TYPESCRIPT_BACKEND_SERVICE_RULES[part.role];
+  if (!rule) return undefined;
+  if (!part.id.startsWith("candidate:") && isNativeEcosystemBackendServiceTool(part)) {
+    return undefined;
+  }
+
+  if (part.toolId !== rule.allowedToolId) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_ECOSYSTEM_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: rule.unsupportedToolMessage,
+    });
+  }
+
+  if (part.ecosystem === "java" && isNoneTool(context.siblingToolIdsByRole?.buildTool)) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: rule.javaNoBuildToolMessage,
+    });
   }
 
   return undefined;
@@ -1524,6 +1624,12 @@ function getStackPartCompatibilityIssue(
 
   const backendCompatibilityIssue = createTypeScriptBackendCompatibilityIssue(part, context);
   if (backendCompatibilityIssue) return backendCompatibilityIssue;
+
+  const sharedBackendServiceCompatibilityIssue = createSharedBackendServiceCompatibilityIssue(
+    part,
+    context,
+  );
+  if (sharedBackendServiceCompatibilityIssue) return sharedBackendServiceCompatibilityIssue;
 
   const mobileCompatibilityIssue = createMobileCompatibilityIssue(part, context);
   if (mobileCompatibilityIssue) return mobileCompatibilityIssue;

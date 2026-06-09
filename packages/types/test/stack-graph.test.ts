@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
   getAddonStackPartBinding,
+  getStackPartCompatibilityIssueForPart,
   getStackPartOptions,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
@@ -568,6 +569,58 @@ describe("stack graph", () => {
     expect(validateStackParts(backendUtilsGoParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
+  });
+
+  it("rejects shared non-TypeScript backend service candidates through graph checks", () => {
+    const javaParts = parseStackPartSpecs([
+      "backend:java:spring-boot",
+      "backend.buildTool:java:none",
+    ]);
+    const javaBackend = javaParts.find((part) => part.role === "backend");
+    expect(javaBackend).toBeDefined();
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:backend.email:java:nodemailer",
+          role: "email",
+          toolId: "nodemailer",
+          ecosystem: "java",
+          ownerPartId: javaBackend?.id,
+        },
+        javaParts,
+      )?.message,
+    ).toBe("Only Resend email is available for non-TypeScript ecosystems");
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:backend.email:java:resend",
+          role: "email",
+          toolId: "resend",
+          ecosystem: "java",
+          ownerPartId: javaBackend?.id,
+        },
+        javaParts,
+      )?.message,
+    ).toBe("Resend email for Java requires Maven or Gradle to manage the SDK dependency");
+
+    const goParts = parseStackPartSpecs(["backend:go:gin"]);
+    const goBackend = goParts.find((part) => part.role === "backend");
+    expect(goBackend).toBeDefined();
+
+    expect(
+      getStackPartCompatibilityIssueForPart(
+        {
+          id: "candidate:backend.search:go:algolia",
+          role: "search",
+          toolId: "algolia",
+          ecosystem: "go",
+          ownerPartId: goBackend?.id,
+        },
+        goParts,
+      )?.message,
+    ).toBe("Only Meilisearch search is available for non-TypeScript ecosystems");
   });
 
   it("rejects Elixir graph selections that the current scaffold cannot generate", () => {
