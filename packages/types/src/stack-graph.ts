@@ -16,7 +16,7 @@ import {
   isExampleAIAllowed,
   isExampleChatSdkAllowed,
   UI_LIBRARY_COMPATIBILITY,
-} from "./compatibility";
+} from "./stack-compatibility-rules";
 import {
   ADDONS_VALUES,
   API_VALUES,
@@ -1393,6 +1393,13 @@ function getStackPartCompatibilityIssue(
   return undefined;
 }
 
+export function getStackPartCompatibilityIssueForPart(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem" | "ownerPartId">,
+  parts: readonly StackPart[],
+): StackGraphIssue | undefined {
+  return getStackPartCompatibilityIssue(part, getStackPartOptionContextForPart(part, parts));
+}
+
 export function getStackToolDefinitions(context?: StackPartOptionContext): ToolDefinition[] {
   if (!context) return [...STACK_TOOL_DEFINITIONS];
   return STACK_TOOL_DEFINITIONS.filter((definition) => {
@@ -1543,6 +1550,63 @@ export function materializeProvidedStackParts(parts: readonly StackPart[]): Stac
 
 function getPrimaryPart(parts: readonly StackPart[], role: StackPrimaryRole) {
   return parts.find((part) => part.role === role && !part.ownerPartId);
+}
+
+function getSelectedToolIdsByRole(parts: readonly StackPart[]) {
+  const selectedToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
+  for (const part of parts) {
+    if (part.source !== "provided") selectedToolIdsByRole[part.role] = part.toolId;
+  }
+  return selectedToolIdsByRole;
+}
+
+function getPrimaryToolContext(parts: readonly StackPart[]) {
+  const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
+  const primaryEcosystemsByRole: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {};
+
+  for (const role of PRIMARY_ROLES) {
+    const primaryPart = getPrimaryPart(parts, role as StackPrimaryRole);
+    if (primaryPart) {
+      primaryToolIdsByRole[role as StackPrimaryRole] = primaryPart.toolId;
+      primaryEcosystemsByRole[role as StackPrimaryRole] = primaryPart.ecosystem;
+    }
+  }
+
+  return { primaryToolIdsByRole, primaryEcosystemsByRole };
+}
+
+function getSiblingToolIdsByRole(
+  part: Pick<StackPart, "ownerPartId">,
+  parts: readonly StackPart[],
+) {
+  const siblingToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
+  for (const sibling of parts) {
+    if (sibling.ownerPartId !== part.ownerPartId || sibling.source === "provided") continue;
+    siblingToolIdsByRole[sibling.role] = sibling.toolId;
+  }
+  return siblingToolIdsByRole;
+}
+
+function getStackPartOptionContextForPart(
+  part: Pick<StackPart, "role" | "ecosystem" | "ownerPartId">,
+  parts: readonly StackPart[],
+): StackPartOptionContext {
+  const partsById = new Map(parts.map((candidate) => [candidate.id, candidate]));
+  const owner = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
+  const { primaryToolIdsByRole, primaryEcosystemsByRole } = getPrimaryToolContext(parts);
+
+  return {
+    role: part.role,
+    ecosystem: part.ecosystem,
+    ownerRole:
+      owner && PRIMARY_ROLES.has(owner.role) ? (owner.role as StackPrimaryRole) : undefined,
+    ownerToolId: owner?.toolId,
+    ownerEcosystem: owner?.ecosystem,
+    siblingToolIdsByRole: getSiblingToolIdsByRole(part, parts),
+    selectedToolIdsByRole: getSelectedToolIdsByRole(parts),
+    primaryToolIdsByRole,
+    primaryEcosystemsByRole,
+  };
 }
 
 function addLegacyPart(
@@ -2091,21 +2155,6 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
 export function validateStackParts(parts: readonly StackPart[]): StackGraphValidationResult {
   const issues: StackGraphIssue[] = [];
   const partsById = new Map(parts.map((part) => [part.id, part]));
-  const primaryToolIdsByRole: Partial<Record<StackPrimaryRole, string>> = {};
-  const primaryEcosystemsByRole: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {};
-  const selectedToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
-
-  for (const role of PRIMARY_ROLES) {
-    const primaryPart = getPrimaryPart(parts, role as StackPrimaryRole);
-    if (primaryPart) {
-      primaryToolIdsByRole[role as StackPrimaryRole] = primaryPart.toolId;
-      primaryEcosystemsByRole[role as StackPrimaryRole] = primaryPart.ecosystem;
-    }
-  }
-
-  for (const part of parts) {
-    if (part.source !== "provided") selectedToolIdsByRole[part.role] = part.toolId;
-  }
 
   for (const role of PRIMARY_ROLES) {
     const matching = parts.filter((part) => part.role === role && !part.ownerPartId);
@@ -2156,24 +2205,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
 
     const owner = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
     if (definition && (PRIMARY_ROLES.has(part.role) || owner || isOwnerlessDefinition(definition))) {
-      const siblingToolIdsByRole: Partial<Record<StackPartRole, string>> = {};
-      for (const sibling of parts) {
-        if (sibling.ownerPartId !== part.ownerPartId || sibling.source === "provided") continue;
-        siblingToolIdsByRole[sibling.role] = sibling.toolId;
-      }
-
-      const compatibilityIssue = getStackPartCompatibilityIssue(part, {
-        role: part.role,
-        ecosystem: part.ecosystem,
-        ownerRole:
-          owner && PRIMARY_ROLES.has(owner.role) ? (owner.role as StackPrimaryRole) : undefined,
-        ownerToolId: owner?.toolId,
-        ownerEcosystem: owner?.ecosystem,
-        siblingToolIdsByRole,
-        selectedToolIdsByRole,
-        primaryToolIdsByRole,
-        primaryEcosystemsByRole,
-      });
+      const compatibilityIssue = getStackPartCompatibilityIssueForPart(part, parts);
 
       if (compatibilityIssue) {
         issues.push(compatibilityIssue);

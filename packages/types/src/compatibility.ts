@@ -8,8 +8,10 @@ import type {
   CSSFramework,
   Forms,
   Frontend,
+  ProjectConfig,
   Runtime,
-  WebDeploy,
+  StackPartEcosystem,
+  StackPartRole,
   UILibrary,
 } from "./types";
 
@@ -19,6 +21,32 @@ import {
   getCategoryDisplayName,
   type OptionCategory,
 } from "./option-metadata";
+import {
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  UI_LIBRARY_COMPATIBILITY,
+} from "./stack-compatibility-rules";
+import {
+  getStackPartCompatibilityIssueForPart,
+  legacyProjectConfigToStackParts,
+} from "./stack-graph";
+
+export {
+  BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  UI_LIBRARY_COMPATIBILITY,
+} from "./stack-compatibility-rules";
 
 export type CompatibilityCategory = OptionCategory;
 
@@ -173,35 +201,6 @@ export function validateProjectName(name: string): string | undefined {
   }
   return undefined;
 }
-
-export const hasPWACompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
-      f,
-    ),
-  );
-
-export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "nuxt",
-      "svelte",
-      "solid",
-      "next",
-      "vinext",
-      "astro",
-    ].includes(f),
-  );
-
-export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
-      f,
-    ),
-  );
 
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
   if (stack.ecosystem !== "typescript") return false;
@@ -1552,6 +1551,11 @@ export const getDisabledReason = (
     }
   }
 
+  const graphDisabledReason = getGraphDisabledReason(currentStack, category, optionId);
+  if (graphDisabledReason) {
+    return graphDisabledReason;
+  }
+
   // ============================================
   // NO BACKEND - locks down backend-dependent options
   // ============================================
@@ -2640,6 +2644,166 @@ export const isOptionCompatible = (
   return getDisabledReason(currentStack, category, optionId) === null;
 };
 
+type GraphDisabledReasonOwnerRole = "frontend" | "backend" | "mobile" | "database";
+
+type GraphDisabledReasonBinding = {
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  ownerRole: GraphDisabledReasonOwnerRole;
+  ownerEcosystem?: StackPartEcosystem;
+  missingOwnerReason: string;
+};
+
+const GRAPH_DISABLED_REASON_BINDINGS: Partial<
+  Record<CompatibilityCategory, GraphDisabledReasonBinding>
+> = {
+  cssFramework: {
+    role: "css",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "CSS framework requires a web frontend",
+  },
+  uiLibrary: {
+    role: "ui",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "UI library requires a web frontend",
+  },
+  forms: {
+    role: "forms",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Forms requires a web frontend",
+  },
+  stateManagement: {
+    role: "stateManagement",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "State management requires a web frontend",
+  },
+  animation: {
+    role: "animation",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Animation requires a web frontend",
+  },
+  fileUpload: {
+    role: "fileUpload",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "File upload requires a web frontend",
+  },
+  i18n: {
+    role: "i18n",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "i18n requires a web frontend",
+  },
+  analytics: {
+    role: "analytics",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Analytics requires a web frontend",
+  },
+  mobileNavigation: {
+    role: "navigation",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile navigation requires a native Expo frontend",
+  },
+  mobileUI: {
+    role: "ui",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile UI requires a native Expo frontend",
+  },
+  mobileStorage: {
+    role: "storage",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile storage requires a native Expo frontend",
+  },
+  mobileTesting: {
+    role: "testing",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile testing requires a native Expo frontend",
+  },
+};
+
+function compatibilityInputToGraphProjectConfig(
+  currentStack: CompatibilityInput,
+): Partial<ProjectConfig> {
+  const frontend = [
+    ...currentStack.webFrontend.filter((frontend) => frontend !== "none"),
+    ...currentStack.nativeFrontend.filter((frontend) => frontend !== "none"),
+  ];
+
+  return {
+    ...currentStack,
+    frontend: (frontend.length > 0 ? frontend : ["none"]) as ProjectConfig["frontend"],
+    addons: [
+      ...currentStack.codeQuality,
+      ...currentStack.documentation,
+      ...currentStack.appPlatforms,
+    ] as ProjectConfig["addons"],
+    ai: currentStack.aiSdk as ProjectConfig["ai"],
+  } as unknown as Partial<ProjectConfig>;
+}
+
+function getGraphDisabledReason(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): string | null {
+  if (optionId === "false") return null;
+
+  const binding = GRAPH_DISABLED_REASON_BINDINGS[category];
+  if (!binding) return null;
+  if (optionId === "none" && category !== "cssFramework") return null;
+
+  let parts;
+  try {
+    parts = legacyProjectConfigToStackParts(compatibilityInputToGraphProjectConfig(currentStack));
+  } catch {
+    return null;
+  }
+
+  const owner = parts.find(
+    (part) =>
+      part.role === binding.ownerRole &&
+      !part.ownerPartId &&
+      (!binding.ownerEcosystem || part.ecosystem === binding.ownerEcosystem),
+  );
+  if (!owner && optionId === "none") return null;
+  if (!owner) return binding.missingOwnerReason;
+
+  const issue = getStackPartCompatibilityIssueForPart(
+    {
+      id: `candidate:${binding.ownerRole}.${binding.role}:${binding.ecosystem}:${optionId}`,
+      role: binding.role,
+      toolId: optionId,
+      ecosystem: binding.ecosystem,
+      ownerPartId: owner.id,
+    },
+    parts,
+  );
+
+  return issue?.message ?? null;
+}
+
 const WEB_FRAMEWORKS: readonly Frontend[] = [
   "tanstack-router",
   "react-router",
@@ -2658,207 +2822,6 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "fresh",
   "none",
 ] as const;
-
-const WEB_DEPLOY_COMPATIBLE_FRONTENDS = {
-  render: [
-    "tanstack-router",
-    "react-router",
-    "react-vite",
-    "tanstack-start",
-    "next",
-    "nuxt",
-    "svelte",
-    "solid",
-  ],
-  netlify: ["tanstack-router", "react-vite", "next", "nuxt", "svelte", "solid"],
-} as const satisfies Partial<Record<WebDeploy, readonly Frontend[]>>;
-
-export function getUnsupportedWebDeployFrontend(
-  webDeploy: string | undefined,
-  frontends: readonly string[] = [],
-): string | undefined {
-  const supported = WEB_DEPLOY_COMPATIBLE_FRONTENDS[
-    webDeploy as keyof typeof WEB_DEPLOY_COMPATIBLE_FRONTENDS
-  ];
-  if (!supported) return undefined;
-
-  return frontends.find((frontend) => {
-    if (frontend === "none" || !WEB_FRAMEWORKS.includes(frontend as Frontend)) return false;
-    return !(supported as readonly string[]).includes(frontend);
-  });
-}
-
-export const UI_LIBRARY_COMPATIBILITY: Record<
-  UILibrary,
-  {
-    frontends: readonly Frontend[];
-    cssFrameworks: readonly CSSFramework[];
-  }
-> = {
-  "shadcn-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  "shadcn-svelte": {
-    frontends: ["svelte", "astro"],
-    cssFrameworks: ["tailwind"],
-  },
-  daisyui: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "svelte",
-      "solid",
-      "solid-start",
-      "astro",
-      "qwik",
-      "angular",
-      "redwood",
-      "fresh",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  "radix-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "headless-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "park-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "solid",
-      "solid-start",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only"],
-  },
-  "chakra-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  nextui: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  mantine: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  mui: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  antd: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "base-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "ark-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "svelte",
-      "solid",
-      "solid-start",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "react-aria": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  none: {
-    frontends: WEB_FRAMEWORKS,
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-};
 
 const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   pwa: [
@@ -2977,21 +2940,6 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   "docker-compose": [],
   none: [],
 };
-
-export const BACKEND_UTILS_COMPATIBLE_BACKENDS = [
-  "hono",
-  "express",
-  "fastify",
-  "elysia",
-  "fets",
-  "nestjs",
-] as const satisfies readonly Backend[];
-
-export function isBackendUtilsCompatibleBackend(backend: string | undefined): boolean {
-  return (
-    backend !== undefined && (BACKEND_UTILS_COMPATIBLE_BACKENDS as readonly string[]).includes(backend)
-  );
-}
 
 export function isWebFrontend(value: Frontend) {
   return WEB_FRAMEWORKS.includes(value);
@@ -3214,51 +3162,6 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   }
 
   return true;
-}
-
-export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {
-  const includesSolid = frontends.includes("solid");
-  const includesSolidStart = frontends.includes("solid-start");
-  if (includesSolid || includesSolidStart) return false;
-
-  if (backend === "convex") {
-    const includesNuxt = frontends.includes("nuxt");
-    const includesSvelte = frontends.includes("svelte");
-    if (includesNuxt || includesSvelte) return false;
-  }
-
-  return true;
-}
-
-function hasExampleChatSdkSelfFrontend(frontends: Frontend[] = []) {
-  return frontends.some((f) => ["next", "tanstack-start", "nuxt"].includes(f));
-}
-
-export function isExampleChatSdkAllowed(
-  backend?: Backend | string,
-  frontends: Frontend[] = [],
-  runtime?: Runtime | string,
-) {
-  if (frontends.includes("react-vite")) return false;
-  if (!backend || backend === "none" || backend === "convex") return false;
-
-  if (backend === "self") {
-    return hasExampleChatSdkSelfFrontend(frontends);
-  }
-
-  if (backend === "self-next" || backend === "self-tanstack-start" || backend === "self-nuxt") {
-    return true;
-  }
-
-  if (backend === "self-astro" || backend === "self-svelte" || backend === "self-solid-start") {
-    return false;
-  }
-
-  if (backend === "hono") {
-    return runtime === "node";
-  }
-
-  return false;
 }
 
 export function requiresChatSdkVercelAIForSelection(

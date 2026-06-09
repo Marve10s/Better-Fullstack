@@ -1,7 +1,7 @@
 # Single Source of Truth for the Stack Graph
 
 > **Active design doc — keep this updated as decisions land.**
-> Status: **Phase 1 landed (foundation); Phases 2–4 planned**
+> Status: **Phase 2 library promotion landed; Phase 3 compatibility consolidation started**
 > Branch in question: `feat/multi-ecosystem-stack-graph` (shipped in PR #209)
 > Last updated: 2026-06-02
 
@@ -10,7 +10,7 @@
 - **Goal:** Move toward a *single source of truth* for stack configuration so Solo and Multi-Ecosystem creation cannot drift apart.
 - **What shipped (PR #209):** the **stack-graph model** (`packages/types/src/stack-graph.ts`), graph-shaped schemas/compatibility/translation, CLI scoped `--part` parsing/emission, graph threading through the template generator, and the multi-ecosystem web builder redesign. The graph currently lives **alongside** the flat `ProjectConfig` (dual representation); it is not yet the sole source of truth.
 - **Direction:** The **graph (`stackParts`) becomes the single source of truth**; the flat `ProjectConfig` becomes a *derived, generator-only projection*. Foundation is in place; the authority flip and library promotion are the remaining work (see Phases 2–4).
-- **Settled decision:** Libraries are **owned by their part** (`ownerPartId`), the same way `orm`/`api`/`auth` already work — not global per-project fields. (Not yet implemented — Phase 2.)
+- **Settled decision:** Libraries are **owned by their part** (`ownerPartId`), the same way `orm`/`api`/`auth` already work — not global per-project fields. Phase 2 has promoted the planned backend, frontend, infrastructure, addon/example, mobile, and ecosystem categories into `stackParts`.
 - **Constraint:** Neither Solo nor Multi is "legacy." Both are first-class creation modes. (See memory: project-creation-modes.) "Legacy" only ever refers to the flat config *data shape*.
 
 ---
@@ -80,8 +80,8 @@ There are **two categories** of configuration data and they behave differently:
 
 - **Phase 0 — Inventory & invariants:** catalog every library field, its role, supported ecosystems, and existing compatibility rules. Add round-trip property tests proving flat ↔ graph is lossless for *structural* parts first.
 - **Phase 1 — Graph foundation + structural round-trip (LANDED in PR #209):** the graph model, schemas, compatibility hooks, translation layer, CLI `--part` parsing/emission, generator threading, and the multi-ecosystem builder shipped. The graph and flat config coexist (dual representation); `compareLegacyConfigToStackParts` is still a **runtime** drift guard, not yet demoted to a test-only assertion, and the mode-dependent authority flip is not yet removed. Finishing that flip is the remaining Phase 1 work.
-- **Phase 2 — Promote libraries to owned parts:** register library tools, add `ownerPartId` scoping, extend the importer/exporter, update both UIs to write library parts. Solo collapses to single-owner. *Not started — libraries are still flat fields.*
-- **Phase 3 — Consolidate compatibility:** route library compatibility through the graph engine; retire duplicated flat rules. *Not started — flat `compatibility.ts` and graph `getStackPartCompatibilityIssue` still coexist.*
+- **Phase 2 — Promote libraries to owned parts:** register library tools, add `ownerPartId` scoping, extend the importer/exporter, and emit promoted categories as graph `--part` selections. Backend, frontend, infrastructure, addon/example, mobile, and remaining ecosystem batches have landed on PR #220; deferred single-option settings remain flat by design.
+- **Phase 3 — Consolidate compatibility:** route library compatibility through the graph engine; retire duplicated flat rules. Started on PR #220: shared helper data was split out of `compatibility.ts`, graph validation exposes candidate-part checks, and `getDisabledReason` now routes promoted frontend/mobile library disables through graph compatibility before falling back to narrower flat-only edge cases.
 - **Phase 4 — Storage cleanup:** decide final `bts.jsonc` shape (graph-only vs graph+cache). *Not started.*
 
 ## Reference Map (files)
@@ -101,3 +101,5 @@ There are **two categories** of configuration data and they behave differently:
 - **2026-06-02:** Phase 1 foundation shipped in PR #209 (`feat/multi-ecosystem-stack-graph`): stack-graph model + schemas/compatibility/translation, CLI `--part` round-trip, generator threading, and the multi-ecosystem builder redesign. Graph coexists with the flat config rather than replacing it; Phases 2–4 (library promotion, compatibility consolidation, storage cleanup) and the structural authority flip remain open follow-ups.
 - **2026-06-09:** Phase 0 inventory completed — see [stack-graph-phase-0-library-inventory.md](./stack-graph-phase-0-library-inventory.md). Answers open questions 4–5 (role catalog, ~250 registrations, compatibility-rule map) and recommends answers for 1–3. Found an existing importer/exporter asymmetry (12 registered ecosystem categories never imported from flat config) and two role collisions (`pythonGraphql`/`pythonApi`, `elixirRealtime`/`elixirApi`); closing the asymmetry is the recommended first Phase 2 PR. Structural round-trip tests added to `packages/types/test/stack-graph.test.ts`.
 - **2026-06-09 (later):** Phase 2 Batch 0 shipped on `feat/stack-graph-phase0-batch0`: the importer now emits backend-owned parts for `rustCaching`, `pythonValidation`, `pythonTaskQueue`, and the seven elixir extras; unsupported elixir tools stay flat-only to keep `validateStackParts` green for existing solo configs. `pythonGraphql`/`elixirRealtime` remain flat-only pending the `realtime` role (Batch 1). Full monorepo suite passes (3,067 CLI tests incl. scaffold regressions).
+- **2026-06-09/10:** Phase 2 Batches 1–5 shipped on PR #220: TypeScript backend singles, frontend singles, deploy/runtime/dbSetup, addons/examples, mobile categories, and remaining Rust/Python/Go/Java/Elixir categories now round-trip as owned graph parts and emit reproducible `--part` specs.
+- **2026-06-10:** Phase 3 compatibility consolidation started: graph-specific compatibility helper data moved into `stack-compatibility-rules.ts`, `validateStackParts` and candidate disabled-reason checks now share graph context construction, and `getDisabledReason` routes promoted frontend/mobile library options through graph checks with regression coverage.

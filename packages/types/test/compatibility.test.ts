@@ -110,6 +110,57 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(supportedStack, "webDeploy", "netlify")).toBeNull();
   });
 
+  it("routes promoted frontend library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["fresh"],
+          uiLibrary: "daisyui",
+        },
+        "forms",
+        "tanstack-form",
+      ),
+    ).toBe("'tanstack-form' has no Preact adapter for the Fresh frontend.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          uiLibrary: "park-ui",
+        },
+        "cssFramework",
+        "none",
+      ),
+    ).toBe("'park-ui' is not compatible with the 'none' CSS framework.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["svelte"],
+        },
+        "uiLibrary",
+        "shadcn-ui",
+      ),
+    ).toBe("'shadcn-ui' is not compatible with the 'svelte' frontend.");
+  });
+
+  it("routes promoted mobile library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          ecosystem: "react-native",
+          webFrontend: ["none"],
+          nativeFrontend: ["native-bare"],
+        },
+        "mobileUI",
+        "uniwind",
+      ),
+    ).toBe("Uniwind mobile UI requires the Expo + Uniwind frontend.");
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,
