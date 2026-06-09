@@ -813,6 +813,65 @@ function createTypeScriptFrontendCompatibilityIssue(
   return undefined;
 }
 
+function createTypeScriptBackendCompatibilityIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.ecosystem !== "typescript" || context.ownerRole !== "backend") return undefined;
+
+  if (part.role === "payments" && part.toolId === "polar") {
+    const authTool = context.siblingToolIdsByRole?.auth;
+    if (authTool !== "better-auth") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Polar requires Better Auth.",
+      });
+    }
+
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (!frontendTool || frontendTool === "none") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Polar requires a web frontend.",
+      });
+    }
+  }
+
+  if (part.role === "payments" && part.toolId === "dodo") {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool === "react-vite") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Dodo Payments are not yet supported for React + Vite projects.",
+      });
+    }
+  }
+
+  if (part.role === "cms" && part.toolId === "payload") {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool !== "next") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Payload CMS v3 requires a Next.js frontend.",
+      });
+    }
+  }
+
+  return undefined;
+}
+
 function createMobileCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -1263,6 +1322,9 @@ function getStackPartCompatibilityIssue(
 
   const frontendCompatibilityIssue = createTypeScriptFrontendCompatibilityIssue(part, context);
   if (frontendCompatibilityIssue) return frontendCompatibilityIssue;
+
+  const backendCompatibilityIssue = createTypeScriptBackendCompatibilityIssue(part, context);
+  if (backendCompatibilityIssue) return backendCompatibilityIssue;
 
   const mobileCompatibilityIssue = createMobileCompatibilityIssue(part, context);
   if (mobileCompatibilityIssue) return mobileCompatibilityIssue;

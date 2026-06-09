@@ -161,6 +161,34 @@ describe("compatibility issue helpers", () => {
     ).toBe("Uniwind mobile UI requires the Expo + Uniwind frontend.");
   });
 
+  it("routes promoted backend library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          auth: "none",
+        },
+        "payments",
+        "polar",
+      ),
+    ).toBe("Polar requires Better Auth.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["react-vite"],
+        },
+        "payments",
+        "dodo",
+      ),
+    ).toBe("Dodo Payments are not yet supported for React + Vite projects.");
+
+    expect(getDisabledReason(DEFAULT_STACK_SELECTION, "cms", "payload")).toBe(
+      "Payload CMS v3 requires a Next.js frontend.",
+    );
+  });
+
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {
     const result = analyzeStackCompatibility({
       ...DEFAULT_STACK_SELECTION,

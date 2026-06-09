@@ -584,6 +584,14 @@ describe("stack graph structural round-trip (phase 0)", () => {
     auth: "better-auth",
   };
 
+  function getCompatibleBackendSingleConfig(field: string, value: string): Partial<ProjectConfig> {
+    const config = { ...TS_BASE, [field]: value };
+    if (field === "cms" && value === "payload") {
+      config.frontend = ["next"];
+    }
+    return config;
+  }
+
   it("round-trips every TypeScript web frontend without drift", () => {
     for (const frontend of WEB_FRONTENDS) {
       const derived = expectNoDrift({ ...TS_BASE, frontend: [frontend] });
@@ -627,7 +635,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
     for (const [field, values] of Object.entries(cases)) {
       for (const value of values) {
-        const config = { ...TS_BASE, [field]: value };
+        const config = getCompatibleBackendSingleConfig(field, value);
         const parts = legacyProjectConfigToStackParts(config);
         const backend = parts.find(
           (part) => part.role === "backend" && part.ecosystem === "typescript",

@@ -1551,11 +1551,6 @@ export const getDisabledReason = (
     }
   }
 
-  const graphDisabledReason = getGraphDisabledReason(currentStack, category, optionId);
-  if (graphDisabledReason) {
-    return graphDisabledReason;
-  }
-
   // ============================================
   // NO BACKEND - locks down backend-dependent options
   // ============================================
@@ -1590,6 +1585,11 @@ export const getDisabledReason = (
     if (category === "examples" && optionId !== "none") {
       return "No backend selected";
     }
+  }
+
+  const graphDisabledReason = getGraphDisabledReason(currentStack, category, optionId);
+  if (graphDisabledReason) {
+    return graphDisabledReason;
   }
 
   // ============================================
@@ -2712,6 +2712,20 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "frontend",
     ownerEcosystem: "typescript",
     missingOwnerReason: "Analytics requires a web frontend",
+  },
+  payments: {
+    role: "payments",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Payments requires a backend",
+  },
+  cms: {
+    role: "cms",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "CMS requires a backend",
   },
   mobileNavigation: {
     role: "navigation",
