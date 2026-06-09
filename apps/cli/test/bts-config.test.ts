@@ -11,7 +11,7 @@ import {
   type ProjectConfig,
 } from "@better-fullstack/types";
 
-import { readBtsConfig, writeBtsConfig } from "../src/utils/bts-config";
+import { readBtsConfig, updateBtsConfig, writeBtsConfig } from "../src/utils/bts-config";
 
 const TEMP_ROOTS: string[] = [];
 
@@ -119,5 +119,45 @@ describe("bts.jsonc graph persistence", () => {
     expect(readBack?.cssFramework).toBe("scss");
     expect(readBack?.goWebFramework).toBe("gin");
     expect(readBack?.goOrm).toBe("gorm");
+  });
+
+  it("refreshes graph metadata and derived cache when updating bts config", async () => {
+    const config = await makeProjectConfig();
+    await writeBtsConfig(config);
+
+    await updateBtsConfig(config.projectDir, {
+      addons: ["turborepo", "pwa"],
+      webDeploy: "netlify",
+      serverDeploy: "railway",
+    });
+
+    const { parsed } = await readJsonc(config.projectDir);
+    const stackPartSpecs = parsed.stackParts?.map((part) => {
+      const owner = parsed.stackParts?.find((candidate) => candidate.id === part.ownerPartId);
+      return owner
+        ? `${owner.role}.${part.role}:${part.ecosystem}:${part.toolId}`
+        : `${part.role}:${part.ecosystem}:${part.toolId}`;
+    });
+
+    expect(parsed.addons).toEqual(["turborepo", "pwa"]);
+    expect(parsed.webDeploy).toBe("netlify");
+    expect(parsed.serverDeploy).toBe("railway");
+    expect(stackPartSpecs).toEqual(
+      expect.arrayContaining([
+        "frontend.appPlatform:typescript:pwa",
+        "frontend.deploy:typescript:netlify",
+        "backend.deploy:typescript:railway",
+      ]),
+    );
+    expect(parsed.effectiveStack).toMatchObject({
+      "frontend.appPlatform": "typescript:pwa",
+      "frontend.deploy": "typescript:netlify",
+      "backend.deploy": "typescript:railway",
+    });
+
+    const readBack = await readBtsConfig(config.projectDir);
+    expect(readBack?.addons).toEqual(["turborepo", "pwa"]);
+    expect(readBack?.webDeploy).toBe("netlify");
+    expect(readBack?.serverDeploy).toBe("railway");
   });
 });

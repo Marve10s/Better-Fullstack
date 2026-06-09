@@ -16,6 +16,7 @@ import { getLatestCLIVersion } from "./get-latest-cli-version";
 const BTS_CONFIG_FILE = "bts.jsonc";
 
 type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
+type BtsConfigMetadata = Pick<BetterTStackConfig, "version" | "createdAt">;
 
 function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
   if (!stackParts) return projectConfig;
@@ -207,14 +208,18 @@ function syncUpdatedStackParts(
   return next;
 }
 
-export async function writeBtsConfig(projectConfig: ProjectConfig) {
+function buildBtsConfigForPersistence(
+  projectConfig: ProjectConfig,
+  metadata: Partial<BtsConfigMetadata> = {},
+): BetterTStackConfig {
   const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
   const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, stackParts);
   const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : null;
   const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
-  const btsConfig: BetterTStackConfig = {
-    version: getLatestCLIVersion(),
-    createdAt: new Date().toISOString(),
+
+  return {
+    version: metadata.version ?? getLatestCLIVersion(),
+    createdAt: metadata.createdAt ?? new Date().toISOString(),
     ...(graphSummary ? { graphSummary, effectiveStack } : {}),
     ecosystem: persistedConfig.ecosystem,
     database: persistedConfig.database,
@@ -310,7 +315,10 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     aiDocs: persistedConfig.aiDocs,
     stackParts,
   };
+}
 
+export async function writeBtsConfig(projectConfig: ProjectConfig) {
+  const btsConfig = buildBtsConfigForPersistence(projectConfig);
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
@@ -426,7 +434,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
   configContent = JSONC.applyEdits(configContent, formatResult);
 
-  const graphNote = stackParts.length > 0
+  const graphNote = btsConfig.stackParts?.length
     ? "// stackParts is the source of truth; graphSummary/effectiveStack summarize it for humans and tools.\n// Top-level option fields are a derived compatibility cache for older integrations.\n"
     : "";
   const finalContent = `// Better Fullstack configuration file
@@ -498,10 +506,23 @@ export async function updateBtsConfig(
     const updatedStackParts = errors.length === 0
       ? syncUpdatedStackParts(currentConfig.stackParts, updates)
       : undefined;
-    const persistedUpdates = {
-      ...updates,
-      ...(updatedStackParts ? { stackParts: updatedStackParts } : {}),
-    };
+    const persistedUpdates = updatedStackParts
+      ? Object.fromEntries(
+          Object.entries(
+            buildBtsConfigForPersistence(
+              {
+                ...currentConfig,
+                ...updates,
+                stackParts: updatedStackParts,
+              } as unknown as ProjectConfig,
+              {
+                version: currentConfig.version,
+                createdAt: currentConfig.createdAt,
+              },
+            ),
+          ).filter(([key]) => key !== "version" && key !== "createdAt"),
+        )
+      : updates;
 
     for (const [key, value] of Object.entries(persistedUpdates)) {
       const editResult = JSONC.modify(modifiedContent, [key], value, {
