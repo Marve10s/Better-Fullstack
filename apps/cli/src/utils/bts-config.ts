@@ -467,18 +467,10 @@ export async function readBtsConfig(projectDir: string) {
       return null;
     }
 
-    if (config.stackParts && config.stackParts.length > 0) {
-      return {
-        ...config,
-        ...stackPartsToLegacyProjectConfigPartial(config.stackParts),
-        stackParts: config.stackParts,
-      } as BetterTStackConfig;
-    }
-
-    return {
-      ...config,
-      stackParts: legacyProjectConfigToStackParts(config),
-    } as BetterTStackConfig;
+    return buildBtsConfigForPersistence(config as unknown as ProjectConfig, {
+      version: config.version,
+      createdAt: config.createdAt,
+    });
   } catch {
     return null;
   }

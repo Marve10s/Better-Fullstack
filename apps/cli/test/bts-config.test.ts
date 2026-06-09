@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "bun:test";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as JSONC from "jsonc-parser";
@@ -119,6 +119,53 @@ describe("bts.jsonc graph persistence", () => {
     expect(readBack?.cssFramework).toBe("scss");
     expect(readBack?.goWebFramework).toBe("gin");
     expect(readBack?.goOrm).toBe("gorm");
+  });
+
+  it("normalizes stale non-selected cache fields when reading stackParts", async () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.css:typescript:scss",
+      "backend:typescript:hono",
+    ]);
+    const config = await makeProjectConfig({ stackParts });
+
+    await writeBtsConfig(config);
+
+    const configPath = join(config.projectDir, "bts.jsonc");
+    let staleContent = await readFile(configPath, "utf8");
+    for (const [key, value] of Object.entries({
+      graphSummary: "Stale graph summary",
+      effectiveStack: { backend: "go:gin" },
+      goWebFramework: "gin",
+      goOrm: "gorm",
+      javaWebFramework: "spring-boot",
+      elixirJson: "jason",
+      mobileNavigation: "expo-router",
+    })) {
+      const edit = JSONC.modify(staleContent, [key], value, {
+        formattingOptions: {
+          tabSize: 2,
+          insertSpaces: true,
+          eol: "\n",
+        },
+      });
+      staleContent = JSONC.applyEdits(staleContent, edit);
+    }
+    await writeFile(configPath, staleContent, "utf8");
+
+    const readBack = await readBtsConfig(config.projectDir);
+
+    expect(readBack?.graphSummary).not.toBe("Stale graph summary");
+    expect(readBack?.effectiveStack).toMatchObject({
+      frontend: "typescript:next",
+      "frontend.css": "typescript:scss",
+      backend: "typescript:hono",
+    });
+    expect(readBack?.goWebFramework).toBe("none");
+    expect(readBack?.goOrm).toBe("none");
+    expect(readBack?.javaWebFramework).toBe("none");
+    expect(readBack?.elixirJson).toBe("none");
+    expect(readBack?.mobileNavigation).toBe("none");
   });
 
   it("refreshes graph metadata and derived cache when updating bts config", async () => {
