@@ -49,9 +49,15 @@ import type {
   Frontend,
   GoApi,
   GoAuth,
+  GoCaching,
   GoCli,
+  GoConfig,
   GoLogging,
+  GoMessageQueue,
+  GoObservability,
   GoOrm,
+  GoRealtime,
+  GoTesting,
   GoWebFramework,
   JavaAuth,
   JavaBuildTool,
@@ -162,9 +168,15 @@ import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
+  getGoCachingChoice,
   getGoCliChoice,
+  getGoConfigChoice,
   getGoLoggingChoice,
+  getGoMessageQueueChoice,
+  getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoRealtimeChoice,
+  getGoTestingChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getI18nChoice } from "./i18n";
@@ -309,6 +321,12 @@ type PromptGroupResults = {
   goCli: GoCli;
   goLogging: GoLogging;
   goAuth: GoAuth;
+  goTesting: GoTesting[];
+  goRealtime: GoRealtime;
+  goMessageQueue: GoMessageQueue;
+  goCaching: GoCaching;
+  goConfig: GoConfig;
+  goObservability: GoObservability;
   // Java ecosystem
   javaWebFramework: JavaWebFramework;
   javaBuildTool: JavaBuildTool;
@@ -789,6 +807,30 @@ export async function gatherConfig(
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
         return getGoAuthChoice(flags.goAuth);
       },
+      goTesting: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve([] as GoTesting[]);
+        return getGoTestingChoice(flags.goTesting);
+      },
+      goRealtime: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoRealtime);
+        return getGoRealtimeChoice(flags.goRealtime);
+      },
+      goMessageQueue: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
+        return getGoMessageQueueChoice(flags.goMessageQueue);
+      },
+      goCaching: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
+        return getGoCachingChoice(flags.goCaching);
+      },
+      goConfig: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoConfig);
+        return getGoConfigChoice(flags.goConfig);
+      },
+      goObservability: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoObservability);
+        return getGoObservabilityChoice(flags.goObservability);
+      },
       // Java ecosystem prompts (skip if not Java)
       javaWebFramework: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
@@ -1044,6 +1086,12 @@ export async function gatherConfig(
     goCli: result.goCli,
     goLogging: result.goLogging,
     goAuth: result.goAuth,
+    goTesting: result.goTesting,
+    goRealtime: result.goRealtime,
+    goMessageQueue: result.goMessageQueue,
+    goCaching: result.goCaching,
+    goConfig: result.goConfig,
+    goObservability: result.goObservability,
     // Java ecosystem options
     javaWebFramework: result.javaWebFramework,
     javaBuildTool: result.javaBuildTool,

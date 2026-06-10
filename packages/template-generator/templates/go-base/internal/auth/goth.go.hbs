@@ -1,0 +1,35 @@
+{{#if (eq goAuth "goth")}}
+// OAuth social login via Goth.
+//
+// Configure provider credentials in your environment, register the providers
+// once at startup, then mount the begin/callback handlers on your router.
+package auth
+
+import (
+	"os"
+
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/github"
+	"github.com/markbates/goth/providers/google"
+)
+
+// InitGoth registers OAuth providers from environment variables. Providers
+// with missing credentials are skipped.
+func InitGoth() {
+	callbackBase := os.Getenv("OAUTH_CALLBACK_BASE_URL")
+	if callbackBase == "" {
+		callbackBase = "http://localhost:3000"
+	}
+
+	providers := []goth.Provider{}
+
+	if key, secret := os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"); key != "" && secret != "" {
+		providers = append(providers, google.New(key, secret, callbackBase+"/auth/google/callback"))
+	}
+	if key, secret := os.Getenv("GITHUB_CLIENT_ID"), os.Getenv("GITHUB_CLIENT_SECRET"); key != "" && secret != "" {
+		providers = append(providers, github.New(key, secret, callbackBase+"/auth/github/callback"))
+	}
+
+	goth.UseProviders(providers...)
+}
+{{/if}}

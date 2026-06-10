@@ -1,0 +1,10 @@
+{{#if (eq goApi "gqlgen")}}
+//go:build tools
+
+// Tool dependencies tracked for `go generate` — never built into the binary.
+package main
+
+import (
+	_ "github.com/99designs/gqlgen"
+)
+{{/if}}

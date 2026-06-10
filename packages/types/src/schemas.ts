@@ -59,6 +59,7 @@ export const StackPartRoleSchema = z
     "errorHandling",
     "httpClient",
     "libraries",
+    "config",
   ])
   .describe("Role a selected tool plays in the stack graph");
 
@@ -494,7 +495,9 @@ export const GoOrmSchema = z
   .enum(["gorm", "sqlc", "ent", "none"])
   .describe("Go ORM/database layer");
 
-export const GoApiSchema = z.enum(["grpc-go", "none"]).describe("Go API layer (gRPC)");
+export const GoApiSchema = z
+  .enum(["grpc-go", "gqlgen", "none"])
+  .describe("Go API layer (gRPC, GraphQL)");
 
 export const GoCliSchema = z
   .enum(["cobra", "bubbletea", "urfave-cli", "none"])
@@ -504,7 +507,33 @@ export const GoLoggingSchema = z
   .enum(["zap", "zerolog", "slog", "logrus", "none"])
   .describe("Go logging library");
 
-export const GoAuthSchema = z.enum(["casbin", "jwt", "none"]).describe("Go authentication library");
+export const GoAuthSchema = z
+  .enum(["casbin", "jwt", "goth", "none"])
+  .describe("Go authentication library");
+
+export const GoTestingSchema = z
+  .enum(["testify", "gomock", "none"])
+  .describe("Go testing libraries");
+
+export const GoRealtimeSchema = z
+  .enum(["gorilla-websocket", "centrifuge", "none"])
+  .describe("Go realtime/WebSocket library");
+
+export const GoMessageQueueSchema = z
+  .enum(["nats", "watermill", "none"])
+  .describe("Go message queue/eventing library");
+
+export const GoCachingSchema = z
+  .enum(["redis", "ristretto", "none"])
+  .describe("Go caching library");
+
+export const GoConfigSchema = z
+  .enum(["viper", "koanf", "none"])
+  .describe("Go configuration management library");
+
+export const GoObservabilitySchema = z
+  .enum(["opentelemetry", "none"])
+  .describe("Go observability/tracing library");
 
 // Java ecosystem schemas
 export const JavaWebFrameworkSchema = z
@@ -855,6 +884,12 @@ export const CreateInputSchema = z.object({
   goCli: GoCliSchema.optional(),
   goLogging: GoLoggingSchema.optional(),
   goAuth: GoAuthSchema.optional(),
+  goTesting: z.array(GoTestingSchema).optional(),
+  goRealtime: GoRealtimeSchema.optional(),
+  goMessageQueue: GoMessageQueueSchema.optional(),
+  goCaching: GoCachingSchema.optional(),
+  goConfig: GoConfigSchema.optional(),
+  goObservability: GoObservabilitySchema.optional(),
   // Java ecosystem options
   javaWebFramework: JavaWebFrameworkSchema.optional(),
   javaBuildTool: JavaBuildToolSchema.optional(),
@@ -995,6 +1030,12 @@ export const ProjectConfigSchema = z.object({
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
   goAuth: GoAuthSchema,
+  goTesting: z.array(GoTestingSchema),
+  goRealtime: GoRealtimeSchema,
+  goMessageQueue: GoMessageQueueSchema,
+  goCaching: GoCachingSchema,
+  goConfig: GoConfigSchema,
+  goObservability: GoObservabilitySchema,
   // Java ecosystem options
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
@@ -1130,6 +1171,12 @@ export const BetterTStackConfigSchema = z.object({
   goCli: GoCliSchema,
   goLogging: GoLoggingSchema,
   goAuth: GoAuthSchema,
+  goTesting: z.array(GoTestingSchema),
+  goRealtime: GoRealtimeSchema,
+  goMessageQueue: GoMessageQueueSchema,
+  goCaching: GoCachingSchema,
+  goConfig: GoConfigSchema,
+  goObservability: GoObservabilitySchema,
   // Java ecosystem options
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
@@ -1276,6 +1323,12 @@ export const GO_API_VALUES = GoApiSchema.options;
 export const GO_CLI_VALUES = GoCliSchema.options;
 export const GO_LOGGING_VALUES = GoLoggingSchema.options;
 export const GO_AUTH_VALUES = GoAuthSchema.options;
+export const GO_TESTING_VALUES = GoTestingSchema.options;
+export const GO_REALTIME_VALUES = GoRealtimeSchema.options;
+export const GO_MESSAGE_QUEUE_VALUES = GoMessageQueueSchema.options;
+export const GO_CACHING_VALUES = GoCachingSchema.options;
+export const GO_CONFIG_VALUES = GoConfigSchema.options;
+export const GO_OBSERVABILITY_VALUES = GoObservabilitySchema.options;
 export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;
 export const JAVA_ORM_VALUES = JavaOrmSchema.options;

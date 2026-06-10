@@ -224,6 +224,12 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["go-cli", config.goCli],
     ["go-logging", config.goLogging],
     ["go-auth", config.goAuth],
+    ["go-testing", withExplicitNone(config.goTesting)],
+    ["go-realtime", config.goRealtime],
+    ["go-message-queue", config.goMessageQueue],
+    ["go-caching", config.goCaching],
+    ["go-config", config.goConfig],
+    ["go-observability", config.goObservability],
   ];
 
   const javaFlags: Array<[string, string | readonly string[]]> = [

@@ -59,9 +59,15 @@ import {
   FrontendSchema,
   GoApiSchema,
   GoAuthSchema,
+  GoCachingSchema,
   GoCliSchema,
+  GoConfigSchema,
   GoLoggingSchema,
+  GoMessageQueueSchema,
+  GoObservabilitySchema,
   GoOrmSchema,
+  GoRealtimeSchema,
+  GoTestingSchema,
   GoWebFrameworkSchema,
   JavaAuthSchema,
   JavaBuildToolSchema,
@@ -264,7 +270,20 @@ export const CreateCommandOptionsSchema = z.object({
   goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
   goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea, urfave-cli)"),
   goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
-  goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
+  goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt, goth)"),
+  goTesting: z
+    .array(GoTestingSchema)
+    .optional()
+    .describe("Go testing libraries (testify, gomock)"),
+  goRealtime: GoRealtimeSchema.optional().describe(
+    "Go realtime library (gorilla-websocket, centrifuge)",
+  ),
+  goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue (nats, watermill)"),
+  goCaching: GoCachingSchema.optional().describe("Go caching library (redis, ristretto)"),
+  goConfig: GoConfigSchema.optional().describe("Go config management (viper, koanf)"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (opentelemetry)",
+  ),
   javaWebFramework: JavaWebFrameworkSchema.optional().describe(
     "Java web framework (spring-boot, quarkus, none)",
   ),

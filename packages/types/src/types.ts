@@ -83,6 +83,12 @@ import type {
   GoCliSchema,
   GoLoggingSchema,
   GoAuthSchema,
+  GoTestingSchema,
+  GoRealtimeSchema,
+  GoMessageQueueSchema,
+  GoCachingSchema,
+  GoConfigSchema,
+  GoObservabilitySchema,
   JavaWebFrameworkSchema,
   JavaBuildToolSchema,
   JavaOrmSchema,
@@ -204,6 +210,12 @@ export type GoApi = z.infer<typeof GoApiSchema>;
 export type GoCli = z.infer<typeof GoCliSchema>;
 export type GoLogging = z.infer<typeof GoLoggingSchema>;
 export type GoAuth = z.infer<typeof GoAuthSchema>;
+export type GoTesting = z.infer<typeof GoTestingSchema>;
+export type GoRealtime = z.infer<typeof GoRealtimeSchema>;
+export type GoMessageQueue = z.infer<typeof GoMessageQueueSchema>;
+export type GoCaching = z.infer<typeof GoCachingSchema>;
+export type GoConfig = z.infer<typeof GoConfigSchema>;
+export type GoObservability = z.infer<typeof GoObservabilitySchema>;
 export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
 export type JavaOrm = z.infer<typeof JavaOrmSchema>;

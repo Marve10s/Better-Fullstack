@@ -57,6 +57,12 @@ import {
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
+  GO_TESTING_VALUES,
+  GO_REALTIME_VALUES,
+  GO_MESSAGE_QUEUE_VALUES,
+  GO_CACHING_VALUES,
+  GO_CONFIG_VALUES,
+  GO_OBSERVABILITY_VALUES,
   JAVA_AUTH_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
@@ -194,6 +200,12 @@ export type OptionCategory =
   | "goCli"
   | "goLogging"
   | "goAuth"
+  | "goTesting"
+  | "goRealtime"
+  | "goMessageQueue"
+  | "goCaching"
+  | "goConfig"
+  | "goObservability"
   | "javaWebFramework"
   | "javaBuildTool"
   | "javaOrm"
@@ -354,6 +366,12 @@ export const GO_CATEGORY_ORDER = [
   "goCli",
   "goLogging",
   "goAuth",
+  "goTesting",
+  "goRealtime",
+  "goMessageQueue",
+  "goCaching",
+  "goConfig",
+  "goObservability",
   "auth",
   "email",
   "observability",
@@ -488,6 +506,12 @@ export function getCategoryDisplayName(categoryKey: string): string {
     goCli: "Go CLI Tools",
     goLogging: "Go Logging",
     goAuth: "Go Auth",
+    goTesting: "Go Testing",
+    goRealtime: "Go Realtime",
+    goMessageQueue: "Go Message Queue",
+    goCaching: "Go Caching",
+    goConfig: "Go Config",
+    goObservability: "Go Observability",
     javaWebFramework: "Java Web Framework",
     javaBuildTool: "Java Build Tool",
     javaOrm: "Java ORM / Database",
@@ -635,6 +659,7 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "javaTestingLibraries",
   "dotnetTesting",
   "dotnetObservability",
+  "goTesting",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
@@ -723,6 +748,12 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   goCli: GO_CLI_VALUES,
   goLogging: GO_LOGGING_VALUES,
   goAuth: GO_AUTH_VALUES,
+  goTesting: GO_TESTING_VALUES,
+  goRealtime: GO_REALTIME_VALUES,
+  goMessageQueue: GO_MESSAGE_QUEUE_VALUES,
+  goCaching: GO_CACHING_VALUES,
+  goConfig: GO_CONFIG_VALUES,
+  goObservability: GO_OBSERVABILITY_VALUES,
   javaWebFramework: JAVA_WEB_FRAMEWORK_VALUES,
   javaBuildTool: JAVA_BUILD_TOOL_VALUES,
   javaOrm: JAVA_ORM_VALUES,
@@ -1167,6 +1198,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goApi: {
     "grpc-go": "gRPC-Go",
+    gqlgen: "gqlgen",
   },
   goCli: {
     cobra: "Cobra",
@@ -1182,6 +1214,30 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goAuth: {
     casbin: "Casbin",
     jwt: "golang-jwt",
+    goth: "Goth",
+  },
+  goTesting: {
+    testify: "Testify",
+    gomock: "GoMock",
+  },
+  goRealtime: {
+    "gorilla-websocket": "Gorilla WebSocket",
+    centrifuge: "Centrifuge",
+  },
+  goMessageQueue: {
+    nats: "NATS",
+    watermill: "Watermill",
+  },
+  goCaching: {
+    redis: "go-redis",
+    ristretto: "Ristretto",
+  },
+  goConfig: {
+    viper: "Viper",
+    koanf: "Koanf",
+  },
+  goObservability: {
+    opentelemetry: "OpenTelemetry",
   },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
@@ -1508,6 +1564,12 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   goCli: buildCategoryMetadata("goCli"),
   goLogging: buildCategoryMetadata("goLogging"),
   goAuth: buildCategoryMetadata("goAuth"),
+  goTesting: buildCategoryMetadata("goTesting"),
+  goRealtime: buildCategoryMetadata("goRealtime"),
+  goMessageQueue: buildCategoryMetadata("goMessageQueue"),
+  goCaching: buildCategoryMetadata("goCaching"),
+  goConfig: buildCategoryMetadata("goConfig"),
+  goObservability: buildCategoryMetadata("goObservability"),
   javaWebFramework: buildCategoryMetadata("javaWebFramework"),
   javaBuildTool: buildCategoryMetadata("javaBuildTool"),
   javaOrm: buildCategoryMetadata("javaOrm"),

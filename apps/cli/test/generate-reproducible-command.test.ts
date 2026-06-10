@@ -82,6 +82,12 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     goCli: "none",
     goLogging: "none",
     goAuth: "none",
+    goTesting: [],
+    goRealtime: "none",
+    goMessageQueue: "none",
+    goCaching: "none",
+    goConfig: "none",
+    goObservability: "none",
     javaWebFramework: "spring-boot",
     javaBuildTool: "maven",
     javaOrm: "none",
@@ -352,6 +358,12 @@ describe("generateReproducibleCommand", () => {
         "--go-cli cobra " +
         "--go-logging zap " +
         "--go-auth none " +
+        "--go-testing none " +
+        "--go-realtime none " +
+        "--go-message-queue none " +
+        "--go-caching none " +
+        "--go-config none " +
+        "--go-observability none " +
         "--auth go-better-auth " +
         "--email none " +
         "--observability none " +

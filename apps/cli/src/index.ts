@@ -528,6 +528,12 @@ export async function createVirtual(
       goCli: options.goCli || "none",
       goLogging: options.goLogging || "none",
       goAuth: options.goAuth || "none",
+      goTesting: options.goTesting || [],
+      goRealtime: options.goRealtime || "none",
+      goMessageQueue: options.goMessageQueue || "none",
+      goCaching: options.goCaching || "none",
+      goConfig: options.goConfig || "none",
+      goObservability: options.goObservability || "none",
       javaWebFramework:
         options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),

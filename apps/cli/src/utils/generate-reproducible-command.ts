@@ -951,6 +951,12 @@ function getGoFlags(config: ProjectConfig) {
   flags.push(`--go-cli ${config.goCli}`);
   flags.push(`--go-logging ${config.goLogging}`);
   flags.push(`--go-auth ${config.goAuth}`);
+  flags.push(formatArrayFlag("go-testing", config.goTesting));
+  flags.push(`--go-realtime ${config.goRealtime}`);
+  flags.push(`--go-message-queue ${config.goMessageQueue}`);
+  flags.push(`--go-caching ${config.goCaching}`);
+  flags.push(`--go-config ${config.goConfig}`);
+  flags.push(`--go-observability ${config.goObservability}`);
   flags.push(`--auth ${config.auth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 

@@ -475,6 +475,12 @@ describe("Addon Configurations", () => {
           goCli: "none",
           goLogging: "slog",
           goAuth: "none",
+          goTesting: [],
+          goRealtime: "none",
+          goMessageQueue: "none",
+          goCaching: "none",
+          goConfig: "none",
+          goObservability: "none",
           install: false,
         });
 

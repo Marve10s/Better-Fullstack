@@ -53,9 +53,15 @@ import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
+  getGoCachingChoice,
   getGoCliChoice,
+  getGoConfigChoice,
   getGoLoggingChoice,
+  getGoMessageQueueChoice,
+  getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoRealtimeChoice,
+  getGoTestingChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getinstallChoice } from "./install";
@@ -237,11 +243,54 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none" ? "none" : promptValue(await getGoCliChoice(flags.goCli));
     const goLogging =
       goWebFramework === "none" ? "none" : promptValue(await getGoLoggingChoice(flags.goLogging));
-    Object.assign(backendChoices, { goWebFramework, goOrm, goApi, goAuth, goCli, goLogging });
+    const goTesting =
+      goWebFramework === "none" ? [] : promptValue(await getGoTestingChoice(flags.goTesting));
+    const goRealtime =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoRealtimeChoice(flags.goRealtime));
+    const goMessageQueue =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoMessageQueueChoice(flags.goMessageQueue));
+    const goCaching =
+      goWebFramework === "none" ? "none" : promptValue(await getGoCachingChoice(flags.goCaching));
+    const goConfig =
+      goWebFramework === "none" ? "none" : promptValue(await getGoConfigChoice(flags.goConfig));
+    const goObservability =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoObservabilityChoice(flags.goObservability));
+    Object.assign(backendChoices, {
+      goWebFramework,
+      goOrm,
+      goApi,
+      goAuth,
+      goCli,
+      goLogging,
+      goTesting,
+      goRealtime,
+      goMessageQueue,
+      goCaching,
+      goConfig,
+      goObservability,
+    });
     if (goWebFramework !== "none") stackPartSpecs.push(`backend:go:${goWebFramework}`);
     if (goOrm !== "none") stackPartSpecs.push(`backend.orm:go:${goOrm}`);
     if (goApi !== "none") stackPartSpecs.push(`backend.api:go:${goApi}`);
     if (goAuth !== "none") stackPartSpecs.push(`backend.auth:go:${goAuth}`);
+    for (const testing of goTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:go:${testing}`);
+    }
+    if (goRealtime !== "none") stackPartSpecs.push(`backend.realtime:go:${goRealtime}`);
+    if (goMessageQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:go:${goMessageQueue}`);
+    }
+    if (goCaching !== "none") stackPartSpecs.push(`backend.caching:go:${goCaching}`);
+    if (goConfig !== "none") stackPartSpecs.push(`backend.config:go:${goConfig}`);
+    if (goObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:go:${goObservability}`);
+    }
   }
 
   if (backendEcosystem === "rust") {

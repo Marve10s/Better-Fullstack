@@ -21,6 +21,12 @@ npm create better-fullstack@latest my-go-api -- \
   --go-auth jwt \
   --go-api none \
   --go-cli none \
+  --go-testing testify \
+  --go-realtime gorilla-websocket \
+  --go-message-queue nats \
+  --go-caching redis \
+  --go-config viper \
+  --go-observability opentelemetry \
   --auth none \
   --ai-docs none \
   --version-channel stable \
@@ -34,10 +40,16 @@ npm create better-fullstack@latest my-go-api -- \
 | --- | --- |
 | Web framework | `gin` `echo` `fiber` `chi` `none` |
 | ORM | `gorm` `sqlc` `ent` `none` |
-| API | `grpc-go` `none` |
+| API | `grpc-go` `gqlgen` `none` |
 | CLI | `cobra` `bubbletea` `urfave-cli` `none` |
 | Logging | `zap` `zerolog` `slog` `logrus` `none` |
-| Go auth helpers | `casbin` `jwt` `none` |
+| Go auth helpers | `casbin` `jwt` `goth` `none` |
+| Testing (multi-select) | `testify` `gomock` `none` |
+| Realtime | `gorilla-websocket` `centrifuge` `none` |
+| Message queue | `nats` `watermill` `none` |
+| Caching | `redis` `ristretto` `none` |
+| Config | `viper` `koanf` `none` |
+| Observability | `opentelemetry` `none` |
 
 ## Auth split
 
@@ -52,4 +64,9 @@ Other global auth providers such as Clerk, NextAuth, Stack Auth, Supabase Auth, 
 
 - `go mod tidy` is the install/verification path when install is enabled.
 - gRPC, Cobra, and Bubble Tea files are included only when selected.
+- Testing, realtime, message-queue, caching, config, and observability selections generate
+  standalone packages under `internal/` (plus example tests for `testify`/`gomock`).
+- `gqlgen` scaffolds `graph/schema.graphqls` + `gqlgen.yml`; run `go generate ./graph` to produce
+  the GraphQL server code (mirrors the Ent code-generation flow).
+- `goth` registers OAuth providers from `GOOGLE_CLIENT_ID`/`GITHUB_CLIENT_ID` style env credentials.
 - AI instruction files are still available through `--ai-docs`, including `--ai-docs none`.

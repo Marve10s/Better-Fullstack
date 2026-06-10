@@ -1,0 +1,49 @@
+{{#if (eq goObservability "opentelemetry")}}
+// Package observability configures OpenTelemetry tracing with OTLP export.
+//
+// Set OTEL_EXPORTER_OTLP_ENDPOINT (defaults to http://localhost:4318) and
+// call InitTracing early in main:
+//
+//	shutdown, err := observability.InitTracing(context.Background())
+//	if err != nil { ... }
+//	defer shutdown(context.Background())
+package observability
+
+import (
+	"context"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+)
+
+// InitTracing installs a global OTLP/HTTP tracer provider and returns a
+// shutdown function that flushes pending spans.
+func InitTracing(ctx context.Context) (func(context.Context) error, error) {
+	exporter, err := otlptracehttp.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := sdkresource.Merge(
+		sdkresource.Default(),
+		sdkresource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName("{{projectName}}"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+	otel.SetTracerProvider(provider)
+
+	return provider.Shutdown, nil
+}
+{{/if}}

@@ -64,9 +64,15 @@ import {
   FRONTEND_VALUES,
   GO_API_VALUES,
   GO_AUTH_VALUES,
+  GO_CACHING_VALUES,
   GO_CLI_VALUES,
+  GO_CONFIG_VALUES,
   GO_LOGGING_VALUES,
+  GO_MESSAGE_QUEUE_VALUES,
+  GO_OBSERVABILITY_VALUES,
   GO_ORM_VALUES,
+  GO_REALTIME_VALUES,
+  GO_TESTING_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
   JAVA_BUILD_TOOL_VALUES,
@@ -294,7 +300,7 @@ const LEGACY_MOBILE_SINGLE_CATEGORIES = {
 const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   rust: { libraries: "rustLibraries" },
   python: { ai: "pythonAi" },
-  go: {},
+  go: { testing: "goTesting" },
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
   dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
   elixir: {},
@@ -340,6 +346,7 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "javaTestingLibraries",
   "dotnetTesting",
   "dotnetObservability",
+  "goTesting",
 ]);
 
 export type AddonStackPartBinding = {
@@ -479,6 +486,9 @@ function isNativeEcosystemBackendServiceTool(
     if (part.ecosystem === "dotnet") {
       return (DOTNET_CACHING_VALUES as readonly string[]).includes(part.toolId);
     }
+    if (part.ecosystem === "go") {
+      return (GO_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
   }
 
   if (part.role === "observability") {
@@ -487,6 +497,9 @@ function isNativeEcosystemBackendServiceTool(
     }
     if (part.ecosystem === "dotnet") {
       return (DOTNET_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "go") {
+      return (GO_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
     }
   }
 
@@ -510,7 +523,15 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     api: "pythonGraphql",
     codeQuality: "pythonQuality",
   },
-  go: { cli: "goCli", logging: "goLogging" },
+  go: {
+    cli: "goCli",
+    logging: "goLogging",
+    realtime: "goRealtime",
+    jobQueue: "goMessageQueue",
+    caching: "goCaching",
+    config: "goConfig",
+    observability: "goObservability",
+  },
   java: { buildTool: "javaBuildTool" },
   dotnet: {
     jobQueue: "dotnetJobQueue",
@@ -701,6 +722,14 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(GO_AUTH_VALUES, "auth", "go", "goAuth"),
   ...defineTools(GO_CLI_VALUES, "cli", "go", "goCli"),
   ...defineTools(GO_LOGGING_VALUES, "logging", "go", "goLogging"),
+  ...defineTools(GO_TESTING_VALUES, "testing", "go", "goTesting", {
+    allowMultiple: true,
+  }),
+  ...defineTools(GO_REALTIME_VALUES, "realtime", "go", "goRealtime"),
+  ...defineTools(GO_MESSAGE_QUEUE_VALUES, "jobQueue", "go", "goMessageQueue"),
+  ...defineTools(GO_CACHING_VALUES, "caching", "go", "goCaching"),
+  ...defineTools(GO_CONFIG_VALUES, "config", "go", "goConfig"),
+  ...defineTools(GO_OBSERVABILITY_VALUES, "observability", "go", "goObservability"),
   ...defineTools(JAVA_WEB_FRAMEWORK_VALUES, "backend", "java", "javaWebFramework"),
   ...defineTools(JAVA_BUILD_TOOL_VALUES, "buildTool", "java", "javaBuildTool"),
   ...defineTools(JAVA_ORM_VALUES, "orm", "java", "javaOrm"),

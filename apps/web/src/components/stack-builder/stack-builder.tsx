@@ -313,7 +313,16 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
   ],
   rust: ["rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
   python: ["pythonValidation", "pythonAi", "pythonTaskQueue", "pythonGraphql", "pythonQuality"],
-  go: ["goCli", "goLogging"],
+  go: [
+    "goCli",
+    "goLogging",
+    "goTesting",
+    "goRealtime",
+    "goMessageQueue",
+    "goCaching",
+    "goConfig",
+    "goObservability",
+  ],
   java: ["javaBuildTool", "javaLibraries", "javaTestingLibraries"],
   elixir: [
     "elixirRealtime",

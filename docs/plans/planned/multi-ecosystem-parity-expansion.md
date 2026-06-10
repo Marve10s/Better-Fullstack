@@ -60,19 +60,22 @@ Every library/category must land across ALL of these layers (the .NET foundation
 
 New categories:
 
-- [ ] `goTesting` (multi-select): `testify`, `gomock`
-- [ ] `goRealtime`: `gorilla-websocket`, `centrifuge`
-- [ ] `goMessageQueue` (jobQueue role): `nats`, `watermill`
-- [ ] `goCaching`: `redis` (go-redis), `ristretto` (in-process; modern replacement for groupcache)
-- [ ] `goConfig`: `viper`, `koanf`
-- [ ] `goObservability`: `opentelemetry`
+- [x] `goTesting` (multi-select): `testify`, `gomock` ✅ 2026-06-11
+- [x] `goRealtime`: `gorilla-websocket`, `centrifuge` ✅ 2026-06-11
+- [x] `goMessageQueue` (jobQueue role): `nats`, `watermill` ✅ 2026-06-11
+- [x] `goCaching`: `redis` (go-redis), `ristretto` ✅ 2026-06-11
+- [x] `goConfig`: `viper`, `koanf` (new `config` graph role) ✅ 2026-06-11
+- [x] `goObservability`: `opentelemetry` ✅ 2026-06-11
 
 Existing-category depth:
 
-- [ ] `goApi` += `gqlgen` (GraphQL, schema-first codegen)
-- [ ] `goWebFramework` += `stdlib` (net/http with Go 1.22+ pattern routing)
-- [ ] `goOrm` += `bun` (uptrace/bun, SQL-shaped query builder)
-- [ ] `goAuth` += `goth` (OAuth social login, 30+ providers)
+- [x] `goApi` += `gqlgen` (schema-first codegen; ent-style `go generate ./graph` flow) ✅ 2026-06-11
+- [x] `goAuth` += `goth` (OAuth social login, 30+ providers) ✅ 2026-06-11
+- [ ] `goWebFramework` += `stdlib` — DEFERRED: requires a full new branch in the ~2,200-line
+      per-framework `handlers.go.hbs` (chi handlers use `chi.URLParam`; stdlib needs
+      `r.PathValue` + Go 1.22 mux patterns)
+- [ ] `goOrm` += `bun` (uptrace/bun) — DEFERRED: requires new ORM branches in
+      `database.go.hbs` + every framework section of `handlers.go.hbs`
 
 ## Batch 2 — Python parity (Tier 1 + Tier 2)
 

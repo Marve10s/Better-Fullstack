@@ -168,6 +168,12 @@ export type CompatibilityInput = {
   goCli: string;
   goLogging: string;
   goAuth: string;
+  goTesting: string[];
+  goRealtime: string;
+  goMessageQueue: string;
+  goCaching: string;
+  goConfig: string;
+  goObservability: string;
   javaWebFramework: string;
   javaBuildTool: string;
   javaOrm: string;
@@ -2798,6 +2804,50 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "java",
     currentEcosystem: "java",
+  },
+  goTesting: {
+    role: "testing",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goRealtime: {
+    role: "realtime",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goCaching: {
+    role: "caching",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    candidateIdPrefix: "candidate:native",
+  },
+  goConfig: {
+    role: "config",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goObservability: {
+    role: "observability",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    candidateIdPrefix: "candidate:native",
   },
   dotnetOrm: {
     role: "orm",

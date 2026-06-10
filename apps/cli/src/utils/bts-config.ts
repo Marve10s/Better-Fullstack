@@ -60,6 +60,12 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.goCli = "none";
     normalized.goLogging = "none";
     normalized.goAuth = "none";
+    normalized.goTesting = [];
+    normalized.goRealtime = "none";
+    normalized.goMessageQueue = "none";
+    normalized.goCaching = "none";
+    normalized.goConfig = "none";
+    normalized.goObservability = "none";
   }
 
   if (!selectedEcosystems.has("java")) {
@@ -305,6 +311,12 @@ function buildBtsConfigForPersistence(
     goCli: persistedConfig.goCli,
     goLogging: persistedConfig.goLogging,
     goAuth: persistedConfig.goAuth,
+    goTesting: persistedConfig.goTesting,
+    goRealtime: persistedConfig.goRealtime,
+    goMessageQueue: persistedConfig.goMessageQueue,
+    goCaching: persistedConfig.goCaching,
+    goConfig: persistedConfig.goConfig,
+    goObservability: persistedConfig.goObservability,
     javaWebFramework: persistedConfig.javaWebFramework,
     javaBuildTool: persistedConfig.javaBuildTool,
     javaOrm: persistedConfig.javaOrm,
@@ -443,6 +455,12 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     goCli: btsConfig.goCli,
     goLogging: btsConfig.goLogging,
     goAuth: btsConfig.goAuth,
+    goTesting: btsConfig.goTesting,
+    goRealtime: btsConfig.goRealtime,
+    goMessageQueue: btsConfig.goMessageQueue,
+    goCaching: btsConfig.goCaching,
+    goConfig: btsConfig.goConfig,
+    goObservability: btsConfig.goObservability,
     javaWebFramework: btsConfig.javaWebFramework,
     javaBuildTool: btsConfig.javaBuildTool,
     javaOrm: btsConfig.javaOrm,

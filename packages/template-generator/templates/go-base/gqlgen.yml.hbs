@@ -1,0 +1,18 @@
+{{#if (eq goApi "gqlgen")}}
+# gqlgen configuration — run `go generate ./graph` to produce the server code.
+schema:
+  - graph/*.graphqls
+
+exec:
+  filename: graph/generated.go
+  package: graph
+
+model:
+  filename: graph/models_gen.go
+  package: graph
+
+resolver:
+  layout: follow-schema
+  dir: graph
+  package: graph
+{{/if}}
