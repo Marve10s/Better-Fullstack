@@ -1,0 +1,64 @@
+---
+title: .NET
+description: ASP.NET Core scaffolds with EF Core or Dapper, Identity, Minimal APIs or Hot Chocolate, SignalR, background jobs, tests, and deploy files.
+---
+
+.NET projects generate ASP.NET Core applications that follow standard `dotnet` conventions. Choose .NET options for the web framework, data access, auth, API style, realtime, background jobs, observability, caching, testing, and deploy files.
+
+## Prerequisites
+
+- .NET SDK 10 or newer.
+- PostgreSQL when using `ef-core` with the `postgres` database; SQLite needs no server.
+- Docker when using the `docker` deploy target or `testcontainers-dotnet`.
+- Git if you want repository initialization.
+
+## Scripted example
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NET categories
+
+| Category | Values |
+| --- | --- |
+| Web framework | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| Data access | `ef-core` `dapper` `linq2db` `none` |
+| Auth | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| Testing | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| Background jobs | `hangfire` `quartz-net` `hosted-services` `none` |
+| Realtime | `signalr` `none` |
+| Observability | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| Caching | `redis` `memory-cache` `none` |
+| Deploy | `docker` `azure` `aws` `none` |
+
+## Compatibility notes
+
+- .NET options only apply with `--ecosystem dotnet`.
+- ASP.NET Core is a standalone .NET web framework; TypeScript frontend and backend options are ignored.
+- `--dotnet-testing` and `--dotnet-observability` accept multiple values.
+- `ef-core` selects the provider from `--database`: `postgres` uses Npgsql, anything else falls back to SQLite.
+- `aspnet-identity` registers Identity stores only when paired with `ef-core`; without it the scaffold registers plain authentication and authorization services.
+- Non-interactive defaults when `--ecosystem dotnet` is set: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog`, and `docker`.
+
+## Generated behavior
+
+- The project includes a `.csproj`, `Program.cs`, `appsettings.json`, an `.http` request file, a test project, `.gitignore`, and setup notes in the README.
+- EF Core selections wire up a `DbContext` with the Npgsql or SQLite provider plus the design-time package for migrations.
+- Optional selections add working ASP.NET Core code for Identity, Hot Chocolate GraphQL, gRPC services, SignalR hubs, Hangfire or Quartz.NET jobs, Serilog/NLog/OpenTelemetry pipelines, Redis caching, and a multi-stage Dockerfile.

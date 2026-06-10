@@ -3,7 +3,7 @@
 > **Active design doc — keep this updated as decisions land.**
 > Status: **Phase 2 library promotion landed; Phase 3 compatibility consolidation started; Phase 4 storage shape selected**
 > Branch in question: `feat/multi-ecosystem-stack-graph` (shipped in PR #209)
-> Last updated: 2026-06-02
+> Last updated: 2026-06-10
 
 ## Active State (read this first)
 
@@ -106,3 +106,4 @@ There are **two categories** of configuration data and they behave differently:
 - **2026-06-09/10:** Phase 2 Batches 1–5 shipped on PR #220: TypeScript backend singles, frontend singles, deploy/runtime/dbSetup, addons/examples, mobile categories, and remaining Rust/Python/Go/Java/Elixir categories now round-trip as owned graph parts and emit reproducible `--part` specs.
 - **2026-06-10:** Phase 3 compatibility consolidation started: graph-specific compatibility helper data moved into `stack-compatibility-rules.ts`, `validateStackParts` and candidate disabled-reason checks now share graph context construction, and `getDisabledReason` routes promoted frontend/mobile library options plus backend Payments/CMS/AI, Java build-tool/library, shared non-TypeScript email/search/caching/observability, unsupported Elixir generated-tool disables, and Phoenix/Ecto/Oban/LiveView Elixir context disables through graph checks with regression coverage. The remaining Elixir flat disabled-reason branch is the `elixirJson` setting pending the final settings/graph shape.
 - **2026-06-10 (storage):** Phase 4 storage shape selected: `bts.jsonc` remains graph + derived cache rather than graph-only. `writeBtsConfig` derives cache fields from `stackParts` for solo and multi projects, emits `graphSummary`/`effectiveStack` whenever a graph is present, `readBtsConfig` returns a fully graph-normalized cache view for external readers, `updateBtsConfig` refreshes the derived cache/metadata after graph-aware addon or deploy updates, and MCP plan/create/addition responses expose the same graph projection.
+- **2026-06-10 (shared singles):** `validation` and `effect` (new role) promoted to graph parts as backend-owned TypeScript singles per inventory §5 decision 3 — the last two unregistered TypeScript categories. Without a TypeScript backend they stay flat-only, and multi-mode command generation keeps passing them as plain flags; promoting the "else frontend" half of the ownership rule is deferred until the CLI accepts library `--part` specs for ownerless selections.
