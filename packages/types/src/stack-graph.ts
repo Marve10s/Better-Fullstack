@@ -338,6 +338,8 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "dotnetTesting",
+  "dotnetObservability",
 ]);
 
 export type AddonStackPartBinding = {
@@ -474,10 +476,18 @@ function isNativeEcosystemBackendServiceTool(
     if (part.ecosystem === "rust") {
       return (RUST_CACHING_VALUES as readonly string[]).includes(part.toolId);
     }
+    if (part.ecosystem === "dotnet") {
+      return (DOTNET_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
   }
 
-  if (part.role === "observability" && part.ecosystem === "elixir") {
-    return (ELIXIR_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+  if (part.role === "observability") {
+    if (part.ecosystem === "elixir") {
+      return (ELIXIR_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "dotnet") {
+      return (DOTNET_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+    }
   }
 
   return false;

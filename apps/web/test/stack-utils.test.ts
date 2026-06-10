@@ -124,6 +124,32 @@ describe("generateStackCommand", () => {
     expect(command).not.toContain("--ecosystem python");
   });
 
+  it("keeps dotnet backend capabilities in multi-ecosystem commands", () => {
+    const command = generateStackCommand({
+      ...DEFAULT_STACK,
+      projectName: "dotnet-mixed-stack",
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:dotnet:aspnet-minimal",
+        "backend.orm:dotnet:ef-core",
+        "database:universal:postgres",
+      ],
+      dotnetTesting: ["xunit"],
+      dotnetRealtime: "signalr",
+      dotnetCaching: "redis",
+      dotnetObservability: ["serilog"],
+    });
+
+    expect(command).toContain("--part backend:dotnet:aspnet-minimal");
+    expect(command).toContain("--part backend.orm:dotnet:ef-core");
+    expect(command).toContain("--part backend.testing:dotnet:xunit");
+    expect(command).toContain("--part backend.realtime:dotnet:signalr");
+    expect(command).toContain("--part backend.caching:dotnet:redis");
+    expect(command).toContain("--part backend.observability:dotnet:serilog");
+    expect(command).not.toContain("--ecosystem dotnet");
+  });
+
   it("keeps TypeScript frontend sub-options in multi-ecosystem commands", () => {
     const command = generateStackCommand({
       ...DEFAULT_STACK,

@@ -35,17 +35,26 @@ const LAYERS: ReadonlyArray<Layer> = [
       "goWebFramework",
       "javaWebFramework",
       "elixirWebFramework",
+      "dotnetWebFramework",
     ],
     word: "BACKEND FRAMEWORKS",
   },
   {
     type: "categories",
-    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm", "elixirOrm"],
+    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm", "elixirOrm", "dotnetOrm"],
     word: "DATABASE ORMs",
   },
   {
     type: "categories",
-    categories: ["auth", "rustAuth", "pythonAuth", "goAuth", "javaAuth", "elixirAuth"],
+    categories: [
+      "auth",
+      "rustAuth",
+      "pythonAuth",
+      "goAuth",
+      "javaAuth",
+      "elixirAuth",
+      "dotnetAuth",
+    ],
     word: "AUTH PROVIDERS",
   },
   {

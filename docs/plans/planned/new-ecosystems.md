@@ -1,6 +1,6 @@
 # New Language Ecosystems
 
-Candidates for entirely new language ecosystem support beyond TypeScript, React Native, Rust, Go, Python, Java, and Elixir. Java and Elixir have shipped as first-class ecosystems; this file now tracks the remaining new ecosystems and links follow-up work separately.
+Candidates for entirely new language ecosystem support beyond TypeScript, React Native, Rust, Go, Python, Java, Elixir, and .NET. Java, Elixir, and .NET have shipped as first-class ecosystems; this file now tracks the remaining new ecosystems and links follow-up work separately.
 
 ---
 
@@ -11,7 +11,7 @@ Candidates for entirely new language ecosystem support beyond TypeScript, React 
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | Java foundation | Done | Shipped in v1.6.2 |
 | [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Java expansion | Medium/Large | Follow-up — Micronaut, jOOQ, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir foundation and follow-ups | Done/Large | Foundation shipped; follow-ups remain for deeper Phoenix/LiveView coverage |
-| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Large | 1 — enterprise demand |
+| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Done | Shipped 2026-06-10 — foundation + multi-ecosystem backend |
 
 ---
 
@@ -34,6 +34,6 @@ Candidates for entirely new language ecosystem support beyond TypeScript, React 
 
 ## Priority Order
 
-1. **C# / ASP.NET** — enterprise demand, high-performance
-2. **Zig** — watch and wait
-3. **Kotlin** — consider as a Java ecosystem extension rather than a separate ecosystem
+1. ~~**C# / ASP.NET** — enterprise demand, high-performance~~ ✅ Shipped 2026-06-10
+2. **Kotlin** — consider as a Java ecosystem extension rather than a separate ecosystem
+3. **Zig** — watch and wait

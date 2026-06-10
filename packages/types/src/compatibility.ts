@@ -2849,6 +2849,7 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "dotnet",
     currentEcosystem: "dotnet",
+    candidateIdPrefix: "candidate:native",
   },
   dotnetCaching: {
     role: "caching",
@@ -2856,6 +2857,7 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "dotnet",
     currentEcosystem: "dotnet",
+    candidateIdPrefix: "candidate:native",
   },
   dotnetDeploy: {
     role: "deploy",

@@ -23,6 +23,16 @@ import {
   CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
   DATABASE_SETUP_VALUES,
+  DOTNET_API_VALUES,
+  DOTNET_AUTH_VALUES,
+  DOTNET_CACHING_VALUES,
+  DOTNET_DEPLOY_VALUES,
+  DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_OBSERVABILITY_VALUES,
+  DOTNET_ORM_VALUES,
+  DOTNET_REALTIME_VALUES,
+  DOTNET_TESTING_VALUES,
+  DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -162,6 +172,25 @@ describe("stack graph", () => {
     expect(lowered.elixirEmail).toBe("swoosh");
     expect(lowered.elixirCaching).toBe("cachex");
     expect(lowered.elixirObservability).toBe("telemetry");
+  });
+
+  it("accepts native dotnet caching and observability tools as scoped capability parts", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:dotnet:aspnet-minimal",
+      "backend.caching:dotnet:redis",
+      "backend.observability:dotnet:serilog",
+      "backend.realtime:dotnet:signalr",
+      "backend.testing:dotnet:xunit",
+    ]);
+    const result = validateStackParts(stackParts);
+    const lowered = stackPartsToLegacyProjectConfigPartial(stackParts);
+
+    expect(result.issues).toEqual([]);
+    expect(lowered.dotnetWebFramework).toBe("aspnet-minimal");
+    expect(lowered.dotnetCaching).toBe("redis");
+    expect(lowered.dotnetObservability).toEqual(["serilog"]);
+    expect(lowered.dotnetRealtime).toBe("signalr");
+    expect(lowered.dotnetTesting).toEqual(["xunit"]);
   });
 
   it("lowers owner-scoped infrastructure graph parts through their legacy categories", () => {
@@ -1280,6 +1309,24 @@ describe("stack graph structural round-trip (phase 0)", () => {
           elixirDeploy: ELIXIR_DEPLOY_VALUES,
         },
         arrays: {},
+      },
+      {
+        ecosystem: "dotnet",
+        backendField: "dotnetWebFramework",
+        backends: DOTNET_WEB_FRAMEWORK_VALUES,
+        capabilities: {
+          dotnetOrm: DOTNET_ORM_VALUES,
+          dotnetApi: DOTNET_API_VALUES,
+          dotnetAuth: DOTNET_AUTH_VALUES,
+          dotnetJobQueue: DOTNET_JOB_QUEUE_VALUES,
+          dotnetRealtime: DOTNET_REALTIME_VALUES,
+          dotnetCaching: DOTNET_CACHING_VALUES,
+          dotnetDeploy: DOTNET_DEPLOY_VALUES,
+        },
+        arrays: {
+          dotnetTesting: DOTNET_TESTING_VALUES,
+          dotnetObservability: DOTNET_OBSERVABILITY_VALUES,
+        },
       },
     ] as const;
 

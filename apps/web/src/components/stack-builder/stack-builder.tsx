@@ -126,7 +126,7 @@ type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
 type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust">;
 type GraphBackendEcosystem = Extract<
   StackPartEcosystem,
-  "typescript" | "rust" | "python" | "go" | "java" | "elixir"
+  "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
 >;
 type GraphSelection = {
   frontendEcosystem: GraphFrontendEcosystem;
@@ -235,6 +235,14 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     apiCategory: "elixirApi",
     authCategory: "elixirAuth",
   },
+  {
+    ecosystem: "dotnet",
+    label: ".NET",
+    frameworkCategory: "dotnetWebFramework",
+    ormCategory: "dotnetOrm",
+    apiCategory: "dotnetApi",
+    authCategory: "dotnetAuth",
+  },
 ];
 
 const GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM = Object.fromEntries(
@@ -319,6 +327,14 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "elixirTesting",
     "elixirQuality",
     "elixirDeploy",
+  ],
+  dotnet: [
+    "dotnetTesting",
+    "dotnetJobQueue",
+    "dotnetRealtime",
+    "dotnetObservability",
+    "dotnetCaching",
+    "dotnetDeploy",
   ],
 } as const satisfies Record<GraphBackendEcosystem, readonly (keyof typeof TECH_OPTIONS)[]>;
 
