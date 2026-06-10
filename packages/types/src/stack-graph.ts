@@ -54,6 +54,7 @@ import {
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
+  EFFECT_VALUES,
   EMAIL_VALUES,
   EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
@@ -112,6 +113,7 @@ import {
   StackPartRoleSchema,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
+  VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "./schemas";
 
@@ -255,6 +257,10 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   realtime: "realtime",
   ai: "ai",
   cms: "cms",
+  // Shared web+server categories collapse onto the backend owner (inventory §5 decision 3);
+  // without a TypeScript backend they stay flat-only, like the rest of this map.
+  validation: "validation",
+  effect: "effect",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
 const LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES = {
@@ -651,6 +657,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(REALTIME_VALUES, "realtime", "typescript", "realtime"),
   ...defineTools(AI_VALUES, "ai", "typescript", "ai"),
   ...defineTools(CMS_VALUES, "cms", "typescript", "cms"),
+  ...defineTools(VALIDATION_VALUES, "validation", "typescript", "validation"),
+  ...defineTools(EFFECT_VALUES, "effect", "typescript", "effect"),
   ...defineTools(AUTH_VALUES, "auth", "react-native", "auth"),
   ...defineTools(MOBILE_NAVIGATION_VALUES, "navigation", "react-native", "mobileNavigation"),
   ...defineTools(MOBILE_UI_VALUES, "ui", "react-native", "mobileUI"),

@@ -37,6 +37,7 @@ export const StackPartRoleSchema = z
     "animation",
     "fileUpload",
     "validation",
+    "effect",
     "ui",
     "css",
     "storage",

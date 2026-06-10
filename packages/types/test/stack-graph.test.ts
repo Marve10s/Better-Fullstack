@@ -37,6 +37,7 @@ import {
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
+  EFFECT_VALUES,
   EMAIL_VALUES,
   EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
@@ -93,6 +94,7 @@ import {
   ANIMATION_VALUES,
   STATE_MANAGEMENT_VALUES,
   UI_LIBRARY_VALUES,
+  VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "../src/schemas";
 import type { ProjectConfig } from "../src/types";
@@ -880,6 +882,8 @@ describe("stack graph structural round-trip (phase 0)", () => {
       realtime: REALTIME_VALUES,
       ai: AI_VALUES,
       cms: CMS_VALUES,
+      validation: VALIDATION_VALUES,
+      effect: EFFECT_VALUES,
     } as const;
 
     for (const [field, values] of Object.entries(cases)) {
@@ -903,6 +907,23 @@ describe("stack graph structural round-trip (phase 0)", () => {
         expect(validateStackParts(parts).issues).toEqual([]);
       }
     }
+  });
+
+  it("keeps validation and effect flat-only without a TypeScript backend", () => {
+    const config: Partial<ProjectConfig> = {
+      ecosystem: "typescript",
+      frontend: ["tanstack-router"],
+      backend: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      auth: "none",
+      validation: "valibot",
+      effect: "effect",
+    };
+    const parts = legacyProjectConfigToStackParts(config);
+    expect(parts.some((part) => part.role === "validation" || part.role === "effect")).toBe(false);
+    expectNoDrift(config);
   });
 
   it("round-trips every frontend-owned TypeScript single value as a scoped graph part", () => {
