@@ -81,14 +81,14 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "minimal-api": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
   "graphql-hotchocolate": { type: "si", slug: "graphql", hex: "E10098" },
   "grpc-dotnet": { type: "local", src: "/icon/grpc.svg" },
-  "testcontainers-dotnet": { type: "si", slug: "testcontainers", hex: "2496ED" },
+  "testcontainers-dotnet": { type: "local", src: "https://testcontainers.com/favicon.ico" },
   "hosted-services": { type: "si", slug: "dotnet", hex: "512BD4" },
   signalr: { type: "si", slug: "dotnet", hex: "512BD4" },
   "opentelemetry-dotnet": { type: "si", slug: "opentelemetry", hex: "000000" },
   "health-checks": { type: "si", slug: "dotnet", hex: "512BD4" },
   "memory-cache": { type: "si", slug: "dotnet", hex: "512BD4" },
-  azure: { type: "si", slug: "microsoftazure", hex: "0078D4" },
-  aws: { type: "si", slug: "amazonwebservices", hex: "FF9900" },
+  azure: { type: "local", src: "https://azure.microsoft.com/favicon.ico" },
+  aws: { type: "local", src: "https://aws.amazon.com/favicon.ico" },
   phoenix: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
   "phoenix-live-view": { type: "si", slug: "phoenixframework", hex: "FD4F00" },
   "ecto-sql": { type: "si", slug: "postgresql", hex: "4169E1" },
@@ -224,11 +224,14 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "stack-auth": { type: "local", src: "/icon/stack-auth.svg" },
   "supabase-auth": { type: "si", slug: "supabase", hex: "3FCF8E" },
   auth0: { type: "si", slug: "auth0", hex: "EB5424" },
-  workos: { type: "si", slug: "workos", hex: "6363F1" },
-  kinde: { type: "si", slug: "kinde", hex: "00A9FF" },
+  workos: {
+    type: "local",
+    src: "https://cdn.prod.website-files.com/621f54116cab10f6e9215d8b/621f549024eb2947f6f2f7f7_Favicon%20256x256.png",
+  },
+  kinde: { type: "local", src: "https://kinde.com/favicon.ico" },
 
   // ─── Rate Limiting ────────────────────────────────────────────────────────
-  arcjet: { type: "local", src: "https://arcjet.com/favicon.ico" },
+  arcjet: { type: "local", src: "https://arcjet.com/favicon.png" },
   "upstash-ratelimit": { type: "si", slug: "upstash", hex: "00E9A3" },
 
   // ─── Payments ──────────────────────────────────────────────────────────────
@@ -258,7 +261,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
   datadog: { type: "si", slug: "datadog", hex: "632CA6" },
-  axiom: { type: "si", slug: "axiom", hex: "7A5CFF" },
+  axiom: { type: "local", src: "https://axiom.co/favicon.ico" },
   betterstack: { type: "si", slug: "betterstack", hex: "111827" },
 
   // ─── Feature Flags ─────────────────────────────────────────────────────────

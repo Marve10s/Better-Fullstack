@@ -2464,6 +2464,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
 "
 ,
       "path": "packages/db/src/schema/auth.ts",
@@ -6046,6 +6047,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
 "
 ,
       "path": "packages/db/src/schema/auth.ts",
