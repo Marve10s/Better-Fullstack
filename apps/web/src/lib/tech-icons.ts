@@ -81,7 +81,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "minimal-api": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
   "graphql-hotchocolate": { type: "si", slug: "graphql", hex: "E10098" },
   "grpc-dotnet": { type: "local", src: "/icon/grpc.svg" },
-  "testcontainers-dotnet": { type: "local", src: "https://testcontainers.com/favicon.ico" },
+  "testcontainers-dotnet": {
+    type: "local",
+    src: "https://raw.githubusercontent.com/testcontainers/testcontainers-dotnet/main/docs/logo.svg",
+  },
   "hosted-services": { type: "si", slug: "dotnet", hex: "512BD4" },
   signalr: { type: "si", slug: "dotnet", hex: "512BD4" },
   "opentelemetry-dotnet": { type: "si", slug: "opentelemetry", hex: "000000" },

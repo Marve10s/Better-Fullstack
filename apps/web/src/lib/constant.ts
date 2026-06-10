@@ -4478,7 +4478,7 @@ export const TECH_OPTIONS: Record<
       id: "testcontainers-dotnet",
       name: "Testcontainers for .NET",
       description: "Disposable Docker-backed integration tests",
-      icon: "https://cdn.simpleicons.org/testcontainers/2496ED",
+      icon: "https://raw.githubusercontent.com/testcontainers/testcontainers-dotnet/main/docs/logo.svg",
       color: "from-sky-500 to-blue-700",
       default: false,
       isNew: true,
