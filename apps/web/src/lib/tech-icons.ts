@@ -420,7 +420,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   maven: { type: "si", slug: "apachemaven", hex: "C71A36" },
   gradle: { type: "si", slug: "gradle", hex: "02303A" },
   "spring-data-jpa": { type: "si", slug: "hibernate", hex: "59666C" },
-  "spring-security": { type: "si", slug: "springsecurity", hex: "6DB33F" },
+  "spring-security": { type: "local", src: "/icon/spring-security.svg" },
   "spring-actuator": { type: "si", slug: "spring", hex: "6DB33F" },
   "spring-validation": { type: "si", slug: "spring", hex: "6DB33F" },
   flyway: { type: "si", slug: "flyway", hex: "CC0200" },

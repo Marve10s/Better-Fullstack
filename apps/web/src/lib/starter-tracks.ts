@@ -31,7 +31,7 @@ export const STARTER_TRACKS = [
     ecosystem: "typescript",
     icon: "stripe",
     guideHref: "/guides/packs/create-saas-app/",
-    docsHref: "/docs/deployment/vercel/",
+    docsHref: "/docs/sections/deployment/",
     highlights: ["Next.js", "Better Auth", "Stripe", "Drizzle"],
     audience: "Founders validating paid products",
     outcome: "Billing, auth, email, and data wired into one app",
@@ -61,7 +61,7 @@ export const STARTER_TRACKS = [
     ecosystem: "python",
     icon: "fastapi",
     guideHref: "/guides/packs/create-rest-api/",
-    docsHref: "/docs/deployment/docker/",
+    docsHref: "/docs/sections/deployment/",
     highlights: ["FastAPI", "PostgreSQL", "SQLAlchemy", "Pydantic"],
     audience: "Backend teams exposing typed services",
     outcome: "FastAPI service with validation, persistence, and Ruff quality checks",
@@ -121,7 +121,7 @@ export const STARTER_TRACKS = [
     ecosystem: "typescript",
     icon: "hono",
     guideHref: "/guides/packs/create-internal-tool/",
-    docsHref: "/docs/deployment/docker/",
+    docsHref: "/docs/sections/deployment/",
     highlights: ["TanStack Router", "Hono", "Drizzle", "tRPC"],
     audience: "Teams building dashboards and admin tools",
     outcome: "Frontend, API, auth, and data layer ready for CRUD workflows",
@@ -133,7 +133,6 @@ export function getStarterTrackBuilderSearch(track: StarterTrack) {
   return {
     preset: track.presetId,
     view: "command" as const,
-    file: "",
   };
 }
 
