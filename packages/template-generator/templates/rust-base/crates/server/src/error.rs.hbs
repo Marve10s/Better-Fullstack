@@ -5,6 +5,7 @@ use thiserror::Error;
 /// Use `anyhow::Result` in application code for ad-hoc errors,
 /// and `AppError` for well-defined domain errors.
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum AppError {
     #[error("Configuration error: {0}")]
     Config(String),

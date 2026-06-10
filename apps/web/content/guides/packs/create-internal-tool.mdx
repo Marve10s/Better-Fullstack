@@ -1,0 +1,62 @@
+---
+title: Create an Internal Tool
+description: Create an internal tool with TanStack Router, Hono, Drizzle, PostgreSQL, Better Auth, tRPC, Tailwind CSS, and shadcn/ui.
+updated: 2026-05-21
+category: Packs
+tags:
+  - internal-tool
+  - tanstack-router
+  - hono
+  - drizzle
+  - trpc
+keywords:
+  - create internal tool
+  - internal tool starter
+  - admin dashboard starter
+  - tanstack hono starter
+  - crud dashboard starter
+---
+
+Use the Internal Tool pack when you need a working CRUD-oriented app for operations, admin workflows, support teams, or product dashboards.
+
+<StarterPackCta id="internal-tool" />
+
+## Generate the internal tool starter
+
+Open the [Internal Tool pack in the Stack Builder](/new?preset=tanstack-hono&view=command&file=), or run:
+
+```bash
+bun create better-fullstack@latest my-internal-tool \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What the pack includes
+
+- TanStack Router for the web app.
+- Hono on Bun for the backend.
+- PostgreSQL and Drizzle for typed persistence.
+- Better Auth for protected internal access.
+- tRPC for typed frontend-to-backend calls.
+- Tailwind CSS and shadcn/ui for dashboard UI.
+
+## First things to customize
+
+1. Model the operational objects your team edits every day.
+2. Add role checks before exposing destructive actions.
+3. Build list, detail, create, edit, and audit views around the same typed API.
+4. Add deployment secrets and database migrations before inviting teammates.
+
+## When this is the right pack
+
+Choose this for admin panels, internal dashboards, support tools, back-office workflows, and CRUD apps where speed matters but type safety still matters.
+
+For the stack-level walkthrough, read [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/).

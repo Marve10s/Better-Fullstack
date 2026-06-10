@@ -1,0 +1,57 @@
+---
+title: Create a Rust Backend
+description: Create a Rust backend with Axum, SeaORM, PostgreSQL, tracing, and structured error handling using Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - rust
+  - axum
+  - seaorm
+  - postgres
+  - backend
+keywords:
+  - create rust backend
+  - rust api starter
+  - axum postgres starter
+  - seaorm api starter
+  - rust backend boilerplate
+---
+
+Use the Rust Backend pack when you want a compact API service with strong types, predictable performance, and compiler-enforced structure.
+
+<StarterPackCta id="rust-backend" />
+
+## Generate the Rust backend starter
+
+Open the [Rust Backend pack in the Stack Builder](/new?preset=rust-api&view=command&file=), or run:
+
+```bash
+bun create better-fullstack@latest my-rust-backend \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## What the pack includes
+
+- Axum for HTTP routes.
+- SeaORM for typed database access.
+- PostgreSQL-oriented backend shape.
+- Tracing for structured application logs.
+- anyhow and thiserror patterns for practical error handling.
+
+## First things to customize
+
+1. Define your route modules around resources or workflows.
+2. Add database entities and migrations for the real domain.
+3. Keep handler errors explicit so API failures are easy to debug.
+4. Run `cargo check` and `cargo clippy -- -D warnings` as the project grows.
+
+## When this is the right pack
+
+Choose this for high-confidence backend services, APIs with strict performance expectations, systems tools with HTTP surfaces, and teams that prefer Rust's compile-time guarantees.
+
+For a stack-level walkthrough, read [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/).
