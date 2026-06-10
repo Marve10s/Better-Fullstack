@@ -10,6 +10,7 @@ When updating this file, verify shipped status against `packages/types/src/schem
 
 | File | Scope |
 |------|-------|
+| [multi-ecosystem-parity-expansion.md](multi-ecosystem-parity-expansion.md) | **Active master plan**: Tier 1 category parity + Tier 2 depth across Go/Python/Rust/Java/Elixir/.NET + Kotlin |
 | **TypeScript** | |
 | [typescript-category-expansion.md](typescript-category-expansion.md) | Expand existing TS categories: search, CMS, flags, observability, deploy, etc. |
 | [typescript-new-categories.md](typescript-new-categories.md) | New TS categories: GraphQL, i18n, rate limiting, desktop, browser ext, PWA, docs |
