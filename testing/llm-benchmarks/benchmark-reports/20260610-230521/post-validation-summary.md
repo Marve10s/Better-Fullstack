@@ -1,0 +1,40 @@
+# Post Validation Results
+
+| Run | Status | Time | Failed checks |
+| --- | --- | ---: | ---: |
+| gpt-5.3-codex-spark__cli__heavy-ts | verify_failed | 54.1s | 1 |
+| gpt-5.3-codex-spark__cli__light-ts | ok | 10.2s | 0 |
+| gpt-5.3-codex-spark__cli__multi-ecosystem | ok | 23.9s | 0 |
+| gpt-5.3-codex-spark__cli__python-ai | ok | 3.5s | 0 |
+| gpt-5.3-codex-spark__mcp__heavy-ts | verify_failed | 93.6s | 1 |
+| gpt-5.3-codex-spark__mcp__light-ts | ok | 5.6s | 0 |
+| gpt-5.3-codex-spark__mcp__multi-ecosystem | ok | 10.8s | 0 |
+| gpt-5.3-codex-spark__mcp__python-ai | ok | 0.2s | 0 |
+| gpt-5.3-codex-spark__prompt__heavy-ts | verify_failed | 4.4s | 2 |
+| gpt-5.3-codex-spark__prompt__light-ts | verify_failed | 3.1s | 1 |
+| gpt-5.3-codex-spark__prompt__multi-ecosystem | ok | 0.0s | 0 |
+| gpt-5.3-codex-spark__prompt__python-ai | ok | 0.2s | 0 |
+| gpt-5.4__cli__heavy-ts | verify_failed | 86.9s | 1 |
+| gpt-5.4__cli__light-ts | ok | 8.9s | 0 |
+| gpt-5.4__cli__multi-ecosystem | ok | 19.7s | 0 |
+| gpt-5.4__cli__python-ai | ok | 2.5s | 0 |
+| gpt-5.4__mcp__heavy-ts | verify_failed | 144.0s | 1 |
+| gpt-5.4__mcp__light-ts | ok | 5.2s | 0 |
+| gpt-5.4__mcp__multi-ecosystem | ok | 20.2s | 0 |
+| gpt-5.4__mcp__python-ai | ok | 2.5s | 0 |
+| gpt-5.4__prompt__heavy-ts | verify_failed | 4.1s | 2 |
+| gpt-5.4__prompt__light-ts | ok | 7.5s | 0 |
+| gpt-5.4__prompt__multi-ecosystem | ok | 0.0s | 0 |
+| gpt-5.4__prompt__python-ai | ok | 2.0s | 0 |
+| gpt-5.5-medium__cli__heavy-ts | verify_failed | 91.3s | 1 |
+| gpt-5.5-medium__cli__light-ts | ok | 11.4s | 0 |
+| gpt-5.5-medium__cli__multi-ecosystem | ok | 32.7s | 0 |
+| gpt-5.5-medium__cli__python-ai | ok | 0.7s | 0 |
+| gpt-5.5-medium__mcp__heavy-ts | verify_failed | 114.7s | 1 |
+| gpt-5.5-medium__mcp__light-ts | ok | 6.8s | 0 |
+| gpt-5.5-medium__mcp__multi-ecosystem | verify_failed | 21.8s | 1 |
+| gpt-5.5-medium__mcp__python-ai | ok | 0.3s | 0 |
+| gpt-5.5-medium__prompt__heavy-ts | ok | 39.6s | 0 |
+| gpt-5.5-medium__prompt__light-ts | ok | 8.2s | 0 |
+| gpt-5.5-medium__prompt__multi-ecosystem | ok | 0.0s | 0 |
+| gpt-5.5-medium__prompt__python-ai | ok | 0.3s | 0 |

@@ -1,0 +1,59 @@
+{
+  "models": [
+    "gpt-5.4",
+    "gpt-5.3-codex-spark",
+    "gpt-5.5-medium"
+  ],
+  "methods": [
+    "prompt",
+    "mcp",
+    "cli"
+  ],
+  "specs": [
+    "light-ts",
+    "heavy-ts",
+    "python-ai",
+    "multi-ecosystem"
+  ],
+  "verify": "structural",
+  "timeout": 900,
+  "concurrency": 2,
+  "jobs": [
+    "gpt-5.4/prompt/light-ts",
+    "gpt-5.4/prompt/heavy-ts",
+    "gpt-5.4/prompt/python-ai",
+    "gpt-5.4/prompt/multi-ecosystem",
+    "gpt-5.4/mcp/light-ts",
+    "gpt-5.4/mcp/heavy-ts",
+    "gpt-5.4/mcp/python-ai",
+    "gpt-5.4/mcp/multi-ecosystem",
+    "gpt-5.4/cli/light-ts",
+    "gpt-5.4/cli/heavy-ts",
+    "gpt-5.4/cli/python-ai",
+    "gpt-5.4/cli/multi-ecosystem",
+    "gpt-5.3-codex-spark/prompt/light-ts",
+    "gpt-5.3-codex-spark/prompt/heavy-ts",
+    "gpt-5.3-codex-spark/prompt/python-ai",
+    "gpt-5.3-codex-spark/prompt/multi-ecosystem",
+    "gpt-5.3-codex-spark/mcp/light-ts",
+    "gpt-5.3-codex-spark/mcp/heavy-ts",
+    "gpt-5.3-codex-spark/mcp/python-ai",
+    "gpt-5.3-codex-spark/mcp/multi-ecosystem",
+    "gpt-5.3-codex-spark/cli/light-ts",
+    "gpt-5.3-codex-spark/cli/heavy-ts",
+    "gpt-5.3-codex-spark/cli/python-ai",
+    "gpt-5.3-codex-spark/cli/multi-ecosystem",
+    "gpt-5.5-medium/prompt/light-ts",
+    "gpt-5.5-medium/prompt/heavy-ts",
+    "gpt-5.5-medium/prompt/python-ai",
+    "gpt-5.5-medium/prompt/multi-ecosystem",
+    "gpt-5.5-medium/mcp/light-ts",
+    "gpt-5.5-medium/mcp/heavy-ts",
+    "gpt-5.5-medium/mcp/python-ai",
+    "gpt-5.5-medium/mcp/multi-ecosystem",
+    "gpt-5.5-medium/cli/light-ts",
+    "gpt-5.5-medium/cli/heavy-ts",
+    "gpt-5.5-medium/cli/python-ai",
+    "gpt-5.5-medium/cli/multi-ecosystem"
+  ]
+}

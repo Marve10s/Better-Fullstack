@@ -1,0 +1,1576 @@
+[
+  {
+    "run_id": "gpt-5.3-codex-spark__cli__heavy-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "cli",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:22:38.613394+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 51.895,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 846542,
+      "cached_input_tokens": 785152,
+      "output_tokens": 10742,
+      "reasoning_output_tokens": 6926
+    },
+    "mcp_calls": [],
+    "agent_messages": 7,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 152,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__cli__light-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "cli",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:22:27.807382+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 10.801,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 27790,
+      "cached_input_tokens": 17280,
+      "output_tokens": 1221,
+      "reasoning_output_tokens": 757
+    },
+    "mcp_calls": [],
+    "agent_messages": 2,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 59,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__cli__multi-ecosystem",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "cli",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:23:30.517432+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 147.05,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 2377709,
+      "cached_input_tokens": 2285184,
+      "output_tokens": 18676,
+      "reasoning_output_tokens": 11495
+    },
+    "mcp_calls": [],
+    "agent_messages": 15,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 72,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__cli__python-ai",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "cli",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:23:29.110536+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 52.584,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 753155,
+      "cached_input_tokens": 701184,
+      "output_tokens": 8936,
+      "reasoning_output_tokens": 5608
+    },
+    "mcp_calls": [],
+    "agent_messages": 7,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 37,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__cli__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__mcp__heavy-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "mcp",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:22:01.680720+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 26.113,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 188331,
+      "cached_input_tokens": 157696,
+      "output_tokens": 5300,
+      "reasoning_output_tokens": 3969
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 4,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 165,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__mcp__light-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "mcp",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:21:45.754762+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 17.843,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 200593,
+      "cached_input_tokens": 170880,
+      "output_tokens": 2870,
+      "reasoning_output_tokens": 1935
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 4,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 60,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__mcp__multi-ecosystem",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "mcp",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:22:22.679118+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 66.426,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 644548,
+      "cached_input_tokens": 604288,
+      "output_tokens": 10988,
+      "reasoning_output_tokens": 9104
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 9,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 39,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__mcp__python-ai",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "mcp",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:22:03.599885+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 19.073,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 171052,
+      "cached_input_tokens": 146048,
+      "output_tokens": 4035,
+      "reasoning_output_tokens": 3043
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 5,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 33,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__mcp__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__prompt__heavy-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "prompt",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:20:15.039289+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 67.796,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 707092,
+      "cached_input_tokens": 643328,
+      "output_tokens": 54325,
+      "reasoning_output_tokens": 21103
+    },
+    "mcp_calls": [],
+    "agent_messages": 6,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 74,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__prompt__light-ts",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "prompt",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:19:24.152484+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 50.882,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 301717,
+      "cached_input_tokens": 264448,
+      "output_tokens": 27446,
+      "reasoning_output_tokens": 19475
+    },
+    "mcp_calls": [],
+    "agent_messages": 5,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 25,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__prompt__multi-ecosystem",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "prompt",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:21:24.095288+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 37.584,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 391381,
+      "cached_input_tokens": 359552,
+      "output_tokens": 21353,
+      "reasoning_output_tokens": 11823
+    },
+    "mcp_calls": [],
+    "agent_messages": 6,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 33,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": false,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.3-codex-spark__prompt__python-ai",
+    "model_key": "gpt-5.3-codex-spark",
+    "model": "gpt-5.3-codex-spark",
+    "effort": "high",
+    "method": "prompt",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:21:22.844440+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 22.907,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 79721,
+      "cached_input_tokens": 56576,
+      "output_tokens": 22549,
+      "reasoning_output_tokens": 14614
+    },
+    "mcp_calls": [],
+    "agent_messages": 2,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 30,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.3-codex-spark__prompt__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": true,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__cli__heavy-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:14:02.482247+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 321.662,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 1405251,
+      "cached_input_tokens": 1309824,
+      "output_tokens": 13834,
+      "reasoning_output_tokens": 3396
+    },
+    "mcp_calls": [],
+    "agent_messages": 15,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 162,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__cli__light-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:13:32.410183+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 30.069,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 48783,
+      "cached_input_tokens": 44160,
+      "output_tokens": 753,
+      "reasoning_output_tokens": 102
+    },
+    "mcp_calls": [],
+    "agent_messages": 3,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 59,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__cli__multi-ecosystem",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:19:00.305137+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 143.787,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 469366,
+      "cached_input_tokens": 415232,
+      "output_tokens": 7870,
+      "reasoning_output_tokens": 2276
+    },
+    "mcp_calls": [],
+    "agent_messages": 13,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 62,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__cli__python-ai",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:16:51.807796+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 128.493,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 333435,
+      "cached_input_tokens": 266624,
+      "output_tokens": 5881,
+      "reasoning_output_tokens": 1562
+    },
+    "mcp_calls": [],
+    "agent_messages": 11,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 32,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__cli__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__mcp__heavy-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:12:23.186145+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 51.28,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 226811,
+      "cached_input_tokens": 193536,
+      "output_tokens": 3016,
+      "reasoning_output_tokens": 1242
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 6,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 164,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__mcp__light-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:11:53.141470+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 44.227,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 240796,
+      "cached_input_tokens": 213376,
+      "output_tokens": 2153,
+      "reasoning_output_tokens": 513
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 7,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 60,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__mcp__multi-ecosystem",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:13:14.475566+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 217.322,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 640077,
+      "cached_input_tokens": 573568,
+      "output_tokens": 13235,
+      "reasoning_output_tokens": 4036
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 12,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 86,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__mcp__python-ai",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:12:37.370876+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 55.035,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 241309,
+      "cached_input_tokens": 213888,
+      "output_tokens": 2284,
+      "reasoning_output_tokens": 893
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 7,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 33,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__mcp__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__prompt__heavy-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:05:21.904908+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 235.867,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 191402,
+      "cached_input_tokens": 160768,
+      "output_tokens": 15502,
+      "reasoning_output_tokens": 3165
+    },
+    "mcp_calls": [],
+    "agent_messages": 6,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 61,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__prompt__light-ts",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:05:21.905066+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 250.978,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 767779,
+      "cached_input_tokens": 686848,
+      "output_tokens": 15271,
+      "reasoning_output_tokens": 3841
+    },
+    "mcp_calls": [],
+    "agent_messages": 13,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 13823,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__prompt__multi-ecosystem",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:09:33.085336+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 170.093,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 277765,
+      "cached_input_tokens": 248448,
+      "output_tokens": 11795,
+      "reasoning_output_tokens": 1290
+    },
+    "mcp_calls": [],
+    "agent_messages": 8,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 40,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": false,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.4__prompt__python-ai",
+    "model_key": "gpt-5.4",
+    "model": "gpt-5.4",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:09:17.782213+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 155.352,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 207156,
+      "cached_input_tokens": 188800,
+      "output_tokens": 10745,
+      "reasoning_output_tokens": 1668
+    },
+    "mcp_calls": [],
+    "agent_messages": 7,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 33,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.4__prompt__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__cli__heavy-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:36:11.676565+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 119.715,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 678109,
+      "cached_input_tokens": 610432,
+      "output_tokens": 6851,
+      "reasoning_output_tokens": 1303
+    },
+    "mcp_calls": [],
+    "agent_messages": 12,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 151,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__cli__light-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:35:45.544971+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 26.125,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 73851,
+      "cached_input_tokens": 44544,
+      "output_tokens": 1513,
+      "reasoning_output_tokens": 69
+    },
+    "mcp_calls": [],
+    "agent_messages": 4,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 59,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__cli__multi-ecosystem",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:38:11.403313+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 84.331,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 460980,
+      "cached_input_tokens": 372736,
+      "output_tokens": 5480,
+      "reasoning_output_tokens": 1047
+    },
+    "mcp_calls": [],
+    "agent_messages": 12,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 62,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__cli__python-ai",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "cli",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:37:20.700568+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 66.128,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 241584,
+      "cached_input_tokens": 221056,
+      "output_tokens": 4347,
+      "reasoning_output_tokens": 1153
+    },
+    "mcp_calls": [],
+    "agent_messages": 9,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 32,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__cli__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__mcp__heavy-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:33:55.497353+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 108.448,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 436084,
+      "cached_input_tokens": 394112,
+      "output_tokens": 6704,
+      "reasoning_output_tokens": 1900
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 12,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 170,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__mcp__light-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:32:57.269158+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 58.222,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 469346,
+      "cached_input_tokens": 392832,
+      "output_tokens": 2544,
+      "reasoning_output_tokens": 566
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "mcp__better_fullstack:list_mcp_resources",
+      "mcp__better_fullstack:list_mcp_resources",
+      "codex:list_mcp_resources",
+      "codex:list_mcp_resources",
+      "better_fullstack:read_mcp_resource",
+      "better_fullstack:read_mcp_resource",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 10,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 60,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__mcp__multi-ecosystem",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:35:43.954170+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 96.744,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 539250,
+      "cached_input_tokens": 484224,
+      "output_tokens": 4101,
+      "reasoning_output_tokens": 1149
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 11,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 73,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": true,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": true,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__mcp__python-ai",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "mcp",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:35:02.952819+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 42.588,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 254662,
+      "cached_input_tokens": 200576,
+      "output_tokens": 2003,
+      "reasoning_output_tokens": 337
+    },
+    "mcp_calls": [
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_guidance",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_get_schema",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_check_compatibility",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_plan_project",
+      "better_fullstack:bfs_create_project",
+      "better_fullstack:bfs_create_project"
+    ],
+    "agent_messages": 8,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 36,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__mcp__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__prompt__heavy-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "heavy-ts",
+    "project_name": "bench-heavy-ts",
+    "start_utc": "2026-06-10T20:25:57.573417+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 541.521,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__heavy-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__heavy-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__heavy-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__heavy-ts/stderr.log",
+    "usage": {
+      "input_tokens": 2551971,
+      "cached_input_tokens": 2385664,
+      "output_tokens": 28342,
+      "reasoning_output_tokens": 3756
+    },
+    "mcp_calls": [],
+    "agent_messages": 40,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 103958,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__heavy-ts/bench-heavy-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__prompt__light-ts",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "light-ts",
+    "project_name": "bench-light-ts",
+    "start_utc": "2026-06-10T20:24:21.700304+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 163.155,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__light-ts",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__light-ts/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__light-ts/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__light-ts/stderr.log",
+    "usage": {
+      "input_tokens": 478959,
+      "cached_input_tokens": 443776,
+      "output_tokens": 10601,
+      "reasoning_output_tokens": 1547
+    },
+    "mcp_calls": [],
+    "agent_messages": 11,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 11919,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__light-ts/bench-light-ts",
+      "manifests": {
+        "package_json": true,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__prompt__multi-ecosystem",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "multi-ecosystem",
+    "project_name": "bench-multi-ecosystem",
+    "start_utc": "2026-06-10T20:28:55.391682+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 241.865,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__multi-ecosystem",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__multi-ecosystem/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__multi-ecosystem/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__multi-ecosystem/stderr.log",
+    "usage": {
+      "input_tokens": 359479,
+      "cached_input_tokens": 291456,
+      "output_tokens": 15787,
+      "reasoning_output_tokens": 1436
+    },
+    "mcp_calls": [],
+    "agent_messages": 9,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 42,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__multi-ecosystem/bench-multi-ecosystem",
+      "manifests": {
+        "package_json": false,
+        "pyproject": false,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  },
+  {
+    "run_id": "gpt-5.5-medium__prompt__python-ai",
+    "model_key": "gpt-5.5-medium",
+    "model": "gpt-5.5",
+    "effort": "medium",
+    "method": "prompt",
+    "spec": "python-ai",
+    "project_name": "bench-python-ai",
+    "start_utc": "2026-06-10T20:27:05.015745+00:00",
+    "codex_exit_code": 0,
+    "timed_out": false,
+    "codex_elapsed_sec": 110.374,
+    "run_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__python-ai",
+    "final": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__python-ai/final.txt",
+    "events": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__python-ai/events.jsonl",
+    "stderr": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__python-ai/stderr.log",
+    "usage": {
+      "input_tokens": 188038,
+      "cached_input_tokens": 155520,
+      "output_tokens": 7869,
+      "reasoning_output_tokens": 1076
+    },
+    "mcp_calls": [],
+    "agent_messages": 9,
+    "validation": {
+      "status": "ok",
+      "checks": [],
+      "file_count": 33,
+      "project_dir": "/Users/ibrahime/Documents/Better-Fullstack/testing/llm-benchmarks/results/20260610-230521/runs/gpt-5.5-medium__prompt__python-ai/bench-python-ai",
+      "manifests": {
+        "package_json": false,
+        "pyproject": true,
+        "requirements": false,
+        "go_mod": false,
+        "cargo": false
+      }
+    }
+  }
+]
