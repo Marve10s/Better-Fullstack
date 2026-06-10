@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 	const { req, res } = event.node;
 	const result = await apiHandler.handle(req, res, {
 		prefix: "/api-reference",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		context: await createContext({ req }),
 {{else}}
 		context: await createContext(),

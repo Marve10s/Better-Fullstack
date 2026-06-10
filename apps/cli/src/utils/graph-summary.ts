@@ -195,6 +195,13 @@ export function getGraphBackendDeployInstructions(config: ProjectConfig): string
         `* Backend: ${backendLabel}`,
         `* Deploy from: ${targetPath}`,
       ].join("\n");
+    case "netlify":
+      return [
+        "Server deployment with Netlify Functions:",
+        `* Backend: ${backendLabel}`,
+        `* Config: ${targetPath}/netlify.toml`,
+        `* Functions: ${targetPath}/netlify/functions`,
+      ].join("\n");
     case "cloudflare":
     case "sst":
       return [

@@ -17,6 +17,16 @@ import {
   CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
+  DotnetApiSchema,
+  DotnetAuthSchema,
+  DotnetCachingSchema,
+  DotnetDeploySchema,
+  DotnetJobQueueSchema,
+  DotnetObservabilitySchema,
+  DotnetOrmSchema,
+  DotnetRealtimeSchema,
+  DotnetTestingSchema,
+  DotnetWebFrameworkSchema,
   EcosystemSchema,
   ElixirApiSchema,
   ElixirAuthSchema,
@@ -82,6 +92,7 @@ import {
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
+  RateLimitSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -116,7 +127,7 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   0,
 );
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -131,10 +142,10 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", and "javaTestingLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", "javaTestingLibraries", "dotnetTesting", and "dotnetObservability". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
-- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/elixir ecosystems.
+- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
 - The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
@@ -158,6 +169,8 @@ function getGuidance() {
       go: "Backend/CLI: web framework (gin/echo), ORM (gorm/sqlc), gRPC, CLI tools, logging.",
       java:
         "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
+      dotnet:
+        "Backend/API: ASP.NET Core Minimal APIs, MVC, or Blazor with EF Core/Dapper, Identity/Auth0, SignalR, xUnit, and Docker-ready output.",
       elixir:
         "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, and Mix releases/Docker.",
     },
@@ -169,7 +182,7 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, javaLibraries, and javaTestingLibraries. Use [] for "none" on multi-select fields.',
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, javaLibraries, javaTestingLibraries, dotnetTesting, and dotnetObservability. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime:
@@ -400,6 +413,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   realtime: "none",
   jobQueue: "none",
   caching: "none",
+  rateLimit: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -461,6 +475,16 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   javaAuth: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
+  dotnetWebFramework: "aspnet-minimal",
+  dotnetOrm: "ef-core",
+  dotnetAuth: "aspnet-identity",
+  dotnetApi: "minimal-api",
+  dotnetTesting: ["xunit"],
+  dotnetJobQueue: "none",
+  dotnetRealtime: "signalr",
+  dotnetObservability: ["serilog"],
+  dotnetCaching: "none",
+  dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -864,6 +888,19 @@ export async function startMcpServer() {
       .array(JavaTestingLibrariesSchema)
       .optional()
       .describe("Java testing libraries"),
+    dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(".NET web framework"),
+    dotnetOrm: DotnetOrmSchema.optional().describe(".NET ORM/data access"),
+    dotnetAuth: DotnetAuthSchema.optional().describe(".NET authentication library"),
+    dotnetApi: DotnetApiSchema.optional().describe(".NET API style"),
+    dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
+    dotnetJobQueue: DotnetJobQueueSchema.optional().describe(".NET jobs and scheduling"),
+    dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime feature"),
+    dotnetObservability: z
+      .array(DotnetObservabilitySchema)
+      .optional()
+      .describe(".NET observability/logging libraries"),
+    dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
+    dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
     elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
     elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
     elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
@@ -910,6 +947,7 @@ export async function startMcpServer() {
       analytics: AnalyticsSchema.optional().describe("Analytics provider"),
       cms: CMSSchema.optional().describe("CMS"),
       caching: CachingSchema.optional().describe("Caching solution"),
+      rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
       i18n: I18nSchema.optional().describe("Internationalization library"),
       search: SearchSchema.optional().describe("Search engine"),
       fileStorage: FileStorageSchema.optional().describe("File storage"),
@@ -970,6 +1008,7 @@ export async function startMcpServer() {
     featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
     search: SearchSchema.optional().describe("Search engine"),
     caching: CachingSchema.optional().describe("Caching solution"),
+    rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
     i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
     cms: CMSSchema.optional().describe("CMS"),
     fileStorage: FileStorageSchema.optional().describe("File storage"),

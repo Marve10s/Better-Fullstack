@@ -25,6 +25,9 @@ const sessionSchema = new Schema(
         ipAddress: { type: String },
         userAgent: { type: String },
         userId: { type: String, ref: 'User', required: true },
+        {{#if (hasBetterAuthOrganizations auth)}}
+        activeOrganizationId: { type: String },
+        {{/if}}
     },
     { collection: 'session' }
 );
@@ -60,9 +63,58 @@ const verificationSchema = new Schema(
     { collection: 'verification' }
 );
 
+{{#if (hasBetterAuthOrganizations auth)}}
+const organizationSchema = new Schema(
+    {
+        _id: { type: String },
+        name: { type: String, required: true },
+        slug: { type: String, required: true, unique: true },
+        logo: { type: String },
+        metadata: { type: String },
+        createdAt: { type: Date, required: true },
+    },
+    { collection: 'organization' }
+);
+
+const memberSchema = new Schema(
+    {
+        _id: { type: String },
+        organizationId: { type: String, ref: 'Organization', required: true },
+        userId: { type: String, ref: 'User', required: true },
+        role: { type: String, required: true, default: 'member' },
+        createdAt: { type: Date, required: true },
+    },
+    { collection: 'member' }
+);
+
+const invitationSchema = new Schema(
+    {
+        _id: { type: String },
+        organizationId: { type: String, ref: 'Organization', required: true },
+        email: { type: String, required: true },
+        role: { type: String },
+        status: { type: String, required: true, default: 'pending' },
+        expiresAt: { type: Date, required: true },
+        createdAt: { type: Date, required: true },
+        inviterId: { type: String, ref: 'User', required: true },
+    },
+    { collection: 'invitation' }
+);
+
+memberSchema.index({ organizationId: 1 });
+memberSchema.index({ userId: 1 });
+invitationSchema.index({ organizationId: 1 });
+invitationSchema.index({ email: 1 });
+
+{{/if}}
 const User = model('User', userSchema);
 const Session = model('Session', sessionSchema);
 const Account = model('Account', accountSchema);
 const Verification = model('Verification', verificationSchema);
+{{#if (hasBetterAuthOrganizations auth)}}
+const Organization = model('Organization', organizationSchema);
+const Member = model('Member', memberSchema);
+const Invitation = model('Invitation', invitationSchema);
+{{/if}}
 
-export { User, Session, Account, Verification };
+export { User, Session, Account, Verification{{#if (hasBetterAuthOrganizations auth)}}, Organization, Member, Invitation{{/if}} };

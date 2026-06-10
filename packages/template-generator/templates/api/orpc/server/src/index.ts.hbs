@@ -1,11 +1,11 @@
-import { {{#if (eq auth "better-auth")}}ORPCError, {{/if}}os } from "@orpc/server";
+import { {{#if (isBetterAuth auth)}}ORPCError, {{/if}}os } from "@orpc/server";
 import type { Context } from "./context{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
 export const o = os.$context<Context>();
 
 export const publicProcedure = o;
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 const requireAuth = o.middleware(async ({ context, next }) => {
   if (!context.session?.user) {
     throw new ORPCError("UNAUTHORIZED");

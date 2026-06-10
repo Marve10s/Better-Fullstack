@@ -1,10 +1,10 @@
 import SchemaBuilder from "@pothos/core";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import type { Session, User } from "better-auth";
 {{/if}}
 
 export interface PothosContext {
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   session: { user: User; session: Session } | null;
 {{/if}}
 }

@@ -102,6 +102,11 @@ describe("compatibility issue helpers", () => {
       ...unsupportedStack,
       webFrontend: ["react-vite"],
     };
+    const supportedNetlifyStacks = [
+      { ...unsupportedStack, webFrontend: ["react-router"] },
+      { ...unsupportedStack, webFrontend: ["tanstack-start"] },
+      { ...unsupportedStack, webFrontend: ["solid-start"] },
+    ];
 
     expect(getDisabledReason(unsupportedStack, "webDeploy", "render")).toBe(
       "Render deployment is not yet wired up for the 'astro' frontend",
@@ -111,6 +116,41 @@ describe("compatibility issue helpers", () => {
     );
     expect(getDisabledReason(supportedStack, "webDeploy", "render")).toBeNull();
     expect(getDisabledReason(supportedStack, "webDeploy", "netlify")).toBeNull();
+    for (const stack of supportedNetlifyStacks) {
+      expect(getDisabledReason(stack, "webDeploy", "netlify")).toBeNull();
+    }
+  });
+
+  it("disables Netlify server deploy outside the supported Hono Node path", () => {
+    const baseStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["tanstack-router"],
+      nativeFrontend: [],
+      backend: "hono",
+      runtime: "node",
+    };
+
+    expect(getDisabledReason(baseStack, "serverDeploy", "netlify")).toBeNull();
+    expect(
+      getDisabledReason(
+        {
+          ...baseStack,
+          backend: "express",
+        },
+        "serverDeploy",
+        "netlify",
+      ),
+    ).toBe("Netlify Functions server deploy is currently supported only with Hono");
+    expect(
+      getDisabledReason(
+        {
+          ...baseStack,
+          runtime: "bun",
+        },
+        "serverDeploy",
+        "netlify",
+      ),
+    ).toBe("Netlify Functions server deploy requires Node.js runtime");
   });
 
   it("routes promoted frontend library disabled reasons through graph checks", () => {

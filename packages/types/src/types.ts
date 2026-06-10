@@ -53,6 +53,7 @@ import type {
   MobileDeepLinkingSchema,
   CMSSchema,
   CachingSchema,
+  RateLimitSchema,
   I18nSchema,
   SearchSchema,
   FileStorageSchema,
@@ -88,6 +89,16 @@ import type {
   JavaAuthSchema,
   JavaLibrariesSchema,
   JavaTestingLibrariesSchema,
+  DotnetWebFrameworkSchema,
+  DotnetOrmSchema,
+  DotnetAuthSchema,
+  DotnetApiSchema,
+  DotnetTestingSchema,
+  DotnetJobQueueSchema,
+  DotnetRealtimeSchema,
+  DotnetObservabilitySchema,
+  DotnetCachingSchema,
+  DotnetDeploySchema,
   ElixirWebFrameworkSchema,
   ElixirOrmSchema,
   ElixirAuthSchema,
@@ -163,6 +174,7 @@ export type MobileOTA = z.infer<typeof MobileOTASchema>;
 export type MobileDeepLinking = z.infer<typeof MobileDeepLinkingSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
+export type RateLimit = z.infer<typeof RateLimitSchema>;
 export type I18n = z.infer<typeof I18nSchema>;
 export type Search = z.infer<typeof SearchSchema>;
 export type FileStorage = z.infer<typeof FileStorageSchema>;
@@ -198,6 +210,16 @@ export type JavaOrm = z.infer<typeof JavaOrmSchema>;
 export type JavaAuth = z.infer<typeof JavaAuthSchema>;
 export type JavaLibraries = z.infer<typeof JavaLibrariesSchema>;
 export type JavaTestingLibraries = z.infer<typeof JavaTestingLibrariesSchema>;
+export type DotnetWebFramework = z.infer<typeof DotnetWebFrameworkSchema>;
+export type DotnetOrm = z.infer<typeof DotnetOrmSchema>;
+export type DotnetAuth = z.infer<typeof DotnetAuthSchema>;
+export type DotnetApi = z.infer<typeof DotnetApiSchema>;
+export type DotnetTesting = z.infer<typeof DotnetTestingSchema>;
+export type DotnetJobQueue = z.infer<typeof DotnetJobQueueSchema>;
+export type DotnetRealtime = z.infer<typeof DotnetRealtimeSchema>;
+export type DotnetObservability = z.infer<typeof DotnetObservabilitySchema>;
+export type DotnetCaching = z.infer<typeof DotnetCachingSchema>;
+export type DotnetDeploy = z.infer<typeof DotnetDeploySchema>;
 export type ElixirWebFramework = z.infer<typeof ElixirWebFrameworkSchema>;
 export type ElixirOrm = z.infer<typeof ElixirOrmSchema>;
 export type ElixirAuth = z.infer<typeof ElixirAuthSchema>;

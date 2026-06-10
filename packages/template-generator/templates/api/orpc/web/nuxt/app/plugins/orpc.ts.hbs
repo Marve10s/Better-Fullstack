@@ -10,7 +10,7 @@ export default defineNuxtPlugin(() => {
 
   const rpcLink = new RPCLink({
     url: rpcUrl,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     fetch(url, options) {
         return fetch(url, {
         ...options,

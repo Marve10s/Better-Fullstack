@@ -57,7 +57,7 @@ export const web = await Nextjs("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     NEXT_PUBLIC_CONVEX_URL: alchemy.env.NEXT_PUBLIC_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     NEXT_PUBLIC_CONVEX_SITE_URL: alchemy.env.NEXT_PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -70,7 +70,7 @@ export const web = await Nextjs("web", {
     {{/if}}
     {{#if (ne backend "convex")}}
     CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
     {{/if}}
@@ -108,7 +108,7 @@ export const web = await Nuxt("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     NUXT_PUBLIC_CONVEX_URL: alchemy.env.NUXT_PUBLIC_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     NUXT_PUBLIC_CONVEX_SITE_URL: alchemy.env.NUXT_PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -122,7 +122,7 @@ export const web = await Nuxt("web", {
     {{/if}}
     {{#if (ne backend "convex")}}
     CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
     {{/if}}
@@ -156,7 +156,7 @@ export const web = await SvelteKit("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     PUBLIC_CONVEX_URL: alchemy.env.PUBLIC_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     PUBLIC_CONVEX_SITE_URL: alchemy.env.PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -170,7 +170,7 @@ export const web = await TanStackStart("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -183,7 +183,7 @@ export const web = await TanStackStart("web", {
     {{/if}}
     {{#if (ne backend "convex")}}
     CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
     {{/if}}
@@ -217,7 +217,7 @@ export const web = await Vite("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -231,7 +231,7 @@ export const web = await ReactRouter("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -246,7 +246,7 @@ export const web = await Vite("web", {
   bindings: {
     {{#if (eq backend "convex")}}
     VITE_CONVEX_URL: alchemy.env.VITE_CONVEX_URL!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
@@ -268,7 +268,7 @@ export const web = await Astro("web", {
     DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
     {{/if}}
     CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
     {{/if}}
@@ -304,7 +304,7 @@ export const server = await Worker("server", {
     DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
     {{/if}}
     CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
     {{/if}}

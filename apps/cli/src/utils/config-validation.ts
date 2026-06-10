@@ -194,6 +194,8 @@ function getEcosystemOrm(cfg: Partial<ProjectConfig>) {
       return cfg.goOrm;
     case "java":
       return cfg.javaOrm;
+    case "dotnet":
+      return cfg.dotnetOrm;
     case "elixir":
       return cfg.elixirOrm;
     default:
@@ -216,6 +218,10 @@ function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
     case "java":
       return cfg.javaWebFramework && cfg.javaWebFramework !== "none"
         ? cfg.javaWebFramework
+        : undefined;
+    case "dotnet":
+      return cfg.dotnetWebFramework && cfg.dotnetWebFramework !== "none"
+        ? cfg.dotnetWebFramework
         : undefined;
     case "elixir":
       return cfg.elixirWebFramework && cfg.elixirWebFramework !== "none"
@@ -334,7 +340,11 @@ export function validateEcosystemAuthCompatibility(
   }
 
   const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (auth === "better-auth" && config.orm && ormsWithoutBetterAuth.includes(config.orm)) {
+  if (
+    (auth === "better-auth" || auth === "better-auth-organizations") &&
+    config.orm &&
+    ormsWithoutBetterAuth.includes(config.orm)
+  ) {
     config.auth = "none";
     if (providedFlags?.has("auth") && !isSilent()) {
       consola.warn(
@@ -949,6 +959,31 @@ function validateCachingConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
+  if (!config.rateLimit || config.rateLimit === "none") return;
+  if (config.ecosystem !== "typescript") {
+    incompatibilityError({
+      message: "Rate limiting helpers are currently available for TypeScript stacks only.",
+      provided: { ecosystem: config.ecosystem ?? "typescript", "rate-limit": config.rateLimit },
+      suggestions: ["Use --rate-limit none"],
+    });
+  }
+  if (config.backend === "convex") {
+    incompatibilityError({
+      message: "Rate limiting helpers are not generated with Convex backend.",
+      provided: { backend: "convex", "rate-limit": config.rateLimit },
+      suggestions: ["Use --rate-limit none"],
+    });
+  }
+  if (config.backend === "none") {
+    incompatibilityError({
+      message: "Rate limiting requires a backend.",
+      provided: { backend: "none", "rate-limit": config.rateLimit },
+      suggestions: ["Use --backend hono", "Use --rate-limit none"],
+    });
+  }
+}
+
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
   if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
@@ -1058,6 +1093,7 @@ export function validateFullConfig(
   validateEmailConstraints(config);
   validateObservabilityConstraints(config);
   validateCachingConstraints(config);
+  validateRateLimitConstraints(config);
   validateSearchConstraints(config);
   validateJavaConstraints(config, providedFlags);
   validateElixirConstraints(config);
@@ -1119,6 +1155,27 @@ export function validateFullConfig(
         "Switch to a serverless-compatible backend like Hono or Express",
       ],
     });
+  }
+
+  if (config.serverDeploy === "netlify") {
+    if (config.backend !== "hono") {
+      incompatibilityError({
+        message: "Netlify Functions server deploy is currently supported only with Hono",
+        provided: { backend: config.backend!, serverDeploy: config.serverDeploy },
+        suggestions: [
+          "Use --backend hono",
+          "Use --server-deploy fly, railway, render, or docker for this backend",
+        ],
+      });
+    }
+
+    if (config.runtime !== "node") {
+      incompatibilityError({
+        message: "Netlify Functions server deploy requires Node.js runtime",
+        provided: { runtime: config.runtime!, serverDeploy: config.serverDeploy },
+        suggestions: ["Use --runtime node", "Choose a different server deployment target"],
+      });
+    }
   }
 
   if (config.addons && config.addons.length > 0) {
@@ -1186,6 +1243,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);
     validateCachingConstraints(config);
+    validateRateLimitConstraints(config);
     validateSearchConstraints(config);
     validateJavaConstraints(config);
     validateElixirConstraints(config);

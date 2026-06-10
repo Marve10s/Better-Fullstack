@@ -601,7 +601,11 @@ export function validatePaymentsCompatibility(
   }
 
   if (payments === "polar") {
-    if (!auth || auth === "none" || auth !== "better-auth") {
+    if (
+      !auth ||
+      auth === "none" ||
+      (auth !== "better-auth" && auth !== "better-auth-organizations")
+    ) {
       exitWithError(
         "Polar payments requires Better Auth. Please use '--auth better-auth' or choose a different payments provider.",
       );

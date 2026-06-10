@@ -1,4 +1,4 @@
-{{#unless (or (eq auth "better-auth") (eq auth "nextauth"))}}
+{{#unless (or (isBetterAuth auth) (eq auth "nextauth"))}}
 import { mysqlTable, serial, varchar, timestamp } from "drizzle-orm/mysql-core";
 
 export const example = mysqlTable("example", {

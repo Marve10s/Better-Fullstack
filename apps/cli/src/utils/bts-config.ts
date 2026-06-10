@@ -71,6 +71,19 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.javaTestingLibraries = [];
   }
 
+  if (!selectedEcosystems.has("dotnet")) {
+    normalized.dotnetWebFramework = "none";
+    normalized.dotnetOrm = "none";
+    normalized.dotnetAuth = "none";
+    normalized.dotnetApi = "none";
+    normalized.dotnetTesting = [];
+    normalized.dotnetJobQueue = "none";
+    normalized.dotnetRealtime = "none";
+    normalized.dotnetObservability = [];
+    normalized.dotnetCaching = "none";
+    normalized.dotnetDeploy = "none";
+  }
+
   if (!selectedEcosystems.has("elixir")) {
     normalized.elixirWebFramework = "none";
     normalized.elixirOrm = "none";
@@ -263,6 +276,7 @@ function buildBtsConfigForPersistence(
     mobileDeepLinking: persistedConfig.mobileDeepLinking,
     cms: persistedConfig.cms,
     caching: persistedConfig.caching,
+    rateLimit: persistedConfig.rateLimit,
     i18n: persistedConfig.i18n,
     search: persistedConfig.search,
     fileStorage: persistedConfig.fileStorage,
@@ -297,6 +311,16 @@ function buildBtsConfigForPersistence(
     javaAuth: persistedConfig.javaAuth,
     javaLibraries: persistedConfig.javaLibraries,
     javaTestingLibraries: persistedConfig.javaTestingLibraries,
+    dotnetWebFramework: persistedConfig.dotnetWebFramework,
+    dotnetOrm: persistedConfig.dotnetOrm,
+    dotnetAuth: persistedConfig.dotnetAuth,
+    dotnetApi: persistedConfig.dotnetApi,
+    dotnetTesting: persistedConfig.dotnetTesting,
+    dotnetJobQueue: persistedConfig.dotnetJobQueue,
+    dotnetRealtime: persistedConfig.dotnetRealtime,
+    dotnetObservability: persistedConfig.dotnetObservability,
+    dotnetCaching: persistedConfig.dotnetCaching,
+    dotnetDeploy: persistedConfig.dotnetDeploy,
     elixirWebFramework: persistedConfig.elixirWebFramework,
     elixirOrm: persistedConfig.elixirOrm,
     elixirAuth: persistedConfig.elixirAuth,
@@ -390,6 +414,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     mobileDeepLinking: btsConfig.mobileDeepLinking,
     cms: btsConfig.cms,
     caching: btsConfig.caching,
+    rateLimit: btsConfig.rateLimit,
     i18n: btsConfig.i18n,
     search: btsConfig.search,
     fileStorage: btsConfig.fileStorage,
@@ -424,6 +449,16 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     javaAuth: btsConfig.javaAuth,
     javaLibraries: btsConfig.javaLibraries,
     javaTestingLibraries: btsConfig.javaTestingLibraries,
+    dotnetWebFramework: btsConfig.dotnetWebFramework,
+    dotnetOrm: btsConfig.dotnetOrm,
+    dotnetAuth: btsConfig.dotnetAuth,
+    dotnetApi: btsConfig.dotnetApi,
+    dotnetTesting: btsConfig.dotnetTesting,
+    dotnetJobQueue: btsConfig.dotnetJobQueue,
+    dotnetRealtime: btsConfig.dotnetRealtime,
+    dotnetObservability: btsConfig.dotnetObservability,
+    dotnetCaching: btsConfig.dotnetCaching,
+    dotnetDeploy: btsConfig.dotnetDeploy,
     elixirWebFramework: btsConfig.elixirWebFramework,
     elixirOrm: btsConfig.elixirOrm,
     elixirAuth: btsConfig.elixirAuth,

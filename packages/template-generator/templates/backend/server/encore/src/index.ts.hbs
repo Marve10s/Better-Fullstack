@@ -1,5 +1,5 @@
 import { api } from "encore.dev/api";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}

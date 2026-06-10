@@ -2,7 +2,7 @@ import { createNextHandler } from "@ts-rest/serverless/next";
 import { contract } from "@{{projectName}}/api/index";
 import { createRouter } from "@{{projectName}}/api/routers";
 import { createContext } from "@{{projectName}}/api/context";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 {{/if}}
@@ -10,7 +10,7 @@ import { headers } from "next/headers";
 const handler = createNextHandler(
   contract,
   async (args, { request }) => {
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -25,7 +25,7 @@ const handler = createNextHandler(
     if (path === "/health") {
       return router.healthCheck();
     }
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
     if (path === "/private") {
       return router.privateData();
     }

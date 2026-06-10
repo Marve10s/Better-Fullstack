@@ -6,7 +6,7 @@ import { useAuth } from "@clerk/react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { env } from "@{{projectName}}/env/web";
-{{else if (eq auth "better-auth")}}
+{{else if (isBetterAuth auth)}}
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { authClient } from "@/lib/auth-client";
@@ -49,12 +49,12 @@ const convex = new ConvexReactClient(env.VITE_CONVEX_URL);
 
 export default function Providers({
   children,
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
   initialToken,
 {{/if}}
 }: {
   children: React.ReactNode;
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
   initialToken?: string | null;
 {{/if}}
 }) {
@@ -76,7 +76,7 @@ export default function Providers({
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         {children}
       </ConvexProviderWithClerk>
-      {{else if (eq auth "better-auth")}}
+      {{else if (isBetterAuth auth)}}
       <ConvexBetterAuthProvider
         client={convex}
         authClient={authClient}

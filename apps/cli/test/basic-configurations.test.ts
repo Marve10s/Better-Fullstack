@@ -12,6 +12,7 @@ describe("Basic Configurations", () => {
       "python",
       "go",
       "java",
+      "dotnet",
       "elixir",
     ]);
   });
@@ -73,6 +74,36 @@ describe("Basic Configurations", () => {
       expect(result.result?.projectConfig.backend).toBe("self");
       expect(result.result?.projectConfig.runtime).toBe("none");
       expect(result.result?.projectConfig.frontend).toEqual(["next"]);
+    });
+
+    it("should preserve explicit database flags for .NET projects", async () => {
+      const result = await runTRPCTest({
+        projectName: "dotnet-postgres",
+        ecosystem: "dotnet",
+        database: "postgres",
+        backend: "none",
+        runtime: "none",
+        frontend: [],
+        api: "none",
+        auth: "none",
+        addons: [],
+        examples: [],
+        dotnetWebFramework: "aspnet-minimal",
+        dotnetOrm: "ef-core",
+        dotnetAuth: "none",
+        dotnetApi: "minimal-api",
+        dotnetTesting: [],
+        dotnetJobQueue: "none",
+        dotnetRealtime: "none",
+        dotnetObservability: [],
+        dotnetCaching: "none",
+        dotnetDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      expect(result.result?.projectConfig.database).toBe("postgres");
+      expect(result.result?.projectConfig.dotnetOrm).toBe("ef-core");
     });
 
     it("should accept graph part bindings without prompting", async () => {
@@ -143,13 +174,13 @@ describe("Basic Configurations", () => {
     it("should reject graph capabilities that the selected framework cannot generate", async () => {
       const result = await runTRPCTest({
         projectName: "bad-graph-elixir-live-view",
-        part: ["backend:elixir:phoenix", "backend.api:elixir:live-view-streams"],
+        part: ["backend:elixir:phoenix", "backend.realtime:elixir:live-view-streams"],
         dryRun: true,
         install: false,
         expectError: true,
       });
 
-      expectError(result, "can only be selected for a Phoenix LiveView backend");
+      expectError(result, "LiveView Streams require Phoenix LiveView");
     });
 
     it("should validate array flag exclusivity when graph part bindings skip prompts", async () => {

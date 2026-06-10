@@ -166,7 +166,7 @@ export async function displayPostInstallInstructions(
   const hasFresh = frontend?.includes("fresh");
   const webPort = String(getLocalWebDevPort(frontend ?? []));
   const betterAuthConvexInstructions =
-    isConvex && config.auth === "better-auth"
+    isConvex && (config.auth === "better-auth" || config.auth === "better-auth-organizations")
       ? getBetterAuthConvexInstructions(hasWeb ?? false, webPort, packageManager)
       : "";
 
@@ -557,7 +557,13 @@ function getAuthSetupInstructions(
   frontend: Frontend[],
 ): string {
   // Clerk and better-auth already have dedicated instruction functions
-  if (auth === "clerk" || auth === "better-auth" || auth === "go-better-auth" || auth === "none") {
+  if (
+    auth === "clerk" ||
+    auth === "better-auth" ||
+    auth === "better-auth-organizations" ||
+    auth === "go-better-auth" ||
+    auth === "none"
+  ) {
     return "";
   }
 

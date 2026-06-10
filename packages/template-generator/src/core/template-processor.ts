@@ -15,6 +15,14 @@ Handlebars.registerHelper("includes", (arr, val) => Array.isArray(arr) && arr.in
 Handlebars.registerHelper("replace", (value, find, replacement) =>
   String(value).split(String(find)).join(String(replacement)),
 );
+Handlebars.registerHelper(
+  "isBetterAuth",
+  (auth) => auth === "better-auth" || auth === "better-auth-organizations",
+);
+Handlebars.registerHelper(
+  "hasBetterAuthOrganizations",
+  (auth) => auth === "better-auth-organizations",
+);
 
 // ---------------------------------------------------------------------------
 // shadcn/ui theme helpers

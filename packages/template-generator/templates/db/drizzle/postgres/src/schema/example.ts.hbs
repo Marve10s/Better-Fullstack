@@ -1,4 +1,4 @@
-{{#unless (or (eq auth "better-auth") (eq auth "nextauth"))}}
+{{#unless (or (isBetterAuth auth) (eq auth "nextauth"))}}
 import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const example = pgTable("example", {

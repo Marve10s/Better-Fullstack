@@ -465,6 +465,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.caching,
       "none",
     );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "rateLimit",
+      "typescript",
+      "rate-limit",
+      config.rateLimit,
+      "none",
+    );
     appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
     appendChangedGraphStringFlag(flags, config, "search", "typescript", "search", config.search, "none");
     appendChangedGraphStringFlag(
@@ -837,6 +846,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--observability ${config.observability}`);
   flags.push(`--feature-flags ${config.featureFlags}`);
   flags.push(`--caching ${config.caching}`);
+  flags.push(`--rate-limit ${config.rateLimit}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
@@ -965,6 +975,25 @@ function getJavaFlags(config: ProjectConfig) {
   return flags;
 }
 
+function getDotnetFlags(config: ProjectConfig) {
+  const flags = ["--ecosystem dotnet"];
+
+  flags.push(`--dotnet-web-framework ${config.dotnetWebFramework}`);
+  flags.push(`--dotnet-orm ${config.dotnetOrm}`);
+  flags.push(`--dotnet-auth ${config.dotnetAuth}`);
+  flags.push(`--dotnet-api ${config.dotnetApi}`);
+  flags.push(formatArrayFlag("dotnet-testing", config.dotnetTesting));
+  flags.push(`--dotnet-job-queue ${config.dotnetJobQueue}`);
+  flags.push(`--dotnet-realtime ${config.dotnetRealtime}`);
+  flags.push(formatArrayFlag("dotnet-observability", config.dotnetObservability));
+  flags.push(`--dotnet-caching ${config.dotnetCaching}`);
+  flags.push(`--dotnet-deploy ${config.dotnetDeploy}`);
+
+  appendCommonFlags(flags, config);
+
+  return flags;
+}
+
 function getElixirFlags(config: ProjectConfig) {
   const flags = ["--ecosystem elixir"];
 
@@ -1018,6 +1047,9 @@ export function generateReproducibleCommand(config: ProjectConfig) {
       break;
     case "java":
       flags = getJavaFlags(config);
+      break;
+    case "dotnet":
+      flags = getDotnetFlags(config);
       break;
     case "elixir":
       flags = getElixirFlags(config);

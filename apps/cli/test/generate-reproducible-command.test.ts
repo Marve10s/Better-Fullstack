@@ -88,6 +88,16 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     javaAuth: "none",
     javaLibraries: [],
     javaTestingLibraries: ["junit5"],
+    dotnetWebFramework: "aspnet-minimal",
+    dotnetOrm: "ef-core",
+    dotnetAuth: "aspnet-identity",
+    dotnetApi: "minimal-api",
+    dotnetTesting: ["xunit"],
+    dotnetJobQueue: "none",
+    dotnetRealtime: "signalr",
+    dotnetObservability: ["serilog"],
+    dotnetCaching: "none",
+    dotnetDeploy: "docker",
     aiDocs: ["claude-md"],
     ...overrides,
   };
@@ -447,6 +457,48 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--auth ");
   });
 
+  it("generates a .NET command with ecosystem-specific flags", () => {
+    const config = makeConfig({
+      ecosystem: "dotnet",
+      frontend: [],
+      addons: [],
+      auth: "none",
+      packageManager: "bun",
+      install: false,
+      git: false,
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "ef-core",
+      dotnetAuth: "aspnet-identity",
+      dotnetApi: "minimal-api",
+      dotnetTesting: ["xunit", "testcontainers-dotnet"],
+      dotnetJobQueue: "hangfire",
+      dotnetRealtime: "signalr",
+      dotnetObservability: ["serilog", "health-checks"],
+      dotnetCaching: "redis",
+      dotnetDeploy: "docker",
+      aiDocs: ["claude-md"],
+    });
+
+    expect(generateReproducibleCommand(config)).toBe(
+      "bun create better-fullstack@latest my-app " +
+        "--ecosystem dotnet " +
+        "--dotnet-web-framework aspnet-minimal " +
+        "--dotnet-orm ef-core " +
+        "--dotnet-auth aspnet-identity " +
+        "--dotnet-api minimal-api " +
+        "--dotnet-testing xunit testcontainers-dotnet " +
+        "--dotnet-job-queue hangfire " +
+        "--dotnet-realtime signalr " +
+        "--dotnet-observability serilog health-checks " +
+        "--dotnet-caching redis " +
+        "--dotnet-deploy docker " +
+        "--ai-docs claude-md " +
+        "--no-git " +
+        "--package-manager bun " +
+        "--no-install",
+    );
+  });
+
   it("generates canonical --part flags when stackParts are present", () => {
     const stackParts = parseStackPartSpecs([
       "frontend:typescript:next",
@@ -716,6 +768,68 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--mobile-navigation react-navigation");
     expect(command).toContain("--mobile-testing maestro");
     expect(command).not.toContain("--backend");
+  });
+
+  it("preserves Elixir JSON as a flat setting when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:elixir:phoenix",
+      "backend.httpClient:elixir:finch",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        ecosystem: "elixir",
+        stackParts,
+        elixirWebFramework: "phoenix",
+        elixirHttp: "finch",
+        elixirJson: "none",
+      }),
+    );
+
+    expect(command).toContain("--part backend:elixir:phoenix");
+    expect(command).toContain("--part backend.httpClient:elixir:finch");
+    expect(command).toContain("--elixir-json none");
+    expect(command).not.toContain("--elixir-http finch");
+    expect(command).not.toContain("--part backend.json:elixir:none");
+  });
+
+  it("reproduces graph-owned .NET fields as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:dotnet:aspnet-minimal",
+      "backend.orm:dotnet:ef-core",
+      "backend.auth:dotnet:aspnet-identity",
+      "backend.api:dotnet:minimal-api",
+      "backend.testing:dotnet:xunit",
+      "backend.testing:dotnet:testcontainers-dotnet",
+      "backend.observability:dotnet:serilog",
+      "backend.realtime:dotnet:signalr",
+      "backend.deploy:dotnet:docker",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        ecosystem: "dotnet",
+        stackParts,
+        dotnetWebFramework: "aspnet-minimal",
+        dotnetOrm: "ef-core",
+        dotnetAuth: "aspnet-identity",
+        dotnetApi: "minimal-api",
+        dotnetTesting: ["xunit", "testcontainers-dotnet"],
+        dotnetObservability: ["serilog"],
+        dotnetRealtime: "signalr",
+        dotnetDeploy: "docker",
+      }),
+    );
+
+    expect(command).toContain("--part backend:dotnet:aspnet-minimal");
+    expect(command).toContain("--part backend.orm:dotnet:ef-core");
+    expect(command).toContain("--part backend.auth:dotnet:aspnet-identity");
+    expect(command).toContain("--part backend.api:dotnet:minimal-api");
+    expect(command).toContain("--part backend.testing:dotnet:xunit");
+    expect(command).toContain("--part backend.testing:dotnet:testcontainers-dotnet");
+    expect(command).toContain("--part backend.observability:dotnet:serilog");
+    expect(command).toContain("--part backend.realtime:dotnet:signalr");
+    expect(command).toContain("--part backend.deploy:dotnet:docker");
+    expect(command).not.toContain("--dotnet-web-framework");
+    expect(command).not.toContain("--dotnet-orm");
   });
 
   it("preserves non-graph selections when stackParts are present", () => {

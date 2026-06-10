@@ -31,6 +31,9 @@
     "react-router": "^7.17.0"
   },
   "devDependencies": {
+{{#if (eq webDeploy "netlify")}}
+    "@netlify/vite-plugin-react-router": "^3.1.1",
+{{/if}}
     "@react-router/dev": "^7.17.0",
 {{#if (eq cssFramework "tailwind")}}
     "@tailwindcss/vite": "^4.3.0",

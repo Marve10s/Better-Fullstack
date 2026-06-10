@@ -1,6 +1,6 @@
 import { builder } from "./builder{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 const UserType = builder.objectRef<{ id: string; email: string; name: string | null }>("User");
 
 UserType.implement({
@@ -17,7 +17,7 @@ builder.queryType({
     health: t.string({
       resolve: () => "OK",
     }),
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
     me: t.field({
       type: UserType,
       nullable: true,

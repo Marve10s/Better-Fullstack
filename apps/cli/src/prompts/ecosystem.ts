@@ -35,6 +35,11 @@ export const ECOSYSTEM_PROMPT_OPTIONS = [
     hint: "Java ecosystem with Spring Boot, Maven, Gradle, and more",
   },
   {
+    value: "dotnet" as const,
+    label: ".NET",
+    hint: "ASP.NET Core ecosystem with Minimal APIs, EF Core, SignalR, and more",
+  },
+  {
     value: "elixir" as const,
     label: "Elixir",
     hint: "Elixir ecosystem with Phoenix, LiveView, Ecto, and more",

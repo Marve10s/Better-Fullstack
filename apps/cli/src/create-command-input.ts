@@ -16,6 +16,16 @@ import {
   DatabaseSchema,
   DatabaseSetupSchema,
   DirectoryConflictSchema,
+  DotnetApiSchema,
+  DotnetAuthSchema,
+  DotnetCachingSchema,
+  DotnetDeploySchema,
+  DotnetJobQueueSchema,
+  DotnetObservabilitySchema,
+  DotnetOrmSchema,
+  DotnetRealtimeSchema,
+  DotnetTestingSchema,
+  DotnetWebFrameworkSchema,
   EcosystemSchema,
   ElixirApiSchema,
   ElixirAuthSchema,
@@ -76,6 +86,7 @@ import {
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
+  RateLimitSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -153,6 +164,7 @@ export const CreateCommandOptionsSchema = z.object({
   analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics"),
   cms: CMSSchema.optional().describe("Headless CMS solution"),
   caching: CachingSchema.optional().describe("Caching solution"),
+  rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
@@ -264,6 +276,27 @@ export const CreateCommandOptionsSchema = z.object({
     .array(JavaTestingLibrariesSchema)
     .optional()
     .describe("Java testing libraries"),
+  dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(
+    ".NET web framework (aspnet-minimal, aspnet-mvc, aspnet-blazor, none)",
+  ),
+  dotnetOrm: DotnetOrmSchema.optional().describe(".NET data access (ef-core, dapper, linq2db)"),
+  dotnetAuth: DotnetAuthSchema.optional().describe(
+    ".NET auth (aspnet-identity, duende-identityserver, auth0-aspnet, none)",
+  ),
+  dotnetApi: DotnetApiSchema.optional().describe(
+    ".NET API style (minimal-api, graphql-hotchocolate, grpc-dotnet, none)",
+  ),
+  dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
+  dotnetJobQueue: DotnetJobQueueSchema.optional().describe(
+    ".NET jobs (hangfire, quartz-net, hosted-services, none)",
+  ),
+  dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime (signalr, none)"),
+  dotnetObservability: z
+    .array(DotnetObservabilitySchema)
+    .optional()
+    .describe(".NET observability/logging libraries"),
+  dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching (redis, memory-cache, none)"),
+  dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deploy target (docker, azure, aws, none)"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
     "Elixir web framework (phoenix, phoenix-live-view, none)",
   ),

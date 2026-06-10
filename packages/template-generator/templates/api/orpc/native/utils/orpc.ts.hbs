@@ -4,7 +4,7 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import type { AppRouterClient } from "@{{projectName}}/api/routers/index";
 import { env } from "@{{projectName}}/env/native";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { authClient } from "@/lib/auth-client";
 import { Platform } from "react-native";
 {{/if}}
@@ -27,7 +27,7 @@ export const link = new RPCLink({
 {{else}}
 	url: `${env.EXPO_PUBLIC_SERVER_URL}/rpc`,
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	fetch:
 		Platform.OS !== "web"
 			? undefined

@@ -10,6 +10,16 @@ import {
   CSS_FRAMEWORK_VALUES,
   DATABASE_SETUP_VALUES,
   DATABASE_VALUES,
+  DOTNET_API_VALUES,
+  DOTNET_AUTH_VALUES,
+  DOTNET_CACHING_VALUES,
+  DOTNET_DEPLOY_VALUES,
+  DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_OBSERVABILITY_VALUES,
+  DOTNET_ORM_VALUES,
+  DOTNET_REALTIME_VALUES,
+  DOTNET_TESTING_VALUES,
+  DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -62,6 +72,7 @@ import {
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  RATE_LIMIT_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -90,6 +101,18 @@ import { resolveCMSPrompt } from "./cms";
 import { resolveCSSFrameworkPrompt } from "./css-framework";
 import { resolveDatabasePrompt } from "./database";
 import { resolveDBSetupPrompt } from "./database-setup";
+import {
+  resolveDotnetApiPrompt,
+  resolveDotnetAuthPrompt,
+  resolveDotnetCachingPrompt,
+  resolveDotnetDeployPrompt,
+  resolveDotnetJobQueuePrompt,
+  resolveDotnetObservabilityPrompt,
+  resolveDotnetOrmPrompt,
+  resolveDotnetRealtimePrompt,
+  resolveDotnetTestingPrompt,
+  resolveDotnetWebFrameworkPrompt,
+} from "./dotnet-ecosystem";
 import {
   resolveElixirApiPrompt,
   resolveElixirAuthPrompt,
@@ -141,6 +164,7 @@ import {
 import { resolveObservabilityPrompt } from "./observability";
 import { resolveORMPrompt } from "./orm";
 import { resolvePaymentsPrompt } from "./payments";
+import { resolveRateLimitPrompt } from "./rate-limit";
 import { type PromptResolution } from "./prompt-contract";
 import {
   resolvePythonAiPrompt,
@@ -223,6 +247,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   caching: {
     schemaValues: CACHING_VALUES,
     resolve: resolveCachingPrompt,
+    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
+  },
+  rateLimit: {
+    schemaValues: RATE_LIMIT_VALUES,
+    resolve: resolveRateLimitPrompt,
     coverageContexts: [{ backend: "hono" }, { backend: "none" }],
   },
   cms: {
@@ -527,6 +556,57 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     resolve: ({ value }: { value?: string[] } = {}) =>
       resolveJavaTestingLibrariesPrompt(value as any),
     coverageContexts: [{}, { value: ["none"] }],
+  },
+  dotnetWebFramework: {
+    schemaValues: DOTNET_WEB_FRAMEWORK_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetWebFrameworkPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetOrm: {
+    schemaValues: DOTNET_ORM_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetOrmPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetAuth: {
+    schemaValues: DOTNET_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetAuthPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetApi: {
+    schemaValues: DOTNET_API_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetApiPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetTesting: {
+    schemaValues: DOTNET_TESTING_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) => resolveDotnetTestingPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
+  },
+  dotnetJobQueue: {
+    schemaValues: DOTNET_JOB_QUEUE_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetJobQueuePrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetRealtime: {
+    schemaValues: DOTNET_REALTIME_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetRealtimePrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetObservability: {
+    schemaValues: DOTNET_OBSERVABILITY_VALUES,
+    resolve: ({ value }: { value?: string[] } = {}) =>
+      resolveDotnetObservabilityPrompt(value as any),
+    coverageContexts: [{}, { value: ["none"] }],
+  },
+  dotnetCaching: {
+    schemaValues: DOTNET_CACHING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetCachingPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  dotnetDeploy: {
+    schemaValues: DOTNET_DEPLOY_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveDotnetDeployPrompt(value as any),
+    coverageContexts: [{}],
   },
   elixirWebFramework: {
     schemaValues: ELIXIR_WEB_FRAMEWORK_VALUES,

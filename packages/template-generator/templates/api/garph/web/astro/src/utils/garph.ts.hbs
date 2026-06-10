@@ -21,7 +21,7 @@ export const client = createClient<Schema>({
   generatedSchema,
   scalarsEnumsHash,
   url: `${env.VITE_SERVER_URL}/graphql`,
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   credentials: "include",
 {{/if}}
 });

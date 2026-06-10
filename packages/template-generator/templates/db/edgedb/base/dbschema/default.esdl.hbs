@@ -1,5 +1,5 @@
 module default {
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   # User type for authentication
   type User {
     required email: str {

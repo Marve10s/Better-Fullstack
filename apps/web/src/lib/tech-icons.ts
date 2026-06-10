@@ -71,6 +71,24 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   go: { type: "si", slug: "go", hex: "00ADD8" },
   java: { type: "local", src: "/icon/java.svg" },
   elixir: { type: "si", slug: "elixir", hex: "4B275F" },
+  dotnet: { type: "si", slug: "dotnet", hex: "512BD4" },
+  "aspnet-minimal": { type: "si", slug: "dotnet", hex: "512BD4" },
+  "aspnet-mvc": { type: "si", slug: "dotnet", hex: "512BD4" },
+  "aspnet-blazor": { type: "si", slug: "blazor", hex: "512BD4" },
+  "ef-core": { type: "si", slug: "dotnet", hex: "512BD4" },
+  "aspnet-identity": { type: "si", slug: "dotnet", hex: "512BD4" },
+  "auth0-aspnet": { type: "si", slug: "auth0", hex: "EB5424" },
+  "minimal-api": { type: "si", slug: "openapiinitiative", hex: "6BA539" },
+  "graphql-hotchocolate": { type: "si", slug: "graphql", hex: "E10098" },
+  "grpc-dotnet": { type: "local", src: "/icon/grpc.svg" },
+  "testcontainers-dotnet": { type: "si", slug: "testcontainers", hex: "2496ED" },
+  "hosted-services": { type: "si", slug: "dotnet", hex: "512BD4" },
+  signalr: { type: "si", slug: "dotnet", hex: "512BD4" },
+  "opentelemetry-dotnet": { type: "si", slug: "opentelemetry", hex: "000000" },
+  "health-checks": { type: "si", slug: "dotnet", hex: "512BD4" },
+  "memory-cache": { type: "si", slug: "dotnet", hex: "512BD4" },
+  azure: { type: "si", slug: "microsoftazure", hex: "0078D4" },
+  aws: { type: "si", slug: "amazonwebservices", hex: "FF9900" },
   phoenix: { type: "si", slug: "phoenixframework", hex: "FD4F00" },
   "phoenix-live-view": { type: "si", slug: "phoenixframework", hex: "FD4F00" },
   "ecto-sql": { type: "si", slug: "postgresql", hex: "4169E1" },
@@ -200,11 +218,18 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Auth ──────────────────────────────────────────────────────────────────
   "better-auth": { type: "local", src: "/icon/better-auth.svg" },
+  "better-auth-organizations": { type: "local", src: "/icon/better-auth.svg" },
   clerk: { type: "si", slug: "clerk", hex: "6C47FF" },
   nextauth: { type: "local", src: "/icon/nextauth.png" },
   "stack-auth": { type: "local", src: "/icon/stack-auth.svg" },
   "supabase-auth": { type: "si", slug: "supabase", hex: "3FCF8E" },
   auth0: { type: "si", slug: "auth0", hex: "EB5424" },
+  workos: { type: "si", slug: "workos", hex: "6363F1" },
+  kinde: { type: "si", slug: "kinde", hex: "00A9FF" },
+
+  // ─── Rate Limiting ────────────────────────────────────────────────────────
+  arcjet: { type: "local", src: "https://arcjet.com/favicon.ico" },
+  "upstash-ratelimit": { type: "si", slug: "upstash", hex: "00E9A3" },
 
   // ─── Payments ──────────────────────────────────────────────────────────────
   polar: { type: "local", src: "/icon/polar.svg" },
@@ -232,6 +257,9 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   sentry: { type: "si", slug: "sentry", hex: "362D59" },
   grafana: { type: "si", slug: "grafana", hex: "F46800" },
   opentelemetry: { type: "si", slug: "opentelemetry", hex: "000000" },
+  datadog: { type: "si", slug: "datadog", hex: "632CA6" },
+  axiom: { type: "si", slug: "axiom", hex: "7A5CFF" },
+  betterstack: { type: "si", slug: "betterstack", hex: "111827" },
 
   // ─── Feature Flags ─────────────────────────────────────────────────────────
   posthog: { type: "si", slug: "posthog", hex: "F54E00" },

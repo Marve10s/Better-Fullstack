@@ -46,6 +46,7 @@ const DOCS_EXTRA_CATEGORIES_BY_ECOSYSTEM: Partial<Record<Ecosystem, readonly Sel
   python: ["packageManager", "versionChannel"],
   go: ["packageManager", "versionChannel"],
   java: ["packageManager", "versionChannel"],
+  dotnet: ["packageManager", "versionChannel"],
   elixir: ["packageManager", "versionChannel"],
 };
 
@@ -110,6 +111,13 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
     { category: "javaBuildTool", label: "Build tool" },
     { category: "javaOrm", label: "ORM" },
     { category: "javaAuth", label: "Auth" },
+  ],
+  dotnet: [
+    { category: "dotnetWebFramework", label: "Framework" },
+    { category: "dotnetOrm", label: "Data access" },
+    { category: "dotnetAuth", label: "Auth" },
+    { category: "dotnetApi", label: "API" },
+    { category: "dotnetRealtime", label: "Realtime" },
   ],
   elixir: [
     { category: "elixirWebFramework", label: "Framework" },

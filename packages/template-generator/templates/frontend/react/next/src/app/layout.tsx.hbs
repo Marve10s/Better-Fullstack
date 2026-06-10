@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 {{#if (eq auth "clerk")}}{{#if (or (eq backend "convex") (eq backend "self"))}}import { ClerkProvider } from "@clerk/nextjs";
-{{/if}}{{/if}}{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{/if}}{{/if}}{{#if (and (eq backend "convex") (isBetterAuth auth))}}
 import { getToken } from "@/lib/auth-server";
 {{/if}}
 import Providers from "@/components/providers";
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description: "{{projectName}}",
 };
 
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
 export default async function RootLayout({
   children,
 }: Readonly<{

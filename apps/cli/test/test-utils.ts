@@ -54,6 +54,7 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     logging: SHARED_TEST_DEFAULTS.logging,
     observability: SHARED_TEST_DEFAULTS.observability,
     caching: SHARED_TEST_DEFAULTS.caching,
+    rateLimit: SHARED_TEST_DEFAULTS.rateLimit,
     i18n: SHARED_TEST_DEFAULTS.i18n,
     search: SHARED_TEST_DEFAULTS.search,
     fileStorage: SHARED_TEST_DEFAULTS.fileStorage,

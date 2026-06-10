@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import UserMenu from "./user-menu";
 {{/if}}
 import { For } from "solid-js";
@@ -7,7 +7,7 @@ import { For } from "solid-js";
 export default function Header() {
   const links = [
     { href: "/", label: "Home" },
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     { href: "/dashboard", label: "Dashboard" },
     {{/if}}
   ];
@@ -21,7 +21,7 @@ export default function Header() {
           </For>
         </nav>
         <div class="flex items-center gap-2">
-          {{#if (eq auth "better-auth")}}
+          {{#if (isBetterAuth auth)}}
           <UserMenu />
           {{/if}}
         </div>

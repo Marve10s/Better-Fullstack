@@ -499,8 +499,14 @@ describe("stack graph", () => {
   });
 
   it("rejects incompatible infrastructure graph selections", () => {
-    const backendNetlifyParts = parseStackPartSpecs([
+    const backendNetlifyWithoutNodeParts = parseStackPartSpecs([
       "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.deploy:typescript:netlify",
+    ]);
+    const expressNetlifyParts = parseStackPartSpecs([
+      "backend:typescript:express",
+      "backend.runtime:typescript:node",
       "backend.deploy:typescript:netlify",
     ]);
     const cloudflareWithoutWorkersParts = parseStackPartSpecs([
@@ -519,7 +525,10 @@ describe("stack graph", () => {
       "frontend.deploy:typescript:render",
     ]);
 
-    expect(validateStackParts(backendNetlifyParts).issues.map((issue) => issue.code)).toContain(
+    expect(
+      validateStackParts(backendNetlifyWithoutNodeParts).issues.map((issue) => issue.code),
+    ).toContain("INCOMPATIBLE_GRAPH_SELECTION");
+    expect(validateStackParts(expressNetlifyParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_TOOL",
     );
     expect(
@@ -994,7 +1003,8 @@ describe("stack graph structural round-trip (phase 0)", () => {
       const config = {
         ...TS_BASE,
         backend: "hono",
-        runtime: serverDeploy === "cloudflare" ? "workers" : "bun",
+        runtime:
+          serverDeploy === "cloudflare" ? "workers" : serverDeploy === "netlify" ? "node" : "bun",
         serverDeploy,
       };
       const parts = legacyProjectConfigToStackParts(config);

@@ -24,6 +24,10 @@ export async function processAuthTemplates(
   const hasNative = hasNativeBare || hasUniwind || hasUnistyles;
 
   const authProvider = config.auth;
+  const authTemplateProvider =
+    authProvider === "better-auth-organizations" ? "better-auth" : authProvider;
+  const isBetterAuthProvider =
+    authProvider === "better-auth" || authProvider === "better-auth-organizations";
 
   if (config.backend === "convex" && authProvider === "clerk") {
     processTemplatesFromPrefix(
@@ -78,7 +82,7 @@ export async function processAuthTemplates(
     return;
   }
 
-  if (config.backend === "convex" && authProvider === "better-auth") {
+  if (config.backend === "convex" && isBetterAuthProvider) {
     processTemplatesFromPrefix(
       vfs,
       templates,
@@ -234,7 +238,7 @@ export async function processAuthTemplates(
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/server/base`,
+      `auth/${authTemplateProvider}/server/base`,
       "packages/auth",
       config,
     );
@@ -243,7 +247,7 @@ export async function processAuthTemplates(
       processTemplatesFromPrefix(
         vfs,
         templates,
-        `auth/${authProvider}/server/db/${config.orm}/${config.database}`,
+        `auth/${authTemplateProvider}/server/db/${config.orm}/${config.database}`,
         "packages/db",
         config,
       );
@@ -254,7 +258,7 @@ export async function processAuthTemplates(
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/web/react/base`,
+      `auth/${authTemplateProvider}/web/react/base`,
       "apps/web",
       config,
     );
@@ -268,7 +272,7 @@ export async function processAuthTemplates(
       processTemplatesFromPrefix(
         vfs,
         templates,
-        `auth/${authProvider}/web/react/${reactFramework}`,
+        `auth/${authTemplateProvider}/web/react/${reactFramework}`,
         "apps/web",
         config,
       );
@@ -280,19 +284,25 @@ export async function processAuthTemplates(
         processTemplatesFromPrefix(
           vfs,
           templates,
-          `auth/${authProvider}/fullstack/${reactFramework}`,
+          `auth/${authTemplateProvider}/fullstack/${reactFramework}`,
           "apps/web",
           config,
         );
       }
     }
   } else if (hasNuxtWeb) {
-    processTemplatesFromPrefix(vfs, templates, `auth/${authProvider}/web/nuxt`, "apps/web", config);
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `auth/${authTemplateProvider}/web/nuxt`,
+      "apps/web",
+      config,
+    );
   } else if (hasSvelteWeb) {
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/web/svelte`,
+      `auth/${authTemplateProvider}/web/svelte`,
       "apps/web",
       config,
     );
@@ -300,7 +310,7 @@ export async function processAuthTemplates(
       processTemplatesFromPrefix(
         vfs,
         templates,
-        `auth/${authProvider}/fullstack/svelte`,
+        `auth/${authTemplateProvider}/fullstack/svelte`,
         "apps/web",
         config,
       );
@@ -309,7 +319,7 @@ export async function processAuthTemplates(
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/web/solid`,
+      `auth/${authTemplateProvider}/web/solid`,
       "apps/web",
       config,
     );
@@ -317,7 +327,7 @@ export async function processAuthTemplates(
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/web/solid-start`,
+      `auth/${authTemplateProvider}/web/solid-start`,
       "apps/web",
       config,
     );
@@ -325,7 +335,7 @@ export async function processAuthTemplates(
       processTemplatesFromPrefix(
         vfs,
         templates,
-        `auth/${authProvider}/fullstack/solid-start`,
+        `auth/${authTemplateProvider}/fullstack/solid-start`,
         "apps/web",
         config,
       );
@@ -336,7 +346,7 @@ export async function processAuthTemplates(
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/${authProvider}/native/base`,
+      `auth/${authTemplateProvider}/native/base`,
       "apps/native",
       config,
     );
@@ -350,7 +360,7 @@ export async function processAuthTemplates(
       processTemplatesFromPrefix(
         vfs,
         templates,
-        `auth/${authProvider}/native/${nativeFramework}`,
+        `auth/${authTemplateProvider}/native/${nativeFramework}`,
         "apps/native",
         config,
       );

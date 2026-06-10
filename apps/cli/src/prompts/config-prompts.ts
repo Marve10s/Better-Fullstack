@@ -11,6 +11,16 @@ import type {
   Caching,
   CMS,
   CSSFramework,
+  DotnetApi,
+  DotnetAuth,
+  DotnetCaching,
+  DotnetDeploy,
+  DotnetJobQueue,
+  DotnetObservability,
+  DotnetOrm,
+  DotnetRealtime,
+  DotnetTesting,
+  DotnetWebFramework,
   ElixirApi,
   ElixirAuth,
   ElixirCaching,
@@ -63,6 +73,7 @@ import type {
   PackageManager,
   Payments,
   ProjectConfig,
+  RateLimit,
   PythonAi,
   PythonApi,
   PythonAuth,
@@ -110,6 +121,18 @@ import { getCMSChoice } from "./cms";
 import { getCSSFrameworkChoice } from "./css-framework";
 import { getDatabaseChoice } from "./database";
 import { getDBSetupChoice } from "./database-setup";
+import {
+  getDotnetApiChoice,
+  getDotnetAuthChoice,
+  getDotnetCachingChoice,
+  getDotnetDeployChoice,
+  getDotnetJobQueueChoice,
+  getDotnetObservabilityChoice,
+  getDotnetOrmChoice,
+  getDotnetRealtimeChoice,
+  getDotnetTestingChoice,
+  getDotnetWebFrameworkChoice,
+} from "./dotnet-ecosystem";
 import {
   getElixirApiChoice,
   getElixirAuthChoice,
@@ -174,6 +197,7 @@ import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
+import { getRateLimitChoice } from "./rate-limit";
 import {
   getPythonAiChoice,
   getPythonApiChoice,
@@ -246,6 +270,7 @@ type PromptGroupResults = {
   analytics: Analytics;
   cms: CMS;
   caching: Caching;
+  rateLimit: RateLimit;
   i18n: I18n;
   search: Search;
   fileStorage: FileStorage;
@@ -291,6 +316,17 @@ type PromptGroupResults = {
   javaAuth: JavaAuth;
   javaLibraries: JavaLibraries[];
   javaTestingLibraries: JavaTestingLibraries[];
+  // .NET ecosystem
+  dotnetWebFramework: DotnetWebFramework;
+  dotnetOrm: DotnetOrm;
+  dotnetAuth: DotnetAuth;
+  dotnetApi: DotnetApi;
+  dotnetTesting: DotnetTesting[];
+  dotnetJobQueue: DotnetJobQueue;
+  dotnetRealtime: DotnetRealtime;
+  dotnetObservability: DotnetObservability[];
+  dotnetCaching: DotnetCaching;
+  dotnetDeploy: DotnetDeploy;
   // Elixir ecosystem
   elixirWebFramework: ElixirWebFramework;
   elixirOrm: ElixirOrm;
@@ -382,9 +418,10 @@ export async function gatherConfig(
       },
       database: ({ results }) => {
         if (results.ecosystem !== "typescript") {
-          return Promise.resolve(
-            results.ecosystem === "python" ? (flags.database ?? "none" as Database) : "none" as Database,
-          );
+          if (results.ecosystem === "python" || results.ecosystem === "dotnet") {
+            return Promise.resolve((flags.database ?? "none") as Database);
+          }
+          return Promise.resolve("none" as Database);
         }
         return getDatabaseChoice(flags.database, results.backend, results.runtime);
       },
@@ -560,6 +597,10 @@ export async function gatherConfig(
           return Promise.resolve("none" as Caching);
         }
         return getCachingChoice(flags.caching, results.backend, results.ecosystem);
+      },
+      rateLimit: ({ results }) => {
+        if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
+        return getRateLimitChoice(flags.rateLimit, results.backend);
       },
       i18n: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
@@ -785,6 +826,56 @@ export async function gatherConfig(
         }
         return getJavaTestingLibrariesChoice(flags.javaTestingLibraries);
       },
+      // .NET ecosystem prompts (skip if not .NET)
+      dotnetWebFramework: ({ results }) => {
+        if (results.ecosystem !== "dotnet") {
+          return Promise.resolve("none" as DotnetWebFramework);
+        }
+        return getDotnetWebFrameworkChoice(flags.dotnetWebFramework);
+      },
+      dotnetOrm: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetOrm);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetOrm);
+        return getDotnetOrmChoice(flags.dotnetOrm);
+      },
+      dotnetAuth: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetAuth);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetAuth);
+        return getDotnetAuthChoice(flags.dotnetAuth);
+      },
+      dotnetApi: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetApi);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetApi);
+        return getDotnetApiChoice(flags.dotnetApi);
+      },
+      dotnetTesting: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetTesting[]);
+        return getDotnetTestingChoice(flags.dotnetTesting);
+      },
+      dotnetJobQueue: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetJobQueue);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetJobQueue);
+        return getDotnetJobQueueChoice(flags.dotnetJobQueue);
+      },
+      dotnetRealtime: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetRealtime);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetRealtime);
+        return getDotnetRealtimeChoice(flags.dotnetRealtime);
+      },
+      dotnetObservability: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetObservability[]);
+        return getDotnetObservabilityChoice(flags.dotnetObservability);
+      },
+      dotnetCaching: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetCaching);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetCaching);
+        return getDotnetCachingChoice(flags.dotnetCaching);
+      },
+      dotnetDeploy: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetDeploy);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
+        return getDotnetDeployChoice(flags.dotnetDeploy);
+      },
       // Elixir ecosystem prompts (skip if not Elixir)
       elixirWebFramework: ({ results }) => {
         if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
@@ -850,12 +941,13 @@ export async function gatherConfig(
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
       packageManager: ({ results }) => {
-        // Skip package manager prompt for Rust/Python/Go/Java (they use cargo/uv/go mod/maven wrapper, not npm/pnpm/bun)
+        // Skip package manager prompt for non-JS ecosystems.
         if (
           results.ecosystem === "rust" ||
           results.ecosystem === "python" ||
           results.ecosystem === "go" ||
           results.ecosystem === "java" ||
+          results.ecosystem === "dotnet" ||
           results.ecosystem === "elixir"
         )
           return Promise.resolve(flags.packageManager ?? getUserPkgManager());
@@ -911,6 +1003,7 @@ export async function gatherConfig(
     analytics: result.analytics,
     cms: result.cms,
     caching: result.caching,
+    rateLimit: result.rateLimit,
     i18n: result.i18n,
     search: result.search,
     fileStorage: result.fileStorage,
@@ -958,6 +1051,17 @@ export async function gatherConfig(
     javaAuth: result.javaAuth,
     javaLibraries: result.javaLibraries,
     javaTestingLibraries: result.javaTestingLibraries,
+    // .NET ecosystem options
+    dotnetWebFramework: result.dotnetWebFramework,
+    dotnetOrm: result.dotnetOrm,
+    dotnetAuth: result.dotnetAuth,
+    dotnetApi: result.dotnetApi,
+    dotnetTesting: result.dotnetTesting,
+    dotnetJobQueue: result.dotnetJobQueue,
+    dotnetRealtime: result.dotnetRealtime,
+    dotnetObservability: result.dotnetObservability,
+    dotnetCaching: result.dotnetCaching,
+    dotnetDeploy: result.dotnetDeploy,
     // Elixir ecosystem options
     elixirWebFramework: result.elixirWebFramework,
     elixirOrm: result.elixirOrm,

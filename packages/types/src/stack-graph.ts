@@ -32,6 +32,16 @@ import {
   CSS_FRAMEWORK_VALUES,
   DATABASE_VALUES,
   DATABASE_SETUP_VALUES,
+  DOTNET_API_VALUES,
+  DOTNET_AUTH_VALUES,
+  DOTNET_CACHING_VALUES,
+  DOTNET_DEPLOY_VALUES,
+  DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_OBSERVABILITY_VALUES,
+  DOTNET_ORM_VALUES,
+  DOTNET_REALTIME_VALUES,
+  DOTNET_TESTING_VALUES,
+  DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -81,6 +91,7 @@ import {
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  RATE_LIMIT_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -214,6 +225,7 @@ const LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM = {
   python: "pythonWebFramework",
   go: "goWebFramework",
   java: "javaWebFramework",
+  dotnet: "dotnetWebFramework",
   elixir: "elixirWebFramework",
 } as const satisfies Record<LegacyBackendEcosystem, keyof ProjectConfig>;
 
@@ -222,6 +234,7 @@ const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
   python: { orm: "pythonOrm", api: "pythonApi", auth: "pythonAuth" },
   go: { orm: "goOrm", api: "goApi", auth: "goAuth" },
   java: { orm: "javaOrm", auth: "javaAuth" },
+  dotnet: { orm: "dotnetOrm", api: "dotnetApi", auth: "dotnetAuth" },
   elixir: { orm: "elixirOrm", api: "elixirApi", auth: "elixirAuth" },
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -235,6 +248,7 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   caching: "caching",
   observability: "observability",
   jobQueue: "jobQueue",
+  rateLimit: "rateLimit",
   fileStorage: "fileStorage",
   featureFlags: "featureFlags",
   payments: "payments",
@@ -276,6 +290,7 @@ const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   python: { ai: "pythonAi" },
   go: {},
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
+  dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
   elixir: {},
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -481,6 +496,12 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
   },
   go: { cli: "goCli", logging: "goLogging" },
   java: { buildTool: "javaBuildTool" },
+  dotnet: {
+    jobQueue: "dotnetJobQueue",
+    realtime: "dotnetRealtime",
+    caching: "dotnetCaching",
+    deploy: "dotnetDeploy",
+  },
   elixir: {
     realtime: "elixirRealtime",
     jobQueue: "elixirJobs",
@@ -623,6 +644,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(CACHING_VALUES, "caching", "typescript", "caching"),
   ...defineTools(OBSERVABILITY_VALUES, "observability", "typescript", "observability"),
   ...defineTools(JOB_QUEUE_VALUES, "jobQueue", "typescript", "jobQueue"),
+  ...defineTools(RATE_LIMIT_VALUES, "rateLimit", "typescript", "rateLimit"),
   ...defineTools(FILE_STORAGE_VALUES, "fileStorage", "typescript", "fileStorage"),
   ...defineTools(FEATURE_FLAGS_VALUES, "featureFlags", "typescript", "featureFlags"),
   ...defineTools(PAYMENTS_VALUES, "payments", "typescript", "payments"),
@@ -671,6 +693,20 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(JAVA_TESTING_LIBRARIES_VALUES, "testing", "java", "javaTestingLibraries", {
     allowMultiple: true,
   }),
+  ...defineTools(DOTNET_WEB_FRAMEWORK_VALUES, "backend", "dotnet", "dotnetWebFramework"),
+  ...defineTools(DOTNET_ORM_VALUES, "orm", "dotnet", "dotnetOrm"),
+  ...defineTools(DOTNET_AUTH_VALUES, "auth", "dotnet", "dotnetAuth"),
+  ...defineTools(DOTNET_API_VALUES, "api", "dotnet", "dotnetApi"),
+  ...defineTools(DOTNET_TESTING_VALUES, "testing", "dotnet", "dotnetTesting", {
+    allowMultiple: true,
+  }),
+  ...defineTools(DOTNET_JOB_QUEUE_VALUES, "jobQueue", "dotnet", "dotnetJobQueue"),
+  ...defineTools(DOTNET_REALTIME_VALUES, "realtime", "dotnet", "dotnetRealtime"),
+  ...defineTools(DOTNET_OBSERVABILITY_VALUES, "observability", "dotnet", "dotnetObservability", {
+    allowMultiple: true,
+  }),
+  ...defineTools(DOTNET_CACHING_VALUES, "caching", "dotnet", "dotnetCaching"),
+  ...defineTools(DOTNET_DEPLOY_VALUES, "deploy", "dotnet", "dotnetDeploy"),
   ...defineTools(ELIXIR_WEB_FRAMEWORK_VALUES, "backend", "elixir", "elixirWebFramework"),
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
@@ -892,7 +928,7 @@ function createTypeScriptBackendCompatibilityIssue(
 
   if (part.role === "payments" && part.toolId === "polar") {
     const authTool = context.siblingToolIdsByRole?.auth;
-    if (authTool !== "better-auth") {
+    if (authTool !== "better-auth" && authTool !== "better-auth-organizations") {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
@@ -1170,6 +1206,27 @@ function createInfrastructureCompatibilityIssue(
             role: part.role,
             toolId: part.toolId,
             message: "Encore manages its own deployment infrastructure.",
+          });
+        }
+      }
+
+      if (part.toolId === "netlify") {
+        if (backendTool !== "hono") {
+          return createStackGraphIssue({
+            code: "INCOMPATIBLE_OWNER_TOOL",
+            partId: part.id,
+            role: part.role,
+            toolId: part.toolId,
+            message: "Netlify Functions server deploy is currently supported only with Hono.",
+          });
+        }
+        if (runtimeTool !== "node") {
+          return createStackGraphIssue({
+            code: "INCOMPATIBLE_GRAPH_SELECTION",
+            partId: part.id,
+            role: part.role,
+            toolId: part.toolId,
+            message: "Netlify Functions server deploy requires Node.js runtime.",
           });
         }
       }
@@ -1696,7 +1753,11 @@ function getStackPartCompatibilityIssue(
     }
   }
 
-  if (part.ecosystem === "typescript" && part.role === "auth" && part.toolId === "better-auth") {
+  if (
+    part.ecosystem === "typescript" &&
+    part.role === "auth" &&
+    (part.toolId === "better-auth" || part.toolId === "better-auth-organizations")
+  ) {
     const databaseTool = context.primaryToolIdsByRole?.database;
     if (databaseTool === "redis") {
       return createStackGraphIssue({
@@ -2438,6 +2499,8 @@ function getLegacyCategoryForPart(
     owner.ecosystem === "typescript" &&
     part.ecosystem === "typescript"
   ) {
+    if (part.role === "auth") return "auth";
+
     const legacyCategory = LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES[
       part.role as keyof typeof LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES
     ];
@@ -2449,6 +2512,10 @@ function getLegacyCategoryForPart(
     owner.ecosystem === "typescript" &&
     part.ecosystem === "typescript"
   ) {
+    if (part.role === "orm" || part.role === "api" || part.role === "auth") {
+      return part.role;
+    }
+
     const legacyCategory =
       LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES[
         part.role as keyof typeof LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES
@@ -2457,6 +2524,10 @@ function getLegacyCategoryForPart(
         part.role as keyof typeof LEGACY_TYPESCRIPT_BACKEND_INFRA_CATEGORIES
       ];
     if (legacyCategory) return legacyCategory;
+  }
+
+  if (owner?.role === "mobile" && part.ecosystem === "react-native" && part.role === "auth") {
+    return "auth";
   }
 
   if (owner?.role === "database" && part.ecosystem === "universal") {

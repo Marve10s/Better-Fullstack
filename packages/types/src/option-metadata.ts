@@ -8,6 +8,16 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   CACHING_VALUES,
+  DOTNET_API_VALUES,
+  DOTNET_AUTH_VALUES,
+  DOTNET_CACHING_VALUES,
+  DOTNET_DEPLOY_VALUES,
+  DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_OBSERVABILITY_VALUES,
+  DOTNET_ORM_VALUES,
+  DOTNET_REALTIME_VALUES,
+  DOTNET_TESTING_VALUES,
+  DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
@@ -69,6 +79,7 @@ import {
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  RATE_LIMIT_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -123,6 +134,7 @@ export type OptionCategory =
   | "realtime"
   | "jobQueue"
   | "caching"
+  | "rateLimit"
   | "i18n"
   | "search"
   | "fileStorage"
@@ -188,6 +200,16 @@ export type OptionCategory =
   | "javaAuth"
   | "javaLibraries"
   | "javaTestingLibraries"
+  | "dotnetWebFramework"
+  | "dotnetOrm"
+  | "dotnetAuth"
+  | "dotnetApi"
+  | "dotnetTesting"
+  | "dotnetJobQueue"
+  | "dotnetRealtime"
+  | "dotnetObservability"
+  | "dotnetCaching"
+  | "dotnetDeploy"
   | "elixirWebFramework"
   | "elixirOrm"
   | "elixirAuth"
@@ -213,6 +235,7 @@ export type OptionCategoryEcosystem =
   | "python"
   | "go"
   | "java"
+  | "dotnet"
   | "elixir";
 
 export const TYPESCRIPT_CATEGORY_ORDER = [
@@ -252,6 +275,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "realtime",
   "jobQueue",
   "caching",
+  "rateLimit",
   "i18n",
   "search",
   "fileStorage",
@@ -356,6 +380,22 @@ export const JAVA_CATEGORY_ORDER = [
   "install",
 ] as const satisfies readonly OptionCategory[];
 
+export const DOTNET_CATEGORY_ORDER = [
+  "dotnetWebFramework",
+  "dotnetOrm",
+  "dotnetAuth",
+  "dotnetApi",
+  "dotnetTesting",
+  "dotnetJobQueue",
+  "dotnetRealtime",
+  "dotnetObservability",
+  "dotnetCaching",
+  "dotnetDeploy",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
 export const ELIXIR_CATEGORY_ORDER = [
   "elixirWebFramework",
   "elixirOrm",
@@ -385,6 +425,7 @@ export const CATEGORY_ORDER = [
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
     ...JAVA_CATEGORY_ORDER,
+    ...DOTNET_CATEGORY_ORDER,
     ...ELIXIR_CATEGORY_ORDER,
   ]),
 ] as OptionCategory[];
@@ -403,6 +444,8 @@ export function getCategoryOrderForEcosystem(
       return GO_CATEGORY_ORDER;
     case "java":
       return JAVA_CATEGORY_ORDER;
+    case "dotnet":
+      return DOTNET_CATEGORY_ORDER;
     case "elixir":
       return ELIXIR_CATEGORY_ORDER;
     case "typescript":
@@ -451,6 +494,16 @@ export function getCategoryDisplayName(categoryKey: string): string {
     javaAuth: "Java Auth",
     javaLibraries: "Java Libraries",
     javaTestingLibraries: "Java Testing Libraries",
+    dotnetWebFramework: ".NET Web Framework",
+    dotnetOrm: ".NET Data Access",
+    dotnetAuth: ".NET Auth",
+    dotnetApi: ".NET API Style",
+    dotnetTesting: ".NET Testing",
+    dotnetJobQueue: ".NET Background Jobs",
+    dotnetRealtime: ".NET Realtime",
+    dotnetObservability: ".NET Observability",
+    dotnetCaching: ".NET Caching",
+    dotnetDeploy: ".NET Deploy",
     elixirWebFramework: "Elixir Web Framework",
     elixirOrm: "Elixir ORM / Database",
     elixirAuth: "Elixir Auth",
@@ -580,6 +633,8 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "dotnetTesting",
+  "dotnetObservability",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
@@ -608,6 +663,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   realtime: REALTIME_VALUES,
   jobQueue: JOB_QUEUE_VALUES,
   caching: CACHING_VALUES,
+  rateLimit: RATE_LIMIT_VALUES,
   i18n: I18N_VALUES,
   search: SEARCH_VALUES,
   fileStorage: FILE_STORAGE_VALUES,
@@ -673,6 +729,16 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   javaAuth: JAVA_AUTH_VALUES,
   javaLibraries: JAVA_LIBRARIES_VALUES,
   javaTestingLibraries: JAVA_TESTING_LIBRARIES_VALUES,
+  dotnetWebFramework: DOTNET_WEB_FRAMEWORK_VALUES,
+  dotnetOrm: DOTNET_ORM_VALUES,
+  dotnetAuth: DOTNET_AUTH_VALUES,
+  dotnetApi: DOTNET_API_VALUES,
+  dotnetTesting: DOTNET_TESTING_VALUES,
+  dotnetJobQueue: DOTNET_JOB_QUEUE_VALUES,
+  dotnetRealtime: DOTNET_REALTIME_VALUES,
+  dotnetObservability: DOTNET_OBSERVABILITY_VALUES,
+  dotnetCaching: DOTNET_CACHING_VALUES,
+  dotnetDeploy: DOTNET_DEPLOY_VALUES,
   elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
   elixirOrm: ELIXIR_ORM_VALUES,
   elixirAuth: ELIXIR_AUTH_VALUES,
@@ -729,10 +795,33 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "mongodb-atlas": "MongoDB Atlas",
     planetscale: "PlanetScale",
   },
-  webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
-  serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
+  webDeploy: {
+    cloudflare: "Cloudflare",
+    fly: "Fly.io",
+    railway: "Railway",
+    render: "Render",
+    netlify: "Netlify",
+    docker: "Docker",
+    sst: "SST",
+    vercel: "Vercel",
+  },
+  serverDeploy: {
+    cloudflare: "Cloudflare",
+    fly: "Fly.io",
+    railway: "Railway",
+    render: "Render",
+    netlify: "Netlify",
+    docker: "Docker",
+    sst: "SST",
+    vercel: "Vercel",
+  },
   cms: { tinacms: "TinaCMS", directus: "Directus" },
-  auth: {},
+  auth: {
+    "better-auth-organizations": "Better Auth + Organizations",
+    auth0: "Auth0",
+    workos: "WorkOS AuthKit",
+    kinde: "Kinde",
+  },
   payments: {
     "lemon-squeezy": "Lemon Squeezy",
     dodo: "Dodo Payments",
@@ -749,6 +838,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   observability: {
     opentelemetry: "OpenTelemetry",
+    datadog: "Datadog",
+    axiom: "Axiom",
+    betterstack: "Better Stack",
+  },
+  rateLimit: {
+    arcjet: "Arcjet",
+    "upstash-ratelimit": "Upstash Ratelimit",
   },
   backendLibraries: {
     effect: "Effect (Core)",
@@ -1129,6 +1225,55 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     archunit: "ArchUnit",
     jqwik: "jqwik",
   },
+  dotnetWebFramework: {
+    "aspnet-minimal": "ASP.NET Core Minimal APIs",
+    "aspnet-mvc": "ASP.NET Core MVC",
+    "aspnet-blazor": "ASP.NET Core Blazor",
+  },
+  dotnetOrm: {
+    "ef-core": "Entity Framework Core",
+    dapper: "Dapper",
+    linq2db: "linq2db",
+  },
+  dotnetAuth: {
+    "aspnet-identity": "ASP.NET Core Identity",
+    "duende-identityserver": "Duende IdentityServer",
+    "auth0-aspnet": "Auth0 ASP.NET Core",
+  },
+  dotnetApi: {
+    "minimal-api": "Minimal APIs",
+    "graphql-hotchocolate": "Hot Chocolate GraphQL",
+    "grpc-dotnet": "gRPC for .NET",
+  },
+  dotnetTesting: {
+    xunit: "xUnit",
+    nunit: "NUnit",
+    moq: "Moq",
+    "testcontainers-dotnet": "Testcontainers for .NET",
+  },
+  dotnetJobQueue: {
+    hangfire: "Hangfire",
+    "quartz-net": "Quartz.NET",
+    "hosted-services": "Hosted Services",
+  },
+  dotnetRealtime: {
+    signalr: "SignalR",
+  },
+  dotnetObservability: {
+    "opentelemetry-dotnet": "OpenTelemetry .NET",
+    serilog: "Serilog",
+    nlog: "NLog",
+    "health-checks": "Health Checks",
+  },
+  dotnetCaching: {
+    redis: "StackExchange.Redis",
+    "memory-cache": "IMemoryCache",
+  },
+  dotnetDeploy: {
+    docker: "Docker",
+    azure: "Azure",
+    aws: "AWS",
+  },
   elixirWebFramework: {
     phoenix: "Phoenix",
     "phoenix-live-view": "Phoenix LiveView",
@@ -1303,6 +1448,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   realtime: buildCategoryMetadata("realtime"),
   jobQueue: buildCategoryMetadata("jobQueue"),
   caching: buildCategoryMetadata("caching"),
+  rateLimit: buildCategoryMetadata("rateLimit"),
   i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
   fileStorage: buildCategoryMetadata("fileStorage"),
@@ -1368,6 +1514,16 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   javaAuth: buildCategoryMetadata("javaAuth"),
   javaLibraries: buildCategoryMetadata("javaLibraries"),
   javaTestingLibraries: buildCategoryMetadata("javaTestingLibraries"),
+  dotnetWebFramework: buildCategoryMetadata("dotnetWebFramework"),
+  dotnetOrm: buildCategoryMetadata("dotnetOrm"),
+  dotnetAuth: buildCategoryMetadata("dotnetAuth"),
+  dotnetApi: buildCategoryMetadata("dotnetApi"),
+  dotnetTesting: buildCategoryMetadata("dotnetTesting"),
+  dotnetJobQueue: buildCategoryMetadata("dotnetJobQueue"),
+  dotnetRealtime: buildCategoryMetadata("dotnetRealtime"),
+  dotnetObservability: buildCategoryMetadata("dotnetObservability"),
+  dotnetCaching: buildCategoryMetadata("dotnetCaching"),
+  dotnetDeploy: buildCategoryMetadata("dotnetDeploy"),
   elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
   elixirOrm: buildCategoryMetadata("elixirOrm"),
   elixirAuth: buildCategoryMetadata("elixirAuth"),

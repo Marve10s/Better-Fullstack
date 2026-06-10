@@ -1,0 +1,8 @@
+# Netlify configuration for {{projectName}} TanStack Start app
+# https://docs.netlify.com/build/frameworks/framework-setup-guides/tanstack-start/
+#
+# In the Netlify dashboard, set the site's base directory to "apps/web".
+
+[build]
+  command = "{{packageManager}} run build"
+  publish = "dist/client"

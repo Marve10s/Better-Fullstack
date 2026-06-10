@@ -32,6 +32,9 @@ const BACKEND_LABELS: Record<string, string> = {
   "net-http": "Go net/http",
   "spring-boot": "Java Spring Boot",
   quarkus: "Java Quarkus",
+  "aspnet-minimal": ".NET ASP.NET Core Minimal APIs",
+  "aspnet-mvc": ".NET ASP.NET Core MVC",
+  "aspnet-blazor": ".NET ASP.NET Core Blazor",
   phoenix: "Elixir Phoenix",
   "phoenix-live-view": "Elixir Phoenix LiveView",
 };
@@ -147,6 +150,28 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         devCommand: `cd ${targetPath} && ${buildTool} ${devTask}`,
         checkCommand: `cd ${targetPath} && ${buildTool} ${buildTask}`,
         testCommand: `cd ${targetPath} && ${buildTool} test`,
+      };
+    }
+    case "dotnet": {
+      const hasHealthChecks = (config.stackParts ?? []).some(
+        (part) =>
+          part.ownerPartId === backend.id &&
+          part.role === "observability" &&
+          part.toolId === "health-checks",
+      );
+      const healthPath = hasHealthChecks ? "/health" : "/";
+      return {
+        ecosystem: backend.ecosystem,
+        toolId: backend.toolId,
+        label,
+        targetPath,
+        serverUrl: "http://localhost:5000",
+        healthPath,
+        healthUrl: `http://localhost:5000${healthPath}`,
+        setupCommand: `cd ${targetPath} && dotnet restore`,
+        devCommand: `cd ${targetPath} && dotnet run`,
+        checkCommand: `cd ${targetPath} && dotnet build --no-restore`,
+        testCommand: config.dotnetTesting.length > 0 ? `cd ${targetPath} && dotnet test` : null,
       };
     }
     default:

@@ -495,6 +495,7 @@ export async function createVirtual(
       mobileDeepLinking: options.mobileDeepLinking || (hasNativeFrontend ? "expo-linking" : "none"),
       cms: options.cms || "none",
       caching: options.caching || "none",
+      rateLimit: options.rateLimit || "none",
       i18n: options.i18n || "none",
       search: options.search || "none",
       fileStorage: options.fileStorage || "none",
@@ -535,6 +536,21 @@ export async function createVirtual(
       javaLibraries: options.javaLibraries || [],
       javaTestingLibraries:
         options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
+      dotnetWebFramework:
+        options.dotnetWebFramework ||
+        (options.ecosystem === "dotnet" ? "aspnet-minimal" : "none"),
+      dotnetOrm: options.dotnetOrm || (options.ecosystem === "dotnet" ? "ef-core" : "none"),
+      dotnetAuth:
+        options.dotnetAuth || (options.ecosystem === "dotnet" ? "aspnet-identity" : "none"),
+      dotnetApi: options.dotnetApi || (options.ecosystem === "dotnet" ? "minimal-api" : "none"),
+      dotnetTesting: options.dotnetTesting || (options.ecosystem === "dotnet" ? ["xunit"] : []),
+      dotnetJobQueue: options.dotnetJobQueue || "none",
+      dotnetRealtime:
+        options.dotnetRealtime || (options.ecosystem === "dotnet" ? "signalr" : "none"),
+      dotnetObservability:
+        options.dotnetObservability || (options.ecosystem === "dotnet" ? ["serilog"] : []),
+      dotnetCaching: options.dotnetCaching || "none",
+      dotnetDeploy: options.dotnetDeploy || (options.ecosystem === "dotnet" ? "docker" : "none"),
       elixirWebFramework:
         options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
       elixirOrm: options.elixirOrm || (options.ecosystem === "elixir" ? "ecto-sql" : "none"),

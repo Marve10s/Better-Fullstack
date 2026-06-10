@@ -55,6 +55,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   realtime: "none",
   jobQueue: "none",
   caching: "none",
+  rateLimit: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -114,6 +115,16 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   javaAuth: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
+  dotnetWebFramework: "aspnet-minimal",
+  dotnetOrm: "ef-core",
+  dotnetAuth: "aspnet-identity",
+  dotnetApi: "minimal-api",
+  dotnetTesting: ["xunit"],
+  dotnetJobQueue: "none",
+  dotnetRealtime: "signalr",
+  dotnetObservability: ["serilog"],
+  dotnetCaching: "none",
+  dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -179,6 +190,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   realtime: "realtime",
   jobQueue: "jobQueue",
   caching: "caching",
+  rateLimit: "rateLimit",
   i18n: "i18n",
   animation: "animation",
   cssFramework: "cssFramework",
@@ -237,6 +249,16 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   javaAuth: "javaAuth",
   javaLibraries: "javaLibraries",
   javaTestingLibraries: "javaTestingLibraries",
+  dotnetWebFramework: "dotnetWebFramework",
+  dotnetOrm: "dotnetOrm",
+  dotnetAuth: "dotnetAuth",
+  dotnetApi: "dotnetApi",
+  dotnetTesting: "dotnetTesting",
+  dotnetJobQueue: "dotnetJobQueue",
+  dotnetRealtime: "dotnetRealtime",
+  dotnetObservability: "dotnetObservability",
+  dotnetCaching: "dotnetCaching",
+  dotnetDeploy: "dotnetDeploy",
   elixirWebFramework: "elixirWebFramework",
   elixirOrm: "elixirOrm",
   elixirAuth: "elixirAuth",
@@ -259,6 +281,8 @@ export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "dotnetTesting",
+  "dotnetObservability",
   "aiDocs",
 ] as const;
 
@@ -304,6 +328,7 @@ export const STACK_SELECTION_URL_KEYS = {
   realtime: "rt2",
   jobQueue: "jq",
   caching: "cache",
+  rateLimit: "rl",
   i18n: "i18n",
   animation: "anim",
   cssFramework: "css",
@@ -363,6 +388,16 @@ export const STACK_SELECTION_URL_KEYS = {
   javaAuth: "jauth",
   javaLibraries: "jlib",
   javaTestingLibraries: "jtest",
+  dotnetWebFramework: "dnwf",
+  dotnetOrm: "dnorm",
+  dotnetAuth: "dnauth",
+  dotnetApi: "dnapi",
+  dotnetTesting: "dntest",
+  dotnetJobQueue: "dnjob",
+  dotnetRealtime: "dnrt",
+  dotnetObservability: "dnobs",
+  dotnetCaching: "dncache",
+  dotnetDeploy: "dndeploy",
   elixirWebFramework: "ewf",
   elixirOrm: "eorm",
   elixirAuth: "eauth",
@@ -593,6 +628,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["observability", "observability"],
   ["cms", "cms"],
   ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
   ["i18n", "i18n"],
   ["search", "search"],
   ["fileStorage", "fileStorage"],
@@ -651,6 +687,14 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["javaBuildTool", "javaBuildTool"],
   ["javaOrm", "javaOrm"],
   ["javaAuth", "javaAuth"],
+  ["dotnetWebFramework", "dotnetWebFramework"],
+  ["dotnetOrm", "dotnetOrm"],
+  ["dotnetAuth", "dotnetAuth"],
+  ["dotnetApi", "dotnetApi"],
+  ["dotnetJobQueue", "dotnetJobQueue"],
+  ["dotnetRealtime", "dotnetRealtime"],
+  ["dotnetCaching", "dotnetCaching"],
+  ["dotnetDeploy", "dotnetDeploy"],
   ["elixirWebFramework", "elixirWebFramework"],
   ["elixirOrm", "elixirOrm"],
   ["elixirAuth", "elixirAuth"],
@@ -680,6 +724,8 @@ const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["pythonAi", "pythonAi"],
   ["javaLibraries", "javaLibraries"],
   ["javaTestingLibraries", "javaTestingLibraries"],
+  ["dotnetTesting", "dotnetTesting"],
+  ["dotnetObservability", "dotnetObservability"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
 const PACKAGE_MANAGER_COMMANDS = {
@@ -740,6 +786,19 @@ const JAVA_CONFIG_KEYS = [
   "javaAuth",
   "javaLibraries",
   "javaTestingLibraries",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const DOTNET_CONFIG_KEYS = [
+  "dotnetWebFramework",
+  "dotnetOrm",
+  "dotnetAuth",
+  "dotnetApi",
+  "dotnetTesting",
+  "dotnetJobQueue",
+  "dotnetRealtime",
+  "dotnetObservability",
+  "dotnetCaching",
+  "dotnetDeploy",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const ELIXIR_CONFIG_KEYS = [
@@ -857,6 +916,7 @@ const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
   ["email", "email"],
   ["observability", "observability"],
   ["caching", "caching"],
+  ["rateLimit", "rate-limit"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
@@ -937,6 +997,7 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
   ["observability", "observability"],
   ["featureFlags", "featureFlags"],
   ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
   ["cms", "cms"],
   ["search", "search"],
   ["fileStorage", "fileStorage"],
@@ -1002,6 +1063,21 @@ const GRAPH_JAVA_BACKEND_ARRAY_PART_SELECTION_KEYS = [
   ["javaTestingLibraries", "testing"],
 ] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
 
+const GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS = [
+  ["dotnetOrm", "orm"],
+  ["dotnetAuth", "auth"],
+  ["dotnetApi", "api"],
+  ["dotnetJobQueue", "jobQueue"],
+  ["dotnetRealtime", "realtime"],
+  ["dotnetCaching", "caching"],
+  ["dotnetDeploy", "deploy"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["dotnetTesting", "testing"],
+  ["dotnetObservability", "observability"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
 const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
   ["webDeploy", "deploy"],
   ["cssFramework", "css"],
@@ -1026,6 +1102,7 @@ const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
   ["observability", "observability"],
   ["featureFlags", "featureFlags"],
   ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
   ["cms", "cms"],
   ["search", "search"],
   ["fileStorage", "fileStorage"],
@@ -1089,6 +1166,21 @@ const GRAPH_JAVA_BACKEND_PART_CLI_KEYS = [
 const GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS = [
   ["javaLibraries", "libraries"],
   ["javaTestingLibraries", "testing"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_PART_CLI_KEYS = [
+  ["dotnetOrm", "orm"],
+  ["dotnetAuth", "auth"],
+  ["dotnetApi", "api"],
+  ["dotnetJobQueue", "jobQueue"],
+  ["dotnetRealtime", "realtime"],
+  ["dotnetCaching", "caching"],
+  ["dotnetDeploy", "deploy"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["dotnetTesting", "testing"],
+  ["dotnetObservability", "observability"],
 ] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
 
 function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
@@ -1253,6 +1345,19 @@ function getSelectionScopedPartFields(
       value: selection[key],
       allowMultiple: true,
     })),
+    ...GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
     ...GRAPH_DATABASE_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "database" as const,
       ecosystem: "universal" as const,
@@ -1344,6 +1449,19 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
     ...GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
       ecosystem: "java" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_DOTNET_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
       role,
       value: getArrayValue(key),
       allowMultiple: true,
@@ -1528,6 +1646,9 @@ function getCliGraphStackParts(input: CLIInput): StackPart[] {
   addScopedBackendPart("go", "auth", input.goAuth);
   addScopedBackendPart("java", "orm", input.javaOrm);
   addScopedBackendPart("java", "auth", input.javaAuth);
+  addScopedBackendPart("dotnet", "orm", input.dotnetOrm);
+  addScopedBackendPart("dotnet", "api", input.dotnetApi);
+  addScopedBackendPart("dotnet", "auth", input.dotnetAuth);
   addScopedBackendPart("elixir", "orm", input.elixirOrm);
   addScopedBackendPart("elixir", "api", input.elixirApi);
   addScopedBackendPart("elixir", "auth", input.elixirAuth);
@@ -1608,6 +1729,7 @@ function buildProjectConfigBase(
     mobileDeepLinking: stack.mobileDeepLinking as ProjectConfig["mobileDeepLinking"],
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
+    rateLimit: stack.rateLimit as ProjectConfig["rateLimit"],
     i18n: stack.i18n as ProjectConfig["i18n"],
     search: stack.search as ProjectConfig["search"],
     fileStorage: stack.fileStorage as ProjectConfig["fileStorage"],
@@ -1644,6 +1766,18 @@ function buildProjectConfigBase(
     javaTestingLibraries: toUniqueNonNoneArray(
       stack.javaTestingLibraries,
     ) as ProjectConfig["javaTestingLibraries"],
+    dotnetWebFramework: stack.dotnetWebFramework as ProjectConfig["dotnetWebFramework"],
+    dotnetOrm: stack.dotnetOrm as ProjectConfig["dotnetOrm"],
+    dotnetAuth: stack.dotnetAuth as ProjectConfig["dotnetAuth"],
+    dotnetApi: stack.dotnetApi as ProjectConfig["dotnetApi"],
+    dotnetTesting: toUniqueNonNoneArray(stack.dotnetTesting) as ProjectConfig["dotnetTesting"],
+    dotnetJobQueue: stack.dotnetJobQueue as ProjectConfig["dotnetJobQueue"],
+    dotnetRealtime: stack.dotnetRealtime as ProjectConfig["dotnetRealtime"],
+    dotnetObservability: toUniqueNonNoneArray(
+      stack.dotnetObservability,
+    ) as ProjectConfig["dotnetObservability"],
+    dotnetCaching: stack.dotnetCaching as ProjectConfig["dotnetCaching"],
+    dotnetDeploy: stack.dotnetDeploy as ProjectConfig["dotnetDeploy"],
     elixirWebFramework: stack.elixirWebFramework as ProjectConfig["elixirWebFramework"],
     elixirOrm: stack.elixirOrm as ProjectConfig["elixirOrm"],
     elixirAuth: stack.elixirAuth as ProjectConfig["elixirAuth"],
@@ -1724,6 +1858,7 @@ export function isCliDefaultStackSelection(
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
           ...JAVA_CONFIG_KEYS,
+          ...DOTNET_CONFIG_KEYS,
           ...ELIXIR_CONFIG_KEYS,
           ...(selection.ecosystem === "typescript" ? REACT_NATIVE_CONFIG_KEYS : []),
         ])
@@ -1764,9 +1899,15 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
   const hasPythonBackend = hasGraphPrimaryPart(stackParts, "backend", "python");
   const hasGoBackend = hasGraphPrimaryPart(stackParts, "backend", "go");
   const hasJavaBackend = hasGraphPrimaryPart(stackParts, "backend", "java");
+  const hasDotnetBackend = hasGraphPrimaryPart(stackParts, "backend", "dotnet");
   const hasElixirBackend = hasGraphPrimaryPart(stackParts, "backend", "elixir");
   const hasNonTypeScriptBackend =
-    hasRustBackend || hasPythonBackend || hasGoBackend || hasJavaBackend || hasElixirBackend;
+    hasRustBackend ||
+    hasPythonBackend ||
+    hasGoBackend ||
+    hasJavaBackend ||
+    hasDotnetBackend ||
+    hasElixirBackend;
   const hasMobile = hasGraphPrimaryPart(stackParts, "mobile");
   const flags = [
     ...stackParts
@@ -1857,6 +1998,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--realtime ${selection.realtime}`,
     `--job-queue ${selection.jobQueue}`,
     `--caching ${selection.caching}`,
+    `--rate-limit ${selection.rateLimit}`,
     `--i18n ${selection.i18n}`,
     `--search ${selection.search}`,
     `--file-storage ${selection.fileStorage}`,
@@ -2016,6 +2158,28 @@ function generateJavaCommand(selection: StackSelectionInput, projectName: string
   return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
 }
 
+function generateDotnetCommand(selection: StackSelectionInput, projectName: string) {
+  const flags: string[] = [
+    "--ecosystem dotnet",
+    `--dotnet-web-framework ${selection.dotnetWebFramework}`,
+    `--dotnet-orm ${selection.dotnetOrm}`,
+    `--dotnet-auth ${selection.dotnetAuth}`,
+    `--dotnet-api ${selection.dotnetApi}`,
+    formatArrayFlag("dotnet-testing", selection.dotnetTesting),
+    `--dotnet-job-queue ${selection.dotnetJobQueue}`,
+    `--dotnet-realtime ${selection.dotnetRealtime}`,
+    formatArrayFlag("dotnet-observability", selection.dotnetObservability),
+    `--dotnet-caching ${selection.dotnetCaching}`,
+    `--dotnet-deploy ${selection.dotnetDeploy}`,
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.git === "false") flags.push("--no-git");
+  if (selection.install === "false") flags.push("--no-install");
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
+}
+
 function generateElixirCommand(selection: StackSelectionInput, projectName: string) {
   const flags: string[] = [
     "--ecosystem elixir",
@@ -2061,6 +2225,8 @@ export function generateStackSelectionCommand(selection: StackSelectionInput): s
       return generateGoCommand(selection, projectName);
     case "java":
       return generateJavaCommand(selection, projectName);
+    case "dotnet":
+      return generateDotnetCommand(selection, projectName);
     case "elixir":
       return generateElixirCommand(selection, projectName);
     case "typescript":

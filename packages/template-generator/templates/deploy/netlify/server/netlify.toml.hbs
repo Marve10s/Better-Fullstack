@@ -1,0 +1,11 @@
+# Netlify configuration for {{projectName}} server
+# https://docs.netlify.com/build/functions/get-started/
+#
+# In the Netlify dashboard, set the site's base directory to "apps/server".
+
+[build]
+  command = "{{packageManager}} run build"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"

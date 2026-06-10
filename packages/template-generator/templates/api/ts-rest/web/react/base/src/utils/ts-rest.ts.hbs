@@ -16,7 +16,7 @@ export const queryClient = new QueryClient({
 const clientArgs = {
 	baseUrl: {{#if (includes frontend "next")}}`${env.NEXT_PUBLIC_SERVER_URL}/rest`{{else}}`${env.VITE_SERVER_URL}/rest`{{/if}},
 	baseHeaders: {},
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	credentials: "include" as const,
 {{/if}}
 	api: tsRestFetchApi,

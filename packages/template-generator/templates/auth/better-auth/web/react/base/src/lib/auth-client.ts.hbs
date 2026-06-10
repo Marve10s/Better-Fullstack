@@ -1,4 +1,7 @@
 import { createAuthClient } from "better-auth/react";
+{{#if (hasBetterAuthOrganizations auth)}}
+import { organizationClient } from "better-auth/client/plugins";
+{{/if}}
 {{#if (eq payments "polar")}}
 import { polarClient } from "@polar-sh/better-auth";
 {{/if}}
@@ -10,7 +13,14 @@ export const authClient = createAuthClient({
 {{#unless (eq backend "self")}}
 	baseURL: env.{{#if (includes frontend "next")}}NEXT_PUBLIC_SERVER_URL{{else}}VITE_SERVER_URL{{/if}},
 {{/unless}}
+{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+	plugins: [
+{{#if (hasBetterAuthOrganizations auth)}}
+		organizationClient(),
+{{/if}}
 {{#if (eq payments "polar")}}
-	plugins: [polarClient()]
+		polarClient(),
+{{/if}}
+	],
 {{/if}}
 });

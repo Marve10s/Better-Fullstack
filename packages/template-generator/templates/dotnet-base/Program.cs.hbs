@@ -1,0 +1,200 @@
+{{#if dotnetHasEfCore}}
+using Microsoft.EntityFrameworkCore;
+{{/if}}
+{{#if dotnetHasIdentity}}
+using Microsoft.AspNetCore.Identity;
+{{/if}}
+{{#if dotnetHasSignalR}}
+using Microsoft.AspNetCore.SignalR;
+{{/if}}
+{{#if dotnetHasSerilog}}
+using Serilog;
+{{/if}}
+{{#if dotnetHasNLog}}
+using NLog.Web;
+{{/if}}
+{{#if dotnetHasOpenTelemetry}}
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+{{/if}}
+{{#if dotnetHasHangfire}}
+using Hangfire;
+using Hangfire.InMemory;
+{{/if}}
+{{#if dotnetHasQuartz}}
+using Quartz;
+{{/if}}
+
+var builder = WebApplication.CreateBuilder(args);
+
+{{#if dotnetHasSerilog}}
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration).WriteTo.Console());
+{{/if}}
+{{#if dotnetHasNLog}}
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+{{/if}}
+
+{{#if dotnetHasEfCore}}
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+{{#if (eq database "postgres")}}
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres";
+    options.UseNpgsql(connectionString);
+{{else}}
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Data Source={{dotnetProjectName}}.db";
+    options.UseSqlite(connectionString);
+{{/if}}
+});
+{{/if}}
+{{#if dotnetHasIdentity}}
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+{{#if dotnetHasEfCore}}
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<AppDbContext>();
+{{/if}}
+{{/if}}
+{{#if dotnetHasSignalR}}
+builder.Services.AddSignalR();
+{{/if}}
+{{#if (eq dotnetApi "graphql-hotchocolate")}}
+builder.Services.AddGraphQLServer().AddQueryType<Query>();
+{{/if}}
+{{#if (eq dotnetApi "grpc-dotnet")}}
+builder.Services.AddGrpc();
+{{/if}}
+{{#if dotnetHasHealthChecks}}
+builder.Services.AddHealthChecks();
+{{/if}}
+{{#if dotnetHasMemoryCache}}
+builder.Services.AddMemoryCache();
+{{/if}}
+{{#if dotnetHasRedis}}
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+});
+{{/if}}
+{{#if dotnetHasOpenTelemetry}}
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation())
+    .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation());
+{{/if}}
+{{#if dotnetHasHangfire}}
+builder.Services.AddHangfire(configuration => configuration.UseInMemoryStorage());
+builder.Services.AddHangfireServer();
+{{/if}}
+{{#if dotnetHasQuartz}}
+builder.Services.AddQuartz();
+builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+{{/if}}
+{{#if dotnetHasHostedServices}}
+builder.Services.AddHostedService<Worker>();
+{{/if}}
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
+
+var app = builder.Build();
+
+app.UseCors();
+
+app.MapGet("/", () => Results.Ok(new
+{
+    name = "{{projectName}}",
+    framework = "{{dotnetWebFramework}}",
+    status = "ok"
+}));
+
+{{#if (eq dotnetApi "minimal-api")}}
+{{#if dotnetHasEfCore}}
+app.MapGet("/api/todos", async (AppDbContext db) =>
+{
+    return Results.Ok(await db.Todos.OrderBy(todo => todo.Id).ToListAsync());
+});
+{{else}}
+app.MapGet("/api/todos", () =>
+{
+    return Results.Ok(Array.Empty<TodoItem>());
+});
+{{/if}}
+
+{{#if dotnetHasEfCore}}
+app.MapPost("/api/todos", async (TodoInput input, AppDbContext db) =>
+{
+    var todo = new TodoItem { Title = input.Title, Complete = false };
+    db.Todos.Add(todo);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+{{else}}
+app.MapPost("/api/todos", (TodoInput input) =>
+{
+    var todo = new TodoItem { Id = 1, Title = input.Title, Complete = false };
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+{{/if}}
+{{/if}}
+{{#if (eq dotnetApi "graphql-hotchocolate")}}
+app.MapGraphQL();
+{{/if}}
+{{#if dotnetHasSignalR}}
+app.MapHub<UpdatesHub>("/hubs/updates");
+{{/if}}
+{{#if dotnetHasHealthChecks}}
+app.MapHealthChecks("/health");
+{{/if}}
+{{#if dotnetHasHangfire}}
+app.MapHangfireDashboard();
+{{/if}}
+
+app.Run();
+
+public partial class Program;
+
+public sealed class TodoItem
+{
+    public int Id { get; set; }
+    public required string Title { get; set; }
+    public bool Complete { get; set; }
+}
+
+public sealed record TodoInput(string Title);
+
+{{#if dotnetHasEfCore}}
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    public DbSet<TodoItem> Todos => Set<TodoItem>();
+}
+{{/if}}
+{{#if (eq dotnetApi "graphql-hotchocolate")}}
+public sealed class Query
+{
+    public string Hello() => "Hello from {{projectName}}";
+}
+{{/if}}
+{{#if dotnetHasSignalR}}
+public sealed class UpdatesHub : Hub
+{
+    public Task Broadcast(string message) => Clients.All.SendAsync("update", message);
+}
+{{/if}}
+{{#if dotnetHasHostedServices}}
+public sealed class Worker(ILogger<Worker> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            logger.LogInformation("Worker heartbeat at {Time}", DateTimeOffset.UtcNow);
+            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+        }
+    }
+}
+{{/if}}

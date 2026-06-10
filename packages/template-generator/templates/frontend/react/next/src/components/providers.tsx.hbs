@@ -6,7 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { env } from "@{{projectName}}/env/web";
-{{else if (eq auth "better-auth")}}
+{{else if (isBetterAuth auth)}}
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { authClient } from "@/lib/auth-client";
@@ -37,7 +37,7 @@ import { queryClient } from "@/utils/ts-rest";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 {{/if}}
-{{#if (eq auth "auth0")}}
+{{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
 import { AuthProvider } from "@/lib/auth-client";
 {{/if}}
 import { ThemeProvider } from "./theme-provider";
@@ -49,12 +49,12 @@ const convex = new ConvexReactClient(env.NEXT_PUBLIC_CONVEX_URL);
 
 export default function Providers({
   children,
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
   initialToken,
 {{/if}}
 }: {
   children: React.ReactNode;
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
   initialToken?: string | null;
 {{/if}}
 }) {
@@ -62,7 +62,7 @@ export default function Providers({
     {{#if (eq uiLibrary "mantine")}}
     <MantineProvider>
     {{/if}}
-    {{#if (eq auth "auth0")}}
+    {{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
     <AuthProvider>
     {{/if}}
     <ThemeProvider
@@ -76,7 +76,7 @@ export default function Providers({
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         {children}
       </ConvexProviderWithClerk>
-      {{else if (eq auth "better-auth")}}
+      {{else if (isBetterAuth auth)}}
       <ConvexBetterAuthProvider
         client={convex}
         authClient={authClient}
@@ -99,7 +99,7 @@ export default function Providers({
       {{/if}}
       <Toaster richColors />
     </ThemeProvider>
-    {{#if (eq auth "auth0")}}
+    {{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
     </AuthProvider>
     {{/if}}
     {{#if (eq uiLibrary "mantine")}}

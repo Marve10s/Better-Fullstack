@@ -13,6 +13,10 @@ type FrontendType = {
   hasNative: boolean;
 };
 
+function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
+  return auth === "better-auth" || auth === "better-auth-organizations";
+}
+
 function getFrontendType(frontend: Frontend[]): FrontendType {
   return {
     hasReactWeb: frontend.some((f) =>
@@ -110,7 +114,7 @@ function addApiPackageDeps(
   }
 
   // Add better-auth for express/fastify backends
-  if (auth === "better-auth" && (backend === "express" || backend === "fastify")) {
+  if (isBetterAuth(auth) && (backend === "express" || backend === "fastify")) {
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["better-auth"] });
   }
 

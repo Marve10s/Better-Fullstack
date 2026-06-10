@@ -1,0 +1,11 @@
+import tracer from "dd-trace";
+
+export const datadogTracer = tracer.init({
+  service: process.env.DD_SERVICE || "{{projectName}}",
+  env: process.env.DD_ENV || process.env.NODE_ENV || "development",
+  version: process.env.DD_VERSION,
+  logInjection: true,
+  runtimeMetrics: true,
+});
+
+export default datadogTracer;

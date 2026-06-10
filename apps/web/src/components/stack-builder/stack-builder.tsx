@@ -297,6 +297,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "observability",
     "featureFlags",
     "caching",
+    "rateLimit",
     "i18n",
     "cms",
     "search",
@@ -325,6 +326,7 @@ const GRAPH_TYPESCRIPT_SHARED_BACKEND_CATEGORY_SET = new Set<keyof typeof TECH_O
   "email",
   "observability",
   "caching",
+  "rateLimit",
   "search",
 ]);
 
@@ -918,6 +920,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "realtime",
   "jobQueue",
   "caching",
+  "rateLimit",
   "search",
   "fileStorage",
   "animation",

@@ -20,6 +20,18 @@ import { getCSSFrameworkChoice } from "./css-framework";
 import { getDatabaseChoice } from "./database";
 import { getDBSetupChoice } from "./database-setup";
 import {
+  getDotnetApiChoice,
+  getDotnetAuthChoice,
+  getDotnetCachingChoice,
+  getDotnetDeployChoice,
+  getDotnetJobQueueChoice,
+  getDotnetObservabilityChoice,
+  getDotnetOrmChoice,
+  getDotnetRealtimeChoice,
+  getDotnetTestingChoice,
+  getDotnetWebFrameworkChoice,
+} from "./dotnet-ecosystem";
+import {
   getElixirApiChoice,
   getElixirAuthChoice,
   getElixirCachingChoice,
@@ -84,7 +96,7 @@ import { getUILibraryChoice } from "./ui-library";
 import { getDeploymentChoice } from "./web-deploy";
 
 type CompositionMode = "single" | "multi";
-type BackendEcosystem = Extract<Ecosystem, "go" | "rust" | "python" | "java" | "elixir">;
+type BackendEcosystem = Extract<Ecosystem, "go" | "rust" | "python" | "java" | "dotnet" | "elixir">;
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -116,6 +128,7 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
       { value: "rust", label: "Rust", hint: "Axum, Actix Web, Rocket" },
       { value: "python", label: "Python", hint: "FastAPI, Django, Flask" },
       { value: "java", label: "Java", hint: "Spring Boot, Quarkus" },
+      { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
     initialValue: "go",
@@ -366,6 +379,89 @@ export async function gatherMultiEcosystemConfig(
     if (javaWebFramework !== "none") stackPartSpecs.push(`backend:java:${javaWebFramework}`);
     if (javaOrm !== "none") stackPartSpecs.push(`backend.orm:java:${javaOrm}`);
     if (javaAuth !== "none") stackPartSpecs.push(`backend.auth:java:${javaAuth}`);
+  }
+
+  if (backendEcosystem === "dotnet") {
+    const dotnetWebFramework = promptValue(
+      await getDotnetWebFrameworkChoice(flags.dotnetWebFramework),
+    );
+    if (dotnetWebFramework !== "none") {
+      const databaseConfig = await selectDatabaseConfig(flags);
+      database = databaseConfig.database;
+      dbSetup = databaseConfig.dbSetup;
+    }
+    const dotnetOrm =
+      database === "none" || dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetOrmChoice(flags.dotnetOrm));
+    const dotnetAuth =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetAuthChoice(flags.dotnetAuth));
+    const dotnetApi =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetApiChoice(flags.dotnetApi));
+    const dotnetTesting =
+      dotnetWebFramework === "none"
+        ? []
+        : promptValue(await getDotnetTestingChoice(flags.dotnetTesting));
+    const dotnetJobQueue =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetJobQueueChoice(flags.dotnetJobQueue));
+    const dotnetRealtime =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetRealtimeChoice(flags.dotnetRealtime));
+    const dotnetObservability =
+      dotnetWebFramework === "none"
+        ? []
+        : promptValue(await getDotnetObservabilityChoice(flags.dotnetObservability));
+    const dotnetCaching =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetCachingChoice(flags.dotnetCaching));
+    const dotnetDeploy =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetDeployChoice(flags.dotnetDeploy));
+    Object.assign(backendChoices, {
+      dotnetWebFramework,
+      dotnetOrm,
+      dotnetAuth,
+      dotnetApi,
+      dotnetTesting,
+      dotnetJobQueue,
+      dotnetRealtime,
+      dotnetObservability,
+      dotnetCaching,
+      dotnetDeploy,
+    });
+    if (dotnetWebFramework !== "none") {
+      stackPartSpecs.push(`backend:dotnet:${dotnetWebFramework}`);
+    }
+    if (dotnetOrm !== "none") stackPartSpecs.push(`backend.orm:dotnet:${dotnetOrm}`);
+    if (dotnetAuth !== "none") stackPartSpecs.push(`backend.auth:dotnet:${dotnetAuth}`);
+    if (dotnetApi !== "none") stackPartSpecs.push(`backend.api:dotnet:${dotnetApi}`);
+    for (const testing of dotnetTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:dotnet:${testing}`);
+    }
+    if (dotnetJobQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:dotnet:${dotnetJobQueue}`);
+    }
+    if (dotnetRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:dotnet:${dotnetRealtime}`);
+    }
+    for (const observability of dotnetObservability) {
+      if (observability !== "none") {
+        stackPartSpecs.push(`backend.observability:dotnet:${observability}`);
+      }
+    }
+    if (dotnetCaching !== "none") {
+      stackPartSpecs.push(`backend.caching:dotnet:${dotnetCaching}`);
+    }
+    if (dotnetDeploy !== "none") stackPartSpecs.push(`backend.deploy:dotnet:${dotnetDeploy}`);
   }
 
   if (backendEcosystem === "elixir") {

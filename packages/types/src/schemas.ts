@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const EcosystemSchema = z
-  .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir"])
-  .describe("Language ecosystem (typescript, react-native, rust, python, go, java, or elixir)");
+  .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"])
+  .describe(
+    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, or dotnet)",
+  );
 
 export const StackPartEcosystemSchema = z
   .union([EcosystemSchema, z.literal("universal")])
@@ -28,6 +30,7 @@ export const StackPartRoleSchema = z
     "search",
     "fileStorage",
     "jobQueue",
+    "rateLimit",
     "testing",
     "stateManagement",
     "forms",
@@ -196,12 +199,15 @@ export const APISchema = z
 export const AuthSchema = z
   .enum([
     "better-auth",
+    "better-auth-organizations",
     "go-better-auth",
     "clerk",
     "nextauth",
     "stack-auth",
     "supabase-auth",
     "auth0",
+    "workos",
+    "kinde",
     "none",
   ])
   .describe("Authentication provider");
@@ -215,7 +221,7 @@ export const WebDeploySchema = z
   .describe("Web deployment");
 
 export const ServerDeploySchema = z
-  .enum(["cloudflare", "fly", "railway", "render", "docker", "sst", "vercel", "none"])
+  .enum(["cloudflare", "fly", "railway", "render", "netlify", "docker", "sst", "vercel", "none"])
   .describe("Server deployment");
 
 export const AISchema = z
@@ -308,6 +314,10 @@ export const CachingSchema = z
   .enum(["upstash-redis", "none"])
   .describe("Caching solution (upstash-redis for serverless Redis)");
 
+export const RateLimitSchema = z
+  .enum(["arcjet", "upstash-ratelimit", "none"])
+  .describe("Rate limiting and abuse protection");
+
 export const I18nSchema = z
   .enum(["i18next", "next-intl", "none"])
   .describe("Internationalization (i18n) library");
@@ -335,7 +345,7 @@ export const LoggingSchema = z
   .describe("Server-side logging framework");
 
 export const ObservabilitySchema = z
-  .enum(["opentelemetry", "sentry", "grafana", "none"])
+  .enum(["opentelemetry", "sentry", "grafana", "datadog", "axiom", "betterstack", "none"])
   .describe("Observability and distributed tracing");
 
 export const FeatureFlagsSchema = z
@@ -546,6 +556,45 @@ export const JavaTestingLibrariesSchema = z
     "none",
   ])
   .describe("Java testing libraries");
+
+// .NET ecosystem schemas
+export const DotnetWebFrameworkSchema = z
+  .enum(["aspnet-minimal", "aspnet-mvc", "aspnet-blazor", "none"])
+  .describe(".NET web framework");
+
+export const DotnetOrmSchema = z
+  .enum(["ef-core", "dapper", "linq2db", "none"])
+  .describe(".NET data access library");
+
+export const DotnetAuthSchema = z
+  .enum(["aspnet-identity", "duende-identityserver", "auth0-aspnet", "none"])
+  .describe(".NET authentication library");
+
+export const DotnetApiSchema = z
+  .enum(["minimal-api", "graphql-hotchocolate", "grpc-dotnet", "none"])
+  .describe(".NET API style");
+
+export const DotnetTestingSchema = z
+  .enum(["xunit", "nunit", "moq", "testcontainers-dotnet", "none"])
+  .describe(".NET testing libraries");
+
+export const DotnetJobQueueSchema = z
+  .enum(["hangfire", "quartz-net", "hosted-services", "none"])
+  .describe(".NET background jobs");
+
+export const DotnetRealtimeSchema = z.enum(["signalr", "none"]).describe(".NET realtime library");
+
+export const DotnetObservabilitySchema = z
+  .enum(["opentelemetry-dotnet", "serilog", "nlog", "health-checks", "none"])
+  .describe(".NET observability and logging libraries");
+
+export const DotnetCachingSchema = z
+  .enum(["redis", "memory-cache", "none"])
+  .describe(".NET caching library");
+
+export const DotnetDeploySchema = z
+  .enum(["docker", "azure", "aws", "none"])
+  .describe(".NET deployment target");
 
 // Elixir ecosystem schemas
 export const ElixirWebFrameworkSchema = z
@@ -766,6 +815,7 @@ export const CreateInputSchema = z.object({
   analytics: AnalyticsSchema.optional(),
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
+  rateLimit: RateLimitSchema.optional(),
   i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
   fileStorage: FileStorageSchema.optional(),
@@ -811,6 +861,17 @@ export const CreateInputSchema = z.object({
   javaAuth: JavaAuthSchema.optional(),
   javaLibraries: z.array(JavaLibrariesSchema).optional(),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema).optional(),
+  // .NET ecosystem options
+  dotnetWebFramework: DotnetWebFrameworkSchema.optional(),
+  dotnetOrm: DotnetOrmSchema.optional(),
+  dotnetAuth: DotnetAuthSchema.optional(),
+  dotnetApi: DotnetApiSchema.optional(),
+  dotnetTesting: z.array(DotnetTestingSchema).optional(),
+  dotnetJobQueue: DotnetJobQueueSchema.optional(),
+  dotnetRealtime: DotnetRealtimeSchema.optional(),
+  dotnetObservability: z.array(DotnetObservabilitySchema).optional(),
+  dotnetCaching: DotnetCachingSchema.optional(),
+  dotnetDeploy: DotnetDeploySchema.optional(),
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema.optional(),
   elixirOrm: ElixirOrmSchema.optional(),
@@ -894,6 +955,7 @@ export const ProjectConfigSchema = z.object({
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
+  rateLimit: RateLimitSchema,
   i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
@@ -939,6 +1001,17 @@ export const ProjectConfigSchema = z.object({
   javaAuth: JavaAuthSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
+  // .NET ecosystem options
+  dotnetWebFramework: DotnetWebFrameworkSchema,
+  dotnetOrm: DotnetOrmSchema,
+  dotnetAuth: DotnetAuthSchema,
+  dotnetApi: DotnetApiSchema,
+  dotnetTesting: z.array(DotnetTestingSchema),
+  dotnetJobQueue: DotnetJobQueueSchema,
+  dotnetRealtime: DotnetRealtimeSchema,
+  dotnetObservability: z.array(DotnetObservabilitySchema),
+  dotnetCaching: DotnetCachingSchema,
+  dotnetDeploy: DotnetDeploySchema,
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1017,6 +1090,7 @@ export const BetterTStackConfigSchema = z.object({
   analytics: AnalyticsSchema,
   cms: CMSSchema,
   caching: CachingSchema,
+  rateLimit: RateLimitSchema,
   i18n: I18nSchema,
   search: SearchSchema,
   fileStorage: FileStorageSchema,
@@ -1062,6 +1136,17 @@ export const BetterTStackConfigSchema = z.object({
   javaAuth: JavaAuthSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
+  // .NET ecosystem options
+  dotnetWebFramework: DotnetWebFrameworkSchema,
+  dotnetOrm: DotnetOrmSchema,
+  dotnetAuth: DotnetAuthSchema,
+  dotnetApi: DotnetApiSchema,
+  dotnetTesting: z.array(DotnetTestingSchema),
+  dotnetJobQueue: DotnetJobQueueSchema,
+  dotnetRealtime: DotnetRealtimeSchema,
+  dotnetObservability: z.array(DotnetObservabilitySchema),
+  dotnetCaching: DotnetCachingSchema,
+  dotnetDeploy: DotnetDeploySchema,
   // Elixir ecosystem options
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
@@ -1160,6 +1245,7 @@ export const MOBILE_OTA_VALUES = MobileOTASchema.options;
 export const MOBILE_DEEP_LINKING_VALUES = MobileDeepLinkingSchema.options;
 export const CMS_VALUES = CMSSchema.options;
 export const CACHING_VALUES = CachingSchema.options;
+export const RATE_LIMIT_VALUES = RateLimitSchema.options;
 export const I18N_VALUES = I18nSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
 export const FILE_STORAGE_VALUES = FileStorageSchema.options;
@@ -1195,6 +1281,16 @@ export const JAVA_ORM_VALUES = JavaOrmSchema.options;
 export const JAVA_AUTH_VALUES = JavaAuthSchema.options;
 export const JAVA_LIBRARIES_VALUES = JavaLibrariesSchema.options;
 export const JAVA_TESTING_LIBRARIES_VALUES = JavaTestingLibrariesSchema.options;
+export const DOTNET_WEB_FRAMEWORK_VALUES = DotnetWebFrameworkSchema.options;
+export const DOTNET_ORM_VALUES = DotnetOrmSchema.options;
+export const DOTNET_AUTH_VALUES = DotnetAuthSchema.options;
+export const DOTNET_API_VALUES = DotnetApiSchema.options;
+export const DOTNET_TESTING_VALUES = DotnetTestingSchema.options;
+export const DOTNET_JOB_QUEUE_VALUES = DotnetJobQueueSchema.options;
+export const DOTNET_REALTIME_VALUES = DotnetRealtimeSchema.options;
+export const DOTNET_OBSERVABILITY_VALUES = DotnetObservabilitySchema.options;
+export const DOTNET_CACHING_VALUES = DotnetCachingSchema.options;
+export const DOTNET_DEPLOY_VALUES = DotnetDeploySchema.options;
 export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
 export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
 export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;

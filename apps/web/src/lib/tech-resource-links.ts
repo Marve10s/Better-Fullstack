@@ -87,6 +87,106 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.convex.dev/",
     githubUrl: "https://github.com/get-convex/convex-js",
   },
+  dotnet: {
+    docsUrl: "https://learn.microsoft.com/dotnet/",
+    githubUrl: "https://github.com/dotnet/runtime",
+  },
+  "aspnet-minimal": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "aspnet-mvc": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/mvc/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "aspnet-blazor": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "ef-core": {
+    docsUrl: "https://learn.microsoft.com/ef/core/",
+    githubUrl: "https://github.com/dotnet/efcore",
+  },
+  dapper: {
+    docsUrl: "https://www.learndapper.com/",
+    githubUrl: "https://github.com/DapperLib/Dapper",
+  },
+  linq2db: {
+    docsUrl: "https://linq2db.github.io/",
+    githubUrl: "https://github.com/linq2db/linq2db",
+  },
+  "aspnet-identity": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/security/authentication/identity",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "duende-identityserver": {
+    docsUrl: "https://docs.duendesoftware.com/identityserver/",
+    githubUrl: "https://github.com/DuendeSoftware/products",
+  },
+  "auth0-aspnet": {
+    docsUrl: "https://auth0.com/docs/quickstart/webapp/aspnet-core",
+    githubUrl: "https://github.com/auth0/auth0-aspnetcore-authentication",
+  },
+  "minimal-api": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "graphql-hotchocolate": {
+    docsUrl: "https://chillicream.com/docs/hotchocolate",
+    githubUrl: "https://github.com/ChilliCream/graphql-platform",
+  },
+  "grpc-dotnet": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/grpc/",
+    githubUrl: "https://github.com/grpc/grpc-dotnet",
+  },
+  xunit: { docsUrl: "https://xunit.net/", githubUrl: "https://github.com/xunit/xunit" },
+  nunit: { docsUrl: "https://docs.nunit.org/", githubUrl: "https://github.com/nunit/nunit" },
+  moq: { docsUrl: "https://github.com/devlooped/moq", githubUrl: "https://github.com/devlooped/moq" },
+  "testcontainers-dotnet": {
+    docsUrl: "https://dotnet.testcontainers.org/",
+    githubUrl: "https://github.com/testcontainers/testcontainers-dotnet",
+  },
+  hangfire: {
+    docsUrl: "https://docs.hangfire.io/",
+    githubUrl: "https://github.com/HangfireIO/Hangfire",
+  },
+  "quartz-net": {
+    docsUrl: "https://www.quartz-scheduler.net/documentation/",
+    githubUrl: "https://github.com/quartznet/quartznet",
+  },
+  "hosted-services": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/host/hosted-services",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  signalr: {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/signalr/introduction",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "opentelemetry-dotnet": {
+    docsUrl: "https://opentelemetry.io/docs/languages/dotnet/",
+    githubUrl: "https://github.com/open-telemetry/opentelemetry-dotnet",
+  },
+  serilog: {
+    docsUrl: "https://serilog.net/",
+    githubUrl: "https://github.com/serilog/serilog",
+  },
+  nlog: { docsUrl: "https://nlog-project.org/", githubUrl: "https://github.com/NLog/NLog" },
+  "health-checks": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/host-and-deploy/health-checks",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "memory-cache": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/performance/caching/memory",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  azure: {
+    docsUrl: "https://learn.microsoft.com/azure/app-service/quickstart-dotnetcore",
+    githubUrl: "https://github.com/Azure/app-service-linux-docs",
+  },
+  aws: {
+    docsUrl: "https://docs.aws.amazon.com/sdk-for-net/",
+    githubUrl: "https://github.com/aws/aws-sdk-net",
+  },
   "self-next": {
     docsUrl: "https://nextjs.org/docs",
     githubUrl: "https://github.com/vercel/next.js",
@@ -255,6 +355,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.better-auth.com/docs",
     githubUrl: "https://github.com/better-auth/better-auth",
   },
+  "better-auth-organizations": {
+    docsUrl: "https://www.better-auth.com/docs/plugins/organization",
+    githubUrl: "https://github.com/better-auth/better-auth",
+  },
   "go-better-auth": {
     docsUrl: "https://go-better-auth.vercel.app/",
     githubUrl: "https://github.com/GoBetterAuth/go-better-auth",
@@ -273,6 +377,22 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/supabase/supabase",
   },
   auth0: { docsUrl: "https://auth0.com/docs", githubUrl: "https://github.com/auth0" },
+  workos: {
+    docsUrl: "https://workos.com/docs/authkit/nextjs",
+    githubUrl: "https://github.com/workos/authkit-nextjs",
+  },
+  kinde: {
+    docsUrl: "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+    githubUrl: "https://github.com/kinde-oss/kinde-auth-nextjs",
+  },
+  arcjet: {
+    docsUrl: "https://docs.arcjet.com/rate-limiting/quick-start",
+    githubUrl: "https://github.com/arcjet/arcjet-js",
+  },
+  "upstash-ratelimit": {
+    docsUrl: "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview",
+    githubUrl: "https://github.com/upstash/ratelimit-js",
+  },
   polar: { docsUrl: "https://docs.polar.sh/", githubUrl: "https://github.com/polarsource/polar" },
   stripe: {
     docsUrl: "https://docs.stripe.com/",
@@ -467,6 +587,18 @@ const BASE_LINKS: LinkMap = {
   grafana: {
     docsUrl: "https://grafana.com/docs/",
     githubUrl: "https://github.com/grafana/grafana",
+  },
+  datadog: {
+    docsUrl: "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/dd_libraries/nodejs/",
+    githubUrl: "https://github.com/DataDog/dd-trace-js",
+  },
+  axiom: {
+    docsUrl: "https://axiom.co/docs/send-data/javascript",
+    githubUrl: "https://github.com/axiomhq/axiom-js",
+  },
+  betterstack: {
+    docsUrl: "https://betterstack.com/docs/logs/javascript/",
+    githubUrl: "https://github.com/betterstackhq/logtail-js",
   },
   growthbook: {
     docsUrl: "https://docs.growthbook.io/",

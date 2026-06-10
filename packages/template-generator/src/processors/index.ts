@@ -32,6 +32,7 @@ import { processLoggingDeps } from "./logging-deps";
 import { processObservabilityDeps } from "./observability-deps";
 import { processPaymentsDeps } from "./payments-deps";
 import { processPwaPlugins } from "./pwa-plugins";
+import { processRateLimitDeps } from "./rate-limit-deps";
 import { processReadme } from "./readme-generator";
 import { processRealtimeDeps } from "./realtime-deps";
 import { processRuntimeDeps } from "./runtime-deps";
@@ -68,6 +69,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processTestingDeps(vfs, config);
   processLoggingDeps(vfs, config);
   processObservabilityDeps(vfs, config);
+  processRateLimitDeps(vfs, config);
   processFeatureFlagsDeps(vfs, config);
   processAnalyticsDeps(vfs, config);
   processCSSAndUILibraryDeps(vfs, config);
@@ -107,6 +109,7 @@ export {
   processObservabilityDeps,
   processFeatureFlagsDeps,
   processPaymentsDeps,
+  processRateLimitDeps,
   processReadme,
   processRealtimeDeps,
   processRuntimeDeps,

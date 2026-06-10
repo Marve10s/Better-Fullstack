@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import UserMenu from './UserMenu.vue'
 {{/if}}
 
@@ -8,7 +8,7 @@ const route = useRoute()
 
 const items = computed<NavigationMenuItem[]>(() => [
     { label: "Home", to: "/", active: route.path === "/" },
-    {{#if (or (eq auth "better-auth") (eq auth "clerk"))}}
+    {{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
     { label: "Dashboard", to: "/dashboard", active: route.path.startsWith("/dashboard") },
     {{/if}}
     {{#if (includes examples "ai")}}
@@ -25,7 +25,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 
     <template #right>
       <UColorModeButton />
-      {{#if (eq auth "better-auth")}}
+      {{#if (isBetterAuth auth)}}
       <UserMenu />
       {{/if}}
     </template>

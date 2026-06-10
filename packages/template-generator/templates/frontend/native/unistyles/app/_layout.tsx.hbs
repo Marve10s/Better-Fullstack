@@ -9,7 +9,7 @@ import { queryClient } from "@/utils/trpc";
 import { queryClient } from "@/utils/orpc";
 {{/if}}
 {{#if (eq backend "convex")}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { authClient } from "@/lib/auth-client";
@@ -95,7 +95,7 @@ export default function RootLayout() {
         </GestureHandlerRootView>
       </ConvexProviderWithClerk>
     </ClerkProvider>
-    {{else if (eq auth "better-auth")}}
+    {{else if (isBetterAuth auth)}}
     <ConvexBetterAuthProvider client={convex} authClient={authClient}>
       <GestureHandlerRootView style=\{{ flex: 1 }}>
         <Stack

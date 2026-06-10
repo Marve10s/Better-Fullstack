@@ -30,7 +30,17 @@ const WEB_DEPLOY_COMPATIBLE_FRONTENDS = {
     "svelte",
     "solid",
   ],
-  netlify: ["tanstack-router", "react-vite", "next", "nuxt", "svelte", "solid"],
+  netlify: [
+    "tanstack-router",
+    "react-router",
+    "react-vite",
+    "tanstack-start",
+    "next",
+    "nuxt",
+    "svelte",
+    "solid",
+    "solid-start",
+  ],
 } as const satisfies Partial<Record<WebDeploy, readonly Frontend[]>>;
 
 export const hasPWACompatibleFrontend = (webFrontend: string[]) =>

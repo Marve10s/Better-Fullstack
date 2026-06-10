@@ -161,11 +161,14 @@ describe("Render Deployment", () => {
 describe("Netlify Deployment", () => {
   const netlifyCases = [
     { frontend: "tanstack-router", api: "trpc", publish: 'publish = "dist"' },
+    { frontend: "react-router", api: "trpc", publish: 'publish = "build/client"' },
     { frontend: "react-vite", api: "trpc", publish: 'publish = "dist"' },
+    { frontend: "tanstack-start", api: "trpc", publish: 'publish = "dist/client"' },
     { frontend: "next", api: "trpc", publish: 'publish = ".next"' },
     { frontend: "nuxt", api: "orpc", publish: 'publish = "dist"' },
     { frontend: "svelte", api: "orpc", publish: 'publish = "build"' },
     { frontend: "solid", api: "orpc", publish: 'publish = "dist"' },
+    { frontend: "solid-start", api: "orpc", publish: 'publish = "dist"' },
   ] as const;
 
   for (const { frontend, api, publish } of netlifyCases) {
@@ -194,6 +197,45 @@ describe("Netlify Deployment", () => {
       const toml = readFileSync(netlifyToml, "utf8");
       expect(toml).toContain(publish);
       expect(toml).toContain("bun run build");
+
+      if (frontend === "react-router") {
+        const viteConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "vite.config.ts"),
+          "utf8",
+        );
+        const packageJson = readFileSync(
+          join(result.projectDir!, "apps", "web", "package.json"),
+          "utf8",
+        );
+
+        expect(viteConfig).toContain("@netlify/vite-plugin-react-router");
+        expect(viteConfig).toContain("netlifyReactRouter()");
+        expect(packageJson).toContain("@netlify/vite-plugin-react-router");
+      }
+
+      if (frontend === "tanstack-start") {
+        const viteConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "vite.config.ts"),
+          "utf8",
+        );
+        const packageJson = readFileSync(
+          join(result.projectDir!, "apps", "web", "package.json"),
+          "utf8",
+        );
+
+        expect(viteConfig).toContain("@netlify/vite-plugin-tanstack-start");
+        expect(viteConfig).toContain("netlify()");
+        expect(packageJson).toContain("@netlify/vite-plugin-tanstack-start");
+      }
+
+      if (frontend === "solid-start") {
+        const appConfig = readFileSync(
+          join(result.projectDir!, "apps", "web", "app.config.ts"),
+          "utf8",
+        );
+
+        expect(appConfig).toContain('preset: "netlify"');
+      }
     });
   }
 
@@ -223,11 +265,87 @@ describe("Netlify Deployment", () => {
     expect(toml).toContain("@netlify/plugin-nextjs");
   });
 
+  describe("Server Deployment with Netlify Functions", () => {
+    it("should generate a Netlify function wrapper for Hono on Node", async () => {
+      const result = await runTRPCTest({
+        projectName: "netlify-server-hono",
+        webDeploy: "none",
+        serverDeploy: "netlify",
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "node",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+
+      const serverDir = join(result.projectDir!, "apps", "server");
+      const toml = readFileSync(join(serverDir, "netlify.toml"), "utf8");
+      const functionFile = readFileSync(join(serverDir, "netlify", "functions", "api.mts"), "utf8");
+      const serverIndex = readFileSync(join(serverDir, "src", "index.ts"), "utf8");
+      const packageJson = readFileSync(join(serverDir, "package.json"), "utf8");
+
+      expect(toml).toContain('functions = "netlify/functions"');
+      expect(toml).toContain('node_bundler = "esbuild"');
+      expect(functionFile).toContain('import app from "../../dist/index.js"');
+      expect(functionFile).toContain('path: "/*"');
+      expect(serverIndex).toContain("export default app");
+      expect(serverIndex).not.toContain("@hono/node-server");
+      expect(packageJson).toContain("@netlify/functions");
+      expect(packageJson).not.toContain("@hono/node-server");
+    });
+
+    it("should reject Netlify server deploy for unsupported backend/runtime pairs", async () => {
+      const expressResult = await runTRPCTest({
+        projectName: "netlify-server-express",
+        webDeploy: "none",
+        serverDeploy: "netlify",
+        frontend: ["tanstack-router"],
+        backend: "express",
+        runtime: "node",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        expectError: true,
+      });
+      expectError(
+        expressResult,
+        "Netlify Functions server deploy is currently supported only with Hono",
+      );
+
+      const bunRuntimeResult = await runTRPCTest({
+        projectName: "netlify-server-bun-runtime",
+        webDeploy: "none",
+        serverDeploy: "netlify",
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        expectError: true,
+      });
+      expectError(bunRuntimeResult, "Netlify Functions server deploy requires Node.js runtime");
+    });
+  });
+
   const blockedFrontends = [
-    "react-router",
-    "tanstack-start",
     "vinext",
-    "solid-start",
     "astro",
     "qwik",
     "angular",

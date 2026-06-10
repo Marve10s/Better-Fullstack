@@ -144,6 +144,7 @@ describe("stack selection translation", () => {
         elixirRealtime: "presence",
         elixirJobs: "oban",
         elixirHttp: "finch",
+        elixirJson: "none",
         elixirQuality: "credo",
         runtime: "node",
         dbSetup: "neon",
@@ -185,6 +186,7 @@ describe("stack selection translation", () => {
     expect(config.elixirRealtime).toBe("presence");
     expect(config.elixirJobs).toBe("oban");
     expect(config.elixirHttp).toBe("finch");
+    expect(config.elixirJson).toBe("none");
     expect(config.elixirQuality).toBe("credo");
     expect(config.runtime).toBe("node");
     expect(config.dbSetup).toBe("neon");
@@ -231,6 +233,8 @@ describe("stack selection translation", () => {
     expect(specs).toContain("backend.realtime:elixir:presence");
     expect(specs).toContain("backend.jobQueue:elixir:oban");
     expect(specs).toContain("backend.httpClient:elixir:finch");
+    expect(specs).not.toContain("backend.json:elixir:none");
+    expect(specs).not.toContain("backend.httpClient:elixir:none");
     expect(specs).toContain("backend.codeQuality:elixir:credo");
     expect(specs).toContain("backend.runtime:typescript:node");
     expect(specs).toContain("backend.deploy:typescript:railway");
@@ -260,6 +264,7 @@ describe("stack selection translation", () => {
         "backend.orm:elixir:ecto-sql",
       ],
       elixirRealtime: "presence",
+      elixirJson: "none",
       elixirDeploy: "docker",
       appPlatforms: ["turborepo", "docker-compose"],
       examples: ["ai"],
@@ -269,6 +274,8 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part backend:elixir:phoenix");
     expect(command).toContain("--part backend.realtime:elixir:presence");
     expect(command).not.toContain("--elixir-realtime presence");
+    expect(command).toContain("--elixir-json none");
+    expect(command).not.toContain("--part backend.json:elixir:none");
     expect(command).toContain("--part backend.deploy:elixir:docker");
     expect(command).not.toContain("--elixir-deploy docker");
     expect(command).toContain("--part workspaceTooling:universal:turborepo");

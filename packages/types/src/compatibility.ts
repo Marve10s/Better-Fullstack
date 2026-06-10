@@ -73,7 +73,15 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "react-native" | "rust" | "python" | "go" | "java" | "elixir";
+  ecosystem:
+    | "typescript"
+    | "react-native"
+    | "rust"
+    | "python"
+    | "go"
+    | "java"
+    | "elixir"
+    | "dotnet";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -99,6 +107,7 @@ export type CompatibilityInput = {
   realtime: string;
   jobQueue: string;
   caching: string;
+  rateLimit: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -165,6 +174,16 @@ export type CompatibilityInput = {
   javaAuth: string;
   javaLibraries: string[];
   javaTestingLibraries: string[];
+  dotnetWebFramework: string;
+  dotnetOrm: string;
+  dotnetAuth: string;
+  dotnetApi: string;
+  dotnetTesting: string[];
+  dotnetJobQueue: string;
+  dotnetRealtime: string;
+  dotnetObservability: string[];
+  dotnetCaching: string;
+  dotnetDeploy: string;
   elixirWebFramework: string;
   elixirOrm: string;
   elixirAuth: string;
@@ -278,6 +297,7 @@ export const analyzeStackCompatibility = (
       dbSetup: "none",
       serverDeploy: "none",
       search: "none",
+      rateLimit: "none",
       fileStorage: "none",
     };
 
@@ -346,6 +366,7 @@ export const analyzeStackCompatibility = (
       serverDeploy: "none",
       payments: "none",
       search: "none",
+      rateLimit: "none",
       fileStorage: "none",
     };
 
@@ -769,7 +790,10 @@ export const analyzeStackCompatibility = (
   // ============================================
 
   // Redis is a key-value store without SQL support — better-auth requires SQL tables
-  if (nextStack.auth === "better-auth" && nextStack.database === "redis") {
+  const isBetterAuthSelection =
+    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+
+  if (isBetterAuthSelection && nextStack.database === "redis") {
     nextStack.auth = "none";
     changed = true;
     changes.push({
@@ -779,7 +803,7 @@ export const analyzeStackCompatibility = (
   }
 
   const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (nextStack.auth === "better-auth" && ormsWithoutBetterAuth.includes(nextStack.orm)) {
+  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
     nextStack.auth = "none";
     changed = true;
     changes.push({
@@ -823,7 +847,7 @@ export const analyzeStackCompatibility = (
   }
 
   if (nextStack.payments === "polar") {
-    if (nextStack.auth !== "better-auth") {
+    if (nextStack.auth !== "better-auth" && nextStack.auth !== "better-auth-organizations") {
       nextStack.payments = "none";
       changed = true;
       changes.push({
@@ -914,6 +938,7 @@ export const analyzeStackCompatibility = (
       ["payments", "none", "Payments set to 'None' (React Native ecosystem)"],
       ["email", "none", "Email set to 'None' (React Native ecosystem)"],
       ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["rateLimit", "none", "Rate limiting set to 'None' (React Native ecosystem)"],
       ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
       ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
       ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
@@ -1508,6 +1533,9 @@ export const getDisabledReason = (
     if (category === "search" && optionId !== "none") {
       return "Search requires a standalone backend";
     }
+    if (category === "rateLimit" && optionId !== "none") {
+      return "Rate limiting requires a standalone backend";
+    }
     if (category === "fileStorage" && optionId !== "none") {
       return "File storage requires a standalone backend";
     }
@@ -1578,6 +1606,9 @@ export const getDisabledReason = (
       return "No backend selected";
     }
     if (category === "search" && optionId !== "none") {
+      return "No backend selected";
+    }
+    if (category === "rateLimit" && optionId !== "none") {
       return "No backend selected";
     }
     if (category === "fileStorage" && optionId !== "none") {
@@ -1861,11 +1892,13 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    if (optionId === "better-auth" && currentStack.database === "redis") {
+    const isBetterAuthOption =
+      optionId === "better-auth" || optionId === "better-auth-organizations";
+    if (isBetterAuthOption && currentStack.database === "redis") {
       return "Better Auth requires a SQL database (not Redis)";
     }
     const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (optionId === "better-auth" && ormsWithoutBetterAuth.includes(currentStack.orm)) {
+    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
       return `Better Auth has no ${currentStack.orm} adapter`;
     }
     return getCapabilityDisabledReason(
@@ -1884,7 +1917,7 @@ export const getDisabledReason = (
   // PAYMENTS CONSTRAINTS
   // ============================================
   if (category === "payments" && optionId === "polar") {
-    if (currentStack.auth !== "better-auth") {
+    if (currentStack.auth !== "better-auth" && currentStack.auth !== "better-auth-organizations") {
       return "Polar requires Better Auth";
     }
     if (!currentStack.webFrontend.some((f) => f !== "none")) {
@@ -1940,6 +1973,21 @@ export const getDisabledReason = (
   if (category === "caching" && optionId !== "none") {
     if (currentStack.ecosystem !== "typescript") {
       return null;
+    }
+  }
+
+  // ============================================
+  // RATE LIMITING CONSTRAINTS
+  // ============================================
+  if (category === "rateLimit" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+    if (currentStack.backend === "convex") {
+      return "Rate limiting helpers are not generated with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Rate limiting requires a backend";
     }
   }
 
@@ -2355,6 +2403,14 @@ export const getDisabledReason = (
         return "Encore manages its own deployment infrastructure";
       }
     }
+    if (optionId === "netlify") {
+      if (currentStack.backend !== "hono") {
+        return "Netlify Functions server deploy is currently supported only with Hono";
+      }
+      if (currentStack.runtime !== "node") {
+        return "Netlify Functions server deploy requires Node.js runtime";
+      }
+    }
     if (optionId !== "none") {
       const noServerDeploy = [
         "none",
@@ -2544,6 +2600,7 @@ const SHARED_BACKEND_SERVICE_CATEGORIES = new Set<CompatibilityCategory>([
   "email",
   "observability",
   "caching",
+  "rateLimit",
   "search",
 ]);
 
@@ -2741,6 +2798,71 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "java",
     currentEcosystem: "java",
+  },
+  dotnetOrm: {
+    role: "orm",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    missingOwnerReason: ".NET data access requires an ASP.NET backend",
+  },
+  dotnetAuth: {
+    role: "auth",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    missingOwnerReason: ".NET auth requires an ASP.NET backend",
+  },
+  dotnetApi: {
+    role: "api",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetTesting: {
+    role: "testing",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetJobQueue: {
+    role: "jobQueue",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetRealtime: {
+    role: "realtime",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetObservability: {
+    role: "observability",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetCaching: {
+    role: "caching",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetDeploy: {
+    role: "deploy",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
   },
 };
 
@@ -3309,6 +3431,14 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
     ["javaAuth", input.javaAuth],
+    ["dotnetWebFramework", input.dotnetWebFramework],
+    ["dotnetOrm", input.dotnetOrm],
+    ["dotnetAuth", input.dotnetAuth],
+    ["dotnetApi", input.dotnetApi],
+    ["dotnetJobQueue", input.dotnetJobQueue],
+    ["dotnetRealtime", input.dotnetRealtime],
+    ["dotnetCaching", input.dotnetCaching],
+    ["dotnetDeploy", input.dotnetDeploy],
     ["elixirWebFramework", input.elixirWebFramework],
     ["elixirOrm", input.elixirOrm],
     ["elixirAuth", input.elixirAuth],
@@ -3411,6 +3541,30 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "javaTestingLibraries",
         optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.dotnetTesting) {
+    const reason = getDisabledReason(input, "dotnetTesting", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_TESTING_LIBRARY",
+        message: reason,
+        category: "dotnetTesting",
+        optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const observabilityLibrary of input.dotnetObservability) {
+    const reason = getDisabledReason(input, "dotnetObservability", observabilityLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_OBSERVABILITY",
+        message: reason,
+        category: "dotnetObservability",
+        optionId: observabilityLibrary,
       });
     }
   }

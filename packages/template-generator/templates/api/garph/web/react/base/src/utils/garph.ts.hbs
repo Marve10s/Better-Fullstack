@@ -35,7 +35,7 @@ export const client = createClient<Schema>({
 {{else}}
   url: `${env.VITE_SERVER_URL}/graphql`,
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   credentials: "include",
 {{/if}}
 });

@@ -30,7 +30,7 @@ export const client = createClient<Schema>({
   generatedSchema,
   scalarsEnumsHash,
   url: "/api/graphql",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   credentials: "include",
 {{/if}}
 });
