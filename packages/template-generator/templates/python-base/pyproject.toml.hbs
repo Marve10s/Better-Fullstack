@@ -193,6 +193,10 @@ ignore = [
 {{/if}}
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"migrations/env.py" = ["E402"]
+"src/app/main.py" = ["I001"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
