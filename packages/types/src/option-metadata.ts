@@ -767,7 +767,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     zod: "Zod",
     arktype: "ArkType",
     typebox: "TypeBox",
-    "effect-schema": "@effect/schema",
+    "effect-schema": "Effect Schema",
   },
   testing: {
     "vitest-playwright": "Vitest + Playwright",

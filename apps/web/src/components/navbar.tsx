@@ -1,5 +1,4 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { parseStackSelectionFromUrlRecord as parseStackFromUrlRecord } from "@better-fullstack/types/stack-translation";
 import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github } from "lucide-react";
 import { motion, LayoutGroup } from "motion/react";
 import { useState } from "react";
@@ -18,8 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HandDrawnNewCallout } from "@/components/ui/hand-drawn-new-callout";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
-import { parseStackShareSlug } from "@/lib/stack-share-paths";
-import { generateStackCommand } from "@/lib/stack-utils";
+import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { cn } from "@/lib/utils";
 
 const BUILDER_COMMAND_SEARCH = { view: "command", file: "" } as const;
@@ -42,6 +40,14 @@ function HeaderCopyButton() {
 
   const handleCopy = async () => {
     try {
+      // Loaded at click time: these pull in the stack-translation +
+      // compatibility bundle, which must stay out of the app entry chunk.
+      const [{ parseStackSelectionFromUrlRecord: parseStackFromUrlRecord }, { parseStackShareSlug }, { generateStackCommand }] =
+        await Promise.all([
+          import("@better-fullstack/types/stack-translation"),
+          import("@/lib/stack-share-paths"),
+          import("@/lib/stack-utils"),
+        ]);
       const sp = new URLSearchParams(window.location.search);
       const record: Record<string, string | string[]> = {};
       for (const key of sp.keys()) {
@@ -198,7 +204,7 @@ export function Navbar() {
   const onBuilder =
     Boolean(matchRoute({ to: "/new" })) ||
     pathname === "/stack" ||
-    (pathSegments.length === 1 && Boolean(parseStackShareSlug(shareSlug)));
+    (pathSegments.length === 1 && isStackShareSlug(shareSlug));
   const builderMode = useBuilderMode();
   const showModeToggle = onBuilder && builderMode.active;
 

@@ -40,8 +40,8 @@ const VALIDATION_PROMPT_OPTIONS: PromptOption<Validation>[] = [
   },
   {
     value: "effect-schema",
-    label: "@effect/schema",
-    hint: "Effect ecosystem schema validation with powerful transformations",
+    label: "Effect Schema",
+    hint: "Schema validation built into the effect package (effect/Schema)",
   },
   {
     value: "none",

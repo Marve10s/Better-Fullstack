@@ -583,7 +583,7 @@ describe("Validation Library Options", () => {
     });
   });
 
-  describe("@effect/schema with React frontends", () => {
+  describe("Effect Schema with React frontends", () => {
     test("effect-schema with TanStack Router", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -633,7 +633,7 @@ describe("Validation Library Options", () => {
     });
   });
 
-  describe("@effect/schema with different backends", () => {
+  describe("Effect Schema with different backends", () => {
     test("effect-schema with Hono backend", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
@@ -673,7 +673,7 @@ describe("Validation Library Options", () => {
     });
   });
 
-  describe("@effect/schema with native apps", () => {
+  describe("Effect Schema with native apps", () => {
     test("effect-schema with native-bare", async () => {
       const result = await runTRPCTest(
         createCustomConfig({

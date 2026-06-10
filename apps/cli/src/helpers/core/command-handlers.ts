@@ -1,8 +1,3 @@
-import {
-  validatePreflightConfig,
-  generateVirtualProject,
-  EMBEDDED_TEMPLATES,
-} from "@better-fullstack/template-generator";
 import { intro, log, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
@@ -317,6 +312,10 @@ export async function createProjectHandler(
         }
       }
 
+      // Loaded here instead of at module top: the template-generator bundle
+      // embeds all templates (~2.5 MB of source) and would slow CLI startup.
+      const { validatePreflightConfig } = await import("@better-fullstack/template-generator");
+
       let config: ProjectConfig;
       if (cliInput.yes || cliInput.part?.length) {
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
@@ -367,6 +366,9 @@ export async function createProjectHandler(
       }
 
       if (input.dryRun) {
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import(
+          "@better-fullstack/template-generator"
+        );
         const result = await generateVirtualProject({
           config,
           templates: EMBEDDED_TEMPLATES,

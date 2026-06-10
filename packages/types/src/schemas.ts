@@ -223,7 +223,7 @@ export const AISchema = z
 export const EffectSchema = z
   .enum(["effect", "effect-full", "none"])
   .describe(
-    "Effect ecosystem (effect-full includes @effect/schema, @effect/platform, @effect/sql)",
+    "Effect ecosystem (effect-full includes effect/Schema, @effect/platform, @effect/sql)",
   );
 
 export const StateManagementSchema = z

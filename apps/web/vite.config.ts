@@ -14,6 +14,7 @@ import cliPackage from "../cli/package.json";
 
 import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
+import { contentMetaPlugin } from "./vite-plugins/content-meta";
 
 const buildDate = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -41,6 +42,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    contentMetaPlugin(),
     tsconfigPaths({
       projects: ["./tsconfig.json"],
       ignoreConfigErrors: true,

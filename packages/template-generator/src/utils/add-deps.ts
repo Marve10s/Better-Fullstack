@@ -341,7 +341,6 @@ export const dependencyVersionMap = {
 
   // Effect ecosystem (updated 2026-01-21)
   effect: "^3.21.3",
-  "@effect/schema": "^0.75.5",
   "@effect/platform": "^0.96.1",
   "@effect/platform-node": "^0.107.0",
   "@effect/platform-bun": "^0.90.0",

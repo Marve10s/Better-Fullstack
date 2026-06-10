@@ -49,7 +49,6 @@ export type NpmPackageInfo = {
 export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   effect: [
     "effect",
-    "@effect/schema",
     "@effect/platform",
     "@effect/platform-node",
     "@effect/platform-bun",

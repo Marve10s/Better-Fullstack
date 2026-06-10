@@ -2,7 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { DocsPageContent } from "@/components/docs/docs-page";
 import { docsPageHead } from "@/lib/docs/seo";
-import { getNeighbors, getPage } from "@/lib/docs/source";
+import { getNeighbors, getPage, preloadDocPageContent } from "@/lib/docs/source";
 
 /**
  * Catch-all for nested docs paths (`/docs/cli/create`, `/docs/ecosystems/go`,
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/docs/$")({
     const slug = splat.split("/").filter(Boolean);
     const page = getPage(slug);
     if (!page) throw notFound();
+    preloadDocPageContent(page.slug);
     return {
       slug: page.slug,
       frontmatter: page.frontmatter,

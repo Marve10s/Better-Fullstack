@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap");
+/* Caveat (Google Fonts) is linked from the document head in __root.tsx —
+   a CSS @import here would block rendering on an external fetch. */
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "node:path";
 
-import { type AvailableDependencies, dependencyVersionMap } from "../constants";
+import type { AvailableDependencies } from "../constants";
 
 export const addPackageDependency = async (opts: {
   dependencies?: AvailableDependencies[];
@@ -17,6 +17,10 @@ export const addPackageDependency = async (opts: {
     customDevDependencies = {},
     projectDir,
   } = opts;
+
+  // Loaded lazily: the version map lives in the template-generator bundle,
+  // which is too heavy to import at CLI startup.
+  const { dependencyVersionMap } = await import("@better-fullstack/template-generator");
 
   const pkgJsonPath = path.join(projectDir, "package.json");
 

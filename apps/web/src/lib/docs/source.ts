@@ -1,5 +1,9 @@
 import type { ComponentType } from "react";
 
+import { docsMeta } from "virtual:content-meta";
+
+import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
+
 import type { TocEntry } from "./remark-extract-toc";
 
 /**
@@ -66,28 +70,35 @@ export type SeparatorNode = {
 export type PageTreeNode = PageNode | FolderNode | SeparatorNode;
 
 /**
- * Per-page bundle exposed to the docs route. `Component` is the actual MDX
- * React component; `path` is the on-disk relative path used for "Edit on
- * GitHub" links and "Copy MD" raw URLs.
+ * Per-page metadata exposed to routes, the sidebar, sitemap, etc. The actual
+ * MDX component, table of contents, and raw markdown are intentionally NOT
+ * here — they live in `DocPageContent` and are loaded on demand via
+ * `useDocPageContent` so the full docs content never lands in the app entry
+ * chunk. `path` is the on-disk relative path used for "Edit on GitHub" links.
  */
 export type DocPage = {
   slug: string[];
   url: string;
   path: string;
-  raw: string;
+  filePath: string;
   frontmatter: DocFrontmatter;
+};
+
+/** Heavy per-page bundle, loaded lazily for the page being viewed. */
+export type DocPageContent = {
+  raw: string;
   toc: TocEntry[];
   Component: MdxModule["default"];
 };
 
 const CONTENT_PREFIX = "/content/docs/";
 
-const mdxModules = import.meta.glob<MdxModule>("../../../content/docs/**/*.mdx", {
-  eager: true,
-});
+// Lazy: each page's compiled MDX module / raw markdown is its own chunk.
+// Frontmatter comes from `virtual:content-meta` (see vite-plugins/content-meta)
+// — importing it from the MDX modules here would fuse them into this chunk.
+const mdxLoaders = import.meta.glob<MdxModule>("../../../content/docs/**/*.mdx");
 
-const rawMdxModules = import.meta.glob<RawMdxModule>("../../../content/docs/**/*.mdx", {
-  eager: true,
+const rawMdxLoaders = import.meta.glob<RawMdxModule>("../../../content/docs/**/*.mdx", {
   query: "?raw",
   import: "default",
 });
@@ -124,20 +135,60 @@ function normalizeMetaPath(filePath: string): { dirSlug: string[] } {
  * O(1).
  */
 const pagesBySlug = new Map<string, DocPage>();
-for (const [filePath, module] of Object.entries(mdxModules)) {
+for (const { filePath, frontmatter } of docsMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/docs" + (slug.length ? "/" + slug.join("/") : "");
   const key = slug.join("/");
-  const raw = rawMdxModules[filePath] ?? "";
   pagesBySlug.set(key, {
     slug,
     url,
     path: relativePath,
-    raw,
-    frontmatter: module.frontmatter ?? {},
+    filePath,
+    frontmatter: frontmatter ?? {},
+  });
+}
+
+const contentCache = createSuspenseCache<DocPageContent>();
+
+async function loadPageContent(page: DocPage): Promise<DocPageContent> {
+  const [module, raw] = await Promise.all([
+    mdxLoaders[page.filePath]?.(),
+    rawMdxLoaders[page.filePath]?.(),
+  ]);
+  if (!module) throw new Error(`Docs content module missing for ${page.filePath}`);
+  return {
+    raw: raw ?? "",
     toc: module.toc ?? [],
     Component: module.default,
-  });
+  };
+}
+
+/**
+ * Suspense hook: returns the page's MDX component/toc/raw, suspending while
+ * the chunk loads. Callers must render inside a `<Suspense>` boundary.
+ */
+export function useDocPageContent(page: DocPage): DocPageContent {
+  return contentCache.read(page.slug.join("/"), () => loadPageContent(page));
+}
+
+/** Start fetching a page's content chunk early (e.g. from a route loader). */
+export function preloadDocPageContent(slug: string[] | undefined): void {
+  const page = getPage(slug);
+  if (!page) return;
+  contentCache.preload(page.slug.join("/"), () => loadPageContent(page));
+}
+
+/**
+ * Load the raw markdown of every docs page, keyed by glob file path. Used by
+ * the search index — heavy, so callers must be lazy (e.g. on dialog open).
+ */
+export async function loadAllRawPages(): Promise<Map<string, string>> {
+  const entries = await Promise.all(
+    Object.entries(rawMdxLoaders).map(
+      async ([filePath, load]) => [filePath, await load()] as const,
+    ),
+  );
+  return new Map(entries);
 }
 
 const metaByDir = new Map<string, MetaFile>();
