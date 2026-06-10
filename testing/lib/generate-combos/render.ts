@@ -157,6 +157,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["ui-library", config.uiLibrary],
     ["cms", config.cms],
     ["caching", config.caching],
+    ["rate-limit", config.rateLimit],
     ["i18n", config.i18n],
     ["search", config.search],
     ["file-storage", config.fileStorage],
@@ -252,6 +253,20 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["elixir-deploy", config.elixirDeploy],
   ];
 
+  const dotnetFlags: Array<[string, string | readonly string[]]> = [
+    ["database", config.database],
+    ["dotnet-web-framework", config.dotnetWebFramework],
+    ["dotnet-orm", config.dotnetOrm],
+    ["dotnet-auth", config.dotnetAuth],
+    ["dotnet-api", config.dotnetApi],
+    ["dotnet-testing", withExplicitNone(config.dotnetTesting)],
+    ["dotnet-job-queue", config.dotnetJobQueue],
+    ["dotnet-realtime", config.dotnetRealtime],
+    ["dotnet-observability", withExplicitNone(config.dotnetObservability)],
+    ["dotnet-caching", config.dotnetCaching],
+    ["dotnet-deploy", config.dotnetDeploy],
+  ];
+
   const orderedFlags = [...commonFlags];
   switch (config.ecosystem) {
     case "typescript":
@@ -290,6 +305,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "elixir":
       orderedFlags.push(...elixirFlags);
+      break;
+    case "dotnet":
+      orderedFlags.push(...sharedServiceFlags, ...dotnetFlags);
       break;
   }
 

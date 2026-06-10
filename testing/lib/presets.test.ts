@@ -29,6 +29,7 @@ const PR_BROAD_PRESET_NAMES = [
   "preset-java-spring-gradle-jpa",
   "preset-java-plain-cli",
   "preset-elixir-phoenix-api",
+  "preset-dotnet-minimal-efcore",
   "preset-react-vite-hono",
   "preset-solid-start-express",
   "preset-angular-fets",

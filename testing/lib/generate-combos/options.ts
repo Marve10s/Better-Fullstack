@@ -67,6 +67,7 @@ import {
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  RATE_LIMIT_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -301,6 +302,10 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       uiLibrary,
       cms: sampleScalar(CMS_VALUES, 0.88),
       caching: sampleScalar(CACHING_VALUES, 0.88),
+      rateLimit:
+        backend === "none" || backend === "convex"
+          ? "none"
+          : sampleScalar(RATE_LIMIT_VALUES, 0.9),
       i18n: sampleScalar(I18N_VALUES, 0.88),
       search: sampleScalar(SEARCH_VALUES, 0.9),
       fileStorage: sampleScalar(FILE_STORAGE_VALUES, 0.84),
@@ -572,6 +577,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     realtime: "none",
     jobQueue: "none",
     caching: "none",
+    rateLimit: "none",
     i18n: "none",
     search: "none",
     fileStorage: "none",
