@@ -1,6 +1,6 @@
 # Rust Ecosystem Expansion
 
-Current state: 2 web frameworks (axum, actix-web), 2 ORMs (sea-orm, sqlx), 2 API layers (tonic, async-graphql), 2 CLI tools (clap, ratatui), 6 libraries (serde, validator, jsonwebtoken, argon2, tokio-test, mockall).
+Current state: 3 web frameworks (axum, actix-web, rocket), 2 WASM frontends (leptos, dioxus), 3 ORMs (sea-orm, sqlx, diesel), 2 API layers (tonic, async-graphql), 2 CLI tools (clap, ratatui), expanded core libraries, 2 logging options, 2 error handling options, 2 caching options, and OAuth2 auth.
 
 Goal: bring Rust to feature parity with TypeScript's depth across all backend categories.
 
@@ -61,7 +61,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Auth (new category)
 
-- [ ] Add `oauth2` crate — complete OAuth 2.0 (RFC 6749), async/sync, PKCE support. The standard for OAuth in Rust.
+- [x] Add `oauth2` crate ✅ — complete OAuth 2.0 (RFC 6749), async/sync, PKCE support. The standard for OAuth in Rust.
 - [ ] Add `torii-rs` — modern auth framework: OAuth/OIDC social login, passkeys/WebAuthn, magic links. Multiple storage backends (SQLite, Postgres, MySQL).
 
 ### Implementation

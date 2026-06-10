@@ -1,4 +1,6 @@
 import {
+  CATEGORY_ORDER,
+  getCategoryOrderForEcosystem,
   getStackPartOptions,
   isMultiSelectCategory,
   parseStackPartSpecs,
@@ -8,6 +10,9 @@ import {
   type StackPartOptionContext,
   type StackPartRole,
 } from "@better-fullstack/types";
+import {
+  usesVirtualNoneStackSelection as usesVirtualNoneSelection,
+} from "@better-fullstack/types/stack-translation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -79,13 +84,11 @@ import {
   saveSavedStacks,
   type SavedStackEntry,
 } from "@/lib/saved-stacks";
-import { usesVirtualNoneSelection } from "@/lib/stack-contract";
 import { useStackState } from "@/lib/stack-url-state";
 import {
-  CATEGORY_ORDER,
   generateStackCommand,
   generateStackSharingUrl,
-  getCategoryOrderForEcosystem,
+  getStackKeyForCategory,
 } from "@/lib/stack-utils";
 import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
@@ -140,7 +143,6 @@ type GraphFrontendConfig = {
   ecosystem: GraphFrontendEcosystem;
   label: string;
   frameworkCategory: keyof typeof TECH_OPTIONS;
-  frameworkStackKey: keyof StackState;
 };
 type GraphBackendConfig = {
   ecosystem: GraphBackendEcosystem;
@@ -149,10 +151,6 @@ type GraphBackendConfig = {
   ormCategory: keyof typeof TECH_OPTIONS;
   apiCategory?: keyof typeof TECH_OPTIONS;
   authCategory?: keyof typeof TECH_OPTIONS;
-  frameworkStackKey: keyof StackState;
-  ormStackKey: keyof StackState;
-  apiStackKey?: keyof StackState;
-  authStackKey?: keyof StackState;
 };
 
 type MultiStackStepId = "frontend" | "backend" | "database" | "mobile" | "finalize";
@@ -162,13 +160,11 @@ const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
     ecosystem: "typescript",
     label: "TypeScript",
     frameworkCategory: "webFrontend",
-    frameworkStackKey: "webFrontend",
   },
   {
     ecosystem: "rust",
     label: "Rust",
     frameworkCategory: "rustFrontend",
-    frameworkStackKey: "rustFrontend",
   },
 ];
 
@@ -199,10 +195,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "orm",
     apiCategory: "api",
     authCategory: "auth",
-    frameworkStackKey: "backend",
-    ormStackKey: "orm",
-    apiStackKey: "api",
-    authStackKey: "auth",
   },
   {
     ecosystem: "go",
@@ -211,10 +203,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "goOrm",
     apiCategory: "goApi",
     authCategory: "goAuth",
-    frameworkStackKey: "goWebFramework",
-    ormStackKey: "goOrm",
-    apiStackKey: "goApi",
-    authStackKey: "goAuth",
   },
   {
     ecosystem: "rust",
@@ -223,10 +211,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "rustOrm",
     apiCategory: "rustApi",
     authCategory: "rustAuth",
-    frameworkStackKey: "rustWebFramework",
-    ormStackKey: "rustOrm",
-    apiStackKey: "rustApi",
-    authStackKey: "rustAuth",
   },
   {
     ecosystem: "python",
@@ -235,10 +219,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "pythonOrm",
     apiCategory: "pythonApi",
     authCategory: "pythonAuth",
-    frameworkStackKey: "pythonWebFramework",
-    ormStackKey: "pythonOrm",
-    apiStackKey: "pythonApi",
-    authStackKey: "pythonAuth",
   },
   {
     ecosystem: "java",
@@ -246,9 +226,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     frameworkCategory: "javaWebFramework",
     ormCategory: "javaOrm",
     authCategory: "javaAuth",
-    frameworkStackKey: "javaWebFramework",
-    ormStackKey: "javaOrm",
-    authStackKey: "javaAuth",
   },
   {
     ecosystem: "elixir",
@@ -257,10 +234,6 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "elixirOrm",
     apiCategory: "elixirApi",
     authCategory: "elixirAuth",
-    frameworkStackKey: "elixirWebFramework",
-    ormStackKey: "elixirOrm",
-    apiStackKey: "elixirApi",
-    authStackKey: "elixirAuth",
   },
 ];
 
@@ -311,117 +284,22 @@ const MULTI_MOBILE_LIBRARY_GROUPS: Array<{
   { label: "Deep Linking", category: "mobileDeepLinking" },
 ];
 
-const GRAPH_MANAGED_CATEGORY_SET = new Set<keyof typeof TECH_OPTIONS>([
-  "webFrontend",
-  "rustFrontend",
-  "nativeFrontend",
-  "backend",
-  "database",
-  "orm",
-  "api",
-  "auth",
-  "rustWebFramework",
-  "rustOrm",
-  "rustApi",
-  "rustAuth",
-  "pythonWebFramework",
-  "pythonOrm",
-  "pythonApi",
-  "pythonAuth",
-  "goWebFramework",
-  "goOrm",
-  "goApi",
-  "goAuth",
-  "javaWebFramework",
-  "javaOrm",
-  "javaAuth",
-  "elixirWebFramework",
-  "elixirOrm",
-  "elixirApi",
-  "elixirAuth",
-]);
-
-const GRAPH_TYPESCRIPT_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "payments",
-  "email",
-  "fileUpload",
-  "backendLibraries",
-  "ai",
-  "realtime",
-  "jobQueue",
-  "logging",
-  "observability",
-  "featureFlags",
-  "caching",
-  "i18n",
-  "cms",
-  "search",
-  "fileStorage",
-];
-
-const GRAPH_RUST_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "rustCli",
-  "rustLibraries",
-  "rustLogging",
-  "rustErrorHandling",
-  "rustCaching",
-];
-
-const GRAPH_PYTHON_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "pythonValidation",
-  "pythonAi",
-  "pythonTaskQueue",
-  "pythonGraphql",
-  "pythonQuality",
-];
-
-const GRAPH_GO_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "goCli",
-  "goLogging",
-];
-
-const GRAPH_JAVA_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "javaBuildTool",
-  "javaLibraries",
-  "javaTestingLibraries",
-];
-
-const GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "elixirRealtime",
-  "elixirJobs",
-  "elixirValidation",
-  "elixirHttp",
-  "elixirJson",
-  "elixirEmail",
-  "elixirCaching",
-  "elixirObservability",
-  "elixirTesting",
-  "elixirQuality",
-  "elixirDeploy",
-];
-
-const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
-  "codeQuality",
-  "documentation",
-  "packageManager",
-  "aiDocs",
-  "versionChannel",
-  "git",
-  "install",
-];
-
-const GRAPH_BACKEND_ADVANCED_STACK_KEYS_BY_ECOSYSTEM = {
+const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
   typescript: [
     "payments",
+    "email",
     "fileUpload",
     "backendLibraries",
-    "aiSdk",
+    "ai",
     "realtime",
     "jobQueue",
     "logging",
+    "observability",
     "featureFlags",
+    "caching",
     "i18n",
     "cms",
+    "search",
     "fileStorage",
   ],
   rust: ["rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
@@ -441,7 +319,24 @@ const GRAPH_BACKEND_ADVANCED_STACK_KEYS_BY_ECOSYSTEM = {
     "elixirQuality",
     "elixirDeploy",
   ],
-} as const satisfies Record<GraphBackendEcosystem, readonly (keyof StackState)[]>;
+} as const satisfies Record<GraphBackendEcosystem, readonly (keyof typeof TECH_OPTIONS)[]>;
+
+const GRAPH_TYPESCRIPT_SHARED_BACKEND_CATEGORY_SET = new Set<keyof typeof TECH_OPTIONS>([
+  "email",
+  "observability",
+  "caching",
+  "search",
+]);
+
+const GRAPH_COMMON_CATEGORY_ORDER: Array<keyof typeof TECH_OPTIONS> = [
+  "codeQuality",
+  "documentation",
+  "packageManager",
+  "aiDocs",
+  "versionChannel",
+  "git",
+  "install",
+];
 
 function isGraphBackendEcosystem(
   ecosystem: StackPartEcosystem,
@@ -458,11 +353,6 @@ function isGraphFrontendEcosystem(
 function getOptionName(category: keyof typeof TECH_OPTIONS, optionId: string) {
   if (optionId === "none") return "None";
   return TECH_OPTIONS[category]?.find((option) => option.id === optionId)?.name ?? optionId;
-}
-
-function getStackKeyForCategory(category: keyof typeof TECH_OPTIONS): keyof StackState {
-  if (category === "ai") return "aiSdk";
-  return category as keyof StackState;
 }
 
 function getStackStringValue(
@@ -518,10 +408,14 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
     ? stack.ecosystem
     : "typescript";
   const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[currentEcosystem];
-  const backendValue = stack[backendConfig.frameworkStackKey];
-  const ormValue = stack[backendConfig.ormStackKey];
-  const apiValue = backendConfig.apiStackKey ? stack[backendConfig.apiStackKey] : "none";
-  const authValue = backendConfig.authStackKey ? stack[backendConfig.authStackKey] : "none";
+  const backendValue = stack[getStackKeyForCategory(backendConfig.frameworkCategory)];
+  const ormValue = stack[getStackKeyForCategory(backendConfig.ormCategory)];
+  const apiValue = backendConfig.apiCategory
+    ? stack[getStackKeyForCategory(backendConfig.apiCategory)]
+    : "none";
+  const authValue = backendConfig.authCategory
+    ? stack[getStackKeyForCategory(backendConfig.authCategory)]
+    : "none";
   const frontendEcosystem =
     stack.ecosystem === "rust" && stack.rustFrontend !== "none" ? "rust" : "typescript";
 
@@ -617,25 +511,17 @@ function graphSelectionToSpecs(selection: GraphSelection): string[] {
 
 function getGraphBackendAdvancedCategoryOrder(
   ecosystem: GraphBackendEcosystem,
-): Array<keyof typeof TECH_OPTIONS> {
-  switch (ecosystem) {
-    case "typescript":
-      return GRAPH_TYPESCRIPT_BACKEND_CATEGORY_ORDER;
-    case "rust":
-      return GRAPH_RUST_BACKEND_CATEGORY_ORDER;
-    case "python":
-      return GRAPH_PYTHON_BACKEND_CATEGORY_ORDER;
-    case "go":
-      return GRAPH_GO_BACKEND_CATEGORY_ORDER;
-    case "java":
-      return GRAPH_JAVA_BACKEND_CATEGORY_ORDER;
-    case "elixir":
-      return GRAPH_ELIXIR_BACKEND_CATEGORY_ORDER;
-  }
+): readonly (keyof typeof TECH_OPTIONS)[] {
+  return GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM[ecosystem];
 }
 
-function getMultiFinalizeCategoryOrder(): Array<keyof typeof TECH_OPTIONS> {
-  return GRAPH_COMMON_CATEGORY_ORDER;
+function shouldResetGraphBackendAdvancedCategory(
+  ecosystem: GraphBackendEcosystem,
+  category: keyof typeof TECH_OPTIONS,
+) {
+  return (
+    ecosystem !== "typescript" || !GRAPH_TYPESCRIPT_SHARED_BACKEND_CATEGORY_SET.has(category)
+  );
 }
 
 function getGraphBackendAdvancedResetPatch(
@@ -643,11 +529,14 @@ function getGraphBackendAdvancedResetPatch(
 ): Partial<StackState> {
   const patch: Partial<StackState> = {};
 
-  for (const [ecosystem, keys] of Object.entries(GRAPH_BACKEND_ADVANCED_STACK_KEYS_BY_ECOSYSTEM)) {
+  for (const { ecosystem } of GRAPH_BACKEND_CONFIGS) {
     if (ecosystem === selectedBackendEcosystem) continue;
 
-    for (const key of keys) {
-      patch[key] = DEFAULT_STACK[key] as never;
+    for (const category of getGraphBackendAdvancedCategoryOrder(ecosystem)) {
+      if (!shouldResetGraphBackendAdvancedCategory(ecosystem, category)) continue;
+
+      const stackKey = getStackKeyForCategory(category);
+      patch[stackKey] = DEFAULT_STACK[stackKey] as never;
     }
   }
 
@@ -680,50 +569,43 @@ function stackPatchFromGraphSpecs(specs: string[]): Partial<StackState> {
     }
     patch.nativeFrontend = [mobile?.toolId ?? "none"];
     patch.database = database?.toolId ?? "none";
-    patch.backend = "none";
-    patch.orm = "none";
-    patch.api = "none";
-    patch.auth = "none";
-    patch.rustWebFramework = "none";
-    patch.rustOrm = "none";
-    patch.rustApi = "none";
-    patch.rustAuth = "none";
-    patch.pythonWebFramework = "none";
-    patch.pythonOrm = "none";
-    patch.pythonApi = "none";
-    patch.pythonAuth = "none";
-    patch.goWebFramework = "none";
-    patch.goOrm = "none";
-    patch.goApi = "none";
-    patch.goAuth = "none";
-    patch.javaWebFramework = "none";
-    patch.javaOrm = "none";
-    patch.javaAuth = "none";
-    patch.elixirWebFramework = "none";
-    patch.elixirOrm = "none";
-    patch.elixirApi = "none";
-    patch.elixirAuth = "none";
+
+    for (const config of GRAPH_BACKEND_CONFIGS) {
+      for (const category of [
+        config.frameworkCategory,
+        config.ormCategory,
+        config.apiCategory,
+        config.authCategory,
+      ]) {
+        if (!category) continue;
+        (patch as Record<string, string>)[getStackKeyForCategory(category)] = "none";
+      }
+    }
 
     if (backend && isGraphBackendEcosystem(backend.ecosystem)) {
       const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[backend.ecosystem];
-      (patch as Record<string, unknown>)[backendConfig.frameworkStackKey] = backend.toolId;
+      (patch as Record<string, unknown>)[getStackKeyForCategory(backendConfig.frameworkCategory)] =
+        backend.toolId;
       const backendOrm = selectedParts.find(
         (part) => part.role === "orm" && part.ownerPartId === backend.id,
       );
       if (backendOrm) {
-        (patch as Record<string, unknown>)[backendConfig.ormStackKey] = backendOrm.toolId;
+        (patch as Record<string, unknown>)[getStackKeyForCategory(backendConfig.ormCategory)] =
+          backendOrm.toolId;
       }
       const backendApi = selectedParts.find(
         (part) => part.role === "api" && part.ownerPartId === backend.id,
       );
-      if (backendApi && backendConfig.apiStackKey) {
-        (patch as Record<string, unknown>)[backendConfig.apiStackKey] = backendApi.toolId;
+      if (backendApi && backendConfig.apiCategory) {
+        (patch as Record<string, unknown>)[getStackKeyForCategory(backendConfig.apiCategory)] =
+          backendApi.toolId;
       }
       const backendAuth = selectedParts.find(
         (part) => part.role === "auth" && part.ownerPartId === backend.id,
       );
-      if (backendAuth && backendConfig.authStackKey) {
-        (patch as Record<string, unknown>)[backendConfig.authStackKey] = backendAuth.toolId;
+      if (backendAuth && backendConfig.authCategory) {
+        (patch as Record<string, unknown>)[getStackKeyForCategory(backendConfig.authCategory)] =
+          backendAuth.toolId;
       }
     }
 
@@ -1910,9 +1792,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
 
   const displayedCategoryOrder = useMemo(() => {
     if (stack.stackMode !== "multi") return categoryOrder;
-    return getMultiFinalizeCategoryOrder().filter(
-      (categoryKey) => !GRAPH_MANAGED_CATEGORY_SET.has(categoryKey),
-    );
+    return GRAPH_COMMON_CATEGORY_ORDER;
   }, [categoryOrder, stack.stackMode]);
   const multiActiveStepIndex = Math.max(
     0,

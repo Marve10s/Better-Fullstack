@@ -1,10 +1,9 @@
-import type {
-  VirtualFileTree,
-  VirtualNode,
-} from "@better-fullstack/template-generator";
+import type { VirtualFileTree } from "@better-fullstack/template-generator";
 
 import { parse as parseJsonc, type ParseError, printParseErrorCode } from "jsonc-parser";
 import { Project, DiagnosticCategory } from "ts-morph";
+
+import { listVirtualTreeFiles } from "./virtual-tree-utils";
 
 // ============================================================================
 // SHARED TS-MORPH PROJECT (MAJOR PERFORMANCE OPTIMIZATION)
@@ -284,20 +283,10 @@ export function getUnprocessedHandlebarsMarkers(content: string): string[] {
  * Recursively get all files from a VirtualFileTree
  */
 export function getAllFiles(tree: VirtualFileTree): { path: string; content: string }[] {
-  const files: { path: string; content: string }[] = [];
-
-  function traverse(node: VirtualNode) {
-    if (node.type === "file") {
-      files.push({ path: node.path, content: node.content });
-    } else {
-      for (const child of node.children) {
-        traverse(child);
-      }
-    }
-  }
-
-  traverse(tree.root);
-  return files;
+  return listVirtualTreeFiles(tree).map((file) => ({
+    path: file.path,
+    content: file.content,
+  }));
 }
 
 /**

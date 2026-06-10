@@ -1,9 +1,22 @@
 import type { ProjectConfig } from "../types";
 
 import { getLatestCLIVersion } from "./get-latest-cli-version";
-import { isTelemetryEnabled } from "./telemetry";
 
 const CONVEX_INGEST_URL = process.env.CONVEX_INGEST_URL;
+
+function isTelemetryEnabled() {
+  const disabled = process.env.BTS_TELEMETRY_DISABLED;
+  if (disabled !== undefined) {
+    return disabled !== "1";
+  }
+
+  const enabled = process.env.BTS_TELEMETRY;
+  if (enabled !== undefined) {
+    return enabled === "1";
+  }
+
+  return true;
+}
 
 async function sendConvexEvent(payload: Record<string, unknown>) {
   if (!CONVEX_INGEST_URL) return;

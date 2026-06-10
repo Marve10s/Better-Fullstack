@@ -1,9 +1,6 @@
-import type {
-  VirtualFileTree,
-  VirtualFile,
-  VirtualDirectory,
-  VirtualNode,
-} from "@better-fullstack/template-generator";
+import type { VirtualFileTree } from "@better-fullstack/template-generator";
+
+import { listVirtualTreeFiles } from "./virtual-tree-utils";
 
 /**
  * File info for snapshot - deterministic and comparable
@@ -88,26 +85,12 @@ export function shouldExclude(path: string): boolean {
  * - Excludes binary/generated files
  */
 export function treeToSnapshot(tree: VirtualFileTree): ProjectSnapshot {
-  const files: SnapshotFile[] = [];
-
-  function traverse(node: VirtualNode) {
-    if (node.type === "file") {
-      if (shouldExclude(node.path)) return;
-
-      files.push({
-        path: node.path,
-        content: isKeyFile(node.path)
-          ? normalizeSnapshotContent((node as VirtualFile).content)
-          : "[exists]",
-      });
-    } else if (node.type === "directory") {
-      for (const child of (node as VirtualDirectory).children) {
-        traverse(child);
-      }
-    }
-  }
-
-  traverse(tree.root);
+  const files = listVirtualTreeFiles(tree)
+    .filter((file) => !shouldExclude(file.path))
+    .map((file) => ({
+      path: file.path,
+      content: isKeyFile(file.path) ? normalizeSnapshotContent(file.content) : "[exists]",
+    }));
 
   // Sort for deterministic output
   files.sort((a, b) => a.path.localeCompare(b.path));
@@ -122,46 +105,21 @@ export function treeToSnapshot(tree: VirtualFileTree): ProjectSnapshot {
  * Get just file paths for a lighter snapshot
  */
 export function treeToFileList(tree: VirtualFileTree): string[] {
-  const paths: string[] = [];
-
-  function traverse(node: VirtualNode) {
-    if (node.type === "file") {
-      if (!shouldExclude(node.path)) {
-        paths.push(node.path);
-      }
-    } else if (node.type === "directory") {
-      for (const child of (node as VirtualDirectory).children) {
-        traverse(child);
-      }
-    }
-  }
-
-  traverse(tree.root);
-  return paths.sort();
+  return listVirtualTreeFiles(tree)
+    .map((file) => file.path)
+    .filter((path) => !shouldExclude(path))
+    .sort();
 }
 
 /**
  * Get only key files with their full content for focused snapshots
  */
 export function treeToKeyFiles(tree: VirtualFileTree): SnapshotFile[] {
-  const files: SnapshotFile[] = [];
-
-  function traverse(node: VirtualNode) {
-    if (node.type === "file") {
-      if (shouldExclude(node.path)) return;
-      if (!isKeyFile(node.path)) return;
-
-      files.push({
-        path: node.path,
-        content: normalizeSnapshotContent((node as VirtualFile).content),
-      });
-    } else if (node.type === "directory") {
-      for (const child of (node as VirtualDirectory).children) {
-        traverse(child);
-      }
-    }
-  }
-
-  traverse(tree.root);
-  return files.sort((a, b) => a.path.localeCompare(b.path));
+  return listVirtualTreeFiles(tree)
+    .filter((file) => !shouldExclude(file.path) && isKeyFile(file.path))
+    .map((file) => ({
+      path: file.path,
+      content: normalizeSnapshotContent(file.content),
+    }))
+    .sort((a, b) => a.path.localeCompare(b.path));
 }

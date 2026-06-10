@@ -1,6 +1,6 @@
 # Python Ecosystem Expansion
 
-Current state: 2 web frameworks (fastapi, django), 2 ORMs (sqlalchemy, sqlmodel), 1 validation (pydantic), 6 AI libs (langchain, llamaindex, openai-sdk, anthropic-sdk, langgraph, crewai), 1 task queue (celery), 1 quality tool (ruff).
+Current state: 4 web frameworks (fastapi, django, flask, litestar), 3 ORMs (sqlalchemy, sqlmodel, tortoise-orm), 1 validation option (pydantic), 7 AI libs (langchain, llamaindex, openai-sdk, anthropic-sdk, langgraph, crewai, haystack), 2 auth options (authlib, jwt), 4 task queues (celery, rq, dramatiq, huey), 2 GraphQL options (strawberry, ariadne), and 3 quality options (ruff, mypy, pyright).
 
 Goal: bring Python to feature parity with TypeScript's depth across all backend categories.
 
@@ -23,7 +23,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 ## ORMs / Database
 
-- [ ] Add `tortoise-orm` — async-first ORM. Top write performance. Django-like API. Best for async apps with FastAPI/Litestar.
+- [x] Add `tortoise-orm` ✅ — async-first ORM. Top write performance. Django-like API. Best for async apps with FastAPI/Litestar.
 - [ ] Add `peewee` — 11k stars. Lightweight, simple. SQLite, MySQL, PostgreSQL, CockroachDB. Perfect for rapid prototyping.
 
 ### Files to touch
@@ -37,7 +37,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 - [x] Add `authlib` ✅ — most comprehensive Python auth library. OAuth1, OAuth2, OpenID Connect, JWS, JWK, JWT. Used by 26%+ of REST API projects.
 - [ ] Add `fastapi-users` — purpose-built auth for FastAPI. JWT, cookies, OAuth2, email verification. Async, multiple DB backends.
-- [ ] Add `python-jose` — JWT library supporting multiple key types (HS256, RS256, ES256, EdDSA).
+- [x] Add `jwt` ✅ — JWT auth path for token-based Python apps.
 
 ### Implementation
 - New schema: `PythonAuthSchema = z.enum(["authlib", "fastapi-users", "jwt", "none"])`
@@ -62,7 +62,7 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 ## GraphQL (new category)
 
 - [x] Add `strawberry` ✅ — default Python GraphQL library. Code-first, leverages type hints, async. Seamless FastAPI integration.
-- [ ] Add `ariadne` — schema-first GraphQL. Batteries included (query cost validation, tracing).
+- [x] Add `ariadne` ✅ — schema-first GraphQL. Batteries included (query cost validation, tracing).
 
 ### Implementation
 - New schema: `PythonGraphqlSchema = z.enum(["strawberry", "ariadne", "none"])`
@@ -72,9 +72,9 @@ Goal: bring Python to feature parity with TypeScript's depth across all backend 
 
 ## Task Queues (expand existing)
 
-- [ ] Add `dramatiq` — modern Celery alternative. 10x faster than Python-RQ. Simpler, more reliable.
+- [x] Add `dramatiq` ✅ — modern Celery alternative. 10x faster than Python-RQ. Simpler, more reliable.
 - [ ] Add `taskiq` — fully async task queue. Integrates with FastAPI and aiohttp.
-- [ ] Add `huey` — lightweight task queue. Minimal dependencies.
+- [x] Add `huey` ✅ — lightweight task queue. Minimal dependencies.
 
 ### Files to touch
 - `packages/types/src/schemas.ts` — add to `PythonTaskQueueSchema`

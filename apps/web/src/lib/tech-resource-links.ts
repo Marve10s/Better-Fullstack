@@ -1,4 +1,4 @@
-export type TechResourceLinks = {
+type TechResourceLinks = {
   docsUrl?: string;
   githubUrl?: string;
 };

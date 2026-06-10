@@ -2,21 +2,24 @@
 
 Strong differentiator — no competing scaffolding tool covers Elixir well. Phoenix LiveView is unique: server-rendered reactive UI without JavaScript. The BEAM VM provides unmatched fault tolerance and hot code reloading.
 
+Current status: foundation shipped. The shared schemas, option metadata, CLI prompts, and template surface now include `ecosystem: "elixir"` plus Phoenix/Phoenix LiveView, Ecto, auth, REST/Absinthe, realtime, jobs, validation, HTTP, JSON, email, caching, observability, testing, quality, and deploy choices. This file now tracks the shipped baseline and the deeper follow-ups still worth doing.
+
 ---
 
 ## Web Framework
 
-- [ ] Add `phoenix` — dominant Elixir web framework. No real competitors in the ecosystem.
+- [x] Add `phoenix` ✅ — dominant Elixir web framework. No real competitors in the ecosystem.
   - LiveView for reactive server-rendered UI
   - Channels for WebSocket-based realtime
   - Built-in generators (`mix phx.gen.auth`, `mix phx.gen.live`, etc.)
   - HEEx templates (HTML + Elixir expressions)
+- [x] Add `phoenix-live-view` ✅ — first-class LiveView web framework option.
 
 ---
 
 ## Database / ORM
 
-- [ ] Add `ecto` — built-in ORM, tightly integrated with Phoenix. Changesets for validation, migrations, multi-repo support.
+- [x] Add `ecto` / `ecto-sql` ✅ — built-in ORM, tightly integrated with Phoenix. Changesets for validation, migrations, multi-repo support.
   - Supports PostgreSQL, MySQL, SQLite, MSSQL via adapters
   - Query composition via `Ecto.Query`
   - Schema-less queries for flexibility
@@ -26,62 +29,69 @@ Strong differentiator — no competing scaffolding tool covers Elixir well. Phoe
 ## Realtime
 
 Built-in — Phoenix Channels and LiveView handle this natively:
-- **Phoenix Channels** — WebSocket-based pub/sub, presence tracking
-- **LiveView** — server-rendered reactive components, no JS framework needed
-- **LiveView Streams** — efficient list rendering for large datasets
+- [x] **Phoenix Channels** ✅ — WebSocket-based pub/sub, presence tracking
+- [x] **Presence / PubSub / LiveView Streams** ✅ — realtime choices represented in schema and metadata
+- [x] **LiveView** ✅ — server-rendered reactive components, no JS framework needed
 
 ---
 
 ## Authentication
 
-- [ ] Add `phx_gen_auth` — built-in Phoenix auth generator. Email/password, session-based, secure defaults.
-- [ ] Add `ueberauth` — OAuth/social login strategies. Pluggable architecture (GitHub, Google, Twitter, etc.).
-- [ ] Add `guardian` — JWT-based auth. Token generation, refresh, revocation.
+- [x] Add `phx_gen_auth` ✅ — built-in Phoenix auth generator. Email/password, session-based, secure defaults.
+- [x] Add `ueberauth` ✅ — OAuth/social login strategies. Pluggable architecture (GitHub, Google, Twitter, etc.).
+- [x] Add `guardian` ✅ — JWT-based auth. Token generation, refresh, revocation.
 
 ---
 
 ## Task Queues
 
-- [ ] Add `oban` — de facto standard for background jobs. PostgreSQL-backed, cron scheduling, unique jobs, priorities, rate limiting. Pro version adds Web UI.
+- [x] Add `oban` ✅ — de facto standard for background jobs. PostgreSQL-backed, cron scheduling, unique jobs, priorities, rate limiting. Pro version adds Web UI.
+- [x] Add `quantum` ✅ — scheduler option for cron-like Elixir jobs.
 
 ---
 
 ## API Styles
 
-- [ ] Add `absinthe` — GraphQL toolkit for Elixir. Schema-first, subscriptions, dataloader for N+1 prevention.
+- [x] Add `absinthe` ✅ — GraphQL toolkit for Elixir. Schema-first, subscriptions, dataloader for N+1 prevention.
 - [ ] Add `grpc` (via `grpc-elixir`) — Protocol Buffers-based RPC.
-- [ ] REST is default via Phoenix controllers/routers.
+- [x] REST is default via Phoenix controllers/routers. ✅
 
 ---
 
 ## Testing
 
-- [ ] `exunit` — built-in test framework. Doctests, async tests, property-based testing via StreamData.
-- [ ] Add `mox` — mock library following José Valim's "Mocks and explicit contracts" pattern.
-- [ ] Add `wallaby` — browser-based integration testing (like Playwright for Elixir).
+- [x] `exunit` ✅ — built-in test framework. Doctests, async tests, property-based testing via StreamData.
+- [x] Add `mox` ✅ — mock library following José Valim's "Mocks and explicit contracts" pattern.
+- [x] Add `bypass` ✅ — HTTP service mocking for tests.
+- [x] Add `wallaby` ✅ — browser-based integration testing (like Playwright for Elixir).
 
 ---
 
 ## Observability
 
-- [ ] Add `telemetry` — built-in instrumentation library. Phoenix, Ecto, and most libraries emit telemetry events.
-- [ ] Add `opentelemetry-erlang` — distributed tracing for BEAM.
-- [ ] Add `prometheus_ex` — Prometheus metrics exporter.
+- [x] Add `telemetry` ✅ — built-in instrumentation library. Phoenix, Ecto, and most libraries emit telemetry events.
+- [x] Add `opentelemetry-erlang` ✅ — distributed tracing for BEAM.
+- [x] Add `prom_ex` ✅ — Prometheus metrics exporter.
 
 ---
 
 ## Deployment
 
-- [ ] Add `fly.io` — first-class Elixir/Phoenix support, clustering via DNS.
-- [ ] Add `docker` — multi-stage Dockerfile with `mix release`.
-- [ ] Add `gigalixir` — Elixir-specific PaaS (Heroku-like but BEAM-optimized).
+- [x] Add `fly.io` ✅ — first-class Elixir/Phoenix support, clustering via DNS.
+- [x] Add `docker` ✅ — multi-stage Dockerfile with `mix release`.
+- [x] Add `gigalixir` ✅ — Elixir-specific PaaS (Heroku-like but BEAM-optimized).
+- [x] Add `mix-release` ✅ — release packaging target.
 
 ---
 
 ## Libraries / Utilities
 
-- [ ] Add `jason` — fast JSON encoder/decoder (default in Phoenix).
-- [ ] Add `req` — modern HTTP client (replaces HTTPoison).
+- [x] Add `jason` ✅ — fast JSON encoder/decoder (default in Phoenix).
+- [x] Add `req` ✅ — modern HTTP client (replaces HTTPoison).
+- [x] Add `finch` ✅ — low-level HTTP client option.
+- [x] Add `swoosh` ✅ — email delivery library.
+- [x] Add `cachex` / `nebulex` ✅ — caching choices.
+- [x] Add `credo` / `dialyxir` / `sobelow` ✅ — code quality and security analysis choices.
 - [ ] Add `broadway` — data ingestion / stream processing (Kafka, SQS, RabbitMQ).
 - [ ] Add `nx` (Numerical Elixir) — tensors, ML, GPU computing on BEAM.
 
@@ -89,9 +99,9 @@ Built-in — Phoenix Channels and LiveView handle this natively:
 
 ## Implementation Notes
 
-- New schema value in `EcosystemSchema`: `"elixir"`
-- Template directory: `packages/template-generator/templates/elixir-base/`
-- Project structure: `lib/`, `config/`, `priv/`, `test/`
+- [x] New schema value in `EcosystemSchema`: `"elixir"` ✅
+- [x] Template directory: `packages/template-generator/templates/elixir-base/` ✅
+- [x] Project structure: `lib/`, `config/`, `priv/`, `test/` ✅
 - Mix project with umbrella app support (monorepo equivalent)
 - Build system: Mix (built-in, no choice needed)
 - Package manager: Hex
@@ -108,10 +118,8 @@ Built-in — Phoenix Channels and LiveView handle this natively:
 
 ## Priority Order
 
-1. **Phoenix** + Ecto + PostgreSQL — core stack
-2. **phx_gen_auth** — auth is table stakes
-3. **Oban** — background jobs
-4. **Absinthe** — GraphQL (unique strength in Elixir)
-5. **LiveView scaffolding** — the killer feature
-6. **Fly.io deploy** — best Elixir hosting
-7. Remaining categories
+1. **Deepen Phoenix/LiveView generated examples** — richer resources, forms, streams, and auth flows
+2. **Add Broadway** — ingestion/stream processing
+3. **Add gRPC** — protobuf RPC support
+4. **Add Nx** — numerical/ML experiments
+5. **Harden deploy templates** — clustering/runtime config details across Fly, Docker, Gigalixir, and Mix releases

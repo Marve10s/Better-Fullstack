@@ -64,11 +64,11 @@ export function PMTabs({
   }, [active, commands]);
 
   return (
-    <div className="my-5 overflow-hidden rounded-md border bg-[var(--code-bg)] border-[var(--code-border)]">
+    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)] shadow-sm">
       <div
         role="tablist"
         aria-label="Package manager"
-        className="flex items-center border-b border-[var(--code-border)]"
+        className="flex items-center overflow-x-auto border-[var(--code-border)] border-b"
       >
         {MANAGERS.map((manager) => {
           const isActive = active === manager;
@@ -82,7 +82,7 @@ export function PMTabs({
               value={manager}
               onClick={handleTabClick}
               className={cn(
-                "relative flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.05em] transition-colors",
+                "relative flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase transition-colors",
                 isActive ? "text-[#e6edf3]" : "text-[#8b949e] hover:text-[#e6edf3]",
               )}
             >
@@ -113,7 +113,7 @@ export function PMTabs({
         language="bash"
         themes={PM_CODE_THEMES}
         className={cn(
-          "text-[0.82rem] leading-relaxed",
+          "text-[0.84rem] leading-relaxed",
           "[&_.shiki]:!bg-transparent",
           "[&_pre]:!overflow-x-auto [&_pre]:!bg-transparent",
           "[&_pre]:px-4 [&_pre]:py-4",

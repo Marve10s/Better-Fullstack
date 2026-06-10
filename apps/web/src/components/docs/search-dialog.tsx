@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { DocSearch, SearchHit } from "@/lib/docs/search";
+
 import { createDocSearch } from "@/lib/docs/search";
 import { searchSections } from "@/lib/docs/search-data";
 import { cn } from "@/lib/utils";
@@ -151,7 +152,7 @@ export function DocsSearchDialog({
                 aria-label="Search docs"
                 className="flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground"
               />
-              <kbd className="hidden font-mono text-[0.65rem] uppercase tracking-[0.05em] text-muted-foreground sm:inline-flex">
+              <kbd className="hidden font-mono text-[0.65rem] text-muted-foreground uppercase sm:inline-flex">
                 Esc
               </kbd>
             </div>
@@ -161,20 +162,17 @@ export function DocsSearchDialog({
                 <Empty>Loading search…</Empty>
               ) : query.trim() === "" ? (
                 <Empty>
-                  <span className="font-mono text-xs uppercase tracking-[0.08em]">
-                    Type to search
-                  </span>
+                  <span className="font-mono text-xs uppercase">Type to search</span>
                 </Empty>
               ) : hits.length === 0 ? (
                 <Empty>
-                  No results for{" "}
-                  <span className="font-mono text-foreground">"{query}"</span>
+                  No results for <span className="font-mono text-foreground">"{query}"</span>
                 </Empty>
               ) : (
                 <ul className="flex flex-col">
                   {grouped.map((group) => (
                     <li key={group.pageId} className="px-2 py-1">
-                      <p className="select-none px-2 py-1 font-mono text-[0.65rem] uppercase tracking-[0.08em] text-muted-foreground">
+                      <p className="select-none px-2 py-1 font-mono text-[0.65rem] text-muted-foreground uppercase">
                         {group.pageTitle}
                       </p>
                       <ul>
@@ -224,7 +222,7 @@ export function DocsSearchDialog({
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-border px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.08em] text-muted-foreground">
+            <div className="flex items-center justify-between border-border border-t px-4 py-2 font-mono text-[0.65rem] text-muted-foreground uppercase">
               <span className="flex items-center gap-3">
                 <KeyHint label="↑↓" />
                 <span>Navigate</span>
@@ -309,7 +307,7 @@ export function DocsSearchTrigger({ className }: { className?: string }) {
       >
         <SearchIcon className="size-3.5" />
         <span className="hidden font-mono sm:inline">Search docs</span>
-        <kbd className="hidden items-center gap-0.5 font-mono text-[0.65rem] uppercase tracking-[0.05em] sm:inline-flex">
+        <kbd className="hidden items-center gap-0.5 font-mono text-[0.65rem] uppercase sm:inline-flex">
           <span>{getModifierLabel()}</span>
           <span>K</span>
         </kbd>
@@ -321,7 +319,5 @@ export function DocsSearchTrigger({ className }: { className?: string }) {
 
 function getModifierLabel(): string {
   if (typeof navigator === "undefined") return SHORTCUT_HINT_KEYS[0];
-  return /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent)
-    ? "⌘"
-    : "Ctrl";
+  return /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent) ? "⌘" : "Ctrl";
 }

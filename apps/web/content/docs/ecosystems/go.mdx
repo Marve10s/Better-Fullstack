@@ -3,7 +3,7 @@ title: Go
 description: Go API, service, gRPC, CLI, logging, ORM, and auth-helper scaffolds.
 ---
 
-Go projects use Go modules and Go-native templates. Shared TypeScript frontend/UI/example categories are not broad Go scaffold support.
+Go projects use Go modules and Go-native templates. Choose Go options for HTTP services, gRPC, CLIs, logging, ORMs, and Go auth helpers.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ Go projects use Go modules and Go-native templates. Shared TypeScript frontend/U
 
 ## Scripted example
 
-```bash
+```npm
 npm create better-fullstack@latest my-go-api -- \
   --ecosystem go \
   --go-web-framework gin \
@@ -35,8 +35,8 @@ npm create better-fullstack@latest my-go-api -- \
 | Web framework | `gin` `echo` `fiber` `chi` `none` |
 | ORM | `gorm` `sqlc` `ent` `none` |
 | API | `grpc-go` `none` |
-| CLI | `cobra` `bubbletea` `none` |
-| Logging | `zap` `zerolog` `slog` `none` |
+| CLI | `cobra` `bubbletea` `urfave-cli` `none` |
+| Logging | `zap` `zerolog` `slog` `logrus` `none` |
 | Go auth helpers | `casbin` `jwt` `none` |
 
 ## Auth split

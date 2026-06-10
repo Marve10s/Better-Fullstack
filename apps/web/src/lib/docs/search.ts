@@ -30,13 +30,14 @@ export type SearchHit = SearchSection & { score: number };
  * stays cheap.
  */
 export function buildSearchSections(
-  pages: Array<{ url: string; rawSource: string; frontmatter?: DocFrontmatter }>,
+  pages: Array<{ url: string; rawSource?: unknown; frontmatter?: DocFrontmatter }>,
 ): SearchSection[] {
   const out: SearchSection[] = [];
 
   for (const page of pages) {
     // Parse frontmatter so its YAML doesn't leak into the search body.
-    const { data, content } = matter(page.rawSource);
+    const rawSource = typeof page.rawSource === "string" ? page.rawSource : "";
+    const { data, content } = matter(rawSource);
     const pageTitle = (data?.title as string) ?? page.frontmatter?.title ?? page.url;
 
     // Split on top-level (## / ###) headings. Anything before the first

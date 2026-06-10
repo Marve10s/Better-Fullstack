@@ -11,30 +11,32 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
   const relatedGuides = getRelatedGuidePages(page);
 
   return (
-    <main className="mx-auto grid w-full max-w-[88rem] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_14rem]">
-      <article className="mx-auto w-full max-w-3xl px-6 py-10">
-        <header className="mb-8 border-b border-border pb-6">
+    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
+      <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
+        <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
           <Link
             to="/guides"
-            className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+            className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
           >
             Guides
           </Link>
           {page.frontmatter.category && !isIndex ? (
-            <span className="ml-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="ml-2 font-mono text-[0.72rem] text-muted-foreground uppercase">
               / {page.frontmatter.category}
             </span>
           ) : null}
           {page.frontmatter.title ? (
-            <h1 className="mt-4 font-semibold text-3xl tracking-tight text-foreground">
+            <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
               {page.frontmatter.title}
             </h1>
           ) : null}
           {page.frontmatter.description ? (
-            <p className="mt-3 text-muted-foreground">{page.frontmatter.description}</p>
+            <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
+              {page.frontmatter.description}
+            </p>
           ) : null}
           {page.frontmatter.updated && !isIndex ? (
-            <p className="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
               Updated {page.frontmatter.updated}
             </p>
           ) : null}
@@ -43,7 +45,7 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
               {page.frontmatter.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-sm border border-border px-2 py-1 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground"
+                  className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
                 >
                   {tag}
                 </span>
@@ -59,8 +61,11 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
         </div>
 
         {relatedGuides.length ? (
-          <nav className="mt-12 border-t border-border pt-8" aria-labelledby="related-guides">
-            <h2 id="related-guides" className="font-semibold text-xl tracking-tight">
+          <nav
+            className="mt-14 border-[var(--docs-border-subtle)] border-t pt-8"
+            aria-labelledby="related-guides"
+          >
+            <h2 id="related-guides" className="font-semibold text-xl">
               Related guides
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -69,7 +74,7 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
                   key={guide.url}
                   to="/guides/$"
                   params={{ _splat: guide.slug.join("/") }}
-                  className="rounded-md border border-border p-4 transition-colors hover:border-muted-foreground/40 hover:bg-muted/30"
+                  className="rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4 transition-colors hover:border-[var(--docs-accent)] hover:bg-[var(--docs-surface-elevated)]"
                 >
                   <span className="block font-medium text-sm text-foreground">
                     {guide.frontmatter.title ?? guide.url}
@@ -85,7 +90,7 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
           </nav>
         ) : null}
       </article>
-      <aside className="hidden lg:block">
+      <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
         <TableOfContents toc={page.toc} />
       </aside>
     </main>

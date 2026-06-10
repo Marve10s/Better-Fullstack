@@ -10,7 +10,7 @@ This note captures the completed deployment trust work verified on May 21, 2026.
 - Vercel deployment templates exist for supported web and server stacks.
 - SST infrastructure templates exist for supported TypeScript layouts.
 - Cloudflare deployment is compatibility-scoped to Workers/Hono server stacks.
-- Public deployment docs now live under `apps/web/content/docs/deployment/`.
+- Public deployment guidance now lives under `apps/web/content/docs/sections/deployment.mdx` so deployment is one stack section rather than a top-level docs group.
 
 ## Still planned
 
@@ -18,4 +18,3 @@ This note captures the completed deployment trust work verified on May 21, 2026.
 - Non-monorepo / single-app mode.
 - Broader deployment walkthroughs with provider-specific screenshots or CLI examples.
 - Generic first-class REST/OpenAPI API option for TypeScript. Existing oRPC, feTS, and Java Springdoc support do not replace a dedicated `--api rest` / `--api openapi` option.
-

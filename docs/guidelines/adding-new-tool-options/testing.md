@@ -124,24 +124,29 @@ createCustomConfig(config: Partial<TestConfig>): TestConfig
 // Returns: { projectName: "test-app", install: false, git: false, ...config }
 ```
 
-### Auto-extracted schema values
+### Shared schema values
 
-`test-utils.ts` exports all enum values extracted from Zod schemas:
+`test-utils.ts` only exports schema arrays that are shared across multiple suites:
 
 ```typescript
 export const AUTH_PROVIDERS = extractEnumValues(AuthSchema);
 export const DATABASES = extractEnumValues(DatabaseSchema);
-export const ORMS = extractEnumValues(ORMSchema);
-export const BACKENDS = extractEnumValues(BackendSchema);
-export const FRONTENDS = extractEnumValues(FrontendSchema);
-export const SEARCH_ENGINES = extractEnumValues(SearchSchema);
-// ... 20+ more for every category
+export const DB_SETUPS = extractEnumValues(DatabaseSetupSchema);
+export const EXAMPLES = extractEnumValues(ExamplesSchema);
+export const PACKAGE_MANAGERS = extractEnumValues(PackageManagerSchema);
+export const SERVER_DEPLOYS = extractEnumValues(ServerDeploySchema);
+export const WEB_DEPLOYS = extractEnumValues(WebDeploySchema);
 ```
 
-Use these to write parametrized tests:
+For category-specific suites, import the relevant schema directly and derive local values:
 
 ```typescript
-const searchEngines = SEARCH_ENGINES.filter(s => s !== "none");
+import { SearchSchema } from "../src/types";
+import { extractEnumValues } from "./test-utils";
+
+const SEARCH_ENGINES = extractEnumValues(SearchSchema);
+const searchEngines = SEARCH_ENGINES.filter((s) => s !== "none");
+
 for (const engine of searchEngines) {
   test(`${engine} with Hono backend`, async () => {
     const result = await runTRPCTest(createCustomConfig({
@@ -176,7 +181,7 @@ interface TestConfig {
   git?: boolean;         // Default: false
   yes?: boolean;         // Default: true for createBasicConfig, undefined for createCustomConfig
   packageManager?: string;
-  smokeDir?: string;     // Where to write generated project (default: testing/.smoke-output)
+  smokeDir?: string;     // Where to write generated project (default: apps/cli/.smoke)
 }
 ```
 

@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -46,11 +47,7 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
         let best: { id: string; ratio: number; order: number } | null = null;
         for (const [id, ratio] of visibility.entries()) {
           const order = ids.indexOf(id);
-          if (
-            !best ||
-            ratio > best.ratio ||
-            (ratio === best.ratio && order < best.order)
-          ) {
+          if (!best || ratio > best.ratio || (ratio === best.ratio && order < best.order)) {
             best = { id, ratio, order };
           }
         }
@@ -73,12 +70,10 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
     <nav
       ref={containerRef}
       aria-label="On this page"
-      className="sticky top-20 hidden h-[calc(100vh-6rem)] w-56 shrink-0 overflow-y-auto py-8 lg:block"
+      className="sticky top-20 hidden h-[calc(100vh-6rem)] w-64 shrink-0 overflow-y-auto px-4 py-8 xl:block"
     >
-      <h2 className="mb-3 px-3 font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
-        On this page
-      </h2>
-      <ul className="flex flex-col">
+      <h2 className="mb-3 font-mono text-[0.7rem] text-muted-foreground uppercase">On this page</h2>
+      <ul className="flex flex-col border-[var(--docs-border-subtle)] border-l">
         {toc.map((entry) => {
           const isActive = activeId === entry.id;
           return (
@@ -86,10 +81,8 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
               <a
                 href={`#${entry.id}`}
                 className={cn(
-                  "relative flex py-1.5 pl-[var(--toc-pad)] pr-3 text-[0.78rem] leading-snug transition-colors",
-                  isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  "relative flex py-1.5 pl-[var(--toc-pad)] text-[0.78rem] leading-snug transition-colors",
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
                 style={
                   {
@@ -101,15 +94,10 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
                   <motion.span
                     layoutId="docs-toc-active-rail"
                     aria-hidden="true"
-                    className="absolute inset-y-0 left-0 w-px bg-foreground"
+                    className="absolute top-1.5 bottom-1.5 -left-px w-0.5 rounded-full bg-[var(--docs-accent)]"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 w-px bg-border"
-                  />
-                )}
+                ) : null}
                 <span className="truncate">{entry.text}</span>
               </a>
             </li>

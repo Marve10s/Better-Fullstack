@@ -3,11 +3,14 @@ title: History Command
 description: View, clear, and export reproducible commands from previous Better Fullstack scaffolds.
 ---
 
-The `history` command shows recent scaffolded projects and the reproducible commands that created them.
+The `history` command shows recent scaffolded projects and the reproducible commands that created them. Use it when you want to recreate a stack, compare generated output, or share a known-good command.
 
-```bash
-npx create-better-fullstack@latest history
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history"
+  pnpm="pnpm dlx create-better-fullstack@latest history"
+  bun="bunx create-better-fullstack@latest history"
+  yarn="yarn dlx create-better-fullstack@latest history"
+/>
 
 ## Flags
 
@@ -21,25 +24,32 @@ npx create-better-fullstack@latest history
 
 Show the five most recent entries:
 
-```bash
-npx create-better-fullstack@latest history --limit 5
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --limit 5"
+  pnpm="pnpm dlx create-better-fullstack@latest history --limit 5"
+  bun="bunx create-better-fullstack@latest history --limit 5"
+  yarn="yarn dlx create-better-fullstack@latest history --limit 5"
+/>
 
 Export history as JSON:
 
-```bash
-npx create-better-fullstack@latest history --json
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --json"
+  pnpm="pnpm dlx create-better-fullstack@latest history --json"
+  bun="bunx create-better-fullstack@latest history --json"
+  yarn="yarn dlx create-better-fullstack@latest history --json"
+/>
 
 Clear local history:
 
-```bash
-npx create-better-fullstack@latest history --clear
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --clear"
+  pnpm="pnpm dlx create-better-fullstack@latest history --clear"
+  bun="bunx create-better-fullstack@latest history --clear"
+  yarn="yarn dlx create-better-fullstack@latest history --clear"
+/>
 
-## Reproducible Workflow
-
-Use history when you want to recreate a stack, compare generated output, or share a known-good scaffold command with another developer.
+## Reproducible workflow
 
 1. Run `history`.
 2. Copy the reproducible command for the stack you want.

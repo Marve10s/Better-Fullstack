@@ -1,6 +1,9 @@
-import type { ProjectConfig, StackPart, StackPartEcosystem } from "@better-fullstack/types";
+import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
-import { getRoleTargetPath } from "@better-fullstack/types";
+import {
+  getRoleTargetPath,
+  stackGraphToLegacyProjectConfigForEcosystem,
+} from "@better-fullstack/types";
 
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
 
@@ -51,6 +54,26 @@ import {
 
 export type { TemplateData };
 
+type NonTypeScriptTemplateEcosystem = Exclude<
+  ProjectConfig["ecosystem"],
+  "typescript" | "react-native"
+>;
+
+type EcosystemBaseTemplateProcessor = (
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+  targetPath?: string,
+) => Promise<void>;
+
+const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
+  rust: processRustBaseTemplate,
+  python: processPythonBaseTemplate,
+  go: processGoBaseTemplate,
+  java: processJavaBaseTemplate,
+  elixir: processElixirBaseTemplate,
+} satisfies Record<NonTypeScriptTemplateEcosystem, EcosystemBaseTemplateProcessor>;
+
 function isPrimaryPart(part: StackPart, role: StackPart["role"]) {
   return part.role === role && !part.ownerPartId && part.source !== "provided";
 }
@@ -70,90 +93,14 @@ function getScopedPart(
   );
 }
 
-function getGraphConfigForEcosystem(
-  config: ProjectConfig,
-  ecosystem: Exclude<StackPartEcosystem, "universal">,
-): ProjectConfig {
-  const backend = config.stackParts?.find(
-    (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
-  );
-  const frontend = config.stackParts?.find(
-    (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
-  );
-  const mobile = config.stackParts?.find(
-    (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
-  );
-  const database = getPrimaryPart(config, "database") ?? getScopedPart(config, backend, "database");
-  const orm = getScopedPart(config, backend, "orm");
-  const api = getScopedPart(config, backend, "api");
-  const auth =
-    getScopedPart(config, backend, "auth") ??
-    getScopedPart(config, frontend, "auth") ??
-    getScopedPart(config, mobile, "auth");
-
-  return {
-    ...config,
-    ecosystem,
-    frontend: [
-      ...(frontend && frontend.ecosystem === "typescript" ? [frontend.toolId] : []),
-      ...(mobile && ["typescript", "react-native"].includes(ecosystem) ? [mobile.toolId] : []),
-    ] as ProjectConfig["frontend"],
-    backend:
-      backend?.ecosystem === "typescript" ? (backend.toolId as ProjectConfig["backend"]) : "none",
-    database: (database?.toolId as ProjectConfig["database"]) ?? "none",
-    orm: orm?.ecosystem === "typescript" ? (orm.toolId as ProjectConfig["orm"]) : "none",
-    api: api?.ecosystem === "typescript" ? (api.toolId as ProjectConfig["api"]) : "none",
-    auth:
-      auth && (auth.ecosystem === "typescript" || auth.ecosystem === "react-native")
-        ? (auth.toolId as ProjectConfig["auth"])
-        : "none",
-    rustWebFramework:
-      backend?.ecosystem === "rust"
-        ? (backend.toolId as ProjectConfig["rustWebFramework"])
-        : "none",
-    rustFrontend:
-      frontend?.ecosystem === "rust" ? (frontend.toolId as ProjectConfig["rustFrontend"]) : "none",
-    rustOrm: orm?.ecosystem === "rust" ? (orm.toolId as ProjectConfig["rustOrm"]) : "none",
-    rustApi: api?.ecosystem === "rust" ? (api.toolId as ProjectConfig["rustApi"]) : "none",
-    rustAuth: auth?.ecosystem === "rust" ? (auth.toolId as ProjectConfig["rustAuth"]) : "none",
-    pythonWebFramework:
-      backend?.ecosystem === "python"
-        ? (backend.toolId as ProjectConfig["pythonWebFramework"])
-        : "none",
-    pythonOrm: orm?.ecosystem === "python" ? (orm.toolId as ProjectConfig["pythonOrm"]) : "none",
-    pythonApi: api?.ecosystem === "python" ? (api.toolId as ProjectConfig["pythonApi"]) : "none",
-    pythonAuth:
-      auth?.ecosystem === "python" ? (auth.toolId as ProjectConfig["pythonAuth"]) : "none",
-    goWebFramework:
-      backend?.ecosystem === "go" ? (backend.toolId as ProjectConfig["goWebFramework"]) : "none",
-    goOrm: orm?.ecosystem === "go" ? (orm.toolId as ProjectConfig["goOrm"]) : "none",
-    goApi: api?.ecosystem === "go" ? (api.toolId as ProjectConfig["goApi"]) : "none",
-    goAuth: auth?.ecosystem === "go" ? (auth.toolId as ProjectConfig["goAuth"]) : "none",
-    javaWebFramework:
-      backend?.ecosystem === "java"
-        ? (backend.toolId as ProjectConfig["javaWebFramework"])
-        : "none",
-    javaOrm: orm?.ecosystem === "java" ? (orm.toolId as ProjectConfig["javaOrm"]) : "none",
-    javaAuth: auth?.ecosystem === "java" ? (auth.toolId as ProjectConfig["javaAuth"]) : "none",
-    elixirWebFramework:
-      backend?.ecosystem === "elixir"
-        ? (backend.toolId as ProjectConfig["elixirWebFramework"])
-        : "none",
-    elixirOrm: orm?.ecosystem === "elixir" ? (orm.toolId as ProjectConfig["elixirOrm"]) : "none",
-    elixirApi: api?.ecosystem === "elixir" ? (api.toolId as ProjectConfig["elixirApi"]) : "none",
-    elixirAuth:
-      auth?.ecosystem === "elixir" ? (auth.toolId as ProjectConfig["elixirAuth"]) : "none",
-  };
-}
-
 async function processGraphTemplates(
   vfs: VirtualFileSystem,
   templates: TemplateData,
   config: ProjectConfig,
 ): Promise<void> {
-  await processBaseTemplate(vfs, templates, getGraphConfigForEcosystem(config, "typescript"));
+  const tsConfig = stackGraphToLegacyProjectConfigForEcosystem(config, "typescript");
+  await processBaseTemplate(vfs, templates, tsConfig);
 
-  const tsConfig = getGraphConfigForEcosystem(config, "typescript");
   if (tsConfig.frontend.length > 0 || tsConfig.backend !== "none") {
     await processFrontendTemplates(vfs, templates, tsConfig);
     await processBackendTemplates(vfs, templates, tsConfig);
@@ -218,46 +165,13 @@ async function processGraphTemplates(
 
   for (const part of nonTypeScriptBackends) {
     const targetPath = part.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
-    if (part.ecosystem === "rust") {
-      await processRustBaseTemplate(
-        vfs,
-        templates,
-        getGraphConfigForEcosystem(config, "rust"),
-        targetPath,
-      );
-    }
-    if (part.ecosystem === "python") {
-      await processPythonBaseTemplate(
-        vfs,
-        templates,
-        getGraphConfigForEcosystem(config, "python"),
-        targetPath,
-      );
-    }
-    if (part.ecosystem === "go") {
-      await processGoBaseTemplate(
-        vfs,
-        templates,
-        getGraphConfigForEcosystem(config, "go"),
-        targetPath,
-      );
-    }
-    if (part.ecosystem === "java") {
-      await processJavaBaseTemplate(
-        vfs,
-        templates,
-        getGraphConfigForEcosystem(config, "java"),
-        targetPath,
-      );
-    }
-    if (part.ecosystem === "elixir") {
-      await processElixirBaseTemplate(
-        vfs,
-        templates,
-        getGraphConfigForEcosystem(config, "elixir"),
-        targetPath,
-      );
-    }
+    const ecosystem = part.ecosystem as NonTypeScriptTemplateEcosystem;
+    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](
+      vfs,
+      templates,
+      stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem),
+      targetPath,
+    );
   }
 
   processPackageConfigs(vfs, config);
@@ -280,22 +194,12 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
 
     if (config.stackParts && config.stackParts.length > 0) {
       await processGraphTemplates(vfs, templates, config);
-    } else if (config.ecosystem === "rust") {
-      // Process base templates based on ecosystem
-      // Rust ecosystem - use Cargo.toml and Rust project structure
-      await processRustBaseTemplate(vfs, templates, config);
-    } else if (config.ecosystem === "python") {
-      // Python ecosystem - use pyproject.toml and Python project structure
-      await processPythonBaseTemplate(vfs, templates, config);
-    } else if (config.ecosystem === "go") {
-      // Go ecosystem - use go.mod and Go project structure
-      await processGoBaseTemplate(vfs, templates, config);
-    } else if (config.ecosystem === "java") {
-      // Java ecosystem - use Maven project structure
-      await processJavaBaseTemplate(vfs, templates, config);
-    } else if (config.ecosystem === "elixir") {
-      // Elixir ecosystem - use Mix and Phoenix project structure
-      await processElixirBaseTemplate(vfs, templates, config);
+    } else if (config.ecosystem in ECOSYSTEM_BASE_TEMPLATE_PROCESSORS) {
+      await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[config.ecosystem as NonTypeScriptTemplateEcosystem](
+        vfs,
+        templates,
+        config,
+      );
     } else {
       // TypeScript and React Native ecosystems use package.json and TS project structure.
       await processBaseTemplate(vfs, templates, config);

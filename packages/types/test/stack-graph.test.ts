@@ -5,9 +5,11 @@ import {
   getStackPartOptions,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
+  stackGraphToLegacyProjectConfigForEcosystem,
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "../src/stack-graph";
+import { createCliDefaultProjectConfigBase } from "../src/defaults";
 
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
@@ -51,6 +53,33 @@ describe("stack graph", () => {
     expect(lowered.elixirEmail).toBe("swoosh");
     expect(lowered.elixirCaching).toBe("cachex");
     expect(lowered.elixirObservability).toBe("telemetry");
+  });
+
+  it("projects graph-selected ecosystem capabilities through legacy categories", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:elixir:phoenix",
+      "backend.orm:elixir:ecto-sql",
+      "backend.api:elixir:absinthe",
+      "backend.email:elixir:swoosh",
+      "backend.caching:elixir:cachex",
+    ]);
+
+    const projected = stackGraphToLegacyProjectConfigForEcosystem(
+      {
+        ...createCliDefaultProjectConfigBase(),
+        projectDir: "/virtual",
+        stackParts,
+      },
+      "elixir",
+    );
+
+    expect(projected.backend).toBe("none");
+    expect(projected.orm).toBe("none");
+    expect(projected.elixirWebFramework).toBe("phoenix");
+    expect(projected.elixirOrm).toBe("ecto-sql");
+    expect(projected.elixirApi).toBe("absinthe");
+    expect(projected.elixirEmail).toBe("swoosh");
+    expect(projected.elixirCaching).toBe("cachex");
   });
 
   it("filters options by role and ecosystem so backend tools do not leak into frontend discovery", () => {

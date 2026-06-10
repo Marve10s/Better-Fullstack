@@ -24,7 +24,7 @@ import { constraintError, incompatibilityError, missingRequirementError } from "
 import { exitWithError } from "./errors";
 import { validatePeerDependencies } from "./peer-dependency-validator";
 
-export function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
+function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string>) {
   const db = cfg.database;
   const orm = cfg.orm;
   const has = (k: string) => (flags ? flags.has(k) : true);
@@ -225,7 +225,7 @@ function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
   }
 }
 
-export function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
+function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
   const { dbSetup, database, runtime } = config;
 
   if (
@@ -370,7 +370,7 @@ export function validateEcosystemAuthCompatibility(
   }
 }
 
-export function validateConvexConstraints(
+function validateConvexConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -431,7 +431,7 @@ export function validateConvexConstraints(
   }
 }
 
-export function validateBackendNoneConstraints(
+function validateBackendNoneConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -496,7 +496,7 @@ export function validateBackendNoneConstraints(
   }
 }
 
-export function validateSelfBackendConstraints(
+function validateSelfBackendConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -515,7 +515,7 @@ export function validateSelfBackendConstraints(
   }
 }
 
-export function validateEncoreConstraints(
+function validateEncoreConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -564,7 +564,7 @@ export function validateEncoreConstraints(
   }
 }
 
-export function validateAdonisJSConstraints(
+function validateAdonisJSConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -583,7 +583,7 @@ export function validateAdonisJSConstraints(
   }
 }
 
-export function validateBackendConstraints(
+function validateBackendConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
   options: CLIInput,
@@ -617,7 +617,7 @@ export function validateBackendConstraints(
   }
 }
 
-export function validateFrontendConstraints(
+function validateFrontendConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
@@ -650,11 +650,11 @@ export function validateFrontendConstraints(
   validateWebDeployRequiresWebFrontend(config.webDeploy, hasWebFrontendFlag);
 }
 
-export function validateApiConstraints(_config: Partial<ProjectConfig>, _options: CLIInput) {
+function validateApiConstraints(_config: Partial<ProjectConfig>, _options: CLIInput) {
   // No API constraints currently needed
 }
 
-export function validateJavaConstraints(
+function validateJavaConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string> = new Set(),
 ) {
@@ -716,7 +716,7 @@ export function validateJavaConstraints(
   }
 }
 
-export function validateElixirConstraints(config: Partial<ProjectConfig>) {
+function validateElixirConstraints(config: Partial<ProjectConfig>) {
   if (config.ecosystem !== "elixir") return;
 
   const hasPhoenix = config.elixirWebFramework !== "none";
@@ -880,7 +880,7 @@ export function validateElixirConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
-export function validateEmailConstraints(config: Partial<ProjectConfig>) {
+function validateEmailConstraints(config: Partial<ProjectConfig>) {
   if (!config.email || config.email === "none") return;
   if (config.ecosystem !== "typescript" && config.email !== "resend") {
     incompatibilityError({
@@ -898,7 +898,7 @@ export function validateEmailConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
-export function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
+function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   if (!config.observability || config.observability === "none") return;
   if (config.ecosystem !== "typescript" && config.observability !== "sentry") {
     incompatibilityError({
@@ -924,7 +924,7 @@ export function validateObservabilityConstraints(config: Partial<ProjectConfig>)
   }
 }
 
-export function validateCachingConstraints(config: Partial<ProjectConfig>) {
+function validateCachingConstraints(config: Partial<ProjectConfig>) {
   if (!config.caching || config.caching === "none") return;
   if (config.ecosystem !== "typescript" && config.caching !== "upstash-redis") {
     incompatibilityError({
@@ -947,7 +947,7 @@ export function validateCachingConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
-export function validateSearchConstraints(config: Partial<ProjectConfig>) {
+function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
   if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
     incompatibilityError({
@@ -969,7 +969,7 @@ export function validateSearchConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
-export function validateShadcnConstraints(
+function validateShadcnConstraints(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {

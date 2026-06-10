@@ -115,7 +115,7 @@ export async function setupAddons(config: ProjectConfig): Promise<string[]> {
   return warnings;
 }
 
-export async function setupBiome(projectDir: string) {
+async function setupBiome(projectDir: string) {
   await addPackageDependency({
     devDependencies: ["@biomejs/biome"],
     projectDir,
@@ -134,7 +134,7 @@ export async function setupBiome(projectDir: string) {
   }
 }
 
-export async function setupHusky(projectDir: string, linter?: "biome" | "oxlint") {
+async function setupHusky(projectDir: string, linter?: "biome" | "oxlint") {
   await addPackageDependency({
     devDependencies: ["husky", "lint-staged"],
     projectDir,
@@ -167,7 +167,7 @@ export async function setupHusky(projectDir: string, linter?: "biome" | "oxlint"
   }
 }
 
-export async function setupLefthook(projectDir: string) {
+async function setupLefthook(projectDir: string) {
   await addPackageDependency({
     devDependencies: ["lefthook"],
     projectDir,

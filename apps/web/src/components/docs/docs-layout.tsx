@@ -1,12 +1,14 @@
+import type { ReactNode } from "react";
+
 import { useLocation } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+
+import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { TableOfContents } from "@/components/docs/table-of-contents";
-import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,7 +22,8 @@ import { cn } from "@/lib/utils";
  *   └────────────┴──────────────────────────────────────┴────────┘
  *
  * The sidebar collapses into a slide-in drawer on small screens. The TOC
- * disappears entirely below `lg` (handled inside TableOfContents).
+ * disappears entirely below `xl` so the reading column keeps a generous
+ * measure on tablet-sized screens.
  */
 export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,28 +53,28 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
   }, [mobileOpen]);
 
   return (
-    <div className="mx-auto w-full max-w-[88rem]">
+    <div className="docs-shell min-h-[calc(100vh-3.5rem)] border-[var(--docs-border-subtle)] border-t">
       {/* Mobile sidebar toggle */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed bottom-6 left-6 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground md:hidden"
+        className="fixed bottom-6 left-6 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/95 text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground md:hidden"
         aria-label="Open docs navigation"
       >
         <Menu className="size-4" />
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_14rem]">
+      <div className="mx-auto grid w-full max-w-[94rem] grid-cols-1 md:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,52rem)_16rem] xl:justify-center">
         {/* Desktop sidebar */}
-        <aside className="hidden border-r border-border md:block">
+        <aside className="hidden border-[var(--docs-border-subtle)] border-r bg-[var(--docs-surface)]/55 md:block">
           <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
             <DocsSidebar />
           </div>
         </aside>
 
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0 bg-background/70">{children}</main>
 
-        <aside className="hidden lg:block">
+        <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
           <TableOfContents toc={toc} />
         </aside>
       </div>
@@ -94,15 +97,15 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
             />
             <motion.div
               className={cn(
-                "absolute left-0 top-0 flex h-full w-72 flex-col border-r border-border bg-background",
+                "absolute left-0 top-0 flex h-full w-72 flex-col border-[var(--docs-border-subtle)] border-r bg-[var(--docs-surface-elevated)]",
               )}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 32 }}
             >
-              <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                <span className="font-mono text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
+              <div className="flex items-center justify-between border-[var(--docs-border-subtle)] border-b px-4 py-3">
+                <span className="font-mono text-[0.72rem] uppercase text-muted-foreground">
                   Docs
                 </span>
                 <button

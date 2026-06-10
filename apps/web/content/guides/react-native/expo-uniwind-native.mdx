@@ -2,7 +2,7 @@
 title: Expo Uniwind Native App
 description: Create an Expo native app with Uniwind and a minimal Better Fullstack configuration for mobile-first projects.
 updated: 2026-05-12
-category: TypeScript
+category: React Native
 tags:
   - expo
   - react-native
@@ -18,23 +18,27 @@ keywords:
 
 Use this stack when you want a mobile-first Expo app and do not need a generated backend in the same scaffold.
 
-```bash
+```npm
 npm create better-fullstack@latest my-mobile-app -- \
-  --ecosystem typescript \
+  --ecosystem react-native \
   --frontend native-uniwind \
-  --backend none \
-  --database none \
-  --orm none \
-  --auth none \
-  --api none \
-  --package-manager bun
+  --mobile-navigation expo-router \
+  --mobile-ui uniwind \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
 ```
 
 ## What this creates
 
 - An Expo native app using Uniwind.
-- No web frontend.
-- No backend, database, ORM, auth, or API layer by default.
+- Expo Router for file-based native routes.
+- MMKV storage, React Native Testing Library, Maestro, push notifications, OTA updates, and deep linking.
+- No web frontend, backend, database, ORM, auth, or API layer by default.
 - A mobile-first project shape that can be paired with an API later.
 
 ## Generated shape
@@ -49,6 +53,7 @@ my-mobile-app/
   app/
   components/
   package.json
+  maestro/
 ```
 
 Exact Expo paths can depend on the template version, but the ownership is straightforward: native screens and components live in the app, while server concerns are intentionally absent.
@@ -78,9 +83,9 @@ Keep API clients behind a small module when you add a backend. That makes it eas
 
 ## Compatibility notes
 
-Native frontends are treated as app platform choices rather than web server frameworks. Keep backend choices explicit if you later add an API service.
+React Native is its own ecosystem in Better Fullstack. Use `--ecosystem react-native`; do not combine TypeScript web frontend flags with native frontend flags.
 
-This guide intentionally uses `--backend none`, `--database none`, `--orm none`, `--auth none`, and `--api none`. Mobile authentication, push notifications, and offline storage need platform-specific decisions that are better made after the product requirements are clear.
+This guide intentionally leaves backend, database, ORM, auth, and API generation out of the mobile scaffold. Mobile authentication and server APIs need platform-specific decisions that are better made after the product requirements are clear.
 
 ## When to choose it
 
@@ -115,6 +120,6 @@ Use this stack for mobile-first work. Use [Next.js with Drizzle and Better Auth]
 
 ## Next steps
 
-- Open the [Stack Builder](/new?eco=typescript&fe-w=none&fe-n=native-uniwind&be=none&db=none&orm=none&au=none&api=none).
+- Open the [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false).
 - Review the [CLI create reference](/docs/cli/create/).
 - Compare with [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/) if your app also needs web and agent tooling.

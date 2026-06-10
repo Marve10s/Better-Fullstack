@@ -3,7 +3,7 @@ title: Rust
 description: Rust backend, CLI, WebAssembly frontend, GraphQL, gRPC, database, logging, caching, and auth scaffolds.
 ---
 
-Rust projects use Cargo and language-native templates. TypeScript-only web, UI, package-manager, and example categories should not be treated as Rust scaffold support.
+Rust projects use Cargo and language-native templates. Choose Rust options for backend services, CLIs, GraphQL/gRPC, WebAssembly frontends, logging, caching, and auth helpers.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ Rust projects use Cargo and language-native templates. TypeScript-only web, UI, 
 
 ## Scripted example
 
-```bash
+```npm
 npm create better-fullstack@latest my-rust-api -- \
   --ecosystem rust \
   --rust-web-framework axum \
@@ -40,7 +40,7 @@ npm create better-fullstack@latest my-rust-api -- \
 | ORM | `sea-orm` `sqlx` `diesel` `none` |
 | API | `tonic` `async-graphql` `none` |
 | CLI | `clap` `ratatui` `none` |
-| Libraries | `serde` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `none` |
+| Libraries | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |
 | Logging | `tracing` `env-logger` `none` |
 | Error handling | `anyhow-thiserror` `eyre` `none` |
 | Caching | `moka` `redis` `none` |

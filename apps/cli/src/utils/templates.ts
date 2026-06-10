@@ -1,6 +1,6 @@
 import type { CreateInput, Template } from "../types";
 
-export const TEMPLATE_PRESETS: Record<Template, CreateInput | null> = {
+const TEMPLATE_PRESETS: Record<Template, CreateInput | null> = {
   mern: {
     database: "mongodb",
     orm: "mongoose",
@@ -87,8 +87,4 @@ export function getTemplateDescription(template: Template) {
   };
 
   return descriptions[template] || "";
-}
-
-export function listAvailableTemplates() {
-  return Object.keys(TEMPLATE_PRESETS).filter((t) => t !== "none") as Template[];
 }

@@ -1,5 +1,3 @@
-import type { VirtualNode, VirtualFile } from "@better-fullstack/template-generator";
-
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
@@ -13,49 +11,13 @@ import {
   RustLibrariesSchema,
   RustLoggingSchema,
 } from "../src/types";
-
-/**
- * Extract enum values from a Zod enum schema
- */
-function extractEnumValues<T extends string>(schema: { options: readonly T[] }): readonly T[] {
-  return schema.options;
-}
-
-/**
- * Helper function to find a file in the virtual file tree by exact path
- */
-function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
-  if (node.type === "file") {
-    // Exact match only - normalize to handle leading slashes
-    const normalizedNodePath = node.path.replace(/^\/+/, "");
-    const normalizedPath = path.replace(/^\/+/, "");
-    if (normalizedNodePath === normalizedPath) {
-      return node;
-    }
-    return undefined;
-  }
-
-  for (const child of node.children) {
-    const found = findFile(child, path);
-    if (found) return found;
-  }
-  return undefined;
-}
-
-/**
- * Helper function to check if a file exists in the virtual file tree
- */
-function hasFile(node: VirtualNode, path: string): boolean {
-  return findFile(node, path) !== undefined;
-}
-
-/**
- * Helper function to get file content from virtual file tree
- */
-function getFileContent(node: VirtualNode, path: string): string | undefined {
-  const file = findFile(node, path);
-  return file?.content;
-}
+import {
+  extractEnumValues,
+} from "./test-utils";
+import {
+  getVirtualFileContent as getFileContent,
+  hasVirtualFile as hasFile,
+} from "./virtual-tree-utils";
 
 // Extract all Rust-related enum values
 const ECOSYSTEMS = extractEnumValues(EcosystemSchema);

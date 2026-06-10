@@ -1,0 +1,33 @@
+---
+title: Auth and Payments
+description: Choose identity, auth helpers, and payment providers.
+---
+
+Auth and payments affect generated schemas, environment variables, callbacks, middleware, and provider setup notes.
+
+## Auth
+
+TypeScript auth providers include Better Auth, Clerk, NextAuth, Stack Auth, Supabase Auth, Auth0, and none.
+
+Other ecosystems expose native helpers where templates exist:
+
+| Ecosystem | Auth choices |
+| --- | --- |
+| Rust | OAuth2 or none. |
+| Python | Authlib, JWT, or none. |
+| Go | Casbin, JWT helpers, or none. GoBetterAuth uses the global `--auth go-better-auth` value. |
+| Java | Spring Security or none. |
+| Elixir | phx.gen.auth, Ueberauth, Guardian, or none. Some Elixir auth choices remain graph-disabled until templates catch up. |
+
+## Payments
+
+Payment providers are TypeScript-first today: Polar, Stripe, Lemon Squeezy, Paddle, Dodo, or none.
+
+Some providers require specific auth or frontend choices. For example, Polar requires Better Auth and a web frontend.
+
+## References
+
+- [TypeScript options](/docs/reference/options/typescript/)
+- [Go options](/docs/reference/options/go/)
+- [Elixir options](/docs/reference/options/elixir/)
+- [Compatibility](/docs/reference/compatibility/)

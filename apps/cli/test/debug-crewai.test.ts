@@ -1,17 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
-
-function listFiles(node: any, files: string[] = []): string[] {
-  if (node.type === "file") {
-    files.push(node.path);
-  } else if (node.type === "directory") {
-    for (const child of node.children) {
-      listFiles(child, files);
-    }
-  }
-  return files;
-}
+import { listVirtualTreeFilePaths } from "./virtual-tree-utils";
 
 describe("Debug CrewAI", () => {
   it("should generate langchain files", async () => {
@@ -27,7 +17,7 @@ describe("Debug CrewAI", () => {
     });
 
     expect(result.success).toBe(true);
-    const files = listFiles(result.tree!.root);
+    const files = listVirtualTreeFilePaths(result.tree!);
     console.log("LangChain Generated files:", files);
 
     // Check for langchain files

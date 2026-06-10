@@ -1,83 +1,16 @@
 ---
-title: "Go Options"
-description: "Go-ecosystem categories: web framework, ORM, API, CLI, logging, auth."
+title: Go Options
+description: Go ecosystem option values for frameworks, ORM, API, CLI, logging, auth, services, and workflow flags.
 ---
 
-Categories applied when scaffolding a Go project.
-
-This page covers **21 options** across **6 categories**.
-
-Use CLI values in commands and MCP payloads.
+Use these values with `--ecosystem go` in CLI commands, MCP payloads, and Stack Builder links.
 
 <Callout kind="info" title="Generated behavior">
-Go templates use Go modules. `goAuth` (`casbin`, `jwt`, `none`) is separate from global `auth=go-better-auth`. gRPC, Cobra, and Bubble Tea files are only emitted when selected.
+Go templates keep API, CLI, logging, auth, libraries, services, and workflow flags separate from TypeScript web options. GoBetterAuth targets Go projects and is documented here.
 </Callout>
 
-## Go Web Framework
+## Option table
 
+The table below is generated from the canonical option metadata so it stays in sync with the CLI and Stack Builder.
 
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `gin` | Gin | `gin` |
-| `echo` | Echo | `echo` |
-| `fiber` | Fiber | `fiber` |
-| `chi` | Chi | `chi` |
-| `none` | None | `none` |
-
-## Go ORM
-
-
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `gorm` | GORM | `gorm` |
-| `sqlc` | sqlc | `sqlc` |
-| `ent` | Ent | `ent` |
-| `none` | None | `none` |
-
-## Go API
-
-
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `grpc-go` | gRPC-Go | `grpc-go` |
-| `none` | None | `none` |
-
-## Go CLI
-
-
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `cobra` | Cobra | `cobra` |
-| `bubbletea` | Bubble Tea | `bubbletea` |
-| `none` | None | `none` |
-
-## Go Logging
-
-
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `zap` | Zap | `zap` |
-| `zerolog` | Zerolog | `zerolog` |
-| `slog` | slog | `slog` |
-| `none` | None | `none` |
-
-## Go Auth
-
-
-Selection: **single**
-
-| Option | Label | CLI value |
-| --- | --- | --- |
-| `casbin` | Casbin | `casbin` |
-| `jwt` | golang-jwt | `jwt` |
-| `none` | None | `none` |
+<OptionCategoryTable ecosystem="go" />

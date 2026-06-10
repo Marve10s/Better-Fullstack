@@ -1,48 +1,65 @@
 ---
-title: Get Started
-description: Scaffold your first Better Fullstack project in minutes.
+title: Better Fullstack Docs
+description: Learn how Better Fullstack scaffolds typed projects across web, mobile, and language-native ecosystems.
 ---
 
-Better Fullstack generates a project from a typed stack configuration. You can pick options in the interactive CLI, pass flags directly, or use the [Stack Builder](https://better-fullstack.dev/new) to copy a command.
+Better Fullstack is a project generator for typed product stacks. Pick the frontend, backend, data layer, services, tooling, and target ecosystem; the CLI writes the matching files and records the stack in `bts.jsonc`.
+
+Use the interactive CLI when you want a guided setup, the [Stack Builder](https://better-fullstack.dev/new) when you want to compare options visually, and explicit flags when you need a reproducible command for CI, docs, or another developer.
 
 ## Requirements
 
-Better Fullstack requires Node.js 20 or newer.
+The CLI runs on Node.js 20 or newer.
 
 ```bash
 node --version
 ```
 
-The CLI itself runs on Node.js even when the generated project targets Rust, Python, Go, or Java. Install those ecosystem toolchains only when you scaffold that ecosystem.
+Generated projects may also need their ecosystem toolchain: Expo tooling for React Native, Cargo for Rust, `uv` for Python, Go, Java 21, or Elixir/Erlang for Phoenix projects.
 
-## Create a project
+## Create your first project
 
-Run the wizard:
+Run the wizard and answer the prompts:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-With `npm create`, Better Fullstack flags go after `--`. The generated reproducible command and Stack Builder use `npx create-better-fullstack@latest` for npm, which is the same package entrypoint in a non-interactive form.
+For npm, Better Fullstack flags go after the `--` separator. The rendered package-manager tabs show the matching pnpm, Bun, and Yarn commands where the separator is not needed.
 
-## Default stack
+## What the defaults create
 
-If you accept defaults, the CLI creates a TypeScript project with TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, npm package manager, stable dependency versions, Git enabled, install enabled, and `CLAUDE.md` generated.
+Accepting defaults creates a TypeScript project with:
 
-## Generated context
+- TanStack Router frontend and Hono backend.
+- Bun runtime, SQLite, Drizzle, Better Auth, and tRPC.
+- Tailwind CSS, shadcn/ui, Vitest, and Turborepo.
+- The package manager used to launch the CLI, stable dependency versions, Git, install enabled, and `CLAUDE.md`.
+
+You can keep that stack, start from a template, or switch ecosystems entirely.
+
+## Ways to choose a stack
+
+| Path | Use it when |
+| --- | --- |
+| CLI wizard | You want prompts and sensible defaults. |
+| Stack Builder | You want to explore compatible combinations before scaffolding. |
+| Explicit flags | You want repeatable output in scripts, docs, or issue reports. |
+| MCP server | You want an AI coding agent to inspect the schema, validate compatibility, and dry-run safely. |
+
+## Generated project context
 
 Every generated project includes:
 
 - `bts.jsonc` with the selected stack.
 - A reproducible command printed by the CLI.
-- Framework and package files for the selected ecosystem.
-- Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
+- Framework, package, and config files for the selected ecosystem.
+- Optional AI instruction files such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
 
-Not ready to scaffold yet? Use the [Stack Builder](https://better-fullstack.dev/new) to preview stack combinations and generated commands in your browser.
+## Next
 
-## Next steps
-
-- [Installation](/docs/getting-started/installation/) — prerequisites and launchers.
-- [First Project](/docs/getting-started/first-project/) — dry-runs, scripted examples, and project structure.
-- [CLI Create](/docs/cli/create/) — flags and examples.
-- [Ecosystems](/docs/ecosystems/) — TypeScript, React Native, Rust, Python, Go, and Java support.
+- [Installation](/docs/getting-started/installation/) explains launchers and toolchains.
+- [First Project](/docs/getting-started/first-project/) walks through scaffold, dry-run, install, and inspection.
+- [CLI Create](/docs/cli/create/) lists flags and scripted examples.
+- [Ecosystems](/docs/ecosystems/) compares TypeScript, React Native, Rust, Python, Go, Java, and Elixir.
+- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) shows how to combine web, backend, database, and mobile parts in one project.

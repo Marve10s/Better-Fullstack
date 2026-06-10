@@ -1,4 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER } from "@better-fullstack/types";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+  parseStackSelectionFromUrlRecord as parseStackFromUrlRecord,
+} from "@better-fullstack/types/stack-translation";
 
 import type { Ecosystem, TechCategory } from "../src/lib/types";
 
@@ -15,11 +20,7 @@ import {
   TECH_OPTIONS,
   type StackState,
 } from "../src/lib/constant";
-import {
-  createStackSearchParams,
-  parseStackFromUrlRecord,
-} from "../src/lib/stack-url-state.shared";
-import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER, generateStackCommand } from "../src/lib/stack-utils";
+import { generateStackCommand } from "../src/lib/stack-utils";
 
 describe("Java Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {

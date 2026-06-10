@@ -3,15 +3,15 @@ title: AI Agents
 description: How AI coding agents should use Better Fullstack safely and reliably.
 ---
 
-Better Fullstack supports two separate AI workflows:
+Better Fullstack supports two AI workflows:
 
-- Generated AI instruction files selected with `--ai-docs`.
-- Structured project creation through the Better Fullstack MCP server.
+- Generate project-local instruction files with `--ai-docs`.
+- Let an AI coding agent use the Better Fullstack MCP server for schema lookup, compatibility checks, dry-runs, and project creation.
 
 ## Preferred workflow
 
-1. Choose the target ecosystem: `typescript`, `rust`, `python`, `go`, or `java`.
-2. Fetch schema options from MCP or the CLI docs.
+1. Choose the target ecosystem: `typescript`, `react-native`, `rust`, `python`, `go`, `java`, or `elixir`.
+2. Fetch schema options from MCP or the CLI reference.
 3. Validate compatibility before scaffolding.
 4. Dry-run to inspect the file tree.
 5. Scaffold with dependency installation disabled when an agent is driving the flow.
@@ -30,7 +30,7 @@ Use `--ai-docs` to generate project-local context files for coding agents:
 
 Multiple values are accepted:
 
-```bash
+```npm
 npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
 ```
 
@@ -40,7 +40,7 @@ Use `--ai-docs none` to disable these files.
 
 For agents without MCP access, pass explicit flags and avoid side effects:
 
-```bash
+```npm
 npm create better-fullstack@latest my-app -- \
   --ecosystem typescript \
   --frontend next \
@@ -63,11 +63,11 @@ npm create better-fullstack@latest my-app -- \
 
 ## AI provider options
 
-TypeScript projects can select one AI SDK with `--ai`, including `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, or `none`.
+TypeScript projects can select one AI option with `--ai`: `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli`, or `none`.
 
 Python projects use the separate multi-select `--python-ai` option with `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai`, or `none`.
 
-Dependency placement depends on the selected framework and backend. Server-side AI packages are added to the server package or self-backend app; supported frontend integrations receive their matching client hooks/packages.
+Dependency placement depends on the selected framework and backend. Server-side packages are added to the server package or self-backend app; supported frontend integrations receive their matching client hooks or packages.
 
 ## MCP workflow
 

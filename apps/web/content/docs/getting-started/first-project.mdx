@@ -3,31 +3,33 @@ title: First Project
 description: Scaffold, inspect, install, and run a Better Fullstack project.
 ---
 
-This flow writes a project to disk, explains what the CLI generated, and shows how to preview output when you want an extra safety check.
+This walkthrough creates a project, previews what the CLI can generate, and shows where to look after the scaffold finishes.
 
-## 1. Scaffold interactively
+## 1. Create a project
 
-Run the wizard when you want prompts:
+Run the wizard:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-The default stack is TypeScript, TanStack Router, Hono, Bun runtime, SQLite, Drizzle, Better Auth, tRPC, Tailwind CSS, shadcn/ui, Vitest, Turborepo, Git, install enabled, stable versions, and `CLAUDE.md`.
+Accept the defaults for a TypeScript starter, or change the prompts to match the stack you want.
 
-## Optional: Preview before writing files
+## 2. Preview without writing
 
-Use `--dry-run` to generate the file tree in memory without writing files:
+Use `--dry-run` when you want to inspect the generated file tree first:
 
 ```npm
 npm create better-fullstack@latest my-app -- --dry-run
 ```
 
-## 2. Scaffold from a script
+The dry run is useful before trying a new ecosystem, deployment target, or multi-ecosystem stack.
 
-Use explicit flags when you want deterministic output. This example avoids dependency installation and Git initialization so you can inspect the files first:
+## 3. Scaffold from a command
 
-```bash
+Explicit flags make the scaffold repeatable. This example creates a Next.js self-backend project and skips install/Git so you can review files first:
+
+```npm
 npm create better-fullstack@latest my-app -- \
   --ecosystem typescript \
   --frontend next \
@@ -44,25 +46,27 @@ npm create better-fullstack@latest my-app -- \
   --addons none \
   --ai-docs none \
   --version-channel stable \
-  --package-manager npm \
   --no-install \
   --no-git
 ```
 
 <Callout kind="info" title="Prompt behavior">
-Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional features you want disabled, including `--ai-docs none`.
+Explicit flags skip the categories they cover. `--yes` accepts defaults and conflicts with core stack flags such as `--frontend`, `--backend`, and `--database`. Use `none` for optional categories you want disabled.
 </Callout>
 
-## 3. Install dependencies
+## 4. Install dependencies
 
-If you selected `--no-install`, install manually inside the project:
+If you used `--no-install`, install manually inside the project:
+
+```bash
+cd my-app
+```
 
 ```npm
-cd my-app
 npm install
 ```
 
-Non-TypeScript ecosystems use their generated toolchain commands instead:
+Language-native ecosystems use their own tools:
 
 ```bash
 cargo build
@@ -72,7 +76,7 @@ go mod tidy
 ./gradlew test
 ```
 
-## 4. Inspect generated files
+## 5. Inspect the project
 
 Generated projects include:
 
@@ -80,9 +84,9 @@ Generated projects include:
 - Framework, package, and config files for the selected ecosystem.
 - A reproducible command printed by the CLI.
 - Optional AI docs such as `CLAUDE.md`, `Agents.md`, or `.cursorrules`.
-- README content and commands where the selected templates provide them.
+- README and setup notes where the selected templates provide them.
 
-## 5. Add features later
+## 6. Add supported features later
 
 Inside a generated project, use `add` for supported addons:
 
@@ -90,4 +94,10 @@ Inside a generated project, use `add` for supported addons:
 npm create better-fullstack@latest add -- --addons mcp skills
 ```
 
-The `add` command reads `bts.jsonc` and skips addons already present.
+The `add` command reads `bts.jsonc`, skips addons already present, and prints install guidance when dependencies are not installed automatically.
+
+## Next
+
+- [CLI Create](/docs/cli/create/) lists every scaffold flag.
+- [CLI Add](/docs/cli/add/) explains existing-project addon updates.
+- [Ecosystems](/docs/ecosystems/) compares the supported project families.

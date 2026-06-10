@@ -206,6 +206,275 @@ export type OptionCategory =
 
 export type OptionSelectionMode = "single" | "multiple";
 
+export type OptionCategoryEcosystem =
+  | "typescript"
+  | "react-native"
+  | "rust"
+  | "python"
+  | "go"
+  | "java"
+  | "elixir";
+
+export const TYPESCRIPT_CATEGORY_ORDER = [
+  "webFrontend",
+  "astroIntegration",
+  "cssFramework",
+  "uiLibrary",
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+  "backend",
+  "backendLibraries",
+  "runtime",
+  "api",
+  "database",
+  "orm",
+  "dbSetup",
+  "webDeploy",
+  "serverDeploy",
+  "auth",
+  "payments",
+  "email",
+  "fileUpload",
+  "logging",
+  "observability",
+  "featureFlags",
+  "analytics",
+  "ai",
+  "stateManagement",
+  "forms",
+  "validation",
+  "testing",
+  "realtime",
+  "jobQueue",
+  "caching",
+  "i18n",
+  "search",
+  "fileStorage",
+  "animation",
+  "cms",
+  "codeQuality",
+  "documentation",
+  "appPlatforms",
+  "packageManager",
+  "examples",
+  "aiDocs",
+  "versionChannel",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const REACT_NATIVE_CATEGORY_ORDER = [
+  "nativeFrontend",
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+  "auth",
+  "packageManager",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const RUST_CATEGORY_ORDER = [
+  "rustWebFramework",
+  "rustFrontend",
+  "rustOrm",
+  "rustApi",
+  "rustCli",
+  "rustLibraries",
+  "rustLogging",
+  "rustErrorHandling",
+  "rustCaching",
+  "rustAuth",
+  "email",
+  "observability",
+  "caching",
+  "search",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const PYTHON_CATEGORY_ORDER = [
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonValidation",
+  "pythonAi",
+  "pythonAuth",
+  "pythonApi",
+  "pythonTaskQueue",
+  "pythonGraphql",
+  "pythonQuality",
+  "email",
+  "observability",
+  "caching",
+  "search",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const GO_CATEGORY_ORDER = [
+  "goWebFramework",
+  "goOrm",
+  "goApi",
+  "goCli",
+  "goLogging",
+  "goAuth",
+  "auth",
+  "email",
+  "observability",
+  "caching",
+  "search",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const JAVA_CATEGORY_ORDER = [
+  "javaWebFramework",
+  "javaBuildTool",
+  "javaOrm",
+  "javaAuth",
+  "javaLibraries",
+  "javaTestingLibraries",
+  "email",
+  "observability",
+  "caching",
+  "search",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const ELIXIR_CATEGORY_ORDER = [
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const CATEGORY_ORDER = [
+  ...new Set([
+    ...TYPESCRIPT_CATEGORY_ORDER,
+    ...REACT_NATIVE_CATEGORY_ORDER,
+    ...RUST_CATEGORY_ORDER,
+    ...PYTHON_CATEGORY_ORDER,
+    ...GO_CATEGORY_ORDER,
+    ...JAVA_CATEGORY_ORDER,
+    ...ELIXIR_CATEGORY_ORDER,
+  ]),
+] as OptionCategory[];
+
+export function getCategoryOrderForEcosystem(
+  ecosystem: OptionCategoryEcosystem,
+): readonly OptionCategory[] {
+  switch (ecosystem) {
+    case "react-native":
+      return REACT_NATIVE_CATEGORY_ORDER;
+    case "rust":
+      return RUST_CATEGORY_ORDER;
+    case "python":
+      return PYTHON_CATEGORY_ORDER;
+    case "go":
+      return GO_CATEGORY_ORDER;
+    case "java":
+      return JAVA_CATEGORY_ORDER;
+    case "elixir":
+      return ELIXIR_CATEGORY_ORDER;
+    case "typescript":
+      return TYPESCRIPT_CATEGORY_ORDER;
+  }
+}
+
+export function getCategoryDisplayName(categoryKey: string): string {
+  const categoryNames: Record<string, string> = {
+    i18n: "Internationalization (i18n)",
+    mobileNavigation: "Mobile Navigation",
+    mobileUI: "Mobile UI",
+    mobileStorage: "Mobile Storage",
+    mobileTesting: "Mobile Testing",
+    mobilePush: "Mobile Push",
+    mobileOTA: "Mobile OTA",
+    mobileDeepLinking: "Mobile Deep Linking",
+    rustWebFramework: "Rust Web Framework",
+    rustFrontend: "Rust Frontend (WASM)",
+    rustOrm: "Rust ORM / Database",
+    rustApi: "Rust API Layer",
+    rustCli: "Rust CLI Tools",
+    rustLibraries: "Rust Core Libraries",
+    rustLogging: "Rust Logging",
+    rustErrorHandling: "Rust Error Handling",
+    rustCaching: "Rust Caching",
+    rustAuth: "Rust Auth",
+    pythonWebFramework: "Python Web Framework",
+    pythonOrm: "Python ORM / Database",
+    pythonValidation: "Python Validation",
+    pythonAi: "Python AI / ML",
+    pythonAuth: "Python Auth",
+    pythonApi: "Python API Framework",
+    pythonTaskQueue: "Python Task Queue",
+    pythonGraphql: "Python GraphQL",
+    pythonQuality: "Python Code Quality",
+    goWebFramework: "Go Web Framework",
+    goOrm: "Go ORM / Database",
+    goApi: "Go API Layer",
+    goCli: "Go CLI Tools",
+    goLogging: "Go Logging",
+    goAuth: "Go Auth",
+    javaWebFramework: "Java Web Framework",
+    javaBuildTool: "Java Build Tool",
+    javaOrm: "Java ORM / Database",
+    javaAuth: "Java Auth",
+    javaLibraries: "Java Libraries",
+    javaTestingLibraries: "Java Testing Libraries",
+    elixirWebFramework: "Elixir Web Framework",
+    elixirOrm: "Elixir ORM / Database",
+    elixirAuth: "Elixir Auth",
+    elixirApi: "Elixir API Layer",
+    elixirRealtime: "Elixir Realtime",
+    elixirJobs: "Elixir Jobs",
+    elixirValidation: "Elixir Validation",
+    elixirHttp: "Elixir HTTP Client",
+    elixirJson: "Elixir JSON",
+    elixirEmail: "Elixir Email",
+    elixirCaching: "Elixir Caching",
+    elixirObservability: "Elixir Observability",
+    elixirTesting: "Elixir Testing",
+    elixirQuality: "Elixir Code Quality",
+    elixirDeploy: "Elixir Deploy",
+  };
+
+  const customName = categoryNames[categoryKey];
+  if (customName) return customName;
+
+  const result = categoryKey.replace(/([A-Z])/g, " $1");
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
 export type OptionMetadata = {
   id: string;
   label: string;

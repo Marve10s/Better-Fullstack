@@ -1,18 +1,12 @@
 import { getAllPages } from "@/lib/docs/source";
 import { getAllGuidePages } from "@/lib/guides/source";
-import {
-  generateSitemapXmlFromEntries,
-  getSitemapEntriesFromPages,
-  type SitemapEntry,
-} from "@/lib/sitemap-core";
-
-export function getSitemapEntries(): SitemapEntry[] {
-  return getSitemapEntriesFromPages({
-    docsPages: getAllPages(),
-    guidePages: getAllGuidePages(),
-  });
-}
+import { generateSitemapXmlFromEntries, getSitemapEntriesFromPages } from "@/lib/sitemap-core";
 
 export function generateSitemapXml() {
-  return generateSitemapXmlFromEntries(getSitemapEntries());
+  return generateSitemapXmlFromEntries(
+    getSitemapEntriesFromPages({
+      docsPages: getAllPages(),
+      guidePages: getAllGuidePages(),
+    }),
+  );
 }

@@ -1,4 +1,5 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
+import { parseStackSelectionFromUrlRecord as parseStackFromUrlRecord } from "@better-fullstack/types/stack-translation";
 import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github } from "lucide-react";
 import { motion, LayoutGroup } from "motion/react";
 import { useState } from "react";
@@ -18,7 +19,6 @@ import {
 import { HandDrawnNewCallout } from "@/components/ui/hand-drawn-new-callout";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { parseStackShareSlug } from "@/lib/stack-share-paths";
-import { parseStackFromUrlRecord } from "@/lib/stack-url-state.shared";
 import { generateStackCommand } from "@/lib/stack-utils";
 import { cn } from "@/lib/utils";
 

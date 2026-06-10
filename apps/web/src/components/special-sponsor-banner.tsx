@@ -1,8 +1,62 @@
 import { Github, Globe, Star } from "lucide-react";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { formatSponsorUrl, getSponsorUrl, shouldShowLifetimeTotal } from "@/lib/sponsor-utils";
-import { fetchSponsors } from "@/lib/sponsors";
+import type { Sponsor, SponsorsData } from "@/lib/types";
+
+const SPONSORS_URL = "https://better-fullstack-web.vercel.app/sponsors.json";
+
+function emptySponsorsData(): SponsorsData {
+  return {
+    generated_at: new Date().toISOString(),
+    summary: {
+      total_sponsors: 0,
+      total_lifetime_amount: 0,
+      total_current_monthly: 0,
+      special_sponsors: 0,
+      current_sponsors: 0,
+      past_sponsors: 0,
+      backers: 0,
+      top_sponsor: { name: "", amount: 0 },
+    },
+    specialSponsors: [],
+    sponsors: [],
+    pastSponsors: [],
+    backers: [],
+  };
+}
+
+async function fetchSponsors(): Promise<SponsorsData> {
+  try {
+    const response = await fetch(SPONSORS_URL);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sponsors: ${response.status}`);
+    }
+
+    return (await response.json()) as SponsorsData;
+  } catch (error) {
+    console.error("Error fetching sponsors:", error);
+    return emptySponsorsData();
+  }
+}
+
+function shouldShowLifetimeTotal(sponsor: Sponsor): boolean {
+  return sponsor.totalProcessedAmount !== undefined && !!sponsor.tierName;
+}
+
+function getSponsorUrl(sponsor: Sponsor): string {
+  const url = sponsor.websiteUrl || sponsor.githubUrl;
+
+  if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+    return `https://${url}`;
+  }
+
+  return url;
+}
+
+function formatSponsorUrl(url: string): string {
+  return url?.replace(/^https?:\/\//, "")?.replace(/\/$/, "");
+}
 
 export async function SpecialSponsorBanner() {
   const data = await fetchSponsors();

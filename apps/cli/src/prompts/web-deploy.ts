@@ -1,12 +1,12 @@
 import type { Backend, Frontend, Runtime, WebDeploy } from "../types";
 
 import { DEFAULT_CONFIG } from "../constants";
-import { WEB_FRAMEWORKS } from "../utils/compatibility";
+import { isWebFrontend } from "../utils/compatibility-rules";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableSelect } from "./navigable";
 
 function hasWebFrontend(frontends: Frontend[]) {
-  return frontends.some((f) => WEB_FRAMEWORKS.includes(f));
+  return frontends.some((f) => isWebFrontend(f));
 }
 
 type DeploymentOption = {

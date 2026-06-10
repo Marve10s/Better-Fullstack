@@ -3,7 +3,7 @@ title: Add Features
 description: Add supported addons to existing Better Fullstack projects.
 ---
 
-The `add` command reads an existing project's `bts.jsonc`, validates requested addons, writes supported addon files, and updates the project config.
+The `add` command updates an existing Better Fullstack project. It reads `bts.jsonc`, validates requested addons, writes supported files, and updates the project config.
 
 ```npm
 npm create better-fullstack@latest add -- --addons mcp skills
@@ -18,14 +18,14 @@ npm create better-fullstack@latest add -- --addons mcp skills
 - Prints an install command when dependency installation is skipped.
 
 <Callout kind="warn" title="Addon-first command">
-`add` currently exits when no new addon is selected. Do not rely on deployment-only commands such as `add --web-deploy vercel`; deployment flags are only applied after the command has a new addon to process.
+`add` currently exits when no new addon is selected. Choose deployment targets during `create` when possible; deployment-only `add --web-deploy ...` or `add --server-deploy ...` flows are not complete yet.
 </Callout>
 
 ## Flags
 
 | Flag | Values or behavior |
 | --- | --- |
-| `--addons` | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none` |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `docker-compose` `none` |
 | `--project-dir` | Path to the generated project. Defaults to the current directory. |
 | `--install` | Install dependencies after adding files. Defaults to false for `add`. |
 | `--package-manager` | `npm` `pnpm` `bun` `yarn` |
@@ -39,11 +39,12 @@ npm create better-fullstack@latest add -- --addons mcp skills
 | `mcp` | Generated-project MCP server configuration for coding agents. |
 | `skills` | Curated coding-agent skill files. |
 | `turborepo` | Monorepo orchestration. |
+| `docker-compose` | Local service orchestration for supported stacks. |
 | `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Code quality and hooks. |
 | `starlight` `fumadocs` | Documentation sites when compatible with the stack. |
 | `tauri` `pwa` `wxt` | Desktop, progressive web app, and browser extension support. |
 | `msw` `storybook` | Testing and component development utilities. |
-| `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | TanStack data and UI utilities. |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Data fetching and UI utilities. |
 | `opentui` | Terminal UI support. |
 
 ## Idempotency

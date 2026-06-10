@@ -34,7 +34,7 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
   };
 
   return (
-    <div className="relative inline-flex items-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground">
+    <div className="relative inline-flex items-center rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 text-muted-foreground shadow-sm transition-colors hover:border-[var(--docs-accent)] hover:text-foreground">
       <button
         type="button"
         onClick={copyMarkdown}
@@ -44,11 +44,11 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
         {copied ? "Copied" : "Copy MD"}
       </button>
       <details className="group">
-        <summary className="flex h-8 cursor-pointer list-none items-center border-border border-l px-2 [&::-webkit-details-marker]:hidden">
+        <summary className="flex h-8 cursor-pointer list-none items-center border-[var(--docs-border-subtle)] border-l px-2 [&::-webkit-details-marker]:hidden">
           <span className="sr-only">Open documentation actions</span>
           <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
         </summary>
-        <div className="absolute top-9 right-0 z-20 min-w-40 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg">
+        <div className="absolute top-9 right-0 z-20 min-w-40 rounded-md border border-[var(--docs-border-subtle)] bg-popover p-1 text-popover-foreground shadow-lg">
           <a
             href={rawUrl}
             target="_blank"

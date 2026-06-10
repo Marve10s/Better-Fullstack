@@ -1,16 +1,13 @@
-
 import { Link } from "@tanstack/react-router";
+import { CATEGORY_ORDER } from "@better-fullstack/types";
 import { Check, Copy, Edit, Share2, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import type { LoadedStackState } from "@/lib/stack-url-state";
 
 import { ShareDialog } from "@/components/ui/share-dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
 import { DEFAULT_STACK, type StackState, TECH_OPTIONS } from "@/lib/constant";
 import {
-  CATEGORY_ORDER,
   generateStackCommand,
   generateStackSharingUrl,
   generateStackSummary,
@@ -19,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface StackDisplayProps {
-  stackState: LoadedStackState;
+  stackState: StackState;
 }
 
 export function StackDisplay({ stackState }: StackDisplayProps) {

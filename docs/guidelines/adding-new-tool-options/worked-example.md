@@ -229,13 +229,13 @@ Find the search section (look for existing `meilisearch` / `typesense` blocks):
 
 **File:** `apps/cli/src/mcp.ts`
 
-Find the `SCHEMA_MAP` object (around line 142, maps field names to Zod schemas). The `search` key should already be there:
+For an existing category like Search, no `bfs_get_schema` change is needed. MCP schema output derives option lists from shared `OPTION_CATEGORY_METADATA` and ecosystem category order, and `search` is already in that shared metadata.
 
 ```typescript
-search: SearchSchema,    // Already exists — no change needed for existing categories
+search: SearchSchema.optional().describe("Search engine")    // Tool parameter schema already exists
 ```
 
-For a **new category**, you'd add a new key-value pair here pointing to the new Zod schema.
+For a **new category**, import the schema, add it to the relevant MCP tool parameter objects, and add `buildProjectConfig()` / `buildCompatibilityInput()` wiring. Only touch MCP schema adapter constants such as `MCP_LEGACY_CATEGORY_KEYS` or `MCP_SCHEMA_OPTION_OVERRIDES` when the public MCP field name must differ from the builder category name.
 
 ---
 
@@ -298,9 +298,9 @@ And add the import at the top:
 
 ## File 17 — Stack defaults (new category only)
 
-**File:** `apps/web/src/lib/stack-defaults.ts`
+**File:** `packages/types/src/stack-translation.ts`
 
-Find the `DEFAULT_STACK` object and add:
+Find the `DEFAULT_STACK_SELECTION` object and add:
 
 ```diff
 + rateLimiting: "none",
@@ -308,9 +308,9 @@ Find the `DEFAULT_STACK` object and add:
 
 ---
 
-## File 18 — Stack URL keys (new category only)
+## File 18 — Stack URL key (new category only)
 
-**File:** `apps/web/src/lib/stack-url-keys.ts`
+**File:** `packages/types/src/stack-translation.ts`
 
 ```diff
 + rateLimiting: "rl",
@@ -318,41 +318,20 @@ Find the `DEFAULT_STACK` object and add:
 
 ---
 
-## File 19 — Stack URL state (new category only)
+## File 19 — Category order and command translation (new category only)
 
-**File:** `apps/web/src/lib/stack-url-state.ts`
-
-Three spots:
-
-**In `loadStackParams()`:**
-```diff
-+ rateLimiting: getString("rateLimiting", DEFAULT_STACK.rateLimiting),
-```
-
-**In `serializeStackParams()`:**
-```diff
-+ addParam("rateLimiting", stack.rateLimiting);
-```
-
-**In `searchToStack()`:**
-```diff
-+ rateLimiting: search.rl ?? DEFAULT_STACK.rateLimiting,
-```
-
----
-
-## File 20 — Stack utils (new category only)
-
-**File:** `apps/web/src/lib/stack-utils.ts`
+**File:** `packages/types/src/option-metadata.ts`
 
 **In `TYPESCRIPT_CATEGORY_ORDER`:**
 ```diff
 + "rateLimiting",
 ```
 
-**In `generateStackCommand()` flags array:**
+**File:** `packages/types/src/stack-translation.ts`
+
+**In `generateTypeScriptCommand()` flags array:**
 ```diff
-+ `--rate-limiting ${stack.rateLimiting}`,
++ `--rate-limiting ${selection.rateLimiting}`,
 ```
 
 ---

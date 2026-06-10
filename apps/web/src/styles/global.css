@@ -251,6 +251,12 @@
    */
   --code-bg: #0d1117;
   --code-border: #30363d;
+  --docs-surface: color-mix(in srgb, var(--background) 84%, white);
+  --docs-surface-elevated: #fbfdfb;
+  --docs-border-subtle: color-mix(in srgb, var(--border) 72%, transparent);
+  --docs-accent: #6f4bd8;
+  --docs-accent-soft: color-mix(in srgb, var(--primary) 10%, transparent);
+  --docs-link: #5f38d9;
 }
 
 .dark {
@@ -310,6 +316,12 @@
   /* Dark mode: slightly elevated from the page bg so code blocks lift off the surface */
   --code-bg: #161b22;
   --code-border: #30363d;
+  --docs-surface: #111113;
+  --docs-surface-elevated: #151518;
+  --docs-border-subtle: #2a2a2e;
+  --docs-accent: #f2eeee;
+  --docs-accent-soft: rgb(242 238 238 / 0.08);
+  --docs-link: #f2eeee;
 }
 /* @layer base {
 	* {
@@ -585,21 +597,29 @@
   font-size: 0.875rem;
 }
 
+.docs-shell {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--docs-surface) 82%, transparent) 0%,
+    var(--background) 18rem
+  );
+}
+
 /*
  * Docs typography ─ scoped to .docs-prose so we don't bleed styles into the
- * marketing site. Mono headings + sans body matches the brand. Spacing
- * follows the rhythm of the rest of the site (Tailwind `space-y-*` style).
+ * marketing site. The rhythm follows mature reference docs: generous lead-in,
+ * strong section starts, compact lists, and readable tables/code surfaces.
  */
 .docs-prose {
   --prose-text: var(--foreground);
   --prose-muted: var(--muted-foreground);
   color: var(--prose-text);
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.78;
 }
 
 .docs-prose > * + * {
-  margin-top: 1.1rem;
+  margin-top: 1.2rem;
 }
 
 .docs-prose h2,
@@ -607,23 +627,34 @@
 .docs-prose h4 {
   color: var(--prose-text);
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   scroll-margin-top: 5rem;
 }
 
 .docs-prose h2 {
-  margin-top: 2.4rem;
-  font-size: 1.4rem;
+  margin-top: 3rem;
+  border-top: 1px solid var(--docs-border-subtle);
+  padding-top: 2rem;
+  font-size: 1.55rem;
+  line-height: 1.25;
+}
+
+.docs-prose > h2:first-child {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
 }
 
 .docs-prose h3 {
-  margin-top: 2rem;
-  font-size: 1.1rem;
+  margin-top: 2.2rem;
+  font-size: 1.18rem;
+  line-height: 1.35;
 }
 
 .docs-prose h4 {
-  margin-top: 1.6rem;
-  font-size: 0.95rem;
+  margin-top: 1.8rem;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 .docs-prose p,
@@ -632,9 +663,9 @@
 }
 
 .docs-prose a:not(:where(.docs-prose .not-prose *)) {
-  color: var(--foreground);
+  color: var(--docs-link);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--border) 70%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--docs-link) 28%, transparent);
   text-underline-offset: 3px;
   transition: text-decoration-color 150ms ease;
 }
@@ -648,10 +679,10 @@
  * Excludes <code> inside <pre> so Shiki token colors stay untouched.
  */
 .docs-prose code:not(:where(.docs-prose pre code)) {
-  border-radius: 0.25rem;
-  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  border: 1px solid var(--docs-border-subtle);
   padding: 0.1rem 0.35rem;
-  background: var(--muted);
+  background: var(--docs-surface);
   color: var(--foreground);
   font-family: var(--font-mono);
   font-size: 0.85em;
@@ -673,6 +704,10 @@
   padding-left: 1.4rem;
 }
 
+.docs-prose li + li {
+  margin-top: 0.35rem;
+}
+
 .docs-prose ul > li {
   list-style: disc;
 }
@@ -682,7 +717,7 @@
 }
 
 .docs-prose blockquote {
-  border-left: 2px solid var(--border);
+  border-left: 3px solid var(--docs-accent);
   padding: 0.25rem 0 0.25rem 1rem;
   color: var(--prose-muted);
   font-style: italic;
@@ -690,15 +725,29 @@
 
 .docs-prose table {
   width: 100%;
-  border-collapse: collapse;
+  border: 1px solid var(--docs-border-subtle);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
   font-size: 0.88rem;
+  overflow: hidden;
 }
 
 .docs-prose th,
 .docs-prose td {
-  border: 1px solid var(--border);
-  padding: 0.5rem 0.75rem;
+  border-right: 1px solid var(--docs-border-subtle);
+  border-bottom: 1px solid var(--docs-border-subtle);
+  padding: 0.65rem 0.8rem;
   text-align: left;
+}
+
+.docs-prose th:last-child,
+.docs-prose td:last-child {
+  border-right: 0;
+}
+
+.docs-prose tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .docs-prose th {
@@ -706,15 +755,19 @@
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   color: var(--prose-muted);
-  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  background: var(--docs-surface);
+}
+
+.docs-prose tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--docs-surface) 55%, transparent);
 }
 
 .docs-prose hr {
   border: 0;
-  border-top: 1px solid var(--border);
-  margin: 2.4rem 0;
+  border-top: 1px solid var(--docs-border-subtle);
+  margin: 2.8rem 0;
 }
 
 /* Heading anchor target offset already handled via scroll-margin-top above */

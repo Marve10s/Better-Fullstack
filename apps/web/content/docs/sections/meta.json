@@ -1,0 +1,15 @@
+{
+  "title": "Sections",
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "frontend-and-apps",
+    "backend-and-api",
+    "data-and-storage",
+    "auth-and-payments",
+    "ui-and-experience",
+    "ai-and-services",
+    "quality-and-tooling",
+    "deployment"
+  ]
+}

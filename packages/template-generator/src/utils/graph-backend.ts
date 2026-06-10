@@ -1,6 +1,6 @@
 import { getRoleTargetPath, type ProjectConfig, type StackPart } from "@better-fullstack/types";
 
-export type GraphBackendConnection = {
+type GraphBackendConnection = {
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   toolId: string;
   label: string;

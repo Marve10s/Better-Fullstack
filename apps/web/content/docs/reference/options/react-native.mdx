@@ -1,24 +1,16 @@
 ---
 title: React Native Options
-description: Reference for Expo and React Native stack options.
+description: Expo and React Native option values for frontend, navigation, UI, storage, testing, push, OTA, and links.
 ---
 
-React Native options are selected with `--ecosystem react-native`. They generate a runnable Expo app and do not expose TypeScript web frontend, backend, database, or web deployment categories.
+React Native options are selected with `--ecosystem react-native`. They generate an Expo app and do not expose TypeScript web frontend, backend, database, or web deployment categories.
 
-| Category | CLI flag | Values |
-| --- | --- | --- |
-| Native frontend | `--frontend` | `native-bare` `native-uniwind` `native-unistyles` |
-| Mobile navigation | `--mobile-navigation` | `expo-router` `react-navigation` `none` |
-| Mobile UI | `--mobile-ui` | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
-| Mobile storage | `--mobile-storage` | `mmkv` `none` |
-| Mobile testing | `--mobile-testing` | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
-| Mobile push | `--mobile-push` | `expo-notifications` `none` |
-| Mobile OTA | `--mobile-ota` | `expo-updates` `none` |
-| Mobile deep linking | `--mobile-deep-linking` | `expo-linking` `none` |
+<Callout kind="info" title="Compatibility notes">
+`native-uniwind` selects `mobile-ui: uniwind`. `native-unistyles` selects `mobile-ui: unistyles`. Tamagui and gluestack-ui are intended for `native-bare` to avoid conflicting style systems.
+</Callout>
 
-## Compatibility
+## Option table
 
-- `native-uniwind` selects `mobile-ui uniwind`.
-- `native-unistyles` selects `mobile-ui unistyles`.
-- `tamagui` and `gluestack-ui` are intended for `native-bare` to avoid conflicting style systems.
-- `expo-notifications`, `expo-updates`, and `expo-linking` require Expo-compatible native projects.
+The table below is generated from the canonical option metadata so it stays in sync with the CLI and Stack Builder.
+
+<OptionCategoryTable ecosystem="react-native" />

@@ -1,4 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import {
+  CATEGORY_ORDER,
+  RUST_CATEGORY_ORDER,
+  TYPESCRIPT_CATEGORY_ORDER,
+} from "@better-fullstack/types";
 
 import type { Ecosystem, TechCategory } from "../src/lib/types";
 
@@ -12,11 +17,6 @@ import {
   type StackState,
 } from "../src/lib/constant";
 import { ICON_REGISTRY } from "../src/lib/tech-icons";
-import {
-  CATEGORY_ORDER,
-  RUST_CATEGORY_ORDER,
-  TYPESCRIPT_CATEGORY_ORDER,
-} from "../src/lib/stack-utils";
 
 describe("Rust Ecosystem Tab", () => {
   describe("Ecosystem Type", () => {

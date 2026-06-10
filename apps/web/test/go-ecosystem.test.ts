@@ -1,4 +1,10 @@
 import { describe, expect, it } from "bun:test";
+import {
+  CATEGORY_ORDER,
+  GO_CATEGORY_ORDER,
+  RUST_CATEGORY_ORDER,
+  TYPESCRIPT_CATEGORY_ORDER,
+} from "@better-fullstack/types";
 
 import type { Ecosystem, TechCategory } from "../src/lib/types";
 
@@ -11,10 +17,6 @@ import {
   type StackState,
 } from "../src/lib/constant";
 import {
-  CATEGORY_ORDER,
-  GO_CATEGORY_ORDER,
-  RUST_CATEGORY_ORDER,
-  TYPESCRIPT_CATEGORY_ORDER,
   generateStackCommand,
 } from "../src/lib/stack-utils";
 

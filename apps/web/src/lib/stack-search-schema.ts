@@ -1,47 +1,15 @@
-import { EcosystemSchema } from "@better-fullstack/types";
-import { z } from "zod";
+import type { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 
-import { DEFAULT_STACK } from "./stack-defaults";
-import { stackUrlKeys } from "./stack-url-keys";
-import { isArrayStackKey, stackStateKeys } from "./stack-url-state.shared";
+import type { StackState } from "./stack-defaults";
 
-const commaSeparatedArray = (defaultValue: string[]) =>
-  z
-    .string()
-    .transform((val) => val.split(",").filter(Boolean))
-    .catch([...defaultValue]);
-
-const stackSearchShape: Record<string, z.ZodType> = {};
-const ecosystemSchema = EcosystemSchema.catch(DEFAULT_STACK.ecosystem);
-
-for (const stackKey of stackStateKeys) {
-  const urlKey = stackUrlKeys[stackKey];
-  const defaultValue = DEFAULT_STACK[stackKey];
-
-  if (stackKey === "ecosystem") {
-    stackSearchShape[urlKey] = ecosystemSchema;
-    continue;
-  }
-
-  if (isArrayStackKey(stackKey)) {
-    stackSearchShape[urlKey] = commaSeparatedArray(defaultValue as string[]);
-    continue;
-  }
-
-  stackSearchShape[urlKey] = z.string().catch(String(defaultValue ?? ""));
-}
-
-export const stackSearchSchema = z.object({
-  ...stackSearchShape,
-  view: z.enum(["command", "preview", "presets", "saved"]).catch("command"),
-  file: z.string().catch(""),
-  preset: z.string().catch(""),
-});
-
-type StackValueForKey<K extends keyof typeof stackUrlKeys> =
-  (typeof DEFAULT_STACK)[K] extends string[] ? string[] : string;
+type StackUrlKeys = typeof STACK_SELECTION_URL_KEYS;
+type StackValueForKey<K extends keyof StackUrlKeys> = K extends keyof StackState
+  ? StackState[K] extends string[]
+    ? string[]
+    : string
+  : never;
 type StackSearchParamShape = {
-  [K in keyof typeof stackUrlKeys as (typeof stackUrlKeys)[K]]: StackValueForKey<K>;
+  [K in keyof StackUrlKeys as StackUrlKeys[K]]: StackValueForKey<K>;
 };
 
 export type StackSearchParams = Partial<StackSearchParamShape> & {

@@ -1,17 +1,10 @@
 import path from "node:path";
 
-import {
-  cliInputToProjectConfigPartial,
-  processCliArrayOption,
-} from "@better-fullstack/types/stack-translation";
+import { cliInputToProjectConfigPartial } from "@better-fullstack/types/stack-translation";
 
 import type { CLIInput } from "../types";
 
-export function processArrayOption<T>(options: (T | "none")[] | undefined) {
-  return processCliArrayOption(options);
-}
-
-export function deriveProjectName(projectName?: string, projectDirectory?: string) {
+function deriveProjectName(projectName?: string, projectDirectory?: string) {
   if (projectName) {
     return projectName;
   }
@@ -32,7 +25,7 @@ export function getProvidedFlags(options: CLIInput) {
   );
 }
 
-export function validateNoneExclusivity<T>(
+function validateNoneExclusivity<T>(
   options: (T | "none")[] | undefined,
   optionName: string,
 ) {

@@ -3,7 +3,9 @@ title: TypeScript
 description: Fullstack web, desktop, API, worker, and integration scaffolds.
 ---
 
-TypeScript is the primary Better Fullstack web ecosystem and has the broadest support for shared categories: frontend, backend, database, auth, API, UI, services, addons, deploy targets, and examples. React Native/Expo mobile scaffolds now live in the dedicated [React Native](/docs/ecosystems/react-native/) ecosystem.
+TypeScript is the broadest Better Fullstack ecosystem. Use it for web apps, APIs, workers, desktop shells, browser extensions, documentation sites, service integrations, and most addon workflows.
+
+React Native/Expo mobile scaffolds live in the dedicated [React Native](/docs/ecosystems/react-native/) ecosystem.
 
 ## Prerequisites
 
@@ -13,7 +15,7 @@ TypeScript is the primary Better Fullstack web ecosystem and has the broadest su
 
 ## Scripted example
 
-```bash
+```npm
 npm create better-fullstack@latest my-app -- \
   --ecosystem typescript \
   --frontend tanstack-router \
@@ -24,7 +26,6 @@ npm create better-fullstack@latest my-app -- \
   --db-setup none \
   --api orpc \
   --auth better-auth \
-  --package-manager npm \
   --addons turborepo \
   --examples none \
   --ai-docs none \
@@ -36,20 +37,20 @@ npm create better-fullstack@latest my-app -- \
 
 | Category | Values |
 | --- | --- |
-| Web frontend | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| Web frontend | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
 | Backend | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
-| Runtime | `node` `bun` `workers` `none` |
+| Runtime | `bun` `node` `workers` `none` |
 | Database | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
 | ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
-| API | `orpc` `trpc` `ts-rest` `graphql-yoga` `garph` `none` |
-| Auth | `better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| Auth | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
 
 ## UI and app features
 
 | Category | Values |
 | --- | --- |
 | CSS | `tailwind` `scss` `less` `postcss-only` `none` |
-| UI library | `shadcn-ui` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `base-ui` `ark-ui` `react-aria` `none` |
+| UI library | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |
 | State | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
 | Forms | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
 | Validation | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
@@ -59,12 +60,15 @@ npm create better-fullstack@latest my-app -- \
 
 | Category | Values |
 | --- | --- |
-| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `none` |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |
 | Payments | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
-| Email | `resend` `react-email` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| Email | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
 | Realtime | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
 | Jobs | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
-| Addons | `mcp` `skills` `turborepo` `starlight` `fumadocs` `biome` `oxlint` `ultracite` `lefthook` `husky` `pwa` `tauri` `wxt` `msw` `storybook` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `opentui` `ruler` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| Storage | `s3` `r2` `cloudinary` `none` |
+| Feature flags | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| Addons | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `docker-compose` `none` |
 
 ## Compatibility notes
 
@@ -74,3 +78,4 @@ npm create better-fullstack@latest my-app -- \
 - Workers runtime support is backend-dependent.
 - UI libraries often depend on frontend family and CSS framework. For example, shadcn/ui is React-oriented and Tailwind-based.
 - Some providers have extra constraints, such as Polar requiring Better Auth and a web frontend.
+- Some options are surfaced for compatibility or dependency support before every template path is equally deep. Run the compatibility checker or Stack Builder before scaffolding large combinations.

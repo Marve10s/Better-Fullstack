@@ -1,6 +1,9 @@
+import {
+  normalizeStackSelection as normalizeStackStateSelections,
+} from "@better-fullstack/types/stack-translation";
+
 import type { StackState } from "@/lib/constant";
 import { DEFAULT_STACK } from "@/lib/stack-defaults";
-import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
 
 const SAVED_STACKS_STORAGE_KEY = "betterFullstackSavedStacks";
 const LEGACY_SAVED_STACK_KEY = "betterFullstackPreference";

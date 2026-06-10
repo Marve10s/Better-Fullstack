@@ -1,24 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import { create, createVirtual } from "../src/index";
-import type { VirtualDirectory, VirtualFile, VirtualNode } from "../src/index";
-
-function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
-  if (node.type === "file") {
-    return node.path.replace(/^\/+/, "") === path ? node : undefined;
-  }
-
-  for (const child of (node as VirtualDirectory).children) {
-    const found = findFile(child, path);
-    if (found) return found;
-  }
-}
-
-function getFile(root: VirtualNode, path: string) {
-  const file = findFile(root, path);
-  expect(file, `${path} should be generated`).toBeDefined();
-  return file!.content;
-}
+import {
+  findVirtualFile as findFile,
+  readVirtualFileContent as getFile,
+} from "./virtual-tree-utils";
 
 describe("mobile native scaffolding", () => {
   test("uses React Native defaults when --yes selects the React Native ecosystem", async () => {

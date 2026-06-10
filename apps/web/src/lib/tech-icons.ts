@@ -3,7 +3,7 @@
 //   SiConfig  → rendered from cdn.simpleicons.org with auto-computed colour
 //   LocalConfig → rendered from a local /public/icon/* file or external URL
 
-export type SiConfig = {
+type SiConfig = {
   type: "si";
   slug: string;
   hex: string;
@@ -11,7 +11,7 @@ export type SiConfig = {
   /** Keep brand hex in every theme (skip luminance-based recoloring). */
   fixedColor?: boolean;
 };
-export type LocalConfig = {
+type LocalConfig = {
   type: "local";
   src: string;
   /** CSS invert strategy for local SVGs that use hardcoded colours.
@@ -29,7 +29,7 @@ export type IconConfig = SiConfig | LocalConfig;
  * Dark icons (low luminance) become white on dark backgrounds.
  * Near-white icons get darkened slightly on light backgrounds.
  */
-export function computeColor(brandHex: string, isDark: boolean): string {
+function computeColor(brandHex: string, isDark: boolean): string {
   const r = parseInt(brandHex.slice(0, 2), 16) / 255;
   const g = parseInt(brandHex.slice(2, 4), 16) / 255;
   const b = parseInt(brandHex.slice(4, 6), 16) / 255;

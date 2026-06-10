@@ -1,0 +1,66 @@
+---
+title: Multi-Ecosystem
+description: Compose one Better Fullstack project from frontend, backend, database, and mobile parts across ecosystems.
+---
+
+Multi-Ecosystem mode models a project as connected stack parts instead of one flat ecosystem selection. Use it when a product spans languages, for example a TypeScript frontend, Go API, shared PostgreSQL database, and React Native mobile app.
+
+Open it in the [Stack Builder](https://better-fullstack.dev/new?mode=multi) or pass repeated `--part` flags to the CLI.
+
+## Stack parts
+
+Each part uses this shape:
+
+```txt
+role:ecosystem:tool
+owner.role:ecosystem:tool
+```
+
+Top-level roles describe generated apps or shared infrastructure. Owned roles attach a capability to a parent part.
+
+| Example | Meaning |
+| --- | --- |
+| `frontend:typescript:next` | Generate a TypeScript Next.js frontend. |
+| `backend:go:gin` | Generate a Go Gin backend. |
+| `backend.orm:go:gorm` | Attach GORM to the selected backend. |
+| `backend.api:rust:tonic` | Attach Tonic gRPC to a Rust backend. |
+| `database:universal:postgres` | Add a shared PostgreSQL database part. |
+| `mobile:react-native:native-bare` | Generate a React Native mobile app. |
+
+## Scripted example
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## Source of truth
+
+Multi-ecosystem projects write `stackParts` to `bts.jsonc`. Those parts are the source of truth for generated structure, history, and reproducible commands. Legacy fields such as `backend`, `orm`, or `frontend` may still appear as compatibility fallbacks derived from the graph.
+
+Generated commands preserve the graph as repeated `--part` flags, so the project can be recreated without relying on hidden builder state.
+
+## Builder flow
+
+The Stack Builder's Multi-Ecosystem mode walks through:
+
+1. Frontend - TypeScript web frontends.
+2. Backend - TypeScript, Rust, Python, Go, Java, or Elixir backends and owned backend capabilities.
+3. Database - shared universal database choices.
+4. Mobile - React Native app choices.
+5. Finalize - addons, AI docs, install, Git, and version settings.
+
+## Compatibility
+
+- Only one selected primary part per role is supported in the current graph model.
+- Owned capability parts must reference an owner, such as `backend.orm:go:gorm`.
+- Capability ecosystems generally need to match their owner ecosystem.
+- Universal database parts can be shared across ecosystems.
+- Some tools provide implied parts. For example, selected backends may provide database or routing assumptions that appear in generated `stackParts`.
+- The compatibility checker validates graph parts before generation and reports owner, duplicate, and unsupported-tool issues.

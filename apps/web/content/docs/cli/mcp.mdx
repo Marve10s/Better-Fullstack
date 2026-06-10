@@ -3,34 +3,54 @@ title: MCP Command
 description: Start the Better Fullstack MCP server over stdio for AI coding agents.
 ---
 
-The `mcp` command starts the Better Fullstack MCP server. Agents can use it to inspect schemas, validate compatibility, preview generated files, create projects, and add supported features to existing projects.
+The `mcp` command starts the Better Fullstack MCP server over stdio. Agents can use it to inspect schemas, validate compatibility, preview generated files, create projects, and add supported features to existing projects.
 
-```bash
-npx create-better-fullstack@latest mcp
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
 
 The server uses stdio transport. Configure your MCP client to launch the command and communicate over standard input/output.
 
-## Client Examples
+## Client examples
 
-Claude Code:
+Claude Code with npm:
 
 ```bash
-claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack mcp
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
 
-Generic MCP client config:
+For pnpm, Bun, or Yarn, replace the command after `--` with the matching launcher:
+
+| Package manager | Launcher |
+| --- | --- |
+| npm | `npx -y create-better-fullstack@latest mcp` |
+| pnpm | `pnpm dlx create-better-fullstack@latest mcp` |
+| Bun | `bunx create-better-fullstack@latest mcp` |
+| Yarn | `yarn dlx create-better-fullstack@latest mcp` |
+
+Generic MCP client config with npm:
 
 ```json
 {
   "mcpServers": {
     "better-fullstack": {
       "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
     }
   }
 }
 ```
+
+Equivalent command/args for other package managers:
+
+| Package manager | `command` | `args` |
+| --- | --- | --- |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| Yarn | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
 
 ## Tool Surface
 
@@ -46,7 +66,7 @@ Generic MCP client config:
 
 See the [MCP tools reference](/docs/ai/mcp-tools/) for inputs, outputs, and safe workflows.
 
-## Safety Notes
+## Safety notes
 
 - `bfs_plan_project` does not write files.
 - `bfs_create_project` writes files but does not install dependencies.

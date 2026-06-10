@@ -1,29 +1,11 @@
-import type { VirtualFile, VirtualNode } from "@better-fullstack/template-generator";
-
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
-import { expectError, runTRPCTest } from "./test-utils";
-
-function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
-  if (node.type === "file") {
-    const normalizedNodePath = node.path.replace(/^\/+/, "");
-    const normalizedPath = path.replace(/^\/+/, "");
-    return normalizedNodePath === normalizedPath ? node : undefined;
-  }
-
-  for (const child of node.children) {
-    const found = findFile(child, path);
-    if (found) return found;
-  }
-  return undefined;
-}
-
-function getFileContent(node: VirtualNode, path: string): string {
-  const file = findFile(node, path);
-  expect(file).toBeDefined();
-  return file?.content ?? "";
-}
+import {
+  expectError,
+  runTRPCTest,
+} from "./test-utils";
+import { readVirtualFileContent as getFileContent } from "./virtual-tree-utils";
 
 describe("Cross-ecosystem email services", () => {
   it("wires Resend for Python projects", async () => {

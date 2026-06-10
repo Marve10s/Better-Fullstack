@@ -1,9 +1,11 @@
+import path from "node:path";
+
 import type { CLIInput, ProjectConfig } from "./types";
 
+import { ProjectNameSchema } from "./types";
 import { getProvidedFlags, processFlags, validateArrayOptions } from "./utils/config-processing";
 import { validateConfigForProgrammaticUse, validateFullConfig } from "./utils/config-validation";
 import { exitWithError } from "./utils/errors";
-import { extractAndValidateProjectName } from "./utils/project-name-validation";
 
 const CORE_STACK_FLAGS = new Set([
   "database",
@@ -43,6 +45,34 @@ function validateYesFlagCombination(options: CLIInput, providedFlags: Set<string
         "The --yes flag uses default configuration. Remove these flags or use --yes without them.",
     );
   }
+}
+
+function validateProjectName(name: string, throwOnError: boolean) {
+  const result = ProjectNameSchema.safeParse(name);
+  if (result.success) return;
+
+  const message = `Invalid project name: ${result.error.issues[0]?.message || "Invalid project name"}`;
+  if (throwOnError) {
+    throw new Error(message);
+  }
+  exitWithError(message);
+}
+
+function extractAndValidateProjectName(
+  projectName?: string,
+  projectDirectory?: string,
+  throwOnError = false,
+) {
+  const derivedName =
+    projectName ||
+    (projectDirectory ? path.basename(path.resolve(process.cwd(), projectDirectory)) : "");
+
+  if (!derivedName) {
+    return "";
+  }
+
+  validateProjectName(projectName ? path.basename(projectName) : derivedName, throwOnError);
+  return projectName || derivedName;
 }
 
 export function processAndValidateFlags(

@@ -14,7 +14,7 @@ import type {
   WebDeploy,
 } from "../../types";
 
-import { WEB_FRAMEWORKS } from "../../utils/compatibility";
+import { isWebFrontend } from "../../utils/compatibility-rules";
 import { getDockerStatus } from "../../utils/docker-utils";
 import {
   getGraphBackendDeployInstructions,
@@ -148,7 +148,7 @@ export async function displayPostInstallInstructions(
   const vercelDeployInstructions = getVercelDeployInstructions(webDeploy, serverDeploy, backend);
   const graphBackendDeployInstructions = getGraphBackendDeployInstructions(config);
 
-  const hasWeb = frontend?.some((f) => WEB_FRAMEWORKS.includes(f));
+  const hasWeb = frontend?.some((f) => isWebFrontend(f));
   const hasNative =
     frontend?.includes("native-bare") ||
     frontend?.includes("native-uniwind") ||

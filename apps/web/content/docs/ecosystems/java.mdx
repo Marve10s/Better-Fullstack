@@ -3,7 +3,7 @@ title: Java
 description: Spring Boot and plain Java scaffolds with Maven or Gradle wrappers, ORM, auth, libraries, and tests.
 ---
 
-Java projects support Spring Boot and plain Java templates. Java options are available through flags, schemas, and templates; verify interactive ecosystem prompt support before relying on a wizard-only Java flow.
+Java projects support Spring Boot, Quarkus, and plain Java templates. Choose Java options for build tools, persistence, auth, application libraries, and test libraries.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ Java projects support Spring Boot and plain Java templates. Java options are ava
 
 ## Scripted example
 
-```bash
+```npm
 npm create better-fullstack@latest my-java-api -- \
   --ecosystem java \
   --java-web-framework spring-boot \
@@ -31,19 +31,19 @@ npm create better-fullstack@latest my-java-api -- \
 
 | Category | Values |
 | --- | --- |
-| Web framework | `spring-boot` `none` |
+| Web framework | `spring-boot` `quarkus` `none` |
 | Build tool | `maven` `gradle` `none` |
 | ORM | `spring-data-jpa` `none` |
 | Auth | `spring-security` `none` |
-| Libraries | `spring-actuator` `spring-validation` `flyway` `none` |
-| Testing libraries | `junit5` `mockito` `testcontainers` `none` |
+| Libraries | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `none` |
+| Testing libraries | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none` |
 
 ## Compatibility notes
 
-- Spring Boot requires Maven or Gradle.
-- Java ORM, auth, and libraries require Spring Boot plus Maven or Gradle.
+- Spring Boot and Quarkus require Maven or Gradle.
+- Java ORM, auth, and Spring-specific libraries require Spring Boot plus Maven or Gradle.
 - Flyway requires Spring Data JPA.
-- `springdoc-openapi` is not currently a supported Java library option.
+- Some libraries are framework-specific. For example, Spring Batch, Spring Kafka, Spring Mail, Spring WebFlux, Springdoc OpenAPI, Actuator, and Spring Security target Spring Boot projects.
 
 ## Generated behavior
 

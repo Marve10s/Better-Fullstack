@@ -1,17 +1,16 @@
 import { useSearch } from "@tanstack/react-router";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+  normalizeStackSelection as normalizeStackStateSelections,
+  parseStackSelectionFromSearch as parseStackFromSearch,
+} from "@better-fullstack/types/stack-translation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { StackSearchParams } from "@/lib/stack-search-schema";
 
 import { PRESET_TEMPLATES } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
-import { normalizeStackStateSelections } from "@/lib/stack-option-normalization";
 import { getStackSharePath } from "@/lib/stack-share-paths";
-import {
-  createStackSearchParams,
-  parseStackFromSearch,
-  parseStackFromUrlRecord,
-} from "@/lib/stack-url-state.shared";
 
 type BuilderViewMode = "command" | "preview" | "presets" | "saved";
 
@@ -21,27 +20,6 @@ type InitialBuilderState = {
   selectedFile: string;
   initialized: boolean;
 };
-
-export function loadStackParams(
-  searchParams:
-    | Record<string, string | string[] | undefined>
-    | Promise<Record<string, string | string[] | undefined>>,
-): Promise<StackState> | StackState {
-  const parseSync = (params: Record<string, string | string[] | undefined>): StackState =>
-    parseStackFromUrlRecord(params);
-
-  if (searchParams instanceof Promise) {
-    return searchParams.then(parseSync);
-  }
-  return parseSync(searchParams);
-}
-
-export function serializeStackParams(basePath: string, stack: StackState): string {
-  const queryString = createStackSearchParams(stack).toString();
-  return queryString ? `${basePath}?${queryString}` : basePath;
-}
-
-export type LoadedStackState = StackState;
 
 function searchToStack(search: StackSearchParams | undefined): StackState {
   if (!search) return DEFAULT_STACK;

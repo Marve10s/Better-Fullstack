@@ -18,7 +18,7 @@ keywords:
 
 Use this stack when you want a Python API with a familiar async-friendly web framework and a relational database.
 
-```bash
+```npm
 npm create better-fullstack@latest my-fastapi-api -- \
   --ecosystem python \
   --python-web-framework fastapi \
@@ -26,7 +26,6 @@ npm create better-fullstack@latest my-fastapi-api -- \
   --python-orm sqlalchemy \
   --python-validation pydantic \
   --python-quality ruff \
-  --package-manager bun
 ```
 
 <GuideStackSnapshot
@@ -166,7 +165,6 @@ Keep tests split between route behavior and database behavior. Route tests shoul
     "`--python-web-framework fastapi` pairs naturally with `--python-orm sqlalchemy` and `--python-validation pydantic`.",
     "Django API options such as `--python-api django-rest-framework` are only valid with `--python-web-framework django`.",
     "The `--database postgres` selection adds PostgreSQL driver support, but the runtime connection is controlled by `DATABASE_URL`.",
-    "`--package-manager bun` controls the generated project command runner. It does not mean the Python application runs on Bun.",
   ]}
 />
 

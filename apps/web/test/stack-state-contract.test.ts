@@ -1,31 +1,29 @@
-import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
+import {
+  getCategoryOrderForEcosystem,
+  OPTION_CATEGORY_METADATA,
+  REACT_NATIVE_CATEGORY_ORDER,
+  TYPESCRIPT_CATEGORY_ORDER,
+} from "@better-fullstack/types";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+  NON_OPTION_STACK_SELECTION_KEYS as NON_OPTION_STACK_KEYS,
+  normalizeStackSelection as normalizeStackStateSelections,
+  parseStackSelectionFromUrlRecord as parseStackFromUrlRecord,
+  STACK_SELECTION_KEYS as stackStateKeys,
+  STACK_SELECTION_OPTION_CATEGORY_BY_KEY as STACK_STATE_OPTION_CATEGORY_BY_KEY,
+  STACK_SELECTION_URL_KEYS,
+} from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 
 import { ECOSYSTEM_CATEGORIES } from "../src/lib/constant";
-import {
-  NON_OPTION_STACK_KEYS,
-  STACK_STATE_OPTION_CATEGORY_BY_KEY,
-} from "../src/lib/stack-contract";
 import { DEFAULT_STACK } from "../src/lib/stack-defaults";
-import { normalizeStackStateSelections } from "../src/lib/stack-option-normalization";
 import {
   createDefaultMultiEcosystemShareStack,
   getStackSharePath,
   parseStackShareSlug,
 } from "../src/lib/stack-share-paths";
-import { stackUrlKeys } from "../src/lib/stack-url-keys";
 import { getInitialBuilderState } from "../src/lib/stack-url-state";
-import {
-  createStackSearchParams,
-  parseStackFromUrlRecord,
-  stackStateKeys,
-} from "../src/lib/stack-url-state.shared";
-import {
-  getCategoryOrderForEcosystem,
-  generateStackSharingUrl,
-  REACT_NATIVE_CATEGORY_ORDER,
-  TYPESCRIPT_CATEGORY_ORDER,
-} from "../src/lib/stack-utils";
+import { generateStackSharingUrl } from "../src/lib/stack-utils";
 
 type MappedStackStateKey = keyof typeof STACK_STATE_OPTION_CATEGORY_BY_KEY;
 
@@ -34,9 +32,9 @@ function isMappedStackStateKey(key: string): key is MappedStackStateKey {
 }
 
 describe("StackState contract", () => {
-  it("keeps DEFAULT_STACK, stackStateKeys, and stackUrlKeys in exact sync", () => {
+  it("keeps DEFAULT_STACK, stackStateKeys, and URL keys in exact sync", () => {
     expect(Object.keys(DEFAULT_STACK)).toEqual(stackStateKeys);
-    expect(Object.keys(stackUrlKeys)).toEqual(stackStateKeys);
+    expect(Object.keys(STACK_SELECTION_URL_KEYS)).toEqual(stackStateKeys);
   });
 
   it("maps every StackState key to either a non-option key or option metadata", () => {

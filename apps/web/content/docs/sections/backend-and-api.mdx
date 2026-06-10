@@ -1,0 +1,38 @@
+---
+title: Backend and API
+description: Choose server frameworks, runtimes, and API layers across supported ecosystems.
+---
+
+Backend choices decide where application logic runs and how clients talk to it.
+
+## Backend framework
+
+TypeScript backend options include Hono, Express, Fastify, Elysia, NestJS, AdonisJS, Nitro, Encore, Convex, feTS, `self`, and `none`.
+
+Language ecosystems expose their own backend surfaces:
+
+| Ecosystem | Backend choices |
+| --- | --- |
+| Rust | Axum, Actix Web, Rocket, or none. |
+| Python | FastAPI, Django, Flask, Litestar, or none. |
+| Go | Gin, Echo, Fiber, Chi, or none. |
+| Java | Spring Boot, Quarkus, or none. |
+| Elixir | Phoenix, Phoenix LiveView, or none. |
+
+## Runtime
+
+TypeScript servers can target Bun, Node.js, Workers, or no separate runtime. Non-TypeScript ecosystems use their native toolchains: Cargo, uv, Go modules, Maven/Gradle, or Mix.
+
+## API layer
+
+API choices include TypeScript RPC/GraphQL options, Rust Tonic or async-graphql, Python Django API/GraphQL options, Go gRPC, and Elixir REST or Absinthe.
+
+## Multi-ecosystem ownership
+
+In multi mode, API, ORM, and auth capabilities attach to the selected backend. For example, `backend.api:rust:tonic` belongs to a Rust backend, while `backend.orm:go:gorm` belongs to a Go backend.
+
+## References
+
+- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/)
+- [Compatibility](/docs/reference/compatibility/)
+- [CLI create](/docs/cli/create/)

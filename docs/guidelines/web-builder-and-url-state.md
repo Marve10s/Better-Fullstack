@@ -4,10 +4,9 @@ Use this guide for changes in `apps/web` that affect stack selection, builder st
 
 ## Builder state flow
 
-- `apps/web/src/lib/stack-defaults.ts` defines the full `StackState` shape and defaults.
-- `apps/web/src/lib/stack-url-keys.ts` maps stack keys to short URL params.
-- `apps/web/src/lib/stack-url-state.shared.ts` parses and serializes stack state.
-- `apps/web/src/lib/stack-option-normalization.ts` normalizes aliases and canonical option IDs across parsed state.
+- `packages/types/src/stack-translation.ts` defines the shared `StackState` shape, defaults, short URL params, parsing, and serialization.
+- `apps/web/src/lib/stack-defaults.ts` re-exports the shared stack state type and defaults under web-facing names.
+- Web callers import shared stack parsing, serialization, and normalization helpers directly from `@better-fullstack/types/stack-translation`.
 - `apps/web/src/lib/preview-config.ts` converts normalized stack state into preview data.
 - Some UI category keys intentionally differ from stack keys. The TypeScript AI category is rendered as `TECH_OPTIONS.ai`, but stack state and command generation use `aiSdk`; map the category to the stack key anywhere selection state is read or written.
 
@@ -24,7 +23,7 @@ If URL parsing changes without normalization, alias handling usually breaks some
 
 ## Editing guidance
 
-- When adding a stack field to shareable URLs, update defaults, URL keys, parsing, serialization, and normalization together.
+- When adding a stack field to shareable URLs, update `DEFAULT_STACK_SELECTION` and `STACK_SELECTION_URL_KEYS` in `packages/types/src/stack-translation.ts`; parsing and serialization are derived from those shared maps.
 - Keep builder labels aligned with canonical metadata from `packages/types` unless there is a deliberate UX reason to diverge.
 - Before cleaning up homepage sections, check whether a component is actually imported by `apps/web/src/routes/index.tsx`. The home component directory can contain dead marketing sections.
 - For SvelteKit or SolidStart with Tailwind + DaisyUI, plugin activation lives in `apps/web/src/app.css` via `@plugin "daisyui";`, not in `tailwind.config.ts`.
@@ -32,7 +31,7 @@ If URL parsing changes without normalization, alias handling usually breaks some
 
 ## Ecosystem and auth rendering
 
-- Go builder rendering depends on both `ECOSYSTEM_CATEGORIES.go` in `apps/web/src/lib/constant.ts` and `GO_CATEGORY_ORDER` in `apps/web/src/lib/stack-utils.ts`. If a Go option exists in the metadata but not the builder UI, check that both lists were updated together.
+- Go builder rendering depends on `GO_CATEGORY_ORDER` in `packages/types/src/option-metadata.ts`; `ECOSYSTEM_CATEGORIES.go` in `apps/web/src/lib/constant.ts` is derived from that shared order. If a Go option exists in the metadata but not the builder UI, check the shared ecosystem order first.
 - Auth capability metadata is intentionally global across ecosystems in `packages/types`, but the web builder should filter visible auth choices by ecosystem in `apps/web/src/components/stack-builder/utils.ts`. Do not assume disabled reasons alone are enough to produce the desired builder UI.
 - The builder has two auth option render paths in `apps/web/src/components/stack-builder/stack-builder.tsx` (sidebar accordion + main category grid). Apply auth visibility filtering in both paths to avoid inconsistent options between sidebar and main content.
 

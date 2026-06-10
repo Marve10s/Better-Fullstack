@@ -3,11 +3,11 @@ title: MCP Tools Reference
 description: Detailed reference for Better Fullstack MCP tools, inputs, outputs, and safe workflows.
 ---
 
-The MCP server exposes structured tools for agents. Use them instead of asking an agent to guess CLI flags from prose.
+The MCP server exposes structured tools for agents. Use them instead of asking an agent to guess CLI flags from prose or copy long commands by hand.
 
-## Recommended Workflows
+## Recommended workflows
 
-### New Project
+### New project
 
 1. `bfs_get_guidance`
 2. `bfs_get_schema`
@@ -15,7 +15,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 4. `bfs_plan_project`
 5. `bfs_create_project`
 
-### Existing Project
+### Existing project
 
 1. `bfs_get_guidance`
 2. `bfs_plan_addition`
@@ -25,7 +25,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 `bfs_plan_project` is dry-run only. `bfs_create_project` writes a new project to disk. `bfs_add_feature` mutates an existing project. MCP project creation and feature addition do not install dependencies.
 </Callout>
 
-## Tool Reference
+## Tool reference
 
 ### `bfs_get_guidance`
 
@@ -68,7 +68,7 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 | When to call | Before `bfs_plan_project` or `bfs_create_project`. |
 | Writes files | No. |
 | Required inputs | `ecosystem`. |
-| Optional inputs | Frontend, backend, runtime, database, ORM, API, auth, payments, UI/CSS, addons, and Java-specific fields. |
+| Optional inputs | Frontend, backend, runtime, database, ORM, API, auth, services, UI/CSS, mobile fields, addons, examples, package manager, deployment fields, and ecosystem-specific fields. |
 | Output | JSON compatibility analysis with changes, notes, and adjusted stack data. |
 
 ```json
@@ -169,5 +169,6 @@ The MCP server exposes structured tools for agents. Use them instead of asking a
 - Treat `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries`, and `javaTestingLibraries` as arrays.
 - Set `ecosystem` before selecting ecosystem-specific fields.
 - Prefer `none` when the user explicitly wants to disable a category.
+- MCP project creation does not currently expose every CLI workflow flag. For example, `aiDocs` uses the server's built-in default during project creation.
 - Do not call write tools until the user has approved the dry-run or addition plan.
 - Tell the user which install/test commands to run after MCP creation or addition, because MCP does not install dependencies.

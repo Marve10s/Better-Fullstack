@@ -16,7 +16,7 @@ type RemarkPlugin = () => (tree: Root) => void;
  *   npm install (no pkg)      → pnpm install        bun install        yarn install
  *   npm uninstall <pkg>       → pnpm remove <pkg>   bun remove <pkg>   yarn remove <pkg>
  *   npm run <script>          → pnpm <script>       bun run <script>   yarn <script>
- *   npm create <starter> -- <args> → pnpm create <starter> <args>  bun create <starter> <args>  yarn create <starter> <args>
+ *   npm create <starter> [project] -- <args> → pnpm/bun/yarn create <starter> [project] <args>
  *
  * The fence body may contain multiple lines (line continuations or chained
  * commands). We rewrite each line independently and re-join with newlines.
@@ -44,7 +44,7 @@ type CommandSet = {
   yarn: string;
 };
 
-function expandNpmCommand(npmSource: string): CommandSet {
+export function expandNpmCommand(npmSource: string): CommandSet {
   const lines = npmSource.split("\n");
   const transform = (managerLine: (line: string) => string) =>
     lines.map(managerLine).join("\n");
@@ -60,8 +60,12 @@ function expandNpmCommand(npmSource: string): CommandSet {
 const NPM_INSTALL_PKG = /^(\s*)npm\s+install\s+(-D|--save-dev|-S|--save)?\s*(.+)$/;
 const NPM_UNINSTALL_PKG = /^(\s*)npm\s+uninstall\s+(.+)$/;
 const NPM_RUN = /^(\s*)npm\s+run\s+(.+)$/;
-const NPM_CREATE = /^(\s*)npm\s+create\s+(\S+)(?:\s+--\s+(.*))?(?:\s+(.*))?$/;
+const NPM_CREATE = /^(\s*)npm\s+create\s+(\S+)(.*)$/;
 const NPM_BARE_INSTALL = /^(\s*)npm\s+install\s*(\\?)$/;
+
+function stripNpmCreateSeparator(rest: string): string {
+  return rest.replace(/\s+--\s*\\\s*$/, " \\").replace(/\s+--\s+/, " ");
+}
 
 function toPnpm(line: string): string {
   if (NPM_BARE_INSTALL.test(line)) return line.replace(/^(\s*)npm\s+install/, "$1pnpm install");
@@ -76,8 +80,7 @@ function toPnpm(line: string): string {
   if (m) return `${m[1]}pnpm ${m[2]}`;
   m = line.match(NPM_CREATE);
   if (m) {
-    const args = [m[3], m[4]].filter(Boolean).join(" ");
-    return `${m[1]}pnpm create ${m[2]}${args ? " " + args : ""}`;
+    return `${m[1]}pnpm create ${m[2]}${stripNpmCreateSeparator(m[3])}`;
   }
   // Fallback: replace bare "npm" with "pnpm" if it appears at the start.
   return line.replace(/^(\s*)npm(\s)/, "$1pnpm$2");
@@ -96,8 +99,7 @@ function toBun(line: string): string {
   if (m) return `${m[1]}bun run ${m[2]}`;
   m = line.match(NPM_CREATE);
   if (m) {
-    const args = [m[3], m[4]].filter(Boolean).join(" ");
-    return `${m[1]}bun create ${m[2]}${args ? " " + args : ""}`;
+    return `${m[1]}bun create ${m[2]}${stripNpmCreateSeparator(m[3])}`;
   }
   return line.replace(/^(\s*)npm(\s)/, "$1bun$2");
 }
@@ -115,8 +117,7 @@ function toYarn(line: string): string {
   if (m) return `${m[1]}yarn ${m[2]}`;
   m = line.match(NPM_CREATE);
   if (m) {
-    const args = [m[3], m[4]].filter(Boolean).join(" ");
-    return `${m[1]}yarn create ${m[2]}${args ? " " + args : ""}`;
+    return `${m[1]}yarn create ${m[2]}${stripNpmCreateSeparator(m[3])}`;
   }
   return line.replace(/^(\s*)npm(\s)/, "$1yarn$2");
 }

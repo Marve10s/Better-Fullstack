@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+} from "@better-fullstack/types/stack-translation";
 
 import { DEFAULT_STACK } from "../../src/lib/stack-defaults";
-import { createStackSearchParams } from "../../src/lib/stack-url-state.shared";
 import { commandOutput, gotoAppPage } from "./test-helpers";
 
 test.describe("URL Sharing", () => {

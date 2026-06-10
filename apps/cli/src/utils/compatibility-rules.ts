@@ -4,7 +4,6 @@ import {
   getApiFrontendCompatibilityIssue,
   getCompatibleAddons as getCompatibleAddonsShared,
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
-  getCompatibleFormLibraries as getCompatibleFormLibrariesShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
@@ -28,7 +27,6 @@ import type {
   CSSFramework,
   Database,
   Ecosystem,
-  Forms,
   Frontend,
   Payments,
   ProjectConfig,
@@ -232,7 +230,7 @@ export function isFrontendAllowedWithBackend(
   return isFrontendAllowedWithBackendShared(frontend, backend, auth);
 }
 
-export function validateClerkCompatibility(
+function validateClerkCompatibility(
   auth: Auth | undefined,
   backend: Backend | undefined,
   frontends: Frontend[] = [],
@@ -300,7 +298,7 @@ export function validateClerkCompatibility(
   );
 }
 
-export function validateNextAuthCompatibility(
+function validateNextAuthCompatibility(
   auth: Auth | undefined,
   backend: Backend | undefined,
   frontends: Frontend[] = [],
@@ -322,7 +320,7 @@ export function validateNextAuthCompatibility(
   }
 }
 
-export function validateStackAuthCompatibility(
+function validateStackAuthCompatibility(
   auth: Auth | undefined,
   backend: Backend | undefined,
   frontends: Frontend[] = [],
@@ -344,7 +342,7 @@ export function validateStackAuthCompatibility(
   }
 }
 
-export function validateSupabaseAuthCompatibility(
+function validateSupabaseAuthCompatibility(
   auth: Auth | undefined,
   backend: Backend | undefined,
   frontends: Frontend[] = [],
@@ -366,7 +364,7 @@ export function validateSupabaseAuthCompatibility(
   }
 }
 
-export function validateAuth0Compatibility(
+function validateAuth0Compatibility(
   auth: Auth | undefined,
   backend: Backend | undefined,
   frontends: Frontend[] = [],
@@ -768,29 +766,4 @@ export function getCompatibleCSSFrameworks(uiLibrary: UILibrary | undefined): CS
  */
 export function hasWebStyling(frontends: Frontend[] = []): boolean {
   return hasWebStylingShared(frontends);
-}
-
-/**
- * Validates that a form library is compatible with the selected frontend(s)
- */
-export function validateFormsFrontendCompatibility(
-  forms: Forms | undefined,
-  frontends: Frontend[] = [],
-) {
-  if (!forms || forms === "none") return;
-  const compatible = getCompatibleFormLibrariesShared(frontends);
-  if (!compatible.includes(forms)) {
-    incompatibilityError({
-      message: `${forms} is not compatible with the selected frontend.`,
-      provided: { forms, frontend: frontends },
-      suggestions: [`Compatible options: ${compatible.join(", ")}`],
-    });
-  }
-}
-
-/**
- * Gets list of form libraries compatible with the selected frontend(s)
- */
-export function getCompatibleFormLibraries(frontends: Frontend[] = []): Forms[] {
-  return getCompatibleFormLibrariesShared(frontends);
 }

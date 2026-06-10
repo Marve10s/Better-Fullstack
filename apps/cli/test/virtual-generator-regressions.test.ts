@@ -3,44 +3,23 @@ import { describe, expect, it } from "bun:test";
 import { createVirtual } from "../src/index";
 import { runWithContext } from "../src/utils/context";
 import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
+import { getVirtualTreeFileContent } from "./virtual-tree-utils";
+
+const readTextFromTree = getVirtualTreeFileContent;
+
+type PackageJsonShape = {
+  packageManager?: string;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+};
 
 function readJsonFromTree(
   tree: NonNullable<Awaited<ReturnType<typeof createVirtual>>["tree"]>,
   targetPath: string,
-) {
-  const stack = [...tree.root.children];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    if (node.type === "file" && node.path === targetPath) {
-      return JSON.parse(node.content) as {
-        packageManager?: string;
-        scripts?: Record<string, string>;
-        dependencies?: Record<string, string>;
-        devDependencies?: Record<string, string>;
-      };
-    }
-    if (node.type === "directory") {
-      stack.push(...node.children);
-    }
-  }
-  return undefined;
-}
-
-function readTextFromTree(
-  tree: NonNullable<Awaited<ReturnType<typeof createVirtual>>["tree"]>,
-  targetPath: string,
-) {
-  const stack = [...tree.root.children];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    if (node.type === "file" && node.path === targetPath) {
-      return node.content;
-    }
-    if (node.type === "directory") {
-      stack.push(...node.children);
-    }
-  }
-  return undefined;
+): PackageJsonShape | undefined {
+  const content = getVirtualTreeFileContent(tree, targetPath);
+  return content === undefined ? undefined : (JSON.parse(content) as PackageJsonShape);
 }
 
 describe("Virtual Generator Regressions", () => {

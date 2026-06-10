@@ -67,6 +67,8 @@ import {
   OPTION_CATEGORY_METADATA,
   PackageManagerSchema,
   PaymentsSchema,
+  type OptionCategory,
+  type OptionCategoryEcosystem,
   type ProjectConfig,
   PythonAiSchema,
   PythonApiSchema,
@@ -97,6 +99,8 @@ import {
   ValidationSchema,
   WebDeploySchema,
   analyzeStackCompatibility,
+  CATEGORY_ORDER,
+  getCategoryOrderForEcosystem,
 } from "@better-fullstack/types";
 import z from "zod";
 
@@ -201,167 +205,121 @@ function getGuidance() {
   };
 }
 
-const SCHEMA_MAP: Record<string, z.ZodType> = {
-  ecosystem: EcosystemSchema,
-  database: DatabaseSchema,
-  orm: ORMSchema,
-  backend: BackendSchema,
-  runtime: RuntimeSchema,
-  frontend: FrontendSchema,
-  api: APISchema,
-  auth: AuthSchema,
-  payments: PaymentsSchema,
-  email: EmailSchema,
-  fileUpload: FileUploadSchema,
-  effect: EffectSchema,
-  ai: AISchema,
-  stateManagement: StateManagementSchema,
-  forms: FormsSchema,
-  validation: ValidationSchema,
-  testing: TestingSchema,
-  cssFramework: CSSFrameworkSchema,
-  uiLibrary: UILibrarySchema,
-  realtime: RealtimeSchema,
-  jobQueue: JobQueueSchema,
-  animation: AnimationSchema,
-  logging: LoggingSchema,
-  observability: ObservabilitySchema,
-  featureFlags: FeatureFlagsSchema,
-  analytics: AnalyticsSchema,
-  cms: CMSSchema,
-  caching: CachingSchema,
-  i18n: I18nSchema,
-  search: SearchSchema,
-  fileStorage: FileStorageSchema,
-  mobileNavigation: MobileNavigationSchema,
-  mobileUI: MobileUISchema,
-  mobileStorage: MobileStorageSchema,
-  mobileTesting: MobileTestingSchema,
-  mobilePush: MobilePushSchema,
-  mobileOTA: MobileOTASchema,
-  mobileDeepLinking: MobileDeepLinkingSchema,
-  addons: AddonsSchema,
-  examples: ExamplesSchema,
-  packageManager: PackageManagerSchema,
-  dbSetup: DatabaseSetupSchema,
-  webDeploy: WebDeploySchema,
-  serverDeploy: ServerDeploySchema,
-  astroIntegration: AstroIntegrationSchema,
-  rustWebFramework: RustWebFrameworkSchema,
-  rustFrontend: RustFrontendSchema,
-  rustOrm: RustOrmSchema,
-  rustApi: RustApiSchema,
-  rustCli: RustCliSchema,
-  rustLibraries: RustLibrariesSchema,
-  rustLogging: RustLoggingSchema,
-  rustErrorHandling: RustErrorHandlingSchema,
-  rustCaching: RustCachingSchema,
-  rustAuth: RustAuthSchema,
-  pythonWebFramework: PythonWebFrameworkSchema,
-  pythonOrm: PythonOrmSchema,
-  pythonValidation: PythonValidationSchema,
-  pythonAi: PythonAiSchema,
-  pythonAuth: PythonAuthSchema,
-  pythonApi: PythonApiSchema,
-  pythonTaskQueue: PythonTaskQueueSchema,
-  pythonGraphql: PythonGraphqlSchema,
-  pythonQuality: PythonQualitySchema,
-  goWebFramework: GoWebFrameworkSchema,
-  goOrm: GoOrmSchema,
-  goApi: GoApiSchema,
-  goCli: GoCliSchema,
-  goLogging: GoLoggingSchema,
-  goAuth: GoAuthSchema,
-  javaWebFramework: JavaWebFrameworkSchema,
-  javaBuildTool: JavaBuildToolSchema,
-  javaOrm: JavaOrmSchema,
-  javaAuth: JavaAuthSchema,
-  javaLibraries: JavaLibrariesSchema,
-      javaTestingLibraries: JavaTestingLibrariesSchema,
-  elixirWebFramework: ElixirWebFrameworkSchema,
-  elixirOrm: ElixirOrmSchema,
-  elixirAuth: ElixirAuthSchema,
-  elixirApi: ElixirApiSchema,
-  elixirRealtime: ElixirRealtimeSchema,
-  elixirJobs: ElixirJobsSchema,
-  elixirValidation: ElixirValidationSchema,
-  elixirHttp: ElixirHttpSchema,
-  elixirJson: ElixirJsonSchema,
-  elixirEmail: ElixirEmailSchema,
-  elixirCaching: ElixirCachingSchema,
-  elixirObservability: ElixirObservabilitySchema,
-  elixirTesting: ElixirTestingSchema,
-  elixirQuality: ElixirQualitySchema,
-  elixirDeploy: ElixirDeploySchema,
+const MCP_ECOSYSTEMS = new Set<OptionCategoryEcosystem>(
+  EcosystemSchema.options as OptionCategoryEcosystem[],
+);
+
+const MCP_SHARED_SCHEMA_KEYS = [
+  "ecosystem",
+  "packageManager",
+  "addons",
+  "examples",
+  "webDeploy",
+  "serverDeploy",
+  "dbSetup",
+] as const;
+
+const MCP_SHARED_COMPATIBILITY_KEYS = [
+  ...MCP_SHARED_SCHEMA_KEYS,
+  "projectName",
+  "git",
+  "install",
+  "aiDocs",
+] as const;
+
+const MCP_LEGACY_CATEGORY_KEYS: Partial<Record<OptionCategory, readonly string[]>> = {
+  webFrontend: ["frontend"],
+  nativeFrontend: ["frontend"],
+  backendLibraries: ["effect"],
+  codeQuality: ["addons"],
+  documentation: ["addons"],
+  appPlatforms: ["addons"],
 };
 
-const ECOSYSTEM_CATEGORIES: Record<string, string[]> = {
-  typescript: [
-    "database", "orm", "backend", "runtime", "frontend", "api", "auth", "payments",
-    "email", "fileUpload", "effect", "ai", "stateManagement", "forms", "validation",
-    "testing", "cssFramework", "uiLibrary", "realtime", "jobQueue", "animation",
-    "logging", "observability", "featureFlags", "analytics", "cms", "caching",
-    "i18n", "search", "fileStorage", "astroIntegration",
-  ],
-  "react-native": [
-    "frontend", "auth", "mobileNavigation", "mobileUI", "mobileStorage",
-    "mobileTesting", "mobilePush", "mobileOTA", "mobileDeepLinking",
-  ],
-  rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching", "rustAuth", "email", "observability", "caching", "search"],
-  python: ["pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonAuth", "pythonApi", "pythonTaskQueue", "pythonGraphql", "pythonQuality", "email", "observability", "caching", "search"],
-  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging", "goAuth", "auth", "email", "observability", "caching", "search"],
-  java: [
-    "javaWebFramework",
-    "javaBuildTool",
-    "javaOrm",
-    "javaAuth",
-    "javaLibraries",
-    "javaTestingLibraries",
-    "email",
-    "observability",
-    "caching",
-    "search",
-  ],
-  elixir: [
-    "elixirWebFramework",
-    "elixirOrm",
-    "elixirAuth",
-    "elixirApi",
-    "elixirRealtime",
-    "elixirJobs",
-    "elixirValidation",
-    "elixirHttp",
-    "elixirJson",
-    "elixirEmail",
-    "elixirCaching",
-    "elixirObservability",
-    "elixirTesting",
-    "elixirQuality",
-    "elixirDeploy",
-  ],
-  shared: ["ecosystem", "packageManager", "addons", "examples", "webDeploy", "serverDeploy", "dbSetup"],
-};
+const MCP_SCHEMA_EXCLUDED_CATEGORIES = new Set<OptionCategory>([
+  "webFrontend",
+  "nativeFrontend",
+  "backendLibraries",
+  "codeQuality",
+  "documentation",
+  "appPlatforms",
+  "aiDocs",
+  "git",
+  "install",
+  "versionChannel",
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+]);
+
+const MCP_SCHEMA_OPTION_OVERRIDES = {
+  ecosystem: EcosystemSchema.options,
+  frontend: FrontendSchema.options,
+  backend: BackendSchema.options,
+  addons: AddonsSchema.options,
+  examples: ExamplesSchema.options,
+  effect: EffectSchema.options,
+} as const satisfies Record<string, readonly string[]>;
+
+const MCP_ALL_SCHEMA_KEYS = [
+  "ecosystem",
+  ...CATEGORY_ORDER.flatMap((category) => MCP_LEGACY_CATEGORY_KEYS[category] ?? [category]).filter(
+    (key, index, keys) => keys.indexOf(key) === index,
+  ),
+].filter((key) => getMcpSchemaOptionValues(key).length > 0);
+
+function isMcpEcosystem(ecosystem: string): ecosystem is OptionCategoryEcosystem {
+  return MCP_ECOSYSTEMS.has(ecosystem as OptionCategoryEcosystem);
+}
+
+function getMcpSchemaOptionValues(key: string): string[] {
+  const override = MCP_SCHEMA_OPTION_OVERRIDES[key as keyof typeof MCP_SCHEMA_OPTION_OVERRIDES];
+  if (override) return [...override];
+
+  const categories =
+    key in OPTION_CATEGORY_METADATA && !MCP_SCHEMA_EXCLUDED_CATEGORIES.has(key as OptionCategory)
+      ? [key as OptionCategory]
+      : [];
+
+  return [
+    ...new Set(
+      categories.flatMap((category) =>
+        OPTION_CATEGORY_METADATA[category].options.map((option) => option.id),
+      ),
+    ),
+  ];
+}
+
+function getMcpCategoryKeysForEcosystem(ecosystem: OptionCategoryEcosystem): string[] {
+  const keys = getCategoryOrderForEcosystem(ecosystem).flatMap(
+    (category) => MCP_LEGACY_CATEGORY_KEYS[category] ?? [category],
+  );
+  return [...new Set(keys.filter((key) => getMcpSchemaOptionValues(key).length > 0))];
+}
+
+function getMcpSchemaKeysForEcosystem(ecosystem: OptionCategoryEcosystem): Set<string> {
+  return new Set([...getMcpCategoryKeysForEcosystem(ecosystem), ...MCP_SHARED_SCHEMA_KEYS]);
+}
 
 function getSchemaOptions(category?: string, ecosystem?: string) {
   if (category) {
-    const schema = SCHEMA_MAP[category];
-    if (!schema) {
-      return { error: `Unknown category: ${category}. Available: ${Object.keys(SCHEMA_MAP).join(", ")}` };
+    const options = getMcpSchemaOptionValues(category);
+    if (options.length === 0) {
+      return { error: `Unknown category: ${category}. Available: ${MCP_ALL_SCHEMA_KEYS.join(", ")}` };
     }
-    if (schema instanceof z.ZodEnum) {
-      return { category, options: schema.options };
-    }
-    return { category, description: "Schema exists but is not a simple enum." };
+    return { category, options };
   }
-  const allowedKeys = ecosystem && ECOSYSTEM_CATEGORIES[ecosystem]
-    ? new Set([...ECOSYSTEM_CATEGORIES[ecosystem], ...ECOSYSTEM_CATEGORIES.shared])
+  const allowedKeys = ecosystem && isMcpEcosystem(ecosystem)
+    ? getMcpSchemaKeysForEcosystem(ecosystem)
     : null;
   const result: Record<string, string[]> = {};
-  for (const [key, schema] of Object.entries(SCHEMA_MAP)) {
+  for (const key of MCP_ALL_SCHEMA_KEYS) {
     if (allowedKeys && !allowedKeys.has(key)) continue;
-    if (schema instanceof z.ZodEnum) {
-      result[key] = schema.options as string[];
-    }
+    result[key] = getMcpSchemaOptionValues(key);
   }
   return result;
 }
@@ -400,16 +358,166 @@ function filterCompatibilityResult(result: { adjustedStack: CompatibilityInput |
   const { adjustedStack, changes } = result;
   if (!adjustedStack) return { adjustedStack: null, changes };
 
+  const relevantEcosystem = isMcpEcosystem(ecosystem) ? ecosystem : "typescript";
   const relevantKeys = new Set([
-    ...(ECOSYSTEM_CATEGORIES[ecosystem] ?? ECOSYSTEM_CATEGORIES.typescript),
-    ...ECOSYSTEM_CATEGORIES.shared,
-    "projectName", "git", "install", "aiDocs",
+    ...getMcpCategoryKeysForEcosystem(relevantEcosystem),
+    ...MCP_SHARED_COMPATIBILITY_KEYS,
   ]);
   const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(adjustedStack)) {
     if (relevantKeys.has(key)) filtered[key] = value;
   }
   return { adjustedStack: filtered, changes };
+}
+
+const MCP_CODE_QUALITY_ADDONS = new Set(["biome", "oxlint", "ultracite", "lefthook", "husky", "ruler"]);
+const MCP_DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
+
+const MCP_COMPATIBILITY_DEFAULTS = {
+  astroIntegration: "none",
+  runtime: "bun",
+  backend: "hono",
+  database: "none",
+  orm: "none",
+  dbSetup: "none",
+  auth: "none",
+  payments: "none",
+  email: "none",
+  fileUpload: "none",
+  logging: "none",
+  observability: "none",
+  featureFlags: "none",
+  analytics: "none",
+  backendLibraries: "none",
+  stateManagement: "none",
+  forms: "none",
+  validation: "none",
+  testing: "none",
+  realtime: "none",
+  jobQueue: "none",
+  caching: "none",
+  i18n: "none",
+  animation: "none",
+  cssFramework: "tailwind",
+  uiLibrary: "none",
+  shadcnBase: "radix",
+  shadcnStyle: "nova",
+  shadcnIconLibrary: "lucide",
+  shadcnColorTheme: "neutral",
+  shadcnBaseColor: "neutral",
+  shadcnFont: "inter",
+  shadcnRadius: "default",
+  cms: "none",
+  search: "none",
+  fileStorage: "none",
+  mobileUI: "none",
+  mobileStorage: "none",
+  mobileTesting: "none",
+  mobilePush: "none",
+  mobileOTA: "none",
+  packageManager: "bun",
+  versionChannel: "stable",
+  examples: [],
+  aiSdk: "none",
+  aiDocs: ["claude-md"],
+  git: "true",
+  install: "false",
+  api: "none",
+  webDeploy: "none",
+  serverDeploy: "none",
+  yolo: "false",
+  rustWebFramework: "none",
+  rustFrontend: "none",
+  rustOrm: "none",
+  rustApi: "none",
+  rustCli: "none",
+  rustLibraries: [],
+  rustLogging: "none",
+  rustErrorHandling: "none",
+  rustCaching: "none",
+  rustAuth: "none",
+  pythonWebFramework: "none",
+  pythonOrm: "none",
+  pythonValidation: "none",
+  pythonAi: [],
+  pythonAuth: "none",
+  pythonApi: "none",
+  pythonTaskQueue: "none",
+  pythonGraphql: "none",
+  pythonQuality: "none",
+  goWebFramework: "none",
+  goOrm: "none",
+  goApi: "none",
+  goCli: "none",
+  goLogging: "none",
+  goAuth: "none",
+  javaWebFramework: "spring-boot",
+  javaBuildTool: "maven",
+  javaOrm: "none",
+  javaAuth: "none",
+  javaLibraries: [],
+  javaTestingLibraries: ["junit5"],
+  elixirWebFramework: "phoenix",
+  elixirOrm: "ecto-sql",
+  elixirAuth: "none",
+  elixirApi: "rest",
+  elixirRealtime: "channels",
+  elixirJobs: "none",
+  elixirValidation: "ecto-changesets",
+  elixirHttp: "req",
+  elixirJson: "jason",
+  elixirEmail: "none",
+  elixirCaching: "none",
+  elixirObservability: "telemetry",
+  elixirTesting: "ex_unit",
+  elixirQuality: "credo",
+  elixirDeploy: "none",
+} satisfies Partial<Record<keyof CompatibilityInput, string | string[]>>;
+
+const {
+  backendLibraries: _backendLibrariesDefault,
+  aiSdk: _aiSdkDefault,
+  git: _compatibilityGitDefault,
+  install: _compatibilityInstallDefault,
+  yolo: _yoloDefault,
+  ...MCP_PROJECT_COMPATIBILITY_DEFAULTS
+} = MCP_COMPATIBILITY_DEFAULTS;
+
+const MCP_PROJECT_CONFIG_DEFAULTS = {
+  ...MCP_PROJECT_COMPATIBILITY_DEFAULTS,
+  addons: [],
+  effect: "none",
+  ai: "none",
+} satisfies Partial<Record<keyof ProjectConfig, string | string[]>>;
+
+function cloneMcpInputDefault<T extends string | string[]>(value: T): T {
+  return (Array.isArray(value) ? [...value] : value) as T;
+}
+
+function applyMcpInputDefaults<TDefaults extends Record<string, string | string[]>>(
+  defaults: TDefaults,
+  input: Record<string, unknown>,
+) {
+  return Object.fromEntries(
+    Object.entries(defaults).map(([key, fallback]) => [
+      key,
+      input[key] ?? cloneMcpInputDefault(fallback),
+    ]),
+  );
+}
+
+function getMcpCompatibilityDefaults(input: Record<string, unknown>) {
+  return applyMcpInputDefaults(
+    MCP_COMPATIBILITY_DEFAULTS,
+    input,
+  ) as Pick<CompatibilityInput, keyof typeof MCP_COMPATIBILITY_DEFAULTS>;
+}
+
+function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
+  return applyMcpInputDefaults(
+    MCP_PROJECT_CONFIG_DEFAULTS,
+    input,
+  ) as Pick<ProjectConfig, keyof typeof MCP_PROJECT_CONFIG_DEFAULTS>;
 }
 
 function buildProjectConfig(
@@ -423,35 +531,32 @@ function buildProjectConfig(
     (ecosystem === "react-native" ? ["native-bare"] : ["tanstack-router"]);
   const hasNativeFrontend = frontend.some((item) => item.startsWith("native-"));
   const hasMobileProject = ecosystem === "react-native" || hasNativeFrontend;
+  const defaults = getMcpProjectConfigDefaults(input);
+
   return {
     projectName,
     projectDir: overrides?.projectDir ?? "/virtual",
     relativePath: overrides ? `./${projectName}` : "./virtual",
     ecosystem,
     frontend,
+    ...defaults,
     backend:
       (input.backend as ProjectConfig["backend"]) ??
-      (ecosystem === "react-native" ? "none" : "hono"),
+      (ecosystem === "react-native" ? "none" : defaults.backend),
     runtime:
       (input.runtime as ProjectConfig["runtime"]) ??
-      (ecosystem === "react-native" ? "none" : "bun"),
-    database: (input.database as ProjectConfig["database"]) ?? "none",
-    orm: (input.orm as ProjectConfig["orm"]) ?? "none",
-    api: (input.api as ProjectConfig["api"]) ?? "none",
-    auth: (input.auth as ProjectConfig["auth"]) ?? "none",
-    payments: (input.payments as ProjectConfig["payments"]) ?? "none",
-    email: (input.email as ProjectConfig["email"]) ?? "none",
-    fileUpload: (input.fileUpload as ProjectConfig["fileUpload"]) ?? "none",
-    effect: (input.effect as ProjectConfig["effect"]) ?? "none",
-    ai: (input.ai as ProjectConfig["ai"]) ?? "none",
-    stateManagement: (input.stateManagement as ProjectConfig["stateManagement"]) ?? "none",
-    forms: (input.forms as ProjectConfig["forms"]) ?? "none",
-    validation: (input.validation as ProjectConfig["validation"]) ?? "none",
-    testing: (input.testing as ProjectConfig["testing"]) ?? "none",
+      (ecosystem === "react-native" ? "none" : defaults.runtime),
     cssFramework:
       (input.cssFramework as ProjectConfig["cssFramework"]) ??
-      (ecosystem === "react-native" ? "none" : "tailwind"),
-    uiLibrary: (input.uiLibrary as ProjectConfig["uiLibrary"]) ?? "none",
+      (ecosystem === "react-native" ? "none" : defaults.cssFramework),
+    mobileNavigation:
+      (input.mobileNavigation as ProjectConfig["mobileNavigation"]) ??
+      (hasMobileProject ? "expo-router" : "none"),
+    mobileDeepLinking:
+      (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
+      (hasMobileProject ? "expo-linking" : "none"),
+    astroIntegration: "none",
+    versionChannel: "stable",
     shadcnBase: "radix",
     shadcnStyle: "nova",
     shadcnIconLibrary: "lucide",
@@ -459,91 +564,9 @@ function buildProjectConfig(
     shadcnBaseColor: "neutral",
     shadcnFont: "inter",
     shadcnRadius: "default",
-    realtime: (input.realtime as ProjectConfig["realtime"]) ?? "none",
-    jobQueue: (input.jobQueue as ProjectConfig["jobQueue"]) ?? "none",
-    animation: (input.animation as ProjectConfig["animation"]) ?? "none",
-    logging: (input.logging as ProjectConfig["logging"]) ?? "none",
-    observability: (input.observability as ProjectConfig["observability"]) ?? "none",
-    featureFlags: (input.featureFlags as ProjectConfig["featureFlags"]) ?? "none",
-    analytics: (input.analytics as ProjectConfig["analytics"]) ?? "none",
-    mobileNavigation:
-      (input.mobileNavigation as ProjectConfig["mobileNavigation"]) ??
-      (hasMobileProject ? "expo-router" : "none"),
-    mobileUI: (input.mobileUI as ProjectConfig["mobileUI"]) ?? "none",
-    mobileStorage: (input.mobileStorage as ProjectConfig["mobileStorage"]) ?? "none",
-    mobileTesting: (input.mobileTesting as ProjectConfig["mobileTesting"]) ?? "none",
-    mobilePush: (input.mobilePush as ProjectConfig["mobilePush"]) ?? "none",
-    mobileOTA: (input.mobileOTA as ProjectConfig["mobileOTA"]) ?? "none",
-    mobileDeepLinking:
-      (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
-      (hasMobileProject ? "expo-linking" : "none"),
-    cms: (input.cms as ProjectConfig["cms"]) ?? "none",
-    caching: (input.caching as ProjectConfig["caching"]) ?? "none",
-    i18n: (input.i18n as ProjectConfig["i18n"]) ?? "none",
-    search: (input.search as ProjectConfig["search"]) ?? "none",
-    fileStorage: (input.fileStorage as ProjectConfig["fileStorage"]) ?? "none",
-    addons: (input.addons as ProjectConfig["addons"]) ?? [],
-    examples: (input.examples as ProjectConfig["examples"]) ?? [],
-    packageManager: (input.packageManager as ProjectConfig["packageManager"]) ?? "bun",
-    versionChannel: "stable",
-    webDeploy: (input.webDeploy as ProjectConfig["webDeploy"]) ?? "none",
-    serverDeploy: (input.serverDeploy as ProjectConfig["serverDeploy"]) ?? "none",
-    dbSetup: (input.dbSetup as ProjectConfig["dbSetup"]) ?? "none",
-    astroIntegration: "none",
+    aiDocs: ["claude-md"],
     git: !!overrides,
     install: false,
-    aiDocs: ["claude-md"],
-    rustWebFramework: (input.rustWebFramework as ProjectConfig["rustWebFramework"]) ?? "none",
-    rustFrontend: (input.rustFrontend as ProjectConfig["rustFrontend"]) ?? "none",
-    rustOrm: (input.rustOrm as ProjectConfig["rustOrm"]) ?? "none",
-    rustApi: (input.rustApi as ProjectConfig["rustApi"]) ?? "none",
-    rustCli: (input.rustCli as ProjectConfig["rustCli"]) ?? "none",
-    rustLibraries: (input.rustLibraries as ProjectConfig["rustLibraries"]) ?? [],
-    rustLogging: (input.rustLogging as ProjectConfig["rustLogging"]) ?? "none",
-    rustErrorHandling: (input.rustErrorHandling as ProjectConfig["rustErrorHandling"]) ?? "none",
-    rustCaching: (input.rustCaching as ProjectConfig["rustCaching"]) ?? "none",
-    rustAuth: (input.rustAuth as ProjectConfig["rustAuth"]) ?? "none",
-    pythonWebFramework: (input.pythonWebFramework as ProjectConfig["pythonWebFramework"]) ?? "none",
-    pythonOrm: (input.pythonOrm as ProjectConfig["pythonOrm"]) ?? "none",
-    pythonValidation: (input.pythonValidation as ProjectConfig["pythonValidation"]) ?? "none",
-    pythonAi: (input.pythonAi as ProjectConfig["pythonAi"]) ?? [],
-    pythonAuth: (input.pythonAuth as ProjectConfig["pythonAuth"]) ?? "none",
-    pythonApi: (input.pythonApi as ProjectConfig["pythonApi"]) ?? "none",
-    pythonTaskQueue: (input.pythonTaskQueue as ProjectConfig["pythonTaskQueue"]) ?? "none",
-    pythonGraphql: (input.pythonGraphql as ProjectConfig["pythonGraphql"]) ?? "none",
-    pythonQuality: (input.pythonQuality as ProjectConfig["pythonQuality"]) ?? "none",
-    goWebFramework: (input.goWebFramework as ProjectConfig["goWebFramework"]) ?? "none",
-    goOrm: (input.goOrm as ProjectConfig["goOrm"]) ?? "none",
-    goApi: (input.goApi as ProjectConfig["goApi"]) ?? "none",
-    goCli: (input.goCli as ProjectConfig["goCli"]) ?? "none",
-    goLogging: (input.goLogging as ProjectConfig["goLogging"]) ?? "none",
-    goAuth: (input.goAuth as ProjectConfig["goAuth"]) ?? "none",
-    javaWebFramework:
-      (input.javaWebFramework as ProjectConfig["javaWebFramework"]) ?? "spring-boot",
-    javaBuildTool: (input.javaBuildTool as ProjectConfig["javaBuildTool"]) ?? "maven",
-    javaOrm: (input.javaOrm as ProjectConfig["javaOrm"]) ?? "none",
-    javaAuth: (input.javaAuth as ProjectConfig["javaAuth"]) ?? "none",
-    javaLibraries: (input.javaLibraries as ProjectConfig["javaLibraries"]) ?? [],
-    javaTestingLibraries:
-      (input.javaTestingLibraries as ProjectConfig["javaTestingLibraries"]) ?? ["junit5"],
-    elixirWebFramework:
-      (input.elixirWebFramework as ProjectConfig["elixirWebFramework"]) ?? "phoenix",
-    elixirOrm: (input.elixirOrm as ProjectConfig["elixirOrm"]) ?? "ecto-sql",
-    elixirAuth: (input.elixirAuth as ProjectConfig["elixirAuth"]) ?? "none",
-    elixirApi: (input.elixirApi as ProjectConfig["elixirApi"]) ?? "rest",
-    elixirRealtime: (input.elixirRealtime as ProjectConfig["elixirRealtime"]) ?? "channels",
-    elixirJobs: (input.elixirJobs as ProjectConfig["elixirJobs"]) ?? "none",
-    elixirValidation:
-      (input.elixirValidation as ProjectConfig["elixirValidation"]) ?? "ecto-changesets",
-    elixirHttp: (input.elixirHttp as ProjectConfig["elixirHttp"]) ?? "req",
-    elixirJson: (input.elixirJson as ProjectConfig["elixirJson"]) ?? "jason",
-    elixirEmail: (input.elixirEmail as ProjectConfig["elixirEmail"]) ?? "none",
-    elixirCaching: (input.elixirCaching as ProjectConfig["elixirCaching"]) ?? "none",
-    elixirObservability:
-      (input.elixirObservability as ProjectConfig["elixirObservability"]) ?? "telemetry",
-    elixirTesting: (input.elixirTesting as ProjectConfig["elixirTesting"]) ?? "ex_unit",
-    elixirQuality: (input.elixirQuality as ProjectConfig["elixirQuality"]) ?? "credo",
-    elixirDeploy: (input.elixirDeploy as ProjectConfig["elixirDeploy"]) ?? "none",
   };
 }
 
@@ -566,11 +589,10 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
   const addons = (input.addons as string[] | undefined) ?? [];
   const ecosystem = (input.ecosystem as CompatibilityInput["ecosystem"]) ?? "typescript";
   const hasMobileProject = ecosystem === "react-native" || nativeFrontend.length > 0;
+  const defaults = getMcpCompatibilityDefaults(input);
 
-  const codeQuality = addons.filter((a) =>
-    ["biome", "oxlint", "ultracite", "lefthook", "husky", "ruler"].includes(a),
-  );
-  const documentation = addons.filter((a) => ["starlight", "fumadocs"].includes(a));
+  const codeQuality = addons.filter((a) => MCP_CODE_QUALITY_ADDONS.has(a));
+  const documentation = addons.filter((a) => MCP_DOCUMENTATION_ADDONS.has(a));
   const appPlatforms = addons.filter(
     (a) =>
       ![...codeQuality, ...documentation, "none"].includes(a),
@@ -581,111 +603,15 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
     projectName: (input.projectName as string) ?? null,
     webFrontend,
     nativeFrontend,
-    astroIntegration: (input.astroIntegration as string) ?? "none",
-    runtime: (input.runtime as string) ?? "bun",
-    backend: (input.backend as string) ?? "hono",
-    database: (input.database as string) ?? "none",
-    orm: (input.orm as string) ?? "none",
-    dbSetup: (input.dbSetup as string) ?? "none",
-    auth: (input.auth as string) ?? "none",
-    payments: (input.payments as string) ?? "none",
-    email: (input.email as string) ?? "none",
-    fileUpload: (input.fileUpload as string) ?? "none",
-    logging: (input.logging as string) ?? "none",
-    observability: (input.observability as string) ?? "none",
-    featureFlags: (input.featureFlags as string) ?? "none",
-    analytics: (input.analytics as string) ?? "none",
-    backendLibraries: "none",
-    stateManagement: (input.stateManagement as string) ?? "none",
-    forms: (input.forms as string) ?? "none",
-    validation: (input.validation as string) ?? "none",
-    testing: (input.testing as string) ?? "none",
-    realtime: (input.realtime as string) ?? "none",
-    jobQueue: (input.jobQueue as string) ?? "none",
-    caching: (input.caching as string) ?? "none",
-    i18n: (input.i18n as string) ?? "none",
-    animation: (input.animation as string) ?? "none",
-    cssFramework: (input.cssFramework as string) ?? "tailwind",
-    uiLibrary: (input.uiLibrary as string) ?? "none",
-    shadcnBase: (input.shadcnBase as string) ?? "radix",
-    shadcnStyle: (input.shadcnStyle as string) ?? "nova",
-    shadcnIconLibrary: (input.shadcnIconLibrary as string) ?? "lucide",
-    shadcnColorTheme: (input.shadcnColorTheme as string) ?? "neutral",
-    shadcnBaseColor: (input.shadcnBaseColor as string) ?? "neutral",
-    shadcnFont: (input.shadcnFont as string) ?? "inter",
-    shadcnRadius: (input.shadcnRadius as string) ?? "default",
-    cms: (input.cms as string) ?? "none",
-    search: (input.search as string) ?? "none",
-    fileStorage: (input.fileStorage as string) ?? "none",
+    ...defaults,
     mobileNavigation:
       (input.mobileNavigation as string) ?? (hasMobileProject ? "expo-router" : "none"),
-    mobileUI: (input.mobileUI as string) ?? "none",
-    mobileStorage: (input.mobileStorage as string) ?? "none",
-    mobileTesting: (input.mobileTesting as string) ?? "none",
-    mobilePush: (input.mobilePush as string) ?? "none",
-    mobileOTA: (input.mobileOTA as string) ?? "none",
     mobileDeepLinking:
       (input.mobileDeepLinking as string) ?? (hasMobileProject ? "expo-linking" : "none"),
     codeQuality,
     documentation,
     appPlatforms,
-    packageManager: (input.packageManager as string) ?? "bun",
-    versionChannel: "stable",
-    examples: (input.examples as string[]) ?? [],
-    aiSdk: (input.ai as string) ?? "none",
-    aiDocs: (input.aiDocs as string[]) ?? ["claude-md"],
-    git: "true",
-    install: "false",
-    api: (input.api as string) ?? "none",
-    webDeploy: (input.webDeploy as string) ?? "none",
-    serverDeploy: (input.serverDeploy as string) ?? "none",
-    yolo: "false",
-    rustWebFramework: (input.rustWebFramework as string) ?? "none",
-    rustFrontend: (input.rustFrontend as string) ?? "none",
-    rustOrm: (input.rustOrm as string) ?? "none",
-    rustApi: (input.rustApi as string) ?? "none",
-    rustCli: (input.rustCli as string) ?? "none",
-    rustLibraries: (input.rustLibraries as string[]) ?? [],
-    rustLogging: (input.rustLogging as string) ?? "none",
-    rustErrorHandling: (input.rustErrorHandling as string) ?? "none",
-    rustCaching: (input.rustCaching as string) ?? "none",
-    rustAuth: (input.rustAuth as string) ?? "none",
-    pythonWebFramework: (input.pythonWebFramework as string) ?? "none",
-    pythonOrm: (input.pythonOrm as string) ?? "none",
-    pythonValidation: (input.pythonValidation as string) ?? "none",
-    pythonAi: (input.pythonAi as string[]) ?? [],
-    pythonAuth: (input.pythonAuth as string) ?? "none",
-    pythonApi: (input.pythonApi as string) ?? "none",
-    pythonTaskQueue: (input.pythonTaskQueue as string) ?? "none",
-    pythonGraphql: (input.pythonGraphql as string) ?? "none",
-    pythonQuality: (input.pythonQuality as string) ?? "none",
-    goWebFramework: (input.goWebFramework as string) ?? "none",
-    goOrm: (input.goOrm as string) ?? "none",
-    goApi: (input.goApi as string) ?? "none",
-    goCli: (input.goCli as string) ?? "none",
-    goLogging: (input.goLogging as string) ?? "none",
-    goAuth: (input.goAuth as string) ?? "none",
-    javaWebFramework: (input.javaWebFramework as string) ?? "spring-boot",
-    javaBuildTool: (input.javaBuildTool as string) ?? "maven",
-    javaOrm: (input.javaOrm as string) ?? "none",
-    javaAuth: (input.javaAuth as string) ?? "none",
-    javaLibraries: (input.javaLibraries as string[]) ?? [],
-    javaTestingLibraries: (input.javaTestingLibraries as string[]) ?? ["junit5"],
-    elixirWebFramework: (input.elixirWebFramework as string) ?? "phoenix",
-    elixirOrm: (input.elixirOrm as string) ?? "ecto-sql",
-    elixirAuth: (input.elixirAuth as string) ?? "none",
-    elixirApi: (input.elixirApi as string) ?? "rest",
-    elixirRealtime: (input.elixirRealtime as string) ?? "channels",
-    elixirJobs: (input.elixirJobs as string) ?? "none",
-    elixirValidation: (input.elixirValidation as string) ?? "ecto-changesets",
-    elixirHttp: (input.elixirHttp as string) ?? "req",
-    elixirJson: (input.elixirJson as string) ?? "jason",
-    elixirEmail: (input.elixirEmail as string) ?? "none",
-    elixirCaching: (input.elixirCaching as string) ?? "none",
-    elixirObservability: (input.elixirObservability as string) ?? "telemetry",
-    elixirTesting: (input.elixirTesting as string) ?? "ex_unit",
-    elixirQuality: (input.elixirQuality as string) ?? "credo",
-    elixirDeploy: (input.elixirDeploy as string) ?? "none",
+    aiSdk: (input.ai as string) ?? defaults.aiSdk,
   };
 }
 
@@ -859,6 +785,74 @@ export async function startMcpServer() {
     },
   );
 
+  const mobileInputSchema = {
+    mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
+    mobileUI: MobileUISchema.optional().describe("Mobile UI"),
+    mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
+    mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
+    mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
+    mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
+    mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
+  };
+
+  const deploymentInputSchema = {
+    dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
+    webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
+    serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
+  };
+
+  const crossEcosystemInputSchema = {
+    rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
+    rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
+    rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
+    rustApi: RustApiSchema.optional().describe("Rust API layer"),
+    rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
+    rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust libraries"),
+    rustLogging: RustLoggingSchema.optional().describe("Rust logging library"),
+    rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
+    rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
+    rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
+    pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
+    pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
+    pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
+    pythonAi: z.array(PythonAiSchema).optional().describe("Python AI libraries"),
+    pythonAuth: PythonAuthSchema.optional().describe("Python auth library"),
+    pythonApi: PythonApiSchema.optional().describe("Python API framework"),
+    pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
+    pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
+    pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
+    goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
+    goOrm: GoOrmSchema.optional().describe("Go ORM"),
+    goApi: GoApiSchema.optional().describe("Go API layer"),
+    goCli: GoCliSchema.optional().describe("Go CLI framework"),
+    goLogging: GoLoggingSchema.optional().describe("Go logging library"),
+    goAuth: GoAuthSchema.optional().describe("Go authentication library"),
+    javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
+    javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
+    javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
+    javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+    javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
+    javaTestingLibraries: z
+      .array(JavaTestingLibrariesSchema)
+      .optional()
+      .describe("Java testing libraries"),
+    elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
+    elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
+    elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
+    elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
+    elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
+    elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
+    elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
+    elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
+    elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
+    elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
+    elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
+    elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
+    elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
+    elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
+    elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+  };
+
   registerTool(
     "bfs_check_compatibility",
     "Validates a stack combination and returns auto-adjusted selections with warnings. Call BEFORE creating a project to avoid invalid combinations.",
@@ -891,74 +885,15 @@ export async function startMcpServer() {
       i18n: I18nSchema.optional().describe("Internationalization library"),
       search: SearchSchema.optional().describe("Search engine"),
       fileStorage: FileStorageSchema.optional().describe("File storage"),
-      mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
-      mobileUI: MobileUISchema.optional().describe("Mobile UI"),
-      mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
-      mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
-      mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
-      mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
-      mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
-      dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
-      webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
-      serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
+      ...mobileInputSchema,
+      ...deploymentInputSchema,
       astroIntegration: AstroIntegrationSchema.optional().describe("Astro UI framework integration"),
       uiLibrary: z.string().optional().describe("UI component library"),
       cssFramework: z.string().optional().describe("CSS framework"),
       addons: z.array(AddonsSchema).optional().describe("Addon list"),
       examples: z.array(ExamplesSchema).optional().describe("Example templates"),
       packageManager: PackageManagerSchema.optional().describe("Package manager"),
-      rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
-      rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
-      rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
-      rustApi: RustApiSchema.optional().describe("Rust API layer"),
-      rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
-      rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust libraries"),
-      rustLogging: RustLoggingSchema.optional().describe("Rust logging library"),
-      rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
-      rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
-      rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
-      pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
-      pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
-      pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
-      pythonAi: z.array(PythonAiSchema).optional().describe("Python AI libraries"),
-      pythonAuth: PythonAuthSchema.optional().describe("Python auth library"),
-      pythonApi: PythonApiSchema.optional().describe("Python API framework"),
-      pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
-      pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
-      pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
-      goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
-      goOrm: GoOrmSchema.optional().describe("Go ORM"),
-      goApi: GoApiSchema.optional().describe("Go API layer"),
-      goCli: GoCliSchema.optional().describe("Go CLI framework"),
-      goLogging: GoLoggingSchema.optional().describe("Go logging library"),
-      goAuth: GoAuthSchema.optional().describe("Go authentication library"),
-      javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
-      javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
-      javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
-      javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
-      javaLibraries: z
-        .array(JavaLibrariesSchema)
-        .optional()
-        .describe("Java application libraries"),
-      javaTestingLibraries: z
-        .array(JavaTestingLibrariesSchema)
-        .optional()
-        .describe("Java testing libraries"),
-      elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
-      elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
-      elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
-      elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
-      elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
-      elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
-      elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
-      elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
-      elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
-      elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
-      elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
-      elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
-      elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
-      elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
-      elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+      ...crossEcosystemInputSchema,
     }),
     async (input: Record<string, unknown>) => {
       try {
@@ -1010,69 +945,10 @@ export async function startMcpServer() {
     i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
     cms: CMSSchema.optional().describe("CMS"),
     fileStorage: FileStorageSchema.optional().describe("File storage"),
-    mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
-    mobileUI: MobileUISchema.optional().describe("Mobile UI"),
-    mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
-    mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
-    mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
-    mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
-    mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
+    ...mobileInputSchema,
     fileUpload: FileUploadSchema.optional().describe("File upload"),
-    webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
-    serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
-    dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
-    rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
-    rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
-    rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
-    rustApi: RustApiSchema.optional().describe("Rust API layer"),
-    rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
-    rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust libraries"),
-    rustLogging: RustLoggingSchema.optional().describe("Rust logging library"),
-    rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
-    rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
-    rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
-    pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
-    pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
-    pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
-    pythonAi: z.array(PythonAiSchema).optional().describe("Python AI libraries"),
-    pythonAuth: PythonAuthSchema.optional().describe("Python auth library"),
-    pythonApi: PythonApiSchema.optional().describe("Python API framework"),
-    pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
-    pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
-    pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
-    goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
-    goOrm: GoOrmSchema.optional().describe("Go ORM"),
-    goApi: GoApiSchema.optional().describe("Go API layer"),
-    goCli: GoCliSchema.optional().describe("Go CLI framework"),
-    goLogging: GoLoggingSchema.optional().describe("Go logging library"),
-    goAuth: GoAuthSchema.optional().describe("Go authentication library"),
-    javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
-    javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
-    javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
-    javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
-    javaLibraries: z
-      .array(JavaLibrariesSchema)
-      .optional()
-      .describe("Java application libraries"),
-    javaTestingLibraries: z
-      .array(JavaTestingLibrariesSchema)
-      .optional()
-      .describe("Java testing libraries"),
-    elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
-    elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
-    elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
-    elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
-    elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
-    elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
-    elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
-    elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
-    elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
-    elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
-    elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
-    elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
-    elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
-    elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
-    elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+    ...deploymentInputSchema,
+    ...crossEcosystemInputSchema,
   };
 
   registerTool(

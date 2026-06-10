@@ -1,7 +1,9 @@
 import { analyzeStackCompatibility } from "@better-fullstack/types";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+} from "@better-fullstack/types/stack-translation";
 
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
-import { createStackSearchParams } from "@/lib/stack-url-state.shared";
 
 const ECOSYSTEM_SHARE_SLUGS = {
   typescript: "TypeScript",

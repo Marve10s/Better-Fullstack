@@ -61,7 +61,7 @@ For deeper dives, see the companion files:
 | **CLI wiring** | | |
 | 16 | `apps/cli/src/index.ts` | 4 spots: import, router input schema, prompt call, config mapping |
 | 17 | `apps/cli/src/prompts/config-prompts.ts` | Import prompt function, add to `PromptGroupResults` type, add to navigable group, add to return mapping |
-| 18 | `apps/cli/src/mcp.ts` | **6 spots:** import schema, add to `SCHEMA_MAP`, add to ecosystem categories, add to `buildProjectConfig()`, add to `buildCompatibilityInput()`, add to `bfs_plan_project`/`bfs_create_project` tool parameters |
+| 18 | `apps/cli/src/mcp.ts` | **5 spots:** import schema, add to tool parameter schemas, add to `buildProjectConfig()`, add to `buildCompatibilityInput()`, and add MCP schema aliases/overrides only when the public Legacy Flat Config key differs from `OPTION_CATEGORY_METADATA` |
 | 19 | `apps/cli/src/utils/bts-config.ts` | Field mapping in both write and read paths of `writeBtsConfig()` |
 | 20 | `apps/cli/src/constants.ts` | Ecosystem-aware default value — use a meaningful default when the category has a clear winner (e.g., Rust logging defaults to `"tracing"`, not `"none"`; use `"none"` only when no default makes sense) |
 | 21 | `apps/cli/src/helpers/core/command-handlers.ts` | Add field with `"none"` default to error fallback config |
@@ -71,13 +71,10 @@ For deeper dives, see the companion files:
 | 24 | `apps/cli/test/generate-reproducible-command.test.ts` | Add field to `makeConfig()` defaults + update expected command strings |
 | 25 | `apps/cli/test/add-history-commands.test.ts` | Add `--<flag> none` to CLI args and expected command in Python/Go/Rust history tests |
 | **Compatibility** | | |
-| 23 | `packages/types/src/compatibility.ts` | Add field to `CompatibilityInput` type + `getCategoryDisplayName()` |
+| 23 | `packages/types/src/compatibility.ts` | Add field to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/option-metadata.ts` |
 | **Web builder** | | |
 | 24 | `apps/web/src/lib/preview-config.ts` | Add field to `stackToConfig()` mapping (maps StackState → ProjectConfig for web preview) |
-| 25 | `apps/web/src/lib/stack-defaults.ts` | Add field to `StackState` type and `DEFAULT_STACK` |
-| 25 | `apps/web/src/lib/stack-url-keys.ts` | Short URL key (e.g., `rateLimiting: "rl"`) |
-| 26 | `apps/web/src/lib/stack-url-state.ts` | 3 spots: `loadStackParams()`, `serializeStackParams()`, `searchToStack()` |
-| 27 | `apps/web/src/lib/stack-utils.ts` | `TYPESCRIPT_CATEGORY_ORDER` + `generateStackCommand()` flags |
+| 25 | `packages/types/src/stack-translation.ts` | Add `DEFAULT_STACK_SELECTION` value, `STACK_SELECTION_URL_KEYS` short key, and `generateStackSelectionCommand()` flag; category order lives in `packages/types/src/option-metadata.ts` |
 | **Smoke test wiring** | | |
 | 28 | `testing/lib/generate-combos/options.ts` | Import `*_VALUES`, add `sampleScalar()` in `make*Draft()`, add default in base config |
 | 29 | `testing/lib/presets.ts` | Add field to `makeBaseConfig()` so existing presets don't break |
@@ -633,13 +630,13 @@ rateLimiting: options.rateLimiting || "none",
 
 **File:** `apps/cli/src/mcp.ts`
 
-Add to `SCHEMA_MAP` (hardcoded record mapping field names to Zod schemas):
+Add the schema import for tool input validation, then wire it into the relevant MCP tool parameter objects:
 
 ```typescript
-rateLimiting: RateLimitingSchema,
+rateLimiting: RateLimitingSchema.optional().describe("Rate limiting library"),
 ```
 
-Also add to the `bfs_plan_project` and `bfs_create_project` tool parameter definitions in the same file.
+Also add it to `buildProjectConfig()` and `buildCompatibilityInput()` defaults/mapping as needed. `bfs_get_schema` is derived from shared `OPTION_CATEGORY_METADATA` and ecosystem category order; only update MCP schema adapter constants such as `MCP_LEGACY_CATEGORY_KEYS` or `MCP_SCHEMA_OPTION_OVERRIDES` when the public MCP field name must differ from the builder category name.
 
 ### bts.jsonc config writer
 
@@ -653,60 +650,32 @@ rateLimiting: projectConfig.rateLimiting,
 
 ### Additional web builder files for new categories
 
-**File:** `apps/web/src/lib/stack-defaults.ts`
+**File:** `packages/types/src/stack-translation.ts`
 
-Add default value in `DEFAULT_STACK`:
+Add the shared stack-selection default and URL key:
 
 ```typescript
+// In DEFAULT_STACK_SELECTION
 rateLimiting: "none",
+
+// In STACK_SELECTION_URL_KEYS
+rateLimiting: "rl",
 ```
 
-**File:** `apps/web/src/lib/constant.ts`
-
-Add category to `ECOSYSTEM_CATEGORIES`:
+Add the command flag mapping:
 
 ```typescript
-const ECOSYSTEM_CATEGORIES: Record<string, OptionCategory[]> = {
-  typescript: [
-    // ...existing
-    "rateLimiting",    // Add in logical order
-  ],
-};
+// In generateTypeScriptCommand() flags array
+`--rate-limiting ${selection.rateLimiting}`,
 ```
 
-**File:** `apps/web/src/lib/stack-url-keys.ts`
+**File:** `packages/types/src/option-metadata.ts`
 
-Add URL key mapping:
-
-```typescript
-rateLimiting: "rl",    // Short key for URL encoding
-```
-
-**File:** `apps/web/src/lib/stack-url-state.ts`
-
-Three spots (use existing `search` entries as landmarks):
-
-```typescript
-// In loadStackParams()
-rateLimiting: getString("rateLimiting", DEFAULT_STACK.rateLimiting),
-
-// In serializeStackParams()
-addParam("rateLimiting", stack.rateLimiting);
-
-// In searchToStack()
-rateLimiting: search.rl ?? DEFAULT_STACK.rateLimiting,
-```
-
-**File:** `apps/web/src/lib/stack-utils.ts`
-
-Two spots:
+Add the category to the shared TypeScript order:
 
 ```typescript
 // In TYPESCRIPT_CATEGORY_ORDER array
 "rateLimiting",
-
-// In generateStackCommand() flags array
-`--rate-limiting ${stack.rateLimiting}`,
 ```
 
 ### New category within an existing non-TS ecosystem (e.g., `GoAuthSchema`)
@@ -743,7 +712,7 @@ Use this when adding a language that doesn't exist yet (e.g., Java, Elixir, C#).
 | 8 | `apps/cli/src/prompts/java-ecosystem.ts` | Create prompt file with `getJavaWebFrameworkChoice()`, `getJavaOrmChoice()`, etc. |
 | 9 | `apps/cli/src/prompts/config-prompts.ts` | Import Java prompt functions, add to `PromptGroupResults`, add to navigable group, add to return mapping |
 | 10 | `apps/cli/src/index.ts` | Register all Java-prefixed Commander flags (`--java-web-framework`, `--java-orm`, etc.), add schema imports, add prompt calls (gated by `ecosystem === "java"`), add config mapping |
-| 11 | `apps/cli/src/mcp.ts` | **6 spots per category:** import schema, add to `SCHEMA_MAP`, add to ecosystem categories, add to `buildProjectConfig()`, add to `buildCompatibilityInput()`, add to tool parameters |
+| 11 | `apps/cli/src/mcp.ts` | Import schema, add tool parameters, add `buildProjectConfig()`/`buildCompatibilityInput()` wiring, and add MCP schema aliases/overrides only for Legacy Flat Config naming differences |
 | 12 | `apps/cli/src/utils/bts-config.ts` | Add all Java field mappings to both write and read paths |
 | 13 | `apps/cli/src/constants.ts` | Add ecosystem-aware defaults for all Java categories |
 | 14 | `apps/cli/src/helpers/core/command-handlers.ts` | Add all Java fields with `"none"` defaults to error fallback config |
@@ -752,16 +721,13 @@ Use this when adding a language that doesn't exist yet (e.g., Java, Elixir, C#).
 | 17 | `packages/template-generator/src/processors/readme-generator.ts` | Add Java framework descriptions and commands for generated README |
 | 18 | `packages/template-generator/src/processors/ai-docs-generator.ts` | Add Java dev server commands for generated CLAUDE.md |
 | **Compatibility** | | |
-| 19 | `packages/types/src/compatibility.ts` | Add all Java fields to `CompatibilityInput` type + `getCategoryDisplayName()` |
+| 19 | `packages/types/src/compatibility.ts` | Add all Java fields to `CompatibilityInput` type and any constraint rules; display names live in `packages/types/src/option-metadata.ts` |
 | **Web builder** | | |
-| 20 | `apps/web/src/lib/constant.ts` | Add `"java"` to ecosystem options. Add all Java `TECH_OPTIONS` categories. Add `java: [...]` to `ECOSYSTEM_CATEGORIES`. Add label overrides. |
+| 20 | `apps/web/src/lib/constant.ts` | Add `"java"` to ecosystem options and add all Java `TECH_OPTIONS` categories. Ecosystem category order lives in `packages/types/src/option-metadata.ts`. |
 | 21 | `apps/web/src/lib/tech-icons.ts` | Add icons for all Java tools |
 | 22 | `apps/web/src/lib/tech-resource-links.ts` | Add docs/GitHub URLs for all Java tools |
 | 23 | `apps/web/src/lib/preview-config.ts` | Add all `java*` fields to `stackToConfig()` mapping |
-| 24 | `apps/web/src/lib/stack-defaults.ts` | Add all `java*` fields to `StackState` type and `DEFAULT_STACK` with `"none"` defaults |
-| 24 | `apps/web/src/lib/stack-url-keys.ts` | Add short URL keys for all Java categories (`javaWebFramework: "jwf"`, etc.) |
-| 25 | `apps/web/src/lib/stack-url-state.ts` | Add all Java fields to `loadStackParams()`, `serializeStackParams()`, `searchToStack()` |
-| 26 | `apps/web/src/lib/stack-utils.ts` | Add `JAVA_CATEGORY_ORDER` array, add `generateJavaCommand()` function, register in ecosystem dispatch |
+| 24 | `packages/types/src/stack-translation.ts` | Add all Java defaults, short URL keys (`javaWebFramework: "jwf"`, etc.), `generateJavaCommand()`, and `generateStackSelectionCommand()` dispatch; category order lives in `packages/types/src/option-metadata.ts` |
 | **Tests** | | |
 | 27 | `apps/cli/test/java-ecosystem.test.ts` | Create test file using `createVirtual` API (same pattern as `rust-ecosystem.test.ts`) |
 | 28 | `apps/cli/test/template-snapshots.test.ts` | Add Java snapshot configs |
@@ -828,7 +794,7 @@ Study the existing `rust-base/`, `go-base/`, and `python-base/` templates as str
 | `apps/cli/src/prompts/<eco>-ecosystem.ts` | Interactive prompt for Rust/Go/Python | Every new non-TS option |
 | `apps/cli/src/prompts/config-prompts.ts` | Prompt group wiring (imports, `PromptGroupResults`, return mapping) | New category only |
 | `apps/cli/src/helpers/core/post-installation.ts` | Post-scaffold setup instructions + framework display name | When user action needed, or when other options in same category have post-install |
-| `apps/cli/src/mcp.ts` | **5 spots:** import, `SCHEMA_MAP`, ecosystem categories, config builder, tool parameters | New category only |
+| `apps/cli/src/mcp.ts` | Import schema, tool parameter schemas, config builder, compatibility input, and MCP schema aliases/overrides only for Legacy Flat Config naming differences | New category only |
 | `apps/cli/src/utils/bts-config.ts` | `writeBtsConfig()` field mapping (write + read paths) | New category only |
 | `apps/cli/src/constants.ts` | Ecosystem-aware default values | New category only |
 | `apps/cli/src/helpers/core/command-handlers.ts` | Error fallback config (`"none"` for new fields) | New category only |
@@ -845,14 +811,11 @@ Study the existing `rust-base/`, `go-base/`, and `python-base/` templates as str
 
 | File | Purpose | When to edit |
 |------|---------|--------------|
-| `apps/web/src/lib/constant.ts` | `TECH_OPTIONS`, `ECOSYSTEM_CATEGORIES`, label overrides | Always |
+| `apps/web/src/lib/constant.ts` | `TECH_OPTIONS` and ecosystem option entries; category order is derived from `packages/types/src/option-metadata.ts` | Always |
 | `apps/web/src/lib/tech-icons.ts` | Icon registry (SimpleIcons CDN or local SVG) | Always |
 | `apps/web/src/lib/tech-resource-links.ts` | Docs URL, GitHub URL | Always |
 | `apps/web/public/icon/<id>.svg` | Local SVG icon file | When not using SimpleIcons |
-| `apps/web/src/lib/stack-defaults.ts` | `DEFAULT_STACK` default value | New category only |
-| `apps/web/src/lib/stack-url-keys.ts` | URL param short keys | New category only |
-| `apps/web/src/lib/stack-url-state.ts` | URL state serialization (3 spots: load, serialize, search) | New category only |
-| `apps/web/src/lib/stack-utils.ts` | Category ordering + command generation flags | New category only |
+| `packages/types/src/stack-translation.ts` | Shared stack defaults, URL keys, URL serialization, and command generation flags | New category only |
 
 ---
 
@@ -1127,7 +1090,7 @@ bun run --cwd apps/cli check-types
 bun run --cwd apps/web typecheck
 ```
 
-If web typecheck fails with "Property 'X' is missing," you forgot to add your new field to `preview-config.ts` or `stack-defaults.ts`.
+If web typecheck fails with "Property 'X' is missing," you forgot to add your new field to `preview-config.ts` or `DEFAULT_STACK_SELECTION` in `packages/types/src/stack-translation.ts`.
 
 ### Step 4 — Category-specific tests
 

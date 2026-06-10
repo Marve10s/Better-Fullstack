@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
+import {
+  createStackSelectionSearchParams as createStackSearchParams,
+  parseStackSelectionFromUrlRecord as parseStackFromUrlRecord,
+} from "@better-fullstack/types/stack-translation";
 
 import { DEFAULT_STACK } from "../src/lib/constant";
-import {
-  createStackSearchParams,
-  parseStackFromUrlRecord,
-} from "../src/lib/stack-url-state.shared";
 import { generateStackCommand, generateStackSummary } from "../src/lib/stack-utils";
 
 describe("generateStackCommand", () => {

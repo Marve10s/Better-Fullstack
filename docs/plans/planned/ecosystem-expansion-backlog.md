@@ -2,6 +2,10 @@
 
 Master tracking file. Detailed plans live in dedicated files per area.
 
+Current snapshot: Better Fullstack now has first-class schema and prompt support for seven ecosystems: TypeScript, React Native, Rust, Python, Go, Java, and Elixir. This backlog is now a mixed status index: checked items are shipped, while unchecked items remain candidates for deeper template, CLI, web builder, MCP, and docs work.
+
+When updating this file, verify shipped status against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and the ecosystem prompt/template tests rather than older plan text.
+
 ## Detailed Plans
 
 | File | Scope |
@@ -17,7 +21,7 @@ Master tracking file. Detailed plans live in dedicated files per area.
 | [new-ecosystems.md](new-ecosystems.md) | Index — links to individual ecosystem files below |
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
 | [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
-| [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir: Phoenix, Ecto, LiveView, Oban, Absinthe, etc. |
+| [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir foundation shipped; remaining follow-ups for deeper Phoenix/LiveView deployment and advanced library coverage |
 | [dotnet-ecosystem.md](dotnet-ecosystem.md) | C#: ASP.NET Core, EF Core, Dapper, SignalR, etc. |
 | **Platform & Infra** | |
 | [platform-features.md](platform-features.md) | CLI features: dry-run, cross-ecosystem, template preview (MCP/add/history done) |
@@ -131,13 +135,14 @@ Master tracking file. Detailed plans live in dedicated files per area.
 ### New Language Ecosystems
 - [x] Add `java` foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries/testing ✅
 - [ ] Expand Java with Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
-- [ ] Add `elixir` (Phoenix, LiveView)
+- [x] Add `elixir` foundation: Phoenix, LiveView, Ecto, auth, REST/Absinthe, realtime, jobs, caching, observability, testing, deploy choices ✅
 - [ ] Add `c#/aspnet` (ASP.NET Core, EF Core)
 
 ### Mobile / React Native
-- [ ] Navigation (expo-router, react-navigation)
-- [ ] Mobile UI libs (tamagui, gluestack, nativewind)
-- [ ] Mobile testing (maestro, detox)
+- [x] React Native ecosystem foundation ✅
+- [x] Navigation (expo-router, react-navigation) ✅
+- [x] Mobile UI libs (tamagui, gluestack, nativewind/unistyles path) ✅
+- [x] Mobile testing foundation (React Native Testing Library / Maestro choice) ✅
 - [ ] Push notifications (expo-notifications)
 - [ ] Capacitor (web → mobile)
 

@@ -27,7 +27,7 @@ function getCategoryTitle(category: ErrorCategory): string {
   return titles[category];
 }
 
-export function displayStructuredError(error: StructuredError): never {
+function displayStructuredError(error: StructuredError): never {
   // For programmatic API, throw plain CLIError
   if (isSilent()) {
     throw new CLIError(error.message);

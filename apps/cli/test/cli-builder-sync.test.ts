@@ -4,11 +4,13 @@ import {
   type OptionCategory,
   OPTION_CATEGORY_METADATA,
 } from "@better-fullstack/types";
+import {
+  STACK_SELECTION_KEYS,
+  STACK_SELECTION_OPTION_CATEGORY_BY_KEY,
+} from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 
 import { TECH_OPTIONS } from "../../web/src/lib/constant";
-import { STACK_STATE_OPTION_CATEGORY_BY_KEY } from "../../web/src/lib/stack-contract";
-import { stackStateKeys } from "../../web/src/lib/stack-url-state.shared";
 import { DEFAULT_CONFIG } from "../src/constants";
 import { CreateCommandOptionsSchema } from "../src/create-command-input";
 import {
@@ -174,8 +176,8 @@ describe("CLI and Builder catalog parity", () => {
 
 describe("StackState to CLI input parity", () => {
   it("maps every option-backed StackState key to a create-command input field", () => {
-    const missingCliKeys = stackStateKeys
-      .filter((key) => STACK_STATE_OPTION_CATEGORY_BY_KEY[key] !== undefined)
+    const missingCliKeys = STACK_SELECTION_KEYS
+      .filter((key) => STACK_SELECTION_OPTION_CATEGORY_BY_KEY[key] !== undefined)
       .map((key) => {
         const techCategory = key === "aiSdk" ? "ai" : key;
         return getCreateOptionKey(techCategory as keyof typeof TECH_OPTIONS);

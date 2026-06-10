@@ -3,7 +3,7 @@ title: Python
 description: Python API and AI-oriented scaffolds with web frameworks, ORMs, validation, queues, GraphQL, and quality tooling.
 ---
 
-Python projects use `uv` and Python-native templates. Shared TypeScript categories such as web UI libraries, package managers, and `chat-sdk` examples are not Python scaffold categories.
+Python projects use `uv` and Python-native templates. Choose Python options for API frameworks, ORMs, validation, AI libraries, auth helpers, task queues, GraphQL, and quality tooling.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ Python projects use `uv` and Python-native templates. Shared TypeScript categori
 
 ## Scripted example
 
-```bash
+```npm
 npm create better-fullstack@latest my-python-api -- \
   --ecosystem python \
   --python-web-framework fastapi \
@@ -37,11 +37,12 @@ npm create better-fullstack@latest my-python-api -- \
 | Web framework | `fastapi` `django` `flask` `litestar` `none` |
 | ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `none` |
 | Validation | `pydantic` `none` |
-| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `none` |
 | Auth | `authlib` `jwt` `none` |
-| Task queue | `celery` `none` |
-| GraphQL | `strawberry` `none` |
-| Quality | `ruff` `none` |
+| API | `django-rest-framework` `django-ninja` `none` |
+| Task queue | `celery` `rq` `dramatiq` `huey` `none` |
+| GraphQL | `strawberry` `ariadne` `none` |
+| Quality | `ruff` `mypy` `pyright` `none` |
 
 ## Generated behavior
 

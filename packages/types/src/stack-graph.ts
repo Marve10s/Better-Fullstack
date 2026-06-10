@@ -53,6 +53,8 @@ export type StackPrimaryRole = Extract<
   StackPartRole,
   "frontend" | "backend" | "mobile" | "database"
 >;
+type LegacyBackendEcosystem = Exclude<Ecosystem, "typescript" | "react-native">;
+type LegacyCapabilityRole = Extract<StackPartRole, "orm" | "api" | "auth">;
 
 export type ProvidedCapabilityDefinition = {
   role: StackPartRole;
@@ -136,6 +138,38 @@ const ROLE_TARGET_PATHS: Record<StackPrimaryRole, string> = {
   mobile: "apps/native",
   database: "packages/database",
 };
+
+const LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM = {
+  rust: "rustWebFramework",
+  python: "pythonWebFramework",
+  go: "goWebFramework",
+  java: "javaWebFramework",
+  elixir: "elixirWebFramework",
+} as const satisfies Record<LegacyBackendEcosystem, keyof ProjectConfig>;
+
+const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
+  rust: { orm: "rustOrm", api: "rustApi", auth: "rustAuth" },
+  python: { orm: "pythonOrm", api: "pythonApi", auth: "pythonAuth" },
+  go: { orm: "goOrm", api: "goApi", auth: "goAuth" },
+  java: { orm: "javaOrm", auth: "javaAuth" },
+  elixir: { orm: "elixirOrm", api: "elixirApi", auth: "elixirAuth" },
+} as const satisfies Record<
+  LegacyBackendEcosystem,
+  Partial<Record<LegacyCapabilityRole, keyof ProjectConfig>>
+>;
+
+const GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES = [
+  "backend",
+  "database",
+  "orm",
+  "api",
+  "auth",
+  "rustFrontend",
+  ...Object.values(LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM),
+  ...Object.values(LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM).flatMap((categories) =>
+    Object.values(categories),
+  ),
+] as Array<keyof ProjectConfig>;
 
 function defineTools(
   values: readonly string[],
@@ -258,6 +292,12 @@ export function createStackPart(input: {
 
 function isNoneTool(toolId: string | undefined) {
   return !toolId || toolId === "none";
+}
+
+function isLegacyBackendEcosystem(
+  ecosystem: StackPartEcosystem | undefined,
+): ecosystem is LegacyBackendEcosystem {
+  return ecosystem !== undefined && ecosystem in LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM;
 }
 
 function allowsCrossEcosystemOwner(
@@ -613,39 +653,19 @@ export function legacyProjectConfigToStackParts(
     backendPart = addLegacyPart(parts, "backend", "typescript", config.backend, source);
   }
 
-  if (
-    config.ecosystem === "rust" &&
-    config.rustWebFramework &&
-    config.rustWebFramework !== "none"
-  ) {
-    backendPart = addLegacyPart(parts, "backend", "rust", config.rustWebFramework, source);
-  }
   if (config.ecosystem === "rust" && config.rustFrontend && config.rustFrontend !== "none") {
     addLegacyPart(parts, "frontend", "rust", config.rustFrontend, source);
   }
-  if (
-    config.ecosystem === "python" &&
-    config.pythonWebFramework &&
-    config.pythonWebFramework !== "none"
-  ) {
-    backendPart = addLegacyPart(parts, "backend", "python", config.pythonWebFramework, source);
-  }
-  if (config.ecosystem === "go" && config.goWebFramework && config.goWebFramework !== "none") {
-    backendPart = addLegacyPart(parts, "backend", "go", config.goWebFramework, source);
-  }
-  if (
-    config.ecosystem === "java" &&
-    config.javaWebFramework &&
-    config.javaWebFramework !== "none"
-  ) {
-    backendPart = addLegacyPart(parts, "backend", "java", config.javaWebFramework, source);
-  }
-  if (
-    config.ecosystem === "elixir" &&
-    config.elixirWebFramework &&
-    config.elixirWebFramework !== "none"
-  ) {
-    backendPart = addLegacyPart(parts, "backend", "elixir", config.elixirWebFramework, source);
+
+  if (isLegacyBackendEcosystem(config.ecosystem)) {
+    const category = LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM[config.ecosystem];
+    backendPart = addLegacyPart(
+      parts,
+      "backend",
+      config.ecosystem,
+      config[category] as string | undefined,
+      source,
+    );
   }
 
   const databasePart = addLegacyPart(parts, "database", "universal", config.database, source);
@@ -671,29 +691,19 @@ export function legacyProjectConfigToStackParts(
       capabilityOwner,
     );
   }
-  if (config.ecosystem === "rust") {
-    addLegacyPart(parts, "orm", "rust", config.rustOrm, source, backendPart?.id);
-    addLegacyPart(parts, "api", "rust", config.rustApi, source, backendPart?.id);
-    addLegacyPart(parts, "auth", "rust", config.rustAuth, source, backendPart?.id);
-  }
-  if (config.ecosystem === "python") {
-    addLegacyPart(parts, "orm", "python", config.pythonOrm, source, backendPart?.id);
-    addLegacyPart(parts, "api", "python", config.pythonApi, source, backendPart?.id);
-    addLegacyPart(parts, "auth", "python", config.pythonAuth, source, backendPart?.id);
-  }
-  if (config.ecosystem === "go") {
-    addLegacyPart(parts, "orm", "go", config.goOrm, source, backendPart?.id);
-    addLegacyPart(parts, "api", "go", config.goApi, source, backendPart?.id);
-    addLegacyPart(parts, "auth", "go", config.goAuth, source, backendPart?.id);
-  }
-  if (config.ecosystem === "java") {
-    addLegacyPart(parts, "orm", "java", config.javaOrm, source, backendPart?.id);
-    addLegacyPart(parts, "auth", "java", config.javaAuth, source, backendPart?.id);
-  }
-  if (config.ecosystem === "elixir") {
-    addLegacyPart(parts, "orm", "elixir", config.elixirOrm, source, backendPart?.id);
-    addLegacyPart(parts, "api", "elixir", config.elixirApi, source, backendPart?.id);
-    addLegacyPart(parts, "auth", "elixir", config.elixirAuth, source, backendPart?.id);
+  if (isLegacyBackendEcosystem(config.ecosystem)) {
+    for (const [role, category] of Object.entries(
+      LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM[config.ecosystem],
+    ) as Array<[LegacyCapabilityRole, keyof ProjectConfig]>) {
+      addLegacyPart(
+        parts,
+        role,
+        config.ecosystem,
+        config[category] as string | undefined,
+        source,
+        backendPart?.id,
+      );
+    }
   }
 
   return materializeProvidedStackParts(parts);
@@ -738,21 +748,11 @@ export function stackPartsToLegacyProjectConfigPartial(
           ...(config.frontend ?? []),
           part.toolId as ProjectConfig["frontend"][number],
         ];
-      } else if (part.role === "backend") {
-        if (part.ecosystem === "typescript")
-          config.backend = part.toolId as ProjectConfig["backend"];
-        if (part.ecosystem === "rust")
-          config.rustWebFramework = part.toolId as ProjectConfig["rustWebFramework"];
-        if (part.ecosystem === "python")
-          config.pythonWebFramework = part.toolId as ProjectConfig["pythonWebFramework"];
-        if (part.ecosystem === "go")
-          config.goWebFramework = part.toolId as ProjectConfig["goWebFramework"];
-        if (part.ecosystem === "java")
-          config.javaWebFramework = part.toolId as ProjectConfig["javaWebFramework"];
-        if (part.ecosystem === "elixir")
-          config.elixirWebFramework = part.toolId as ProjectConfig["elixirWebFramework"];
-      } else if (part.role === "database") {
-        config.database = part.toolId as ProjectConfig["database"];
+      } else {
+        const definition = findDefinition(part);
+        if (definition?.legacyCategory) {
+          (config as Record<string, unknown>)[definition.legacyCategory] = part.toolId;
+        }
       }
       continue;
     }
@@ -763,36 +763,107 @@ export function stackPartsToLegacyProjectConfigPartial(
       continue;
     }
 
-    if (part.role === "orm") {
-      if (part.ecosystem === "typescript") config.orm = part.toolId as ProjectConfig["orm"];
-      if (part.ecosystem === "rust") config.rustOrm = part.toolId as ProjectConfig["rustOrm"];
-      if (part.ecosystem === "python") config.pythonOrm = part.toolId as ProjectConfig["pythonOrm"];
-      if (part.ecosystem === "go") config.goOrm = part.toolId as ProjectConfig["goOrm"];
-      if (part.ecosystem === "java") config.javaOrm = part.toolId as ProjectConfig["javaOrm"];
-      if (part.ecosystem === "elixir") config.elixirOrm = part.toolId as ProjectConfig["elixirOrm"];
-    }
-    if (part.role === "api") {
-      if (part.ecosystem === "typescript") config.api = part.toolId as ProjectConfig["api"];
-      if (part.ecosystem === "rust") config.rustApi = part.toolId as ProjectConfig["rustApi"];
-      if (part.ecosystem === "python") config.pythonApi = part.toolId as ProjectConfig["pythonApi"];
-      if (part.ecosystem === "go") config.goApi = part.toolId as ProjectConfig["goApi"];
-      if (part.ecosystem === "elixir") config.elixirApi = part.toolId as ProjectConfig["elixirApi"];
-    }
-    if (part.role === "auth") {
-      if (part.ecosystem === "typescript" || part.ecosystem === "react-native") {
-        config.auth = part.toolId as ProjectConfig["auth"];
-      }
-      if (part.ecosystem === "rust") config.rustAuth = part.toolId as ProjectConfig["rustAuth"];
-      if (part.ecosystem === "python")
-        config.pythonAuth = part.toolId as ProjectConfig["pythonAuth"];
-      if (part.ecosystem === "go") config.goAuth = part.toolId as ProjectConfig["goAuth"];
-      if (part.ecosystem === "java") config.javaAuth = part.toolId as ProjectConfig["javaAuth"];
-      if (part.ecosystem === "elixir")
-        config.elixirAuth = part.toolId as ProjectConfig["elixirAuth"];
-    }
   }
 
   return config;
+}
+
+type GraphProjectionEcosystem = Exclude<StackPartEcosystem, "universal">;
+
+function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
+  return parts.find(
+    (part) => part.role === role && !part.ownerPartId && part.source !== "provided",
+  );
+}
+
+function getSelectedScopedPart(
+  parts: readonly StackPart[],
+  owner: StackPart | undefined,
+  role: StackPartRole,
+) {
+  if (!owner) return undefined;
+  return parts.find(
+    (part) => part.role === role && part.ownerPartId === owner.id && part.source !== "provided",
+  );
+}
+
+function projectLegacyCategoryFromPart(
+  config: ProjectConfig,
+  part: StackPart | undefined,
+  ecosystem: GraphProjectionEcosystem,
+) {
+  if (!part) return;
+  const legacyCategory = findDefinition(part)?.legacyCategory;
+  if (!legacyCategory || legacyCategory === "frontend") return;
+
+  const canProject =
+    legacyCategory === "database" ||
+    part.ecosystem === ecosystem ||
+    (legacyCategory === "auth" &&
+      (ecosystem === "typescript" || ecosystem === "react-native") &&
+      (part.ecosystem === "typescript" || part.ecosystem === "react-native"));
+
+  if (canProject) {
+    (config as Record<string, unknown>)[legacyCategory] = part.toolId;
+  }
+}
+
+export function stackGraphToLegacyProjectConfigForEcosystem(
+  config: ProjectConfig,
+  ecosystem: GraphProjectionEcosystem,
+): ProjectConfig {
+  const parts = config.stackParts ?? [];
+  const backend = parts.find(
+    (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
+  );
+  const frontend = parts.find(
+    (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
+  );
+  const mobile = parts.find(
+    (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
+  );
+  const database =
+    getSelectedPrimaryPart(parts, "database") ?? getSelectedScopedPart(parts, backend, "database");
+  const orm = getSelectedScopedPart(parts, backend, "orm");
+  const api = getSelectedScopedPart(parts, backend, "api");
+  const auth =
+    getSelectedScopedPart(parts, backend, "auth") ??
+    getSelectedScopedPart(parts, frontend, "auth") ??
+    getSelectedScopedPart(parts, mobile, "auth");
+
+  const projected: ProjectConfig = {
+    ...config,
+    ecosystem,
+    frontend: [
+      ...(frontend && frontend.ecosystem === "typescript" ? [frontend.toolId] : []),
+      ...(mobile && ["typescript", "react-native"].includes(ecosystem) ? [mobile.toolId] : []),
+    ] as ProjectConfig["frontend"],
+  };
+
+  for (const category of GRAPH_PROJECTION_DEFAULT_LEGACY_CATEGORIES) {
+    (projected as Record<string, unknown>)[category] = "none";
+  }
+
+  projectLegacyCategoryFromPart(projected, backend, ecosystem);
+  projectLegacyCategoryFromPart(projected, frontend, ecosystem);
+  projectLegacyCategoryFromPart(projected, database, ecosystem);
+  projectLegacyCategoryFromPart(projected, orm, ecosystem);
+  projectLegacyCategoryFromPart(projected, api, ecosystem);
+  projectLegacyCategoryFromPart(projected, auth, ecosystem);
+
+  const backendScopedPartRoles = new Set<StackPartRole>(["database", "orm", "api", "auth"]);
+  for (const part of parts) {
+    if (
+      part.source === "provided" ||
+      part.ownerPartId !== backend?.id ||
+      backendScopedPartRoles.has(part.role)
+    ) {
+      continue;
+    }
+    projectLegacyCategoryFromPart(projected, part, ecosystem);
+  }
+
+  return projected;
 }
 
 export function compareLegacyConfigToStackParts(

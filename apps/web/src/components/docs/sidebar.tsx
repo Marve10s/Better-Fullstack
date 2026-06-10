@@ -3,12 +3,7 @@ import { motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 
 import { DocsSearchTrigger } from "@/components/docs/search-dialog";
-import {
-  type FolderNode,
-  type PageNode,
-  pageTree,
-  type PageTreeNode,
-} from "@/lib/docs/source";
+import { type FolderNode, type PageNode, pageTree, type PageTreeNode } from "@/lib/docs/source";
 import { cn } from "@/lib/utils";
 
 const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
@@ -31,19 +26,11 @@ export function DocsSidebar({ className }: { className?: string }) {
   return (
     <nav
       aria-label="Documentation"
-      className={cn(
-        "flex w-full flex-col gap-7 px-4 py-8 font-mono text-sm",
-        className,
-      )}
+      className={cn("flex w-full flex-col gap-5 px-3 py-6 font-mono text-sm", className)}
     >
-      <DocsSearchTrigger className="w-full justify-between rounded-lg px-3 py-2 text-[0.78rem]" />
+      <DocsSearchTrigger className="w-full justify-between border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 px-3 py-2 text-[0.78rem] shadow-sm backdrop-blur" />
       {pageTree.children.map((node, index) => (
-        <SidebarNode
-          key={getNodeKey(node, index)}
-          node={node}
-          currentUrl={currentUrl}
-          depth={0}
-        />
+        <SidebarNode key={getNodeKey(node, index)} node={node} currentUrl={currentUrl} depth={0} />
       ))}
     </nav>
   );
@@ -80,17 +67,13 @@ function SidebarFolder({
   depth: number;
 }) {
   const [open, setOpen] = useState(folder.defaultOpen);
-  const handleToggle = useCallback(
-    (event: React.SyntheticEvent<HTMLDetailsElement>) => {
-      setOpen(event.currentTarget.open);
-    },
-    [],
-  );
+  const handleToggle = useCallback((event: React.SyntheticEvent<HTMLDetailsElement>) => {
+    setOpen(event.currentTarget.open);
+  }, []);
   const childContains = (children: PageTreeNode[]): boolean =>
     children.some((c) => {
       if (c.type === "page") return c.url === currentUrl;
-      if (c.type === "folder")
-        return c.index?.url === currentUrl || childContains(c.children);
+      if (c.type === "folder") return c.index?.url === currentUrl || childContains(c.children);
       return false;
     });
   // Auto-expand when a descendant is active so deep links land with the
@@ -123,12 +106,8 @@ function SidebarFolder({
   const visibleChildren = nestedOnlyFolder ? nestedOnlyFolder.children : folder.children;
 
   return (
-    <details
-      open={expanded}
-      onToggle={handleToggle}
-      className="group select-none"
-    >
-      <summary className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-[0.72rem] font-medium uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground">
+    <details open={expanded} onToggle={handleToggle} className="group select-none">
+      <summary className="flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 font-medium text-[0.72rem] text-muted-foreground uppercase transition-colors hover:bg-[var(--docs-surface-elevated)] hover:text-foreground">
         <span>{folder.name}</span>
         <ChevronIcon
           className={cn(
@@ -137,14 +116,10 @@ function SidebarFolder({
           )}
         />
       </summary>
-      <ul className="mt-1 flex flex-col">
+      <ul className="mt-1 ml-2 flex flex-col border-[var(--docs-border-subtle)] border-l pl-2">
         {visibleIndexPage ? (
           <li>
-            <SidebarPageLink
-              page={visibleIndexPage}
-              currentUrl={currentUrl}
-              depth={depth + 1}
-            />
+            <SidebarPageLink page={visibleIndexPage} currentUrl={currentUrl} depth={depth + 1} />
           </li>
         ) : null}
         {visibleChildren.map((child, index) => (
@@ -175,13 +150,13 @@ function SidebarPageLink({
     <Link
       to={page.url}
       className={cn(
-        "relative flex items-center py-1.5 text-[0.82rem] leading-snug transition-colors",
+        "relative flex items-center rounded-md py-1.5 text-[0.82rem] leading-snug transition-colors",
         // Indentation: 2 base + (depth × 2.5) for visual hierarchy. Mono
         // font keeps the column rhythm stable.
         "pl-[var(--sidebar-pad)] pr-3",
         isActive
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground",
+          ? "bg-[var(--docs-accent-soft)] text-foreground"
+          : "text-muted-foreground hover:bg-[var(--docs-surface-elevated)] hover:text-foreground",
       )}
       style={style}
     >
@@ -189,11 +164,14 @@ function SidebarPageLink({
         <motion.span
           layoutId="docs-sidebar-active-rail"
           aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-px bg-foreground"
+          className="absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-full bg-[var(--docs-accent)]"
           transition={ACTIVE_RAIL_TRANSITION}
         />
       ) : (
-        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-border" />
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-transparent"
+        />
       )}
       <span className="truncate">{page.name}</span>
     </Link>

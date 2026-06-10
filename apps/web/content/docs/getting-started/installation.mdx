@@ -3,20 +3,30 @@ title: Installation
 description: Set up your environment and scaffold your first Better Fullstack project.
 ---
 
-The fastest path is the `create-better-fullstack` CLI. It can run as a wizard, accept flags, or execute commands copied from the Stack Builder.
+Better Fullstack runs through the `create-better-fullstack` package. You do not need to install it globally; run it with your package manager, answer the prompts, and the CLI writes the selected project.
 
 <Callout kind="tip" title="Online preview">
-Prefer to configure visually? Open the [Stack Builder](https://better-fullstack.dev/new), pick options from the UI, and copy the generated command.
+Prefer to choose visually? Open the [Stack Builder](https://better-fullstack.dev/new), pick a compatible stack, and copy the generated command.
 </Callout>
 
 ## Prerequisites
 
-- Node.js 20 or newer.
+- Node.js 20 or newer for the CLI.
 - A terminal.
 - Git only if you want the CLI to initialize a repository.
-- Ecosystem-specific tools only for the generated language you choose.
+- Ecosystem-specific tools only for the project you generate.
 
-## Launchers
+| Ecosystem | Extra tooling |
+| --- | --- |
+| TypeScript | npm, pnpm, Yarn, or Bun |
+| React Native | Expo-compatible iOS/Android tooling when running on a simulator or device |
+| Rust | Rust toolchain and Cargo |
+| Python | Python and `uv` |
+| Go | Go toolchain |
+| Java | Java 21 |
+| Elixir | Elixir, Erlang/OTP, and PostgreSQL for database-backed Phoenix flows |
+
+## Run the CLI
 
 <PMTabs
   npm="npm create better-fullstack@latest"
@@ -25,23 +35,19 @@ Prefer to configure visually? Open the [Stack Builder](https://better-fullstack.
   yarn="yarn create better-fullstack@latest"
 />
 
-With `npm create`, pass Better Fullstack flags after a `--` separator. The generated npm command may use `npx create-better-fullstack@latest`; both target the same package entrypoint.
-
-## Wizard mode
-
-Run the CLI without stack flags to answer prompts:
+Add a project name to start the wizard:
 
 ```npm
 npm create better-fullstack@latest my-app
 ```
 
-The wizard asks for the project name, ecosystem, stack options, optional addons, Git, and dependency installation.
+The wizard asks for the ecosystem, stack options, optional addons, Git, and dependency installation.
 
-## Scripted mode
+## Use explicit flags
 
-Explicit flags skip the prompts for those categories. Omitted categories can still prompt unless defaults are being used, the CLI is running non-interactively, or you pass `--yes`.
+Explicit flags skip the prompts they cover. This is the best form for scripts, docs, generated commands, and reproducible bug reports.
 
-```bash
+```npm
 npm create better-fullstack@latest my-app -- \
   --ecosystem typescript \
   --frontend tanstack-router \
@@ -54,16 +60,17 @@ npm create better-fullstack@latest my-app -- \
   --db-setup none \
   --ai-docs none \
   --version-channel stable \
-  --package-manager npm \
   --no-install \
   --no-git
 ```
 
-Use `--ai-docs none` when you do not want generated AI instruction files.
+With `npm create`, Better Fullstack flags go after `--`. The rendered pnpm, Bun, and Yarn tabs remove that npm-only separator.
+
+Use `--ai-docs none` when you do not want generated AI instruction files. Use `--no-install` when you want to inspect files before dependency installation.
 
 ## Templates
 
-The CLI includes shorthand templates:
+Templates are shorthand for common stacks:
 
 | Template | Stack |
 | --- | --- |
@@ -77,20 +84,18 @@ The CLI includes shorthand templates:
 npm create better-fullstack@latest my-app -- --template t3
 ```
 
-## Ecosystem toolchains
+## Validate before writing files
 
-| Ecosystem | Tooling |
-| --- | --- |
-| TypeScript | Node.js plus npm, pnpm, Yarn, or Bun |
-| Rust | Rust toolchain and Cargo |
-| Python | Python and `uv` |
-| Go | Go toolchain |
-| Java | Java 21; Maven/Gradle wrappers are generated when selected |
+Use `--dry-run` to preview generated files without writing a project:
 
-For non-TypeScript projects, generated install or verification commands use the ecosystem tooling, such as `cargo build`, `uv sync`, `go mod tidy`, `./mvnw test`, or `./gradlew test`.
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
 
-## Next steps
+Use `--verify` when you want the CLI to run generated checks after scaffolding. It does not start dev servers.
+
+## Next
 
 - Walk through the [First Project](/docs/getting-started/first-project/) flow.
-- Browse every flag in [CLI Create](/docs/cli/create/).
+- Browse all flags in [CLI Create](/docs/cli/create/).
 - Compare language support in [Ecosystems](/docs/ecosystems/).

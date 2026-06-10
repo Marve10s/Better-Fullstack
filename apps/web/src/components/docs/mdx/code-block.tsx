@@ -12,11 +12,7 @@ import { cn } from "@/lib/utils";
  * intercept the `<pre>` rendered by MDX and render the same children inside
  * our chrome.
  */
-export function CodeBlock({
-  className,
-  children,
-  ...rest
-}: React.HTMLAttributes<HTMLPreElement>) {
+export function CodeBlock({ className, children, ...rest }: React.HTMLAttributes<HTMLPreElement>) {
   const [copied, setCopied] = useState(false);
   const preRef = useRef<HTMLPreElement | null>(null);
   const language = extractLanguage(className);
@@ -42,9 +38,9 @@ export function CodeBlock({
   }, [copied]);
 
   return (
-    <div className="group relative my-5 overflow-hidden rounded-md border bg-[var(--code-bg)] border-[var(--code-border)]">
+    <div className="group relative my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)] shadow-sm">
       {language ? (
-        <div className="flex items-center border-b border-[var(--code-border)] px-4 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.08em] text-[#8b949e]">
+        <div className="flex items-center border-[var(--code-border)] border-b px-4 py-1.5 font-mono text-[#8b949e] text-[0.65rem] uppercase">
           <span>{language}</span>
         </div>
       ) : null}
@@ -52,7 +48,7 @@ export function CodeBlock({
         {...rest}
         ref={preRef}
         className={cn(
-          "overflow-x-auto px-4 py-4 text-[0.82rem] leading-relaxed",
+          "overflow-x-auto px-4 py-4 text-[0.84rem] leading-relaxed",
           "[&_code]:font-mono [&_code]:bg-transparent",
           className,
         )}

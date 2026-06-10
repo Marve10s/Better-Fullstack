@@ -6,97 +6,74 @@ import { SMOKE_DIR } from "./setup";
 import type {
   CreateInput,
   InitResult,
-  Database,
-  ORM,
-  Backend,
-  Runtime,
-  Frontend,
-  Addons,
-  Examples,
-  Auth,
-  Payments,
-  API,
-  WebDeploy,
-  ServerDeploy,
-  DatabaseSetup,
-  CSSFramework,
-  UILibrary,
-  Effect,
-  Email,
-  StateManagement,
-  Forms,
-  Testing,
-  Validation,
-  Realtime,
-  Animation,
-  FileUpload,
-  FileStorage,
-  Logging,
-  Observability,
-  CMS,
-  Caching,
-  I18n,
-  Search,
-  Ecosystem,
-  AI,
-  JobQueue,
-  Analytics,
-  FeatureFlags,
-  AiDocs,
-  MobileNavigation,
-  MobileUI,
-  MobileStorage,
-  MobileTesting,
-  MobilePush,
-  MobileOTA,
-  MobileDeepLinking,
 } from "../src/types";
 
 import { create } from "../src/index";
 import {
-  AddonsSchema,
-  AiDocsSchema,
-  AISchema,
-  AnimationSchema,
-  APISchema,
-  AstroIntegrationSchema,
   AuthSchema,
-  BackendSchema,
-  CMSSchema,
-  CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
-  EcosystemSchema,
-  EffectSchema,
   ExamplesSchema,
-  FileUploadSchema,
-  LoggingSchema,
-  ObservabilitySchema,
-  CachingSchema,
-  FormsSchema,
-  FrontendSchema,
-  ORMSchema,
   PackageManagerSchema,
-  PaymentsSchema,
-  RealtimeSchema,
-  RuntimeSchema,
   ServerDeploySchema,
-  StateManagementSchema,
-  TestingSchema,
-  UILibrarySchema,
-  ValidationSchema,
   WebDeploySchema,
-  RustWebFrameworkSchema,
-  RustFrontendSchema,
-  RustOrmSchema,
-  RustApiSchema,
-  RustCliSchema,
-  RustLibrariesSchema,
-  AnalyticsSchema,
+  createCliDefaultProjectConfigBase,
 } from "../src/types";
 
 // Default smoke directory path - keep in sync with setup preload.
 const DEFAULT_SMOKE_DIR = SMOKE_DIR;
+const SHARED_TEST_DEFAULTS = createCliDefaultProjectConfigBase("bun");
+
+function createTestCoreDefaults(): Partial<CreateInput> {
+  return {
+    ecosystem: SHARED_TEST_DEFAULTS.ecosystem,
+    frontend: [...SHARED_TEST_DEFAULTS.frontend],
+    backend: SHARED_TEST_DEFAULTS.backend,
+    runtime: SHARED_TEST_DEFAULTS.runtime,
+    api: SHARED_TEST_DEFAULTS.api,
+    database: SHARED_TEST_DEFAULTS.database,
+    orm: SHARED_TEST_DEFAULTS.orm,
+    auth: "none",
+    payments: SHARED_TEST_DEFAULTS.payments,
+    addons: ["none"],
+    examples: ["none"],
+    dbSetup: SHARED_TEST_DEFAULTS.dbSetup,
+    webDeploy: SHARED_TEST_DEFAULTS.webDeploy,
+    serverDeploy: SHARED_TEST_DEFAULTS.serverDeploy,
+    cssFramework: SHARED_TEST_DEFAULTS.cssFramework,
+    uiLibrary: "none",
+    effect: SHARED_TEST_DEFAULTS.effect,
+    email: SHARED_TEST_DEFAULTS.email,
+    fileUpload: SHARED_TEST_DEFAULTS.fileUpload,
+    stateManagement: SHARED_TEST_DEFAULTS.stateManagement,
+    forms: SHARED_TEST_DEFAULTS.forms,
+    testing: SHARED_TEST_DEFAULTS.testing,
+    validation: SHARED_TEST_DEFAULTS.validation,
+    realtime: SHARED_TEST_DEFAULTS.realtime,
+    animation: SHARED_TEST_DEFAULTS.animation,
+    logging: SHARED_TEST_DEFAULTS.logging,
+    observability: SHARED_TEST_DEFAULTS.observability,
+    caching: SHARED_TEST_DEFAULTS.caching,
+    i18n: SHARED_TEST_DEFAULTS.i18n,
+    search: SHARED_TEST_DEFAULTS.search,
+    fileStorage: SHARED_TEST_DEFAULTS.fileStorage,
+    cms: SHARED_TEST_DEFAULTS.cms,
+    ai: SHARED_TEST_DEFAULTS.ai,
+    jobQueue: SHARED_TEST_DEFAULTS.jobQueue,
+    analytics: SHARED_TEST_DEFAULTS.analytics,
+    featureFlags: SHARED_TEST_DEFAULTS.featureFlags,
+    mobileNavigation: SHARED_TEST_DEFAULTS.mobileNavigation,
+    mobileUI: SHARED_TEST_DEFAULTS.mobileUI,
+    mobileStorage: SHARED_TEST_DEFAULTS.mobileStorage,
+    mobileTesting: SHARED_TEST_DEFAULTS.mobileTesting,
+    mobilePush: SHARED_TEST_DEFAULTS.mobilePush,
+    mobileOTA: SHARED_TEST_DEFAULTS.mobileOTA,
+    mobileDeepLinking: SHARED_TEST_DEFAULTS.mobileDeepLinking,
+    aiDocs: [],
+  };
+}
+
+const CORE_STACK_FLAGS = Object.keys(createTestCoreDefaults()) as Array<keyof CreateInput>;
 
 export interface TestResult {
   success: boolean;
@@ -132,56 +109,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
   const projectName = config.projectName || "default-app";
   const projectPath = join(smokeDir, projectName);
 
-  // Determine if we should use --yes or not
-  // Only core stack flags conflict with --yes flag (from CLI error message)
-  const coreStackFlags: (keyof TestConfig)[] = [
-    "ecosystem",
-    "database",
-    "orm",
-    "backend",
-    "runtime",
-    "frontend",
-    "astroIntegration",
-    "addons",
-    "examples",
-    "auth",
-    "payments",
-    "email",
-    "fileUpload",
-    "dbSetup",
-    "api",
-    "webDeploy",
-    "serverDeploy",
-    "cssFramework",
-    "uiLibrary",
-    "effect",
-    "stateManagement",
-    "forms",
-    "testing",
-    "validation",
-    "realtime",
-    "animation",
-    "logging",
-    "observability",
-    "caching",
-    "i18n",
-    "search",
-    "fileStorage",
-    "cms",
-    "ai",
-    "jobQueue",
-    "analytics",
-    "featureFlags",
-    "mobileNavigation",
-    "mobileUI",
-    "mobileStorage",
-    "mobileTesting",
-    "mobilePush",
-    "mobileOTA",
-    "mobileDeepLinking",
-    "aiDocs",
-  ];
-  const hasSpecificCoreConfig = coreStackFlags.some((flag) => config[flag] !== undefined);
+  const hasSpecificCoreConfig = CORE_STACK_FLAGS.some((flag) => config[flag] !== undefined);
 
   // Only use --yes if no core stack flags are provided and not explicitly disabled
   const willUseYesFlag = config.yes !== undefined ? config.yes : !hasSpecificCoreConfig;
@@ -190,54 +118,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
   // But don't provide core stack defaults when yes: true is explicitly set
   const coreStackDefaults = willUseYesFlag
     ? {}
-    : {
-        ecosystem: "typescript" as Ecosystem,
-        frontend: ["tanstack-router"] as Frontend[],
-        backend: "hono" as Backend,
-        runtime: "bun" as Runtime,
-        api: "trpc" as API,
-        database: "sqlite" as Database,
-        orm: "drizzle" as ORM,
-        auth: "none" as Auth,
-        payments: "none" as Payments,
-        addons: ["none"] as Addons[],
-        examples: ["none"] as Examples[],
-        dbSetup: "none" as DatabaseSetup,
-        webDeploy: "none" as WebDeploy,
-        serverDeploy: "none" as ServerDeploy,
-        cssFramework: "tailwind" as CSSFramework,
-        // Use "none" as default - compatible with all frontends
-        // Tests for specific UI libraries should specify explicitly
-        uiLibrary: "none" as UILibrary,
-        effect: "none" as Effect,
-        email: "none" as Email,
-        fileUpload: "none" as FileUpload,
-        stateManagement: "none" as StateManagement,
-        forms: "react-hook-form" as Forms,
-        testing: "vitest" as Testing,
-        validation: "zod" as Validation,
-        realtime: "none" as Realtime,
-        animation: "none" as Animation,
-        logging: "none" as Logging,
-        observability: "none" as Observability,
-        caching: "none" as Caching,
-        i18n: "none" as I18n,
-        search: "none" as Search,
-        fileStorage: "none" as FileStorage,
-        cms: "none" as CMS,
-        ai: "none" as AI,
-        jobQueue: "none" as JobQueue,
-        analytics: "none" as Analytics,
-        featureFlags: "none" as FeatureFlags,
-        mobileNavigation: "none" as MobileNavigation,
-        mobileUI: "none" as MobileUI,
-        mobileStorage: "none" as MobileStorage,
-        mobileTesting: "none" as MobileTesting,
-        mobilePush: "none" as MobilePush,
-        mobileOTA: "none" as MobileOTA,
-        mobileDeepLinking: "none" as MobileDeepLinking,
-        aiDocs: [] as AiDocs[],
-      };
+    : createTestCoreDefaults();
 
   // Build options object - let the CLI handle all validation
   // Remove test-specific properties before passing to create()
@@ -258,7 +139,7 @@ export async function runTRPCTest(config: TestConfig): Promise<TestResult> {
     disableAnalytics: true,
     yes: willUseYesFlag,
     // Always provide ecosystem to avoid prompting (it's required for all tests)
-    ecosystem: config.ecosystem ?? ("typescript" as Ecosystem),
+    ecosystem: config.ecosystem ?? "typescript",
     ...coreStackDefaults,
     ...restConfig,
   };
@@ -305,50 +186,20 @@ export function createTestConfig(
 /**
  * Extract enum values from a Zod enum schema
  */
-function extractEnumValues<T extends string>(schema: { options: readonly T[] }): readonly T[] {
+export function extractEnumValues<T extends string>(schema: {
+  options: readonly T[];
+}): readonly T[] {
   return schema.options;
 }
 
 // Test data generators inferred from Zod schemas
 export const PACKAGE_MANAGERS = extractEnumValues(PackageManagerSchema);
 export const DATABASES = extractEnumValues(DatabaseSchema);
-export const ORMS = extractEnumValues(ORMSchema);
-export const BACKENDS = extractEnumValues(BackendSchema);
-export const RUNTIMES = extractEnumValues(RuntimeSchema);
-export const FRONTENDS = extractEnumValues(FrontendSchema);
-export const ASTRO_INTEGRATIONS = extractEnumValues(AstroIntegrationSchema);
-export const ADDONS = extractEnumValues(AddonsSchema);
 export const EXAMPLES = extractEnumValues(ExamplesSchema);
 export const AUTH_PROVIDERS = extractEnumValues(AuthSchema);
-export const PAYMENTS_PROVIDERS = extractEnumValues(PaymentsSchema);
-export const API_TYPES = extractEnumValues(APISchema);
 export const WEB_DEPLOYS = extractEnumValues(WebDeploySchema);
 export const SERVER_DEPLOYS = extractEnumValues(ServerDeploySchema);
 export const DB_SETUPS = extractEnumValues(DatabaseSetupSchema);
-export const CSS_FRAMEWORKS = extractEnumValues(CSSFrameworkSchema);
-export const UI_LIBRARIES = extractEnumValues(UILibrarySchema);
-export const EFFECTS = extractEnumValues(EffectSchema);
-export const STATE_MANAGEMENTS = extractEnumValues(StateManagementSchema);
-export const FORMS = extractEnumValues(FormsSchema);
-export const TESTINGS = extractEnumValues(TestingSchema);
-export const VALIDATIONS = extractEnumValues(ValidationSchema);
-export const REALTIMES = extractEnumValues(RealtimeSchema);
-export const ANIMATIONS = extractEnumValues(AnimationSchema);
-export const FILE_UPLOADS = extractEnumValues(FileUploadSchema);
-export const LOGGINGS = extractEnumValues(LoggingSchema);
-export const OBSERVABILITIES = extractEnumValues(ObservabilitySchema);
-export const AI_SDKS = extractEnumValues(AISchema);
-export const CMS_OPTIONS = extractEnumValues(CMSSchema);
-export const CACHINGS = extractEnumValues(CachingSchema);
-export const ECOSYSTEMS = extractEnumValues(EcosystemSchema);
-export const RUST_WEB_FRAMEWORKS = extractEnumValues(RustWebFrameworkSchema);
-export const RUST_FRONTENDS = extractEnumValues(RustFrontendSchema);
-export const RUST_ORMS = extractEnumValues(RustOrmSchema);
-export const RUST_APIS = extractEnumValues(RustApiSchema);
-export const RUST_CLIS = extractEnumValues(RustCliSchema);
-export const RUST_LIBRARIES = extractEnumValues(RustLibrariesSchema);
-export const ANALYTICS = extractEnumValues(AnalyticsSchema);
-export const AI_DOCS = extractEnumValues(AiDocsSchema);
 
 // Convenience functions for common test patterns
 export function createBasicConfig(overrides: Partial<TestConfig> = {}): TestConfig {

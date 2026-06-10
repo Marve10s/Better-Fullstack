@@ -35,7 +35,7 @@ import {
 } from "../../validation";
 import { createProject } from "./create-project";
 
-export interface CreateHandlerOptions {
+interface CreateHandlerOptions {
   silent?: boolean;
 }
 

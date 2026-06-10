@@ -1,11 +1,10 @@
-import type { VirtualFile, VirtualNode } from "@better-fullstack/template-generator";
-
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
 import {
   analyzeStackCompatibility,
   type CompatibilityInput,
+  DEFAULT_STACK_SELECTION,
   EcosystemSchema,
   evaluateCompatibility,
   JavaAuthSchema,
@@ -15,125 +14,54 @@ import {
   JavaTestingLibrariesSchema,
   JavaWebFrameworkSchema,
 } from "../src/types";
-
-function extractEnumValues<T extends string>(schema: { options: readonly T[] }): readonly T[] {
-  return schema.options;
-}
-
-function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
-  if (node.type === "file") {
-    const normalizedNodePath = node.path.replace(/^\/+/, "");
-    const normalizedPath = path.replace(/^\/+/, "");
-    if (normalizedNodePath === normalizedPath) {
-      return node;
-    }
-    return undefined;
-  }
-
-  for (const child of node.children) {
-    const found = findFile(child, path);
-    if (found) return found;
-  }
-  return undefined;
-}
-
-function hasFile(node: VirtualNode, path: string): boolean {
-  return findFile(node, path) !== undefined;
-}
-
-function getFileContent(node: VirtualNode, path: string): string | undefined {
-  return findFile(node, path)?.content;
-}
+import {
+  extractEnumValues,
+} from "./test-utils";
+import {
+  getVirtualFileContent as getFileContent,
+  hasVirtualFile as hasFile,
+} from "./virtual-tree-utils";
 
 function createJavaCompatibilityInput(
   overrides: Partial<CompatibilityInput> = {},
 ): CompatibilityInput {
+  const {
+    stackMode: _stackMode,
+    stackPartSpecs: _stackPartSpecs,
+    ...baseSelection
+  } = DEFAULT_STACK_SELECTION;
+
   return {
+    ...baseSelection,
     ecosystem: "java",
     projectName: "java-compatibility",
     webFrontend: ["none"],
-    nativeFrontend: ["none"],
-    astroIntegration: "none",
     runtime: "none",
     backend: "none",
     database: "none",
     orm: "none",
-    dbSetup: "none",
     auth: "none",
-    payments: "none",
-    email: "none",
-    fileUpload: "none",
-    logging: "none",
-    observability: "none",
-    featureFlags: "none",
-    analytics: "none",
-    backendLibraries: "none",
-    stateManagement: "none",
     forms: "none",
     validation: "none",
     testing: "none",
-    realtime: "none",
-    jobQueue: "none",
-    caching: "none",
-    i18n: "none",
-    search: "none",
-    fileStorage: "none",
-    animation: "none",
     cssFramework: "none",
     uiLibrary: "none",
-    shadcnBase: "radix",
-    shadcnStyle: "nova",
-    shadcnIconLibrary: "lucide",
-    shadcnColorTheme: "neutral",
-    shadcnBaseColor: "neutral",
-    shadcnFont: "inter",
-    shadcnRadius: "default",
-    cms: "none",
-    codeQuality: [],
-    documentation: [],
     appPlatforms: [],
-    packageManager: "bun",
-    versionChannel: "stable",
-    examples: [],
-    aiSdk: "none",
     aiDocs: [],
     git: "false",
     install: "false",
     api: "none",
-    webDeploy: "none",
-    serverDeploy: "none",
-    yolo: "false",
     rustWebFramework: "none",
-    rustFrontend: "none",
     rustOrm: "none",
-    rustApi: "none",
-    rustCli: "none",
-    rustLibraries: [],
     rustLogging: "none",
     rustErrorHandling: "none",
-    rustCaching: "none",
-    rustAuth: "none",
     pythonWebFramework: "none",
     pythonOrm: "none",
     pythonValidation: "none",
-    pythonAi: [],
-    pythonAuth: "none",
-    pythonApi: "none",
-    pythonTaskQueue: "none",
-    pythonGraphql: "none",
     pythonQuality: "none",
     goWebFramework: "none",
     goOrm: "none",
-    goApi: "none",
-    goCli: "none",
     goLogging: "none",
-    goAuth: "none",
-    javaWebFramework: "spring-boot",
-    javaBuildTool: "maven",
-    javaOrm: "none",
-    javaAuth: "none",
-    javaLibraries: [],
-    javaTestingLibraries: ["junit5"],
     ...overrides,
   };
 }

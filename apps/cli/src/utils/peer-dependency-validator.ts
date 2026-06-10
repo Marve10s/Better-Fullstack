@@ -17,7 +17,7 @@ import {
   type PeerDependencyConflict,
 } from "./peer-dependency-conflicts";
 
-export interface ConflictResult {
+interface ConflictResult {
   errors: PeerDependencyConflict[];
   warnings: PeerDependencyConflict[];
 }
@@ -38,7 +38,7 @@ function matchesValue(configValue: unknown, values: string[]): boolean {
 /**
  * Checks the configuration against known peer dependency conflicts.
  */
-export function checkPeerDependencyConflicts(config: Partial<ProjectConfig>): ConflictResult {
+function checkPeerDependencyConflicts(config: Partial<ProjectConfig>): ConflictResult {
   const errors: PeerDependencyConflict[] = [];
   const warnings: PeerDependencyConflict[] = [];
 
@@ -81,7 +81,7 @@ function warnDependencyConflict(message: string, resolution: string): void {
 /**
  * Handles conflict results by printing warnings and exiting on errors.
  */
-export function handleConflictResult(result: ConflictResult): void {
+function handleConflictResult(result: ConflictResult): void {
   // Print warnings first
   for (const warning of result.warnings) {
     warnDependencyConflict(warning.description, warning.resolution);

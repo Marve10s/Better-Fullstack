@@ -1,0 +1,37 @@
+---
+title: Data and Storage
+description: Choose databases, ORMs, provider setup, caching, search, uploads, and file storage.
+---
+
+Data choices decide where generated apps persist records, cache work, search content, and store files.
+
+## Database and ORM
+
+The shared database category includes SQLite, PostgreSQL, MySQL, MongoDB, EdgeDB, Redis, and none. ORMs are ecosystem-specific in practice:
+
+| Ecosystem | ORM or data layer |
+| --- | --- |
+| TypeScript | Drizzle, Prisma, Mongoose, TypeORM, Kysely, MikroORM, Sequelize, or none. |
+| Rust | SeaORM, SQLx, Diesel, or none. |
+| Python | SQLAlchemy, SQLModel, Tortoise ORM, or none. |
+| Go | GORM, sqlc, Ent, or none. |
+| Java | Spring Data JPA or none. |
+| Elixir | Ecto, Ecto SQL, or none. |
+
+## Provider setup
+
+`--db-setup` can add hosting/provider setup for Turso, Neon, Prisma Postgres, PlanetScale, MongoDB Atlas, Supabase, Upstash, Cloudflare D1, Docker, or none.
+
+## Storage-style services
+
+Data-adjacent sections include:
+
+- Caching: Upstash Redis in TypeScript plus ecosystem-specific cache choices where supported.
+- Search: Meilisearch, Typesense, Elasticsearch, Algolia, and ecosystem-specific search paths.
+- File upload: UploadThing, FilePond, Uppy, or none.
+- File storage: S3, R2, Cloudinary, or none.
+
+## References
+
+- [Reference options](/docs/reference/options/)
+- [Compatibility](/docs/reference/compatibility/)

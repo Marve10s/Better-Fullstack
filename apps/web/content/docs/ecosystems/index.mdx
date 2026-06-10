@@ -3,7 +3,9 @@ title: Ecosystems
 description: Supported language ecosystems and what Better Fullstack scaffolds for each one.
 ---
 
-Better Fullstack uses one CLI for multiple ecosystems, but each ecosystem has its own scaffold surface. TypeScript focuses on fullstack web, React Native focuses on Expo mobile apps, and Rust, Python, Go, and Java focus on language-native project templates.
+Better Fullstack uses one CLI for multiple ecosystems. Each ecosystem has its own scaffold surface, toolchain, and compatibility rules.
+
+For product stacks that span languages, use [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/). It models the project as stack parts, such as `frontend:typescript:next`, `backend:go:gin`, `backend.orm:go:gorm`, and `database:universal:postgres`.
 
 | Ecosystem | Best for | Notes |
 | --- | --- | --- |
@@ -12,11 +14,12 @@ Better Fullstack uses one CLI for multiple ecosystems, but each ecosystem has it
 | [Rust](/docs/ecosystems/rust/) | Backend services, CLI apps, GraphQL/gRPC, Rust web frontends, and strongly typed libraries. | Uses Cargo; templates are conditional by selected Rust options. |
 | [Python](/docs/ecosystems/python/) | API and AI-oriented services with framework, ORM, validation, queue, GraphQL, and quality choices. | Uses `uv`; Python AI is a separate multi-select category. |
 | [Go](/docs/ecosystems/go/) | API services, gRPC, CLIs, logging, ORM, and Go auth helpers. | Uses Go modules; GoBetterAuth is selected with global `--auth go-better-auth`. |
-| [Java](/docs/ecosystems/java/) | Spring Boot or plain Java projects with Maven/Gradle, Spring Data JPA, Spring Security, libraries, and tests. | Java is supported by flags/schema/templates; verify interactive prompt support before relying on wizard-only flows. |
+| [Java](/docs/ecosystems/java/) | Spring Boot, Quarkus, or plain Java projects with Maven/Gradle, persistence, auth, libraries, and tests. | Java uses Maven or Gradle wrappers when a build tool is selected. |
+| [Elixir](/docs/ecosystems/elixir/) | Phoenix and Phoenix LiveView apps with Ecto, Absinthe, realtime, jobs, testing, quality, and deploy choices. | Uses Mix; a few schema-level options stay disabled until templates catch up. |
 
 ## Default CLI baseline
 
-Accepting defaults creates a TypeScript project:
+Accepting defaults creates a TypeScript web project. The package manager follows the package manager used to launch the CLI.
 
 ```json
 {
@@ -32,14 +35,13 @@ Accepting defaults creates a TypeScript project:
   "uiLibrary": "shadcn-ui",
   "testing": "vitest",
   "addons": ["turborepo"],
-  "packageManager": "npm",
   "versionChannel": "stable",
   "aiDocs": ["claude-md"]
 }
 ```
 
-Runtime and package manager are separate choices. For example, a project can use npm for installs while selecting Bun as the TypeScript runtime.
+Runtime and package manager are separate choices. For example, a generated TypeScript project can use npm, pnpm, Yarn, or Bun for installs while selecting Bun as the application runtime.
 
 ## Shared options are not universal
 
-Some flags are global because they are stored in one project config, but not every flag generates meaningful files in every ecosystem. Use the ecosystem pages below for what is actually scaffolded, and use the [Reference Options](/docs/reference/options/) pages for complete option values and compatibility caveats.
+Some flags are global because they are stored in one project config, but not every flag applies to every ecosystem. Use the ecosystem pages below for what is generated, and use [Reference Options](/docs/reference/options/) for exact CLI values.

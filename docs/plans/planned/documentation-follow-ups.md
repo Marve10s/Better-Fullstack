@@ -32,9 +32,10 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 - [ ] Add database + ORM pairing guide
 - [ ] Add auth provider comparison
 
-## Deployment Guides
+## Section Guides
 
-- [x] Add deployment walkthroughs for Cloudflare, Fly, Railway, Docker, SST, and Vercel
+- [x] Fold deployment guidance into public `/docs/sections/deployment` instead of a top-level Deployment sidebar group
+- [x] Add section explainers for frontend/apps, backend/API, data/storage, auth/payments, UI/experience, AI/services, quality/tooling, and deployment
 - [ ] Add environment-variable setup per provider
 - [ ] Add database provisioning guides for Turso, Neon, Supabase, PlanetScale, and other supported providers
 

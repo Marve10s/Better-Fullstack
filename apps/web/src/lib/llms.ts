@@ -1,7 +1,7 @@
 import { ECOSYSTEM_COUNT_LABEL, ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "@/lib/project-stats";
 import { SITE_NAME, SITE_URL, canonicalUrl } from "@/lib/seo";
 
-export type LlmsPage = {
+type LlmsPage = {
   url: string;
   slug: string[];
   frontmatter: {

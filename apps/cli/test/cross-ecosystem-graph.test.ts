@@ -1,29 +1,10 @@
-import type { VirtualFile, VirtualNode } from "@better-fullstack/template-generator";
-
 import { describe, expect, it } from "bun:test";
 
 import { cliInputToProjectConfigPartial } from "@better-fullstack/types";
 
 import { createVirtual } from "../src/index";
 import { displayConfig } from "../src/utils/display-config";
-
-function findFile(node: VirtualNode, path: string): VirtualFile | undefined {
-  if (node.type === "file") {
-    return node.path.replace(/^\/+/, "") === path.replace(/^\/+/, "") ? node : undefined;
-  }
-
-  for (const child of node.children) {
-    const found = findFile(child, path);
-    if (found) return found;
-  }
-  return undefined;
-}
-
-function fileContent(node: VirtualNode, path: string): string {
-  const file = findFile(node, path);
-  expect(file).toBeDefined();
-  return file?.content ?? "";
-}
+import { readVirtualFileContent as fileContent } from "./virtual-tree-utils";
 
 function graphParts(part: string[]) {
   return cliInputToProjectConfigPartial({ part }).stackParts;

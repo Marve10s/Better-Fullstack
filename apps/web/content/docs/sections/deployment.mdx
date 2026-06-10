@@ -1,0 +1,39 @@
+---
+title: Deployment
+description: Choose web and server deployment targets as one stack section.
+---
+
+Deployment is one stack section, not a separate docs pillar. It controls whether Better Fullstack emits platform files during project creation with `--web-deploy` and `--server-deploy`.
+
+Use deployment flags at scaffold time when you want generated platform files to match the selected frontend, backend, runtime, and workspace layout.
+
+## Deployment flags
+
+| Flag | Values |
+| --- | --- |
+| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
+
+Deployment choices are compatibility-checked against the stack. Some fullstack frameworks deploy through the web app, some backends do not need a separate server deployment, and Convex or Encore manage their own platform path.
+
+## Targets
+
+| Target | Best fit | Notes |
+| --- | --- | --- |
+| Docker | Self-hosting, reproducible production images, and local service orchestration. | Separate from the `docker-compose` addon, which focuses on local services. |
+| Vercel | Supported React, Nuxt, SvelteKit, Solid, and serverless deployments. | Fullstack frontends usually deploy through the web app rather than a separate server target. |
+| Cloudflare | Workers runtime stacks and edge-first Hono servers. | Compatibility is scoped to Workers-compatible server runtimes. |
+| Fly.io | Docker-backed app hosting with regional placement and long-running services. | Good for persistent server processes. |
+| Railway | Git-connected app hosting with Dockerfile-based builds and managed services. | Configure production environment variables before deploy. |
+| SST | AWS-oriented infrastructure as code for TypeScript app workflows. | Best when you want to own AWS resources explicitly. |
+
+## Before deploying
+
+- Set production environment variables for auth secrets, database URLs, provider keys, and public app URLs.
+- Run database migrations against the production database before routing traffic.
+- Confirm generated platform config matches the app that should receive requests.
+- Keep local-only service containers, test credentials, and generated logs out of source control.
+
+## Add after scaffold
+
+The `add` command can record deployment flags, but it currently processes addons first. If no new addon is selected, deployment-only `add` commands exit early. Prefer choosing deployment targets during `create` until deployment-only add flows are expanded.

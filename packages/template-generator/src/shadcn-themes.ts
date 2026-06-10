@@ -20,7 +20,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export interface ThemeCssVars {
+interface ThemeCssVars {
   background: string;
   foreground: string;
   card: string;
@@ -54,14 +54,14 @@ export interface ThemeCssVars {
   "sidebar-ring": string;
 }
 
-export interface ThemeDefinition {
+interface ThemeDefinition {
   light: ThemeCssVars;
   dark: ThemeCssVars;
   radius: string;
 }
 
 /** Accent themes only override a subset of variables */
-export interface AccentThemeOverrides {
+interface AccentThemeOverrides {
   light: Partial<ThemeCssVars>;
   dark: Partial<ThemeCssVars>;
 }
@@ -87,13 +87,11 @@ export type AccentColorName =
   | "violet"
   | "yellow";
 
-export type ThemeColorName = BaseColorName | AccentColorName;
-
 // ---------------------------------------------------------------------------
 // Base Color Themes (complete variable sets)
 // ---------------------------------------------------------------------------
 
-export const BASE_THEMES: Record<BaseColorName, ThemeDefinition> = {
+const BASE_THEMES: Record<BaseColorName, ThemeDefinition> = {
   neutral: {
     radius: "0.625rem",
     light: {
@@ -379,7 +377,7 @@ export const BASE_THEMES: Record<BaseColorName, ThemeDefinition> = {
 // Accent Theme Overrides (partial -- merge on top of a base color)
 // ---------------------------------------------------------------------------
 
-export const ACCENT_THEMES: Record<AccentColorName, AccentThemeOverrides> = {
+const ACCENT_THEMES: Record<AccentColorName, AccentThemeOverrides> = {
   amber: {
     light: {
       primary: "oklch(0.67 0.16 58)",
@@ -879,30 +877,6 @@ export const ACCENT_THEMES: Record<AccentColorName, AccentThemeOverrides> = {
 // All theme names
 // ---------------------------------------------------------------------------
 
-export const BASE_COLOR_NAMES: BaseColorName[] = ["neutral", "stone", "zinc", "gray"];
-
-export const ACCENT_COLOR_NAMES: AccentColorName[] = [
-  "amber",
-  "blue",
-  "cyan",
-  "emerald",
-  "fuchsia",
-  "green",
-  "indigo",
-  "lime",
-  "orange",
-  "pink",
-  "purple",
-  "red",
-  "rose",
-  "sky",
-  "teal",
-  "violet",
-  "yellow",
-];
-
-export const ALL_THEME_COLOR_NAMES: ThemeColorName[] = [...BASE_COLOR_NAMES, ...ACCENT_COLOR_NAMES];
-
 // ---------------------------------------------------------------------------
 // Theme Composition Helper
 // ---------------------------------------------------------------------------
@@ -946,82 +920,4 @@ export function composeTheme(base: BaseColorName, accent?: AccentColorName): The
       ...accentOverrides.dark,
     } as ThemeCssVars,
   };
-}
-
-// ---------------------------------------------------------------------------
-// CSS Generation Helper
-// ---------------------------------------------------------------------------
-
-/**
- * Generates CSS custom property declarations from a ThemeCssVars object.
- *
- * @example
- * ```ts
- * const theme = composeTheme("zinc", "blue");
- * const lightCss = generateCssVars(theme.light);
- * // Returns: "--background: oklch(1 0 0);\n--foreground: oklch(0.141 0.005 285.823);\n..."
- * ```
- */
-export function generateCssVars(vars: ThemeCssVars): string {
-  return Object.entries(vars)
-    .map(([key, value]) => `--${key}: ${value};`)
-    .join("\n");
-}
-
-/**
- * Generates a complete CSS block with :root (light) and .dark selectors.
- *
- * @example
- * ```ts
- * const theme = composeTheme("zinc", "violet");
- * const css = generateThemeCss(theme);
- * ```
- */
-export function generateThemeCss(theme: ThemeDefinition): string {
-  const lightVars = Object.entries(theme.light)
-    .map(([key, value]) => `  --${key}: ${value};`)
-    .join("\n");
-
-  const darkVars = Object.entries(theme.dark)
-    .map(([key, value]) => `  --${key}: ${value};`)
-    .join("\n");
-
-  return `:root {
-  --radius: ${theme.radius};
-${lightVars}
-}
-
-.dark {
-${darkVars}
-}`;
-}
-
-/**
- * Generates a Tailwind CSS v4 @theme block.
- *
- * @example
- * ```ts
- * const theme = composeTheme("zinc", "blue");
- * const css = generateTailwindV4Theme(theme);
- * ```
- */
-export function generateTailwindV4Theme(theme: ThemeDefinition): string {
-  const lightVars = Object.entries(theme.light)
-    .map(([key, value]) => `    --${key}: ${value};`)
-    .join("\n");
-
-  const darkVars = Object.entries(theme.dark)
-    .map(([key, value]) => `    --${key}: ${value};`)
-    .join("\n");
-
-  return `@layer base {
-  :root {
-    --radius: ${theme.radius};
-${lightVars}
-  }
-
-  .dark {
-${darkVars}
-  }
-}`;
 }

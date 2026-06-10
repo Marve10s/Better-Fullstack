@@ -1,11 +1,11 @@
 ---
 title: CLI Reference
-description: Commands for scaffolding projects, adding features, opening docs, and using AI-agent workflows.
+description: Commands for creating projects, updating generated apps, opening resources, and running AI-agent workflows.
 ---
 
-Better Fullstack exposes a small command surface for project creation, project updates, local history, docs discovery, and MCP agent workflows.
+Better Fullstack has a small command surface. Most users only need `create`, `add`, and `history`; AI-agent workflows use `mcp`.
 
-## Project Commands
+## Commands
 
 | Command | Purpose |
 | --- | --- |
@@ -22,31 +22,40 @@ Better Fullstack exposes a small command surface for project creation, project u
 | `builder` | Open the interactive Stack Builder. |
 | `sponsors` | Show Better Fullstack sponsors. |
 
-## Examples
+## Run utility commands
 
 Open docs:
 
-```bash
-npx create-better-fullstack@latest docs
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest docs"
+  pnpm="pnpm dlx create-better-fullstack@latest docs"
+  bun="bunx create-better-fullstack@latest docs"
+  yarn="yarn dlx create-better-fullstack@latest docs"
+/>
 
 Open the builder:
 
-```bash
-npx create-better-fullstack@latest builder
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest builder"
+  pnpm="pnpm dlx create-better-fullstack@latest builder"
+  bun="bunx create-better-fullstack@latest builder"
+  yarn="yarn dlx create-better-fullstack@latest builder"
+/>
 
 Show sponsors:
 
-```bash
-npx create-better-fullstack@latest sponsors
-```
+<PMTabs
+  npm="npx -y create-better-fullstack@latest sponsors"
+  pnpm="pnpm dlx create-better-fullstack@latest sponsors"
+  bun="bunx create-better-fullstack@latest sponsors"
+  yarn="yarn dlx create-better-fullstack@latest sponsors"
+/>
 
 ## Maintainer Commands
 
-`update-deps` is a maintainer-oriented command for dependency version checks and updates. It is intentionally omitted from normal user workflows.
+`update-deps` is for maintainers checking and updating dependency versions. It is intentionally omitted from normal user workflows.
 
-## Next Steps
+## Next
 
 - [Create command](/docs/cli/create/) covers all scaffold flags.
 - [Add command](/docs/cli/add/) covers existing-project updates.

@@ -9,11 +9,22 @@ This page describes the Better Fullstack MCP server. The generated-project `mcp`
 
 ## Setup
 
+Launch the server with the package manager you use:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
 ### Claude Code
 
 ```bash
-claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack mcp
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
+
+Use the same launcher table above if you prefer pnpm, Bun, or Yarn.
 
 ### Cursor
 
@@ -22,7 +33,7 @@ claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack
   "mcpServers": {
     "better-fullstack": {
       "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
     }
   }
 }
@@ -36,7 +47,7 @@ claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack
     "better-fullstack": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "create-better-fullstack", "mcp"]
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
     }
   }
 }
@@ -44,11 +55,14 @@ claude mcp add --transport stdio better-fullstack -- npx create-better-fullstack
 
 ### Other MCP clients
 
-Use the same stdio command with clients such as Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose, or other MCP-compatible tools:
+Use the same stdio command with clients such as Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose, or other MCP-compatible tools.
 
-```bash
-npx -y create-better-fullstack mcp
-```
+| Package manager | `command` | `args` |
+| --- | --- | --- |
+| npm | `npx` | `["-y", "create-better-fullstack@latest", "mcp"]` |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| Yarn | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
 
 ## Tools
 

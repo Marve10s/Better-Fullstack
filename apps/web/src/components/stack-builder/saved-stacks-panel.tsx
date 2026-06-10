@@ -1,3 +1,4 @@
+import { getCategoryOrderForEcosystem } from "@better-fullstack/types";
 import {
   Copy,
   EllipsisVertical,
@@ -26,59 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import type { StackState } from "@/lib/constant";
 import type { SavedStackEntry } from "@/lib/saved-stacks";
+import { getStackKeyForCategory } from "@/lib/stack-utils";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { cn } from "@/lib/utils";
-
-/** Ordered stack keys meaningful for each ecosystem. Order determines display in View Full Stack. */
-const RELEVANT_KEYS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
-  typescript: [
-    "ecosystem", "projectName",
-    "webFrontend", "nativeFrontend", "astroIntegration",
-    "cssFramework", "uiLibrary",
-    "shadcnBase", "shadcnStyle", "shadcnIconLibrary", "shadcnColorTheme", "shadcnBaseColor", "shadcnFont", "shadcnRadius",
-    "backend", "backendLibraries", "runtime", "api",
-    "database", "orm", "dbSetup",
-    "webDeploy", "serverDeploy",
-    "auth", "payments", "email", "fileUpload",
-    "logging", "observability", "featureFlags", "analytics",
-    "aiSdk", "stateManagement", "forms", "validation", "testing",
-    "realtime", "jobQueue", "caching", "search", "fileStorage",
-    "animation", "cms",
-    "codeQuality", "documentation", "appPlatforms", "packageManager", "examples",
-    "aiDocs", "versionChannel", "git", "install", "yolo",
-  ],
-  rust: [
-    "ecosystem", "projectName",
-    "rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli", "rustLibraries",
-    "email", "observability", "caching", "search",
-    "aiDocs", "git", "install", "yolo",
-  ],
-  python: [
-    "ecosystem", "projectName",
-    "pythonWebFramework", "pythonOrm", "pythonValidation", "pythonAi", "pythonApi", "pythonTaskQueue", "pythonQuality",
-    "email", "observability", "caching", "search",
-    "aiDocs", "git", "install", "yolo",
-  ],
-  go: [
-    "ecosystem", "projectName",
-    "goWebFramework", "goOrm", "goApi", "goCli", "goLogging",
-    "auth", "email", "observability", "caching", "search",
-    "aiDocs", "git", "install", "yolo",
-  ],
-  java: [
-    "ecosystem", "projectName",
-    "javaWebFramework", "javaBuildTool", "javaOrm", "javaAuth", "javaLibraries", "javaTestingLibraries",
-    "email", "observability", "caching", "search",
-    "aiDocs", "git", "install", "yolo",
-  ],
-  elixir: [
-    "ecosystem", "projectName",
-    "elixirWebFramework", "elixirOrm", "elixirAuth", "elixirApi", "elixirRealtime",
-    "elixirJobs", "elixirValidation", "elixirHttp", "elixirJson", "elixirEmail",
-    "elixirCaching", "elixirObservability", "elixirTesting", "elixirQuality", "elixirDeploy",
-    "aiDocs", "git", "install", "yolo",
-  ],
-};
 
 /** Subset of keys used for the card highlight badges. */
 const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]> = {
@@ -108,6 +59,15 @@ function formatSavedAt(value: string) {
   } catch {
     return value;
   }
+}
+
+function getRelevantStackKeys(ecosystem: StackState["ecosystem"]): readonly (keyof StackState)[] {
+  return [
+    "ecosystem",
+    "projectName",
+    ...getCategoryOrderForEcosystem(ecosystem).map(getStackKeyForCategory),
+    "yolo",
+  ];
 }
 
 function getStackHighlights(stack: StackState) {
@@ -180,7 +140,7 @@ export function SavedStacksPanel({
   const viewingConfigEntries = viewingEntry
     ? (() => {
         const eco = viewingEntry.stack.ecosystem || "typescript";
-        const orderedKeys = RELEVANT_KEYS_BY_ECOSYSTEM[eco] || RELEVANT_KEYS_BY_ECOSYSTEM.typescript;
+        const orderedKeys = getRelevantStackKeys(eco);
         const stack = viewingEntry.stack as Record<string, string | string[]>;
         return orderedKeys
           .filter((key) => {

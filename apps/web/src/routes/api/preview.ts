@@ -2,9 +2,26 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import type { StackState } from "@/lib/stack-defaults";
 
-import { isStackPreviewEnabledServer } from "@/lib/feature-flags";
 import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { NOINDEX_ROBOTS } from "@/lib/robots";
+
+const ENABLE_STACK_PREVIEW = "1";
+
+type EnvLike = Record<string, string | boolean | undefined>;
+
+function getPreviewEnvOverride(env: EnvLike | undefined): string | undefined {
+  const value = env?.BFS_ENABLE_STACK_PREVIEW;
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return value ? ENABLE_STACK_PREVIEW : "0";
+  return undefined;
+}
+
+function isStackPreviewEnabledServer(): boolean {
+  const override = getPreviewEnvOverride(process.env as EnvLike);
+  if (override === ENABLE_STACK_PREVIEW) return true;
+
+  return process.env.NODE_ENV !== "production";
+}
 
 // VirtualNode type definition for transformed output
 interface VirtualNode {

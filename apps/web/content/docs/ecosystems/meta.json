@@ -1,5 +1,5 @@
 {
   "title": "Ecosystems",
   "defaultOpen": true,
-  "pages": ["index", "typescript", "react-native", "rust", "python", "go", "java", "elixir"]
+  "pages": ["index", "multi-ecosystem", "typescript", "react-native", "rust", "python", "go", "java", "elixir"]
 }

@@ -1,20 +1,20 @@
 import { canonicalUrl } from "@/lib/seo";
 
-export type SitemapEntry = {
+type SitemapEntry = {
   path: string;
   changefreq?: "daily" | "weekly" | "monthly";
   lastmod?: string;
   priority?: number;
 };
 
-export type SitemapContentPage = {
+type SitemapContentPage = {
   slug: string[];
   frontmatter: {
     updated?: string;
   };
 };
 
-export const staticSitemapEntries: SitemapEntry[] = [
+const staticSitemapEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: 1 },
   { path: "/new", changefreq: "daily", priority: 0.9 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },

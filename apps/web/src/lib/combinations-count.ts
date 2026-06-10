@@ -1,76 +1,7 @@
-import {
-  ADDONS_VALUES,
-  AI_DOCS_VALUES,
-  AI_VALUES,
-  ANALYTICS_VALUES,
-  ANIMATION_VALUES,
-  API_VALUES,
-  ASTRO_INTEGRATION_VALUES,
-  AUTH_VALUES,
-  BACKEND_VALUES,
-  CACHING_VALUES,
-  CMS_VALUES,
-  CSS_FRAMEWORK_VALUES,
-  DATABASE_SETUP_VALUES,
-  DATABASE_VALUES,
-  EFFECT_VALUES,
-  ELIXIR_API_VALUES,
-  ELIXIR_AUTH_VALUES,
-  ELIXIR_CACHING_VALUES,
-  ELIXIR_DEPLOY_VALUES,
-  ELIXIR_EMAIL_VALUES,
-  ELIXIR_HTTP_VALUES,
-  ELIXIR_JOBS_VALUES,
-  ELIXIR_JSON_VALUES,
-  ELIXIR_OBSERVABILITY_VALUES,
-  ELIXIR_ORM_VALUES,
-  ELIXIR_QUALITY_VALUES,
-  ELIXIR_REALTIME_VALUES,
-  ELIXIR_TESTING_VALUES,
-  ELIXIR_VALIDATION_VALUES,
-  ELIXIR_WEB_FRAMEWORK_VALUES,
-  EMAIL_VALUES,
-  EXAMPLES_VALUES,
-  FEATURE_FLAGS_VALUES,
-  FILE_STORAGE_VALUES,
-  FILE_UPLOAD_VALUES,
-  FORMS_VALUES,
-  FRONTEND_VALUES,
-  GO_API_VALUES,
-  GO_CLI_VALUES,
-  GO_LOGGING_VALUES,
-  GO_ORM_VALUES,
-  GO_WEB_FRAMEWORK_VALUES,
-  JOB_QUEUE_VALUES,
-  LOGGING_VALUES,
-  OBSERVABILITY_VALUES,
-  ORM_VALUES,
-  PACKAGE_MANAGER_VALUES,
-  PAYMENTS_VALUES,
-  PYTHON_AI_VALUES,
-  PYTHON_ORM_VALUES,
-  PYTHON_QUALITY_VALUES,
-  PYTHON_TASK_QUEUE_VALUES,
-  PYTHON_VALIDATION_VALUES,
-  PYTHON_WEB_FRAMEWORK_VALUES,
-  REALTIME_VALUES,
-  RUNTIME_VALUES,
-  RUST_API_VALUES,
-  RUST_CLI_VALUES,
-  RUST_FRONTEND_VALUES,
-  RUST_LIBRARIES_VALUES,
-  RUST_ORM_VALUES,
-  RUST_WEB_FRAMEWORK_VALUES,
-  SEARCH_VALUES,
-  SERVER_DEPLOY_VALUES,
-  STATE_MANAGEMENT_VALUES,
-  TESTING_VALUES,
-  UI_LIBRARY_VALUES,
-  VALIDATION_VALUES,
-  WEB_DEPLOY_VALUES,
-} from "@better-fullstack/types/schemas";
+import { getCategoryOptionIds, type OptionCategory } from "@better-fullstack/types";
+import { BACKEND_VALUES, EXAMPLES_VALUES } from "@better-fullstack/types/schemas";
 
-export type ScientificNotation = {
+type ScientificNotation = {
   mantissa: string;
   exponent: number;
 };
@@ -86,6 +17,20 @@ function powerSetSize(values: readonly string[]): bigint {
 
 function multiplyCounts(counts: readonly number[]): bigint {
   return counts.reduce((acc, count) => acc * BigInt(count), 1n);
+}
+
+function optionIds(category: OptionCategory): readonly string[] {
+  return getCategoryOptionIds(category);
+}
+
+function optionCount(category: OptionCategory): number {
+  return optionIds(category).length;
+}
+
+function mergedOptionIds(categories: readonly OptionCategory[]): string[] {
+  return [
+    ...new Set(categories.flatMap((category) => optionIds(category))),
+  ];
 }
 
 function formatScientificFromBigInt(value: bigint, precision = 3): ScientificNotation {
@@ -107,114 +52,127 @@ function formatScientificFromNumber(value: number, precision = 3): ScientificNot
   return { mantissa: mantissaStr.replace(/\.0+$/, ""), exponent: Number.parseInt(exponentStr, 10) };
 }
 
+const typescriptSingleSelectCategories = [
+  "database",
+  "orm",
+  "runtime",
+  "astroIntegration",
+  "packageManager",
+  "dbSetup",
+  "api",
+  "auth",
+  "payments",
+  "webDeploy",
+  "serverDeploy",
+  "ai",
+  "backendLibraries",
+  "stateManagement",
+  "forms",
+  "testing",
+  "email",
+  "cssFramework",
+  "uiLibrary",
+  "validation",
+  "realtime",
+  "jobQueue",
+  "cms",
+  "caching",
+  "animation",
+  "fileUpload",
+  "logging",
+  "observability",
+  "featureFlags",
+  "analytics",
+  "search",
+  "fileStorage",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+const rustSingleSelectCategories = [
+  "rustWebFramework",
+  "rustFrontend",
+  "rustOrm",
+  "rustApi",
+  "rustCli",
+  "packageManager",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+const pythonSingleSelectCategories = [
+  "pythonWebFramework",
+  "pythonOrm",
+  "pythonValidation",
+  "pythonAi",
+  "pythonTaskQueue",
+  "pythonQuality",
+  "packageManager",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+const goSingleSelectCategories = [
+  "goWebFramework",
+  "goOrm",
+  "goApi",
+  "goCli",
+  "goLogging",
+  "packageManager",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+const elixirSingleSelectCategories = [
+  "elixirWebFramework",
+  "elixirOrm",
+  "elixirAuth",
+  "elixirApi",
+  "elixirRealtime",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirHttp",
+  "elixirJson",
+  "elixirEmail",
+  "elixirCaching",
+  "elixirObservability",
+  "elixirTesting",
+  "elixirQuality",
+  "elixirDeploy",
+  "packageManager",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
 const typescriptSingleSelectCounts = [
-  DATABASE_VALUES.length,
-  ORM_VALUES.length,
   BACKEND_VALUES.length,
-  RUNTIME_VALUES.length,
-  ASTRO_INTEGRATION_VALUES.length,
-  PACKAGE_MANAGER_VALUES.length,
-  DATABASE_SETUP_VALUES.length,
-  API_VALUES.length,
-  AUTH_VALUES.length,
-  PAYMENTS_VALUES.length,
-  WEB_DEPLOY_VALUES.length,
-  SERVER_DEPLOY_VALUES.length,
-  AI_VALUES.length,
-  EFFECT_VALUES.length,
-  STATE_MANAGEMENT_VALUES.length,
-  FORMS_VALUES.length,
-  TESTING_VALUES.length,
-  EMAIL_VALUES.length,
-  CSS_FRAMEWORK_VALUES.length,
-  UI_LIBRARY_VALUES.length,
-  VALIDATION_VALUES.length,
-  REALTIME_VALUES.length,
-  JOB_QUEUE_VALUES.length,
-  CMS_VALUES.length,
-  CACHING_VALUES.length,
-  ANIMATION_VALUES.length,
-  FILE_UPLOAD_VALUES.length,
-  LOGGING_VALUES.length,
-  OBSERVABILITY_VALUES.length,
-  FEATURE_FLAGS_VALUES.length,
-  ANALYTICS_VALUES.length,
-  SEARCH_VALUES.length,
-  FILE_STORAGE_VALUES.length,
-  2, // git
-  2, // install
+  ...typescriptSingleSelectCategories.map(optionCount),
 ] as const;
 
-const rustSingleSelectCounts = [
-  RUST_WEB_FRAMEWORK_VALUES.length,
-  RUST_FRONTEND_VALUES.length,
-  RUST_ORM_VALUES.length,
-  RUST_API_VALUES.length,
-  RUST_CLI_VALUES.length,
-  PACKAGE_MANAGER_VALUES.length,
-  2, // git
-  2, // install
-] as const;
-
-const pythonSingleSelectCounts = [
-  PYTHON_WEB_FRAMEWORK_VALUES.length,
-  PYTHON_ORM_VALUES.length,
-  PYTHON_VALIDATION_VALUES.length,
-  PYTHON_AI_VALUES.length,
-  PYTHON_TASK_QUEUE_VALUES.length,
-  PYTHON_QUALITY_VALUES.length,
-  PACKAGE_MANAGER_VALUES.length,
-  2, // git
-  2, // install
-] as const;
-
-const goSingleSelectCounts = [
-  GO_WEB_FRAMEWORK_VALUES.length,
-  GO_ORM_VALUES.length,
-  GO_API_VALUES.length,
-  GO_CLI_VALUES.length,
-  GO_LOGGING_VALUES.length,
-  PACKAGE_MANAGER_VALUES.length,
-  2, // git
-  2, // install
-] as const;
-
-const elixirSingleSelectCounts = [
-  ELIXIR_WEB_FRAMEWORK_VALUES.length,
-  ELIXIR_ORM_VALUES.length,
-  ELIXIR_AUTH_VALUES.length,
-  ELIXIR_API_VALUES.length,
-  ELIXIR_REALTIME_VALUES.length,
-  ELIXIR_JOBS_VALUES.length,
-  ELIXIR_VALIDATION_VALUES.length,
-  ELIXIR_HTTP_VALUES.length,
-  ELIXIR_JSON_VALUES.length,
-  ELIXIR_EMAIL_VALUES.length,
-  ELIXIR_CACHING_VALUES.length,
-  ELIXIR_OBSERVABILITY_VALUES.length,
-  ELIXIR_TESTING_VALUES.length,
-  ELIXIR_QUALITY_VALUES.length,
-  ELIXIR_DEPLOY_VALUES.length,
-  PACKAGE_MANAGER_VALUES.length,
-  2, // git
-  2, // install
-] as const;
+const rustSingleSelectCounts = rustSingleSelectCategories.map(optionCount);
+const pythonSingleSelectCounts = pythonSingleSelectCategories.map(optionCount);
+const goSingleSelectCounts = goSingleSelectCategories.map(optionCount);
+const elixirSingleSelectCounts = elixirSingleSelectCategories.map(optionCount);
 
 const typescriptCombinations =
   multiplyCounts(typescriptSingleSelectCounts) *
-  powerSetSize(FRONTEND_VALUES) *
-  powerSetSize(ADDONS_VALUES) *
+  powerSetSize(mergedOptionIds(["webFrontend", "nativeFrontend"])) *
+  powerSetSize(mergedOptionIds(["codeQuality", "documentation", "appPlatforms"])) *
   powerSetSize(EXAMPLES_VALUES) *
-  powerSetSize(AI_DOCS_VALUES);
+  powerSetSize(optionIds("aiDocs"));
 
 const rustCombinations =
-  multiplyCounts(rustSingleSelectCounts) * powerSetSize(RUST_LIBRARIES_VALUES) * powerSetSize(AI_DOCS_VALUES);
+  multiplyCounts(rustSingleSelectCounts) *
+  powerSetSize(optionIds("rustLibraries")) *
+  powerSetSize(optionIds("aiDocs"));
 
-const pythonCombinations = multiplyCounts(pythonSingleSelectCounts) * powerSetSize(AI_DOCS_VALUES);
+const pythonCombinations =
+  multiplyCounts(pythonSingleSelectCounts) * powerSetSize(optionIds("aiDocs"));
 
-const goCombinations = multiplyCounts(goSingleSelectCounts) * powerSetSize(AI_DOCS_VALUES);
+const goCombinations = multiplyCounts(goSingleSelectCounts) * powerSetSize(optionIds("aiDocs"));
 
-const elixirCombinations = multiplyCounts(elixirSingleSelectCounts) * powerSetSize(AI_DOCS_VALUES);
+const elixirCombinations =
+  multiplyCounts(elixirSingleSelectCounts) * powerSetSize(optionIds("aiDocs"));
 
 const totalCombinations =
   typescriptCombinations + rustCombinations + pythonCombinations + goCombinations + elixirCombinations;

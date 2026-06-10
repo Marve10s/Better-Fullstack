@@ -1,4 +1,5 @@
 
+import { CATEGORY_ORDER } from "@better-fullstack/types";
 import { Check, Copy, Terminal, Twitter } from "lucide-react";
 import QRCode from "qrcode";
 import React, { useEffect, useState } from "react";
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { TechBadge } from "@/components/ui/tech-badge";
 import { DEFAULT_STACK, TECH_OPTIONS } from "@/lib/constant";
-import { CATEGORY_ORDER } from "@/lib/stack-utils";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 

@@ -1,6 +1,6 @@
 # Go Ecosystem Expansion
 
-Current state: 2 web frameworks (gin, echo), 2 ORMs (gorm, sqlc), 1 API layer (grpc-go), 2 CLI tools (cobra, bubbletea), 1 logging (zap).
+Current state: 4 web frameworks (gin, echo, fiber, chi), 3 ORMs (gorm, sqlc, ent), 1 API layer (grpc-go), 3 CLI tools (cobra, bubbletea, urfave-cli), 4 logging options (zap, zerolog, slog, logrus), and 2 auth options (casbin, jwt).
 
 Goal: bring Go to feature parity with TypeScript's depth across all backend categories.
 
@@ -34,8 +34,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Auth (new category)
 
-- [ ] Add `casbin` — 17k+ stars. Authorization standard for Go. Supports ACL, RBAC, ABAC models. Dozens of storage adapters.
-- [ ] Add `golang-jwt` (v5) — standard JWT library for Go. Token-based auth essential.
+- [x] Add `casbin` ✅ — 17k+ stars. Authorization standard for Go. Supports ACL, RBAC, ABAC models. Dozens of storage adapters.
+- [x] Add `golang-jwt` (v5) ✅ — standard JWT library for Go. Token-based auth essential.
 - [ ] Add `goth` — OAuth social login. 30+ providers (Google, GitHub, etc.). Clean Go API.
 
 ### Implementation

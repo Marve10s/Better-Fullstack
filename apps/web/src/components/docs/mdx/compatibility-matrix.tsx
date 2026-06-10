@@ -1,16 +1,19 @@
-import { useMemo, useState } from "react";
-
 import {
   analyzeStackCompatibility,
   getCategoryDisplayName,
+  getCategoryOrderForEcosystem,
   getDisabledReason,
+  isMultiSelectCategory,
   isOptionCompatible,
   OPTION_CATEGORY_METADATA,
   type CompatibilityCategory,
   type OptionCategory,
 } from "@better-fullstack/types";
+import { useMemo, useState } from "react";
 
+import { ECOSYSTEMS } from "@/lib/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
+import { getStackKeyForCategory } from "@/lib/stack-utils";
 
 type Ecosystem = StackState["ecosystem"];
 
@@ -21,152 +24,44 @@ type BaselineControl = {
   label: string;
 };
 
-const ECOSYSTEMS: Array<{ id: Ecosystem; label: string }> = [
-  { id: "typescript", label: "TypeScript" },
-  { id: "react-native", label: "React Native" },
-  { id: "rust", label: "Rust" },
-  { id: "python", label: "Python" },
-  { id: "go", label: "Go" },
-  { id: "java", label: "Java" },
-  { id: "elixir", label: "Elixir" },
-];
+const DOCS_CATEGORY_EXCLUSIONS = new Set<SelectCategory>([
+  "astroIntegration",
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+  "packageManager",
+  "aiDocs",
+  "versionChannel",
+  "git",
+  "install",
+]);
 
-const TYPESCRIPT_CATEGORIES: SelectCategory[] = [
-  "webFrontend",
-  "backend",
-  "runtime",
-  "database",
-  "orm",
-  "dbSetup",
-  "api",
-  "auth",
-  "payments",
-  "email",
-  "cssFramework",
-  "uiLibrary",
-  "forms",
-  "stateManagement",
-  "validation",
-  "testing",
-  "realtime",
-  "jobQueue",
-  "caching",
-  "i18n",
-  "search",
-  "fileStorage",
-  "fileUpload",
-  "cms",
-  "featureFlags",
-  "analytics",
-  "logging",
-  "observability",
-  "ai",
-  "webDeploy",
-  "serverDeploy",
-  "appPlatforms",
-  "documentation",
-  "codeQuality",
-  "examples",
-];
-
-const ECOSYSTEM_CATEGORIES: Record<Ecosystem, SelectCategory[]> = {
-  typescript: TYPESCRIPT_CATEGORIES,
-  "react-native": [
-    "nativeFrontend",
-    "mobileNavigation",
-    "mobileUI",
-    "mobileStorage",
-    "mobileTesting",
-    "mobilePush",
-    "mobileOTA",
-    "mobileDeepLinking",
-    "auth",
-    "packageManager",
-  ],
-  rust: [
-    "rustWebFramework",
-    "rustFrontend",
-    "rustOrm",
-    "rustApi",
-    "rustCli",
-    "rustLibraries",
-    "rustLogging",
-    "rustErrorHandling",
-    "rustCaching",
-    "rustAuth",
-    "email",
-    "observability",
-    "caching",
-    "search",
-    "packageManager",
-    "versionChannel",
-  ],
-  python: [
-    "pythonWebFramework",
-    "pythonOrm",
-    "pythonValidation",
-    "pythonAi",
-    "pythonAuth",
-    "pythonApi",
-    "pythonTaskQueue",
-    "pythonGraphql",
-    "pythonQuality",
-    "email",
-    "observability",
-    "caching",
-    "search",
-    "packageManager",
-    "versionChannel",
-  ],
-  go: [
-    "goWebFramework",
-    "goOrm",
-    "goApi",
-    "goCli",
-    "goLogging",
-    "goAuth",
-    "auth",
-    "email",
-    "observability",
-    "caching",
-    "search",
-    "packageManager",
-    "versionChannel",
-  ],
-  java: [
-    "javaWebFramework",
-    "javaBuildTool",
-    "javaOrm",
-    "javaAuth",
-    "javaLibraries",
-    "javaTestingLibraries",
-    "email",
-    "observability",
-    "caching",
-    "search",
-    "packageManager",
-    "versionChannel",
-  ],
-  elixir: [
-    "elixirWebFramework",
-    "elixirOrm",
-    "elixirAuth",
-    "elixirApi",
-    "elixirRealtime",
-    "elixirJobs",
-    "elixirValidation",
-    "elixirHttp",
-    "elixirJson",
-    "elixirEmail",
-    "elixirCaching",
-    "elixirObservability",
-    "elixirTesting",
-    "elixirQuality",
-    "elixirDeploy",
-    "packageManager",
-    "versionChannel",
-  ],
+const DOCS_EXTRA_CATEGORIES_BY_ECOSYSTEM: Partial<Record<Ecosystem, readonly SelectCategory[]>> = {
+  "react-native": ["packageManager"],
+  rust: ["packageManager", "versionChannel"],
+  python: ["packageManager", "versionChannel"],
+  go: ["packageManager", "versionChannel"],
+  java: ["packageManager", "versionChannel"],
+  elixir: ["packageManager", "versionChannel"],
 };
+
+function getDocsCategories(ecosystem: Ecosystem): SelectCategory[] {
+  return [
+    ...getCategoryOrderForEcosystem(ecosystem).filter(
+      (category) =>
+        Boolean(OPTION_CATEGORY_METADATA[category]) && !DOCS_CATEGORY_EXCLUSIONS.has(category),
+    ),
+    ...(DOCS_EXTRA_CATEGORIES_BY_ECOSYSTEM[ecosystem] ?? []),
+  ];
+}
+
+const ECOSYSTEM_CATEGORIES = Object.fromEntries(
+  ECOSYSTEMS.map((ecosystem) => [ecosystem.id, getDocsCategories(ecosystem.id)]),
+) as Record<Ecosystem, SelectCategory[]>;
 
 const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
   typescript: [
@@ -225,34 +120,15 @@ const BASELINE_CONTROLS: Record<Ecosystem, BaselineControl[]> = {
   ],
 };
 
-const MULTI_STACK_KEYS = new Set<SelectCategory>([
-  "webFrontend",
-  "nativeFrontend",
-  "codeQuality",
-  "documentation",
-  "appPlatforms",
-  "examples",
-  "aiDocs",
-  "rustLibraries",
-  "pythonAi",
-  "javaLibraries",
-  "javaTestingLibraries",
-]);
-
-const categoryToStackKey = (category: SelectCategory): keyof StackState => {
-  if (category === "ai") return "aiSdk";
-  return category as keyof StackState;
-};
-
 const applyCategoryValue = (
   stack: StackState,
   category: SelectCategory,
   optionId: string,
 ): StackState => {
-  const key = categoryToStackKey(category);
+  const key = getStackKeyForCategory(category);
   const next = { ...stack };
 
-  if (MULTI_STACK_KEYS.has(category)) {
+  if (isMultiSelectCategory(category)) {
     (next as unknown as Record<string, string[]>)[key] = optionId === "none" ? [] : [optionId];
   } else {
     (next as unknown as Record<string, string>)[key] = optionId;
@@ -266,7 +142,7 @@ const getCategoryOptions = (category: SelectCategory) => {
 };
 
 const getCurrentValue = (stack: StackState, category: SelectCategory): string => {
-  const value = stack[categoryToStackKey(category)];
+  const value = stack[getStackKeyForCategory(category)];
   if (Array.isArray(value)) return value[0] ?? "none";
   return value ?? "none";
 };
@@ -277,7 +153,9 @@ const getInitialCategory = (ecosystem: Ecosystem): SelectCategory => {
 
 export function CompatibilityMatrix() {
   const [stack, setStack] = useState<StackState>(DEFAULT_STACK);
-  const [category, setCategory] = useState<SelectCategory>(getInitialCategory(DEFAULT_STACK.ecosystem));
+  const [category, setCategory] = useState<SelectCategory>(
+    getInitialCategory(DEFAULT_STACK.ecosystem),
+  );
 
   const ecosystem = stack.ecosystem;
   const categories = ECOSYSTEM_CATEGORIES[ecosystem];
@@ -320,10 +198,10 @@ export function CompatibilityMatrix() {
   };
 
   return (
-    <div className="not-prose my-8 rounded-2xl border border-border bg-card/60 p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4 border-b border-border pb-4">
+    <div className="not-prose my-8 rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/70 p-4 shadow-sm sm:p-5">
+      <div className="flex flex-col gap-4 border-[var(--docs-border-subtle)] border-b pb-4">
         <div>
-          <h2 className="font-semibold text-xl text-foreground">Check a Stack Combination</h2>
+          <h2 className="font-semibold text-foreground text-xl">Check a Stack Combination</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Start from a default baseline, adjust the key fields, then inspect one option category.
           </p>
@@ -332,13 +210,13 @@ export function CompatibilityMatrix() {
         <label className="grid gap-2 text-sm">
           <span className="font-medium text-foreground">Ecosystem</span>
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-foreground"
+            className="h-10 rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)] px-3 text-foreground"
             value={ecosystem}
             onChange={(event) => handleEcosystemChange(event.target.value as Ecosystem)}
           >
             {ECOSYSTEMS.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.label}
+                {item.name}
               </option>
             ))}
           </select>
@@ -346,7 +224,7 @@ export function CompatibilityMatrix() {
       </div>
 
       <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <section className="rounded-xl border border-border bg-background/70 p-4">
+        <section className="rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4">
           <h3 className="font-medium text-foreground">Baseline Stack</h3>
           <p className="mt-1 text-muted-foreground text-xs">
             These fields affect compatibility for the selected category.
@@ -358,7 +236,7 @@ export function CompatibilityMatrix() {
                 <label key={control.category} className="grid gap-1.5 text-sm">
                   <span className="font-medium text-muted-foreground">{control.label}</span>
                   <select
-                    className="h-9 rounded-md border border-input bg-background px-2 text-foreground"
+                    className="h-9 rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)] px-2 text-foreground"
                     value={getCurrentValue(stack, control.category)}
                     onChange={(event) => handleBaselineChange(control.category, event.target.value)}
                   >
@@ -374,11 +252,11 @@ export function CompatibilityMatrix() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-background/70 p-4">
+        <section className="rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4">
           <label className="grid gap-2 text-sm">
             <span className="font-medium text-foreground">Category to inspect</span>
             <select
-              className="h-10 rounded-md border border-input bg-background px-3 text-foreground"
+              className="h-10 rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)] px-3 text-foreground"
               value={category}
               onChange={(event) => handleCategoryChange(event.target.value as SelectCategory)}
             >
@@ -401,18 +279,18 @@ export function CompatibilityMatrix() {
             </div>
           ) : null}
 
-          <div className="mt-4 overflow-hidden rounded-lg border border-border">
+          <div className="mt-4 overflow-hidden rounded-lg border border-[var(--docs-border-subtle)]">
             <table className="w-full border-collapse text-left text-sm">
-              <thead className="bg-muted/60 text-muted-foreground text-xs uppercase tracking-wide">
+              <thead className="bg-[var(--docs-surface)] text-muted-foreground text-xs uppercase">
                 <tr>
                   <th className="px-3 py-2 font-medium">Option</th>
                   <th className="px-3 py-2 font-medium">Status</th>
                   <th className="hidden px-3 py-2 font-medium sm:table-cell">Notes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-[var(--docs-border-subtle)]">
                 {rows.map((row) => (
-                  <tr key={row.id} className="bg-background/40">
+                  <tr key={row.id} className="bg-[var(--docs-surface-elevated)]/50">
                     <td className="px-3 py-3 align-top">
                       <div className="font-medium text-foreground">{row.label}</div>
                       <div className="font-mono text-muted-foreground text-xs">{row.cliValue}</div>
@@ -430,7 +308,9 @@ export function CompatibilityMatrix() {
                     </td>
                     <td className="hidden px-3 py-3 align-top text-muted-foreground text-xs sm:table-cell">
                       {row.reason ? <div>{row.reason}</div> : null}
-                      {!row.reason && row.changes.length === 0 ? <div>No compatibility issues found.</div> : null}
+                      {!row.reason && row.changes.length === 0 ? (
+                        <div>No compatibility issues found.</div>
+                      ) : null}
                       {row.changes.length > 0 ? (
                         <ul className="space-y-1">
                           {row.changes.map((change) => (

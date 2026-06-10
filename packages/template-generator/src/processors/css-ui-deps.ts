@@ -8,7 +8,7 @@ import { getWebPackagePath } from "../utils/project-paths";
 /**
  * Process CSS framework dependencies based on config.cssFramework
  */
-export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
+function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { cssFramework, frontend, backend } = config;
 
   const hasWeb = frontend.some((f) =>
@@ -61,7 +61,7 @@ export function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectC
 /**
  * Process UI library dependencies based on config.uiLibrary
  */
-export function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
+function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { uiLibrary, frontend, backend } = config;
 
   const hasReactWeb = frontend.some((f) =>

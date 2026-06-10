@@ -62,7 +62,7 @@ const TOOL_LABELS: Record<string, string> = {
   "spring-data-jpa": "Spring Data JPA",
 };
 
-export function getSelectedGraphParts(config: Pick<ProjectConfig, "stackParts">): StackPart[] {
+function getSelectedGraphParts(config: Pick<ProjectConfig, "stackParts">): StackPart[] {
   return (config.stackParts ?? []).filter((part) => part.source !== "provided");
 }
 

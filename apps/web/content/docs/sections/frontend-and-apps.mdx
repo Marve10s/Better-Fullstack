@@ -1,0 +1,32 @@
+---
+title: Frontend and Apps
+description: Choose generated web frontends, mobile apps, and app-platform addons.
+---
+
+This section controls the user-facing app surfaces that Better Fullstack generates.
+
+## Web frontend
+
+TypeScript web frontends are selected with `--frontend`. The category supports React, Vinext, Vue/Nuxt, SvelteKit, Solid, Astro, Qwik, Angular, Redwood, Fresh, and `none`.
+
+Use `none` for backend-only services. Use fullstack frontend modes with `--backend self` when the framework owns server routes.
+
+## React Native apps
+
+React Native is its own ecosystem. Select it with `--ecosystem react-native` or as a multi-ecosystem part with `mobile:react-native:native-bare`.
+
+Mobile choices include navigation, UI, storage, testing, push notifications, OTA updates, and deep linking. They do not imply TypeScript web backend or deploy categories.
+
+## Rust WASM frontends
+
+Rust can generate Leptos or Dioxus frontend surfaces through `--rust-frontend`. Those are Rust ecosystem choices, separate from TypeScript web frontends.
+
+## App platforms
+
+App-platform addons such as Tauri, PWA, WXT, and OpenTUI add shell, offline, extension, or terminal app capabilities around compatible stacks.
+
+## References
+
+- [TypeScript options](/docs/reference/options/typescript/)
+- [React Native options](/docs/reference/options/react-native/)
+- [Rust options](/docs/reference/options/rust/)
