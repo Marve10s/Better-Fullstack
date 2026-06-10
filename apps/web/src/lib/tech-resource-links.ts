@@ -1235,6 +1235,50 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://casbin.org/docs/overview",
     githubUrl: "https://github.com/casbin/casbin",
   },
+  gqlgen: {
+    docsUrl: "https://gqlgen.com/",
+    githubUrl: "https://github.com/99designs/gqlgen",
+  },
+  goth: {
+    docsUrl: "https://pkg.go.dev/github.com/markbates/goth",
+    githubUrl: "https://github.com/markbates/goth",
+  },
+  testify: {
+    docsUrl: "https://pkg.go.dev/github.com/stretchr/testify",
+    githubUrl: "https://github.com/stretchr/testify",
+  },
+  gomock: {
+    docsUrl: "https://pkg.go.dev/go.uber.org/mock/gomock",
+    githubUrl: "https://github.com/uber-go/mock",
+  },
+  "gorilla-websocket": {
+    docsUrl: "https://pkg.go.dev/github.com/gorilla/websocket",
+    githubUrl: "https://github.com/gorilla/websocket",
+  },
+  centrifuge: {
+    docsUrl: "https://pkg.go.dev/github.com/centrifugal/centrifuge",
+    githubUrl: "https://github.com/centrifugal/centrifuge",
+  },
+  nats: {
+    docsUrl: "https://docs.nats.io/",
+    githubUrl: "https://github.com/nats-io/nats.go",
+  },
+  watermill: {
+    docsUrl: "https://watermill.io/docs/",
+    githubUrl: "https://github.com/ThreeDotsLabs/watermill",
+  },
+  ristretto: {
+    docsUrl: "https://pkg.go.dev/github.com/dgraph-io/ristretto/v2",
+    githubUrl: "https://github.com/hypermodeinc/ristretto",
+  },
+  viper: {
+    docsUrl: "https://pkg.go.dev/github.com/spf13/viper",
+    githubUrl: "https://github.com/spf13/viper",
+  },
+  koanf: {
+    docsUrl: "https://pkg.go.dev/github.com/knadh/koanf/v2",
+    githubUrl: "https://github.com/knadh/koanf",
+  },
 };
 
 const CATEGORY_LINKS: LinkMap = {
