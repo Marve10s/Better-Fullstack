@@ -95,6 +95,11 @@ import {
   PYTHON_GRAPHQL_VALUES,
   PYTHON_ORM_VALUES,
   PYTHON_QUALITY_VALUES,
+  PYTHON_TESTING_VALUES,
+  PYTHON_CACHING_VALUES,
+  PYTHON_REALTIME_VALUES,
+  PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_CLI_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -299,7 +304,7 @@ const LEGACY_MOBILE_SINGLE_CATEGORIES = {
 
 const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   rust: { libraries: "rustLibraries" },
-  python: { ai: "pythonAi" },
+  python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli" },
   go: { testing: "goTesting" },
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
   dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
@@ -347,6 +352,8 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "dotnetTesting",
   "dotnetObservability",
   "goTesting",
+  "pythonTesting",
+  "pythonCli",
 ]);
 
 export type AddonStackPartBinding = {
@@ -489,6 +496,9 @@ function isNativeEcosystemBackendServiceTool(
     if (part.ecosystem === "go") {
       return (GO_CACHING_VALUES as readonly string[]).includes(part.toolId);
     }
+    if (part.ecosystem === "python") {
+      return (PYTHON_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
   }
 
   if (part.role === "observability") {
@@ -500,6 +510,9 @@ function isNativeEcosystemBackendServiceTool(
     }
     if (part.ecosystem === "go") {
       return (GO_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "python") {
+      return (PYTHON_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
     }
   }
 
@@ -522,6 +535,9 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     jobQueue: "pythonTaskQueue",
     api: "pythonGraphql",
     codeQuality: "pythonQuality",
+    caching: "pythonCaching",
+    realtime: "pythonRealtime",
+    observability: "pythonObservability",
   },
   go: {
     cli: "goCli",
@@ -716,6 +732,15 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(PYTHON_TASK_QUEUE_VALUES, "jobQueue", "python", "pythonTaskQueue"),
   ...defineTools(PYTHON_GRAPHQL_VALUES, "api", "python", "pythonGraphql"),
   ...defineTools(PYTHON_QUALITY_VALUES, "codeQuality", "python", "pythonQuality"),
+  ...defineTools(PYTHON_TESTING_VALUES, "testing", "python", "pythonTesting", {
+    allowMultiple: true,
+  }),
+  ...defineTools(PYTHON_CACHING_VALUES, "caching", "python", "pythonCaching"),
+  ...defineTools(PYTHON_REALTIME_VALUES, "realtime", "python", "pythonRealtime"),
+  ...defineTools(PYTHON_OBSERVABILITY_VALUES, "observability", "python", "pythonObservability"),
+  ...defineTools(PYTHON_CLI_VALUES, "cli", "python", "pythonCli", {
+    allowMultiple: true,
+  }),
   ...defineTools(GO_WEB_FRAMEWORK_VALUES, "backend", "go", "goWebFramework"),
   ...defineTools(GO_ORM_VALUES, "orm", "go", "goOrm"),
   ...defineTools(GO_API_VALUES, "api", "go", "goApi"),

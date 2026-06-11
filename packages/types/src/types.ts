@@ -77,6 +77,11 @@ import type {
   PythonTaskQueueSchema,
   PythonGraphqlSchema,
   PythonQualitySchema,
+  PythonTestingSchema,
+  PythonCachingSchema,
+  PythonRealtimeSchema,
+  PythonObservabilitySchema,
+  PythonCliSchema,
   GoWebFrameworkSchema,
   GoOrmSchema,
   GoApiSchema,
@@ -204,6 +209,11 @@ export type PythonApi = z.infer<typeof PythonApiSchema>;
 export type PythonTaskQueue = z.infer<typeof PythonTaskQueueSchema>;
 export type PythonGraphql = z.infer<typeof PythonGraphqlSchema>;
 export type PythonQuality = z.infer<typeof PythonQualitySchema>;
+export type PythonTesting = z.infer<typeof PythonTestingSchema>;
+export type PythonCaching = z.infer<typeof PythonCachingSchema>;
+export type PythonRealtime = z.infer<typeof PythonRealtimeSchema>;
+export type PythonObservability = z.infer<typeof PythonObservabilitySchema>;
+export type PythonCli = z.infer<typeof PythonCliSchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;
 export type GoOrm = z.infer<typeof GoOrmSchema>;
 export type GoApi = z.infer<typeof GoApiSchema>;

@@ -51,6 +51,11 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.pythonTaskQueue = "none";
     normalized.pythonGraphql = "none";
     normalized.pythonQuality = "none";
+    normalized.pythonTesting = [];
+    normalized.pythonCaching = "none";
+    normalized.pythonRealtime = "none";
+    normalized.pythonObservability = "none";
+    normalized.pythonCli = [];
   }
 
   if (!selectedEcosystems.has("go")) {
@@ -305,6 +310,11 @@ function buildBtsConfigForPersistence(
     pythonTaskQueue: persistedConfig.pythonTaskQueue,
     pythonGraphql: persistedConfig.pythonGraphql,
     pythonQuality: persistedConfig.pythonQuality,
+    pythonTesting: persistedConfig.pythonTesting,
+    pythonCaching: persistedConfig.pythonCaching,
+    pythonRealtime: persistedConfig.pythonRealtime,
+    pythonObservability: persistedConfig.pythonObservability,
+    pythonCli: persistedConfig.pythonCli,
     goWebFramework: persistedConfig.goWebFramework,
     goOrm: persistedConfig.goOrm,
     goApi: persistedConfig.goApi,
@@ -449,6 +459,11 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     pythonTaskQueue: btsConfig.pythonTaskQueue,
     pythonGraphql: btsConfig.pythonGraphql,
     pythonQuality: btsConfig.pythonQuality,
+    pythonTesting: btsConfig.pythonTesting,
+    pythonCaching: btsConfig.pythonCaching,
+    pythonRealtime: btsConfig.pythonRealtime,
+    pythonObservability: btsConfig.pythonObservability,
+    pythonCli: btsConfig.pythonCli,
     goWebFramework: btsConfig.goWebFramework,
     goOrm: btsConfig.goOrm,
     goApi: btsConfig.goApi,

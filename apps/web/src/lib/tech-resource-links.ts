@@ -1279,6 +1279,66 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://pkg.go.dev/github.com/knadh/koanf/v2",
     githubUrl: "https://github.com/knadh/koanf",
   },
+  "google-adk": {
+    docsUrl: "https://google.github.io/adk-docs/",
+    githubUrl: "https://github.com/google/adk-python",
+  },
+  starlette: {
+    docsUrl: "https://www.starlette.io/",
+    githubUrl: "https://github.com/encode/starlette",
+  },
+  peewee: {
+    docsUrl: "https://docs.peewee-orm.com/",
+    githubUrl: "https://github.com/coleifer/peewee",
+  },
+  "fastapi-users": {
+    docsUrl: "https://fastapi-users.github.io/fastapi-users/",
+    githubUrl: "https://github.com/fastapi-users/fastapi-users",
+  },
+  "pydantic-ai": {
+    docsUrl: "https://ai.pydantic.dev/",
+    githubUrl: "https://github.com/pydantic/pydantic-ai",
+  },
+  smolagents: {
+    docsUrl: "https://huggingface.co/docs/smolagents",
+    githubUrl: "https://github.com/huggingface/smolagents",
+  },
+  taskiq: {
+    docsUrl: "https://taskiq-python.github.io/",
+    githubUrl: "https://github.com/taskiq-python/taskiq",
+  },
+  pytest: {
+    docsUrl: "https://docs.pytest.org/",
+    githubUrl: "https://github.com/pytest-dev/pytest",
+  },
+  hypothesis: {
+    docsUrl: "https://hypothesis.readthedocs.io/",
+    githubUrl: "https://github.com/HypothesisWorks/hypothesis",
+  },
+  aiocache: {
+    docsUrl: "https://aiocache.aio-libs.org/",
+    githubUrl: "https://github.com/aio-libs/aiocache",
+  },
+  "python-socketio": {
+    docsUrl: "https://python-socketio.readthedocs.io/",
+    githubUrl: "https://github.com/miguelgrinberg/python-socketio",
+  },
+  websockets: {
+    docsUrl: "https://websockets.readthedocs.io/",
+    githubUrl: "https://github.com/python-websockets/websockets",
+  },
+  typer: {
+    docsUrl: "https://typer.tiangolo.com/",
+    githubUrl: "https://github.com/fastapi/typer",
+  },
+  click: {
+    docsUrl: "https://click.palletsprojects.com/",
+    githubUrl: "https://github.com/pallets/click",
+  },
+  rich: {
+    docsUrl: "https://rich.readthedocs.io/",
+    githubUrl: "https://github.com/Textualize/rich",
+  },
 };
 
 const CATEGORY_LINKS: LinkMap = {

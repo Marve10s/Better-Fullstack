@@ -935,6 +935,11 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-task-queue ${config.pythonTaskQueue}`);
   flags.push(`--python-graphql ${config.pythonGraphql}`);
   flags.push(`--python-quality ${config.pythonQuality}`);
+  flags.push(formatArrayFlag("python-testing", config.pythonTesting));
+  flags.push(`--python-caching ${config.pythonCaching}`);
+  flags.push(`--python-realtime ${config.pythonRealtime}`);
+  flags.push(`--python-observability ${config.pythonObservability}`);
+  flags.push(formatArrayFlag("python-cli", config.pythonCli));
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);

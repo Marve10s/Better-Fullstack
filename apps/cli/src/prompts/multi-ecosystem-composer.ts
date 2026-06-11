@@ -81,6 +81,11 @@ import {
   getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
+  getPythonTestingChoice,
+  getPythonCachingChoice,
+  getPythonRealtimeChoice,
+  getPythonObservabilityChoice,
+  getPythonCliChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -377,6 +382,24 @@ export async function gatherMultiEcosystemConfig(
       pythonWebFramework === "none"
         ? "none"
         : promptValue(await getPythonQualityChoice(flags.pythonQuality));
+    const pythonTesting =
+      pythonWebFramework === "none"
+        ? []
+        : promptValue(await getPythonTestingChoice(flags.pythonTesting));
+    const pythonCaching =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonCachingChoice(flags.pythonCaching));
+    const pythonRealtime =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonRealtimeChoice(flags.pythonRealtime));
+    const pythonObservability =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonObservabilityChoice(flags.pythonObservability));
+    const pythonCli =
+      pythonWebFramework === "none" ? [] : promptValue(await getPythonCliChoice(flags.pythonCli));
     Object.assign(backendChoices, {
       pythonWebFramework,
       pythonOrm,
@@ -386,12 +409,30 @@ export async function gatherMultiEcosystemConfig(
       pythonTaskQueue,
       pythonGraphql,
       pythonQuality,
+      pythonTesting,
+      pythonCaching,
+      pythonRealtime,
+      pythonObservability,
+      pythonCli,
     });
     if (pythonWebFramework !== "none") stackPartSpecs.push(`backend:python:${pythonWebFramework}`);
     if (pythonOrm !== "none") stackPartSpecs.push(`backend.orm:python:${pythonOrm}`);
     if (pythonAuth !== "none") stackPartSpecs.push(`backend.auth:python:${pythonAuth}`);
     if (pythonTaskQueue !== "none") stackPartSpecs.push(`backend.jobQueue:python:${pythonTaskQueue}`);
     if (pythonGraphql !== "none") stackPartSpecs.push(`backend.api:python:${pythonGraphql}`);
+    for (const testing of pythonTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:python:${testing}`);
+    }
+    if (pythonCaching !== "none") stackPartSpecs.push(`backend.caching:python:${pythonCaching}`);
+    if (pythonRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:python:${pythonRealtime}`);
+    }
+    if (pythonObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:python:${pythonObservability}`);
+    }
+    for (const cli of pythonCli) {
+      if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
+    }
   }
 
   if (backendEcosystem === "java") {

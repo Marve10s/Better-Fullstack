@@ -89,6 +89,11 @@ import {
   PythonGraphqlSchema,
   PythonOrmSchema,
   PythonQualitySchema,
+  PythonTestingSchema,
+  PythonCachingSchema,
+  PythonRealtimeSchema,
+  PythonObservabilitySchema,
+  PythonCliSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
@@ -265,6 +270,21 @@ export const CreateCommandOptionsSchema = z.object({
   pythonQuality: PythonQualitySchema.optional().describe(
     "Python code quality (ruff, mypy, pyright)",
   ),
+  pythonTesting: z
+    .array(PythonTestingSchema)
+    .optional()
+    .describe("Python testing libraries (pytest, hypothesis)"),
+  pythonCaching: PythonCachingSchema.optional().describe("Python caching (redis, aiocache)"),
+  pythonRealtime: PythonRealtimeSchema.optional().describe(
+    "Python realtime (python-socketio, websockets)",
+  ),
+  pythonObservability: PythonObservabilitySchema.optional().describe(
+    "Python observability (opentelemetry)",
+  ),
+  pythonCli: z
+    .array(PythonCliSchema)
+    .optional()
+    .describe("Python CLI tooling (typer, click, rich)"),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
   goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
   goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),

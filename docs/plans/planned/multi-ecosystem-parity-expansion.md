@@ -81,19 +81,19 @@ Existing-category depth:
 
 New categories:
 
-- [ ] `pythonTesting` (multi-select): `pytest`, `hypothesis`
-- [ ] `pythonCaching`: `redis-py`, `aiocache`
-- [ ] `pythonRealtime`: `python-socketio`, `websockets`
-- [ ] `pythonObservability`: `opentelemetry`
-- [ ] `pythonCli` (multi-select): `typer`, `click`, `rich`
+- [x] `pythonTesting` (multi-select): `pytest`, `hypothesis` ✅ 2026-06-11
+- [x] `pythonCaching`: `redis` (redis-py), `aiocache` ✅ 2026-06-11
+- [x] `pythonRealtime`: `python-socketio`, `websockets` ✅ 2026-06-11
+- [x] `pythonObservability`: `opentelemetry` ✅ 2026-06-11
+- [x] `pythonCli` (multi-select): `typer`, `click`, `rich` ✅ 2026-06-11
 
 Existing-category depth:
 
-- [ ] `pythonWebFramework` += `starlette`
-- [ ] `pythonOrm` += `peewee`
-- [ ] `pythonAuth` += `fastapi-users`
-- [ ] `pythonAi` += `pydantic-ai`, `google-adk`, `smolagents`
-- [ ] `pythonTaskQueue` += `taskiq`
+- [x] `pythonWebFramework` += `starlette` ✅ 2026-06-11
+- [x] `pythonOrm` += `peewee` ✅ 2026-06-11
+- [x] `pythonAuth` += `fastapi-users` (FastAPI routers auto-wired) ✅ 2026-06-11
+- [x] `pythonAi` += `pydantic-ai`, `google-adk`, `smolagents` ✅ 2026-06-11
+- [x] `pythonTaskQueue` += `taskiq` ✅ 2026-06-11
 
 ## Batch 3 — Rust parity (Tier 1 + Tier 2)
 

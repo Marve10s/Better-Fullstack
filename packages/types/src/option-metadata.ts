@@ -82,6 +82,11 @@ import {
   PYTHON_ORM_VALUES,
   PYTHON_GRAPHQL_VALUES,
   PYTHON_QUALITY_VALUES,
+  PYTHON_TESTING_VALUES,
+  PYTHON_CACHING_VALUES,
+  PYTHON_REALTIME_VALUES,
+  PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_CLI_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
@@ -194,6 +199,11 @@ export type OptionCategory =
   | "pythonTaskQueue"
   | "pythonGraphql"
   | "pythonQuality"
+  | "pythonTesting"
+  | "pythonCaching"
+  | "pythonRealtime"
+  | "pythonObservability"
+  | "pythonCli"
   | "goWebFramework"
   | "goOrm"
   | "goApi"
@@ -350,6 +360,11 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
+  "pythonTesting",
+  "pythonCaching",
+  "pythonRealtime",
+  "pythonObservability",
+  "pythonCli",
   "email",
   "observability",
   "caching",
@@ -500,6 +515,11 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonTaskQueue: "Python Task Queue",
     pythonGraphql: "Python GraphQL",
     pythonQuality: "Python Code Quality",
+    pythonTesting: "Python Testing",
+    pythonCaching: "Python Caching",
+    pythonRealtime: "Python Realtime",
+    pythonObservability: "Python Observability",
+    pythonCli: "Python CLI Tooling",
     goWebFramework: "Go Web Framework",
     goOrm: "Go ORM / Database",
     goApi: "Go API Layer",
@@ -660,6 +680,8 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "dotnetTesting",
   "dotnetObservability",
   "goTesting",
+  "pythonTesting",
+  "pythonCli",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
@@ -742,6 +764,11 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
   pythonGraphql: PYTHON_GRAPHQL_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
+  pythonTesting: PYTHON_TESTING_VALUES,
+  pythonCaching: PYTHON_CACHING_VALUES,
+  pythonRealtime: PYTHON_REALTIME_VALUES,
+  pythonObservability: PYTHON_OBSERVABILITY_VALUES,
+  pythonCli: PYTHON_CLI_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
   goOrm: GO_ORM_VALUES,
   goApi: GO_API_VALUES,
@@ -1144,11 +1171,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     django: "Django",
     flask: "Flask",
     litestar: "Litestar",
+    starlette: "Starlette",
   },
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",
     sqlmodel: "SQLModel",
     "tortoise-orm": "Tortoise ORM",
+    peewee: "Peewee",
   },
   pythonValidation: {
     pydantic: "Pydantic",
@@ -1161,10 +1190,14 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     langgraph: "LangGraph",
     crewai: "CrewAI",
     haystack: "Haystack",
+    "pydantic-ai": "Pydantic AI",
+    "google-adk": "Google ADK",
+    smolagents: "smolagents",
   },
   pythonAuth: {
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
+    "fastapi-users": "FastAPI Users",
   },
   pythonApi: {
     "django-rest-framework": "Django REST Framework",
@@ -1175,6 +1208,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     rq: "RQ",
     dramatiq: "Dramatiq",
     huey: "Huey",
+    taskiq: "Taskiq",
   },
   pythonGraphql: {
     strawberry: "Strawberry",
@@ -1184,6 +1218,26 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     ruff: "Ruff",
     mypy: "mypy",
     pyright: "Pyright",
+  },
+  pythonTesting: {
+    pytest: "pytest",
+    hypothesis: "Hypothesis",
+  },
+  pythonCaching: {
+    redis: "redis-py",
+    aiocache: "aiocache",
+  },
+  pythonRealtime: {
+    "python-socketio": "python-socketio",
+    websockets: "websockets",
+  },
+  pythonObservability: {
+    opentelemetry: "OpenTelemetry",
+  },
+  pythonCli: {
+    typer: "Typer",
+    click: "Click",
+    rich: "Rich",
   },
   goWebFramework: {
     gin: "Gin",
@@ -1558,6 +1612,11 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
   pythonGraphql: buildCategoryMetadata("pythonGraphql"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
+  pythonTesting: buildCategoryMetadata("pythonTesting"),
+  pythonCaching: buildCategoryMetadata("pythonCaching"),
+  pythonRealtime: buildCategoryMetadata("pythonRealtime"),
+  pythonObservability: buildCategoryMetadata("pythonObservability"),
+  pythonCli: buildCategoryMetadata("pythonCli"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
   goOrm: buildCategoryMetadata("goOrm"),
   goApi: buildCategoryMetadata("goApi"),

@@ -76,6 +76,11 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
+    pythonTesting: [],
+    pythonCaching: "none",
+    pythonRealtime: "none",
+    pythonObservability: "none",
+    pythonCli: [],
     goWebFramework: "none",
     goOrm: "none",
     goApi: "none",
@@ -190,6 +195,11 @@ describe("generateReproducibleCommand", () => {
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--python-testing none " +
+        "--python-caching none " +
+        "--python-realtime none " +
+        "--python-observability none " +
+        "--python-cli none " +
         "--email none " +
         "--observability none " +
         "--caching none " +
@@ -266,6 +276,11 @@ describe("generateReproducibleCommand", () => {
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--python-testing none " +
+        "--python-caching none " +
+        "--python-realtime none " +
+        "--python-observability none " +
+        "--python-cli none " +
         "--email none " +
         "--observability none " +
         "--caching none " +

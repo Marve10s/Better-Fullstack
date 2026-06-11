@@ -1,0 +1,92 @@
+{{#if (eq pythonAuth "fastapi-users")}}
+"""FastAPI Users setup: SQLAlchemy user table, JWT auth backend, and routers.
+
+Include the routers in your FastAPI app:
+
+    from app.users import auth_router, register_router, fastapi_users
+    app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])
+    app.include_router(register_router, prefix="/auth", tags=["auth"])
+"""
+
+import os
+import uuid
+from collections.abc import AsyncGenerator
+
+from fastapi import Depends
+from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, schemas
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+
+AUTH_SECRET = os.getenv("AUTH_SECRET", "change-me-to-a-real-secret")
+USERS_DATABASE_URL = os.getenv("USERS_DATABASE_URL", "sqlite+aiosqlite:///./users.db")
+
+
+class Base(DeclarativeBase):
+    """Declarative base for auth tables."""
+
+
+class User(SQLAlchemyBaseUserTableUUID, Base):
+    """User table managed by FastAPI Users."""
+
+
+class UserRead(schemas.BaseUser[uuid.UUID]):
+    """User read schema."""
+
+
+class UserCreate(schemas.BaseUserCreate):
+    """User registration schema."""
+
+
+engine = create_async_engine(USERS_DATABASE_URL)
+session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    """Yield an async session."""
+    async with session_maker() as session:
+        yield session
+
+
+async def get_user_db(session: AsyncSession = Depends(get_session)):
+    """Yield the FastAPI Users database adapter."""
+    yield SQLAlchemyUserDatabase(session, User)
+
+
+class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+    """User manager with shared secrets for reset/verify tokens."""
+
+    reset_password_token_secret = AUTH_SECRET
+    verification_token_secret = AUTH_SECRET
+
+
+async def get_user_manager(user_db=Depends(get_user_db)):
+    """Yield the user manager."""
+    yield UserManager(user_db)
+
+
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+
+
+def get_jwt_strategy() -> JWTStrategy:
+    """JWT strategy with a one-hour lifetime."""
+    return JWTStrategy(secret=AUTH_SECRET, lifetime_seconds=3600)
+
+
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+
+auth_router = fastapi_users.get_auth_router(auth_backend)
+register_router = fastapi_users.get_register_router(UserRead, UserCreate)
+current_active_user = fastapi_users.current_user(active=True)
+{{/if}}

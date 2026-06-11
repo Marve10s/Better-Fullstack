@@ -1,0 +1,26 @@
+{{#if (eq pythonCaching "redis")}}
+"""Redis cache helpers built on redis-py.
+
+Set REDIS_URL in your environment (defaults to redis://127.0.0.1:6379/0).
+"""
+
+import os
+
+import redis.asyncio as redis
+
+
+def create_client() -> redis.Redis:
+    """Create an async Redis client from REDIS_URL."""
+    url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+    return redis.from_url(url, decode_responses=True)
+
+
+async def set_value(client: redis.Redis, key: str, value: str, ttl_seconds: int = 300) -> None:
+    """Store a value with a TTL."""
+    await client.set(key, value, ex=ttl_seconds)
+
+
+async def get_value(client: redis.Redis, key: str) -> str | None:
+    """Retrieve a value; returns None when the key is missing."""
+    return await client.get(key)
+{{/if}}

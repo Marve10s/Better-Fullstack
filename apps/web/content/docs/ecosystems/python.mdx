@@ -24,6 +24,11 @@ npm create better-fullstack@latest my-python-api -- \
   --python-task-queue none \
   --python-graphql none \
   --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
   --ai-docs none \
   --version-channel stable \
   --no-install \
@@ -34,15 +39,20 @@ npm create better-fullstack@latest my-python-api -- \
 
 | Category | Values |
 | --- | --- |
-| Web framework | `fastapi` `django` `flask` `litestar` `none` |
-| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `none` |
+| Web framework | `fastapi` `django` `flask` `litestar` `starlette` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |
 | Validation | `pydantic` `none` |
-| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `none` |
-| Auth | `authlib` `jwt` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `none` |
+| Auth | `authlib` `jwt` `fastapi-users` `none` |
 | API | `django-rest-framework` `django-ninja` `none` |
-| Task queue | `celery` `rq` `dramatiq` `huey` `none` |
+| Task queue | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |
 | GraphQL | `strawberry` `ariadne` `none` |
 | Quality | `ruff` `mypy` `pyright` `none` |
+| Testing (multi-select) | `pytest` `hypothesis` `none` |
+| Caching | `redis` `aiocache` `none` |
+| Realtime | `python-socketio` `websockets` `none` |
+| Observability | `opentelemetry` `none` |
+| CLI tooling (multi-select) | `typer` `click` `rich` `none` |
 
 ## Generated behavior
 

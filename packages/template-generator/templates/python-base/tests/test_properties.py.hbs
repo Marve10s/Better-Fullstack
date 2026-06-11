@@ -1,0 +1,18 @@
+{{#if (includes pythonTesting "hypothesis")}}
+"""Property-based tests with Hypothesis."""
+
+from hypothesis import given
+from hypothesis import strategies as st
+
+
+@given(st.integers(), st.integers())
+def test_addition_is_commutative(a: int, b: int) -> None:
+    """Addition order never matters."""
+    assert a + b == b + a
+
+
+@given(st.lists(st.integers()))
+def test_reversing_twice_is_identity(values: list[int]) -> None:
+    """Reversing a list twice returns the original list."""
+    assert list(reversed(list(reversed(values)))) == values
+{{/if}}

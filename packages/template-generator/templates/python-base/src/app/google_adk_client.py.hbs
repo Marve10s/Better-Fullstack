@@ -1,0 +1,15 @@
+{{#if (includes pythonAi "google-adk")}}
+"""Google Agent Development Kit example agent.
+
+Set GOOGLE_API_KEY before running. See https://google.github.io/adk-docs/.
+"""
+
+from google.adk.agents import Agent
+
+root_agent = Agent(
+    name="assistant",
+    model="gemini-2.5-flash",
+    description="A helpful assistant for {{projectName}}.",
+    instruction="Answer user questions clearly and concisely.",
+)
+{{/if}}

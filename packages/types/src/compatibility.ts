@@ -162,6 +162,11 @@ export type CompatibilityInput = {
   pythonTaskQueue: string;
   pythonGraphql: string;
   pythonQuality: string;
+  pythonTesting: string[];
+  pythonCaching: string;
+  pythonRealtime: string;
+  pythonObservability: string;
+  pythonCli: string[];
   goWebFramework: string;
   goOrm: string;
   goApi: string;
@@ -2804,6 +2809,43 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "java",
     currentEcosystem: "java",
+  },
+  pythonTesting: {
+    role: "testing",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+  },
+  pythonCaching: {
+    role: "caching",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonRealtime: {
+    role: "realtime",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+  },
+  pythonObservability: {
+    role: "observability",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonCli: {
+    role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
   },
   goTesting: {
     role: "testing",

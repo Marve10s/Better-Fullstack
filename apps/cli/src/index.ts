@@ -521,6 +521,11 @@ export async function createVirtual(
       pythonTaskQueue: options.pythonTaskQueue || "none",
       pythonGraphql: options.pythonGraphql || "none",
       pythonQuality: options.pythonQuality || "none",
+      pythonTesting: options.pythonTesting || [],
+      pythonCaching: options.pythonCaching || "none",
+      pythonRealtime: options.pythonRealtime || "none",
+      pythonObservability: options.pythonObservability || "none",
+      pythonCli: options.pythonCli || [],
       // Go ecosystem options
       goWebFramework: options.goWebFramework || "none",
       goOrm: options.goOrm || "none",

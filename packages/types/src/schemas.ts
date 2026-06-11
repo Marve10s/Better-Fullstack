@@ -442,11 +442,11 @@ export const RustAuthSchema = z.enum(["oauth2", "none"]).describe("Rust authenti
 
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
-  .enum(["fastapi", "django", "flask", "litestar", "none"])
+  .enum(["fastapi", "django", "flask", "litestar", "starlette", "none"])
   .describe("Python web framework");
 
 export const PythonOrmSchema = z
-  .enum(["sqlalchemy", "sqlmodel", "tortoise-orm", "none"])
+  .enum(["sqlalchemy", "sqlmodel", "tortoise-orm", "peewee", "none"])
   .describe("Python ORM/database layer");
 
 export const PythonValidationSchema = z
@@ -462,12 +462,15 @@ export const PythonAiSchema = z
     "langgraph",
     "crewai",
     "haystack",
+    "pydantic-ai",
+    "google-adk",
+    "smolagents",
     "none",
   ])
   .describe("Python AI/ML framework");
 
 export const PythonAuthSchema = z
-  .enum(["authlib", "jwt", "none"])
+  .enum(["authlib", "jwt", "fastapi-users", "none"])
   .describe("Python authentication library");
 
 export const PythonApiSchema = z
@@ -475,7 +478,7 @@ export const PythonApiSchema = z
   .describe("Python API framework");
 
 export const PythonTaskQueueSchema = z
-  .enum(["celery", "rq", "dramatiq", "huey", "none"])
+  .enum(["celery", "rq", "dramatiq", "huey", "taskiq", "none"])
   .describe("Python task queue");
 
 export const PythonGraphqlSchema = z
@@ -485,6 +488,26 @@ export const PythonGraphqlSchema = z
 export const PythonQualitySchema = z
   .enum(["ruff", "mypy", "pyright", "none"])
   .describe("Python code quality tool");
+
+export const PythonTestingSchema = z
+  .enum(["pytest", "hypothesis", "none"])
+  .describe("Python testing libraries");
+
+export const PythonCachingSchema = z
+  .enum(["redis", "aiocache", "none"])
+  .describe("Python caching library");
+
+export const PythonRealtimeSchema = z
+  .enum(["python-socketio", "websockets", "none"])
+  .describe("Python realtime/WebSocket library");
+
+export const PythonObservabilitySchema = z
+  .enum(["opentelemetry", "none"])
+  .describe("Python observability/tracing library");
+
+export const PythonCliSchema = z
+  .enum(["typer", "click", "rich", "none"])
+  .describe("Python CLI tooling libraries");
 
 // Go ecosystem schemas
 export const GoWebFrameworkSchema = z
@@ -877,6 +900,11 @@ export const CreateInputSchema = z.object({
   pythonTaskQueue: PythonTaskQueueSchema.optional(),
   pythonGraphql: PythonGraphqlSchema.optional(),
   pythonQuality: PythonQualitySchema.optional(),
+  pythonTesting: z.array(PythonTestingSchema).optional(),
+  pythonCaching: PythonCachingSchema.optional(),
+  pythonRealtime: PythonRealtimeSchema.optional(),
+  pythonObservability: PythonObservabilitySchema.optional(),
+  pythonCli: z.array(PythonCliSchema).optional(),
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema.optional(),
   goOrm: GoOrmSchema.optional(),
@@ -1023,6 +1051,11 @@ export const ProjectConfigSchema = z.object({
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
+  pythonTesting: z.array(PythonTestingSchema),
+  pythonCaching: PythonCachingSchema,
+  pythonRealtime: PythonRealtimeSchema,
+  pythonObservability: PythonObservabilitySchema,
+  pythonCli: z.array(PythonCliSchema),
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
   goOrm: GoOrmSchema,
@@ -1164,6 +1197,11 @@ export const BetterTStackConfigSchema = z.object({
   pythonTaskQueue: PythonTaskQueueSchema,
   pythonGraphql: PythonGraphqlSchema,
   pythonQuality: PythonQualitySchema,
+  pythonTesting: z.array(PythonTestingSchema),
+  pythonCaching: PythonCachingSchema,
+  pythonRealtime: PythonRealtimeSchema,
+  pythonObservability: PythonObservabilitySchema,
+  pythonCli: z.array(PythonCliSchema),
   // Go ecosystem options
   goWebFramework: GoWebFrameworkSchema,
   goOrm: GoOrmSchema,
@@ -1317,6 +1355,11 @@ export const PYTHON_API_VALUES = PythonApiSchema.options;
 export const PYTHON_TASK_QUEUE_VALUES = PythonTaskQueueSchema.options;
 export const PYTHON_GRAPHQL_VALUES = PythonGraphqlSchema.options;
 export const PYTHON_QUALITY_VALUES = PythonQualitySchema.options;
+export const PYTHON_TESTING_VALUES = PythonTestingSchema.options;
+export const PYTHON_CACHING_VALUES = PythonCachingSchema.options;
+export const PYTHON_REALTIME_VALUES = PythonRealtimeSchema.options;
+export const PYTHON_OBSERVABILITY_VALUES = PythonObservabilitySchema.options;
+export const PYTHON_CLI_VALUES = PythonCliSchema.options;
 export const GO_WEB_FRAMEWORK_VALUES = GoWebFrameworkSchema.options;
 export const GO_ORM_VALUES = GoOrmSchema.options;
 export const GO_API_VALUES = GoApiSchema.options;

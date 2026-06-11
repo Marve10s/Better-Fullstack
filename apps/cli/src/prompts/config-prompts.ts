@@ -85,6 +85,11 @@ import type {
   PythonAuth,
   PythonOrm,
   PythonQuality,
+  PythonTesting,
+  PythonCaching,
+  PythonRealtime,
+  PythonObservability,
+  PythonCli,
   PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
@@ -217,6 +222,11 @@ import {
   getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
+  getPythonTestingChoice,
+  getPythonCachingChoice,
+  getPythonRealtimeChoice,
+  getPythonObservabilityChoice,
+  getPythonCliChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -314,6 +324,11 @@ type PromptGroupResults = {
   pythonTaskQueue: PythonTaskQueue;
   pythonGraphql: PythonGraphql;
   pythonQuality: PythonQuality;
+  pythonTesting: PythonTesting[];
+  pythonCaching: PythonCaching;
+  pythonRealtime: PythonRealtime;
+  pythonObservability: PythonObservability;
+  pythonCli: PythonCli[];
   // Go ecosystem
   goWebFramework: GoWebFramework;
   goOrm: GoOrm;
@@ -782,6 +797,28 @@ export async function gatherConfig(
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonQuality);
         return getPythonQualityChoice(flags.pythonQuality);
       },
+      pythonTesting: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve([] as PythonTesting[]);
+        return getPythonTestingChoice(flags.pythonTesting);
+      },
+      pythonCaching: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCaching);
+        return getPythonCachingChoice(flags.pythonCaching);
+      },
+      pythonRealtime: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonRealtime);
+        return getPythonRealtimeChoice(flags.pythonRealtime);
+      },
+      pythonObservability: ({ results }) => {
+        if (results.ecosystem !== "python") {
+          return Promise.resolve("none" as PythonObservability);
+        }
+        return getPythonObservabilityChoice(flags.pythonObservability);
+      },
+      pythonCli: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
+        return getPythonCliChoice(flags.pythonCli);
+      },
       // Go ecosystem prompts (skip if not Go)
       goWebFramework: ({ results }) => {
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoWebFramework);
@@ -1079,6 +1116,11 @@ export async function gatherConfig(
     pythonTaskQueue: result.pythonTaskQueue,
     pythonGraphql: result.pythonGraphql,
     pythonQuality: result.pythonQuality,
+    pythonTesting: result.pythonTesting,
+    pythonCaching: result.pythonCaching,
+    pythonRealtime: result.pythonRealtime,
+    pythonObservability: result.pythonObservability,
+    pythonCli: result.pythonCli,
     // Go ecosystem options
     goWebFramework: result.goWebFramework,
     goOrm: result.goOrm,

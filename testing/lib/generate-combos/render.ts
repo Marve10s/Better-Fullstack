@@ -214,6 +214,11 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-task-queue", config.pythonTaskQueue],
     ["python-graphql", config.pythonGraphql],
     ["python-quality", config.pythonQuality],
+    ["python-testing", withExplicitNone(config.pythonTesting)],
+    ["python-caching", config.pythonCaching],
+    ["python-realtime", config.pythonRealtime],
+    ["python-observability", config.pythonObservability],
+    ["python-cli", withExplicitNone(config.pythonCli)],
   ];
 
   const goFlags: Array<[string, string | readonly string[]]> = [

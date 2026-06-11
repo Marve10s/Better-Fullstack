@@ -418,6 +418,11 @@ describe("Addon Configurations", () => {
           pythonTaskQueue: "none",
           pythonGraphql: "none",
           pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
           install: false,
         });
 
@@ -448,6 +453,11 @@ describe("Addon Configurations", () => {
           pythonTaskQueue: "none",
           pythonGraphql: "none",
           pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
           install: false,
         });
 

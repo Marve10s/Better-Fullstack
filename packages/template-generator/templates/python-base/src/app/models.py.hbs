@@ -179,5 +179,53 @@ class Post(models.Model):
 
     def __repr__(self) -> str:
         return f"<Post(id={self.id}, title={self.title})>"
+{{#if (eq pythonOrm "peewee")}}
+"""Peewee models."""
+
+import datetime
+
+from peewee import (
+    AutoField,
+    CharField,
+    DateTimeField,
+    ForeignKeyField,
+    Model,
+    TextField,
+)
+
+from app.database import db
+
+
+class BaseModel(Model):
+    """Base model bound to the application database."""
+
+    class Meta:
+        database = db
+
+
+class User(BaseModel):
+    """User model."""
+
+    id = AutoField()
+    name = CharField(max_length=100)
+    email = CharField(max_length=255, unique=True)
+    created_at = DateTimeField(default=datetime.datetime.now)
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, email={self.email})>"
+
+
+class Post(BaseModel):
+    """Post model."""
+
+    id = AutoField()
+    title = CharField(max_length=200)
+    content = TextField(default="")
+    author = ForeignKeyField(User, backref="posts")
+    created_at = DateTimeField(default=datetime.datetime.now)
+
+    def __repr__(self) -> str:
+        return f"<Post(id={self.id}, title={self.title})>"
+{{/if}}
 {{/if}}
 {{/if}}
