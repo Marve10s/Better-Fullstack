@@ -49,8 +49,8 @@ export const PEER_DEPENDENCY_CONFLICTS: PeerDependencyConflict[] = [
   // 2. Effect ecosystem with Zod
   {
     id: "effect-schema-zod-overlap",
-    description: "@effect/schema and zod both provide validation - may cause confusion",
-    packages: ["@effect/schema", "zod"],
+    description: "effect/Schema (built into effect) and zod both provide validation - may cause confusion",
+    packages: ["effect", "zod"],
     severity: "warning",
     resolution: "Use --validation effect-schema with Effect, or --effect none with Zod",
     triggeredBy: [{ optionKey: "effect", values: ["effect-full"] }],

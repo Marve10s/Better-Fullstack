@@ -1506,7 +1506,7 @@ export const TECH_OPTIONS: Record<
     },
     {
       id: "effect-schema",
-      name: "@effect/schema",
+      name: "Effect Schema",
       description: "Merged into the main effect package as effect/Schema",
       icon: "",
       color: "from-black to-gray-700",

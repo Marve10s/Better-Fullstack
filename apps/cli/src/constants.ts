@@ -6,11 +6,10 @@ import { createCliDefaultProjectConfigBase } from "@better-fullstack/types";
 
 import { getUserPkgManager } from "./utils/get-package-manager";
 
-// Re-export from template-generator (single source of truth)
-export {
-  dependencyVersionMap,
-  type AvailableDependencies,
-} from "@better-fullstack/template-generator";
+// Re-export from template-generator (single source of truth).
+// Type-only: the value lives in the heavy template-generator bundle and must
+// be imported dynamically at point of use to keep CLI startup fast.
+export type { AvailableDependencies } from "@better-fullstack/template-generator";
 
 const __filename = fileURLToPath(import.meta.url);
 const distPath = path.dirname(__filename);

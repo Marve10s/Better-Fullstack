@@ -1,5 +1,3 @@
-import { generateVirtualProject, EMBEDDED_TEMPLATES } from "@better-fullstack/template-generator";
-import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
 import { log } from "@clack/prompts";
 import { $ } from "execa";
 import fs from "fs-extra";
@@ -37,6 +35,14 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
   try {
     await fs.ensureDir(projectDir);
+
+    // Loaded here instead of at module top to keep CLI startup fast — the
+    // template-generator bundle embeds all templates (~2.5 MB of source).
+    const [{ generateVirtualProject, EMBEDDED_TEMPLATES }, { writeTreeToFilesystem }] =
+      await Promise.all([
+        import("@better-fullstack/template-generator"),
+        import("@better-fullstack/template-generator/fs-writer"),
+      ]);
 
     const result = await generateVirtualProject({
       config: options,

@@ -1,12 +1,24 @@
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
+import { Suspense } from "react";
 
 import { mdxComponents } from "@/components/docs/mdx";
 import { TableOfContents } from "@/components/docs/table-of-contents";
-import { getRelatedGuidePages, type GuidePage } from "@/lib/guides/source";
+import { getRelatedGuidePages, type GuidePage, useGuidePageContent } from "@/lib/guides/source";
 
 export function GuidePageContent({ page }: { page: GuidePage }) {
-  const Content = page.Component;
+  // The MDX body chunk loads on demand; render nothing extra while waiting —
+  // the surrounding route shell (navbar etc.) stays visible.
+  return (
+    <Suspense fallback={null}>
+      <GuidePageBody page={page} />
+    </Suspense>
+  );
+}
+
+function GuidePageBody({ page }: { page: GuidePage }) {
+  const content = useGuidePageContent(page);
+  const Content = content.Component;
   const isIndex = page.slug.length === 0;
   const relatedGuides = getRelatedGuidePages(page);
 
@@ -91,7 +103,7 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
         ) : null}
       </article>
       <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
-        <TableOfContents toc={page.toc} />
+        <TableOfContents toc={content.toc} />
       </aside>
     </main>
   );

@@ -6,7 +6,6 @@ import { describe, test, expect } from "bun:test";
 const criticalDependencies: Record<string, string> = {
   // Effect ecosystem (updated 2026-02-20)
   effect: "^3.19.14",
-  "@effect/schema": "^0.75.5",
   "@effect/platform": "^0.94.5",
   "@effect/platform-node": "^0.104.1",
   "@effect/platform-bun": "^0.87.1",

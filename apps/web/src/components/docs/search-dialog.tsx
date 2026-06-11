@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DocSearch, SearchHit } from "@/lib/docs/search";
 
 import { createDocSearch } from "@/lib/docs/search";
-import { searchSections } from "@/lib/docs/search-data";
+import { loadSearchSections } from "@/lib/docs/search-data";
 import { cn } from "@/lib/utils";
 
 const SHORTCUT_HINT_KEYS = ["meta+k", "ctrl+k"] as const;
@@ -31,6 +31,7 @@ export function DocsSearchDialog({
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [search, setSearch] = useState<DocSearch | null>(null);
+  const [sectionCount, setSectionCount] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Lazy-init Orama on first open. The promise is cached so repeat opens
@@ -39,8 +40,12 @@ export function DocsSearchDialog({
     if (!open || search) return;
     let cancelled = false;
     const init = async () => {
-      const instance = await createDocSearch(searchSections);
-      if (!cancelled) setSearch(instance);
+      const sections = await loadSearchSections();
+      const instance = await createDocSearch(sections);
+      if (!cancelled) {
+        setSearch(instance);
+        setSectionCount(sections.length);
+      }
     };
     void init();
     return () => {
@@ -229,7 +234,7 @@ export function DocsSearchDialog({
                 <KeyHint label="↵" />
                 <span>Open</span>
               </span>
-              <span>{searchSections.length} sections indexed</span>
+              <span>{sectionCount} sections indexed</span>
             </div>
           </motion.dialog>
         </motion.div>

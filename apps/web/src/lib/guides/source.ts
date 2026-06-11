@@ -1,6 +1,10 @@
 import type { ComponentType } from "react";
 
+import { guidesMeta } from "virtual:content-meta";
+
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
+
+import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 
 export type GuideFrontmatter = {
   title?: string;
@@ -18,20 +22,30 @@ type MdxModule = {
   toc?: TocEntry[];
 };
 
+/**
+ * Per-guide metadata. The compiled MDX component and toc are loaded on demand
+ * via `useGuidePageContent` so guide content stays out of the app entry chunk.
+ */
 export type GuidePage = {
   slug: string[];
   url: string;
   path: string;
+  filePath: string;
   frontmatter: GuideFrontmatter;
+};
+
+/** Heavy per-guide bundle, loaded lazily for the page being viewed. */
+export type GuidePageContent = {
   toc: TocEntry[];
   Component: MdxModule["default"];
 };
 
 const CONTENT_PREFIX = "/content/guides/";
 
-const mdxModules = import.meta.glob<MdxModule>("../../../content/guides/**/*.mdx", {
-  eager: true,
-});
+// Lazy: each guide's compiled MDX module is its own chunk. Frontmatter comes
+// from `virtual:content-meta` (see vite-plugins/content-meta) — importing it
+// from the MDX modules here would fuse them into this chunk.
+const mdxLoaders = import.meta.glob<MdxModule>("../../../content/guides/**/*.mdx");
 
 function normalizeMdxPath(filePath: string): { relativePath: string; slug: string[] } {
   const idx = filePath.indexOf(CONTENT_PREFIX);
@@ -44,17 +58,42 @@ function normalizeMdxPath(filePath: string): { relativePath: string; slug: strin
 
 const pagesBySlug = new Map<string, GuidePage>();
 
-for (const [filePath, module] of Object.entries(mdxModules)) {
+for (const { filePath, frontmatter } of guidesMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/guides" + (slug.length ? `/${slug.join("/")}` : "");
   pagesBySlug.set(slug.join("/"), {
     slug,
     url,
     path: relativePath,
-    frontmatter: module.frontmatter ?? {},
+    filePath,
+    frontmatter: frontmatter ?? {},
+  });
+}
+
+const contentCache = createSuspenseCache<GuidePageContent>();
+
+async function loadGuideContent(page: GuidePage): Promise<GuidePageContent> {
+  const module = await mdxLoaders[page.filePath]?.();
+  if (!module) throw new Error(`Guide content module missing for ${page.filePath}`);
+  return {
     toc: module.toc ?? [],
     Component: module.default,
-  });
+  };
+}
+
+/**
+ * Suspense hook: returns the guide's MDX component/toc, suspending while the
+ * chunk loads. Callers must render inside a `<Suspense>` boundary.
+ */
+export function useGuidePageContent(page: GuidePage): GuidePageContent {
+  return contentCache.read(page.slug.join("/"), () => loadGuideContent(page));
+}
+
+/** Start fetching a guide's content chunk early (e.g. from a route loader). */
+export function preloadGuidePageContent(slug: string[] | undefined): void {
+  const page = getGuidePage(slug);
+  if (!page) return;
+  contentCache.preload(page.slug.join("/"), () => loadGuideContent(page));
 }
 
 export function getGuidePage(slug: string[] | undefined): GuidePage | undefined {
