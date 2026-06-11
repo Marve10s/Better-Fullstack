@@ -1,0 +1,27 @@
+{{#if (eq rustObservability "opentelemetry")}}
+//! OpenTelemetry tracing with OTLP/HTTP export.
+//!
+//! Set OTEL_EXPORTER_OTLP_ENDPOINT (defaults to http://localhost:4318) and
+//! call `init_tracing()` once at startup; keep the returned provider alive
+//! and call `shutdown()` on it before exit to flush spans.
+
+use opentelemetry::global;
+use opentelemetry::KeyValue;
+use opentelemetry_otlp::SpanExporter;
+use opentelemetry_sdk::trace::SdkTracerProvider;
+use opentelemetry_sdk::Resource;
+
+/// Install a global OTLP tracer provider and return it for shutdown.
+pub fn init_tracing() -> Result<SdkTracerProvider, Box<dyn std::error::Error + Send + Sync>> {
+    let exporter = SpanExporter::builder().with_http().build()?;
+    let resource = Resource::builder()
+        .with_attributes([KeyValue::new("service.name", "{{projectName}}")])
+        .build();
+    let provider = SdkTracerProvider::builder()
+        .with_batch_exporter(exporter)
+        .with_resource(resource)
+        .build();
+    global::set_tracer_provider(provider.clone());
+    Ok(provider)
+}
+{{/if}}

@@ -1,0 +1,96 @@
+{{#if (eq goRealtime "gorilla-websocket")}}
+// Package realtime provides a WebSocket hub built on gorilla/websocket.
+//
+// Wire it into your router, e.g.:
+//
+//	hub := realtime.NewHub()
+//	go hub.Run()
+//	mux.HandleFunc("/ws", hub.ServeWS)
+package realtime
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gorilla/websocket"
+)
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	// Adjust the origin policy before exposing this endpoint publicly.
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
+// Hub tracks connected clients and broadcasts messages to all of them.
+type Hub struct {
+	mu         sync.RWMutex
+	clients    map[*websocket.Conn]bool
+	broadcast  chan []byte
+	register   chan *websocket.Conn
+	unregister chan *websocket.Conn
+}
+
+func NewHub() *Hub {
+	return &Hub{
+		clients:    make(map[*websocket.Conn]bool),
+		broadcast:  make(chan []byte, 64),
+		register:   make(chan *websocket.Conn),
+		unregister: make(chan *websocket.Conn),
+	}
+}
+
+// Run processes register/unregister/broadcast events. Call it in a goroutine.
+func (h *Hub) Run() {
+	for {
+		select {
+		case conn := <-h.register:
+			h.mu.Lock()
+			h.clients[conn] = true
+			h.mu.Unlock()
+		case conn := <-h.unregister:
+			h.mu.Lock()
+			if _, ok := h.clients[conn]; ok {
+				delete(h.clients, conn)
+				conn.Close()
+			}
+			h.mu.Unlock()
+		case message := <-h.broadcast:
+			h.mu.RLock()
+			for conn := range h.clients {
+				if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
+					conn.Close()
+					delete(h.clients, conn)
+				}
+			}
+			h.mu.RUnlock()
+		}
+	}
+}
+
+// Broadcast queues a message for delivery to every connected client.
+func (h *Hub) Broadcast(message []byte) {
+	h.broadcast <- message
+}
+
+// ServeWS upgrades an HTTP request to a WebSocket connection and echoes
+// inbound messages to all connected clients.
+func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	h.register <- conn
+
+	go func() {
+		defer func() { h.unregister <- conn }()
+		for {
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+			h.Broadcast(message)
+		}
+	}()
+}
+{{/if}}

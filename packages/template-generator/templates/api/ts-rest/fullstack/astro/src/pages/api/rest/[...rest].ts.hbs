@@ -3,12 +3,12 @@ import { tsr } from "@ts-rest/serverless";
 import { contract } from "@{{projectName}}/api/index";
 import { createRouter } from "@{{projectName}}/api/routers";
 import { createContext } from "@{{projectName}}/api/context";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@/lib/auth";
 {{/if}}
 
 const handler = tsr.router(contract, async (args) => {
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   const request = args.request;
   const session = await auth.api.getSession({
     headers: request.headers,
@@ -24,7 +24,7 @@ const handler = tsr.router(contract, async (args) => {
   if (path === "/health") {
     return router.healthCheck();
   }
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   if (path === "/private") {
     return router.privateData();
   }

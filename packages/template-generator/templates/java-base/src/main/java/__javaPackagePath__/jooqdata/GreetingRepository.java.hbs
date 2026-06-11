@@ -1,0 +1,26 @@
+{{#if hasJavaJooq}}
+package {{javaPackageName}}.jooqdata;
+
+import org.jooq.DSLContext;
+import org.springframework.stereotype.Repository;
+
+/**
+ * jOOQ data access using plain SQL through {@link DSLContext}.
+ *
+ * <p>For fully type-safe queries, configure the jOOQ code generator against
+ * your schema and replace the string SQL with generated table references.
+ */
+@Repository
+public class GreetingRepository {
+
+	private final DSLContext dsl;
+
+	public GreetingRepository(DSLContext dsl) {
+		this.dsl = dsl;
+	}
+
+	public String fetchGreeting() {
+		return this.dsl.resultQuery("SELECT 'Hello from jOOQ!'").fetchSingle().get(0, String.class);
+	}
+}
+{{/if}}

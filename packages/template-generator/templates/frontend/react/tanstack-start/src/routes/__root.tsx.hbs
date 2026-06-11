@@ -11,7 +11,7 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
-{{#if (and (eq backend "convex") (or (eq auth "clerk") (eq auth "better-auth")))}}
+{{#if (and (eq backend "convex") (or (eq auth "clerk") (isBetterAuth auth)))}}
   useRouteContext,
 {{/if}}
 } from "@tanstack/react-router";
@@ -40,7 +40,7 @@ const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
 });
 {{else if (and (eq backend "self") (eq auth "clerk"))}}
 import { ClerkProvider } from "@clerk/tanstack-react-start";
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 import { createServerFn } from "@tanstack/react-start";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { authClient } from "@/lib/auth-client";
@@ -109,7 +109,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     }
     return { userId, token };
   },
-  {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+  {{else if (and (eq backend "convex") (isBetterAuth auth))}}
   beforeLoad: async (ctx) => {
     const token = await getAuth();
     if (token) {
@@ -148,7 +148,7 @@ function RootDocument() {
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );
-  {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+  {{else if (and (eq backend "convex") (isBetterAuth auth))}}
   const context = useRouteContext({ from: Route.id });
   return (
     <ConvexBetterAuthProvider

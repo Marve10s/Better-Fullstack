@@ -102,7 +102,9 @@ function getRecommendedSourceKeys(config: ProjectConfig): SourceKey[] {
   if (frontend.includes("nuxt")) sources.push("nuxt/ui");
   if (frontend.includes("native-uniwind")) sources.push("heroui-inc/heroui");
   if (hasNativeFrontend(frontend)) sources.push("expo/skills");
-  if (auth === "better-auth") sources.push("better-auth/skills");
+  if (auth === "better-auth" || auth === "better-auth-organizations") {
+    sources.push("better-auth/skills");
+  }
   if (dbSetup === "neon") sources.push("neondatabase/agent-skills");
   if (dbSetup === "supabase") sources.push("supabase/agent-skills");
   if (dbSetup === "planetscale") sources.push("planetscale/database-skills");

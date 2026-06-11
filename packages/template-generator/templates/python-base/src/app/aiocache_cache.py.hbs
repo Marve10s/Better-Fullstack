@@ -1,0 +1,21 @@
+{{#if (eq pythonCaching "aiocache")}}
+"""Async cache helpers built on aiocache.
+
+Uses the in-memory backend by default; switch to RedisCache or
+MemcachedCache for shared caching across processes.
+"""
+
+from aiocache import SimpleMemoryCache
+
+cache = SimpleMemoryCache()
+
+
+async def set_value(key: str, value: str, ttl_seconds: int = 300) -> None:
+    """Store a value with a TTL."""
+    await cache.set(key, value, ttl=ttl_seconds)
+
+
+async def get_value(key: str) -> str | None:
+    """Retrieve a value; returns None when the key is missing."""
+    return await cache.get(key)
+{{/if}}

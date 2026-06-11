@@ -1,6 +1,9 @@
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+{{#if (eq webDeploy "netlify")}}
+import netlify from "@netlify/vite-plugin-tanstack-start";
+{{/if}}
 {{#if (eq cssFramework "tailwind")}}
 import tailwindcss from "@tailwindcss/vite";
 {{/if}}
@@ -13,12 +16,15 @@ export default defineConfig({
     tailwindcss(),
     {{/if}}
     tanstackStart(),
+    {{#if (eq webDeploy "netlify")}}
+    netlify(),
+    {{/if}}
     viteReact(),
   ],
   server: {
     port: 3001,
   },
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   ssr: {
     noExternal: [{{#if (eq backend "convex")}}"@convex-dev/better-auth", {{/if}}"better-auth"],
   },

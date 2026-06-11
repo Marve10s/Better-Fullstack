@@ -59,7 +59,7 @@ function HomeScreen() {
       {{#if (eq auth "clerk")}}
       <Text style={styles.body}>{user ? `Signed in as ${user.primaryEmailAddress?.emailAddress}` : "Auth routes are ready for Clerk."}</Text>
       {{/if}}
-      {{#if (eq auth "better-auth")}}
+      {{#if (isBetterAuth auth)}}
       {{#if (eq mobileDeepLinking "expo-linking")}}
       <Text style={styles.body}>Use {getAuthRedirectUri()} as the Better Auth mobile callback URL.</Text>
       {{else}}

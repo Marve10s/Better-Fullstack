@@ -1,0 +1,26 @@
+{{#if (eq backend "express")}}
+import type { NextFunction, Request, Response } from "express";
+
+type AsyncRequestHandler<Req extends Request = Request, Res extends Response = Response> = (
+	req: Req,
+	res: Res,
+	next: NextFunction,
+) => Promise<unknown>;
+
+/**
+ * Wraps an async route handler so rejected promises reach the global error
+ * handler instead of becoming unhandled rejections.
+ *
+ * @example
+ * app.get("/users", asyncHandler(async (_req, res) => {
+ *   res.json(ApiResponse.ok(await listUsers()));
+ * }));
+ */
+export function asyncHandler<Req extends Request = Request, Res extends Response = Response>(
+	handler: AsyncRequestHandler<Req, Res>,
+) {
+	return (req: Req, res: Res, next: NextFunction): void => {
+		void handler(req, res, next).catch(next);
+	};
+}
+{{/if}}

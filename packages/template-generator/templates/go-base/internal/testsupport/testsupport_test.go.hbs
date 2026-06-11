@@ -1,0 +1,38 @@
+{{#if (or (includes goTesting "testify") (includes goTesting "gomock"))}}
+package testsupport
+
+import (
+	"testing"
+{{#if (includes goTesting "testify")}}
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+{{/if}}
+{{#if (includes goTesting "gomock")}}
+
+	"go.uber.org/mock/gomock"
+{{/if}}
+)
+
+{{#if (includes goTesting "testify")}}
+func TestHelloWithTestify(t *testing.T) {
+	require.NotEmpty(t, Hello(""))
+	assert.Equal(t, "Hello, world!", Hello(""))
+	assert.Equal(t, "Hello, gopher!", Hello("gopher"))
+}
+{{/if}}
+{{#if (includes goTesting "gomock")}}
+func TestGomockControllerLifecycle(t *testing.T) {
+	// Generated mocks land in ./mocks after `go generate ./internal/testsupport`.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+}
+{{/if}}
+{{#if (and (includes goTesting "gomock") (not (includes goTesting "testify")))}}
+func TestHello(t *testing.T) {
+	if Hello("") != "Hello, world!" {
+		t.Fatalf("unexpected greeting: %s", Hello(""))
+	}
+}
+{{/if}}
+{{/if}}

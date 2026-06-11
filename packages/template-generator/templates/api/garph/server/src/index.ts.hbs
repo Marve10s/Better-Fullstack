@@ -1,7 +1,7 @@
 import { g, buildSchema, type InferResolvers } from "garph";
 
 // Define GraphQL types using Garph's type-safe builder
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export const userType = g.type("User", {
   id: g.string(),
   email: g.string(),
@@ -16,7 +16,7 @@ export const privateDataType = g.type("PrivateData", {
 
 export const queryType = g.type("Query", {
   health: g.string().description("Health check endpoint"),
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   privateData: g.ref(privateDataType).optional().description("Get private data (requires authentication)"),
 {{/if}}
 });

@@ -25,6 +25,10 @@ dependencies = [
 {{#if (eq pythonWebFramework "litestar")}}
     "litestar[standard]>=2.15.0",
 {{/if}}
+{{#if (eq pythonWebFramework "starlette")}}
+    "starlette>=0.47.0",
+    "uvicorn[standard]>=0.43.0",
+{{/if}}
 {{#if (eq pythonOrm "sqlalchemy")}}
     "sqlalchemy>=2.0.49",
     "alembic>=1.18.4",
@@ -45,6 +49,12 @@ dependencies = [
     "aerich>=0.8.0",
 {{#if (eq database "postgres")}}
     "asyncpg>=0.31.0",
+{{/if}}
+{{/if}}
+{{#if (eq pythonOrm "peewee")}}
+    "peewee>=3.18.0",
+{{#if (eq database "postgres")}}
+    "psycopg2-binary>=2.9.10",
 {{/if}}
 {{/if}}
 {{#if (eq pythonValidation "pydantic")}}
@@ -78,6 +88,15 @@ dependencies = [
 {{#if (includes pythonAi "haystack")}}
     "haystack-ai>=2.20.0",
 {{/if}}
+{{#if (includes pythonAi "pydantic-ai")}}
+    "pydantic-ai>=1.107.0",
+{{/if}}
+{{#if (includes pythonAi "google-adk")}}
+    "google-adk>=2.2.0",
+{{/if}}
+{{#if (includes pythonAi "smolagents")}}
+    "smolagents>=1.26.0",
+{{/if}}
 {{#if (eq pythonAuth "authlib")}}
     "authlib>=1.6.0",
     "httpx>=0.28.0",
@@ -85,6 +104,9 @@ dependencies = [
 {{#if (eq pythonAuth "jwt")}}
     "python-jose[cryptography]>=3.4.0",
     "passlib[bcrypt]>=1.7.4",
+{{/if}}
+{{#if (eq pythonAuth "fastapi-users")}}
+    "fastapi-users[sqlalchemy]>=15.0.5",
 {{/if}}
 {{#if (and (eq pythonWebFramework "django") (eq pythonApi "django-rest-framework"))}}
     "djangorestframework>=3.17.1",
@@ -105,6 +127,34 @@ dependencies = [
 {{#if (eq pythonTaskQueue "huey")}}
     "huey>=2.5.0",
     "redis>=7.0.0",
+{{/if}}
+{{#if (eq pythonTaskQueue "taskiq")}}
+    "taskiq>=0.11.0",
+{{/if}}
+{{#if (eq pythonCaching "redis")}}
+    "redis>=7.0.0",
+{{/if}}
+{{#if (eq pythonCaching "aiocache")}}
+    "aiocache>=0.12.3",
+{{/if}}
+{{#if (eq pythonRealtime "python-socketio")}}
+    "python-socketio>=5.13.0",
+{{/if}}
+{{#if (eq pythonRealtime "websockets")}}
+    "websockets>=15.0",
+{{/if}}
+{{#if (eq pythonObservability "opentelemetry")}}
+    "opentelemetry-sdk>=1.34.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.34.0",
+{{/if}}
+{{#if (includes pythonCli "typer")}}
+    "typer>=0.16.0",
+{{/if}}
+{{#if (includes pythonCli "click")}}
+    "click>=8.2.0",
+{{/if}}
+{{#if (includes pythonCli "rich")}}
+    "rich>=14.0.0",
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 {{#if (eq pythonWebFramework "fastapi")}}
@@ -159,6 +209,9 @@ dev = [
 {{/if}}
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+{{#if (includes pythonTesting "hypothesis")}}
+    "hypothesis>=6.130.0",
+{{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
     "httpx>=0.28.0",
 {{/if}}

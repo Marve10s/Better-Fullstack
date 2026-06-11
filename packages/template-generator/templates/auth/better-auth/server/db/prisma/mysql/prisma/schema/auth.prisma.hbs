@@ -8,6 +8,10 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+{{#if (hasBetterAuthOrganizations auth)}}
+  members       Member[]
+  invitations   Invitation[] @relation("inviterInvitations")
+{{/if}}
 
   @@unique([email])
   @@map("user")
@@ -23,6 +27,9 @@ model Session {
   userAgent String?  @db.Text
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+{{#if (hasBetterAuthOrganizations auth)}}
+  activeOrganizationId String?
+{{/if}}
 
   @@unique([token])
   @@index([userId(length: 191)])
@@ -60,3 +67,50 @@ model Verification {
   @@index([identifier(length: 191)])
   @@map("verification")
 }
+
+{{#if (hasBetterAuthOrganizations auth)}}
+model Organization {
+  id          String       @id
+  name        String       @db.Text
+  slug        String
+  logo        String?      @db.Text
+  metadata    String?      @db.Text
+  createdAt   DateTime     @default(now())
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member") @db.Text
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId(length: 191)])
+  @@index([userId(length: 191)])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?      @db.Text
+  status         String       @default("pending") @db.Text
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  inviter        User         @relation("inviterInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId(length: 191)])
+  @@index([email(length: 191)])
+  @@map("invitation")
+}
+{{/if}}

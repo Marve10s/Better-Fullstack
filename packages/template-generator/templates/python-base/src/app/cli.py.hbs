@@ -1,0 +1,88 @@
+{{#if (or (includes pythonCli "typer") (includes pythonCli "click"))}}
+"""Command line interface for {{projectName}}.
+
+Run with:
+
+    uv run python -m app.cli --help
+"""
+
+{{#if (includes pythonCli "typer")}}
+import typer
+{{#if (includes pythonCli "rich")}}
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+{{/if}}
+
+app = typer.Typer(help="{{projectName}} command line interface")
+
+
+@app.command()
+def hello(name: str = "world") -> None:
+    """Print a greeting."""
+{{#if (includes pythonCli "rich")}}
+    console.print(f"[bold green]Hello, {name}![/bold green]")
+{{else}}
+    typer.echo(f"Hello, {name}!")
+{{/if}}
+
+
+@app.command()
+def info() -> None:
+    """Show project information."""
+{{#if (includes pythonCli "rich")}}
+    table = Table(title="{{projectName}}")
+    table.add_column("Key")
+    table.add_column("Value")
+    table.add_row("name", "{{projectName}}")
+    table.add_row("cli", "typer")
+    console.print(table)
+{{else}}
+    typer.echo("{{projectName}} — built with Better Fullstack")
+{{/if}}
+
+
+if __name__ == "__main__":
+    app()
+{{else}}
+import click
+{{#if (includes pythonCli "rich")}}
+from rich.console import Console
+
+console = Console()
+{{/if}}
+
+
+@click.group(help="{{projectName}} command line interface")
+def cli() -> None:
+    """Root command group."""
+
+
+@cli.command()
+@click.option("--name", default="world", help="Name to greet")
+def hello(name: str) -> None:
+    """Print a greeting."""
+{{#if (includes pythonCli "rich")}}
+    console.print(f"[bold green]Hello, {name}![/bold green]")
+{{else}}
+    click.echo(f"Hello, {name}!")
+{{/if}}
+
+
+if __name__ == "__main__":
+    cli()
+{{/if}}
+{{/if}}
+{{#if (and (includes pythonCli "rich") (and (not (includes pythonCli "typer")) (not (includes pythonCli "click"))))}}
+"""Rich console helpers for {{projectName}}."""
+
+from rich.console import Console
+
+console = Console()
+
+
+def print_banner() -> None:
+    """Print a styled startup banner."""
+    console.print("[bold cyan]{{projectName}}[/bold cyan] — built with Better Fullstack")
+{{/if}}

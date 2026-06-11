@@ -63,4 +63,9 @@ export async function processDeployTemplates(
   if (config.webDeploy === "sst" || config.serverDeploy === "sst") {
     processTemplatesFromPrefix(vfs, templates, "deploy/sst/infra", "", config);
   }
+
+  // Process Render blueprint (root-level render.yaml covering both services)
+  if (config.webDeploy === "render" || config.serverDeploy === "render") {
+    processTemplatesFromPrefix(vfs, templates, "deploy/render/infra", "", config);
+  }
 }

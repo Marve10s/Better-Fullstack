@@ -1,0 +1,14 @@
+# Netlify configuration for {{projectName}} Solid single-page app
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+#
+# In the Netlify dashboard, set the site's base directory to "apps/web".
+
+[build]
+  command = "{{packageManager}} run build"
+  publish = "dist"
+
+# SPA fallback so client-side routes resolve to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,10 +1,10 @@
 {{#if (and (eq backend 'self') (includes frontend "next"))}}
 import type { NextRequest } from "next/server";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext(req: NextRequest) {
   const session = await auth.api.getSession({
     headers: req.headers,
@@ -20,11 +20,11 @@ export async function createContext(_req: NextRequest) {
 {{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "tanstack-start"))}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext({ req }: { req: Request }) {
 	const session = await auth.api.getSession({
 		headers: req.headers,
@@ -40,11 +40,11 @@ export async function createContext(_opts: { req: Request }) {
 {{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "svelte"))}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext(req: Request) {
   const session = await auth.api.getSession({
     headers: req.headers,
@@ -60,11 +60,11 @@ export async function createContext(_req: Request) {
 {{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "solid-start"))}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext(req: Request) {
   const session = await auth.api.getSession({
     headers: req.headers,
@@ -81,7 +81,7 @@ export async function createContext(_req: Request) {
 
 {{else if (eq backend 'hono')}}
 import type { Context as HonoContext } from "hono";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -89,7 +89,7 @@ export type CreateContextOptions = {
   context: HonoContext;
 };
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext({ context }: CreateContextOptions) {
   const session = await auth.api.getSession({
     headers: context.req.raw.headers,
@@ -109,7 +109,7 @@ export async function createContext(_opts: CreateContextOptions) {
 
 {{else if (eq backend 'elysia')}}
 import type { Context as ElysiaContext } from "elysia";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -117,7 +117,7 @@ export type CreateContextOptions = {
   context: ElysiaContext;
 };
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext({ context }: CreateContextOptions) {
   const session = await auth.api.getSession({
     headers: context.request.headers,
@@ -137,7 +137,7 @@ export async function createContext(_opts: CreateContextOptions) {
 
 {{else if (eq backend 'express')}}
 import type { Request } from "express";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -145,7 +145,7 @@ interface CreateContextOptions {
 	req: Request;
 }
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 function nodeHeadersToHeaders(headers: Request["headers"]) {
 	const webHeaders = new Headers();
 	for (const [key, value] of Object.entries(headers)) {
@@ -176,11 +176,11 @@ export async function createContext(_opts: CreateContextOptions) {
 
 {{else if (eq backend 'fastify')}}
 import type { IncomingHttpHeaders } from "node:http";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 function nodeHeadersToHeaders(headers: IncomingHttpHeaders) {
   const webHeaders = new Headers();
   for (const [key, value] of Object.entries(headers)) {
@@ -212,7 +212,7 @@ export async function createContext(_req: IncomingHttpHeaders) {
 
 {{else if (eq backend 'nitro')}}
 import type { IncomingMessage } from "node:http";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -220,7 +220,7 @@ type CreateContextOptions = {
   req: IncomingMessage;
 };
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export async function createContext({ req }: CreateContextOptions) {
   const session = await auth.api.getSession({
     headers: req.headers as any,

@@ -16,11 +16,23 @@ import {
   DatabaseSchema,
   DatabaseSetupSchema,
   DirectoryConflictSchema,
+  DotnetApiSchema,
+  DotnetAuthSchema,
+  DotnetCachingSchema,
+  DotnetValidationSchema,
+  DotnetDeploySchema,
+  DotnetJobQueueSchema,
+  DotnetObservabilitySchema,
+  DotnetOrmSchema,
+  DotnetRealtimeSchema,
+  DotnetTestingSchema,
+  DotnetWebFrameworkSchema,
   EcosystemSchema,
   ElixirApiSchema,
   ElixirAuthSchema,
   ElixirCachingSchema,
   ElixirDeploySchema,
+  ElixirLibrariesSchema,
   ElixirEmailSchema,
   ElixirHttpSchema,
   ElixirJobsSchema,
@@ -49,11 +61,19 @@ import {
   FrontendSchema,
   GoApiSchema,
   GoAuthSchema,
+  GoCachingSchema,
   GoCliSchema,
+  GoConfigSchema,
   GoLoggingSchema,
+  GoMessageQueueSchema,
+  GoObservabilitySchema,
   GoOrmSchema,
+  GoRealtimeSchema,
+  GoTestingSchema,
   GoWebFrameworkSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
   JavaOrmSchema,
@@ -73,13 +93,23 @@ import {
   PythonGraphqlSchema,
   PythonOrmSchema,
   PythonQualitySchema,
+  PythonTestingSchema,
+  PythonCachingSchema,
+  PythonRealtimeSchema,
+  PythonObservabilitySchema,
+  PythonCliSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
+  RateLimitSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
   RustAuthSchema,
+  RustRealtimeSchema,
+  RustMessageQueueSchema,
+  RustObservabilitySchema,
+  RustTemplatingSchema,
   RustCachingSchema,
   RustCliSchema,
   RustErrorHandlingSchema,
@@ -153,6 +183,7 @@ export const CreateCommandOptionsSchema = z.object({
   analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics"),
   cms: CMSSchema.optional().describe("Headless CMS solution"),
   caching: CachingSchema.optional().describe("Caching solution"),
+  rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
   fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
@@ -232,6 +263,12 @@ export const CreateCommandOptionsSchema = z.object({
   ),
   rustCaching: RustCachingSchema.optional().describe("Rust caching (moka, redis)"),
   rustAuth: RustAuthSchema.optional().describe("Rust auth (oauth2)"),
+  rustRealtime: RustRealtimeSchema.optional().describe("Rust realtime (tokio-tungstenite)"),
+  rustMessageQueue: RustMessageQueueSchema.optional().describe("Rust message queue (lapin)"),
+  rustObservability: RustObservabilitySchema.optional().describe(
+    "Rust observability (opentelemetry)",
+  ),
+  rustTemplating: RustTemplatingSchema.optional().describe("Rust templating (askama, tera)"),
   pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
     "Python web framework (fastapi, django)",
   ),
@@ -247,23 +284,77 @@ export const CreateCommandOptionsSchema = z.object({
   pythonQuality: PythonQualitySchema.optional().describe(
     "Python code quality (ruff, mypy, pyright)",
   ),
+  pythonTesting: z
+    .array(PythonTestingSchema)
+    .optional()
+    .describe("Python testing libraries (pytest, hypothesis)"),
+  pythonCaching: PythonCachingSchema.optional().describe("Python caching (redis, aiocache)"),
+  pythonRealtime: PythonRealtimeSchema.optional().describe(
+    "Python realtime (python-socketio, websockets)",
+  ),
+  pythonObservability: PythonObservabilitySchema.optional().describe(
+    "Python observability (opentelemetry)",
+  ),
+  pythonCli: z
+    .array(PythonCliSchema)
+    .optional()
+    .describe("Python CLI tooling (typer, click, rich)"),
   goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework (gin, echo, fiber)"),
   goOrm: GoOrmSchema.optional().describe("Go ORM/database (gorm, sqlc)"),
   goApi: GoApiSchema.optional().describe("Go API layer (grpc-go)"),
   goCli: GoCliSchema.optional().describe("Go CLI tools (cobra, bubbletea, urfave-cli)"),
   goLogging: GoLoggingSchema.optional().describe("Go logging (zap, zerolog, slog)"),
-  goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt)"),
+  goAuth: GoAuthSchema.optional().describe("Go auth (casbin, jwt, goth)"),
+  goTesting: z
+    .array(GoTestingSchema)
+    .optional()
+    .describe("Go testing libraries (testify, gomock)"),
+  goRealtime: GoRealtimeSchema.optional().describe(
+    "Go realtime library (gorilla-websocket, centrifuge)",
+  ),
+  goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue (nats, watermill)"),
+  goCaching: GoCachingSchema.optional().describe("Go caching library (redis, ristretto)"),
+  goConfig: GoConfigSchema.optional().describe("Go config management (viper, koanf)"),
+  goObservability: GoObservabilitySchema.optional().describe(
+    "Go observability (opentelemetry)",
+  ),
   javaWebFramework: JavaWebFrameworkSchema.optional().describe(
     "Java web framework (spring-boot, quarkus, none)",
   ),
   javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool (maven, gradle, none)"),
   javaOrm: JavaOrmSchema.optional().describe("Java ORM/database (spring-data-jpa)"),
   javaAuth: JavaAuthSchema.optional().describe("Java auth (spring-security)"),
+  javaApi: JavaApiSchema.optional().describe("Java API layer (spring-graphql)"),
+  javaLogging: JavaLoggingSchema.optional().describe("Java logging (logback, log4j2)"),
   javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
   javaTestingLibraries: z
     .array(JavaTestingLibrariesSchema)
     .optional()
     .describe("Java testing libraries"),
+  dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(
+    ".NET web framework (aspnet-minimal, aspnet-mvc, aspnet-blazor, none)",
+  ),
+  dotnetOrm: DotnetOrmSchema.optional().describe(".NET data access (ef-core, dapper, linq2db)"),
+  dotnetAuth: DotnetAuthSchema.optional().describe(
+    ".NET auth (aspnet-identity, duende-identityserver, auth0-aspnet, none)",
+  ),
+  dotnetApi: DotnetApiSchema.optional().describe(
+    ".NET API style (minimal-api, graphql-hotchocolate, grpc-dotnet, none)",
+  ),
+  dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
+  dotnetJobQueue: DotnetJobQueueSchema.optional().describe(
+    ".NET jobs (hangfire, quartz-net, hosted-services, none)",
+  ),
+  dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime (signalr, none)"),
+  dotnetObservability: z
+    .array(DotnetObservabilitySchema)
+    .optional()
+    .describe(".NET observability/logging libraries"),
+  dotnetValidation: DotnetValidationSchema.optional().describe(
+    ".NET validation (fluentvalidation, data-annotations)",
+  ),
+  dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching (redis, memory-cache, none)"),
+  dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deploy target (docker, azure, aws, none)"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
     "Elixir web framework (phoenix, phoenix-live-view, none)",
   ),
@@ -295,6 +386,10 @@ export const CreateCommandOptionsSchema = z.object({
   elixirDeploy: ElixirDeploySchema.optional().describe(
     "Elixir deploy target (docker, fly, gigalixir, mix-release, none)",
   ),
+  elixirLibraries: z
+    .array(ElixirLibrariesSchema)
+    .optional()
+    .describe("Elixir libraries (broadway, nx)"),
   aiDocs: z
     .array(AiDocsSchema)
     .optional()

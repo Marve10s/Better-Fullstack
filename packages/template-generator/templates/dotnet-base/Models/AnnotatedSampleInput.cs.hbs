@@ -1,0 +1,24 @@
+{{#if (eq dotnetValidation "data-annotations")}}
+using System.ComponentModel.DataAnnotations;
+
+namespace {{dotnetProjectName}}.Models;
+
+/// <summary>
+/// Attribute-validated model. Minimal APIs validate automatically in
+/// .NET 10 when parameter binding runs; for manual validation use
+/// <see cref="Validator.TryValidateObject(object, ValidationContext, ICollection{ValidationResult}?, bool)"/>.
+/// </summary>
+public sealed class AnnotatedSampleInput
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(0, 150)]
+    public int Age { get; set; }
+}
+{{/if}}

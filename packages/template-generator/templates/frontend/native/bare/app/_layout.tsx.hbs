@@ -4,7 +4,7 @@ import "@/polyfills";
 {{/if}}
 
 {{#if (eq backend "convex")}}
-  {{#if (eq auth "better-auth")}}
+  {{#if (isBetterAuth auth)}}
     import { ConvexReactClient } from "convex/react";
     import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
     import { authClient } from "@/lib/auth-client";
@@ -131,7 +131,7 @@ export default function RootLayout() {
               </ThemeProvider>
             </ConvexProviderWithClerk>
           </ClerkProvider>
-        {{else if (eq auth "better-auth")}}
+        {{else if (isBetterAuth auth)}}
           <ConvexBetterAuthProvider client={convex} authClient={authClient}>
             <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
               <StatusBar style={isDarkColorScheme ? "light" : "dark"} />

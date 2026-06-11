@@ -43,6 +43,8 @@ export const dependencyVersionMap = {
   // Auth0 — templates use v3 API (handleAuth, withMiddlewareAuthRequired,
   // UserProvider from /client). v4 requires a full template migration.
   "@auth0/nextjs-auth0": "^3.8.0",
+  "@workos-inc/authkit-nextjs": "^4.1.1",
+  "@kinde-oss/kinde-auth-nextjs": "^2.12.2",
 
   "drizzle-orm": "^0.45.2",
   "drizzle-kit": "^0.31.10",
@@ -120,6 +122,7 @@ export const dependencyVersionMap = {
   "@hono/node-server": "^2.0.4",
   "@hono/trpc-server": "^0.4.2",
   hono: "^4.12.23",
+  "@netlify/functions": "^5.3.0",
   "@octokit/rest": "^22.0.1",
   "@vercel/sandbox": "^2.1.1",
   vercel: "^54.9.1",
@@ -662,6 +665,11 @@ export const dependencyVersionMap = {
   // Grafana (Prometheus metrics)
   "prom-client": "^15.1.3",
 
+  // Enterprise observability
+  "dd-trace": "^5.106.0",
+  "@axiomhq/js": "^1.6.1",
+  "@logtail/node": "^0.5.8",
+
   // Headless CMS - Payload
   payload: "^3.85.0",
   "@payloadcms/next": "^3.85.0",
@@ -698,6 +706,11 @@ export const dependencyVersionMap = {
 
   // Caching - Upstash Redis
   "@upstash/redis": "^1.38.0",
+
+  // Rate limiting
+  "@arcjet/next": "^1.5.0",
+  "@arcjet/node": "^1.5.0",
+  "@upstash/ratelimit": "^2.0.8",
 
   // i18n - i18next
   i18next: "^26.3.1",

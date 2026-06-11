@@ -1,0 +1,13 @@
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+export const rateLimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(60, "60 s"),
+  analytics: true,
+  prefix: "{{projectName}}:ratelimit",
+});
+
+export async function checkRateLimit(identifier: string) {
+  return rateLimit.limit(identifier);
+}

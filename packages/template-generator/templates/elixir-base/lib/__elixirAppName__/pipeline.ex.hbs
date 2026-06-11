@@ -1,0 +1,32 @@
+{{#if (includes elixirLibraries "broadway")}}
+defmodule {{elixirModuleName}}.Pipeline do
+  @moduledoc """
+  Broadway data-ingestion pipeline.
+
+  Uses the in-process `Broadway.DummyProducer` for local development; swap in
+  `BroadwayKafka.Producer`, `BroadwaySQS.Producer`, or
+  `BroadwayRabbitMQ.Producer` for production sources.
+
+  Add to your supervision tree:
+
+      {{elixirModuleName}}.Pipeline
+  """
+
+  use Broadway
+
+  alias Broadway.Message
+
+  def start_link(_opts) do
+    Broadway.start_link(__MODULE__,
+      name: __MODULE__,
+      producer: [module: {Broadway.DummyProducer, []}],
+      processors: [default: [concurrency: 2]]
+    )
+  end
+
+  @impl true
+  def handle_message(_processor, %Message{} = message, _context) do
+    message
+  end
+end
+{{/if}}

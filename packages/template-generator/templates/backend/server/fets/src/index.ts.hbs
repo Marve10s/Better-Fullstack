@@ -15,7 +15,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { createContext } from "@{{projectName}}/api/context";
 import { appRouter } from "@{{projectName}}/api/routers/index";
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 import { createRouter, Response, type Router } from "fets";
@@ -30,7 +30,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
 
-{{#if (or (eq auth "better-auth") (or (eq api "trpc") (eq api "orpc")))}}
+{{#if (or (isBetterAuth auth) (or (eq api "trpc") (eq api "orpc")))}}
 const toNativeRequest = async (request: Request): Promise<Request> => {
 	const requestInit: RequestInit = {
 		method: request.method,
@@ -73,7 +73,7 @@ const router: Router<any, any, any> = createRouter({
 		},
 		handler: () => Response.json({ status: "OK" }),
 	})
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	.route({
 		method: "GET",
 		path: "/api/auth/*",
@@ -248,7 +248,7 @@ const corsMiddleware = (handler: typeof router) => {
 				headers: {
 					"Access-Control-Allow-Origin": corsOrigin,
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 					"Access-Control-Allow-Headers": "Content-Type, Authorization",
 					"Access-Control-Allow-Credentials": "true",
 {{else}}
@@ -262,7 +262,7 @@ const corsMiddleware = (handler: typeof router) => {
 		const newHeaders = new Headers(response.headers);
 		newHeaders.set("Access-Control-Allow-Origin", corsOrigin);
 		newHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 		newHeaders.set("Access-Control-Allow-Credentials", "true");
 {{else}}
@@ -319,7 +319,7 @@ const corsMiddleware = (handler: typeof router) => {
 				headers: {
 					"Access-Control-Allow-Origin": corsOrigin,
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 					"Access-Control-Allow-Headers": "Content-Type, Authorization",
 					"Access-Control-Allow-Credentials": "true",
 {{else}}
@@ -333,7 +333,7 @@ const corsMiddleware = (handler: typeof router) => {
 		const newHeaders = new Headers(response.headers);
 		newHeaders.set("Access-Control-Allow-Origin", corsOrigin);
 		newHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 		newHeaders.set("Access-Control-Allow-Credentials", "true");
 {{else}}

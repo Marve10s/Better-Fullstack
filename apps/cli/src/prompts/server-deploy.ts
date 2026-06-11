@@ -26,6 +26,12 @@ function getDeploymentDisplay(deployment: ServerDeploy): {
       hint: "Deploy to Vercel's edge network",
     };
   }
+  if (deployment === "netlify") {
+    return {
+      label: "Netlify",
+      hint: "Deploy Hono APIs with Netlify Functions",
+    };
+  }
   return {
     label: deployment,
     hint: `Add ${deployment} deployment`,
@@ -76,6 +82,13 @@ export async function getServerDeploymentToAdd(
         hint,
       });
     }
+  } else if (runtime === "node" && existingDeployment !== "netlify") {
+    const { label, hint } = getDeploymentDisplay("netlify");
+    options.push({
+      value: "netlify",
+      label,
+      hint,
+    });
   }
 
   if (existingDeployment && existingDeployment !== "none") {

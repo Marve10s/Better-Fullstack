@@ -17,7 +17,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/re
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { useUser } from "@clerk/clerk-expo";
 import { SignOutButton } from "@/components/sign-out-button";
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
@@ -41,7 +41,7 @@ const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 const { user } = useUser();
 const healthCheck = useQuery(api.healthCheck.get);
 const privateData = useQuery(api.privateData.get);
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 const healthCheck = useQuery(api.healthCheck.get);
 const { isAuthenticated } = useConvexAuth();
 const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
@@ -57,7 +57,7 @@ return (
         Better Fullstack
       </Text>
 
-      {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
+      {{#unless (and (eq backend "convex") (isBetterAuth auth))}}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         {{#if (eq backend "convex")}}
         <View style={styles.statusRow}>
@@ -116,7 +116,7 @@ return (
       </AuthLoading>
       {{/if}}
 
-      {{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+      {{#if (and (eq backend "convex") (isBetterAuth auth))}}
       {user ? (
       <View style={[styles.userCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <View style={styles.userHeader}>

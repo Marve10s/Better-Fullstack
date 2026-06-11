@@ -1,4 +1,4 @@
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { authClient } from "@/lib/auth-client";
 import { Platform } from "react-native";
 {{/if}}
@@ -18,7 +18,7 @@ const trpcClient = createTRPCClient<AppRouter>({
 {{else}}
 			url: `${env.EXPO_PUBLIC_SERVER_URL}/trpc`,
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			fetch:
 				Platform.OS !== "web"
 					? undefined

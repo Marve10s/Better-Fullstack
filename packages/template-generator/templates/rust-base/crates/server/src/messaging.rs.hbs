@@ -1,0 +1,53 @@
+{{#if (eq rustMessageQueue "lapin")}}
+//! RabbitMQ (AMQP) helpers built on lapin.
+//!
+//! Set AMQP_URL in your environment (defaults to amqp://127.0.0.1:5672/%2f).
+
+use lapin::{
+    options::{BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions},
+    types::FieldTable,
+    BasicProperties, Connection, ConnectionProperties,
+};
+
+/// Connect to RabbitMQ using AMQP_URL.
+pub async fn connect() -> Result<Connection, lapin::Error> {
+    let addr =
+        std::env::var("AMQP_URL").unwrap_or_else(|_| "amqp://127.0.0.1:5672/%2f".to_string());
+    Connection::connect(&addr, ConnectionProperties::default()).await
+}
+
+/// Publish a payload to a queue, declaring it if needed.
+pub async fn publish(conn: &Connection, queue: &str, payload: &[u8]) -> Result<(), lapin::Error> {
+    let channel = conn.create_channel().await?;
+    channel
+        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())
+        .await?;
+    channel
+        .basic_publish(
+            "".into(),
+            queue.into(),
+            BasicPublishOptions::default(),
+            payload,
+            BasicProperties::default(),
+        )
+        .await?
+        .await?;
+    Ok(())
+}
+
+/// Create a consumer for a queue; iterate it with `StreamExt::next`.
+pub async fn consumer(conn: &Connection, queue: &str) -> Result<lapin::Consumer, lapin::Error> {
+    let channel = conn.create_channel().await?;
+    channel
+        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())
+        .await?;
+    channel
+        .basic_consume(
+            queue.into(),
+            "{{projectName}}-consumer".into(),
+            BasicConsumeOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+}
+{{/if}}

@@ -35,7 +35,7 @@ export function resolvePaymentsPrompt(
   }
 
   const isPolarCompatible =
-    context.auth === "better-auth" &&
+    (context.auth === "better-auth" || context.auth === "better-auth-organizations") &&
     (context.frontends?.length === 0 || splitFrontends(context.frontends).web.length > 0);
 
   const options: Array<{ value: Payments; label: string; hint: string }> = [];

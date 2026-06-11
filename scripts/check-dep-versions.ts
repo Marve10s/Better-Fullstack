@@ -2,8 +2,8 @@
 /**
  * check-dep-versions.ts
  *
- * Audits hardcoded dependency versions across all ecosystems (npm, Rust, Go, Python, Java)
- * and optionally updates them in-place.
+ * Audits hardcoded dependency versions across all ecosystems (npm, Rust, Go, Python,
+ * Java, Elixir, .NET) and optionally updates them in-place.
  *
  * Usage:
  *   bun run scripts/check-dep-versions.ts                  # audit all ecosystems
@@ -17,7 +17,7 @@ import { resolve } from "node:path";
 
 // ── types ──────────────────────────────────────────────────────────────────
 
-type Ecosystem = "npm" | "rust" | "go" | "python" | "java";
+type Ecosystem = "npm" | "rust" | "go" | "python" | "java" | "elixir" | "dotnet";
 
 type DepEntry = {
   ecosystem: Ecosystem;
@@ -60,6 +60,17 @@ const JAVA_GRADLE = resolve(
   ROOT,
   "packages/template-generator/templates/java-base/build.gradle.kts.hbs",
 );
+const ELIXIR_MIX = resolve(ROOT, "packages/template-generator/templates/elixir-base/mix.exs.hbs");
+const DOTNET_CSPROJ_FILES = [
+  resolve(
+    ROOT,
+    "packages/template-generator/templates/dotnet-base/__dotnetProjectName__.csproj.hbs",
+  ),
+  resolve(
+    ROOT,
+    "packages/template-generator/templates/dotnet-base/__dotnetProjectName__.Tests/__dotnetProjectName__.Tests.csproj.hbs",
+  ),
+];
 
 const JAVA_PROPERTY_ARTIFACTS: Record<string, string> = {
   "springdoc.version": "org.springdoc:springdoc-openapi-starter-webmvc-ui",
@@ -289,6 +300,50 @@ function parseJavaTemplates(): DepEntry[] {
   return entries;
 }
 
+function parseElixirMix(): DepEntry[] {
+  const src = readFileSync(ELIXIR_MIX, "utf-8");
+  const entries: DepEntry[] = [];
+  // Match: {:dep_name, "~> 1.2"} — skip ">= 0.0.0"-style floors (not meaningful to bump)
+  const re = /\{:([a-z][a-z0-9_]*),\s*"~>\s*([0-9][^"]*)"/g;
+  let m: RegExpExecArray | null;
+  const seen = new Set<string>();
+  while ((m = re.exec(src)) !== null) {
+    const [, name, ver] = m;
+    if (!name || !ver || seen.has(name)) continue;
+    seen.add(name);
+    entries.push({
+      ecosystem: "elixir",
+      file: ELIXIR_MIX,
+      name,
+      current: `~> ${ver}`,
+      currentNorm: normVersion(ver),
+    });
+  }
+  return entries;
+}
+
+function parseDotnetCsproj(): DepEntry[] {
+  const entries: DepEntry[] = [];
+  // Match: <PackageReference Include="Name" Version="1.2.3" />
+  const re = /<PackageReference\s+Include="([^"]+)"\s+Version="([0-9][^"]*)"/g;
+  for (const file of DOTNET_CSPROJ_FILES) {
+    const src = readFileSync(file, "utf-8");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src)) !== null) {
+      const [, name, ver] = m;
+      if (!name || !ver) continue;
+      entries.push({
+        ecosystem: "dotnet",
+        file,
+        name,
+        current: ver,
+        currentNorm: normVersion(ver),
+      });
+    }
+  }
+  return entries;
+}
+
 // ── registry fetchers ──────────────────────────────────────────────────────
 
 const CONCURRENCY = 12;
@@ -355,6 +410,30 @@ async function fetchLatestMaven(name: string): Promise<string> {
   return latest;
 }
 
+async function fetchLatestHex(name: string): Promise<string> {
+  const res = await fetch(`https://hex.pm/api/packages/${name}`, {
+    headers: { "User-Agent": "better-fullstack-dep-checker/1.0" },
+  });
+  if (!res.ok) throw new Error(`hex.pm ${res.status}`);
+  const data = (await res.json()) as { latest_stable_version?: string; latest_version: string };
+  const latest = data.latest_stable_version ?? data.latest_version;
+  if (!latest) throw new Error("no stable version found");
+  return latest;
+}
+
+async function fetchLatestNuGet(name: string): Promise<string> {
+  const res = await fetch(
+    `https://api.nuget.org/v3-flatcontainer/${name.toLowerCase()}/index.json`,
+  );
+  if (!res.ok) throw new Error(`nuget ${res.status}`);
+  const data = (await res.json()) as { versions: string[] };
+  // Versions are ascending; take the newest stable (no prerelease suffix)
+  const stable = data.versions.filter((v) => !v.includes("-"));
+  const latest = stable[stable.length - 1];
+  if (!latest) throw new Error("no stable version found");
+  return latest;
+}
+
 function getFetcher(eco: Ecosystem): (name: string) => Promise<string> {
   switch (eco) {
     case "npm":
@@ -367,6 +446,10 @@ function getFetcher(eco: Ecosystem): (name: string) => Promise<string> {
       return fetchLatestPyPI;
     case "java":
       return fetchLatestMaven;
+    case "elixir":
+      return fetchLatestHex;
+    case "dotnet":
+      return fetchLatestNuGet;
   }
 }
 
@@ -559,16 +642,58 @@ function updateJavaTemplates(outdated: CheckedDep[]): number {
   return count;
 }
 
+function updateElixirMix(outdated: CheckedDep[]): number {
+  let src = readFileSync(ELIXIR_MIX, "utf-8");
+  let count = 0;
+  for (const dep of outdated) {
+    if (dep.majorBump) continue;
+    const current = dep.currentNorm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Preserve the precision of the existing constraint (e.g. "~> 1.7" stays two-segment)
+    const segments = dep.currentNorm.split(".").length;
+    const next = dep.latest.split(".").slice(0, segments).join(".");
+    const re = new RegExp(`(\\{:${dep.name},\\s*"~>\\s*)${current}(")`);
+    const updated = src.replace(re, `$1${next}$2`);
+    if (updated !== src) {
+      src = updated;
+      count++;
+    }
+  }
+  if (count > 0) writeFileSync(ELIXIR_MIX, src);
+  return count;
+}
+
+function updateDotnetCsproj(outdated: CheckedDep[]): number {
+  let count = 0;
+  for (const file of DOTNET_CSPROJ_FILES) {
+    let src = readFileSync(file, "utf-8");
+    const before = src;
+    for (const dep of outdated) {
+      if (dep.majorBump || dep.file !== file) continue;
+      const name = dep.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const current = dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(`(<PackageReference\\s+Include="${name}"\\s+Version=")${current}(")`);
+      const updated = src.replace(re, `$1${dep.latest}$2`);
+      if (updated !== src) {
+        src = updated;
+        count++;
+      }
+    }
+    if (src !== before) writeFileSync(file, src);
+  }
+  return count;
+}
+
 // ── main ───────────────────────────────────────────────────────────────────
 
 async function main() {
   const ecosystems: Ecosystem[] = ecosystemFilter
     ? [ecosystemFilter]
-    : ["npm", "rust", "go", "python", "java"];
+    : ["npm", "rust", "go", "python", "java", "elixir", "dotnet"];
 
   // 1. Parse all sources
   let entries: DepEntry[] = [];
   for (const eco of ecosystems) {
+    const before = entries.length;
     switch (eco) {
       case "npm":
         entries.push(...parseNpmMap());
@@ -585,6 +710,18 @@ async function main() {
       case "java":
         entries.push(...parseJavaTemplates());
         break;
+      case "elixir":
+        entries.push(...parseElixirMix());
+        break;
+      case "dotnet":
+        entries.push(...parseDotnetCsproj());
+        break;
+    }
+    // Coverage guard: every ecosystem has hardcoded deps, so an empty parse means a
+    // template moved or a parser broke — fail loudly instead of silently dropping coverage.
+    if (entries.length === before) {
+      console.error(`Fatal: parsed 0 dependencies for ecosystem "${eco}" — check template paths`);
+      process.exit(1);
     }
   }
 
@@ -651,12 +788,16 @@ async function main() {
     const goOutdated = minorUpdates.filter((d) => d.ecosystem === "go");
     const pyOutdated = minorUpdates.filter((d) => d.ecosystem === "python");
     const javaOutdated = minorUpdates.filter((d) => d.ecosystem === "java");
+    const elixirOutdated = minorUpdates.filter((d) => d.ecosystem === "elixir");
+    const dotnetOutdated = minorUpdates.filter((d) => d.ecosystem === "dotnet");
 
     if (npmOutdated.length > 0) totalUpdated += updateNpmMap(npmOutdated);
     if (rustOutdated.length > 0) totalUpdated += updateRustCargo(rustOutdated);
     if (goOutdated.length > 0) totalUpdated += updateGoMod(goOutdated);
     if (pyOutdated.length > 0) totalUpdated += updatePythonPyproject(pyOutdated);
     if (javaOutdated.length > 0) totalUpdated += updateJavaTemplates(javaOutdated);
+    if (elixirOutdated.length > 0) totalUpdated += updateElixirMix(elixirOutdated);
+    if (dotnetOutdated.length > 0) totalUpdated += updateDotnetCsproj(dotnetOutdated);
 
     console.log(`\n✅ Updated ${totalUpdated} dependencies in place.`);
     if (majorUpdates.length > 0) {

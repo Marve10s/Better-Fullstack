@@ -158,6 +158,33 @@ moka.workspace = true
 oauth2.workspace = true
 url.workspace = true
 {{/if}}
+{{#if (eq rustAuth "torii")}}
+# Auth
+torii.workspace = true
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+# Realtime
+tokio-tungstenite.workspace = true
+futures-util.workspace = true
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+# Message queue
+lapin.workspace = true
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+# Observability
+opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true
+opentelemetry-otlp.workspace = true
+{{/if}}
+{{#if (eq rustTemplating "askama")}}
+# Templating
+askama.workspace = true
+{{/if}}
+{{#if (eq rustTemplating "tera")}}
+# Templating
+tera.workspace = true
+{{/if}}
 
 [[bin]]
 name = "server"

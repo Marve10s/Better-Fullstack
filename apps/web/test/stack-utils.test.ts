@@ -85,15 +85,16 @@ describe("generateStackCommand", () => {
       stackMode: "multi",
       stackPartSpecs: ["frontend:typescript:next", "mobile:react-native:native-bare"],
       cssFramework: "scss",
+      uiLibrary: "none",
       mobileNavigation: "react-navigation",
       mobileTesting: "maestro",
     });
 
     expect(command).toContain("--part frontend:typescript:next");
     expect(command).toContain("--part mobile:react-native:native-bare");
-    expect(command).toContain("--css-framework scss");
-    expect(command).toContain("--mobile-navigation react-navigation");
-    expect(command).toContain("--mobile-testing maestro");
+    expect(command).toContain("--part frontend.css:typescript:scss");
+    expect(command).toContain("--part mobile.navigation:react-native:react-navigation");
+    expect(command).toContain("--part mobile.testing:react-native:maestro");
     expect(command).not.toContain("--frontend");
     expect(command).not.toContain("--ecosystem typescript");
   });
@@ -115,11 +116,38 @@ describe("generateStackCommand", () => {
     });
 
     expect(command).toContain("--part backend:python:fastapi");
-    expect(command).toContain("--python-ai langchain");
-    expect(command).toContain("--python-quality mypy");
-    expect(command).toContain("--addons turborepo docker-compose");
-    expect(command).toContain("--examples ai");
+    expect(command).toContain("--part backend.ai:python:langchain");
+    expect(command).toContain("--part backend.codeQuality:python:mypy");
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceTooling:universal:docker-compose");
+    expect(command).toContain("--part examples:universal:ai");
     expect(command).not.toContain("--ecosystem python");
+  });
+
+  it("keeps dotnet backend capabilities in multi-ecosystem commands", () => {
+    const command = generateStackCommand({
+      ...DEFAULT_STACK,
+      projectName: "dotnet-mixed-stack",
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:dotnet:aspnet-minimal",
+        "backend.orm:dotnet:ef-core",
+        "database:universal:postgres",
+      ],
+      dotnetTesting: ["xunit"],
+      dotnetRealtime: "signalr",
+      dotnetCaching: "redis",
+      dotnetObservability: ["serilog"],
+    });
+
+    expect(command).toContain("--part backend:dotnet:aspnet-minimal");
+    expect(command).toContain("--part backend.orm:dotnet:ef-core");
+    expect(command).toContain("--part backend.testing:dotnet:xunit");
+    expect(command).toContain("--part backend.realtime:dotnet:signalr");
+    expect(command).toContain("--part backend.caching:dotnet:redis");
+    expect(command).toContain("--part backend.observability:dotnet:serilog");
+    expect(command).not.toContain("--ecosystem dotnet");
   });
 
   it("keeps TypeScript frontend sub-options in multi-ecosystem commands", () => {

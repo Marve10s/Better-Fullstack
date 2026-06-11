@@ -157,6 +157,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["ui-library", config.uiLibrary],
     ["cms", config.cms],
     ["caching", config.caching],
+    ["rate-limit", config.rateLimit],
     ["i18n", config.i18n],
     ["search", config.search],
     ["file-storage", config.fileStorage],
@@ -200,6 +201,10 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["rust-error-handling", config.rustErrorHandling],
     ["rust-caching", config.rustCaching],
     ["rust-auth", config.rustAuth],
+    ["rust-realtime", config.rustRealtime],
+    ["rust-message-queue", config.rustMessageQueue],
+    ["rust-observability", config.rustObservability],
+    ["rust-templating", config.rustTemplating],
     ["rust-libraries", withExplicitNone(config.rustLibraries)],
   ];
 
@@ -213,6 +218,11 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-task-queue", config.pythonTaskQueue],
     ["python-graphql", config.pythonGraphql],
     ["python-quality", config.pythonQuality],
+    ["python-testing", withExplicitNone(config.pythonTesting)],
+    ["python-caching", config.pythonCaching],
+    ["python-realtime", config.pythonRealtime],
+    ["python-observability", config.pythonObservability],
+    ["python-cli", withExplicitNone(config.pythonCli)],
   ];
 
   const goFlags: Array<[string, string | readonly string[]]> = [
@@ -223,6 +233,12 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["go-cli", config.goCli],
     ["go-logging", config.goLogging],
     ["go-auth", config.goAuth],
+    ["go-testing", withExplicitNone(config.goTesting)],
+    ["go-realtime", config.goRealtime],
+    ["go-message-queue", config.goMessageQueue],
+    ["go-caching", config.goCaching],
+    ["go-config", config.goConfig],
+    ["go-observability", config.goObservability],
   ];
 
   const javaFlags: Array<[string, string | readonly string[]]> = [
@@ -230,6 +246,8 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["java-build-tool", config.javaBuildTool],
     ["java-orm", config.javaOrm],
     ["java-auth", config.javaAuth],
+    ["java-api", config.javaApi],
+    ["java-logging", config.javaLogging],
     ["java-libraries", withExplicitNone(config.javaLibraries)],
     ["java-testing-libraries", withExplicitNone(config.javaTestingLibraries)],
   ];
@@ -250,6 +268,22 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["elixir-testing", config.elixirTesting],
     ["elixir-quality", config.elixirQuality],
     ["elixir-deploy", config.elixirDeploy],
+    ["elixir-libraries", withExplicitNone(config.elixirLibraries)],
+  ];
+
+  const dotnetFlags: Array<[string, string | readonly string[]]> = [
+    ["database", config.database],
+    ["dotnet-web-framework", config.dotnetWebFramework],
+    ["dotnet-orm", config.dotnetOrm],
+    ["dotnet-auth", config.dotnetAuth],
+    ["dotnet-api", config.dotnetApi],
+    ["dotnet-testing", withExplicitNone(config.dotnetTesting)],
+    ["dotnet-job-queue", config.dotnetJobQueue],
+    ["dotnet-realtime", config.dotnetRealtime],
+    ["dotnet-observability", withExplicitNone(config.dotnetObservability)],
+    ["dotnet-validation", config.dotnetValidation],
+    ["dotnet-caching", config.dotnetCaching],
+    ["dotnet-deploy", config.dotnetDeploy],
   ];
 
   const orderedFlags = [...commonFlags];
@@ -290,6 +324,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "elixir":
       orderedFlags.push(...elixirFlags);
+      break;
+    case "dotnet":
+      orderedFlags.push(...sharedServiceFlags, ...dotnetFlags);
       break;
   }
 

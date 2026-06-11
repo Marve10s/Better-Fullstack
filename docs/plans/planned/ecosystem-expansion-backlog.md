@@ -2,7 +2,7 @@
 
 Master tracking file. Detailed plans live in dedicated files per area.
 
-Current snapshot: Better Fullstack now has first-class schema and prompt support for seven ecosystems: TypeScript, React Native, Rust, Python, Go, Java, and Elixir. This backlog is now a mixed status index: checked items are shipped, while unchecked items remain candidates for deeper template, CLI, web builder, MCP, and docs work.
+Current snapshot: Better Fullstack now has first-class schema and prompt support for eight ecosystems: TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET. This backlog is now a mixed status index: checked items are shipped, while unchecked items remain candidates for deeper template, CLI, web builder, MCP, and docs work.
 
 When updating this file, verify shipped status against `packages/types/src/schemas.ts`, `packages/types/src/option-metadata.ts`, and the ecosystem prompt/template tests rather than older plan text.
 
@@ -10,6 +10,7 @@ When updating this file, verify shipped status against `packages/types/src/schem
 
 | File | Scope |
 |------|-------|
+| [multi-ecosystem-parity-expansion.md](multi-ecosystem-parity-expansion.md) | **Active master plan**: Tier 1 category parity + Tier 2 depth across Go/Python/Rust/Java/Elixir/.NET + Kotlin |
 | **TypeScript** | |
 | [typescript-category-expansion.md](typescript-category-expansion.md) | Expand existing TS categories: search, CMS, flags, observability, deploy, etc. |
 | [typescript-new-categories.md](typescript-new-categories.md) | New TS categories: GraphQL, i18n, rate limiting, desktop, browser ext, PWA, docs |
@@ -22,7 +23,7 @@ When updating this file, verify shipped status against `packages/types/src/schem
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
 | [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir foundation shipped; remaining follow-ups for deeper Phoenix/LiveView deployment and advanced library coverage |
-| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C#: ASP.NET Core, EF Core, Dapper, SignalR, etc. |
+| [dotnet-ecosystem.md](dotnet-ecosystem.md) | ✅ C# foundation shipped 2026-06-10: ASP.NET Core, EF Core, Dapper, SignalR, multi-ecosystem backend |
 | **Platform & Infra** | |
 | [platform-features.md](platform-features.md) | CLI features: dry-run, cross-ecosystem, template preview (MCP/add/history done) |
 | [mcp-incremental-library-updates.md](mcp-incremental-library-updates.md) | Future MCP stack mutation layer for adding scaffold-time libraries to existing projects |
@@ -41,8 +42,8 @@ When updating this file, verify shipped status against `packages/types/src/schem
 
 ### Deploy
 - [x] Add `vercel` ✅
-- [ ] Add `render`
-- [ ] Add `netlify`
+- [x] Add `render` ✅
+- [x] Add `netlify` ✅ (web-only v1)
 
 ### Auth
 - [ ] Add `kinde`
@@ -136,7 +137,7 @@ When updating this file, verify shipped status against `packages/types/src/schem
 - [x] Add `java` foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries/testing ✅
 - [ ] Expand Java with Micronaut, jOOQ, MyBatis, Keycloak, messaging, and observability
 - [x] Add `elixir` foundation: Phoenix, LiveView, Ecto, auth, REST/Absinthe, realtime, jobs, caching, observability, testing, deploy choices ✅
-- [ ] Add `c#/aspnet` (ASP.NET Core, EF Core)
+- [x] Add `c#/aspnet` (ASP.NET Core, EF Core) — full foundation + multi-ecosystem backend support ✅ Shipped 2026-06-10
 
 ### Mobile / React Native
 - [x] React Native ecosystem foundation ✅

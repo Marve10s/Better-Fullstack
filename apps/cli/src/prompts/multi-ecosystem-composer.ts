@@ -20,10 +20,24 @@ import { getCSSFrameworkChoice } from "./css-framework";
 import { getDatabaseChoice } from "./database";
 import { getDBSetupChoice } from "./database-setup";
 import {
+  getDotnetApiChoice,
+  getDotnetAuthChoice,
+  getDotnetCachingChoice,
+  getDotnetValidationChoice,
+  getDotnetDeployChoice,
+  getDotnetJobQueueChoice,
+  getDotnetObservabilityChoice,
+  getDotnetOrmChoice,
+  getDotnetRealtimeChoice,
+  getDotnetTestingChoice,
+  getDotnetWebFrameworkChoice,
+} from "./dotnet-ecosystem";
+import {
   getElixirApiChoice,
   getElixirAuthChoice,
   getElixirCachingChoice,
   getElixirDeployChoice,
+  getElixirLibrariesChoice,
   getElixirEmailChoice,
   getElixirHttpChoice,
   getElixirJobsChoice,
@@ -41,14 +55,22 @@ import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
+  getGoCachingChoice,
   getGoCliChoice,
+  getGoConfigChoice,
   getGoLoggingChoice,
+  getGoMessageQueueChoice,
+  getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoRealtimeChoice,
+  getGoTestingChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getinstallChoice } from "./install";
 import {
   getJavaAuthChoice,
+  getJavaApiChoice,
+  getJavaLoggingChoice,
   getJavaBuildToolChoice,
   getJavaLibrariesChoice,
   getJavaOrmChoice,
@@ -63,6 +85,11 @@ import {
   getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
+  getPythonTestingChoice,
+  getPythonCachingChoice,
+  getPythonRealtimeChoice,
+  getPythonObservabilityChoice,
+  getPythonCliChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -70,6 +97,10 @@ import {
 import {
   getRustApiChoice,
   getRustAuthChoice,
+  getRustRealtimeChoice,
+  getRustMessageQueueChoice,
+  getRustObservabilityChoice,
+  getRustTemplatingChoice,
   getRustCachingChoice,
   getRustCliChoice,
   getRustErrorHandlingChoice,
@@ -84,7 +115,7 @@ import { getUILibraryChoice } from "./ui-library";
 import { getDeploymentChoice } from "./web-deploy";
 
 type CompositionMode = "single" | "multi";
-type BackendEcosystem = Extract<Ecosystem, "go" | "rust" | "python" | "java" | "elixir">;
+type BackendEcosystem = Extract<Ecosystem, "go" | "rust" | "python" | "java" | "dotnet" | "elixir">;
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -116,6 +147,7 @@ async function selectBackendEcosystem(): Promise<BackendEcosystem> {
       { value: "rust", label: "Rust", hint: "Axum, Actix Web, Rocket" },
       { value: "python", label: "Python", hint: "FastAPI, Django, Flask" },
       { value: "java", label: "Java", hint: "Spring Boot, Quarkus" },
+      { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
     initialValue: "go",
@@ -224,11 +256,54 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none" ? "none" : promptValue(await getGoCliChoice(flags.goCli));
     const goLogging =
       goWebFramework === "none" ? "none" : promptValue(await getGoLoggingChoice(flags.goLogging));
-    Object.assign(backendChoices, { goWebFramework, goOrm, goApi, goAuth, goCli, goLogging });
+    const goTesting =
+      goWebFramework === "none" ? [] : promptValue(await getGoTestingChoice(flags.goTesting));
+    const goRealtime =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoRealtimeChoice(flags.goRealtime));
+    const goMessageQueue =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoMessageQueueChoice(flags.goMessageQueue));
+    const goCaching =
+      goWebFramework === "none" ? "none" : promptValue(await getGoCachingChoice(flags.goCaching));
+    const goConfig =
+      goWebFramework === "none" ? "none" : promptValue(await getGoConfigChoice(flags.goConfig));
+    const goObservability =
+      goWebFramework === "none"
+        ? "none"
+        : promptValue(await getGoObservabilityChoice(flags.goObservability));
+    Object.assign(backendChoices, {
+      goWebFramework,
+      goOrm,
+      goApi,
+      goAuth,
+      goCli,
+      goLogging,
+      goTesting,
+      goRealtime,
+      goMessageQueue,
+      goCaching,
+      goConfig,
+      goObservability,
+    });
     if (goWebFramework !== "none") stackPartSpecs.push(`backend:go:${goWebFramework}`);
     if (goOrm !== "none") stackPartSpecs.push(`backend.orm:go:${goOrm}`);
     if (goApi !== "none") stackPartSpecs.push(`backend.api:go:${goApi}`);
     if (goAuth !== "none") stackPartSpecs.push(`backend.auth:go:${goAuth}`);
+    for (const testing of goTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:go:${testing}`);
+    }
+    if (goRealtime !== "none") stackPartSpecs.push(`backend.realtime:go:${goRealtime}`);
+    if (goMessageQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:go:${goMessageQueue}`);
+    }
+    if (goCaching !== "none") stackPartSpecs.push(`backend.caching:go:${goCaching}`);
+    if (goConfig !== "none") stackPartSpecs.push(`backend.config:go:${goConfig}`);
+    if (goObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:go:${goObservability}`);
+    }
   }
 
   if (backendEcosystem === "rust") {
@@ -262,6 +337,22 @@ export async function gatherMultiEcosystemConfig(
       rustWebFramework === "none"
         ? "none"
         : promptValue(await getRustCachingChoice(flags.rustCaching));
+    const rustRealtime =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustRealtimeChoice(flags.rustRealtime));
+    const rustMessageQueue =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustMessageQueueChoice(flags.rustMessageQueue));
+    const rustObservability =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustObservabilityChoice(flags.rustObservability));
+    const rustTemplating =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustTemplatingChoice(flags.rustTemplating));
     Object.assign(backendChoices, {
       rustWebFramework,
       rustOrm,
@@ -273,11 +364,25 @@ export async function gatherMultiEcosystemConfig(
       rustLogging,
       rustErrorHandling,
       rustCaching,
+      rustRealtime,
+      rustMessageQueue,
+      rustObservability,
+      rustTemplating,
     });
     if (rustWebFramework !== "none") stackPartSpecs.push(`backend:rust:${rustWebFramework}`);
     if (rustOrm !== "none") stackPartSpecs.push(`backend.orm:rust:${rustOrm}`);
     if (rustApi !== "none") stackPartSpecs.push(`backend.api:rust:${rustApi}`);
     if (rustAuth !== "none") stackPartSpecs.push(`backend.auth:rust:${rustAuth}`);
+    if (rustRealtime !== "none") stackPartSpecs.push(`backend.realtime:rust:${rustRealtime}`);
+    if (rustMessageQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:rust:${rustMessageQueue}`);
+    }
+    if (rustObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:rust:${rustObservability}`);
+    }
+    if (rustTemplating !== "none") {
+      stackPartSpecs.push(`backend.templating:rust:${rustTemplating}`);
+    }
   }
 
   if (backendEcosystem === "python") {
@@ -315,6 +420,24 @@ export async function gatherMultiEcosystemConfig(
       pythonWebFramework === "none"
         ? "none"
         : promptValue(await getPythonQualityChoice(flags.pythonQuality));
+    const pythonTesting =
+      pythonWebFramework === "none"
+        ? []
+        : promptValue(await getPythonTestingChoice(flags.pythonTesting));
+    const pythonCaching =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonCachingChoice(flags.pythonCaching));
+    const pythonRealtime =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonRealtimeChoice(flags.pythonRealtime));
+    const pythonObservability =
+      pythonWebFramework === "none"
+        ? "none"
+        : promptValue(await getPythonObservabilityChoice(flags.pythonObservability));
+    const pythonCli =
+      pythonWebFramework === "none" ? [] : promptValue(await getPythonCliChoice(flags.pythonCli));
     Object.assign(backendChoices, {
       pythonWebFramework,
       pythonOrm,
@@ -324,12 +447,30 @@ export async function gatherMultiEcosystemConfig(
       pythonTaskQueue,
       pythonGraphql,
       pythonQuality,
+      pythonTesting,
+      pythonCaching,
+      pythonRealtime,
+      pythonObservability,
+      pythonCli,
     });
     if (pythonWebFramework !== "none") stackPartSpecs.push(`backend:python:${pythonWebFramework}`);
     if (pythonOrm !== "none") stackPartSpecs.push(`backend.orm:python:${pythonOrm}`);
     if (pythonAuth !== "none") stackPartSpecs.push(`backend.auth:python:${pythonAuth}`);
     if (pythonTaskQueue !== "none") stackPartSpecs.push(`backend.jobQueue:python:${pythonTaskQueue}`);
     if (pythonGraphql !== "none") stackPartSpecs.push(`backend.api:python:${pythonGraphql}`);
+    for (const testing of pythonTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:python:${testing}`);
+    }
+    if (pythonCaching !== "none") stackPartSpecs.push(`backend.caching:python:${pythonCaching}`);
+    if (pythonRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:python:${pythonRealtime}`);
+    }
+    if (pythonObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:python:${pythonObservability}`);
+    }
+    for (const cli of pythonCli) {
+      if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
+    }
   }
 
   if (backendEcosystem === "java") {
@@ -355,17 +496,120 @@ export async function gatherMultiEcosystemConfig(
     const javaTestingLibraries = promptValue(
       await getJavaTestingLibrariesChoice(flags.javaTestingLibraries),
     );
+    const javaApi =
+      javaWebFramework !== "spring-boot" || javaBuildTool === "none"
+        ? "none"
+        : promptValue(await getJavaApiChoice(flags.javaApi));
+    const javaLogging =
+      javaWebFramework !== "spring-boot" || javaBuildTool === "none"
+        ? "none"
+        : promptValue(await getJavaLoggingChoice(flags.javaLogging));
     Object.assign(backendChoices, {
       javaWebFramework,
       javaBuildTool,
       javaOrm,
       javaAuth,
+      javaApi,
+      javaLogging,
       javaLibraries,
       javaTestingLibraries,
     });
     if (javaWebFramework !== "none") stackPartSpecs.push(`backend:java:${javaWebFramework}`);
     if (javaOrm !== "none") stackPartSpecs.push(`backend.orm:java:${javaOrm}`);
     if (javaAuth !== "none") stackPartSpecs.push(`backend.auth:java:${javaAuth}`);
+    if (javaApi !== "none") stackPartSpecs.push(`backend.api:java:${javaApi}`);
+    if (javaLogging !== "none") stackPartSpecs.push(`backend.logging:java:${javaLogging}`);
+  }
+
+  if (backendEcosystem === "dotnet") {
+    const dotnetWebFramework = promptValue(
+      await getDotnetWebFrameworkChoice(flags.dotnetWebFramework),
+    );
+    if (dotnetWebFramework !== "none") {
+      const databaseConfig = await selectDatabaseConfig(flags);
+      database = databaseConfig.database;
+      dbSetup = databaseConfig.dbSetup;
+    }
+    const dotnetOrm =
+      database === "none" || dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetOrmChoice(flags.dotnetOrm));
+    const dotnetAuth =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetAuthChoice(flags.dotnetAuth));
+    const dotnetApi =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetApiChoice(flags.dotnetApi));
+    const dotnetTesting =
+      dotnetWebFramework === "none"
+        ? []
+        : promptValue(await getDotnetTestingChoice(flags.dotnetTesting));
+    const dotnetJobQueue =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetJobQueueChoice(flags.dotnetJobQueue));
+    const dotnetRealtime =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetRealtimeChoice(flags.dotnetRealtime));
+    const dotnetObservability =
+      dotnetWebFramework === "none"
+        ? []
+        : promptValue(await getDotnetObservabilityChoice(flags.dotnetObservability));
+    const dotnetValidation =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetValidationChoice(flags.dotnetValidation));
+    const dotnetCaching =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetCachingChoice(flags.dotnetCaching));
+    const dotnetDeploy =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetDeployChoice(flags.dotnetDeploy));
+    Object.assign(backendChoices, {
+      dotnetWebFramework,
+      dotnetOrm,
+      dotnetAuth,
+      dotnetApi,
+      dotnetTesting,
+      dotnetJobQueue,
+      dotnetRealtime,
+      dotnetObservability,
+      dotnetValidation,
+      dotnetCaching,
+      dotnetDeploy,
+    });
+    if (dotnetWebFramework !== "none") {
+      stackPartSpecs.push(`backend:dotnet:${dotnetWebFramework}`);
+    }
+    if (dotnetOrm !== "none") stackPartSpecs.push(`backend.orm:dotnet:${dotnetOrm}`);
+    if (dotnetAuth !== "none") stackPartSpecs.push(`backend.auth:dotnet:${dotnetAuth}`);
+    if (dotnetApi !== "none") stackPartSpecs.push(`backend.api:dotnet:${dotnetApi}`);
+    for (const testing of dotnetTesting) {
+      if (testing !== "none") stackPartSpecs.push(`backend.testing:dotnet:${testing}`);
+    }
+    if (dotnetJobQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:dotnet:${dotnetJobQueue}`);
+    }
+    if (dotnetRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:dotnet:${dotnetRealtime}`);
+    }
+    for (const observability of dotnetObservability) {
+      if (observability !== "none") {
+        stackPartSpecs.push(`backend.observability:dotnet:${observability}`);
+      }
+    }
+    if (dotnetValidation !== "none") {
+      stackPartSpecs.push(`backend.validation:dotnet:${dotnetValidation}`);
+    }
+    if (dotnetCaching !== "none") {
+      stackPartSpecs.push(`backend.caching:dotnet:${dotnetCaching}`);
+    }
+    if (dotnetDeploy !== "none") stackPartSpecs.push(`backend.deploy:dotnet:${dotnetDeploy}`);
   }
 
   if (backendEcosystem === "elixir") {
@@ -433,6 +677,10 @@ export async function gatherMultiEcosystemConfig(
       elixirWebFramework === "none"
         ? "none"
         : promptValue(await getElixirDeployChoice(flags.elixirDeploy));
+    const elixirLibraries =
+      elixirWebFramework === "none"
+        ? []
+        : promptValue(await getElixirLibrariesChoice(flags.elixirLibraries));
     Object.assign(backendChoices, {
       elixirWebFramework,
       elixirOrm,
@@ -449,6 +697,7 @@ export async function gatherMultiEcosystemConfig(
       elixirTesting,
       elixirQuality,
       elixirDeploy,
+      elixirLibraries,
     });
     if (elixirWebFramework !== "none") {
       stackPartSpecs.push(`backend:elixir:${elixirWebFramework}`);
@@ -456,7 +705,9 @@ export async function gatherMultiEcosystemConfig(
     if (elixirOrm !== "none") stackPartSpecs.push(`backend.orm:elixir:${elixirOrm}`);
     if (elixirAuth !== "none") stackPartSpecs.push(`backend.auth:elixir:${elixirAuth}`);
     if (elixirApi !== "none") stackPartSpecs.push(`backend.api:elixir:${elixirApi}`);
-    if (elixirRealtime !== "none") stackPartSpecs.push(`backend.api:elixir:${elixirRealtime}`);
+    if (elixirRealtime !== "none") {
+      stackPartSpecs.push(`backend.realtime:elixir:${elixirRealtime}`);
+    }
     if (elixirJobs !== "none") stackPartSpecs.push(`backend.jobQueue:elixir:${elixirJobs}`);
     if (elixirEmail !== "none") stackPartSpecs.push(`backend.email:elixir:${elixirEmail}`);
     if (elixirCaching !== "none") stackPartSpecs.push(`backend.caching:elixir:${elixirCaching}`);
@@ -465,6 +716,9 @@ export async function gatherMultiEcosystemConfig(
     }
     if (elixirTesting !== "none") stackPartSpecs.push(`backend.testing:elixir:${elixirTesting}`);
     if (elixirDeploy !== "none") stackPartSpecs.push(`backend.deploy:elixir:${elixirDeploy}`);
+    for (const library of elixirLibraries) {
+      if (library !== "none") stackPartSpecs.push(`backend.libraries:elixir:${library}`);
+    }
   }
 
   if (database !== "none") stackPartSpecs.push(`database:universal:${database}`);

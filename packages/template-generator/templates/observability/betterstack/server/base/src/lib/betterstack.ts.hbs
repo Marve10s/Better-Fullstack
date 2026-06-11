@@ -1,0 +1,20 @@
+import { Logtail } from "@logtail/node";
+
+const endpoint = process.env.BETTERSTACK_INGESTING_HOST
+  ? `https://${process.env.BETTERSTACK_INGESTING_HOST}`
+  : undefined;
+
+export const logtail = new Logtail(
+  process.env.BETTERSTACK_SOURCE_TOKEN ?? "",
+  endpoint ? { endpoint } : undefined,
+);
+
+export async function logInfo(message: string, context?: Record<string, unknown>) {
+  logtail.info(message, context);
+  await logtail.flush();
+}
+
+export async function logError(message: string, context?: Record<string, unknown>) {
+  logtail.error(message, context);
+  await logtail.flush();
+}

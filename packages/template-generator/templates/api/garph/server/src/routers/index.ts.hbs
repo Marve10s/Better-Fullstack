@@ -5,7 +5,7 @@ export function createResolvers(ctx: Context): InferResolvers<{ Query: typeof qu
   return {
     Query: {
       health: () => "OK",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
       privateData: () => {
         if (!ctx.session) {
           return null;

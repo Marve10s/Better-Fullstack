@@ -29,7 +29,7 @@ const trpcClient = createTRPCClient<AppRouter>({
 {{else}}
 			url: `${env.NEXT_PUBLIC_SERVER_URL}/trpc`,
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			fetch(url, options) {
 				return fetch(url, {
 					...options,
@@ -78,7 +78,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
 			url: `${env.VITE_SERVER_URL}/trpc`,
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			fetch(url, options) {
 				return fetch(url, {
 					...options,

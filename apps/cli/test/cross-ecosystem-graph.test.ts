@@ -45,6 +45,9 @@ const NON_TYPESCRIPT_BACKENDS = [
   ["go", "chi"],
   ["java", "spring-boot"],
   ["java", "quarkus"],
+  ["dotnet", "aspnet-minimal"],
+  ["dotnet", "aspnet-mvc"],
+  ["dotnet", "aspnet-blazor"],
   ["elixir", "phoenix"],
   ["elixir", "phoenix-live-view"],
 ] as const;
@@ -54,6 +57,7 @@ function serverUrlFor(ecosystem: string, toolId: string) {
   if (ecosystem === "python") return "http://localhost:8000";
   if (ecosystem === "go" || ecosystem === "java") return "http://localhost:8080";
   if (ecosystem === "rust") return "http://localhost:3000";
+  if (ecosystem === "dotnet") return "http://localhost:5000";
   throw new Error(`Unknown backend ${ecosystem}:${toolId}`);
 }
 
@@ -175,9 +179,11 @@ describe("Cross-ecosystem graph generation", () => {
             runtime: "none",
             astroIntegration: frontend === "astro" ? "react" : "none",
             javaBuildTool: ecosystem === "java" ? "maven" : "none",
+            dotnetTesting: ecosystem === "dotnet" ? [] : undefined,
             stackParts: graphParts([
               `frontend:typescript:${frontend}`,
               `backend:${ecosystem}:${backend}`,
+              ...(ecosystem === "java" ? ["backend.buildTool:java:maven"] : []),
             ]),
           });
 
@@ -338,7 +344,11 @@ describe("Cross-ecosystem graph generation", () => {
       api: "none",
       runtime: "none",
       javaBuildTool: "maven",
-      stackParts: graphParts(["frontend:typescript:next", "backend:java:spring-boot"]),
+      stackParts: graphParts([
+        "frontend:typescript:next",
+        "backend:java:spring-boot",
+        "backend.buildTool:java:maven",
+      ]),
     });
     expect(spring.success).toBe(true);
     expect(
@@ -355,7 +365,11 @@ describe("Cross-ecosystem graph generation", () => {
       api: "none",
       runtime: "none",
       javaBuildTool: "maven",
-      stackParts: graphParts(["frontend:typescript:next", "backend:java:quarkus"]),
+      stackParts: graphParts([
+        "frontend:typescript:next",
+        "backend:java:quarkus",
+        "backend.buildTool:java:maven",
+      ]),
     });
     expect(quarkus.success).toBe(true);
     expect(
@@ -364,5 +378,19 @@ describe("Cross-ecosystem graph generation", () => {
         "apps/server/src/main/java/com/example/corsquarkus/resource/GreetingResource.java",
       ),
     ).toContain("Access-Control-Allow-Origin");
+
+    const dotnet = await createVirtual({
+      projectName: "cors-dotnet",
+      frontend: ["next"],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      dotnetTesting: [],
+      stackParts: graphParts(["frontend:typescript:next", "backend:dotnet:aspnet-minimal"]),
+    });
+    expect(dotnet.success).toBe(true);
+    expect(fileContent(dotnet.tree!.root, "apps/server/Program.cs")).toContain(
+      "policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()",
+    );
   });
 });

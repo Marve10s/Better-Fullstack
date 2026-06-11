@@ -1,0 +1,19 @@
+{
+  "ConnectionStrings": {
+{{#if (eq database "postgres")}}
+    "DefaultConnection": "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres"{{#if dotnetHasRedis}},{{/if}}
+{{else}}
+    "DefaultConnection": "Data Source={{dotnetProjectName}}.db"{{#if dotnetHasRedis}},{{/if}}
+{{/if}}
+{{#if dotnetHasRedis}}
+    "Redis": "localhost:6379"
+{{/if}}
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}

@@ -5,8 +5,10 @@ import {
   getCompatibleAddons as getCompatibleAddonsShared,
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
+  getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
+  isBackendUtilsCompatibleBackend,
   isExampleAIAllowed as isExampleAIAllowedShared,
   isExampleChatSdkAllowed as isExampleChatSdkAllowedShared,
   isFrontendAllowedWithBackend as isFrontendAllowedWithBackendShared,
@@ -424,6 +426,19 @@ export function validateWebDeployRequiresWebFrontend(
   }
 }
 
+export function validateWebDeployFrontendTemplates(
+  webDeploy: WebDeploy | undefined,
+  frontends: Frontend[] = [],
+) {
+  const blocked = getUnsupportedWebDeployFrontend(webDeploy, frontends);
+  if (blocked) {
+    const deployName = webDeploy === "render" ? "Render" : "Netlify";
+    exitWithError(
+      `${deployName} deployment is not yet wired up for the '${blocked}' frontend. Choose a different web deploy target or frontend.`,
+    );
+  }
+}
+
 export function validateServerDeployRequiresBackend(
   serverDeploy: ServerDeploy | undefined,
   backend: Backend | undefined,
@@ -454,6 +469,22 @@ export function validateAddonCompatibility(
 ): { isCompatible: boolean; reason?: string } {
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
+
+  // Backend Utils generates framework-specific server helpers.
+  if (addon === "backend-utils") {
+    if (ecosystem !== undefined && ecosystem !== "typescript") {
+      return {
+        isCompatible: false,
+        reason: "Backend Utils requires a TypeScript server stack",
+      };
+    }
+    if (backend !== undefined && !isBackendUtilsCompatibleBackend(backend)) {
+      return {
+        isCompatible: false,
+        reason: "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend",
+      };
+    }
+  }
 
   // Docker Compose targets containerized/self-hosted stacks only.
   if (addon === "docker-compose") {
@@ -570,7 +601,11 @@ export function validatePaymentsCompatibility(
   }
 
   if (payments === "polar") {
-    if (!auth || auth === "none" || auth !== "better-auth") {
+    if (
+      !auth ||
+      auth === "none" ||
+      (auth !== "better-auth" && auth !== "better-auth-organizations")
+    ) {
       exitWithError(
         "Polar payments requires Better Auth. Please use '--auth better-auth' or choose a different payments provider.",
       );

@@ -20,7 +20,7 @@ import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel }
 import { google } from "@ai-sdk/google";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 import { toNodeHandler } from "better-auth/node";
 {{/if}}
@@ -31,14 +31,14 @@ app.use(
 	cors({
 		origin: env.CORS_ORIGIN,
 		methods: ["GET", "POST", "OPTIONS"],
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
 {{/if}}
 	})
 );
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 app.all("/api/auth{/*path}", toNodeHandler(auth));
 {{/if}}
 

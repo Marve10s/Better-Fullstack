@@ -33,6 +33,9 @@
     "vite-tsconfig-paths": "^6.1.1"
   },
   "devDependencies": {
+{{#if (eq webDeploy "netlify")}}
+    "@netlify/vite-plugin-tanstack-start": "^1.3.9",
+{{/if}}
     "@tanstack/react-router-devtools": "^1.167.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",

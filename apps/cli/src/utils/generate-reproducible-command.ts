@@ -1,6 +1,6 @@
-import type { ProjectConfig } from "../types";
+import type { ProjectConfig, StackPartRole } from "../types";
 
-import { formatStackPartSpec } from "../types";
+import { formatStackPartSpec, getAddonStackPartBinding } from "../types";
 import { hasGraphPart } from "./graph-summary";
 
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
@@ -56,6 +56,94 @@ function hasGraphPrimaryPart(
   );
 }
 
+function hasOwnedGraphPart(
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem?: string,
+  toolId?: string,
+) {
+  const owner = config.stackParts?.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === ownerRole &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem),
+  );
+  if (!owner) return false;
+
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === role &&
+        part.ownerPartId === owner.id &&
+        (!ecosystem || part.ecosystem === ecosystem) &&
+        (!toolId || part.toolId === toolId),
+    ),
+  );
+}
+
+function hasGraphAddonPart(config: ProjectConfig, addon: string) {
+  const binding = getAddonStackPartBinding(addon);
+  if (!binding) return false;
+
+  if (!binding.ownerRole) {
+    return Boolean(
+      config.stackParts?.some(
+        (part) =>
+          part.source !== "provided" &&
+          part.role === binding.role &&
+          part.ecosystem === binding.ecosystem &&
+          part.toolId === addon &&
+          !part.ownerPartId,
+      ),
+    );
+  }
+
+  const owner = config.stackParts?.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === binding.ownerRole &&
+      !part.ownerPartId &&
+      part.ecosystem === binding.ecosystem,
+  );
+  if (!owner) return false;
+
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === binding.role &&
+        part.ecosystem === binding.ecosystem &&
+        part.toolId === addon &&
+        part.ownerPartId === owner.id,
+    ),
+  );
+}
+
+function hasGraphExamplePart(config: ProjectConfig, example: string) {
+  return Boolean(
+    config.stackParts?.some(
+      (part) =>
+        part.source !== "provided" &&
+        part.role === "examples" &&
+        part.ecosystem === "universal" &&
+        part.toolId === example &&
+        !part.ownerPartId,
+    ),
+  );
+}
+
+function hasGraphArrayParts(
+  config: ProjectConfig,
+  values: string[],
+  hasPart: (config: ProjectConfig, value: string) => boolean,
+) {
+  const normalizedValues = values.filter((value) => value !== "none");
+  return normalizedValues.length > 0 && normalizedValues.every((value) => hasPart(config, value));
+}
+
 function appendChangedStringFlag(
   flags: string[],
   flag: string,
@@ -65,6 +153,61 @@ function appendChangedStringFlag(
   if (value !== defaultValue) {
     flags.push(`--${flag} ${value}`);
   }
+}
+
+function appendChangedGraphStringFlag(
+  flags: string[],
+  config: ProjectConfig,
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  value: string,
+  defaultValue: string,
+) {
+  if (hasGraphPart(config, role, ecosystem)) return;
+  appendChangedStringFlag(flags, flag, value, defaultValue);
+}
+
+function appendChangedOwnedGraphStringFlag(
+  flags: string[],
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  value: string,
+  defaultValue: string,
+) {
+  if (hasOwnedGraphPart(config, ownerRole, role, ecosystem, value)) return;
+  appendChangedStringFlag(flags, flag, value, defaultValue);
+}
+
+function hasOwnedGraphArrayParts(
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  values: string[],
+) {
+  const normalizedValues = values.filter((value) => value !== "none");
+  if (normalizedValues.length === 0) return false;
+  return normalizedValues.every((value) =>
+    hasOwnedGraphPart(config, ownerRole, role, ecosystem, value),
+  );
+}
+
+function appendChangedOwnedGraphArrayFlag(
+  flags: string[],
+  config: ProjectConfig,
+  ownerRole: "frontend" | "backend" | "mobile" | "database",
+  role: StackPartRole,
+  ecosystem: string,
+  flag: string,
+  values: string[],
+  defaultValues: string[],
+) {
+  if (hasOwnedGraphArrayParts(config, ownerRole, role, ecosystem, values)) return;
+  appendChangedArrayFlag(flags, flag, values, defaultValues);
 }
 
 function appendChangedArrayFlag(
@@ -88,16 +231,58 @@ function appendAstroIntegrationFlag(flags: string[], config: ProjectConfig) {
 }
 
 function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
-  appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
-  appendChangedArrayFlag(flags, "examples", config.examples, []);
-  appendChangedStringFlag(flags, "db-setup", config.dbSetup, "none");
-  appendChangedStringFlag(flags, "web-deploy", config.webDeploy, "none");
-  appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
+  if (!hasGraphArrayParts(config, config.addons, hasGraphAddonPart)) {
+    appendChangedArrayFlag(flags, "addons", config.addons, ["turborepo"]);
+  }
+  if (!hasGraphArrayParts(config, config.examples, hasGraphExamplePart)) {
+    appendChangedArrayFlag(flags, "examples", config.examples, []);
+  }
+
+  if (hasGraphPrimaryPart(config, "database")) {
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "database",
+      "dbSetup",
+      "universal",
+      "db-setup",
+      config.dbSetup,
+      "none",
+    );
+  } else {
+    appendChangedStringFlag(flags, "db-setup", config.dbSetup, "none");
+  }
 
   if (hasGraphPrimaryPart(config, "frontend", "typescript")) {
     appendAstroIntegrationFlag(flags, config);
-    appendChangedStringFlag(flags, "css-framework", config.cssFramework, "tailwind");
-    appendChangedStringFlag(flags, "ui-library", config.uiLibrary, "shadcn-ui");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "frontend",
+      "deploy",
+      "typescript",
+      "web-deploy",
+      config.webDeploy,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "css",
+      "typescript",
+      "css-framework",
+      config.cssFramework,
+      "tailwind",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "ui",
+      "typescript",
+      "ui-library",
+      config.uiLibrary,
+      "shadcn-ui",
+    );
     if (config.uiLibrary === "shadcn-ui") {
       appendChangedStringFlag(flags, "shadcn-base", config.shadcnBase ?? "radix", "radix");
       appendChangedStringFlag(flags, "shadcn-style", config.shadcnStyle ?? "nova", "nova");
@@ -127,39 +312,222 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
         "default",
       );
     }
-    appendChangedStringFlag(flags, "state-management", config.stateManagement, "none");
-    appendChangedStringFlag(flags, "forms", config.forms, "react-hook-form");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "stateManagement",
+      "typescript",
+      "state-management",
+      config.stateManagement,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "forms",
+      "typescript",
+      "forms",
+      config.forms,
+      "react-hook-form",
+    );
     appendChangedStringFlag(flags, "validation", config.validation, "zod");
     appendChangedStringFlag(flags, "testing", config.testing, "vitest");
-    appendChangedStringFlag(flags, "animation", config.animation, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "animation",
+      "typescript",
+      "animation",
+      config.animation,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "fileUpload",
+      "typescript",
+      "file-upload",
+      config.fileUpload,
+      "none",
+    );
+    appendChangedGraphStringFlag(flags, config, "i18n", "typescript", "i18n", config.i18n, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "analytics",
+      "typescript",
+      "analytics",
+      config.analytics,
+      "none",
+    );
   }
 
   if (
     hasGraphPrimaryPart(config, "frontend", "typescript") ||
     hasGraphPrimaryPart(config, "backend", "typescript")
   ) {
-    appendChangedStringFlag(flags, "payments", config.payments, "none");
-    appendChangedStringFlag(flags, "email", config.email, "none");
-    appendChangedStringFlag(flags, "file-upload", config.fileUpload, "none");
+    if (hasGraphPrimaryPart(config, "backend", "typescript")) {
+      appendChangedOwnedGraphStringFlag(
+        flags,
+        config,
+        "backend",
+        "runtime",
+        "typescript",
+        "runtime",
+        config.runtime,
+        "bun",
+      );
+      appendChangedOwnedGraphStringFlag(
+        flags,
+        config,
+        "backend",
+        "deploy",
+        "typescript",
+        "server-deploy",
+        config.serverDeploy,
+        "none",
+      );
+    } else {
+      appendChangedStringFlag(flags, "server-deploy", config.serverDeploy, "none");
+    }
+
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "payments",
+      "typescript",
+      "payments",
+      config.payments,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "email",
+      "typescript",
+      "email",
+      config.email,
+      "none",
+    );
     appendChangedStringFlag(flags, "effect", config.effect, "none");
-    appendChangedStringFlag(flags, "ai", config.ai, "none");
-    appendChangedStringFlag(flags, "realtime", config.realtime, "none");
-    appendChangedStringFlag(flags, "job-queue", config.jobQueue, "none");
-    appendChangedStringFlag(flags, "logging", config.logging, "none");
-    appendChangedStringFlag(flags, "observability", config.observability, "none");
-    appendChangedStringFlag(flags, "feature-flags", config.featureFlags, "none");
-    appendChangedStringFlag(flags, "caching", config.caching, "none");
-    appendChangedStringFlag(flags, "i18n", config.i18n, "none");
-    appendChangedStringFlag(flags, "cms", config.cms, "none");
-    appendChangedStringFlag(flags, "search", config.search, "none");
-    appendChangedStringFlag(flags, "file-storage", config.fileStorage, "none");
+    appendChangedGraphStringFlag(flags, config, "ai", "typescript", "ai", config.ai, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "realtime",
+      "typescript",
+      "realtime",
+      config.realtime,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "jobQueue",
+      "typescript",
+      "job-queue",
+      config.jobQueue,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "logging",
+      "typescript",
+      "logging",
+      config.logging,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "observability",
+      "typescript",
+      "observability",
+      config.observability,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "featureFlags",
+      "typescript",
+      "feature-flags",
+      config.featureFlags,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "caching",
+      "typescript",
+      "caching",
+      config.caching,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "rateLimit",
+      "typescript",
+      "rate-limit",
+      config.rateLimit,
+      "none",
+    );
+    appendChangedGraphStringFlag(flags, config, "cms", "typescript", "cms", config.cms, "none");
+    appendChangedGraphStringFlag(flags, config, "search", "typescript", "search", config.search, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "fileStorage",
+      "typescript",
+      "file-storage",
+      config.fileStorage,
+      "none",
+    );
   }
 
   if (hasGraphPrimaryPart(config, "mobile")) {
-    appendChangedStringFlag(flags, "mobile-navigation", config.mobileNavigation, "expo-router");
-    appendChangedStringFlag(flags, "mobile-ui", config.mobileUI, "none");
-    appendChangedStringFlag(flags, "mobile-storage", config.mobileStorage, "none");
-    appendChangedStringFlag(flags, "mobile-testing", config.mobileTesting, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "navigation",
+      "react-native",
+      "mobile-navigation",
+      config.mobileNavigation,
+      "expo-router",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "ui",
+      "react-native",
+      "mobile-ui",
+      config.mobileUI,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "storage",
+      "react-native",
+      "mobile-storage",
+      config.mobileStorage,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "mobile",
+      "testing",
+      "react-native",
+      "mobile-testing",
+      config.mobileTesting,
+      "none",
+    );
     appendChangedStringFlag(flags, "mobile-push", config.mobilePush, "none");
     appendChangedStringFlag(flags, "mobile-ota", config.mobileOTA, "none");
     appendChangedStringFlag(flags, "mobile-deep-linking", config.mobileDeepLinking, "none");
@@ -169,47 +537,257 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedStringFlag(flags, "rust-frontend", config.rustFrontend, "none");
   }
   if (hasGraphPrimaryPart(config, "backend", "rust")) {
-    appendChangedStringFlag(flags, "rust-cli", config.rustCli, "none");
-    appendChangedArrayFlag(flags, "rust-libraries", config.rustLibraries, []);
-    appendChangedStringFlag(flags, "rust-logging", config.rustLogging, "tracing");
-    appendChangedStringFlag(
+    appendChangedOwnedGraphStringFlag(
       flags,
+      config,
+      "backend",
+      "cli",
+      "rust",
+      "rust-cli",
+      config.rustCli,
+      "none",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "libraries",
+      "rust",
+      "rust-libraries",
+      config.rustLibraries,
+      [],
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "logging",
+      "rust",
+      "rust-logging",
+      config.rustLogging,
+      "tracing",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "errorHandling",
+      "rust",
       "rust-error-handling",
       config.rustErrorHandling,
       "anyhow-thiserror",
     );
-    appendChangedStringFlag(flags, "rust-caching", config.rustCaching, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "caching",
+      "rust",
+      "rust-caching",
+      config.rustCaching,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "python")) {
-    appendChangedStringFlag(flags, "python-validation", config.pythonValidation, "none");
-    appendChangedArrayFlag(flags, "python-ai", config.pythonAi, []);
-    appendChangedStringFlag(flags, "python-task-queue", config.pythonTaskQueue, "none");
-    appendChangedStringFlag(flags, "python-graphql", config.pythonGraphql, "none");
-    appendChangedStringFlag(flags, "python-quality", config.pythonQuality, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "validation",
+      "python",
+      "python-validation",
+      config.pythonValidation,
+      "none",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "ai",
+      "python",
+      "python-ai",
+      config.pythonAi,
+      [],
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "jobQueue",
+      "python",
+      "python-task-queue",
+      config.pythonTaskQueue,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "api",
+      "python",
+      "python-graphql",
+      config.pythonGraphql,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "codeQuality",
+      "python",
+      "python-quality",
+      config.pythonQuality,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "go")) {
-    appendChangedStringFlag(flags, "go-cli", config.goCli, "none");
-    appendChangedStringFlag(flags, "go-logging", config.goLogging, "none");
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "cli",
+      "go",
+      "go-cli",
+      config.goCli,
+      "none",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "logging",
+      "go",
+      "go-logging",
+      config.goLogging,
+      "none",
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "java")) {
-    appendChangedStringFlag(flags, "java-build-tool", config.javaBuildTool, "maven");
-    appendChangedArrayFlag(flags, "java-libraries", config.javaLibraries, []);
-    appendChangedArrayFlag(flags, "java-testing-libraries", config.javaTestingLibraries, ["junit5"]);
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "buildTool",
+      "java",
+      "java-build-tool",
+      config.javaBuildTool,
+      "maven",
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "libraries",
+      "java",
+      "java-libraries",
+      config.javaLibraries,
+      [],
+    );
+    appendChangedOwnedGraphArrayFlag(
+      flags,
+      config,
+      "backend",
+      "testing",
+      "java",
+      "java-testing-libraries",
+      config.javaTestingLibraries,
+      ["junit5"],
+    );
   }
   if (hasGraphPrimaryPart(config, "backend", "elixir")) {
-    appendChangedStringFlag(flags, "elixir-realtime", config.elixirRealtime, "channels");
-    appendChangedStringFlag(flags, "elixir-jobs", config.elixirJobs, "none");
-    appendChangedStringFlag(flags, "elixir-validation", config.elixirValidation, "ecto-changesets");
-    appendChangedStringFlag(flags, "elixir-http", config.elixirHttp, "req");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "realtime",
+      "elixir",
+      "elixir-realtime",
+      config.elixirRealtime,
+      "channels",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "jobQueue",
+      "elixir",
+      "elixir-jobs",
+      config.elixirJobs,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "validation",
+      "elixir",
+      "elixir-validation",
+      config.elixirValidation,
+      "ecto-changesets",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "httpClient",
+      "elixir",
+      "elixir-http",
+      config.elixirHttp,
+      "req",
+    );
     appendChangedStringFlag(flags, "elixir-json", config.elixirJson, "jason");
-    if (!hasGraphPart(config, "email", "elixir")) {
-      appendChangedStringFlag(flags, "elixir-email", config.elixirEmail, "none");
-    }
-    appendChangedStringFlag(flags, "elixir-caching", config.elixirCaching, "none");
-    appendChangedStringFlag(flags, "elixir-observability", config.elixirObservability, "telemetry");
-    appendChangedStringFlag(flags, "elixir-testing", config.elixirTesting, "ex_unit");
-    appendChangedStringFlag(flags, "elixir-quality", config.elixirQuality, "credo");
-    appendChangedStringFlag(flags, "elixir-deploy", config.elixirDeploy, "none");
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "email",
+      "elixir",
+      "elixir-email",
+      config.elixirEmail,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "caching",
+      "elixir",
+      "elixir-caching",
+      config.elixirCaching,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "observability",
+      "elixir",
+      "elixir-observability",
+      config.elixirObservability,
+      "telemetry",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "testing",
+      "elixir",
+      "elixir-testing",
+      config.elixirTesting,
+      "ex_unit",
+    );
+    appendChangedOwnedGraphStringFlag(
+      flags,
+      config,
+      "backend",
+      "codeQuality",
+      "elixir",
+      "elixir-quality",
+      config.elixirQuality,
+      "credo",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "deploy",
+      "elixir",
+      "elixir-deploy",
+      config.elixirDeploy,
+      "none",
+    );
   }
 }
 
@@ -268,6 +846,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--observability ${config.observability}`);
   flags.push(`--feature-flags ${config.featureFlags}`);
   flags.push(`--caching ${config.caching}`);
+  flags.push(`--rate-limit ${config.rateLimit}`);
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
@@ -337,6 +916,10 @@ function getRustFlags(config: ProjectConfig) {
   flags.push(`--rust-error-handling ${config.rustErrorHandling}`);
   flags.push(`--rust-caching ${config.rustCaching}`);
   flags.push(`--rust-auth ${config.rustAuth}`);
+  flags.push(`--rust-realtime ${config.rustRealtime}`);
+  flags.push(`--rust-message-queue ${config.rustMessageQueue}`);
+  flags.push(`--rust-observability ${config.rustObservability}`);
+  flags.push(`--rust-templating ${config.rustTemplating}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);
@@ -356,6 +939,11 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-task-queue ${config.pythonTaskQueue}`);
   flags.push(`--python-graphql ${config.pythonGraphql}`);
   flags.push(`--python-quality ${config.pythonQuality}`);
+  flags.push(formatArrayFlag("python-testing", config.pythonTesting));
+  flags.push(`--python-caching ${config.pythonCaching}`);
+  flags.push(`--python-realtime ${config.pythonRealtime}`);
+  flags.push(`--python-observability ${config.pythonObservability}`);
+  flags.push(formatArrayFlag("python-cli", config.pythonCli));
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);
@@ -372,6 +960,12 @@ function getGoFlags(config: ProjectConfig) {
   flags.push(`--go-cli ${config.goCli}`);
   flags.push(`--go-logging ${config.goLogging}`);
   flags.push(`--go-auth ${config.goAuth}`);
+  flags.push(formatArrayFlag("go-testing", config.goTesting));
+  flags.push(`--go-realtime ${config.goRealtime}`);
+  flags.push(`--go-message-queue ${config.goMessageQueue}`);
+  flags.push(`--go-caching ${config.goCaching}`);
+  flags.push(`--go-config ${config.goConfig}`);
+  flags.push(`--go-observability ${config.goObservability}`);
   flags.push(`--auth ${config.auth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
@@ -387,9 +981,31 @@ function getJavaFlags(config: ProjectConfig) {
   flags.push(`--java-build-tool ${config.javaBuildTool}`);
   flags.push(`--java-orm ${config.javaOrm}`);
   flags.push(`--java-auth ${config.javaAuth}`);
+  flags.push(`--java-api ${config.javaApi}`);
+  flags.push(`--java-logging ${config.javaLogging}`);
   flags.push(formatArrayFlag("java-libraries", config.javaLibraries));
   flags.push(formatArrayFlag("java-testing-libraries", config.javaTestingLibraries));
   appendSharedNonTypeScriptFlags(flags, config);
+
+  appendCommonFlags(flags, config);
+
+  return flags;
+}
+
+function getDotnetFlags(config: ProjectConfig) {
+  const flags = ["--ecosystem dotnet"];
+
+  flags.push(`--dotnet-web-framework ${config.dotnetWebFramework}`);
+  flags.push(`--dotnet-orm ${config.dotnetOrm}`);
+  flags.push(`--dotnet-auth ${config.dotnetAuth}`);
+  flags.push(`--dotnet-api ${config.dotnetApi}`);
+  flags.push(formatArrayFlag("dotnet-testing", config.dotnetTesting));
+  flags.push(`--dotnet-job-queue ${config.dotnetJobQueue}`);
+  flags.push(`--dotnet-realtime ${config.dotnetRealtime}`);
+  flags.push(formatArrayFlag("dotnet-observability", config.dotnetObservability));
+  flags.push(`--dotnet-validation ${config.dotnetValidation}`);
+  flags.push(`--dotnet-caching ${config.dotnetCaching}`);
+  flags.push(`--dotnet-deploy ${config.dotnetDeploy}`);
 
   appendCommonFlags(flags, config);
 
@@ -414,6 +1030,7 @@ function getElixirFlags(config: ProjectConfig) {
   flags.push(`--elixir-testing ${config.elixirTesting}`);
   flags.push(`--elixir-quality ${config.elixirQuality}`);
   flags.push(`--elixir-deploy ${config.elixirDeploy}`);
+  flags.push(formatArrayFlag("elixir-libraries", config.elixirLibraries));
 
   appendCommonFlags(flags, config);
 
@@ -449,6 +1066,9 @@ export function generateReproducibleCommand(config: ProjectConfig) {
       break;
     case "java":
       flags = getJavaFlags(config);
+      break;
+    case "dotnet":
+      flags = getDotnetFlags(config);
       break;
     case "elixir":
       flags = getElixirFlags(config);

@@ -1,5 +1,5 @@
 import { defineApp } from "convex/server";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import betterAuth from "@convex-dev/better-auth/convex.config";
 {{/if}}
 {{#if (eq payments "polar")}}
@@ -10,7 +10,7 @@ import agent from "@convex-dev/agent/convex.config";
 {{/if}}
 
 const app = defineApp();
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 app.use(betterAuth);
 {{/if}}
 {{#if (eq payments "polar")}}

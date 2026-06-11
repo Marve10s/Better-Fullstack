@@ -11,8 +11,8 @@ Use deployment flags at scaffold time when you want generated platform files to 
 
 | Flag | Values |
 | --- | --- |
-| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
-| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `docker` `sst` `none` |
+| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `docker` `sst` `none` |
 
 Deployment choices are compatibility-checked against the stack. Some fullstack frameworks deploy through the web app, some backends do not need a separate server deployment, and Convex or Encore manage their own platform path.
 
@@ -25,6 +25,8 @@ Deployment choices are compatibility-checked against the stack. Some fullstack f
 | Cloudflare | Workers runtime stacks and edge-first Hono servers. | Compatibility is scoped to Workers-compatible server runtimes. |
 | Fly.io | Docker-backed app hosting with regional placement and long-running services. | Good for persistent server processes. |
 | Railway | Git-connected app hosting with Dockerfile-based builds and managed services. | Configure production environment variables before deploy. |
+| Render | Blueprint-driven app hosting with Dockerfile-based builds (`render.yaml` at the repo root). | Web and server deploy as separate Docker services; set env vars in the Render dashboard. |
+| Netlify | Static and SSR web frontends (Next.js, Vite SPAs, SvelteKit, Nuxt). | Web-only target; set the site base directory to `apps/web`. |
 | SST | AWS-oriented infrastructure as code for TypeScript app workflows. | Best when you want to own AWS resources explicitly. |
 
 ## Before deploying

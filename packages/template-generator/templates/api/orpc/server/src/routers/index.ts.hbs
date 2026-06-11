@@ -1,12 +1,12 @@
 {{#if (eq api "orpc")}}
-import { {{#if (eq auth "better-auth")}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
+import { {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
     return "OK";
   }),
-  {{#if (eq auth "better-auth")}}
+  {{#if (isBetterAuth auth)}}
   privateData: protectedProcedure.handler(({ context }) => {
     return {
       message: "This is private",
@@ -19,7 +19,7 @@ export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;
 {{else if (eq api "trpc")}}
 import {
-  {{#if (eq auth "better-auth")}}protectedProcedure, {{/if}}publicProcedure,
+  {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure,
   router,
 } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
@@ -27,7 +27,7 @@ export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
-  {{#if (eq auth "better-auth")}}
+  {{#if (isBetterAuth auth)}}
   privateData: protectedProcedure.query(({ ctx }) => {
     return {
       message: "This is private",

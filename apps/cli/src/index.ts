@@ -109,6 +109,7 @@ export async function createVirtual(
       mobileDeepLinking: options.mobileDeepLinking || (hasNativeFrontend ? "expo-linking" : "none"),
       cms: options.cms || "none",
       caching: options.caching || "none",
+      rateLimit: options.rateLimit || "none",
       i18n: options.i18n || "none",
       search: options.search || "none",
       fileStorage: options.fileStorage || "none",
@@ -124,6 +125,10 @@ export async function createVirtual(
         options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       rustCaching: options.rustCaching || "none",
       rustAuth: options.rustAuth || "none",
+      rustRealtime: options.rustRealtime || "none",
+      rustMessageQueue: options.rustMessageQueue || "none",
+      rustObservability: options.rustObservability || "none",
+      rustTemplating: options.rustTemplating || "none",
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",
@@ -134,6 +139,11 @@ export async function createVirtual(
       pythonTaskQueue: options.pythonTaskQueue || "none",
       pythonGraphql: options.pythonGraphql || "none",
       pythonQuality: options.pythonQuality || "none",
+      pythonTesting: options.pythonTesting || [],
+      pythonCaching: options.pythonCaching || "none",
+      pythonRealtime: options.pythonRealtime || "none",
+      pythonObservability: options.pythonObservability || "none",
+      pythonCli: options.pythonCli || [],
       // Go ecosystem options
       goWebFramework: options.goWebFramework || "none",
       goOrm: options.goOrm || "none",
@@ -141,14 +151,38 @@ export async function createVirtual(
       goCli: options.goCli || "none",
       goLogging: options.goLogging || "none",
       goAuth: options.goAuth || "none",
+      goTesting: options.goTesting || [],
+      goRealtime: options.goRealtime || "none",
+      goMessageQueue: options.goMessageQueue || "none",
+      goCaching: options.goCaching || "none",
+      goConfig: options.goConfig || "none",
+      goObservability: options.goObservability || "none",
       javaWebFramework:
         options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),
       javaOrm: options.javaOrm || "none",
       javaAuth: options.javaAuth || "none",
+      javaApi: options.javaApi || "none",
+      javaLogging: options.javaLogging || "none",
       javaLibraries: options.javaLibraries || [],
       javaTestingLibraries:
         options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),
+      dotnetWebFramework:
+        options.dotnetWebFramework ||
+        (options.ecosystem === "dotnet" ? "aspnet-minimal" : "none"),
+      dotnetOrm: options.dotnetOrm || (options.ecosystem === "dotnet" ? "ef-core" : "none"),
+      dotnetAuth:
+        options.dotnetAuth || (options.ecosystem === "dotnet" ? "aspnet-identity" : "none"),
+      dotnetApi: options.dotnetApi || (options.ecosystem === "dotnet" ? "minimal-api" : "none"),
+      dotnetTesting: options.dotnetTesting || (options.ecosystem === "dotnet" ? ["xunit"] : []),
+      dotnetJobQueue: options.dotnetJobQueue || "none",
+      dotnetRealtime:
+        options.dotnetRealtime || (options.ecosystem === "dotnet" ? "signalr" : "none"),
+      dotnetObservability:
+        options.dotnetObservability || (options.ecosystem === "dotnet" ? ["serilog"] : []),
+      dotnetValidation: options.dotnetValidation || "none",
+      dotnetCaching: options.dotnetCaching || "none",
+      dotnetDeploy: options.dotnetDeploy || (options.ecosystem === "dotnet" ? "docker" : "none"),
       elixirWebFramework:
         options.elixirWebFramework || (options.ecosystem === "elixir" ? "phoenix" : "none"),
       elixirOrm: options.elixirOrm || (options.ecosystem === "elixir" ? "ecto-sql" : "none"),
@@ -168,6 +202,7 @@ export async function createVirtual(
       elixirTesting: options.elixirTesting || (options.ecosystem === "elixir" ? "ex_unit" : "none"),
       elixirQuality: options.elixirQuality || (options.ecosystem === "elixir" ? "credo" : "none"),
       elixirDeploy: options.elixirDeploy || "none",
+      elixirLibraries: options.elixirLibraries || [],
       // AI documentation files
       aiDocs: options.aiDocs || ["claude-md"],
     };

@@ -1,0 +1,22 @@
+{{#if (eq pythonTaskQueue "taskiq")}}
+"""Example Taskiq tasks.
+
+Run a worker with:
+
+    uv run taskiq worker app.taskiq_app:broker app.taskiq_tasks
+"""
+
+from app.taskiq_app import broker
+
+
+@broker.task
+async def add(a: int, b: int) -> int:
+    """Add two numbers in the background."""
+    return a + b
+
+
+@broker.task
+async def send_welcome_email(email: str) -> str:
+    """Pretend to send a welcome email."""
+    return f"welcome email queued for {email}"
+{{/if}}

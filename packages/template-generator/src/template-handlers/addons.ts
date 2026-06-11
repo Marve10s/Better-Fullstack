@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import { isBackendUtilsCompatibleBackend, type ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "../core/virtual-fs";
 
@@ -34,6 +34,23 @@ export async function processAddonTemplates(
     if (addon === "tauri") {
       if (vfs.exists("apps/web/package.json")) {
         processTemplatesFromPrefix(vfs, templates, "addons/tauri/apps/web", "apps/web", config);
+      }
+      continue;
+    }
+
+    // Backend Utils templates - framework-aligned server helpers
+    if (addon === "backend-utils") {
+      if (
+        vfs.exists("apps/server/package.json") &&
+        isBackendUtilsCompatibleBackend(config.backend)
+      ) {
+        processTemplatesFromPrefix(
+          vfs,
+          templates,
+          "addons/backend-utils/apps/server",
+          "apps/server",
+          config,
+        );
       }
       continue;
     }

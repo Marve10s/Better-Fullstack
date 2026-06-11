@@ -1,0 +1,24 @@
+{{#if (includes pythonAi "smolagents")}}
+"""smolagents example: a minimal tool-calling agent.
+
+Set HF_TOKEN (or configure another model) before running.
+"""
+
+from smolagents import CodeAgent, InferenceClientModel, tool
+
+
+@tool
+def add_numbers(a: int, b: int) -> int:
+    """Add two numbers.
+
+    Args:
+        a: First number.
+        b: Second number.
+    """
+    return a + b
+
+
+def create_agent() -> CodeAgent:
+    """Create a CodeAgent with the example tool."""
+    return CodeAgent(tools=[add_numbers], model=InferenceClientModel())
+{{/if}}

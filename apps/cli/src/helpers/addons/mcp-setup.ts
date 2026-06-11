@@ -178,7 +178,7 @@ function getRecommendedMcpServers(config: ProjectConfig): McpServerDef[] {
     });
   }
 
-  if (config.auth === "better-auth") {
+  if (config.auth === "better-auth" || config.auth === "better-auth-organizations") {
     servers.push({
       key: "better-auth",
       label: "Better Auth",

@@ -11,7 +11,7 @@ export const contract = c.router({
       200: z.literal("OK"),
     },
   },
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
   privateData: {
     method: "GET",
     path: "/private",

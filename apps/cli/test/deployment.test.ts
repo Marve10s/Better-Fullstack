@@ -153,7 +153,12 @@ describe("Deployment Configurations", () => {
             webDeploy: "none",
             serverDeploy: serverDeploy,
             backend: "hono",
-            runtime: serverDeploy === "cloudflare" ? "workers" : "bun",
+            runtime:
+              serverDeploy === "cloudflare"
+                ? "workers"
+                : serverDeploy === "netlify"
+                  ? "node"
+                  : "bun",
             database: "sqlite",
             orm: "drizzle",
             auth: "none",

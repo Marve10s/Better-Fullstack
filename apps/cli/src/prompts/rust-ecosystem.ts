@@ -1,6 +1,10 @@
 import type {
   RustApi,
   RustAuth,
+  RustRealtime,
+  RustMessageQueue,
+  RustObservability,
+  RustTemplating,
   RustCli,
   RustErrorHandling,
   RustCaching,
@@ -485,6 +489,11 @@ export async function getRustAuthChoice(rustAuth?: RustAuth) {
       hint: "OAuth2 client with authorization code, PKCE, and token exchange flows",
     },
     {
+      value: "torii" as const,
+      label: "Torii",
+      hint: "Auth framework with passwords, sessions, and pluggable storage",
+    },
+    {
       value: "none" as const,
       label: "None",
       hint: "No authentication library",
@@ -493,6 +502,119 @@ export async function getRustAuthChoice(rustAuth?: RustAuth) {
 
   const response = await navigableSelect<RustAuth>({
     message: "Select Rust authentication library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustRealtimeChoice(rustRealtime?: RustRealtime) {
+  if (rustRealtime !== undefined) return rustRealtime;
+
+  const options = [
+    {
+      value: "tokio-tungstenite" as const,
+      label: "tokio-tungstenite",
+      hint: "Standard async WebSocket server/client for Tokio",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No realtime layer",
+    },
+  ];
+
+  const response = await navigableSelect<RustRealtime>({
+    message: "Select Rust realtime library",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustMessageQueueChoice(rustMessageQueue?: RustMessageQueue) {
+  if (rustMessageQueue !== undefined) return rustMessageQueue;
+
+  const options = [
+    {
+      value: "lapin" as const,
+      label: "Lapin",
+      hint: "Async RabbitMQ (AMQP) client",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No message queue",
+    },
+  ];
+
+  const response = await navigableSelect<RustMessageQueue>({
+    message: "Select Rust message queue",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustObservabilityChoice(rustObservability?: RustObservability) {
+  if (rustObservability !== undefined) return rustObservability;
+
+  const options = [
+    {
+      value: "opentelemetry" as const,
+      label: "OpenTelemetry",
+      hint: "Official OTel SDK with OTLP/HTTP export",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No tracing/metrics SDK",
+    },
+  ];
+
+  const response = await navigableSelect<RustObservability>({
+    message: "Select Rust observability",
+    options,
+    initialValue: "none",
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export async function getRustTemplatingChoice(rustTemplating?: RustTemplating) {
+  if (rustTemplating !== undefined) return rustTemplating;
+
+  const options = [
+    {
+      value: "askama" as const,
+      label: "Askama",
+      hint: "Compile-time, type-safe Jinja-style templates",
+    },
+    {
+      value: "tera" as const,
+      label: "Tera",
+      hint: "Runtime Jinja2-style templates with dynamic loading",
+    },
+    {
+      value: "none" as const,
+      label: "None",
+      hint: "No template engine",
+    },
+  ];
+
+  const response = await navigableSelect<RustTemplating>({
+    message: "Select Rust template engine",
     options,
     initialValue: "none",
   });

@@ -4,6 +4,10 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "../utils/add-deps";
 
+function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
+  return auth === "better-auth" || auth === "better-auth-organizations";
+}
+
 export function processAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { auth, backend } = config;
   if (!auth || auth === "none") return;
@@ -64,7 +68,7 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
         dependencies: ["@clerk/clerk-expo"],
       });
     }
-  } else if (auth === "better-auth") {
+  } else if (isBetterAuth(auth)) {
     if (backendExists) {
       addPackageDependency({
         vfs,
@@ -134,7 +138,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
     ].includes(f),
   );
 
-  if (auth === "better-auth") {
+  if (isBetterAuth(auth)) {
     if (authExists) {
       const authDependencies: AvailableDependencies[] = ["better-auth"];
       if (orm === "drizzle") authDependencies.push("@better-auth/drizzle-adapter");
@@ -250,6 +254,26 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
         vfs,
         packagePath: webPath,
         dependencies: ["@auth0/nextjs-auth0"],
+      });
+    }
+  } else if (auth === "workos") {
+    const hasNextJs = frontend.includes("next");
+
+    if (hasNextJs && webExists) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@workos-inc/authkit-nextjs"],
+      });
+    }
+  } else if (auth === "kinde") {
+    const hasNextJs = frontend.includes("next");
+
+    if (hasNextJs && webExists) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@kinde-oss/kinde-auth-nextjs"],
       });
     }
   }

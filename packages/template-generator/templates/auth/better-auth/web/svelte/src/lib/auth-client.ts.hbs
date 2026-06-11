@@ -2,6 +2,9 @@
 import { PUBLIC_SERVER_URL } from "$env/static/public";
 {{/if}}
 import { createAuthClient } from "better-auth/svelte";
+{{#if (hasBetterAuthOrganizations auth)}}
+import { organizationClient } from "better-auth/client/plugins";
+{{/if}}
 {{#if (eq payments "polar")}}
 import { polarClient } from "@polar-sh/better-auth";
 {{/if}}
@@ -10,7 +13,14 @@ export const authClient = createAuthClient({
 {{#if (ne backend "self")}}
 	baseURL: PUBLIC_SERVER_URL,
 {{/if}}
+{{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar"))}}
+	plugins: [
+{{#if (hasBetterAuthOrganizations auth)}}
+		organizationClient(),
+{{/if}}
 {{#if (eq payments "polar")}}
-	plugins: [polarClient()]
+		polarClient(),
+{{/if}}
+	],
 {{/if}}
 });

@@ -5,7 +5,7 @@ import { createEnv } from "@t3-oss/env-nuxt";
 {{else}}
 import { createEnv } from "@t3-oss/env-core";
 {{/if}}
-{{#if (or (or (eq backend "convex") (and (eq backend "self") (eq auth "clerk"))) (and (ne backend "self") (ne backend "none")))}}
+{{#if (or (or (eq backend "convex") (and (eq backend "self") (or (eq auth "clerk") (eq auth "workos")))) (and (ne backend "self") (ne backend "none")))}}
 import { z } from "zod";
 {{/if}}
 
@@ -26,7 +26,7 @@ export const env = createEnv({
 {{#if (includes frontend "next")}}
 	client: {
 		NEXT_PUBLIC_CONVEX_URL: z.url(),
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		NEXT_PUBLIC_CONVEX_SITE_URL: z.url(),
 {{/if}}
 {{#if (eq auth "clerk")}}
@@ -35,7 +35,7 @@ export const env = createEnv({
 	},
 	runtimeEnv: {
 		NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		NEXT_PUBLIC_CONVEX_SITE_URL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
 {{/if}}
 {{#if (eq auth "clerk")}}
@@ -56,7 +56,7 @@ export const env = createEnv({
 	clientPrefix: "VITE_",
 	client: {
 		VITE_CONVEX_URL: z.url(),
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		VITE_CONVEX_SITE_URL: z.url(),
 {{/if}}
 {{#if (eq auth "clerk")}}
@@ -71,10 +71,16 @@ export const env = createEnv({
 {{#if (eq auth "clerk")}}
 		NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
 {{/if}}
+{{#if (eq auth "workos")}}
+		NEXT_PUBLIC_WORKOS_REDIRECT_URI: z.url(),
+{{/if}}
 	},
 	runtimeEnv: {
 {{#if (eq auth "clerk")}}
 		NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+{{/if}}
+{{#if (eq auth "workos")}}
+		NEXT_PUBLIC_WORKOS_REDIRECT_URI: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
 {{/if}}
 	},
 {{else}}

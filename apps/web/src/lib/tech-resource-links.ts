@@ -87,6 +87,106 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.convex.dev/",
     githubUrl: "https://github.com/get-convex/convex-js",
   },
+  dotnet: {
+    docsUrl: "https://learn.microsoft.com/dotnet/",
+    githubUrl: "https://github.com/dotnet/runtime",
+  },
+  "aspnet-minimal": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "aspnet-mvc": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/mvc/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "aspnet-blazor": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/blazor/",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "ef-core": {
+    docsUrl: "https://learn.microsoft.com/ef/core/",
+    githubUrl: "https://github.com/dotnet/efcore",
+  },
+  dapper: {
+    docsUrl: "https://www.learndapper.com/",
+    githubUrl: "https://github.com/DapperLib/Dapper",
+  },
+  linq2db: {
+    docsUrl: "https://linq2db.github.io/",
+    githubUrl: "https://github.com/linq2db/linq2db",
+  },
+  "aspnet-identity": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/security/authentication/identity",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "duende-identityserver": {
+    docsUrl: "https://docs.duendesoftware.com/identityserver/",
+    githubUrl: "https://github.com/DuendeSoftware/products",
+  },
+  "auth0-aspnet": {
+    docsUrl: "https://auth0.com/docs/quickstart/webapp/aspnet-core",
+    githubUrl: "https://github.com/auth0/auth0-aspnetcore-authentication",
+  },
+  "minimal-api": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/overview",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "graphql-hotchocolate": {
+    docsUrl: "https://chillicream.com/docs/hotchocolate",
+    githubUrl: "https://github.com/ChilliCream/graphql-platform",
+  },
+  "grpc-dotnet": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/grpc/",
+    githubUrl: "https://github.com/grpc/grpc-dotnet",
+  },
+  xunit: { docsUrl: "https://xunit.net/", githubUrl: "https://github.com/xunit/xunit" },
+  nunit: { docsUrl: "https://docs.nunit.org/", githubUrl: "https://github.com/nunit/nunit" },
+  moq: { docsUrl: "https://github.com/devlooped/moq", githubUrl: "https://github.com/devlooped/moq" },
+  "testcontainers-dotnet": {
+    docsUrl: "https://dotnet.testcontainers.org/",
+    githubUrl: "https://github.com/testcontainers/testcontainers-dotnet",
+  },
+  hangfire: {
+    docsUrl: "https://docs.hangfire.io/",
+    githubUrl: "https://github.com/HangfireIO/Hangfire",
+  },
+  "quartz-net": {
+    docsUrl: "https://www.quartz-scheduler.net/documentation/",
+    githubUrl: "https://github.com/quartznet/quartznet",
+  },
+  "hosted-services": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/fundamentals/host/hosted-services",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  signalr: {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/signalr/introduction",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "opentelemetry-dotnet": {
+    docsUrl: "https://opentelemetry.io/docs/languages/dotnet/",
+    githubUrl: "https://github.com/open-telemetry/opentelemetry-dotnet",
+  },
+  serilog: {
+    docsUrl: "https://serilog.net/",
+    githubUrl: "https://github.com/serilog/serilog",
+  },
+  nlog: { docsUrl: "https://nlog-project.org/", githubUrl: "https://github.com/NLog/NLog" },
+  "health-checks": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/host-and-deploy/health-checks",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  "memory-cache": {
+    docsUrl: "https://learn.microsoft.com/aspnet/core/performance/caching/memory",
+    githubUrl: "https://github.com/dotnet/aspnetcore",
+  },
+  azure: {
+    docsUrl: "https://learn.microsoft.com/azure/app-service/quickstart-dotnetcore",
+    githubUrl: "https://github.com/Azure/app-service-linux-docs",
+  },
+  aws: {
+    docsUrl: "https://docs.aws.amazon.com/sdk-for-net/",
+    githubUrl: "https://github.com/aws/aws-sdk-net",
+  },
   "self-next": {
     docsUrl: "https://nextjs.org/docs",
     githubUrl: "https://github.com/vercel/next.js",
@@ -247,6 +347,8 @@ const BASE_LINKS: LinkMap = {
   },
   fly: { docsUrl: "https://fly.io/docs/", githubUrl: "https://github.com/superfly/docs" },
   railway: { docsUrl: "https://docs.railway.com/" },
+  render: { docsUrl: "https://render.com/docs" },
+  netlify: { docsUrl: "https://docs.netlify.com/" },
   sst: { docsUrl: "https://sst.dev/docs/", githubUrl: "https://github.com/sst/sst" },
   vercel: { docsUrl: "https://vercel.com/docs", githubUrl: "https://github.com/vercel/vercel" },
   "better-auth": {
@@ -254,7 +356,7 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/better-auth/better-auth",
   },
   "better-auth-organizations": {
-    docsUrl: "https://www.better-auth.com/docs",
+    docsUrl: "https://www.better-auth.com/docs/plugins/organization",
     githubUrl: "https://github.com/better-auth/better-auth",
   },
   "go-better-auth": {
@@ -262,17 +364,9 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/GoBetterAuth/go-better-auth",
   },
   clerk: { docsUrl: "https://clerk.com/docs", githubUrl: "https://github.com/clerk/javascript" },
-  workos: {
-    docsUrl: "https://docs.workos.com",
-    githubUrl: "https://github.com/workos",
-  },
   nextauth: {
     docsUrl: "https://authjs.dev/",
     githubUrl: "https://github.com/nextauthjs/next-auth",
-  },
-  kinde: {
-    docsUrl: "https://docs.kinde.com",
-    githubUrl: "https://github.com/kinde",
   },
   "stack-auth": {
     docsUrl: "https://docs.stack-auth.com/",
@@ -283,6 +377,22 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/supabase/supabase",
   },
   auth0: { docsUrl: "https://auth0.com/docs", githubUrl: "https://github.com/auth0" },
+  workos: {
+    docsUrl: "https://workos.com/docs/authkit/nextjs",
+    githubUrl: "https://github.com/workos/authkit-nextjs",
+  },
+  kinde: {
+    docsUrl: "https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/",
+    githubUrl: "https://github.com/kinde-oss/kinde-auth-nextjs",
+  },
+  arcjet: {
+    docsUrl: "https://docs.arcjet.com/rate-limiting/quick-start",
+    githubUrl: "https://github.com/arcjet/arcjet-js",
+  },
+  "upstash-ratelimit": {
+    docsUrl: "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview",
+    githubUrl: "https://github.com/upstash/ratelimit-js",
+  },
   polar: { docsUrl: "https://docs.polar.sh/", githubUrl: "https://github.com/polarsource/polar" },
   stripe: {
     docsUrl: "https://docs.stripe.com/",
@@ -477,6 +587,18 @@ const BASE_LINKS: LinkMap = {
   grafana: {
     docsUrl: "https://grafana.com/docs/",
     githubUrl: "https://github.com/grafana/grafana",
+  },
+  datadog: {
+    docsUrl: "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/dd_libraries/nodejs/",
+    githubUrl: "https://github.com/DataDog/dd-trace-js",
+  },
+  axiom: {
+    docsUrl: "https://axiom.co/docs/send-data/javascript",
+    githubUrl: "https://github.com/axiomhq/axiom-js",
+  },
+  betterstack: {
+    docsUrl: "https://betterstack.com/docs/logs/javascript/",
+    githubUrl: "https://github.com/betterstackhq/logtail-js",
   },
   growthbook: {
     docsUrl: "https://docs.growthbook.io/",
@@ -724,6 +846,9 @@ const BASE_LINKS: LinkMap = {
   },
   skills: { docsUrl: "https://www.npmjs.com/package/skills" },
   msw: { docsUrl: "https://mswjs.io/docs", githubUrl: "https://github.com/mswjs/msw" },
+  "backend-utils": {
+    docsUrl: "https://github.com/Marve10s/Better-Fullstack/issues/208",
+  },
   storybook: {
     docsUrl: "https://storybook.js.org/docs",
     githubUrl: "https://github.com/storybookjs/storybook",
@@ -1109,6 +1234,178 @@ const BASE_LINKS: LinkMap = {
   casbin: {
     docsUrl: "https://casbin.org/docs/overview",
     githubUrl: "https://github.com/casbin/casbin",
+  },
+  gqlgen: {
+    docsUrl: "https://gqlgen.com/",
+    githubUrl: "https://github.com/99designs/gqlgen",
+  },
+  goth: {
+    docsUrl: "https://pkg.go.dev/github.com/markbates/goth",
+    githubUrl: "https://github.com/markbates/goth",
+  },
+  testify: {
+    docsUrl: "https://pkg.go.dev/github.com/stretchr/testify",
+    githubUrl: "https://github.com/stretchr/testify",
+  },
+  gomock: {
+    docsUrl: "https://pkg.go.dev/go.uber.org/mock/gomock",
+    githubUrl: "https://github.com/uber-go/mock",
+  },
+  "gorilla-websocket": {
+    docsUrl: "https://pkg.go.dev/github.com/gorilla/websocket",
+    githubUrl: "https://github.com/gorilla/websocket",
+  },
+  centrifuge: {
+    docsUrl: "https://pkg.go.dev/github.com/centrifugal/centrifuge",
+    githubUrl: "https://github.com/centrifugal/centrifuge",
+  },
+  nats: {
+    docsUrl: "https://docs.nats.io/",
+    githubUrl: "https://github.com/nats-io/nats.go",
+  },
+  watermill: {
+    docsUrl: "https://watermill.io/docs/",
+    githubUrl: "https://github.com/ThreeDotsLabs/watermill",
+  },
+  ristretto: {
+    docsUrl: "https://pkg.go.dev/github.com/dgraph-io/ristretto/v2",
+    githubUrl: "https://github.com/hypermodeinc/ristretto",
+  },
+  viper: {
+    docsUrl: "https://pkg.go.dev/github.com/spf13/viper",
+    githubUrl: "https://github.com/spf13/viper",
+  },
+  koanf: {
+    docsUrl: "https://pkg.go.dev/github.com/knadh/koanf/v2",
+    githubUrl: "https://github.com/knadh/koanf",
+  },
+  "google-adk": {
+    docsUrl: "https://google.github.io/adk-docs/",
+    githubUrl: "https://github.com/google/adk-python",
+  },
+  grpc: {
+    docsUrl: "https://hexdocs.pm/grpc/",
+    githubUrl: "https://github.com/elixir-grpc/grpc",
+  },
+  broadway: {
+    docsUrl: "https://hexdocs.pm/broadway/",
+    githubUrl: "https://github.com/dashbitco/broadway",
+  },
+  nx: {
+    docsUrl: "https://hexdocs.pm/nx/",
+    githubUrl: "https://github.com/elixir-nx/nx",
+  },
+  fluentvalidation: {
+    docsUrl: "https://docs.fluentvalidation.net/",
+    githubUrl: "https://github.com/FluentValidation/FluentValidation",
+  },
+  "data-annotations": {
+    docsUrl:
+      "https://learn.microsoft.com/dotnet/api/system.componentmodel.dataannotations",
+  },
+  jooq: {
+    docsUrl: "https://www.jooq.org/doc/latest/manual/",
+    githubUrl: "https://github.com/jOOQ/jOOQ",
+  },
+  mybatis: {
+    docsUrl: "https://mybatis.org/mybatis-3/",
+    githubUrl: "https://github.com/mybatis/mybatis-3",
+  },
+  keycloak: {
+    docsUrl: "https://www.keycloak.org/documentation",
+    githubUrl: "https://github.com/keycloak/keycloak",
+  },
+  "spring-graphql": {
+    docsUrl: "https://docs.spring.io/spring-graphql/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-graphql",
+  },
+  logback: {
+    docsUrl: "https://logback.qos.ch/documentation.html",
+    githubUrl: "https://github.com/qos-ch/logback",
+  },
+  "spring-amqp": {
+    docsUrl: "https://docs.spring.io/spring-amqp/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-amqp",
+  },
+  "opentelemetry-java": {
+    docsUrl: "https://opentelemetry.io/docs/languages/java/",
+    githubUrl: "https://github.com/open-telemetry/opentelemetry-java",
+  },
+  torii: {
+    docsUrl: "https://docs.rs/torii",
+    githubUrl: "https://github.com/cmackenzie1/torii-rs",
+  },
+  "tokio-tungstenite": {
+    docsUrl: "https://docs.rs/tokio-tungstenite",
+    githubUrl: "https://github.com/snapview/tokio-tungstenite",
+  },
+  lapin: {
+    docsUrl: "https://docs.rs/lapin",
+    githubUrl: "https://github.com/amqp-rs/lapin",
+  },
+  askama: {
+    docsUrl: "https://askama.readthedocs.io/",
+    githubUrl: "https://github.com/askama-rs/askama",
+  },
+  tera: {
+    docsUrl: "https://keats.github.io/tera/docs/",
+    githubUrl: "https://github.com/Keats/tera",
+  },
+  starlette: {
+    docsUrl: "https://www.starlette.io/",
+    githubUrl: "https://github.com/encode/starlette",
+  },
+  peewee: {
+    docsUrl: "https://docs.peewee-orm.com/",
+    githubUrl: "https://github.com/coleifer/peewee",
+  },
+  "fastapi-users": {
+    docsUrl: "https://fastapi-users.github.io/fastapi-users/",
+    githubUrl: "https://github.com/fastapi-users/fastapi-users",
+  },
+  "pydantic-ai": {
+    docsUrl: "https://ai.pydantic.dev/",
+    githubUrl: "https://github.com/pydantic/pydantic-ai",
+  },
+  smolagents: {
+    docsUrl: "https://huggingface.co/docs/smolagents",
+    githubUrl: "https://github.com/huggingface/smolagents",
+  },
+  taskiq: {
+    docsUrl: "https://taskiq-python.github.io/",
+    githubUrl: "https://github.com/taskiq-python/taskiq",
+  },
+  pytest: {
+    docsUrl: "https://docs.pytest.org/",
+    githubUrl: "https://github.com/pytest-dev/pytest",
+  },
+  hypothesis: {
+    docsUrl: "https://hypothesis.readthedocs.io/",
+    githubUrl: "https://github.com/HypothesisWorks/hypothesis",
+  },
+  aiocache: {
+    docsUrl: "https://aiocache.aio-libs.org/",
+    githubUrl: "https://github.com/aio-libs/aiocache",
+  },
+  "python-socketio": {
+    docsUrl: "https://python-socketio.readthedocs.io/",
+    githubUrl: "https://github.com/miguelgrinberg/python-socketio",
+  },
+  websockets: {
+    docsUrl: "https://websockets.readthedocs.io/",
+    githubUrl: "https://github.com/python-websockets/websockets",
+  },
+  typer: {
+    docsUrl: "https://typer.tiangolo.com/",
+    githubUrl: "https://github.com/fastapi/typer",
+  },
+  click: {
+    docsUrl: "https://click.palletsprojects.com/",
+    githubUrl: "https://github.com/pallets/click",
+  },
+  rich: {
+    docsUrl: "https://rich.readthedocs.io/",
+    githubUrl: "https://github.com/Textualize/rich",
   },
 };
 

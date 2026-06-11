@@ -207,7 +207,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 }
 
 function applyBetterAuthKyselyOverride(pkgJson: PackageJson, config: ProjectConfig): void {
-  if (config.auth !== "better-auth") return;
+  if (config.auth !== "better-auth" && config.auth !== "better-auth-organizations") return;
 
   // Better Auth 1.6.x imports migration exports removed in Kysely 0.29.
   // Pin the transitive peer until Better Auth supports the newer Kysely API.

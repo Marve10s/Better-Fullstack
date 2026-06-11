@@ -1,0 +1,30 @@
+{{#if (eq goCaching "ristretto")}}
+// Package cache provides a high-performance in-process cache via Ristretto.
+package cache
+
+import (
+	"time"
+
+	"github.com/dgraph-io/ristretto/v2"
+)
+
+// NewCache creates a Ristretto cache sized for roughly 10k entries.
+func NewCache() (*ristretto.Cache[string, string], error) {
+	return ristretto.NewCache(&ristretto.Config[string, string]{
+		NumCounters: 100_000, // ~10x expected max entries
+		MaxCost:     1 << 26, // 64 MiB
+		BufferItems: 64,
+	})
+}
+
+// Set stores a value with a TTL; cost 1 treats all entries equally.
+func Set(cache *ristretto.Cache[string, string], key, value string, ttl time.Duration) {
+	cache.SetWithTTL(key, value, 1, ttl)
+	cache.Wait()
+}
+
+// Get retrieves a value and reports whether it was present.
+func Get(cache *ristretto.Cache[string, string], key string) (string, bool) {
+	return cache.Get(key)
+}
+{{/if}}

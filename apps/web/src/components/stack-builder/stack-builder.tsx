@@ -126,7 +126,7 @@ type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
 type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust">;
 type GraphBackendEcosystem = Extract<
   StackPartEcosystem,
-  "typescript" | "rust" | "python" | "go" | "java" | "elixir"
+  "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
 >;
 type GraphSelection = {
   frontendEcosystem: GraphFrontendEcosystem;
@@ -179,7 +179,7 @@ const APP_PLATFORM_OPTION_GROUPS = [
   },
   {
     heading: "Integrations",
-    ids: ["msw", "storybook"],
+    ids: ["msw", "storybook", "backend-utils"],
   },
   {
     heading: "TanStack",
@@ -234,6 +234,14 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     ormCategory: "elixirOrm",
     apiCategory: "elixirApi",
     authCategory: "elixirAuth",
+  },
+  {
+    ecosystem: "dotnet",
+    label: ".NET",
+    frameworkCategory: "dotnetWebFramework",
+    ormCategory: "dotnetOrm",
+    apiCategory: "dotnetApi",
+    authCategory: "dotnetAuth",
   },
 ];
 
@@ -297,15 +305,52 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "observability",
     "featureFlags",
     "caching",
+    "rateLimit",
     "i18n",
     "cms",
     "search",
     "fileStorage",
   ],
-  rust: ["rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
-  python: ["pythonValidation", "pythonAi", "pythonTaskQueue", "pythonGraphql", "pythonQuality"],
-  go: ["goCli", "goLogging"],
-  java: ["javaBuildTool", "javaLibraries", "javaTestingLibraries"],
+  rust: [
+    "rustCli",
+    "rustLibraries",
+    "rustLogging",
+    "rustErrorHandling",
+    "rustCaching",
+    "rustRealtime",
+    "rustMessageQueue",
+    "rustObservability",
+    "rustTemplating",
+  ],
+  python: [
+    "pythonValidation",
+    "pythonAi",
+    "pythonTaskQueue",
+    "pythonGraphql",
+    "pythonQuality",
+    "pythonTesting",
+    "pythonCaching",
+    "pythonRealtime",
+    "pythonObservability",
+    "pythonCli",
+  ],
+  go: [
+    "goCli",
+    "goLogging",
+    "goTesting",
+    "goRealtime",
+    "goMessageQueue",
+    "goCaching",
+    "goConfig",
+    "goObservability",
+  ],
+  java: [
+    "javaBuildTool",
+    "javaApi",
+    "javaLogging",
+    "javaLibraries",
+    "javaTestingLibraries",
+  ],
   elixir: [
     "elixirRealtime",
     "elixirJobs",
@@ -318,6 +363,16 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "elixirTesting",
     "elixirQuality",
     "elixirDeploy",
+    "elixirLibraries",
+  ],
+  dotnet: [
+    "dotnetTesting",
+    "dotnetJobQueue",
+    "dotnetRealtime",
+    "dotnetObservability",
+    "dotnetValidation",
+    "dotnetCaching",
+    "dotnetDeploy",
   ],
 } as const satisfies Record<GraphBackendEcosystem, readonly (keyof typeof TECH_OPTIONS)[]>;
 
@@ -325,6 +380,7 @@ const GRAPH_TYPESCRIPT_SHARED_BACKEND_CATEGORY_SET = new Set<keyof typeof TECH_O
   "email",
   "observability",
   "caching",
+  "rateLimit",
   "search",
 ]);
 
@@ -918,6 +974,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "realtime",
   "jobQueue",
   "caching",
+  "rateLimit",
   "search",
   "fileStorage",
   "animation",

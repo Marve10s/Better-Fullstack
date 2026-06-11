@@ -1,0 +1,37 @@
+{{#if (eq goCaching "redis")}}
+// Package cache provides a Redis-backed cache via go-redis.
+//
+// Set REDIS_URL in your environment (defaults to redis://127.0.0.1:6379).
+package cache
+
+import (
+	"context"
+	"os"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+)
+
+// NewRedisClient creates a go-redis client from REDIS_URL.
+func NewRedisClient() (*redis.Client, error) {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "redis://127.0.0.1:6379"
+	}
+	opts, err := redis.ParseURL(url)
+	if err != nil {
+		return nil, err
+	}
+	return redis.NewClient(opts), nil
+}
+
+// Set stores a value with a TTL.
+func Set(ctx context.Context, client *redis.Client, key, value string, ttl time.Duration) error {
+	return client.Set(ctx, key, value, ttl).Err()
+}
+
+// Get retrieves a value; returns redis.Nil error when the key is missing.
+func Get(ctx context.Context, client *redis.Client, key string) (string, error) {
+	return client.Get(ctx, key).Result()
+}
+{{/if}}

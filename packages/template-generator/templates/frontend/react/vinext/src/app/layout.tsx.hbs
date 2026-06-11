@@ -1,12 +1,12 @@
 import "../index.css";
 {{#if (eq auth "clerk")}}{{#if (eq backend "convex")}}import { ClerkProvider } from "@clerk/clerk-react";
-{{/if}}{{/if}}{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{/if}}{{/if}}{{#if (and (eq backend "convex") (isBetterAuth auth))}}
 import { getToken } from "@/lib/auth-server";
 {{/if}}
 import Providers from "@/components/providers";
 import Header from "@/components/header";
 
-{{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{#if (and (eq backend "convex") (isBetterAuth auth))}}
 export default async function RootLayout({
   children,
 }: Readonly<{

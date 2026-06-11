@@ -1,0 +1,17 @@
+{{#if hasJavaGraphql}}
+package {{javaPackageName}}.controller;
+
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.stereotype.Controller;
+
+/** Resolvers for the schema in src/main/resources/graphql/schema.graphqls. */
+@Controller
+public class GraphqlController {
+
+	@QueryMapping
+	public String greeting(@Argument String name) {
+		return "Hello, %s!".formatted(name == null ? "world" : name);
+	}
+}
+{{/if}}

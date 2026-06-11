@@ -1,0 +1,48 @@
+"use client";
+
+import { KindeProvider, useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  return <KindeProvider>{children}</KindeProvider>;
+}
+
+function normalizeUser(user: ReturnType<typeof useKindeBrowserClient>["user"]) {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    email: user.email ?? "",
+    name: [user.given_name, user.family_name].filter(Boolean).join(" ") || user.email || "",
+    image: user.picture ?? "",
+  };
+}
+
+export function useUser() {
+  const { user, isLoading, error } = useKindeBrowserClient();
+
+  return {
+    user: normalizeUser(user),
+    isLoading: Boolean(isLoading),
+    error,
+  };
+}
+
+export function useAuthClient() {
+  const { user, isAuthenticated, isLoading, error } = useKindeBrowserClient();
+
+  return {
+    user: normalizeUser(user),
+    isAuthenticated: Boolean(isAuthenticated),
+    isLoading: Boolean(isLoading),
+    error,
+    signOut: () => {
+      window.location.href = "/api/auth/logout";
+    },
+    signIn: () => {
+      window.location.href = "/api/auth/login";
+    },
+    signUp: () => {
+      window.location.href = "/api/auth/register";
+    },
+  };
+}
