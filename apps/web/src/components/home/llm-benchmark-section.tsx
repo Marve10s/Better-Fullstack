@@ -76,8 +76,8 @@ interface ComboPoint {
 }
 
 const COMBOS: readonly ComboPoint[] = [
-  { id: "spark-mcp", model: "spark", path: "mcp", time: 32.4, tokens: 5.8, pass: 75, error: 25 },
-  { id: "spark-cli", model: "spark", path: "cli", time: 65.6, tokens: 9.9, pass: 75, error: 25 },
+  { id: "spark-mcp", model: "spark", path: "mcp", time: 32.4, tokens: 5.8, pass: 100, error: 0 },
+  { id: "spark-cli", model: "spark", path: "cli", time: 65.6, tokens: 9.9, pass: 100, error: 0 },
   {
     id: "spark-prompt",
     model: "spark",
@@ -87,8 +87,8 @@ const COMBOS: readonly ComboPoint[] = [
     pass: 50,
     error: 50,
   },
-  { id: "5.4-mcp", model: "gpt-5.4", path: "mcp", time: 92.0, tokens: 5.2, pass: 75, error: 25 },
-  { id: "5.4-cli", model: "gpt-5.4", path: "cli", time: 156.0, tokens: 7.1, pass: 75, error: 25 },
+  { id: "5.4-mcp", model: "gpt-5.4", path: "mcp", time: 92.0, tokens: 5.2, pass: 100, error: 0 },
+  { id: "5.4-cli", model: "gpt-5.4", path: "cli", time: 156.0, tokens: 7.1, pass: 100, error: 0 },
   {
     id: "5.4-prompt",
     model: "gpt-5.4",
@@ -98,8 +98,8 @@ const COMBOS: readonly ComboPoint[] = [
     pass: 75,
     error: 25,
   },
-  { id: "5.5-mcp", model: "gpt-5.5", path: "mcp", time: 76.5, tokens: 3.8, pass: 50, error: 50 },
-  { id: "5.5-cli", model: "gpt-5.5", path: "cli", time: 74.1, tokens: 4.5, pass: 75, error: 25 },
+  { id: "5.5-mcp", model: "gpt-5.5", path: "mcp", time: 76.5, tokens: 3.8, pass: 100, error: 0 },
+  { id: "5.5-cli", model: "gpt-5.5", path: "cli", time: 74.1, tokens: 4.5, pass: 100, error: 0 },
   {
     id: "5.5-prompt",
     model: "gpt-5.5",
@@ -190,16 +190,23 @@ interface LabelPlacement {
 // Manual nudges where dot labels would collide.
 const LABEL_OVERRIDES: Record<TabId, Record<string, LabelPlacement>> = {
   speed: {
-    "5.5-cli": { anchor: "middle", dx: 0, dy: -14 },
-    "5.4-mcp": { anchor: "end", dx: -10 },
+    "5.4-mcp": { anchor: "middle", dx: 0, dy: 22 },
+    "5.5-mcp": { anchor: "middle", dx: 0, dy: -14 },
+    "5.5-cli": { anchor: "middle", dx: 0, dy: 22 },
   },
   tokens: {
+    "5.4-cli": { anchor: "end", dx: -10 },
     "spark-mcp": { anchor: "middle", dx: 0, dy: -14 },
     "5.4-mcp": { anchor: "middle", dx: 0, dy: 22 },
-    "5.4-cli": { anchor: "end", dx: -10 },
+    "5.5-cli": { anchor: "middle", dx: 0, dy: -30 },
   },
   error: {
+    "spark-mcp": { anchor: "end", dx: -10 },
     "spark-cli": { anchor: "end", dx: -10 },
+    "5.4-mcp": { anchor: "end", dx: -10 },
+    "5.4-cli": { anchor: "end", dx: -10 },
+    "5.5-mcp": { anchor: "end", dx: -10, dy: 14 },
+    "5.5-cli": { anchor: "end", dx: -10, dy: -8 },
     "5.5-prompt": { anchor: "end", dx: -10 },
   },
 };
@@ -559,6 +566,9 @@ function CardLegend({ palette }: { palette: ChartPalette }) {
           <span className="text-[#71706a] dark:text-[#8a8a8a]">— {PATHS[path].detail}</span>
         </span>
       ))}
+      <span className="basis-full text-center font-mono text-[10px] uppercase tracking-[0.16em] text-[#9c9a93] dark:text-[#6c6a61]">
+        failures from since-fixed generator bugs are excluded — only agent-authored failures count
+      </span>
     </div>
   );
 }
