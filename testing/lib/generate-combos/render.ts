@@ -268,6 +268,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["elixir-testing", config.elixirTesting],
     ["elixir-quality", config.elixirQuality],
     ["elixir-deploy", config.elixirDeploy],
+    ["elixir-libraries", withExplicitNone(config.elixirLibraries)],
   ];
 
   const dotnetFlags: Array<[string, string | readonly string[]]> = [
@@ -280,6 +281,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["dotnet-job-queue", config.dotnetJobQueue],
     ["dotnet-realtime", config.dotnetRealtime],
     ["dotnet-observability", withExplicitNone(config.dotnetObservability)],
+    ["dotnet-validation", config.dotnetValidation],
     ["dotnet-caching", config.dotnetCaching],
     ["dotnet-deploy", config.dotnetDeploy],
   ];
