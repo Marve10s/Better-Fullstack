@@ -5,7 +5,6 @@ import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  ChromeButton,
   CREATION_MODE_INDICATOR_ID,
   CREATION_MODE_INDICATOR_TRANSITION,
 } from "@/components/ui/chrome-button";
@@ -15,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { HandDrawnNewCallout } from "@/components/ui/hand-drawn-new-callout";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { cn } from "@/lib/utils";
@@ -72,7 +70,7 @@ function HeaderCopyButton() {
       type="button"
       onClick={handleCopy}
       aria-label={copied ? "Command copied" : "Copy install command"}
-      className="inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
     >
       {copied ? (
         <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -109,27 +107,6 @@ function StackModeToggle({
       >
         {options.map((option) => {
           const active = mode === option.value;
-
-          if (option.value === "multi") {
-            return (
-              <div key={option.value} className="relative">
-                <ChromeButton
-                  type="button"
-                  data-testid={`stack-mode-${option.value}`}
-                  aria-pressed={active}
-                  onClick={() => onChange(option.value)}
-                  size="toggle"
-                  border="none"
-                  tone={active ? "toggleActive" : "toggleIdle"}
-                  showActiveIndicator={active}
-                  chromeOpacity={active ? "active" : "idle"}
-                >
-                  {option.label}
-                </ChromeButton>
-                <HandDrawnNewCallout className="absolute top-1/2 left-[calc(100%+0.35rem)] z-20 hidden -translate-y-1/2 min-[640px]:block" />
-              </div>
-            );
-          }
 
           return (
             <button
