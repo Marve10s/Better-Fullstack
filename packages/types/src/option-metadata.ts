@@ -10,6 +10,7 @@ import {
   CACHING_VALUES,
   DOTNET_API_VALUES,
   DOTNET_AUTH_VALUES,
+  DOTNET_VALIDATION_VALUES,
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
@@ -19,6 +20,7 @@ import {
   DOTNET_TESTING_VALUES,
   DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
+  ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
   ELIXIR_DEPLOY_VALUES,
@@ -242,6 +244,7 @@ export type OptionCategory =
   | "dotnetJobQueue"
   | "dotnetRealtime"
   | "dotnetObservability"
+  | "dotnetValidation"
   | "dotnetCaching"
   | "dotnetDeploy"
   | "elixirWebFramework"
@@ -258,7 +261,8 @@ export type OptionCategory =
   | "elixirObservability"
   | "elixirTesting"
   | "elixirQuality"
-  | "elixirDeploy";
+  | "elixirDeploy"
+  | "elixirLibraries";
 
 export type OptionSelectionMode = "single" | "multiple";
 
@@ -440,6 +444,7 @@ export const DOTNET_CATEGORY_ORDER = [
   "dotnetJobQueue",
   "dotnetRealtime",
   "dotnetObservability",
+  "dotnetValidation",
   "dotnetCaching",
   "dotnetDeploy",
   "aiDocs",
@@ -463,6 +468,7 @@ export const ELIXIR_CATEGORY_ORDER = [
   "elixirTesting",
   "elixirQuality",
   "elixirDeploy",
+  "elixirLibraries",
   "aiDocs",
   "git",
   "install",
@@ -570,6 +576,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     dotnetJobQueue: ".NET Background Jobs",
     dotnetRealtime: ".NET Realtime",
     dotnetObservability: ".NET Observability",
+    dotnetValidation: ".NET Validation",
     dotnetCaching: ".NET Caching",
     dotnetDeploy: ".NET Deploy",
     elixirWebFramework: "Elixir Web Framework",
@@ -587,6 +594,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     elixirTesting: "Elixir Testing",
     elixirQuality: "Elixir Code Quality",
     elixirDeploy: "Elixir Deploy",
+    elixirLibraries: "Elixir Libraries",
   };
 
   const customName = categoryNames[categoryKey];
@@ -706,6 +714,7 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "elixirLibraries",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
@@ -825,6 +834,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   dotnetJobQueue: DOTNET_JOB_QUEUE_VALUES,
   dotnetRealtime: DOTNET_REALTIME_VALUES,
   dotnetObservability: DOTNET_OBSERVABILITY_VALUES,
+  dotnetValidation: DOTNET_VALIDATION_VALUES,
   dotnetCaching: DOTNET_CACHING_VALUES,
   dotnetDeploy: DOTNET_DEPLOY_VALUES,
   elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
@@ -842,6 +852,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   elixirTesting: ELIXIR_TESTING_VALUES,
   elixirQuality: ELIXIR_QUALITY_VALUES,
   elixirDeploy: ELIXIR_DEPLOY_VALUES,
+  elixirLibraries: ELIXIR_LIBRARIES_VALUES,
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
@@ -1430,6 +1441,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     nlog: "NLog",
     "health-checks": "Health Checks",
   },
+  dotnetValidation: {
+    fluentvalidation: "FluentValidation",
+    "data-annotations": "Data Annotations",
+  },
   dotnetCaching: {
     redis: "StackExchange.Redis",
     "memory-cache": "IMemoryCache",
@@ -1455,6 +1470,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   elixirApi: {
     rest: "Phoenix REST",
     absinthe: "Absinthe GraphQL",
+    grpc: "gRPC (grpc-elixir)",
+  },
+  elixirLibraries: {
+    broadway: "Broadway",
+    nx: "Nx (Numerical Elixir)",
   },
   elixirRealtime: {
     channels: "Phoenix Channels",
@@ -1704,6 +1724,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   dotnetJobQueue: buildCategoryMetadata("dotnetJobQueue"),
   dotnetRealtime: buildCategoryMetadata("dotnetRealtime"),
   dotnetObservability: buildCategoryMetadata("dotnetObservability"),
+  dotnetValidation: buildCategoryMetadata("dotnetValidation"),
   dotnetCaching: buildCategoryMetadata("dotnetCaching"),
   dotnetDeploy: buildCategoryMetadata("dotnetDeploy"),
   elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
@@ -1721,6 +1742,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   elixirTesting: buildCategoryMetadata("elixirTesting"),
   elixirQuality: buildCategoryMetadata("elixirQuality"),
   elixirDeploy: buildCategoryMetadata("elixirDeploy"),
+  elixirLibraries: buildCategoryMetadata("elixirLibraries"),
 };
 
 const OPTION_LOOKUP = Object.fromEntries(

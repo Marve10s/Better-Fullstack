@@ -14,6 +14,7 @@ import type {
   DotnetApi,
   DotnetAuth,
   DotnetCaching,
+  DotnetValidation,
   DotnetDeploy,
   DotnetJobQueue,
   DotnetObservability,
@@ -25,6 +26,7 @@ import type {
   ElixirAuth,
   ElixirCaching,
   ElixirDeploy,
+  ElixirLibraries,
   ElixirEmail,
   ElixirHttp,
   ElixirJobs,
@@ -142,6 +144,7 @@ import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
   getDotnetCachingChoice,
+  getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
   getDotnetObservabilityChoice,
@@ -155,6 +158,7 @@ import {
   getElixirAuthChoice,
   getElixirCachingChoice,
   getElixirDeployChoice,
+  getElixirLibrariesChoice,
   getElixirEmailChoice,
   getElixirHttpChoice,
   getElixirJobsChoice,
@@ -376,6 +380,7 @@ type PromptGroupResults = {
   dotnetJobQueue: DotnetJobQueue;
   dotnetRealtime: DotnetRealtime;
   dotnetObservability: DotnetObservability[];
+  dotnetValidation: DotnetValidation;
   dotnetCaching: DotnetCaching;
   dotnetDeploy: DotnetDeploy;
   // Elixir ecosystem
@@ -394,6 +399,7 @@ type PromptGroupResults = {
   elixirTesting: ElixirTesting;
   elixirQuality: ElixirQuality;
   elixirDeploy: ElixirDeploy;
+  elixirLibraries: ElixirLibraries[];
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
@@ -993,6 +999,10 @@ export async function gatherConfig(
         if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetObservability[]);
         return getDotnetObservabilityChoice(flags.dotnetObservability);
       },
+      dotnetValidation: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetValidation);
+        return getDotnetValidationChoice(flags.dotnetValidation);
+      },
       dotnetCaching: ({ results }) => {
         if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetCaching);
         if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetCaching);
@@ -1063,6 +1073,10 @@ export async function gatherConfig(
       elixirDeploy: ({ results }) => {
         if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
         return getElixirDeployChoice(flags.elixirDeploy);
+      },
+      elixirLibraries: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve([] as ElixirLibraries[]);
+        return getElixirLibrariesChoice(flags.elixirLibraries);
       },
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
@@ -1204,6 +1218,7 @@ export async function gatherConfig(
     dotnetJobQueue: result.dotnetJobQueue,
     dotnetRealtime: result.dotnetRealtime,
     dotnetObservability: result.dotnetObservability,
+    dotnetValidation: result.dotnetValidation,
     dotnetCaching: result.dotnetCaching,
     dotnetDeploy: result.dotnetDeploy,
     // Elixir ecosystem options
@@ -1222,6 +1237,7 @@ export async function gatherConfig(
     elixirTesting: result.elixirTesting,
     elixirQuality: result.elixirQuality,
     elixirDeploy: result.elixirDeploy,
+    elixirLibraries: result.elixirLibraries,
     // AI documentation files
     aiDocs: result.aiDocs,
   };

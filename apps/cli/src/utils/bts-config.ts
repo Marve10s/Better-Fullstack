@@ -97,6 +97,7 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.dotnetJobQueue = "none";
     normalized.dotnetRealtime = "none";
     normalized.dotnetObservability = [];
+    normalized.dotnetValidation = "none";
     normalized.dotnetCaching = "none";
     normalized.dotnetDeploy = "none";
   }
@@ -117,6 +118,7 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.elixirTesting = "none";
     normalized.elixirQuality = "none";
     normalized.elixirDeploy = "none";
+    normalized.elixirLibraries = [];
   }
 
   if (!selectedEcosystems.has("react-native")) {
@@ -353,6 +355,7 @@ function buildBtsConfigForPersistence(
     dotnetJobQueue: persistedConfig.dotnetJobQueue,
     dotnetRealtime: persistedConfig.dotnetRealtime,
     dotnetObservability: persistedConfig.dotnetObservability,
+    dotnetValidation: persistedConfig.dotnetValidation,
     dotnetCaching: persistedConfig.dotnetCaching,
     dotnetDeploy: persistedConfig.dotnetDeploy,
     elixirWebFramework: persistedConfig.elixirWebFramework,
@@ -370,6 +373,7 @@ function buildBtsConfigForPersistence(
     elixirTesting: persistedConfig.elixirTesting,
     elixirQuality: persistedConfig.elixirQuality,
     elixirDeploy: persistedConfig.elixirDeploy,
+    elixirLibraries: persistedConfig.elixirLibraries,
     aiDocs: persistedConfig.aiDocs,
     stackParts,
   };
@@ -508,6 +512,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     dotnetJobQueue: btsConfig.dotnetJobQueue,
     dotnetRealtime: btsConfig.dotnetRealtime,
     dotnetObservability: btsConfig.dotnetObservability,
+    dotnetValidation: btsConfig.dotnetValidation,
     dotnetCaching: btsConfig.dotnetCaching,
     dotnetDeploy: btsConfig.dotnetDeploy,
     elixirWebFramework: btsConfig.elixirWebFramework,
@@ -525,6 +530,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     elixirTesting: btsConfig.elixirTesting,
     elixirQuality: btsConfig.elixirQuality,
     elixirDeploy: btsConfig.elixirDeploy,
+    elixirLibraries: btsConfig.elixirLibraries,
     aiDocs: btsConfig.aiDocs,
     stackParts: btsConfig.stackParts,
   };

@@ -96,6 +96,7 @@ describe("Basic Configurations", () => {
         dotnetJobQueue: "none",
         dotnetRealtime: "none",
         dotnetObservability: [],
+        dotnetValidation: "none",
         dotnetCaching: "none",
         dotnetDeploy: "none",
         install: false,

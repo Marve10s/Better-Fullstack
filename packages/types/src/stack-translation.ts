@@ -140,6 +140,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   dotnetJobQueue: "none",
   dotnetRealtime: "signalr",
   dotnetObservability: ["serilog"],
+  dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
@@ -157,6 +158,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   elixirTesting: "ex_unit",
   elixirQuality: "credo",
   elixirDeploy: "none",
+  elixirLibraries: [],
 };
 
 export type StackSelectionKey = keyof StackSelectionState;
@@ -291,6 +293,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   dotnetJobQueue: "dotnetJobQueue",
   dotnetRealtime: "dotnetRealtime",
   dotnetObservability: "dotnetObservability",
+  dotnetValidation: "dotnetValidation",
   dotnetCaching: "dotnetCaching",
   dotnetDeploy: "dotnetDeploy",
   elixirWebFramework: "elixirWebFramework",
@@ -308,6 +311,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   elixirTesting: "elixirTesting",
   elixirQuality: "elixirQuality",
   elixirDeploy: "elixirDeploy",
+  elixirLibraries: "elixirLibraries",
 };
 
 export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
@@ -320,6 +324,7 @@ export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "elixirLibraries",
   "aiDocs",
 ] as const;
 
@@ -450,6 +455,7 @@ export const STACK_SELECTION_URL_KEYS = {
   dotnetJobQueue: "dnjob",
   dotnetRealtime: "dnrt",
   dotnetObservability: "dnobs",
+  dotnetValidation: "dnval",
   dotnetCaching: "dncache",
   dotnetDeploy: "dndeploy",
   elixirWebFramework: "ewf",
@@ -467,6 +473,7 @@ export const STACK_SELECTION_URL_KEYS = {
   elixirTesting: "etest",
   elixirQuality: "eq",
   elixirDeploy: "edeploy",
+  elixirLibraries: "elib",
 } as const satisfies Record<StackSelectionKey, string>;
 
 export const STACK_SELECTION_KEYS = Object.keys(STACK_SELECTION_URL_KEYS) as StackSelectionKey[];
@@ -761,6 +768,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["dotnetApi", "dotnetApi"],
   ["dotnetJobQueue", "dotnetJobQueue"],
   ["dotnetRealtime", "dotnetRealtime"],
+  ["dotnetValidation", "dotnetValidation"],
   ["dotnetCaching", "dotnetCaching"],
   ["dotnetDeploy", "dotnetDeploy"],
   ["elixirWebFramework", "elixirWebFramework"],
@@ -797,6 +805,7 @@ const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["goTesting", "goTesting"],
   ["pythonTesting", "pythonTesting"],
   ["pythonCli", "pythonCli"],
+  ["elixirLibraries", "elixirLibraries"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
 const PACKAGE_MANAGER_COMMANDS = {
@@ -885,6 +894,7 @@ const DOTNET_CONFIG_KEYS = [
   "dotnetJobQueue",
   "dotnetRealtime",
   "dotnetObservability",
+  "dotnetValidation",
   "dotnetCaching",
   "dotnetDeploy",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
@@ -905,6 +915,7 @@ const ELIXIR_CONFIG_KEYS = [
   "elixirTesting",
   "elixirQuality",
   "elixirDeploy",
+  "elixirLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const REACT_NATIVE_CONFIG_KEYS = [
@@ -1881,6 +1892,7 @@ function buildProjectConfigBase(
     dotnetObservability: toUniqueNonNoneArray(
       stack.dotnetObservability,
     ) as ProjectConfig["dotnetObservability"],
+    dotnetValidation: stack.dotnetValidation as ProjectConfig["dotnetValidation"],
     dotnetCaching: stack.dotnetCaching as ProjectConfig["dotnetCaching"],
     dotnetDeploy: stack.dotnetDeploy as ProjectConfig["dotnetDeploy"],
     elixirWebFramework: stack.elixirWebFramework as ProjectConfig["elixirWebFramework"],
@@ -1898,6 +1910,9 @@ function buildProjectConfigBase(
     elixirTesting: stack.elixirTesting as ProjectConfig["elixirTesting"],
     elixirQuality: stack.elixirQuality as ProjectConfig["elixirQuality"],
     elixirDeploy: stack.elixirDeploy as ProjectConfig["elixirDeploy"],
+    elixirLibraries: toUniqueNonNoneArray(
+      stack.elixirLibraries,
+    ) as ProjectConfig["elixirLibraries"],
     aiDocs: toUniqueNonNoneArray(stack.aiDocs) as ProjectConfig["aiDocs"],
   };
 
@@ -2291,6 +2306,7 @@ function generateDotnetCommand(selection: StackSelectionInput, projectName: stri
     `--dotnet-job-queue ${selection.dotnetJobQueue}`,
     `--dotnet-realtime ${selection.dotnetRealtime}`,
     formatArrayFlag("dotnet-observability", selection.dotnetObservability),
+    `--dotnet-validation ${selection.dotnetValidation}`,
     `--dotnet-caching ${selection.dotnetCaching}`,
     `--dotnet-deploy ${selection.dotnetDeploy}`,
     formatArrayFlag("ai-docs", selection.aiDocs),
@@ -2320,6 +2336,7 @@ function generateElixirCommand(selection: StackSelectionInput, projectName: stri
     `--elixir-testing ${selection.elixirTesting}`,
     `--elixir-quality ${selection.elixirQuality}`,
     `--elixir-deploy ${selection.elixirDeploy}`,
+    formatArrayFlag("elixir-libraries", selection.elixirLibraries),
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];
 

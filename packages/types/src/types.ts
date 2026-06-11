@@ -114,12 +114,14 @@ import type {
   DotnetJobQueueSchema,
   DotnetRealtimeSchema,
   DotnetObservabilitySchema,
+  DotnetValidationSchema,
   DotnetCachingSchema,
   DotnetDeploySchema,
   ElixirWebFrameworkSchema,
   ElixirOrmSchema,
   ElixirAuthSchema,
   ElixirApiSchema,
+  ElixirLibrariesSchema,
   ElixirRealtimeSchema,
   ElixirJobsSchema,
   ElixirValidationSchema,
@@ -252,12 +254,14 @@ export type DotnetTesting = z.infer<typeof DotnetTestingSchema>;
 export type DotnetJobQueue = z.infer<typeof DotnetJobQueueSchema>;
 export type DotnetRealtime = z.infer<typeof DotnetRealtimeSchema>;
 export type DotnetObservability = z.infer<typeof DotnetObservabilitySchema>;
+export type DotnetValidation = z.infer<typeof DotnetValidationSchema>;
 export type DotnetCaching = z.infer<typeof DotnetCachingSchema>;
 export type DotnetDeploy = z.infer<typeof DotnetDeploySchema>;
 export type ElixirWebFramework = z.infer<typeof ElixirWebFrameworkSchema>;
 export type ElixirOrm = z.infer<typeof ElixirOrmSchema>;
 export type ElixirAuth = z.infer<typeof ElixirAuthSchema>;
 export type ElixirApi = z.infer<typeof ElixirApiSchema>;
+export type ElixirLibraries = z.infer<typeof ElixirLibrariesSchema>;
 export type ElixirRealtime = z.infer<typeof ElixirRealtimeSchema>;
 export type ElixirJobs = z.infer<typeof ElixirJobsSchema>;
 export type ElixirValidation = z.infer<typeof ElixirValidationSchema>;

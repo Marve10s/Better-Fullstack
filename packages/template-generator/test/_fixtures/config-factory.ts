@@ -116,6 +116,7 @@ const DEFAULT_CONFIG = {
   dotnetJobQueue: "none",
   dotnetRealtime: "none",
   dotnetObservability: [],
+  dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "none",
   elixirWebFramework: "none",
@@ -133,6 +134,7 @@ const DEFAULT_CONFIG = {
   elixirTesting: "none",
   elixirQuality: "none",
   elixirDeploy: "none",
+  elixirLibraries: [],
   aiDocs: [],
 };
 

@@ -199,6 +199,7 @@ export type CompatibilityInput = {
   dotnetJobQueue: string;
   dotnetRealtime: string;
   dotnetObservability: string[];
+  dotnetValidation: string;
   dotnetCaching: string;
   dotnetDeploy: string;
   elixirWebFramework: string;
@@ -216,6 +217,7 @@ export type CompatibilityInput = {
   elixirTesting: string;
   elixirQuality: string;
   elixirDeploy: string;
+  elixirLibraries: string[];
 };
 
 const DEFAULT_RUNTIME = "bun";

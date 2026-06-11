@@ -19,6 +19,7 @@ import {
   DotnetApiSchema,
   DotnetAuthSchema,
   DotnetCachingSchema,
+  DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
   DotnetObservabilitySchema,
@@ -31,6 +32,7 @@ import {
   ElixirAuthSchema,
   ElixirCachingSchema,
   ElixirDeploySchema,
+  ElixirLibrariesSchema,
   ElixirEmailSchema,
   ElixirHttpSchema,
   ElixirJobsSchema,
@@ -348,6 +350,9 @@ export const CreateCommandOptionsSchema = z.object({
     .array(DotnetObservabilitySchema)
     .optional()
     .describe(".NET observability/logging libraries"),
+  dotnetValidation: DotnetValidationSchema.optional().describe(
+    ".NET validation (fluentvalidation, data-annotations)",
+  ),
   dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching (redis, memory-cache, none)"),
   dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deploy target (docker, azure, aws, none)"),
   elixirWebFramework: ElixirWebFrameworkSchema.optional().describe(
@@ -381,6 +386,10 @@ export const CreateCommandOptionsSchema = z.object({
   elixirDeploy: ElixirDeploySchema.optional().describe(
     "Elixir deploy target (docker, fly, gigalixir, mix-release, none)",
   ),
+  elixirLibraries: z
+    .array(ElixirLibrariesSchema)
+    .optional()
+    .describe("Elixir libraries (broadway, nx)"),
   aiDocs: z
     .array(AiDocsSchema)
     .optional()

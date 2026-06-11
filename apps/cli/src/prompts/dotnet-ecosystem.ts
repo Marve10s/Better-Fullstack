@@ -2,6 +2,7 @@ import type {
   DotnetApi,
   DotnetAuth,
   DotnetCaching,
+  DotnetValidation,
   DotnetDeploy,
   DotnetJobQueue,
   DotnetObservability,
@@ -143,6 +144,20 @@ const OBSERVABILITY_OPTIONS: PromptOption<DotnetObservability>[] = [
   { value: "none", label: "None", hint: "No .NET observability libraries" },
 ];
 
+const VALIDATION_OPTIONS: PromptOption<DotnetValidation>[] = [
+  {
+    value: "fluentvalidation",
+    label: "FluentValidation",
+    hint: "Strongly-typed validator classes with a fluent API",
+  },
+  {
+    value: "data-annotations",
+    label: "Data Annotations",
+    hint: "Built-in attribute-based validation",
+  },
+  { value: "none", label: "None", hint: "No validation library" },
+];
+
 const CACHING_OPTIONS: PromptOption<DotnetCaching>[] = [
   { value: "redis", label: "StackExchange.Redis", hint: "Redis distributed caching" },
   { value: "memory-cache", label: "IMemoryCache", hint: "Built-in in-process cache" },
@@ -172,6 +187,8 @@ export const resolveDotnetRealtimePrompt = (value?: DotnetRealtime) =>
   createStaticSinglePromptResolution(REALTIME_OPTIONS, "signalr", value);
 export const resolveDotnetObservabilityPrompt = (value?: DotnetObservability[]) =>
   createStaticMultiPromptResolution(OBSERVABILITY_OPTIONS, ["serilog"], value);
+export const resolveDotnetValidationPrompt = (value?: DotnetValidation) =>
+  createStaticSinglePromptResolution(VALIDATION_OPTIONS, "none", value);
 export const resolveDotnetCachingPrompt = (value?: DotnetCaching) =>
   createStaticSinglePromptResolution(CACHING_OPTIONS, "none", value);
 export const resolveDotnetDeployPrompt = (value?: DotnetDeploy) =>
@@ -193,6 +210,8 @@ export const getDotnetRealtimeChoice = (value?: DotnetRealtime) =>
   makeChoice("Select .NET realtime", REALTIME_OPTIONS, "signalr", value);
 export const getDotnetObservabilityChoice = (value?: DotnetObservability[]) =>
   makeMultiChoice("Select .NET observability", OBSERVABILITY_OPTIONS, ["serilog"], value);
+export const getDotnetValidationChoice = (value?: DotnetValidation) =>
+  makeChoice("Select .NET validation", VALIDATION_OPTIONS, "none", value);
 export const getDotnetCachingChoice = (value?: DotnetCaching) =>
   makeChoice("Select .NET caching", CACHING_OPTIONS, "none", value);
 export const getDotnetDeployChoice = (value?: DotnetDeploy) =>

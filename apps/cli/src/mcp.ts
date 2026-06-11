@@ -20,6 +20,7 @@ import {
   DotnetApiSchema,
   DotnetAuthSchema,
   DotnetCachingSchema,
+  DotnetValidationSchema,
   DotnetDeploySchema,
   DotnetJobQueueSchema,
   DotnetObservabilitySchema,
@@ -32,6 +33,7 @@ import {
   ElixirAuthSchema,
   ElixirCachingSchema,
   ElixirDeploySchema,
+  ElixirLibrariesSchema,
   ElixirEmailSchema,
   ElixirHttpSchema,
   ElixirJobsSchema,
@@ -517,6 +519,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   dotnetJobQueue: "none",
   dotnetRealtime: "signalr",
   dotnetObservability: ["serilog"],
+  dotnetValidation: "none",
   dotnetCaching: "none",
   dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
@@ -534,6 +537,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   elixirTesting: "ex_unit",
   elixirQuality: "credo",
   elixirDeploy: "none",
+  elixirLibraries: [],
 } satisfies Partial<Record<keyof CompatibilityInput, string | string[]>>;
 
 const {
@@ -950,6 +954,7 @@ export async function startMcpServer() {
       .array(DotnetObservabilitySchema)
       .optional()
       .describe(".NET observability/logging libraries"),
+    dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
     dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
     dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
     elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
@@ -967,6 +972,7 @@ export async function startMcpServer() {
     elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
     elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
     elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+    elixirLibraries: z.array(ElixirLibrariesSchema).optional().describe("Elixir libraries"),
   };
 
   registerTool(

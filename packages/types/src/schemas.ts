@@ -670,6 +670,10 @@ export const DotnetObservabilitySchema = z
   .enum(["opentelemetry-dotnet", "serilog", "nlog", "health-checks", "none"])
   .describe(".NET observability and logging libraries");
 
+export const DotnetValidationSchema = z
+  .enum(["fluentvalidation", "data-annotations", "none"])
+  .describe(".NET validation library");
+
 export const DotnetCachingSchema = z
   .enum(["redis", "memory-cache", "none"])
   .describe(".NET caching library");
@@ -691,7 +695,13 @@ export const ElixirAuthSchema = z
   .enum(["phx-gen-auth", "ueberauth", "guardian", "none"])
   .describe("Elixir authentication library");
 
-export const ElixirApiSchema = z.enum(["rest", "absinthe", "none"]).describe("Elixir API layer");
+export const ElixirApiSchema = z
+  .enum(["rest", "absinthe", "grpc", "none"])
+  .describe("Elixir API layer");
+
+export const ElixirLibrariesSchema = z
+  .enum(["broadway", "nx", "none"])
+  .describe("Elixir application libraries");
 
 export const ElixirRealtimeSchema = z
   .enum(["channels", "presence", "pubsub", "live-view-streams", "none"])
@@ -969,6 +979,7 @@ export const CreateInputSchema = z.object({
   dotnetJobQueue: DotnetJobQueueSchema.optional(),
   dotnetRealtime: DotnetRealtimeSchema.optional(),
   dotnetObservability: z.array(DotnetObservabilitySchema).optional(),
+  dotnetValidation: DotnetValidationSchema.optional(),
   dotnetCaching: DotnetCachingSchema.optional(),
   dotnetDeploy: DotnetDeploySchema.optional(),
   // Elixir ecosystem options
@@ -987,6 +998,7 @@ export const CreateInputSchema = z.object({
   elixirTesting: ElixirTestingSchema.optional(),
   elixirQuality: ElixirQualitySchema.optional(),
   elixirDeploy: ElixirDeploySchema.optional(),
+  elixirLibraries: z.array(ElixirLibrariesSchema).optional(),
   // AI documentation files
   aiDocs: z.array(AiDocsSchema).optional(),
   part: z.array(z.string()).optional(),
@@ -1126,6 +1138,7 @@ export const ProjectConfigSchema = z.object({
   dotnetJobQueue: DotnetJobQueueSchema,
   dotnetRealtime: DotnetRealtimeSchema,
   dotnetObservability: z.array(DotnetObservabilitySchema),
+  dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
   // Elixir ecosystem options
@@ -1144,6 +1157,7 @@ export const ProjectConfigSchema = z.object({
   elixirTesting: ElixirTestingSchema,
   elixirQuality: ElixirQualitySchema,
   elixirDeploy: ElixirDeploySchema,
+  elixirLibraries: z.array(ElixirLibrariesSchema),
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
   stackParts: z
@@ -1278,6 +1292,7 @@ export const BetterTStackConfigSchema = z.object({
   dotnetJobQueue: DotnetJobQueueSchema,
   dotnetRealtime: DotnetRealtimeSchema,
   dotnetObservability: z.array(DotnetObservabilitySchema),
+  dotnetValidation: DotnetValidationSchema,
   dotnetCaching: DotnetCachingSchema,
   dotnetDeploy: DotnetDeploySchema,
   // Elixir ecosystem options
@@ -1296,6 +1311,7 @@ export const BetterTStackConfigSchema = z.object({
   elixirTesting: ElixirTestingSchema,
   elixirQuality: ElixirQualitySchema,
   elixirDeploy: ElixirDeploySchema,
+  elixirLibraries: z.array(ElixirLibrariesSchema),
   // AI documentation files
   aiDocs: z.array(AiDocsSchema),
   stackParts: z
@@ -1439,12 +1455,14 @@ export const DOTNET_TESTING_VALUES = DotnetTestingSchema.options;
 export const DOTNET_JOB_QUEUE_VALUES = DotnetJobQueueSchema.options;
 export const DOTNET_REALTIME_VALUES = DotnetRealtimeSchema.options;
 export const DOTNET_OBSERVABILITY_VALUES = DotnetObservabilitySchema.options;
+export const DOTNET_VALIDATION_VALUES = DotnetValidationSchema.options;
 export const DOTNET_CACHING_VALUES = DotnetCachingSchema.options;
 export const DOTNET_DEPLOY_VALUES = DotnetDeploySchema.options;
 export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
 export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
 export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;
 export const ELIXIR_API_VALUES = ElixirApiSchema.options;
+export const ELIXIR_LIBRARIES_VALUES = ElixirLibrariesSchema.options;
 export const ELIXIR_REALTIME_VALUES = ElixirRealtimeSchema.options;
 export const ELIXIR_JOBS_VALUES = ElixirJobsSchema.options;
 export const ELIXIR_VALIDATION_VALUES = ElixirValidationSchema.options;

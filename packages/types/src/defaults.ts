@@ -120,6 +120,7 @@ export function createCliDefaultProjectConfigBase(
     dotnetJobQueue: "none",
     dotnetRealtime: "signalr",
     dotnetObservability: ["serilog"],
+    dotnetValidation: "none",
     dotnetCaching: "none",
     dotnetDeploy: "docker",
     elixirWebFramework: "phoenix",
@@ -137,6 +138,7 @@ export function createCliDefaultProjectConfigBase(
     elixirTesting: "ex_unit",
     elixirQuality: "credo",
     elixirDeploy: "none",
+    elixirLibraries: [],
     aiDocs: ["claude-md"],
   };
 }

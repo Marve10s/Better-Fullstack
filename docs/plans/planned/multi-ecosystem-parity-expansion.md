@@ -136,9 +136,11 @@ Existing-category depth:
 
 ## Batch 5 — Elixir + .NET follow-ups (Tier 2)
 
-- [ ] `elixirApi` += `grpc` (grpc-elixir)
-- [ ] `elixirLibraries` (new multi-select): `broadway` (data ingestion), `nx` (Numerical Elixir)
-- [ ] `dotnetValidation` (new): `fluentvalidation`, `data-annotations`
+- [x] `elixirApi` += `grpc` (grpc-elixir endpoint; ent-style protoc codegen flow) ✅ 2026-06-11
+- [x] `elixirLibraries` (new multi-select): `broadway` (DummyProducer pipeline), `nx` (Numerics
+      module) ✅ 2026-06-11
+- [x] `dotnetValidation` (new): `fluentvalidation` (validator class), `data-annotations`
+      (attribute-validated model) ✅ 2026-06-11
 
 ## Batch 6 — Kotlin (new language)
 

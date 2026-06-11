@@ -23,6 +23,7 @@ import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
   getDotnetCachingChoice,
+  getDotnetValidationChoice,
   getDotnetDeployChoice,
   getDotnetJobQueueChoice,
   getDotnetObservabilityChoice,
@@ -36,6 +37,7 @@ import {
   getElixirAuthChoice,
   getElixirCachingChoice,
   getElixirDeployChoice,
+  getElixirLibrariesChoice,
   getElixirEmailChoice,
   getElixirHttpChoice,
   getElixirJobsChoice,
@@ -556,6 +558,10 @@ export async function gatherMultiEcosystemConfig(
       dotnetWebFramework === "none"
         ? []
         : promptValue(await getDotnetObservabilityChoice(flags.dotnetObservability));
+    const dotnetValidation =
+      dotnetWebFramework === "none"
+        ? "none"
+        : promptValue(await getDotnetValidationChoice(flags.dotnetValidation));
     const dotnetCaching =
       dotnetWebFramework === "none"
         ? "none"
@@ -573,6 +579,7 @@ export async function gatherMultiEcosystemConfig(
       dotnetJobQueue,
       dotnetRealtime,
       dotnetObservability,
+      dotnetValidation,
       dotnetCaching,
       dotnetDeploy,
     });
@@ -595,6 +602,9 @@ export async function gatherMultiEcosystemConfig(
       if (observability !== "none") {
         stackPartSpecs.push(`backend.observability:dotnet:${observability}`);
       }
+    }
+    if (dotnetValidation !== "none") {
+      stackPartSpecs.push(`backend.validation:dotnet:${dotnetValidation}`);
     }
     if (dotnetCaching !== "none") {
       stackPartSpecs.push(`backend.caching:dotnet:${dotnetCaching}`);
@@ -667,6 +677,10 @@ export async function gatherMultiEcosystemConfig(
       elixirWebFramework === "none"
         ? "none"
         : promptValue(await getElixirDeployChoice(flags.elixirDeploy));
+    const elixirLibraries =
+      elixirWebFramework === "none"
+        ? []
+        : promptValue(await getElixirLibrariesChoice(flags.elixirLibraries));
     Object.assign(backendChoices, {
       elixirWebFramework,
       elixirOrm,
@@ -683,6 +697,7 @@ export async function gatherMultiEcosystemConfig(
       elixirTesting,
       elixirQuality,
       elixirDeploy,
+      elixirLibraries,
     });
     if (elixirWebFramework !== "none") {
       stackPartSpecs.push(`backend:elixir:${elixirWebFramework}`);
@@ -701,6 +716,9 @@ export async function gatherMultiEcosystemConfig(
     }
     if (elixirTesting !== "none") stackPartSpecs.push(`backend.testing:elixir:${elixirTesting}`);
     if (elixirDeploy !== "none") stackPartSpecs.push(`backend.deploy:elixir:${elixirDeploy}`);
+    for (const library of elixirLibraries) {
+      if (library !== "none") stackPartSpecs.push(`backend.libraries:elixir:${library}`);
+    }
   }
 
   if (database !== "none") stackPartSpecs.push(`database:universal:${database}`);

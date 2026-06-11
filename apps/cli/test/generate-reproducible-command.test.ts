@@ -113,6 +113,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     dotnetJobQueue: "none",
     dotnetRealtime: "signalr",
     dotnetObservability: ["serilog"],
+    dotnetValidation: "none",
     dotnetCaching: "none",
     dotnetDeploy: "docker",
     aiDocs: ["claude-md"],
@@ -529,6 +530,7 @@ describe("generateReproducibleCommand", () => {
         "--dotnet-job-queue hangfire " +
         "--dotnet-realtime signalr " +
         "--dotnet-observability serilog health-checks " +
+        "--dotnet-validation none " +
         "--dotnet-caching redis " +
         "--dotnet-deploy docker " +
         "--ai-docs claude-md " +

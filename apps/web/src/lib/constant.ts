@@ -4359,6 +4359,7 @@ export const TECH_OPTIONS: Record<
   elixirApi: [
     { id: "rest", name: "Phoenix REST", description: "JSON controllers and resources", icon: "", color: "from-sky-500 to-cyan-600", default: true },
     { id: "absinthe", name: "Absinthe GraphQL", description: "GraphQL schema and resolvers", icon: "https://cdn.simpleicons.org/graphql/E10098", color: "from-pink-500 to-violet-600" },
+    { id: "grpc", name: "gRPC", description: "grpc-elixir endpoint (run protoc codegen for stubs)", icon: "https://cdn.simpleicons.org/elixir/4B275F", color: "from-purple-500 to-violet-600", isNew: true },
     { id: "none", name: "No API", description: "Skip API routes", icon: "", color: "from-gray-400 to-gray-600" },
   ],
   elixirRealtime: [
@@ -4821,6 +4822,32 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  elixirLibraries: [
+    {
+      id: "broadway",
+      name: "Broadway",
+      description: "Data ingestion pipelines (Kafka, SQS, RabbitMQ)",
+      icon: "https://cdn.simpleicons.org/elixir/4B275F",
+      color: "from-purple-500 to-violet-600",
+      default: false,
+    },
+    {
+      id: "nx",
+      name: "Nx",
+      description: "Numerical Elixir: tensors and ML on the BEAM",
+      icon: "https://cdn.simpleicons.org/elixir/4B275F",
+      color: "from-indigo-500 to-purple-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Extra Libraries",
+      description: "Skip Elixir library selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   // .NET ecosystem options
   dotnetWebFramework: [
     {
@@ -5116,6 +5143,32 @@ export const TECH_OPTIONS: Record<
       icon: "",
       color: "from-gray-400 to-gray-600",
       default: false,
+    },
+  ],
+  dotnetValidation: [
+    {
+      id: "fluentvalidation",
+      name: "FluentValidation",
+      description: "Strongly-typed validator classes with a fluent API",
+      icon: "https://cdn.simpleicons.org/dotnet/512BD4",
+      color: "from-violet-500 to-purple-600",
+      default: false,
+    },
+    {
+      id: "data-annotations",
+      name: "Data Annotations",
+      description: "Built-in attribute-based validation",
+      icon: "https://cdn.simpleicons.org/dotnet/512BD4",
+      color: "from-blue-500 to-indigo-600",
+      default: false,
+    },
+    {
+      id: "none",
+      name: "No Validation Library",
+      description: "Skip .NET validation selection",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
     },
   ],
   dotnetCaching: [

@@ -1003,6 +1003,7 @@ function getDotnetFlags(config: ProjectConfig) {
   flags.push(`--dotnet-job-queue ${config.dotnetJobQueue}`);
   flags.push(`--dotnet-realtime ${config.dotnetRealtime}`);
   flags.push(formatArrayFlag("dotnet-observability", config.dotnetObservability));
+  flags.push(`--dotnet-validation ${config.dotnetValidation}`);
   flags.push(`--dotnet-caching ${config.dotnetCaching}`);
   flags.push(`--dotnet-deploy ${config.dotnetDeploy}`);
 
@@ -1029,6 +1030,7 @@ function getElixirFlags(config: ProjectConfig) {
   flags.push(`--elixir-testing ${config.elixirTesting}`);
   flags.push(`--elixir-quality ${config.elixirQuality}`);
   flags.push(`--elixir-deploy ${config.elixirDeploy}`);
+  flags.push(formatArrayFlag("elixir-libraries", config.elixirLibraries));
 
   appendCommonFlags(flags, config);
 

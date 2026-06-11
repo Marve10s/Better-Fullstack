@@ -1283,6 +1283,26 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://google.github.io/adk-docs/",
     githubUrl: "https://github.com/google/adk-python",
   },
+  grpc: {
+    docsUrl: "https://hexdocs.pm/grpc/",
+    githubUrl: "https://github.com/elixir-grpc/grpc",
+  },
+  broadway: {
+    docsUrl: "https://hexdocs.pm/broadway/",
+    githubUrl: "https://github.com/dashbitco/broadway",
+  },
+  nx: {
+    docsUrl: "https://hexdocs.pm/nx/",
+    githubUrl: "https://github.com/elixir-nx/nx",
+  },
+  fluentvalidation: {
+    docsUrl: "https://docs.fluentvalidation.net/",
+    githubUrl: "https://github.com/FluentValidation/FluentValidation",
+  },
+  "data-annotations": {
+    docsUrl:
+      "https://learn.microsoft.com/dotnet/api/system.componentmodel.dataannotations",
+  },
   jooq: {
     docsUrl: "https://www.jooq.org/doc/latest/manual/",
     githubUrl: "https://github.com/jOOQ/jOOQ",

@@ -51,6 +51,16 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirJobs "oban")}}
       {:oban, "~> 2.19"},
 {{/if}}
+{{#if (eq elixirApi "grpc")}}
+      {:grpc, "~> 0.11"},
+      {:protobuf, "~> 0.15"},
+{{/if}}
+{{#if (includes elixirLibraries "broadway")}}
+      {:broadway, "~> 1.3"},
+{{/if}}
+{{#if (includes elixirLibraries "nx")}}
+      {:nx, "~> 0.12"},
+{{/if}}
 {{#if (eq elixirJobs "quantum")}}
       {:quantum, "~> 3.5"},
 {{/if}}

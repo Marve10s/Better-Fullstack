@@ -20,6 +20,9 @@
 {{#if (eq dotnetApi "graphql-hotchocolate")}}
     <PackageReference Include="HotChocolate.AspNetCore" Version="16.0.0" />
 {{/if}}
+{{#if (eq dotnetValidation "fluentvalidation")}}
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+{{/if}}
 {{#if (eq dotnetApi "grpc-dotnet")}}
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
 {{/if}}

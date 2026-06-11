@@ -3,6 +3,7 @@ import type {
   ElixirAuth,
   ElixirCaching,
   ElixirDeploy,
+  ElixirLibraries,
   ElixirEmail,
   ElixirHttp,
   ElixirJobs,
@@ -17,8 +18,12 @@ import type {
 } from "../types";
 
 import { exitCancelled } from "../utils/errors";
-import { createStaticSinglePromptResolution, type PromptOption } from "./prompt-contract";
-import { isCancel, navigableSelect } from "./navigable";
+import {
+  createStaticMultiPromptResolution,
+  createStaticSinglePromptResolution,
+  type PromptOption,
+} from "./prompt-contract";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 function makeChoice<T extends string>(
   message: string,
@@ -34,6 +39,26 @@ function makeChoice<T extends string>(
     options: resolution.options,
     initialValue: resolution.initialValue as T,
   }).then((response) => (isCancel(response) ? exitCancelled("Operation cancelled") : response));
+}
+
+function makeMultiChoice<T extends string>(
+  message: string,
+  options: PromptOption<T>[],
+  defaultValue: T[],
+  value?: T[],
+) {
+  const resolution = createStaticMultiPromptResolution(options, defaultValue, value);
+  if (!resolution.shouldPrompt) return Promise.resolve(resolution.autoValue ?? defaultValue);
+
+  return navigableMultiselect<T>({
+    message,
+    options: resolution.options,
+    required: false,
+    initialValues: resolution.initialValue,
+  }).then((response) => {
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+    return response.includes("none" as T) ? [] : response;
+  });
 }
 
 const WEB_FRAMEWORK_OPTIONS: PromptOption<ElixirWebFramework>[] = [
@@ -58,7 +83,14 @@ const AUTH_OPTIONS: PromptOption<ElixirAuth>[] = [
 const API_OPTIONS: PromptOption<ElixirApi>[] = [
   { value: "rest", label: "Phoenix REST", hint: "Controllers and JSON endpoints" },
   { value: "absinthe", label: "Absinthe GraphQL", hint: "GraphQL schema and resolvers" },
+  { value: "grpc", label: "gRPC", hint: "grpc-elixir endpoint (run protoc codegen for stubs)" },
   { value: "none", label: "None", hint: "No API layer" },
+];
+
+const LIBRARY_OPTIONS: PromptOption<ElixirLibraries>[] = [
+  { value: "broadway", label: "Broadway", hint: "Data ingestion pipelines (Kafka, SQS, RabbitMQ)" },
+  { value: "nx", label: "Nx", hint: "Numerical Elixir: tensors and ML on the BEAM" },
+  { value: "none", label: "None", hint: "No extra libraries" },
 ];
 
 const REALTIME_OPTIONS: PromptOption<ElixirRealtime>[] = [
@@ -193,3 +225,6 @@ export const getElixirQualityChoice = (value?: ElixirQuality) =>
   makeChoice("Select Elixir code quality", QUALITY_OPTIONS, "credo", value);
 export const getElixirDeployChoice = (value?: ElixirDeploy) =>
   makeChoice("Select Elixir deploy target", DEPLOY_OPTIONS, "none", value);
+
+export const getElixirLibrariesChoice = (value?: ElixirLibraries[]) =>
+  makeMultiChoice("Select Elixir libraries", LIBRARY_OPTIONS, [], value);

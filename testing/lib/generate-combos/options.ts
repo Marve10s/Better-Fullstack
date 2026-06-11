@@ -15,6 +15,7 @@ import {
   DATABASE_VALUES,
   EFFECT_VALUES,
   ELIXIR_API_VALUES,
+  ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
   ELIXIR_DEPLOY_VALUES,
@@ -555,6 +556,7 @@ function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
         ? sampleScalar(ELIXIR_QUALITY_VALUES, 0.25, "elixirQuality")
         : "none",
       elixirDeploy: usesPhoenix
+      elixirLibraries: usesPhoenix ? sampleArray(ELIXIR_LIBRARIES_VALUES, 0.5, 2, "elixirLibraries") : [],
         ? sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy")
         : "none",
     },
@@ -689,6 +691,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     elixirTesting: "none",
     elixirQuality: "none",
     elixirDeploy: "none",
+    elixirLibraries: [],
     aiDocs: [],
     packageManager: "bun",
     git: false,

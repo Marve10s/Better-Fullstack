@@ -34,6 +34,7 @@ import {
   DATABASE_SETUP_VALUES,
   DOTNET_API_VALUES,
   DOTNET_AUTH_VALUES,
+  DOTNET_VALIDATION_VALUES,
   DOTNET_CACHING_VALUES,
   DOTNET_DEPLOY_VALUES,
   DOTNET_JOB_QUEUE_VALUES,
@@ -43,6 +44,7 @@ import {
   DOTNET_TESTING_VALUES,
   DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
+  ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
   ELIXIR_DEPLOY_VALUES,
@@ -314,7 +316,7 @@ const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
   go: { testing: "goTesting" },
   java: { libraries: "javaLibraries", testing: "javaTestingLibraries" },
   dotnet: { testing: "dotnetTesting", observability: "dotnetObservability" },
-  elixir: {},
+  elixir: { libraries: "elixirLibraries" },
 } as const satisfies Record<
   LegacyBackendEcosystem,
   Partial<Record<StackPartRole, keyof ProjectConfig>>
@@ -360,6 +362,7 @@ const LEGACY_ARRAY_CATEGORIES = new Set<keyof ProjectConfig>([
   "goTesting",
   "pythonTesting",
   "pythonCli",
+  "elixirLibraries",
 ]);
 
 export type AddonStackPartBinding = {
@@ -567,6 +570,7 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     realtime: "dotnetRealtime",
     caching: "dotnetCaching",
     deploy: "dotnetDeploy",
+    validation: "dotnetValidation",
   },
   elixir: {
     realtime: "elixirRealtime",
@@ -796,12 +800,16 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(DOTNET_OBSERVABILITY_VALUES, "observability", "dotnet", "dotnetObservability", {
     allowMultiple: true,
   }),
+  ...defineTools(DOTNET_VALIDATION_VALUES, "validation", "dotnet", "dotnetValidation"),
   ...defineTools(DOTNET_CACHING_VALUES, "caching", "dotnet", "dotnetCaching"),
   ...defineTools(DOTNET_DEPLOY_VALUES, "deploy", "dotnet", "dotnetDeploy"),
   ...defineTools(ELIXIR_WEB_FRAMEWORK_VALUES, "backend", "elixir", "elixirWebFramework"),
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
   ...defineTools(ELIXIR_API_VALUES, "api", "elixir", "elixirApi"),
+  ...defineTools(ELIXIR_LIBRARIES_VALUES, "libraries", "elixir", "elixirLibraries", {
+    allowMultiple: true,
+  }),
   ...defineTools(ELIXIR_REALTIME_VALUES, "realtime", "elixir", "elixirRealtime"),
   ...defineTools(ELIXIR_JOBS_VALUES, "jobQueue", "elixir", "elixirJobs"),
   ...defineTools(ELIXIR_VALIDATION_VALUES, "validation", "elixir", "elixirValidation"),

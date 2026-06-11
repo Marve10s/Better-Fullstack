@@ -566,6 +566,7 @@ export async function createVirtual(
         options.dotnetRealtime || (options.ecosystem === "dotnet" ? "signalr" : "none"),
       dotnetObservability:
         options.dotnetObservability || (options.ecosystem === "dotnet" ? ["serilog"] : []),
+      dotnetValidation: options.dotnetValidation || "none",
       dotnetCaching: options.dotnetCaching || "none",
       dotnetDeploy: options.dotnetDeploy || (options.ecosystem === "dotnet" ? "docker" : "none"),
       elixirWebFramework:
@@ -587,6 +588,7 @@ export async function createVirtual(
       elixirTesting: options.elixirTesting || (options.ecosystem === "elixir" ? "ex_unit" : "none"),
       elixirQuality: options.elixirQuality || (options.ecosystem === "elixir" ? "credo" : "none"),
       elixirDeploy: options.elixirDeploy || "none",
+      elixirLibraries: options.elixirLibraries || [],
       // AI documentation files
       aiDocs: options.aiDocs || ["claude-md"],
     };
