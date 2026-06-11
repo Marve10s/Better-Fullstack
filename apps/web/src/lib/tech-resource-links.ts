@@ -1283,6 +1283,26 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://google.github.io/adk-docs/",
     githubUrl: "https://github.com/google/adk-python",
   },
+  torii: {
+    docsUrl: "https://docs.rs/torii",
+    githubUrl: "https://github.com/cmackenzie1/torii-rs",
+  },
+  "tokio-tungstenite": {
+    docsUrl: "https://docs.rs/tokio-tungstenite",
+    githubUrl: "https://github.com/snapview/tokio-tungstenite",
+  },
+  lapin: {
+    docsUrl: "https://docs.rs/lapin",
+    githubUrl: "https://github.com/amqp-rs/lapin",
+  },
+  askama: {
+    docsUrl: "https://askama.readthedocs.io/",
+    githubUrl: "https://github.com/askama-rs/askama",
+  },
+  tera: {
+    docsUrl: "https://keats.github.io/tera/docs/",
+    githubUrl: "https://github.com/Keats/tera",
+  },
   starlette: {
     docsUrl: "https://www.starlette.io/",
     githubUrl: "https://github.com/encode/starlette",

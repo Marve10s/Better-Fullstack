@@ -99,15 +99,19 @@ Existing-category depth:
 
 New categories:
 
-- [ ] `rustRealtime`: `tokio-tungstenite`
-- [ ] `rustMessageQueue` (jobQueue role): `lapin` (RabbitMQ), `rdkafka` (Kafka)
-- [ ] `rustObservability`: `opentelemetry`
-- [ ] `rustTemplating`: `askama` (compile-time), `tera` (runtime)
+- [x] `rustRealtime`: `tokio-tungstenite` ✅ 2026-06-11
+- [x] `rustMessageQueue` (jobQueue role): `lapin` (RabbitMQ) ✅ 2026-06-11 —
+      `rdkafka` DEFERRED: requires a native librdkafka/cmake toolchain in every smoke lane
+      (compiles C via cmake-build); revisit when the lanes install cmake
+- [x] `rustObservability`: `opentelemetry` ✅ 2026-06-11
+- [x] `rustTemplating`: `askama` (compile-time), `tera` (runtime; new `templating` graph role) ✅ 2026-06-11
 
 Existing-category depth:
 
-- [ ] `rustWebFramework` += `loco` ("Rails of Rust"), `poem`
-- [ ] `rustAuth` += `torii` (OAuth/OIDC, passkeys, magic links)
+- [x] `rustAuth` += `torii` (passwords/sessions via SQLite storage) ✅ 2026-06-11
+- [ ] `rustWebFramework` += `loco`, `poem` — DEFERRED: every framework value needs a full branch
+      in the 1,100-line `main.rs.hbs` plus async-graphql/auth/email/ORM-CRUD integrations
+      (loco additionally imposes its own Rails-style project layout)
 
 Note: Rust testing is already covered as `rustLibraries` entries (tokio-test, mockall, proptest,
 insta) — no new category; do not duplicate.

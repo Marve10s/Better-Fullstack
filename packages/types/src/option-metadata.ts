@@ -101,6 +101,10 @@ import {
   RUST_ERROR_HANDLING_VALUES,
   RUST_CACHING_VALUES,
   RUST_AUTH_VALUES,
+  RUST_REALTIME_VALUES,
+  RUST_MESSAGE_QUEUE_VALUES,
+  RUST_OBSERVABILITY_VALUES,
+  RUST_TEMPLATING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -190,6 +194,10 @@ export type OptionCategory =
   | "rustErrorHandling"
   | "rustCaching"
   | "rustAuth"
+  | "rustRealtime"
+  | "rustMessageQueue"
+  | "rustObservability"
+  | "rustTemplating"
   | "pythonWebFramework"
   | "pythonOrm"
   | "pythonValidation"
@@ -341,6 +349,10 @@ export const RUST_CATEGORY_ORDER = [
   "rustErrorHandling",
   "rustCaching",
   "rustAuth",
+  "rustRealtime",
+  "rustMessageQueue",
+  "rustObservability",
+  "rustTemplating",
   "email",
   "observability",
   "caching",
@@ -506,6 +518,10 @@ export function getCategoryDisplayName(categoryKey: string): string {
     rustErrorHandling: "Rust Error Handling",
     rustCaching: "Rust Caching",
     rustAuth: "Rust Auth",
+    rustRealtime: "Rust Realtime",
+    rustMessageQueue: "Rust Message Queue",
+    rustObservability: "Rust Observability",
+    rustTemplating: "Rust Templating",
     pythonWebFramework: "Python Web Framework",
     pythonOrm: "Python ORM / Database",
     pythonValidation: "Python Validation",
@@ -755,6 +771,10 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rustErrorHandling: RUST_ERROR_HANDLING_VALUES,
   rustCaching: RUST_CACHING_VALUES,
   rustAuth: RUST_AUTH_VALUES,
+  rustRealtime: RUST_REALTIME_VALUES,
+  rustMessageQueue: RUST_MESSAGE_QUEUE_VALUES,
+  rustObservability: RUST_OBSERVABILITY_VALUES,
+  rustTemplating: RUST_TEMPLATING_VALUES,
   pythonWebFramework: PYTHON_WEB_FRAMEWORK_VALUES,
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
@@ -1165,6 +1185,20 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   rustAuth: {
     oauth2: "OAuth2",
+    torii: "Torii",
+  },
+  rustRealtime: {
+    "tokio-tungstenite": "tokio-tungstenite",
+  },
+  rustMessageQueue: {
+    lapin: "Lapin (RabbitMQ)",
+  },
+  rustObservability: {
+    opentelemetry: "OpenTelemetry",
+  },
+  rustTemplating: {
+    askama: "Askama",
+    tera: "Tera",
   },
   pythonWebFramework: {
     fastapi: "FastAPI",
@@ -1603,6 +1637,10 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rustErrorHandling: buildCategoryMetadata("rustErrorHandling"),
   rustCaching: buildCategoryMetadata("rustCaching"),
   rustAuth: buildCategoryMetadata("rustAuth"),
+  rustRealtime: buildCategoryMetadata("rustRealtime"),
+  rustMessageQueue: buildCategoryMetadata("rustMessageQueue"),
+  rustObservability: buildCategoryMetadata("rustObservability"),
+  rustTemplating: buildCategoryMetadata("rustTemplating"),
   pythonWebFramework: buildCategoryMetadata("pythonWebFramework"),
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),

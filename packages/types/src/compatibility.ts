@@ -153,6 +153,10 @@ export type CompatibilityInput = {
   rustErrorHandling: string;
   rustCaching: string;
   rustAuth: string;
+  rustRealtime: string;
+  rustMessageQueue: string;
+  rustObservability: string;
+  rustTemplating: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -2809,6 +2813,35 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     ownerRole: "backend",
     ownerEcosystem: "java",
     currentEcosystem: "java",
+  },
+  rustRealtime: {
+    role: "realtime",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+  },
+  rustMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+  },
+  rustObservability: {
+    role: "observability",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    candidateIdPrefix: "candidate:native",
+  },
+  rustTemplating: {
+    role: "templating",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
   },
   pythonTesting: {
     role: "testing",

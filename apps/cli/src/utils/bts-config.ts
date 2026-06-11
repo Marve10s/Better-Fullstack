@@ -39,6 +39,10 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.rustErrorHandling = "none";
     normalized.rustCaching = "none";
     normalized.rustAuth = "none";
+    normalized.rustRealtime = "none";
+    normalized.rustMessageQueue = "none";
+    normalized.rustObservability = "none";
+    normalized.rustTemplating = "none";
   }
 
   if (!selectedEcosystems.has("python")) {
@@ -301,6 +305,10 @@ function buildBtsConfigForPersistence(
     rustErrorHandling: persistedConfig.rustErrorHandling,
     rustCaching: persistedConfig.rustCaching,
     rustAuth: persistedConfig.rustAuth,
+    rustRealtime: persistedConfig.rustRealtime,
+    rustMessageQueue: persistedConfig.rustMessageQueue,
+    rustObservability: persistedConfig.rustObservability,
+    rustTemplating: persistedConfig.rustTemplating,
     pythonWebFramework: persistedConfig.pythonWebFramework,
     pythonOrm: persistedConfig.pythonOrm,
     pythonValidation: persistedConfig.pythonValidation,
@@ -450,6 +458,10 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     rustErrorHandling: btsConfig.rustErrorHandling,
     rustCaching: btsConfig.rustCaching,
     rustAuth: btsConfig.rustAuth,
+    rustRealtime: btsConfig.rustRealtime,
+    rustMessageQueue: btsConfig.rustMessageQueue,
+    rustObservability: btsConfig.rustObservability,
+    rustTemplating: btsConfig.rustTemplating,
     pythonWebFramework: btsConfig.pythonWebFramework,
     pythonOrm: btsConfig.pythonOrm,
     pythonValidation: btsConfig.pythonValidation,

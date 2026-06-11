@@ -109,6 +109,10 @@ import {
   RUST_API_VALUES,
   RUST_AUTH_VALUES,
   RUST_CACHING_VALUES,
+  RUST_REALTIME_VALUES,
+  RUST_MESSAGE_QUEUE_VALUES,
+  RUST_OBSERVABILITY_VALUES,
+  RUST_TEMPLATING_VALUES,
   RUST_CLI_VALUES,
   RUST_ERROR_HANDLING_VALUES,
   RUST_FRONTEND_VALUES,
@@ -514,6 +518,9 @@ function isNativeEcosystemBackendServiceTool(
     if (part.ecosystem === "python") {
       return (PYTHON_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
     }
+    if (part.ecosystem === "rust") {
+      return (RUST_OBSERVABILITY_VALUES as readonly string[]).includes(part.toolId);
+    }
   }
 
   return false;
@@ -529,6 +536,10 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     cli: "rustCli",
     logging: "rustLogging",
     errorHandling: "rustErrorHandling",
+    realtime: "rustRealtime",
+    jobQueue: "rustMessageQueue",
+    observability: "rustObservability",
+    templating: "rustTemplating",
   },
   python: {
     validation: "pythonValidation",
@@ -716,6 +727,10 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
   ...defineTools(RUST_API_VALUES, "api", "rust", "rustApi"),
   ...defineTools(RUST_AUTH_VALUES, "auth", "rust", "rustAuth"),
+  ...defineTools(RUST_REALTIME_VALUES, "realtime", "rust", "rustRealtime"),
+  ...defineTools(RUST_MESSAGE_QUEUE_VALUES, "jobQueue", "rust", "rustMessageQueue"),
+  ...defineTools(RUST_OBSERVABILITY_VALUES, "observability", "rust", "rustObservability"),
+  ...defineTools(RUST_TEMPLATING_VALUES, "templating", "rust", "rustTemplating"),
   ...defineTools(RUST_CLI_VALUES, "cli", "rust", "rustCli"),
   ...defineTools(RUST_LIBRARIES_VALUES, "libraries", "rust", "rustLibraries", {
     allowMultiple: true,

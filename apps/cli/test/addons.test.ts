@@ -522,6 +522,10 @@ describe("Addon Configurations", () => {
           rustErrorHandling: "anyhow-thiserror",
           rustCaching: "none",
           rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
           install: false,
         });
 
@@ -553,6 +557,10 @@ describe("Addon Configurations", () => {
           rustErrorHandling: "anyhow-thiserror",
           rustCaching: "none",
           rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
           install: false,
         });
 
@@ -579,6 +587,10 @@ describe("Addon Configurations", () => {
           rustErrorHandling: "anyhow-thiserror",
           rustCaching: "none",
           rustAuth: "none",
+          rustRealtime: "none",
+          rustMessageQueue: "none",
+          rustObservability: "none",
+          rustTemplating: "none",
           expectError: true,
         });
 

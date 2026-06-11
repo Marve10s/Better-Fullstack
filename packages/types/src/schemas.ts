@@ -60,6 +60,7 @@ export const StackPartRoleSchema = z
     "httpClient",
     "libraries",
     "config",
+    "templating",
   ])
   .describe("Role a selected tool plays in the stack graph");
 
@@ -438,7 +439,25 @@ export const RustErrorHandlingSchema = z
 
 export const RustCachingSchema = z.enum(["moka", "redis", "none"]).describe("Rust caching library");
 
-export const RustAuthSchema = z.enum(["oauth2", "none"]).describe("Rust authentication library");
+export const RustAuthSchema = z
+  .enum(["oauth2", "torii", "none"])
+  .describe("Rust authentication library");
+
+export const RustRealtimeSchema = z
+  .enum(["tokio-tungstenite", "none"])
+  .describe("Rust realtime/WebSocket library");
+
+export const RustMessageQueueSchema = z
+  .enum(["lapin", "none"])
+  .describe("Rust message queue library");
+
+export const RustObservabilitySchema = z
+  .enum(["opentelemetry", "none"])
+  .describe("Rust observability/tracing library");
+
+export const RustTemplatingSchema = z
+  .enum(["askama", "tera", "none"])
+  .describe("Rust template engine");
 
 // Python ecosystem schemas
 export const PythonWebFrameworkSchema = z
@@ -890,6 +909,10 @@ export const CreateInputSchema = z.object({
   rustErrorHandling: RustErrorHandlingSchema.optional(),
   rustCaching: RustCachingSchema.optional(),
   rustAuth: RustAuthSchema.optional(),
+  rustRealtime: RustRealtimeSchema.optional(),
+  rustMessageQueue: RustMessageQueueSchema.optional(),
+  rustObservability: RustObservabilitySchema.optional(),
+  rustTemplating: RustTemplatingSchema.optional(),
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema.optional(),
   pythonOrm: PythonOrmSchema.optional(),
@@ -1041,6 +1064,10 @@ export const ProjectConfigSchema = z.object({
   rustErrorHandling: RustErrorHandlingSchema,
   rustCaching: RustCachingSchema,
   rustAuth: RustAuthSchema,
+  rustRealtime: RustRealtimeSchema,
+  rustMessageQueue: RustMessageQueueSchema,
+  rustObservability: RustObservabilitySchema,
+  rustTemplating: RustTemplatingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -1187,6 +1214,10 @@ export const BetterTStackConfigSchema = z.object({
   rustErrorHandling: RustErrorHandlingSchema,
   rustCaching: RustCachingSchema,
   rustAuth: RustAuthSchema,
+  rustRealtime: RustRealtimeSchema,
+  rustMessageQueue: RustMessageQueueSchema,
+  rustObservability: RustObservabilitySchema,
+  rustTemplating: RustTemplatingSchema,
   // Python ecosystem options
   pythonWebFramework: PythonWebFrameworkSchema,
   pythonOrm: PythonOrmSchema,
@@ -1346,6 +1377,10 @@ export const RUST_LOGGING_VALUES = RustLoggingSchema.options;
 export const RUST_ERROR_HANDLING_VALUES = RustErrorHandlingSchema.options;
 export const RUST_CACHING_VALUES = RustCachingSchema.options;
 export const RUST_AUTH_VALUES = RustAuthSchema.options;
+export const RUST_REALTIME_VALUES = RustRealtimeSchema.options;
+export const RUST_MESSAGE_QUEUE_VALUES = RustMessageQueueSchema.options;
+export const RUST_OBSERVABILITY_VALUES = RustObservabilitySchema.options;
+export const RUST_TEMPLATING_VALUES = RustTemplatingSchema.options;
 export const PYTHON_WEB_FRAMEWORK_VALUES = PythonWebFrameworkSchema.options;
 export const PYTHON_ORM_VALUES = PythonOrmSchema.options;
 export const PYTHON_VALIDATION_VALUES = PythonValidationSchema.options;

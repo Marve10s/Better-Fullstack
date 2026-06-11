@@ -916,6 +916,10 @@ function getRustFlags(config: ProjectConfig) {
   flags.push(`--rust-error-handling ${config.rustErrorHandling}`);
   flags.push(`--rust-caching ${config.rustCaching}`);
   flags.push(`--rust-auth ${config.rustAuth}`);
+  flags.push(`--rust-realtime ${config.rustRealtime}`);
+  flags.push(`--rust-message-queue ${config.rustMessageQueue}`);
+  flags.push(`--rust-observability ${config.rustObservability}`);
+  flags.push(`--rust-templating ${config.rustTemplating}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
   appendCommonFlags(flags, config);

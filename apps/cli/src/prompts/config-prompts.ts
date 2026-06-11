@@ -100,6 +100,10 @@ import type {
   RustErrorHandling,
   RustCaching,
   RustAuth,
+  RustRealtime,
+  RustMessageQueue,
+  RustObservability,
+  RustTemplating,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -242,6 +246,10 @@ import {
   getRustErrorHandlingChoice,
   getRustCachingChoice,
   getRustAuthChoice,
+  getRustRealtimeChoice,
+  getRustMessageQueueChoice,
+  getRustObservabilityChoice,
+  getRustTemplatingChoice,
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
@@ -314,6 +322,10 @@ type PromptGroupResults = {
   rustErrorHandling: RustErrorHandling;
   rustCaching: RustCaching;
   rustAuth: RustAuth;
+  rustRealtime: RustRealtime;
+  rustMessageQueue: RustMessageQueue;
+  rustObservability: RustObservability;
+  rustTemplating: RustTemplating;
   // Python ecosystem
   pythonWebFramework: PythonWebFramework;
   pythonOrm: PythonOrm;
@@ -757,6 +769,22 @@ export async function gatherConfig(
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustAuth);
         return getRustAuthChoice(flags.rustAuth);
       },
+      rustRealtime: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustRealtime);
+        return getRustRealtimeChoice(flags.rustRealtime);
+      },
+      rustMessageQueue: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustMessageQueue);
+        return getRustMessageQueueChoice(flags.rustMessageQueue);
+      },
+      rustObservability: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustObservability);
+        return getRustObservabilityChoice(flags.rustObservability);
+      },
+      rustTemplating: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustTemplating);
+        return getRustTemplatingChoice(flags.rustTemplating);
+      },
       // Python ecosystem prompts (skip if TypeScript or Rust)
       pythonWebFramework: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
@@ -1106,6 +1134,10 @@ export async function gatherConfig(
     rustErrorHandling: result.rustErrorHandling,
     rustCaching: result.rustCaching,
     rustAuth: result.rustAuth,
+    rustRealtime: result.rustRealtime,
+    rustMessageQueue: result.rustMessageQueue,
+    rustObservability: result.rustObservability,
+    rustTemplating: result.rustTemplating,
     // Python ecosystem options
     pythonWebFramework: result.pythonWebFramework,
     pythonOrm: result.pythonOrm,

@@ -201,6 +201,10 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["rust-error-handling", config.rustErrorHandling],
     ["rust-caching", config.rustCaching],
     ["rust-auth", config.rustAuth],
+    ["rust-realtime", config.rustRealtime],
+    ["rust-message-queue", config.rustMessageQueue],
+    ["rust-observability", config.rustObservability],
+    ["rust-templating", config.rustTemplating],
     ["rust-libraries", withExplicitNone(config.rustLibraries)],
   ];
 

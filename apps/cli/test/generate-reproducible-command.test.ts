@@ -66,6 +66,10 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustErrorHandling: "anyhow-thiserror",
     rustCaching: "none",
     rustAuth: "none",
+    rustRealtime: "none",
+    rustMessageQueue: "none",
+    rustObservability: "none",
+    rustTemplating: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
@@ -330,6 +334,10 @@ describe("generateReproducibleCommand", () => {
         "--rust-error-handling anyhow-thiserror " +
         "--rust-caching none " +
         "--rust-auth none " +
+        "--rust-realtime none " +
+        "--rust-message-queue none " +
+        "--rust-observability none " +
+        "--rust-templating none " +
         "--email none " +
         "--observability none " +
         "--caching none " +

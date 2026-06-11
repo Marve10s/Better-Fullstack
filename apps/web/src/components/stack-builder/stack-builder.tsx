@@ -311,7 +311,17 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "search",
     "fileStorage",
   ],
-  rust: ["rustCli", "rustLibraries", "rustLogging", "rustErrorHandling", "rustCaching"],
+  rust: [
+    "rustCli",
+    "rustLibraries",
+    "rustLogging",
+    "rustErrorHandling",
+    "rustCaching",
+    "rustRealtime",
+    "rustMessageQueue",
+    "rustObservability",
+    "rustTemplating",
+  ],
   python: [
     "pythonValidation",
     "pythonAi",

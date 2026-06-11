@@ -93,6 +93,10 @@ import {
 import {
   getRustApiChoice,
   getRustAuthChoice,
+  getRustRealtimeChoice,
+  getRustMessageQueueChoice,
+  getRustObservabilityChoice,
+  getRustTemplatingChoice,
   getRustCachingChoice,
   getRustCliChoice,
   getRustErrorHandlingChoice,
@@ -329,6 +333,22 @@ export async function gatherMultiEcosystemConfig(
       rustWebFramework === "none"
         ? "none"
         : promptValue(await getRustCachingChoice(flags.rustCaching));
+    const rustRealtime =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustRealtimeChoice(flags.rustRealtime));
+    const rustMessageQueue =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustMessageQueueChoice(flags.rustMessageQueue));
+    const rustObservability =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustObservabilityChoice(flags.rustObservability));
+    const rustTemplating =
+      rustWebFramework === "none"
+        ? "none"
+        : promptValue(await getRustTemplatingChoice(flags.rustTemplating));
     Object.assign(backendChoices, {
       rustWebFramework,
       rustOrm,
@@ -340,11 +360,25 @@ export async function gatherMultiEcosystemConfig(
       rustLogging,
       rustErrorHandling,
       rustCaching,
+      rustRealtime,
+      rustMessageQueue,
+      rustObservability,
+      rustTemplating,
     });
     if (rustWebFramework !== "none") stackPartSpecs.push(`backend:rust:${rustWebFramework}`);
     if (rustOrm !== "none") stackPartSpecs.push(`backend.orm:rust:${rustOrm}`);
     if (rustApi !== "none") stackPartSpecs.push(`backend.api:rust:${rustApi}`);
     if (rustAuth !== "none") stackPartSpecs.push(`backend.auth:rust:${rustAuth}`);
+    if (rustRealtime !== "none") stackPartSpecs.push(`backend.realtime:rust:${rustRealtime}`);
+    if (rustMessageQueue !== "none") {
+      stackPartSpecs.push(`backend.jobQueue:rust:${rustMessageQueue}`);
+    }
+    if (rustObservability !== "none") {
+      stackPartSpecs.push(`backend.observability:rust:${rustObservability}`);
+    }
+    if (rustTemplating !== "none") {
+      stackPartSpecs.push(`backend.templating:rust:${rustTemplating}`);
+    }
   }
 
   if (backendEcosystem === "python") {

@@ -511,6 +511,10 @@ export async function createVirtual(
         options.rustErrorHandling || (options.ecosystem === "rust" ? "anyhow-thiserror" : "none"),
       rustCaching: options.rustCaching || "none",
       rustAuth: options.rustAuth || "none",
+      rustRealtime: options.rustRealtime || "none",
+      rustMessageQueue: options.rustMessageQueue || "none",
+      rustObservability: options.rustObservability || "none",
+      rustTemplating: options.rustTemplating || "none",
       // Python ecosystem options
       pythonWebFramework: options.pythonWebFramework || "none",
       pythonOrm: options.pythonOrm || "none",

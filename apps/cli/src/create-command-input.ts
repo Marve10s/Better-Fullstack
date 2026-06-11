@@ -102,6 +102,10 @@ import {
   RuntimeSchema,
   RustApiSchema,
   RustAuthSchema,
+  RustRealtimeSchema,
+  RustMessageQueueSchema,
+  RustObservabilitySchema,
+  RustTemplatingSchema,
   RustCachingSchema,
   RustCliSchema,
   RustErrorHandlingSchema,
@@ -255,6 +259,12 @@ export const CreateCommandOptionsSchema = z.object({
   ),
   rustCaching: RustCachingSchema.optional().describe("Rust caching (moka, redis)"),
   rustAuth: RustAuthSchema.optional().describe("Rust auth (oauth2)"),
+  rustRealtime: RustRealtimeSchema.optional().describe("Rust realtime (tokio-tungstenite)"),
+  rustMessageQueue: RustMessageQueueSchema.optional().describe("Rust message queue (lapin)"),
+  rustObservability: RustObservabilitySchema.optional().describe(
+    "Rust observability (opentelemetry)",
+  ),
+  rustTemplating: RustTemplatingSchema.optional().describe("Rust templating (askama, tera)"),
   pythonWebFramework: PythonWebFrameworkSchema.optional().describe(
     "Python web framework (fastapi, django)",
   ),
