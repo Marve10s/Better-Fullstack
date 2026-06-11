@@ -594,7 +594,11 @@ function buildProjectConfig(
   const ecosystem = (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript";
   const frontend =
     (input.frontend as ProjectConfig["frontend"]) ??
-    (ecosystem === "react-native" ? ["native-bare"] : ["tanstack-router"]);
+    (ecosystem === "react-native"
+      ? ["native-bare"]
+      : ecosystem === "typescript"
+        ? ["tanstack-router"]
+        : ["none"]);
   const hasNativeFrontend = frontend.some((item) => item.startsWith("native-"));
   const hasMobileProject = ecosystem === "react-native" || hasNativeFrontend;
   const defaults = getMcpProjectConfigDefaults(input);
