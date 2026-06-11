@@ -52,7 +52,11 @@ export function RaycastHeroBackground({ className }: RaycastHeroBackgroundProps)
   return (
     <div
       ref={ref}
-      className={cn("absolute inset-0 overflow-hidden bg-white dark:bg-[#0a0a0a]", className)}
+      className={cn(
+        "absolute inset-0 overflow-hidden bg-[#0a0a0a] [filter:invert(1)_hue-rotate(180deg)]",
+        "dark:bg-[#0a0a0a] dark:[filter:none]",
+        className,
+      )}
       aria-hidden
     >
       {size.width > 0 && size.height > 0 ? (

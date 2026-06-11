@@ -49,9 +49,9 @@ function HomePage() {
     <main className="min-h-svh">
       <div className="mx-auto max-w-[1480px] border-x border-border">
         <HeroSection />
+        <LLMBenchmarkSection />
         <FeaturesSection />
         <CombinationsSection />
-        <LLMBenchmarkSection />
         <TestimonialsSection />
         <ContributorsSection />
         <Footer />
