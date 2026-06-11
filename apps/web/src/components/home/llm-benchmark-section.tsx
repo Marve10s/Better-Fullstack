@@ -247,7 +247,12 @@ export default function LLMBenchmarkSection() {
               <Activity className="size-4" />
               scaffold time matrix, seconds
             </div>
-            <div className="overflow-x-auto">
+            {/* Labeled, focusable section: WAI scrollable-region pattern */}
+            <section
+              aria-label="Scaffold time matrix in seconds"
+              className="overflow-x-auto"
+              tabIndex={0}
+            >
               <table className="w-full min-w-[720px] border-collapse text-left">
                 <thead className="font-mono text-[10px] uppercase text-[#5f6b58]">
                   <tr>
@@ -281,7 +286,7 @@ export default function LLMBenchmarkSection() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </section>
           </div>
 
           <div className="col-span-12 grid gap-4 lg:col-span-5">
