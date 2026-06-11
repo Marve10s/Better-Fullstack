@@ -1,491 +1,767 @@
-import { Activity, Bot, CheckCircle2, Clock3, Route, Terminal, TriangleAlert, Zap } from "lucide-react";
-import { motion } from "motion/react";
-import { useMemo, type CSSProperties } from "react";
+import NumberFlow from "@number-flow/react";
+import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
 
-const revealInitial = { opacity: 0, y: 16 } as const;
-const revealInView = { opacity: 1, y: 0 } as const;
-const revealViewport = { once: true, margin: "-15%" } as const;
-const revealTransition = { duration: 0.45 } as const;
+/**
+ * Data source: testing/llm-benchmarks/benchmark-reports/20260610-230521
+ * 36 runs = 3 models x 3 creation paths x 4 project specs (Codex CLI agent,
+ * empty workspace). Post-validation = dependency install + full build/compile
+ * of the generated project.
+ */
 
-const methodStats = [
+type MethodId = "mcp" | "cli" | "prompt";
+
+interface MethodStat {
+  id: MethodId;
+  label: string;
+  detail: string;
+  avg: number;
+  median: number;
+  fastest: number;
+  outTokens: number;
+  accent: string;
+}
+
+const METHOD_STATS: readonly MethodStat[] = [
   {
     id: "mcp",
     label: "Better-Fullstack MCP",
-    average: 66.9,
+    detail: "agent drives bfs_* tools, the generator writes the code",
+    avg: 66.9,
     median: 53.2,
-    min: 17.8,
-    max: 217.3,
-    ok: 8,
-    structuralOnly: 0,
-    failed: 4,
-    color: "#0ea5a4",
-    note: "Fastest average path; reliable on light, Python, and most multi-ecosystem runs.",
+    fastest: 17.8,
+    outTokens: 4936,
+    accent: "#C6E853",
   },
   {
     id: "cli",
-    label: "CLI / Website Reference",
-    average: 98.6,
+    label: "CLI reference",
+    detail: "agent reads the docs, composes one create command",
+    avg: 98.6,
     median: 75.2,
-    min: 10.8,
-    max: 321.7,
-    ok: 9,
-    structuralOnly: 0,
-    failed: 3,
-    color: "#d97706",
-    note: "Fast when the graph-part command is obvious; slower when agents hit prompt friction.",
+    fastest: 10.8,
+    outTokens: 7175,
+    accent: "#e5e5e5",
   },
   {
     id: "prompt",
-    label: "Prompt Only",
-    average: 170.7,
+    label: "Prompt only",
+    detail: "agent hand-writes every file from scratch",
+    avg: 170.7,
     median: 159.3,
-    min: 22.9,
-    max: 541.5,
-    ok: 6,
-    structuralOnly: 3,
-    failed: 3,
-    color: "#e11d48",
-    note: "Most variable path; can repair deeply, but often spends minutes hand-authoring.",
+    fastest: 22.9,
+    outTokens: 20132,
+    accent: "#737373",
   },
 ] as const;
 
-const modelStats = [
+const SPEC_COLUMNS = ["Light TS", "Heavy TS", "Python AI", "Multi-eco"] as const;
+
+interface MatrixCellData {
+  t: number;
+  ok: boolean;
+}
+
+interface MatrixRowData {
+  model: string;
+  cells: readonly MatrixCellData[];
+}
+
+// Cell order matches SPEC_COLUMNS. `ok` = post-validation build passed.
+const RUN_MATRIX: Record<MethodId, readonly MatrixRowData[]> = {
+  mcp: [
+    {
+      model: "gpt-5.3-codex-spark",
+      cells: [
+        { t: 17.8, ok: true },
+        { t: 26.1, ok: false },
+        { t: 19.1, ok: true },
+        { t: 66.4, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.4",
+      cells: [
+        { t: 44.2, ok: true },
+        { t: 51.3, ok: false },
+        { t: 55.0, ok: true },
+        { t: 217.3, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.5-medium",
+      cells: [
+        { t: 58.2, ok: true },
+        { t: 108.4, ok: false },
+        { t: 42.6, ok: true },
+        { t: 96.7, ok: false },
+      ],
+    },
+  ],
+  cli: [
+    {
+      model: "gpt-5.3-codex-spark",
+      cells: [
+        { t: 10.8, ok: true },
+        { t: 51.9, ok: false },
+        { t: 52.6, ok: true },
+        { t: 147.1, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.4",
+      cells: [
+        { t: 30.1, ok: true },
+        { t: 321.7, ok: false },
+        { t: 128.5, ok: true },
+        { t: 143.8, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.5-medium",
+      cells: [
+        { t: 26.1, ok: true },
+        { t: 119.7, ok: false },
+        { t: 66.1, ok: true },
+        { t: 84.3, ok: true },
+      ],
+    },
+  ],
+  prompt: [
+    {
+      model: "gpt-5.3-codex-spark",
+      cells: [
+        { t: 50.9, ok: false },
+        { t: 67.8, ok: false },
+        { t: 22.9, ok: true },
+        { t: 37.6, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.4",
+      cells: [
+        { t: 251.0, ok: true },
+        { t: 235.9, ok: false },
+        { t: 155.4, ok: true },
+        { t: 170.1, ok: true },
+      ],
+    },
+    {
+      model: "gpt-5.5-medium",
+      cells: [
+        { t: 163.2, ok: true },
+        { t: 541.5, ok: true },
+        { t: 110.4, ok: true },
+        { t: 241.9, ok: true },
+      ],
+    },
+  ],
+};
+
+const MODEL_STATS = [
+  { label: "gpt-5.3-codex-spark", avg: 47.6 },
+  { label: "gpt-5.5-medium", avg: 138.3 },
+  { label: "gpt-5.4", avg: 150.3 },
+] as const;
+
+const FINDINGS = [
   {
-    id: "spark",
-    label: "gpt-5.3-codex-spark",
-    average: 47.6,
-    median: 44.2,
-    min: 10.8,
-    max: 147.1,
-    ok: 7,
-    structuralOnly: 1,
-    failed: 4,
-    color: "#84cc16",
+    title: "Structure beats improvisation",
+    detail:
+      "MCP runs averaged 4.9k output tokens; prompt-only burned 20.1k hand-writing files — and still took 2.6× longer.",
   },
   {
-    id: "5.5",
-    label: "gpt-5.5 medium",
-    average: 138.3,
-    median: 102.6,
-    min: 26.1,
-    max: 541.5,
-    ok: 8,
-    structuralOnly: 1,
-    failed: 3,
-    color: "#2563eb",
+    title: "Prompt-only drifts",
+    detail:
+      "One prompt-only run vendored 100k+ files into the workspace; another skipped the root manifest entirely.",
   },
   {
-    id: "5.4",
-    label: "gpt-5.4 medium",
-    average: 150.3,
-    median: 149.6,
-    min: 30.1,
-    max: 321.7,
-    ok: 8,
-    structuralOnly: 1,
-    failed: 3,
-    color: "#7c3aed",
+    title: "Heavy TS broke on every path",
+    detail:
+      "8 of 9 heavy-spec builds failed post-validation on the same Storybook type dependency — a generator bug, not a path difference.",
   },
 ] as const;
 
-const specStats = [
-  {
-    id: "light",
-    label: "Light TypeScript",
-    average: 72.5,
-    ok: 8,
-    structuralOnly: 0,
-    failed: 1,
-    color: "#22c55e",
-  },
-  {
-    id: "python",
-    label: "Python AI",
-    average: 72.5,
-    ok: 9,
-    structuralOnly: 0,
-    failed: 0,
-    color: "#3b82f6",
-  },
-  {
-    id: "multi",
-    label: "Multi-ecosystem",
-    average: 133.9,
-    ok: 5,
-    structuralOnly: 3,
-    failed: 1,
-    color: "#f59e0b",
-  },
-  {
-    id: "heavy",
-    label: "Heavy TypeScript",
-    average: 169.4,
-    ok: 1,
-    structuralOnly: 0,
-    failed: 8,
-    color: "#ef4444",
-  },
+const BAND_STATS = [
+  { value: 36, suffix: "/36", label: "scaffolds completed", fraction: false },
+  { value: 17.8, suffix: "s", label: "fastest mcp scaffold", fraction: true },
+  { value: 4.1, suffix: "×", label: "fewer output tokens via mcp", fraction: true },
+  { value: 9, suffix: "/9", label: "python ai builds green", fraction: false },
 ] as const;
 
-const runMatrix = [
-  {
-    model: "gpt-5.3-codex-spark",
-    prompt: [50.9, 67.8, 22.9, 37.6],
-    mcp: [17.8, 26.1, 19.1, 66.4],
-    cli: [10.8, 51.9, 52.6, 147.1],
-  },
-  {
-    model: "gpt-5.4",
-    prompt: [251.0, 235.9, 155.4, 170.1],
-    mcp: [44.2, 51.3, 55.0, 217.3],
-    cli: [30.1, 321.7, 128.5, 143.8],
-  },
-  {
-    model: "gpt-5.5 medium",
-    prompt: [163.2, 541.5, 110.4, 241.9],
-    mcp: [58.2, 108.4, 42.6, 96.7],
-    cli: [26.1, 119.7, 66.1, 84.3],
-  },
-] as const;
+const MCP_COMMAND = "claude mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp";
 
-const matrixColumns = ["Light TS", "Heavy TS", "Python AI", "Multi"] as const;
-const methodOrder = ["prompt", "mcp", "cli"] as const;
-
-const fastestRuns = [
-  "Spark + CLI + Light TS: 10.8s",
-  "Spark + MCP + Light TS: 17.8s",
-  "Spark + MCP + Python AI: 19.1s",
-] as const;
-
-const failureNotes = [
-  {
-    title: "Heavy TypeScript exposed generator edges",
-    detail: "8 of 9 heavy runs failed deeper post-validation, mostly at web build time.",
-  },
-  {
-    title: "Storybook type dependency was the common build break",
-    detail: "Several generated web apps could not resolve @storybook/react-vite during build.",
-  },
-  {
-    title: "Prompt-only can be fast but thin",
-    detail: "Some prompt-only multi runs had no root manifest, so they were structural-only checks.",
-  },
-] as const;
-
-const maxMethodAverage = Math.max(...methodStats.map((item) => item.average));
-const maxModelAverage = Math.max(...modelStats.map((item) => item.average));
-const maxSpecAverage = Math.max(...specStats.map((item) => item.average));
-const maxRun = Math.max(
-  ...runMatrix.flatMap((row) => methodOrder.flatMap((method) => row[method])),
+const MAX_AVG = Math.max(...METHOD_STATS.map((m) => m.avg));
+const MAX_RUN = Math.max(
+  ...Object.values(RUN_MATRIX).flatMap((rows) => rows.flatMap((row) => row.cells.map((c) => c.t))),
 );
+const MAX_MODEL_AVG = Math.max(...MODEL_STATS.map((m) => m.avg));
+
+const numberFlowTiming = { duration: 900, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
+const oneDecimalFormat = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const;
+
+const fadeUpInitial = { opacity: 0, y: 12 } as const;
+const fadeUpVisible = { opacity: 1, y: 0 } as const;
+const viewportOnce = { once: true } as const;
+const viewportOnceNear = { once: true, margin: "-10%" } as const;
+const fadeUpTransition = { duration: 0.6 } as const;
+const barEase = [0.2, 0.8, 0.2, 1] as const;
+
+const headingStyle: CSSProperties = {
+  fontSize: "clamp(2.25rem, 7vw, 4.75rem)",
+  lineHeight: 0.96,
+};
+const heroNumberStyle: CSSProperties = { fontSize: "clamp(4.5rem, 13vw, 9.5rem)" };
+const heroTimesStyle: CSSProperties = { fontSize: "clamp(2.25rem, 6vw, 4.5rem)" };
 
 export default function LLMBenchmarkSection() {
   return (
-    <section className="relative overflow-hidden border-t border-border bg-[#10130f] text-[#edf5e7]">
-      <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(198,232,83,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(198,232,83,0.22)_1px,transparent_1px)] [background-size:42px_42px]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#c6e853] to-transparent" />
+    <section className="relative overflow-hidden border-t border-border bg-[#0a0a0a] text-[#fafafa] [color-scheme:dark]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.5] [background-image:linear-gradient(rgba(198,232,83,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(198,232,83,0.05)_1px,transparent_1px)] [background-size:44px_44px]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#C6E853] to-transparent"
+      />
 
-      <div className="relative px-4 py-20 sm:px-8 sm:py-24">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-10">
-          <div className="col-span-12 lg:col-span-5">
-            <p className="font-mono text-[11px] uppercase text-[#c6e853]">agent benchmark lab</p>
-            <h2 className="mt-4 max-w-[13ch] text-balance font-mono text-5xl font-black leading-[0.9] text-white sm:text-7xl">
-              36 runs. Three creation paths.
-            </h2>
-            <p className="mt-6 max-w-md text-pretty text-sm leading-6 text-[#b9c8b0] sm:text-base">
-              We tested prompt-only generation, Better-Fullstack MCP scaffolding, and CLI/reference
-              creation across light, heavy, Python AI, and multi-ecosystem projects.
-            </p>
-
-            <div className="mt-8 grid grid-cols-3 border border-[#2f3a2c] bg-black/20">
-              <StatCell icon={Bot} label="models" value="3" />
-              <StatCell icon={Route} label="templates" value="4" />
-              <StatCell icon={CheckCircle2} label="scaffolded" value="36/36" />
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-7">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {methodStats.map((method) => (
-                <motion.div
-                  key={method.id}
-                  initial={revealInitial}
-                  whileInView={revealInView}
-                  viewport={revealViewport}
-                  transition={revealTransition}
-                  className="border border-[#2f3a2c] bg-[#161b14] p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-mono text-[10px] uppercase text-[#8da184]">
-                      {method.label}
-                    </span>
-                    <ColorDot color={method.color} />
-                  </div>
-                  <div className="mt-6 font-mono text-4xl font-black text-white">
-                    {method.average.toFixed(1)}s
-                  </div>
-                  <div className="mt-2 h-1.5 bg-[#273123]">
-                    <ScaledBar color={method.color} max={maxMethodAverage} value={method.average} />
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2 font-mono text-[10px] uppercase text-[#b9c8b0]">
-                    <span>ok {method.ok}</span>
-                    <span>thin {method.structuralOnly}</span>
-                    <span>fail {method.failed}</span>
-                  </div>
-                  <p className="mt-4 text-xs leading-5 text-[#8da184]">{method.note}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-12 grid grid-cols-12 gap-4">
-          <div className="col-span-12 border border-[#2f3a2c] bg-[#edf5e7] text-[#121711] lg:col-span-7">
-            <div className="flex items-center gap-2 border-b border-[#c8d8bd] px-4 py-3 font-mono text-[11px] uppercase">
-              <Activity className="size-4" />
-              scaffold time matrix, seconds
-            </div>
-            {/* Labeled, focusable section: WAI scrollable-region pattern */}
-            <section
-              aria-label="Scaffold time matrix in seconds"
-              className="overflow-x-auto"
-              tabIndex={0}
-            >
-              <table className="w-full min-w-[720px] border-collapse text-left">
-                <thead className="font-mono text-[10px] uppercase text-[#5f6b58]">
-                  <tr>
-                    <th className="border-b border-[#c8d8bd] px-4 py-3">Model / Path</th>
-                    {matrixColumns.map((column) => (
-                      <th key={column} className="border-b border-[#c8d8bd] px-3 py-3">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {runMatrix.map((row) =>
-                    methodOrder.map((method) => (
-                      <tr key={`${row.model}-${method}`} className="border-b border-[#dbe6d4]">
-                        <td className="px-4 py-3">
-                          <div className="font-mono text-xs font-semibold text-[#121711]">
-                            {row.model}
-                          </div>
-                          <div className="mt-1 font-mono text-[10px] uppercase text-[#697462]">
-                            {method}
-                          </div>
-                        </td>
-                        {row[method].map((value, index) => (
-                          <td key={`${method}-${matrixColumns[index]}`} className="px-3 py-3">
-                            <RunCell value={value} />
-                          </td>
-                        ))}
-                      </tr>
-                    )),
-                  )}
-                </tbody>
-              </table>
-            </section>
-          </div>
-
-          <div className="col-span-12 grid gap-4 lg:col-span-5">
-            <BenchmarkPanel
-              icon={Zap}
-              title="Fastest successful paths"
-              items={fastestRuns}
-              accent="#c6e853"
-            />
-            <div className="border border-[#2f3a2c] bg-[#161b14] p-4">
-              <div className="flex items-center gap-2 font-mono text-[11px] uppercase text-[#c6e853]">
-                <Terminal className="size-4" />
-                model average
-              </div>
-              <div className="mt-5 space-y-4">
-                {modelStats.map((model) => (
-                  <BarMetric
-                    key={model.id}
-                    label={model.label}
-                    value={model.average}
-                    max={maxModelAverage}
-                    color={model.color}
-                    meta={`${model.ok} ok / ${model.failed} failed`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="relative px-4 py-20 sm:px-8 sm:py-28">
+        <Header />
+        <RacePanel />
+        <StatBand />
 
         <div className="mt-4 grid grid-cols-12 gap-4">
-          <div className="col-span-12 border border-[#2f3a2c] bg-[#161b14] p-4 lg:col-span-5">
-            <div className="flex items-center gap-2 font-mono text-[11px] uppercase text-[#c6e853]">
-              <Clock3 className="size-4" />
-              project difficulty
-            </div>
-            <div className="mt-5 space-y-4">
-              {specStats.map((spec) => (
-                <BarMetric
-                  key={spec.id}
-                  label={spec.label}
-                  value={spec.average}
-                  max={maxSpecAverage}
-                  color={spec.color}
-                  meta={`${spec.ok} ok / ${spec.structuralOnly} thin / ${spec.failed} failed`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="col-span-12 border border-[#2f3a2c] bg-[#161b14] p-4 lg:col-span-7">
-            <div className="flex items-center gap-2 font-mono text-[11px] uppercase text-[#fca5a5]">
-              <TriangleAlert className="size-4" />
-              post-validation findings
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-3">
-              {failureNotes.map((note) => (
-                <div key={note.title} className="border border-[#3f302a] bg-[#211815] p-4">
-                  <h3 className="text-sm font-semibold text-white">{note.title}</h3>
-                  <p className="mt-3 text-xs leading-5 text-[#cbb9ac]">{note.detail}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 border-t border-[#2f3a2c] pt-4">
-              <p className="font-mono text-[11px] uppercase text-[#8da184]">
-                Result tree kept at 47 MB after dependency/cache cleanup. Raw transcripts and
-                validation logs remain available in the benchmark output.
-              </p>
-            </div>
-          </div>
+          <RunMatrixPanel />
+          <aside className="col-span-12 grid gap-4 lg:col-span-5">
+            <ModelPanel />
+            <FindingsPanel />
+          </aside>
         </div>
+
+        <CtaBar />
       </div>
     </section>
   );
 }
 
+function Header() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-20%" });
+
+  return (
+    <div ref={ref} className="grid grid-cols-12 items-end gap-x-6 gap-y-8">
+      <div className="col-span-12 lg:col-span-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+            ✦ agent benchmark
+          </p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a7a7a]">
+            codex cli · 3 models · jun 2026
+          </p>
+        </div>
+        <h2
+          className="mt-4 max-w-[16ch] text-balance font-mono font-bold tracking-[-0.045em]"
+          style={headingStyle}
+        >
+          Same agent. Same spec.{" "}
+          <span className="italic text-[#C6E853]">Three ways to build.</span>
+        </h2>
+        <p className="mt-6 max-w-lg text-pretty text-sm leading-6 text-[#a3a3a3] sm:text-base">
+          36 scaffold runs: three frontier models building four project specs through prompt-only
+          generation, our CLI reference, and the Better-Fullstack MCP. Every project then had to
+          survive a real dependency install and build.
+        </p>
+      </div>
+
+      <motion.div
+        initial={fadeUpInitial}
+        whileInView={fadeUpVisible}
+        viewport={viewportOnce}
+        transition={fadeUpTransition}
+        className="col-span-12 lg:col-span-5 lg:text-right"
+      >
+        <div className="flex items-baseline justify-start gap-1 lg:justify-end">
+          <span
+            className="font-mono font-black leading-none tracking-[-0.05em]"
+            style={heroNumberStyle}
+          >
+            <NumberFlow
+              value={inView ? 2.6 : 0}
+              format={oneDecimalFormat}
+              transformTiming={numberFlowTiming}
+            />
+          </span>
+          <span className="font-mono font-black leading-none text-[#C6E853]" style={heroTimesStyle}>
+            ×
+          </span>
+        </div>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[#a3a3a3]">
+          faster through mcp than prompt-only
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
+function RacePanel() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15%" });
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <div ref={ref} className="mt-14 border border-[#1f1f1f] bg-[#0d0d0d]">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[#1f1f1f] px-5 py-3 sm:px-8">
+        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+          ✦ average scaffold time by creation path
+        </span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a7a7a]">
+          12 runs per path · lower is better
+        </span>
+      </div>
+
+      {METHOD_STATS.map((method, index) => (
+        <RaceTrack
+          key={method.id}
+          method={method}
+          rank={index + 1}
+          inView={inView}
+          reduceMotion={reduceMotion === true}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RaceTrack({
+  method,
+  rank,
+  inView,
+  reduceMotion,
+}: {
+  method: MethodStat;
+  rank: number;
+  inView: boolean;
+  reduceMotion: boolean;
+}) {
+  const widthPercent = (method.avg / MAX_AVG) * 100;
+  const accentStyle = useMemo<CSSProperties>(() => ({ color: method.accent }), [method.accent]);
+  const barColorStyle = useMemo<CSSProperties>(
+    () => ({ backgroundColor: method.accent }),
+    [method.accent],
+  );
+  const barInitial = useMemo(() => (reduceMotion ? false : { width: "0%" }), [reduceMotion]);
+  const barAnimate = useMemo(
+    () => ({ width: inView ? `${widthPercent}%` : "0%" }),
+    [inView, widthPercent],
+  );
+  const barTransition = useMemo(
+    () => ({ duration: 1.1, delay: rank * 0.12, ease: barEase }),
+    [rank],
+  );
+
+  return (
+    <div className="border-b border-[#1f1f1f] px-5 py-6 last:border-b-0 sm:px-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="font-mono text-[10px] tabular-nums text-[#7a7a7a]">0{rank}</span>
+          <span className="font-mono text-sm font-semibold sm:text-base">{method.label}</span>
+          {method.id === "mcp" ? (
+            <span className="border border-[#C6E853]/40 bg-[#C6E853]/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-[#C6E853]">
+              fastest path
+            </span>
+          ) : null}
+        </div>
+        <span className="font-mono text-3xl font-black tabular-nums sm:text-4xl" style={accentStyle}>
+          <NumberFlow
+            value={inView ? method.avg : 0}
+            format={oneDecimalFormat}
+            transformTiming={numberFlowTiming}
+          />
+          <span className="text-lg sm:text-xl">s</span>
+        </span>
+      </div>
+
+      <div className="mt-4 h-2 overflow-hidden bg-[#1a1a1a]">
+        <motion.div
+          className="h-full"
+          style={barColorStyle}
+          initial={barInitial}
+          animate={barAnimate}
+          transition={barTransition}
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <p className="text-xs leading-5 text-[#7a7a7a]">{method.detail}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+          median {method.median.toFixed(1)}s · best {method.fastest.toFixed(1)}s ·{" "}
+          {(method.outTokens / 1000).toFixed(1)}k output tokens
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatBand() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15%" });
+
+  return (
+    <div
+      ref={ref}
+      className="mt-4 grid grid-cols-2 border border-[#1f1f1f] bg-[#0d0d0d] lg:grid-cols-4"
+    >
+      {BAND_STATS.map((stat, index) => (
+        <StatCell key={stat.label} stat={stat} index={index} inView={inView} />
+      ))}
+    </div>
+  );
+}
+
 function StatCell({
-  icon: Icon,
-  label,
-  value,
+  stat,
+  index,
+  inView,
 }: {
-  icon: typeof Bot;
-  label: string;
-  value: string;
+  stat: (typeof BAND_STATS)[number];
+  index: number;
+  inView: boolean;
 }) {
+  const transition = useMemo(() => ({ duration: 0.5, delay: index * 0.08 }), [index]);
+
   return (
-    <div className="border-r border-[#2f3a2c] p-4 last:border-r-0">
-      <Icon className="size-4 text-[#c6e853]" />
-      <div className="mt-4 font-mono text-3xl font-black text-white">{value}</div>
-      <div className="mt-1 font-mono text-[10px] uppercase text-[#8da184]">{label}</div>
+    <motion.div
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={transition}
+      className={cn(
+        "border-[#1f1f1f] p-5 sm:p-6",
+        index % 2 === 0 && "border-r",
+        index < 2 && "border-b lg:border-b-0",
+        index < 3 && "lg:border-r",
+      )}
+    >
+      <div className="font-mono text-3xl font-black tabular-nums sm:text-4xl">
+        <NumberFlow
+          value={inView ? stat.value : 0}
+          format={stat.fraction ? oneDecimalFormat : undefined}
+          transformTiming={numberFlowTiming}
+        />
+        <span className="text-[#C6E853]">{stat.suffix}</span>
+      </div>
+      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#7a7a7a]">
+        {stat.label}
+      </p>
+    </motion.div>
+  );
+}
+
+function RunMatrixPanel() {
+  const [method, setMethod] = useState<MethodId>("mcp");
+  const rows = RUN_MATRIX[method];
+
+  return (
+    <div className="col-span-12 border border-[#1f1f1f] bg-[#0d0d0d] lg:col-span-7">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f1f1f] px-5 py-3 sm:px-8">
+        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+          ✦ every run, by path
+        </span>
+        <div className="flex" role="tablist" aria-label="Creation path">
+          {METHOD_STATS.map((m) => (
+            <TabButton key={m.id} id={m.id} active={method === m.id} onSelect={setMethod} />
+          ))}
+        </div>
+      </div>
+
+      {/* Labeled, focusable section: WAI scrollable-region pattern */}
+      <section
+        aria-label="Scaffold time for every run in seconds"
+        className="overflow-x-auto"
+        tabIndex={0}
+      >
+        <table className="w-full min-w-[560px] border-collapse text-left">
+          <thead className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#7a7a7a]">
+            <tr>
+              <th className="border-b border-[#1f1f1f] px-5 py-3 font-medium sm:px-8">Model</th>
+              {SPEC_COLUMNS.map((column) => (
+                <th key={column} className="border-b border-[#1f1f1f] px-3 py-3 font-medium">
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody key={method}>
+            {rows.map((row, rowIndex) => (
+              <MatrixRow key={row.model} row={row} rowIndex={rowIndex} />
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-[#1f1f1f] px-5 py-3 sm:px-8">
+        <LegendDot color="#C6E853" label="build verified" />
+        <LegendDot color="#f87171" label="post-build failed" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#7a7a7a]">
+          verify = install deps + full build of the generated app
+        </span>
+      </div>
     </div>
   );
 }
 
-function RunCell({ value }: { value: number }) {
-  const color = value < 60 ? "#16a34a" : value < 140 ? "#d97706" : "#e11d48";
+function TabButton({
+  id,
+  active,
+  onSelect,
+}: {
+  id: MethodId;
+  active: boolean;
+  onSelect: (id: MethodId) => void;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(id);
+  }, [id, onSelect]);
 
   return (
-    <div className="min-w-[7rem]">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="font-mono text-sm font-semibold tabular-nums">{value.toFixed(1)}</span>
-        <span className="font-mono text-[10px] uppercase text-[#697462]">sec</span>
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer border border-l-0 border-[#1f1f1f] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors first:border-l",
+        active ? "bg-[#C6E853] text-[#0a0a0a]" : "bg-transparent text-[#a3a3a3] hover:text-[#fafafa]",
+      )}
+    >
+      {id}
+    </button>
+  );
+}
+
+function MatrixRow({ row, rowIndex }: { row: MatrixRowData; rowIndex: number }) {
+  const transition = useMemo(() => ({ duration: 0.35, delay: rowIndex * 0.07 }), [rowIndex]);
+
+  return (
+    <motion.tr
+      initial={fadeUpInitial}
+      animate={fadeUpVisible}
+      transition={transition}
+      className="border-b border-[#161616] last:border-b-0"
+    >
+      <td className="px-5 py-4 font-mono text-xs font-semibold sm:px-8">{row.model}</td>
+      {row.cells.map((cell, cellIndex) => (
+        <MatrixCell key={SPEC_COLUMNS[cellIndex]} cell={cell} />
+      ))}
+    </motion.tr>
+  );
+}
+
+function MatrixCell({ cell }: { cell: MatrixCellData }) {
+  const barStyle = useMemo<CSSProperties>(
+    () => ({
+      width: `${Math.max(5, (cell.t / MAX_RUN) * 100)}%`,
+      backgroundColor: cell.ok ? "#C6E853" : "#f87171",
+    }),
+    [cell.ok, cell.t],
+  );
+
+  return (
+    <td
+      aria-label={`${cell.t.toFixed(1)} seconds, build ${cell.ok ? "verified" : "failed"}`}
+      className="px-3 py-4"
+    >
+      <div className="flex items-baseline gap-1.5">
+        <span className="font-mono text-sm font-semibold tabular-nums">{cell.t.toFixed(1)}</span>
+        <span className="font-mono text-[10px] text-[#7a7a7a]">s</span>
       </div>
-      <div className="mt-2 h-1.5 bg-[#d6e0cf]">
-        <ScaledBar color={color} max={maxRun} minPercent={6} value={value} />
+      <div className="mt-2 h-1 w-full max-w-[6.5rem] bg-[#1a1a1a]">
+        <div className="h-full" style={barStyle} />
       </div>
+    </td>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  const dotStyle = useMemo<CSSProperties>(() => ({ backgroundColor: color }), [color]);
+
+  return (
+    <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#a3a3a3]">
+      <span className="size-2 rounded-full" style={dotStyle} />
+      {label}
+    </span>
+  );
+}
+
+function ModelPanel() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-10%" });
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <div ref={ref} className="border border-[#1f1f1f] bg-[#0d0d0d] p-5 sm:p-6">
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+        ✦ model average, all paths
+      </p>
+      <div className="mt-5 space-y-4">
+        {MODEL_STATS.map((model, index) => (
+          <ModelBar
+            key={model.label}
+            model={model}
+            index={index}
+            inView={inView}
+            reduceMotion={reduceMotion === true}
+          />
+        ))}
+      </div>
+      <p className="mt-5 text-xs leading-5 text-[#7a7a7a]">
+        gpt-5.3-codex-spark was 3× faster than the bigger models on identical specs — small models
+        do fine when the generator carries the structure.
+      </p>
     </div>
   );
 }
 
-function BarMetric({
-  label,
-  value,
-  max,
-  color,
-  meta,
+function ModelBar({
+  model,
+  index,
+  inView,
+  reduceMotion,
 }: {
-  label: string;
-  value: number;
-  max: number;
-  color: string;
-  meta: string;
+  model: (typeof MODEL_STATS)[number];
+  index: number;
+  inView: boolean;
+  reduceMotion: boolean;
 }) {
+  const barInitial = useMemo(() => (reduceMotion ? false : { width: "0%" }), [reduceMotion]);
+  const barAnimate = useMemo(
+    () => ({ width: inView ? `${(model.avg / MAX_MODEL_AVG) * 100}%` : "0%" }),
+    [inView, model.avg],
+  );
+  const barTransition = useMemo(
+    () => ({ duration: 0.9, delay: index * 0.1, ease: barEase }),
+    [index],
+  );
+
   return (
     <div>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-white">{label}</span>
-        <span className="font-mono text-xs tabular-nums text-[#c6e853]">{value.toFixed(1)}s</span>
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-mono text-xs font-semibold">{model.label}</span>
+        <span className="font-mono text-xs tabular-nums text-[#C6E853]">
+          {model.avg.toFixed(1)}s
+        </span>
       </div>
-      <div className="mt-2 h-2 bg-[#273123]">
-        <ScaledBar color={color} max={max} value={value} />
+      <div className="mt-2 h-1.5 overflow-hidden bg-[#1a1a1a]">
+        <motion.div
+          className="h-full bg-[#e5e5e5]"
+          initial={barInitial}
+          animate={barAnimate}
+          transition={barTransition}
+        />
       </div>
-      <div className="mt-1 font-mono text-[10px] uppercase text-[#8da184]">{meta}</div>
     </div>
   );
 }
 
-function BenchmarkPanel({
-  icon: Icon,
-  title,
-  items,
-  accent,
-}: {
-  icon: typeof Zap;
-  title: string;
-  items: readonly string[];
-  accent: string;
-}) {
-  const accentStyle = useMemo<CSSProperties>(() => ({ color: accent }), [accent]);
-
+function FindingsPanel() {
   return (
-    <div className="border border-[#2f3a2c] bg-[#161b14] p-4">
-      <div className="flex items-center gap-2 font-mono text-[11px] uppercase" style={accentStyle}>
-        <Icon className="size-4" />
-        {title}
-      </div>
-      <ol className="mt-5 space-y-3">
-        {items.map((item, index) => (
-          <li key={item} className="flex items-center gap-3">
-            <span
-              className={cn(
-                "grid size-7 shrink-0 place-items-center border border-[#3d4b37] font-mono text-xs text-white",
-                index === 0 && "border-[#c6e853] text-[#c6e853]",
-              )}
-            >
-              {index + 1}
-            </span>
-            <span className="text-sm text-[#dce7d5]">{item}</span>
-          </li>
+    <div className="border border-[#1f1f1f] bg-[#0d0d0d] p-5 sm:p-6">
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+        ✦ what the runs showed
+      </p>
+      <ol className="mt-5 space-y-4">
+        {FINDINGS.map((finding, index) => (
+          <FindingItem key={finding.title} finding={finding} index={index} />
         ))}
       </ol>
     </div>
   );
 }
 
-function ColorDot({ color }: { color: string }) {
-  const dotStyle = useMemo<CSSProperties>(() => ({ backgroundColor: color }), [color]);
+function FindingItem({
+  finding,
+  index,
+}: {
+  finding: (typeof FINDINGS)[number];
+  index: number;
+}) {
+  const transition = useMemo(() => ({ duration: 0.4, delay: index * 0.08 }), [index]);
 
-  return <span className="size-2.5 rounded-full" style={dotStyle} />;
+  return (
+    <motion.li
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={transition}
+      className="flex gap-3"
+    >
+      <span className="font-mono text-[10px] tabular-nums leading-6 text-[#7a7a7a]">
+        0{index + 1}
+      </span>
+      <div>
+        <h3 className="text-sm font-semibold">{finding.title}</h3>
+        <p className="mt-1 text-xs leading-5 text-[#a3a3a3]">{finding.detail}</p>
+      </div>
+    </motion.li>
+  );
 }
 
-function ScaledBar({
-  color,
-  max,
-  minPercent = 4,
-  value,
-}: {
-  color: string;
-  max: number;
-  minPercent?: number;
-  value: number;
-}) {
-  const barStyle = useMemo<CSSProperties>(
-    () => ({
-      backgroundColor: color,
-      width: `${Math.max(minPercent, (value / max) * 100)}%`,
-    }),
-    [color, max, minPercent, value],
-  );
+function CtaBar() {
+  const [copied, setCopied] = useState(false);
 
-  return <div className="h-full" style={barStyle} />;
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(MCP_COMMAND).then(
+      () => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+        return;
+      },
+      () => {},
+    );
+  }, []);
+
+  return (
+    <motion.div
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={fadeUpTransition}
+      className="mt-4 grid grid-cols-12 border border-[#1f1f1f] bg-[#0d0d0d]"
+    >
+      <div className="col-span-12 p-5 sm:p-6 lg:col-span-8 lg:border-r lg:border-[#1f1f1f]">
+        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+          ✦ give your agent the fast path
+        </p>
+        <div className="mt-3 flex items-center justify-between gap-3 border border-[#1f1f1f] bg-[#111111] px-4 py-3">
+          <code className="truncate font-mono text-xs sm:text-sm">
+            <span className="text-[#C6E853]">$</span> {MCP_COMMAND}
+          </code>
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="Copy MCP install command"
+            className={cn(
+              "flex size-8 shrink-0 cursor-pointer items-center justify-center transition-colors active:translate-y-[1px]",
+              copied ? "text-[#C6E853]" : "text-[#a3a3a3] hover:text-[#fafafa]",
+            )}
+          >
+            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+          </button>
+        </div>
+      </div>
+      <div className="col-span-12 flex items-center border-t border-[#1f1f1f] p-5 sm:p-6 lg:col-span-4 lg:border-t-0">
+        <a
+          href="/docs/ai/mcp"
+          className="group inline-flex items-center gap-2 font-mono text-sm font-semibold text-[#fafafa] transition-colors hover:text-[#C6E853]"
+        >
+          MCP setup for Claude, Cursor, Codex &amp; more
+          <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </a>
+      </div>
+    </motion.div>
+  );
 }
