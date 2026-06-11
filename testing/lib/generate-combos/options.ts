@@ -47,6 +47,8 @@ import {
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_API_VALUES,
+  JAVA_LOGGING_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
@@ -496,6 +498,8 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
       javaBuildTool,
       javaOrm,
       javaAuth: usesSpringBoot ? sampleScalar(JAVA_AUTH_VALUES, 0.65, "javaAuth") : "none",
+      javaApi: usesSpringBoot ? sampleScalar(JAVA_API_VALUES, 0.6, "javaApi") : "none",
+      javaLogging: usesSpringBoot ? sampleScalar(JAVA_LOGGING_VALUES, 0.6, "javaLogging") : "none",
       javaLibraries,
       javaTestingLibraries: usesBuildTool
         ? sampleArray(JAVA_TESTING_LIBRARIES_VALUES, 0.2, 3, "javaTestingLibraries")
@@ -666,6 +670,8 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaBuildTool: "none",
     javaOrm: "none",
     javaAuth: "none",
+    javaApi: "none",
+    javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
     elixirWebFramework: "none",

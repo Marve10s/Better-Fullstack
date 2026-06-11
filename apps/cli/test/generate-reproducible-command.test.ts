@@ -101,6 +101,8 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     javaBuildTool: "maven",
     javaOrm: "none",
     javaAuth: "none",
+    javaApi: "none",
+    javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: ["junit5"],
     dotnetWebFramework: "aspnet-minimal",
@@ -473,6 +475,8 @@ describe("generateReproducibleCommand", () => {
         "--java-build-tool gradle " +
         "--java-orm spring-data-jpa " +
         "--java-auth spring-security " +
+        "--java-api none " +
+        "--java-logging none " +
         "--java-libraries spring-actuator flyway " +
         "--java-testing-libraries junit5 mockito " +
         "--email none " +

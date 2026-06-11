@@ -54,6 +54,27 @@ dependencies {
 {{#if hasJavaJpa}}
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 {{/if}}
+{{#if hasJavaJooq}}
+	implementation("org.springframework.boot:spring-boot-starter-jooq")
+	runtimeOnly("com.h2database:h2")
+{{/if}}
+{{#if hasJavaMybatis}}
+	implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4")
+	runtimeOnly("com.h2database:h2")
+{{/if}}
+{{#if hasJavaKeycloak}}
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+{{/if}}
+{{#if hasJavaGraphql}}
+	implementation("org.springframework.boot:spring-boot-starter-graphql")
+{{/if}}
+{{#if hasJavaAmqp}}
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+{{/if}}
+{{#if hasJavaOtel}}
+	implementation("io.opentelemetry:opentelemetry-sdk:1.51.0")
+	implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.51.0")
+{{/if}}
 {{#if hasJavaSecurity}}
 	implementation("org.springframework.boot:spring-boot-starter-security")
 {{/if}}

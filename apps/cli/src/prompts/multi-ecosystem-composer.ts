@@ -67,6 +67,8 @@ import {
 import { getinstallChoice } from "./install";
 import {
   getJavaAuthChoice,
+  getJavaApiChoice,
+  getJavaLoggingChoice,
   getJavaBuildToolChoice,
   getJavaLibrariesChoice,
   getJavaOrmChoice,
@@ -492,17 +494,29 @@ export async function gatherMultiEcosystemConfig(
     const javaTestingLibraries = promptValue(
       await getJavaTestingLibrariesChoice(flags.javaTestingLibraries),
     );
+    const javaApi =
+      javaWebFramework !== "spring-boot" || javaBuildTool === "none"
+        ? "none"
+        : promptValue(await getJavaApiChoice(flags.javaApi));
+    const javaLogging =
+      javaWebFramework !== "spring-boot" || javaBuildTool === "none"
+        ? "none"
+        : promptValue(await getJavaLoggingChoice(flags.javaLogging));
     Object.assign(backendChoices, {
       javaWebFramework,
       javaBuildTool,
       javaOrm,
       javaAuth,
+      javaApi,
+      javaLogging,
       javaLibraries,
       javaTestingLibraries,
     });
     if (javaWebFramework !== "none") stackPartSpecs.push(`backend:java:${javaWebFramework}`);
     if (javaOrm !== "none") stackPartSpecs.push(`backend.orm:java:${javaOrm}`);
     if (javaAuth !== "none") stackPartSpecs.push(`backend.auth:java:${javaAuth}`);
+    if (javaApi !== "none") stackPartSpecs.push(`backend.api:java:${javaApi}`);
+    if (javaLogging !== "none") stackPartSpecs.push(`backend.logging:java:${javaLogging}`);
   }
 
   if (backendEcosystem === "dotnet") {

@@ -68,6 +68,8 @@ import {
   GO_TESTING_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_API_VALUES,
+  JAVA_LOGGING_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
@@ -1314,6 +1316,8 @@ describe("stack graph structural round-trip (phase 0)", () => {
           javaBuildTool: JAVA_BUILD_TOOL_VALUES,
           javaOrm: JAVA_ORM_VALUES,
           javaAuth: JAVA_AUTH_VALUES,
+          javaApi: JAVA_API_VALUES,
+          javaLogging: JAVA_LOGGING_VALUES,
         },
         arrays: {
           javaLibraries: JAVA_LIBRARIES_VALUES,

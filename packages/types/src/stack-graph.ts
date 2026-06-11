@@ -75,6 +75,8 @@ import {
   GO_TESTING_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_API_VALUES,
+  JAVA_LOGGING_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
@@ -250,7 +252,7 @@ const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
   rust: { orm: "rustOrm", api: "rustApi", auth: "rustAuth" },
   python: { orm: "pythonOrm", api: "pythonApi", auth: "pythonAuth" },
   go: { orm: "goOrm", api: "goApi", auth: "goAuth" },
-  java: { orm: "javaOrm", auth: "javaAuth" },
+  java: { orm: "javaOrm", api: "javaApi", auth: "javaAuth" },
   dotnet: { orm: "dotnetOrm", api: "dotnetApi", auth: "dotnetAuth" },
   elixir: { orm: "elixirOrm", api: "elixirApi", auth: "elixirAuth" },
 } as const satisfies Record<
@@ -559,7 +561,7 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     config: "goConfig",
     observability: "goObservability",
   },
-  java: { buildTool: "javaBuildTool" },
+  java: { buildTool: "javaBuildTool", logging: "javaLogging" },
   dotnet: {
     jobQueue: "dotnetJobQueue",
     realtime: "dotnetRealtime",
@@ -774,6 +776,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(JAVA_BUILD_TOOL_VALUES, "buildTool", "java", "javaBuildTool"),
   ...defineTools(JAVA_ORM_VALUES, "orm", "java", "javaOrm"),
   ...defineTools(JAVA_AUTH_VALUES, "auth", "java", "javaAuth"),
+  ...defineTools(JAVA_API_VALUES, "api", "java", "javaApi"),
+  ...defineTools(JAVA_LOGGING_VALUES, "logging", "java", "javaLogging"),
   ...defineTools(JAVA_LIBRARIES_VALUES, "libraries", "java", "javaLibraries", {
     allowMultiple: true,
   }),

@@ -187,6 +187,8 @@ export type CompatibilityInput = {
   javaBuildTool: string;
   javaOrm: string;
   javaAuth: string;
+  javaApi: string;
+  javaLogging: string;
   javaLibraries: string[];
   javaTestingLibraries: string[];
   dotnetWebFramework: string;

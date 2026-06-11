@@ -102,6 +102,8 @@ import type {
   JavaBuildToolSchema,
   JavaOrmSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaLibrariesSchema,
   JavaTestingLibrariesSchema,
   DotnetWebFrameworkSchema,
@@ -238,6 +240,8 @@ export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
 export type JavaOrm = z.infer<typeof JavaOrmSchema>;
 export type JavaAuth = z.infer<typeof JavaAuthSchema>;
+export type JavaApi = z.infer<typeof JavaApiSchema>;
+export type JavaLogging = z.infer<typeof JavaLoggingSchema>;
 export type JavaLibraries = z.infer<typeof JavaLibrariesSchema>;
 export type JavaTestingLibraries = z.infer<typeof JavaTestingLibrariesSchema>;
 export type DotnetWebFramework = z.infer<typeof DotnetWebFrameworkSchema>;

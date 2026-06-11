@@ -22,6 +22,20 @@ spring:
     console:
       enabled: true
 {{/if}}
+{{#if (or hasJavaJooq hasJavaMybatis)}}
+  datasource:
+    url: jdbc:h2:file:./data/{{javaArtifactId}};MODE=PostgreSQL;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+{{/if}}
+{{#if hasJavaKeycloak}}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/{{javaArtifactId}}{{! brace }}}
+{{/if}}
 {{#if hasJavaFlyway}}
   flyway:
     locations: classpath:db/migration

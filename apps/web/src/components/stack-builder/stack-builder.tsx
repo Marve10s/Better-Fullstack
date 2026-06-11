@@ -344,7 +344,13 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "goConfig",
     "goObservability",
   ],
-  java: ["javaBuildTool", "javaLibraries", "javaTestingLibraries"],
+  java: [
+    "javaBuildTool",
+    "javaApi",
+    "javaLogging",
+    "javaLibraries",
+    "javaTestingLibraries",
+  ],
   elixir: [
     "elixirRealtime",
     "elixirJobs",

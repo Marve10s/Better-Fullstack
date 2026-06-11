@@ -108,6 +108,8 @@ export function createCliDefaultProjectConfigBase(
     javaBuildTool: "maven",
     javaOrm: "none",
     javaAuth: "none",
+    javaApi: "none",
+    javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: ["junit5"],
     dotnetWebFramework: "aspnet-minimal",

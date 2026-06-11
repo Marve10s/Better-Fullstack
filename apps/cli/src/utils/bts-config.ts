@@ -82,6 +82,8 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.javaBuildTool = "none";
     normalized.javaOrm = "none";
     normalized.javaAuth = "none";
+    normalized.javaApi = "none";
+    normalized.javaLogging = "none";
     normalized.javaLibraries = [];
     normalized.javaTestingLibraries = [];
   }
@@ -339,6 +341,8 @@ function buildBtsConfigForPersistence(
     javaBuildTool: persistedConfig.javaBuildTool,
     javaOrm: persistedConfig.javaOrm,
     javaAuth: persistedConfig.javaAuth,
+    javaApi: persistedConfig.javaApi,
+    javaLogging: persistedConfig.javaLogging,
     javaLibraries: persistedConfig.javaLibraries,
     javaTestingLibraries: persistedConfig.javaTestingLibraries,
     dotnetWebFramework: persistedConfig.dotnetWebFramework,
@@ -492,6 +496,8 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     javaBuildTool: btsConfig.javaBuildTool,
     javaOrm: btsConfig.javaOrm,
     javaAuth: btsConfig.javaAuth,
+    javaApi: btsConfig.javaApi,
+    javaLogging: btsConfig.javaLogging,
     javaLibraries: btsConfig.javaLibraries,
     javaTestingLibraries: btsConfig.javaTestingLibraries,
     dotnetWebFramework: btsConfig.dotnetWebFramework,

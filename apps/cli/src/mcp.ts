@@ -72,6 +72,8 @@ import {
   GoTestingSchema,
   GoWebFrameworkSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
   JavaOrmSchema,
@@ -503,6 +505,8 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   javaBuildTool: "maven",
   javaOrm: "none",
   javaAuth: "none",
+  javaApi: "none",
+  javaLogging: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
   dotnetWebFramework: "aspnet-minimal",
@@ -928,6 +932,8 @@ export async function startMcpServer() {
     javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
     javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
     javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+    javaApi: JavaApiSchema.optional().describe("Java API layer"),
+    javaLogging: JavaLoggingSchema.optional().describe("Java logging configuration"),
     javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
     javaTestingLibraries: z
       .array(JavaTestingLibrariesSchema)

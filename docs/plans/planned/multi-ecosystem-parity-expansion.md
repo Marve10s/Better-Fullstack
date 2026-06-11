@@ -120,15 +120,19 @@ insta) — no new category; do not duplicate.
 
 New categories:
 
-- [ ] `javaApi`: `spring-graphql`, `grpc-java`
-- [ ] `javaLogging`: `logback` (explicit config), `log4j2`
+- [x] `javaApi`: `spring-graphql` ✅ 2026-06-11 — `grpc-java` DEFERRED: protoc build-plugin
+      codegen must be configured and kept green in BOTH Maven and Gradle smoke builds
+- [x] `javaLogging`: `logback` (explicit logback-spring.xml) ✅ 2026-06-11 — `log4j2` DEFERRED:
+      requires logging-starter exclusions on all 16 starter declarations across both build files
 
 Existing-category depth:
 
-- [ ] `javaWebFramework` += `micronaut`
-- [ ] `javaOrm` += `jooq`, `mybatis`
-- [ ] `javaAuth` += `keycloak`
-- [ ] `javaLibraries` += `spring-amqp` (RabbitMQ), `opentelemetry-java`
+- [x] `javaOrm` += `jooq` (DSLContext + H2), `mybatis` (annotated mappers + H2) ✅ 2026-06-11
+- [x] `javaAuth` += `keycloak` (OAuth2 resource server, lazy issuer fetch) ✅ 2026-06-11
+- [x] `javaLibraries` += `spring-amqp`, `opentelemetry-java` (plain SDK + OTLP; the Spring Boot
+      starter does not support Boot 4 yet) ✅ 2026-06-11
+- [ ] `javaWebFramework` += `micronaut` — DEFERRED: a second full framework with its own build
+      plugins and source layout (same class as quarkus, which has its own branch today)
 
 ## Batch 5 — Elixir + .NET follow-ups (Tier 2)
 

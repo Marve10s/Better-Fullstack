@@ -267,6 +267,8 @@ export async function createProjectHandler(
               javaBuildTool: "none",
               javaOrm: "none",
               javaAuth: "none",
+              javaApi: "none",
+              javaLogging: "none",
               javaLibraries: [],
               javaTestingLibraries: [],
               dotnetWebFramework: "none",

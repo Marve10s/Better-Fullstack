@@ -64,6 +64,8 @@ import {
   GO_CONFIG_VALUES,
   GO_OBSERVABILITY_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_API_VALUES,
+  JAVA_LOGGING_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
@@ -228,6 +230,8 @@ export type OptionCategory =
   | "javaBuildTool"
   | "javaOrm"
   | "javaAuth"
+  | "javaApi"
+  | "javaLogging"
   | "javaLibraries"
   | "javaTestingLibraries"
   | "dotnetWebFramework"
@@ -414,6 +418,8 @@ export const JAVA_CATEGORY_ORDER = [
   "javaBuildTool",
   "javaOrm",
   "javaAuth",
+  "javaApi",
+  "javaLogging",
   "javaLibraries",
   "javaTestingLibraries",
   "email",
@@ -552,6 +558,8 @@ export function getCategoryDisplayName(categoryKey: string): string {
     javaBuildTool: "Java Build Tool",
     javaOrm: "Java ORM / Database",
     javaAuth: "Java Auth",
+    javaApi: "Java API Layer",
+    javaLogging: "Java Logging",
     javaLibraries: "Java Libraries",
     javaTestingLibraries: "Java Testing Libraries",
     dotnetWebFramework: ".NET Web Framework",
@@ -805,6 +813,8 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   javaBuildTool: JAVA_BUILD_TOOL_VALUES,
   javaOrm: JAVA_ORM_VALUES,
   javaAuth: JAVA_AUTH_VALUES,
+  javaApi: JAVA_API_VALUES,
+  javaLogging: JAVA_LOGGING_VALUES,
   javaLibraries: JAVA_LIBRARIES_VALUES,
   javaTestingLibraries: JAVA_TESTING_LIBRARIES_VALUES,
   dotnetWebFramework: DOTNET_WEB_FRAMEWORK_VALUES,
@@ -1336,9 +1346,18 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaOrm: {
     "spring-data-jpa": "Spring Data JPA",
+    jooq: "jOOQ",
+    mybatis: "MyBatis",
   },
   javaAuth: {
     "spring-security": "Spring Security",
+    keycloak: "Keycloak (OAuth2 Resource Server)",
+  },
+  javaApi: {
+    "spring-graphql": "Spring for GraphQL",
+  },
+  javaLogging: {
+    logback: "Logback",
   },
   javaLibraries: {
     "spring-actuator": "Spring Boot Actuator",
@@ -1357,6 +1376,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "spring-devtools": "Spring Boot DevTools",
     "micrometer-prometheus": "Micrometer Prometheus",
     thymeleaf: "Thymeleaf",
+    "spring-amqp": "Spring AMQP (RabbitMQ)",
+    "opentelemetry-java": "OpenTelemetry",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
@@ -1671,6 +1692,8 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   javaBuildTool: buildCategoryMetadata("javaBuildTool"),
   javaOrm: buildCategoryMetadata("javaOrm"),
   javaAuth: buildCategoryMetadata("javaAuth"),
+  javaApi: buildCategoryMetadata("javaApi"),
+  javaLogging: buildCategoryMetadata("javaLogging"),
   javaLibraries: buildCategoryMetadata("javaLibraries"),
   javaTestingLibraries: buildCategoryMetadata("javaTestingLibraries"),
   dotnetWebFramework: buildCategoryMetadata("dotnetWebFramework"),

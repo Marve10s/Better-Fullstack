@@ -585,12 +585,20 @@ export const JavaWebFrameworkSchema = z
 export const JavaBuildToolSchema = z.enum(["maven", "gradle", "none"]).describe("Java build tool");
 
 export const JavaOrmSchema = z
-  .enum(["spring-data-jpa", "none"])
+  .enum(["spring-data-jpa", "jooq", "mybatis", "none"])
   .describe("Java ORM/database layer");
 
 export const JavaAuthSchema = z
-  .enum(["spring-security", "none"])
+  .enum(["spring-security", "keycloak", "none"])
   .describe("Java authentication library");
+
+export const JavaApiSchema = z
+  .enum(["spring-graphql", "none"])
+  .describe("Java API layer");
+
+export const JavaLoggingSchema = z
+  .enum(["logback", "none"])
+  .describe("Java logging configuration");
 
 export const JavaLibrariesSchema = z
   .enum([
@@ -610,6 +618,8 @@ export const JavaLibrariesSchema = z
     "spring-devtools",
     "micrometer-prometheus",
     "thymeleaf",
+    "spring-amqp",
+    "opentelemetry-java",
     "none",
   ])
   .describe("Java application libraries");
@@ -946,6 +956,8 @@ export const CreateInputSchema = z.object({
   javaBuildTool: JavaBuildToolSchema.optional(),
   javaOrm: JavaOrmSchema.optional(),
   javaAuth: JavaAuthSchema.optional(),
+  javaApi: JavaApiSchema.optional(),
+  javaLogging: JavaLoggingSchema.optional(),
   javaLibraries: z.array(JavaLibrariesSchema).optional(),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema).optional(),
   // .NET ecosystem options
@@ -1101,6 +1113,8 @@ export const ProjectConfigSchema = z.object({
   javaBuildTool: JavaBuildToolSchema,
   javaOrm: JavaOrmSchema,
   javaAuth: JavaAuthSchema,
+  javaApi: JavaApiSchema,
+  javaLogging: JavaLoggingSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
   // .NET ecosystem options
@@ -1251,6 +1265,8 @@ export const BetterTStackConfigSchema = z.object({
   javaBuildTool: JavaBuildToolSchema,
   javaOrm: JavaOrmSchema,
   javaAuth: JavaAuthSchema,
+  javaApi: JavaApiSchema,
+  javaLogging: JavaLoggingSchema,
   javaLibraries: z.array(JavaLibrariesSchema),
   javaTestingLibraries: z.array(JavaTestingLibrariesSchema),
   // .NET ecosystem options
@@ -1411,6 +1427,8 @@ export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;
 export const JAVA_ORM_VALUES = JavaOrmSchema.options;
 export const JAVA_AUTH_VALUES = JavaAuthSchema.options;
+export const JAVA_API_VALUES = JavaApiSchema.options;
+export const JAVA_LOGGING_VALUES = JavaLoggingSchema.options;
 export const JAVA_LIBRARIES_VALUES = JavaLibrariesSchema.options;
 export const JAVA_TESTING_LIBRARIES_VALUES = JavaTestingLibrariesSchema.options;
 export const DOTNET_WEB_FRAMEWORK_VALUES = DotnetWebFrameworkSchema.options;

@@ -246,6 +246,8 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["java-build-tool", config.javaBuildTool],
     ["java-orm", config.javaOrm],
     ["java-auth", config.javaAuth],
+    ["java-api", config.javaApi],
+    ["java-logging", config.javaLogging],
     ["java-libraries", withExplicitNone(config.javaLibraries)],
     ["java-testing-libraries", withExplicitNone(config.javaTestingLibraries)],
   ];

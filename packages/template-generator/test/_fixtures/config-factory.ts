@@ -104,6 +104,8 @@ const DEFAULT_CONFIG = {
   javaBuildTool: "none",
   javaOrm: "none",
   javaAuth: "none",
+  javaApi: "none",
+  javaLogging: "none",
   javaLibraries: [],
   javaTestingLibraries: [],
   dotnetWebFramework: "none",

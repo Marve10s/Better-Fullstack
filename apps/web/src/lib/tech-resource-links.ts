@@ -1283,6 +1283,34 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://google.github.io/adk-docs/",
     githubUrl: "https://github.com/google/adk-python",
   },
+  jooq: {
+    docsUrl: "https://www.jooq.org/doc/latest/manual/",
+    githubUrl: "https://github.com/jOOQ/jOOQ",
+  },
+  mybatis: {
+    docsUrl: "https://mybatis.org/mybatis-3/",
+    githubUrl: "https://github.com/mybatis/mybatis-3",
+  },
+  keycloak: {
+    docsUrl: "https://www.keycloak.org/documentation",
+    githubUrl: "https://github.com/keycloak/keycloak",
+  },
+  "spring-graphql": {
+    docsUrl: "https://docs.spring.io/spring-graphql/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-graphql",
+  },
+  logback: {
+    docsUrl: "https://logback.qos.ch/documentation.html",
+    githubUrl: "https://github.com/qos-ch/logback",
+  },
+  "spring-amqp": {
+    docsUrl: "https://docs.spring.io/spring-amqp/reference/",
+    githubUrl: "https://github.com/spring-projects/spring-amqp",
+  },
+  "opentelemetry-java": {
+    docsUrl: "https://opentelemetry.io/docs/languages/java/",
+    githubUrl: "https://github.com/open-telemetry/opentelemetry-java",
+  },
   torii: {
     docsUrl: "https://docs.rs/torii",
     githubUrl: "https://github.com/cmackenzie1/torii-rs",

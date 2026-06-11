@@ -70,6 +70,8 @@ import {
   GoTestingSchema,
   GoWebFrameworkSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
   JavaOrmSchema,
@@ -320,6 +322,8 @@ export const CreateCommandOptionsSchema = z.object({
   javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool (maven, gradle, none)"),
   javaOrm: JavaOrmSchema.optional().describe("Java ORM/database (spring-data-jpa)"),
   javaAuth: JavaAuthSchema.optional().describe("Java auth (spring-security)"),
+  javaApi: JavaApiSchema.optional().describe("Java API layer (spring-graphql)"),
+  javaLogging: JavaLoggingSchema.optional().describe("Java logging (logback, log4j2)"),
   javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
   javaTestingLibraries: z
     .array(JavaTestingLibrariesSchema)

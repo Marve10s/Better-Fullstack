@@ -548,6 +548,8 @@ export async function createVirtual(
       javaBuildTool: options.javaBuildTool || (options.ecosystem === "java" ? "maven" : "none"),
       javaOrm: options.javaOrm || "none",
       javaAuth: options.javaAuth || "none",
+      javaApi: options.javaApi || "none",
+      javaLogging: options.javaLogging || "none",
       javaLibraries: options.javaLibraries || [],
       javaTestingLibraries:
         options.javaTestingLibraries || (options.ecosystem === "java" ? ["junit5"] : []),

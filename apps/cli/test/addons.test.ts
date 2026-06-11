@@ -606,6 +606,8 @@ describe("Addon Configurations", () => {
           javaBuildTool: "maven",
           javaOrm: "none",
           javaAuth: "none",
+          javaApi: "none",
+          javaLogging: "none",
           javaLibraries: [],
           javaTestingLibraries: ["junit5"],
           install: false,

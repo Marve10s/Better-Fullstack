@@ -60,6 +60,8 @@ import type {
   GoTesting,
   GoWebFramework,
   JavaAuth,
+  JavaApi,
+  JavaLogging,
   JavaBuildTool,
   JavaLibraries,
   JavaOrm,
@@ -192,6 +194,8 @@ import { getI18nChoice } from "./i18n";
 import { getinstallChoice } from "./install";
 import {
   getJavaAuthChoice,
+  getJavaApiChoice,
+  getJavaLoggingChoice,
   getJavaBuildToolChoice,
   getJavaLibrariesChoice,
   getJavaOrmChoice,
@@ -359,6 +363,8 @@ type PromptGroupResults = {
   javaBuildTool: JavaBuildTool;
   javaOrm: JavaOrm;
   javaAuth: JavaAuth;
+  javaApi: JavaApi;
+  javaLogging: JavaLogging;
   javaLibraries: JavaLibraries[];
   javaTestingLibraries: JavaTestingLibraries[];
   // .NET ecosystem
@@ -919,6 +925,20 @@ export async function gatherConfig(
         }
         return getJavaAuthChoice(flags.javaAuth);
       },
+      javaApi: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaApi);
+        if (results.javaWebFramework !== "spring-boot") {
+          return Promise.resolve("none" as JavaApi);
+        }
+        return getJavaApiChoice(flags.javaApi);
+      },
+      javaLogging: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaLogging);
+        if (results.javaWebFramework !== "spring-boot") {
+          return Promise.resolve("none" as JavaLogging);
+        }
+        return getJavaLoggingChoice(flags.javaLogging);
+      },
       javaLibraries: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve([] as JavaLibraries[]);
         if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
@@ -1171,6 +1191,8 @@ export async function gatherConfig(
     javaBuildTool: result.javaBuildTool,
     javaOrm: result.javaOrm,
     javaAuth: result.javaAuth,
+    javaApi: result.javaApi,
+    javaLogging: result.javaLogging,
     javaLibraries: result.javaLibraries,
     javaTestingLibraries: result.javaTestingLibraries,
     // .NET ecosystem options

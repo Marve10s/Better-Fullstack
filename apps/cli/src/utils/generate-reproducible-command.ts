@@ -981,6 +981,8 @@ function getJavaFlags(config: ProjectConfig) {
   flags.push(`--java-build-tool ${config.javaBuildTool}`);
   flags.push(`--java-orm ${config.javaOrm}`);
   flags.push(`--java-auth ${config.javaAuth}`);
+  flags.push(`--java-api ${config.javaApi}`);
+  flags.push(`--java-logging ${config.javaLogging}`);
   flags.push(formatArrayFlag("java-libraries", config.javaLibraries));
   flags.push(formatArrayFlag("java-testing-libraries", config.javaTestingLibraries));
   appendSharedNonTypeScriptFlags(flags, config);
