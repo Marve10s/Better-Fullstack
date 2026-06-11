@@ -556,9 +556,11 @@ function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
         ? sampleScalar(ELIXIR_QUALITY_VALUES, 0.25, "elixirQuality")
         : "none",
       elixirDeploy: usesPhoenix
-      elixirLibraries: usesPhoenix ? sampleArray(ELIXIR_LIBRARIES_VALUES, 0.5, 2, "elixirLibraries") : [],
         ? sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy")
         : "none",
+      elixirLibraries: usesPhoenix
+        ? sampleArray(ELIXIR_LIBRARIES_VALUES, 0.5, 2, "elixirLibraries")
+        : [],
     },
   };
 }
