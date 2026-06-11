@@ -71,3 +71,5 @@ scripts/ralph/
 .claude/worktrees/
 testing/.validate-r4/
 testing/.verify-*/
+# LLM benchmark reports stay local
+testing/llm-benchmarks/
