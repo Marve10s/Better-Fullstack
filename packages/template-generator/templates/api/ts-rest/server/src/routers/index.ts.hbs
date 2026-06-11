@@ -9,7 +9,7 @@ export function createRouter(ctx: Context) {
         body: "OK" as const,
       };
     },
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
     privateData: async () => {
       if (!ctx.session) {
         return {

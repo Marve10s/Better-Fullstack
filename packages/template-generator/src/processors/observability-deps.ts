@@ -65,4 +65,28 @@ export function processObservabilityDeps(vfs: VirtualFileSystem, config: Project
       dependencies: ["prom-client"],
     });
   }
+
+  if (observability === "datadog") {
+    addPackageDependency({
+      vfs,
+      packagePath: targetPath,
+      dependencies: ["dd-trace"],
+    });
+  }
+
+  if (observability === "axiom") {
+    addPackageDependency({
+      vfs,
+      packagePath: targetPath,
+      dependencies: ["@axiomhq/js"],
+    });
+  }
+
+  if (observability === "betterstack") {
+    addPackageDependency({
+      vfs,
+      packagePath: targetPath,
+      dependencies: ["@logtail/node"],
+    });
+  }
 }

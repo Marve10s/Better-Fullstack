@@ -1,4 +1,4 @@
-import { initTRPC{{#if (eq auth "better-auth")}}, TRPCError{{/if}} } from "@trpc/server";
+import { initTRPC{{#if (isBetterAuth auth)}}, TRPCError{{/if}} } from "@trpc/server";
 import type { Context } from "./context{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
 export const t = initTRPC.context<Context>().create();
@@ -7,7 +7,7 @@ export const router = t.router;
 
 export const publicProcedure = t.procedure;
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.session) {
     throw new TRPCError({

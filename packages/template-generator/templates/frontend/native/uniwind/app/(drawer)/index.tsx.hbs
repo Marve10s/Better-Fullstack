@@ -15,7 +15,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/re
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { useUser } from "@clerk/clerk-expo";
 import { SignOutButton } from "@/components/sign-out-button";
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
@@ -25,7 +25,7 @@ import { SignUp } from "@/components/sign-up";
 import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 {{/if}}
-{{#unless (or (eq backend "none") (and (eq backend "convex") (eq auth "better-auth")))}}
+{{#unless (or (eq backend "none") (and (eq backend "convex") (isBetterAuth auth)))}}
 import { Ionicons } from "@expo/vector-icons";
 {{/unless}}
 import { Button, Chip, Spinner, Surface, useThemeColor } from "heroui-native";
@@ -41,7 +41,7 @@ const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 const { user } = useUser();
 const healthCheck = useQuery(api.healthCheck.get);
 const privateData = useQuery(api.privateData.get);
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 const healthCheck = useQuery(api.healthCheck.get);
 const { isAuthenticated } = useConvexAuth();
 const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
@@ -72,7 +72,7 @@ return (
     <Text className="text-muted text-sm mt-1">Full-stack TypeScript starter</Text>
   </View>
 
-  {{#unless (or (eq backend "none") (and (eq backend "convex") (eq auth "better-auth")))}}
+  {{#unless (or (eq backend "none") (and (eq backend "convex") (isBetterAuth auth)))}}
   <Surface variant="secondary" className="p-4 rounded-lg">
     <View className="flex-row items-center justify-between mb-3">
       <Text className="text-foreground font-medium">System Status</Text>
@@ -147,7 +147,7 @@ return (
   </AuthLoading>
   {{/if}}
 
-  {{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+  {{#if (and (eq backend "convex") (isBetterAuth auth))}}
   {user ? (
   <Surface variant="secondary" className="mb-4 p-4 rounded-lg">
     <View className="flex-row items-center justify-between">

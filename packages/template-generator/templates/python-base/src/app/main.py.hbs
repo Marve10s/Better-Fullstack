@@ -17,7 +17,7 @@ from app.observability import init_sentry
 
 {{/if}}
 {{#if (eq pythonWebFramework "fastapi")}}
-from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (ne pythonAuth "none")))}}, HTTPException{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}, HTTPException{{/if}}{{#if (eq pythonOrm "tortoise-orm")}}, HTTPException{{/if}}{{#if (and (eq pythonOrm "none") (or (eq pythonValidation "pydantic") (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))))}}, HTTPException{{/if}}
 from fastapi.middleware.cors import CORSMiddleware
 {{#if (eq pythonOrm "sqlalchemy")}}
 from sqlalchemy.orm import Session
@@ -167,8 +167,11 @@ from app.celery_schemas import (
     TaskRevokeResponse,
 )
 {{/if}}
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 from app.auth import create_access_token, verify_token
+{{/if}}
+{{#if (eq pythonAuth "fastapi-users")}}
+from app.users import auth_router, register_router
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 from strawberry.fastapi import GraphQLRouter
@@ -236,6 +239,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+{{#if (eq pythonAuth "fastapi-users")}}
+app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])
+app.include_router(register_router, prefix="/auth", tags=["auth"])
+{{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 graphql_app = GraphQLRouter(graphql_schema)
 app.include_router(graphql_app, prefix="/graphql")
@@ -255,7 +262,7 @@ async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
 
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 
 # Auth endpoints
 @app.post("/auth/token")
@@ -1078,7 +1085,7 @@ from rest_framework.response import Response
 {{#if (eq pythonApi "django-ninja")}}
 from ninja import NinjaAPI
 {{/if}}
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 from app.auth import create_access_token, verify_token
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
@@ -1145,7 +1152,7 @@ def api_status(request):
 {{/if}}
 
 
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 def auth_token(request):
     """Create an access token."""
     if request.method != "POST":
@@ -1180,7 +1187,7 @@ urlpatterns = [
 {{#if (eq pythonApi "django-ninja")}}
     path("api/", ninja_api.urls),
 {{/if}}
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
     path("auth/token", auth_token),
     path("auth/me", auth_me),
 {{/if}}
@@ -1209,7 +1216,7 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 {{#if (eq pythonValidation "pydantic")}}
 from app.settings import get_settings
 {{/if}}
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 from app.auth import create_access_token, verify_token
 {{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
@@ -1253,7 +1260,7 @@ def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy"})
 
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 
 @app.route("/auth/token", methods=["POST"])
 def auth_token():
@@ -1290,7 +1297,7 @@ if __name__ == "__main__":
 {{#if (eq pythonWebFramework "litestar")}}
 from litestar import Litestar, get, post{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
 from litestar.config.cors import CORSConfig
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 from litestar.exceptions import HTTPException
 
 from app.auth import create_access_token, verify_token
@@ -1322,7 +1329,7 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-{{#if (ne pythonAuth "none")}}
+{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}
 
 @post("/auth/token")
 async def auth_token(data: dict) -> dict:
@@ -1361,9 +1368,53 @@ async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
     await ariadne_app(scope, receive, send)
 {{/if}}
 app = Litestar(
-    route_handlers=[index, health{{#if (ne pythonAuth "none")}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
+    route_handlers=[index, health{{#if (or (eq pythonAuth "authlib") (eq pythonAuth "jwt"))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
 )
+{{/if}}
+{{#if (eq pythonWebFramework "starlette")}}
+from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+
+load_dotenv()
+
+
+async def index(request: Request) -> JSONResponse:
+    """Root endpoint."""
+    return JSONResponse({"message": "Hello from Starlette!"})
+
+
+async def health(request: Request) -> JSONResponse:
+    """Health check endpoint."""
+    return JSONResponse({"status": "ok"})
+
+
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    ),
+]
+
+app = Starlette(
+    routes=[
+        Route("/", index),
+        Route("/health", health),
+    ],
+    middleware=middleware,
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000")))
 {{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def main():

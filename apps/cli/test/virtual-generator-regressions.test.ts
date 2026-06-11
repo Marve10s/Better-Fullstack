@@ -110,6 +110,316 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
   });
 
+  it("projects backend-owned Better Auth organizations into generated auth files", async () => {
+    const result = await createVirtual({
+      projectName: "better-auth-orgs",
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "trpc",
+      database: "postgres",
+      orm: "drizzle",
+      auth: "better-auth-organizations",
+      payments: "none",
+      addons: [],
+      examples: [],
+    });
+
+    expect(result.success).toBe(true);
+
+    const authServer = readTextFromTree(result.tree!, "packages/auth/src/index.ts");
+    const authClient = readTextFromTree(result.tree!, "apps/web/src/lib/auth-client.ts");
+    const authSchema = readTextFromTree(result.tree!, "packages/db/src/schema/auth.ts");
+
+    expect(authServer).toContain('from "better-auth/plugins"');
+    expect(authServer).toContain("organization()");
+    expect(authServer).not.toContain("polar(");
+    expect(authClient).toContain("organizationClient()");
+    expect(authClient).not.toContain("polarClient");
+    expect(authSchema).toContain("activeOrganizationId");
+    expect(authSchema).toContain('pgTable("organization"');
+    expect(authSchema).toContain("export const member = pgTable(");
+    expect(authSchema).toContain("export const invitation = pgTable(");
+  });
+
+  const enterpriseObservabilityProviders = [
+    {
+      observability: "datadog",
+      filePath: "apps/server/src/lib/datadog.ts",
+      dependency: "dd-trace",
+      fileSnippet: 'from "dd-trace"',
+      envVars: ["DD_SERVICE", "DD_ENV", "DD_VERSION", "DD_TRACE_AGENT_URL"],
+    },
+    {
+      observability: "axiom",
+      filePath: "apps/server/src/lib/axiom.ts",
+      dependency: "@axiomhq/js",
+      fileSnippet: 'from "@axiomhq/js"',
+      envVars: ["AXIOM_TOKEN", "AXIOM_DATASET"],
+    },
+    {
+      observability: "betterstack",
+      filePath: "apps/server/src/lib/betterstack.ts",
+      dependency: "@logtail/node",
+      fileSnippet: 'from "@logtail/node"',
+      envVars: ["BETTERSTACK_SOURCE_TOKEN", "BETTERSTACK_INGESTING_HOST"],
+    },
+  ] as const;
+
+  for (const provider of enterpriseObservabilityProviders) {
+    it(`generates ${provider.observability} observability files, deps, and env vars`, async () => {
+      const result = await createVirtual({
+        projectName: `obs-${provider.observability}`,
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        api: "trpc",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        observability: provider.observability,
+        addons: [],
+        examples: [],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+      });
+
+      expect(result.success).toBe(true);
+
+      const serverPackageJson = readJsonFromTree(result.tree!, "apps/server/package.json");
+      const integrationFile = readTextFromTree(result.tree!, provider.filePath);
+      const serverEnv = readTextFromTree(result.tree!, "packages/env/src/server.ts");
+      const serverDotEnv = readTextFromTree(result.tree!, "apps/server/.env");
+
+      expect(serverPackageJson?.dependencies?.[provider.dependency]).toBeDefined();
+      expect(integrationFile).toContain(provider.fileSnippet);
+      for (const envVar of provider.envVars) {
+        expect(serverEnv).toContain(envVar);
+        expect(serverDotEnv).toContain(`${envVar}=`);
+      }
+    });
+  }
+
+  const rateLimitProviders = [
+    {
+      rateLimit: "arcjet",
+      dependencies: ["@arcjet/node"],
+      fileSnippet: 'from "@arcjet/node"',
+      envVars: ["ARCJET_KEY"],
+    },
+    {
+      rateLimit: "upstash-ratelimit",
+      dependencies: ["@upstash/ratelimit", "@upstash/redis"],
+      fileSnippet: 'from "@upstash/ratelimit"',
+      envVars: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    },
+  ] as const;
+
+  for (const provider of rateLimitProviders) {
+    it(`generates ${provider.rateLimit} rate-limit files, deps, and env vars`, async () => {
+      const result = await createVirtual({
+        projectName: `rate-${provider.rateLimit}`,
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        api: "trpc",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        rateLimit: provider.rateLimit,
+        addons: [],
+        examples: [],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+      });
+
+      expect(result.success).toBe(true);
+
+      const serverPackageJson = readJsonFromTree(result.tree!, "apps/server/package.json");
+      const rateLimitFile = readTextFromTree(result.tree!, "apps/server/src/lib/rate-limit.ts");
+      const serverEnv = readTextFromTree(result.tree!, "packages/env/src/server.ts");
+      const serverDotEnv = readTextFromTree(result.tree!, "apps/server/.env");
+
+      for (const dependency of provider.dependencies) {
+        expect(serverPackageJson?.dependencies?.[dependency]).toBeDefined();
+      }
+      expect(rateLimitFile).toContain(provider.fileSnippet);
+      for (const envVar of provider.envVars) {
+        expect(serverEnv).toContain(envVar);
+        expect(serverDotEnv).toContain(`${envVar}=`);
+      }
+    });
+  }
+
+  it("uses the Arcjet Next package for self-hosted Next.js rate limiting", async () => {
+    const result = await createVirtual({
+      projectName: "rate-arcjet-next",
+      frontend: ["next"],
+      backend: "self",
+      runtime: "none",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      rateLimit: "arcjet",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const webPackageJson = readJsonFromTree(result.tree!, "apps/web/package.json");
+    const rateLimitFile = readTextFromTree(result.tree!, "apps/web/src/lib/rate-limit.ts");
+    const webDotEnv = readTextFromTree(result.tree!, "apps/web/.env");
+
+    expect(webPackageJson?.dependencies?.["@arcjet/next"]).toBeDefined();
+    expect(webPackageJson?.dependencies?.["@arcjet/node"]).toBeUndefined();
+    expect(rateLimitFile).toContain('from "@arcjet/next"');
+    expect(webDotEnv).toContain("ARCJET_KEY=");
+  });
+
+  const hostedNextAuthProviders = [
+    {
+      auth: "workos",
+      dependency: "@workos-inc/authkit-nextjs",
+      routePath: "apps/web/src/app/login/route.ts",
+      routeSnippet: "getSignInUrl",
+      clientSnippet: "AuthKitProvider",
+      webEnvSnippet: "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
+      envVars: [
+        "WORKOS_API_KEY",
+        "WORKOS_CLIENT_ID",
+        "WORKOS_COOKIE_PASSWORD",
+        "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
+      ],
+    },
+    {
+      auth: "kinde",
+      dependency: "@kinde-oss/kinde-auth-nextjs",
+      routePath: "apps/web/src/app/api/auth/[kindeAuth]/route.ts",
+      routeSnippet: "handleAuth()",
+      clientSnippet: "KindeProvider",
+      webEnvSnippet: undefined,
+      envVars: [
+        "KINDE_CLIENT_ID",
+        "KINDE_CLIENT_SECRET",
+        "KINDE_ISSUER_URL",
+        "KINDE_SITE_URL",
+        "KINDE_POST_LOGIN_REDIRECT_URL",
+        "KINDE_POST_LOGOUT_REDIRECT_URL",
+      ],
+    },
+  ] as const;
+
+  for (const provider of hostedNextAuthProviders) {
+    it(`generates ${provider.auth} fullstack Next auth files, deps, and env vars`, async () => {
+      const result = await createVirtual({
+        projectName: `auth-${provider.auth}`,
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        api: "trpc",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: provider.auth,
+        addons: [],
+        examples: [],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+      });
+
+      expect(result.success).toBe(true);
+
+      const webPackageJson = readJsonFromTree(result.tree!, "apps/web/package.json");
+      const route = readTextFromTree(result.tree!, provider.routePath);
+      const authClient = readTextFromTree(result.tree!, "apps/web/src/lib/auth-client.tsx");
+      const providers = readTextFromTree(result.tree!, "apps/web/src/components/providers.tsx");
+      const serverEnv = readTextFromTree(result.tree!, "packages/env/src/server.ts");
+      const webEnv = readTextFromTree(result.tree!, "packages/env/src/web.ts");
+      const webDotEnv = readTextFromTree(result.tree!, "apps/web/.env");
+
+      expect(webPackageJson?.dependencies?.[provider.dependency]).toBeDefined();
+      expect(route).toContain(provider.routeSnippet);
+      expect(authClient).toContain(provider.clientSnippet);
+      expect(providers).toContain("<AuthProvider>");
+      if (provider.webEnvSnippet) {
+        expect(webEnv).toContain(provider.webEnvSnippet);
+      }
+      for (const envVar of provider.envVars) {
+        expect(serverEnv).toContain(envVar);
+        expect(webDotEnv).toContain(`${envVar}=`);
+      }
+    });
+  }
+
+  it("scaffolds a default .NET Minimal API project", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetApi",
+      ecosystem: "dotnet",
+      database: "postgres",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "ef-core",
+      dotnetAuth: "aspnet-identity",
+      dotnetApi: "minimal-api",
+      dotnetTesting: ["xunit"],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "signalr",
+      dotnetObservability: ["serilog"],
+      dotnetCaching: "none",
+      dotnetDeploy: "docker",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetApi.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+    const dockerfile = readTextFromTree(result.tree!, "Dockerfile");
+    const testProject = readTextFromTree(result.tree!, "DotnetApi.Tests/DotnetApi.Tests.csproj");
+
+    expect(projectFile).toContain("<TargetFramework>net10.0</TargetFramework>");
+    expect(projectFile).toContain('PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"');
+    expect(projectFile).toContain('PackageReference Include="Serilog.AspNetCore"');
+    expect(program).toContain("builder.Services.AddDbContext<AppDbContext>");
+    expect(program).toContain('app.MapHub<UpdatesHub>("/hubs/updates")');
+    expect(dockerfile).toContain("FROM mcr.microsoft.com/dotnet/sdk:10.0");
+    expect(testProject).toContain('PackageReference Include="xunit"');
+  });
+
+  it("keeps .NET Minimal API templates valid when EF Core is disabled", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetNoEf",
+      ecosystem: "dotnet",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "none",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetNoEf.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(projectFile).not.toContain("EntityFrameworkCore");
+    expect(program).not.toContain("AppDbContext");
+    expect(program).not.toContain("EntityFrameworkCore");
+    expect(program).toContain('app.MapGet("/api/todos", () =>');
+    expect(readTextFromTree(result.tree!, "Dockerfile")).toBeUndefined();
+    expect(readTextFromTree(result.tree!, "DotnetNoEf.Tests/DotnetNoEf.Tests.csproj")).toBeUndefined();
+  });
+
   it("omits the Quantum scheduler unless Quantum jobs are selected", async () => {
     const result = await createVirtual({
       projectName: "elixir-no-quantum",

@@ -1,0 +1,14 @@
+{{#if hasJavaMybatis}}
+package {{javaPackageName}}.mybatisdata;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+/** Annotation-mapped SQL via MyBatis. */
+@Mapper
+public interface GreetingMapper {
+
+	@Select("SELECT 'Hello from MyBatis!'")
+	String fetchGreeting();
+}
+{{/if}}

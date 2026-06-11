@@ -1,0 +1,45 @@
+{{#if (eq goRealtime "centrifuge")}}
+// Package realtime configures a Centrifuge real-time messaging node.
+//
+// Wire it into your router, e.g.:
+//
+//	node, _ := realtime.NewNode()
+//	wsHandler := centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{})
+//	mux.Handle("/connection/websocket", wsHandler)
+package realtime
+
+import (
+	"github.com/centrifugal/centrifuge"
+)
+
+// NewNode creates and runs a Centrifuge node that accepts every connection
+// and lets clients subscribe to any channel. Tighten the handlers before
+// exposing this publicly.
+func NewNode() (*centrifuge.Node, error) {
+	node, err := centrifuge.New(centrifuge.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	node.OnConnect(func(client *centrifuge.Client) {
+		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
+			cb(centrifuge.SubscribeReply{}, nil)
+		})
+		client.OnPublish(func(e centrifuge.PublishEvent, cb centrifuge.PublishCallback) {
+			cb(centrifuge.PublishReply{}, nil)
+		})
+	})
+
+	if err := node.Run(); err != nil {
+		return nil, err
+	}
+
+	return node, nil
+}
+
+// Publish sends data to every subscriber of a channel.
+func Publish(node *centrifuge.Node, channel string, data []byte) error {
+	_, err := node.Publish(channel, data)
+	return err
+}
+{{/if}}

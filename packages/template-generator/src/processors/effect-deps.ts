@@ -39,12 +39,8 @@ function addEffectCoreDeps(
   webPath: string,
   serverPath: string,
 ): void {
+  // Schema ships inside the core effect package (effect/Schema) since 3.10
   const deps: AvailableDependencies[] = ["effect"];
-
-  // For effect-full, also add schema
-  if (effect === "effect-full") {
-    deps.push("@effect/schema");
-  }
 
   // Add to server package
   if (hasServer && vfs.exists(serverPath)) {

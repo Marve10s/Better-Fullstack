@@ -19,7 +19,7 @@ export async function graphqlFetch<T = unknown>(
   const response = await fetch(GRAPHQL_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
     credentials: "include",
 {{/if}}
     body: JSON.stringify({ query, variables }),

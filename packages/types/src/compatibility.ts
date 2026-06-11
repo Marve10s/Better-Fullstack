@@ -8,7 +8,10 @@ import type {
   CSSFramework,
   Forms,
   Frontend,
+  ProjectConfig,
   Runtime,
+  StackPartEcosystem,
+  StackPartRole,
   UILibrary,
 } from "./types";
 
@@ -18,6 +21,36 @@ import {
   getCategoryDisplayName,
   type OptionCategory,
 } from "./option-metadata";
+import {
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
+  UI_LIBRARY_COMPATIBILITY,
+} from "./stack-compatibility-rules";
+import {
+  getStackPartCompatibilityIssueForPart,
+  legacyProjectConfigToStackParts,
+} from "./stack-graph";
+
+export {
+  BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getUnsupportedWebDeployFrontend,
+  hasDockerComposeCompatibleFrontend,
+  hasPWACompatibleFrontend,
+  hasTanStackAICompatibleFrontend,
+  hasTauriCompatibleFrontend,
+  isBackendUtilsCompatibleBackend,
+  isExampleAIAllowed,
+  isExampleChatSdkAllowed,
+  requiresChatSdkVercelAIForExamples,
+  UI_LIBRARY_COMPATIBILITY,
+} from "./stack-compatibility-rules";
 
 export type CompatibilityCategory = OptionCategory;
 
@@ -40,7 +73,15 @@ export type CompatibilityAdjustment = {
 };
 
 export type CompatibilityInput = {
-  ecosystem: "typescript" | "react-native" | "rust" | "python" | "go" | "java" | "elixir";
+  ecosystem:
+    | "typescript"
+    | "react-native"
+    | "rust"
+    | "python"
+    | "go"
+    | "java"
+    | "elixir"
+    | "dotnet";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -66,6 +107,7 @@ export type CompatibilityInput = {
   realtime: string;
   jobQueue: string;
   caching: string;
+  rateLimit: string;
   animation: string;
   cssFramework: string;
   uiLibrary: string;
@@ -111,6 +153,10 @@ export type CompatibilityInput = {
   rustErrorHandling: string;
   rustCaching: string;
   rustAuth: string;
+  rustRealtime: string;
+  rustMessageQueue: string;
+  rustObservability: string;
+  rustTemplating: string;
   pythonWebFramework: string;
   pythonOrm: string;
   pythonValidation: string;
@@ -120,18 +166,42 @@ export type CompatibilityInput = {
   pythonTaskQueue: string;
   pythonGraphql: string;
   pythonQuality: string;
+  pythonTesting: string[];
+  pythonCaching: string;
+  pythonRealtime: string;
+  pythonObservability: string;
+  pythonCli: string[];
   goWebFramework: string;
   goOrm: string;
   goApi: string;
   goCli: string;
   goLogging: string;
   goAuth: string;
+  goTesting: string[];
+  goRealtime: string;
+  goMessageQueue: string;
+  goCaching: string;
+  goConfig: string;
+  goObservability: string;
   javaWebFramework: string;
   javaBuildTool: string;
   javaOrm: string;
   javaAuth: string;
+  javaApi: string;
+  javaLogging: string;
   javaLibraries: string[];
   javaTestingLibraries: string[];
+  dotnetWebFramework: string;
+  dotnetOrm: string;
+  dotnetAuth: string;
+  dotnetApi: string;
+  dotnetTesting: string[];
+  dotnetJobQueue: string;
+  dotnetRealtime: string;
+  dotnetObservability: string[];
+  dotnetValidation: string;
+  dotnetCaching: string;
+  dotnetDeploy: string;
   elixirWebFramework: string;
   elixirOrm: string;
   elixirAuth: string;
@@ -147,6 +217,7 @@ export type CompatibilityInput = {
   elixirTesting: string;
   elixirQuality: string;
   elixirDeploy: string;
+  elixirLibraries: string[];
 };
 
 const DEFAULT_RUNTIME = "bun";
@@ -173,35 +244,6 @@ export function validateProjectName(name: string): string | undefined {
   return undefined;
 }
 
-export const hasPWACompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
-      f,
-    ),
-  );
-
-export const hasTauriCompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "nuxt",
-      "svelte",
-      "solid",
-      "next",
-      "vinext",
-      "astro",
-    ].includes(f),
-  );
-
-export const hasDockerComposeCompatibleFrontend = (webFrontend: string[]) =>
-  webFrontend.some((f) =>
-    ["tanstack-router", "react-router", "react-vite", "solid", "next", "vinext", "astro"].includes(
-      f,
-    ),
-  );
-
 const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
   if (stack.ecosystem !== "typescript") return false;
 
@@ -225,10 +267,7 @@ const isChatSdkExampleSupported = (stack: CompatibilityInput): boolean => {
 };
 
 export const requiresChatSdkVercelAI = (stack: CompatibilityInput): boolean => {
-  return (
-    stack.examples.includes("chat-sdk") &&
-    (stack.backend === "self-nuxt" || (stack.backend === "hono" && stack.runtime === "node"))
-  );
+  return requiresChatSdkVercelAIForExamples(stack.backend, stack.runtime, stack.examples);
 };
 
 export type CompatibilityAnalysisResult = {
@@ -277,6 +316,7 @@ export const analyzeStackCompatibility = (
       dbSetup: "none",
       serverDeploy: "none",
       search: "none",
+      rateLimit: "none",
       fileStorage: "none",
     };
 
@@ -345,6 +385,7 @@ export const analyzeStackCompatibility = (
       serverDeploy: "none",
       payments: "none",
       search: "none",
+      rateLimit: "none",
       fileStorage: "none",
     };
 
@@ -768,7 +809,10 @@ export const analyzeStackCompatibility = (
   // ============================================
 
   // Redis is a key-value store without SQL support — better-auth requires SQL tables
-  if (nextStack.auth === "better-auth" && nextStack.database === "redis") {
+  const isBetterAuthSelection =
+    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
+
+  if (isBetterAuthSelection && nextStack.database === "redis") {
     nextStack.auth = "none";
     changed = true;
     changes.push({
@@ -778,7 +822,7 @@ export const analyzeStackCompatibility = (
   }
 
   const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (nextStack.auth === "better-auth" && ormsWithoutBetterAuth.includes(nextStack.orm)) {
+  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
     nextStack.auth = "none";
     changed = true;
     changes.push({
@@ -822,7 +866,7 @@ export const analyzeStackCompatibility = (
   }
 
   if (nextStack.payments === "polar") {
-    if (nextStack.auth !== "better-auth") {
+    if (nextStack.auth !== "better-auth" && nextStack.auth !== "better-auth-organizations") {
       nextStack.payments = "none";
       changed = true;
       changes.push({
@@ -913,6 +957,7 @@ export const analyzeStackCompatibility = (
       ["payments", "none", "Payments set to 'None' (React Native ecosystem)"],
       ["email", "none", "Email set to 'None' (React Native ecosystem)"],
       ["search", "none", "Search set to 'None' (React Native ecosystem)"],
+      ["rateLimit", "none", "Rate limiting set to 'None' (React Native ecosystem)"],
       ["fileStorage", "none", "File storage set to 'None' (React Native ecosystem)"],
       ["cms", "none", "CMS set to 'None' (React Native ecosystem)"],
       ["caching", "none", "Caching set to 'None' (React Native ecosystem)"],
@@ -1507,6 +1552,9 @@ export const getDisabledReason = (
     if (category === "search" && optionId !== "none") {
       return "Search requires a standalone backend";
     }
+    if (category === "rateLimit" && optionId !== "none") {
+      return "Rate limiting requires a standalone backend";
+    }
     if (category === "fileStorage" && optionId !== "none") {
       return "File storage requires a standalone backend";
     }
@@ -1579,12 +1627,20 @@ export const getDisabledReason = (
     if (category === "search" && optionId !== "none") {
       return "No backend selected";
     }
+    if (category === "rateLimit" && optionId !== "none") {
+      return "No backend selected";
+    }
     if (category === "fileStorage" && optionId !== "none") {
       return "No backend selected";
     }
     if (category === "examples" && optionId !== "none") {
       return "No backend selected";
     }
+  }
+
+  const graphDisabledReason = getGraphDisabledReason(currentStack, category, optionId);
+  if (graphDisabledReason) {
+    return graphDisabledReason;
   }
 
   // ============================================
@@ -1855,11 +1911,13 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    if (optionId === "better-auth" && currentStack.database === "redis") {
+    const isBetterAuthOption =
+      optionId === "better-auth" || optionId === "better-auth-organizations";
+    if (isBetterAuthOption && currentStack.database === "redis") {
       return "Better Auth requires a SQL database (not Redis)";
     }
     const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (optionId === "better-auth" && ormsWithoutBetterAuth.includes(currentStack.orm)) {
+    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
       return `Better Auth has no ${currentStack.orm} adapter`;
     }
     return getCapabilityDisabledReason(
@@ -1878,7 +1936,7 @@ export const getDisabledReason = (
   // PAYMENTS CONSTRAINTS
   // ============================================
   if (category === "payments" && optionId === "polar") {
-    if (currentStack.auth !== "better-auth") {
+    if (currentStack.auth !== "better-auth" && currentStack.auth !== "better-auth-organizations") {
       return "Polar requires Better Auth";
     }
     if (!currentStack.webFrontend.some((f) => f !== "none")) {
@@ -1908,16 +1966,6 @@ export const getDisabledReason = (
   // EMAIL CONSTRAINTS
   // ============================================
   if (category === "email" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "resend") {
-      return "Only Resend email is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "resend"
-    ) {
-      return "Resend email for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -1933,16 +1981,6 @@ export const getDisabledReason = (
   // OBSERVABILITY CONSTRAINTS
   // ============================================
   if (category === "observability" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "sentry") {
-      return "Only Sentry observability is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "sentry"
-    ) {
-      return "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -1952,18 +1990,23 @@ export const getDisabledReason = (
   // CACHING CONSTRAINTS
   // ============================================
   if (category === "caching" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "upstash-redis") {
-      return "Only Upstash Redis caching is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "upstash-redis"
-    ) {
-      return "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
+    }
+  }
+
+  // ============================================
+  // RATE LIMITING CONSTRAINTS
+  // ============================================
+  if (category === "rateLimit" && optionId !== "none") {
+    if (currentStack.ecosystem !== "typescript") {
+      return null;
+    }
+    if (currentStack.backend === "convex") {
+      return "Rate limiting helpers are not generated with Convex backend";
+    }
+    if (currentStack.backend === "none") {
+      return "Rate limiting requires a backend";
     }
   }
 
@@ -1971,16 +2014,6 @@ export const getDisabledReason = (
   // SEARCH CONSTRAINTS
   // ============================================
   if (category === "search" && optionId !== "none") {
-    if (currentStack.ecosystem !== "typescript" && optionId !== "meilisearch") {
-      return "Only Meilisearch search is available for non-TypeScript ecosystems";
-    }
-    if (
-      currentStack.ecosystem === "java" &&
-      currentStack.javaBuildTool === "none" &&
-      optionId === "meilisearch"
-    ) {
-      return "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency";
-    }
     if (currentStack.ecosystem !== "typescript") {
       return null;
     }
@@ -2055,6 +2088,14 @@ export const getDisabledReason = (
         currentStack.database !== "postgres"
       ) {
         return "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres";
+      }
+    }
+    if (optionId === "backend-utils") {
+      if (currentStack.ecosystem !== "typescript") {
+        return "Backend Utils requires a TypeScript server stack";
+      }
+      if (!isBackendUtilsCompatibleBackend(currentStack.backend)) {
+        return "Backend Utils requires a Hono, Express, Fastify, Elysia, feTS, or NestJS backend";
       }
     }
     if (optionId === "tanstack-query" && currentStack.api !== "none") {
@@ -2353,6 +2394,13 @@ export const getDisabledReason = (
         return "Vercel deployment is not available for Redwood/Fresh (they have their own deploy systems)";
       }
     }
+    if (optionId === "render" || optionId === "netlify") {
+      const blocked = getUnsupportedWebDeployFrontend(optionId, currentStack.webFrontend);
+      if (blocked) {
+        const deployName = optionId === "render" ? "Render" : "Netlify";
+        return `${deployName} deployment is not yet wired up for the '${blocked}' frontend`;
+      }
+    }
   }
 
   if (category === "serverDeploy") {
@@ -2372,6 +2420,14 @@ export const getDisabledReason = (
       // Encore has its own deployment
       if (currentStack.backend === "encore") {
         return "Encore manages its own deployment infrastructure";
+      }
+    }
+    if (optionId === "netlify") {
+      if (currentStack.backend !== "hono") {
+        return "Netlify Functions server deploy is currently supported only with Hono";
+      }
+      if (currentStack.runtime !== "node") {
+        return "Netlify Functions server deploy requires Node.js runtime";
       }
     }
     if (optionId !== "none") {
@@ -2522,57 +2578,6 @@ export const getDisabledReason = (
     return "Elixir web frameworks are available only in the Elixir ecosystem";
   }
 
-  const elixirNotYetGenerated: Partial<Record<CompatibilityCategory, Record<string, string>>> = {
-    elixirOrm: {
-      ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
-    },
-    elixirAuth: {
-      ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
-      guardian: "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
-    },
-    elixirValidation: {
-      "nimble-options":
-        "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
-    },
-    elixirCaching: {
-      nebulex: "Nebulex cache modules are not generated yet; use Cachex or no cache",
-    },
-    elixirObservability: {
-      opentelemetry:
-        "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
-      prom_ex: "PromEx setup is not generated yet; use Phoenix telemetry or no extra observability",
-    },
-    elixirTesting: {
-      mox: "Mox-specific test boundaries are not generated yet; use ExUnit",
-      bypass: "Bypass-specific HTTP tests are not generated yet; use ExUnit",
-      wallaby: "Wallaby browser tests are not generated yet; use ExUnit",
-    },
-    elixirDeploy: {
-      fly: "Fly.io config is not generated yet; use Docker or mix releases",
-      gigalixir: "Gigalixir config is not generated yet; use Docker or mix releases",
-    },
-  };
-
-  const unsupportedElixirReason = elixirNotYetGenerated[category]?.[optionId];
-  if (currentStack.ecosystem === "elixir" && unsupportedElixirReason) {
-    return unsupportedElixirReason;
-  }
-
-  if (currentStack.ecosystem === "elixir" && currentStack.elixirWebFramework === "none") {
-    if (category === "elixirAuth" && optionId !== "none") {
-      return "Elixir auth scaffolds require Phoenix";
-    }
-    if (category === "elixirApi" && optionId !== "none") {
-      return "Elixir API scaffolds require Phoenix";
-    }
-    if (category === "elixirRealtime" && optionId !== "none") {
-      return "Elixir realtime scaffolds require Phoenix";
-    }
-    if (category === "elixirObservability" && optionId === "phoenix-telemetry") {
-      return "Phoenix telemetry requires Phoenix";
-    }
-  }
-
   if (
     category === "elixirJson" &&
     optionId === "none" &&
@@ -2580,34 +2585,6 @@ export const getDisabledReason = (
     currentStack.elixirWebFramework !== "none"
   ) {
     return "Phoenix JSON scaffolds require Jason";
-  }
-
-  if (category === "elixirAuth") {
-    if (optionId === "phx-gen-auth" && currentStack.elixirOrm === "none") {
-      return "phx.gen.auth requires Ecto";
-    }
-    if (
-      (optionId === "ueberauth" || optionId === "guardian") &&
-      currentStack.elixirWebFramework === "none"
-    ) {
-      return "Elixir auth libraries require Phoenix";
-    }
-  }
-
-  if (category === "elixirJobs" && optionId === "oban" && currentStack.elixirOrm !== "ecto-sql") {
-    return "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold";
-  }
-
-  if (category === "elixirApi" && optionId === "absinthe" && currentStack.elixirOrm === "none") {
-    return "Absinthe GraphQL requires Ecto in the current Phoenix scaffold";
-  }
-
-  if (
-    category === "elixirRealtime" &&
-    optionId === "live-view-streams" &&
-    currentStack.elixirWebFramework !== "phoenix-live-view"
-  ) {
-    return "LiveView Streams require Phoenix LiveView";
   }
 
   return null;
@@ -2623,6 +2600,469 @@ export const isOptionCompatible = (
   }
   return getDisabledReason(currentStack, category, optionId) === null;
 };
+
+type GraphDisabledReasonOwnerRole = "frontend" | "backend" | "mobile" | "database";
+
+type GraphDisabledReasonBinding = {
+  role: StackPartRole;
+  ecosystem: StackPartEcosystem;
+  ownerRole: GraphDisabledReasonOwnerRole;
+  ownerEcosystem?: StackPartEcosystem;
+  currentEcosystem?: StackPartEcosystem;
+  allowNoneCandidate?: boolean;
+  allowOwnerlessCandidate?: boolean;
+  candidateIdPrefix?: string;
+  missingOwnerReason?: string;
+};
+
+const SHARED_BACKEND_SERVICE_CATEGORIES = new Set<CompatibilityCategory>([
+  "email",
+  "observability",
+  "caching",
+  "rateLimit",
+  "search",
+]);
+
+function getSharedBackendServiceGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  if (!SHARED_BACKEND_SERVICE_CATEGORIES.has(category)) return undefined;
+  if (currentStack.ecosystem === "react-native") return undefined;
+
+  return {
+    role: category as StackPartRole,
+    ecosystem: currentStack.ecosystem,
+    ownerRole: "backend",
+    ownerEcosystem: currentStack.ecosystem,
+  };
+}
+
+const ELIXIR_GRAPH_DISABLED_REASON_ROLES: Partial<Record<CompatibilityCategory, StackPartRole>> = {
+  elixirOrm: "orm",
+  elixirAuth: "auth",
+  elixirApi: "api",
+  elixirRealtime: "realtime",
+  elixirJobs: "jobQueue",
+  elixirValidation: "validation",
+  elixirHttp: "httpClient",
+  elixirEmail: "email",
+  elixirCaching: "caching",
+  elixirObservability: "observability",
+  elixirTesting: "testing",
+  elixirQuality: "codeQuality",
+  elixirDeploy: "deploy",
+};
+
+function getElixirGraphBinding(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+): GraphDisabledReasonBinding | undefined {
+  const role = ELIXIR_GRAPH_DISABLED_REASON_ROLES[category];
+  if (!role || currentStack.ecosystem !== "elixir") return undefined;
+
+  return {
+    role,
+    ecosystem: "elixir",
+    ownerRole: "backend",
+    ownerEcosystem: "elixir",
+    currentEcosystem: "elixir",
+    allowOwnerlessCandidate: true,
+    candidateIdPrefix: "candidate:native",
+  };
+}
+
+const GRAPH_DISABLED_REASON_BINDINGS: Partial<
+  Record<CompatibilityCategory, GraphDisabledReasonBinding>
+> = {
+  cssFramework: {
+    role: "css",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "CSS framework requires a web frontend",
+  },
+  uiLibrary: {
+    role: "ui",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "UI library requires a web frontend",
+  },
+  forms: {
+    role: "forms",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Forms requires a web frontend",
+  },
+  stateManagement: {
+    role: "stateManagement",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "State management requires a web frontend",
+  },
+  animation: {
+    role: "animation",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Animation requires a web frontend",
+  },
+  fileUpload: {
+    role: "fileUpload",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "File upload requires a web frontend",
+  },
+  i18n: {
+    role: "i18n",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "i18n requires a web frontend",
+  },
+  analytics: {
+    role: "analytics",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Analytics requires a web frontend",
+  },
+  payments: {
+    role: "payments",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "Payments requires a backend",
+  },
+  cms: {
+    role: "cms",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    missingOwnerReason: "CMS requires a backend",
+  },
+  ai: {
+    role: "ai",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+  },
+  mobileNavigation: {
+    role: "navigation",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile navigation requires a native Expo frontend",
+  },
+  mobileUI: {
+    role: "ui",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile UI requires a native Expo frontend",
+  },
+  mobileStorage: {
+    role: "storage",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile storage requires a native Expo frontend",
+  },
+  mobileTesting: {
+    role: "testing",
+    ecosystem: "react-native",
+    ownerRole: "mobile",
+    ownerEcosystem: "react-native",
+    missingOwnerReason: "Mobile testing requires a native Expo frontend",
+  },
+  javaBuildTool: {
+    role: "buildTool",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    allowNoneCandidate: true,
+  },
+  javaOrm: {
+    role: "orm",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Java ORM support currently requires Spring Boot",
+  },
+  javaAuth: {
+    role: "auth",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Java auth support currently requires Spring Boot",
+  },
+  javaLibraries: {
+    role: "libraries",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+    missingOwnerReason: "Spring libraries currently require Spring Boot in the Java scaffold",
+  },
+  javaTestingLibraries: {
+    role: "testing",
+    ecosystem: "java",
+    ownerRole: "backend",
+    ownerEcosystem: "java",
+    currentEcosystem: "java",
+  },
+  rustRealtime: {
+    role: "realtime",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+  },
+  rustMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+  },
+  rustObservability: {
+    role: "observability",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+    candidateIdPrefix: "candidate:native",
+  },
+  rustTemplating: {
+    role: "templating",
+    ecosystem: "rust",
+    ownerRole: "backend",
+    ownerEcosystem: "rust",
+    currentEcosystem: "rust",
+  },
+  pythonTesting: {
+    role: "testing",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+  },
+  pythonCaching: {
+    role: "caching",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonRealtime: {
+    role: "realtime",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+  },
+  pythonObservability: {
+    role: "observability",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    candidateIdPrefix: "candidate:native",
+  },
+  pythonCli: {
+    role: "cli",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+  },
+  goTesting: {
+    role: "testing",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goRealtime: {
+    role: "realtime",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goMessageQueue: {
+    role: "jobQueue",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goCaching: {
+    role: "caching",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    candidateIdPrefix: "candidate:native",
+  },
+  goConfig: {
+    role: "config",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+  },
+  goObservability: {
+    role: "observability",
+    ecosystem: "go",
+    ownerRole: "backend",
+    ownerEcosystem: "go",
+    currentEcosystem: "go",
+    candidateIdPrefix: "candidate:native",
+  },
+  dotnetOrm: {
+    role: "orm",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    missingOwnerReason: ".NET data access requires an ASP.NET backend",
+  },
+  dotnetAuth: {
+    role: "auth",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    missingOwnerReason: ".NET auth requires an ASP.NET backend",
+  },
+  dotnetApi: {
+    role: "api",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetTesting: {
+    role: "testing",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetJobQueue: {
+    role: "jobQueue",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetRealtime: {
+    role: "realtime",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+  dotnetObservability: {
+    role: "observability",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    candidateIdPrefix: "candidate:native",
+  },
+  dotnetCaching: {
+    role: "caching",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+    candidateIdPrefix: "candidate:native",
+  },
+  dotnetDeploy: {
+    role: "deploy",
+    ecosystem: "dotnet",
+    ownerRole: "backend",
+    ownerEcosystem: "dotnet",
+    currentEcosystem: "dotnet",
+  },
+};
+
+function compatibilityInputToGraphProjectConfig(
+  currentStack: CompatibilityInput,
+): Partial<ProjectConfig> {
+  const frontend = [
+    ...currentStack.webFrontend.filter((frontend) => frontend !== "none"),
+    ...currentStack.nativeFrontend.filter((frontend) => frontend !== "none"),
+  ];
+
+  return {
+    ...currentStack,
+    frontend: (frontend.length > 0 ? frontend : ["none"]) as ProjectConfig["frontend"],
+    addons: [
+      ...currentStack.codeQuality,
+      ...currentStack.documentation,
+      ...currentStack.appPlatforms,
+    ] as ProjectConfig["addons"],
+    ai: currentStack.aiSdk as ProjectConfig["ai"],
+  } as unknown as Partial<ProjectConfig>;
+}
+
+function getGraphDisabledReason(
+  currentStack: CompatibilityInput,
+  category: CompatibilityCategory,
+  optionId: string,
+): string | null {
+  if (optionId === "false") return null;
+
+  const binding =
+    getSharedBackendServiceGraphBinding(currentStack, category) ??
+    getElixirGraphBinding(currentStack, category) ??
+    GRAPH_DISABLED_REASON_BINDINGS[category];
+  if (!binding) return null;
+  if (binding.currentEcosystem && currentStack.ecosystem !== binding.currentEcosystem) return null;
+  if (optionId === "none" && category !== "cssFramework" && !binding.allowNoneCandidate) {
+    return null;
+  }
+
+  let parts;
+  try {
+    parts = legacyProjectConfigToStackParts(compatibilityInputToGraphProjectConfig(currentStack));
+  } catch {
+    return null;
+  }
+
+  const owner = parts.find(
+    (part) =>
+      part.role === binding.ownerRole &&
+      !part.ownerPartId &&
+      (!binding.ownerEcosystem || part.ecosystem === binding.ownerEcosystem),
+  );
+  if (!owner && optionId === "none") return null;
+  if (!owner && !binding.allowOwnerlessCandidate) return binding.missingOwnerReason ?? null;
+
+  const issue = getStackPartCompatibilityIssueForPart(
+    {
+      id: `${binding.candidateIdPrefix ?? "candidate"}:${binding.ownerRole}.${binding.role}:${binding.ecosystem}:${optionId}`,
+      role: binding.role,
+      toolId: optionId,
+      ecosystem: binding.ecosystem,
+      ownerPartId: owner?.id,
+    },
+    parts,
+  );
+
+  return issue?.message ?? (!owner ? (binding.missingOwnerReason ?? null) : null);
+}
 
 const WEB_FRAMEWORKS: readonly Frontend[] = [
   "tanstack-router",
@@ -2642,178 +3082,6 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "fresh",
   "none",
 ] as const;
-
-const UI_LIBRARY_COMPATIBILITY: Record<
-  UILibrary,
-  {
-    frontends: readonly Frontend[];
-    cssFrameworks: readonly CSSFramework[];
-  }
-> = {
-  "shadcn-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  "shadcn-svelte": {
-    frontends: ["svelte", "astro"],
-    cssFrameworks: ["tailwind"],
-  },
-  daisyui: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "svelte",
-      "solid",
-      "solid-start",
-      "astro",
-      "qwik",
-      "angular",
-      "redwood",
-      "fresh",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  "radix-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "headless-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "park-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "solid",
-      "solid-start",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only"],
-  },
-  "chakra-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  nextui: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind"],
-  },
-  mantine: {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  mui: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  antd: {
-    frontends: ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "astro"],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "base-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "ark-ui": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "nuxt",
-      "svelte",
-      "solid",
-      "solid-start",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  "react-aria": {
-    frontends: [
-      "tanstack-router",
-      "react-router",
-      "react-vite",
-      "tanstack-start",
-      "next",
-      "vinext",
-      "astro",
-    ],
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-  none: {
-    frontends: WEB_FRAMEWORKS,
-    cssFrameworks: ["tailwind", "scss", "less", "postcss-only", "none"],
-  },
-};
 
 const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   pwa: [
@@ -2928,6 +3196,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "astro",
     "redwood",
   ],
+  "backend-utils": [],
   "docker-compose": [],
   none: [],
 };
@@ -3092,19 +3361,7 @@ export function getAIFrontendCompatibilityIssue(
 ): CompatibilityIssue | undefined {
   if (!ai || ai !== "tanstack-ai") return undefined;
 
-  const compatibleFrontends = new Set<Frontend>([
-    "tanstack-router",
-    "react-router",
-    "react-vite",
-    "tanstack-start",
-    "next",
-    "redwood",
-    "solid",
-    "solid-start",
-  ]);
-  const hasCompatible = frontends.some((frontend) => compatibleFrontends.has(frontend));
-
-  if (hasCompatible) return undefined;
+  if (hasTanStackAICompatibleFrontend(frontends)) return undefined;
 
   return {
     code: "TANSTACK_AI_REQUIRES_REACT_OR_SOLID_FRONTEND",
@@ -3153,51 +3410,6 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   }
 
   return true;
-}
-
-export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {
-  const includesSolid = frontends.includes("solid");
-  const includesSolidStart = frontends.includes("solid-start");
-  if (includesSolid || includesSolidStart) return false;
-
-  if (backend === "convex") {
-    const includesNuxt = frontends.includes("nuxt");
-    const includesSvelte = frontends.includes("svelte");
-    if (includesNuxt || includesSvelte) return false;
-  }
-
-  return true;
-}
-
-function hasExampleChatSdkSelfFrontend(frontends: Frontend[] = []) {
-  return frontends.some((f) => ["next", "tanstack-start", "nuxt"].includes(f));
-}
-
-export function isExampleChatSdkAllowed(
-  backend?: Backend | string,
-  frontends: Frontend[] = [],
-  runtime?: Runtime | string,
-) {
-  if (frontends.includes("react-vite")) return false;
-  if (!backend || backend === "none" || backend === "convex") return false;
-
-  if (backend === "self") {
-    return hasExampleChatSdkSelfFrontend(frontends);
-  }
-
-  if (backend === "self-next" || backend === "self-tanstack-start" || backend === "self-nuxt") {
-    return true;
-  }
-
-  if (backend === "self-astro" || backend === "self-svelte" || backend === "self-solid-start") {
-    return false;
-  }
-
-  if (backend === "hono") {
-    return runtime === "node";
-  }
-
-  return false;
 }
 
 export function requiresChatSdkVercelAIForSelection(
@@ -3350,6 +3562,14 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["javaBuildTool", input.javaBuildTool],
     ["javaOrm", input.javaOrm],
     ["javaAuth", input.javaAuth],
+    ["dotnetWebFramework", input.dotnetWebFramework],
+    ["dotnetOrm", input.dotnetOrm],
+    ["dotnetAuth", input.dotnetAuth],
+    ["dotnetApi", input.dotnetApi],
+    ["dotnetJobQueue", input.dotnetJobQueue],
+    ["dotnetRealtime", input.dotnetRealtime],
+    ["dotnetCaching", input.dotnetCaching],
+    ["dotnetDeploy", input.dotnetDeploy],
     ["elixirWebFramework", input.elixirWebFramework],
     ["elixirOrm", input.elixirOrm],
     ["elixirAuth", input.elixirAuth],
@@ -3452,6 +3672,30 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
         message: reason,
         category: "javaTestingLibraries",
         optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const testingLibrary of input.dotnetTesting) {
+    const reason = getDisabledReason(input, "dotnetTesting", testingLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_TESTING_LIBRARY",
+        message: reason,
+        category: "dotnetTesting",
+        optionId: testingLibrary,
+      });
+    }
+  }
+
+  for (const observabilityLibrary of input.dotnetObservability) {
+    const reason = getDisabledReason(input, "dotnetObservability", observabilityLibrary);
+    if (reason) {
+      issues.push({
+        code: "INCOMPATIBLE_DOTNET_OBSERVABILITY",
+        message: reason,
+        category: "dotnetObservability",
+        optionId: observabilityLibrary,
       });
     }
   }

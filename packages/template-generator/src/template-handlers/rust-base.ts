@@ -40,6 +40,38 @@ export async function processRustBaseTemplate(
     // Skip graphql.rs if async-graphql is not selected
     if (!hasAsyncGraphql && templatePath.includes("crates/server/src/graphql.rs")) continue;
 
+    // Skip optional capability modules when their option is not selected
+    if (
+      config.rustRealtime === "none" &&
+      templatePath.includes("crates/server/src/realtime.rs")
+    ) {
+      continue;
+    }
+    if (
+      config.rustMessageQueue === "none" &&
+      templatePath.includes("crates/server/src/messaging.rs")
+    ) {
+      continue;
+    }
+    if (
+      config.rustObservability === "none" &&
+      templatePath.includes("crates/server/src/otel.rs")
+    ) {
+      continue;
+    }
+    if (
+      config.rustTemplating === "none" &&
+      templatePath.includes("crates/server/src/templating.rs")
+    ) {
+      continue;
+    }
+    if (
+      config.rustTemplating !== "askama" &&
+      templatePath.includes("crates/server/templates/hello.html")
+    ) {
+      continue;
+    }
+
     // Skip cli crate templates if Clap is not selected
     if (!hasClap && templatePath.includes("crates/cli/")) continue;
 

@@ -4,8 +4,12 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "../utils/add-deps";
 
+function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
+  return auth === "better-auth" || auth === "better-auth-organizations";
+}
+
 export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { backend, runtime, api, auth } = config;
+  const { backend, runtime, api, auth, serverDeploy } = config;
 
   if (backend === "convex") {
     const convexPath = "packages/backend/package.json";
@@ -23,7 +27,7 @@ export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig
 
   if (backend === "hono") {
     deps.push("hono");
-    if (runtime === "node") deps.push("@hono/node-server");
+    if (runtime === "node" && serverDeploy !== "netlify") deps.push("@hono/node-server");
   } else if (backend === "elysia") {
     deps.push("elysia", "@elysiajs/cors");
     if (runtime === "node") deps.push("@elysiajs/node");
@@ -61,10 +65,12 @@ export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig
     deps.push("@orpc/server", "@orpc/openapi", "@orpc/zod");
   }
 
-  if (auth === "better-auth") deps.push("better-auth");
+  if (isBetterAuth(auth)) deps.push("better-auth");
 
   if (runtime === "node") devDeps.push("tsx", "@types/node");
   else if (runtime === "bun") devDeps.push("@types/bun");
+
+  if (serverDeploy === "netlify") devDeps.push("@netlify/functions");
 
   if (deps.length > 0 || devDeps.length > 0) {
     addPackageDependency({

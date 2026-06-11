@@ -1,0 +1,22 @@
+{{#if (eq dotnetValidation "fluentvalidation")}}
+using FluentValidation;
+
+namespace {{dotnetProjectName}}.Validators;
+
+public record SampleInput(string Email, string Name, int Age);
+
+/// <summary>
+/// FluentValidation rules for <see cref="SampleInput"/>. Register all
+/// validators with
+/// <c>builder.Services.AddValidatorsFromAssemblyContaining&lt;SampleInputValidator&gt;()</c>.
+/// </summary>
+public sealed class SampleInputValidator : AbstractValidator<SampleInput>
+{
+    public SampleInputValidator()
+    {
+        RuleFor(input => input.Email).NotEmpty().EmailAddress();
+        RuleFor(input => input.Name).NotEmpty().MaximumLength(100);
+        RuleFor(input => input.Age).InclusiveBetween(0, 150);
+    }
+}
+{{/if}}

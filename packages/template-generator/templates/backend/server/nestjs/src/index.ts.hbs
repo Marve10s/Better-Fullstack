@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { env } from "@{{projectName}}/env/server";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
@@ -12,13 +12,13 @@ async function bootstrap() {
 	app.enableCors({
 		origin: env.CORS_ORIGIN,
 		methods: ["GET", "POST", "OPTIONS"],
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
 {{/if}}
 	});
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	const expressApp = app.getHttpAdapter().getInstance();
 	expressApp.all("/api/auth/*path", async (req: any, _res: any) => {
 		return auth.handler(req);

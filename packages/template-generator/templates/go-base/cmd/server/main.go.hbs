@@ -208,6 +208,20 @@ func main() {
 {{/if}}
 {{/if}}
 
+{{#if (eq goAuth "goth")}}
+	// Register Goth OAuth providers from environment credentials
+	appauth.InitGoth()
+{{#if (eq goLogging "zap")}}
+	logger.Info("Goth OAuth providers registered")
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	logger.Info().Msg("Goth OAuth providers registered")
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	logger.Info("Goth OAuth providers registered")
+{{/if}}
+{{/if}}
+
 {{#if (eq goOrm "gorm")}}
 	// Initialize database
 	db, err := database.InitDB()

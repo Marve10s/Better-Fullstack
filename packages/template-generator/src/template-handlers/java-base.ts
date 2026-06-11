@@ -17,6 +17,13 @@ type JavaTemplateContext = ProjectConfig & {
   isJavaQuarkus: boolean;
   isJavaPlainJava: boolean;
   hasJavaJpa: boolean;
+  hasJavaJooq: boolean;
+  hasJavaMybatis: boolean;
+  hasJavaKeycloak: boolean;
+  hasJavaGraphql: boolean;
+  hasJavaLogback: boolean;
+  hasJavaAmqp: boolean;
+  hasJavaOtel: boolean;
   hasJavaSecurity: boolean;
   hasJavaActuator: boolean;
   hasJavaValidation: boolean;
@@ -195,6 +202,13 @@ function createJavaTemplateContext(config: ProjectConfig): JavaTemplateContext {
     isJavaQuarkus,
     isJavaPlainJava: !isJavaSpringBoot && !isJavaQuarkus,
     hasJavaJpa,
+    hasJavaJooq: isJavaSpringBoot && config.javaOrm === "jooq",
+    hasJavaMybatis: isJavaSpringBoot && config.javaOrm === "mybatis",
+    hasJavaKeycloak: isJavaSpringBoot && config.javaAuth === "keycloak",
+    hasJavaGraphql: isJavaSpringBoot && config.javaApi === "spring-graphql",
+    hasJavaLogback: isJavaSpringBoot && config.javaLogging === "logback",
+    hasJavaAmqp: javaLibraries.includes("spring-amqp"),
+    hasJavaOtel: javaLibraries.includes("opentelemetry-java"),
     hasJavaSecurity: isJavaSpringBoot && config.javaAuth === "spring-security",
     hasJavaActuator: javaLibraries.includes("spring-actuator"),
     hasJavaValidation: javaLibraries.includes("spring-validation"),
@@ -282,7 +296,42 @@ function shouldSkipJavaTemplate(templatePath: string, context: JavaTemplateConte
     }
   }
 
-  if (!context.hasJavaSecurity && templatePath.includes("/config/")) {
+  if (
+    !context.hasJavaSecurity &&
+    !context.hasJavaKeycloak &&
+    !context.hasJavaOtel &&
+    templatePath.includes("/config/")
+  ) {
+    return true;
+  }
+  if (!context.hasJavaOtel && templatePath.endsWith("/config/OtelConfig.java.hbs")) {
+    return true;
+  }
+  if (!context.hasJavaSecurity && templatePath.endsWith("/config/SecurityConfig.java.hbs")) {
+    return true;
+  }
+  if (
+    !context.hasJavaKeycloak &&
+    templatePath.endsWith("/config/ResourceServerConfig.java.hbs")
+  ) {
+    return true;
+  }
+  if (!context.hasJavaGraphql && templatePath.includes("/graphql/")) {
+    return true;
+  }
+  if (
+    !context.hasJavaGraphql &&
+    templatePath.endsWith("/controller/GraphqlController.java.hbs")
+  ) {
+    return true;
+  }
+  if (!context.hasJavaJooq && templatePath.includes("/jooqdata/")) {
+    return true;
+  }
+  if (!context.hasJavaMybatis && templatePath.includes("/mybatisdata/")) {
+    return true;
+  }
+  if (!context.hasJavaLogback && templatePath.endsWith("/logback-spring.xml.hbs")) {
     return true;
   }
 

@@ -11,7 +11,7 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { RPCHandler } from "@orpc/server/node";
 import { onError } from "@orpc/server";
 import { appRouter } from "@{{projectName}}/api/routers/index";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
 {{/if}}
@@ -20,7 +20,7 @@ import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel }
 import { google } from "@ai-sdk/google";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 import { toNodeHandler } from "better-auth/node";
 {{/if}}
@@ -31,7 +31,7 @@ const setCorsHeaders = (response: any) => {
 	const origin = env.CORS_ORIGIN;
 	response.header("Access-Control-Allow-Origin", origin);
 	response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	response.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 	response.header("Access-Control-Allow-Credentials", "true");
 {{else}}
@@ -51,7 +51,7 @@ router.get("/", ({ response }) => {
 	return response.send("OK");
 });
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 // Better Auth handler
 const authHandler = toNodeHandler(auth);
 router.any("/api/auth/*", async ({ request, response }) => {
@@ -102,7 +102,7 @@ router.any("/rpc/*", async ({ request, response }) => {
 	setCorsHeaders(response);
 	const result = await rpcHandler.handle(request.request as any, response.response as any, {
 		prefix: "/rpc",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		context: await createContext({ req: request.request as any }),
 {{else}}
 		context: { session: null },
@@ -117,7 +117,7 @@ router.any("/api-reference/*", async ({ request, response }) => {
 	setCorsHeaders(response);
 	const result = await apiHandler.handle(request.request as any, response.response as any, {
 		prefix: "/api-reference",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		context: await createContext({ req: request.request as any }),
 {{else}}
 		context: { session: null },

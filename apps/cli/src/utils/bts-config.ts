@@ -5,7 +5,8 @@ import path from "node:path";
 import type { BetterTStackConfig, ProjectConfig } from "../types";
 
 import {
-  compareLegacyConfigToStackParts,
+  createStackPart,
+  getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   stackPartsToLegacyProjectConfigPartial,
 } from "../types";
@@ -13,6 +14,9 @@ import { getEffectiveStack, getGraphSummary } from "./graph-summary";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const BTS_CONFIG_FILE = "bts.jsonc";
+
+type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
+type BtsConfigMetadata = Pick<BetterTStackConfig, "version" | "createdAt">;
 
 function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
   if (!stackParts) return projectConfig;
@@ -35,6 +39,10 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.rustErrorHandling = "none";
     normalized.rustCaching = "none";
     normalized.rustAuth = "none";
+    normalized.rustRealtime = "none";
+    normalized.rustMessageQueue = "none";
+    normalized.rustObservability = "none";
+    normalized.rustTemplating = "none";
   }
 
   if (!selectedEcosystems.has("python")) {
@@ -47,6 +55,11 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.pythonTaskQueue = "none";
     normalized.pythonGraphql = "none";
     normalized.pythonQuality = "none";
+    normalized.pythonTesting = [];
+    normalized.pythonCaching = "none";
+    normalized.pythonRealtime = "none";
+    normalized.pythonObservability = "none";
+    normalized.pythonCli = [];
   }
 
   if (!selectedEcosystems.has("go")) {
@@ -56,6 +69,12 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.goCli = "none";
     normalized.goLogging = "none";
     normalized.goAuth = "none";
+    normalized.goTesting = [];
+    normalized.goRealtime = "none";
+    normalized.goMessageQueue = "none";
+    normalized.goCaching = "none";
+    normalized.goConfig = "none";
+    normalized.goObservability = "none";
   }
 
   if (!selectedEcosystems.has("java")) {
@@ -63,8 +82,24 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.javaBuildTool = "none";
     normalized.javaOrm = "none";
     normalized.javaAuth = "none";
+    normalized.javaApi = "none";
+    normalized.javaLogging = "none";
     normalized.javaLibraries = [];
     normalized.javaTestingLibraries = [];
+  }
+
+  if (!selectedEcosystems.has("dotnet")) {
+    normalized.dotnetWebFramework = "none";
+    normalized.dotnetOrm = "none";
+    normalized.dotnetAuth = "none";
+    normalized.dotnetApi = "none";
+    normalized.dotnetTesting = [];
+    normalized.dotnetJobQueue = "none";
+    normalized.dotnetRealtime = "none";
+    normalized.dotnetObservability = [];
+    normalized.dotnetValidation = "none";
+    normalized.dotnetCaching = "none";
+    normalized.dotnetDeploy = "none";
   }
 
   if (!selectedEcosystems.has("elixir")) {
@@ -83,19 +118,140 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.elixirTesting = "none";
     normalized.elixirQuality = "none";
     normalized.elixirDeploy = "none";
+    normalized.elixirLibraries = [];
+  }
+
+  if (!selectedEcosystems.has("react-native")) {
+    normalized.mobileNavigation = "none";
+    normalized.mobileUI = "none";
+    normalized.mobileStorage = "none";
+    normalized.mobileTesting = "none";
+    normalized.mobilePush = "none";
+    normalized.mobileOTA = "none";
+    normalized.mobileDeepLinking = "none";
   }
 
   return normalized;
 }
 
-export async function writeBtsConfig(projectConfig: ProjectConfig) {
+function findSelectedPrimaryPart(
+  stackParts: readonly StackPart[],
+  role: "frontend" | "backend" | "database" | "mobile",
+  ecosystem?: string,
+) {
+  return stackParts.find(
+    (part) =>
+      part.source !== "provided" &&
+      part.role === role &&
+      !part.ownerPartId &&
+      (!ecosystem || part.ecosystem === ecosystem),
+  );
+}
+
+function isAddonGraphPart(part: StackPart) {
+  const binding = getAddonStackPartBinding(part.toolId);
+  return (
+    binding !== undefined &&
+    part.role === binding.role &&
+    part.ecosystem === binding.ecosystem
+  );
+}
+
+function hasMatchingStackPart(stackParts: readonly StackPart[], part: StackPart) {
+  return stackParts.some(
+    (candidate) =>
+      candidate.source !== "provided" &&
+      candidate.role === part.role &&
+      candidate.ecosystem === part.ecosystem &&
+      candidate.toolId === part.toolId &&
+      candidate.ownerPartId === part.ownerPartId,
+  );
+}
+
+function syncAddonStackParts(stackParts: readonly StackPart[], addons: readonly string[]) {
+  const addonSet = new Set(addons.filter((addon) => addon !== "none"));
+  const frontend = findSelectedPrimaryPart(stackParts, "frontend", "typescript");
+  const next = stackParts.filter(
+    (part) => part.source === "provided" || !isAddonGraphPart(part) || addonSet.has(part.toolId),
+  );
+
+  for (const addon of addonSet) {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) continue;
+    const ownerPartId = binding.ownerRole === "frontend" ? frontend?.id : undefined;
+    if (binding.ownerRole === "frontend" && !ownerPartId) continue;
+    const part = createStackPart({
+      role: binding.role,
+      ecosystem: binding.ecosystem,
+      toolId: addon,
+      ownerPartId,
+      source: "selected",
+    });
+    if (!hasMatchingStackPart(next, part)) {
+      next.push(part);
+    }
+  }
+
+  return next;
+}
+
+function syncOwnedDeployStackPart(
+  stackParts: readonly StackPart[],
+  ownerRole: "frontend" | "backend",
+  deployValue: string | undefined,
+) {
+  if (deployValue === undefined) return [...stackParts];
+  const owner = findSelectedPrimaryPart(stackParts, ownerRole, "typescript");
+  const next = stackParts.filter(
+    (part) =>
+      part.source === "provided" ||
+      part.role !== "deploy" ||
+      part.ecosystem !== "typescript" ||
+      part.ownerPartId !== owner?.id,
+  );
+
+  if (!owner || deployValue === "none") return next;
+
+  next.push(
+    createStackPart({
+      role: "deploy",
+      ecosystem: "typescript",
+      toolId: deployValue,
+      ownerPartId: owner.id,
+      source: "selected",
+    }),
+  );
+  return next;
+}
+
+function syncUpdatedStackParts(
+  stackParts: readonly StackPart[] | undefined,
+  updates: Partial<Pick<BetterTStackConfig, "addons" | "webDeploy" | "serverDeploy">>,
+) {
+  if (!stackParts) return undefined;
+  let next = [...stackParts];
+
+  if (updates.addons) {
+    next = syncAddonStackParts(next, updates.addons);
+  }
+  next = syncOwnedDeployStackPart(next, "frontend", updates.webDeploy);
+  next = syncOwnedDeployStackPart(next, "backend", updates.serverDeploy);
+
+  return next;
+}
+
+function buildBtsConfigForPersistence(
+  projectConfig: ProjectConfig,
+  metadata: Partial<BtsConfigMetadata> = {},
+): BetterTStackConfig {
   const stackParts = projectConfig.stackParts ?? legacyProjectConfigToStackParts(projectConfig);
-  const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, projectConfig.stackParts);
-  const graphSummary = projectConfig.stackParts ? getGraphSummary({ stackParts }) : null;
-  const effectiveStack = projectConfig.stackParts ? getEffectiveStack({ stackParts }) : undefined;
-  const btsConfig: BetterTStackConfig = {
-    version: getLatestCLIVersion(),
-    createdAt: new Date().toISOString(),
+  const persistedConfig = normalizeGraphConfigForPersistence(projectConfig, stackParts);
+  const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : null;
+  const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
+
+  return {
+    version: metadata.version ?? getLatestCLIVersion(),
+    createdAt: metadata.createdAt ?? new Date().toISOString(),
     ...(graphSummary ? { graphSummary, effectiveStack } : {}),
     ecosystem: persistedConfig.ecosystem,
     database: persistedConfig.database,
@@ -139,6 +295,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     mobileDeepLinking: persistedConfig.mobileDeepLinking,
     cms: persistedConfig.cms,
     caching: persistedConfig.caching,
+    rateLimit: persistedConfig.rateLimit,
     i18n: persistedConfig.i18n,
     search: persistedConfig.search,
     fileStorage: persistedConfig.fileStorage,
@@ -152,6 +309,10 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     rustErrorHandling: persistedConfig.rustErrorHandling,
     rustCaching: persistedConfig.rustCaching,
     rustAuth: persistedConfig.rustAuth,
+    rustRealtime: persistedConfig.rustRealtime,
+    rustMessageQueue: persistedConfig.rustMessageQueue,
+    rustObservability: persistedConfig.rustObservability,
+    rustTemplating: persistedConfig.rustTemplating,
     pythonWebFramework: persistedConfig.pythonWebFramework,
     pythonOrm: persistedConfig.pythonOrm,
     pythonValidation: persistedConfig.pythonValidation,
@@ -161,18 +322,42 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     pythonTaskQueue: persistedConfig.pythonTaskQueue,
     pythonGraphql: persistedConfig.pythonGraphql,
     pythonQuality: persistedConfig.pythonQuality,
+    pythonTesting: persistedConfig.pythonTesting,
+    pythonCaching: persistedConfig.pythonCaching,
+    pythonRealtime: persistedConfig.pythonRealtime,
+    pythonObservability: persistedConfig.pythonObservability,
+    pythonCli: persistedConfig.pythonCli,
     goWebFramework: persistedConfig.goWebFramework,
     goOrm: persistedConfig.goOrm,
     goApi: persistedConfig.goApi,
     goCli: persistedConfig.goCli,
     goLogging: persistedConfig.goLogging,
     goAuth: persistedConfig.goAuth,
+    goTesting: persistedConfig.goTesting,
+    goRealtime: persistedConfig.goRealtime,
+    goMessageQueue: persistedConfig.goMessageQueue,
+    goCaching: persistedConfig.goCaching,
+    goConfig: persistedConfig.goConfig,
+    goObservability: persistedConfig.goObservability,
     javaWebFramework: persistedConfig.javaWebFramework,
     javaBuildTool: persistedConfig.javaBuildTool,
     javaOrm: persistedConfig.javaOrm,
     javaAuth: persistedConfig.javaAuth,
+    javaApi: persistedConfig.javaApi,
+    javaLogging: persistedConfig.javaLogging,
     javaLibraries: persistedConfig.javaLibraries,
     javaTestingLibraries: persistedConfig.javaTestingLibraries,
+    dotnetWebFramework: persistedConfig.dotnetWebFramework,
+    dotnetOrm: persistedConfig.dotnetOrm,
+    dotnetAuth: persistedConfig.dotnetAuth,
+    dotnetApi: persistedConfig.dotnetApi,
+    dotnetTesting: persistedConfig.dotnetTesting,
+    dotnetJobQueue: persistedConfig.dotnetJobQueue,
+    dotnetRealtime: persistedConfig.dotnetRealtime,
+    dotnetObservability: persistedConfig.dotnetObservability,
+    dotnetValidation: persistedConfig.dotnetValidation,
+    dotnetCaching: persistedConfig.dotnetCaching,
+    dotnetDeploy: persistedConfig.dotnetDeploy,
     elixirWebFramework: persistedConfig.elixirWebFramework,
     elixirOrm: persistedConfig.elixirOrm,
     elixirAuth: persistedConfig.elixirAuth,
@@ -188,10 +373,33 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     elixirTesting: persistedConfig.elixirTesting,
     elixirQuality: persistedConfig.elixirQuality,
     elixirDeploy: persistedConfig.elixirDeploy,
+    elixirLibraries: persistedConfig.elixirLibraries,
     aiDocs: persistedConfig.aiDocs,
     stackParts,
   };
+}
 
+export function previewBtsConfigUpdate(
+  currentConfig: BetterTStackConfig,
+  updates: Partial<Pick<BetterTStackConfig, "addons" | "webDeploy" | "serverDeploy">>,
+) {
+  const updatedStackParts = syncUpdatedStackParts(currentConfig.stackParts, updates);
+
+  return buildBtsConfigForPersistence(
+    {
+      ...currentConfig,
+      ...updates,
+      ...(updatedStackParts ? { stackParts: updatedStackParts } : {}),
+    } as unknown as ProjectConfig,
+    {
+      version: currentConfig.version,
+      createdAt: currentConfig.createdAt,
+    },
+  );
+}
+
+export async function writeBtsConfig(projectConfig: ProjectConfig) {
+  const btsConfig = buildBtsConfigForPersistence(projectConfig);
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
@@ -244,6 +452,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     mobileDeepLinking: btsConfig.mobileDeepLinking,
     cms: btsConfig.cms,
     caching: btsConfig.caching,
+    rateLimit: btsConfig.rateLimit,
     i18n: btsConfig.i18n,
     search: btsConfig.search,
     fileStorage: btsConfig.fileStorage,
@@ -257,6 +466,10 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     rustErrorHandling: btsConfig.rustErrorHandling,
     rustCaching: btsConfig.rustCaching,
     rustAuth: btsConfig.rustAuth,
+    rustRealtime: btsConfig.rustRealtime,
+    rustMessageQueue: btsConfig.rustMessageQueue,
+    rustObservability: btsConfig.rustObservability,
+    rustTemplating: btsConfig.rustTemplating,
     pythonWebFramework: btsConfig.pythonWebFramework,
     pythonOrm: btsConfig.pythonOrm,
     pythonValidation: btsConfig.pythonValidation,
@@ -266,18 +479,42 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     pythonTaskQueue: btsConfig.pythonTaskQueue,
     pythonGraphql: btsConfig.pythonGraphql,
     pythonQuality: btsConfig.pythonQuality,
+    pythonTesting: btsConfig.pythonTesting,
+    pythonCaching: btsConfig.pythonCaching,
+    pythonRealtime: btsConfig.pythonRealtime,
+    pythonObservability: btsConfig.pythonObservability,
+    pythonCli: btsConfig.pythonCli,
     goWebFramework: btsConfig.goWebFramework,
     goOrm: btsConfig.goOrm,
     goApi: btsConfig.goApi,
     goCli: btsConfig.goCli,
     goLogging: btsConfig.goLogging,
     goAuth: btsConfig.goAuth,
+    goTesting: btsConfig.goTesting,
+    goRealtime: btsConfig.goRealtime,
+    goMessageQueue: btsConfig.goMessageQueue,
+    goCaching: btsConfig.goCaching,
+    goConfig: btsConfig.goConfig,
+    goObservability: btsConfig.goObservability,
     javaWebFramework: btsConfig.javaWebFramework,
     javaBuildTool: btsConfig.javaBuildTool,
     javaOrm: btsConfig.javaOrm,
     javaAuth: btsConfig.javaAuth,
+    javaApi: btsConfig.javaApi,
+    javaLogging: btsConfig.javaLogging,
     javaLibraries: btsConfig.javaLibraries,
     javaTestingLibraries: btsConfig.javaTestingLibraries,
+    dotnetWebFramework: btsConfig.dotnetWebFramework,
+    dotnetOrm: btsConfig.dotnetOrm,
+    dotnetAuth: btsConfig.dotnetAuth,
+    dotnetApi: btsConfig.dotnetApi,
+    dotnetTesting: btsConfig.dotnetTesting,
+    dotnetJobQueue: btsConfig.dotnetJobQueue,
+    dotnetRealtime: btsConfig.dotnetRealtime,
+    dotnetObservability: btsConfig.dotnetObservability,
+    dotnetValidation: btsConfig.dotnetValidation,
+    dotnetCaching: btsConfig.dotnetCaching,
+    dotnetDeploy: btsConfig.dotnetDeploy,
     elixirWebFramework: btsConfig.elixirWebFramework,
     elixirOrm: btsConfig.elixirOrm,
     elixirAuth: btsConfig.elixirAuth,
@@ -293,6 +530,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     elixirTesting: btsConfig.elixirTesting,
     elixirQuality: btsConfig.elixirQuality,
     elixirDeploy: btsConfig.elixirDeploy,
+    elixirLibraries: btsConfig.elixirLibraries,
     aiDocs: btsConfig.aiDocs,
     stackParts: btsConfig.stackParts,
   };
@@ -307,8 +545,8 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
 
   configContent = JSONC.applyEdits(configContent, formatResult);
 
-  const graphNote = graphSummary
-    ? "// For multi-ecosystem projects, graphSummary/effectiveStack and stackParts are the source of truth.\n// Legacy fields such as backend/orm may stay as compatibility fallbacks.\n"
+  const graphNote = btsConfig.stackParts?.length
+    ? "// stackParts is the source of truth; graphSummary/effectiveStack summarize it for humans and tools.\n// Top-level option fields are a derived compatibility cache for older integrations.\n"
     : "";
   const finalContent = `// Better Fullstack configuration file
 // safe to delete
@@ -340,27 +578,10 @@ export async function readBtsConfig(projectDir: string) {
       return null;
     }
 
-    if (config.stackParts && config.stackParts.length > 0) {
-      const diagnostics = compareLegacyConfigToStackParts(config, config.stackParts);
-      if (diagnostics.length > 0) {
-        console.warn(
-          `Warning: bts.jsonc legacy fields differ from stackParts; using stackParts for ${diagnostics
-            .map((diagnostic) => diagnostic.path)
-            .filter(Boolean)
-            .join(", ")}.`,
-        );
-      }
-      return {
-        ...config,
-        ...stackPartsToLegacyProjectConfigPartial(config.stackParts),
-        stackParts: config.stackParts,
-      } as BetterTStackConfig;
-    }
-
-    return {
-      ...config,
-      stackParts: legacyProjectConfigToStackParts(config),
-    } as BetterTStackConfig;
+    return buildBtsConfigForPersistence(config as unknown as ProjectConfig, {
+      version: config.version,
+      createdAt: config.createdAt,
+    });
   } catch {
     return null;
   }
@@ -378,10 +599,23 @@ export async function updateBtsConfig(
     }
 
     const configContent = await fs.readFile(configPath, "utf-8");
+    const errors: JSONC.ParseError[] = [];
+    const currentConfig = JSONC.parse(configContent, errors, {
+      allowTrailingComma: true,
+      disallowComments: false,
+    }) as BetterTStackConfig;
 
     let modifiedContent = configContent;
+    const nextConfig = errors.length === 0
+      ? previewBtsConfigUpdate(currentConfig, updates)
+      : undefined;
+    const persistedUpdates = nextConfig
+      ? Object.fromEntries(
+          Object.entries(nextConfig).filter(([key]) => key !== "version" && key !== "createdAt"),
+        )
+      : updates;
 
-    for (const [key, value] of Object.entries(updates)) {
+    for (const [key, value] of Object.entries(persistedUpdates)) {
       const editResult = JSONC.modify(modifiedContent, [key], value, {
         formattingOptions: {
           tabSize: 2,

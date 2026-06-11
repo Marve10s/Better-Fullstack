@@ -16,12 +16,15 @@ type AuthPromptContext = {
 export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingleResolution<Auth> {
   const authOptionOrder = [
     { value: "better-auth" },
+    { value: "better-auth-organizations" },
     { value: "go-better-auth" },
     { value: "clerk" },
     { value: "nextauth" },
     { value: "stack-auth" },
     { value: "supabase-auth" },
     { value: "auth0" },
+    { value: "workos" },
+    { value: "kinde" },
     { value: "none" },
   ] as const satisfies ReadonlyArray<{ value: Auth }>;
 

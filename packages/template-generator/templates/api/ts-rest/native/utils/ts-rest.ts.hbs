@@ -16,7 +16,7 @@ export const queryClient = new QueryClient({
 const clientArgs = {
 	baseUrl: `${env.EXPO_PUBLIC_SERVER_URL}/rest`,
 	baseHeaders: {},
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	credentials: "include" as const,
 {{/if}}
 	api: tsRestFetchApi,

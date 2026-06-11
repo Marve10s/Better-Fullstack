@@ -1,6 +1,6 @@
 import type { Generated, ColumnType } from "kysely";
 
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 export interface UserTable {
 	id: string;
 	name: string;
@@ -56,7 +56,7 @@ export interface ExampleTable {
 
 {{/if}}
 export interface Database {
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	user: UserTable;
 	session: SessionTable;
 	account: AccountTable;

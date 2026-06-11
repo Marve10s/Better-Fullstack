@@ -11,6 +11,18 @@ mod cache;
 {{#if (ne rustAuth "none")}}
 mod auth;
 {{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+mod messaging;
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
 {{#if (eq email "resend")}}
 mod email;
 {{/if}}
@@ -368,6 +380,18 @@ mod cache;
 {{/if}}
 {{#if (ne rustAuth "none")}}
 mod auth;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+mod messaging;
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
 {{/if}}
 {{#if (eq email "resend")}}
 mod email;
@@ -744,6 +768,18 @@ mod cache;
 {{#if (ne rustAuth "none")}}
 mod auth;
 {{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+mod messaging;
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
 {{#if (eq email "resend")}}
 mod email;
 {{/if}}
@@ -1053,6 +1089,18 @@ mod cache;
 {{/if}}
 {{#if (ne rustAuth "none")}}
 mod auth;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+mod messaging;
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
 {{/if}}
 {{#if (eq email "resend")}}
 mod email;

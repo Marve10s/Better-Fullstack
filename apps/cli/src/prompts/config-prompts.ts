@@ -11,10 +11,22 @@ import type {
   Caching,
   CMS,
   CSSFramework,
+  DotnetApi,
+  DotnetAuth,
+  DotnetCaching,
+  DotnetValidation,
+  DotnetDeploy,
+  DotnetJobQueue,
+  DotnetObservability,
+  DotnetOrm,
+  DotnetRealtime,
+  DotnetTesting,
+  DotnetWebFramework,
   ElixirApi,
   ElixirAuth,
   ElixirCaching,
   ElixirDeploy,
+  ElixirLibraries,
   ElixirEmail,
   ElixirHttp,
   ElixirJobs,
@@ -39,11 +51,19 @@ import type {
   Frontend,
   GoApi,
   GoAuth,
+  GoCaching,
   GoCli,
+  GoConfig,
   GoLogging,
+  GoMessageQueue,
+  GoObservability,
   GoOrm,
+  GoRealtime,
+  GoTesting,
   GoWebFramework,
   JavaAuth,
+  JavaApi,
+  JavaLogging,
   JavaBuildTool,
   JavaLibraries,
   JavaOrm,
@@ -63,11 +83,17 @@ import type {
   PackageManager,
   Payments,
   ProjectConfig,
+  RateLimit,
   PythonAi,
   PythonApi,
   PythonAuth,
   PythonOrm,
   PythonQuality,
+  PythonTesting,
+  PythonCaching,
+  PythonRealtime,
+  PythonObservability,
+  PythonCli,
   PythonGraphql,
   PythonTaskQueue,
   PythonValidation,
@@ -78,6 +104,10 @@ import type {
   RustErrorHandling,
   RustCaching,
   RustAuth,
+  RustRealtime,
+  RustMessageQueue,
+  RustObservability,
+  RustTemplating,
   RustFrontend,
   RustLibraries,
   RustLogging,
@@ -111,10 +141,24 @@ import { getCSSFrameworkChoice } from "./css-framework";
 import { getDatabaseChoice } from "./database";
 import { getDBSetupChoice } from "./database-setup";
 import {
+  getDotnetApiChoice,
+  getDotnetAuthChoice,
+  getDotnetCachingChoice,
+  getDotnetValidationChoice,
+  getDotnetDeployChoice,
+  getDotnetJobQueueChoice,
+  getDotnetObservabilityChoice,
+  getDotnetOrmChoice,
+  getDotnetRealtimeChoice,
+  getDotnetTestingChoice,
+  getDotnetWebFrameworkChoice,
+} from "./dotnet-ecosystem";
+import {
   getElixirApiChoice,
   getElixirAuthChoice,
   getElixirCachingChoice,
   getElixirDeployChoice,
+  getElixirLibrariesChoice,
   getElixirEmailChoice,
   getElixirHttpChoice,
   getElixirJobsChoice,
@@ -139,15 +183,23 @@ import { getGitChoice } from "./git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
+  getGoCachingChoice,
   getGoCliChoice,
+  getGoConfigChoice,
   getGoLoggingChoice,
+  getGoMessageQueueChoice,
+  getGoObservabilityChoice,
   getGoOrmChoice,
+  getGoRealtimeChoice,
+  getGoTestingChoice,
   getGoWebFrameworkChoice,
 } from "./go-ecosystem";
 import { getI18nChoice } from "./i18n";
 import { getinstallChoice } from "./install";
 import {
   getJavaAuthChoice,
+  getJavaApiChoice,
+  getJavaLoggingChoice,
   getJavaBuildToolChoice,
   getJavaLibrariesChoice,
   getJavaOrmChoice,
@@ -174,6 +226,7 @@ import { getObservabilityChoice } from "./observability";
 import { getORMChoice } from "./orm";
 import { getPackageManagerChoice } from "./package-manager";
 import { getPaymentsChoice } from "./payments";
+import { getRateLimitChoice } from "./rate-limit";
 import {
   getPythonAiChoice,
   getPythonApiChoice,
@@ -181,6 +234,11 @@ import {
   getPythonGraphqlChoice,
   getPythonOrmChoice,
   getPythonQualityChoice,
+  getPythonTestingChoice,
+  getPythonCachingChoice,
+  getPythonRealtimeChoice,
+  getPythonObservabilityChoice,
+  getPythonCliChoice,
   getPythonTaskQueueChoice,
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
@@ -196,6 +254,10 @@ import {
   getRustErrorHandlingChoice,
   getRustCachingChoice,
   getRustAuthChoice,
+  getRustRealtimeChoice,
+  getRustMessageQueueChoice,
+  getRustObservabilityChoice,
+  getRustTemplatingChoice,
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
@@ -246,6 +308,7 @@ type PromptGroupResults = {
   analytics: Analytics;
   cms: CMS;
   caching: Caching;
+  rateLimit: RateLimit;
   i18n: I18n;
   search: Search;
   fileStorage: FileStorage;
@@ -267,6 +330,10 @@ type PromptGroupResults = {
   rustErrorHandling: RustErrorHandling;
   rustCaching: RustCaching;
   rustAuth: RustAuth;
+  rustRealtime: RustRealtime;
+  rustMessageQueue: RustMessageQueue;
+  rustObservability: RustObservability;
+  rustTemplating: RustTemplating;
   // Python ecosystem
   pythonWebFramework: PythonWebFramework;
   pythonOrm: PythonOrm;
@@ -277,6 +344,11 @@ type PromptGroupResults = {
   pythonTaskQueue: PythonTaskQueue;
   pythonGraphql: PythonGraphql;
   pythonQuality: PythonQuality;
+  pythonTesting: PythonTesting[];
+  pythonCaching: PythonCaching;
+  pythonRealtime: PythonRealtime;
+  pythonObservability: PythonObservability;
+  pythonCli: PythonCli[];
   // Go ecosystem
   goWebFramework: GoWebFramework;
   goOrm: GoOrm;
@@ -284,13 +356,33 @@ type PromptGroupResults = {
   goCli: GoCli;
   goLogging: GoLogging;
   goAuth: GoAuth;
+  goTesting: GoTesting[];
+  goRealtime: GoRealtime;
+  goMessageQueue: GoMessageQueue;
+  goCaching: GoCaching;
+  goConfig: GoConfig;
+  goObservability: GoObservability;
   // Java ecosystem
   javaWebFramework: JavaWebFramework;
   javaBuildTool: JavaBuildTool;
   javaOrm: JavaOrm;
   javaAuth: JavaAuth;
+  javaApi: JavaApi;
+  javaLogging: JavaLogging;
   javaLibraries: JavaLibraries[];
   javaTestingLibraries: JavaTestingLibraries[];
+  // .NET ecosystem
+  dotnetWebFramework: DotnetWebFramework;
+  dotnetOrm: DotnetOrm;
+  dotnetAuth: DotnetAuth;
+  dotnetApi: DotnetApi;
+  dotnetTesting: DotnetTesting[];
+  dotnetJobQueue: DotnetJobQueue;
+  dotnetRealtime: DotnetRealtime;
+  dotnetObservability: DotnetObservability[];
+  dotnetValidation: DotnetValidation;
+  dotnetCaching: DotnetCaching;
+  dotnetDeploy: DotnetDeploy;
   // Elixir ecosystem
   elixirWebFramework: ElixirWebFramework;
   elixirOrm: ElixirOrm;
@@ -307,6 +399,7 @@ type PromptGroupResults = {
   elixirTesting: ElixirTesting;
   elixirQuality: ElixirQuality;
   elixirDeploy: ElixirDeploy;
+  elixirLibraries: ElixirLibraries[];
   // Keep at end
   aiDocs: AiDocs[];
   git: boolean;
@@ -382,9 +475,10 @@ export async function gatherConfig(
       },
       database: ({ results }) => {
         if (results.ecosystem !== "typescript") {
-          return Promise.resolve(
-            results.ecosystem === "python" ? (flags.database ?? "none" as Database) : "none" as Database,
-          );
+          if (results.ecosystem === "python" || results.ecosystem === "dotnet") {
+            return Promise.resolve((flags.database ?? "none") as Database);
+          }
+          return Promise.resolve("none" as Database);
         }
         return getDatabaseChoice(flags.database, results.backend, results.runtime);
       },
@@ -561,6 +655,10 @@ export async function gatherConfig(
         }
         return getCachingChoice(flags.caching, results.backend, results.ecosystem);
       },
+      rateLimit: ({ results }) => {
+        if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
+        return getRateLimitChoice(flags.rateLimit, results.backend);
+      },
       i18n: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as I18n);
         return getI18nChoice(flags.i18n, results.frontend);
@@ -683,6 +781,22 @@ export async function gatherConfig(
         if (results.ecosystem !== "rust") return Promise.resolve("none" as RustAuth);
         return getRustAuthChoice(flags.rustAuth);
       },
+      rustRealtime: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustRealtime);
+        return getRustRealtimeChoice(flags.rustRealtime);
+      },
+      rustMessageQueue: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustMessageQueue);
+        return getRustMessageQueueChoice(flags.rustMessageQueue);
+      },
+      rustObservability: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustObservability);
+        return getRustObservabilityChoice(flags.rustObservability);
+      },
+      rustTemplating: ({ results }) => {
+        if (results.ecosystem !== "rust") return Promise.resolve("none" as RustTemplating);
+        return getRustTemplatingChoice(flags.rustTemplating);
+      },
       // Python ecosystem prompts (skip if TypeScript or Rust)
       pythonWebFramework: ({ results }) => {
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonWebFramework);
@@ -723,6 +837,28 @@ export async function gatherConfig(
         if (results.ecosystem !== "python") return Promise.resolve("none" as PythonQuality);
         return getPythonQualityChoice(flags.pythonQuality);
       },
+      pythonTesting: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve([] as PythonTesting[]);
+        return getPythonTestingChoice(flags.pythonTesting);
+      },
+      pythonCaching: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonCaching);
+        return getPythonCachingChoice(flags.pythonCaching);
+      },
+      pythonRealtime: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve("none" as PythonRealtime);
+        return getPythonRealtimeChoice(flags.pythonRealtime);
+      },
+      pythonObservability: ({ results }) => {
+        if (results.ecosystem !== "python") {
+          return Promise.resolve("none" as PythonObservability);
+        }
+        return getPythonObservabilityChoice(flags.pythonObservability);
+      },
+      pythonCli: ({ results }) => {
+        if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
+        return getPythonCliChoice(flags.pythonCli);
+      },
       // Go ecosystem prompts (skip if not Go)
       goWebFramework: ({ results }) => {
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoWebFramework);
@@ -748,6 +884,30 @@ export async function gatherConfig(
         if (results.ecosystem !== "go") return Promise.resolve("none" as GoAuth);
         return getGoAuthChoice(flags.goAuth);
       },
+      goTesting: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve([] as GoTesting[]);
+        return getGoTestingChoice(flags.goTesting);
+      },
+      goRealtime: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoRealtime);
+        return getGoRealtimeChoice(flags.goRealtime);
+      },
+      goMessageQueue: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
+        return getGoMessageQueueChoice(flags.goMessageQueue);
+      },
+      goCaching: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
+        return getGoCachingChoice(flags.goCaching);
+      },
+      goConfig: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoConfig);
+        return getGoConfigChoice(flags.goConfig);
+      },
+      goObservability: ({ results }) => {
+        if (results.ecosystem !== "go") return Promise.resolve("none" as GoObservability);
+        return getGoObservabilityChoice(flags.goObservability);
+      },
       // Java ecosystem prompts (skip if not Java)
       javaWebFramework: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
@@ -771,6 +931,20 @@ export async function gatherConfig(
         }
         return getJavaAuthChoice(flags.javaAuth);
       },
+      javaApi: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaApi);
+        if (results.javaWebFramework !== "spring-boot") {
+          return Promise.resolve("none" as JavaApi);
+        }
+        return getJavaApiChoice(flags.javaApi);
+      },
+      javaLogging: ({ results }) => {
+        if (results.ecosystem !== "java") return Promise.resolve("none" as JavaLogging);
+        if (results.javaWebFramework !== "spring-boot") {
+          return Promise.resolve("none" as JavaLogging);
+        }
+        return getJavaLoggingChoice(flags.javaLogging);
+      },
       javaLibraries: ({ results }) => {
         if (results.ecosystem !== "java") return Promise.resolve([] as JavaLibraries[]);
         if (results.javaWebFramework !== "spring-boot" || results.javaBuildTool === "none") {
@@ -784,6 +958,60 @@ export async function gatherConfig(
           return Promise.resolve([] as JavaTestingLibraries[]);
         }
         return getJavaTestingLibrariesChoice(flags.javaTestingLibraries);
+      },
+      // .NET ecosystem prompts (skip if not .NET)
+      dotnetWebFramework: ({ results }) => {
+        if (results.ecosystem !== "dotnet") {
+          return Promise.resolve("none" as DotnetWebFramework);
+        }
+        return getDotnetWebFrameworkChoice(flags.dotnetWebFramework);
+      },
+      dotnetOrm: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetOrm);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetOrm);
+        return getDotnetOrmChoice(flags.dotnetOrm);
+      },
+      dotnetAuth: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetAuth);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetAuth);
+        return getDotnetAuthChoice(flags.dotnetAuth);
+      },
+      dotnetApi: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetApi);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetApi);
+        return getDotnetApiChoice(flags.dotnetApi);
+      },
+      dotnetTesting: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetTesting[]);
+        return getDotnetTestingChoice(flags.dotnetTesting);
+      },
+      dotnetJobQueue: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetJobQueue);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetJobQueue);
+        return getDotnetJobQueueChoice(flags.dotnetJobQueue);
+      },
+      dotnetRealtime: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetRealtime);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetRealtime);
+        return getDotnetRealtimeChoice(flags.dotnetRealtime);
+      },
+      dotnetObservability: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve([] as DotnetObservability[]);
+        return getDotnetObservabilityChoice(flags.dotnetObservability);
+      },
+      dotnetValidation: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetValidation);
+        return getDotnetValidationChoice(flags.dotnetValidation);
+      },
+      dotnetCaching: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetCaching);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetCaching);
+        return getDotnetCachingChoice(flags.dotnetCaching);
+      },
+      dotnetDeploy: ({ results }) => {
+        if (results.ecosystem !== "dotnet") return Promise.resolve("none" as DotnetDeploy);
+        if (results.dotnetWebFramework === "none") return Promise.resolve("none" as DotnetDeploy);
+        return getDotnetDeployChoice(flags.dotnetDeploy);
       },
       // Elixir ecosystem prompts (skip if not Elixir)
       elixirWebFramework: ({ results }) => {
@@ -846,16 +1074,21 @@ export async function gatherConfig(
         if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
         return getElixirDeployChoice(flags.elixirDeploy);
       },
+      elixirLibraries: ({ results }) => {
+        if (results.ecosystem !== "elixir") return Promise.resolve([] as ElixirLibraries[]);
+        return getElixirLibrariesChoice(flags.elixirLibraries);
+      },
       // Keep at end
       aiDocs: () => getAiDocsChoice(flags.aiDocs),
       git: () => getGitChoice(flags.git),
       packageManager: ({ results }) => {
-        // Skip package manager prompt for Rust/Python/Go/Java (they use cargo/uv/go mod/maven wrapper, not npm/pnpm/bun)
+        // Skip package manager prompt for non-JS ecosystems.
         if (
           results.ecosystem === "rust" ||
           results.ecosystem === "python" ||
           results.ecosystem === "go" ||
           results.ecosystem === "java" ||
+          results.ecosystem === "dotnet" ||
           results.ecosystem === "elixir"
         )
           return Promise.resolve(flags.packageManager ?? getUserPkgManager());
@@ -911,6 +1144,7 @@ export async function gatherConfig(
     analytics: result.analytics,
     cms: result.cms,
     caching: result.caching,
+    rateLimit: result.rateLimit,
     i18n: result.i18n,
     search: result.search,
     fileStorage: result.fileStorage,
@@ -934,6 +1168,10 @@ export async function gatherConfig(
     rustErrorHandling: result.rustErrorHandling,
     rustCaching: result.rustCaching,
     rustAuth: result.rustAuth,
+    rustRealtime: result.rustRealtime,
+    rustMessageQueue: result.rustMessageQueue,
+    rustObservability: result.rustObservability,
+    rustTemplating: result.rustTemplating,
     // Python ecosystem options
     pythonWebFramework: result.pythonWebFramework,
     pythonOrm: result.pythonOrm,
@@ -944,6 +1182,11 @@ export async function gatherConfig(
     pythonTaskQueue: result.pythonTaskQueue,
     pythonGraphql: result.pythonGraphql,
     pythonQuality: result.pythonQuality,
+    pythonTesting: result.pythonTesting,
+    pythonCaching: result.pythonCaching,
+    pythonRealtime: result.pythonRealtime,
+    pythonObservability: result.pythonObservability,
+    pythonCli: result.pythonCli,
     // Go ecosystem options
     goWebFramework: result.goWebFramework,
     goOrm: result.goOrm,
@@ -951,13 +1194,33 @@ export async function gatherConfig(
     goCli: result.goCli,
     goLogging: result.goLogging,
     goAuth: result.goAuth,
+    goTesting: result.goTesting,
+    goRealtime: result.goRealtime,
+    goMessageQueue: result.goMessageQueue,
+    goCaching: result.goCaching,
+    goConfig: result.goConfig,
+    goObservability: result.goObservability,
     // Java ecosystem options
     javaWebFramework: result.javaWebFramework,
     javaBuildTool: result.javaBuildTool,
     javaOrm: result.javaOrm,
     javaAuth: result.javaAuth,
+    javaApi: result.javaApi,
+    javaLogging: result.javaLogging,
     javaLibraries: result.javaLibraries,
     javaTestingLibraries: result.javaTestingLibraries,
+    // .NET ecosystem options
+    dotnetWebFramework: result.dotnetWebFramework,
+    dotnetOrm: result.dotnetOrm,
+    dotnetAuth: result.dotnetAuth,
+    dotnetApi: result.dotnetApi,
+    dotnetTesting: result.dotnetTesting,
+    dotnetJobQueue: result.dotnetJobQueue,
+    dotnetRealtime: result.dotnetRealtime,
+    dotnetObservability: result.dotnetObservability,
+    dotnetValidation: result.dotnetValidation,
+    dotnetCaching: result.dotnetCaching,
+    dotnetDeploy: result.dotnetDeploy,
     // Elixir ecosystem options
     elixirWebFramework: result.elixirWebFramework,
     elixirOrm: result.elixirOrm,
@@ -974,6 +1237,7 @@ export async function gatherConfig(
     elixirTesting: result.elixirTesting,
     elixirQuality: result.elixirQuality,
     elixirDeploy: result.elixirDeploy,
+    elixirLibraries: result.elixirLibraries,
     // AI documentation files
     aiDocs: result.aiDocs,
   };

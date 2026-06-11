@@ -46,7 +46,7 @@ const getORPCClient = createIsomorphicFn()
 	.client((): RouterClient<typeof appRouter> => {
 			const link = new RPCLink({
 			url: `${window.location.origin}/api/rpc`,
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			fetch(url, options) {
 				return fetch(url, {
 					...options,
@@ -63,7 +63,7 @@ export const client: RouterClient<typeof appRouter> = getORPCClient();
 {{else if (includes frontend "tanstack-start")}}
 const link = new RPCLink({
 	url: `${env.VITE_SERVER_URL}/rpc`,
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	fetch(url, options) {
 		return fetch(url, {
 			...options,
@@ -87,7 +87,7 @@ export const link = new RPCLink({
 {{else}}
 	url: `${env.VITE_SERVER_URL}/rpc`,
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	fetch(url, options) {
 		return fetch(url, {
 			...options,

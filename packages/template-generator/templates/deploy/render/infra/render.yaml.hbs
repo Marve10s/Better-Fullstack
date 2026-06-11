@@ -1,0 +1,33 @@
+# Render Blueprint for {{projectName}}
+# https://render.com/docs/blueprint-spec
+#
+# Connect this repository on https://dashboard.render.com/blueprints and Render
+# will create the services below. Set production environment variables
+# (database URLs, auth secrets, CORS origins) in the Render dashboard.
+services:
+{{#if (eq serverDeploy "render")}}
+  - type: web
+    name: {{projectName}}-server
+    runtime: docker
+    dockerfilePath: ./apps/server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+{{/if}}
+{{#if (eq webDeploy "render")}}
+  - type: web
+    name: {{projectName}}-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+{{/if}}

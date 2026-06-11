@@ -1,0 +1,34 @@
+{{#if (eq rustTemplating "askama")}}
+//! Compile-time HTML templates with Askama.
+//!
+//! Template sources live in `templates/` at the crate root and are checked
+//! at compile time.
+
+use askama::Template;
+
+#[derive(Template)]
+#[template(path = "hello.html")]
+pub struct HelloTemplate<'a> {
+    pub name: &'a str,
+}
+
+/// Render the hello template to an HTML string.
+pub fn render_hello(name: &str) -> Result<String, askama::Error> {
+    HelloTemplate { name }.render()
+}
+{{/if}}
+{{#if (eq rustTemplating "tera")}}
+//! Runtime HTML templates with Tera.
+
+use tera::{Context, Tera};
+
+/// Render a small inline template; swap for `Tera::new("templates/**/*")`
+/// to load templates from disk.
+pub fn render_hello(name: &str) -> Result<String, tera::Error> {
+    let mut tera = Tera::default();
+    tera.add_raw_template("hello.html", "<h1>Hello, \{{name}}!</h1>")?;
+    let mut context = Context::new();
+    context.insert("name", name);
+    tera.render("hello.html", &context)
+}
+{{/if}}

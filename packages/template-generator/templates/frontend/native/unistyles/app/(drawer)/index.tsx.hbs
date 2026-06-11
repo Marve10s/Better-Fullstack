@@ -17,7 +17,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/re
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { useUser } from "@clerk/clerk-expo";
 import { SignOutButton } from "@/components/sign-out-button";
-{{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+{{else if (and (eq backend "convex") (isBetterAuth auth))}}
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
@@ -39,7 +39,7 @@ export default function Home() {
   const { user } = useUser();
   const healthCheck = useQuery(api.healthCheck.get);
   const privateData = useQuery(api.privateData.get);
-  {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
+  {{else if (and (eq backend "convex") (isBetterAuth auth))}}
   const healthCheck = useQuery(api.healthCheck.get);
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
@@ -57,7 +57,7 @@ export default function Home() {
           Better Fullstack
         </Text>
 
-        {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
+        {{#unless (and (eq backend "convex") (isBetterAuth auth))}}
         <View style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <Text style={styles.statusTitle}>System Status</Text>
@@ -66,7 +66,7 @@ export default function Home() {
             </View>
           </View>
           {{#if (eq backend "convex")}}
-            {{#unless (eq auth "better-auth")}}
+            {{#unless (isBetterAuth auth)}}
             <View style={styles.statusRow}>
               <View
                 style={[
@@ -141,7 +141,7 @@ export default function Home() {
         </AuthLoading>
         {{/if}}
 
-        {{#if (and (eq backend "convex") (eq auth "better-auth"))}}
+        {{#if (and (eq backend "convex") (isBetterAuth auth))}}
         {user ? (
           <View style={styles.userCard}>
             <View style={styles.userHeader}>

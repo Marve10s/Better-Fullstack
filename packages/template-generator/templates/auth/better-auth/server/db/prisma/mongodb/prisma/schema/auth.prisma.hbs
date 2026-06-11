@@ -8,6 +8,10 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+{{#if (hasBetterAuthOrganizations auth)}}
+  members       Member[]
+  invitations   Invitation[] @relation("inviterInvitations")
+{{/if}}
 
   @@unique([email])
   @@map("user")
@@ -23,6 +27,9 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+{{#if (hasBetterAuthOrganizations auth)}}
+  activeOrganizationId String?
+{{/if}}
 
   @@unique([token])
   @@index([userId])
@@ -60,3 +67,50 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+{{#if (hasBetterAuthOrganizations auth)}}
+model Organization {
+  id          String       @id @map("_id")
+  name        String
+  slug        String
+  logo        String?
+  metadata    String?
+  createdAt   DateTime     @default(now())
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id @map("_id")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id @map("_id")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  inviter        User         @relation("inviterInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
+}
+{{/if}}

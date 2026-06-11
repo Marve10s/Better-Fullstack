@@ -1,0 +1,41 @@
+{{#if (eq goMessageQueue "watermill")}}
+// Package messaging provides Watermill pub/sub helpers.
+//
+// This setup uses the in-process GoChannel transport; swap it for the Kafka,
+// RabbitMQ, or Pub/Sub Watermill implementations in production.
+package messaging
+
+import (
+	"context"
+
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
+)
+
+// NewPubSub creates an in-process Watermill pub/sub.
+func NewPubSub() *gochannel.GoChannel {
+	return gochannel.NewGoChannel(gochannel.Config{}, watermill.NewStdLogger(false, false))
+}
+
+// Publish sends a payload to the given topic.
+func Publish(pubSub *gochannel.GoChannel, topic string, payload []byte) error {
+	msg := message.NewMessage(watermill.NewUUID(), payload)
+	return pubSub.Publish(topic, msg)
+}
+
+// Subscribe consumes messages from the given topic until the process exits.
+func Subscribe(pubSub *gochannel.GoChannel, topic string, handler func(payload []byte)) error {
+	messages, err := pubSub.Subscribe(context.Background(), topic)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for msg := range messages {
+			handler(msg.Payload)
+			msg.Ack()
+		}
+	}()
+	return nil
+}
+{{/if}}

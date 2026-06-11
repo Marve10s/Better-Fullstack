@@ -1,0 +1,29 @@
+{{#if (includes pythonAi "pydantic-ai")}}
+"""Pydantic AI agent example.
+
+Set OPENAI_API_KEY (or another provider key) before running.
+"""
+
+from pydantic import BaseModel
+from pydantic_ai import Agent
+
+
+class CityInfo(BaseModel):
+    """Structured output returned by the agent."""
+
+    city: str
+    country: str
+
+
+agent = Agent(
+    "openai:gpt-5",
+    output_type=CityInfo,
+    system_prompt="Extract the city and country the user is asking about.",
+)
+
+
+async def ask_city(question: str) -> CityInfo:
+    """Run the agent and return a validated CityInfo."""
+    result = await agent.run(question)
+    return result.output
+{{/if}}

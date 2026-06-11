@@ -281,7 +281,8 @@ describe("docs content contract", () => {
 
     const searchDataSource = readFileSync(join(WEB_ROOT, "src/lib/docs/search-data.ts"), "utf8");
     expect(searchDataSource).toContain("buildSearchSections");
-    expect(searchDataSource).toContain("rawSource: page.raw");
+    expect(searchDataSource).toContain("loadAllRawPages");
+    expect(searchDataSource).toContain("rawSource: rawByFilePath.get(page.filePath)");
   });
 
   it("does not crash docs search when raw MDX text is unavailable", () => {

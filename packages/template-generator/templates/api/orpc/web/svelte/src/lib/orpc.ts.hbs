@@ -17,7 +17,7 @@ export const queryClient = new QueryClient({
 
 export const link = new RPCLink({
 	url: {{#if (eq backend "self")}}"/api/rpc"{{else}}`${PUBLIC_SERVER_URL}/rpc`{{/if}},
-	{{#if (and (eq auth "better-auth") (ne backend "self"))}}
+	{{#if (and (isBetterAuth auth) (ne backend "self"))}}
 	fetch(url, options) {
 		return fetch(url, {
 			...options,

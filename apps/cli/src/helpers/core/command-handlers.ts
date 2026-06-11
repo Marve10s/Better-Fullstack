@@ -1,8 +1,3 @@
-import {
-  validatePreflightConfig,
-  generateVirtualProject,
-  EMBEDDED_TEMPLATES,
-} from "@better-fullstack/template-generator";
 import { intro, log, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
@@ -76,6 +71,7 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     analytics: "none",
     cms: "none",
     caching: "none",
+    rateLimit: "none",
     i18n: "none",
     search: "none",
     fileStorage: "none",
@@ -217,8 +213,13 @@ export async function createProjectHandler(
               rustErrorHandling: "none",
               rustCaching: "none",
               rustAuth: "none",
+              rustRealtime: "none",
+              rustMessageQueue: "none",
+              rustObservability: "none",
+              rustTemplating: "none",
               cms: "none",
               caching: "none",
+              rateLimit: "none",
               i18n: "none",
               search: "none",
               featureFlags: "none",
@@ -240,18 +241,42 @@ export async function createProjectHandler(
               pythonTaskQueue: "none",
               pythonGraphql: "none",
               pythonQuality: "none",
+              pythonTesting: [],
+              pythonCaching: "none",
+              pythonRealtime: "none",
+              pythonObservability: "none",
+              pythonCli: [],
               goWebFramework: "none",
               goOrm: "none",
               goApi: "none",
               goCli: "none",
               goLogging: "none",
               goAuth: "none",
+              goTesting: [],
+              goRealtime: "none",
+              goMessageQueue: "none",
+              goCaching: "none",
+              goConfig: "none",
+              goObservability: "none",
               javaWebFramework: "none",
               javaBuildTool: "none",
               javaOrm: "none",
               javaAuth: "none",
+              javaApi: "none",
+              javaLogging: "none",
               javaLibraries: [],
               javaTestingLibraries: [],
+              dotnetWebFramework: "none",
+              dotnetOrm: "none",
+              dotnetAuth: "none",
+              dotnetApi: "none",
+              dotnetTesting: [],
+              dotnetJobQueue: "none",
+              dotnetRealtime: "none",
+              dotnetObservability: [],
+              dotnetValidation: "none",
+              dotnetCaching: "none",
+              dotnetDeploy: "none",
               elixirWebFramework: "none",
               elixirOrm: "none",
               elixirAuth: "none",
@@ -267,6 +292,7 @@ export async function createProjectHandler(
               elixirTesting: "none",
               elixirQuality: "none",
               elixirDeploy: "none",
+              elixirLibraries: [],
               aiDocs: [],
             } satisfies ProjectConfig,
             reproducibleCommand: "",
@@ -316,6 +342,10 @@ export async function createProjectHandler(
           };
         }
       }
+
+      // Loaded here instead of at module top: the template-generator bundle
+      // embeds all templates (~2.5 MB of source) and would slow CLI startup.
+      const { validatePreflightConfig } = await import("@better-fullstack/template-generator");
 
       let config: ProjectConfig;
       if (cliInput.yes || cliInput.part?.length) {
@@ -367,6 +397,9 @@ export async function createProjectHandler(
       }
 
       if (input.dryRun) {
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import(
+          "@better-fullstack/template-generator"
+        );
         const result = await generateVirtualProject({
           config,
           templates: EMBEDDED_TEMPLATES,

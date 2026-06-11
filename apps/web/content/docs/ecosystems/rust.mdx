@@ -25,6 +25,10 @@ npm create better-fullstack@latest my-rust-api -- \
   --rust-cli none \
   --rust-caching none \
   --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
   --ai-docs none \
   --version-channel stable \
   --no-install \
@@ -44,7 +48,11 @@ npm create better-fullstack@latest my-rust-api -- \
 | Logging | `tracing` `env-logger` `none` |
 | Error handling | `anyhow-thiserror` `eyre` `none` |
 | Caching | `moka` `redis` `none` |
-| Auth | `oauth2` `none` |
+| Auth | `oauth2` `torii` `none` |
+| Realtime | `tokio-tungstenite` `none` |
+| Message queue | `lapin` `none` |
+| Observability | `opentelemetry` `none` |
+| Templating | `askama` `tera` `none` |
 
 ## Generated behavior
 

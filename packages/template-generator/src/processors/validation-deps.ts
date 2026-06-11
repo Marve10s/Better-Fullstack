@@ -88,7 +88,7 @@ function getValidationDeps(validation: ProjectConfig["validation"]): AvailableDe
       deps.push("runtypes");
       break;
     case "effect-schema":
-      deps.push("@effect/schema");
+      // Schema is part of the core effect package (effect/Schema)
       deps.push("effect");
       break;
   }

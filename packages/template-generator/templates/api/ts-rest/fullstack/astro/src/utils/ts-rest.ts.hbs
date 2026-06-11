@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
 const clientArgs = {
 	baseUrl: "/api/rest",
 	baseHeaders: {},
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 	credentials: "include" as const,
 {{/if}}
 	api: tsRestFetchApi,

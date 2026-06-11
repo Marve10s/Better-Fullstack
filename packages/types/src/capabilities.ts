@@ -49,6 +49,14 @@ const AUTH_CAPABILITIES = [
     default: true,
   },
   {
+    id: "better-auth-organizations",
+    label: "Better Auth + Organizations",
+    description: "Better Auth with the Organizations plugin for teams and multi-tenant apps",
+    promptHint: "Better Auth with organizations and team management",
+    icon: "/icon/better-auth.svg",
+    color: "from-emerald-400 to-teal-600",
+  },
+  {
     id: "go-better-auth",
     label: "GoBetterAuth",
     description: "Embedded auth routes for Go applications",
@@ -95,6 +103,22 @@ const AUTH_CAPABILITIES = [
     promptHint: "Flexible identity platform for authentication",
     icon: "https://cdn.simpleicons.org/auth0/EB5424",
     color: "from-orange-400 to-orange-600",
+  },
+  {
+    id: "workos",
+    label: "WorkOS AuthKit",
+    description: "Enterprise auth with SSO, SCIM, organizations, and audit logs",
+    promptHint: "Enterprise AuthKit with SSO and organizations",
+    icon: "https://cdn.simpleicons.org/workos/6363F1",
+    color: "from-indigo-400 to-violet-600",
+  },
+  {
+    id: "kinde",
+    label: "Kinde",
+    description: "Authentication, organizations, roles, and permissions for SaaS apps",
+    promptHint: "Auth with organizations, roles, and permissions",
+    icon: "https://cdn.simpleicons.org/kinde/00A9FF",
+    color: "from-sky-400 to-cyan-600",
   },
   {
     id: "none",
@@ -153,7 +177,7 @@ function isSelfBackend(backend?: string): boolean {
   return backend === "self" || backend?.startsWith("self-") === true;
 }
 
-function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "go-better-auth" | "clerk">): string {
+function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "better-auth-organizations" | "go-better-auth" | "clerk">): string {
   switch (optionId) {
     case "nextauth":
       return "Auth.js (NextAuth)";
@@ -163,6 +187,10 @@ function getNextOnlyAuthLabel(optionId: Exclude<Auth, "none" | "better-auth" | "
       return "Supabase Auth";
     case "auth0":
       return "Auth0";
+    case "workos":
+      return "WorkOS AuthKit";
+    case "kinde":
+      return "Kinde";
     default: {
       const _exhaustive: never = optionId;
       return String(_exhaustive);
@@ -196,7 +224,11 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return "No backend selected";
   }
 
-  if (optionId === "better-auth") {
+  if (optionId === "better-auth" || optionId === "better-auth-organizations") {
+    if (optionId === "better-auth-organizations" && backend === "convex") {
+      return "Better Auth organizations is currently generated for non-Convex Better Auth stacks";
+    }
+
     if (backend === "convex") {
       const hasCompatibleFrontend =
         webFrontend.some((frontend) => CONVEX_BETTER_AUTH_WEB.has(frontend)) ||

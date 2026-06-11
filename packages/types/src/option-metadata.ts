@@ -8,7 +8,19 @@ import {
   ASTRO_INTEGRATION_VALUES,
   AUTH_VALUES,
   CACHING_VALUES,
+  DOTNET_API_VALUES,
+  DOTNET_AUTH_VALUES,
+  DOTNET_VALIDATION_VALUES,
+  DOTNET_CACHING_VALUES,
+  DOTNET_DEPLOY_VALUES,
+  DOTNET_JOB_QUEUE_VALUES,
+  DOTNET_OBSERVABILITY_VALUES,
+  DOTNET_ORM_VALUES,
+  DOTNET_REALTIME_VALUES,
+  DOTNET_TESTING_VALUES,
+  DOTNET_WEB_FRAMEWORK_VALUES,
   ELIXIR_API_VALUES,
+  ELIXIR_LIBRARIES_VALUES,
   ELIXIR_AUTH_VALUES,
   ELIXIR_CACHING_VALUES,
   ELIXIR_DEPLOY_VALUES,
@@ -47,7 +59,15 @@ import {
   GO_LOGGING_VALUES,
   GO_ORM_VALUES,
   GO_WEB_FRAMEWORK_VALUES,
+  GO_TESTING_VALUES,
+  GO_REALTIME_VALUES,
+  GO_MESSAGE_QUEUE_VALUES,
+  GO_CACHING_VALUES,
+  GO_CONFIG_VALUES,
+  GO_OBSERVABILITY_VALUES,
   JAVA_AUTH_VALUES,
+  JAVA_API_VALUES,
+  JAVA_LOGGING_VALUES,
   JAVA_BUILD_TOOL_VALUES,
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
@@ -66,9 +86,15 @@ import {
   PYTHON_ORM_VALUES,
   PYTHON_GRAPHQL_VALUES,
   PYTHON_QUALITY_VALUES,
+  PYTHON_TESTING_VALUES,
+  PYTHON_CACHING_VALUES,
+  PYTHON_REALTIME_VALUES,
+  PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_CLI_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
   PYTHON_WEB_FRAMEWORK_VALUES,
+  RATE_LIMIT_VALUES,
   REALTIME_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
@@ -79,6 +105,10 @@ import {
   RUST_ERROR_HANDLING_VALUES,
   RUST_CACHING_VALUES,
   RUST_AUTH_VALUES,
+  RUST_REALTIME_VALUES,
+  RUST_MESSAGE_QUEUE_VALUES,
+  RUST_OBSERVABILITY_VALUES,
+  RUST_TEMPLATING_VALUES,
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
@@ -123,6 +153,7 @@ export type OptionCategory =
   | "realtime"
   | "jobQueue"
   | "caching"
+  | "rateLimit"
   | "i18n"
   | "search"
   | "fileStorage"
@@ -167,6 +198,10 @@ export type OptionCategory =
   | "rustErrorHandling"
   | "rustCaching"
   | "rustAuth"
+  | "rustRealtime"
+  | "rustMessageQueue"
+  | "rustObservability"
+  | "rustTemplating"
   | "pythonWebFramework"
   | "pythonOrm"
   | "pythonValidation"
@@ -176,18 +211,42 @@ export type OptionCategory =
   | "pythonTaskQueue"
   | "pythonGraphql"
   | "pythonQuality"
+  | "pythonTesting"
+  | "pythonCaching"
+  | "pythonRealtime"
+  | "pythonObservability"
+  | "pythonCli"
   | "goWebFramework"
   | "goOrm"
   | "goApi"
   | "goCli"
   | "goLogging"
   | "goAuth"
+  | "goTesting"
+  | "goRealtime"
+  | "goMessageQueue"
+  | "goCaching"
+  | "goConfig"
+  | "goObservability"
   | "javaWebFramework"
   | "javaBuildTool"
   | "javaOrm"
   | "javaAuth"
+  | "javaApi"
+  | "javaLogging"
   | "javaLibraries"
   | "javaTestingLibraries"
+  | "dotnetWebFramework"
+  | "dotnetOrm"
+  | "dotnetAuth"
+  | "dotnetApi"
+  | "dotnetTesting"
+  | "dotnetJobQueue"
+  | "dotnetRealtime"
+  | "dotnetObservability"
+  | "dotnetValidation"
+  | "dotnetCaching"
+  | "dotnetDeploy"
   | "elixirWebFramework"
   | "elixirOrm"
   | "elixirAuth"
@@ -202,7 +261,8 @@ export type OptionCategory =
   | "elixirObservability"
   | "elixirTesting"
   | "elixirQuality"
-  | "elixirDeploy";
+  | "elixirDeploy"
+  | "elixirLibraries";
 
 export type OptionSelectionMode = "single" | "multiple";
 
@@ -213,6 +273,7 @@ export type OptionCategoryEcosystem =
   | "python"
   | "go"
   | "java"
+  | "dotnet"
   | "elixir";
 
 export const TYPESCRIPT_CATEGORY_ORDER = [
@@ -252,6 +313,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "realtime",
   "jobQueue",
   "caching",
+  "rateLimit",
   "i18n",
   "search",
   "fileStorage",
@@ -295,6 +357,10 @@ export const RUST_CATEGORY_ORDER = [
   "rustErrorHandling",
   "rustCaching",
   "rustAuth",
+  "rustRealtime",
+  "rustMessageQueue",
+  "rustObservability",
+  "rustTemplating",
   "email",
   "observability",
   "caching",
@@ -314,6 +380,11 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
+  "pythonTesting",
+  "pythonCaching",
+  "pythonRealtime",
+  "pythonObservability",
+  "pythonCli",
   "email",
   "observability",
   "caching",
@@ -330,6 +401,12 @@ export const GO_CATEGORY_ORDER = [
   "goCli",
   "goLogging",
   "goAuth",
+  "goTesting",
+  "goRealtime",
+  "goMessageQueue",
+  "goCaching",
+  "goConfig",
+  "goObservability",
   "auth",
   "email",
   "observability",
@@ -345,12 +422,31 @@ export const JAVA_CATEGORY_ORDER = [
   "javaBuildTool",
   "javaOrm",
   "javaAuth",
+  "javaApi",
+  "javaLogging",
   "javaLibraries",
   "javaTestingLibraries",
   "email",
   "observability",
   "caching",
   "search",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const DOTNET_CATEGORY_ORDER = [
+  "dotnetWebFramework",
+  "dotnetOrm",
+  "dotnetAuth",
+  "dotnetApi",
+  "dotnetTesting",
+  "dotnetJobQueue",
+  "dotnetRealtime",
+  "dotnetObservability",
+  "dotnetValidation",
+  "dotnetCaching",
+  "dotnetDeploy",
   "aiDocs",
   "git",
   "install",
@@ -372,6 +468,7 @@ export const ELIXIR_CATEGORY_ORDER = [
   "elixirTesting",
   "elixirQuality",
   "elixirDeploy",
+  "elixirLibraries",
   "aiDocs",
   "git",
   "install",
@@ -385,6 +482,7 @@ export const CATEGORY_ORDER = [
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
     ...JAVA_CATEGORY_ORDER,
+    ...DOTNET_CATEGORY_ORDER,
     ...ELIXIR_CATEGORY_ORDER,
   ]),
 ] as OptionCategory[];
@@ -403,6 +501,8 @@ export function getCategoryOrderForEcosystem(
       return GO_CATEGORY_ORDER;
     case "java":
       return JAVA_CATEGORY_ORDER;
+    case "dotnet":
+      return DOTNET_CATEGORY_ORDER;
     case "elixir":
       return ELIXIR_CATEGORY_ORDER;
     case "typescript":
@@ -430,6 +530,10 @@ export function getCategoryDisplayName(categoryKey: string): string {
     rustErrorHandling: "Rust Error Handling",
     rustCaching: "Rust Caching",
     rustAuth: "Rust Auth",
+    rustRealtime: "Rust Realtime",
+    rustMessageQueue: "Rust Message Queue",
+    rustObservability: "Rust Observability",
+    rustTemplating: "Rust Templating",
     pythonWebFramework: "Python Web Framework",
     pythonOrm: "Python ORM / Database",
     pythonValidation: "Python Validation",
@@ -439,18 +543,42 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonTaskQueue: "Python Task Queue",
     pythonGraphql: "Python GraphQL",
     pythonQuality: "Python Code Quality",
+    pythonTesting: "Python Testing",
+    pythonCaching: "Python Caching",
+    pythonRealtime: "Python Realtime",
+    pythonObservability: "Python Observability",
+    pythonCli: "Python CLI Tooling",
     goWebFramework: "Go Web Framework",
     goOrm: "Go ORM / Database",
     goApi: "Go API Layer",
     goCli: "Go CLI Tools",
     goLogging: "Go Logging",
     goAuth: "Go Auth",
+    goTesting: "Go Testing",
+    goRealtime: "Go Realtime",
+    goMessageQueue: "Go Message Queue",
+    goCaching: "Go Caching",
+    goConfig: "Go Config",
+    goObservability: "Go Observability",
     javaWebFramework: "Java Web Framework",
     javaBuildTool: "Java Build Tool",
     javaOrm: "Java ORM / Database",
     javaAuth: "Java Auth",
+    javaApi: "Java API Layer",
+    javaLogging: "Java Logging",
     javaLibraries: "Java Libraries",
     javaTestingLibraries: "Java Testing Libraries",
+    dotnetWebFramework: ".NET Web Framework",
+    dotnetOrm: ".NET Data Access",
+    dotnetAuth: ".NET Auth",
+    dotnetApi: ".NET API Style",
+    dotnetTesting: ".NET Testing",
+    dotnetJobQueue: ".NET Background Jobs",
+    dotnetRealtime: ".NET Realtime",
+    dotnetObservability: ".NET Observability",
+    dotnetValidation: ".NET Validation",
+    dotnetCaching: ".NET Caching",
+    dotnetDeploy: ".NET Deploy",
     elixirWebFramework: "Elixir Web Framework",
     elixirOrm: "Elixir ORM / Database",
     elixirAuth: "Elixir Auth",
@@ -466,6 +594,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     elixirTesting: "Elixir Testing",
     elixirQuality: "Elixir Code Quality",
     elixirDeploy: "Elixir Deploy",
+    elixirLibraries: "Elixir Libraries",
   };
 
   const customName = categoryNames[categoryKey];
@@ -561,6 +690,7 @@ const APP_PLATFORM_VALUES = [
   "tanstack-virtual",
   "tanstack-db",
   "tanstack-pacer",
+  "backend-utils",
   "docker-compose",
 ] as const satisfies readonly string[];
 
@@ -579,6 +709,12 @@ const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "dotnetTesting",
+  "dotnetObservability",
+  "goTesting",
+  "pythonTesting",
+  "pythonCli",
+  "elixirLibraries",
 ]);
 
 const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
@@ -607,6 +743,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   realtime: REALTIME_VALUES,
   jobQueue: JOB_QUEUE_VALUES,
   caching: CACHING_VALUES,
+  rateLimit: RATE_LIMIT_VALUES,
   i18n: I18N_VALUES,
   search: SEARCH_VALUES,
   fileStorage: FILE_STORAGE_VALUES,
@@ -651,6 +788,10 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rustErrorHandling: RUST_ERROR_HANDLING_VALUES,
   rustCaching: RUST_CACHING_VALUES,
   rustAuth: RUST_AUTH_VALUES,
+  rustRealtime: RUST_REALTIME_VALUES,
+  rustMessageQueue: RUST_MESSAGE_QUEUE_VALUES,
+  rustObservability: RUST_OBSERVABILITY_VALUES,
+  rustTemplating: RUST_TEMPLATING_VALUES,
   pythonWebFramework: PYTHON_WEB_FRAMEWORK_VALUES,
   pythonOrm: PYTHON_ORM_VALUES,
   pythonValidation: PYTHON_VALIDATION_VALUES,
@@ -660,18 +801,42 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonTaskQueue: PYTHON_TASK_QUEUE_VALUES,
   pythonGraphql: PYTHON_GRAPHQL_VALUES,
   pythonQuality: PYTHON_QUALITY_VALUES,
+  pythonTesting: PYTHON_TESTING_VALUES,
+  pythonCaching: PYTHON_CACHING_VALUES,
+  pythonRealtime: PYTHON_REALTIME_VALUES,
+  pythonObservability: PYTHON_OBSERVABILITY_VALUES,
+  pythonCli: PYTHON_CLI_VALUES,
   goWebFramework: GO_WEB_FRAMEWORK_VALUES,
   goOrm: GO_ORM_VALUES,
   goApi: GO_API_VALUES,
   goCli: GO_CLI_VALUES,
   goLogging: GO_LOGGING_VALUES,
   goAuth: GO_AUTH_VALUES,
+  goTesting: GO_TESTING_VALUES,
+  goRealtime: GO_REALTIME_VALUES,
+  goMessageQueue: GO_MESSAGE_QUEUE_VALUES,
+  goCaching: GO_CACHING_VALUES,
+  goConfig: GO_CONFIG_VALUES,
+  goObservability: GO_OBSERVABILITY_VALUES,
   javaWebFramework: JAVA_WEB_FRAMEWORK_VALUES,
   javaBuildTool: JAVA_BUILD_TOOL_VALUES,
   javaOrm: JAVA_ORM_VALUES,
   javaAuth: JAVA_AUTH_VALUES,
+  javaApi: JAVA_API_VALUES,
+  javaLogging: JAVA_LOGGING_VALUES,
   javaLibraries: JAVA_LIBRARIES_VALUES,
   javaTestingLibraries: JAVA_TESTING_LIBRARIES_VALUES,
+  dotnetWebFramework: DOTNET_WEB_FRAMEWORK_VALUES,
+  dotnetOrm: DOTNET_ORM_VALUES,
+  dotnetAuth: DOTNET_AUTH_VALUES,
+  dotnetApi: DOTNET_API_VALUES,
+  dotnetTesting: DOTNET_TESTING_VALUES,
+  dotnetJobQueue: DOTNET_JOB_QUEUE_VALUES,
+  dotnetRealtime: DOTNET_REALTIME_VALUES,
+  dotnetObservability: DOTNET_OBSERVABILITY_VALUES,
+  dotnetValidation: DOTNET_VALIDATION_VALUES,
+  dotnetCaching: DOTNET_CACHING_VALUES,
+  dotnetDeploy: DOTNET_DEPLOY_VALUES,
   elixirWebFramework: ELIXIR_WEB_FRAMEWORK_VALUES,
   elixirOrm: ELIXIR_ORM_VALUES,
   elixirAuth: ELIXIR_AUTH_VALUES,
@@ -687,6 +852,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   elixirTesting: ELIXIR_TESTING_VALUES,
   elixirQuality: ELIXIR_QUALITY_VALUES,
   elixirDeploy: ELIXIR_DEPLOY_VALUES,
+  elixirLibraries: ELIXIR_LIBRARIES_VALUES,
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
@@ -728,10 +894,33 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "mongodb-atlas": "MongoDB Atlas",
     planetscale: "PlanetScale",
   },
-  webDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
-  serverDeploy: { cloudflare: "Cloudflare", fly: "Fly.io", sst: "SST", vercel: "Vercel" },
+  webDeploy: {
+    cloudflare: "Cloudflare",
+    fly: "Fly.io",
+    railway: "Railway",
+    render: "Render",
+    netlify: "Netlify",
+    docker: "Docker",
+    sst: "SST",
+    vercel: "Vercel",
+  },
+  serverDeploy: {
+    cloudflare: "Cloudflare",
+    fly: "Fly.io",
+    railway: "Railway",
+    render: "Render",
+    netlify: "Netlify",
+    docker: "Docker",
+    sst: "SST",
+    vercel: "Vercel",
+  },
   cms: { tinacms: "TinaCMS", directus: "Directus" },
-  auth: {},
+  auth: {
+    "better-auth-organizations": "Better Auth + Organizations",
+    auth0: "Auth0",
+    workos: "WorkOS AuthKit",
+    kinde: "Kinde",
+  },
   payments: {
     "lemon-squeezy": "Lemon Squeezy",
     dodo: "Dodo Payments",
@@ -748,6 +937,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   observability: {
     opentelemetry: "OpenTelemetry",
+    datadog: "Datadog",
+    axiom: "Axiom",
+    betterstack: "Better Stack",
+  },
+  rateLimit: {
+    arcjet: "Arcjet",
+    "upstash-ratelimit": "Upstash Ratelimit",
   },
   backendLibraries: {
     effect: "Effect (Core)",
@@ -767,7 +963,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     zod: "Zod",
     arktype: "ArkType",
     typebox: "TypeBox",
-    "effect-schema": "@effect/schema",
+    "effect-schema": "Effect Schema",
   },
   testing: {
     "vitest-playwright": "Vitest + Playwright",
@@ -1010,17 +1206,33 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   rustAuth: {
     oauth2: "OAuth2",
+    torii: "Torii",
+  },
+  rustRealtime: {
+    "tokio-tungstenite": "tokio-tungstenite",
+  },
+  rustMessageQueue: {
+    lapin: "Lapin (RabbitMQ)",
+  },
+  rustObservability: {
+    opentelemetry: "OpenTelemetry",
+  },
+  rustTemplating: {
+    askama: "Askama",
+    tera: "Tera",
   },
   pythonWebFramework: {
     fastapi: "FastAPI",
     django: "Django",
     flask: "Flask",
     litestar: "Litestar",
+    starlette: "Starlette",
   },
   pythonOrm: {
     sqlalchemy: "SQLAlchemy",
     sqlmodel: "SQLModel",
     "tortoise-orm": "Tortoise ORM",
+    peewee: "Peewee",
   },
   pythonValidation: {
     pydantic: "Pydantic",
@@ -1033,10 +1245,14 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     langgraph: "LangGraph",
     crewai: "CrewAI",
     haystack: "Haystack",
+    "pydantic-ai": "Pydantic AI",
+    "google-adk": "Google ADK",
+    smolagents: "smolagents",
   },
   pythonAuth: {
     authlib: "Authlib",
     jwt: "JWT (python-jose)",
+    "fastapi-users": "FastAPI Users",
   },
   pythonApi: {
     "django-rest-framework": "Django REST Framework",
@@ -1047,6 +1263,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     rq: "RQ",
     dramatiq: "Dramatiq",
     huey: "Huey",
+    taskiq: "Taskiq",
   },
   pythonGraphql: {
     strawberry: "Strawberry",
@@ -1056,6 +1273,26 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     ruff: "Ruff",
     mypy: "mypy",
     pyright: "Pyright",
+  },
+  pythonTesting: {
+    pytest: "pytest",
+    hypothesis: "Hypothesis",
+  },
+  pythonCaching: {
+    redis: "redis-py",
+    aiocache: "aiocache",
+  },
+  pythonRealtime: {
+    "python-socketio": "python-socketio",
+    websockets: "websockets",
+  },
+  pythonObservability: {
+    opentelemetry: "OpenTelemetry",
+  },
+  pythonCli: {
+    typer: "Typer",
+    click: "Click",
+    rich: "Rich",
   },
   goWebFramework: {
     gin: "Gin",
@@ -1070,6 +1307,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goApi: {
     "grpc-go": "gRPC-Go",
+    gqlgen: "gqlgen",
   },
   goCli: {
     cobra: "Cobra",
@@ -1085,6 +1323,30 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   goAuth: {
     casbin: "Casbin",
     jwt: "golang-jwt",
+    goth: "Goth",
+  },
+  goTesting: {
+    testify: "Testify",
+    gomock: "GoMock",
+  },
+  goRealtime: {
+    "gorilla-websocket": "Gorilla WebSocket",
+    centrifuge: "Centrifuge",
+  },
+  goMessageQueue: {
+    nats: "NATS",
+    watermill: "Watermill",
+  },
+  goCaching: {
+    redis: "go-redis",
+    ristretto: "Ristretto",
+  },
+  goConfig: {
+    viper: "Viper",
+    koanf: "Koanf",
+  },
+  goObservability: {
+    opentelemetry: "OpenTelemetry",
   },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
@@ -1095,9 +1357,18 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   javaOrm: {
     "spring-data-jpa": "Spring Data JPA",
+    jooq: "jOOQ",
+    mybatis: "MyBatis",
   },
   javaAuth: {
     "spring-security": "Spring Security",
+    keycloak: "Keycloak (OAuth2 Resource Server)",
+  },
+  javaApi: {
+    "spring-graphql": "Spring for GraphQL",
+  },
+  javaLogging: {
+    logback: "Logback",
   },
   javaLibraries: {
     "spring-actuator": "Spring Boot Actuator",
@@ -1116,6 +1387,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "spring-devtools": "Spring Boot DevTools",
     "micrometer-prometheus": "Micrometer Prometheus",
     thymeleaf: "Thymeleaf",
+    "spring-amqp": "Spring AMQP (RabbitMQ)",
+    "opentelemetry-java": "OpenTelemetry",
   },
   javaTestingLibraries: {
     junit5: "JUnit 5",
@@ -1127,6 +1400,59 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     awaitility: "Awaitility",
     archunit: "ArchUnit",
     jqwik: "jqwik",
+  },
+  dotnetWebFramework: {
+    "aspnet-minimal": "ASP.NET Core Minimal APIs",
+    "aspnet-mvc": "ASP.NET Core MVC",
+    "aspnet-blazor": "ASP.NET Core Blazor",
+  },
+  dotnetOrm: {
+    "ef-core": "Entity Framework Core",
+    dapper: "Dapper",
+    linq2db: "linq2db",
+  },
+  dotnetAuth: {
+    "aspnet-identity": "ASP.NET Core Identity",
+    "duende-identityserver": "Duende IdentityServer",
+    "auth0-aspnet": "Auth0 ASP.NET Core",
+  },
+  dotnetApi: {
+    "minimal-api": "Minimal APIs",
+    "graphql-hotchocolate": "Hot Chocolate GraphQL",
+    "grpc-dotnet": "gRPC for .NET",
+  },
+  dotnetTesting: {
+    xunit: "xUnit",
+    nunit: "NUnit",
+    moq: "Moq",
+    "testcontainers-dotnet": "Testcontainers for .NET",
+  },
+  dotnetJobQueue: {
+    hangfire: "Hangfire",
+    "quartz-net": "Quartz.NET",
+    "hosted-services": "Hosted Services",
+  },
+  dotnetRealtime: {
+    signalr: "SignalR",
+  },
+  dotnetObservability: {
+    "opentelemetry-dotnet": "OpenTelemetry .NET",
+    serilog: "Serilog",
+    nlog: "NLog",
+    "health-checks": "Health Checks",
+  },
+  dotnetValidation: {
+    fluentvalidation: "FluentValidation",
+    "data-annotations": "Data Annotations",
+  },
+  dotnetCaching: {
+    redis: "StackExchange.Redis",
+    "memory-cache": "IMemoryCache",
+  },
+  dotnetDeploy: {
+    docker: "Docker",
+    azure: "Azure",
+    aws: "AWS",
   },
   elixirWebFramework: {
     phoenix: "Phoenix",
@@ -1144,6 +1470,11 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   elixirApi: {
     rest: "Phoenix REST",
     absinthe: "Absinthe GraphQL",
+    grpc: "gRPC (grpc-elixir)",
+  },
+  elixirLibraries: {
+    broadway: "Broadway",
+    nx: "Nx (Numerical Elixir)",
   },
   elixirRealtime: {
     channels: "Phoenix Channels",
@@ -1302,6 +1633,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   realtime: buildCategoryMetadata("realtime"),
   jobQueue: buildCategoryMetadata("jobQueue"),
   caching: buildCategoryMetadata("caching"),
+  rateLimit: buildCategoryMetadata("rateLimit"),
   i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
   fileStorage: buildCategoryMetadata("fileStorage"),
@@ -1346,6 +1678,10 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rustErrorHandling: buildCategoryMetadata("rustErrorHandling"),
   rustCaching: buildCategoryMetadata("rustCaching"),
   rustAuth: buildCategoryMetadata("rustAuth"),
+  rustRealtime: buildCategoryMetadata("rustRealtime"),
+  rustMessageQueue: buildCategoryMetadata("rustMessageQueue"),
+  rustObservability: buildCategoryMetadata("rustObservability"),
+  rustTemplating: buildCategoryMetadata("rustTemplating"),
   pythonWebFramework: buildCategoryMetadata("pythonWebFramework"),
   pythonOrm: buildCategoryMetadata("pythonOrm"),
   pythonValidation: buildCategoryMetadata("pythonValidation"),
@@ -1355,18 +1691,42 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonTaskQueue: buildCategoryMetadata("pythonTaskQueue"),
   pythonGraphql: buildCategoryMetadata("pythonGraphql"),
   pythonQuality: buildCategoryMetadata("pythonQuality"),
+  pythonTesting: buildCategoryMetadata("pythonTesting"),
+  pythonCaching: buildCategoryMetadata("pythonCaching"),
+  pythonRealtime: buildCategoryMetadata("pythonRealtime"),
+  pythonObservability: buildCategoryMetadata("pythonObservability"),
+  pythonCli: buildCategoryMetadata("pythonCli"),
   goWebFramework: buildCategoryMetadata("goWebFramework"),
   goOrm: buildCategoryMetadata("goOrm"),
   goApi: buildCategoryMetadata("goApi"),
   goCli: buildCategoryMetadata("goCli"),
   goLogging: buildCategoryMetadata("goLogging"),
   goAuth: buildCategoryMetadata("goAuth"),
+  goTesting: buildCategoryMetadata("goTesting"),
+  goRealtime: buildCategoryMetadata("goRealtime"),
+  goMessageQueue: buildCategoryMetadata("goMessageQueue"),
+  goCaching: buildCategoryMetadata("goCaching"),
+  goConfig: buildCategoryMetadata("goConfig"),
+  goObservability: buildCategoryMetadata("goObservability"),
   javaWebFramework: buildCategoryMetadata("javaWebFramework"),
   javaBuildTool: buildCategoryMetadata("javaBuildTool"),
   javaOrm: buildCategoryMetadata("javaOrm"),
   javaAuth: buildCategoryMetadata("javaAuth"),
+  javaApi: buildCategoryMetadata("javaApi"),
+  javaLogging: buildCategoryMetadata("javaLogging"),
   javaLibraries: buildCategoryMetadata("javaLibraries"),
   javaTestingLibraries: buildCategoryMetadata("javaTestingLibraries"),
+  dotnetWebFramework: buildCategoryMetadata("dotnetWebFramework"),
+  dotnetOrm: buildCategoryMetadata("dotnetOrm"),
+  dotnetAuth: buildCategoryMetadata("dotnetAuth"),
+  dotnetApi: buildCategoryMetadata("dotnetApi"),
+  dotnetTesting: buildCategoryMetadata("dotnetTesting"),
+  dotnetJobQueue: buildCategoryMetadata("dotnetJobQueue"),
+  dotnetRealtime: buildCategoryMetadata("dotnetRealtime"),
+  dotnetObservability: buildCategoryMetadata("dotnetObservability"),
+  dotnetValidation: buildCategoryMetadata("dotnetValidation"),
+  dotnetCaching: buildCategoryMetadata("dotnetCaching"),
+  dotnetDeploy: buildCategoryMetadata("dotnetDeploy"),
   elixirWebFramework: buildCategoryMetadata("elixirWebFramework"),
   elixirOrm: buildCategoryMetadata("elixirOrm"),
   elixirAuth: buildCategoryMetadata("elixirAuth"),
@@ -1382,6 +1742,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   elixirTesting: buildCategoryMetadata("elixirTesting"),
   elixirQuality: buildCategoryMetadata("elixirQuality"),
   elixirDeploy: buildCategoryMetadata("elixirDeploy"),
+  elixirLibraries: buildCategoryMetadata("elixirLibraries"),
 };
 
 const OPTION_LOOKUP = Object.fromEntries(

@@ -1,4 +1,4 @@
-{{#if (or (eq auth "better-auth") (eq auth "nextauth"))}}
+{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
 export * from "./auth";
 {{else}}
 export * from "./example";

@@ -26,6 +26,7 @@ import {
   processPythonBaseTemplate,
   processGoBaseTemplate,
   processJavaBaseTemplate,
+  processDotnetBaseTemplate,
   processElixirBaseTemplate,
   processFrontendTemplates,
   processBackendTemplates,
@@ -42,6 +43,7 @@ import {
   processDeployTemplates,
   processLoggingTemplates,
   processObservabilityTemplates,
+  processRateLimitTemplates,
   processFeatureFlagsTemplates,
   processAnalyticsTemplates,
   processJobQueueTemplates,
@@ -56,7 +58,7 @@ export type { TemplateData };
 
 type NonTypeScriptTemplateEcosystem = Exclude<
   ProjectConfig["ecosystem"],
-  "typescript" | "react-native" | "dotnet"
+  "typescript" | "react-native"
 >;
 
 type EcosystemBaseTemplateProcessor = (
@@ -71,6 +73,7 @@ const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
   python: processPythonBaseTemplate,
   go: processGoBaseTemplate,
   java: processJavaBaseTemplate,
+  dotnet: processDotnetBaseTemplate,
   elixir: processElixirBaseTemplate,
 } satisfies Record<NonTypeScriptTemplateEcosystem, EcosystemBaseTemplateProcessor>;
 
@@ -116,6 +119,7 @@ async function processGraphTemplates(
     await processDeployTemplates(vfs, templates, tsConfig);
     await processLoggingTemplates(vfs, templates, tsConfig);
     await processObservabilityTemplates(vfs, templates, tsConfig);
+    await processRateLimitTemplates(vfs, templates, tsConfig);
     await processFeatureFlagsTemplates(vfs, templates, tsConfig);
     await processAnalyticsTemplates(vfs, templates, tsConfig);
     await processJobQueueTemplates(vfs, templates, tsConfig);
@@ -218,6 +222,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processDeployTemplates(vfs, templates, config);
       await processLoggingTemplates(vfs, templates, config);
       await processObservabilityTemplates(vfs, templates, config);
+      await processRateLimitTemplates(vfs, templates, config);
       await processFeatureFlagsTemplates(vfs, templates, config);
       await processAnalyticsTemplates(vfs, templates, config);
       await processJobQueueTemplates(vfs, templates, config);

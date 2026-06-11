@@ -1,0 +1,11 @@
+import type { Config, Context } from "@netlify/functions";
+
+import app from "../../dist/index.js";
+
+export default async (request: Request, _context: Context) => {
+  return app.fetch(request);
+};
+
+export const config: Config = {
+  path: "/*",
+};

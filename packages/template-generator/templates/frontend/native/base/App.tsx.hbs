@@ -4,7 +4,7 @@ import "@/polyfills";
 {{/if}}
 
 {{#if (eq backend "convex")}}
-  {{#if (eq auth "better-auth")}}
+  {{#if (isBetterAuth auth)}}
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { ConvexReactClient } from "convex/react";
 import { authClient } from "@/lib/auth-client";
@@ -125,7 +125,7 @@ export default function App() {
         <AppShell />
       </ConvexProviderWithClerk>
     </ClerkProvider>
-      {{else if (eq auth "better-auth")}}
+      {{else if (isBetterAuth auth)}}
     <ConvexBetterAuthProvider client={convex} authClient={authClient}>
       <AppShell />
     </ConvexBetterAuthProvider>

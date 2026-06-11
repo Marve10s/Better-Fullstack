@@ -1,5 +1,7 @@
 import type {
   JavaAuth,
+  JavaApi,
+  JavaLogging,
   JavaBuildTool,
   JavaLibraries,
   JavaOrm,
@@ -58,6 +60,16 @@ const JAVA_ORM_PROMPT_OPTIONS: PromptOption<JavaOrm>[] = [
     hint: "Repository abstraction built on JPA/Hibernate",
   },
   {
+    value: "jooq",
+    label: "jOOQ",
+    hint: "Type-safe SQL query builder (DSLContext with plain SQL)",
+  },
+  {
+    value: "mybatis",
+    label: "MyBatis",
+    hint: "SQL mapping via annotated mapper interfaces",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No Java ORM/database layer",
@@ -69,6 +81,11 @@ const JAVA_AUTH_PROMPT_OPTIONS: PromptOption<JavaAuth>[] = [
     value: "spring-security",
     label: "Spring Security",
     hint: "Authentication and authorization for Spring applications",
+  },
+  {
+    value: "keycloak",
+    label: "Keycloak",
+    hint: "OAuth2 resource server validating Keycloak-issued JWTs",
   },
   {
     value: "none",
@@ -210,6 +227,16 @@ const JAVA_LIBRARY_PROMPT_OPTIONS: PromptOption<JavaLibraries>[] = [
     value: "thymeleaf",
     label: "Thymeleaf",
     hint: "Server-rendered HTML templates for Spring MVC apps",
+  },
+  {
+    value: "spring-amqp",
+    label: "Spring AMQP",
+    hint: "RabbitMQ messaging with RabbitTemplate and listeners",
+  },
+  {
+    value: "opentelemetry-java",
+    label: "OpenTelemetry",
+    hint: "OpenTelemetry SDK with OTLP export",
   },
   {
     value: "none",
@@ -356,4 +383,72 @@ export async function getJavaTestingLibrariesChoice(javaTestingLibraries?: JavaT
   if (response.includes("none")) return [];
 
   return response as JavaTestingLibraries[];
+}
+
+const JAVA_API_PROMPT_OPTIONS: PromptOption<JavaApi>[] = [
+  {
+    value: "spring-graphql",
+    label: "Spring for GraphQL",
+    hint: "GraphQL schema + annotated controllers on Spring Boot",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "REST controllers only",
+  },
+];
+
+const JAVA_LOGGING_PROMPT_OPTIONS: PromptOption<JavaLogging>[] = [
+  {
+    value: "logback",
+    label: "Logback",
+    hint: "Spring Boot default logger with explicit logback-spring.xml",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "Spring Boot logging defaults",
+  },
+];
+
+export function resolveJavaApiPrompt(javaApi?: JavaApi) {
+  return createStaticSinglePromptResolution(JAVA_API_PROMPT_OPTIONS, "none", javaApi);
+}
+
+export async function getJavaApiChoice(javaApi?: JavaApi) {
+  const resolution = resolveJavaApiPrompt(javaApi);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<JavaApi>({
+    message: "Select Java API layer",
+    options: resolution.options,
+    initialValue: resolution.initialValue as JavaApi,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveJavaLoggingPrompt(javaLogging?: JavaLogging) {
+  return createStaticSinglePromptResolution(JAVA_LOGGING_PROMPT_OPTIONS, "none", javaLogging);
+}
+
+export async function getJavaLoggingChoice(javaLogging?: JavaLogging) {
+  const resolution = resolveJavaLoggingPrompt(javaLogging);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<JavaLogging>({
+    message: "Select Java logging configuration",
+    options: resolution.options,
+    initialValue: resolution.initialValue as JavaLogging,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
 }

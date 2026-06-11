@@ -1,0 +1,27 @@
+{{#if (includes elixirLibraries "nx")}}
+defmodule {{elixirModuleName}}.Numerics do
+  @moduledoc """
+  Numerical Elixir (Nx) examples.
+
+  Add the EXLA backend for accelerated computation when you need it.
+  """
+
+  @doc "Softmax over a list of numbers."
+  def softmax(values) when is_list(values) do
+    tensor = Nx.tensor(values)
+    exp = Nx.exp(tensor)
+
+    exp
+    |> Nx.divide(Nx.sum(exp))
+    |> Nx.to_list()
+  end
+
+  @doc "Mean of a list of numbers."
+  def mean(values) when is_list(values) do
+    values
+    |> Nx.tensor()
+    |> Nx.mean()
+    |> Nx.to_number()
+  end
+end
+{{/if}}

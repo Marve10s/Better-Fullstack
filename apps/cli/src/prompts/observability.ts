@@ -21,6 +21,21 @@ const OBSERVABILITY_PROMPT_OPTIONS = [
     hint: "Prometheus metrics for Grafana dashboards and alerting",
   },
   {
+    value: "datadog" as const,
+    label: "Datadog",
+    hint: "APM tracing and service observability",
+  },
+  {
+    value: "axiom" as const,
+    label: "Axiom",
+    hint: "Structured event ingestion and observability",
+  },
+  {
+    value: "betterstack" as const,
+    label: "Better Stack",
+    hint: "Logtail logging for Better Stack observability",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip observability/tracing setup",

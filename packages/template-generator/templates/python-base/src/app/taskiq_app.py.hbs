@@ -1,0 +1,11 @@
+{{#if (eq pythonTaskQueue "taskiq")}}
+"""Taskiq broker configuration.
+
+Uses the in-memory broker for local development; swap in
+taskiq-redis or taskiq-nats for production workers.
+"""
+
+from taskiq import InMemoryBroker
+
+broker = InMemoryBroker()
+{{/if}}

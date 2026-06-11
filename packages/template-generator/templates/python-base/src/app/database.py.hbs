@@ -117,4 +117,39 @@ async def close_db() -> None:
     """Close Tortoise ORM connections."""
     await Tortoise.close_connections()
 {{/if}}
+{{#if (eq pythonOrm "peewee")}}
+"""Database configuration for Peewee."""
+
+import os
+
+{{#if (eq database "postgres")}}
+from peewee import PostgresqlDatabase
+
+db = PostgresqlDatabase(
+    os.getenv("DATABASE_NAME", "{{projectName}}"),
+    user=os.getenv("DATABASE_USER", "postgres"),
+    password=os.getenv("DATABASE_PASSWORD", "postgres"),
+    host=os.getenv("DATABASE_HOST", "localhost"),
+    port=int(os.getenv("DATABASE_PORT", "5432")),
+)
+{{else}}
+from peewee import SqliteDatabase
+
+db = SqliteDatabase(os.getenv("DATABASE_PATH", "app.db"))
+{{/if}}
+
+
+def init_db() -> None:
+    """Create tables for all registered models."""
+    from app.models import Post, User
+
+    db.connect(reuse_if_open=True)
+    db.create_tables([User, Post])
+
+
+def close_db() -> None:
+    """Close the database connection."""
+    if not db.is_closed():
+        db.close()
+{{/if}}
 {{/if}}

@@ -42,3 +42,30 @@ pub fn authorize_url(client: &BasicClient) -> (url::Url, CsrfToken) {
     client.authorize_url(CsrfToken::new_random).url()
 }
 {{/if}}
+{{#if (eq rustAuth "torii")}}
+//! Authentication via the Torii framework (SQLite storage + passwords).
+//!
+//! Set TORII_DATABASE_URL (defaults to sqlite://auth.db?mode=rwc), then:
+//!
+//! ```ignore
+//! let torii = auth::init_torii().await?;
+//! let user = torii.password().register("user@example.com", "secure-password").await?;
+//! ```
+
+use std::sync::Arc;
+
+use torii::sqlite::SqliteStorage;
+use torii::Torii;
+use torii::sqlite::SqliteRepositoryProvider;
+
+/// Connect storage, run Torii's migrations, and build the auth instance.
+pub async fn init_torii(
+) -> Result<Torii<SqliteRepositoryProvider>, Box<dyn std::error::Error + Send + Sync>> {
+    let database_url = std::env::var("TORII_DATABASE_URL")
+        .unwrap_or_else(|_| "sqlite://auth.db?mode=rwc".to_string());
+    let storage = SqliteStorage::connect(&database_url).await?;
+    storage.migrate().await?;
+    let repositories = Arc::new(storage.into_repository_provider());
+    Ok(Torii::new(repositories))
+}
+{{/if}}

@@ -38,6 +38,10 @@ function generateAuthSecret() {
   return generateRandomString(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 }
 
+function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
+  return auth === "better-auth" || auth === "better-auth-organizations";
+}
+
 function getClientServerVar(
   frontend: string[],
   backend: ProjectConfig["backend"],
@@ -218,7 +222,7 @@ function buildClientVars(
     }
   }
 
-  if (backend === "convex" && auth === "better-auth") {
+  if (backend === "convex" && isBetterAuth(auth)) {
     if (hasNextJs) {
       vars.push({
         key: "NEXT_PUBLIC_CONVEX_SITE_URL",
@@ -553,7 +557,7 @@ function buildNativeVars(
     });
   }
 
-  if (backend === "convex" && auth === "better-auth") {
+  if (backend === "convex" && isBetterAuth(auth)) {
     vars.push({
       key: "EXPO_PUBLIC_CONVEX_SITE_URL",
       value: "https://your-convex-url.convex.cloud",
@@ -616,7 +620,7 @@ function buildConvexBackendVars(
     });
   }
 
-  if (auth === "better-auth") {
+  if (isBetterAuth(auth)) {
     if (hasNative) {
       vars.push({
         key: "EXPO_PUBLIC_CONVEX_SITE_URL",
@@ -701,7 +705,7 @@ function buildConvexCommentBlocks(
 `;
   }
 
-  if (auth === "better-auth") {
+  if (isBetterAuth(auth)) {
     commentBlocks += `# Set Convex environment variables
 # npx convex env set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
 ${hasWeb ? "# npx convex env set SITE_URL http://localhost:3001\n" : ""}`;
@@ -725,6 +729,7 @@ ${hasWeb ? "# npx convex env set SITE_URL http://localhost:3001\n" : ""}`;
 function buildServerVars(
   backend: ProjectConfig["backend"],
   frontend: string[],
+  projectName: string,
   auth: ProjectConfig["auth"],
   database: ProjectConfig["database"],
   dbSetup: ProjectConfig["dbSetup"],
@@ -738,6 +743,7 @@ function buildServerVars(
   fileUpload: ProjectConfig["fileUpload"],
   logging: ProjectConfig["logging"],
   observability: ProjectConfig["observability"],
+  rateLimit: ProjectConfig["rateLimit"],
   featureFlags: ProjectConfig["featureFlags"],
   jobQueue: ProjectConfig["jobQueue"],
   caching: ProjectConfig["caching"],
@@ -794,12 +800,12 @@ function buildServerVars(
     {
       key: "BETTER_AUTH_SECRET",
       value: generateAuthSecret(),
-      condition: auth === "better-auth",
+      condition: isBetterAuth(auth),
     },
     {
       key: "BETTER_AUTH_URL",
       value: backend === "self" ? "http://localhost:3001" : "http://localhost:3000",
-      condition: auth === "better-auth",
+      condition: isBetterAuth(auth),
     },
     {
       key: "AUTH_SECRET",
@@ -873,6 +879,66 @@ function buildServerVars(
       condition: auth === "supabase-auth",
       comment:
         "Supabase Service Role Key (server-side only) - get it at https://supabase.com/dashboard",
+    },
+    {
+      key: "WORKOS_API_KEY",
+      value: "",
+      condition: auth === "workos",
+      comment: "WorkOS API key - get it at https://dashboard.workos.com",
+    },
+    {
+      key: "WORKOS_CLIENT_ID",
+      value: "",
+      condition: auth === "workos",
+      comment: "WorkOS client ID - get it at https://dashboard.workos.com",
+    },
+    {
+      key: "WORKOS_COOKIE_PASSWORD",
+      value: generateAuthSecret(),
+      condition: auth === "workos",
+      comment: "At least 32 characters, used to encrypt AuthKit session cookies",
+    },
+    {
+      key: "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
+      value: `${webOrigin}/callback`,
+      condition: auth === "workos",
+      comment: "Must match the WorkOS dashboard redirect URI",
+    },
+    {
+      key: "KINDE_CLIENT_ID",
+      value: "",
+      condition: auth === "kinde",
+      comment: "Kinde application client ID",
+    },
+    {
+      key: "KINDE_CLIENT_SECRET",
+      value: "",
+      condition: auth === "kinde",
+      comment: "Kinde application client secret",
+    },
+    {
+      key: "KINDE_ISSUER_URL",
+      value: "https://your-subdomain.kinde.com",
+      condition: auth === "kinde",
+      comment: "Kinde issuer URL",
+    },
+    {
+      key: "KINDE_SITE_URL",
+      value: webOrigin,
+      condition: auth === "kinde",
+      comment: "Base URL for this app",
+    },
+    {
+      key: "KINDE_POST_LOGIN_REDIRECT_URL",
+      value: `${webOrigin}/dashboard`,
+      condition: auth === "kinde",
+      comment: "Kinde redirect URL after login",
+    },
+    {
+      key: "KINDE_POST_LOGOUT_REDIRECT_URL",
+      value: webOrigin,
+      condition: auth === "kinde",
+      comment: "Kinde redirect URL after logout",
     },
     {
       key: "POLAR_ACCESS_TOKEN",
@@ -1227,6 +1293,60 @@ function buildServerVars(
       comment: "Prefix for all metric names (optional, defaults to app name)",
     },
     {
+      key: "DD_SERVICE",
+      value: projectName || "my-app",
+      condition: observability === "datadog",
+      comment: "Datadog service name",
+    },
+    {
+      key: "DD_ENV",
+      value: "development",
+      condition: observability === "datadog",
+      comment: "Datadog environment name",
+    },
+    {
+      key: "DD_VERSION",
+      value: "0.1.0",
+      condition: observability === "datadog",
+      comment: "Datadog service version",
+    },
+    {
+      key: "DD_TRACE_AGENT_URL",
+      value: "http://localhost:8126",
+      condition: observability === "datadog",
+      comment: "Datadog Agent trace intake URL",
+    },
+    {
+      key: "AXIOM_TOKEN",
+      value: "",
+      condition: observability === "axiom",
+      comment: "Axiom API token with ingest permissions",
+    },
+    {
+      key: "AXIOM_DATASET",
+      value: "",
+      condition: observability === "axiom",
+      comment: "Axiom dataset name",
+    },
+    {
+      key: "BETTERSTACK_SOURCE_TOKEN",
+      value: "",
+      condition: observability === "betterstack",
+      comment: "Better Stack source token",
+    },
+    {
+      key: "BETTERSTACK_INGESTING_HOST",
+      value: "in.logs.betterstack.com",
+      condition: observability === "betterstack",
+      comment: "Better Stack ingesting host",
+    },
+    {
+      key: "ARCJET_KEY",
+      value: "",
+      condition: rateLimit === "arcjet",
+      comment: "Arcjet site key - get it at https://app.arcjet.com",
+    },
+    {
       key: "GROWTHBOOK_API_HOST",
       value: "https://cdn.growthbook.io",
       condition: featureFlags === "growthbook",
@@ -1349,13 +1469,13 @@ function buildServerVars(
     {
       key: "UPSTASH_REDIS_REST_URL",
       value: "",
-      condition: caching === "upstash-redis",
+      condition: caching === "upstash-redis" || rateLimit === "upstash-ratelimit",
       comment: "Upstash Redis REST URL - get it at https://console.upstash.com",
     },
     {
       key: "UPSTASH_REDIS_REST_TOKEN",
       value: "",
-      condition: caching === "upstash-redis",
+      condition: caching === "upstash-redis" || rateLimit === "upstash-ratelimit",
       comment: "Upstash Redis REST token - get it at https://console.upstash.com",
     },
     {
@@ -1786,6 +1906,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
   const serverVars = buildServerVars(
     backend,
     frontend,
+    config.projectName,
     auth,
     database,
     dbSetup,
@@ -1799,6 +1920,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     fileUpload,
     logging,
     observability,
+    config.rateLimit,
     config.featureFlags,
     config.jobQueue,
     config.caching,

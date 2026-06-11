@@ -85,6 +85,366 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(stack, "elixirRealtime", "channels")).toBe(
       "Elixir realtime scaffolds require Phoenix",
     );
+    expect(getDisabledReason(stack, "elixirObservability", "phoenix-telemetry")).toBe(
+      "Phoenix telemetry requires Phoenix",
+    );
+  });
+
+  it("disables web deploy targets for frontends without deploy templates", () => {
+    const unsupportedStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["astro"],
+      nativeFrontend: [],
+      backend: "none",
+      api: "none",
+    };
+    const supportedStack = {
+      ...unsupportedStack,
+      webFrontend: ["react-vite"],
+    };
+    const supportedNetlifyStacks = [
+      { ...unsupportedStack, webFrontend: ["react-router"] },
+      { ...unsupportedStack, webFrontend: ["tanstack-start"] },
+      { ...unsupportedStack, webFrontend: ["solid-start"] },
+    ];
+
+    expect(getDisabledReason(unsupportedStack, "webDeploy", "render")).toBe(
+      "Render deployment is not yet wired up for the 'astro' frontend",
+    );
+    expect(getDisabledReason(unsupportedStack, "webDeploy", "netlify")).toBe(
+      "Netlify deployment is not yet wired up for the 'astro' frontend",
+    );
+    expect(getDisabledReason(supportedStack, "webDeploy", "render")).toBeNull();
+    expect(getDisabledReason(supportedStack, "webDeploy", "netlify")).toBeNull();
+    for (const stack of supportedNetlifyStacks) {
+      expect(getDisabledReason(stack, "webDeploy", "netlify")).toBeNull();
+    }
+  });
+
+  it("disables Netlify server deploy outside the supported Hono Node path", () => {
+    const baseStack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["tanstack-router"],
+      nativeFrontend: [],
+      backend: "hono",
+      runtime: "node",
+    };
+
+    expect(getDisabledReason(baseStack, "serverDeploy", "netlify")).toBeNull();
+    expect(
+      getDisabledReason(
+        {
+          ...baseStack,
+          backend: "express",
+        },
+        "serverDeploy",
+        "netlify",
+      ),
+    ).toBe("Netlify Functions server deploy is currently supported only with Hono");
+    expect(
+      getDisabledReason(
+        {
+          ...baseStack,
+          runtime: "bun",
+        },
+        "serverDeploy",
+        "netlify",
+      ),
+    ).toBe("Netlify Functions server deploy requires Node.js runtime");
+  });
+
+  it("routes promoted frontend library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["fresh"],
+          uiLibrary: "daisyui",
+        },
+        "forms",
+        "tanstack-form",
+      ),
+    ).toBe("'tanstack-form' has no Preact adapter for the Fresh frontend.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          uiLibrary: "park-ui",
+        },
+        "cssFramework",
+        "none",
+      ),
+    ).toBe("'park-ui' is not compatible with the 'none' CSS framework.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["svelte"],
+        },
+        "uiLibrary",
+        "shadcn-ui",
+      ),
+    ).toBe("'shadcn-ui' is not compatible with the 'svelte' frontend.");
+  });
+
+  it("routes promoted mobile library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          ecosystem: "react-native",
+          webFrontend: ["none"],
+          nativeFrontend: ["native-bare"],
+        },
+        "mobileUI",
+        "uniwind",
+      ),
+    ).toBe("Uniwind mobile UI requires the Expo + Uniwind frontend.");
+  });
+
+  it("routes promoted backend library disabled reasons through graph checks", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          auth: "none",
+        },
+        "payments",
+        "polar",
+      ),
+    ).toBe("Polar requires Better Auth.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["react-vite"],
+        },
+        "payments",
+        "dodo",
+      ),
+    ).toBe("Dodo Payments are not yet supported for React + Vite projects.");
+
+    expect(getDisabledReason(DEFAULT_STACK_SELECTION, "cms", "payload")).toBe(
+      "Payload CMS v3 requires a Next.js frontend.",
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          examples: ["chat-sdk"],
+          runtime: "node",
+        },
+        "ai",
+        "langchain",
+      ),
+    ).toBe("Chat SDK example (Nuxt/Hono profile) requires Vercel AI SDK in v1.");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["svelte"],
+        },
+        "ai",
+        "tanstack-ai",
+      ),
+    ).toBe("TanStack AI requires React or Solid frontend (no Vue/Svelte/Angular adapter yet).");
+  });
+
+  it("routes promoted Java ecosystem disabled reasons through graph checks", () => {
+    const javaBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "java",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: [],
+    };
+
+    expect(getDisabledReason(javaBase, "javaLibraries", "flyway")).toBe(
+      "Flyway currently requires Spring Data JPA in the Java scaffold",
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...javaBase,
+          javaOrm: "spring-data-jpa",
+          javaLibraries: ["flyway"],
+        },
+        "javaLibraries",
+        "liquibase",
+      ),
+    ).toBe("Liquibase cannot be combined with Flyway in the current Java scaffold");
+
+    expect(
+      getDisabledReason(
+        {
+          ...javaBase,
+          javaBuildTool: "none",
+        },
+        "javaTestingLibraries",
+        "junit5",
+      ),
+    ).toBe("Java testing libraries require Maven or Gradle");
+
+    expect(getDisabledReason(javaBase, "javaBuildTool", "none")).toBe(
+      "Java web frameworks require Maven or Gradle",
+    );
+  });
+
+  it("routes shared non-TypeScript service disabled reasons through graph checks", () => {
+    const rustBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+    };
+    const javaWithoutBuildTool = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "java",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "none",
+      javaOrm: "none",
+      javaAuth: "none",
+      javaLibraries: [],
+      javaTestingLibraries: [],
+    };
+    const elixirBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+    };
+
+    expect(getDisabledReason(rustBase, "email", "nodemailer")).toBe(
+      "Only Resend email is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(rustBase, "observability", "grafana")).toBe(
+      "Only Sentry observability is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(rustBase, "search", "algolia")).toBe(
+      "Only Meilisearch search is available for non-TypeScript ecosystems",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "email", "resend")).toBe(
+      "Resend email for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "observability", "sentry")).toBe(
+      "Sentry observability for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "caching", "upstash-redis")).toBe(
+      "Upstash Redis caching for Java requires Maven or Gradle to manage the Redis client dependency",
+    );
+
+    expect(getDisabledReason(javaWithoutBuildTool, "search", "meilisearch")).toBe(
+      "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency",
+    );
+
+    expect(getDisabledReason(elixirBase, "email", "swoosh")).toBe(
+      "Only Resend email is available for non-TypeScript ecosystems",
+    );
+    expect(getDisabledReason(elixirBase, "elixirEmail", "swoosh")).toBeNull();
+  });
+
+  it("routes unsupported Elixir generated-tool disabled reasons through graph checks", () => {
+    const elixirBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "ecto-sql",
+    };
+
+    expect(getDisabledReason(elixirBase, "elixirOrm", "ecto")).toBe(
+      "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirAuth", "guardian")).toBe(
+      "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirValidation", "nimble-options")).toBe(
+      "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirCaching", "nebulex")).toBe(
+      "Nebulex cache modules are not generated yet; use Cachex or no cache",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirObservability", "opentelemetry")).toBe(
+      "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirTesting", "mox")).toBe(
+      "Mox-specific test boundaries are not generated yet; use ExUnit",
+    );
+
+    expect(getDisabledReason(elixirBase, "elixirDeploy", "fly")).toBe(
+      "Fly.io config is not generated yet; use Docker or mix releases",
+    );
+
+    expect(
+      getDisabledReason(
+        {
+          ...elixirBase,
+          elixirWebFramework: "none",
+        },
+        "elixirAuth",
+        "ueberauth",
+      ),
+    ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+  });
+
+  it("routes Elixir context disabled reasons through graph checks", () => {
+    const plainElixir = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "none",
+      elixirOrm: "none",
+    };
+    const phoenixBase = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "none",
+    };
+
+    expect(getDisabledReason(plainElixir, "elixirAuth", "phx-gen-auth")).toBe(
+      "Elixir auth scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirApi", "rest")).toBe(
+      "Elixir API scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirRealtime", "channels")).toBe(
+      "Elixir realtime scaffolds require Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirObservability", "phoenix-telemetry")).toBe(
+      "Phoenix telemetry requires Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirJobs", "oban")).toBe(
+      "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold",
+    );
+
+    expect(getDisabledReason(phoenixBase, "elixirAuth", "phx-gen-auth")).toBe(
+      "phx.gen.auth requires Ecto",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirApi", "absinthe")).toBe(
+      "Absinthe GraphQL requires Ecto in the current Phoenix scaffold",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirJobs", "oban")).toBe(
+      "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold",
+    );
+    expect(getDisabledReason(phoenixBase, "elixirRealtime", "live-view-streams")).toBe(
+      "LiveView Streams require Phoenix LiveView",
+    );
   });
 
   it("keeps non-Phoenix Elixir selections when Phoenix is removed", () => {

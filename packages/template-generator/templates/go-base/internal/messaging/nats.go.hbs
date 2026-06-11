@@ -1,0 +1,33 @@
+{{#if (eq goMessageQueue "nats")}}
+// Package messaging provides NATS publish/subscribe helpers.
+//
+// Set NATS_URL in your environment (defaults to nats://127.0.0.1:4222).
+package messaging
+
+import (
+	"os"
+
+	"github.com/nats-io/nats.go"
+)
+
+// Connect opens a NATS connection using NATS_URL.
+func Connect() (*nats.Conn, error) {
+	url := os.Getenv("NATS_URL")
+	if url == "" {
+		url = nats.DefaultURL
+	}
+	return nats.Connect(url)
+}
+
+// Publish sends a message to the given subject.
+func Publish(nc *nats.Conn, subject string, data []byte) error {
+	return nc.Publish(subject, data)
+}
+
+// Subscribe registers a handler for the given subject.
+func Subscribe(nc *nats.Conn, subject string, handler func(data []byte)) (*nats.Subscription, error) {
+	return nc.Subscribe(subject, func(msg *nats.Msg) {
+		handler(msg.Data)
+	})
+}
+{{/if}}

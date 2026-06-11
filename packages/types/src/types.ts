@@ -53,6 +53,7 @@ import type {
   MobileDeepLinkingSchema,
   CMSSchema,
   CachingSchema,
+  RateLimitSchema,
   I18nSchema,
   SearchSchema,
   FileStorageSchema,
@@ -67,6 +68,10 @@ import type {
   RustErrorHandlingSchema,
   RustCachingSchema,
   RustAuthSchema,
+  RustRealtimeSchema,
+  RustMessageQueueSchema,
+  RustObservabilitySchema,
+  RustTemplatingSchema,
   PythonWebFrameworkSchema,
   PythonOrmSchema,
   PythonValidationSchema,
@@ -76,22 +81,47 @@ import type {
   PythonTaskQueueSchema,
   PythonGraphqlSchema,
   PythonQualitySchema,
+  PythonTestingSchema,
+  PythonCachingSchema,
+  PythonRealtimeSchema,
+  PythonObservabilitySchema,
+  PythonCliSchema,
   GoWebFrameworkSchema,
   GoOrmSchema,
   GoApiSchema,
   GoCliSchema,
   GoLoggingSchema,
   GoAuthSchema,
+  GoTestingSchema,
+  GoRealtimeSchema,
+  GoMessageQueueSchema,
+  GoCachingSchema,
+  GoConfigSchema,
+  GoObservabilitySchema,
   JavaWebFrameworkSchema,
   JavaBuildToolSchema,
   JavaOrmSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaLibrariesSchema,
   JavaTestingLibrariesSchema,
+  DotnetWebFrameworkSchema,
+  DotnetOrmSchema,
+  DotnetAuthSchema,
+  DotnetApiSchema,
+  DotnetTestingSchema,
+  DotnetJobQueueSchema,
+  DotnetRealtimeSchema,
+  DotnetObservabilitySchema,
+  DotnetValidationSchema,
+  DotnetCachingSchema,
+  DotnetDeploySchema,
   ElixirWebFrameworkSchema,
   ElixirOrmSchema,
   ElixirAuthSchema,
   ElixirApiSchema,
+  ElixirLibrariesSchema,
   ElixirRealtimeSchema,
   ElixirJobsSchema,
   ElixirValidationSchema,
@@ -163,6 +193,7 @@ export type MobileOTA = z.infer<typeof MobileOTASchema>;
 export type MobileDeepLinking = z.infer<typeof MobileDeepLinkingSchema>;
 export type CMS = z.infer<typeof CMSSchema>;
 export type Caching = z.infer<typeof CachingSchema>;
+export type RateLimit = z.infer<typeof RateLimitSchema>;
 export type I18n = z.infer<typeof I18nSchema>;
 export type Search = z.infer<typeof SearchSchema>;
 export type FileStorage = z.infer<typeof FileStorageSchema>;
@@ -177,6 +208,10 @@ export type RustLogging = z.infer<typeof RustLoggingSchema>;
 export type RustErrorHandling = z.infer<typeof RustErrorHandlingSchema>;
 export type RustCaching = z.infer<typeof RustCachingSchema>;
 export type RustAuth = z.infer<typeof RustAuthSchema>;
+export type RustRealtime = z.infer<typeof RustRealtimeSchema>;
+export type RustMessageQueue = z.infer<typeof RustMessageQueueSchema>;
+export type RustObservability = z.infer<typeof RustObservabilitySchema>;
+export type RustTemplating = z.infer<typeof RustTemplatingSchema>;
 export type PythonWebFramework = z.infer<typeof PythonWebFrameworkSchema>;
 export type PythonOrm = z.infer<typeof PythonOrmSchema>;
 export type PythonValidation = z.infer<typeof PythonValidationSchema>;
@@ -186,22 +221,47 @@ export type PythonApi = z.infer<typeof PythonApiSchema>;
 export type PythonTaskQueue = z.infer<typeof PythonTaskQueueSchema>;
 export type PythonGraphql = z.infer<typeof PythonGraphqlSchema>;
 export type PythonQuality = z.infer<typeof PythonQualitySchema>;
+export type PythonTesting = z.infer<typeof PythonTestingSchema>;
+export type PythonCaching = z.infer<typeof PythonCachingSchema>;
+export type PythonRealtime = z.infer<typeof PythonRealtimeSchema>;
+export type PythonObservability = z.infer<typeof PythonObservabilitySchema>;
+export type PythonCli = z.infer<typeof PythonCliSchema>;
 export type GoWebFramework = z.infer<typeof GoWebFrameworkSchema>;
 export type GoOrm = z.infer<typeof GoOrmSchema>;
 export type GoApi = z.infer<typeof GoApiSchema>;
 export type GoCli = z.infer<typeof GoCliSchema>;
 export type GoLogging = z.infer<typeof GoLoggingSchema>;
 export type GoAuth = z.infer<typeof GoAuthSchema>;
+export type GoTesting = z.infer<typeof GoTestingSchema>;
+export type GoRealtime = z.infer<typeof GoRealtimeSchema>;
+export type GoMessageQueue = z.infer<typeof GoMessageQueueSchema>;
+export type GoCaching = z.infer<typeof GoCachingSchema>;
+export type GoConfig = z.infer<typeof GoConfigSchema>;
+export type GoObservability = z.infer<typeof GoObservabilitySchema>;
 export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
 export type JavaOrm = z.infer<typeof JavaOrmSchema>;
 export type JavaAuth = z.infer<typeof JavaAuthSchema>;
+export type JavaApi = z.infer<typeof JavaApiSchema>;
+export type JavaLogging = z.infer<typeof JavaLoggingSchema>;
 export type JavaLibraries = z.infer<typeof JavaLibrariesSchema>;
 export type JavaTestingLibraries = z.infer<typeof JavaTestingLibrariesSchema>;
+export type DotnetWebFramework = z.infer<typeof DotnetWebFrameworkSchema>;
+export type DotnetOrm = z.infer<typeof DotnetOrmSchema>;
+export type DotnetAuth = z.infer<typeof DotnetAuthSchema>;
+export type DotnetApi = z.infer<typeof DotnetApiSchema>;
+export type DotnetTesting = z.infer<typeof DotnetTestingSchema>;
+export type DotnetJobQueue = z.infer<typeof DotnetJobQueueSchema>;
+export type DotnetRealtime = z.infer<typeof DotnetRealtimeSchema>;
+export type DotnetObservability = z.infer<typeof DotnetObservabilitySchema>;
+export type DotnetValidation = z.infer<typeof DotnetValidationSchema>;
+export type DotnetCaching = z.infer<typeof DotnetCachingSchema>;
+export type DotnetDeploy = z.infer<typeof DotnetDeploySchema>;
 export type ElixirWebFramework = z.infer<typeof ElixirWebFrameworkSchema>;
 export type ElixirOrm = z.infer<typeof ElixirOrmSchema>;
 export type ElixirAuth = z.infer<typeof ElixirAuthSchema>;
 export type ElixirApi = z.infer<typeof ElixirApiSchema>;
+export type ElixirLibraries = z.infer<typeof ElixirLibrariesSchema>;
 export type ElixirRealtime = z.infer<typeof ElixirRealtimeSchema>;
 export type ElixirJobs = z.infer<typeof ElixirJobsSchema>;
 export type ElixirValidation = z.infer<typeof ElixirValidationSchema>;

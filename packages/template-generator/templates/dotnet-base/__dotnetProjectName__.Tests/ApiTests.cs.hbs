@@ -1,0 +1,42 @@
+using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+{{#if dotnetHasXunit}}
+using Xunit;
+{{/if}}
+{{#if dotnetHasNunit}}
+using NUnit.Framework;
+{{/if}}
+
+namespace {{dotnetNamespace}}.Tests;
+
+{{#if dotnetHasXunit}}
+public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public ApiTests(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task RootEndpointReturnsOk()
+    {
+        using var client = _factory.CreateClient();
+        using var response = await client.GetAsync("/");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+}
+{{else}}
+public sealed class ApiTests
+{
+    [Test]
+    public async Task RootEndpointReturnsOk()
+    {
+        await using var factory = new WebApplicationFactory<Program>();
+        using var client = factory.CreateClient();
+        using var response = await client.GetAsync("/");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
+}
+{{/if}}

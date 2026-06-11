@@ -477,6 +477,27 @@ def test_health(client):
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 {{/if}}
+{{#if (eq pythonWebFramework "starlette")}}
+from starlette.testclient import TestClient
+
+from app.main import app
+
+client = TestClient(app)
+
+
+def test_root():
+    """Test root endpoint."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Hello from Starlette!"}
+
+
+def test_health():
+    """Test health endpoint."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+{{/if}}
 {{#if (eq pythonWebFramework "none")}}
 def test_main():
     """Test main module imports correctly."""

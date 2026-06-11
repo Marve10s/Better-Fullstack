@@ -108,10 +108,12 @@ describe("Java Ecosystem", () => {
         "spring-devtools",
         "micrometer-prometheus",
         "thymeleaf",
+        "spring-amqp",
+        "opentelemetry-java",
         "none",
       ]);
-      expect(JAVA_ORMS).toEqual(["spring-data-jpa", "none"]);
-      expect(JAVA_AUTHS).toEqual(["spring-security", "none"]);
+      expect(JAVA_ORMS).toEqual(["spring-data-jpa", "jooq", "mybatis", "none"]);
+      expect(JAVA_AUTHS).toEqual(["spring-security", "keycloak", "none"]);
       expect(JAVA_TESTING_LIBRARIES).toEqual([
         "junit5",
         "mockito",

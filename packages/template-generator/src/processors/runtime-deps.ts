@@ -10,7 +10,7 @@ type PackageJson = {
 };
 
 export function processRuntimeDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { runtime, backend } = config;
+  const { runtime, backend, serverDeploy } = config;
 
   if (
     backend === "convex" ||
@@ -49,7 +49,7 @@ export function processRuntimeDeps(vfs: VirtualFileSystem, config: ProjectConfig
       devDependencies: ["tsx", "@types/node"],
     });
 
-    if (backend === "hono") {
+    if (backend === "hono" && serverDeploy !== "netlify") {
       addPackageDependency({
         vfs,
         packagePath: serverPath,

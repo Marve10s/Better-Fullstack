@@ -6,7 +6,11 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   server: {
+    {{#if (eq webDeploy "netlify")}}
+    preset: "netlify",
+    {{else}}
     preset: "node-server",
+    {{/if}}
   },
   vite: {
     plugins: [

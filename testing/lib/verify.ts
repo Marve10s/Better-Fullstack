@@ -510,6 +510,39 @@ export async function verifyElixir(
   return wrapResult("elixir", comboName, projectDir, steps);
 }
 
+export async function verifyDotnet(
+  comboName: string,
+  projectDir: string,
+): Promise<VerifyResult> {
+  const steps: StepResult[] = [];
+
+  const entries = await readdir(projectDir, { withFileTypes: true });
+  const rootProject = entries.find(
+    (entry) => entry.isFile() && entry.name.endsWith(".csproj"),
+  )?.name;
+  if (!rootProject) {
+    steps.push(templateFailure("structure", "Expected a .csproj in the .NET project root"));
+    return wrapResult("dotnet", comboName, projectDir, steps);
+  }
+
+  const testsDir = entries.find((entry) => entry.isDirectory() && entry.name.endsWith(".Tests"));
+  const testsProject = testsDir ? join(testsDir.name, `${testsDir.name}.csproj`) : undefined;
+  const buildTarget =
+    testsProject && existsSync(join(projectDir, testsProject)) ? testsProject : rootProject;
+
+  steps.push(await runStep("restore", "dotnet", ["restore", buildTarget], projectDir));
+  if (!steps.at(-1)!.success) return wrapResult("dotnet", comboName, projectDir, steps);
+
+  steps.push(await runStep("build", "dotnet", ["build", buildTarget, "--no-restore"], projectDir));
+  if (!steps.at(-1)!.success) return wrapResult("dotnet", comboName, projectDir, steps);
+
+  if (buildTarget !== rootProject) {
+    steps.push(await runStep("test", "dotnet", ["test", buildTarget, "--no-build"], projectDir));
+  }
+
+  return wrapResult("dotnet", comboName, projectDir, steps);
+}
+
 export function getVerifier(
   ecosystem: Ecosystem,
 ): (comboName: string, projectDir: string, options?: VerifyOptions) => Promise<VerifyResult> {
@@ -528,5 +561,7 @@ export function getVerifier(
       return verifyJava;
     case "elixir":
       return verifyElixir;
+    case "dotnet":
+      return verifyDotnet;
   }
 }

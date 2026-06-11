@@ -4,16 +4,7 @@ import {
 } from "@better-fullstack/types/stack-translation";
 
 import { DEFAULT_STACK, type StackState } from "@/lib/stack-defaults";
-
-const ECOSYSTEM_SHARE_SLUGS = {
-  typescript: "TypeScript",
-  "react-native": "React-Native",
-  rust: "Rust",
-  python: "Python",
-  go: "Go",
-  java: "Java",
-  elixir: "Elixir",
-} as const satisfies Partial<Record<StackState["ecosystem"], string>>;
+import { ECOSYSTEM_SHARE_SLUGS } from "@/lib/stack-share-slugs";
 
 const DEFAULT_MULTI_STACK_PARTS = [
   "frontend:typescript:tanstack-router",

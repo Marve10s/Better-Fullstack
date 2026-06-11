@@ -1,85 +1,87 @@
 # C# / ASP.NET Ecosystem Expansion
 
+**Status: ✅ Shipped 2026-06-10** — full foundation landed on `feat/stack-graph-phase0-batch0` (PR #220): schema, prompts, templates (net10.0), CLI flags, web builder (solo tab + multi-ecosystem backend), stack-graph parts, MCP, dep-freshness automation, smoke coverage, and docs.
+
 Enterprise candidate. .NET is dominant in finance, healthcare, and government. ASP.NET Core is one of the highest-performance web frameworks (TechEmpower benchmarks). .NET 9+ has excellent minimal API support and growing interest from TypeScript developers.
 
 ---
 
 ## Web Frameworks
 
-- [ ] Add `aspnet-minimal` — ASP.NET Core Minimal APIs. Lightweight, lambda-style endpoints. Best for microservices and APIs.
-- [ ] Add `aspnet-mvc` — ASP.NET Core MVC. Controllers, views, model binding. Traditional enterprise pattern.
-- [ ] Add `aspnet-blazor` — Server-side or WASM interactive UI. C# instead of JavaScript for frontend. Unique like Phoenix LiveView.
+- [x] Add `aspnet-minimal` — ASP.NET Core Minimal APIs. Lightweight, lambda-style endpoints. Best for microservices and APIs.
+- [x] Add `aspnet-mvc` — ASP.NET Core MVC. Controllers, views, model binding. Traditional enterprise pattern.
+- [x] Add `aspnet-blazor` — Server-side or WASM interactive UI. C# instead of JavaScript for frontend. Unique like Phoenix LiveView.
 
 ---
 
 ## ORM / Data Access
 
-- [ ] Add `ef-core` (Entity Framework Core) — dominant .NET ORM. Code-first migrations, LINQ queries, change tracking. Supports SQL Server, PostgreSQL, MySQL, SQLite, Cosmos DB.
-- [ ] Add `dapper` — micro-ORM. Raw SQL with object mapping. High performance, no magic. Popular for read-heavy apps.
-- [ ] Add `linq2db` — lightweight LINQ provider. Direct SQL generation without heavy ORM overhead.
+- [x] Add `ef-core` (Entity Framework Core) — dominant .NET ORM. Code-first migrations, LINQ queries, change tracking. Supports SQL Server, PostgreSQL, MySQL, SQLite, Cosmos DB.
+- [x] Add `dapper` — micro-ORM. Raw SQL with object mapping. High performance, no magic. Popular for read-heavy apps.
+- [x] Add `linq2db` — lightweight LINQ provider. Direct SQL generation without heavy ORM overhead.
 
 ---
 
 ## Authentication
 
-- [ ] Add `aspnet-identity` — built-in auth system. User management, password hashing, 2FA, account confirmation. Integrates with EF Core.
-- [ ] Add `duende-identityserver` — OpenID Connect / OAuth2 server. SSO, API protection, federation. Enterprise standard.
-- [ ] Add `auth0-aspnet` — Auth0 SDK for ASP.NET. Managed auth with social login.
+- [x] Add `aspnet-identity` — built-in auth system. User management, password hashing, 2FA, account confirmation. Integrates with EF Core.
+- [x] Add `duende-identityserver` — OpenID Connect / OAuth2 server. SSO, API protection, federation. Enterprise standard.
+- [x] Add `auth0-aspnet` — Auth0 SDK for ASP.NET. Managed auth with social login.
 
 ---
 
 ## API Styles
 
-- [ ] Add `graphql-hotchocolate` — most popular .NET GraphQL server. Code-first, schema-first, filtering, sorting, pagination.
-- [ ] Add `grpc-dotnet` — built-in gRPC support. Code-first or proto-first. Bidirectional streaming.
-- [ ] Add `minimal-api` — REST via ASP.NET Minimal APIs with OpenAPI/Swagger generation.
+- [x] Add `graphql-hotchocolate` — most popular .NET GraphQL server. Code-first, schema-first, filtering, sorting, pagination.
+- [x] Add `grpc-dotnet` — built-in gRPC support. Code-first or proto-first. Bidirectional streaming.
+- [x] Add `minimal-api` — REST via ASP.NET Minimal APIs with OpenAPI/Swagger generation.
 
 ---
 
 ## Testing
 
-- [ ] Add `xunit` — most popular .NET test framework. Used by .NET team itself.
-- [ ] Add `nunit` — established alternative. Rich assertion library.
-- [ ] Add `moq` — mocking library. Interface-based mocking.
-- [ ] Add `testcontainers-dotnet` — Docker-based integration tests.
+- [x] Add `xunit` — most popular .NET test framework. Used by .NET team itself.
+- [x] Add `nunit` — established alternative. Rich assertion library.
+- [x] Add `moq` — mocking library. Interface-based mocking.
+- [x] Add `testcontainers-dotnet` — Docker-based integration tests.
 
 ---
 
 ## Task Queues / Background Jobs
 
-- [ ] Add `hangfire` — background job processing. Dashboard UI, retry, scheduling. SQL Server or Redis storage.
-- [ ] Add `quartz-net` — enterprise job scheduler. Cron triggers, clustering, persistence.
-- [ ] Add `hosted-services` — built-in `IHostedService` / `BackgroundService` for simple background work.
+- [x] Add `hangfire` — background job processing. Dashboard UI, retry, scheduling. SQL Server or Redis storage.
+- [x] Add `quartz-net` — enterprise job scheduler. Cron triggers, clustering, persistence.
+- [x] Add `hosted-services` — built-in `IHostedService` / `BackgroundService` for simple background work.
 
 ---
 
 ## Realtime
 
-- [ ] Add `signalr` — built-in realtime framework. WebSocket, Server-Sent Events, Long Polling fallback. Hub pattern. Scales with Azure SignalR Service or Redis backplane.
+- [x] Add `signalr` — built-in realtime framework. WebSocket, Server-Sent Events, Long Polling fallback. Hub pattern. Scales with Azure SignalR Service or Redis backplane.
 
 ---
 
 ## Observability
 
-- [ ] Add `opentelemetry-dotnet` — distributed tracing, metrics. Built-in support in .NET 8+.
-- [ ] Add `serilog` — structured logging. Sinks for Seq, Elasticsearch, Datadog, Application Insights, etc.
-- [ ] Add `nlog` — alternative structured logging. Flexible targets and layouts.
-- [ ] Add `health-checks` — built-in ASP.NET health check middleware. Custom checks for DB, Redis, external services.
+- [x] Add `opentelemetry-dotnet` — distributed tracing, metrics. Built-in support in .NET 8+.
+- [x] Add `serilog` — structured logging. Sinks for Seq, Elasticsearch, Datadog, Application Insights, etc.
+- [x] Add `nlog` — alternative structured logging. Flexible targets and layouts.
+- [x] Add `health-checks` — built-in ASP.NET health check middleware. Custom checks for DB, Redis, external services.
 
 ---
 
 ## Caching
 
-- [ ] Add `redis` (via StackExchange.Redis) — distributed caching. Also supports `IDistributedCache` interface.
-- [ ] Add `memory-cache` — built-in `IMemoryCache`. In-process, no external dependency.
+- [x] Add `redis` (via StackExchange.Redis) — distributed caching. Also supports `IDistributedCache` interface.
+- [x] Add `memory-cache` — built-in `IMemoryCache`. In-process, no external dependency.
 
 ---
 
 ## Deployment
 
-- [ ] Add `docker` — multi-stage Dockerfile with `dotnet publish`.
-- [ ] Add `azure` — Azure App Service, Azure Container Apps. First-class .NET support.
-- [ ] Add `aws` — AWS Lambda (.NET), ECS, Elastic Beanstalk.
+- [x] Add `docker` — multi-stage Dockerfile with `dotnet publish`.
+- [x] Add `azure` — Azure App Service, Azure Container Apps. First-class .NET support.
+- [x] Add `aws` — AWS Lambda (.NET), ECS, Elastic Beanstalk.
 
 ---
 

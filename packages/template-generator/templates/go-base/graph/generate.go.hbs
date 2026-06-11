@@ -1,0 +1,13 @@
+{{#if (eq goApi "gqlgen")}}
+// Package graph hosts the GraphQL schema and (after code generation) the
+// gqlgen server code.
+//
+// Run `go generate ./graph` to generate the executable schema and resolver
+// stubs, then mount the handler in cmd/server/main.go:
+//
+//	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+//	mux.Handle("/graphql", srv)
+package graph
+
+//go:generate go run github.com/99designs/gqlgen generate
+{{/if}}

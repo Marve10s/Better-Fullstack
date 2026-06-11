@@ -6,7 +6,7 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { RPCHandler } from "@orpc/server/node";
 import { onError } from "@orpc/server";
 import { appRouter } from "@{{projectName}}/api/routers/index";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
 import type { Request, Response, NextFunction } from "express";
@@ -37,7 +37,7 @@ export class OrpcMiddleware implements NestMiddleware {
 	async use(req: Request, res: Response, next: NextFunction) {
 		const rpcResult = await this.rpcHandler.handle(req, res, {
 			prefix: "/rpc",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			context: await createContext({ req }),
 {{else}}
 			context: { session: null },
@@ -47,7 +47,7 @@ export class OrpcMiddleware implements NestMiddleware {
 
 		const apiResult = await this.apiHandler.handle(req, res, {
 			prefix: "/api-reference",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 			context: await createContext({ req }),
 {{else}}
 			context: { session: null },

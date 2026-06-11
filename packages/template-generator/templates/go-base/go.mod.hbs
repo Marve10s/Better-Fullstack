@@ -63,13 +63,54 @@ require (
 {{#if (eq goAuth "jwt")}}
 	github.com/golang-jwt/jwt/v5 v5.2.2
 {{/if}}
+{{#if (eq goAuth "goth")}}
+	github.com/markbates/goth v1.82.0
+{{/if}}
+{{#if (includes goTesting "testify")}}
+	github.com/stretchr/testify v1.11.1
+{{/if}}
+{{#if (includes goTesting "gomock")}}
+	go.uber.org/mock v0.6.0
+{{/if}}
+{{#if (eq goRealtime "gorilla-websocket")}}
+	github.com/gorilla/websocket v1.5.3
+{{/if}}
+{{#if (eq goRealtime "centrifuge")}}
+	github.com/centrifugal/centrifuge v0.38.0
+{{/if}}
+{{#if (eq goMessageQueue "nats")}}
+	github.com/nats-io/nats.go v1.52.0
+{{/if}}
+{{#if (eq goMessageQueue "watermill")}}
+	github.com/ThreeDotsLabs/watermill v1.5.2
+{{/if}}
+{{#if (eq goCaching "ristretto")}}
+	github.com/dgraph-io/ristretto/v2 v2.4.0
+{{/if}}
+{{#if (eq goConfig "viper")}}
+	github.com/spf13/viper v1.21.0
+{{/if}}
+{{#if (eq goConfig "koanf")}}
+	github.com/knadh/koanf/v2 v2.3.5
+	github.com/knadh/koanf/parsers/yaml v1.1.0
+	github.com/knadh/koanf/providers/env v1.1.0
+	github.com/knadh/koanf/providers/file v1.2.1
+{{/if}}
+{{#if (eq goObservability "opentelemetry")}}
+	go.opentelemetry.io/otel v1.44.0
+	go.opentelemetry.io/otel/sdk v1.44.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.44.0
+{{/if}}
+{{#if (eq goApi "gqlgen")}}
+	github.com/99designs/gqlgen v0.17.90
+{{/if}}
 {{#if (eq email "resend")}}
 	github.com/resend/resend-go/v3 v3.4.1
 {{/if}}
 {{#if (eq observability "sentry")}}
 	github.com/getsentry/sentry-go v0.46.2
 {{/if}}
-{{#if (eq caching "upstash-redis")}}
+{{#if (or (eq caching "upstash-redis") (eq goCaching "redis"))}}
 	github.com/redis/go-redis/v9 v9.19.0
 {{/if}}
 {{#if (eq search "meilisearch")}}

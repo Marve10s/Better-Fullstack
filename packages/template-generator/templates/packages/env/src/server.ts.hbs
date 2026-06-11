@@ -22,13 +22,48 @@ export const env = createEnv({
 {{/if}}
 {{/if}}
 {{/if}}
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		BETTER_AUTH_SECRET: z.string().min(32),
 		BETTER_AUTH_URL: z.url(),
+{{/if}}
+{{#if (eq auth "workos")}}
+		WORKOS_API_KEY: z.string().min(1),
+		WORKOS_CLIENT_ID: z.string().min(1),
+		WORKOS_COOKIE_PASSWORD: z.string().min(32),
+		NEXT_PUBLIC_WORKOS_REDIRECT_URI: z.url(),
+{{/if}}
+{{#if (eq auth "kinde")}}
+		KINDE_CLIENT_ID: z.string().min(1),
+		KINDE_CLIENT_SECRET: z.string().min(1),
+		KINDE_ISSUER_URL: z.url(),
+		KINDE_SITE_URL: z.url(),
+		KINDE_POST_LOGIN_REDIRECT_URL: z.url(),
+		KINDE_POST_LOGOUT_REDIRECT_URL: z.url(),
 {{/if}}
 {{#if (eq payments "polar")}}
 		POLAR_ACCESS_TOKEN: z.string().min(1),
 		POLAR_SUCCESS_URL: z.url(),
+{{/if}}
+{{#if (eq observability "datadog")}}
+		DD_SERVICE: z.string().min(1),
+		DD_ENV: z.string().min(1),
+		DD_VERSION: z.string().min(1),
+		DD_TRACE_AGENT_URL: z.url(),
+{{/if}}
+{{#if (eq observability "axiom")}}
+		AXIOM_TOKEN: z.string().min(1),
+		AXIOM_DATASET: z.string().min(1),
+{{/if}}
+{{#if (eq observability "betterstack")}}
+		BETTERSTACK_SOURCE_TOKEN: z.string().min(1),
+		BETTERSTACK_INGESTING_HOST: z.string().min(1),
+{{/if}}
+{{#if (eq rateLimit "arcjet")}}
+		ARCJET_KEY: z.string().min(1),
+{{/if}}
+{{#if (eq rateLimit "upstash-ratelimit")}}
+		UPSTASH_REDIS_REST_URL: z.url(),
+		UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 {{/if}}
 		CORS_ORIGIN: z.url(),
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

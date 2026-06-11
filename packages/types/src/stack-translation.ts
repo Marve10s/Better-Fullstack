@@ -5,6 +5,7 @@ import { createCliDefaultProjectConfigBase, type CliDefaultProjectConfigBase } f
 import { normalizeOptionId, type OptionCategory } from "./option-metadata";
 import {
   formatStackPartSpec,
+  getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
@@ -54,6 +55,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   realtime: "none",
   jobQueue: "none",
   caching: "none",
+  rateLimit: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -92,6 +94,10 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   rustErrorHandling: "anyhow-thiserror",
   rustCaching: "none",
   rustAuth: "none",
+  rustRealtime: "none",
+  rustMessageQueue: "none",
+  rustObservability: "none",
+  rustTemplating: "none",
   pythonWebFramework: "fastapi",
   pythonOrm: "sqlalchemy",
   pythonValidation: "pydantic",
@@ -101,18 +107,42 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   pythonTaskQueue: "none",
   pythonGraphql: "none",
   pythonQuality: "ruff",
+  pythonTesting: [],
+  pythonCaching: "none",
+  pythonRealtime: "none",
+  pythonObservability: "none",
+  pythonCli: [],
   goWebFramework: "gin",
   goOrm: "gorm",
   goApi: "none",
   goCli: "none",
   goLogging: "zap",
   goAuth: "none",
+  goTesting: [],
+  goRealtime: "none",
+  goMessageQueue: "none",
+  goCaching: "none",
+  goConfig: "none",
+  goObservability: "none",
   javaWebFramework: "spring-boot",
   javaBuildTool: "maven",
   javaOrm: "none",
   javaAuth: "none",
+  javaApi: "none",
+  javaLogging: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
+  dotnetWebFramework: "aspnet-minimal",
+  dotnetOrm: "ef-core",
+  dotnetAuth: "aspnet-identity",
+  dotnetApi: "minimal-api",
+  dotnetTesting: ["xunit"],
+  dotnetJobQueue: "none",
+  dotnetRealtime: "signalr",
+  dotnetObservability: ["serilog"],
+  dotnetValidation: "none",
+  dotnetCaching: "none",
+  dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -128,6 +158,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   elixirTesting: "ex_unit",
   elixirQuality: "credo",
   elixirDeploy: "none",
+  elixirLibraries: [],
 };
 
 export type StackSelectionKey = keyof StackSelectionState;
@@ -178,6 +209,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   realtime: "realtime",
   jobQueue: "jobQueue",
   caching: "caching",
+  rateLimit: "rateLimit",
   i18n: "i18n",
   animation: "animation",
   cssFramework: "cssFramework",
@@ -215,6 +247,10 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   rustErrorHandling: "rustErrorHandling",
   rustCaching: "rustCaching",
   rustAuth: "rustAuth",
+  rustRealtime: "rustRealtime",
+  rustMessageQueue: "rustMessageQueue",
+  rustObservability: "rustObservability",
+  rustTemplating: "rustTemplating",
   pythonWebFramework: "pythonWebFramework",
   pythonOrm: "pythonOrm",
   pythonValidation: "pythonValidation",
@@ -224,18 +260,42 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   pythonTaskQueue: "pythonTaskQueue",
   pythonGraphql: "pythonGraphql",
   pythonQuality: "pythonQuality",
+  pythonTesting: "pythonTesting",
+  pythonCaching: "pythonCaching",
+  pythonRealtime: "pythonRealtime",
+  pythonObservability: "pythonObservability",
+  pythonCli: "pythonCli",
   goWebFramework: "goWebFramework",
   goOrm: "goOrm",
   goApi: "goApi",
   goCli: "goCli",
   goLogging: "goLogging",
   goAuth: "goAuth",
+  goTesting: "goTesting",
+  goRealtime: "goRealtime",
+  goMessageQueue: "goMessageQueue",
+  goCaching: "goCaching",
+  goConfig: "goConfig",
+  goObservability: "goObservability",
   javaWebFramework: "javaWebFramework",
   javaBuildTool: "javaBuildTool",
   javaOrm: "javaOrm",
   javaAuth: "javaAuth",
+  javaApi: "javaApi",
+  javaLogging: "javaLogging",
   javaLibraries: "javaLibraries",
   javaTestingLibraries: "javaTestingLibraries",
+  dotnetWebFramework: "dotnetWebFramework",
+  dotnetOrm: "dotnetOrm",
+  dotnetAuth: "dotnetAuth",
+  dotnetApi: "dotnetApi",
+  dotnetTesting: "dotnetTesting",
+  dotnetJobQueue: "dotnetJobQueue",
+  dotnetRealtime: "dotnetRealtime",
+  dotnetObservability: "dotnetObservability",
+  dotnetValidation: "dotnetValidation",
+  dotnetCaching: "dotnetCaching",
+  dotnetDeploy: "dotnetDeploy",
   elixirWebFramework: "elixirWebFramework",
   elixirOrm: "elixirOrm",
   elixirAuth: "elixirAuth",
@@ -251,6 +311,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   elixirTesting: "elixirTesting",
   elixirQuality: "elixirQuality",
   elixirDeploy: "elixirDeploy",
+  elixirLibraries: "elixirLibraries",
 };
 
 export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
@@ -258,6 +319,12 @@ export const VIRTUAL_NONE_MULTI_SELECT_STACK_SELECTION_KEYS = [
   "pythonAi",
   "javaLibraries",
   "javaTestingLibraries",
+  "dotnetTesting",
+  "dotnetObservability",
+  "goTesting",
+  "pythonTesting",
+  "pythonCli",
+  "elixirLibraries",
   "aiDocs",
 ] as const;
 
@@ -303,6 +370,7 @@ export const STACK_SELECTION_URL_KEYS = {
   realtime: "rt2",
   jobQueue: "jq",
   caching: "cache",
+  rateLimit: "rl",
   i18n: "i18n",
   animation: "anim",
   cssFramework: "css",
@@ -341,6 +409,10 @@ export const STACK_SELECTION_URL_KEYS = {
   rustErrorHandling: "reh",
   rustCaching: "rca",
   rustAuth: "rau",
+  rustRealtime: "rrt",
+  rustMessageQueue: "rmq",
+  rustObservability: "robs",
+  rustTemplating: "rtpl",
   pythonWebFramework: "pwf",
   pythonOrm: "porm",
   pythonValidation: "pval",
@@ -350,18 +422,42 @@ export const STACK_SELECTION_URL_KEYS = {
   pythonTaskQueue: "ptq",
   pythonGraphql: "pgql",
   pythonQuality: "pq",
+  pythonTesting: "ptest",
+  pythonCaching: "pcache",
+  pythonRealtime: "prt",
+  pythonObservability: "pobs",
+  pythonCli: "pcli",
   goWebFramework: "gwf",
   goOrm: "gorm",
   goApi: "gapi",
   goCli: "gcli",
   goLogging: "glog",
   goAuth: "gauth",
+  goTesting: "gtest",
+  goRealtime: "grt",
+  goMessageQueue: "gmq",
+  goCaching: "gcache",
+  goConfig: "gcfg",
+  goObservability: "gobs",
   javaWebFramework: "jwf",
   javaBuildTool: "jbt",
   javaOrm: "jorm",
   javaAuth: "jauth",
+  javaApi: "japi",
+  javaLogging: "jlog",
   javaLibraries: "jlib",
   javaTestingLibraries: "jtest",
+  dotnetWebFramework: "dnwf",
+  dotnetOrm: "dnorm",
+  dotnetAuth: "dnauth",
+  dotnetApi: "dnapi",
+  dotnetTesting: "dntest",
+  dotnetJobQueue: "dnjob",
+  dotnetRealtime: "dnrt",
+  dotnetObservability: "dnobs",
+  dotnetValidation: "dnval",
+  dotnetCaching: "dncache",
+  dotnetDeploy: "dndeploy",
   elixirWebFramework: "ewf",
   elixirOrm: "eorm",
   elixirAuth: "eauth",
@@ -377,6 +473,7 @@ export const STACK_SELECTION_URL_KEYS = {
   elixirTesting: "etest",
   elixirQuality: "eq",
   elixirDeploy: "edeploy",
+  elixirLibraries: "elib",
 } as const satisfies Record<StackSelectionKey, string>;
 
 export const STACK_SELECTION_KEYS = Object.keys(STACK_SELECTION_URL_KEYS) as StackSelectionKey[];
@@ -592,6 +689,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["observability", "observability"],
   ["cms", "cms"],
   ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
   ["i18n", "i18n"],
   ["search", "search"],
   ["fileStorage", "fileStorage"],
@@ -632,6 +730,10 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["rustErrorHandling", "rustErrorHandling"],
   ["rustCaching", "rustCaching"],
   ["rustAuth", "rustAuth"],
+  ["rustRealtime", "rustRealtime"],
+  ["rustMessageQueue", "rustMessageQueue"],
+  ["rustObservability", "rustObservability"],
+  ["rustTemplating", "rustTemplating"],
   ["pythonWebFramework", "pythonWebFramework"],
   ["pythonOrm", "pythonOrm"],
   ["pythonValidation", "pythonValidation"],
@@ -640,16 +742,35 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["pythonTaskQueue", "pythonTaskQueue"],
   ["pythonGraphql", "pythonGraphql"],
   ["pythonQuality", "pythonQuality"],
+  ["pythonCaching", "pythonCaching"],
+  ["pythonRealtime", "pythonRealtime"],
+  ["pythonObservability", "pythonObservability"],
   ["goWebFramework", "goWebFramework"],
   ["goOrm", "goOrm"],
   ["goApi", "goApi"],
   ["goCli", "goCli"],
   ["goLogging", "goLogging"],
   ["goAuth", "goAuth"],
+  ["goRealtime", "goRealtime"],
+  ["goMessageQueue", "goMessageQueue"],
+  ["goCaching", "goCaching"],
+  ["goConfig", "goConfig"],
+  ["goObservability", "goObservability"],
   ["javaWebFramework", "javaWebFramework"],
   ["javaBuildTool", "javaBuildTool"],
   ["javaOrm", "javaOrm"],
   ["javaAuth", "javaAuth"],
+  ["javaApi", "javaApi"],
+  ["javaLogging", "javaLogging"],
+  ["dotnetWebFramework", "dotnetWebFramework"],
+  ["dotnetOrm", "dotnetOrm"],
+  ["dotnetAuth", "dotnetAuth"],
+  ["dotnetApi", "dotnetApi"],
+  ["dotnetJobQueue", "dotnetJobQueue"],
+  ["dotnetRealtime", "dotnetRealtime"],
+  ["dotnetValidation", "dotnetValidation"],
+  ["dotnetCaching", "dotnetCaching"],
+  ["dotnetDeploy", "dotnetDeploy"],
   ["elixirWebFramework", "elixirWebFramework"],
   ["elixirOrm", "elixirOrm"],
   ["elixirAuth", "elixirAuth"],
@@ -679,6 +800,12 @@ const CLI_DEFINED_ARRAY_CONFIG_FIELDS = [
   ["pythonAi", "pythonAi"],
   ["javaLibraries", "javaLibraries"],
   ["javaTestingLibraries", "javaTestingLibraries"],
+  ["dotnetTesting", "dotnetTesting"],
+  ["dotnetObservability", "dotnetObservability"],
+  ["goTesting", "goTesting"],
+  ["pythonTesting", "pythonTesting"],
+  ["pythonCli", "pythonCli"],
+  ["elixirLibraries", "elixirLibraries"],
 ] as const satisfies readonly (readonly [keyof CLIInput, keyof ProjectConfig])[];
 
 const PACKAGE_MANAGER_COMMANDS = {
@@ -709,6 +836,10 @@ const RUST_CONFIG_KEYS = [
   "rustErrorHandling",
   "rustCaching",
   "rustAuth",
+  "rustRealtime",
+  "rustMessageQueue",
+  "rustObservability",
+  "rustTemplating",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const PYTHON_CONFIG_KEYS = [
@@ -721,6 +852,11 @@ const PYTHON_CONFIG_KEYS = [
   "pythonTaskQueue",
   "pythonGraphql",
   "pythonQuality",
+  "pythonTesting",
+  "pythonCaching",
+  "pythonRealtime",
+  "pythonObservability",
+  "pythonCli",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const GO_CONFIG_KEYS = [
@@ -730,6 +866,12 @@ const GO_CONFIG_KEYS = [
   "goCli",
   "goLogging",
   "goAuth",
+  "goTesting",
+  "goRealtime",
+  "goMessageQueue",
+  "goCaching",
+  "goConfig",
+  "goObservability",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const JAVA_CONFIG_KEYS = [
@@ -737,8 +879,24 @@ const JAVA_CONFIG_KEYS = [
   "javaBuildTool",
   "javaOrm",
   "javaAuth",
+  "javaApi",
+  "javaLogging",
   "javaLibraries",
   "javaTestingLibraries",
+] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const DOTNET_CONFIG_KEYS = [
+  "dotnetWebFramework",
+  "dotnetOrm",
+  "dotnetAuth",
+  "dotnetApi",
+  "dotnetTesting",
+  "dotnetJobQueue",
+  "dotnetRealtime",
+  "dotnetObservability",
+  "dotnetValidation",
+  "dotnetCaching",
+  "dotnetDeploy",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const ELIXIR_CONFIG_KEYS = [
@@ -757,6 +915,7 @@ const ELIXIR_CONFIG_KEYS = [
   "elixirTesting",
   "elixirQuality",
   "elixirDeploy",
+  "elixirLibraries",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const REACT_NATIVE_CONFIG_KEYS = [
@@ -828,13 +987,8 @@ type StackSelectionStringKey = {
 }[keyof StackSelectionState];
 
 const GRAPH_TYPESCRIPT_FRONTEND_FLAG_KEYS = [
-  ["cssFramework", "css-framework"],
-  ["uiLibrary", "ui-library"],
-  ["stateManagement", "state-management"],
-  ["forms", "forms"],
   ["validation", "validation"],
   ["testing", "testing"],
-  ["animation", "animation"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_SHADCN_FLAG_KEYS = [
@@ -848,81 +1002,25 @@ const GRAPH_SHADCN_FLAG_KEYS = [
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_MOBILE_FLAG_KEYS = [
-  ["mobileNavigation", "mobile-navigation"],
-  ["mobileUI", "mobile-ui"],
-  ["mobileStorage", "mobile-storage"],
-  ["mobileTesting", "mobile-testing"],
   ["mobilePush", "mobile-push"],
   ["mobileOTA", "mobile-ota"],
   ["mobileDeepLinking", "mobile-deep-linking"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_GLOBAL_FLAG_KEYS = [
-  ["dbSetup", "db-setup"],
-  ["webDeploy", "web-deploy"],
-  ["serverDeploy", "server-deploy"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
 const GRAPH_TYPESCRIPT_BACKEND_FLAG_KEYS = [
-  ["payments", "payments"],
-  ["email", "email"],
-  ["fileUpload", "file-upload"],
   ["backendLibraries", "effect"],
-  ["aiSdk", "ai"],
-  ["realtime", "realtime"],
-  ["jobQueue", "job-queue"],
-  ["logging", "logging"],
-  ["observability", "observability"],
-  ["featureFlags", "feature-flags"],
-  ["caching", "caching"],
-  ["i18n", "i18n"],
-  ["cms", "cms"],
-  ["search", "search"],
-  ["fileStorage", "file-storage"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 const GRAPH_SHARED_BACKEND_FLAG_KEYS = [
   ["email", "email"],
   ["observability", "observability"],
   ["caching", "caching"],
+  ["rateLimit", "rate-limit"],
   ["search", "search"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
-const GRAPH_RUST_BACKEND_FLAG_KEYS = [
-  ["rustCli", "rust-cli"],
-  ["rustLogging", "rust-logging"],
-  ["rustErrorHandling", "rust-error-handling"],
-  ["rustCaching", "rust-caching"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_PYTHON_BACKEND_FLAG_KEYS = [
-  ["pythonValidation", "python-validation"],
-  ["pythonTaskQueue", "python-task-queue"],
-  ["pythonGraphql", "python-graphql"],
-  ["pythonQuality", "python-quality"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_GO_BACKEND_FLAG_KEYS = [
-  ["goCli", "go-cli"],
-  ["goLogging", "go-logging"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
-const GRAPH_JAVA_BACKEND_FLAG_KEYS = [
-  ["javaBuildTool", "java-build-tool"],
-] as const satisfies readonly [StackSelectionStringKey, string][];
-
 const GRAPH_ELIXIR_BACKEND_FLAG_KEYS = [
-  ["elixirRealtime", "elixir-realtime"],
-  ["elixirJobs", "elixir-jobs"],
-  ["elixirValidation", "elixir-validation"],
-  ["elixirHttp", "elixir-http"],
   ["elixirJson", "elixir-json"],
-  ["elixirEmail", "elixir-email"],
-  ["elixirCaching", "elixir-caching"],
-  ["elixirObservability", "elixir-observability"],
-  ["elixirTesting", "elixir-testing"],
-  ["elixirQuality", "elixir-quality"],
-  ["elixirDeploy", "elixir-deploy"],
 ] as const satisfies readonly [StackSelectionStringKey, string][];
 
 function formatChangedStringFlag(
@@ -936,16 +1034,6 @@ function formatChangedStringFlag(
 type StackSelectionArrayKey = {
   [K in keyof StackSelectionState]: StackSelectionState[K] extends string[] ? K : never;
 }[keyof StackSelectionState];
-
-function formatChangedArraySelectionFlag(
-  selection: StackSelectionInput,
-  key: StackSelectionArrayKey,
-  flag: string,
-) {
-  return areStringArraysEqual(selection[key], DEFAULT_STACK_SELECTION[key])
-    ? undefined
-    : formatArrayFlag(flag, selection[key]);
-}
 
 function formatChangedStringFlags(
   selection: StackSelectionInput,
@@ -972,6 +1060,522 @@ function hasGraphPrimaryPart(
   );
 }
 
+type ScopedStackPartRole = Exclude<
+  StackPartRole,
+  "frontend" | "backend" | "mobile" | "database"
+>;
+type ScopedStackPartField = {
+  ownerRole?: "frontend" | "backend" | "mobile" | "database";
+  ecosystem: StackPartEcosystem;
+  role: ScopedStackPartRole;
+  value: string | readonly string[] | undefined;
+  allowMultiple?: boolean;
+};
+
+const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
+  ["webDeploy", "deploy"],
+  ["cssFramework", "css"],
+  ["uiLibrary", "ui"],
+  ["forms", "forms"],
+  ["stateManagement", "stateManagement"],
+  ["animation", "animation"],
+  ["fileUpload", "fileUpload"],
+  ["i18n", "i18n"],
+  ["analytics", "analytics"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS = [
+  ["runtime", "runtime"],
+  ["serverDeploy", "deploy"],
+  ["payments", "payments"],
+  ["email", "email"],
+  ["aiSdk", "ai"],
+  ["realtime", "realtime"],
+  ["jobQueue", "jobQueue"],
+  ["logging", "logging"],
+  ["observability", "observability"],
+  ["featureFlags", "featureFlags"],
+  ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
+  ["cms", "cms"],
+  ["search", "search"],
+  ["fileStorage", "fileStorage"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS = [
+  ["elixirRealtime", "realtime"],
+  ["elixirJobs", "jobQueue"],
+  ["elixirValidation", "validation"],
+  ["elixirHttp", "httpClient"],
+  ["elixirEmail", "email"],
+  ["elixirCaching", "caching"],
+  ["elixirObservability", "observability"],
+  ["elixirTesting", "testing"],
+  ["elixirQuality", "codeQuality"],
+  ["elixirDeploy", "deploy"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_DATABASE_PART_SELECTION_KEYS = [
+  ["dbSetup", "dbSetup"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_MOBILE_PART_SELECTION_KEYS = [
+  ["mobileNavigation", "navigation"],
+  ["mobileUI", "ui"],
+  ["mobileStorage", "storage"],
+  ["mobileTesting", "testing"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_PART_SELECTION_KEYS = [
+  ["rustCli", "cli"],
+  ["rustLogging", "logging"],
+  ["rustErrorHandling", "errorHandling"],
+  ["rustCaching", "caching"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["rustLibraries", "libraries"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS = [
+  ["pythonValidation", "validation"],
+  ["pythonTaskQueue", "jobQueue"],
+  ["pythonGraphql", "api"],
+  ["pythonQuality", "codeQuality"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["pythonAi", "ai"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_GO_BACKEND_PART_SELECTION_KEYS = [
+  ["goCli", "cli"],
+  ["goLogging", "logging"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS = [
+  ["javaBuildTool", "buildTool"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["javaLibraries", "libraries"],
+  ["javaTestingLibraries", "testing"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS = [
+  ["dotnetOrm", "orm"],
+  ["dotnetAuth", "auth"],
+  ["dotnetApi", "api"],
+  ["dotnetJobQueue", "jobQueue"],
+  ["dotnetRealtime", "realtime"],
+  ["dotnetCaching", "caching"],
+  ["dotnetDeploy", "deploy"],
+] as const satisfies readonly [StackSelectionStringKey, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS = [
+  ["dotnetTesting", "testing"],
+  ["dotnetObservability", "observability"],
+] as const satisfies readonly [StackSelectionArrayKey, ScopedStackPartRole][];
+
+const GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS = [
+  ["webDeploy", "deploy"],
+  ["cssFramework", "css"],
+  ["uiLibrary", "ui"],
+  ["forms", "forms"],
+  ["stateManagement", "stateManagement"],
+  ["animation", "animation"],
+  ["fileUpload", "fileUpload"],
+  ["i18n", "i18n"],
+  ["analytics", "analytics"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS = [
+  ["runtime", "runtime"],
+  ["serverDeploy", "deploy"],
+  ["payments", "payments"],
+  ["email", "email"],
+  ["ai", "ai"],
+  ["realtime", "realtime"],
+  ["jobQueue", "jobQueue"],
+  ["logging", "logging"],
+  ["observability", "observability"],
+  ["featureFlags", "featureFlags"],
+  ["caching", "caching"],
+  ["rateLimit", "rateLimit"],
+  ["cms", "cms"],
+  ["search", "search"],
+  ["fileStorage", "fileStorage"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS = [
+  ["elixirRealtime", "realtime"],
+  ["elixirJobs", "jobQueue"],
+  ["elixirValidation", "validation"],
+  ["elixirHttp", "httpClient"],
+  ["elixirEmail", "email"],
+  ["elixirCaching", "caching"],
+  ["elixirObservability", "observability"],
+  ["elixirTesting", "testing"],
+  ["elixirQuality", "codeQuality"],
+  ["elixirDeploy", "deploy"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_DATABASE_PART_CLI_KEYS = [
+  ["dbSetup", "dbSetup"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_MOBILE_PART_CLI_KEYS = [
+  ["mobileNavigation", "navigation"],
+  ["mobileUI", "ui"],
+  ["mobileStorage", "storage"],
+  ["mobileTesting", "testing"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_PART_CLI_KEYS = [
+  ["rustCli", "cli"],
+  ["rustLogging", "logging"],
+  ["rustErrorHandling", "errorHandling"],
+  ["rustCaching", "caching"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_RUST_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["rustLibraries", "libraries"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_PART_CLI_KEYS = [
+  ["pythonValidation", "validation"],
+  ["pythonTaskQueue", "jobQueue"],
+  ["pythonGraphql", "api"],
+  ["pythonQuality", "codeQuality"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["pythonAi", "ai"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_GO_BACKEND_PART_CLI_KEYS = [
+  ["goCli", "cli"],
+  ["goLogging", "logging"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_PART_CLI_KEYS = [
+  ["javaBuildTool", "buildTool"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["javaLibraries", "libraries"],
+  ["javaTestingLibraries", "testing"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_PART_CLI_KEYS = [
+  ["dotnetOrm", "orm"],
+  ["dotnetAuth", "auth"],
+  ["dotnetApi", "api"],
+  ["dotnetJobQueue", "jobQueue"],
+  ["dotnetRealtime", "realtime"],
+  ["dotnetCaching", "caching"],
+  ["dotnetDeploy", "deploy"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+const GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS = [
+  ["dotnetTesting", "testing"],
+  ["dotnetObservability", "observability"],
+] as const satisfies readonly [keyof CLIInput, ScopedStackPartRole][];
+
+function getAddonScopedPartFields(addons: readonly string[] | undefined): ScopedStackPartField[] {
+  return toUniqueNonNoneArray(addons ?? []).flatMap((addon) => {
+    const binding = getAddonStackPartBinding(addon);
+    if (!binding) return [];
+    return [
+      {
+        ownerRole: binding.ownerRole,
+        ecosystem: binding.ecosystem,
+        role: binding.role as ScopedStackPartRole,
+        value: addon,
+        allowMultiple: true,
+      },
+    ];
+  });
+}
+
+function getExampleScopedPartFields(examples: readonly string[] | undefined): ScopedStackPartField[] {
+  return toUniqueNonNoneArray(examples ?? []).map((example) => ({
+    ecosystem: "universal" as const,
+    role: "examples" as const,
+    value: example,
+    allowMultiple: true,
+  }));
+}
+
+function expandScopedStackPartSpecs(
+  specs: readonly string[],
+  fields: readonly ScopedStackPartField[],
+) {
+  const stackParts = parseStackPartSpecs(specs, "selected");
+  const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
+  const stackPartSpecSet = new Set(stackPartSpecs);
+
+  const getPrimary = (
+    role: "frontend" | "backend" | "mobile" | "database",
+    ecosystem: StackPartEcosystem,
+  ) =>
+    stackParts.find(
+      (part) =>
+        part.role === role &&
+        part.ecosystem === ecosystem &&
+        !part.ownerPartId &&
+        part.source !== "provided",
+    );
+  const hasScoped = (
+    ownerId: string,
+    role: StackPartRole,
+    ecosystem: StackPartEcosystem,
+    toolId: string,
+    allowMultiple = false,
+  ) =>
+    stackParts.some(
+      (part) =>
+        part.role === role &&
+        part.ecosystem === ecosystem &&
+        part.ownerPartId === ownerId &&
+        part.source !== "provided" &&
+        (allowMultiple ? part.toolId === toolId : true),
+    );
+
+  for (const { ownerRole, ecosystem, role, value, allowMultiple } of fields) {
+    const values = Array.isArray(value) ? value : [value];
+    for (const toolId of values) {
+      if (!toolId || toolId === "none") continue;
+
+      if (!ownerRole) {
+        const spec = `${role}:${ecosystem}:${toolId}`;
+        if (!stackPartSpecSet.has(spec)) {
+          stackPartSpecs.push(spec);
+          stackPartSpecSet.add(spec);
+        }
+        continue;
+      }
+
+      const owner = getPrimary(ownerRole, ecosystem);
+      if (!owner || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
+        continue;
+      }
+      const spec = `${ownerRole}.${role}:${ecosystem}:${toolId}`;
+      if (!stackPartSpecSet.has(spec)) {
+        stackPartSpecs.push(spec);
+        stackPartSpecSet.add(spec);
+      }
+    }
+  }
+
+  return stackPartSpecs;
+}
+
+function getSelectionScopedPartFields(
+  selection: StackSelectionInput,
+): ScopedStackPartField[] {
+  return [
+    ...GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "frontend" as const,
+      ecosystem: "typescript" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "typescript" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_ELIXIR_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "elixir" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_MOBILE_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_RUST_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_RUST_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_PYTHON_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_PYTHON_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_GO_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_JAVA_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_JAVA_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_DOTNET_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: selection[key],
+    })),
+    ...GRAPH_DOTNET_BACKEND_ARRAY_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: selection[key],
+      allowMultiple: true,
+    })),
+    ...GRAPH_DATABASE_PART_SELECTION_KEYS.map(([key, role]) => ({
+      ownerRole: "database" as const,
+      ecosystem: "universal" as const,
+      role,
+      value: selection[key],
+    })),
+    ...getAddonScopedPartFields([
+      ...selection.codeQuality,
+      ...selection.documentation,
+      ...selection.appPlatforms,
+    ]),
+    ...getExampleScopedPartFields(selection.examples),
+  ];
+}
+
+function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
+  const getValue = (key: keyof CLIInput) => {
+    const value = input[key];
+    return typeof value === "string" ? value : undefined;
+  };
+  const getArrayValue = (key: keyof CLIInput) => {
+    const value = input[key];
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : undefined;
+  };
+
+  return [
+    ...GRAPH_TYPESCRIPT_FRONTEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "frontend" as const,
+      ecosystem: "typescript" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "typescript" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_ELIXIR_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "elixir" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_MOBILE_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "mobile" as const,
+      ecosystem: "react-native" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_RUST_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_RUST_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "rust" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_PYTHON_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_PYTHON_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "python" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_GO_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "go" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_JAVA_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_JAVA_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "java" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_DOTNET_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...GRAPH_DOTNET_BACKEND_ARRAY_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "backend" as const,
+      ecosystem: "dotnet" as const,
+      role,
+      value: getArrayValue(key),
+      allowMultiple: true,
+    })),
+    ...GRAPH_DATABASE_PART_CLI_KEYS.map(([key, role]) => ({
+      ownerRole: "database" as const,
+      ecosystem: "universal" as const,
+      role,
+      value: getValue(key),
+    })),
+    ...getAddonScopedPartFields(input.addons),
+    ...getExampleScopedPartFields(input.examples),
+  ];
+}
+
 function mapBackendToCli(backend: string) {
   return SELF_BACKENDS.has(backend) ? "self" : backend;
 }
@@ -986,7 +1590,11 @@ export function isGraphStackSelection(
 }
 
 function getGraphStackParts(selection: StackSelectionInput) {
-  const stackParts = parseStackPartSpecs(selection.stackPartSpecs, "selected");
+  const stackPartSpecs = expandScopedStackPartSpecs(
+    selection.stackPartSpecs,
+    getSelectionScopedPartFields(selection),
+  );
+  const stackParts = parseStackPartSpecs(stackPartSpecs, "selected");
   const validation = validateStackParts(stackParts);
   if (validation.issues.length > 0) {
     throw new Error(validation.issues.map((issue) => issue.message).join("\n"));
@@ -1082,7 +1690,8 @@ export function cliInputToProjectConfigPartial(
 }
 
 function getCliGraphStackParts(input: CLIInput): StackPart[] {
-  const stackParts = parseStackPartSpecs(input.part ?? [], "selected");
+  const inputSpecs = [...(input.part ?? [])];
+  const stackParts = parseStackPartSpecs(inputSpecs, "selected");
   const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
   const stackPartSpecSet = new Set(stackPartSpecs);
 
@@ -1136,11 +1745,17 @@ function getCliGraphStackParts(input: CLIInput): StackPart[] {
   addScopedBackendPart("go", "auth", input.goAuth);
   addScopedBackendPart("java", "orm", input.javaOrm);
   addScopedBackendPart("java", "auth", input.javaAuth);
+  addScopedBackendPart("dotnet", "orm", input.dotnetOrm);
+  addScopedBackendPart("dotnet", "api", input.dotnetApi);
+  addScopedBackendPart("dotnet", "auth", input.dotnetAuth);
   addScopedBackendPart("elixir", "orm", input.elixirOrm);
   addScopedBackendPart("elixir", "api", input.elixirApi);
   addScopedBackendPart("elixir", "auth", input.elixirAuth);
 
-  return parseStackPartSpecs(stackPartSpecs, "selected");
+  return parseStackPartSpecs(
+    expandScopedStackPartSpecs(stackPartSpecs, getCliScopedPartFields(input)),
+    "selected",
+  );
 }
 
 function buildProjectConfigBase(
@@ -1213,6 +1828,7 @@ function buildProjectConfigBase(
     mobileDeepLinking: stack.mobileDeepLinking as ProjectConfig["mobileDeepLinking"],
     cms: stack.cms as ProjectConfig["cms"],
     caching: stack.caching as ProjectConfig["caching"],
+    rateLimit: stack.rateLimit as ProjectConfig["rateLimit"],
     i18n: stack.i18n as ProjectConfig["i18n"],
     search: stack.search as ProjectConfig["search"],
     fileStorage: stack.fileStorage as ProjectConfig["fileStorage"],
@@ -1225,6 +1841,10 @@ function buildProjectConfigBase(
     rustErrorHandling: stack.rustErrorHandling as ProjectConfig["rustErrorHandling"],
     rustCaching: stack.rustCaching as ProjectConfig["rustCaching"],
     rustAuth: stack.rustAuth as ProjectConfig["rustAuth"],
+    rustRealtime: stack.rustRealtime as ProjectConfig["rustRealtime"],
+    rustMessageQueue: stack.rustMessageQueue as ProjectConfig["rustMessageQueue"],
+    rustObservability: stack.rustObservability as ProjectConfig["rustObservability"],
+    rustTemplating: stack.rustTemplating as ProjectConfig["rustTemplating"],
     rustLibraries: toUniqueNonNoneArray(stack.rustLibraries) as ProjectConfig["rustLibraries"],
     pythonWebFramework: stack.pythonWebFramework as ProjectConfig["pythonWebFramework"],
     pythonOrm: stack.pythonOrm as ProjectConfig["pythonOrm"],
@@ -1235,20 +1855,46 @@ function buildProjectConfigBase(
     pythonTaskQueue: stack.pythonTaskQueue as ProjectConfig["pythonTaskQueue"],
     pythonGraphql: stack.pythonGraphql as ProjectConfig["pythonGraphql"],
     pythonQuality: stack.pythonQuality as ProjectConfig["pythonQuality"],
+    pythonTesting: toUniqueNonNoneArray(stack.pythonTesting) as ProjectConfig["pythonTesting"],
+    pythonCaching: stack.pythonCaching as ProjectConfig["pythonCaching"],
+    pythonRealtime: stack.pythonRealtime as ProjectConfig["pythonRealtime"],
+    pythonObservability: stack.pythonObservability as ProjectConfig["pythonObservability"],
+    pythonCli: toUniqueNonNoneArray(stack.pythonCli) as ProjectConfig["pythonCli"],
     goWebFramework: stack.goWebFramework as ProjectConfig["goWebFramework"],
     goOrm: stack.goOrm as ProjectConfig["goOrm"],
     goApi: stack.goApi as ProjectConfig["goApi"],
     goCli: stack.goCli as ProjectConfig["goCli"],
     goLogging: stack.goLogging as ProjectConfig["goLogging"],
     goAuth: stack.goAuth as ProjectConfig["goAuth"],
+    goTesting: toUniqueNonNoneArray(stack.goTesting) as ProjectConfig["goTesting"],
+    goRealtime: stack.goRealtime as ProjectConfig["goRealtime"],
+    goMessageQueue: stack.goMessageQueue as ProjectConfig["goMessageQueue"],
+    goCaching: stack.goCaching as ProjectConfig["goCaching"],
+    goConfig: stack.goConfig as ProjectConfig["goConfig"],
+    goObservability: stack.goObservability as ProjectConfig["goObservability"],
     javaWebFramework: stack.javaWebFramework as ProjectConfig["javaWebFramework"],
     javaBuildTool: stack.javaBuildTool as ProjectConfig["javaBuildTool"],
     javaOrm: stack.javaOrm as ProjectConfig["javaOrm"],
     javaAuth: stack.javaAuth as ProjectConfig["javaAuth"],
+    javaApi: stack.javaApi as ProjectConfig["javaApi"],
+    javaLogging: stack.javaLogging as ProjectConfig["javaLogging"],
     javaLibraries: toUniqueNonNoneArray(stack.javaLibraries) as ProjectConfig["javaLibraries"],
     javaTestingLibraries: toUniqueNonNoneArray(
       stack.javaTestingLibraries,
     ) as ProjectConfig["javaTestingLibraries"],
+    dotnetWebFramework: stack.dotnetWebFramework as ProjectConfig["dotnetWebFramework"],
+    dotnetOrm: stack.dotnetOrm as ProjectConfig["dotnetOrm"],
+    dotnetAuth: stack.dotnetAuth as ProjectConfig["dotnetAuth"],
+    dotnetApi: stack.dotnetApi as ProjectConfig["dotnetApi"],
+    dotnetTesting: toUniqueNonNoneArray(stack.dotnetTesting) as ProjectConfig["dotnetTesting"],
+    dotnetJobQueue: stack.dotnetJobQueue as ProjectConfig["dotnetJobQueue"],
+    dotnetRealtime: stack.dotnetRealtime as ProjectConfig["dotnetRealtime"],
+    dotnetObservability: toUniqueNonNoneArray(
+      stack.dotnetObservability,
+    ) as ProjectConfig["dotnetObservability"],
+    dotnetValidation: stack.dotnetValidation as ProjectConfig["dotnetValidation"],
+    dotnetCaching: stack.dotnetCaching as ProjectConfig["dotnetCaching"],
+    dotnetDeploy: stack.dotnetDeploy as ProjectConfig["dotnetDeploy"],
     elixirWebFramework: stack.elixirWebFramework as ProjectConfig["elixirWebFramework"],
     elixirOrm: stack.elixirOrm as ProjectConfig["elixirOrm"],
     elixirAuth: stack.elixirAuth as ProjectConfig["elixirAuth"],
@@ -1264,6 +1910,9 @@ function buildProjectConfigBase(
     elixirTesting: stack.elixirTesting as ProjectConfig["elixirTesting"],
     elixirQuality: stack.elixirQuality as ProjectConfig["elixirQuality"],
     elixirDeploy: stack.elixirDeploy as ProjectConfig["elixirDeploy"],
+    elixirLibraries: toUniqueNonNoneArray(
+      stack.elixirLibraries,
+    ) as ProjectConfig["elixirLibraries"],
     aiDocs: toUniqueNonNoneArray(stack.aiDocs) as ProjectConfig["aiDocs"],
   };
 
@@ -1329,6 +1978,7 @@ export function isCliDefaultStackSelection(
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
           ...JAVA_CONFIG_KEYS,
+          ...DOTNET_CONFIG_KEYS,
           ...ELIXIR_CONFIG_KEYS,
           ...(selection.ecosystem === "typescript" ? REACT_NATIVE_CONFIG_KEYS : []),
         ])
@@ -1369,9 +2019,15 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
   const hasPythonBackend = hasGraphPrimaryPart(stackParts, "backend", "python");
   const hasGoBackend = hasGraphPrimaryPart(stackParts, "backend", "go");
   const hasJavaBackend = hasGraphPrimaryPart(stackParts, "backend", "java");
+  const hasDotnetBackend = hasGraphPrimaryPart(stackParts, "backend", "dotnet");
   const hasElixirBackend = hasGraphPrimaryPart(stackParts, "backend", "elixir");
   const hasNonTypeScriptBackend =
-    hasRustBackend || hasPythonBackend || hasGoBackend || hasJavaBackend || hasElixirBackend;
+    hasRustBackend ||
+    hasPythonBackend ||
+    hasGoBackend ||
+    hasJavaBackend ||
+    hasDotnetBackend ||
+    hasElixirBackend;
   const hasMobile = hasGraphPrimaryPart(stackParts, "mobile");
   const flags = [
     ...stackParts
@@ -1392,46 +2048,12 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
     ...(hasNonTypeScriptBackend
       ? formatChangedStringFlags(selection, GRAPH_SHARED_BACKEND_FLAG_KEYS)
       : []),
-    ...(hasRustBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_RUST_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "rustLibraries", "rust-libraries"),
-        ].filter((flag): flag is string => Boolean(flag))
-      : []),
-    ...(hasPythonBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_PYTHON_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "pythonAi", "python-ai"),
-        ].filter((flag): flag is string => Boolean(flag))
-      : []),
-    ...(hasGoBackend ? formatChangedStringFlags(selection, GRAPH_GO_BACKEND_FLAG_KEYS) : []),
-    ...(hasJavaBackend
-      ? [
-          ...formatChangedStringFlags(selection, GRAPH_JAVA_BACKEND_FLAG_KEYS),
-          formatChangedArraySelectionFlag(selection, "javaLibraries", "java-libraries"),
-          formatChangedArraySelectionFlag(
-            selection,
-            "javaTestingLibraries",
-            "java-testing-libraries",
-          ),
-        ].filter((flag): flag is string => Boolean(flag))
-      : []),
     ...(hasElixirBackend
       ? formatChangedStringFlags(selection, GRAPH_ELIXIR_BACKEND_FLAG_KEYS)
       : []),
     ...(hasMobile
       ? formatChangedStringFlags(selection, GRAPH_MOBILE_FLAG_KEYS)
       : []),
-    ...formatChangedStringFlags(selection, GRAPH_GLOBAL_FLAG_KEYS),
-    ...(areStringArraysEqual(
-      [...selection.codeQuality, ...selection.documentation, ...selection.appPlatforms],
-      [...DEFAULT_STACK_SELECTION.codeQuality, ...DEFAULT_STACK_SELECTION.documentation, ...DEFAULT_STACK_SELECTION.appPlatforms],
-    )
-      ? []
-      : [formatTypeScriptAddonsFlag(selection)]),
-    ...(areStringArraysEqual(selection.examples, DEFAULT_STACK_SELECTION.examples)
-      ? []
-      : [formatArrayFlag("examples", selection.examples)]),
     `--package-manager ${selection.packageManager}`,
     ...(selection.versionChannel !== "stable"
       ? [`--version-channel ${selection.versionChannel}`]
@@ -1496,6 +2118,7 @@ function generateTypeScriptCommand(selection: StackSelectionInput, projectName: 
     `--realtime ${selection.realtime}`,
     `--job-queue ${selection.jobQueue}`,
     `--caching ${selection.caching}`,
+    `--rate-limit ${selection.rateLimit}`,
     `--i18n ${selection.i18n}`,
     `--search ${selection.search}`,
     `--file-storage ${selection.fileStorage}`,
@@ -1572,6 +2195,10 @@ function generateRustCommand(selection: StackSelectionInput, projectName: string
     `--rust-error-handling ${selection.rustErrorHandling}`,
     `--rust-caching ${selection.rustCaching}`,
     `--rust-auth ${selection.rustAuth}`,
+    `--rust-realtime ${selection.rustRealtime}`,
+    `--rust-message-queue ${selection.rustMessageQueue}`,
+    `--rust-observability ${selection.rustObservability}`,
+    `--rust-templating ${selection.rustTemplating}`,
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,
     `--caching ${selection.caching}`,
@@ -1597,6 +2224,11 @@ function generatePythonCommand(selection: StackSelectionInput, projectName: stri
     `--python-task-queue ${selection.pythonTaskQueue}`,
     `--python-graphql ${selection.pythonGraphql}`,
     `--python-quality ${selection.pythonQuality}`,
+    formatArrayFlag("python-testing", selection.pythonTesting),
+    `--python-caching ${selection.pythonCaching}`,
+    `--python-realtime ${selection.pythonRealtime}`,
+    `--python-observability ${selection.pythonObservability}`,
+    formatArrayFlag("python-cli", selection.pythonCli),
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,
     `--caching ${selection.caching}`,
@@ -1619,6 +2251,12 @@ function generateGoCommand(selection: StackSelectionInput, projectName: string) 
     `--go-cli ${selection.goCli}`,
     `--go-logging ${selection.goLogging}`,
     `--go-auth ${selection.goAuth}`,
+    formatArrayFlag("go-testing", selection.goTesting),
+    `--go-realtime ${selection.goRealtime}`,
+    `--go-message-queue ${selection.goMessageQueue}`,
+    `--go-caching ${selection.goCaching}`,
+    `--go-config ${selection.goConfig}`,
+    `--go-observability ${selection.goObservability}`,
     `--auth ${selection.auth}`,
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,
@@ -1640,12 +2278,37 @@ function generateJavaCommand(selection: StackSelectionInput, projectName: string
     `--java-build-tool ${selection.javaBuildTool}`,
     `--java-orm ${selection.javaOrm}`,
     `--java-auth ${selection.javaAuth}`,
+    `--java-api ${selection.javaApi}`,
+    `--java-logging ${selection.javaLogging}`,
     formatArrayFlag("java-libraries", selection.javaLibraries),
     formatArrayFlag("java-testing-libraries", selection.javaTestingLibraries),
     `--email ${selection.email}`,
     `--observability ${selection.observability}`,
     `--caching ${selection.caching}`,
     `--search ${selection.search}`,
+    formatArrayFlag("ai-docs", selection.aiDocs),
+  ];
+
+  if (selection.git === "false") flags.push("--no-git");
+  if (selection.install === "false") flags.push("--no-install");
+
+  return `${getBaseCommand(selection)} ${projectName} ${flags.join(" ")}`;
+}
+
+function generateDotnetCommand(selection: StackSelectionInput, projectName: string) {
+  const flags: string[] = [
+    "--ecosystem dotnet",
+    `--dotnet-web-framework ${selection.dotnetWebFramework}`,
+    `--dotnet-orm ${selection.dotnetOrm}`,
+    `--dotnet-auth ${selection.dotnetAuth}`,
+    `--dotnet-api ${selection.dotnetApi}`,
+    formatArrayFlag("dotnet-testing", selection.dotnetTesting),
+    `--dotnet-job-queue ${selection.dotnetJobQueue}`,
+    `--dotnet-realtime ${selection.dotnetRealtime}`,
+    formatArrayFlag("dotnet-observability", selection.dotnetObservability),
+    `--dotnet-validation ${selection.dotnetValidation}`,
+    `--dotnet-caching ${selection.dotnetCaching}`,
+    `--dotnet-deploy ${selection.dotnetDeploy}`,
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];
 
@@ -1673,6 +2336,7 @@ function generateElixirCommand(selection: StackSelectionInput, projectName: stri
     `--elixir-testing ${selection.elixirTesting}`,
     `--elixir-quality ${selection.elixirQuality}`,
     `--elixir-deploy ${selection.elixirDeploy}`,
+    formatArrayFlag("elixir-libraries", selection.elixirLibraries),
     formatArrayFlag("ai-docs", selection.aiDocs),
   ];
 
@@ -1700,6 +2364,8 @@ export function generateStackSelectionCommand(selection: StackSelectionInput): s
       return generateGoCommand(selection, projectName);
     case "java":
       return generateJavaCommand(selection, projectName);
+    case "dotnet":
+      return generateDotnetCommand(selection, projectName);
     case "elixir":
       return generateElixirCommand(selection, projectName);
     case "typescript":

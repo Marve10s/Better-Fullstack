@@ -1,0 +1,8 @@
+# Netlify configuration for {{projectName}} SolidStart app
+# https://nitro.build/deploy/providers/netlify
+#
+# In the Netlify dashboard, set the site's base directory to "apps/web".
+
+[build]
+  command = "{{packageManager}} run build"
+  publish = "dist"

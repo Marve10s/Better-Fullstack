@@ -125,6 +125,14 @@ export const Route = createRootRoute({
         type: "font/woff2",
         crossOrigin: "anonymous",
       },
+      // Caveat is loaded as a head link (not a CSS @import) so it doesn't
+      // block the main stylesheet from applying.
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap",
+      },
     ],
   }),
   component: RootComponent,

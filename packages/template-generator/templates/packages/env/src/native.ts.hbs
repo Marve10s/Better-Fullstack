@@ -6,7 +6,7 @@ export const env = createEnv({
 	client: {
 {{#if (eq backend "convex")}}
 		EXPO_PUBLIC_CONVEX_URL: z.url(),
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		EXPO_PUBLIC_CONVEX_SITE_URL: z.url(),
 {{/if}}
 {{#if (eq auth "clerk")}}

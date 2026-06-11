@@ -10,17 +10,30 @@ import {
   AstroIntegrationSchema,
   AuthSchema,
   BackendSchema,
+  type BetterTStackConfig,
   CachingSchema,
   CMSSchema,
   type CompatibilityInput,
   CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
+  DotnetApiSchema,
+  DotnetAuthSchema,
+  DotnetCachingSchema,
+  DotnetValidationSchema,
+  DotnetDeploySchema,
+  DotnetJobQueueSchema,
+  DotnetObservabilitySchema,
+  DotnetOrmSchema,
+  DotnetRealtimeSchema,
+  DotnetTestingSchema,
+  DotnetWebFrameworkSchema,
   EcosystemSchema,
   ElixirApiSchema,
   ElixirAuthSchema,
   ElixirCachingSchema,
   ElixirDeploySchema,
+  ElixirLibrariesSchema,
   ElixirEmailSchema,
   ElixirHttpSchema,
   ElixirJobsSchema,
@@ -38,6 +51,7 @@ import {
   FeatureFlagsSchema,
   FileStorageSchema,
   FileUploadSchema,
+  formatStackPartSpec,
   FormsSchema,
   FrontendSchema,
   MobileDeepLinkingSchema,
@@ -50,10 +64,18 @@ import {
   GoApiSchema,
   GoCliSchema,
   GoAuthSchema,
+  GoCachingSchema,
+  GoConfigSchema,
   GoLoggingSchema,
+  GoMessageQueueSchema,
+  GoObservabilitySchema,
   GoOrmSchema,
+  GoRealtimeSchema,
+  GoTestingSchema,
   GoWebFrameworkSchema,
   JavaAuthSchema,
+  JavaApiSchema,
+  JavaLoggingSchema,
   JavaBuildToolSchema,
   JavaLibrariesSchema,
   JavaOrmSchema,
@@ -61,6 +83,7 @@ import {
   JavaWebFrameworkSchema,
   I18nSchema,
   JobQueueSchema,
+  legacyProjectConfigToStackParts,
   LoggingSchema,
   ObservabilitySchema,
   ORMSchema,
@@ -75,10 +98,16 @@ import {
   PythonAuthSchema,
   PythonOrmSchema,
   PythonQualitySchema,
+  PythonTestingSchema,
+  PythonCachingSchema,
+  PythonRealtimeSchema,
+  PythonObservabilitySchema,
+  PythonCliSchema,
   PythonGraphqlSchema,
   PythonTaskQueueSchema,
   PythonValidationSchema,
   PythonWebFrameworkSchema,
+  RateLimitSchema,
   RealtimeSchema,
   RuntimeSchema,
   RustApiSchema,
@@ -89,6 +118,10 @@ import {
   RustErrorHandlingSchema,
   RustCachingSchema,
   RustAuthSchema,
+  RustRealtimeSchema,
+  RustMessageQueueSchema,
+  RustObservabilitySchema,
+  RustTemplatingSchema,
   RustOrmSchema,
   RustWebFrameworkSchema,
   SearchSchema,
@@ -104,15 +137,16 @@ import {
 } from "@better-fullstack/types";
 import z from "zod";
 
-import { readBtsConfig, writeBtsConfig } from "./utils/bts-config";
+import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
+import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
   0,
 );
 
-const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
+const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
 RECOMMENDED WORKFLOW:
 1. Call bfs_get_guidance to understand field semantics, required fields, and workflow rules.
@@ -127,10 +161,10 @@ For existing projects:
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
-- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "javaLibraries", and "javaTestingLibraries". Most other option fields are strings.
+- Array fields: "frontend", "addons", "examples", "aiDocs", "rustLibraries", "pythonAi", "pythonTesting", "pythonCli", "goTesting", "javaLibraries", "javaTestingLibraries", "dotnetTesting", "dotnetObservability", and "elixirLibraries". Most other option fields are strings.
 - "none" means "skip this feature entirely", not "use the default".
 - Always specify "ecosystem" first — it determines which other fields are relevant.
-- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/elixir ecosystems.
+- TypeScript web-specific fields (web frontend, backend, orm, etc.) are IGNORED for react-native/rust/python/go/java/dotnet/elixir ecosystems.
 - The compatibility engine auto-adjusts invalid combinations — always call bfs_check_compatibility first to see adjustments.`;
 
 function getGuidance() {
@@ -154,6 +188,8 @@ function getGuidance() {
       go: "Backend/CLI: web framework (gin/echo), ORM (gorm/sqlc), gRPC, CLI tools, logging.",
       java:
         "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
+      dotnet:
+        "Backend/API: ASP.NET Core Minimal APIs, MVC, or Blazor with EF Core/Dapper, Identity/Auth0, SignalR, xUnit, and Docker-ready output.",
       elixir:
         "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, and Mix releases/Docker.",
     },
@@ -165,7 +201,7 @@ function getGuidance() {
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
-        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, javaLibraries, and javaTestingLibraries. Use [] for "none" on multi-select fields.',
+        'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, and elixirLibraries. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
       runtime:
@@ -396,6 +432,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   realtime: "none",
   jobQueue: "none",
   caching: "none",
+  rateLimit: "none",
   i18n: "none",
   animation: "none",
   cssFramework: "tailwind",
@@ -436,6 +473,10 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   rustErrorHandling: "none",
   rustCaching: "none",
   rustAuth: "none",
+  rustRealtime: "none",
+  rustMessageQueue: "none",
+  rustObservability: "none",
+  rustTemplating: "none",
   pythonWebFramework: "none",
   pythonOrm: "none",
   pythonValidation: "none",
@@ -445,18 +486,42 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   pythonTaskQueue: "none",
   pythonGraphql: "none",
   pythonQuality: "none",
+  pythonTesting: [],
+  pythonCaching: "none",
+  pythonRealtime: "none",
+  pythonObservability: "none",
+  pythonCli: [],
   goWebFramework: "none",
   goOrm: "none",
   goApi: "none",
   goCli: "none",
   goLogging: "none",
   goAuth: "none",
+  goTesting: [],
+  goRealtime: "none",
+  goMessageQueue: "none",
+  goCaching: "none",
+  goConfig: "none",
+  goObservability: "none",
   javaWebFramework: "spring-boot",
   javaBuildTool: "maven",
   javaOrm: "none",
   javaAuth: "none",
+  javaApi: "none",
+  javaLogging: "none",
   javaLibraries: [],
   javaTestingLibraries: ["junit5"],
+  dotnetWebFramework: "aspnet-minimal",
+  dotnetOrm: "ef-core",
+  dotnetAuth: "aspnet-identity",
+  dotnetApi: "minimal-api",
+  dotnetTesting: ["xunit"],
+  dotnetJobQueue: "none",
+  dotnetRealtime: "signalr",
+  dotnetObservability: ["serilog"],
+  dotnetValidation: "none",
+  dotnetCaching: "none",
+  dotnetDeploy: "docker",
   elixirWebFramework: "phoenix",
   elixirOrm: "ecto-sql",
   elixirAuth: "none",
@@ -472,6 +537,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   elixirTesting: "ex_unit",
   elixirQuality: "credo",
   elixirDeploy: "none",
+  elixirLibraries: [],
 } satisfies Partial<Record<keyof CompatibilityInput, string | string[]>>;
 
 const {
@@ -528,7 +594,11 @@ function buildProjectConfig(
   const ecosystem = (input.ecosystem as ProjectConfig["ecosystem"]) ?? "typescript";
   const frontend =
     (input.frontend as ProjectConfig["frontend"]) ??
-    (ecosystem === "react-native" ? ["native-bare"] : ["tanstack-router"]);
+    (ecosystem === "react-native"
+      ? ["native-bare"]
+      : ecosystem === "typescript"
+        ? ["tanstack-router"]
+        : ["none"]);
   const hasNativeFrontend = frontend.some((item) => item.startsWith("native-"));
   const hasMobileProject = ecosystem === "react-native" || hasNativeFrontend;
   const defaults = getMcpProjectConfigDefaults(input);
@@ -629,6 +699,30 @@ function summarizeTree(tree: { fileCount: number; directoryCount: number; root: 
   }
   walk(tree.root.children, "");
   return { fileCount: tree.fileCount, directoryCount: tree.directoryCount, files: paths };
+}
+
+type McpGraphPreview = {
+  graphSummary?: string;
+  effectiveStack?: Record<string, string>;
+  stackPartSpecs: string[];
+};
+
+export function getMcpGraphPreview(
+  config: Partial<ProjectConfig> | BetterTStackConfig,
+): McpGraphPreview {
+  const stackParts = config.stackParts?.length
+    ? config.stackParts
+    : legacyProjectConfigToStackParts(config);
+  const graphSummary = stackParts.length > 0 ? getGraphSummary({ stackParts }) : undefined;
+  const effectiveStack = stackParts.length > 0 ? getEffectiveStack({ stackParts }) : undefined;
+  const stackPartSpecs = stackParts
+    .filter((part) => part.source !== "provided")
+    .map((part) => formatStackPartSpec(part, stackParts));
+
+  return {
+    ...(graphSummary ? { graphSummary, effectiveStack } : {}),
+    stackPartSpecs,
+  };
 }
 
 const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
@@ -812,6 +906,10 @@ export async function startMcpServer() {
     rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
     rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
     rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
+    rustRealtime: RustRealtimeSchema.optional().describe("Rust realtime library"),
+    rustMessageQueue: RustMessageQueueSchema.optional().describe("Rust message queue"),
+    rustObservability: RustObservabilitySchema.optional().describe("Rust observability"),
+    rustTemplating: RustTemplatingSchema.optional().describe("Rust template engine"),
     pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
     pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
     pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
@@ -821,21 +919,48 @@ export async function startMcpServer() {
     pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
     pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
     pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
+    pythonTesting: z.array(PythonTestingSchema).optional().describe("Python testing libraries"),
+    pythonCaching: PythonCachingSchema.optional().describe("Python caching library"),
+    pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
+    pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
+    pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
     goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
     goOrm: GoOrmSchema.optional().describe("Go ORM"),
     goApi: GoApiSchema.optional().describe("Go API layer"),
     goCli: GoCliSchema.optional().describe("Go CLI framework"),
     goLogging: GoLoggingSchema.optional().describe("Go logging library"),
     goAuth: GoAuthSchema.optional().describe("Go authentication library"),
+    goTesting: z.array(GoTestingSchema).optional().describe("Go testing libraries"),
+    goRealtime: GoRealtimeSchema.optional().describe("Go realtime/WebSocket library"),
+    goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
+    goCaching: GoCachingSchema.optional().describe("Go caching library"),
+    goConfig: GoConfigSchema.optional().describe("Go config management"),
+    goObservability: GoObservabilitySchema.optional().describe("Go observability"),
     javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
     javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
     javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
     javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+    javaApi: JavaApiSchema.optional().describe("Java API layer"),
+    javaLogging: JavaLoggingSchema.optional().describe("Java logging configuration"),
     javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
     javaTestingLibraries: z
       .array(JavaTestingLibrariesSchema)
       .optional()
       .describe("Java testing libraries"),
+    dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(".NET web framework"),
+    dotnetOrm: DotnetOrmSchema.optional().describe(".NET ORM/data access"),
+    dotnetAuth: DotnetAuthSchema.optional().describe(".NET authentication library"),
+    dotnetApi: DotnetApiSchema.optional().describe(".NET API style"),
+    dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
+    dotnetJobQueue: DotnetJobQueueSchema.optional().describe(".NET jobs and scheduling"),
+    dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime feature"),
+    dotnetObservability: z
+      .array(DotnetObservabilitySchema)
+      .optional()
+      .describe(".NET observability/logging libraries"),
+    dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
+    dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
+    dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
     elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
     elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
     elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
@@ -851,6 +976,7 @@ export async function startMcpServer() {
     elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
     elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
     elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+    elixirLibraries: z.array(ElixirLibrariesSchema).optional().describe("Elixir libraries"),
   };
 
   registerTool(
@@ -882,6 +1008,7 @@ export async function startMcpServer() {
       analytics: AnalyticsSchema.optional().describe("Analytics provider"),
       cms: CMSSchema.optional().describe("CMS"),
       caching: CachingSchema.optional().describe("Caching solution"),
+      rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
       i18n: I18nSchema.optional().describe("Internationalization library"),
       search: SearchSchema.optional().describe("Search engine"),
       fileStorage: FileStorageSchema.optional().describe("File storage"),
@@ -942,6 +1069,7 @@ export async function startMcpServer() {
     featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
     search: SearchSchema.optional().describe("Search engine"),
     caching: CachingSchema.optional().describe("Caching solution"),
+    rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
     i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
     cms: CMSSchema.optional().describe("CMS"),
     fileStorage: FileStorageSchema.optional().describe("File storage"),
@@ -963,8 +1091,9 @@ export async function startMcpServer() {
 
         if (result.success && result.tree) {
           const summary = summarizeTree(result.tree);
+          const graphPreview = getMcpGraphPreview(config);
           return {
-            content: [{ type: "text", text: JSON.stringify({ success: true, ...summary }, null, 2) }],
+            content: [{ type: "text", text: JSON.stringify({ success: true, ...summary, ...graphPreview }, null, 2) }],
           };
         }
         return {
@@ -1008,6 +1137,7 @@ export async function startMcpServer() {
         await writeTreeToFilesystem(result.tree, projectDir);
 
         await writeBtsConfig(config);
+        const graphPreview = getMcpGraphPreview(config);
 
         let addonWarnings: string[] = [];
         if (config.addons.length > 0 && config.addons[0] !== "none") {
@@ -1030,6 +1160,7 @@ export async function startMcpServer() {
               success: true,
               projectDirectory: projectDir,
               fileCount: result.tree.fileCount,
+              ...graphPreview,
               ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
               message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
             }, null, 2),
@@ -1068,6 +1199,13 @@ export async function startMcpServer() {
         const newAddons = (addons ?? []).filter((a) => a !== "none" && !existingAddons.has(a));
 
         const mergedAddons = [...new Set([...(config.addons ?? []), ...newAddons])];
+        const updatePreview = previewBtsConfigUpdate(config, {
+          addons: mergedAddons,
+          webDeploy: webDeploy ?? config.webDeploy,
+          serverDeploy: serverDeploy ?? config.serverDeploy,
+        });
+        const existingGraphPreview = getMcpGraphPreview(config);
+        const proposedGraphPreview = getMcpGraphPreview(updatePreview);
         const compatInput = buildCompatibilityInput({
           ...config,
           addons: mergedAddons,
@@ -1089,11 +1227,17 @@ export async function startMcpServer() {
                 frontend: config.frontend,
                 backend: config.backend,
                 addons: config.addons,
+                graphSummary: existingGraphPreview.graphSummary,
+                effectiveStack: existingGraphPreview.effectiveStack,
+                stackPartSpecs: existingGraphPreview.stackPartSpecs,
               },
               proposedAdditions: {
                 newAddons,
                 webDeploy: webDeploy ?? null,
                 serverDeploy: serverDeploy ?? null,
+                graphSummary: proposedGraphPreview.graphSummary,
+                effectiveStack: proposedGraphPreview.effectiveStack,
+                stackPartSpecs: proposedGraphPreview.stackPartSpecs,
               },
               alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
               ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
@@ -1136,6 +1280,7 @@ export async function startMcpServer() {
         const result = await add(addInput);
         if (result?.success) {
           const existingConfig = await readBtsConfig(safePath);
+          const graphPreview = existingConfig ? getMcpGraphPreview(existingConfig) : undefined;
           const ecosystem = existingConfig?.ecosystem ?? "typescript";
           const dirName = safePath.split("/").pop() ?? "project";
           const installCmd = getInstallCommand(
@@ -1152,6 +1297,7 @@ export async function startMcpServer() {
                 success: true,
                 addedAddons: result.addedAddons,
                 projectDir: result.projectDir,
+                ...graphPreview,
                 message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
               }, null, 2),
             }],

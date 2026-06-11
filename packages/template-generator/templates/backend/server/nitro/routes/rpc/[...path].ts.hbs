@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 	const { req, res } = event.node;
 	const result = await rpcHandler.handle(req, res, {
 		prefix: "/rpc",
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 		context: await createContext({ req }),
 {{else}}
 		context: await createContext(),

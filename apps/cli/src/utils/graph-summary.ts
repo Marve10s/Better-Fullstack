@@ -118,9 +118,11 @@ export function getGraphBackendUrl(config: Pick<ProjectConfig, "stackParts">): s
 export function getEffectiveStack(config: Pick<ProjectConfig, "stackParts">): EffectiveStack {
   const effectiveStack: EffectiveStack = {};
   const parts = getSelectedGraphParts(config);
+  const partsById = new Map(parts.map((part) => [part.id, part]));
 
   for (const part of parts) {
-    const key = part.ownerPartId ? `backend.${part.role}` : part.role;
+    const owner = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
+    const key = owner ? `${owner.role}.${part.role}` : part.role;
     effectiveStack[key] = `${part.ecosystem}:${part.toolId}`;
   }
 
@@ -192,6 +194,13 @@ export function getGraphBackendDeployInstructions(config: ProjectConfig): string
         "Server deployment with Vercel:",
         `* Backend: ${backendLabel}`,
         `* Deploy from: ${targetPath}`,
+      ].join("\n");
+    case "netlify":
+      return [
+        "Server deployment with Netlify Functions:",
+        `* Backend: ${backendLabel}`,
+        `* Config: ${targetPath}/netlify.toml`,
+        `* Functions: ${targetPath}/netlify/functions`,
       ].join("\n");
     case "cloudflare":
     case "sst":

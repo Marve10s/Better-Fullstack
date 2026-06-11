@@ -1,0 +1,20 @@
+{{#if (eq elixirApi "grpc")}}
+defmodule {{elixirModuleName}}.GRPCEndpoint do
+  @moduledoc """
+  gRPC endpoint for {{elixirModuleName}}.
+
+  Define services in `.proto` files and generate Elixir stubs with:
+
+      protoc --elixir_out=plugins=grpc:./lib priv/protos/your_service.proto
+
+  then register them here with `run YourService.Server` and start the
+  endpoint from your supervision tree:
+
+      {GRPC.Server.Supervisor, endpoint: {{elixirModuleName}}.GRPCEndpoint, port: 50051, start_server: true}
+  """
+
+  use GRPC.Endpoint
+
+  intercept GRPC.Server.Interceptors.Logger
+end
+{{/if}}

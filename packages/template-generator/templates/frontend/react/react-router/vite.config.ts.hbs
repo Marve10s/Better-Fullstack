@@ -1,4 +1,7 @@
 import { reactRouter } from "@react-router/dev/vite";
+{{#if (eq webDeploy "netlify")}}
+import netlifyReactRouter from "@netlify/vite-plugin-react-router";
+{{/if}}
 {{#if (eq cssFramework "tailwind")}}
 import tailwindcss from "@tailwindcss/vite";
 {{/if}}
@@ -12,5 +15,8 @@ export default defineConfig({
     {{/if}}
     reactRouter(),
     tsconfigPaths(),
+    {{#if (eq webDeploy "netlify")}}
+    netlifyReactRouter(),
+    {{/if}}
   ],
 });

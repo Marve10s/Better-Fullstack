@@ -1,11 +1,25 @@
-import type { GoApi, GoAuth, GoCli, GoLogging, GoOrm, GoWebFramework } from "../types";
+import type {
+  GoApi,
+  GoAuth,
+  GoCaching,
+  GoCli,
+  GoConfig,
+  GoLogging,
+  GoMessageQueue,
+  GoObservability,
+  GoOrm,
+  GoRealtime,
+  GoTesting,
+  GoWebFramework,
+} from "../types";
 
 import { exitCancelled } from "../utils/errors";
 import {
+  createStaticMultiPromptResolution,
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "./prompt-contract";
-import { isCancel, navigableSelect } from "./navigable";
+import { isCancel, navigableMultiselect, navigableSelect } from "./navigable";
 
 const GO_WEB_FRAMEWORK_PROMPT_OPTIONS: PromptOption<GoWebFramework>[] = [
   {
@@ -63,6 +77,11 @@ const GO_API_PROMPT_OPTIONS: PromptOption<GoApi>[] = [
     value: "grpc-go",
     label: "gRPC-Go",
     hint: "The Go implementation of gRPC",
+  },
+  {
+    value: "gqlgen",
+    label: "gqlgen",
+    hint: "Schema-first GraphQL server with code generation",
   },
   {
     value: "none",
@@ -132,6 +151,11 @@ const GO_AUTH_PROMPT_OPTIONS: PromptOption<GoAuth>[] = [
     value: "jwt",
     label: "golang-jwt",
     hint: "JWT token creation and validation with HMAC/RSA/ECDSA signing",
+  },
+  {
+    value: "goth",
+    label: "Goth",
+    hint: "OAuth social login for 30+ providers (Google, GitHub, ...)",
   },
   {
     value: "none",
@@ -263,6 +287,244 @@ export async function getGoAuthChoice(goAuth?: GoAuth) {
     message: "Select Go authentication library",
     options: resolution.options,
     initialValue: resolution.initialValue as GoAuth,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+const GO_TESTING_PROMPT_OPTIONS: PromptOption<GoTesting>[] = [
+  {
+    value: "testify",
+    label: "Testify",
+    hint: "Assertions, suites, and mocks — the Go testing standard",
+  },
+  {
+    value: "gomock",
+    label: "GoMock",
+    hint: "Interface mock generation via mockgen",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "Standard library testing only",
+  },
+];
+
+const GO_REALTIME_PROMPT_OPTIONS: PromptOption<GoRealtime>[] = [
+  {
+    value: "gorilla-websocket",
+    label: "Gorilla WebSocket",
+    hint: "Industry-standard WebSocket implementation for Go",
+  },
+  {
+    value: "centrifuge",
+    label: "Centrifuge",
+    hint: "Scalable real-time messaging with channels and presence",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No realtime layer",
+  },
+];
+
+const GO_MESSAGE_QUEUE_PROMPT_OPTIONS: PromptOption<GoMessageQueue>[] = [
+  {
+    value: "nats",
+    label: "NATS",
+    hint: "Lightweight, high-performance messaging with JetStream persistence",
+  },
+  {
+    value: "watermill",
+    label: "Watermill",
+    hint: "Event-driven framework over Kafka, RabbitMQ, Pub/Sub, and more",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No message queue",
+  },
+];
+
+const GO_CACHING_PROMPT_OPTIONS: PromptOption<GoCaching>[] = [
+  {
+    value: "redis",
+    label: "go-redis",
+    hint: "Standard Redis client with go-redis/cache helpers",
+  },
+  {
+    value: "ristretto",
+    label: "Ristretto",
+    hint: "High-performance in-process cache with TinyLFU admission",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No caching library",
+  },
+];
+
+const GO_CONFIG_PROMPT_OPTIONS: PromptOption<GoConfig>[] = [
+  {
+    value: "viper",
+    label: "Viper",
+    hint: "De facto Go config standard: files, env, flags, live reload",
+  },
+  {
+    value: "koanf",
+    label: "Koanf",
+    hint: "Lightweight config with clean provider/parser abstractions",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "Environment variables only",
+  },
+];
+
+const GO_OBSERVABILITY_PROMPT_OPTIONS: PromptOption<GoObservability>[] = [
+  {
+    value: "opentelemetry",
+    label: "OpenTelemetry",
+    hint: "Official OTel SDK: traces and metrics with OTLP export",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "No tracing/metrics SDK",
+  },
+];
+
+export function resolveGoTestingPrompt(goTesting?: GoTesting[]) {
+  return createStaticMultiPromptResolution(GO_TESTING_PROMPT_OPTIONS, [], goTesting);
+}
+
+export async function getGoTestingChoice(goTesting?: GoTesting[]) {
+  const resolution = resolveGoTestingPrompt(goTesting);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? [];
+  }
+
+  const response = await navigableMultiselect<GoTesting>({
+    message: "Select Go testing libraries",
+    options: resolution.options,
+    required: false,
+    initialValues: resolution.initialValue,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response.includes("none") ? [] : response;
+}
+
+export function resolveGoRealtimePrompt(goRealtime?: GoRealtime) {
+  return createStaticSinglePromptResolution(GO_REALTIME_PROMPT_OPTIONS, "none", goRealtime);
+}
+
+export async function getGoRealtimeChoice(goRealtime?: GoRealtime) {
+  const resolution = resolveGoRealtimePrompt(goRealtime);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<GoRealtime>({
+    message: "Select Go realtime library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as GoRealtime,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveGoMessageQueuePrompt(goMessageQueue?: GoMessageQueue) {
+  return createStaticSinglePromptResolution(
+    GO_MESSAGE_QUEUE_PROMPT_OPTIONS,
+    "none",
+    goMessageQueue,
+  );
+}
+
+export async function getGoMessageQueueChoice(goMessageQueue?: GoMessageQueue) {
+  const resolution = resolveGoMessageQueuePrompt(goMessageQueue);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<GoMessageQueue>({
+    message: "Select Go message queue",
+    options: resolution.options,
+    initialValue: resolution.initialValue as GoMessageQueue,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveGoCachingPrompt(goCaching?: GoCaching) {
+  return createStaticSinglePromptResolution(GO_CACHING_PROMPT_OPTIONS, "none", goCaching);
+}
+
+export async function getGoCachingChoice(goCaching?: GoCaching) {
+  const resolution = resolveGoCachingPrompt(goCaching);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<GoCaching>({
+    message: "Select Go caching library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as GoCaching,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveGoConfigPrompt(goConfig?: GoConfig) {
+  return createStaticSinglePromptResolution(GO_CONFIG_PROMPT_OPTIONS, "none", goConfig);
+}
+
+export async function getGoConfigChoice(goConfig?: GoConfig) {
+  const resolution = resolveGoConfigPrompt(goConfig);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<GoConfig>({
+    message: "Select Go config management",
+    options: resolution.options,
+    initialValue: resolution.initialValue as GoConfig,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolveGoObservabilityPrompt(goObservability?: GoObservability) {
+  return createStaticSinglePromptResolution(
+    GO_OBSERVABILITY_PROMPT_OPTIONS,
+    "none",
+    goObservability,
+  );
+}
+
+export async function getGoObservabilityChoice(goObservability?: GoObservability) {
+  const resolution = resolveGoObservabilityPrompt(goObservability);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<GoObservability>({
+    message: "Select Go observability",
+    options: resolution.options,
+    initialValue: resolution.initialValue as GoObservability,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

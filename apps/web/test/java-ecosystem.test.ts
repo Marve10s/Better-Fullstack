@@ -121,6 +121,8 @@ describe("Java Ecosystem Tab", () => {
         "spring-devtools",
         "micrometer-prometheus",
         "thymeleaf",
+        "spring-amqp",
+        "opentelemetry-java",
         "none",
       ]);
       expect(TECH_OPTIONS.javaTestingLibraries.map((option) => option.id)).toEqual([

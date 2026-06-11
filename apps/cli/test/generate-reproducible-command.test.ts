@@ -66,6 +66,10 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     rustErrorHandling: "anyhow-thiserror",
     rustCaching: "none",
     rustAuth: "none",
+    rustRealtime: "none",
+    rustMessageQueue: "none",
+    rustObservability: "none",
+    rustTemplating: "none",
     rustLibraries: [],
     pythonWebFramework: "none",
     pythonOrm: "none",
@@ -76,18 +80,42 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonTaskQueue: "none",
     pythonGraphql: "none",
     pythonQuality: "none",
+    pythonTesting: [],
+    pythonCaching: "none",
+    pythonRealtime: "none",
+    pythonObservability: "none",
+    pythonCli: [],
     goWebFramework: "none",
     goOrm: "none",
     goApi: "none",
     goCli: "none",
     goLogging: "none",
     goAuth: "none",
+    goTesting: [],
+    goRealtime: "none",
+    goMessageQueue: "none",
+    goCaching: "none",
+    goConfig: "none",
+    goObservability: "none",
     javaWebFramework: "spring-boot",
     javaBuildTool: "maven",
     javaOrm: "none",
     javaAuth: "none",
+    javaApi: "none",
+    javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: ["junit5"],
+    dotnetWebFramework: "aspnet-minimal",
+    dotnetOrm: "ef-core",
+    dotnetAuth: "aspnet-identity",
+    dotnetApi: "minimal-api",
+    dotnetTesting: ["xunit"],
+    dotnetJobQueue: "none",
+    dotnetRealtime: "signalr",
+    dotnetObservability: ["serilog"],
+    dotnetValidation: "none",
+    dotnetCaching: "none",
+    dotnetDeploy: "docker",
     aiDocs: ["claude-md"],
     ...overrides,
   };
@@ -174,6 +202,11 @@ describe("generateReproducibleCommand", () => {
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--python-testing none " +
+        "--python-caching none " +
+        "--python-realtime none " +
+        "--python-observability none " +
+        "--python-cli none " +
         "--email none " +
         "--observability none " +
         "--caching none " +
@@ -250,6 +283,11 @@ describe("generateReproducibleCommand", () => {
         "--python-task-queue celery " +
         "--python-graphql none " +
         "--python-quality ruff " +
+        "--python-testing none " +
+        "--python-caching none " +
+        "--python-realtime none " +
+        "--python-observability none " +
+        "--python-cli none " +
         "--email none " +
         "--observability none " +
         "--caching none " +
@@ -299,6 +337,10 @@ describe("generateReproducibleCommand", () => {
         "--rust-error-handling anyhow-thiserror " +
         "--rust-caching none " +
         "--rust-auth none " +
+        "--rust-realtime none " +
+        "--rust-message-queue none " +
+        "--rust-observability none " +
+        "--rust-templating none " +
         "--email none " +
         "--observability none " +
         "--caching none " +
@@ -342,6 +384,12 @@ describe("generateReproducibleCommand", () => {
         "--go-cli cobra " +
         "--go-logging zap " +
         "--go-auth none " +
+        "--go-testing none " +
+        "--go-realtime none " +
+        "--go-message-queue none " +
+        "--go-caching none " +
+        "--go-config none " +
+        "--go-observability none " +
         "--auth go-better-auth " +
         "--email none " +
         "--observability none " +
@@ -428,6 +476,8 @@ describe("generateReproducibleCommand", () => {
         "--java-build-tool gradle " +
         "--java-orm spring-data-jpa " +
         "--java-auth spring-security " +
+        "--java-api none " +
+        "--java-logging none " +
         "--java-libraries spring-actuator flyway " +
         "--java-testing-libraries junit5 mockito " +
         "--email none " +
@@ -445,6 +495,49 @@ describe("generateReproducibleCommand", () => {
         "--no-install",
     );
     expect(command).not.toContain("--auth ");
+  });
+
+  it("generates a .NET command with ecosystem-specific flags", () => {
+    const config = makeConfig({
+      ecosystem: "dotnet",
+      frontend: [],
+      addons: [],
+      auth: "none",
+      packageManager: "bun",
+      install: false,
+      git: false,
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "ef-core",
+      dotnetAuth: "aspnet-identity",
+      dotnetApi: "minimal-api",
+      dotnetTesting: ["xunit", "testcontainers-dotnet"],
+      dotnetJobQueue: "hangfire",
+      dotnetRealtime: "signalr",
+      dotnetObservability: ["serilog", "health-checks"],
+      dotnetCaching: "redis",
+      dotnetDeploy: "docker",
+      aiDocs: ["claude-md"],
+    });
+
+    expect(generateReproducibleCommand(config)).toBe(
+      "bun create better-fullstack@latest my-app " +
+        "--ecosystem dotnet " +
+        "--dotnet-web-framework aspnet-minimal " +
+        "--dotnet-orm ef-core " +
+        "--dotnet-auth aspnet-identity " +
+        "--dotnet-api minimal-api " +
+        "--dotnet-testing xunit testcontainers-dotnet " +
+        "--dotnet-job-queue hangfire " +
+        "--dotnet-realtime signalr " +
+        "--dotnet-observability serilog health-checks " +
+        "--dotnet-validation none " +
+        "--dotnet-caching redis " +
+        "--dotnet-deploy docker " +
+        "--ai-docs claude-md " +
+        "--no-git " +
+        "--package-manager bun " +
+        "--no-install",
+    );
   });
 
   it("generates canonical --part flags when stackParts are present", () => {
@@ -467,6 +560,212 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--part backend:go:gin");
     expect(command).toContain("--part backend.orm:go:gorm");
     expect(command).not.toContain("--backend");
+  });
+
+  it("reproduces graph-owned TypeScript backend singles as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.logging:typescript:pino",
+      "backend.payments:typescript:stripe",
+      "backend.ai:typescript:langgraph",
+      "backend.realtime:typescript:socket-io",
+      "backend.fileStorage:typescript:s3",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        logging: "pino",
+        payments: "stripe",
+        ai: "langgraph",
+        realtime: "socket-io",
+        fileStorage: "s3",
+      }),
+    );
+
+    expect(command).toContain("--part backend.logging:typescript:pino");
+    expect(command).toContain("--part backend.payments:typescript:stripe");
+    expect(command).toContain("--part backend.ai:typescript:langgraph");
+    expect(command).toContain("--part backend.realtime:typescript:socket-io");
+    expect(command).toContain("--part backend.fileStorage:typescript:s3");
+    expect(command).not.toContain("--logging pino");
+    expect(command).not.toContain("--payments stripe");
+    expect(command).not.toContain("--ai langgraph");
+    expect(command).not.toContain("--realtime socket-io");
+    expect(command).not.toContain("--file-storage s3");
+  });
+
+  it("reproduces graph-owned TypeScript frontend singles as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.css:typescript:scss",
+      "frontend.ui:typescript:radix-ui",
+      "frontend.forms:typescript:formik",
+      "frontend.stateManagement:typescript:zustand",
+      "frontend.animation:typescript:framer-motion",
+      "frontend.fileUpload:typescript:uploadthing",
+      "frontend.i18n:typescript:i18next",
+      "frontend.analytics:typescript:plausible",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        cssFramework: "scss",
+        uiLibrary: "radix-ui",
+        forms: "formik",
+        stateManagement: "zustand",
+        animation: "framer-motion",
+        fileUpload: "uploadthing",
+        i18n: "i18next",
+        analytics: "plausible",
+      }),
+    );
+
+    expect(command).toContain("--part frontend.css:typescript:scss");
+    expect(command).toContain("--part frontend.ui:typescript:radix-ui");
+    expect(command).toContain("--part frontend.forms:typescript:formik");
+    expect(command).toContain("--part frontend.stateManagement:typescript:zustand");
+    expect(command).toContain("--part frontend.animation:typescript:framer-motion");
+    expect(command).toContain("--part frontend.fileUpload:typescript:uploadthing");
+    expect(command).toContain("--part frontend.i18n:typescript:i18next");
+    expect(command).toContain("--part frontend.analytics:typescript:plausible");
+    expect(command).not.toContain("--css-framework scss");
+    expect(command).not.toContain("--ui-library radix-ui");
+    expect(command).not.toContain("--forms formik");
+    expect(command).not.toContain("--state-management zustand");
+    expect(command).not.toContain("--animation framer-motion");
+    expect(command).not.toContain("--file-upload uploadthing");
+    expect(command).not.toContain("--i18n i18next");
+    expect(command).not.toContain("--analytics plausible");
+  });
+
+  it("reproduces graph-owned infrastructure selections as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.deploy:typescript:vercel",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "backend.deploy:typescript:railway",
+      "database:universal:postgres",
+      "database.dbSetup:universal:neon",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        runtime: "node",
+        database: "postgres",
+        webDeploy: "vercel",
+        serverDeploy: "railway",
+        dbSetup: "neon",
+      }),
+    );
+
+    expect(command).toContain("--part frontend.deploy:typescript:vercel");
+    expect(command).toContain("--part backend.runtime:typescript:node");
+    expect(command).toContain("--part backend.deploy:typescript:railway");
+    expect(command).toContain("--part database.dbSetup:universal:neon");
+    expect(command).not.toContain("--runtime node");
+    expect(command).not.toContain("--web-deploy vercel");
+    expect(command).not.toContain("--server-deploy railway");
+    expect(command).not.toContain("--db-setup neon");
+  });
+
+  it("reproduces graph-owned addons and examples as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "frontend.appPlatform:typescript:pwa",
+      "frontend.dataFetching:typescript:swr",
+      "frontend.testing:typescript:storybook",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "codeQuality:universal:biome",
+      "documentation:universal:fumadocs",
+      "workspaceTooling:universal:turborepo",
+      "workspaceTooling:universal:mcp",
+      "examples:universal:ai",
+      "examples:universal:chat-sdk",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        frontend: ["next"],
+        backend: "hono",
+        runtime: "node",
+        api: "none",
+        addons: ["biome", "fumadocs", "pwa", "swr", "storybook", "turborepo", "mcp"],
+        examples: ["ai", "chat-sdk"],
+      }),
+    );
+
+    expect(command).toContain("--part codeQuality:universal:biome");
+    expect(command).toContain("--part documentation:universal:fumadocs");
+    expect(command).toContain("--part frontend.appPlatform:typescript:pwa");
+    expect(command).toContain("--part frontend.dataFetching:typescript:swr");
+    expect(command).toContain("--part frontend.testing:typescript:storybook");
+    expect(command).toContain("--part workspaceTooling:universal:turborepo");
+    expect(command).toContain("--part workspaceTooling:universal:mcp");
+    expect(command).toContain("--part examples:universal:ai");
+    expect(command).toContain("--part examples:universal:chat-sdk");
+    expect(command).not.toContain("--addons biome");
+    expect(command).not.toContain("--examples ai");
+  });
+
+  it("reproduces graph-owned mobile and ecosystem fields as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "mobile:react-native:native-bare",
+      "mobile.navigation:react-native:react-navigation",
+      "mobile.ui:react-native:gluestack-ui",
+      "mobile.storage:react-native:mmkv",
+      "mobile.testing:react-native:maestro",
+      "backend:rust:axum",
+      "backend.cli:rust:clap",
+      "backend.libraries:rust:serde",
+      "backend.libraries:rust:uuid",
+      "backend.logging:rust:env-logger",
+      "backend.errorHandling:rust:eyre",
+      "backend.caching:rust:moka",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        stackParts,
+        ecosystem: "rust",
+        frontend: ["native-bare"],
+        mobileNavigation: "react-navigation",
+        mobileUI: "gluestack-ui",
+        mobileStorage: "mmkv",
+        mobileTesting: "maestro",
+        rustWebFramework: "axum",
+        rustCli: "clap",
+        rustLibraries: ["serde", "uuid"],
+        rustLogging: "env-logger",
+        rustErrorHandling: "eyre",
+        rustCaching: "moka",
+      }),
+    );
+
+    expect(command).toContain("--part mobile.navigation:react-native:react-navigation");
+    expect(command).toContain("--part mobile.ui:react-native:gluestack-ui");
+    expect(command).toContain("--part mobile.storage:react-native:mmkv");
+    expect(command).toContain("--part mobile.testing:react-native:maestro");
+    expect(command).toContain("--part backend.cli:rust:clap");
+    expect(command).toContain("--part backend.libraries:rust:serde");
+    expect(command).toContain("--part backend.libraries:rust:uuid");
+    expect(command).toContain("--part backend.logging:rust:env-logger");
+    expect(command).toContain("--part backend.errorHandling:rust:eyre");
+    expect(command).toContain("--part backend.caching:rust:moka");
+    expect(command).not.toContain("--mobile-navigation react-navigation");
+    expect(command).not.toContain("--mobile-ui gluestack-ui");
+    expect(command).not.toContain("--mobile-storage mmkv");
+    expect(command).not.toContain("--mobile-testing maestro");
+    expect(command).not.toContain("--rust-cli clap");
+    expect(command).not.toContain("--rust-libraries");
+    expect(command).not.toContain("--rust-logging env-logger");
+    expect(command).not.toContain("--rust-error-handling eyre");
+    expect(command).not.toContain("--rust-caching moka");
   });
 
   it("preserves Astro integration when stackParts are present", () => {
@@ -510,6 +809,68 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--mobile-navigation react-navigation");
     expect(command).toContain("--mobile-testing maestro");
     expect(command).not.toContain("--backend");
+  });
+
+  it("preserves Elixir JSON as a flat setting when stackParts are present", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:elixir:phoenix",
+      "backend.httpClient:elixir:finch",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        ecosystem: "elixir",
+        stackParts,
+        elixirWebFramework: "phoenix",
+        elixirHttp: "finch",
+        elixirJson: "none",
+      }),
+    );
+
+    expect(command).toContain("--part backend:elixir:phoenix");
+    expect(command).toContain("--part backend.httpClient:elixir:finch");
+    expect(command).toContain("--elixir-json none");
+    expect(command).not.toContain("--elixir-http finch");
+    expect(command).not.toContain("--part backend.json:elixir:none");
+  });
+
+  it("reproduces graph-owned .NET fields as --part flags", () => {
+    const stackParts = parseStackPartSpecs([
+      "backend:dotnet:aspnet-minimal",
+      "backend.orm:dotnet:ef-core",
+      "backend.auth:dotnet:aspnet-identity",
+      "backend.api:dotnet:minimal-api",
+      "backend.testing:dotnet:xunit",
+      "backend.testing:dotnet:testcontainers-dotnet",
+      "backend.observability:dotnet:serilog",
+      "backend.realtime:dotnet:signalr",
+      "backend.deploy:dotnet:docker",
+    ]);
+    const command = generateReproducibleCommand(
+      makeConfig({
+        ecosystem: "dotnet",
+        stackParts,
+        dotnetWebFramework: "aspnet-minimal",
+        dotnetOrm: "ef-core",
+        dotnetAuth: "aspnet-identity",
+        dotnetApi: "minimal-api",
+        dotnetTesting: ["xunit", "testcontainers-dotnet"],
+        dotnetObservability: ["serilog"],
+        dotnetRealtime: "signalr",
+        dotnetDeploy: "docker",
+      }),
+    );
+
+    expect(command).toContain("--part backend:dotnet:aspnet-minimal");
+    expect(command).toContain("--part backend.orm:dotnet:ef-core");
+    expect(command).toContain("--part backend.auth:dotnet:aspnet-identity");
+    expect(command).toContain("--part backend.api:dotnet:minimal-api");
+    expect(command).toContain("--part backend.testing:dotnet:xunit");
+    expect(command).toContain("--part backend.testing:dotnet:testcontainers-dotnet");
+    expect(command).toContain("--part backend.observability:dotnet:serilog");
+    expect(command).toContain("--part backend.realtime:dotnet:signalr");
+    expect(command).toContain("--part backend.deploy:dotnet:docker");
+    expect(command).not.toContain("--dotnet-web-framework");
+    expect(command).not.toContain("--dotnet-orm");
   });
 
   it("preserves non-graph selections when stackParts are present", () => {

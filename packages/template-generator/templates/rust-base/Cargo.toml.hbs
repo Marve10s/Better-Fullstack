@@ -29,6 +29,27 @@ repository = ""
 [workspace.dependencies]
 # Async runtime
 tokio = { version = "1.51", features = ["full"] }
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+tokio-tungstenite = "0.29"
+futures-util = "0.3"
+{{/if}}
+{{#if (eq rustMessageQueue "lapin")}}
+lapin = "4.10"
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+opentelemetry = "0.32"
+opentelemetry_sdk = "0.32"
+opentelemetry-otlp = { version = "0.32", features = ["http-proto", "reqwest-blocking-client"] }
+{{/if}}
+{{#if (eq rustTemplating "askama")}}
+askama = "0.16"
+{{/if}}
+{{#if (eq rustTemplating "tera")}}
+tera = "1.20"
+{{/if}}
+{{#if (eq rustAuth "torii")}}
+torii = { version = "0.5", features = ["sqlite", "password"] }
+{{/if}}
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

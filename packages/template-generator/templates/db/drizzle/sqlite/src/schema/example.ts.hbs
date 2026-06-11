@@ -1,4 +1,4 @@
-{{#unless (or (eq auth "better-auth") (eq auth "nextauth"))}}
+{{#unless (or (isBetterAuth auth) (eq auth "nextauth"))}}
 import { sql } from "drizzle-orm";
 import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 

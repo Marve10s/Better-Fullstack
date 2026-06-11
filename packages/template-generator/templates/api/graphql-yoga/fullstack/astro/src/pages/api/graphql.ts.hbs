@@ -2,15 +2,15 @@ import type { APIRoute } from "astro";
 import { createYoga } from "graphql-yoga";
 import { schema } from "@{{projectName}}/api";
 import { createContext } from "@{{projectName}}/api/context";
-{{#if (eq auth "better-auth")}}
+{{#if (isBetterAuth auth)}}
 import { auth } from "@/lib/auth";
 {{/if}}
 
 const yoga = createYoga({
   graphqlEndpoint: "/api/graphql",
   fetchAPI: { Response },
-  context: async ({{#if (eq auth "better-auth")}}{ request }{{/if}}) => {
-{{#if (eq auth "better-auth")}}
+  context: async ({{#if (isBetterAuth auth)}}{ request }{{/if}}) => {
+{{#if (isBetterAuth auth)}}
     const session = await auth.api.getSession({
       headers: request.headers,
     });

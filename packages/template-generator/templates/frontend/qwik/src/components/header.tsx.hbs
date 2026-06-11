@@ -4,7 +4,7 @@ import { Link } from "@builder.io/qwik-city";
 export default component$(() => {
   const links = [
     { href: "/", label: "Home" },
-    {{#if (eq auth "better-auth")}}
+    {{#if (isBetterAuth auth)}}
     { href: "/dashboard", label: "Dashboard" },
     {{/if}}
     {{#if (includes examples "ai")}}
@@ -24,7 +24,7 @@ export default component$(() => {
           ))}
         </nav>
         <div class="flex items-center gap-2">
-          {{#if (eq auth "better-auth")}}
+          {{#if (isBetterAuth auth)}}
           {/* User menu component would go here */}
           {{/if}}
         </div>
@@ -40,7 +40,7 @@ export default component$(() => {
           ))}
         </nav>
         <div style=\{{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {{#if (eq auth "better-auth")}}
+          {{#if (isBetterAuth auth)}}
           {/* User menu component would go here */}
           {{/if}}
         </div>

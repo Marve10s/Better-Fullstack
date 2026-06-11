@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+{{#if dotnetHasEfCore}}
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" PrivateAssets="all" />
+{{#if (eq database "postgres")}}
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+{{else}}
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+{{/if}}
+{{/if}}
+{{#if dotnetHasIdentity}}
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+{{/if}}
+{{#if (eq dotnetApi "graphql-hotchocolate")}}
+    <PackageReference Include="HotChocolate.AspNetCore" Version="16.0.0" />
+{{/if}}
+{{#if (eq dotnetValidation "fluentvalidation")}}
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+{{/if}}
+{{#if (eq dotnetApi "grpc-dotnet")}}
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+{{/if}}
+{{#if dotnetHasSerilog}}
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+{{/if}}
+{{#if dotnetHasNLog}}
+    <PackageReference Include="NLog.Web.AspNetCore" Version="6.0.0" />
+{{/if}}
+{{#if dotnetHasOpenTelemetry}}
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+{{/if}}
+{{#if dotnetHasRedis}}
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
+{{/if}}
+{{#if dotnetHasHangfire}}
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
+{{/if}}
+{{#if dotnetHasQuartz}}
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+{{/if}}
+  </ItemGroup>
+</Project>

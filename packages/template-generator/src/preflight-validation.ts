@@ -1,18 +1,37 @@
 import type { ProjectConfig } from "@better-fullstack/types";
-import { Array as Arr, Data, Option, pipe } from "effect";
 
-export class PreflightWarning extends Data.Class<{
+export class PreflightWarning {
   readonly ruleId: string;
   readonly featureDisplayName: string;
   readonly featureKey: keyof ProjectConfig;
   readonly selectedValue: string | string[];
   readonly reason: string;
   readonly suggestions: readonly string[];
-}> {}
 
-export class PreflightResult extends Data.Class<{
+  constructor(props: {
+    readonly ruleId: string;
+    readonly featureDisplayName: string;
+    readonly featureKey: keyof ProjectConfig;
+    readonly selectedValue: string | string[];
+    readonly reason: string;
+    readonly suggestions: readonly string[];
+  }) {
+    this.ruleId = props.ruleId;
+    this.featureDisplayName = props.featureDisplayName;
+    this.featureKey = props.featureKey;
+    this.selectedValue = props.selectedValue;
+    this.reason = props.reason;
+    this.suggestions = props.suggestions;
+  }
+}
+
+export class PreflightResult {
   readonly warnings: readonly PreflightWarning[];
-}> {
+
+  constructor(props: { readonly warnings: readonly PreflightWarning[] }) {
+    this.warnings = props.warnings;
+  }
+
   get hasWarnings(): boolean {
     return this.warnings.length > 0;
   }
@@ -189,26 +208,26 @@ const isFeatureSelected = (value: unknown): boolean => {
   return true;
 };
 
-const evaluateRule = (config: ProjectConfig) => (rule: PreflightRule): Option.Option<PreflightWarning> => {
+const evaluateRule = (config: ProjectConfig, rule: PreflightRule): PreflightWarning | undefined => {
   const value = config[rule.featureKey];
-  if (!isFeatureSelected(value)) return Option.none();
-  if (!rule.willSkip(config)) return Option.none();
+  if (!isFeatureSelected(value)) return undefined;
+  if (!rule.willSkip(config)) return undefined;
 
-  return Option.some(
-    new PreflightWarning({
-      ruleId: rule.id,
-      featureDisplayName: rule.displayName,
-      featureKey: rule.featureKey,
-      selectedValue: value as string | string[],
-      reason: rule.reason,
-      suggestions: rule.suggestions,
-    }),
-  );
+  return new PreflightWarning({
+    ruleId: rule.id,
+    featureDisplayName: rule.displayName,
+    featureKey: rule.featureKey,
+    selectedValue: value as string | string[],
+    reason: rule.reason,
+    suggestions: rule.suggestions,
+  });
 };
 
-export const validatePreflightConfig = (config: ProjectConfig): PreflightResult =>
-  pipe(
-    PREFLIGHT_RULES,
-    Arr.filterMap(evaluateRule(config)),
-    (warnings) => new PreflightResult({ warnings }),
-  );
+export const validatePreflightConfig = (config: ProjectConfig): PreflightResult => {
+  const warnings: PreflightWarning[] = [];
+  for (const rule of PREFLIGHT_RULES) {
+    const warning = evaluateRule(config, rule);
+    if (warning) warnings.push(warning);
+  }
+  return new PreflightResult({ warnings });
+};
