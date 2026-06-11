@@ -195,7 +195,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mongoose: { type: "si", slug: "mongoose", hex: "880000" },
   typeorm: { type: "si", slug: "typeorm", hex: "E83524" },
   kysely: { type: "local", src: "https://kysely.dev/img/logo.svg" },
-  mikroorm: { type: "local", src: "https://mikro-orm.io/img/logo.svg" },
+  mikroorm: {
+    type: "local",
+    src: "https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo.svg",
+  },
   sequelize: { type: "si", slug: "sequelize", hex: "52B0E7" },
 
   // ─── DB Setup ──────────────────────────────────────────────────────────────
