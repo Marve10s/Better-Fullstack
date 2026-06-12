@@ -19,8 +19,10 @@ import { Route as StackShareRouteImport } from './routes/$stackShare'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
 import { Route as GuidesSplatRouteImport } from './routes/guides/$'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
+import { Route as BlogSplatRouteImport } from './routes/blog/$'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiPreviewRouteImport } from './routes/api/preview'
 
@@ -74,6 +76,11 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
   path: '/docs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesSplatRoute = GuidesSplatRouteImport.update({
   id: '/guides/$',
   path: '/guides/$',
@@ -82,6 +89,11 @@ const GuidesSplatRoute = GuidesSplatRouteImport.update({
 const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSplatRoute = BlogSplatRouteImport.update({
+  id: '/blog/$',
+  path: '/blog/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStatsRoute = ApiStatsRouteImport.update({
@@ -106,8 +118,10 @@ export interface FileRoutesByFullPath {
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
+  '/blog/$': typeof BlogSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
 }
@@ -122,8 +136,10 @@ export interface FileRoutesByTo {
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
+  '/blog/$': typeof BlogSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/blog': typeof BlogIndexRoute
   '/docs': typeof DocsIndexRoute
   '/guides': typeof GuidesIndexRoute
 }
@@ -139,8 +155,10 @@ export interface FileRoutesById {
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
   '/api/stats': typeof ApiStatsRoute
+  '/blog/$': typeof BlogSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/guides/$': typeof GuidesSplatRoute
+  '/blog/': typeof BlogIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/guides/': typeof GuidesIndexRoute
 }
@@ -157,8 +175,10 @@ export interface FileRouteTypes {
     | '/stack'
     | '/api/preview'
     | '/api/stats'
+    | '/blog/$'
     | '/docs/$'
     | '/guides/$'
+    | '/blog/'
     | '/docs/'
     | '/guides/'
   fileRoutesByTo: FileRoutesByTo
@@ -173,8 +193,10 @@ export interface FileRouteTypes {
     | '/stack'
     | '/api/preview'
     | '/api/stats'
+    | '/blog/$'
     | '/docs/$'
     | '/guides/$'
+    | '/blog'
     | '/docs'
     | '/guides'
   id:
@@ -189,8 +211,10 @@ export interface FileRouteTypes {
     | '/stack'
     | '/api/preview'
     | '/api/stats'
+    | '/blog/$'
     | '/docs/$'
     | '/guides/$'
+    | '/blog/'
     | '/docs/'
     | '/guides/'
   fileRoutesById: FileRoutesById
@@ -206,8 +230,10 @@ export interface RootRouteChildren {
   StackRoute: typeof StackRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
   ApiStatsRoute: typeof ApiStatsRoute
+  BlogSplatRoute: typeof BlogSplatRoute
   DocsSplatRoute: typeof DocsSplatRoute
   GuidesSplatRoute: typeof GuidesSplatRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
 }
@@ -284,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/$': {
       id: '/guides/$'
       path: '/guides/$'
@@ -296,6 +329,13 @@ declare module '@tanstack/react-router' {
       path: '/docs/$'
       fullPath: '/docs/$'
       preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$': {
+      id: '/blog/$'
+      path: '/blog/$'
+      fullPath: '/blog/$'
+      preLoaderRoute: typeof BlogSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/stats': {
@@ -326,8 +366,10 @@ const rootRouteChildren: RootRouteChildren = {
   StackRoute: StackRoute,
   ApiPreviewRoute: ApiPreviewRoute,
   ApiStatsRoute: ApiStatsRoute,
+  BlogSplatRoute: BlogSplatRoute,
   DocsSplatRoute: DocsSplatRoute,
   GuidesSplatRoute: GuidesSplatRoute,
+  BlogIndexRoute: BlogIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
 }

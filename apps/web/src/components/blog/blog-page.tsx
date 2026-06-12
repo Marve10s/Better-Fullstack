@@ -1,0 +1,88 @@
+import { MDXProvider } from "@mdx-js/react";
+import { Link } from "@tanstack/react-router";
+import { Suspense } from "react";
+
+import { mdxComponents } from "@/components/docs/mdx";
+import { TableOfContents } from "@/components/docs/table-of-contents";
+import { type BlogPost, useBlogPostContent } from "@/lib/blog/source";
+
+export function formatPostDate(date: string | undefined): string | null {
+  if (!date) return null;
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function BlogPostPageContent({ post }: { post: BlogPost }) {
+  // The MDX body chunk loads on demand; render nothing extra while waiting —
+  // the surrounding route shell (navbar etc.) stays visible.
+  return (
+    <Suspense fallback={null}>
+      <BlogPostBody post={post} />
+    </Suspense>
+  );
+}
+
+function BlogPostBody({ post }: { post: BlogPost }) {
+  const content = useBlogPostContent(post);
+  const Content = content.Component;
+  const date = formatPostDate(post.frontmatter.date);
+
+  return (
+    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
+      <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
+        <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
+          <Link
+            to="/blog"
+            className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
+          >
+            Blog
+          </Link>
+          {post.frontmatter.title ? (
+            <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
+              {post.frontmatter.title}
+            </h1>
+          ) : null}
+          {post.frontmatter.description ? (
+            <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
+              {post.frontmatter.description}
+            </p>
+          ) : null}
+          {date || post.frontmatter.authors?.length ? (
+            <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
+              {date}
+              {date && post.frontmatter.authors?.length ? " · " : null}
+              {post.frontmatter.authors?.join(", ")}
+            </p>
+          ) : null}
+          {post.frontmatter.tags?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {post.frontmatter.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </header>
+
+        <div className="docs-prose">
+          <MDXProvider components={mdxComponents}>
+            <Content components={mdxComponents} />
+          </MDXProvider>
+        </div>
+      </article>
+      <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
+        <TableOfContents toc={content.toc} />
+      </aside>
+    </main>
+  );
+}

@@ -1,4 +1,5 @@
-import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ArrowUpRight, Check, Copy } from "lucide-react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 
@@ -16,22 +17,32 @@ type PathId = "mcp" | "cli" | "prompt";
 
 const PATH_ORDER: readonly PathId[] = ["mcp", "cli", "prompt"] as const;
 
-const PATHS: Record<PathId, { short: string; label: string; detail: string }> = {
+const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = {
   mcp: {
-    short: "mcp",
-    label: "Better-Fullstack MCP",
+    glyph: "●",
+    short: "MCP",
     detail: "scaffolds through our MCP tools",
   },
   cli: {
-    short: "cli",
-    label: "Better-Fullstack CLI",
-    detail: "agent composes the create command",
+    glyph: "○",
+    short: "BF mention",
+    detail: "agent composes the Better-Fullstack CLI command",
   },
   prompt: {
-    short: "prompt",
-    label: "Prompt only",
-    detail: "agent hand-writes every file",
+    glyph: "◆",
+    short: "Prompt",
+    detail: "no Better-Fullstack — agent hand-writes every file",
   },
+};
+
+type ModelId = "fable" | "opus" | "sonnet";
+
+const MODEL_ORDER: readonly ModelId[] = ["fable", "opus", "sonnet"] as const;
+
+const MODELS: Record<ModelId, { label: string; short: string }> = {
+  fable: { label: "Fable 5", short: "Fable" },
+  opus: { label: "Opus 4.8", short: "Opus" },
+  sonnet: { label: "Sonnet 4.6", short: "Sonnet" },
 };
 
 interface ChartPalette {
@@ -40,7 +51,7 @@ interface ChartPalette {
   axisLabel: string;
   note: string;
   circleStroke: string;
-  paths: Record<PathId, string>;
+  models: Record<ModelId, string>;
 }
 
 const CHART_PALETTE: ChartPalette = {
@@ -49,21 +60,21 @@ const CHART_PALETTE: ChartPalette = {
   axisLabel: "var(--ch-label)",
   note: "var(--ch-note)",
   circleStroke: "var(--ch-stroke)",
-  paths: { mcp: "var(--ch-mcp)", cli: "var(--ch-cli)", prompt: "var(--ch-prompt)" },
+  models: { fable: "var(--ch-fable)", opus: "var(--ch-opus)", sonnet: "var(--ch-sonnet)" },
 };
 
 const CHART_THEME_VARS = cn(
   "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff]",
-  "[--ch-mcp:#7ca111] [--ch-cli:#55534b] [--ch-prompt:#e85d11]",
+  "[--ch-fable:#7ca111] [--ch-opus:#e85d11] [--ch-sonnet:#55534b]",
   "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
-  "dark:[--ch-mcp:#b8d75e] dark:[--ch-cli:#c9c7bf] dark:[--ch-prompt:#e0894f]",
+  "dark:[--ch-fable:#b8d75e] dark:[--ch-opus:#e0894f] dark:[--ch-sonnet:#c9c7bf]",
 );
 
 type MetricKey = "time" | "tokens" | "pass" | "error";
 
 interface ComboPoint {
   id: string;
-  model: string;
+  model: ModelId;
   path: PathId;
   /** avg scaffold seconds */
   time: number;
@@ -76,33 +87,33 @@ interface ComboPoint {
 }
 
 const COMBOS: readonly ComboPoint[] = [
-  { id: "fable-mcp", model: "fable-5", path: "mcp", time: 172.6, tokens: 7.6, pass: 100, error: 0 },
-  { id: "fable-cli", model: "fable-5", path: "cli", time: 405.7, tokens: 17.7, pass: 100, error: 0 },
+  { id: "fable-mcp", model: "fable", path: "mcp", time: 172.6, tokens: 7.6, pass: 100, error: 0 },
+  { id: "fable-cli", model: "fable", path: "cli", time: 405.7, tokens: 17.7, pass: 100, error: 0 },
   {
     id: "fable-prompt",
-    model: "fable-5",
+    model: "fable",
     path: "prompt",
     time: 572.8,
     tokens: 24.9,
     pass: 75,
     error: 25,
   },
-  { id: "opus-mcp", model: "opus-4.8", path: "mcp", time: 97.1, tokens: 5.2, pass: 100, error: 0 },
-  { id: "opus-cli", model: "opus-4.8", path: "cli", time: 154.7, tokens: 10.6, pass: 100, error: 0 },
+  { id: "opus-mcp", model: "opus", path: "mcp", time: 97.1, tokens: 5.2, pass: 100, error: 0 },
+  { id: "opus-cli", model: "opus", path: "cli", time: 154.7, tokens: 10.6, pass: 100, error: 0 },
   {
     id: "opus-prompt",
-    model: "opus-4.8",
+    model: "opus",
     path: "prompt",
     time: 510.8,
     tokens: 21.5,
     pass: 75,
     error: 25,
   },
-  { id: "sonnet-mcp", model: "sonnet-4.6", path: "mcp", time: 70.3, tokens: 3.9, pass: 100, error: 0 },
-  { id: "sonnet-cli", model: "sonnet-4.6", path: "cli", time: 98.3, tokens: 4.8, pass: 100, error: 0 },
+  { id: "sonnet-mcp", model: "sonnet", path: "mcp", time: 70.3, tokens: 3.9, pass: 100, error: 0 },
+  { id: "sonnet-cli", model: "sonnet", path: "cli", time: 98.3, tokens: 4.8, pass: 100, error: 0 },
   {
     id: "sonnet-prompt",
-    model: "sonnet-4.6",
+    model: "sonnet",
     path: "prompt",
     time: 464.9,
     tokens: 31.2,
@@ -194,10 +205,12 @@ const LABEL_OVERRIDES: Record<TabId, Record<string, LabelPlacement>> = {
     "opus-cli": { anchor: "middle", dx: 0, dy: -14 },
     "sonnet-cli": { anchor: "middle", dx: 0, dy: 22 },
     "opus-mcp": { anchor: "middle", dx: 0, dy: -14 },
+    "opus-prompt": { anchor: "middle", dx: 0, dy: 22 },
   },
   tokens: {
     "opus-mcp": { anchor: "middle", dx: 0, dy: 22 },
     "sonnet-cli": { anchor: "middle", dx: 0, dy: -14 },
+    "opus-cli": { anchor: "middle", dx: 0, dy: 22 },
   },
   error: {
     "sonnet-mcp": { anchor: "end", dx: -10, dy: -2 },
@@ -299,15 +312,17 @@ const barEase = [0.2, 0.8, 0.2, 1] as const;
 const chartMove = { duration: 0.7, ease: barEase } as const;
 
 const headingStyle: CSSProperties = {
-  fontSize: "clamp(1.85rem, 5vw, 3.4rem)",
+  fontSize: "clamp(2.2rem, 6vw, 4rem)",
   lineHeight: 0.98,
 };
+
+const blogPostParams = { _splat: "scaffbench" } as const;
 
 export default function LLMBenchmarkSection() {
   return (
     <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
       <div className="px-4 py-20 sm:px-8 sm:py-24">
-        <Header />
+        <Masthead />
         <BenchmarkChartCard />
         <AgentInstallPanel />
       </div>
@@ -315,34 +330,50 @@ export default function LLMBenchmarkSection() {
   );
 }
 
-function Header() {
+function Masthead() {
   return (
-    <div className="grid grid-cols-12 items-end gap-x-6 gap-y-8">
-      <div className="col-span-12 lg:col-span-7">
-        <h2
-          className="max-w-[20ch] text-balance font-mono font-bold tracking-[-0.04em]"
-          style={headingStyle}
-        >
-          Why use Better-Fullstack with AI?
+    <div className="flex flex-col items-center text-center">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <ScaffBenchMark className="size-9 shrink-0 text-foreground sm:size-12" />
+        <h2 className="font-mono font-bold tracking-[-0.04em]" style={headingStyle}>
+          ScaffBench
         </h2>
-        <p className="mt-5 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
-          Point your agent at our MCP server and it scaffolds production-ready apps that are{" "}
-          <span className="font-semibold text-foreground">faster</span> to generate,{" "}
-          <span className="font-semibold text-foreground">cheaper</span> in tokens, and more{" "}
-          <span className="font-semibold text-foreground">reliable</span> than hand-writing every
-          file.
-        </p>
       </div>
-
-      <div className="col-span-12 lg:col-span-5">
-        <h3 className="text-base font-semibold sm:text-lg">How we measured</h3>
-        <p className="mt-2 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
-          36 runs — Fable 5, Opus 4.8, and Sonnet 4.6 in Claude Code, building four project specs
-          through each creation path. Every generated project had to survive a real install and
-          build.
-        </p>
+      <p className="mt-4 font-mono text-xs uppercase tracking-[0.22em] text-lime-700 dark:text-[#C6E853]">
+        ✦ by Better-Fullstack
+      </p>
+      <p className="mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
+        Measuring coding agents on real fullstack scaffolding tasks — time, tokens, cost, and
+        whether the result actually builds.
+      </p>
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          to="/blog/$"
+          params={blogPostParams}
+          className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
+        >
+          Read the blog
+          <ArrowRight className="size-4" />
+        </Link>
+        <Link
+          to="/mcp"
+          className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-lime-700/40 hover:text-lime-700 dark:hover:text-[#C6E853]"
+        >
+          Run it with your agent
+        </Link>
       </div>
     </div>
+  );
+}
+
+/** ScaffBench logomark: scaffold layers, top plank in brand lime. */
+function ScaffBenchMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden className={className}>
+      <rect x="14" y="7" width="20" height="8" rx="2" fill="#C6E853" />
+      <rect x="10" y="20" width="28" height="8" rx="2" fill="currentColor" />
+      <rect x="6" y="33" width="36" height="8" rx="2" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -524,7 +555,7 @@ function ChartPoint({
   const x = plotX(comboValue(combo, tab.x.key), tab.x);
   const y = plotY(comboValue(combo, tab.y.key), tab.y, tab.yInverted);
   const placement = LABEL_OVERRIDES[tab.id][combo.id];
-  const hex = palette.paths[combo.path];
+  const hex = palette.models[combo.model];
 
   const animate = useMemo(() => ({ x, y, opacity: inView ? 1 : 0 }), [x, y, inView]);
   const transition = useMemo(
@@ -537,7 +568,7 @@ function ChartPoint({
 
   return (
     <motion.g initial={false} animate={animate} transition={transition}>
-      <circle r={4.5} fill={hex} stroke={palette.circleStroke} strokeWidth={2} />
+      <PathMarker path={combo.path} hex={hex} cardBg={palette.circleStroke} />
       <text
         x={placement?.dx ?? 10}
         y={placement?.dy ?? 4}
@@ -546,25 +577,58 @@ function ChartPoint({
         fontWeight={500}
         fill={hex}
       >
-        {combo.model}
+        {MODELS[combo.model].short} · {PATHS[combo.path].short}
       </text>
     </motion.g>
   );
 }
 
+/** Marker shape encodes the creation path: ● mcp, ○ cli, ◆ prompt. */
+function PathMarker({ path, hex, cardBg }: { path: PathId; hex: string; cardBg: string }) {
+  if (path === "cli") {
+    return <circle r={4.5} fill={cardBg} stroke={hex} strokeWidth={2} />;
+  }
+  if (path === "prompt") {
+    return (
+      <rect
+        x={-4.2}
+        y={-4.2}
+        width={8.4}
+        height={8.4}
+        transform="rotate(45)"
+        fill={hex}
+        stroke={cardBg}
+        strokeWidth={2}
+      />
+    );
+  }
+  return <circle r={4.5} fill={hex} stroke={cardBg} strokeWidth={2} />;
+}
+
 function CardLegend({ palette }: { palette: ChartPalette }) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2.5 border-t border-[#e6e5e0] bg-[#fafaf8] px-5 py-4 dark:border-[rgba(237,235,228,0.10)] dark:bg-[#100f0e] sm:px-8">
-      {PATH_ORDER.map((path) => (
-        <span key={path} className="flex items-baseline gap-2 text-xs sm:text-sm">
-          <span
-            className="size-2.5 self-center rounded-[2px]"
-            style={{ backgroundColor: palette.paths[path] }}
-          />
-          <span className="font-semibold">{PATHS[path].label}</span>
-          <span className="text-[#71706a] dark:text-[#8a8a8a]">— {PATHS[path].detail}</span>
-        </span>
-      ))}
+    <div className="border-t border-[#e6e5e0] bg-[#fafaf8] px-5 py-4 dark:border-[rgba(237,235,228,0.10)] dark:bg-[#100f0e] sm:px-8">
+      <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2.5">
+        {MODEL_ORDER.map((model) => (
+          <span key={model} className="flex items-center gap-2 text-xs font-semibold sm:text-sm">
+            <span
+              className="size-2.5 rounded-[2px]"
+              style={{ backgroundColor: palette.models[model] }}
+            />
+            {MODELS[model].label}
+          </span>
+        ))}
+      </div>
+      <div className="mt-2.5 flex flex-wrap items-baseline justify-center gap-x-6 gap-y-1.5">
+        {PATH_ORDER.map((path) => (
+          <span key={path} className="text-xs text-[#71706a] dark:text-[#8a8a8a]">
+            <span className="font-mono font-semibold text-[#1b1a17] dark:text-[#dad8d0]">
+              {PATHS[path].glyph} {PATHS[path].short}
+            </span>{" "}
+            — {PATHS[path].detail}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

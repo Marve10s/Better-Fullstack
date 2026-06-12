@@ -1,0 +1,299 @@
+---
+title: "ScaffBench: measuring coding agents on real fullstack scaffolding"
+description: "36 Claude Code runs, three creation paths, four project specs. We measured wall-clock time, output tokens, dollar cost — and whether the generated project actually installs and builds."
+date: 2026-06-12
+authors:
+  - Better-Fullstack Team
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+---
+
+Coding agents are very good at writing code and surprisingly bad at *starting* projects. Ask one to
+scaffold a production-grade fullstack monorepo and it will happily spend ten minutes hand-writing
+manifests, lockfiles, and config — and the result frequently doesn't build.
+
+ScaffBench measures exactly that: an agent in an empty workspace, a project spec, and a hard
+question at the end — **does the generated project install and build?** We ran the same specs
+through three creation paths to isolate how much tooling helps:
+
+- **MCP** — the agent uses the Better-Fullstack MCP server to plan and scaffold the project.
+- **BF mention** — no MCP; the prompt points the agent at the Better-Fullstack CLI and docs, and it
+  composes the `create` command itself.
+- **Prompt** — no Better-Fullstack at all; the agent hand-writes every file from scratch.
+
+## Headline results
+
+36 runs: three Claude Code models (Fable 5, Opus 4.8, Sonnet 4.6) × three creation paths × four
+project specs. Same machine, same harness, same prompts apart from the creation-mode instructions.
+
+| Creation path | Avg time | Median time | Avg output tokens | Builds passing |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | 113.4s | 85.9s | 5,553 | 12/12 (100%) |
+| BF mention | 219.6s | 172.1s | 11,060 | 9/9 (100%)* |
+| Prompt | 516.2s | 424.0s | 25,859 | 9/12 (75%) |
+
+\* Three BF-mention runs are excluded from the denominator because they failed on a template
+generator bug on our side, not on anything the agent did — see [the scoring policy](#what-counts-as-a-failure).
+
+Three things stood out:
+
+1. **MCP is ~4.6× faster than prompt-only** on average (and ~4.9× on medians), with ~4.7× fewer
+   output tokens. The agent ships configuration, not code.
+2. **Every MCP run passed validation**, for every model. Prompt-only runs passed 75% — two runs hit
+   the 15-minute timeout and one produced a monorepo that didn't build.
+3. **Tooling compresses model differences.** On the MCP path even the smallest model matched the
+   frontier models at 100% pass rate — it just got there faster and cheaper.
+
+## Methodology
+
+### The three creation paths
+
+Every run starts in an empty directory with the same base prompt:
+
+```text
+You are running in an empty benchmark workspace:
+{run_dir}
+
+Create exactly one project directory named `{project_name}`.
+Do not ask questions. Do not start a dev server. Do not write outside the
+current working directory.
+At the end, report the commands you ran and any errors you hit.
+
+Benchmark target: {spec_title}
+Requirements:
+{spec_requirements}
+```
+
+The only difference between paths is the creation-mode instruction appended to that prompt.
+Prompt-only runs are explicitly forbidden from touching anything of ours:
+
+```text
+Creation mode: prompt-only.
+Do not use the Better-Fullstack MCP server, Better-Fullstack CLI,
+Better-Fullstack website, or files from the Better-Fullstack repository.
+Create the project from scratch by writing the files and manifests needed
+for a runnable starter.
+```
+
+MCP runs get the opposite:
+
+```text
+Creation mode: Better-Fullstack MCP.
+Use the Better-Fullstack MCP tools, starting with bfs_get_guidance. Then use
+schema/compatibility/plan as needed and call bfs_create_project to create
+the project.
+```
+
+And BF-mention runs sit in between — no MCP tools, but the prompt names the CLI and a README the
+agent may read before composing a non-interactive `create` command itself.
+
+### The four project specs
+
+The specs are deliberately spread from "weekend project" to "the stack a real team would argue
+about for a week":
+
+| Spec | What it asks for |
+| --- | --- |
+| `light-ts` | React + Vite, Hono on Bun, tRPC, SQLite + Drizzle, Tailwind + DaisyUI, Pino, Vitest, Biome — no auth, no payments |
+| `heavy-ts` | Next.js **and** an Expo/React Native app, Hono on Bun, oRPC, PostgreSQL + Drizzle, Better Auth, Stripe, Resend, UploadThing, Effect, TanStack Store/Form/Query, Valibot, Vitest + Playwright, Vercel AI SDK, Socket.IO, Inngest, Framer Motion, OpenTelemetry, PostHog, Umami, Sanity, Upstash Redis, Algolia, S3, shadcn/ui, Turborepo, MSW, Storybook, PWA, Docker compose |
+| `python-ai` | FastAPI, SQLModel, PostgreSQL, Pydantic, JWT auth, Celery, Strawberry GraphQL, LangChain + OpenAI SDK + LangGraph + CrewAI, Ruff |
+| `multi-ecosystem` | TypeScript Next.js frontend, Python FastAPI backend (SQLModel/Pydantic/LangChain/Celery), Go Gin service (GORM, gRPC, Cobra, Zap), shared PostgreSQL |
+
+`heavy-ts` is the stress test. It is also where every interesting failure in this benchmark
+happened.
+
+### The harness
+
+- **Agent:** Claude Code in headless mode (`claude -p`), JSON event stream captured per run.
+- **Models:** `claude-fable-5`, `claude-opus-4-8`, `claude-sonnet-4-6`, default reasoning effort.
+- **Isolation:** every run gets a fresh empty workspace; MCP runs get a strict MCP config with only
+  the Better-Fullstack server attached.
+- **Timeout:** 900 seconds per run. A timeout counts as a failure for the agent.
+- **Metrics:** wall-clock time, token usage and cost from the agent's own usage report, MCP tool
+  calls from the event stream.
+
+### What counts as passing
+
+Validation runs *after* the agent finishes, against whatever it left on disk:
+
+- **TypeScript:** `bun install`, then the project's own `build` (or `check`/`lint`/`test`) script.
+- **Python:** `compileall` across the project, excluding virtualenvs and vendored packages.
+- **Go:** `go mod download` and the module must compile.
+
+A run passes only if every applicable check exits zero. "It looks like a project" doesn't count;
+it has to build.
+
+### What counts as a failure
+
+<Callout kind="info">
+  **Scoring policy:** failures caused by bugs in our own template generator are excluded from the
+  pass-rate denominator — only agent-authored failures count against the agent. The benchmark's
+  job is to measure agents, not to launder our bugs into their score. The flip side: we publish
+  those generator bugs below instead of hiding them.
+</Callout>
+
+This mattered exactly three times: all three models, on the BF-mention path, scaffolded `heavy-ts`
+correctly via the CLI — and all three hit the same generator bug in our native (Expo) template
+where `app.json` sets a web output mode that only works with `expo-router`. The agents did
+everything right; the template couldn't build. Those three runs are excluded. Prompt-path failures
+(two timeouts, one broken hand-written build) are entirely agent-authored and count in full.
+
+## Results
+
+### Per model and path
+
+Times and tokens are averages across the four specs; cost is the metered API total for those four runs.
+
+| Model | Path | Avg time | Avg output tokens | Cost (4 specs) | Builds passing |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Fable 5 | MCP | 172.6s | 7,590 | $9.34 | 4/4 |
+| Fable 5 | BF mention | 405.7s | 17,748 | $15.66 | 3/3* |
+| Fable 5 | Prompt | 572.8s | 24,905 | $11.26† | 3/4 |
+| Opus 4.8 | MCP | 97.1s | 5,206 | $3.43 | 4/4 |
+| Opus 4.8 | BF mention | 154.7s | 10,596 | $4.12 | 3/3* |
+| Opus 4.8 | Prompt | 510.8s | 21,485 | $6.89† | 3/4 |
+| Sonnet 4.6 | MCP | 70.3s | 3,863 | $1.47 | 4/4 |
+| Sonnet 4.6 | BF mention | 98.3s | 4,834 | $1.31 | 3/3* |
+| Sonnet 4.6 | Prompt | 464.9s | 31,188 | $7.11 | 3/4 |
+
+\* `heavy-ts` excluded (generator bug on our side). † Timed-out runs report no cost, so these
+totals under-count the true spend.
+
+### Cost
+
+The whole benchmark cost **$60.60** in metered API usage (less than the true number — the two
+timed-out runs report $0). Reading the spread is more interesting than the total:
+
+- Cheapest passing run: **$0.12** — Sonnet 4.6 scaffolding `light-ts` through the CLI in 21 seconds.
+- Most expensive passing runs: **$3.50–$4.21** — Fable 5 hand-writing projects on the prompt path.
+- For Sonnet, the prompt path cost ~5× its MCP path ($7.11 vs $1.47) and was ~6.6× slower, for a
+  *lower* pass rate.
+
+The pattern holds across all three models: the more of the project the agent has to author
+itself, the more you pay for a less reliable result.
+
+## Qualitative analysis
+
+### MCP keeps agents on rails
+
+MCP runs converged on the same tool sequence: `bfs_get_guidance` → compatibility check → plan →
+`bfs_create_project`, between 3 and 10 calls per run (the multi-ecosystem spec needed the most
+iterations to settle a valid stack). Output stays small because the agent's job collapses to
+*choosing a configuration* — the file-writing is done by the generator, deterministically. That's
+also why pass rates don't degrade as the spec grows: `heavy-ts` through MCP passed for every
+model.
+
+### Prompt-only agents drown in the heavy spec
+
+On the prompt path, `heavy-ts` defeated everyone. Fable 5 and Opus 4.8 were still writing files at
+the 15-minute timeout. Sonnet 4.6 finished a 90-file monorepo in 767 seconds — and it didn't
+build. The lighter specs all passed prompt-only, but at 4–9 minutes and 16k–37k output tokens
+each. Hand-writing a starter is something frontier models *can* do; it's just the slowest, most
+expensive, least reliable way to get one.
+
+### The benchmark audited our own templates
+
+The most useful failures were ours. Validating every generated project surfaced **six layered
+template bugs** in our generator, most hiding behind a single "Storybook build fails" symptom on
+`heavy-ts`:
+
+1. Storybook templates tested the frontend with an equality check, but `frontend` is an array.
+2. A database package path mismatch left the DB package without its dependencies in graph-part mode.
+3. `expo-network` was missing from a native template variant.
+4. Storybook 8 framework packages don't re-export `Meta`/`StoryObj` types — imports had to move to
+   the renderer packages.
+5. `@better-auth/expo` needed four Expo peer dependencies installed explicitly.
+6. Native `app.json` sets a static web output mode that only works with `expo-router` — this one is
+   still open, and is the bug behind the three excluded BF-mention runs.
+
+Five of the six were fixed and shipped in `create-better-fullstack` 2.0.2 before this post went
+out. Running your own product through an agent benchmark turns out to be a brutally effective QA
+pass.
+
+### Model character
+
+Sonnet 4.6 was the fastest and cheapest on every path, and with tooling it gave up nothing in
+reliability. Fable 5 was the most deliberate — highest token counts, longest runs, and on the
+prompt path that thoroughness still wasn't enough to beat the timeout on `heavy-ts`. Opus 4.8 sat
+reliably in between. The ranking never changed across paths; the *gap* did. Tooling is the great
+equalizer: on MCP, the spread between best and worst model was 102 seconds; prompt-only it was
+varying minutes and, twice, a wall-clock ceiling.
+
+## Limitations
+
+- **One run per cell.** 36 runs is enough to see the structure, not to put confidence intervals on
+  it. Scaffold times also vary with API load.
+- **We benchmarked our own tool.** The harness, prompts, and validation are public in spirit —
+  prompts and policy are quoted above — and the full per-run table is in the appendix. Treat the
+  comparison between paths (tooling vs no tooling) as the finding, not a claim about other
+  scaffolders.
+- **Builds, not features.** Validation proves the project installs and builds — not that the auth
+  flow works or the Stripe webhook is wired correctly. A passing prompt-only project may still be
+  missing more of the spec than a generated one.
+- **Timeout cost under-reporting.** Runs killed at 900s report $0 cost, which flatters the prompt
+  path's totals.
+
+## What's next
+
+Re-running other agent CLIs through the same harness now that the template fixes are out, adding
+repeated trials per cell, and validating *feature* completeness (does auth actually work?) rather
+than just builds. The harness also doubles as our regression suite now — every release candidate
+gets the heavy spec thrown at it.
+
+## Appendix: all 36 runs
+
+| Model | Path | Spec | Time | Output tokens | Cost | Result |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Fable 5 | MCP | heavy-ts | 290s | 11,891 | $2.97 | pass |
+| Fable 5 | MCP | light-ts | 82s | 4,166 | $1.62 | pass |
+| Fable 5 | MCP | multi-ecosystem | 240s | 10,895 | $3.22 | pass |
+| Fable 5 | MCP | python-ai | 78s | 3,406 | $1.54 | pass |
+| Fable 5 | BF mention | heavy-ts | 613s | 30,259 | $6.98 | build failed* |
+| Fable 5 | BF mention | light-ts | 314s | 16,132 | $3.74 | pass |
+| Fable 5 | BF mention | multi-ecosystem | 470s | 15,196 | $2.98 | pass |
+| Fable 5 | BF mention | python-ai | 226s | 9,404 | $1.95 | pass |
+| Fable 5 | Prompt | heavy-ts | 900s | — | — | timed out |
+| Fable 5 | Prompt | light-ts | 413s | 32,080 | $3.50 | pass |
+| Fable 5 | Prompt | multi-ecosystem | 570s | 37,436 | $4.21 | pass |
+| Fable 5 | Prompt | python-ai | 408s | 30,103 | $3.55 | pass |
+| Opus 4.8 | MCP | heavy-ts | 178s | 5,805 | $0.88 | pass |
+| Opus 4.8 | MCP | light-ts | 46s | 2,894 | $0.72 | pass |
+| Opus 4.8 | MCP | multi-ecosystem | 118s | 8,903 | $1.10 | pass |
+| Opus 4.8 | MCP | python-ai | 47s | 3,223 | $0.74 | pass |
+| Opus 4.8 | BF mention | heavy-ts | 345s | 24,383 | $2.29 | build failed* |
+| Opus 4.8 | BF mention | light-ts | 39s | 2,754 | $0.32 | pass |
+| Opus 4.8 | BF mention | multi-ecosystem | 116s | 8,038 | $0.70 | pass |
+| Opus 4.8 | BF mention | python-ai | 118s | 7,211 | $0.81 | pass |
+| Opus 4.8 | Prompt | heavy-ts | 900s | — | — | timed out |
+| Opus 4.8 | Prompt | light-ts | 435s | 33,390 | $2.50 | pass |
+| Opus 4.8 | Prompt | multi-ecosystem | 395s | 28,598 | $2.43 | pass |
+| Opus 4.8 | Prompt | python-ai | 313s | 23,952 | $1.96 | pass |
+| Sonnet 4.6 | MCP | heavy-ts | 90s | 5,094 | $0.41 | pass |
+| Sonnet 4.6 | MCP | light-ts | 47s | 2,530 | $0.33 | pass |
+| Sonnet 4.6 | MCP | multi-ecosystem | 101s | 5,904 | $0.42 | pass |
+| Sonnet 4.6 | MCP | python-ai | 43s | 1,923 | $0.31 | pass |
+| Sonnet 4.6 | BF mention | heavy-ts | 98s | 5,527 | $0.28 | build failed* |
+| Sonnet 4.6 | BF mention | light-ts | 21s | 795 | $0.12 | pass |
+| Sonnet 4.6 | BF mention | multi-ecosystem | 237s | 11,333 | $0.73 | pass |
+| Sonnet 4.6 | BF mention | python-ai | 38s | 1,682 | $0.18 | pass |
+| Sonnet 4.6 | Prompt | heavy-ts | 767s | 52,926 | $3.18 | build failed |
+| Sonnet 4.6 | Prompt | light-ts | 520s | 32,767 | $1.88 | pass |
+| Sonnet 4.6 | Prompt | multi-ecosystem | 347s | 22,642 | $1.20 | pass |
+| Sonnet 4.6 | Prompt | python-ai | 226s | 16,418 | $0.85 | pass |
+
+\* Failed on a since-identified template generator bug on our side (excluded from agent pass
+rates). The Sonnet 4.6 prompt-path `heavy-ts` failure is agent-authored and counts.
+
+---
+
+Want to see the fast path yourself? Point your agent at the
+[Better-Fullstack MCP server](/mcp) and ask it to scaffold something heavy.

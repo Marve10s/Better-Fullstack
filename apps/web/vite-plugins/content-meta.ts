@@ -49,7 +49,7 @@ function collectMdxFiles(dir: string): string[] {
 export function contentMetaPlugin(): Plugin {
   let rootDir = "";
 
-  function buildMeta(contentSubdir: "docs" | "guides", globPrefix: string): MetaEntry[] {
+  function buildMeta(contentSubdir: "docs" | "guides" | "blog", globPrefix: string): MetaEntry[] {
     const contentDir = path.join(rootDir, "content", contentSubdir);
     return collectMdxFiles(contentDir).map((file) => {
       const rel = path.relative(contentDir, file).split(path.sep).join("/");
@@ -73,12 +73,14 @@ export function contentMetaPlugin(): Plugin {
       if (id !== RESOLVED_ID) return undefined;
       const docs = buildMeta("docs", "../../../content/docs/");
       const guides = buildMeta("guides", "../../../content/guides/");
-      for (const entry of [...docs, ...guides]) {
+      const blog = buildMeta("blog", "../../../content/blog/");
+      for (const entry of [...docs, ...guides, ...blog]) {
         this.addWatchFile(path.join(rootDir, "content", entry.filePath.replace("../../../content/", "")));
       }
       return (
         `export const docsMeta = ${JSON.stringify(docs)};\n` +
-        `export const guidesMeta = ${JSON.stringify(guides)};\n`
+        `export const guidesMeta = ${JSON.stringify(guides)};\n` +
+        `export const blogMeta = ${JSON.stringify(blog)};\n`
       );
     },
     handleHotUpdate(ctx) {

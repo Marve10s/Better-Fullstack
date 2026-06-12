@@ -19,9 +19,11 @@ function pageLine(title: string | undefined, url: string, description?: string) 
 export function generateLlmsTxt({
   docsPages,
   guidePages,
+  blogPages = [],
 }: {
   docsPages: LlmsPage[];
   guidePages: LlmsPage[];
+  blogPages?: LlmsPage[];
 }) {
   const visibleGuidePages = guidePages.filter((page) => page.slug.length > 0);
   const featuredDocs = docsPages.filter((page) =>
@@ -72,6 +74,7 @@ export function generateLlmsTxt({
     pageLine("MCP", "/mcp", "AI agent integration overview"),
     pageLine("Docs", "/docs", "Documentation index"),
     pageLine("Guides", "/guides", "Stack-specific starter guides"),
+    pageLine("Blog", "/blog", "Engineering write-ups and benchmarks"),
     "",
     "## Important Docs",
     "",
@@ -85,6 +88,16 @@ export function generateLlmsTxt({
       pageLine(page.frontmatter.title, page.url, page.frontmatter.description),
     ),
     "",
+    ...(blogPages.length
+      ? [
+          "## Blog",
+          "",
+          ...blogPages.map((page) =>
+            pageLine(page.frontmatter.title, page.url, page.frontmatter.description),
+          ),
+          "",
+        ]
+      : []),
     "## Common Questions",
     "",
     "### What is Better Fullstack?",

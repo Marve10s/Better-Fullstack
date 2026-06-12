@@ -38,12 +38,18 @@ function guidesPath(slug: string[]) {
   return slug.length ? `/guides/${slug.join("/")}` : "/guides";
 }
 
+function blogPath(slug: string[]) {
+  return slug.length ? `/blog/${slug.join("/")}` : "/blog";
+}
+
 export function getSitemapEntriesFromPages({
   docsPages,
   guidePages,
+  blogPages = [],
 }: {
   docsPages: SitemapContentPage[];
   guidePages: SitemapContentPage[];
+  blogPages?: SitemapContentPage[];
 }): SitemapEntry[] {
   const docsEntries = docsPages.map((page): SitemapEntry => {
     return {
@@ -63,8 +69,20 @@ export function getSitemapEntriesFromPages({
     };
   });
 
+  const blogEntries: SitemapEntry[] = [
+    { path: "/blog", changefreq: "weekly", priority: 0.75 },
+    ...blogPages.map(
+      (page): SitemapEntry => ({
+        path: blogPath(page.slug),
+        changefreq: "monthly",
+        lastmod: page.frontmatter.updated,
+        priority: 0.7,
+      }),
+    ),
+  ];
+
   const entriesByUrl = new Map<string, SitemapEntry>();
-  for (const entry of [...staticSitemapEntries, ...docsEntries, ...guideEntries]) {
+  for (const entry of [...staticSitemapEntries, ...docsEntries, ...guideEntries, ...blogEntries]) {
     entriesByUrl.set(canonicalUrl(entry.path), entry);
   }
 

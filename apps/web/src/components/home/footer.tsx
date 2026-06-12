@@ -47,6 +47,12 @@ export default function Footer() {
           >
             Guides
           </Link>
+          <Link
+            to="/blog"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Blog
+          </Link>
           <button
             type="button"
             onClick={() => setIsChangelogOpen(true)}

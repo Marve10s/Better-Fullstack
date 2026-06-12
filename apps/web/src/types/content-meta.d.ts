@@ -7,4 +7,8 @@ declare module "virtual:content-meta" {
     filePath: string;
     frontmatter: Record<string, unknown>;
   }>;
+  export const blogMeta: ReadonlyArray<{
+    filePath: string;
+    frontmatter: Record<string, unknown>;
+  }>;
 }
