@@ -1,9 +1,9 @@
 ---
 title: "ScaffBench: measuring coding agents on real fullstack scaffolding"
-description: "72 runs across Claude Code and Codex CLI — six models, three creation paths, four project specs. We measured wall-clock time, output tokens, dollar cost — and whether the generated project actually installs and builds."
+description: "102 runs across Claude Code, Codex CLI, Gemini CLI, Kilo, and opencode — fifteen models, three creation paths. We measured wall-clock time, output tokens, dollar cost — and whether the generated project actually installs and builds."
 date: 2026-06-12
 authors:
-  - Better-Fullstack Team
+  - Ibrahim Elkamali
 tags:
   - benchmark
   - mcp
@@ -32,7 +32,9 @@ through three creation paths to isolate how much tooling helps:
 
 We ran the full suite twice, on two different agent CLIs: **OpenAI Codex CLI** with three GPT
 models (June 10), and **Claude Code** with three Claude models (June 12) — 72 runs in total. Same
-specs, same prompts, same validation.
+specs, same prompts, same validation. We then added a deliberately [light third sweep](#the-light-sweep-gemini-kilo-and-opencode)
+— nine more models across **Gemini CLI**, **Kilo**, and **opencode**, on the lightest spec only —
+bringing the total to 102 runs and fifteen models.
 
 ## Headline results
 
@@ -244,6 +246,61 @@ A caveat worth repeating: the two sweeps ran on different agent harnesses, diffe
 different generator versions. Comparing paths within a sweep is the experiment; comparing vendors
 across sweeps is not.
 
+## The light sweep: Gemini, Kilo, and opencode
+
+The full suite costs real money and real rate-limit budget, so for the next batch of models we ran
+a deliberately light version: **one spec (`light-ts`) × three creation paths × one run per cell**.
+Nine models across three more agent CLIs, all on June 12:
+
+- **Gemini CLI** — Gemini 3.1 Pro (Google's latest, and the CLI's default).
+- **opencode** (Go subscription) — Kimi K2.6, GLM-5.1, MiniMax M3, Qwen3.7 Max, DeepSeek-V4 Pro:
+  the current open-weights flagship tier.
+- **Kilo CLI** (free model tier) — Step-3.7 Flash, Laguna m.1, Nex N2-Pro.
+
+Same prompts, same 900-second budget, same validation as the main sweeps. Scoring matches the
+headline criterion — does the project **install and build** — so lint-only failures don't count
+against a run (the strict logs are in the run artifacts). Gemini got a second, accidental repeat of
+all three paths, which we kept as a free variance sample: 30 runs total. (A tenth model,
+Nemotron-3 Ultra on Kilo's free tier, is excluded — the endpoint was too slow to drive an agent at
+all; see the appendix note.)
+
+| Model | MCP | BF mention | Prompt-only |
+| --- | --- | --- | --- |
+| Gemini 3.1 Pro | ✅ 60s · 1.6k | ✅ 27s · 0.9k | ✅ 124s · 13.2k |
+| Kimi K2.6 | ✅ 311s · 2.8k | ✅ 24s · 1.6k | ✅ 372s · 13.5k |
+| GLM-5.1 | ✅ 46s · 1.2k | ✅ 67s · 2.2k | ✅ 694s · 29.5k |
+| MiniMax M3 | ✅ 69s · 2.5k | ✅ 32s · 0.8k | ❌ build break |
+| Qwen3.7 Max | ✅ 80s · 2.7k | ✅ 35s · 0.8k | ✅ 379s · 13.3k |
+| DeepSeek-V4 Pro | ✅ 43s · 1.4k | ✅ 40s · 1.4k | ✅ 357s · 11.7k |
+| Step-3.7 Flash | ✅ 45s · 2.0k | ✅ 16s · 0.6k | ❌ broken install |
+| Laguna m.1 | ✅ 225s · 1.6k | ✅ 592s · 3.7k | ✅ 900s (timeout) · 9.4k |
+| Nex N2-Pro | ✅ 227s · 2.4k | ✅ 146s · 1.3k | ❌ build break |
+
+What the light sweep adds:
+
+- **The assisted paths went 18-for-18.** Every model passed both MCP and BF mention. That includes
+  Step-3.7 Flash — a small, fast, free model — scaffolding a correct fullstack monorepo in 16
+  seconds and 640 output tokens via the BF mention path. The structure we saw on Claude and GPT
+  isn't a frontier-model phenomenon; the tooling levels the playing field all the way down.
+- **Prompt-only is where the field splits.** Three of nine models shipped broken projects, each in
+  an instructive way: Step-3.7 Flash pinned `pino-http` to a version that doesn't exist (install
+  failed); MiniMax M3 named a tRPC procedure `useContext`, colliding with tRPC's built-in client
+  method (type check failed); Nex N2-Pro wrote an import that doesn't resolve (Rollup failed).
+  None of these failure modes exist on the assisted paths, because the agent never hand-writes a
+  manifest.
+- **The economics hold on a third, fourth, and fifth harness.** Every assisted run finished under
+  3k output tokens. Every prompt-only run cost 8–36k — MiniMax M3's 36k being the most expensive
+  single run in ScaffBench so far, for a project that didn't build.
+- **Gemini 3.1 Pro is excellent at this task.** Fastest BF mention cell of the entire benchmark
+  (26.7 seconds, 863 tokens), a textbook four-call MCP flow, and one of the few models to pass
+  prompt-only. Its repeat sample is also a useful honesty check: the first prompt run failed Biome
+  lint, the second passed cleanly — single-run cells are directional, not definitive.
+
+Light-sweep caveats: one run per cell, and 25 of the runs executed concurrently, so wall-clock
+times carry contention noise (Gemini's BF mention run measured 27s solo and 50s in the parallel
+batch — same outcome, different traffic). Treat path structure and pass/fail as the signal, exact
+seconds as approximate.
+
 ## Qualitative analysis
 
 ### MCP keeps agents on rails
@@ -296,11 +353,14 @@ varying minutes and, twice, a wall-clock ceiling.
 
 ## Limitations
 
-- **One run per cell.** 72 runs is enough to see the structure, not to put confidence intervals on
-  it. Scaffold times also vary with API load.
+- **One run per cell.** 102 runs is enough to see the structure, not to put confidence intervals
+  on it. Scaffold times also vary with API load — and the light sweep's parallel batch adds
+  contention noise on top (Gemini's own repeat showed both a 2× time spread and a lint-fail/pass
+  flip between identical runs).
 - **The sweeps aren't head-to-head.** The GPT runs used a different agent CLI (Codex), different
-  reasoning-effort settings, an earlier generator version, and report no dollar cost. Within-sweep
-  path comparisons are sound; cross-vendor model rankings are not what this benchmark measures.
+  reasoning-effort settings, an earlier generator version, and report no dollar cost; the light
+  sweep covers one spec on three further CLIs. Within-sweep path comparisons are sound;
+  cross-vendor model rankings are not what this benchmark measures.
 - **We benchmarked our own tool.** The harness, prompts, and validation are public in spirit —
   prompts and policy are quoted above — and the full per-run table is in the appendix. Treat the
   comparison between paths (tooling vs no tooling) as the finding, not a claim about other
@@ -318,7 +378,7 @@ adding more agent CLIs, repeated trials per cell, and validating *feature* compl
 actually work?) rather than just builds. The harness also doubles as our regression suite now —
 every release candidate gets the heavy spec thrown at it.
 
-## Appendix: all 72 runs
+## Appendix: all 102 runs
 
 ### Claude sweep (Claude Code, June 12)
 
@@ -407,6 +467,50 @@ rates). The Sonnet 4.6 prompt-path `heavy-ts` failure is agent-authored and coun
 
 \* Failed on a since-fixed template generator bug on our side (excluded from agent pass rates) —
 this sweep ran before the fixes shipped. GPT prompt-path failures are agent-authored and count.
+
+### Light sweep (Gemini CLI / Kilo / opencode, June 12 — light-ts only)
+
+| Model | Agent CLI | Path | Time | Output tokens | Result |
+| --- | --- | --- | ---: | ---: | --- |
+| Gemini 3.1 Pro | Gemini CLI | MCP | 60.2s | 1,584 | pass |
+| Gemini 3.1 Pro | Gemini CLI | BF mention | 26.7s | 863 | pass |
+| Gemini 3.1 Pro | Gemini CLI | Prompt | 123.6s | 13,188 | pass\*\* |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | MCP | 69.6s | 1,280 | pass |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | BF mention | 50.5s | 873 | pass |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | Prompt | 254.8s | 15,752 | pass |
+| Laguna m.1 | Kilo | MCP | 224.8s | 1,560 | pass |
+| Laguna m.1 | Kilo | BF mention | 592.5s | 3,653 | pass |
+| Laguna m.1 | Kilo | Prompt | 900.0s† | 9,439 | pass |
+| Nex N2-Pro | Kilo | MCP | 226.6s | 2,362 | pass |
+| Nex N2-Pro | Kilo | BF mention | 146.2s | 1,294 | pass |
+| Nex N2-Pro | Kilo | Prompt | 426.4s | 7,806 | fail (build) |
+| Step-3.7 Flash | Kilo | MCP | 45.5s | 1,985 | pass |
+| Step-3.7 Flash | Kilo | BF mention | 15.6s | 640 | pass |
+| Step-3.7 Flash | Kilo | Prompt | 166.0s | 12,738 | fail (install) |
+| DeepSeek-V4 Pro | opencode | MCP | 42.9s | 1,369 | pass |
+| DeepSeek-V4 Pro | opencode | BF mention | 40.0s | 1,391 | pass |
+| DeepSeek-V4 Pro | opencode | Prompt | 357.4s | 11,740 | pass |
+| GLM-5.1 | opencode | MCP | 45.9s | 1,172 | pass |
+| GLM-5.1 | opencode | BF mention | 67.4s | 2,197 | pass |
+| GLM-5.1 | opencode | Prompt | 693.9s | 29,527 | pass |
+| Kimi K2.6 | opencode | MCP | 311.2s | 2,816 | pass |
+| Kimi K2.6 | opencode | BF mention | 24.3s | 1,618 | pass |
+| Kimi K2.6 | opencode | Prompt | 371.9s | 13,527 | pass |
+| MiniMax M3 | opencode | MCP | 68.7s | 2,473 | pass |
+| MiniMax M3 | opencode | BF mention | 31.9s | 846 | pass |
+| MiniMax M3 | opencode | Prompt | 712.9s | 36,034 | fail (build) |
+| Qwen3.7 Max | opencode | MCP | 80.2s | 2,669 | pass |
+| Qwen3.7 Max | opencode | BF mention | 35.2s | 843 | pass |
+| Qwen3.7 Max | opencode | Prompt | 378.9s | 13,313 | pass |
+
+† Hit the 900-second budget, but the project written before the cutoff installs and builds.
+\*\* Passed install + build; failed the project's own Biome lint script, which the headline
+criterion doesn't count.
+
+We also attempted **Nemotron-3 Ultra 550B** on Kilo's free tier, but its runs are excluded from
+the results: the endpoint was effectively unusable for agentic work in our harness (minutes per
+turn, zero or one tool execution per 15-minute budget on every path). That's an infrastructure
+failure — we couldn't meaningfully reach the model — not a benchmark result about the model.
 
 ---
 

@@ -86,7 +86,7 @@ export default function FeaturesSection() {
       <div className="relative overflow-hidden border-b border-border">
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
               ✦ seven ecosystems
             </p>
             <h2
@@ -137,7 +137,7 @@ export default function FeaturesSection() {
                     >
                       Pick your <span className="italic">stack.</span>
                     </div>
-                    <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition-all group-hover:gap-3">
+                    <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all group-hover:gap-3">
                       Open the builder
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </div>
@@ -187,7 +187,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-mono font-black leading-[0.82] tracking-[-0.05em] text-black dark:text-[#fafafa]"
+            className="font-mono font-black leading-[0.82] tracking-[-0.05em] text-ink"
             style={{ fontSize: "clamp(5rem, 14vw, 11rem)" }}
           >
             <NumberFlow
@@ -197,7 +197,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             />
           </motion.div>
           <div
-            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-black dark:text-[#C6E853]"
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand"
             style={{ direction: "ltr" }}
           >
             ✦ {String(index + 1).padStart(2, "0")}
@@ -209,7 +209,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, x: flip ? 16 : -16 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-black dark:text-[#fafafa]"
+            className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-ink"
             style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
           >
             {layer.word}
@@ -249,7 +249,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
                     duration: 0.3,
                     delay: 0.2 + Math.min(j * 0.02, 0.4),
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-[#3f6212] transition-colors hover:border-foreground/30 dark:text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:border-foreground/30"
                 >
                   <TechIcon techId={opt.id} name={opt.name} className="size-3" />
                   <span>{opt.name}</span>
@@ -272,7 +272,7 @@ function TotalBlock() {
       <ContainerScroll className="px-4 py-12 sm:px-8 sm:py-16">
         <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-4">
           <div className="col-span-12 sm:col-span-4 lg:col-span-3">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#C6E853]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">
               ✦ total
             </p>
             <p className="mt-2 max-w-[26ch] text-pretty text-sm text-background/70">
@@ -293,7 +293,7 @@ function TotalBlock() {
                   transformTiming={{ duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}
                 />
               </span>
-              <span className="text-[#C6E853]" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
+              <span className="text-brand" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
                 ✦
               </span>
             </motion.div>

@@ -3,7 +3,10 @@ import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 
-import { RaycastHeroBackground } from "@/components/ui/raycast-hero-background";
+import {
+  AsciiHeroBackground,
+  type AsciiHeroVariant,
+} from "@/components/ui/ascii-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +21,9 @@ const COMMANDS: Record<PM, string> = {
   yarn: "yarn create better-fullstack@latest",
 };
 
-const ACCENT_TEXT = "text-black dark:text-[#C6E853]";
+const ACCENT_TEXT = "text-ink dark:text-brand";
+// TODO(temp): remove the variant switcher once a hero scene is picked.
+const HERO_VARIANTS: readonly AsciiHeroVariant[] = ["graph", "stack", "terminal", "globe"];
 const RELEASE_BADGE = latestChangelogRelease
   ? `${latestChangelogRelease.version} · ${latestChangelogRelease.displayDate}`
   : "";
@@ -26,6 +31,7 @@ const RELEASE_BADGE = latestChangelogRelease
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
   const [copied, setCopied] = useState(false);
+  const [heroVariant, setHeroVariant] = useState<AsciiHeroVariant>("graph");
 
   const copy = () => {
     navigator.clipboard.writeText(COMMANDS[pm]).then(
@@ -41,26 +47,16 @@ export default function HeroSection() {
   return (
     <section
       className={cn(
-        "relative bg-white text-[#14532d] [color-scheme:light]",
-        "dark:bg-[#0a0a0a] dark:text-[#fafafa] dark:[color-scheme:dark]",
+        "relative bg-surface text-ink [color-scheme:light]",
+        "dark:[color-scheme:dark]",
       )}
     >
-      <div
-        className={cn(
-          "border-b border-[#e5e5e5] px-4 pb-5 pt-6 sm:px-8 sm:pt-8",
-          "dark:border-[#1f1f1f]",
-        )}
-      >
+      <div className="border-b border-edge px-4 pb-5 pt-6 sm:px-8 sm:pt-8">
         <div className="flex items-baseline justify-between">
           <span className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
             ✦ install
           </span>
-          <span
-            className={cn(
-              "font-mono text-[11px] uppercase tracking-[0.22em] text-[#4d7c0f]",
-              "dark:text-[#7a7a7a]",
-            )}
-          >
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-soft">
             {RELEASE_BADGE}
           </span>
         </div>
@@ -69,23 +65,17 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className={cn(
-            "mt-3 overflow-hidden rounded-md border border-[#e5e5e5] bg-[#fafafa]",
-            "dark:border-[#1f1f1f] dark:bg-[#111111]",
-          )}
+          className="mt-3 overflow-hidden rounded-md border border-edge bg-surface-raised"
         >
-          <div className={cn("flex border-b border-[#e5e5e5] dark:border-[#1f1f1f]")}>
+          <div className="flex border-b border-edge">
             {PMS.map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPm(p)}
                 className={cn(
-                  "flex cursor-pointer items-center gap-1.5 border-r border-[#e5e5e5] px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4",
-                  "dark:border-[#1f1f1f]",
-                  pm === p
-                    ? "bg-[#C6E853] text-[#0a0a0a]"
-                    : "bg-transparent text-[#3f6212] dark:text-[#a3a3a3]",
+                  "flex cursor-pointer items-center gap-1.5 border-r border-edge px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4",
+                  pm === p ? "bg-brand text-[#0a0a0a]" : "bg-transparent text-soft",
                 )}
               >
                 <PackageIcon pm={p} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -103,7 +93,7 @@ export default function HeroSection() {
               aria-label="Copy command"
               className={cn(
                 "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
-                copied ? "text-black dark:text-[#C6E853]" : "text-[#3f6212] dark:text-[#a3a3a3]",
+                copied ? "text-ink dark:text-brand" : "text-soft",
               )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -117,13 +107,7 @@ export default function HeroSection() {
           className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2"
           aria-hidden
         >
-          <RaycastHeroBackground className="size-full" />
-          <div
-            className={cn(
-              "absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,#ffffff_30%,rgba(255,255,255,0.88)_42%,rgba(255,255,255,0.45)_58%,transparent_78%)]",
-              "dark:bg-[linear-gradient(90deg,#0a0a0a_0%,#0a0a0a_30%,rgba(10,10,10,0.88)_42%,rgba(10,10,10,0.45)_58%,transparent_78%)]",
-            )}
-          />
+          <AsciiHeroBackground className="size-full" variant={heroVariant} />
         </div>
 
         <motion.h1
@@ -131,7 +115,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
           className={cn(
-            "relative z-10 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-[#14532d] dark:text-[#fafafa]",
+            "relative z-10 max-w-[15ch] text-balance font-mono font-bold tracking-[-0.045em] text-ink",
           )}
           style={{
             fontSize: "clamp(2.75rem, 9vw, 6.5rem)",
@@ -147,10 +131,7 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className={cn(
-            "relative z-10 mt-7 max-w-lg text-pretty text-base text-[#3f6212] sm:text-lg",
-            "dark:text-[#a3a3a3]",
-          )}
+          className="relative z-10 mt-7 max-w-lg text-pretty text-base text-soft sm:text-lg"
         >
           A CLI that scaffolds production-ready fullstack apps across five language ecosystems. Pick
           your stack — frontend, database, auth, payments, AI — and run one command.
@@ -165,21 +146,35 @@ export default function HeroSection() {
           <Link
             to="/new"
             search={{ view: "command", file: "" }}
-            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
+            className="group inline-flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
             Open the builder
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
             to="/docs"
-            className={cn(
-              "rounded-md border border-[#e5e5e5] px-5 py-2.5 text-sm font-medium text-[#14532d] transition-colors",
-              "dark:border-[#1f1f1f] dark:text-[#fafafa]",
-            )}
+            className="rounded-md border border-edge px-5 py-2.5 text-sm font-medium text-ink transition-colors"
           >
             Read the docs
           </Link>
         </motion.div>
+
+        {/* TODO(temp): variant switcher — remove once a hero scene is picked. */}
+        <div className="absolute bottom-3 right-3 z-10 flex gap-1">
+          {HERO_VARIANTS.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setHeroVariant(v)}
+              className={cn(
+                "cursor-pointer rounded-sm border border-edge px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors",
+                heroVariant === v ? "bg-brand text-[#0a0a0a]" : "text-soft hover:text-ink",
+              )}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

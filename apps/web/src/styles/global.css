@@ -165,6 +165,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand: var(--brand);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-edge: var(--edge);
+  --color-soft: var(--soft);
   --radius: 0.35rem;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -192,42 +198,53 @@
 }
 
 :root {
-  --color-fd-primary: #7c3aed;
-  --color-fd-primary-foreground: #ffffff;
-  --background: #f4f8f4;
-  --foreground: oklch(0.44 0.04 279.33);
-  --card: #f4f8f4;
-  --card-foreground: oklch(0.44 0.04 279.33);
-  --popover: oklch(0.86 0.01 268.48);
-  --popover-foreground: oklch(0.44 0.04 279.33);
-  --primary: #7c3aed;
-  --primary-foreground: #ffffff;
-  --secondary: oklch(0.86 0.01 268.48);
-  --secondary-foreground: oklch(0.44 0.04 279.33);
-  --muted: oklch(0.91 0.01 264.51);
-  --muted-foreground: oklch(0.48 0.03 279.08);
-  --accent: #9353d3;
-  --accent-foreground: #ffffff;
+  /*
+   * Light theme — one brand accent (lime) + one warm-stone neutral family.
+   * Lime fails contrast as text on light surfaces, so in light mode it is
+   * used as a fill (buttons, chips, highlights) with ink text on top.
+   */
+  --brand: #c6e853;
+  --ink: #1b1a17;
+  --surface: #f6f5f1;
+  --surface-raised: #edece6;
+  --edge: #e1e0d8;
+  --soft: #6c6a61;
+  --color-fd-primary: #1b1a17;
+  --color-fd-primary-foreground: #f6f5f1;
+  --background: #f6f5f1;
+  --foreground: #1b1a17;
+  --card: #f6f5f1;
+  --card-foreground: #1b1a17;
+  --popover: #efeee8;
+  --popover-foreground: #1b1a17;
+  --primary: #1b1a17;
+  --primary-foreground: #f6f5f1;
+  --secondary: #edece6;
+  --secondary-foreground: #1b1a17;
+  --muted: #edece6;
+  --muted-foreground: #6c6a61;
+  --accent: #c6e853;
+  --accent-foreground: #1b1a17;
   --destructive: #d20f39;
-  --border: oklch(0.81 0.02 271.2);
-  --input: oklch(0.86 0.01 268.48);
-  --ring: #7c3aed;
+  --border: #e1e0d8;
+  --input: #e1e0d8;
+  --ring: #1b1a17;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.93 0.01 264.52);
-  --sidebar-foreground: oklch(0.44 0.04 279.33);
-  --sidebar-primary: #7c3aed;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #9353d3;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: oklch(0.81 0.02 271.2);
-  --sidebar-ring: #7c3aed;
+  --sidebar: #efeee8;
+  --sidebar-foreground: #1b1a17;
+  --sidebar-primary: #1b1a17;
+  --sidebar-primary-foreground: #f6f5f1;
+  --sidebar-accent: #c6e853;
+  --sidebar-accent-foreground: #1b1a17;
+  --sidebar-border: #e1e0d8;
+  --sidebar-ring: #1b1a17;
   --destructive-foreground: oklch(1 0 0);
   --radius: 0.35rem;
-  --shadow-color: hsl(240 30% 25%);
+  --shadow-color: hsl(45 8% 18%);
   --shadow-opacity: 0.12;
   --shadow-blur: 6px;
   --shadow-spread: 0px;
@@ -235,14 +252,14 @@
   --shadow-offset-y: 4px;
   --letter-spacing: 0em;
   --spacing: 0.25rem;
-  --shadow-2xs: 0px 4px 6px 0px hsl(240 30% 25% / 0.06);
-  --shadow-xs: 0px 4px 6px 0px hsl(240 30% 25% / 0.06);
-  --shadow-sm: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 1px 2px -1px hsl(240 30% 25% / 0.12);
-  --shadow: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 1px 2px -1px hsl(240 30% 25% / 0.12);
-  --shadow-md: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 2px 4px -1px hsl(240 30% 25% / 0.12);
-  --shadow-lg: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 4px 6px -1px hsl(240 30% 25% / 0.12);
-  --shadow-xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 8px 10px -1px hsl(240 30% 25% / 0.12);
-  --shadow-2xl: 0px 4px 6px 0px hsl(240 30% 25% / 0.3);
+  --shadow-2xs: 0px 4px 6px 0px hsl(45 8% 18% / 0.06);
+  --shadow-xs: 0px 4px 6px 0px hsl(45 8% 18% / 0.06);
+  --shadow-sm: 0px 4px 6px 0px hsl(45 8% 18% / 0.12), 0px 1px 2px -1px hsl(45 8% 18% / 0.12);
+  --shadow: 0px 4px 6px 0px hsl(45 8% 18% / 0.12), 0px 1px 2px -1px hsl(45 8% 18% / 0.12);
+  --shadow-md: 0px 4px 6px 0px hsl(45 8% 18% / 0.12), 0px 2px 4px -1px hsl(45 8% 18% / 0.12);
+  --shadow-lg: 0px 4px 6px 0px hsl(45 8% 18% / 0.12), 0px 4px 6px -1px hsl(45 8% 18% / 0.12);
+  --shadow-xl: 0px 4px 6px 0px hsl(45 8% 18% / 0.12), 0px 8px 10px -1px hsl(45 8% 18% / 0.12);
+  --shadow-2xl: 0px 4px 6px 0px hsl(45 8% 18% / 0.3);
   --tracking-normal: 0em;
 
   /*
@@ -253,14 +270,20 @@
   --code-bg: #0d1117;
   --code-border: #30363d;
   --docs-surface: color-mix(in srgb, var(--background) 84%, white);
-  --docs-surface-elevated: #fbfdfb;
+  --docs-surface-elevated: #faf9f5;
   --docs-border-subtle: color-mix(in srgb, var(--border) 72%, transparent);
-  --docs-accent: #6f4bd8;
+  --docs-accent: #1b1a17;
   --docs-accent-soft: color-mix(in srgb, var(--primary) 10%, transparent);
-  --docs-link: #5f38d9;
+  --docs-link: #1b1a17;
 }
 
 .dark {
+  --brand: #c6e853;
+  --ink: #fafafa;
+  --surface: #0a0a0a;
+  --surface-raised: #111111;
+  --edge: #1f1f1f;
+  --soft: #a3a3a3;
   --color-fd-primary: #f2eeee;
   --color-fd-primary-foreground: #0c0c0e;
   --color-fd-background: #0e0e10;
@@ -374,7 +397,7 @@
 
 .terminal-block-hover:hover {
   border-color: var(--primary);
-  box-shadow: 0 0 10px rgba(136, 57, 239, 0.3);
+  box-shadow: 0 0 10px rgba(198, 232, 83, 0.35);
   transform: translateY(-1px);
 }
 

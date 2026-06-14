@@ -1,6 +1,6 @@
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 
 import { mdxComponents } from "@/components/docs/mdx";
 import { TableOfContents } from "@/components/docs/table-of-contents";
@@ -17,6 +17,12 @@ export function formatPostDate(date: string | undefined): string | null {
     timeZone: "UTC",
   });
 }
+
+const AUTHOR_LINKS: Record<string, string> = {
+  "Ibrahim Elkamali": "https://x.com/IbrahimElkamali",
+};
+
+const EMPTY_AUTHORS: string[] = [];
 
 export function BlogPostPageContent({ post }: { post: BlogPost }) {
   // The MDX body chunk loads on demand; render nothing extra while waiting —
@@ -57,7 +63,7 @@ function BlogPostBody({ post }: { post: BlogPost }) {
             <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
               {date}
               {date && post.frontmatter.authors?.length ? " · " : null}
-              {post.frontmatter.authors?.join(", ")}
+              <AuthorByline authors={post.frontmatter.authors ?? EMPTY_AUTHORS} />
             </p>
           ) : null}
           {post.frontmatter.tags?.length ? (
@@ -85,4 +91,28 @@ function BlogPostBody({ post }: { post: BlogPost }) {
       </aside>
     </main>
   );
+}
+
+function AuthorByline({ authors }: { authors: string[] }) {
+  return authors.map((author, index) => {
+    const href = AUTHOR_LINKS[author];
+
+    return (
+      <Fragment key={author}>
+        {index > 0 ? ", " : null}
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            {author}
+          </a>
+        ) : (
+          author
+        )}
+      </Fragment>
+    );
+  });
 }
