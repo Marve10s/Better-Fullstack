@@ -123,9 +123,6 @@ const MODEL_GROUPS: readonly { label: string; detail: string; models: readonly M
 // Curated default: flagship + fastest model per vendor, prompt-only struggles visible.
 const DEFAULT_MODELS: readonly ModelId[] = ["fable", "sonnet", "spark", "gpt54"] as const;
 
-const LEGEND_NOTE =
-  "Claude sweep Jun 12 (Claude Code CLI) · GPT sweep Jun 10 (Codex CLI, pre-fix generator) · light sweep Jun 12 (Gemini CLI / Kilo / opencode, light-ts spec only) · generator-bug & lint-only failures excluded";
-
 interface ChartPalette {
   grid: string;
   axisTick: string;
@@ -1188,9 +1185,6 @@ function CardLegend({ models }: { models: readonly ModelId[] }) {
           </span>
         ))}
       </div>
-      <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-[#9c9a93] dark:text-[#6c6a61]">
-        {LEGEND_NOTE}
-      </p>
     </div>
   );
 }
