@@ -40,6 +40,13 @@ export const env = createEnv({
 		KINDE_POST_LOGIN_REDIRECT_URL: z.url(),
 		KINDE_POST_LOGOUT_REDIRECT_URL: z.url(),
 {{/if}}
+{{#if (eq auth "auth0")}}
+		AUTH0_DOMAIN: z.string().min(1).optional(),
+		AUTH0_CLIENT_ID: z.string().min(1).optional(),
+		AUTH0_CLIENT_SECRET: z.string().min(1).optional(),
+		AUTH0_SECRET: z.string().min(32).optional(),
+		APP_BASE_URL: z.url().optional(),
+{{/if}}
 {{#if (eq payments "polar")}}
 		POLAR_ACCESS_TOKEN: z.string().min(1),
 		POLAR_SUCCESS_URL: z.url(),

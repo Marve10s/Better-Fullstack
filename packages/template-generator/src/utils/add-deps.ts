@@ -46,8 +46,7 @@ export const dependencyVersionMap = {
   "@supabase/supabase-js": "^2.108.2",
   "@supabase/ssr": "^0.12.0",
 
-  // Auth0 — templates use v3 API (handleAuth, withMiddlewareAuthRequired,
-  // UserProvider from /client). v4 requires a full template migration.
+  // Auth0 v4 handles auth routes through middleware and the Auth0Client.
   "@auth0/nextjs-auth0": "^4.22.0",
   "@workos-inc/authkit-nextjs": "^4.1.1",
   "@kinde-oss/kinde-auth-nextjs": "^2.12.2",
@@ -545,9 +544,11 @@ export const dependencyVersionMap = {
   cypress: "^15.17.0",
 
   // Testing - Vitest
-  vitest: "^4.1.9",
-  "@vitest/ui": "^4.1.9",
-  "@vitest/coverage-v8": "^4.1.9",
+  // Keep the Vitest family on the latest Yarn-allowed patch. 4.1.9 is
+  // quarantined for @vitest/coverage-v8 in Yarn's package metadata.
+  vitest: "4.1.8",
+  "@vitest/ui": "4.1.8",
+  "@vitest/coverage-v8": "4.1.8",
   jsdom: "^29.1.1",
   "happy-dom": "^20.10.3",
 

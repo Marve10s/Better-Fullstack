@@ -881,6 +881,36 @@ function buildServerVars(
         "Supabase Service Role Key (server-side only) - get it at https://supabase.com/dashboard",
     },
     {
+      key: "AUTH0_DOMAIN",
+      value: "",
+      condition: auth === "auth0",
+      comment: "Auth0 application domain, for example your-tenant.us.auth0.com",
+    },
+    {
+      key: "AUTH0_CLIENT_ID",
+      value: "",
+      condition: auth === "auth0",
+      comment: "Auth0 Regular Web Application client ID",
+    },
+    {
+      key: "AUTH0_CLIENT_SECRET",
+      value: "",
+      condition: auth === "auth0",
+      comment: "Auth0 Regular Web Application client secret",
+    },
+    {
+      key: "AUTH0_SECRET",
+      value: generateRandomString(64, "0123456789abcdef"),
+      condition: auth === "auth0",
+      comment: "Auth0 session secret - generate with: openssl rand -hex 32",
+    },
+    {
+      key: "APP_BASE_URL",
+      value: webOrigin,
+      condition: auth === "auth0",
+      comment: "Base URL registered with Auth0 for callbacks and logout",
+    },
+    {
       key: "WORKOS_API_KEY",
       value: "",
       condition: auth === "workos",

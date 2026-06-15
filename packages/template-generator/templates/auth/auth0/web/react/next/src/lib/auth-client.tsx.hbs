@@ -1,9 +1,9 @@
 "use client";
 
-import { useUser as useAuth0User, UserProvider } from "@auth0/nextjs-auth0/client";
+import { useUser as useAuth0User } from "@auth0/nextjs-auth0";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  return <UserProvider>{children}</UserProvider>;
+  return <>{children}</>;
 }
 
 export function useUser() {
@@ -39,10 +39,10 @@ export function useAuthClient() {
     isLoading,
     error,
     signOut: () => {
-      window.location.href = "/api/auth/logout";
+      window.location.href = "/auth/logout";
     },
     signIn: () => {
-      window.location.href = "/api/auth/login";
+      window.location.href = "/auth/login";
     },
   };
 }
