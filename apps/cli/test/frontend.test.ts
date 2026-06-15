@@ -482,7 +482,13 @@ describe("Frontend Configurations", () => {
           nodeModulesDir: "auto",
           workspace: ["./apps/web"],
         });
-        expect(rootTsconfig.extends).toBe("./packages/config/tsconfig.base.json");
+        expect(rootTsconfig.extends).toBeUndefined();
+        expect(rootTsconfig.compilerOptions).toMatchObject({
+          jsx: "react-jsx",
+          jsxImportSource: "preact",
+          moduleResolution: "bundler",
+          types: ["vite/client"],
+        });
         expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.3.3"');
         expect(denoJson).toContain(
           '"build": "deno run --node-modules-dir=auto -A npm:vite@^7.3.1 build"',
