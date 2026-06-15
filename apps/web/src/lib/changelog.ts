@@ -1,4 +1,4 @@
-type ChangelogRelease = {
+export type ChangelogRelease = {
   version: string;
   publishedAt: string;
   displayDate: string;

@@ -1,0 +1,88 @@
+---
+title: Echo with SQLC
+description: 使用 Better Fullstack 的 Go project scaffolding 创建带 Echo、SQLC 和 Zap logging 的 Go API project。
+updated: 2026-05-12
+category: Go
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+当你需要使用 Echo，并采用 SQL-first database access 的 Go API 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## 创建内容
+
+- 使用 Echo 的 Go API project。
+- SQLC 作为 Go ORM/database access option。
+- Zap 用于 logging。
+- 默认不包含 gRPC、CLI 或 Go auth add-on。
+
+## 生成结构
+
+这是一个 SQL-first Go API。Echo 提供 HTTP layer，SQLC 从 SQL 生成 typed Go methods，Zap 负责 structured logging。
+
+代表性结构：
+
+```txt
+my-echo-api/
+  go.mod
+  sqlc.yaml
+  queries/
+    users.sql
+  migrations/
+    001_create_users.sql
+  cmd/
+    server/
+      main.go
+  internal/
+    db/
+      generated/
+    handlers/
+    services/
+```
+
+把 SQL 放入 version control，并像 review Go code 一样认真 review query changes。SQLC 让 Go 侧更安全，但不能代替 schema design。
+
+## 兼容性
+
+本指南故意使用 `--go-api none`、`--go-cli none` 和 `--go-auth none`，让 scaffold 专注于 HTTP API。当你想从 SQL 生成 query code 时，请保留 `--go-orm sqlc`。如果 service boundary 应是 protobuf 而不是 JSON，请使用 gRPC guide。
+
+## 何时选择
+
+当你想要显式 SQL 和生成的 Go types，而不采用更高层 ORM 时，选择 Echo with SQLC。
+
+SQLC 让 database behavior 可见，但你需要维护更多 SQL。如果想要更传统的 ORM flow，请使用 [Gin with PostgreSQL and GORM](/guides/go/gin-postgres-gorm/)。
+
+## 测试与部署
+
+为 handlers 和 services 运行 Go tests，并为重要 SQL queries 加上 database-backed integration tests。
+
+```bash
+go test ./...
+```
+
+SQL 改变时，在信任 compiler feedback 前，先用生成项目记录的命令重新生成 SQLC output。部署时，在启动 API 前运行 migrations，确保 generated query types 与 live schema 匹配。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none)。
+- 阅读 [Go ecosystem docs](/docs/ecosystems/go/)。

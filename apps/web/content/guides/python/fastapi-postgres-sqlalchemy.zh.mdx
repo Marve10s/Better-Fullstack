@@ -1,0 +1,79 @@
+---
+title: FastAPI with PostgreSQL and SQLAlchemy
+description: 使用 Better Fullstack 创建包含 FastAPI、PostgreSQL、SQLAlchemy、Pydantic 和 Ruff 的 Python API project。
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - postgres
+  - sqlalchemy
+  - pydantic
+keywords:
+  - fastapi postgres starter
+  - fastapi sqlalchemy starter
+  - python api boilerplate
+  - create fastapi project
+  - fastapi pydantic postgres
+---
+
+当你需要熟悉、async-friendly 的 Python web framework，并搭配 relational database 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-fastapi-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff \
+```
+
+## 创建内容
+
+- FastAPI API。
+- PostgreSQL 作为 database。
+- SQLAlchemy 用于 data access。
+- Pydantic 用于 request 和 response schemas。
+- Ruff 用于 linting 和 formatting。
+
+## 生成结构
+
+这个 stack 让 FastAPI 位于 HTTP boundary。Pydantic 在 API edge 附近验证数据，SQLAlchemy 拥有 models 和 queries，PostgreSQL 提供 relational persistence。
+
+代表性结构：
+
+```txt
+my-fastapi-api/
+  pyproject.toml
+  app/
+    main.py
+    api/
+      routes/
+    db/
+    models/
+    schemas/
+  tests/
+```
+
+保持 routes 轻薄。把 business decisions 放在 services 中，把 queries 放在 database modules 后面，避免 handlers 同时承担 validation、SQL 和 response mapping。
+
+## 兼容性
+
+`--python-web-framework fastapi`、`--database postgres`、`--python-orm sqlalchemy` 和 `--python-validation pydantic` 是核心组合。如果把 SQLAlchemy 换成 SQLModel，请一起检查 models 和 session handling。
+
+## 测试与部署
+
+部署前运行 Python validations：
+
+```bash
+python -m compileall .
+ruff check .
+```
+
+生产环境中设置 PostgreSQL URL、secrets 和 CORS configuration。部署依赖新 columns 或 tables 的代码前，先运行 migrations。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff)。
+- 阅读 [Python ecosystem docs](/docs/ecosystems/python/)。
+- 对比 [FastAPI AI Agent with LangChain](/guides/python/fastapi-langchain-ai-agent/)。

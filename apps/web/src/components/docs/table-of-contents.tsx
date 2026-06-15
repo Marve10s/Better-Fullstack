@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Right-rail "On this page" navigation.
@@ -69,10 +70,12 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
   return (
     <nav
       ref={containerRef}
-      aria-label="On this page"
+      aria-label={m.tocOnThisPage()}
       className="sticky top-20 hidden h-[calc(100vh-6rem)] w-64 shrink-0 overflow-y-auto px-4 py-8 xl:block"
     >
-      <h2 className="mb-3 font-mono text-[0.7rem] text-muted-foreground uppercase">On this page</h2>
+      <h2 className="mb-3 font-mono text-[0.7rem] text-muted-foreground uppercase">
+        {m.tocOnThisPage()}
+      </h2>
       <ul className="flex flex-col border-[var(--docs-border-subtle)] border-l">
         {toc.map((entry) => {
           const isActive = activeId === entry.id;

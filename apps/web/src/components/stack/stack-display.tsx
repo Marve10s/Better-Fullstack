@@ -14,6 +14,7 @@ import {
   generateStackUrlFromState,
 } from "@/lib/stack-utils";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 interface StackDisplayProps {
   stackState: StackState;
@@ -98,10 +99,10 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
     try {
       await navigator.clipboard.writeText(command);
       setCopied(true);
-      toast.success("Command copied to clipboard!");
+      toast.success(m.stackCommandCopied());
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy command");
+      toast.error(m.stackCommandCopyFailed());
     }
   };
 
@@ -115,7 +116,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           </div>
           <div className="hidden h-px flex-1 bg-border sm:block" />
           <span className="w-full text-right text-muted-foreground text-xs sm:w-auto sm:text-left">
-            [{techBadges.length} DEPENDENCIES]
+            [{m.stackDependencyCount({ count: techBadges.length })}]
           </span>
         </div>
 
@@ -130,7 +131,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-primary">$</span>
-            <span className="text-muted-foreground">Stack loaded successfully</span>
+            <span className="text-muted-foreground">{m.stackLoaded()}</span>
           </div>
         </div>
 
@@ -160,7 +161,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           <div className="flex items-center gap-2">
             <span className="text-primary text-xs">▶</span>
             <span className="font-mono font-semibold text-foreground text-sm">
-              GENERATE_COMMAND
+              {m.stackGenerateCommand()}
             </span>
           </div>
 
@@ -180,7 +181,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
               )}
             >
               {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              {copied ? "COPIED!" : "COPY"}
+              {copied ? m.stackCopied() : m.stackCopy()}
             </button>
           </div>
         </div>
@@ -189,7 +190,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           <div className="flex items-center gap-2">
             <span className="text-primary text-xs">▶</span>
             <span className="font-mono font-semibold text-foreground text-sm">
-              DEPENDENCIES ({techBadges.length})
+              {m.stackDependencies()} ({techBadges.length})
             </span>
           </div>
 
@@ -198,7 +199,7 @@ export function StackDisplay({ stackState }: StackDisplayProps) {
           ) : (
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="text-primary">$</span>
-              <span>No technologies selected</span>
+              <span>{m.stackNoTechnologiesSelected()}</span>
             </div>
           )}
         </div>

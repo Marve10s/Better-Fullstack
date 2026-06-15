@@ -6,6 +6,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 type TreeViewElement = {
   id: string;
@@ -302,7 +303,7 @@ function CollapseButton({ elements, expandAll = false, children, ...props }: Col
       {...props}
     >
       {children}
-      <span className="sr-only">Toggle</span>
+      <span className="sr-only">{m.uiToggle()}</span>
     </Button>
   );
 }

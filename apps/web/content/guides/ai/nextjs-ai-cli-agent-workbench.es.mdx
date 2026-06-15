@@ -1,0 +1,90 @@
+---
+title: Next.js AI CLI Agent Workbench
+description: Crea una app Next.js con AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite y documentacion de agentes usando Better Fullstack.
+updated: 2026-05-12
+category: AI Tools
+tags:
+  - nextjs
+  - ai-cli
+  - mcp
+  - agents
+keywords:
+  - nextjs ai cli starter
+  - ai agent workbench starter
+  - mcp nextjs starter
+  - create ai app nextjs
+  - ai coding agent project
+---
+
+Usa este stack cuando quieras un proyecto Next.js preparado para flujos de desarrollo asistido por AI, tooling MCP local y documentacion generada para agentes.
+
+```npm
+npm create better-fullstack@latest my-agent-workbench -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons mcp skills \
+  --ai-docs claude-md agents-md cursorrules \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Que crea
+
+- Una app Next.js con setup fullstack local.
+- SQLite y Drizzle.
+- Better Auth.
+- Configuracion AI CLI.
+- Add-ons MCP y Skills.
+- Archivos de documentacion para agentes como `CLAUDE.md`, `AGENTS.md` o `.cursorrules` segun las flags.
+
+## Forma generada
+
+Este preset es tanto scaffold de aplicacion como scaffold de workflow para agentes. La app web es un proyecto Next.js fullstack normal, mientras los add-ons crean contexto de repositorio para agentes de codigo y tooling AI local.
+
+Forma representativa:
+
+```txt
+my-agent-workbench/
+  bts.jsonc
+  AGENTS.md
+  CLAUDE.md
+  .cursorrules
+  app/
+  components/
+  lib/
+    auth/
+    db/
+```
+
+Los archivos exactos dependen de `--ai-docs claude-md agents-md cursorrules`. El comando pide los tres para que distintas herramientas de agentes encuentren guia en su formato preferido.
+
+## Como encajan las piezas AI
+
+`--ai ai-cli` selecciona soporte AI CLI. `--addons mcp skills` agrega capacidades locales alrededor de MCP y skills. `--ai-docs` controla que archivos de instrucciones de repositorio se generan.
+
+Usa esas piezas para trabajos distintos: AI CLI para tareas locales, MCP como puente de tools/contexto, Skills para instrucciones reutilizables y agent docs para explicar la estructura del proyecto.
+
+## Compatibilidad
+
+- Este preset usa una app TypeScript Next.js con `--backend self`, asi que Next.js controla la frontera de servidor.
+- `--addons mcp skills` son adiciones de workflow de desarrollo. No reemplazan auth, database ni API de la app.
+- `--ai-docs claude-md agents-md cursorrules` genera varios formatos de instrucciones para distintas herramientas.
+- SQLite es comodo para workbenches locales. Usa PostgreSQL si el workbench se vuelve producto multiusuario con estado compartido.
+
+## Despliegue
+
+Despliega la app Next.js como una aplicacion fullstack normal: configura secretos de Better Auth, URL de app y database settings. Trata keys de proveedores AI, credenciales MCP y tokens de herramientas como secretos de servidor.
+
+Los agent docs suelen pertenecer al control de versiones. Credenciales locales, logs generados y config MCP especifica de maquina normalmente no.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?preset=ai-cli-agent-workbench&view=command).
+- Lee la [documentacion de agentes AI](/docs/ai/overview/).
+- Aprende como funciona el [servidor MCP de Better Fullstack](/mcp).

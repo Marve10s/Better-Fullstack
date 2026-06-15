@@ -1,0 +1,86 @@
+---
+title: Servicio Go gRPC
+description: Crea un backend Go con Gin, gRPC-Go, GORM, Zap logging y scaffolding de servicio Go de Better Fullstack.
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - grpc
+  - gin
+  - gorm
+keywords:
+  - go grpc starter
+  - grpc-go boilerplate
+  - gin grpc service
+  - create go grpc service
+  - go microservice starter
+---
+
+Usa este stack cuando tu servicio Go necesite contratos gRPC junto a una forma de proyecto backend generada.
+
+```npm
+npm create better-fullstack@latest my-go-grpc -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-api grpc-go \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## Que crea
+
+- Un backend Go usando Gin.
+- gRPC-Go como opcion API.
+- GORM para acceso a datos.
+- Zap para logging.
+
+## Forma generada
+
+Este stack crea un servicio Go con frontera gRPC tipada. Gin todavia puede servir endpoints HTTP operacionales, mientras gRPC-Go controla el contrato usado por otros clientes backend.
+
+El servicio es mas mantenible cuando:
+
+- Los archivos protobuf definen contratos de request y response.
+- Handlers gRPC traducen input de transporte a llamadas de servicio.
+- Modelos GORM quedan en la capa de persistencia.
+- Rutas Gin se mantienen separadas de la superficie gRPC.
+
+## Arbol representativo
+
+```txt
+my-go-grpc/
+  go.mod
+  proto/
+    users/v1/users.proto
+  cmd/
+    server/
+      main.go
+  internal/
+    grpc/
+    http/
+    models/
+    services/
+```
+
+Mantiene la salida protobuf generada donde el scaffold espera y evita editar archivos generados directamente.
+
+## Compatibilidad
+
+Mantiene `--go-api grpc-go` cuando quieras wiring gRPC generado. Si cambias a `--go-api none`, esto se vuelve un backend HTTP normal y el flujo protobuf deja de formar parte del scaffold. `--go-cli none` mantiene el proyecto como servicio, no como herramienta CLI.
+
+## Pruebas y despliegue
+
+Prueba metodos de servicio directamente, luego agrega pruebas de integracion gRPC con un servidor de test para comportamiento importante de cara al cliente.
+
+```bash
+go test ./...
+```
+
+En despliegue, expone el puerto gRPC esperado por los clientes y conserva health checks HTTP en el puerto que tu plataforma sondea. Si la generacion protobuf forma parte del build, asegura que CI instale las herramientas necesarias.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none).
+- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).

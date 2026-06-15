@@ -1,0 +1,77 @@
+---
+title: SvelteKit con Hono y Drizzle
+description: Crea una app SvelteKit con API Hono, oRPC, Drizzle, PostgreSQL, Tailwind CSS y Better Auth usando Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - sveltekit
+  - hono
+  - orpc
+  - drizzle
+keywords:
+  - sveltekit hono
+  - sveltekit drizzle starter
+  - sveltekit postgres boilerplate
+  - sveltekit orpc
+  - create sveltekit fullstack app
+---
+
+Usa este stack cuando quieras SvelteKit en el frontend y un servidor API TypeScript pequeno junto a el.
+
+```npm
+npm create better-fullstack@latest my-sveltekit-app -- \
+  --ecosystem typescript \
+  --frontend svelte \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## Que crea
+
+- Un frontend SvelteKit.
+- Un backend Hono en Bun.
+- oRPC para contratos API tipados en frontends no React.
+- PostgreSQL y Drizzle.
+- Better Auth cuando la base y el ORM elegidos lo soportan.
+
+## Forma generada
+
+Este es un stack TypeScript dividido: SvelteKit maneja la experiencia frontend, Hono maneja el servidor API y oRPC es la frontera tipada entre ambos.
+
+Forma representativa:
+
+```txt
+my-sveltekit-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Los nombres pueden evolucionar, pero la propiedad debe quedar clara. Los componentes Svelte no deberian importar modulos de base de datos directamente; deberian llamar operaciones de servidor tipadas.
+
+## Compatibilidad
+
+- Esta guia usa `--api orpc` porque SvelteKit no es un frontend React.
+- `--backend hono` y `--runtime bun` crean un servicio API separado en vez de depender solo de rutas servidor de SvelteKit.
+- Better Auth requiere que la ruta de database y ORM siga siendo compatible. Mantiene cambios de schema de auth y migraciones Drizzle sincronizados.
+- Si despues eliminas el backend separado, revisa setup del cliente API, CORS y cookies de auth juntos.
+
+## Despliegue
+
+Espera variables de entorno separadas para web y API. La app SvelteKit necesita el origen publico de la API. El servidor Hono necesita PostgreSQL y secretos de auth. Si se despliegan en dominios distintos, configura CORS y cookies con intencion.
+
+Ejecuta migraciones antes de desplegar codigo API que espera tablas o columnas nuevas.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=svelte&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=orpc).
+- Compara con el stack React [Hono con tRPC y Drizzle](/guides/typescript/hono-trpc-drizzle/).
+- Lee la [referencia de compatibilidad](/docs/reference/compatibility/).

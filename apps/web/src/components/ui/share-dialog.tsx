@@ -19,6 +19,7 @@ import { TechBadge } from "@/components/ui/tech-badge";
 import { DEFAULT_STACK, TECH_OPTIONS } from "@/lib/constant";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 interface ShareDialogProps {
   children: React.ReactNode;
@@ -93,16 +94,16 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
     try {
       await navigator.clipboard.writeText(stackUrl);
       setCopied(true);
-      toast.success("Link copied to clipboard!");
+      toast.success(m.shareLinkCopied());
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy link");
+      toast.error(m.shareLinkCopyFailed());
     }
   };
 
   const shareToTwitter = () => {
     const text = encodeURIComponent(
-      `Check out this cool tech stack I configured with Better Fullstack!\n\n ${techBadges.length} technologies selected\n\n`,
+      m.shareTweetText({ count: techBadges.length }),
     );
     const url = encodeURIComponent(stackUrl);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
@@ -162,7 +163,7 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
                 </span>
                 <div className="ml-auto flex items-center gap-2 text-muted-foreground text-xs">
                   <span>•</span>
-                  <span>{techBadges.length} PACKAGES</span>
+                  <span>{m.stackPackageCount({ count: techBadges.length })}</span>
                 </div>
               </div>
             </div>
@@ -173,7 +174,7 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
                 ) : (
                   <div className="flex items-center gap-2 text-muted-foreground text-sm">
                     <span className="text-primary">$</span>
-                    <span>No technologies selected</span>
+                    <span>{m.stackNoTechnologiesSelected()}</span>
                   </div>
                 )}
               </div>
@@ -195,13 +196,13 @@ export function ShareDialog({ children, stackUrl, stackState }: ShareDialogProps
                       src={qrCodeDataUrl}
                       width={128}
                       height={128}
-                      alt="QR Code for stack configuration"
+                      alt={m.shareQrAlt()}
                       className="h-full w-full object-contain"
                     />
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs">
                       <span className="text-primary">$</span>
-                      <span>Generating QR code...</span>
+                      <span>{m.shareGeneratingQr()}</span>
                     </div>
                   )}
                 </div>

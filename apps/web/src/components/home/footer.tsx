@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";
+import { m } from "@/paraglide/messages.js";
 
 const GUIDE_LINKS = [
   { label: "TanStack Start", slug: "typescript/create-tanstack-start-project" },
@@ -39,26 +40,26 @@ export default function Footer() {
             to="/compare"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Compare
+            {m.navCompare()}
           </Link>
           <Link
             to="/guides"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Guides
+            {m.navGuides()}
           </Link>
           <Link
             to="/blog"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Blog
+            {m.navBlog()}
           </Link>
           <button
             type="button"
             onClick={() => setIsChangelogOpen(true)}
             className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
           >
-            Changelog
+            {m.footerChangelog()}
           </button>
           <a
             href="https://github.com/Marve10s/Better-Fullstack/blob/main/LICENSE"
@@ -66,13 +67,13 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            MIT License
+            {m.footerMitLicense()}
           </a>
         </div>
 
         <div className="mt-8 border-t border-border pt-6">
           <p className="text-center font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
-            Popular guides
+            {m.footerPopularGuides()}
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
             {GUIDE_LINKS.map((link) => (
@@ -89,7 +90,7 @@ export default function Footer() {
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Originally inspired by{" "}
+          {m.footerInspiredBy()}{" "}
           <a
             href="https://github.com/AmanVarshney01/create-better-t-stack"
             target="_blank"
@@ -101,7 +102,7 @@ export default function Footer() {
         </p>
 
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          {new Date().getFullYear()} Better Fullstack · Built by{" "}
+          {new Date().getFullYear()} Better Fullstack · {m.footerBuiltBy()}{" "}
           <a
             href="https://elkamali.dev"
             target="_blank"

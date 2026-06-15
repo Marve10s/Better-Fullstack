@@ -5,6 +5,7 @@ import { blogMeta } from "virtual:content-meta";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
+import { getLocale } from "@/paraglide/runtime.js";
 
 export type BlogFrontmatter = {
   title?: string;
@@ -49,6 +50,24 @@ const CONTENT_PREFIX = "/content/blog/";
 // from the MDX modules here would fuse them into this chunk.
 const mdxLoaders = import.meta.glob<MdxModule>("../../../content/blog/**/*.mdx");
 
+function currentContentLocale(): "en" | "es" | "zh" {
+  const locale = getLocale();
+  return locale === "es" || locale === "zh" ? locale : "en";
+}
+
+function localizedFilePath(filePath: string, locale: "en" | "es" | "zh"): string {
+  if (locale === "en") return filePath;
+  return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
+}
+
+function hasLocalizedContent(filePath: string, locale: "en" | "es" | "zh"): boolean {
+  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+}
+
+function contentCacheKey(post: BlogPost, locale: "en" | "es" | "zh"): string {
+  return `${post.slug.join("/")}:${locale}`;
+}
+
 function normalizeMdxPath(filePath: string): { relativePath: string; slug: string[] } {
   const idx = filePath.indexOf(CONTENT_PREFIX);
   const relativePath = filePath.slice(idx + CONTENT_PREFIX.length);
@@ -75,8 +94,12 @@ for (const { filePath, frontmatter } of blogMeta) {
 const contentCache = createSuspenseCache<BlogPostContent>();
 
 async function loadBlogContent(post: BlogPost): Promise<BlogPostContent> {
-  const module = await mdxLoaders[post.filePath]?.();
-  if (!module) throw new Error(`Blog content module missing for ${post.filePath}`);
+  const locale = currentContentLocale();
+  const filePath = hasLocalizedContent(post.filePath, locale)
+    ? localizedFilePath(post.filePath, locale)
+    : post.filePath;
+  const module = await mdxLoaders[filePath]?.();
+  if (!module) throw new Error(`Blog content module missing for ${filePath}`);
   return {
     toc: module.toc ?? [],
     Component: module.default,
@@ -88,14 +111,14 @@ async function loadBlogContent(post: BlogPost): Promise<BlogPostContent> {
  * chunk loads. Callers must render inside a `<Suspense>` boundary.
  */
 export function useBlogPostContent(post: BlogPost): BlogPostContent {
-  return contentCache.read(post.slug.join("/"), () => loadBlogContent(post));
+  return contentCache.read(contentCacheKey(post, currentContentLocale()), () => loadBlogContent(post));
 }
 
 /** Start fetching a post's content chunk early (e.g. from a route loader). */
 export function preloadBlogPostContent(slug: string[] | undefined): void {
   const post = getBlogPost(slug);
   if (!post) return;
-  contentCache.preload(post.slug.join("/"), () => loadBlogContent(post));
+  contentCache.preload(contentCacheKey(post, currentContentLocale()), () => loadBlogContent(post));
 }
 
 export function getBlogPost(slug: string[] | undefined): BlogPost | undefined {

@@ -9,6 +9,7 @@ import type { TechCategory } from "@/lib/types";
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/constant";
+import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {
   const m = await import("@/components/effects/web-gl-shader");
@@ -16,15 +17,16 @@ const WebGLShader = lazy(async () => {
 });
 
 type Layer =
-  | { type: "ecosystems"; word: string }
-  | { type: "categories"; categories: TechCategory[]; word: string };
+  | { type: "ecosystems"; key: string; word: () => string }
+  | { type: "categories"; categories: TechCategory[]; key: string; word: () => string };
 
 const LAYERS: ReadonlyArray<Layer> = [
-  { type: "ecosystems", word: "LANGUAGE ECOSYSTEMS" },
+  { type: "ecosystems", key: "ecosystems", word: m.homeLayerLanguageEcosystems },
   {
     type: "categories",
     categories: ["webFrontend", "rustFrontend"],
-    word: "FRONTEND FRAMEWORKS",
+    key: "frontend",
+    word: m.homeLayerFrontendFrameworks,
   },
   {
     type: "categories",
@@ -37,12 +39,14 @@ const LAYERS: ReadonlyArray<Layer> = [
       "elixirWebFramework",
       "dotnetWebFramework",
     ],
-    word: "BACKEND FRAMEWORKS",
+    key: "backend",
+    word: m.homeLayerBackendFrameworks,
   },
   {
     type: "categories",
     categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm", "elixirOrm", "dotnetOrm"],
-    word: "DATABASE ORMs",
+    key: "orm",
+    word: m.homeLayerDatabaseOrms,
   },
   {
     type: "categories",
@@ -55,12 +59,14 @@ const LAYERS: ReadonlyArray<Layer> = [
       "elixirAuth",
       "dotnetAuth",
     ],
-    word: "AUTH PROVIDERS",
+    key: "auth",
+    word: m.homeLayerAuthProviders,
   },
   {
     type: "categories",
     categories: ["ai", "pythonAi"],
-    word: "AI INTEGRATIONS",
+    key: "ai",
+    word: m.homeLayerAiIntegrations,
   },
 ];
 
@@ -87,7 +93,7 @@ export default function FeaturesSection() {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 px-4 py-20 sm:px-8 sm:py-24">
           <div className="col-span-12 lg:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ seven ecosystems
+              ✦ {m.homeSevenEcosystems()}
             </p>
             <h2
               className="mt-4 max-w-[24ch] text-balance font-mono font-bold tracking-[-0.045em]"
@@ -96,11 +102,11 @@ export default function FeaturesSection() {
                 lineHeight: 0.94,
               }}
             >
-              Not just TypeScript. <span className="italic text-muted-foreground">Everything.</span>
+              {m.homeNotJustTypeScript()}{" "}
+              <span className="italic text-muted-foreground">{m.homeEverything()}</span>
             </h2>
             <p className="mt-8 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-              TypeScript, React Native, Rust, Python, Go, Java, Elixir — one CLI scaffolds
-              production-ready apps across all seven. Pick your ecosystem, pick your stack.
+              {m.homeFeaturesDescription()}
             </p>
           </div>
 
@@ -125,7 +131,7 @@ export default function FeaturesSection() {
 
                 <div className="relative z-10 flex h-full flex-col p-6 sm:p-8">
                   <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
-                    ✦ ready when you are
+                    ✦ {m.homeReadyWhenYouAre()}
                   </div>
                   <div className="mt-auto">
                     <div
@@ -135,10 +141,10 @@ export default function FeaturesSection() {
                         lineHeight: 0.95,
                       }}
                     >
-                      Pick your <span className="italic">stack.</span>
+                      {m.homePickYourStack()} <span className="italic">{m.homeStack()}</span>
                     </div>
                     <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all group-hover:gap-3">
-                      Open the builder
+                      {m.homeOpenBuilder()}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </div>
                   </div>
@@ -151,7 +157,7 @@ export default function FeaturesSection() {
 
       <ul className="relative">
         {LAYERS.map((layer, i) => (
-          <LayerRow key={layer.word} layer={layer} index={i} />
+          <LayerRow key={layer.key} layer={layer} index={i} />
         ))}
       </ul>
 
@@ -212,7 +218,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-ink"
             style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
           >
-            {layer.word}
+            {layer.word()}
           </motion.h3>
 
           <motion.div
@@ -273,11 +279,10 @@ function TotalBlock() {
         <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-4">
           <div className="col-span-12 sm:col-span-4 lg:col-span-3">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand">
-              ✦ total
+              ✦ {m.homeTotal()}
             </p>
             <p className="mt-2 max-w-[26ch] text-pretty text-sm text-background/70">
-              Multiply this by every database, every CSS framework, every AI SDK, and you get more
-              combinations than there are grains of sand.
+              {m.homeTotalDescription()}
             </p>
           </div>
           <div className="col-span-12 sm:col-span-8 lg:col-span-9">
@@ -298,7 +303,7 @@ function TotalBlock() {
               </span>
             </motion.div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-background/70">
-              options across 7 ecosystems · ts · rn · rust · go · python · java · elixir
+              {m.homeTotalOptions()}
             </p>
           </div>
         </div>

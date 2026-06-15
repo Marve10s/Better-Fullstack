@@ -6,8 +6,12 @@ import type { StackState } from "@/lib/constant";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { stackStateToProjectConfig } from "@/lib/preview-config";
 import { cn } from "@/lib/utils";
+import * as m from "@/paraglide/messages";
 
 import type { PreflightWarning } from "@better-fullstack/template-generator/browser";
+
+import { CodeViewer, CodeViewerEmpty } from "./code-viewer";
+import { FileExplorer, type VirtualFile, type VirtualDirectory } from "./file-explorer";
 
 // Client-side generation via dynamic import — the ~354KB template-generator
 // bundle is only loaded when the user actually opens the Preview tab.
@@ -33,9 +37,6 @@ const generatePreview = async (stack: StackState) => {
     preflightWarnings: preflight.warnings,
   };
 };
-
-import { CodeViewer, CodeViewerEmpty } from "./code-viewer";
-import { FileExplorer, type VirtualFile, type VirtualDirectory } from "./file-explorer";
 
 interface PreviewPanelProps {
   stack: StackState;
@@ -85,10 +86,10 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           setMobileView("tree");
         }
       } else {
-        setError(data.error || "Failed to generate preview");
+        setError(data.error || m.builderPreviewFailedGenerate());
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch preview");
+      setError(err instanceof Error ? err.message : m.builderPreviewFailedFetch());
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +145,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
   if (!tree) {
     return (
       <div data-testid="preview-pending" className="flex h-full items-center justify-center text-muted-foreground">
-        <p className="text-sm">Generating preview...</p>
+        <p className="text-sm">{m.builderPreviewGenerating()}</p>
       </div>
     );
   }
@@ -161,7 +162,7 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground sm:hidden"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Files</span>
+            <span>{m.builderPreviewFiles()}</span>
           </button>
         )}
         <div
@@ -171,7 +172,9 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           )}
         >
           <FolderTree className="h-3.5 w-3.5" />
-          <span data-testid="preview-folder-count">{directoryCount} folders</span>
+          <span data-testid="preview-folder-count">
+            {m.builderPreviewFolderCount({ count: directoryCount })}
+          </span>
         </div>
         <div
           className={cn(
@@ -180,7 +183,9 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           )}
         >
           <FileCode2 className="h-3.5 w-3.5" />
-          <span data-testid="preview-file-count">{fileCount} files</span>
+          <span data-testid="preview-file-count">
+            {m.builderPreviewFileCount({ count: fileCount })}
+          </span>
         </div>
         {/* Show current file name on mobile */}
         {mobileView === "code" && selectedFile && (
@@ -192,14 +197,10 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           <Tooltip>
             <TooltipTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <Info className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Preview info</span>
+              <span className="hidden sm:inline">{m.builderPreviewInfo()}</span>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-xs">
-              <p>
-                This is a static template preview. Files are not formatted. Some features like
-                database provider setup (Turso, Neon, Supabase, etc.) and certain addons (Fumadocs,
-                Starlight, Tauri, etc.) require CLI execution and are not shown here.
-              </p>
+              <p>{m.builderPreviewInfoDescription()}</p>
             </TooltipContent>
           </Tooltip>
           {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
@@ -216,11 +217,10 @@ export function PreviewPanel({ stack, selectedFilePath, onSelectFile }: PreviewP
           >
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
             <span className="font-medium">
-              {preflightWarnings.length} feature{preflightWarnings.length > 1 ? "s" : ""} will not
-              generate templates
+              {m.builderPreviewWarnings({ count: preflightWarnings.length })}
             </span>
             <span className="ml-auto text-[10px] text-yellow-600/60 dark:text-yellow-400/60">
-              {showWarnings ? "hide" : "show"}
+              {showWarnings ? m.builderPreviewHideWarnings() : m.builderPreviewShowWarnings()}
             </span>
           </button>
           {showWarnings && (

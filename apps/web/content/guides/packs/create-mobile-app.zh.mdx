@@ -1,0 +1,57 @@
+---
+title: 创建移动应用
+description: 使用 Better Fullstack Mobile App pack，通过 Expo、React Native 和 Uniwind 创建移动应用。
+updated: 2026-05-21
+category: Packs
+tags:
+  - mobile
+  - expo
+  - react-native
+  - uniwind
+  - typescript
+keywords:
+  - create mobile app
+  - expo app starter
+  - react native starter
+  - uniwind starter
+  - create expo app
+---
+
+当第一个界面应该是 native 而不是 web 时，请使用 Mobile App pack。它从 Expo 和 Uniwind 开始，让你可以先构建移动界面，再添加 backend services。
+
+<StarterPackCta id="mobile-app" />
+
+## 生成 mobile starter
+
+打开 [Stack Builder 中的 Mobile App pack](/new?preset=uniwind&view=command)，或运行：
+
+```bash
+bun create better-fullstack@latest my-mobile-app \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --api none \
+  --css-framework none \
+  --ui-library none
+```
+
+## Pack 包含什么
+
+- Expo 用于 native app runtime。
+- React Native 作为 UI foundation。
+- Uniwind 用于 utility-first native styling。
+- 一个 frontend-only 的项目结构，在需要 backend choices 前保持轻量。
+
+## 首先要自定义的内容
+
+1. 用核心移动流程替换示例 screens。
+2. 决定 auth 应该是 native-only、API-backed，还是与 web app 共享。
+3. 只有在 app 的 data boundaries 清晰后，再添加 backend services。
+4. 尽早在小屏和大屏设备尺寸上验证 layouts。
+
+## 什么时候适合这个 pack
+
+选择它来构建 mobile-first 产品、companion apps、需要 native feel 的 prototypes，以及想先从设备体验开始、再选择 server infrastructure 的团队项目。
+
+如需 stack 层面的 walkthrough，请阅读 [Expo Uniwind 原生应用](/guides/react-native/expo-uniwind-native/)。

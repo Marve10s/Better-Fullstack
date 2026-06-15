@@ -1,0 +1,88 @@
+---
+title: Go CLI with Bubble Tea
+description: 使用 Better Fullstack 的 Go CLI project scaffolding 创建带 Bubble Tea 的 Go terminal application。
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - cli
+  - bubbletea
+keywords:
+  - go bubble tea starter
+  - go cli boilerplate
+  - create go cli
+  - bubbletea terminal app
+  - go tui starter
+---
+
+当你想要 Go terminal UI，而不是 web API 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-go-cli -- \
+  --ecosystem go \
+  --go-web-framework none \
+  --go-orm none \
+  --go-api none \
+  --go-cli bubbletea \
+  --go-logging none \
+  --go-auth none
+```
+
+## 创建内容
+
+- Go CLI project。
+- Bubble Tea 作为 terminal UI option。
+- 默认不包含 web framework、ORM、gRPC 或 auth add-on。
+
+## 生成结构
+
+这个 stack 创建的是 interactive terminal app，不是 server。Bubble Tea 会围绕 model、messages、update 和 view 组织程序。
+
+代表性结构：
+
+```txt
+my-go-cli/
+  go.mod
+  cmd/
+    app/
+      main.go
+  internal/
+    tui/
+      model.go
+      update.go
+      view.go
+```
+
+尽量把 side effects 放进 Bubble Tea commands。这样 model 和 view 更容易在不运行真实 terminal 的情况下测试。
+
+## 工作模型
+
+- model 保存当前应用状态。
+- messages 描述 input、ticks 或 command results。
+- `Update` 修改 model 并返回后续 commands。
+- `View` 将当前 model 渲染为 terminal text。
+
+## 兼容性
+
+CLI projects 应保持 server-only categories 为 `none`，除非你有意构建 hybrid tools。
+
+为 terminal-first app 保持 `--go-cli bubbletea`、`--go-web-framework none`、`--go-orm none` 和 `--go-api none`。如果 CLI 之后要调用 API，请把 client 放在独立 package 中，并通过 commands 调用，不要从 `View` 调用。
+
+## 测试与分发
+
+直接测试 model transitions：
+
+```bash
+go test ./...
+```
+
+分发时构建单个 binary，并记录支持的 environment variables 或 config files：
+
+```bash
+go build ./cmd/app
+```
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=go&gwf=none&gorm=none&gapi=none&gcli=bubbletea&glog=none&gauth=none)。
+- 阅读 [Go ecosystem docs](/docs/ecosystems/go/)。

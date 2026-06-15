@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 import PackageIcon from "./icons";
 
@@ -48,7 +49,7 @@ export default function HeroSection() {
       <div className="border-b border-edge px-4 pb-5 pt-6 sm:px-8 sm:pt-8">
         <div className="flex items-baseline justify-between">
           <span className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-            ✦ install
+            ✦ {m.homeInstall()}
           </span>
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-soft">
             {RELEASE_BADGE}
@@ -84,7 +85,7 @@ export default function HeroSection() {
             <button
               type="button"
               onClick={copy}
-              aria-label="Copy command"
+              aria-label={m.homeCopyCommand()}
               className={cn(
                 "flex size-8 cursor-pointer items-center justify-center rounded-md bg-transparent transition-colors active:translate-y-[1px]",
                 copied ? "text-ink dark:text-brand" : "text-soft",
@@ -116,9 +117,9 @@ export default function HeroSection() {
             lineHeight: 0.94,
           }}
         >
-          Stop wiring.
+          {m.homeStopWiring()}
           <br />
-          <span className={cn("italic", ACCENT_TEXT)}>Start shipping.</span>
+          <span className={cn("italic", ACCENT_TEXT)}>{m.homeStartShipping()}</span>
         </motion.h1>
 
         <motion.p
@@ -127,8 +128,7 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative z-10 mt-7 max-w-lg text-pretty text-base text-soft sm:text-lg"
         >
-          A CLI that scaffolds production-ready fullstack apps across five language ecosystems. Pick
-          your stack — frontend, database, auth, payments, AI — and run one command.
+          {m.homeHeroDescription()}
         </motion.p>
 
         <motion.div
@@ -142,14 +142,14 @@ export default function HeroSection() {
             search={{ view: "command", file: "" }}
             className="group inline-flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
           >
-            Open the builder
+            {m.homeOpenBuilder()}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
             to="/docs"
             className="rounded-md border border-edge px-5 py-2.5 text-sm font-medium text-ink transition-colors"
           >
-            Read the docs
+            {m.homeReadDocs()}
           </Link>
         </motion.div>
 

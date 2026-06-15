@@ -24,38 +24,39 @@ import {
   DEFAULT_OG_IMAGE_WIDTH,
   DEFAULT_ROBOTS,
   DEFAULT_X_IMAGE_URL,
-  SITE_NAME,
   canonicalUrl,
 } from "@/lib/seo";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-
-const MCP_TITLE = `MCP Server — AI Agent Integration | ${SITE_NAME}`;
-const MCP_DESCRIPTION =
-  "Connect AI coding agents to Better Fullstack via MCP. Let Claude, Cursor, VS Code Copilot, and other agents scaffold fullstack projects programmatically.";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/mcp")({
-  head: () => ({
-    meta: [
-      { title: MCP_TITLE },
-      { name: "description", content: MCP_DESCRIPTION },
-      { name: "robots", content: DEFAULT_ROBOTS },
-      { property: "og:title", content: MCP_TITLE },
-      { property: "og:description", content: MCP_DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: canonicalUrl("/mcp") },
-      { property: "og:image", content: DEFAULT_OG_IMAGE_URL },
-      { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
-      { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
-      { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: MCP_TITLE },
-      { name: "twitter:description", content: MCP_DESCRIPTION },
-      { name: "twitter:image", content: DEFAULT_X_IMAGE_URL },
-      { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
-    ],
-    links: [{ rel: "canonical", href: canonicalUrl("/mcp") }],
-  }),
+  head: () => {
+    const title = m.mcpSeoTitle();
+    const description = m.mcpSeoDescription();
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: DEFAULT_ROBOTS },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: canonicalUrl("/mcp") },
+        { property: "og:image", content: DEFAULT_OG_IMAGE_URL },
+        { property: "og:image:alt", content: DEFAULT_OG_IMAGE_ALT },
+        { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
+        { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: DEFAULT_X_IMAGE_URL },
+        { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
+      ],
+      links: [{ rel: "canonical", href: canonicalUrl("/mcp") }],
+    };
+  },
   component: McpPage,
 });
 
@@ -180,77 +181,96 @@ const AGENTS: readonly Agent[] = [
   },
 ] as const;
 
+type ToolId =
+  | "guidance"
+  | "schema"
+  | "compatibility"
+  | "plan"
+  | "create"
+  | "plan-addition"
+  | "add-feature";
+
 interface ToolInfo {
+  id: ToolId;
   name: string;
-  description: string;
   icon: LucideIcon;
 }
 
 const TOOLS: readonly ToolInfo[] = [
   {
+    id: "guidance",
     name: "bfs_get_guidance",
-    description: "Workflow rules, field semantics, and critical constraints",
     icon: Settings2,
   },
   {
+    id: "schema",
     name: "bfs_get_schema",
-    description: "Valid options for any category, filterable by ecosystem",
     icon: Layers,
   },
   {
+    id: "compatibility",
     name: "bfs_check_compatibility",
-    description: "Validate stack combinations with auto-adjustments",
     icon: SearchCheck,
   },
   {
+    id: "plan",
     name: "bfs_plan_project",
-    description: "Dry-run preview — generates the file tree in memory",
     icon: FileCode2,
   },
   {
+    id: "create",
     name: "bfs_create_project",
-    description: "Scaffold a new project to disk",
     icon: Sparkles,
   },
   {
+    id: "plan-addition",
     name: "bfs_plan_addition",
-    description: "Validate proposed addons for an existing project",
     icon: SearchCheck,
   },
   {
+    id: "add-feature",
     name: "bfs_add_feature",
-    description: "Add features to an existing project",
     icon: Wrench,
   },
 ] as const;
 
-const RESOURCES = [
-  { uri: "docs://compatibility-rules", desc: "Which stack combinations are valid" },
-  { uri: "docs://stack-options", desc: "All technology options per category" },
-  { uri: "docs://getting-started", desc: "Quick-start recipes per ecosystem" },
+type ResourceId = "compatibility" | "options" | "getting-started";
+
+const RESOURCES: ReadonlyArray<{ id: ResourceId; uri: string }> = [
+  { id: "compatibility", uri: "docs://compatibility-rules" },
+  { id: "options", uri: "docs://stack-options" },
+  { id: "getting-started", uri: "docs://getting-started" },
 ] as const;
 
-const WORKFLOW_LINES = [
-  { kind: "call", name: "bfs_get_guidance", note: "workflow rules + field semantics" },
-  { kind: "call", name: "bfs_get_schema", note: "valid options for the stack" },
-  { kind: "call", name: "bfs_check_compatibility", note: "stack validated, 0 adjustments" },
-  { kind: "call", name: "bfs_plan_project", note: "dry-run preview, 59 files" },
-  { kind: "call", name: "bfs_create_project", note: "written to ./my-app" },
-  { kind: "done", name: "scaffold complete", note: "run bun install to finish" },
+type WorkflowLineId = "guidance" | "schema" | "compatibility" | "plan" | "create" | "done";
+
+const WORKFLOW_LINES: ReadonlyArray<{
+  id: WorkflowLineId;
+  kind: "call" | "done";
+  name?: string;
+}> = [
+  { id: "guidance", kind: "call", name: "bfs_get_guidance" },
+  { id: "schema", kind: "call", name: "bfs_get_schema" },
+  { id: "compatibility", kind: "call", name: "bfs_check_compatibility" },
+  { id: "plan", kind: "call", name: "bfs_plan_project" },
+  { id: "create", kind: "call", name: "bfs_create_project" },
+  { id: "done", kind: "done" },
 ] as const;
 
-const TIPS = [
-  "frontend is an array — multiple frontends in one monorepo",
-  '"none" means skip, not "use the default"',
-  "Set ecosystem first — it decides which fields matter",
-  "Dependencies are never installed — your agent will tell you the install command",
+type TipId = "frontend-array" | "none-skip" | "ecosystem-first" | "dependencies";
+
+const TIPS: readonly TipId[] = [
+  "frontend-array",
+  "none-skip",
+  "ecosystem-first",
+  "dependencies",
 ] as const;
 
 const STATS = [
-  { value: 7, suffix: "", label: "structured tools", fraction: false },
-  { value: 3, suffix: "", label: "readable resources", fraction: false },
-  { value: 677, suffix: "", label: "configurable options", fraction: false },
-  { value: 2.6, suffix: "×", label: "faster than prompt-only", fraction: true },
+  { id: "tools", value: 7, suffix: "", fraction: false },
+  { id: "resources", value: 3, suffix: "", fraction: false },
+  { id: "options", value: 677, suffix: "", fraction: false },
+  { id: "speed", value: 2.6, suffix: "×", fraction: true },
 ] as const;
 
 const numberFlowTiming = { duration: 900, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
@@ -266,6 +286,83 @@ const builderSearch = { view: "command", file: "" } as const;
 
 const h1Style: CSSProperties = { fontSize: "clamp(2.5rem, 8vw, 5.5rem)", lineHeight: 0.94 };
 const h2Style: CSSProperties = { fontSize: "clamp(1.85rem, 5vw, 3.4rem)", lineHeight: 0.98 };
+
+function getToolDescription(id: ToolId) {
+  switch (id) {
+    case "guidance":
+      return m.mcpToolGuidanceDescription();
+    case "schema":
+      return m.mcpToolSchemaDescription();
+    case "compatibility":
+      return m.mcpToolCompatibilityDescription();
+    case "plan":
+      return m.mcpToolPlanDescription();
+    case "create":
+      return m.mcpToolCreateDescription();
+    case "plan-addition":
+      return m.mcpToolPlanAdditionDescription();
+    case "add-feature":
+      return m.mcpToolAddFeatureDescription();
+  }
+}
+
+function getResourceDescription(id: ResourceId) {
+  switch (id) {
+    case "compatibility":
+      return m.mcpResourceCompatibilityDescription();
+    case "options":
+      return m.mcpResourceOptionsDescription();
+    case "getting-started":
+      return m.mcpResourceGettingStartedDescription();
+  }
+}
+
+function getWorkflowName(line: (typeof WORKFLOW_LINES)[number]) {
+  return line.kind === "done" ? m.mcpWorkflowDoneName() : (line.name ?? "");
+}
+
+function getWorkflowNote(id: WorkflowLineId) {
+  switch (id) {
+    case "guidance":
+      return m.mcpWorkflowGuidanceNote();
+    case "schema":
+      return m.mcpWorkflowSchemaNote();
+    case "compatibility":
+      return m.mcpWorkflowCompatibilityNote();
+    case "plan":
+      return m.mcpWorkflowPlanNote();
+    case "create":
+      return m.mcpWorkflowCreateNote();
+    case "done":
+      return m.mcpWorkflowDoneNote();
+  }
+}
+
+function getTipText(id: TipId) {
+  switch (id) {
+    case "frontend-array":
+      return m.mcpTipFrontendArray();
+    case "none-skip":
+      return m.mcpTipNoneMeansSkip();
+    case "ecosystem-first":
+      return m.mcpTipSetEcosystemFirst();
+    case "dependencies":
+      return m.mcpTipDependenciesNeverInstalled();
+  }
+}
+
+function getStatLabel(id: (typeof STATS)[number]["id"]) {
+  switch (id) {
+    case "tools":
+      return m.mcpStatStructuredTools();
+    case "resources":
+      return m.mcpStatReadableResources();
+    case "options":
+      return m.mcpStatConfigurableOptions();
+    case "speed":
+      return m.mcpStatFasterPromptOnly();
+  }
+}
 
 function McpPage() {
   return (
@@ -291,18 +388,17 @@ function HeroSection() {
         <div className="grid grid-cols-12 items-end gap-x-6 gap-y-10">
           <div className="col-span-12 lg:col-span-7">
             <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-              ✦ model context protocol
+              ✦ {m.mcpHeroEyebrow()}
             </p>
             <h1
               className="mt-4 max-w-[14ch] text-balance font-mono font-bold tracking-[-0.04em]"
               style={h1Style}
             >
-              Your agent. <span className="italic text-muted-foreground">Every stack.</span>
+              {m.mcpHeroTitleA()}{" "}
+              <span className="italic text-muted-foreground">{m.mcpHeroTitleB()}</span>
             </h1>
             <p className="mt-6 max-w-lg text-pretty text-sm text-muted-foreground sm:text-base">
-              One local MCP server turns any coding agent into a fullstack scaffolder — schema
-              lookup, compatibility checks, dry-run previews, and project creation through
-              structured tool calls. No hosting, runs via stdio.
+              {m.mcpHeroDescription()}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -311,7 +407,7 @@ function HeroSection() {
                 search={builderSearch}
                 className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-all hover:gap-3"
               >
-                Open the builder
+                {m.mcpOpenBuilder()}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <a
@@ -320,7 +416,7 @@ function HeroSection() {
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
               >
-                what is mcp?
+                {m.mcpReadProtocol()}
                 <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
             </div>
@@ -334,7 +430,7 @@ function HeroSection() {
             className="col-span-12 lg:col-span-5"
           >
             <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-              ✦ add it to your agent
+              ✦ {m.mcpInstallFor()}
             </p>
             <AgentInstallCard />
           </motion.div>
@@ -342,7 +438,7 @@ function HeroSection() {
 
         <div className="mt-14 grid grid-cols-2 border border-border bg-muted/20 lg:grid-cols-4">
           {STATS.map((stat, index) => (
-            <StatCell key={stat.label} stat={stat} index={index} inView={inView} />
+            <StatCell key={stat.id} stat={stat} index={index} inView={inView} />
           ))}
         </div>
       </div>
@@ -383,7 +479,7 @@ function StatCell({
         {stat.suffix ? <span className={ACCENT_TEXT}>{stat.suffix}</span> : null}
       </div>
       <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        {stat.label}
+        {getStatLabel(stat.id)}
       </p>
     </motion.div>
   );
@@ -427,7 +523,7 @@ function AgentInstallCard() {
           <button
             type="button"
             onClick={copyConfig}
-            aria-label={`Copy ${agent.name} configuration`}
+            aria-label={m.mcpCopyAgentConfiguration({ agent: agent.name })}
             className={cn(
               "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
               copied
@@ -448,7 +544,7 @@ function AgentInstallCard() {
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {agent.shell ? "run in your terminal" : `paste into ${agent.file}`}
+          {agent.shell ? m.mcpRunTerminal() : m.mcpPasteInto({ file: agent.file })}
         </p>
         <a
           href="/docs/ai/mcp"
@@ -457,7 +553,7 @@ function AgentInstallCard() {
             ACCENT_TEXT,
           )}
         >
-          full docs
+          {m.mcpDocs()}
           <ArrowUpRight className="size-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </a>
       </div>
@@ -526,17 +622,17 @@ function ToolsSection() {
     <section className="border-b border-border">
       <div className="px-4 pt-20 sm:px-8 sm:pt-24">
         <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-          ✦ the toolbox
+          ✦ {m.mcpToolsEyebrow()}
         </p>
         <h2
           className="mt-4 max-w-[16ch] text-balance font-mono font-bold tracking-[-0.04em]"
           style={h2Style}
         >
-          Seven tools. <span className="italic text-muted-foreground">One workflow.</span>
+          {m.mcpToolsTitleA()}{" "}
+          <span className="italic text-muted-foreground">{m.mcpToolsTitleB()}</span>
         </h2>
         <p className="mt-5 max-w-lg text-pretty text-sm text-muted-foreground sm:text-base">
-          Discover, validate, preview, create. Structured calls instead of guessed CLI flags —
-          the compatibility engine auto-adjusts invalid combinations before they reach disk.
+          {m.mcpToolsDescription()}
         </p>
       </div>
 
@@ -548,7 +644,7 @@ function ToolsSection() {
 
       <div className="border-t border-border bg-muted/20 px-4 py-8 sm:px-8">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          ✦ plus three read-only resources
+          ✦ {m.mcpResources()}
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {RESOURCES.map((resource) => (
@@ -556,7 +652,9 @@ function ToolsSection() {
               <code className={cn("font-mono text-xs font-semibold", ACCENT_TEXT)}>
                 {resource.uri}
               </code>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{resource.desc}</p>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                {getResourceDescription(resource.id)}
+              </p>
             </div>
           ))}
         </div>
@@ -585,7 +683,7 @@ function ToolRow({ tool, index }: { tool: ToolInfo; index: number }) {
         <code className="font-mono text-sm font-semibold sm:text-base">{tool.name}</code>
       </span>
       <span className="col-span-10 col-start-3 mt-1 text-xs text-muted-foreground sm:col-span-6 sm:col-start-7 sm:mt-0 sm:text-sm">
-        {tool.description}
+        {getToolDescription(tool.id)}
       </span>
     </motion.li>
   );
@@ -598,24 +696,24 @@ function WorkflowSection() {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10">
           <div className="col-span-12 lg:col-span-5">
             <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-              ✦ how it works
+              ✦ {m.mcpWorkflowEyebrow()}
             </p>
             <h2
               className="mt-4 max-w-[14ch] text-balance font-mono font-bold tracking-[-0.04em]"
               style={h2Style}
             >
-              You describe. <span className="italic text-muted-foreground">It builds.</span>
+              {m.mcpWorkflowTitleA()}{" "}
+              <span className="italic text-muted-foreground">{m.mcpWorkflowTitleB()}</span>
             </h2>
             <p className="mt-5 max-w-sm text-pretty text-sm text-muted-foreground sm:text-base">
-              No flags to memorize. The agent walks the tool chain on its own — guidance, schema,
-              validation, preview, scaffold.
+              {m.mcpWorkflowDescription()}
             </p>
 
             <ul className="mt-8 space-y-3">
               {TIPS.map((tip) => (
                 <li key={tip} className="flex gap-2.5 text-xs text-muted-foreground sm:text-sm">
                   <span className={cn("shrink-0 font-mono", ACCENT_TEXT)}>—</span>
-                  <span>{tip}</span>
+                  <span>{getTipText(tip)}</span>
                 </li>
               ))}
             </ul>
@@ -635,7 +733,7 @@ function TerminalCard() {
     <div className="overflow-hidden rounded-xl border border-border bg-[#0a0a0a] text-[#fafafa] [color-scheme:dark]">
       <div className="flex items-center justify-between border-b border-[#1f1f1f] px-4 py-3 sm:px-5">
         <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a7a7a]">
-          your agent session
+          {m.mcpTerminalHeader()}
         </span>
         <span className="flex gap-1.5">
           <span className="size-2.5 rounded-full bg-[#2a2a2a]" />
@@ -652,13 +750,12 @@ function TerminalCard() {
           transition={fadeUpTransition}
           className="leading-6 text-[#fafafa]"
         >
-          <span className="text-[#7a7a7a]">you: </span>
-          &ldquo;Create a fullstack TypeScript app with Next.js, Hono, Drizzle, and
-          PostgreSQL.&rdquo;
+          <span className="text-[#7a7a7a]">{m.mcpTerminalYou()} </span>
+          &ldquo;{m.mcpTerminalExample()}&rdquo;
         </motion.p>
 
         {WORKFLOW_LINES.map((line, index) => (
-          <WorkflowLine key={line.name} line={line} index={index} />
+          <WorkflowLine key={line.id} line={line} index={index} />
         ))}
       </div>
     </div>
@@ -684,9 +781,9 @@ function WorkflowLine({
     >
       <span className="text-[#C6E853]">{line.kind === "done" ? "✓" : "→"}</span>
       <span className={cn(line.kind === "done" ? "font-semibold text-[#C6E853]" : "text-[#fafafa]")}>
-        {line.name}
+        {getWorkflowName(line)}
       </span>
-      <span className="text-[#7a7a7a]">{line.note}</span>
+      <span className="text-[#7a7a7a]">{getWorkflowNote(line.id)}</span>
     </motion.p>
   );
 }
@@ -700,31 +797,31 @@ function CtaSection() {
           ACCENT_TEXT,
         )}
       >
-        ✦ benchmarked
+        ✦ {m.mcpFinalEyebrow()}
       </p>
       <h2
         className="mx-auto mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
         style={h2Style}
       >
-        2.6× faster than <span className="italic text-muted-foreground">prompt-only.</span>
+        {m.mcpFinalTitle()}{" "}
+        <span className="italic text-muted-foreground">{m.mcpFinalTitleEmphasis()}</span>
       </h2>
       <p className="mx-auto mt-5 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
-        36 benchmark runs across three frontier models — agents on the MCP path scaffolded faster,
-        burned 4× fewer output tokens, and every project survived a real install and build check.
+        {m.mcpFinalDescription()}
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <a
           href="/#benchmark"
           className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-all hover:gap-3"
         >
-          See the benchmark
+          {m.mcpViewBenchmark()}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </a>
         <a
           href="/docs/ai/mcp"
           className="group inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          read the docs
+          {m.mcpReadDocs()}
           <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </a>
       </div>

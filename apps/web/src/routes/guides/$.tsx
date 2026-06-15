@@ -3,6 +3,8 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { GuidePageContent } from "@/components/guides/guide-page";
 import { guidePageHead } from "@/lib/guides/seo";
 import { getGuidePage, preloadGuidePageContent } from "@/lib/guides/source";
+import { localizeGuideFrontmatter } from "@/lib/i18n/content-copy";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/guides/$")({
   loader: ({ params }) => {
@@ -19,9 +21,9 @@ export const Route = createFileRoute("/guides/$")({
     loaderData
       ? guidePageHead({
           url: `/guides/${loaderData.slug.join("/")}`,
-          frontmatter: loaderData.frontmatter,
+          frontmatter: localizeGuideFrontmatter(loaderData.slug, loaderData.frontmatter),
         })
-      : guidePageHead({ url: "/guides", frontmatter: { title: "Guides" } }),
+      : guidePageHead({ url: "/guides", frontmatter: { title: m.navGuides() } }),
   component: GuidesSplatPage,
 });
 

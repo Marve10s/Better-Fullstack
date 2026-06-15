@@ -1,0 +1,77 @@
+---
+title: Servicio Rust gRPC con Tonic y SQLx
+description: Crea un servicio Rust gRPC con Axum, Tonic, SQLx, tracing y manejo de errores estructurado usando Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - tonic
+  - grpc
+  - sqlx
+keywords:
+  - rust grpc starter
+  - tonic sqlx starter
+  - axum tonic grpc
+  - create rust grpc service
+  - rust microservice boilerplate
+---
+
+Usa este stack cuando necesites un backend Rust orientado a APIs servicio-a-servicio y contratos gRPC tipados.
+
+```npm
+npm create better-fullstack@latest my-rust-grpc -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sqlx \
+  --rust-api tonic \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Que crea
+
+- Un servicio Rust usando Axum.
+- Tonic para gRPC.
+- SQLx para acceso a base de datos.
+- tracing y manejo de errores estructurado.
+
+## Forma generada
+
+Este stack combina endpoints operacionales Axum con una frontera gRPC Tonic. SQLx mantiene el acceso a datos explicito, y tracing da observabilidad desde startup hasta requests de servicio.
+
+Forma representativa:
+
+```txt
+my-rust-grpc/
+  Cargo.toml
+  proto/
+  build.rs
+  src/
+    main.rs
+    grpc/
+    routes/
+    db/
+```
+
+Mantiene contratos protobuf como la superficie publica del servicio. El SQL y las migraciones pertenecen en la capa de datos, no en handlers gRPC.
+
+## Compatibilidad
+
+`--rust-api tonic` agrega el flujo gRPC. `--rust-orm sqlx` significa que debes gestionar SQL, migraciones y compatibilidad de queries con cuidado. Para APIs HTTP de cara al navegador, empieza con [Axum con PostgreSQL y SeaORM](/guides/rust/axum-postgres-seaorm/).
+
+## Pruebas y despliegue
+
+Prueba comportamiento a nivel protobuf con clientes generados o tipos Tonic, y prueba funciones de repository contra PostgreSQL real cuando la correccion de queries importe.
+
+```bash
+cargo test
+```
+
+En CI, asegura que el tooling protobuf este disponible si el proyecto genera tipos Rust durante el build. En despliegue, expone el puerto gRPC esperado por clientes y manten health routes HTTP separadas si tu plataforma requiere probes distintos.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Lee la [documentacion del ecosistema Rust](/docs/ecosystems/rust/).

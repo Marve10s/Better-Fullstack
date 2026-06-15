@@ -1,0 +1,90 @@
+---
+title: Next.js AI CLI Agent Workbench
+description: 使用 Better Fullstack 创建包含 AI CLI、MCP、Skills、Better Auth、Drizzle、SQLite 和 agent docs 的 Next.js app。
+updated: 2026-05-12
+category: AI Tools
+tags:
+  - nextjs
+  - ai-cli
+  - mcp
+  - agents
+keywords:
+  - nextjs ai cli starter
+  - ai agent workbench starter
+  - mcp nextjs starter
+  - create ai app nextjs
+  - ai coding agent project
+---
+
+当你希望 Next.js project 为 AI-assisted development workflows、local MCP tooling 和 generated agent documentation 做好准备时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-agent-workbench -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons mcp skills \
+  --ai-docs claude-md agents-md cursorrules \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## 创建内容
+
+- 带 local fullstack setup 的 Next.js app。
+- SQLite 和 Drizzle。
+- Better Auth。
+- AI CLI configuration。
+- MCP 和 Skills add-ons。
+- 根据所选 flags 生成面向 agents 的 documentation files，例如 `CLAUDE.md`、`AGENTS.md` 或 `.cursorrules`。
+
+## 生成结构
+
+这个 preset 既是 application scaffold，也是 agent-workflow scaffold。web app 是普通 Next.js fullstack project，而 add-ons 会为 coding agents 和 local AI tooling 创建 repository context。
+
+代表性结构：
+
+```txt
+my-agent-workbench/
+  bts.jsonc
+  AGENTS.md
+  CLAUDE.md
+  .cursorrules
+  app/
+  components/
+  lib/
+    auth/
+    db/
+```
+
+具体 documentation files 取决于 `--ai-docs claude-md agents-md cursorrules`。这个命令请求全部三种格式，让不同 agent tools 可以按偏好的格式找到项目指南。
+
+## AI pieces 如何配合
+
+`--ai ai-cli` 选择 AI CLI support。`--addons mcp skills` 添加围绕 MCP 和 skills 的 local agent capabilities。`--ai-docs` 控制生成哪些 repository instruction files。
+
+这些 pieces 用于不同工作：AI CLI 处理 local command-line AI workflow，MCP 作为 tool/context bridge，Skills 标准化 reusable agent instructions，agent docs 说明项目结构。
+
+## 兼容性
+
+- 这个 preset 使用 TypeScript Next.js app 和 `--backend self`，因此 Next.js 拥有 server boundary。
+- `--addons mcp skills` 是 development-workflow additions，不会替换 app authentication、database 或 API choices。
+- `--ai-docs claude-md agents-md cursorrules` 会为不同工具生成多个 instruction formats。
+- SQLite 适合 local workbench-style projects。如果 workbench 变成带 shared state 的 multi-user production product，请使用 PostgreSQL。
+
+## 部署
+
+像普通 fullstack application 一样部署 Next.js app：配置 Better Auth secrets、app URL 和 database settings。AI provider keys、MCP credentials 和任何 tool tokens 都应作为 server-side secrets。
+
+Agent docs 通常应进入 source control。Local credentials、generated logs 和 machine-specific MCP config 通常不应提交。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?preset=ai-cli-agent-workbench&view=command)。
+- 阅读 [AI agents docs](/docs/ai/overview/)。
+- 了解 [Better Fullstack MCP server](/mcp) 的工作方式。

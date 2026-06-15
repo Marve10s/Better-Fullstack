@@ -3,6 +3,8 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { BlogPostPageContent } from "@/components/blog/blog-page";
 import { blogPostHead } from "@/lib/blog/seo";
 import { getBlogPost, preloadBlogPostContent } from "@/lib/blog/source";
+import { localizeBlogFrontmatter, localizeBlogPost } from "@/lib/i18n/content-copy";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/blog/$")({
   loader: ({ params }) => {
@@ -19,9 +21,9 @@ export const Route = createFileRoute("/blog/$")({
     loaderData
       ? blogPostHead({
           url: `/blog/${loaderData.slug.join("/")}`,
-          frontmatter: loaderData.frontmatter,
+          frontmatter: localizeBlogFrontmatter(loaderData.slug, loaderData.frontmatter),
         })
-      : blogPostHead({ url: "/blog", frontmatter: { title: "Blog" } }),
+      : blogPostHead({ url: "/blog", frontmatter: { title: m.navBlog() } }),
   component: BlogSplatPage,
 });
 
@@ -29,5 +31,5 @@ function BlogSplatPage() {
   const { slug } = Route.useLoaderData();
   const post = getBlogPost(slug);
   if (!post) throw notFound();
-  return <BlogPostPageContent post={post} />;
+  return <BlogPostPageContent post={localizeBlogPost(post)} />;
 }

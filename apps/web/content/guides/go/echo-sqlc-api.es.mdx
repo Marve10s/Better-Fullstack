@@ -1,0 +1,88 @@
+---
+title: Echo con SQLC
+description: Crea un proyecto API en Go con Echo, SQLC, Zap logging y scaffolding Go de Better Fullstack.
+updated: 2026-05-12
+category: Go
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+Usa este stack cuando quieras una API Go con Echo y acceso a datos SQL-first.
+
+```npm
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## Que crea
+
+- Un proyecto API Go usando Echo.
+- SQLC como opcion de acceso a base de datos.
+- Zap para logging.
+- Sin gRPC, CLI ni addon de auth por defecto.
+
+## Forma generada
+
+Este stack es una API Go SQL-first. Echo proporciona la capa HTTP, SQLC genera metodos y tipos Go desde SQL, y Zap maneja logs estructurados.
+
+Forma representativa:
+
+```txt
+my-echo-api/
+  go.mod
+  sqlc.yaml
+  queries/
+    users.sql
+  migrations/
+    001_create_users.sql
+  cmd/
+    server/
+      main.go
+  internal/
+    db/
+      generated/
+    handlers/
+    services/
+```
+
+Mantiene SQL bajo control de versiones y revisa cambios de consultas con el mismo cuidado que el codigo Go. SQLC hace mas seguro el lado Go, pero no reemplaza el diseno de schema.
+
+## Compatibilidad
+
+Esta guia usa intencionalmente `--go-api none`, `--go-cli none` y `--go-auth none` para mantener el scaffold enfocado en una API HTTP. Mantiene `--go-orm sqlc` cuando quieras codigo de consultas generado desde SQL. Usa la guia gRPC si la frontera de servicio debe ser protobuf en vez de JSON.
+
+## Cuando elegirlo
+
+Elige Echo con SQLC cuando quieras SQL explicito y tipos Go generados sin adoptar un ORM de nivel mas alto.
+
+SQLC mantiene visible el comportamiento de base de datos, pero escribes mas SQL. Si quieres un flujo ORM convencional, usa [Gin con PostgreSQL y GORM](/guides/go/gin-postgres-gorm/).
+
+## Pruebas y despliegue
+
+Ejecuta pruebas Go para handlers y servicios, e incluye pruebas de integracion con base real para consultas importantes.
+
+```bash
+go test ./...
+```
+
+Cuando cambie SQL, regenera la salida SQLC con el comando documentado en el proyecto generado antes de confiar en el compilador. En despliegue, ejecuta migraciones antes de iniciar la API.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none).
+- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).

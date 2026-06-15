@@ -1,0 +1,89 @@
+---
+title: Axum con PostgreSQL y SeaORM
+description: Crea una API Rust con Axum, PostgreSQL, SeaORM, tracing y manejo de errores estructurado usando Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - axum
+  - postgres
+  - seaorm
+  - tracing
+keywords:
+  - axum postgres starter
+  - rust api boilerplate
+  - axum seaorm starter
+  - create rust api project
+  - rust postgres api
+---
+
+Usa este stack cuando quieras un backend Rust con framework HTTP moderno, persistencia relacional, logging y manejo explicito de errores.
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Que crea
+
+- Un proyecto API Rust usando Axum.
+- PostgreSQL como opcion de base de datos.
+- SeaORM para acceso a datos.
+- tracing para logging estructurado.
+- Manejo de errores estilo Anyhow y Thiserror.
+
+## Forma generada
+
+Este stack produce un servicio backend, no una app fullstack. El proyecto da una frontera HTTP tipada en Axum, una capa de base de datos controlada por SeaORM y logging por request mediante `tracing`.
+
+Fronteras importantes:
+
+- Routes delgadas traducen input HTTP a llamadas de aplicacion.
+- Modelos y entidades SeaORM controlan mapping de base de datos.
+- Errores se modelan explicitamente y se convierten a respuestas HTTP en el borde.
+- Configuracion se lee una vez al arrancar para cablear pools, routers y logging de forma predecible.
+
+## Arbol representativo
+
+```txt
+my-rust-api/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    config.rs
+    error.rs
+    routes/
+    entities/
+    services/
+```
+
+Usa `routes/` para mecanica HTTP, `services/` para comportamiento de aplicacion y `entities/` para tipos de modelo SeaORM generados o mantenidos.
+
+## Compatibilidad
+
+Mantiene `--rust-web-framework axum`, `--database postgres` y `--rust-orm sea-orm` juntos para la forma de esta guia. Si cambias ORM a `sqlx`, espera mas SQL escrito a mano y menos tipos estilo entity. Si `--rust-web-framework` es `none`, los ejemplos de rutas ya no aplican.
+
+## Pruebas y despliegue
+
+Empieza probando handlers y servicios por separado. Los tests de handler pueden construir un router Axum con estado de prueba; los tests de servicio pueden usar una base PostgreSQL descartable.
+
+```bash
+cargo test
+```
+
+Antes de desplegar, asegura una cadena PostgreSQL y el paso de migracion que use el proyecto. En produccion, define `RUST_LOG` explicitamente:
+
+```bash
+RUST_LOG=info cargo run
+```
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=rust&rwf=axum&db=postgres&rorm=sea-orm&rlog=tracing&reh=anyhow-thiserror).
+- Lee la [documentacion del ecosistema Rust](/docs/ecosystems/rust/).
+- Revisa la [referencia de CLI create](/docs/cli/create/).

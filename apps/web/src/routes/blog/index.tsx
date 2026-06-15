@@ -5,6 +5,8 @@ import type { CSSProperties } from "react";
 import { formatPostDate } from "@/components/blog/blog-page";
 import { blogIndexHead } from "@/lib/blog/seo";
 import { getAllBlogPosts } from "@/lib/blog/source";
+import { localizeBlogPost } from "@/lib/i18n/content-copy";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/blog/")({
   head: () => blogIndexHead(),
@@ -16,34 +18,31 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-// Static content metadata — safe to compute once at module scope.
-const POSTS = getAllBlogPosts().map((post) => ({
-  post,
-  params: { _splat: post.slug.join("/") },
-}));
-
 function BlogIndexPage() {
+  const posts = getAllBlogPosts().map((post) => ({
+    post: localizeBlogPost(post),
+    params: { _splat: post.slug.join("/") },
+  }));
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-16 sm:px-8 sm:py-20">
       <header>
         <p className="font-mono text-xs uppercase tracking-[0.22em] text-lime-700 dark:text-[#C6E853]">
-          ✦ blog
+          ✦ {m.navBlog()}
         </p>
         <h1
           className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
           style={headingStyle}
         >
-          Notes from the workshop.
+          {m.blogTitle()}
         </h1>
         <p className="mt-5 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
-          Benchmarks, releases, and what we learn building a fullstack scaffolder — written up
-          with the data attached.
+          {m.blogDescription()}
         </p>
       </header>
 
       <div className="mt-12 grid gap-4">
-        {POSTS.map(({ post, params }) => (
+        {posts.map(({ post, params }) => (
           <Link
             key={post.url}
             to="/blog/$"

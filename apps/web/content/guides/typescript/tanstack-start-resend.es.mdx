@@ -1,0 +1,86 @@
+---
+title: TanStack Start y Resend
+description: Crea una app TanStack Start con Resend, Better Auth, Drizzle, SQLite, Tailwind CSS y shadcn/ui usando Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - resend
+  - email
+  - better-auth
+keywords:
+  - tanstack start resend
+  - tanstack start email
+  - tanstack start transactional email
+  - create tanstack start resend app
+  - resend fullstack starter
+---
+
+Usa este stack cuando tu app TanStack Start necesite email transaccional para login, notificaciones de producto, invitaciones u onboarding.
+
+```npm
+npm create better-fullstack@latest my-email-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --email resend \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Que crea
+
+- Una app TanStack Start con su propia capa de rutas de servidor.
+- Resend como opcion de proveedor de email.
+- Better Auth con soporte de base relacional.
+- Drizzle y SQLite para desarrollo local.
+- Tailwind CSS y shadcn/ui para la interfaz.
+
+## Forma generada
+
+Este stack parte de la forma fullstack de TanStack Start y agrega configuracion de proveedor de email. El proveedor se elige con `--email resend`; el resto de la app sigue usando `--backend self`, asi que no necesitas un servidor API separado solo para enviar correo.
+
+Forma representativa:
+
+```txt
+my-email-app/
+  bts.jsonc
+  src/
+    routes/
+    lib/
+      auth/
+      db/
+      email/
+```
+
+El codigo de entrega de email deberia vivir detras de un helper pequeno solo de servidor para que los componentes React nunca importen secretos del proveedor.
+
+## Casos de uso
+
+- Magic links y emails de verificacion.
+- Invitaciones de equipo.
+- Emails de prueba u onboarding.
+- Notificaciones de producto desde server actions o rutas API.
+
+## Compatibilidad
+
+- `--email resend` es aditivo. No reemplaza `--auth better-auth`, `--api trpc` ni `--backend self`.
+- El envio de email debe ejecutarse en servidor. Nunca expongas la API key de Resend en variables publicas ni bundles del navegador.
+- SQLite es comodo para desarrollo local. Si los flujos de email dependen de auditoria durable, reintentos o registros de equipo, PostgreSQL puede ser mejor en produccion.
+- Los flujos de email de Better Auth y las notificaciones de producto pueden compartir proveedor, pero conviene separarlos a nivel de funcion.
+
+## Despliegue
+
+Configura API key de Resend, dominio remitente, secretos de Better Auth y URL de app en el entorno de despliegue. Completa verificacion de dominio antes de depender de correo de produccion.
+
+Para previews, usa un remitente restringido o una allowlist de destinatarios de prueba si la app puede disparar emails desde trafico no confiable.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc).
+- Compara opciones de email en la [referencia de CLI create](/docs/cli/create/).
+- Empieza por la guia mas amplia de [TanStack Start](/guides/typescript/create-tanstack-start-project/).

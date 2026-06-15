@@ -1,0 +1,78 @@
+---
+title: Agente AI FastAPI con LangChain
+description: Crea una API Python AI con FastAPI, LangChain, SQLModel, Pydantic y Ruff usando Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - langchain
+  - ai
+  - sqlmodel
+keywords:
+  - fastapi langchain starter
+  - python ai agent starter
+  - fastapi ai api
+  - create langchain api
+  - python ai boilerplate
+---
+
+Usa este stack cuando quieras una API Python preparada para codigo de aplicaciones AI.
+
+```npm
+npm create better-fullstack@latest my-python-ai-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-ai langchain \
+  --python-quality ruff
+```
+
+## Que crea
+
+- Un proyecto FastAPI.
+- LangChain como opcion de libreria AI Python.
+- SQLModel y Pydantic.
+- Ruff para calidad de codigo.
+
+## Forma generada
+
+Este scaffold arranca con una API HTTP, persistencia SQLModel y modulos helper LangChain. La capa de rutas maneja validacion y respuestas streaming, mientras el modulo AI controla llamadas de modelo. Esa separacion importa cuando prompts, retrieval, tools y persistencia cambian a ritmos distintos.
+
+Forma representativa:
+
+```txt
+my-python-ai-api/
+  pyproject.toml
+  app/
+    main.py
+    api/
+    ai/
+    models/
+  tests/
+```
+
+## Compatibilidad
+
+`--python-ai langchain` agrega piezas AI al proyecto, pero no reemplaza FastAPI, SQLModel ni Pydantic. Mantiene keys de proveedores AI y credenciales de tools en variables de entorno de servidor, nunca en respuestas publicas.
+
+## Cuando elegirlo
+
+Elige este stack para APIs AI, agent workbenches, prototipos con retrieval o productos que necesiten endpoint HTTP alrededor de llamadas de modelo.
+
+## Pruebas y despliegue
+
+Valida al menos que el proyecto compile y que Ruff pase antes de publicar cambios:
+
+```bash
+python -m compileall .
+ruff check .
+```
+
+En despliegue, configura secretos de proveedor AI, limites de timeout y politica de logging. No registres prompts con datos sensibles sin una politica explicita de retencion.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff).
+- Lee la [documentacion AI](/docs/ai/overview/).
+- Compara con [FastAPI con PostgreSQL y SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/).

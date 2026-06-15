@@ -1,0 +1,74 @@
+---
+title: Starter de Qwik City App
+description: Crea una app Qwik City con Tailwind CSS y una configuracion minima de proyecto Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - qwik
+  - qwik-city
+  - tailwind
+keywords:
+  - qwik city starter
+  - create qwik app
+  - qwik tailwind starter
+  - qwik boilerplate
+  - better fullstack qwik
+---
+
+Usa este stack cuando quieras una app Qwik sin agregar backend ni base de datos el primer dia.
+
+```npm
+npm create better-fullstack@latest my-qwik-app -- \
+  --ecosystem typescript \
+  --frontend qwik \
+  --backend none \
+  --runtime none \
+  --database none \
+  --orm none \
+  --auth none \
+  --api none \
+  --css-framework tailwind \
+```
+
+## Que crea
+
+- Una app Qwik.
+- Tailwind CSS.
+- Sin base de datos, ORM, auth ni capa API por defecto.
+- Una configuracion de proyecto generada que puedes extender despues.
+
+## Forma generada
+
+Esta guia empieza de forma intencional con una app Qwik City solo frontend. Sirve cuando quieres preparar shell, routing y estilos antes de elegir backend o persistencia.
+
+Forma representativa:
+
+```txt
+my-qwik-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+```
+
+El `bts.jsonc` generado registra que backend, runtime, database, ORM, auth y API son `none`. Asi la naturaleza minima del stack queda explicita.
+
+## Compatibilidad
+
+Qwik tiene soporte backend/API mas estrecho en Better Fullstack que React, Nuxt, Svelte o Solid. Esta guia mantiene el stack deliberadamente minimo y compatible.
+
+Como el comando usa `--backend none`, `--database none`, `--orm none`, `--auth none` y `--api none`, no deberia generar contratos de servidor ni modelos de base de datos. Si necesitas eso desde el primer dia, elige una combinacion framework/backend con soporte Better Fullstack mas completo.
+
+## Cuando elegirlo
+
+Elige Qwik para apps frontend-first donde resumability y un payload inicial minimo importan mas que un backend generado desde el primer dia.
+
+## Agregar backend despues
+
+Cuando la app necesite datos, decide si Qwik debe quedarse como frontend mientras otro servicio controla la API, o si otro preset Better Fullstack encaja mejor con la necesidad fullstack. Para muchos equipos, agregar una API Hono separada es mas limpio que forzar preocupaciones backend dentro de un scaffold frontend-first.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=qwik&be=none&rt=none&db=none&orm=none&au=none&api=none).
+- Lee la [referencia de CLI create](/docs/cli/create/).
+- Compara con [Astro con React y Hono](/guides/typescript/astro-react-hono/).

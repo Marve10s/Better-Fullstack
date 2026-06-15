@@ -1,4 +1,5 @@
 import mdx from "@mdx-js/rollup";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -12,6 +13,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 import cliPackage from "../cli/package.json";
 
+import { paraglideCompilerOptions } from "./paraglide.config";
 import { remarkExtractToc } from "./src/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "./src/lib/docs/remark-npm-tabs";
 import { contentMetaPlugin } from "./vite-plugins/content-meta";
@@ -43,6 +45,7 @@ export default defineConfig({
   },
   plugins: [
     contentMetaPlugin(),
+    paraglideVitePlugin(paraglideCompilerOptions),
     tsconfigPaths({
       projects: ["./tsconfig.json"],
       ignoreConfigErrors: true,

@@ -1,20 +1,29 @@
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { combinationsMetrics } from "@/lib/combinations-count";
+import { m } from "@/paraglide/messages.js";
 
 const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScientific } =
   combinationsMetrics;
 
-const funFacts = [
-  `${universeLifetimesScientific.mantissa} × 10^${universeLifetimesScientific.exponent} universe lifetimes to test all combinations`,
-  `${combinationsMetrics.universeSandRatioScientific.mantissa} × 10^${combinationsMetrics.universeSandRatioScientific.exponent}× more combinations than grains of sand in the observable universe`,
-  "Across TypeScript, React Native, Rust, Python, Go, and Java",
-  "Each combination scaffolds a unique, production-ready app",
-  "YOLO mode doubles every single one of them",
-];
-
 export default function CombinationsSection() {
+  const funFacts = useMemo(
+    () => [
+      m.homeFactUniverseLifetimes({
+        mantissa: universeLifetimesScientific.mantissa,
+        exponent: universeLifetimesScientific.exponent,
+      }),
+      m.homeFactSand({
+        mantissa: combinationsMetrics.universeSandRatioScientific.mantissa,
+        exponent: combinationsMetrics.universeSandRatioScientific.exponent,
+      }),
+      m.homeFactEcosystems(),
+      m.homeFactUnique(),
+      m.homeFactYolo(),
+    ],
+    [],
+  );
   const [factIndex, setFactIndex] = useState(0);
 
   useEffect(() => {
@@ -22,7 +31,7 @@ export default function CombinationsSection() {
       setFactIndex((i) => (i + 1) % funFacts.length);
     }, 4000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [funFacts.length]);
 
   return (
     <section className="relative border-t border-border bg-muted/30">
@@ -30,7 +39,7 @@ export default function CombinationsSection() {
         <div className="grid grid-cols-12 items-end gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-6">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ combinatorics
+              ✦ {m.homeCombinatorics()}
             </p>
             <h2
               className="mt-4 max-w-[14ch] text-balance font-mono font-bold tracking-[-0.04em]"
@@ -39,11 +48,11 @@ export default function CombinationsSection() {
                 lineHeight: 0.98,
               }}
             >
-              Infinite <span className="italic text-muted-foreground">possibilities.</span>
+              {m.homeInfinite()}{" "}
+              <span className="italic text-muted-foreground">{m.homePossibilities()}</span>
             </h2>
             <p className="mt-5 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
-              Mix and match frameworks, databases, auth, payments, AI, and more. Every combination
-              scaffolds a working, production-ready codebase.
+              {m.homeCombinationsDescription()}
             </p>
           </div>
 
@@ -75,7 +84,7 @@ export default function CombinationsSection() {
               </span>
             </div>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground sm:text-right">
-              possible project combinations
+              {m.homePossibleCombinations()}
             </p>
             <div className="mt-4 h-6 overflow-hidden">
               <p
@@ -91,19 +100,19 @@ export default function CombinationsSection() {
         <div className="mt-14 grid grid-cols-12 gap-x-4 gap-y-3 border-t border-border pt-10 sm:gap-y-0">
           <div className="col-span-12 sm:col-span-3">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              ✦ at 1ms per test
+              ✦ {m.homeAtOneMs()}
             </p>
           </div>
           <div className="col-span-12 sm:col-span-9">
             <p className="text-pretty text-base sm:text-lg">
               <span className="font-mono font-semibold tabular-nums">
                 {yearsAtOneMillisecondScientific.mantissa} × 10
-                <sup>{yearsAtOneMillisecondScientific.exponent}</sup> years
+                <sup>{yearsAtOneMillisecondScientific.exponent}</sup> {m.homeYears()}
               </span>{" "}
-              <span className="text-muted-foreground">— that&rsquo;s</span>{" "}
+              <span className="text-muted-foreground">— {m.homeThatIs()}</span>{" "}
               <span className="font-mono font-semibold text-ink dark:text-brand">
                 {universeLifetimesScientific.mantissa} × 10
-                <sup>{universeLifetimesScientific.exponent}</sup> universe lifetimes
+                <sup>{universeLifetimesScientific.exponent}</sup> {m.homeUniverseLifetimes()}
               </span>
               <span className="text-muted-foreground">.</span>
             </p>

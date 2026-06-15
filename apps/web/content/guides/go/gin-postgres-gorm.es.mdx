@@ -1,0 +1,86 @@
+---
+title: Gin con PostgreSQL y GORM
+description: Crea un proyecto API en Go con Gin, PostgreSQL, GORM, Zap logging y una estructura limpia de Better Fullstack.
+updated: 2026-05-12
+category: Go
+tags:
+  - gin
+  - postgres
+  - gorm
+  - go
+keywords:
+  - gin postgres starter
+  - go api boilerplate
+  - gin gorm starter
+  - create go api project
+  - go postgres api
+---
+
+Usa este stack cuando quieras una API HTTP Go con un router familiar, acceso a datos relacional y estructura pragmatica.
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap
+```
+
+## Que crea
+
+- Un proyecto API Go usando Gin.
+- PostgreSQL como opcion de base de datos.
+- GORM para acceso a datos.
+- Zap para logging estructurado.
+- Un layout generado listo para desarrollo backend.
+
+## Forma generada
+
+Este stack crea una API HTTP Go convencional. Gin maneja rutas y middleware, GORM controla modelos y persistencia, PostgreSQL es el storage, y Zap aporta logs estructurados.
+
+La frontera mas limpia es:
+
+- Handlers HTTP parsean input y devuelven respuestas.
+- Services toman decisiones de negocio.
+- Modelos GORM describen registros persistidos.
+- Setup de base de datos y logger ocurre una vez durante startup.
+
+## Arbol representativo
+
+```txt
+my-go-api/
+  go.mod
+  .env.example
+  cmd/
+    server/
+      main.go
+  internal/
+    config/
+    database/
+    handlers/
+    models/
+    services/
+```
+
+Los proyectos Go generados varian segun opciones, pero conserva esta forma al crecer: framework cerca de handlers y persistencia detras de services o repositories.
+
+## Compatibilidad
+
+Mantiene `--go-web-framework gin`, `--database postgres` y `--go-orm gorm` juntos para el flujo de esta guia. Si cambias a `--go-orm sqlc`, espera archivos SQL y tipos de consulta generados en vez de modelos GORM. Si usas `--go-web-framework none`, se vuelve un proyecto no servidor.
+
+## Pruebas y despliegue
+
+Usa `httptest` para handlers y una base PostgreSQL real para pruebas de integracion de comportamiento GORM.
+
+```bash
+go test ./...
+```
+
+Antes de desplegar, confirma que la app lee la URL de base de datos desde el entorno y que migraciones o auto-migracion coinciden con la politica de release del equipo. Usa campos Zap para request IDs, user IDs y fallos de dependencias.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=go&gwf=gin&db=postgres&gorm=gorm&glog=zap).
+- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).
+- Revisa la [referencia de CLI create](/docs/cli/create/).

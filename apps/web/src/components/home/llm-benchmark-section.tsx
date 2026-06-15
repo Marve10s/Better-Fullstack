@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Data sources:
@@ -512,6 +513,60 @@ const CHART_TABS: readonly TabSpec[] = [
   },
 ] as const;
 
+function getPathShort(path: PathId): string {
+  if (path === "cli") return m.llmPathCliShort();
+  if (path === "prompt") return m.llmPathPromptShort();
+  return PATHS[path].short;
+}
+
+function getPathDetail(path: PathId): string {
+  if (path === "mcp") return m.llmPathMcpDetail();
+  if (path === "cli") return m.llmPathCliDetail();
+  return m.llmPathPromptDetail();
+}
+
+function getModelGroupDetail(detail: string): string {
+  if (detail === "Jun 12 sweep") return m.llmClaudeSweep();
+  if (detail === "Jun 10 sweep") return m.llmCodexSweep();
+  if (detail === "Jun 12 light sweep") return m.llmLightSweep();
+  return detail;
+}
+
+function getAxisLabel(key: MetricKey): string {
+  if (key === "pass") return m.llmBuildsPassing();
+  if (key === "time") return m.llmAvgScaffoldTime();
+  if (key === "tokens") return m.llmOutputTokens();
+  return m.llmFailedBuilds();
+}
+
+function getChartTabLabel(id: TabId): string {
+  if (id === "speed") return m.llmSpeed();
+  if (id === "tokens") return m.llmTokens();
+  return m.llmErrorRate();
+}
+
+function getChartTabNote(id: TabId): string {
+  return id === "error" ? m.llmFastReliable() : m.llmMostEfficient();
+}
+
+function localizeAxis(axis: AxisSpec): AxisSpec {
+  return { ...axis, label: getAxisLabel(axis.key) };
+}
+
+function localizeTab(tab: TabSpec): TabSpec {
+  return {
+    ...tab,
+    label: getChartTabLabel(tab.id),
+    note: getChartTabNote(tab.id),
+    x: localizeAxis(tab.x),
+    y: localizeAxis(tab.y),
+  };
+}
+
+function getAgentHint(agent: AgentTab): string {
+  return agent.id === "cursor" ? m.llmPasteCursor() : m.llmRunInTerminal();
+}
+
 interface LabelPlacement {
   dx?: number;
   dy?: number;
@@ -577,7 +632,7 @@ function computeLabelPlacements(
     x: plotX(comboValue(combo, tab.x.key), tab.x),
     y: plotY(comboValue(combo, tab.y.key), tab.y, tab.yInverted),
     width:
-      (MODELS[combo.model].short.length + PATHS[combo.path].short.length + 3) * LABEL_CHAR_W,
+      (MODELS[combo.model].short.length + getPathShort(combo.path).length + 3) * LABEL_CHAR_W,
   }));
   const obstacles: LabelBox[] = points.map((p) => ({
     x1: p.x - DOT_PAD,
@@ -730,8 +785,7 @@ function Masthead() {
         </h2>
       </div>
       <p className="mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
-        Measuring coding agents on real fullstack scaffolding tasks — time, tokens, cost, and
-        whether the result actually builds.
+        {m.llmBenchmarkDescription()}
       </p>
       <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
         <Link
@@ -739,14 +793,14 @@ function Masthead() {
           params={blogPostParams}
           className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-all hover:gap-2.5"
         >
-          Read the blog
+          {m.llmReadBlog()}
           <ArrowRight className="size-4" />
         </Link>
         <Link
           to="/mcp"
           className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-brand dark:hover:text-brand"
         >
-          Try out MCP
+          {m.llmTryMcp()}
         </Link>
       </div>
     </div>
@@ -802,10 +856,11 @@ function BenchmarkChartCard() {
     [selectedModels],
   );
   // Refit value axes to the visible selection so outliers don't crowd the rest.
-  const tab = useMemo(
+  const fittedTab = useMemo(
     () => ({ ...baseTab, x: fitAxis(baseTab.x, combos), y: fitAxis(baseTab.y, combos) }),
     [baseTab, combos],
   );
+  const tab = useMemo(() => localizeTab(fittedTab), [fittedTab]);
   const labelPlacements = useMemo(() => computeLabelPlacements(combos, tab), [combos, tab]);
   const toggleModel = useCallback((model: ModelId) => {
     setSelectedModels((prev) =>
@@ -837,10 +892,15 @@ function BenchmarkChartCard() {
           <div
             className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
             role="tablist"
-            aria-label="Benchmark metric"
+            aria-label={m.llmBenchmarkMetric()}
           >
             {CHART_TABS.map((t) => (
-              <ChartTabButton key={t.id} tab={t} active={tabId === t.id} onSelect={setTabId} />
+              <ChartTabButton
+                key={t.id}
+                tab={localizeTab(t)}
+                active={tabId === t.id}
+                onSelect={setTabId}
+              />
             ))}
           </div>
           <ModelFilter selectedModels={selectedModels} onToggle={toggleModel} />
@@ -850,7 +910,7 @@ function BenchmarkChartCard() {
       <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
         {/* Labeled, focusable section: WAI scrollable-region pattern */}
         <section
-          aria-label="Benchmark scatter chart: each point is one model and creation path"
+          aria-label={m.llmScatterAria()}
           className="overflow-x-auto"
           tabIndex={0}
         >
@@ -897,10 +957,10 @@ function ModelFilter({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Filter models"
+        aria-label={m.llmFilterModels()}
         className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
       >
-        Models
+        {m.llmModels()}
         <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
           {selectedModels.length}
         </span>
@@ -911,7 +971,7 @@ function ModelFilter({
           <DropdownMenuGroup key={group.label}>
             {index > 0 ? <DropdownMenuSeparator /> : null}
             <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
-              {group.label} · {group.detail}
+              {group.label} · {getModelGroupDetail(group.detail)}
             </DropdownMenuLabel>
             {group.models.map((model) => (
               <ModelMenuItem
@@ -1110,7 +1170,7 @@ function ChartPoint({
           strokeWidth={3}
           paintOrder="stroke"
         >
-          {MODELS[combo.model].short} · {PATHS[combo.path].short}
+          {MODELS[combo.model].short} · {getPathShort(combo.path)}
         </text>
       )}
     </motion.g>
@@ -1179,9 +1239,9 @@ function CardLegend({ models }: { models: readonly ModelId[] }) {
         {PATH_ORDER.map((path) => (
           <span key={path} className="text-xs text-[#71706a] dark:text-[#8a8a8a]">
             <span className="font-mono font-semibold text-[#1b1a17] dark:text-[#dad8d0]">
-              {PATHS[path].glyph} {PATHS[path].short}
+              {PATHS[path].glyph} {getPathShort(path)}
             </span>{" "}
-            — {PATHS[path].detail}
+            — {getPathDetail(path)}
           </span>
         ))}
       </div>
@@ -1216,17 +1276,16 @@ function AgentInstallPanel() {
     >
       <div className="col-span-12 lg:col-span-4">
         <h3 className="max-w-[16ch] text-balance font-mono text-2xl font-bold tracking-[-0.03em] sm:text-3xl">
-          Give your agent the fast path.
+          {m.llmAgentTitle()}
         </h3>
         <p className="mt-3 max-w-sm text-pretty text-sm text-muted-foreground">
-          One MCP server, every spec-to-scaffold tool the benchmark used. Pick your agent, paste,
-          done.
+          {m.llmAgentDescription()}
         </p>
         <a
           href="/docs/ai/mcp"
           className="group mt-4 inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-ink underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-ink/70 dark:text-brand dark:no-underline"
         >
-          all supported clients
+          {m.llmAllSupportedClients()}
           <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </a>
       </div>
@@ -1253,7 +1312,7 @@ function AgentInstallPanel() {
             <button
               type="button"
               onClick={copy}
-              aria-label={`Copy ${agent.label} setup command`}
+              aria-label={m.llmCopyAgentSetupCommand({ agent: agent.label })}
               className={cn(
                 "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
                 copied
@@ -1266,7 +1325,7 @@ function AgentInstallPanel() {
           </div>
         </div>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {agent.hint}
+          {getAgentHint(agent)}
         </p>
       </div>
     </motion.div>

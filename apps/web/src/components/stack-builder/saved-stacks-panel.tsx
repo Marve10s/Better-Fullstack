@@ -29,7 +29,9 @@ import type { StackState } from "@/lib/constant";
 import type { SavedStackEntry } from "@/lib/saved-stacks";
 import { getStackKeyForCategory } from "@/lib/stack-utils";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
+import { getLocalizedCategoryDisplayName } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 /** Subset of keys used for the card highlight badges. */
 const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]> = {
@@ -158,14 +160,14 @@ export function SavedStacksPanel({
       <Dialog open={pendingDeleteEntry !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
         <DialogContent className="sm:max-w-sm" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>Delete Preset</DialogTitle>
+            <DialogTitle>{m.savedDeletePreset()}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{pendingDeleteEntry?.name}&quot;? This action cannot be undone.
+              {m.savedDeleteDescription({ name: pendingDeleteEntry?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={() => setPendingDeleteId(null)}>
-              Cancel
+              {m.builderCancel()}
             </Button>
             <Button
               type="button"
@@ -177,7 +179,7 @@ export function SavedStacksPanel({
                 }
               }}
             >
-              Delete
+              {m.savedDelete()}
             </Button>
           </div>
         </DialogContent>
@@ -193,11 +195,9 @@ export function SavedStacksPanel({
                   className="h-4 w-4"
                 />
               )}
-              {viewingEntry?.name || "Saved preset"}
+              {viewingEntry?.name || m.savedPresetFallback()}
             </DialogTitle>
-            <DialogDescription>
-              Full saved configuration for this preset.
-            </DialogDescription>
+            <DialogDescription>{m.savedFullConfig()}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border/40 bg-muted/[0.03]">
             {viewingConfigEntries.map(([key, value], i) => (
@@ -209,7 +209,7 @@ export function SavedStacksPanel({
                 )}
               >
                 <div className="flex items-center font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                  {key}
+                  {getLocalizedCategoryDisplayName(key, key)}
                 </div>
                 <div className="flex items-center">{renderConfigValue(value)}</div>
               </div>
@@ -220,10 +220,9 @@ export function SavedStacksPanel({
       <div className="flex h-full flex-col overflow-hidden">
         <div className="border-b border-border bg-muted/20 px-3 py-3">
           <div className="space-y-1">
-            <div className="font-mono text-xs text-foreground">Saved Projects & Presets</div>
+            <div className="font-mono text-xs text-foreground">{m.savedTitle()}</div>
             <p className="text-xs text-muted-foreground">
-              Use the save icon in the builder bar to create local presets, then load or update them
-              here.
+              {m.savedDescription()}
             </p>
           </div>
         </div>
@@ -233,11 +232,10 @@ export function SavedStacksPanel({
             <div className="flex h-full min-h-64 items-center justify-center p-6 text-center">
               <div className="space-y-2">
                 <div className="text-sm font-light tracking-tight text-muted-foreground/60">
-                  No saved presets yet
+                  {m.savedEmptyTitle()}
                 </div>
                 <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-                  Save the current builder configuration to create a reusable preset for yourself.
-                  These entries stay in local storage on this browser.
+                  {m.savedEmptyDescription()}
                 </p>
               </div>
             </div>
@@ -272,7 +270,7 @@ export function SavedStacksPanel({
                                 setEditingName("");
                               }}
                             >
-                              Save
+                              {m.builderSavePreset()}
                             </Button>
                           </div>
                         ) : (
@@ -291,7 +289,7 @@ export function SavedStacksPanel({
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40">
-                              Project
+                              {m.savedProject()}
                             </span>
                             <span className="text-[10px] text-muted-foreground/60">
                               {entry.stack.projectName || "my-app"}
@@ -299,7 +297,7 @@ export function SavedStacksPanel({
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40">
-                              Updated
+                              {m.savedUpdated()}
                             </span>
                             <span className="text-[10px] text-muted-foreground/60">
                               {formatSavedAt(entry.updatedAt)}
@@ -327,20 +325,20 @@ export function SavedStacksPanel({
                             }}
                           >
                             <Pencil className="h-3.5 w-3.5" />
-                            Rename
+                            {m.savedRename()}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => onDuplicateEntry(entry.id, `${entry.name} Copy`)}
                           >
                             <Copy className="h-3.5 w-3.5" />
-                            Duplicate
+                            {m.savedDuplicate()}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             variant="destructive"
                             onClick={() => setPendingDeleteId(entry.id)}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            Delete
+                            {m.savedDelete()}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -370,7 +368,7 @@ export function SavedStacksPanel({
                         onClick={() => onLoadEntry(entry.id)}
                       >
                         <FolderOpen className="h-3.5 w-3.5" />
-                        Load
+                        {m.savedLoad()}
                       </Button>
                       <Button
                         type="button"
@@ -380,7 +378,7 @@ export function SavedStacksPanel({
                         onClick={() => setViewingEntryId(entry.id)}
                       >
                         <SlidersHorizontal className="h-3.5 w-3.5" />
-                        View Full Stack
+                        {m.savedViewFullStack()}
                       </Button>
                       <Button
                         type="button"
@@ -390,7 +388,7 @@ export function SavedStacksPanel({
                         onClick={() => onOverwriteEntry(entry.id)}
                       >
                         <Save className="h-3.5 w-3.5" />
-                        Update
+                        {m.savedUpdate()}
                       </Button>
                     </div>
                   </div>

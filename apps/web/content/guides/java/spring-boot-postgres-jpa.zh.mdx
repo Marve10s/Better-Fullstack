@@ -1,0 +1,81 @@
+---
+title: Spring Boot with PostgreSQL and JPA
+description: 使用 Better Fullstack 创建包含 Spring Boot、PostgreSQL、Maven、JPA、JUnit 5 和可选 Spring libraries 的 Java API project。
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - postgres
+  - jpa
+  - java
+keywords:
+  - spring boot postgres starter
+  - spring boot jpa boilerplate
+  - java api starter
+  - create spring boot project
+  - spring boot postgresql api
+---
+
+当你需要带 Spring ecosystem 和 relational persistence 的 Java API 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-testing-libraries junit5
+```
+
+## 创建内容
+
+- 使用 Spring Boot 的 Java project。
+- Maven 作为 build tool。
+- PostgreSQL 作为 database option。
+- JPA 用于 persistence。
+- JUnit 5 用于 testing。
+
+## 生成结构
+
+这个 stack 创建传统 Spring Boot API。Spring Boot 拥有 HTTP runtime，Spring Data JPA 拥有 repositories 和 persistence，PostgreSQL 提供 relational backing store。
+
+代表性结构：
+
+```txt
+my-spring-api/
+  pom.xml
+  src/
+    main/
+      java/
+        .../
+          controllers/
+          entities/
+          repositories/
+          services/
+      resources/
+        application.yml
+    test/
+```
+
+Controllers 应专注 HTTP，services 处理 business decisions，repositories 处理 data access。JPA entities 应描述 persistence，不要把所有 API decisions 直接泄漏出去。
+
+## 兼容性
+
+本指南保持 `--java-web-framework spring-boot`、`--java-build-tool maven`、`--database postgres` 和 `--java-orm spring-data-jpa` 组合。如果把 build tool 改为 Gradle，即使 build files 改变，也应保持相同 package boundaries。
+
+## 测试与部署
+
+用 Maven 运行生成项目的 tests：
+
+```bash
+./mvnw test
+```
+
+部署前，为目标环境配置 PostgreSQL URL、credentials 和 Spring profiles。明确 migrations 是通过 Flyway/Liquibase、pipeline，还是其他 release process 执行。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=maven&db=postgres&jorm=spring-data-jpa&jtest=junit5)。
+- 阅读 [Java ecosystem docs](/docs/ecosystems/java/)。
+- 查看 [CLI create reference](/docs/cli/create/)。

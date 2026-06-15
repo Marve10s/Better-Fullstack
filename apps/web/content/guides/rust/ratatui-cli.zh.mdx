@@ -1,0 +1,78 @@
+---
+title: Rust CLI with Ratatui
+description: 使用 Better Fullstack 的 Rust CLI project scaffolding 创建带 Ratatui 的 Rust terminal UI app。
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+当你想构建 terminal UI，而不是 web service 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## 创建内容
+
+- Rust CLI project。
+- Ratatui 作为 terminal UI option。
+- 不包含 web framework、frontend、ORM 或 API layer。
+
+## 生成结构
+
+这个 stack 创建 terminal application，而不是 server。Ratatui 负责把 widgets 渲染到 terminal 中，app code 拥有 state、events 和 command behavior。
+
+代表性结构：
+
+```txt
+my-rust-cli/
+  Cargo.toml
+  src/
+    main.rs
+    app.rs
+    event.rs
+    ui.rs
+```
+
+把 state 和 transitions 保持在 terminal layer 下方，这样 tests 不依赖真实 rendering。
+
+## 兼容性
+
+`--rust-web-framework none`、`--rust-frontend none`、`--rust-orm none` 和 `--rust-api none` 明确表示项目是 CLI-first。如果之后需要调用 service，请添加独立 client，并保持 UI 解耦。
+
+## 测试与分发
+
+大多数 Ratatui logic 最适合在 terminal layer 以下测试：
+
+```bash
+cargo test
+```
+
+release build 使用：
+
+```bash
+cargo build --release
+```
+
+分发 binary 时，记录 color support、keyboard shortcuts、config file locations，以及工具读取的 environment variables。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none)。
+- 阅读 [Rust ecosystem docs](/docs/ecosystems/rust/)。

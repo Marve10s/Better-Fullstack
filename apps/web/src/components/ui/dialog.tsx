@@ -4,6 +4,7 @@ import { XIcon } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -60,7 +61,7 @@ function DialogContent({
             className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-all duration-150 hover:bg-muted/50 hover:text-foreground focus:outline-none"
           >
             <XIcon className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{m.uiClose()}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>
@@ -97,7 +98,7 @@ function DialogFooter({
         <DialogPrimitive.Close
           className="inline-flex h-9 items-center justify-center rounded-lg border border-border/50 bg-muted/20 px-4 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/40 hover:text-foreground"
         >
-          Close
+          {m.uiClose()}
         </DialogPrimitive.Close>
       )}
     </div>

@@ -41,9 +41,15 @@ function collectMdxFiles(dir: string): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) out.push(...collectMdxFiles(full));
-    else if (entry.isFile() && entry.name.endsWith(".mdx")) out.push(full);
+    else if (entry.isFile() && entry.name.endsWith(".mdx") && !isLocalizedMdxFile(entry.name)) {
+      out.push(full);
+    }
   }
   return out.sort();
+}
+
+function isLocalizedMdxFile(fileName: string): boolean {
+  return /\.(es|zh)\.mdx$/.test(fileName);
 }
 
 export function contentMetaPlugin(): Plugin {

@@ -1,0 +1,78 @@
+---
+title: Rust CLI con Ratatui
+description: Crea una app Rust de terminal con Ratatui usando el scaffolding Rust CLI de Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+Usa este stack cuando quieras construir una UI de terminal en lugar de un servicio web.
+
+```npm
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## Que crea
+
+- Un proyecto Rust CLI.
+- Ratatui como opcion de UI de terminal.
+- Sin web framework, frontend, ORM ni capa API.
+
+## Forma generada
+
+Este stack crea una aplicacion de terminal, no un servidor. Ratatui renderiza widgets en la terminal, mientras tu app controla estado, eventos y comportamiento de comandos.
+
+Forma representativa:
+
+```txt
+my-rust-cli/
+  Cargo.toml
+  src/
+    main.rs
+    app.rs
+    event.rs
+    ui.rs
+```
+
+Mantiene estado y transiciones por debajo de la capa de terminal para que las pruebas no dependan del renderizado real.
+
+## Compatibilidad
+
+Los flags `--rust-web-framework none`, `--rust-frontend none`, `--rust-orm none` y `--rust-api none` dejan claro que el proyecto es CLI-first. Si luego necesita hablar con un servicio, agrega un cliente separado y manten la UI desacoplada.
+
+## Pruebas y distribucion
+
+La mayor parte de la logica Ratatui se prueba mejor por debajo de la terminal:
+
+```bash
+cargo test
+```
+
+Para builds de release:
+
+```bash
+cargo build --release
+```
+
+Al distribuir el binario, documenta soporte de color, atajos de teclado, rutas de config y variables de entorno leidas por la herramienta.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none).
+- Lee la [documentacion del ecosistema Rust](/docs/ecosystems/rust/).

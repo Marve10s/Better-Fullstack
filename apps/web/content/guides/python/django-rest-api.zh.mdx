@@ -1,0 +1,75 @@
+---
+title: Django REST API Starter
+description: 使用 Better Fullstack 创建带 Django、Django REST Framework、SQLAlchemy、Pydantic 和 Ruff 的 Python backend。
+updated: 2026-05-12
+category: Python
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+当你想要 Django conventions，并且项目形态以 API 为中心时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## 创建内容
+
+- 使用 Django 的 Python project。
+- Django REST Framework 作为 Python API option。
+- SQLAlchemy 和 Pydantic selections。
+- Ruff 用于 code quality。
+
+## 生成结构
+
+这个 stack 面向想要 Django ecosystem 但又需要 API-first starting point 的开发者。生成项目记录 `--python-api django-rest-framework`，包含 Django 和 DRF dependencies，设置最小 Django settings module，并暴露 health-style API response。
+
+代表性结构：
+
+```txt
+my-django-api/
+  pyproject.toml
+  app/
+    settings.py
+    urls.py
+    api/
+      views.py
+      serializers.py
+  tests/
+```
+
+Views 和 serializers 应专注 HTTP。把 business rules 放在 services 或 domain modules 中，避免 DRF 成为唯一承载逻辑的位置。
+
+## 兼容性
+
+为了保持这个 shape，应将 `--python-web-framework django` 和 `--python-api django-rest-framework` 一起使用。SQLAlchemy 和 Pydantic 记录 data access 与 validation 偏好；如果换成其他 Python stack，请检查 generated imports 和 settings conventions。
+
+## 测试与部署
+
+运行 tests，或至少验证 package 能 compile：
+
+```bash
+python -m compileall .
+```
+
+部署前配置 settings、database URL 和 secrets。Ruff 应在 CI 中运行，保持生成和新增的 Python code 一致。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff)。
+- 阅读 [Python ecosystem docs](/docs/ecosystems/python/)。

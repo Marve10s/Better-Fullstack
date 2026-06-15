@@ -2,6 +2,7 @@ import { Quote } from "lucide-react";
 import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 import type { Testimonial } from "./testimonials-data";
 
@@ -98,7 +99,7 @@ export default function TestimonialsSection() {
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ on the record
+              ✦ {m.homeTestimonialsEyebrow()}
             </p>
             <h2
               className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
@@ -107,12 +108,14 @@ export default function TestimonialsSection() {
                 lineHeight: 0.98,
               }}
             >
-              People <span className="italic text-muted-foreground">almost</span> love it.
+              {m.homeTestimonialsTitleA()}{" "}
+              <span className="italic text-muted-foreground">{m.homeTestimonialsTitleB()}</span>{" "}
+              {m.homeTestimonialsTitleC()}
             </h2>
           </div>
           <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
             <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
-              Posted on{" "}
+              {m.homeTestimonialsDescriptionA()}{" "}
               <a
                 href="https://app.daily.dev/posts/a42eCYoJk"
                 target="_blank"
@@ -121,7 +124,7 @@ export default function TestimonialsSection() {
               >
                 daily.dev
               </a>{" "}
-              and{" "}
+              {m.homeTestimonialsDescriptionB()}{" "}
               <a
                 href="https://x.com"
                 target="_blank"
@@ -130,7 +133,7 @@ export default function TestimonialsSection() {
               >
                 X
               </a>{" "}
-              by people who shipped with it.
+              {m.homeTestimonialsDescriptionC()}
             </p>
           </div>
         </div>
@@ -144,7 +147,7 @@ export default function TestimonialsSection() {
         {REACTIONS.length > 0 ? (
           <div className="mt-10 flex flex-wrap items-center gap-2">
             <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              ✦ + reactions
+              ✦ {m.homeReactions()}
             </span>
             {REACTIONS.map((t, i) => (
               <ReactionChip key={`${t.name}-${i}`} testimonial={t} index={i} />
@@ -156,9 +159,9 @@ export default function TestimonialsSection() {
           <div className="grid grid-cols-12 gap-x-4 gap-y-4">
             <div className="col-span-12 sm:col-span-3">
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-                ✦ liked on x
+                ✦ {m.homeLikedOnX()}
               </p>
-              <p className="mt-2 text-xs text-muted-foreground">Builders who hearted the launch.</p>
+              <p className="mt-2 text-xs text-muted-foreground">{m.homeLikedDescription()}</p>
             </div>
             <div className="col-span-12 sm:col-span-9">
               <ul className="flex flex-wrap gap-2">

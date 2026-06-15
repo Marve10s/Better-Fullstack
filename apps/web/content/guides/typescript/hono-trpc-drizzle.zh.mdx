@@ -1,0 +1,89 @@
+---
+title: Hono with tRPC and Drizzle
+description: 创建包含 Hono、tRPC、Drizzle、PostgreSQL、TanStack Router、Tailwind CSS 和 Better Auth 的 TypeScript fullstack app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+当你需要快速的 TypeScript API server，以及一个通过 typed client-server calls 连接的独立 React frontend 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## 创建内容
+
+- TanStack Router frontend。
+- 运行在 Bun 上的 Hono backend。
+- PostgreSQL 和 Drizzle。
+- Better Auth。
+- web app 与 API 之间使用 tRPC。
+- frontend 和 server packages 的 monorepo 结构。
+
+## 生成结构
+
+这个命令创建 split app shape：frontend 和 backend 是独立 packages，但会一起生成并共享同一份 stack 配置。这样 API boundary 更明确，同时不放弃 TypeScript inference。
+
+代表性结构：
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+TanStack Router 负责 browser app，Hono 负责 HTTP，Drizzle 负责 database access，tRPC 是二者之间的 typed contract。
+
+## API 模式
+
+当 request handling 应该保持显式和轻量时，Hono 很适合。把 framework middleware、auth context 和 request logging 留在 server package 中。不要把 Hono request objects 泄露到 shared business logic。
+
+tRPC procedures 应该是围绕 server operations 的小型、已验证入口。更大的应用中，只有 client 和 server 都需要时才共享 validation schemas。数据库写入必须保持 server-only。
+
+## 何时选择
+
+当 backend 应保持小、快、明确时，选择 Hono。它适合 API-first products、dashboards、internal tools，以及之后可能拆分 frontend/backend 部署的服务。
+
+## 兼容性
+
+- `--frontend tanstack-router` 加 `--backend hono` 会生成独立 React web app 和 API server。
+- `--runtime bun` 为本指南的 Hono service 选择 Bun。
+- `--api trpc` 适合这里，因为 frontend 基于 React。对于 SvelteKit、Nuxt 或 SolidStart，Better Fullstack 使用 oRPC。
+- PostgreSQL 和 Drizzle 是这种 split service shape 的生产导向组合。
+
+## 部署
+
+如果 hosting 将 frontend 和 Hono server 视为不同部署目标，请按两个目标规划。主动配置 CORS、auth cookie domains 和 public API URLs；split services 会让这些细节变得可见。
+
+API server 需要 PostgreSQL connection string 和 auth secrets。web app 需要 API origin 和公开 app URL。不要把 secrets 放入 frontend build-time public variables。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc)。
+- 阅读 [TypeScript ecosystem docs](/docs/ecosystems/typescript/)。
+- 查看 [CLI create flags](/docs/cli/create/)。

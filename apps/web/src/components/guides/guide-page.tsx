@@ -2,9 +2,24 @@ import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 
-import { mdxComponents } from "@/components/docs/mdx";
 import { TableOfContents } from "@/components/docs/table-of-contents";
+import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
 import { getRelatedGuidePages, type GuidePage, useGuidePageContent } from "@/lib/guides/source";
+import { localizeGuidePage, localizeTocEntries } from "@/lib/i18n/content-copy";
+import { getLocaleDateTag } from "@/lib/i18n/locales";
+import { m } from "@/paraglide/messages.js";
+import { getLocale } from "@/paraglide/runtime.js";
+
+function formatGuideDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString(getLocaleDateTag(getLocale()), {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 export function GuidePageContent({ page }: { page: GuidePage }) {
   // The MDX body chunk loads on demand; render nothing extra while waiting —
@@ -19,8 +34,9 @@ export function GuidePageContent({ page }: { page: GuidePage }) {
 function GuidePageBody({ page }: { page: GuidePage }) {
   const content = useGuidePageContent(page);
   const Content = content.Component;
-  const isIndex = page.slug.length === 0;
-  const relatedGuides = getRelatedGuidePages(page);
+  const localizedPage = localizeGuidePage(page);
+  const isIndex = localizedPage.slug.length === 0;
+  const relatedGuides = getRelatedGuidePages(page).map(localizeGuidePage);
 
   return (
     <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
@@ -30,31 +46,31 @@ function GuidePageBody({ page }: { page: GuidePage }) {
             to="/guides"
             className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
           >
-            Guides
+            {m.navGuides()}
           </Link>
-          {page.frontmatter.category && !isIndex ? (
+          {localizedPage.frontmatter.category && !isIndex ? (
             <span className="ml-2 font-mono text-[0.72rem] text-muted-foreground uppercase">
-              / {page.frontmatter.category}
+              / {localizedPage.frontmatter.category}
             </span>
           ) : null}
-          {page.frontmatter.title ? (
+          {localizedPage.frontmatter.title ? (
             <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
-              {page.frontmatter.title}
+              {localizedPage.frontmatter.title}
             </h1>
           ) : null}
-          {page.frontmatter.description ? (
+          {localizedPage.frontmatter.description ? (
             <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
-              {page.frontmatter.description}
+              {localizedPage.frontmatter.description}
             </p>
           ) : null}
-          {page.frontmatter.updated && !isIndex ? (
+          {localizedPage.frontmatter.updated && !isIndex ? (
             <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
-              Updated {page.frontmatter.updated}
+              {m.guidesUpdated({ date: formatGuideDate(localizedPage.frontmatter.updated) })}
             </p>
           ) : null}
-          {page.frontmatter.tags?.length ? (
+          {localizedPage.frontmatter.tags?.length ? (
             <div className="mt-4 flex flex-wrap gap-2">
-              {page.frontmatter.tags.map((tag) => (
+              {localizedPage.frontmatter.tags.map((tag) => (
                 <span
                   key={tag}
                   className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
@@ -67,8 +83,8 @@ function GuidePageBody({ page }: { page: GuidePage }) {
         </header>
 
         <div className="docs-prose">
-          <MDXProvider components={mdxComponents}>
-            <Content components={mdxComponents} />
+          <MDXProvider components={localizedContentMdxComponents}>
+            <Content components={localizedContentMdxComponents} />
           </MDXProvider>
         </div>
 
@@ -78,7 +94,7 @@ function GuidePageBody({ page }: { page: GuidePage }) {
             aria-labelledby="related-guides"
           >
             <h2 id="related-guides" className="font-semibold text-xl">
-              Related guides
+              {m.guidesRelated()}
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {relatedGuides.map((guide) => (
@@ -103,7 +119,7 @@ function GuidePageBody({ page }: { page: GuidePage }) {
         ) : null}
       </article>
       <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
-        <TableOfContents toc={content.toc} />
+        <TableOfContents toc={localizeTocEntries(content.toc)} />
       </aside>
     </main>
   );

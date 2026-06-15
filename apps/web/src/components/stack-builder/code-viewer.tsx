@@ -13,6 +13,7 @@ import {
   CodeBlockHeader,
   CodeBlockItem,
 } from "@/components/ui/kibo-ui/code-block";
+import * as m from "@/paraglide/messages";
 
 interface CodeViewerProps {
   filePath: string;
@@ -120,7 +121,7 @@ interface EmptyStateProps {
 }
 
 export function CodeViewerEmpty({
-  message = "Select a file to view its content",
+  message = m.builderSelectFileToView(),
 }: EmptyStateProps) {
   return (
     <div className="flex h-full items-center justify-center text-muted-foreground">

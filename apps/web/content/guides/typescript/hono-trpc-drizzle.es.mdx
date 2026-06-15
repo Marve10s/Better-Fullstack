@@ -1,0 +1,89 @@
+---
+title: Hono con tRPC y Drizzle
+description: Crea una app TypeScript fullstack con Hono, tRPC, Drizzle, PostgreSQL, TanStack Router, Tailwind CSS y Better Auth.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+Usa este stack cuando quieras un servidor API TypeScript rapido y un frontend React separado con llamadas cliente-servidor tipadas.
+
+```npm
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Que crea
+
+- Un frontend TanStack Router.
+- Un backend Hono corriendo en Bun.
+- PostgreSQL y Drizzle.
+- Better Auth.
+- tRPC entre la app web y la API.
+- Una estructura monorepo para paquetes de frontend y servidor.
+
+## Forma generada
+
+Este comando crea una app dividida: frontend y backend son paquetes separados, pero se generan juntos y comparten la misma configuracion de stack. Eso hace explicita la frontera de API sin perder inferencia TypeScript.
+
+Forma representativa:
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+TanStack Router controla la app del navegador, Hono controla HTTP, Drizzle controla el acceso a datos y tRPC es el contrato tipado entre ambos.
+
+## Patron de API
+
+Hono es util cuando el manejo de requests debe permanecer explicito y ligero. Mantiene middleware, contexto de auth y logging en el paquete server. Evita filtrar objetos de request de Hono hacia logica compartida de negocio.
+
+Los procedimientos tRPC deberian ser puntos de entrada pequenos y validados alrededor de operaciones de servidor. En apps grandes, comparte schemas solo cuando cliente y servidor los necesiten. Las escrituras de base de datos deben seguir siendo solo de servidor.
+
+## Cuando elegirlo
+
+Elige Hono cuando el backend debe mantenerse pequeno, rapido y explicito. Funciona bien para productos API-first, dashboards, herramientas internas y servicios que luego podrian separar despliegue de frontend y backend.
+
+## Compatibilidad
+
+- `--frontend tanstack-router` con `--backend hono` produce una app React separada y un servidor API.
+- `--runtime bun` selecciona Bun para el servicio Hono.
+- `--api trpc` encaja aqui porque el frontend esta basado en React. Para SvelteKit, Nuxt o SolidStart, Better Fullstack usa oRPC.
+- PostgreSQL y Drizzle son una pareja orientada a produccion para este formato de servicio dividido.
+
+## Despliegue
+
+Planifica dos objetivos desplegables si tu host trata frontend y servidor Hono por separado. Configura CORS, dominios de cookies de auth y URLs publicas de API de forma deliberada; los servicios divididos hacen visibles esos detalles.
+
+El servidor API necesita la cadena de conexion PostgreSQL y secretos de auth. La app web necesita el origen de la API y valores publicos de URL. No pongas secretos en variables publicas de build del frontend.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Lee la [documentacion del ecosistema TypeScript](/docs/ecosystems/typescript/).
+- Revisa las [flags de CLI create](/docs/cli/create/).

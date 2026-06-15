@@ -1,0 +1,81 @@
+---
+title: Fullstack Rust with Axum and Leptos
+description: 使用 Better Fullstack 的 Rust project scaffolding 创建包含 Axum、Leptos 和 SeaORM 的 fullstack Rust app。
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+当你希望生成的应用在 server 和 frontend 两侧都使用 Rust 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## 创建内容
+
+- 基于 Axum 的 Rust server。
+- Leptos 作为 Rust frontend option。
+- SeaORM 用于 database access。
+- tracing 和 structured error handling defaults。
+
+## 生成结构
+
+这个 stack 生成 fullstack Rust app。Axum 负责 server routes 和 shared state，Leptos 负责 frontend UI，SeaORM 负责 entities 与 persistence。
+
+代表性结构：
+
+```txt
+my-rust-fullstack/
+  Cargo.toml
+  src/
+    main.rs
+    routes/
+    entities/
+    services/
+    ui/
+```
+
+让 Axum routes 专注 HTTP 和 server functions，services 负责 application behavior，Leptos components 负责 UI。如果 database queries 可以放在 services 后面，就不要直接混入 components。
+
+## 兼容性
+
+为了保持这个 fullstack shape，请将 `--rust-web-framework axum`、`--rust-frontend leptos` 和 `--rust-orm sea-orm` 一起使用。`--rust-api none` 和 `--rust-cli none` 让 scaffold 专注 web app，而不是 gRPC 或 CLI。
+
+## 何时选择
+
+当减少语言切换的收益高于 Rust compile times 和 Leptos-specific frontend workflow 的成本时，选择这个 stack。它适合 server 和 frontend 都愿意使用 Rust 的团队。
+
+## 测试与部署
+
+对 services 和 model logic 使用 Rust unit tests，并围绕关键 flows 添加 route 或 browser-level tests。
+
+```bash
+cargo test
+```
+
+部署时验证两部分：server 必须接收环境变量，frontend assets 必须通过 generated project scripts 构建。如果应用存储用户数据，请把 database migrations 放进部署路径。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror)。
+- 对比 [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/)。
+- 阅读 [Rust ecosystem docs](/docs/ecosystems/rust/)。

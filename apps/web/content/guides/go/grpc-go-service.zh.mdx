@@ -1,0 +1,86 @@
+---
+title: Go gRPC Service
+description: 使用 Better Fullstack 的 Go service scaffolding 创建带 Gin、gRPC-Go、GORM 和 Zap logging 的 Go backend。
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - grpc
+  - gin
+  - gorm
+keywords:
+  - go grpc starter
+  - grpc-go boilerplate
+  - gin grpc service
+  - create go grpc service
+  - go microservice starter
+---
+
+当你的 Go service 需要 gRPC contracts，并且需要生成好的 backend project shape 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-go-grpc -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-api grpc-go \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## 创建内容
+
+- 使用 Gin 的 Go backend。
+- gRPC-Go 作为 API option。
+- GORM 用于 database access。
+- Zap 用于 logging。
+
+## 生成结构
+
+这个 stack 创建带 typed gRPC boundary 的 Go service。Gin 仍可提供 health 或 operational HTTP endpoints，而 gRPC-Go 拥有其他 backend clients 使用的 service contract。
+
+服务最容易维护的方式是：
+
+- Protobuf files 定义 request 和 response contracts。
+- gRPC handlers 将 transport input 转换为 service calls。
+- GORM models 留在 persistence layer。
+- Gin routes 与 gRPC service surface 保持分离。
+
+## 代表性文件树
+
+```txt
+my-go-grpc/
+  go.mod
+  proto/
+    users/v1/users.proto
+  cmd/
+    server/
+      main.go
+  internal/
+    grpc/
+    http/
+    models/
+    services/
+```
+
+把 generated protobuf output 放在 scaffold 预期的位置，并避免直接编辑 generated files。
+
+## 兼容性
+
+当你需要 generated gRPC wiring 时，保留 `--go-api grpc-go`。如果改成 `--go-api none`，项目会变成普通 HTTP backend，protobuf flow 不再属于 scaffold。`--go-cli none` 让项目保持 service，而不是 command-line tool。
+
+## 测试与部署
+
+先直接测试 service methods，再用 test server 为重要 client-facing behavior 添加 gRPC integration tests。
+
+```bash
+go test ./...
+```
+
+部署时暴露 clients 需要的 gRPC port，并将 HTTP health checks 保持在平台探测的端口。如果 protobuf generation 是 build 的一部分，确保 CI 安装所需 generator tools。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none)。
+- 阅读 [Go ecosystem docs](/docs/ecosystems/go/)。

@@ -1,0 +1,81 @@
+---
+title: Nuxt with Prisma and Better Auth
+description: 创建包含 PostgreSQL、Prisma、Better Auth、oRPC、Tailwind CSS 和 Better Fullstack 项目结构的 Nuxt fullstack app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+当你需要带 relational data、authentication 和 typed API contracts 的 Vue/Nuxt fullstack app 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## 创建内容
+
+- fullstack mode 的 Nuxt app。
+- PostgreSQL 和 Prisma。
+- Better Auth。
+- oRPC 用于 typed API contracts。
+- Tailwind CSS。
+- 可复现的 `bts.jsonc` stack 配置。
+
+## 生成结构
+
+这个 stack 将应用保留在 Nuxt 的 fullstack model 中。Prisma 负责 database schema 和 migrations，Better Auth 负责 authentication behavior，oRPC 提供不依赖 React frontend 的 typed contracts。
+
+代表性结构：
+
+```txt
+my-nuxt-app/
+  bts.jsonc
+  app/
+  server/
+  prisma/
+    schema.prisma
+```
+
+关键边界是：server-only database 和 auth code 留在 Nuxt server modules 或 API handlers 中，Vue components 调用 typed server contracts。
+
+## Models 与 contracts
+
+小型 product model 可以从 Prisma 开始，并通过 identifier 引用 auth users。保持 Better Auth 需要的 models 与 adapter documentation 对齐，并与应用自己的 tables 分开。
+
+用 oRPC 描述 Nuxt app 的已验证 server operations。Authorization checks 应放在 server implementation 中，而不只是 Vue components 中。Client-side guards 改善 UX，但不能保护数据。
+
+## 兼容性
+
+Nuxt 在 Better Fullstack 中使用 oRPC 做 typed contracts。tRPC 保留给 React-based TypeScript frontends，因此本指南故意使用 `--api orpc`。
+
+`--backend self` 是 Nuxt fullstack 的正确选择。如果你想要单独部署的 API server，请选择支持该组合的 backend option，例如 Hono。
+
+## 部署
+
+在部署环境中设置 PostgreSQL connection string、Better Auth secrets 和 public app URL。部署依赖新 schema 的代码前，先运行 Prisma migrations。
+
+对于 serverless platforms，请检查 Prisma Client 如何生成，以及 database connections 如何 pooling。Managed PostgreSQL providers 通常会说明 serverless runtimes 最安全的 connection string。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc)。
+- 对比 [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/)。
+- 阅读 [compatibility reference](/docs/reference/compatibility/)。

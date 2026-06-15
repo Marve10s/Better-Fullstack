@@ -1,5 +1,4 @@
 import {
-  DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_URL,
@@ -9,7 +8,9 @@ import {
   SITE_NAME,
   SITE_URL,
   canonicalUrl,
+  getDefaultDescription,
 } from "@/lib/seo";
+import { m } from "@/paraglide/messages.js";
 
 import type { BlogPost } from "./source";
 
@@ -20,11 +21,11 @@ type JsonLdMeta = {
 function postTitle(post: Pick<BlogPost, "frontmatter">) {
   return post.frontmatter.title
     ? `${post.frontmatter.title} | ${SITE_NAME}`
-    : `Blog | ${SITE_NAME}`;
+    : `${m.navBlog()} | ${SITE_NAME}`;
 }
 
 function postDescription(post: Pick<BlogPost, "frontmatter">) {
-  return post.frontmatter.description ?? DEFAULT_DESCRIPTION;
+  return post.frontmatter.description ?? getDefaultDescription();
 }
 
 function postImage(post: Pick<BlogPost, "frontmatter">) {
@@ -90,7 +91,7 @@ function postJsonLd(post: Pick<BlogPost, "url" | "frontmatter">) {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Blog",
+        name: m.navBlog(),
         item: canonicalUrl("/blog"),
       },
       ...(post.frontmatter.title
@@ -147,9 +148,8 @@ export function blogPostHead(post: Pick<BlogPost, "url" | "frontmatter">) {
 }
 
 export function blogIndexHead() {
-  const title = `Blog | ${SITE_NAME}`;
-  const description =
-    "Engineering write-ups from the Better-Fullstack team: benchmarks, releases, and what we learn building a fullstack scaffolder.";
+  const title = `${m.navBlog()} | ${SITE_NAME}`;
+  const description = m.blogDescription();
   const url = canonicalUrl("/blog");
 
   return {

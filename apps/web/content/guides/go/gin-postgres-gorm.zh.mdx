@@ -1,0 +1,86 @@
+---
+title: Gin with PostgreSQL and GORM
+description: 创建带 Gin、PostgreSQL、GORM、Zap logging 和清晰 Better Fullstack 项目结构的 Go API project。
+updated: 2026-05-12
+category: Go
+tags:
+  - gin
+  - postgres
+  - gorm
+  - go
+keywords:
+  - gin postgres starter
+  - go api boilerplate
+  - gin gorm starter
+  - create go api project
+  - go postgres api
+---
+
+当你需要熟悉的 router、relational database access 和务实项目结构的 Go HTTP API 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap
+```
+
+## 创建内容
+
+- 使用 Gin 的 Go API project。
+- PostgreSQL 作为 database option。
+- GORM 用于 database access。
+- Zap 用于 structured logging。
+- 可直接开始 backend development 的 generated project layout。
+
+## 生成结构
+
+这个 stack 创建传统 Go HTTP API。Gin 处理 routing 和 middleware，GORM 负责 model mapping 与 persistence，PostgreSQL 是 backing store，Zap 提供 structured logs。
+
+最清晰的边界是：
+
+- HTTP handlers 解析 input 并返回 responses。
+- Services 拥有 business decisions。
+- GORM models 描述 persisted records。
+- Database setup 和 logger setup 在 startup 时只发生一次。
+
+## 代表性文件树
+
+```txt
+my-go-api/
+  go.mod
+  .env.example
+  cmd/
+    server/
+      main.go
+  internal/
+    config/
+    database/
+    handlers/
+    models/
+    services/
+```
+
+Generated Go projects 会随 option set 变化，但应用增长时应保持这个 shape：framework code 靠近 handlers，persistence code 放在 services 或 repositories 后面。
+
+## 兼容性
+
+本指南流程需要保持 `--go-web-framework gin`、`--database postgres` 和 `--go-orm gorm` 组合。如果改成 `--go-orm sqlc`，应期待 SQL files 和 generated query types，而不是 GORM models。如果设置 `--go-web-framework none`，项目会变成非 server project。
+
+## 测试与部署
+
+用 `httptest` 测试 handlers，并用真实 PostgreSQL database 做 GORM behavior 的 integration tests。
+
+```bash
+go test ./...
+```
+
+部署前确认 generated app 从环境读取 database URL，并确认 migrations 或 auto-migration behavior 符合团队 release policy。使用 Zap fields 记录 request IDs、user IDs 和 dependency failures。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=go&gwf=gin&db=postgres&gorm=gorm&glog=zap)。
+- 阅读 [Go ecosystem docs](/docs/ecosystems/go/)。
+- 查看 [CLI create reference](/docs/cli/create/)。

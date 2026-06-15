@@ -1,5 +1,4 @@
 import {
-  DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_URL,
@@ -9,7 +8,9 @@ import {
   SITE_NAME,
   SITE_URL,
   canonicalUrl,
+  getDefaultDescription,
 } from "@/lib/seo";
+import { m } from "@/paraglide/messages.js";
 
 import type { GuidePage } from "./source";
 
@@ -20,11 +21,11 @@ type JsonLdMeta = {
 function guideTitle(page: Pick<GuidePage, "frontmatter">) {
   return page.frontmatter.title
     ? `${page.frontmatter.title} | ${SITE_NAME}`
-    : `Guides | ${SITE_NAME}`;
+    : `${m.navGuides()} | ${SITE_NAME}`;
 }
 
 function guideDescription(page: Pick<GuidePage, "frontmatter">) {
-  return page.frontmatter.description ?? DEFAULT_DESCRIPTION;
+  return page.frontmatter.description ?? getDefaultDescription();
 }
 
 function guideImage(page: Pick<GuidePage, "frontmatter">) {
@@ -83,7 +84,7 @@ function guideJsonLd(page: Pick<GuidePage, "url" | "frontmatter">) {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Guides",
+        name: m.navGuides(),
         item: canonicalUrl("/guides"),
       },
       ...(page.frontmatter.title

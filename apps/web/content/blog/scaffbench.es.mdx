@@ -1,0 +1,153 @@
+---
+title: "ScaffBench: medir agentes de codigo en scaffolding fullstack real"
+description: "102 ejecuciones con Claude Code, Codex CLI, Gemini CLI, Kilo y opencode, midiendo velocidad, coste, tokens y builds."
+date: 2026-06-12
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+---
+
+Los agentes de codigo son muy buenos escribiendo codigo y sorprendentemente malos empezando proyectos. Pide a uno que cree un monorepo fullstack de produccion y puede pasar diez minutos escribiendo manifests, lockfiles y config a mano; muchas veces el resultado ni siquiera compila.
+
+ScaffBench mide exactamente eso: un agente en un workspace vacio, una especificacion de proyecto y una pregunta dura al final: **el proyecto generado instala y builda?** Ejecutamos las mismas specs por tres caminos de creacion para aislar cuanto ayuda el tooling:
+
+- **MCP**: el agente usa el servidor MCP de Better-Fullstack para planificar y crear el proyecto.
+- **BF mention**: sin MCP; el prompt apunta al agente a la CLI y docs de Better-Fullstack, y el agente compone el comando `create`.
+- **Prompt**: sin Better-Fullstack; el agente escribe todos los archivos desde cero.
+
+Corrimos la suite completa dos veces: **OpenAI Codex CLI** con tres modelos GPT el 10 de junio y **Claude Code** con tres modelos Claude el 12 de junio. Luego agregamos una barrida ligera con **Gemini CLI**, **Kilo** y **opencode**. En total: 102 ejecuciones y quince modelos.
+
+## Resultados principales
+
+Los numeros principales vienen de la barrida de Claude Code: 36 ejecuciones, tres modelos, tres caminos de creacion y cuatro specs de proyecto. Misma maquina, mismo harness, mismos prompts salvo las instrucciones del modo de creacion.
+
+| Camino de creacion | Tiempo medio | Mediana | Tokens de salida medios | Builds que pasan |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | 113.4s | 85.9s | 5,553 | 12/12 (100%) |
+| BF mention | 219.6s | 172.1s | 11,060 | 9/9 (100%)* |
+| Prompt | 516.2s | 424.0s | 25,859 | 9/12 (75%) |
+
+\* Tres ejecuciones BF mention se excluyen porque fallaron por un bug de nuestro generator, no por una decision del agente.
+
+Tres cosas destacaron:
+
+1. **MCP fue cerca de 4.6 veces mas rapido que prompt-only** en promedio, con unos 4.7 veces menos tokens de salida.
+2. **Todas las ejecuciones MCP pasaron validacion**, para todos los modelos. Prompt-only paso 75%.
+3. **El tooling comprime las diferencias entre modelos.** En el camino MCP incluso el modelo mas pequeno mantuvo 100% de pass rate.
+
+## Metodologia
+
+Cada ejecucion empieza en un directorio vacio con un prompt base que pide crear exactamente un proyecto, no hacer preguntas, no iniciar dev server y reportar comandos y errores al final.
+
+La diferencia entre caminos es la instruccion de creacion:
+
+- Prompt-only prohibe MCP, CLI, website y archivos del repo de Better-Fullstack.
+- MCP exige empezar por `bfs_get_guidance`, usar schema/compatibility/plan cuando haga falta y llamar `bfs_create_project`.
+- BF mention queda en medio: sin MCP tools, pero con permiso para leer la CLI y docs y componer un comando no interactivo.
+
+Las cuatro specs van de ligera a pesada:
+
+| Spec | Que pide |
+| --- | --- |
+| `light-ts` | React + Vite, Hono en Bun, tRPC, SQLite + Drizzle, Tailwind + DaisyUI, Pino, Vitest, Biome, sin auth ni pagos |
+| `heavy-ts` | Next.js, Expo/React Native, Hono, oRPC, PostgreSQL, Better Auth, Stripe, Resend, UploadThing, Effect, TanStack Store/Form/Query, Vercel AI SDK, Socket.IO y mas |
+| `python-ai` | FastAPI, SQLModel, PostgreSQL, Pydantic, JWT auth, Celery, Strawberry GraphQL, LangChain, OpenAI SDK, LangGraph, CrewAI, Ruff |
+| `multi-ecosystem` | Frontend Next.js, backend FastAPI, servicio Go Gin, PostgreSQL compartido |
+
+La validacion corre despues de que el agente termina. TypeScript ejecuta `bun install` y el script de build/check/lint/test del proyecto; Python usa `compileall`; Go descarga modulos y debe compilar. Un proyecto solo cuenta como pass si todas las comprobaciones aplicables salen con codigo cero.
+
+## Por modelo y camino
+
+| Modelo | Camino | Tiempo medio | Tokens de salida medios | Coste (4 specs) | Builds que pasan |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Fable 5 | MCP | 172.6s | 7,590 | $9.34 | 4/4 |
+| Fable 5 | BF mention | 405.7s | 17,748 | $15.66 | 3/3* |
+| Fable 5 | Prompt | 572.8s | 24,905 | $11.26† | 3/4 |
+| Opus 4.8 | MCP | 97.1s | 5,206 | $3.43 | 4/4 |
+| Opus 4.8 | BF mention | 154.7s | 10,596 | $4.12 | 3/3* |
+| Opus 4.8 | Prompt | 510.8s | 21,485 | $6.89† | 3/4 |
+| Sonnet 4.6 | MCP | 70.3s | 3,863 | $1.47 | 4/4 |
+| Sonnet 4.6 | BF mention | 98.3s | 4,834 | $1.31 | 3/3* |
+| Sonnet 4.6 | Prompt | 464.9s | 31,188 | $7.11 | 3/4 |
+
+\* `heavy-ts` excluido por bug del generator. † Las ejecuciones con timeout no reportan coste, asi que estos totales subestiman el gasto real.
+
+## Modelos GPT en Codex CLI
+
+La barrida GPT uso las mismas specs y prompts con Codex CLI dos dias antes de la barrida Claude. Los fallos por bugs de generator se excluyen igual.
+
+| Modelo | Camino | Tiempo medio | Tokens de salida medios | Builds que pasan |
+| --- | --- | ---: | ---: | ---: |
+| GPT-5.3 Codex Spark | MCP | 32.4s | 5,798 | 3/3* |
+| GPT-5.3 Codex Spark | BF mention | 65.6s | 9,894 | 3/3* |
+| GPT-5.3 Codex Spark | Prompt | 44.8s | 31,418 | 2/4 |
+| GPT-5.4 | MCP | 92.0s | 5,172 | 3/3* |
+| GPT-5.4 | BF mention | 156.0s | 7,084 | 3/3* |
+| GPT-5.4 | Prompt | 203.1s | 13,328 | 3/4 |
+| GPT-5.5 | MCP | 76.5s | 3,838 | 2/2* |
+| GPT-5.5 | BF mention | 74.1s | 4,548 | 3/3* |
+| GPT-5.5 | Prompt | 264.2s | 15,650 | 4/4 |
+
+\* Exclusiones por bugs del generator ya corregidos o identificados en esa version anterior.
+
+Lo importante no es comparar vendors de frente, porque corrimos dias y harnesses distintos. Lo importante es que la forma se repite: para cada modelo GPT, MCP fue el camino mas rapido y prompt-only el mas caro en tokens.
+
+## Barrida ligera: Gemini, Kilo y opencode
+
+Para la siguiente tanda usamos una version ligera: una spec (`light-ts`), tres caminos y una ejecucion por celda. Nueve modelos en tres CLIs, todos el 12 de junio.
+
+| Modelo | MCP | BF mention | Prompt-only |
+| --- | --- | --- | --- |
+| Gemini 3.1 Pro | ✅ 60s · 1.6k | ✅ 27s · 0.9k | ✅ 124s · 13.2k |
+| Kimi K2.6 | ✅ 311s · 2.8k | ✅ 24s · 1.6k | ✅ 372s · 13.5k |
+| GLM-5.1 | ✅ 46s · 1.2k | ✅ 67s · 2.2k | ✅ 694s · 29.5k |
+| MiniMax M3 | ✅ 69s · 2.5k | ✅ 32s · 0.8k | ❌ build break |
+| Qwen3.7 Max | ✅ 80s · 2.7k | ✅ 35s · 0.8k | ✅ 379s · 13.3k |
+| DeepSeek-V4 Pro | ✅ 43s · 1.4k | ✅ 40s · 1.4k | ✅ 357s · 11.7k |
+| Step-3.7 Flash | ✅ 45s · 2.0k | ✅ 16s · 0.6k | ❌ broken install |
+| Laguna m.1 | ✅ 225s · 1.6k | ✅ 592s · 3.7k | ✅ 900s (timeout) · 9.4k |
+| Nex N2-Pro | ✅ 227s · 2.4k | ✅ 146s · 1.3k | ❌ build break |
+
+La barrida ligera agrega tres senales:
+
+- Los caminos asistidos fueron 18 de 18. Todos los modelos pasaron tanto MCP como BF mention.
+- Prompt-only es donde el campo se divide. Tres de nueve modelos entregaron proyectos rotos.
+- La economia se mantiene en mas harnesses: todos los caminos asistidos terminaron bajo 3k tokens de salida; todos los prompt-only costaron entre 8k y 36k.
+
+## Analisis cualitativo
+
+### MCP mantiene al agente sobre rieles
+
+Las ejecuciones MCP convergieron en la misma secuencia: `bfs_get_guidance`, compatibility check, plan y `bfs_create_project`. La salida es pequena porque el trabajo del agente se reduce a elegir configuracion; la escritura de archivos queda en el generator de forma determinista. Por eso el pass rate no cae al crecer la spec.
+
+### Prompt-only se ahoga en la spec pesada
+
+En el camino prompt-only, `heavy-ts` vencio a casi todos. Algunos modelos llegaron al timeout de 15 minutos; otros terminaron y no compilaron. El unico outlier claro fue GPT-5.5, que paso `heavy-ts` prompt-only con 542 segundos y 28k tokens de salida. Los modelos frontier pueden escribir un starter a mano, pero es la forma mas lenta, cara y menos fiable de conseguirlo.
+
+### El benchmark tambien audito nuestros templates
+
+Validar cada proyecto generado encontro seis bugs de template en nuestro generator, la mayoria escondidos detras de un mismo sintoma de Storybook/Expo en `heavy-ts`. Cinco se corrigieron y salieron en `create-better-fullstack` 2.0.2 antes de publicar el post. Ejecutar tu propio producto a traves de un benchmark de agentes resulto ser una pasada de QA brutalmente efectiva.
+
+## Limitaciones
+
+- **Una ejecucion por celda en varias partes.** 102 runs bastan para ver estructura, no para intervalos de confianza finos.
+- **Las barridas no son head-to-head.** GPT, Claude y la barrida ligera usan CLIs, dias, versiones y modelos distintos.
+- **Benchmark de nuestra propia herramienta.** La comparacion entre caminos, tooling vs sin tooling, es el hallazgo; no una afirmacion sobre todos los scaffolders.
+- **Builds, no features.** Validar build no demuestra que cada flujo de auth o webhook funcione.
+- **Coste sub-reportado en timeouts.** Runs matados a 900s reportan $0, lo que favorece artificialmente a prompt-only.
+
+## Conclusion
+
+La conclusion de ScaffBench es simple: los agentes mejoran mucho cuando no tienen que inventar el scaffold. Con MCP o una CLI clara, los modelos pasan mas, gastan menos tokens y llegan antes. Prompt-only sigue siendo impresionante, pero para scaffolding fullstack real es la ruta cara y fragil.
+
+Quieres probar el camino rapido? Apunta tu agente al [servidor MCP de Better-Fullstack](/mcp) y pidele que cree algo pesado.

@@ -1,0 +1,57 @@
+---
+title: Crear una app móvil
+description: Crea una app móvil con Expo, React Native y Uniwind usando el pack Mobile App de Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - mobile
+  - expo
+  - react-native
+  - uniwind
+  - typescript
+keywords:
+  - create mobile app
+  - expo app starter
+  - react native starter
+  - uniwind starter
+  - create expo app
+---
+
+Usa el pack Mobile App cuando la primera pantalla deba ser nativa, no web. Empieza con Expo y Uniwind para que puedas construir una interfaz móvil antes de añadir servicios backend.
+
+<StarterPackCta id="mobile-app" />
+
+## Generar el starter móvil
+
+Abre el [pack Mobile App en el Stack Builder](/new?preset=uniwind&view=command), o ejecuta:
+
+```bash
+bun create better-fullstack@latest my-mobile-app \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --api none \
+  --css-framework none \
+  --ui-library none
+```
+
+## Qué incluye el pack
+
+- Expo para el runtime de app nativa.
+- React Native como base de UI.
+- Uniwind para estilos nativos utility-first.
+- Una forma de proyecto frontend-only que se mantiene ligera hasta que hagan falta decisiones backend.
+
+## Primeras cosas para personalizar
+
+1. Reemplaza las pantallas de ejemplo por el flujo móvil principal.
+2. Decide si auth debe ser native-only, respaldado por API o compartido con una app web.
+3. Añade servicios backend solo después de que los límites de datos de la app estén claros.
+4. Valida layouts en tamaños de dispositivo pequeños y grandes desde temprano.
+
+## Cuándo este pack encaja
+
+Elige esto para productos mobile-first, apps companion, prototipos que necesitan sensación nativa y equipos que quieren empezar por la experiencia del dispositivo antes de elegir infraestructura server.
+
+Para un walkthrough de stack, lee [App nativa Expo Uniwind](/guides/react-native/expo-uniwind-native/).

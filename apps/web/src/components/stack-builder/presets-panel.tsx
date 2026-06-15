@@ -2,10 +2,12 @@ import { BookOpen, Check, Pencil, Terminal, Zap } from "lucide-react";
 
 import type { StackState } from "@/lib/constant";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
+import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
 import { DEFAULT_STACK } from "@/lib/stack-defaults";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
-import { getStarterTracksForEcosystem } from "@/lib/starter-tracks";
+import { getStarterTracksForEcosystem, type StarterTrack } from "@/lib/starter-tracks";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 interface PresetsPanelProps {
   stack: StackState;
@@ -83,6 +85,63 @@ function isPresetActive(
   return true;
 }
 
+function getStarterTrackName(track: StarterTrack) {
+  switch (track.id) {
+    case "saas-app":
+      return m.presetTrackSaasName();
+    case "ai-agent-app":
+      return m.presetTrackAiAgentName();
+    case "rest-api":
+      return m.presetTrackRestApiName();
+    case "java-api":
+      return m.presetTrackJavaApiName();
+    case "rust-backend":
+      return m.presetTrackRustBackendName();
+    case "mobile-app":
+      return m.presetTrackMobileAppName();
+    case "internal-tool":
+      return m.presetTrackInternalToolName();
+  }
+}
+
+function getStarterTrackIntent(track: StarterTrack) {
+  switch (track.id) {
+    case "saas-app":
+      return m.presetTrackSaasIntent();
+    case "ai-agent-app":
+      return m.presetTrackAiAgentIntent();
+    case "rest-api":
+      return m.presetTrackRestApiIntent();
+    case "java-api":
+      return m.presetTrackJavaApiIntent();
+    case "rust-backend":
+      return m.presetTrackRustBackendIntent();
+    case "mobile-app":
+      return m.presetTrackMobileAppIntent();
+    case "internal-tool":
+      return m.presetTrackInternalToolIntent();
+  }
+}
+
+function getStarterTrackDescription(track: StarterTrack) {
+  switch (track.id) {
+    case "saas-app":
+      return m.presetTrackSaasDescription();
+    case "ai-agent-app":
+      return m.presetTrackAiAgentDescription();
+    case "rest-api":
+      return m.presetTrackRestApiDescription();
+    case "java-api":
+      return m.presetTrackJavaApiDescription();
+    case "rust-backend":
+      return m.presetTrackRustBackendDescription();
+    case "mobile-app":
+      return m.presetTrackMobileAppDescription();
+    case "internal-tool":
+      return m.presetTrackInternalToolDescription();
+  }
+}
+
 export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
   const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
   const filteredPresets = PRESET_TEMPLATES.filter((p) =>
@@ -95,9 +154,9 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
       <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-1.5 sm:gap-4">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Zap className="h-3.5 w-3.5" />
-          <span>{filteredPresets.length} presets</span>
+          <span>{m.presetCount({ count: filteredPresets.length })}</span>
         </div>
-        <span className="ml-auto text-xs text-muted-foreground">Click to apply</span>
+        <span className="ml-auto text-xs text-muted-foreground">{m.presetClickToApply()}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 sm:p-4">
@@ -106,7 +165,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
             <section>
               <div className="mb-3 flex items-center gap-2">
                 <Zap className="h-4 w-4 text-primary" />
-                <h2 className="font-mono text-sm font-medium">Starter tracks</h2>
+                <h2 className="font-mono text-sm font-medium">{m.presetStarterTracks()}</h2>
                 <span className="text-xs text-muted-foreground">
                   {starterTracks.length}
                 </span>
@@ -116,6 +175,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                 {starterTracks.map((track) => {
                   const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
                   const active = preset ? isPresetActive(preset.stack, stack) : false;
+                  const trackName = getStarterTrackName(track);
 
                   return (
                     <article
@@ -129,17 +189,17 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background">
-                          <TechIcon techId={track.icon} name={track.name} className="h-4 w-4" />
+                          <TechIcon techId={track.icon} name={trackName} className="h-4 w-4" />
                         </div>
                         <span className="rounded-md border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {track.intent}
+                          {getStarterTrackIntent(track)}
                         </span>
                       </div>
 
                       <div className="mt-4">
-                        <h3 className="font-mono text-sm font-medium">{track.name}</h3>
+                        <h3 className="font-mono text-sm font-medium">{trackName}</h3>
                         <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                          {track.description}
+                          {getStarterTrackDescription(track)}
                         </p>
                       </div>
 
@@ -161,14 +221,14 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                           className="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground transition-all group-hover:gap-2"
                         >
                           <Terminal className="h-3.5 w-3.5" />
-                          Apply
+                          {m.presetApply()}
                         </button>
                         <a
                           href={track.guideHref}
                           className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium transition-colors hover:border-muted-foreground/40 hover:bg-muted"
                         >
                           <BookOpen className="h-3.5 w-3.5" />
-                          Guide
+                          {m.presetGuide()}
                         </a>
                       </div>
                     </article>
@@ -200,6 +260,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {categoryPresets.map((preset) => {
+                    const localizedPreset = getLocalizedPresetTemplate(preset);
                     const active = isPresetActive(preset.stack, stack);
                     const highlights = getPresetHighlights(preset.stack);
 
@@ -221,7 +282,7 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                           <span
                             role="button" // eslint-disable-line
                             tabIndex={0}
-                            title="Customize preset"
+                            title={m.presetCustomize()}
                             onClick={(e) => {
                               e.stopPropagation();
                               onCustomizePreset(preset.id);
@@ -250,9 +311,9 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                         </div>
 
                         <div className="space-y-1 pr-6">
-                          <h3 className="font-mono text-sm font-medium">{preset.name}</h3>
+                          <h3 className="font-mono text-sm font-medium">{localizedPreset.name}</h3>
                           <p className="text-xs leading-relaxed text-muted-foreground">
-                            {preset.description}
+                            {localizedPreset.description}
                           </p>
                         </div>
 

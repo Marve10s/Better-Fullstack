@@ -1,0 +1,93 @@
+---
+title: Crear un proyecto TanStack Start
+description: Crea una app TanStack Start fullstack con routing, API routes, Drizzle, SQLite, Better Auth, Tailwind CSS y shadcn/ui.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - react
+  - drizzle
+  - better-auth
+keywords:
+  - create tanstack start project
+  - tanstack start starter
+  - tanstack start boilerplate
+  - tanstack start fullstack app
+  - tanstack start drizzle
+---
+
+Usa este stack cuando quieras una app React fullstack basada en TanStack Router y el modelo de rutas de servidor de TanStack Start.
+
+```npm
+npm create better-fullstack@latest my-tanstack-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Que crea
+
+- Una app TanStack Start con rutas basadas en archivos.
+- Routing fullstack mediante la capa de servidor del framework.
+- SQLite y Drizzle para una base relacional local.
+- Better Auth integrado en la app generada.
+- Tailwind CSS y shadcn/ui para el frontend.
+- Una configuracion reproducible en `bts.jsonc`.
+
+## Forma generada
+
+El proyecto generado esta pensado como una sola app web desplegable, no como un workspace frontend/API separado. TanStack Start controla rutas, funciones de servidor y manejo de requests; Drizzle controla el esquema de base de datos y las consultas.
+
+Forma representativa:
+
+```txt
+my-tanstack-app/
+  bts.jsonc
+  package.json
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      trpc/
+```
+
+Los nombres exactos pueden cambiar, pero la frontera importante se mantiene: el codigo de rutas vive con TanStack Start, el codigo de base de datos queda detras de helpers Drizzle, y los procedimientos API se exponen con `--api trpc`.
+
+## Patron de ruta y API
+
+Una ruta tipica mantiene el estado de UI en React y llama a helpers de API tipados en vez de construir URLs `fetch` a mano. Para trabajo nuevo de API, crea procedimientos estrechos alrededor de casos de uso, no CRUD con forma de tabla desde el primer dia.
+
+Drizzle funciona mejor cuando las definiciones de esquema son pequenas y explicitas. Mantiene las tablas de Better Auth separadas de las tablas de producto; los modelos de producto deberian referenciar el identificador de usuario, no duplicar estado de auth.
+
+## Cuando elegirlo
+
+Elige TanStack Start cuando quieras React, routing tipado, comportamiento fullstack colocalizado y una superficie de framework mas pequena que un framework con muchas decisiones incluidas.
+
+Encaja bien para dashboards, herramientas internas, prototipos SaaS y apps donde la seguridad de tipos en rutas importa.
+
+## Compatibilidad
+
+- `--backend self` es la opcion correcta porque TanStack Start proporciona la capa de servidor de la app.
+- `--api trpc` es compatible con este stack React y da llamadas tipadas de extremo a extremo.
+- SQLite es buen valor por defecto para desarrollo local y despliegues pequenos. Migra a PostgreSQL cuando necesites bases gestionadas, pooling, replicas u operacion mas fuerte.
+- shadcn/ui asume una UI React basada en Tailwind. Si luego quitas Tailwind, revisa imports y clases generadas.
+
+## Despliegue
+
+Antes de desplegar, define variables de entorno para la base de datos, secretos de Better Auth y la URL publica usada por callbacks de auth. Para despliegues SQLite, confirma que el host soporte almacenamiento persistente escribible; muchas plataformas serverless no lo hacen.
+
+Si apuntas a serverless, PostgreSQL suele ser una base de datos de produccion mas segura que un archivo SQLite local. Mantiene `bts.jsonc` versionado para que futuros companeros y agentes puedan reconstruir el stack previsto.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=trpc).
+- Lee la [documentacion del ecosistema TypeScript](/docs/ecosystems/typescript/).
+- Revisa la [referencia de CLI create](/docs/cli/create/).

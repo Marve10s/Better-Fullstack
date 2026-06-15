@@ -79,6 +79,10 @@ import {
   TECH_OPTIONS,
 } from "@/lib/constant";
 import {
+  getLocalizedCategoryDisplayName,
+  getLocalizedTechOption,
+} from "@/lib/i18n/builder-copy";
+import {
   buildSavedStackEntry,
   loadSavedStacks,
   saveSavedStacks,
@@ -93,6 +97,7 @@ import {
 import { ICON_REGISTRY } from "@/lib/tech-icons";
 import { getTechResourceLinks } from "@/lib/tech-resource-links";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 import { PresetsPanel } from "./presets-panel";
 import { SavedStacksPanel } from "./saved-stacks-panel";
@@ -170,19 +175,19 @@ const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
 
 const APP_PLATFORM_OPTION_GROUPS = [
   {
-    heading: "Workspace & Platforms",
+    headingKey: "workspacePlatforms",
     ids: ["turborepo", "docker-compose", "pwa", "tauri", "wxt", "opentui"],
   },
   {
-    heading: "AI Agents",
+    headingKey: "aiAgents",
     ids: ["mcp", "skills"],
   },
   {
-    heading: "Integrations",
+    headingKey: "integrations",
     ids: ["msw", "storybook", "backend-utils"],
   },
   {
-    heading: "TanStack",
+    headingKey: "tanstack",
     ids: ["tanstack-query", "tanstack-table", "tanstack-virtual", "tanstack-db", "tanstack-pacer"],
   },
 ] as const;
@@ -253,43 +258,63 @@ const GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM = Object.fromEntries(
   GRAPH_BACKEND_CONFIGS.map((config) => [config.ecosystem, config]),
 ) as Record<GraphBackendEcosystem, GraphBackendConfig>;
 
+function getAppPlatformGroupHeading(headingKey: (typeof APP_PLATFORM_OPTION_GROUPS)[number]["headingKey"]) {
+  switch (headingKey) {
+    case "workspacePlatforms":
+      return m.builderGroupWorkspacePlatforms();
+    case "aiAgents":
+      return m.builderGroupAiAgents();
+    case "integrations":
+      return m.builderGroupIntegrations();
+    case "tanstack":
+      return "TanStack";
+  }
+}
+
+function getMultiStepLabel(stepId: MultiStackStepId) {
+  switch (stepId) {
+    case "frontend":
+      return getLocalizedCategoryDisplayName("webFrontend", "Frontend");
+    case "backend":
+      return getLocalizedCategoryDisplayName("backend", "Backend");
+    case "database":
+      return getLocalizedCategoryDisplayName("database", "Database");
+    case "mobile":
+      return m.builderStepMobile();
+    case "finalize":
+      return m.builderStepFinalize();
+  }
+}
+
 const MULTI_STACK_STEPS: Array<{
   id: MultiStackStepId;
-  label: string;
-  description: string;
 }> = [
-  { id: "frontend", label: "Frontend", description: "Web UI language and libraries" },
-  { id: "backend", label: "Backend", description: "Server language, framework, and services" },
-  { id: "database", label: "Database", description: "Standalone data service" },
-  { id: "mobile", label: "Mobile", description: "Native app and mobile libraries" },
-  { id: "finalize", label: "Finalize", description: "Package manager" },
+  { id: "frontend" },
+  { id: "backend" },
+  { id: "database" },
+  { id: "mobile" },
+  { id: "finalize" },
 ];
 
-const MULTI_FRONTEND_LIBRARY_GROUPS: Array<{
-  label: string;
-  category: keyof typeof TECH_OPTIONS;
-}> = [
-  { label: "CSS Framework", category: "cssFramework" },
-  { label: "UI Library", category: "uiLibrary" },
-  { label: "State Management", category: "stateManagement" },
-  { label: "App Platforms", category: "appPlatforms" },
-  { label: "Forms", category: "forms" },
-  { label: "Validation", category: "validation" },
-  { label: "Testing", category: "testing" },
-  { label: "Animation", category: "animation" },
+const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
+  "cssFramework",
+  "uiLibrary",
+  "stateManagement",
+  "appPlatforms",
+  "forms",
+  "validation",
+  "testing",
+  "animation",
 ];
 
-const MULTI_MOBILE_LIBRARY_GROUPS: Array<{
-  label: string;
-  category: keyof typeof TECH_OPTIONS;
-}> = [
-  { label: "Navigation", category: "mobileNavigation" },
-  { label: "UI", category: "mobileUI" },
-  { label: "Storage", category: "mobileStorage" },
-  { label: "Testing", category: "mobileTesting" },
-  { label: "Push", category: "mobilePush" },
-  { label: "OTA", category: "mobileOTA" },
-  { label: "Deep Linking", category: "mobileDeepLinking" },
+const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
 ];
 
 const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
@@ -407,7 +432,7 @@ function isGraphFrontendEcosystem(
 }
 
 function getOptionName(category: keyof typeof TECH_OPTIONS, optionId: string) {
-  if (optionId === "none") return "None";
+  if (optionId === "none") return m.builderNone();
   return TECH_OPTIONS[category]?.find((option) => option.id === optionId)?.name ?? optionId;
 }
 
@@ -696,14 +721,14 @@ function getCategoryOptionGroups(
       }
 
       return {
-        heading: group.heading,
+        heading: getAppPlatformGroupHeading(group.headingKey),
         options: groupOptions,
       };
     }).filter((group) => group.options.length > 0);
 
   const ungroupedOptions = options.filter((option) => !assignedIds.has(option.id));
   if (ungroupedOptions.length > 0) {
-    groupedOptions.push({ heading: "Other", options: ungroupedOptions });
+    groupedOptions.push({ heading: m.builderGroupOther(), options: ungroupedOptions });
   }
 
   return groupedOptions;
@@ -734,13 +759,13 @@ function getCategoryRenderGroups(
     return [
       {
         key: "go-auth-libraries",
-        heading: "Libraries",
+        heading: m.builderLibraries(),
         category: "goAuth" as const,
         options: [...categoryOptions],
       },
       {
         key: "go-auth-integrated",
-        heading: "Integrated Auth",
+        heading: m.builderIntegratedAuth(),
         category: "auth" as const,
         options: [...authOptions],
       },
@@ -773,7 +798,7 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
                 href={docsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Open documentation"
+                aria-label={m.builderOpenDocumentation()}
                 className={linkClass}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -781,7 +806,7 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
           >
             <BookOpen className="h-3.5 w-3.5" />
           </TooltipTrigger>
-          <TooltipContent>Docs</TooltipContent>
+          <TooltipContent>{m.builderDocs()}</TooltipContent>
         </Tooltip>
       )}
       {githubUrl && (
@@ -792,7 +817,7 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
                 href={githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Open GitHub repository"
+                aria-label={m.builderOpenGithubRepository()}
                 className={linkClass}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -815,7 +840,7 @@ function DisabledReasonInline({ reason, compact = false }: { reason: string; com
         compact ? "text-[9px] leading-tight" : "text-[10px] leading-snug",
       )}
     >
-      <span className="font-medium">Unavailable:</span>{" "}
+      <span className="font-medium">{m.builderUnavailable()}</span>{" "}
       <span className={compact ? "line-clamp-1" : "line-clamp-2"}>{reason}</span>
     </div>
   );
@@ -826,9 +851,8 @@ function CategoryHint({ categoryKey }: { categoryKey: string }) {
 
   return (
     <div className="mb-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">Grouped add-ons:</span> platforms, integrations,
-      AI agents, and TanStack extras are split below. MCP and Skills still add the addon flags
-      first, then the CLI asks follow-up questions to configure them.
+      <span className="font-medium text-foreground">{m.builderGroupedAddons()}</span>{" "}
+      {m.builderGroupedAddonsDescription()}
     </div>
   );
 }
@@ -1012,6 +1036,7 @@ function GraphOptionButton({
   onSelect: () => void;
 }) {
   const isDisabled = Boolean(disabledReason);
+  const localizedOption = getLocalizedTechOption(option);
 
   return (
     <button
@@ -1054,10 +1079,10 @@ function GraphOptionButton({
               selected ? "text-primary" : "text-foreground",
             )}
           >
-            {option.name}
+            {localizedOption.name}
           </span>
           <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-            {option.description}
+            {localizedOption.description}
           </p>
           {disabledReason && <DisabledReasonInline reason={disabledReason} />}
         </div>
@@ -1358,7 +1383,7 @@ function CreationModeComposer({
         return graphSelection.database === "none"
           ? null
           : {
-              scopeLabel: "Universal",
+              scopeLabel: m.builderUniversal(),
               toolId: graphSelection.database,
               toolName: getOptionName("database", graphSelection.database),
             };
@@ -1482,7 +1507,7 @@ function CreationModeComposer({
         isOptionCompatible(compatibilityStack, category, optionId)
           ? null
           : (getDisabledReason(compatibilityStack, category, optionId) ??
-            "Not compatible with current stack")
+            m.builderNotCompatibleCurrentStack())
       }
       onSelect={(optionId) => {
         if (!isOptionCompatible(compatibilityStack, category, optionId)) return;
@@ -1526,7 +1551,7 @@ function CreationModeComposer({
             })}
 
             <GraphOptionGroup
-              label={`${frontendConfig.label} Frontend`}
+              label={m.builderFrontendGroup({ ecosystem: frontendConfig.label })}
               options={frontendOptions}
               selectedId={graphSelection.frontend}
               testIdPrefix="multi-frontend-tool"
@@ -1540,12 +1565,12 @@ function CreationModeComposer({
 
             {graphSelection.frontendEcosystem === "typescript" &&
               graphSelection.frontend !== "none" &&
-              MULTI_FRONTEND_LIBRARY_GROUPS.map((group) => (
-                <div key={group.category}>
+              MULTI_FRONTEND_LIBRARY_GROUPS.map((category) => (
+                <div key={category}>
                   {renderStackOptionGroup({
-                    label: group.label,
-                    category: group.category,
-                    testIdPrefix: `multi-frontend-${group.category}`,
+                    label: getLocalizedCategoryDisplayName(category, getCategoryDisplayName(category)),
+                    category,
+                    testIdPrefix: `multi-frontend-${category}`,
                   })}
                 </div>
               ))}
@@ -1589,7 +1614,7 @@ function CreationModeComposer({
             })}
 
             <GraphOptionGroup
-              label={`${backendConfig.label} Backend`}
+              label={m.builderBackendGroup({ ecosystem: backendConfig.label })}
               options={backendOptions}
               selectedId={graphSelection.backend}
               testIdPrefix="multi-backend-tool"
@@ -1610,7 +1635,7 @@ function CreationModeComposer({
 
             {graphSelection.backend !== "none" && backendOrmOptions.length > 0 && (
               <GraphOptionGroup
-                label={`${backendConfig.label} ORM`}
+                label={m.builderOrmGroup({ ecosystem: backendConfig.label })}
                 options={backendOrmOptions}
                 selectedId={graphSelection.backendOrm}
                 testIdPrefix="multi-backend-orm"
@@ -1623,7 +1648,7 @@ function CreationModeComposer({
 
             {graphSelection.backend !== "none" && backendApiOptions.length > 0 && (
               <GraphOptionGroup
-                label={`${backendConfig.label} API`}
+                label={m.builderApiGroup({ ecosystem: backendConfig.label })}
                 options={backendApiOptions}
                 selectedId={graphSelection.backendApi}
                 testIdPrefix="multi-backend-api"
@@ -1636,7 +1661,7 @@ function CreationModeComposer({
 
             {graphSelection.backend !== "none" && backendAuthOptions.length > 0 && (
               <GraphOptionGroup
-                label={`${backendConfig.label} Auth`}
+                label={m.builderAuthGroup({ ecosystem: backendConfig.label })}
                 options={backendAuthOptions}
                 selectedId={graphSelection.backendAuth}
                 testIdPrefix="multi-backend-auth"
@@ -1665,13 +1690,13 @@ function CreationModeComposer({
               children: renderLanguageButton({
                 selected: true,
                 testId: "multi-database-language-universal",
-                label: "Universal",
+                label: m.builderUniversal(),
                 onClick: () => undefined,
               }),
             })}
 
             <GraphOptionGroup
-              label="Standalone Database"
+              label={m.builderStandaloneDatabase()}
               options={databaseOptions}
               selectedId={graphSelection.database}
               testIdPrefix="multi-database-tool"
@@ -1699,7 +1724,7 @@ function CreationModeComposer({
             })}
 
             <GraphOptionGroup
-              label="Mobile App"
+              label={m.builderMobileApp()}
               options={mobileOptions}
               selectedId={graphSelection.mobile}
               testIdPrefix="multi-mobile-tool"
@@ -1707,12 +1732,12 @@ function CreationModeComposer({
             />
 
             {graphSelection.mobile !== "none" &&
-              MULTI_MOBILE_LIBRARY_GROUPS.map((group) => (
-                <div key={group.category}>
+              MULTI_MOBILE_LIBRARY_GROUPS.map((category) => (
+                <div key={category}>
                   {renderStackOptionGroup({
-                    label: group.label,
-                    category: group.category,
-                    testIdPrefix: `multi-mobile-${group.category}`,
+                    label: getLocalizedCategoryDisplayName(category, getCategoryDisplayName(category)),
+                    category,
+                    testIdPrefix: `multi-mobile-${category}`,
                   })}
                 </div>
               ))}
@@ -1739,7 +1764,7 @@ function CreationModeComposer({
             const isFinalize = step.id === "finalize";
             const isLast = index === MULTI_STACK_STEPS.length - 1;
             const selection = isFinalize ? null : getStepSelection(step.id);
-            const subLabel = isFinalize ? "setup" : (selection?.toolName ?? "None");
+            const subLabel = isFinalize ? m.builderSetup() : (selection?.toolName ?? m.builderNone());
             const stepNumber = String(index + 1).padStart(2, "0");
 
             return (
@@ -1770,7 +1795,7 @@ function CreationModeComposer({
                           : "font-medium text-muted-foreground group-hover:text-foreground",
                       )}
                     >
-                      {step.label}
+                      {getMultiStepLabel(step.id)}
                     </span>
                     <span className="truncate text-[11px] text-muted-foreground/70">
                       {subLabel}
@@ -2090,7 +2115,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     persistSavedEntries([nextEntry, ...savedStacks]);
     setIsSaveInputVisible(false);
     setSavePresetName("");
-    toast.success(`Saved preset: ${nextEntry.name}`);
+    toast.success(m.savedPresetSaved({ name: nextEntry.name }));
   };
 
   const loadSavedStack = (entryId: string) => {
@@ -2101,7 +2126,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       setStack(entry.stack);
       setViewMode("command");
     });
-    toast.success(`Loaded preset: ${entry.name}`);
+    toast.success(m.savedPresetLoaded({ name: entry.name }));
   };
 
   const overwriteSavedStack = (entryId: string) => {
@@ -2126,13 +2151,13 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     persistSavedEntries(nextEntries);
     setPendingUpdateEntryId(null);
     const entryName = savedStacks.find((entry) => entry.id === entryId)?.name || "preset";
-    toast.success(`Updated preset: ${entryName}`);
+    toast.success(m.savedPresetUpdated({ name: entryName }));
   };
 
   const renameSavedStack = (entryId: string, name: string) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      toast.error("Preset name cannot be empty");
+      toast.error(m.savedPresetNameRequired());
       return;
     }
 
@@ -2147,7 +2172,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
     );
 
     persistSavedEntries(nextEntries);
-    toast.success("Preset renamed");
+    toast.success(m.savedPresetRenamed());
   };
 
   const duplicateSavedStack = (entryId: string, name: string) => {
@@ -2228,19 +2253,19 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Update Saved Preset</DialogTitle>
+            <DialogTitle>{m.builderUpdateSavedPreset()}</DialogTitle>
             <DialogDescription>
               {pendingUpdateEntry
-                ? `Updating "${pendingUpdateEntry.name}" will override the saved preset with your current stack configuration.`
-                : "Updating this preset will override the saved preset with your current stack configuration."}
+                ? m.builderUpdatePresetDescriptionNamed({ name: pendingUpdateEntry.name })
+                : m.builderUpdatePresetDescription()}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={() => setPendingUpdateEntryId(null)}>
-              Cancel
+              {m.builderCancel()}
             </Button>
             <Button type="button" onClick={confirmOverwriteSavedStack}>
-              Update Preset
+              {m.builderUpdatePreset()}
             </Button>
           </div>
         </DialogContent>
@@ -2338,19 +2363,21 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   )}
                 >
                   <span className="pointer-events-none absolute -top-[7px] left-3 bg-fd-background px-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Project name
+                    {m.builderProjectName()}
                   </span>
                   <input
                     id="project-name"
                     value={stack.projectName || ""}
                     onChange={(e) => setStack({ projectName: e.target.value })}
                     placeholder="my-app"
-                    aria-label="Project name"
+                    aria-label={m.builderProjectName()}
                     aria-invalid={projectNameError ? true : undefined}
                     title={
                       projectNameError ||
                       ((stack.projectName || "my-app").includes(" ")
-                        ? `Will be saved as: ${(stack.projectName || "my-app").replace(/\s+/g, "-")}`
+                        ? m.builderWillSaveAs({
+                            name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
+                          })
                         : undefined)
                     }
                     className={cn(
@@ -2377,7 +2404,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   )}
                 >
                   <Hammer className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Builder</span>
+                  <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
                 </button>
                 {!isMultiMode && (
                   <button
@@ -2394,7 +2421,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     )}
                   >
                     <Zap className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">Presets</span>
+                    <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
                   </button>
                 )}
                 <button
@@ -2411,7 +2438,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   )}
                 >
                   <Eye className="h-3 w-3" />
-                  <span className="hidden min-[480px]:inline">Preview</span>
+                  <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
                 </button>
                 {!isMultiMode && (
                   <button
@@ -2428,7 +2455,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     )}
                   >
                     <Bookmark className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">Saved</span>
+                    <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
                   </button>
                 )}
 
@@ -2450,7 +2477,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 saveCurrentStack(
-                                  savePresetName || stack.projectName || "Untitled preset",
+                                  savePresetName || stack.projectName || m.savedPresetFallback(),
                                 );
                               }
                               if (e.key === "Escape") {
@@ -2458,18 +2485,18 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                 setSavePresetName("");
                               }
                             }}
-                            placeholder={stack.projectName || "My preset"}
+                            placeholder={stack.projectName || m.savedPresetFallback()}
                             className="h-8 min-w-0"
                           />
                           <button
                             type="button"
                             onClick={() =>
                               saveCurrentStack(
-                                savePresetName || stack.projectName || "Untitled preset",
+                                savePresetName || stack.projectName || m.savedPresetFallback(),
                               )
                             }
                             className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            title="Save preset"
+                            title={m.builderSavePreset()}
                           >
                             <Check className="h-3.5 w-3.5" />
                           </button>
@@ -2490,8 +2517,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   setIsSaveInputVisible(nextVisible);
                                   setSavePresetName(nextVisible ? stack.projectName || "" : "");
                                 }}
-                                title="Save current preset"
-                                aria-label="Save current preset"
+                                title={m.builderSaveCurrentPreset()}
+                                aria-label={m.builderSaveCurrentPreset()}
                                 className={cn(
                                   "cursor-pointer rounded-md p-1.5 transition-colors",
                                   isSaveInputVisible
@@ -2503,7 +2530,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           >
                             <Save className="h-3.5 w-3.5" />
                           </TooltipTrigger>
-                          <TooltipContent>Save the current stack as a named preset</TooltipContent>
+                          <TooltipContent>{m.builderSaveCurrentStackTooltip()}</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger
@@ -2511,8 +2538,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                               <button
                                 type="button"
                                 onClick={resetStack}
-                                title="Reset to defaults"
-                                aria-label="Reset to defaults"
+                                title={m.builderResetDefaults()}
+                                aria-label={m.builderResetDefaults()}
                                 data-testid="btn-reset"
                                 className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                               />
@@ -2520,7 +2547,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           >
                             <RefreshCw className="h-3.5 w-3.5" />
                           </TooltipTrigger>
-                          <TooltipContent>Reset all builder options to defaults</TooltipContent>
+                          <TooltipContent>{m.builderResetTooltip()}</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger
@@ -2528,8 +2555,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                               <button
                                 type="button"
                                 onClick={getRandomStack}
-                                title="Generate a random stack"
-                                aria-label="Generate a random stack"
+                                title={m.builderRandomTitle()}
+                                aria-label={m.builderRandomTitle()}
                                 data-testid="btn-random"
                                 className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                               />
@@ -2537,7 +2564,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           >
                             <Shuffle className="h-3.5 w-3.5" />
                           </TooltipTrigger>
-                          <TooltipContent>Generate a random stack configuration</TooltipContent>
+                          <TooltipContent>{m.builderRandomTooltip()}</TooltipContent>
                         </Tooltip>
                       </>
                     )}
@@ -2548,8 +2575,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                           render={
                             <button
                               type="button"
-                              aria-label="Builder settings"
-                              title="Builder settings"
+                              aria-label={m.builderSettings()}
+                              title={m.builderSettings()}
                               className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             />
                           }
@@ -2569,8 +2596,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                       render={
                         <button
                           type="button"
-                          aria-label="More actions"
-                          title="More actions"
+                          aria-label={m.builderMoreActions()}
+                          title={m.builderMoreActions()}
                           className="flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
                         />
                       }
@@ -2586,19 +2613,19 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         <>
                           <DropdownMenuItem
                             onClick={() => {
-                              saveCurrentStack(stack.projectName || "Untitled preset");
+                              saveCurrentStack(stack.projectName || m.savedPresetFallback());
                             }}
                           >
                             <Save className="h-3.5 w-3.5" />
-                            Save Preset
+                            {m.builderSavePreset()}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={resetStack}>
                             <RefreshCw className="h-3.5 w-3.5" />
-                            Reset to Defaults
+                            {m.builderResetDefaults()}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={getRandomStack}>
                             <Shuffle className="h-3.5 w-3.5" />
-                            Random Stack
+                            {m.builderRandomTitle()}
                           </DropdownMenuItem>
                         </>
                       )}
@@ -2606,14 +2633,14 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         onClick={async () => {
                           try {
                             await navigator.clipboard.writeText(getStackUrl());
-                            toast.success("Share link copied!");
+                            toast.success(m.builderShareLinkCopied());
                           } catch {
-                            toast.error("Failed to copy link");
+                            toast.error(m.builderShareLinkFailed());
                           }
                         }}
                       >
                         <Link className="h-3.5 w-3.5" />
-                        Copy Share Link
+                        {m.builderCopyShareLink()}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -2645,7 +2672,10 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                         stack,
                         categoryKey as keyof typeof TECH_OPTIONS,
                       );
-                      const categoryDisplayName = getCategoryDisplayName(categoryKey);
+                      const categoryDisplayName = getLocalizedCategoryDisplayName(
+                        categoryKey,
+                        getCategoryDisplayName(categoryKey),
+                      );
                       const sectionCompatibilityNotes =
                         stack.ecosystem === "go" && categoryKey === "goAuth"
                           ? mergeCompatibilityNotes(
@@ -2762,7 +2792,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                   />
                                                   {tech.default && !isSelected && (
                                                     <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                      Default
+                                                      {m.builderDefault()}
                                                     </span>
                                                   )}
                                                   {tech.legacy && (
@@ -2772,11 +2802,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                         className="cursor-default"
                                                       >
                                                         <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                          Legacy
+                                                          {m.builderLegacy()}
                                                         </span>
                                                       </TooltipTrigger>
                                                       <TooltipContent>
-                                                        No longer actively maintained
+                                                        {m.builderLegacyTooltip()}
                                                       </TooltipContent>
                                                     </Tooltip>
                                                   )}
@@ -2813,7 +2843,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                       {tech.name}
                                                     </span>
                                                     <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                      {tech.description}
+                                                      {getLocalizedTechOption(tech).description}
                                                     </p>
                                                     {isDisabled && disabledReason && (
                                                       <DisabledReasonInline
@@ -2857,7 +2887,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   >
                                     <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
                                     <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
-                                      shadcn/ui Configuration
+                                      {m.builderShadcnConfiguration()}
                                     </h2>
                                     <motion.div
                                       animate={{
@@ -2882,28 +2912,52 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                             [
                                               {
                                                 key: "shadcnBase" as const,
-                                                label: "Base Library",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnBase",
+                                                  "Base Library",
+                                                ),
                                               },
                                               {
                                                 key: "shadcnStyle" as const,
-                                                label: "Visual Style",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnStyle",
+                                                  "Visual Style",
+                                                ),
                                               },
                                               {
                                                 key: "shadcnIconLibrary" as const,
-                                                label: "Icon Library",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnIconLibrary",
+                                                  "Icon Library",
+                                                ),
                                               },
                                               {
                                                 key: "shadcnColorTheme" as const,
-                                                label: "Color Theme",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnColorTheme",
+                                                  "Color Theme",
+                                                ),
                                               },
                                               {
                                                 key: "shadcnBaseColor" as const,
-                                                label: "Base Color",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnBaseColor",
+                                                  "Base Color",
+                                                ),
                                               },
-                                              { key: "shadcnFont" as const, label: "Font" },
+                                              {
+                                                key: "shadcnFont" as const,
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnFont",
+                                                  "Font",
+                                                ),
+                                              },
                                               {
                                                 key: "shadcnRadius" as const,
-                                                label: "Border Radius",
+                                                label: getLocalizedCategoryDisplayName(
+                                                  "shadcnRadius",
+                                                  "Border Radius",
+                                                ),
                                               },
                                             ] as const
                                           ).map(({ key, label }) => (
@@ -2937,7 +2991,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                         />
                                                         {tech.default && !isSelected && (
                                                           <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
-                                                            Default
+                                                            {m.builderDefault()}
                                                           </span>
                                                         )}
                                                       </div>
@@ -2995,7 +3049,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                             {tech.name}
                                                           </span>
                                                           <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
-                                                            {tech.description}
+                                                            {getLocalizedTechOption(tech).description}
                                                           </p>
                                                         </div>
                                                       </div>
@@ -3032,7 +3086,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                   <div className="mb-3 flex items-center gap-2 border-border border-b pb-2">
                                     <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
                                     <h2 className="font-mono text-foreground text-sm sm:text-base">
-                                      Astro Integration
+                                      {m.builderAstroIntegration()}
                                     </h2>
                                   </div>
                                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
@@ -3069,7 +3123,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                         >
                                           {tech.default && !isSelected && (
                                             <span className="absolute top-2 right-2 rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                              Default
+                                              {m.builderDefault()}
                                             </span>
                                           )}
                                           {tech.legacy && (
@@ -3079,11 +3133,11 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                 className="absolute top-2 right-2 cursor-default"
                                               >
                                                 <span className="rounded-sm border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-500 dark:text-amber-400">
-                                                  Legacy
+                                                  {m.builderLegacy()}
                                                 </span>
                                               </TooltipTrigger>
                                               <TooltipContent>
-                                                No longer actively maintained
+                                                {m.builderLegacyTooltip()}
                                               </TooltipContent>
                                             </Tooltip>
                                           )}
@@ -3117,7 +3171,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                                                 {tech.name}
                                               </span>
                                               <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                {tech.description}
+                                                {getLocalizedTechOption(tech).description}
                                               </p>
                                               {isDisabled && disabledReason && (
                                                 <DisabledReasonInline reason={disabledReason} />
@@ -3143,7 +3197,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <Suspense
                     fallback={
                       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                        Loading preview...
+                        {m.builderLoadingPreview()}
                       </div>
                     }
                   >
@@ -3189,9 +3243,9 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
               <button
                 type="button"
                 onClick={() => setSidebarOpen((open) => !open)}
-                aria-label="Toggle section navigation"
+                aria-label={m.builderToggleSectionNavigation()}
                 aria-pressed={sidebarOpen}
-                title="Section navigation"
+                title={m.builderSectionNavigation()}
                 className="mr-2.5 flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-colors hover:bg-[#26262b] dark:border-white/10 dark:bg-[#1a1a1a] dark:hover:bg-[#242429]"
               >
                 <PanelLeft className="h-4 w-4" />
@@ -3209,12 +3263,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     <button
                       type="button"
                       data-testid="multi-step-back"
-                      aria-label="Previous step"
+                      aria-label={m.builderPreviousStep()}
                       onClick={handleMultiPreviousStep}
                       className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />
-                      <span className="hidden min-[420px]:inline">Back</span>
+                      <span className="hidden min-[420px]:inline">{m.builderBack()}</span>
                     </button>
                   )}
                   {!isFinalMultiStep && (
@@ -3242,8 +3296,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                   <button
                     type="button"
                     onClick={copyToClipboard}
-                    aria-label={copied ? "Command copied" : "Copy command"}
-                    title="Copy partial command"
+                    aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+                    title={m.builderCopyPartialCommand()}
                     className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
                   >
                     {copied ? (
@@ -3259,8 +3313,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
                   >
                     <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                      <span className="hidden min-[420px]:inline">Next step</span>
-                      <span className="min-[420px]:hidden">Next</span>
+                      <span className="hidden min-[420px]:inline">{m.builderNextStep()}</span>
+                      <span className="min-[420px]:hidden">{m.builderNext()}</span>
                       <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </button>
@@ -3269,7 +3323,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                 <button
                   type="button"
                   onClick={copyToClipboard}
-                  aria-label={copied ? "Command copied" : "Copy command"}
+                  aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
                   className={cn(
                     "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
                     // The animated gradient border + glow is a multi-ecosystem
@@ -3285,7 +3339,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
                     ) : (
                       <ClipboardCopy className="h-3.5 w-3.5" />
                     )}
-                    <span>{copied ? "Copied" : "Copy"}</span>
+                    <span>{copied ? m.navCopied() : m.navCopy()}</span>
                   </span>
                 </button>
               )}
@@ -3294,8 +3348,8 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
               <button
                 type="button"
                 onClick={scrollToTop}
-                aria-label="Scroll to top"
-                title="Scroll to top"
+                aria-label={m.builderScrollToTop()}
+                title={m.builderScrollToTop()}
                 tabIndex={showScrollTop ? 0 : -1}
                 aria-hidden={!showScrollTop}
                 className={cn(
@@ -3316,7 +3370,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
           <>
             <button
               type="button"
-              aria-label="Close section navigation"
+              aria-label={m.builderCloseSectionNavigation()}
               tabIndex={sidebarOpen ? 0 : -1}
               onClick={() => setSidebarOpen(false)}
               className={cn(
@@ -3325,7 +3379,7 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
               )}
             />
             <aside
-              aria-label="Section navigation"
+              aria-label={m.builderSectionNavigation()}
               inert={!sidebarOpen}
               className={cn(
                 "absolute inset-y-0 left-0 z-50 flex w-64 max-w-[80%] flex-col border-border border-r bg-fd-background shadow-xl transition-transform duration-200 ease-out",
@@ -3334,12 +3388,12 @@ const StackBuilder = ({ initialStack }: { initialStack?: StackState }) => {
             >
               <div className="flex shrink-0 items-center justify-between border-border border-b px-4 py-3">
                 <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Sections
+                  {m.builderSections()}
                 </span>
                 <button
                   type="button"
                   onClick={() => setSidebarOpen(false)}
-                  aria-label="Close section navigation"
+                  aria-label={m.builderCloseSectionNavigation()}
                   className="cursor-pointer rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   <X className="h-4 w-4" />

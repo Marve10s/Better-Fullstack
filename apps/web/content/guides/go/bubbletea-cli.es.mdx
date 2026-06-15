@@ -1,0 +1,88 @@
+---
+title: Go CLI con Bubble Tea
+description: Crea una aplicacion de terminal en Go con Bubble Tea usando el scaffolding Go CLI de Better Fullstack.
+updated: 2026-05-12
+category: Go
+tags:
+  - go
+  - cli
+  - bubbletea
+keywords:
+  - go bubble tea starter
+  - go cli boilerplate
+  - create go cli
+  - bubbletea terminal app
+  - go tui starter
+---
+
+Usa este stack cuando quieras una UI de terminal en Go en lugar de una API web.
+
+```npm
+npm create better-fullstack@latest my-go-cli -- \
+  --ecosystem go \
+  --go-web-framework none \
+  --go-orm none \
+  --go-api none \
+  --go-cli bubbletea \
+  --go-logging none \
+  --go-auth none
+```
+
+## Que crea
+
+- Un proyecto Go CLI.
+- Bubble Tea como opcion de UI de terminal.
+- Sin web framework, ORM, gRPC ni addon de auth.
+
+## Forma generada
+
+Este stack crea una aplicacion interactiva de terminal, no un servidor. Bubble Tea organiza el programa alrededor de model, messages, update y view.
+
+Forma representativa:
+
+```txt
+my-go-cli/
+  go.mod
+  cmd/
+    app/
+      main.go
+  internal/
+    tui/
+      model.go
+      update.go
+      view.go
+```
+
+Mantiene efectos secundarios en comandos Bubble Tea cuando sea posible. Asi el model y view son mas faciles de probar sin ejecutar una terminal real.
+
+## Modelo de trabajo
+
+- El model conserva el estado actual.
+- Messages describen input, ticks o resultados de comandos.
+- `Update` cambia el model y devuelve comandos posteriores.
+- `View` renderiza el estado actual como texto de terminal.
+
+## Compatibilidad
+
+Los proyectos CLI deberian mantener categorias de servidor en `none` salvo que sean herramientas hibridas a proposito.
+
+Mantiene `--go-cli bubbletea` junto a `--go-web-framework none`, `--go-orm none` y `--go-api none` para una app terminal-first. Si luego el CLI habla con una API, pon ese cliente en un paquete separado y llamalo desde commands, no desde `View`.
+
+## Pruebas y distribucion
+
+Prueba las transiciones del model directamente:
+
+```bash
+go test ./...
+```
+
+Para distribuir, compila un binario unico y documenta variables de entorno o archivos de configuracion soportados:
+
+```bash
+go build ./cmd/app
+```
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=go&gwf=none&gorm=none&gapi=none&gcli=bubbletea&glog=none&gauth=none).
+- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).

@@ -1,6 +1,8 @@
 import { Code2, GitPullRequest, Heart } from "lucide-react";
 import { motion } from "motion/react";
 
+import { m } from "@/paraglide/messages.js";
+
 type Contributor = {
   username: string;
   name: string;
@@ -75,7 +77,7 @@ export default function ContributorsSection() {
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ contributors
+              ✦ {m.homeContributorsEyebrow()}
             </p>
             <h2
               className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
@@ -84,14 +86,13 @@ export default function ContributorsSection() {
                 lineHeight: 0.98,
               }}
             >
-              Built in public.{" "}
-              <span className="italic text-muted-foreground">By the community.</span>
+              {m.homeContributorsTitleA()}{" "}
+              <span className="italic text-muted-foreground">{m.homeContributorsTitleB()}</span>
             </h2>
           </div>
           <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
             <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
-              Special thanks to the contributors who help improve Better Fullstack through testing,
-              feedback, and code.
+              {m.homeContributorsDescription()}
             </p>
           </div>
         </div>
@@ -110,7 +111,7 @@ export default function ContributorsSection() {
             className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
           >
             <GitPullRequest className="h-4 w-4" />
-            Contribute on GitHub
+            {m.homeContributeGithub()}
           </a>
           <a
             href="https://www.patreon.com/c/marve10s"
@@ -119,7 +120,7 @@ export default function ContributorsSection() {
             className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
           >
             <Heart className="h-4 w-4" />
-            Become a patron
+            {m.homeBecomePatron()}
           </a>
         </div>
       </div>

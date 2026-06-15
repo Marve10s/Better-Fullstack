@@ -1,0 +1,81 @@
+---
+title: Spring Boot con PostgreSQL y JPA
+description: Crea una API Java con Spring Boot, PostgreSQL, Maven, JPA, JUnit 5 y librerias Spring opcionales usando Better Fullstack.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - postgres
+  - jpa
+  - java
+keywords:
+  - spring boot postgres starter
+  - spring boot jpa boilerplate
+  - java api starter
+  - create spring boot project
+  - spring boot postgresql api
+---
+
+Usa este stack cuando quieras una API Java con el ecosistema Spring y persistencia relacional.
+
+```npm
+npm create better-fullstack@latest my-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-testing-libraries junit5
+```
+
+## Que crea
+
+- Un proyecto Java usando Spring Boot.
+- Maven como herramienta de build.
+- PostgreSQL como opcion de base de datos.
+- JPA para persistencia.
+- JUnit 5 para pruebas.
+
+## Forma generada
+
+Este stack crea una API Spring Boot convencional. Spring Boot controla el runtime HTTP, Spring Data JPA controla repositories y persistence, y PostgreSQL aporta la base relacional.
+
+Forma representativa:
+
+```txt
+my-spring-api/
+  pom.xml
+  src/
+    main/
+      java/
+        .../
+          controllers/
+          entities/
+          repositories/
+          services/
+      resources/
+        application.yml
+    test/
+```
+
+Mantiene controladores enfocados en HTTP, services para decisiones de negocio y repositories para acceso a datos. Las entidades JPA deberian describir persistencia, no filtrar directamente todas las decisiones de API.
+
+## Compatibilidad
+
+Mantiene `--java-web-framework spring-boot`, `--java-build-tool maven`, `--database postgres` y `--java-orm spring-data-jpa` juntos para esta guia. Si cambias la herramienta de build a Gradle, conserva las mismas fronteras de paquete aunque cambien los archivos de build.
+
+## Pruebas y despliegue
+
+Ejecuta las pruebas del proyecto generado con Maven:
+
+```bash
+./mvnw test
+```
+
+Antes de desplegar, configura la URL PostgreSQL, credenciales y perfiles de Spring para el entorno destino. Define si las migraciones se ejecutan con Flyway/Liquibase, por pipeline o por otro proceso de release.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=maven&db=postgres&jorm=spring-data-jpa&jtest=junit5).
+- Lee la [documentacion del ecosistema Java](/docs/ecosystems/java/).
+- Revisa la [referencia de CLI create](/docs/cli/create/).

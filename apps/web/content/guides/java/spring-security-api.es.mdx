@@ -1,0 +1,84 @@
+---
+title: API segura con Spring Boot
+description: Crea una API Java segura con Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5 y Testcontainers.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - spring security api starter
+  - secure spring boot starter
+  - spring boot testcontainers
+  - spring boot flyway jpa
+  - java secure api boilerplate
+---
+
+Usa este stack cuando quieras un backend Spring Boot con persistencia, seguridad, migraciones de base de datos y tooling de pruebas de integracion.
+
+```npm
+npm create better-fullstack@latest my-secure-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## Que crea
+
+- Una API Java Spring Boot.
+- Gradle como herramienta de build.
+- Spring Data JPA.
+- Spring Security.
+- Spring Actuator y Flyway.
+- JUnit 5 y Testcontainers.
+
+## Forma generada
+
+Este stack se orienta a una API Java de produccion: Spring Security controla autenticacion/autorizacion, Flyway controla migraciones, Actuator expone endpoints operacionales, y Testcontainers permite pruebas contra dependencias reales.
+
+Forma representativa:
+
+```txt
+my-secure-spring-api/
+  build.gradle
+  src/
+    main/
+      java/
+        .../
+          config/
+          controllers/
+          security/
+          services/
+      resources/
+        db/migration/
+    test/
+```
+
+Mantiene reglas de seguridad cerca de configuracion y filtros, logica de negocio en services y acceso a datos detras de repositories JPA.
+
+## Compatibilidad
+
+`--java-auth spring-security` agrega la capa de seguridad; no reemplaza Spring Data JPA ni Flyway. `--java-libraries spring-actuator flyway` es una buena pareja para APIs operadas en produccion. `--java-testing-libraries junit5 testcontainers` deja preparadas pruebas de integracion con servicios reales.
+
+## Pruebas y despliegue
+
+Ejecuta pruebas con Gradle:
+
+```bash
+./gradlew test
+```
+
+Para produccion, configura perfiles Spring, secrets, URL PostgreSQL y politica de migraciones. Ejecuta Flyway antes o durante el arranque segun el modelo de release del equipo. Usa Testcontainers para validar comportamiento que depende de PostgreSQL real.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=gradle&db=postgres&jorm=spring-data-jpa&jauth=spring-security&jlib=spring-actuator,flyway&jtest=junit5,testcontainers).
+- Lee la [documentacion del ecosistema Java](/docs/ecosystems/java/).
+- Revisa la [referencia de CLI create](/docs/cli/create/).

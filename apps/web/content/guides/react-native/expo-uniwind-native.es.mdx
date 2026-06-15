@@ -1,0 +1,81 @@
+---
+title: App nativa Expo con Uniwind
+description: Crea una app nativa Expo con Uniwind y una configuracion minima Better Fullstack para proyectos mobile-first.
+updated: 2026-05-12
+category: React Native
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+Usa este stack cuando quieras una app Expo mobile-first y no necesites un backend generado en el mismo scaffold.
+
+```npm
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-uniwind \
+  --mobile-navigation expo-router \
+  --mobile-ui uniwind \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## Que crea
+
+- Una app nativa Expo usando Uniwind.
+- Expo Router para rutas nativas basadas en archivos.
+- MMKV storage, React Native Testing Library, Maestro, push notifications, OTA updates y deep linking.
+- Sin frontend web, backend, base de datos, ORM, auth ni API por defecto.
+- Una forma de proyecto mobile-first que puede conectarse a una API despues.
+
+## Forma generada
+
+Este comando crea una base frontend nativa, no una app web fullstack. Mantiene las decisiones backend fuera del scaffold inicial para que la app movil pueda apuntar luego a una API existente o a un servicio generado por separado.
+
+Forma representativa:
+
+```txt
+my-mobile-app/
+  bts.jsonc
+  app/
+  components/
+  package.json
+  maestro/
+```
+
+Las rutas Expo exactas dependen de la version de template, pero la propiedad es clara: pantallas y componentes nativos viven en la app, mientras las preocupaciones de servidor estan ausentes intencionalmente.
+
+## Compatibilidad
+
+React Native es su propio ecosistema en Better Fullstack. Usa `--ecosystem react-native`; no combines flags frontend web TypeScript con flags nativas.
+
+Esta guia deja backend, database, ORM, auth y API fuera del scaffold movil. La auth movil y APIs de servidor requieren decisiones de plataforma que conviene tomar cuando los requisitos esten claros.
+
+## Agregar una API despues
+
+Pasos comunes: una API Hono para backend TypeScript ligero, una app Next.js o TanStack Start si tambien necesitas web, o un backend dedicado que ya exista fuera de Better Fullstack.
+
+Al agregar una API, decide como la app nativa manejara URLs base por entorno, almacenamiento de sesion, refresh tokens, comportamiento offline y perfiles de build nativo.
+
+## Despliegue
+
+El despliegue Expo es distinto al web. Planifica perfiles de build nativo, identificadores de app, credenciales de firma y variables usadas en build time. No pongas secretos de servidor en el bundle movil; las apps nativas deben llamar un backend que guarde secretos en servidor.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false).
+- Revisa la [referencia de CLI create](/docs/cli/create/).
+- Compara con [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/) si tu app tambien necesita web y tooling para agentes.

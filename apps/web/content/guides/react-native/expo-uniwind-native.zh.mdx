@@ -1,0 +1,81 @@
+---
+title: Expo Uniwind Native App
+description: 创建带 Uniwind 的 Expo native app，并为 mobile-first projects 使用最小 Better Fullstack 配置。
+updated: 2026-05-12
+category: React Native
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+当你想要 mobile-first Expo app，并且不需要在同一个 scaffold 中生成 backend 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-uniwind \
+  --mobile-navigation expo-router \
+  --mobile-ui uniwind \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## 创建内容
+
+- 使用 Uniwind 的 Expo native app。
+- Expo Router 用于 file-based native routes。
+- MMKV storage、React Native Testing Library、Maestro、push notifications、OTA updates 和 deep linking。
+- 默认不包含 web frontend、backend、database、ORM、auth 或 API layer。
+- 之后可以连接 API 的 mobile-first project shape。
+
+## 生成结构
+
+这个命令创建 native frontend foundation，而不是 fullstack web app。它把 backend decisions 留在初始 scaffold 之外，让 mobile app 之后可以指向已有 API 或单独生成的 service。
+
+代表性结构：
+
+```txt
+my-mobile-app/
+  bts.jsonc
+  app/
+  components/
+  package.json
+  maestro/
+```
+
+具体 Expo paths 取决于 template version，但 ownership 很直接：native screens 和 components 位于 app 中，server concerns 被有意排除。
+
+## 兼容性
+
+React Native 在 Better Fullstack 中是独立 ecosystem。使用 `--ecosystem react-native`；不要把 TypeScript web frontend flags 与 native frontend flags 混用。
+
+本指南刻意不在 mobile scaffold 中生成 backend、database、ORM、auth 或 API。Mobile authentication 和 server APIs 需要 platform-specific decisions，最好在 product requirements 清楚后再决定。
+
+## 之后添加 API
+
+常见下一步包括：轻量 TypeScript backend 的 Hono API、如果也需要 web surface 则使用 Next.js 或 TanStack Start app，或者连接 Better Fullstack 之外已有的 dedicated backend。
+
+添加 API 时，决定 native app 如何处理 environment-specific API base URLs、device 上的 auth session storage、refresh tokens、offline behavior，以及 development/preview/production 的 native build profiles。
+
+## 部署
+
+Expo deployment 不同于 web deployment。规划 native build profiles、app identifiers、signing credentials 和 build time 使用的 environment variables。不要把 server secrets 放入 mobile bundle；native apps 应调用由 server-side 保存 secrets 的 backend。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false)。
+- 查看 [CLI create reference](/docs/cli/create/)。
+- 如果 app 也需要 web 和 agent tooling，对比 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。

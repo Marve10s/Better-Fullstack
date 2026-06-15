@@ -1,6 +1,8 @@
 
 import { RefreshCw, Shuffle } from "lucide-react";
 
+import { m } from "@/paraglide/messages.js";
+
 interface ActionButtonsProps {
   onReset: () => void;
   onRandom: () => void;
@@ -12,14 +14,14 @@ const btnBase =
 export function ActionButtons({ onReset, onRandom }: ActionButtonsProps) {
   return (
     <div className="grid grid-cols-2 gap-1">
-      <button type="button" onClick={onReset} title="Reset to defaults" className={btnBase}>
+      <button type="button" onClick={onReset} title={m.builderResetDefaults()} className={btnBase}>
         <RefreshCw className="h-3.5 w-3.5" />
-        <span className="font-pixel text-[9px] leading-none">Reset</span>
+        <span className="font-pixel text-[9px] leading-none">{m.actionsReset()}</span>
       </button>
 
-      <button type="button" onClick={onRandom} title="Generate a random stack" className={btnBase}>
+      <button type="button" onClick={onRandom} title={m.builderRandomTitle()} className={btnBase}>
         <Shuffle className="h-3.5 w-3.5" />
-        <span className="font-pixel text-[9px] leading-none">Random</span>
+        <span className="font-pixel text-[9px] leading-none">{m.actionsRandom()}</span>
       </button>
     </div>
   );

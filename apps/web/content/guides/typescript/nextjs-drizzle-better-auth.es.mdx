@@ -1,0 +1,89 @@
+---
+title: Next.js con Drizzle y Better Auth
+description: Crea una app Next.js fullstack con Drizzle, PostgreSQL, Better Auth, Tailwind CSS, shadcn/ui y tRPC usando Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+Usa este stack cuando quieras una app React fullstack conocida, con datos relacionales, autenticacion y una capa API tipada.
+
+```npm
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Que crea
+
+- Una app Next.js en modo fullstack.
+- PostgreSQL como base relacional.
+- Drizzle como ORM TypeScript.
+- Better Auth para autenticacion.
+- tRPC para APIs tipadas de extremo a extremo.
+- Tailwind CSS y shadcn/ui para estilos de frontend.
+
+## Forma generada
+
+La app generada usa Next.js como frontera web y servidor. PostgreSQL y Drizzle quedan detras de modulos solo de servidor, mientras tRPC aporta llamadas tipadas para componentes cliente que necesitan datos de aplicacion.
+
+Forma representativa:
+
+```txt
+my-next-app/
+  bts.jsonc
+  app/
+  components/
+  lib/
+    auth/
+    db/
+    trpc/
+```
+
+Las rutas exactas pueden variar por version del generator, pero la separacion prevista es estable: componentes UI renderizan la experiencia, route handlers y codigo de servidor poseen las fronteras de request, y la base de datos no entra en bundles de navegador.
+
+## Modelo y procedimiento tipado
+
+Mantiene las tablas de producto explicitas y faciles de migrar. Better Auth deberia controlar tablas de autenticacion y sesiones. Las tablas de producto deberian referenciar IDs de usuario y evitar copiar campos de sesion.
+
+Usa tRPC para operaciones donde el frontend se beneficia de inferir tipos de entrada y salida. Coloca la autorizacion cerca de la mutacion; crear un workspace deberia comprobar que existe un usuario autenticado antes de insertar.
+
+## Cuando elegirlo
+
+Elige este stack para apps SaaS, productos con cuentas, dashboards, portales de administracion y proyectos donde la familiaridad de hosting de Next.js importa.
+
+## Compatibilidad
+
+- `--backend self` significa que Next.js controla la frontera de servidor; no agregues otro backend salvo que quieras una separacion explicita.
+- `--database postgres` encaja con hosting de produccion, conexiones con pooling y proveedores gestionados.
+- `--api trpc` es una buena eleccion para este stack React. Frontends TypeScript no React suelen usar oRPC en Better Fullstack.
+- shadcn/ui espera Tailwind y React. Mantiene esas elecciones alineadas si regeneras o agregas componentes.
+
+## Despliegue
+
+Define la cadena PostgreSQL, secretos de Better Auth y URL base de la app en el entorno de despliegue. Ejecuta migraciones antes de enviar trafico a codigo que espera columnas o tablas nuevas.
+
+En hosting serverless, revisa la recomendacion de pooling del proveedor de base de datos. Conexiones directas PostgreSQL pueden agotar limites cuando se levantan muchas instancias.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Compara con [Crear un proyecto TanStack Start](/guides/typescript/create-tanstack-start-project/).
+- Lee la [referencia de compatibilidad](/docs/reference/compatibility/).

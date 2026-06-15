@@ -5,6 +5,7 @@ import { guidesMeta } from "virtual:content-meta";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
+import { getLocale } from "@/paraglide/runtime.js";
 
 export type GuideFrontmatter = {
   title?: string;
@@ -47,6 +48,24 @@ const CONTENT_PREFIX = "/content/guides/";
 // from the MDX modules here would fuse them into this chunk.
 const mdxLoaders = import.meta.glob<MdxModule>("../../../content/guides/**/*.mdx");
 
+function currentContentLocale(): "en" | "es" | "zh" {
+  const locale = getLocale();
+  return locale === "es" || locale === "zh" ? locale : "en";
+}
+
+function localizedFilePath(filePath: string, locale: "en" | "es" | "zh"): string {
+  if (locale === "en") return filePath;
+  return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
+}
+
+function hasLocalizedContent(filePath: string, locale: "en" | "es" | "zh"): boolean {
+  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+}
+
+function contentCacheKey(page: GuidePage, locale: "en" | "es" | "zh"): string {
+  return `${page.slug.join("/")}:${locale}`;
+}
+
 function normalizeMdxPath(filePath: string): { relativePath: string; slug: string[] } {
   const idx = filePath.indexOf(CONTENT_PREFIX);
   const relativePath = filePath.slice(idx + CONTENT_PREFIX.length);
@@ -73,8 +92,12 @@ for (const { filePath, frontmatter } of guidesMeta) {
 const contentCache = createSuspenseCache<GuidePageContent>();
 
 async function loadGuideContent(page: GuidePage): Promise<GuidePageContent> {
-  const module = await mdxLoaders[page.filePath]?.();
-  if (!module) throw new Error(`Guide content module missing for ${page.filePath}`);
+  const locale = currentContentLocale();
+  const filePath = hasLocalizedContent(page.filePath, locale)
+    ? localizedFilePath(page.filePath, locale)
+    : page.filePath;
+  const module = await mdxLoaders[filePath]?.();
+  if (!module) throw new Error(`Guide content module missing for ${filePath}`);
   return {
     toc: module.toc ?? [],
     Component: module.default,
@@ -86,14 +109,14 @@ async function loadGuideContent(page: GuidePage): Promise<GuidePageContent> {
  * chunk loads. Callers must render inside a `<Suspense>` boundary.
  */
 export function useGuidePageContent(page: GuidePage): GuidePageContent {
-  return contentCache.read(page.slug.join("/"), () => loadGuideContent(page));
+  return contentCache.read(contentCacheKey(page, currentContentLocale()), () => loadGuideContent(page));
 }
 
 /** Start fetching a guide's content chunk early (e.g. from a route loader). */
 export function preloadGuidePageContent(slug: string[] | undefined): void {
   const page = getGuidePage(slug);
   if (!page) return;
-  contentCache.preload(page.slug.join("/"), () => loadGuideContent(page));
+  contentCache.preload(contentCacheKey(page, currentContentLocale()), () => loadGuideContent(page));
 }
 
 export function getGuidePage(slug: string[] | undefined): GuidePage | undefined {

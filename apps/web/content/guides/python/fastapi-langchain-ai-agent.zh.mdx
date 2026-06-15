@@ -1,0 +1,78 @@
+---
+title: FastAPI AI Agent with LangChain
+description: 使用 Better Fullstack 创建包含 FastAPI、LangChain、SQLModel、Pydantic 和 Ruff 的 Python AI API。
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - langchain
+  - ai
+  - sqlmodel
+keywords:
+  - fastapi langchain starter
+  - python ai agent starter
+  - fastapi ai api
+  - create langchain api
+  - python ai boilerplate
+---
+
+当你需要为 AI application code 准备好的 Python API 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-python-ai-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-ai langchain \
+  --python-quality ruff
+```
+
+## 创建内容
+
+- FastAPI project。
+- LangChain 作为 Python AI library option。
+- SQLModel 和 Pydantic。
+- Ruff 用于 code quality。
+
+## 生成结构
+
+这个 scaffold 从 HTTP API、SQLModel persistence 和 LangChain helper modules 开始。route layer 处理 validation 和 streaming responses，AI client module 拥有 model calls。当 prompts、retrieval、tools 和 persistence 以不同速度变化时，这种分离很重要。
+
+代表性结构：
+
+```txt
+my-python-ai-api/
+  pyproject.toml
+  app/
+    main.py
+    api/
+    ai/
+    models/
+  tests/
+```
+
+## 兼容性
+
+`--python-ai langchain` 会向项目添加 AI pieces，但不会替代 FastAPI、SQLModel 或 Pydantic。将 AI provider keys 和 tool credentials 保存在 server environment variables 中，绝不要放入 public responses。
+
+## 何时选择
+
+适合 AI APIs、agent workbenches、带 retrieval 的 prototypes，以及需要在 model calls 外面包一层 HTTP endpoint 的产品。
+
+## 测试与部署
+
+发布改动前，至少验证项目能 compile 并让 Ruff 通过：
+
+```bash
+python -m compileall .
+ruff check .
+```
+
+部署时配置 AI provider secrets、timeout limits 和 logging policy。没有明确 retention policy 时，不要记录包含敏感数据的 prompts。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff)。
+- 阅读 [AI docs](/docs/ai/overview/)。
+- 对比 [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/)。

@@ -1,0 +1,81 @@
+---
+title: SolidStart con oRPC y Drizzle
+description: Crea una app SolidStart fullstack con oRPC, Drizzle, SQLite, Better Auth y Tailwind CSS usando Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+Usa este stack cuando quieras la reactividad fina de Solid con un framework fullstack y contratos API tipados.
+
+```npm
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## Que crea
+
+- Una app SolidStart fullstack.
+- SQLite y Drizzle.
+- Better Auth.
+- oRPC para contratos tipados.
+- Tailwind CSS.
+
+## Forma generada
+
+Este stack mantiene SolidStart como framework fullstack. La app puede renderizar UI Solid, llamar contratos de servidor tipados y persistir datos con Drizzle sin introducir un servicio backend separado.
+
+Forma representativa:
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+Usa este arbol como mapa de propiedad. El codigo UI pertenece en componentes y rutas Solid; base de datos y auth deben permanecer solo de servidor.
+
+## Compatibilidad
+
+SolidStart usa oRPC en Better Fullstack. tRPC esta orientado a React, asi que este stack mantiene `--api orpc` de forma intencional.
+
+`--backend self` significa que SolidStart controla la capa de servidor. No agregues Hono salvo que quieras una API desplegada por separado.
+
+## Cuando elegirlo
+
+Elige SolidStart cuando quieras el modelo runtime de Solid, pero tambien un proyecto fullstack generado con base de datos, auth y API tipada.
+
+## Despliegue
+
+Define secretos de Better Auth, URL de app y ruta o cadena de conexion de base de datos para el entorno destino. Si tu plataforma no da disco persistente, no dependas de SQLite en archivo para datos de produccion.
+
+Para herramientas internas pequenas, SQLite puede bastar. Para apps SaaS multiusuario, PostgreSQL suele ser mas facil de operar entre despliegues.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc).
+- Compara con [Crear un proyecto TanStack Start](/guides/typescript/create-tanstack-start-project/).
+- Lee la [referencia de compatibilidad](/docs/reference/compatibility/).

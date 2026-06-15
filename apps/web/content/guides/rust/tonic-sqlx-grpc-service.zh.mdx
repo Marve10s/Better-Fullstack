@@ -1,0 +1,77 @@
+---
+title: Rust gRPC Service with Tonic and SQLx
+description: 使用 Better Fullstack 创建包含 Axum、Tonic、SQLx、tracing 和 structured error handling 的 Rust gRPC service。
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - tonic
+  - grpc
+  - sqlx
+keywords:
+  - rust grpc starter
+  - tonic sqlx starter
+  - axum tonic grpc
+  - create rust grpc service
+  - rust microservice boilerplate
+---
+
+当你需要面向 service-to-service APIs 和 typed gRPC contracts 的 Rust backend 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-rust-grpc -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sqlx \
+  --rust-api tonic \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## 创建内容
+
+- 使用 Axum 的 Rust service。
+- Tonic 用于 gRPC。
+- SQLx 用于 database access。
+- tracing 和 structured error handling。
+
+## 生成结构
+
+这个 stack 将 Axum operational endpoints 与 Tonic gRPC boundary 组合起来。SQLx 让 data access 保持显式，tracing 提供从 startup 到 service requests 的 observability。
+
+代表性结构：
+
+```txt
+my-rust-grpc/
+  Cargo.toml
+  proto/
+  build.rs
+  src/
+    main.rs
+    grpc/
+    routes/
+    db/
+```
+
+把 protobuf contracts 当作 service 的 public surface。SQL 和 migrations 属于 data layer，不属于 gRPC handlers。
+
+## 兼容性
+
+`--rust-api tonic` 添加 gRPC flow。`--rust-orm sqlx` 表示你需要有意管理 SQL、migrations 和 query compatibility。对于 browser-facing HTTP APIs，请从 [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/) 开始。
+
+## 测试与部署
+
+用 generated clients 或 Tonic request types 测试 protobuf-level behavior；当 query correctness 很重要时，用真实 PostgreSQL database 测试 repository functions。
+
+```bash
+cargo test
+```
+
+在 CI 中，如果项目 build 时生成 Rust types，请确保 protobuf tooling 可用。部署时暴露 clients 期望的 gRPC port；如果平台需要独立 probes，请将 HTTP health route 与 gRPC service address 分开。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror)。
+- 阅读 [Rust ecosystem docs](/docs/ecosystems/rust/)。

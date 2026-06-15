@@ -1,0 +1,89 @@
+---
+title: Axum with PostgreSQL and SeaORM
+description: 使用 Better Fullstack 创建包含 Axum、PostgreSQL、SeaORM、tracing 和 structured error handling 的 Rust API project。
+updated: 2026-05-12
+category: Rust
+tags:
+  - axum
+  - postgres
+  - seaorm
+  - tracing
+keywords:
+  - axum postgres starter
+  - rust api boilerplate
+  - axum seaorm starter
+  - create rust api project
+  - rust postgres api
+---
+
+当你需要带 modern HTTP framework、relational persistence、logging 和 explicit error handling 的 Rust backend 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## 创建内容
+
+- 使用 Axum 的 Rust API project。
+- PostgreSQL 作为 database option。
+- SeaORM 用于 database access。
+- tracing 用于 structured logging。
+- Anyhow 和 Thiserror 风格的 error handling。
+
+## 生成结构
+
+这个 stack 生成 backend service，而不是 fullstack app。生成项目提供 Axum 中的 typed HTTP boundary、SeaORM 拥有的 database layer，以及通过 `tracing` 实现的 request-scoped logging。
+
+重要边界是：
+
+- Routes 保持轻薄，将 HTTP input 转换为 application calls。
+- SeaORM models 和 entities 拥有 database mapping。
+- Errors 被显式建模，并在 edge 转换为 HTTP responses。
+- Configuration 在 startup 时读取一次，便于可预测地连接 database pools、routers 和 logging。
+
+## 代表性文件树
+
+```txt
+my-rust-api/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    config.rs
+    error.rs
+    routes/
+    entities/
+    services/
+```
+
+用 `routes/` 放 HTTP mechanics，`services/` 放 application behavior，`entities/` 放 SeaORM generated 或 maintained database model types。
+
+## 兼容性
+
+当你需要本指南的 shape 时，请保持 `--rust-web-framework axum`、`--database postgres` 和 `--rust-orm sea-orm` 组合。如果 ORM 切换到 `sqlx`，会有更多 handwritten SQL 和更少 entity-style model types。如果设置 `--rust-web-framework none`，本指南的 route examples 不再适用。
+
+## 测试与部署
+
+先分别测试 handlers 和 services。Handler tests 可以用 test state 构建 Axum router；service tests 可以针对 disposable PostgreSQL database 运行。
+
+```bash
+cargo test
+```
+
+部署前确保 runtime environment 提供 PostgreSQL connection string，以及项目使用的 migration step。生产环境中显式设置 `RUST_LOG`：
+
+```bash
+RUST_LOG=info cargo run
+```
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=rust&rwf=axum&db=postgres&rorm=sea-orm&rlog=tracing&reh=anyhow-thiserror)。
+- 阅读 [Rust ecosystem docs](/docs/ecosystems/rust/)。
+- 查看 [CLI create reference](/docs/cli/create/)。

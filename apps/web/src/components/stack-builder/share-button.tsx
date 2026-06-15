@@ -1,6 +1,8 @@
 import { Check, Link } from "lucide-react";
 import { useState } from "react";
 
+import { m } from "@/paraglide/messages.js";
+
 interface ShareButtonProps {
   stackUrl: string;
 }
@@ -22,7 +24,7 @@ export function ShareButton({ stackUrl }: ShareButtonProps) {
     <button
       type="button"
       onClick={copyToClipboard}
-      title={copied ? "Copied!" : "Copy share link"}
+      title={copied ? m.shareButtonCopiedTitle() : m.shareButtonCopyTitle()}
       className={
         copied
           ? "cursor-pointer rounded-md p-1.5 text-green-500 transition-colors"

@@ -2,15 +2,19 @@ import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
 import { Fragment, Suspense } from "react";
 
-import { mdxComponents } from "@/components/docs/mdx";
 import { TableOfContents } from "@/components/docs/table-of-contents";
+import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
 import { type BlogPost, useBlogPostContent } from "@/lib/blog/source";
+import { localizeTocEntries } from "@/lib/i18n/content-copy";
+import { getLocaleDateTag } from "@/lib/i18n/locales";
+import { m } from "@/paraglide/messages.js";
+import { getLocale } from "@/paraglide/runtime.js";
 
 export function formatPostDate(date: string | undefined): string | null {
   if (!date) return null;
   const parsed = new Date(`${date}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString("en-US", {
+  return parsed.toLocaleDateString(getLocaleDateTag(getLocale()), {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -47,7 +51,7 @@ function BlogPostBody({ post }: { post: BlogPost }) {
             to="/blog"
             className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
           >
-            Blog
+            {m.navBlog()}
           </Link>
           {post.frontmatter.title ? (
             <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
@@ -81,13 +85,13 @@ function BlogPostBody({ post }: { post: BlogPost }) {
         </header>
 
         <div className="docs-prose">
-          <MDXProvider components={mdxComponents}>
-            <Content components={mdxComponents} />
+          <MDXProvider components={localizedContentMdxComponents}>
+            <Content components={localizedContentMdxComponents} />
           </MDXProvider>
         </div>
       </article>
       <aside className="hidden border-[var(--docs-border-subtle)] border-l bg-[var(--docs-surface)]/35 xl:block">
-        <TableOfContents toc={content.toc} />
+        <TableOfContents toc={localizeTocEntries(content.toc)} />
       </aside>
     </main>
   );

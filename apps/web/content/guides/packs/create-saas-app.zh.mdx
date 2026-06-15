@@ -1,0 +1,67 @@
+---
+title: 创建 SaaS 应用
+description: 学习如何用 Next.js、Better Auth、Stripe、PostgreSQL、Drizzle、React Email、Tailwind CSS 和 shadcn/ui 创建 SaaS 应用。
+updated: 2026-05-21
+category: Packs
+tags:
+  - saas
+  - nextjs
+  - stripe
+  - better-auth
+  - drizzle
+keywords:
+  - create saas app
+  - how to make saas app
+  - build saas app
+  - create sass app
+  - nextjs saas starter
+  - saas boilerplate
+---
+
+如果你正在搜索如何创建 SaaS 应用，请从 SaaS pack 开始。它提供大多数订阅产品在第一个客户注册前就需要的部分：账户、数据库表、billing、email、UI，以及类型化的应用结构。
+
+<StarterPackCta id="saas-app" />
+
+## 生成 SaaS starter
+
+打开 [Stack Builder 中的 SaaS pack](/new?preset=nextjs-saas&view=command)，或运行下面的命令。
+
+```bash
+bun create better-fullstack@latest my-saas-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --email react-email \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## Pack 包含什么
+
+- Next.js 作为 web 和 server 边界。
+- PostgreSQL 搭配 Drizzle，用于关系型产品数据。
+- Better Auth 处理 sign-in、sessions 和账户流程。
+- Stripe 用于订阅 billing。
+- React Email 用于事务邮件模板。
+- Tailwind CSS 和 shadcn/ui 用于产品界面。
+- tRPC 用于 React UI 与 server 代码之间的类型化调用。
+
+## 首先要自定义的内容
+
+1. 替换生成的产品名称、metadata 和导航。
+2. 在 Drizzle schema 旁边加入你的核心产品表。
+3. 配置 Better Auth secrets 和 trusted origins。
+4. 创建 Stripe products，并把它们映射到你的 app plans。
+5. 为 signup、billing 和团队邀请加入事务邮件。
+
+## 什么时候适合这个 pack
+
+将这个 pack 用于订阅产品、B2B dashboards、付费 developer tools、团队 workspaces，以及 auth 加 billing 必须出现在第一版可运行产品中的场景。
+
+如需 stack 层面的 walkthrough，请阅读 [Next.js 与 Drizzle 和 Better Auth](/guides/typescript/nextjs-drizzle-better-auth/)。

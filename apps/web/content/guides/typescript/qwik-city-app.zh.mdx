@@ -1,0 +1,74 @@
+---
+title: Qwik City App Starter
+description: 创建带 Tailwind CSS 和最小 Better Fullstack 项目配置的 Qwik City app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - qwik
+  - qwik-city
+  - tailwind
+keywords:
+  - qwik city starter
+  - create qwik app
+  - qwik tailwind starter
+  - qwik boilerplate
+  - better fullstack qwik
+---
+
+当你希望第一天只创建 Qwik app，而不添加单独 backend 或 database 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-qwik-app -- \
+  --ecosystem typescript \
+  --frontend qwik \
+  --backend none \
+  --runtime none \
+  --database none \
+  --orm none \
+  --auth none \
+  --api none \
+  --css-framework tailwind \
+```
+
+## 创建内容
+
+- Qwik app。
+- Tailwind CSS。
+- 默认不包含 database、ORM、auth 或 API layer。
+- 之后可以扩展的生成项目配置。
+
+## 生成结构
+
+本指南刻意从 frontend-only Qwik City app 开始。当你想先放好 application shell、routing 和 styling，再选择 backend 或 persistence layer 时，这很有用。
+
+代表性结构：
+
+```txt
+my-qwik-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+```
+
+生成的 `bts.jsonc` 会记录 backend、runtime、database、ORM、auth 和 API 都是 `none`。这样 stack 的最小性质是显式的，而不是隐含的。
+
+## 兼容性
+
+与 React、Nuxt、Svelte 或 Solid 选项相比，Qwik 在 Better Fullstack 中的 backend/API 支持更窄。本指南故意保持 stack 最小且兼容。
+
+由于命令使用 `--backend none`、`--database none`、`--orm none`、`--auth none` 和 `--api none`，它不应生成 server contracts 或 database models。如果第一天就需要这些，请选择 Better Fullstack 支持更完整的 framework/backend 组合。
+
+## 何时选择
+
+当 resumability 和较小初始 payload 比第一天生成 backend 更重要时，为 frontend-first apps 选择 Qwik。
+
+## 之后添加 backend
+
+当 app 需要数据时，决定 Qwik 是否继续作为 frontend，并由另一个 service 拥有 API；或者另一个 Better Fullstack preset 是否更匹配 fullstack 需求。对许多团队来说，添加独立 Hono API 比把 backend concerns 强塞进 frontend-first scaffold 更清晰。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=typescript&fe-w=qwik&be=none&rt=none&db=none&orm=none&au=none&api=none)。
+- 阅读 [CLI create reference](/docs/cli/create/)。
+- 对比 [Astro with React and Hono](/guides/typescript/astro-react-hono/)。

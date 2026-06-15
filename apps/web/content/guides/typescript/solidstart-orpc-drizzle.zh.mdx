@@ -1,0 +1,81 @@
+---
+title: SolidStart with oRPC and Drizzle
+description: 使用 Better Fullstack 创建包含 oRPC、Drizzle、SQLite、Better Auth 和 Tailwind CSS 的 SolidStart fullstack app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+当你想要 Solid 的 fine-grained reactivity，同时需要 fullstack framework 和 typed API contracts 时，使用这个 stack。
+
+```npm
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## 创建内容
+
+- SolidStart fullstack app。
+- SQLite 和 Drizzle。
+- Better Auth。
+- oRPC 用于 typed contracts。
+- Tailwind CSS。
+
+## 生成结构
+
+这个 stack 让 SolidStart 作为 fullstack framework。应用可以渲染 Solid UI、调用 typed server contracts，并通过 Drizzle 持久化数据，不需要引入独立 backend service。
+
+代表性结构：
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+把这棵树当作 ownership map。UI code 属于 Solid components 和 routes；database 与 auth code 应保持 server-only。
+
+## 兼容性
+
+SolidStart 在 Better Fullstack 中使用 oRPC。tRPC 偏向 React，因此这个 stack 故意保留 `--api orpc`。
+
+`--backend self` 表示 SolidStart 拥有 server layer。除非你明确需要单独 API deployment，否则不要添加 Hono。
+
+## 何时选择
+
+当你想要 Solid runtime model，同时还需要生成好的 fullstack project、database、auth 和 typed API wiring 时，选择 SolidStart。
+
+## 部署
+
+为目标环境设置 Better Auth secrets、app URL，以及 database path 或 connection string。如果部署平台不提供 persistent disk，不要依赖 file-backed SQLite 保存生产数据。
+
+小型 internal tools 可能用 SQLite 就足够。对 SaaS-style multi-user production apps，PostgreSQL 通常更容易跨部署运行。
+
+## 下一步
+
+- 打开 [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc)。
+- 对比 [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/)。
+- 阅读 [compatibility reference](/docs/reference/compatibility/)。

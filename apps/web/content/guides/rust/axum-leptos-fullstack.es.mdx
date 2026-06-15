@@ -1,0 +1,81 @@
+---
+title: Rust fullstack con Axum y Leptos
+description: Crea una app Rust fullstack con Axum, Leptos, SeaORM y el scaffolding Rust de Better Fullstack.
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+Usa este stack cuando quieras Rust tanto en el servidor como en el frontend de la app generada.
+
+```npm
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Que crea
+
+- Un servidor Rust basado en Axum.
+- Leptos como opcion frontend Rust.
+- SeaORM para acceso a datos.
+- Defaults de tracing y manejo de errores estructurado.
+
+## Forma generada
+
+Este stack genera una app fullstack Rust. Axum controla rutas de servidor y estado compartido, Leptos controla UI frontend, y SeaORM controla entidades y persistencia.
+
+Forma representativa:
+
+```txt
+my-rust-fullstack/
+  Cargo.toml
+  src/
+    main.rs
+    routes/
+    entities/
+    services/
+    ui/
+```
+
+Mantiene rutas Axum enfocadas en HTTP y funciones servidor, servicios para comportamiento de aplicacion, y componentes Leptos para UI. No mezcles queries de base de datos directamente en componentes si pueden vivir detras de servicios.
+
+## Compatibilidad
+
+Mantiene `--rust-web-framework axum`, `--rust-frontend leptos` y `--rust-orm sea-orm` juntos para esta forma fullstack. `--rust-api none` y `--rust-cli none` mantienen el scaffold centrado en una app web, no en gRPC ni CLI.
+
+## Cuando elegirlo
+
+Elige este stack cuando la reduccion de cambio de lenguaje compense los tiempos de compilacion Rust y el flujo frontend especifico de Leptos. Es buena eleccion para equipos comodos con Rust en ambos lados.
+
+## Pruebas y despliegue
+
+Usa pruebas unitarias Rust para servicios y logica de modelos, y agrega pruebas de rutas o navegador para flujos importantes.
+
+```bash
+cargo test
+```
+
+En despliegue, verifica ambas mitades: el servidor necesita variables de entorno y los assets frontend deben construirse con los scripts generados. Mantiene migraciones en el camino de despliegue si la app guarda datos de usuario.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Compara con [Axum con PostgreSQL y SeaORM](/guides/rust/axum-postgres-seaorm/).
+- Lee la [documentacion del ecosistema Rust](/docs/ecosystems/rust/).

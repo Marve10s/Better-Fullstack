@@ -1,0 +1,79 @@
+---
+title: FastAPI con PostgreSQL y SQLAlchemy
+description: Crea una API Python con FastAPI, PostgreSQL, SQLAlchemy, Pydantic y Ruff usando Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - postgres
+  - sqlalchemy
+  - pydantic
+keywords:
+  - fastapi postgres starter
+  - fastapi sqlalchemy starter
+  - python api boilerplate
+  - create fastapi project
+  - fastapi pydantic postgres
+---
+
+Usa este stack cuando quieras una API Python con un framework web familiar y friendly para async, junto con una base relacional.
+
+```npm
+npm create better-fullstack@latest my-fastapi-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff \
+```
+
+## Que crea
+
+- Una API FastAPI.
+- PostgreSQL como base de datos.
+- SQLAlchemy para acceso a datos.
+- Pydantic para schemas de request y response.
+- Ruff para linting y formato.
+
+## Forma generada
+
+Este stack mantiene FastAPI en la frontera HTTP. Pydantic valida datos cerca del borde de la API, SQLAlchemy controla modelos y consultas, y PostgreSQL aporta persistencia relacional.
+
+Forma representativa:
+
+```txt
+my-fastapi-api/
+  pyproject.toml
+  app/
+    main.py
+    api/
+      routes/
+    db/
+    models/
+    schemas/
+  tests/
+```
+
+Mantiene routes delgadas. Coloca decisiones de negocio en services y consultas detras de modulos de base de datos para que handlers no se conviertan en una mezcla de validacion, SQL y response mapping.
+
+## Compatibilidad
+
+`--python-web-framework fastapi`, `--database postgres`, `--python-orm sqlalchemy` y `--python-validation pydantic` son la combinacion central. Si cambias SQLAlchemy por SQLModel, revisa modelos y session handling juntos.
+
+## Pruebas y despliegue
+
+Ejecuta validaciones Python antes de desplegar:
+
+```bash
+python -m compileall .
+ruff check .
+```
+
+En produccion, define la URL PostgreSQL, secretos y configuracion CORS. Ejecuta migraciones antes de desplegar codigo que espera nuevas columnas o tablas.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff).
+- Lee la [documentacion del ecosistema Python](/docs/ecosystems/python/).
+- Compara con [Agente AI FastAPI con LangChain](/guides/python/fastapi-langchain-ai-agent/).

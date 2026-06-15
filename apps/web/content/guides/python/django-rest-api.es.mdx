@@ -1,0 +1,75 @@
+---
+title: Starter Django REST API
+description: Crea un backend Python con Django, Django REST Framework, SQLAlchemy, Pydantic y Ruff usando Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+Usa este stack cuando quieras convenciones Django con una forma de proyecto enfocada en API.
+
+```npm
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## Que crea
+
+- Un proyecto Python usando Django.
+- Django REST Framework como opcion API.
+- Selecciones SQLAlchemy y Pydantic.
+- Ruff para calidad de codigo.
+
+## Forma generada
+
+Este stack es para equipos que quieren el ecosistema Django, pero un punto de partida API-first. El proyecto registra `--python-api django-rest-framework`, incluye dependencias Django y DRF, configura un modulo minimo de settings y expone una respuesta estilo health.
+
+Forma representativa:
+
+```txt
+my-django-api/
+  pyproject.toml
+  app/
+    settings.py
+    urls.py
+    api/
+      views.py
+      serializers.py
+  tests/
+```
+
+Mantiene vistas y serializers enfocados en HTTP. Coloca reglas de negocio en servicios o modulos de dominio para que DRF no se convierta en el unico sitio donde vive la logica.
+
+## Compatibilidad
+
+`--python-web-framework django` y `--python-api django-rest-framework` deben mantenerse juntos para esta forma. SQLAlchemy y Pydantic registran preferencias de acceso a datos y validacion; si cambias a otro stack Python, revisa imports generados y convenciones de settings.
+
+## Pruebas y despliegue
+
+Ejecuta las pruebas o, como minimo, valida que el paquete compile:
+
+```bash
+python -m compileall .
+```
+
+Configura variables de entorno para settings, database URL y secrets antes de desplegar. Ruff deberia correr en CI para mantener consistente el codigo Python generado y agregado.
+
+## Siguientes pasos
+
+- Abre el [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff).
+- Lee la [documentacion del ecosistema Python](/docs/ecosystems/python/).

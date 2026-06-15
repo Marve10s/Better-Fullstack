@@ -1,3 +1,5 @@
+import { m } from "@/paraglide/messages.js";
+
 import { ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "./project-stats";
 
 export const SITE_NAME = "Better Fullstack";
@@ -20,83 +22,103 @@ export function canonicalUrl(path = "/") {
   return new URL(normalized, SITE_URL).toString();
 }
 
-export const siteJsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/favicon/favicon-96x96.png`,
-        width: 96,
-        height: 96,
+export function getDefaultDescription() {
+  return m.siteDefaultDescription({
+    optionCount: OPTION_COUNT_LABEL,
+    ecosystems: ECOSYSTEM_NAMES.join(", "),
+  });
+}
+
+export function ogLocale(locale: string) {
+  const locales: Record<string, string> = {
+    en: "en_US",
+    es: "es_ES",
+    zh: "zh_CN",
+  };
+  return locales[locale] ?? "en_US";
+}
+
+export function getSiteJsonLd() {
+  const description = getDefaultDescription();
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/favicon/favicon-96x96.png`,
+          width: 96,
+          height: 96,
+        },
+        founder: {
+          "@type": "Person",
+          name: "Ibrahim Elkamali",
+          url: "https://elkamali.dev",
+        },
+        sameAs: [
+          "https://github.com/Marve10s/Better-Fullstack",
+          "https://www.npmjs.com/package/create-better-fullstack",
+        ],
       },
-      founder: {
-        "@type": "Person",
-        name: "Ibrahim Elkamali",
-        url: "https://elkamali.dev",
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        publisher: { "@id": `${SITE_URL}/#organization` },
       },
-      sameAs: [
-        "https://github.com/Marve10s/Better-Fullstack",
-        "https://www.npmjs.com/package/create-better-fullstack",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      publisher: { "@id": `${SITE_URL}/#organization` },
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${SITE_URL}/#software`,
-      name: SITE_NAME,
-      alternateName: "create-better-fullstack",
-      applicationCategory: "DeveloperApplication",
-      applicationSubCategory: "CLI Scaffolding Tool",
-      operatingSystem: "macOS, Windows, Linux",
-      url: SITE_URL,
-      downloadUrl: "https://www.npmjs.com/package/create-better-fullstack",
-      installUrl: "https://www.npmjs.com/package/create-better-fullstack",
-      license: "https://opensource.org/licenses/MIT",
-      isAccessibleForFree: true,
-      description: DEFAULT_DESCRIPTION,
-      programmingLanguage: ECOSYSTEM_NAMES,
-      featureList: [
-        "15 frontend frameworks",
-        "17 backend frameworks",
-        "6 databases",
-        "13 ORMs",
-        "7 auth providers",
-        "5 payment integrations",
-        "13 AI integrations",
-        "7 type-safe API options",
-        "Visual web stack builder",
-        "Monorepo support via Turborepo",
-        "Desktop apps via Tauri",
-        "Mobile apps via Expo / React Native",
-        "PWA support",
-        "5 deployment targets",
-      ],
-      image: DEFAULT_OG_IMAGE_URL,
-      screenshot: DEFAULT_OG_IMAGE_URL,
-      author: { "@id": `${SITE_URL}/#organization` },
-      sourceOrganization: { "@id": `${SITE_URL}/#organization` },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-        availability: "https://schema.org/InStock",
-        url: "https://www.npmjs.com/package/create-better-fullstack",
+      {
+        "@type": "SoftwareApplication",
+        "@id": `${SITE_URL}/#software`,
+        name: SITE_NAME,
+        alternateName: "create-better-fullstack",
+        applicationCategory: "DeveloperApplication",
+        applicationSubCategory: "CLI Scaffolding Tool",
+        operatingSystem: "macOS, Windows, Linux",
+        url: SITE_URL,
+        downloadUrl: "https://www.npmjs.com/package/create-better-fullstack",
+        installUrl: "https://www.npmjs.com/package/create-better-fullstack",
+        license: "https://opensource.org/licenses/MIT",
+        isAccessibleForFree: true,
+        description,
+        programmingLanguage: ECOSYSTEM_NAMES,
+        featureList: [
+          "15 frontend frameworks",
+          "17 backend frameworks",
+          "6 databases",
+          "13 ORMs",
+          "7 auth providers",
+          "5 payment integrations",
+          "13 AI integrations",
+          "7 type-safe API options",
+          "Visual web stack builder",
+          "Monorepo support via Turborepo",
+          "Desktop apps via Tauri",
+          "Mobile apps via Expo / React Native",
+          "PWA support",
+          "5 deployment targets",
+        ],
+        image: DEFAULT_OG_IMAGE_URL,
+        screenshot: DEFAULT_OG_IMAGE_URL,
+        author: { "@id": `${SITE_URL}/#organization` },
+        sourceOrganization: { "@id": `${SITE_URL}/#organization` },
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+          url: "https://www.npmjs.com/package/create-better-fullstack",
+        },
+        sameAs: [
+          "https://github.com/Marve10s/Better-Fullstack",
+          "https://www.npmjs.com/package/create-better-fullstack",
+        ],
       },
-      sameAs: [
-        "https://github.com/Marve10s/Better-Fullstack",
-        "https://www.npmjs.com/package/create-better-fullstack",
-      ],
-    },
-  ],
-};
+    ],
+  };
+}

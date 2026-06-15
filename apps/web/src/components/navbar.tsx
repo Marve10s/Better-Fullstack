@@ -1,5 +1,5 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github, Languages } from "lucide-react";
 import { motion, LayoutGroup } from "motion/react";
 import { useState } from "react";
 
@@ -15,13 +15,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
+import { LOCALE_LABELS } from "@/lib/i18n/locales";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
+import { getLocale, setLocale, locales, type Locale } from "@/paraglide/runtime.js";
 
 const BUILDER_COMMAND_SEARCH = { view: "command", file: "" } as const;
 const BUILDER_PRESETS_SEARCH = { view: "presets", file: "" } as const;
 const DOCS_ACTIVE_OPTIONS = { includeSearch: false } as const;
 const DOCS_ACTIVE_PROPS = { className: "active" } as const;
+const DOCS_SKILL_PARAMS = { _splat: "ai/skills" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
@@ -69,7 +73,7 @@ function HeaderCopyButton() {
     <button
       type="button"
       onClick={handleCopy}
-      aria-label={copied ? "Command copied" : "Copy install command"}
+      aria-label={copied ? m.navCommandCopied() : m.navCopyInstallCommand()}
       className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
     >
       {copied ? (
@@ -77,7 +81,7 @@ function HeaderCopyButton() {
       ) : (
         <ClipboardCopy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
       )}
-      {copied ? "Copied" : "Copy"}
+      {copied ? m.navCopied() : m.navCopy()}
     </button>
   );
 }
@@ -95,14 +99,14 @@ function StackModeToggle({
   onChange: (mode: BuilderMode) => void;
 }) {
   const options: Array<{ value: BuilderMode; label: string }> = [
-    { value: "solo", label: "Solo" },
-    { value: "multi", label: "Multi-Ecosystem" },
+    { value: "solo", label: m.navSolo() },
+    { value: "multi", label: m.navMultiEcosystem() },
   ];
 
   return (
     <LayoutGroup id="creation-mode-toggle">
       <fieldset
-        aria-label="Creation method"
+        aria-label={m.navCreationMethod()}
         className="relative inline-flex items-center gap-0.5 overflow-visible rounded-full border border-border/60 bg-muted/30 p-0.5"
       >
         {options.map((option) => {
@@ -138,36 +142,124 @@ function StackModeToggle({
   );
 }
 
+// The Docs entry points (MCP page, Skill) shared by both the full nav and the
+// compact builder menu.
+function DocsMenuItems() {
+  return (
+    <>
+      <DropdownMenuItem
+        render={<Link to="/mcp" />}
+        className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em]"
+      >
+        {m.navMcp()}
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        render={<Link to="/docs/$" params={DOCS_SKILL_PARAMS} />}
+        className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em]"
+      >
+        {m.navSkill()}
+      </DropdownMenuItem>
+    </>
+  );
+}
+
+// Split control: the "Docs" label navigates to /docs, while the adjacent chevron
+// opens a dropdown with the related entry points (MCP, Skill).
+function DocsMenu() {
+  return (
+    <div className="inline-flex items-center">
+      <Link
+        to="/docs"
+        activeOptions={DOCS_ACTIVE_OPTIONS}
+        className={cn(NAV_LINK_CLASS, "cursor-pointer")}
+        activeProps={DOCS_ACTIVE_PROPS}
+      >
+        {m.navDocs()}
+      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button
+              type="button"
+              aria-label={m.navOpenDocsMenu()}
+              className="group ml-1 inline-flex cursor-pointer items-center text-muted-foreground transition-colors hover:text-foreground"
+            />
+          }
+        >
+          <ChevronDown
+            className="h-3 w-3 transition-transform duration-200 ease-out group-data-[popup-open]:rotate-180"
+            aria-hidden
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-36">
+          <DocsMenuItems />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 // On the builder page the full nav is hidden to make room for the stack
-// controls, so docs entry points live in a compact dropdown instead.
+// controls, so docs entry points live in a compact dropdown instead. The label
+// itself navigates to /docs; the chevron opens the related entry points.
 function BuilderDocsMenu() {
+  return (
+    <div className="inline-flex items-center">
+      <Link to="/docs" className={cn(NAV_LINK_CLASS, "cursor-pointer")}>
+        {m.navDocs()}
+      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button
+              type="button"
+              aria-label={m.navOpenDocsMenu()}
+              className="group ml-1 inline-flex cursor-pointer items-center text-muted-foreground transition-colors hover:text-foreground"
+            />
+          }
+        >
+          <ChevronDown
+            className="h-3 w-3 transition-transform duration-200 ease-out group-data-[popup-open]:rotate-180"
+            aria-hidden
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-36">
+          <DocsMenuItems />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+function LocaleMenu() {
+  const locale = getLocale();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <button
             type="button"
-            aria-label="Open documentation menu"
-            className={cn(NAV_LINK_CLASS, "inline-flex cursor-pointer items-center gap-1")}
+            aria-label={m.navLanguage()}
+            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           />
         }
       >
-        Docs
-        <ChevronDown className="h-3 w-3" aria-hidden />
+        <Languages className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-36">
-        <DropdownMenuItem
-          render={<Link to="/docs" />}
-          className="font-mono text-[11px] uppercase tracking-[0.18em]"
-        >
-          Docs
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          render={<Link to="/mcp" />}
-          className="font-mono text-[11px] uppercase tracking-[0.18em]"
-        >
-          MCP
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="min-w-36">
+        {locales.map((availableLocale) => (
+          <DropdownMenuItem
+            key={availableLocale}
+            onClick={() => setLocale(availableLocale as Locale)}
+            className="font-mono text-[11px] uppercase tracking-[0.14em]"
+          >
+            <span className="flex-1">
+              {LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}
+            </span>
+            {locale === availableLocale ? <Check className="h-3.5 w-3.5" /> : null}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -192,7 +284,7 @@ export function Navbar() {
           <Link
             to="/"
             className="flex items-center font-mono text-sm font-bold tracking-[-0.02em] text-foreground sm:text-base"
-            aria-label="Better Fullstack home"
+            aria-label={m.navHome()}
           >
             <span className="sm:hidden">
               b<span className="text-muted-foreground">/</span>f
@@ -211,7 +303,7 @@ export function Navbar() {
                   className={NAV_LINK_CLASS}
                   activeProps={DOCS_ACTIVE_PROPS}
                 >
-                  Builder
+                  {m.navBuilder()}
                 </Link>
                 <Link
                   to="/new"
@@ -219,19 +311,9 @@ export function Navbar() {
                   className={NAV_LINK_CLASS}
                   activeProps={DOCS_ACTIVE_PROPS}
                 >
-                  Presets
+                  {m.navPresets()}
                 </Link>
-                <Link to="/mcp" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
-                  MCP
-                </Link>
-                <Link
-                  to="/docs"
-                  activeOptions={DOCS_ACTIVE_OPTIONS}
-                  className={NAV_LINK_CLASS}
-                  activeProps={DOCS_ACTIVE_PROPS}
-                >
-                  Docs
-                </Link>
+                <DocsMenu />
               </div>
             </>
           )}
@@ -256,12 +338,13 @@ export function Navbar() {
             href="https://github.com/Marve10s/Better-Fullstack"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="GitHub repository"
+            aria-label={m.navGithubRepository()}
             className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
             <Github className="h-4 w-4" />
           </a>
           <ThemeToggle />
+          <LocaleMenu />
           <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
           {onBuilder ? (
             <HeaderCopyButton />
@@ -271,7 +354,7 @@ export function Navbar() {
               search={BUILDER_COMMAND_SEARCH}
               className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
             >
-              Try now
+              {m.navTryNow()}
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
             </Link>
           )}
