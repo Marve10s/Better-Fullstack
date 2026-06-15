@@ -471,6 +471,7 @@ describe("Frontend Configurations", () => {
         const webPkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
         const readme = await Bun.file(`${result.projectDir}/README.md`).text();
         const viteConfig = Bun.file(`${result.projectDir}/apps/web/vite.config.ts`);
+        const webTsconfig = Bun.file(`${result.projectDir}/apps/web/tsconfig.json`);
         const clientEntry = Bun.file(`${result.projectDir}/apps/web/client.ts`);
         const legacyDevEntry = Bun.file(`${result.projectDir}/apps/web/dev.ts`);
         const modernApp = Bun.file(`${result.projectDir}/apps/web/routes/_app.tsx`);
@@ -498,6 +499,7 @@ describe("Frontend Configurations", () => {
         expect(webPkg.dependencies.vite).toBeDefined();
         expect(readme).toContain("http://localhost:5173");
         expect(await viteConfig.exists()).toBe(true);
+        expect(await webTsconfig.exists()).toBe(true);
         expect(await clientEntry.exists()).toBe(true);
         expect(await modernApp.exists()).toBe(true);
         expect(await legacyDevEntry.exists()).toBe(false);
