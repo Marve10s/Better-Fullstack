@@ -7,7 +7,7 @@
     "deploy": "convex deploy"
   },
   "dependencies": {
-    "convex": "^1.40.0"
+    "convex": "^1.41.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
