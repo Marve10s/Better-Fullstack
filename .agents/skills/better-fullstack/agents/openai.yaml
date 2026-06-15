@@ -1,0 +1,4 @@
+interface:
+  display_name: "Better Fullstack"
+  short_description: "Scaffold Better Fullstack projects"
+  default_prompt: "Use $better-fullstack to scaffold a fullstack project with the requested stack."

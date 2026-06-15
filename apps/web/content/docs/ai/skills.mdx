@@ -1,0 +1,60 @@
+---
+title: Agent Skill
+description: Install the Better Fullstack agent skill for fast CLI-driven scaffolding in Codex, Claude Code, Cursor, and other agents.
+---
+
+The Better Fullstack agent skill teaches coding agents to use the CLI instead of hand-writing starter projects. It maps the requested stack to graph parts, runs a dry-run first, scaffolds with dependency installation disabled, and reports the exact follow-up commands.
+
+Use this when your agent supports skills and you want the fastest path from a prompt to a generated Better Fullstack project. Use the [MCP server](/docs/ai/mcp/) when you want structured schema lookup and tool-call planning instead.
+
+## Install
+
+The skill lives in this repository at `.agents/skills/better-fullstack`. Because the repo also contains other internal skills, install only `better-fullstack`.
+
+Install for Codex:
+
+<PMTabs
+  npm="npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  pnpm="pnpm dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  bun="bunx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  yarn="yarn dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+/>
+
+Install for several common agents:
+
+```bash
+bunx skills@latest add Marve10s/Better-Fullstack \
+  --skill better-fullstack \
+  --agent codex claude-code cursor github-copilot gemini-cli \
+  --global \
+  --yes
+```
+
+For a project-local install, omit `--global` from the same command. Project installs are useful when a team wants the skill version recorded with the repository.
+
+## Use
+
+Invoke the skill explicitly:
+
+```text
+Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.
+```
+
+Or ask naturally. Agents that support implicit skill matching can choose the skill when the request is about scaffolding, planning, or extending a Better Fullstack project.
+
+## What The Skill Does
+
+1. Maps the requested stack into Better Fullstack graph parts and CLI flags.
+2. Runs a non-interactive CLI dry-run.
+3. Runs the same command without `--dry-run` when the plan succeeds.
+4. Uses `--no-install` and `--no-git` unless you explicitly ask for those side effects.
+5. Reports the command used, any compatibility adjustment, and next install/test/run commands.
+
+## Skill vs MCP
+
+| Path | Best for |
+| --- | --- |
+| Agent skill | Fast CLI-driven scaffolding when the stack can be expressed as flags or graph parts. |
+| MCP server | Structured schema lookup, compatibility checks, dry-run planning, and existing-project mutation through tool calls. |
+
+Both paths use the same Better Fullstack generator. The skill is the lighter route; MCP is the more structured route.

@@ -3,15 +3,16 @@ title: AI Agents
 description: How AI coding agents should use Better Fullstack safely and reliably.
 ---
 
-Better Fullstack supports two AI workflows:
+Better Fullstack supports three AI workflows:
 
 - Generate project-local instruction files with `--ai-docs`.
+- Install the Better Fullstack agent skill so coding agents use the CLI instead of hand-writing starter files.
 - Let an AI coding agent use the Better Fullstack MCP server for schema lookup, compatibility checks, dry-runs, and project creation.
 
 ## Preferred workflow
 
 1. Choose the target ecosystem: `typescript`, `react-native`, `rust`, `python`, `go`, `java`, or `elixir`.
-2. Fetch schema options from MCP or the CLI reference.
+2. Use the Better Fullstack agent skill, MCP server, or explicit CLI reference.
 3. Validate compatibility before scaffolding.
 4. Dry-run to inspect the file tree.
 5. Scaffold with dependency installation disabled when an agent is driving the flow.
@@ -60,6 +61,12 @@ npm create better-fullstack@latest my-app -- \
 <Callout kind="info" title="CLI rules for agents">
 `--yes` accepts defaults and is incompatible with core stack flags. Explicit flags skip only the categories they cover. Pass `none` for optional categories you want disabled.
 </Callout>
+
+## Agent skill workflow
+
+The Better Fullstack agent skill lives in this repository and teaches supported agents to use the CLI with the benchmarked fast workflow: map the stack, run a dry-run, scaffold without install or Git side effects, then report follow-up commands.
+
+See the [agent skill setup guide](/docs/ai/skills/) for Codex, Claude Code, Cursor, GitHub Copilot, and Gemini CLI install commands.
 
 ## AI provider options
 

@@ -32,6 +32,7 @@ describe("docs navigation", () => {
     expect(ecosystemsMeta.pages).toContain("multi-ecosystem");
     expect(referenceMeta.pages).toContain("compatibility");
     expect(optionsMeta.pages).toContain("elixir");
+    expect(aiMeta.pages).toContain("skills");
     expect(aiMeta.pages).toContain("mcp-tools");
   });
 
@@ -45,6 +46,7 @@ describe("docs navigation", () => {
     await expectDocPage("cli/history.mdx");
     await expectDocPage("cli/mcp.mdx");
     await expectDocPage("ecosystems/multi-ecosystem.mdx");
+    await expectDocPage("ai/skills.mdx");
     await expectDocPage("ai/mcp-tools.mdx");
   });
 });

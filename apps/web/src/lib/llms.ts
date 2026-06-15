@@ -33,6 +33,7 @@ export function generateLlmsTxt({
       "/docs/reference/compatibility",
       "/docs/reference/options",
       "/docs/ai/overview",
+      "/docs/ai/skills",
       "/docs/ai/mcp",
       "/docs/ai/mcp-tools",
       "/docs/ecosystems/typescript",
