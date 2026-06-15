@@ -55,14 +55,14 @@ describe("mobile native scaffolding", () => {
 
     expect(pkg.main).toBe("index.js");
     expect(pkg.dependencies).toMatchObject({
-      "@react-navigation/native-stack": "^7.17.0",
+      "@react-navigation/native-stack": "^7.17.5",
       "@gluestack-ui/themed": "^1.1.73",
       "react-native-mmkv": "^4.3.1",
-      "expo-notifications": "^56.0.16",
-      "expo-updates": "^56.0.18",
+      "expo-notifications": "^56.0.17",
+      "expo-updates": "^56.0.19",
     });
     expect(pkg.dependencies["expo-router"]).toBeUndefined();
-    expect(pkg.devDependencies["babel-preset-expo"]).toBe("^56.0.14");
+    expect(pkg.devDependencies["babel-preset-expo"]).toBe("^56.0.15");
     expect(pkg.scripts.test).toBe("jest");
 
     expect(appConfig.expo.plugins).not.toContain("expo-router");
@@ -95,7 +95,7 @@ describe("mobile native scaffolding", () => {
     const appConfig = JSON.parse(getFile(root, "apps/native/app.json"));
 
     expect(pkg.main).toBe("expo-router/entry");
-    expect(pkg.dependencies["expo-router"]).toBe("^56.2.9");
+    expect(pkg.dependencies["expo-router"]).toBe("^56.2.10");
     expect(appConfig.expo.plugins).toContain("expo-router");
   });
 
