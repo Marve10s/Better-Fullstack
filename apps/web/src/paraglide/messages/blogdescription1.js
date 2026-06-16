@@ -10,11 +10,11 @@ const en_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => Local
 };
 
 const es_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmarks, lanzamientos y aprendizajes al construir un scaffolder fullstack, escritos con los datos incluidos.`)
+	return /** @type {LocalizedString} */ (`Benchmarks, lanzamientos y aprendizajes al construir un generador fullstack, escritos con los datos incluidos.`)
 };
 
 const zh_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmarks、发布记录，以及我们构建全栈 scaffolder 时学到的东西，连同数据一起写下来。`)
+	return /** @type {LocalizedString} */ (`基准测试、发布记录，以及我们构建全栈脚手架时学到的东西，都会连同数据一起写下来。`)
 };
 
 /**

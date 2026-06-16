@@ -10,7 +10,7 @@ const en_homebecomepatron2 = /** @type {(inputs: Homebecomepatron2Inputs) => Loc
 };
 
 const es_homebecomepatron2 = /** @type {(inputs: Homebecomepatron2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Hazte patron`)
+	return /** @type {LocalizedString} */ (`Hazte patrocinador`)
 };
 
 const zh_homebecomepatron2 = /** @type {(inputs: Homebecomepatron2Inputs) => LocalizedString} */ () => {

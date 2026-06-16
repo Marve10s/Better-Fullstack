@@ -10,11 +10,11 @@ const en_presettrackrustbackendintent4 = /** @type {(inputs: Presettrackrustback
 };
 
 const es_presettrackrustbackendintent4 = /** @type {(inputs: Presettrackrustbackendintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preferir APIs de nivel sistemas`)
+	return /** @type {LocalizedString} */ (`Preferir APIs de nivel de sistemas`)
 };
 
 const zh_presettrackrustbackendintent4 = /** @type {(inputs: Presettrackrustbackendintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`偏好系统级 API`)
+	return /** @type {LocalizedString} */ (`构建系统级服务`)
 };
 
 /**

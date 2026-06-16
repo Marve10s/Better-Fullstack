@@ -10,11 +10,11 @@ const en_mcpresourcegettingstarteddescription4 = /** @type {(inputs: Mcpresource
 };
 
 const es_mcpresourcegettingstarteddescription4 = /** @type {(inputs: Mcpresourcegettingstarteddescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Recetas quick-start por ecosistema`)
+	return /** @type {LocalizedString} */ (`Recetas de inicio rápido por ecosistema`)
 };
 
 const zh_mcpresourcegettingstarteddescription4 = /** @type {(inputs: Mcpresourcegettingstarteddescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`按生态划分的 quick-start 配方`)
+	return /** @type {LocalizedString} */ (`按生态划分的快速上手指南`)
 };
 
 /**

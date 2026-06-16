@@ -14,7 +14,7 @@ const es_presettrackrestapiintent4 = /** @type {(inputs: Presettrackrestapiinten
 };
 
 const zh_presettrackrestapiintent4 = /** @type {(inputs: Presettrackrestapiintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`暴露服务`)
+	return /** @type {LocalizedString} */ (`开放接口`)
 };
 
 /**

@@ -1,11 +1,11 @@
 ---
 title: Referencia de herramientas MCP
-description: Referencia detallada de herramientas MCP de Better Fullstack, inputs, outputs y workflows seguros.
+description: Referencia detallada de herramientas MCP de Better Fullstack, inputs, outputs y flujos seguros.
 ---
 
-El servidor MCP expone herramientas estructuradas para agentes. Usalas en lugar de pedirle a un agente que adivine flags de CLI desde prosa o copie comandos largos a mano.
+El servidor MCP expone herramientas estructuradas para agentes. Úsalas en lugar de pedirle a un agente que adivine flags de CLI desde prosa o copie comandos largos a mano.
 
-## Workflows recomendados
+## Flujos recomendados
 
 ### Proyecto nuevo
 
@@ -21,12 +21,12 @@ El servidor MCP expone herramientas estructuradas para agentes. Usalas en lugar 
 2. `bfs_plan_addition`
 3. `bfs_add_feature`
 
-<Callout kind="warn" title="Comportamiento de mutacion">
-`bfs_plan_project` es solo dry-run. `bfs_create_project` escribe un proyecto nuevo en disco. `bfs_add_feature` muta un proyecto existente. La creacion de proyecto y adicion de features via MCP no instalan dependencias.
+<Callout kind="warn" title="Comportamiento de mutación">
+`bfs_plan_project` es solo dry-run. `bfs_create_project` escribe un proyecto nuevo en disco. `bfs_add_feature` muta un proyecto existente. La creación de proyecto y adición de features vía MCP no instalan dependencias.
 </Callout>
 
 <Callout kind="info" title="Metadata de grafo">
-Las herramientas de planificacion, creacion y adicion de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para que los agentes inspeccionen la misma vista de stack derivada del grafo que persiste `bts.jsonc`.
+Las herramientas de planificación, creación y adición de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para que los agentes inspeccionen la misma vista de stack derivada del grafo que persiste `bts.jsonc`.
 </Callout>
 
 ## Referencia de herramientas

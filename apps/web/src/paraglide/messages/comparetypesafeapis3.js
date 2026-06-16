@@ -10,7 +10,7 @@ const en_comparetypesafeapis3 = /** @type {(inputs: Comparetypesafeapis3Inputs) 
 };
 
 const es_comparetypesafeapis3 = /** @type {(inputs: Comparetypesafeapis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`APIs type-safe (tRPC, oRPC, GraphQL)`)
+	return /** @type {LocalizedString} */ (`APIs con seguridad de tipos (tRPC, oRPC, GraphQL)`)
 };
 
 const zh_comparetypesafeapis3 = /** @type {(inputs: Comparetypesafeapis3Inputs) => LocalizedString} */ () => {

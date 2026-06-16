@@ -28,6 +28,17 @@ npm create better-fullstack@latest my-fastapi-api -- \
   --python-quality ruff \
 ```
 
+<GuideStackSnapshot
+  title="Snapshot del stack generado"
+  description="La frontera runtime para la que este stack está optimizado."
+  items={[
+    { label: "HTTP", value: "FastAPI", detail: "Funciones de ruta, inyección de dependencias y salida OpenAPI." },
+    { label: "Datos", value: "PostgreSQL + SQLAlchemy", detail: "Modelos SQLAlchemy con el driver PostgreSQL seleccionado por el scaffold." },
+    { label: "Validación", value: "Pydantic", detail: "Schemas de request y response cerca del borde de la API." },
+    { label: "Calidad", value: "Ruff", detail: "Linting y formato rápidos para el paquete Python generado." },
+  ]}
+/>
+
 ## Que crea
 
 - Una API FastAPI.
@@ -59,7 +70,15 @@ Mantiene routes delgadas. Coloca decisiones de negocio en services y consultas d
 
 ## Compatibilidad
 
-`--python-web-framework fastapi`, `--database postgres`, `--python-orm sqlalchemy` y `--python-validation pydantic` son la combinacion central. Si cambias SQLAlchemy por SQLModel, revisa modelos y session handling juntos.
+<GuideCompatibilityNote
+  kind="supported"
+  title="Regla de compatibilidad"
+  items={[
+    "`--python-web-framework fastapi` encaja de forma natural con `--python-orm sqlalchemy` y `--python-validation pydantic`.",
+    "Opciones de API de Django como `--python-api django-rest-framework` solo son válidas con `--python-web-framework django`.",
+    "La selección `--database postgres` añade soporte de driver PostgreSQL, pero la conexión runtime se controla con `DATABASE_URL`.",
+  ]}
+/>
 
 ## Pruebas y despliegue
 

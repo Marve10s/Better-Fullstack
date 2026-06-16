@@ -31,6 +31,17 @@ npm create better-fullstack@latest my-tanstack-app -- \
   --ui-library shadcn-ui \
 ```
 
+<GuideStackSnapshot
+  title="Snapshot del stack generado"
+  description="Las decisiones clave que Better Fullstack registra para este proyecto TanStack Start."
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React, file routes y server routes en una sola app desplegable." },
+    { label: "Backend", value: "Servidor de app propio", detail: "Usa la capa server de TanStack Start en vez de un paquete API separado." },
+    { label: "API", value: "tRPC", detail: "Procedures tipados para rutas React y mutaciones server-side." },
+    { label: "Datos", value: "SQLite + Drizzle", detail: "Schema relacional local con camino claro hacia PostgreSQL más adelante." },
+  ]}
+/>
+
 ## Que crea
 
 - Una app TanStack Start con rutas basadas en archivos.
@@ -75,10 +86,16 @@ Encaja bien para dashboards, herramientas internas, prototipos SaaS y apps donde
 
 ## Compatibilidad
 
-- `--backend self` es la opcion correcta porque TanStack Start proporciona la capa de servidor de la app.
-- `--api trpc` es compatible con este stack React y da llamadas tipadas de extremo a extremo.
-- SQLite es buen valor por defecto para desarrollo local y despliegues pequenos. Migra a PostgreSQL cuando necesites bases gestionadas, pooling, replicas u operacion mas fuerte.
-- shadcn/ui asume una UI React basada en Tailwind. Si luego quitas Tailwind, revisa imports y clases generadas.
+<GuideCompatibilityNote
+  kind="supported"
+  title="Regla de compatibilidad"
+  items={[
+    "`--backend self` es la opción correcta aquí porque TanStack Start proporciona la capa de servidor de la app.",
+    "`--api trpc` es compatible con este stack React y da llamadas tipadas de extremo a extremo.",
+    "SQLite es un buen valor por defecto para desarrollo local y despliegues pequeños. Migra a PostgreSQL cuando necesites bases gestionadas, pooling, réplicas u operación más fuerte.",
+    "shadcn/ui asume una UI React basada en Tailwind. Si luego quitas Tailwind, revisa imports y clases generadas.",
+  ]}
+/>
 
 ## Despliegue
 

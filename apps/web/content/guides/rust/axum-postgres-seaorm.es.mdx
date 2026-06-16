@@ -28,6 +28,17 @@ npm create better-fullstack@latest my-rust-api -- \
   --rust-error-handling anyhow-thiserror
 ```
 
+<GuideStackSnapshot
+  title="Snapshot del stack generado"
+  description="Las fronteras que conviene preservar mientras crece el servicio Rust."
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Extractores tipados, estado compartido del router y handlers explícitos." },
+    { label: "Datos", value: "PostgreSQL + SeaORM", detail: "Acceso a base de datos estilo entity y active models." },
+    { label: "Observabilidad", value: "tracing", detail: "Logs estructurados desde el arranque hasta el manejo de requests." },
+    { label: "Errores", value: "Anyhow + Thiserror", detail: "Errores de dominio convertidos en responses HTTP en el borde." },
+  ]}
+/>
+
 ## Que crea
 
 - Un proyecto API Rust usando Axum.
@@ -66,7 +77,9 @@ Usa `routes/` para mecanica HTTP, `services/` para comportamiento de aplicacion 
 
 ## Compatibilidad
 
-Mantiene `--rust-web-framework axum`, `--database postgres` y `--rust-orm sea-orm` juntos para la forma de esta guia. Si cambias ORM a `sqlx`, espera mas SQL escrito a mano y menos tipos estilo entity. Si `--rust-web-framework` es `none`, los ejemplos de rutas ya no aplican.
+<GuideCompatibilityNote kind="supported" title="Regla de compatibilidad">
+  Mantén `--rust-web-framework axum`, `--database postgres` y `--rust-orm sea-orm` juntos para la forma de esta guía. Si cambias ORM a `sqlx`, espera más SQL escrito a mano y menos tipos estilo entity. Si `--rust-web-framework` es `none`, los ejemplos de rutas ya no aplican.
+</GuideCompatibilityNote>
 
 ## Pruebas y despliegue
 

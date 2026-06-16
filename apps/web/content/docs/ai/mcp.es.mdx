@@ -1,13 +1,13 @@
 ---
 title: Servidor MCP
-description: Conecta Better Fullstack a Claude Code, Cursor, VS Code y agentes de codigo compatibles con MCP.
+description: Conecta Better Fullstack a Claude Code, Cursor, VS Code y agentes de código compatibles con MCP.
 ---
 
-El servidor MCP de Better Fullstack permite a los agentes crear scaffolds mediante tool calls estructuradas en lugar de adivinar flags de CLI. Maneja busqueda de schema, validacion de compatibilidad, previews dry-run, creacion de proyectos y agregados de features.
+El servidor MCP de Better Fullstack permite a los agentes generar proyectos mediante tool calls estructuradas en lugar de adivinar flags de CLI. Maneja búsqueda de schema, validación de compatibilidad, previews dry-run, creación de proyectos y agregado de features.
 
-Esta pagina describe el servidor MCP de Better Fullstack. El addon `mcp` del proyecto generado es separado: escribe configuracion de cliente/servidor MCP en una app scaffolded y puede ejecutar comandos externos de setup.
+Esta página describe el servidor MCP de Better Fullstack. El addon `mcp` del proyecto generado es algo separado: escribe configuración de cliente/servidor MCP en la app generada y puede ejecutar comandos externos de setup.
 
-Para un workflow de agente mas ligero guiado por CLI, instala la [agent skill de Better Fullstack](/docs/ai/skills/). La skill y el servidor MCP usan el mismo generador; la skill esta optimizada para scaffolding rapido basado en flags, mientras que MCP esta optimizado para tool calls estructuradas.
+Para un flujo de agente más ligero y guiado por CLI, instala la [agent skill de Better Fullstack](/docs/ai/skills/). La skill y el servidor MCP usan el mismo generador; la skill está optimizada para scaffolding rápido basado en flags, mientras que MCP está optimizado para tool calls estructuradas.
 
 ## Setup
 
@@ -70,10 +70,10 @@ Usa el mismo comando stdio con clientes como Claude Desktop, Zed, Cursor, Codex,
 
 Para inputs, outputs, ejemplos y comportamiento de escritura segura completos, consulta la [referencia de herramientas MCP](/docs/ai/mcp-tools/).
 
-| Herramienta | Proposito |
+| Herramienta | Propósito |
 | --- | --- |
-| `bfs_get_guidance` | Devuelve reglas de workflow y semantica de campos. Llamala primero. |
-| `bfs_get_schema` | Devuelve opciones validas para categorias de configuracion. |
+| `bfs_get_guidance` | Devuelve reglas de flujo y semántica de campos. Llámala primero. |
+| `bfs_get_schema` | Devuelve opciones válidas para categorías de configuración. |
 | `bfs_check_compatibility` | Valida un stack y devuelve selecciones ajustadas con warnings. |
 | `bfs_plan_project` | Hace dry-run de generacion de proyecto en memoria. |
 | `bfs_create_project` | Escribe un proyecto nuevo en disco. |
@@ -81,7 +81,7 @@ Para inputs, outputs, ejemplos y comportamiento de escritura segura completos, c
 | `bfs_add_feature` | Agrega addons soportados a un proyecto existente. |
 
 <Callout kind="info" title="Comportamiento de install">
-La creacion de proyectos MCP salta la instalacion normal de dependencias para evitar llamadas de agente largas. Si el proyecto generado incluye el addon `mcp`, el setup de ese addon aun puede ejecutar comandos externos para configuracion de clientes MCP.
+La creación de proyectos MCP salta la instalación normal de dependencias para evitar llamadas de agente largas. Si el proyecto generado incluye el addon `mcp`, el setup de ese addon aún puede ejecutar comandos externos para configuración de clientes MCP.
 </Callout>
 
 ## Recursos

@@ -28,6 +28,17 @@ npm create better-fullstack@latest my-fastapi-api -- \
   --python-quality ruff \
 ```
 
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="这个 stack 优化的 runtime 边界。"
+  items={[
+    { label: "HTTP", value: "FastAPI", detail: "Route functions、dependency injection 和 OpenAPI output。" },
+    { label: "数据", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models，以及 scaffold 选择的 PostgreSQL driver。" },
+    { label: "验证", value: "Pydantic", detail: "靠近 API edge 的 request 和 response schemas。" },
+    { label: "质量", value: "Ruff", detail: "为生成的 Python package 提供快速 linting 和 formatting。" },
+  ]}
+/>
+
 ## 创建内容
 
 - FastAPI API。
@@ -59,7 +70,15 @@ my-fastapi-api/
 
 ## 兼容性
 
-`--python-web-framework fastapi`、`--database postgres`、`--python-orm sqlalchemy` 和 `--python-validation pydantic` 是核心组合。如果把 SQLAlchemy 换成 SQLModel，请一起检查 models 和 session handling。
+<GuideCompatibilityNote
+  kind="supported"
+  title="兼容性规则"
+  items={[
+    "`--python-web-framework fastapi` 与 `--python-orm sqlalchemy` 和 `--python-validation pydantic` 自然搭配。",
+    "Django API options（如 `--python-api django-rest-framework`）只在 `--python-web-framework django` 下有效。",
+    "`--database postgres` 会添加 PostgreSQL driver 支持，但 runtime connection 由 `DATABASE_URL` 控制。",
+  ]}
+/>
 
 ## 测试与部署
 

@@ -27,6 +27,17 @@ npm create better-fullstack@latest my-go-api -- \
   --go-logging zap
 ```
 
+<GuideStackSnapshot
+  title="Snapshot del stack generado"
+  description="El servicio Go generado se organiza alrededor de estas responsabilidades."
+  items={[
+    { label: "HTTP", value: "Gin", detail: "Routing, binding de requests, middleware y responses." },
+    { label: "Datos", value: "PostgreSQL + GORM", detail: "Mapeo de modelos y persistencia para servicios CRUD." },
+    { label: "Logging", value: "Zap", detail: "Logs estructurados con contexto de requests y dependencias." },
+    { label: "Forma", value: "cmd + internal", detail: "Layout de servicio backend que mantiene el código de app detrás de límites de paquetes." },
+  ]}
+/>
+
 ## Que crea
 
 - Un proyecto API Go usando Gin.
@@ -67,7 +78,9 @@ Los proyectos Go generados varian segun opciones, pero conserva esta forma al cr
 
 ## Compatibilidad
 
-Mantiene `--go-web-framework gin`, `--database postgres` y `--go-orm gorm` juntos para el flujo de esta guia. Si cambias a `--go-orm sqlc`, espera archivos SQL y tipos de consulta generados en vez de modelos GORM. Si usas `--go-web-framework none`, se vuelve un proyecto no servidor.
+<GuideCompatibilityNote kind="supported" title="Regla de compatibilidad">
+  Mantén `--go-web-framework gin`, `--database postgres` y `--go-orm gorm` juntos para el flujo de esta guía. Si cambias a `--go-orm sqlc`, espera archivos SQL y tipos de consulta generados en vez de modelos GORM. Si usas `--go-web-framework none`, se vuelve un proyecto no servidor.
+</GuideCompatibilityNote>
 
 ## Pruebas y despliegue
 

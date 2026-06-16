@@ -21,9 +21,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -314,10 +312,13 @@ function MobileLocaleItems() {
   const locale = getLocale();
 
   return (
-    <DropdownMenuGroup>
-      <DropdownMenuLabel className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em]">
+    <>
+      <div
+        className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
+        role="presentation"
+      >
         {m.navLanguage()}
-      </DropdownMenuLabel>
+      </div>
       {locales.map((availableLocale) => (
         <DropdownMenuItem
           key={availableLocale}
@@ -333,11 +334,30 @@ function MobileLocaleItems() {
           {locale === availableLocale ? <Check className="h-3.5 w-3.5" /> : null}
         </DropdownMenuItem>
       ))}
-    </DropdownMenuGroup>
+    </>
   );
 }
 
 function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
+  const builderItems = onBuilder
+    ? null
+    : [
+        <DropdownMenuItem
+          key="builder"
+          render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
+          className={MOBILE_MENU_ITEM_CLASS}
+        >
+          {m.navBuilder()}
+        </DropdownMenuItem>,
+        <DropdownMenuItem
+          key="presets"
+          render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
+          className={MOBILE_MENU_ITEM_CLASS}
+        >
+          {m.navPresets()}
+        </DropdownMenuItem>,
+      ];
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -352,22 +372,7 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
         <Menu className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        {!onBuilder ? (
-          <>
-            <DropdownMenuItem
-              render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
-              className={MOBILE_MENU_ITEM_CLASS}
-            >
-              {m.navBuilder()}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
-              className={MOBILE_MENU_ITEM_CLASS}
-            >
-              {m.navPresets()}
-            </DropdownMenuItem>
-          </>
-        ) : null}
+        {builderItems}
         <DropdownMenuItem render={<Link to="/docs" />} className={MOBILE_MENU_ITEM_CLASS}>
           {m.navDocs()}
         </DropdownMenuItem>

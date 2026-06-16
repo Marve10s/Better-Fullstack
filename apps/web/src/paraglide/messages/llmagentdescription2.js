@@ -10,7 +10,7 @@ const en_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) 
 };
 
 const es_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un servidor MCP, todas las herramientas spec-to-scaffold que usó el benchmark. Elige tu agente, pega y listo.`)
+	return /** @type {LocalizedString} */ (`Un servidor MCP y todas las herramientas para pasar de especificación a scaffold que usó el benchmark. Elige tu agente, pega y listo.`)
 };
 
 const zh_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) => LocalizedString} */ () => {

@@ -31,6 +31,17 @@ npm create better-fullstack@latest my-tanstack-app -- \
   --ui-library shadcn-ui \
 ```
 
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="Better Fullstack 为这个 TanStack Start 项目记录的关键选择。"
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React、file routes 和 server routes 位于同一个可部署 app 中。" },
+    { label: "Backend", value: "Self-hosted app server", detail: "使用 TanStack Start 的 server layer，而不是单独的 API package。" },
+    { label: "API", value: "tRPC", detail: "为 React routes 和 server-side mutations 提供 typed procedures。" },
+    { label: "数据", value: "SQLite + Drizzle", detail: "本地关系型 schema，并保留以后迁移到 PostgreSQL 的清晰路径。" },
+  ]}
+/>
+
 ## 创建内容
 
 - 带 file-based routes 的 TanStack Start web app。
@@ -75,10 +86,16 @@ Drizzle 在 schema 小而明确时效果最好。Better Auth 拥有自己的 aut
 
 ## 兼容性
 
-- `--backend self` 是这里的正确选择，因为 TanStack Start 提供 app server layer。
-- `--api trpc` 与这个 React stack 兼容，并提供 end-to-end typed calls。
-- SQLite 适合 local development 和小型部署。需要 managed production databases、pooling、replicas 或更强运维能力时再迁移到 PostgreSQL。
-- shadcn/ui 假设使用 Tailwind-based React UI。如果以后移除 Tailwind，请一起检查 generated component imports 和 class names。
+<GuideCompatibilityNote
+  kind="supported"
+  title="兼容性规则"
+  items={[
+    "`--backend self` 是这里的正确选择，因为 TanStack Start 提供 app server layer。",
+    "`--api trpc` 与这个 React stack 兼容，并提供 end-to-end typed calls。",
+    "SQLite 适合 local development 和小型部署。需要 managed production databases、pooling、replicas 或更强运维能力时再迁移到 PostgreSQL。",
+    "shadcn/ui 假设使用 Tailwind-based React UI。如果以后移除 Tailwind，请一起检查 generated component imports 和 class names。",
+  ]}
+/>
 
 ## 部署
 

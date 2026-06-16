@@ -28,6 +28,17 @@ npm create better-fullstack@latest my-rust-api -- \
   --rust-error-handling anyhow-thiserror
 ```
 
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="Rust service 增长时应保留的边界。"
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Typed extractors、shared router state 和 explicit handlers。" },
+    { label: "数据", value: "PostgreSQL + SeaORM", detail: "Entity-style database access 和 active models。" },
+    { label: "可观测性", value: "tracing", detail: "从 startup 到 request handling 的 structured logs。" },
+    { label: "错误", value: "Anyhow + Thiserror", detail: "Domain errors 在 edge 转换成 HTTP responses。" },
+  ]}
+/>
+
 ## 创建内容
 
 - 使用 Axum 的 Rust API project。
@@ -66,7 +77,9 @@ my-rust-api/
 
 ## 兼容性
 
-当你需要本指南的 shape 时，请保持 `--rust-web-framework axum`、`--database postgres` 和 `--rust-orm sea-orm` 组合。如果 ORM 切换到 `sqlx`，会有更多 handwritten SQL 和更少 entity-style model types。如果设置 `--rust-web-framework none`，本指南的 route examples 不再适用。
+<GuideCompatibilityNote kind="supported" title="兼容性规则">
+  当你需要本指南的 shape 时，请保持 `--rust-web-framework axum`、`--database postgres` 和 `--rust-orm sea-orm` 组合。如果 ORM 切换到 `sqlx`，会有更多 handwritten SQL 和更少 entity-style model types。如果设置 `--rust-web-framework none`，本指南的 route examples 不再适用。
+</GuideCompatibilityNote>
 
 ## 测试与部署
 
