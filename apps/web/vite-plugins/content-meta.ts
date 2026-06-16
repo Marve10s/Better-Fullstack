@@ -21,7 +21,15 @@ import { parse as parseYaml } from "yaml";
 const VIRTUAL_ID = "virtual:content-meta";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
 
-type MetaEntry = { filePath: string; frontmatter: Record<string, unknown> };
+const LOCALIZED_CONTENT_LOCALES = ["es", "zh"] as const;
+
+type LocalizedContentLocale = (typeof LOCALIZED_CONTENT_LOCALES)[number];
+type MetaEntry = {
+  filePath: string;
+  frontmatter: Record<string, unknown>;
+  localizedFrontmatter: Partial<Record<LocalizedContentLocale, Record<string, unknown>>>;
+};
+type MetaBuild = { entries: MetaEntry[]; watchFiles: string[] };
 
 function extractFrontmatter(source: string): Record<string, unknown> {
   if (!source.startsWith("---")) return {};
@@ -55,15 +63,31 @@ function isLocalizedMdxFile(fileName: string): boolean {
 export function contentMetaPlugin(): Plugin {
   let rootDir = "";
 
-  function buildMeta(contentSubdir: "docs" | "guides" | "blog", globPrefix: string): MetaEntry[] {
+  function buildMeta(contentSubdir: "docs" | "guides" | "blog", globPrefix: string): MetaBuild {
     const contentDir = path.join(rootDir, "content", contentSubdir);
-    return collectMdxFiles(contentDir).map((file) => {
+    const watchFiles: string[] = [];
+    const entries = collectMdxFiles(contentDir).map((file) => {
       const rel = path.relative(contentDir, file).split(path.sep).join("/");
+      const localizedFrontmatter: MetaEntry["localizedFrontmatter"] = {};
+      for (const locale of LOCALIZED_CONTENT_LOCALES) {
+        const localizedFile = path.join(
+          contentDir,
+          rel.replace(/\.mdx$/, `.${locale}.mdx`).split("/").join(path.sep),
+        );
+        if (fs.existsSync(localizedFile)) {
+          localizedFrontmatter[locale] = extractFrontmatter(
+            fs.readFileSync(localizedFile, "utf8"),
+          );
+          watchFiles.push(localizedFile);
+        }
+      }
       return {
         filePath: globPrefix + rel,
         frontmatter: extractFrontmatter(fs.readFileSync(file, "utf8")),
+        localizedFrontmatter,
       };
     });
+    return { entries, watchFiles };
   }
 
   return {
@@ -80,13 +104,18 @@ export function contentMetaPlugin(): Plugin {
       const docs = buildMeta("docs", "../../../content/docs/");
       const guides = buildMeta("guides", "../../../content/guides/");
       const blog = buildMeta("blog", "../../../content/blog/");
-      for (const entry of [...docs, ...guides, ...blog]) {
-        this.addWatchFile(path.join(rootDir, "content", entry.filePath.replace("../../../content/", "")));
+      for (const entry of [...docs.entries, ...guides.entries, ...blog.entries]) {
+        this.addWatchFile(
+          path.join(rootDir, "content", entry.filePath.replace("../../../content/", "")),
+        );
+      }
+      for (const filePath of [...docs.watchFiles, ...guides.watchFiles, ...blog.watchFiles]) {
+        this.addWatchFile(filePath);
       }
       return (
-        `export const docsMeta = ${JSON.stringify(docs)};\n` +
-        `export const guidesMeta = ${JSON.stringify(guides)};\n` +
-        `export const blogMeta = ${JSON.stringify(blog)};\n`
+        `export const docsMeta = ${JSON.stringify(docs.entries)};\n` +
+        `export const guidesMeta = ${JSON.stringify(guides.entries)};\n` +
+        `export const blogMeta = ${JSON.stringify(blog.entries)};\n`
       );
     },
     handleHotUpdate(ctx) {

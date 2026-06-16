@@ -15,13 +15,18 @@ export const Route = createFileRoute("/blog/$")({
     return {
       slug: post.slug,
       frontmatter: post.frontmatter,
+      localizedFrontmatter: post.localizedFrontmatter,
     };
   },
   head: ({ loaderData }) =>
     loaderData
       ? blogPostHead({
           url: `/blog/${loaderData.slug.join("/")}`,
-          frontmatter: localizeBlogFrontmatter(loaderData.slug, loaderData.frontmatter),
+          frontmatter: localizeBlogFrontmatter(
+            loaderData.slug,
+            loaderData.frontmatter,
+            loaderData.localizedFrontmatter,
+          ),
         })
       : blogPostHead({ url: "/blog", frontmatter: { title: m.navBlog() } }),
   component: BlogSplatPage,

@@ -8,6 +8,8 @@ import type { DocSearch, SearchHit } from "@/lib/docs/search";
 import { createDocSearch } from "@/lib/docs/search";
 import { loadSearchSections } from "@/lib/docs/search-data";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
+import { getLocale } from "@/paraglide/runtime.js";
 
 const SHORTCUT_HINT_KEYS = ["meta+k", "ctrl+k"] as const;
 
@@ -33,6 +35,14 @@ export function DocsSearchDialog({
   const [search, setSearch] = useState<DocSearch | null>(null);
   const [sectionCount, setSectionCount] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const locale = getLocale();
+
+  useEffect(() => {
+    setSearch(null);
+    setSectionCount(0);
+    setHits([]);
+    setActiveIndex(0);
+  }, [locale]);
 
   // Lazy-init Orama on first open. The promise is cached so repeat opens
   // don't rebuild the index.
@@ -51,7 +61,7 @@ export function DocsSearchDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, search]);
+  }, [locale, open, search]);
 
   // Run the query whenever input changes.
   useEffect(() => {
@@ -131,14 +141,14 @@ export function DocsSearchDialog({
         >
           <button
             type="button"
-            aria-label="Close search"
+            aria-label={m.docsCloseSearch()}
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => onOpenChange(false)}
           />
           <motion.dialog
             open
             aria-modal="true"
-            aria-label="Search docs"
+            aria-label={m.docsSearch()}
             className="relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -150,11 +160,11 @@ export function DocsSearchDialog({
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search docs…"
+                placeholder={m.docsSearchPlaceholder()}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKey}
-                aria-label="Search docs"
+                aria-label={m.docsSearch()}
                 className="flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground"
               />
               <kbd className="hidden font-mono text-[0.65rem] text-muted-foreground uppercase sm:inline-flex">
@@ -164,14 +174,15 @@ export function DocsSearchDialog({
 
             <div className="max-h-[60vh] overflow-y-auto py-2">
               {!search ? (
-                <Empty>Loading search…</Empty>
+                <Empty>{m.docsSearchLoading()}</Empty>
               ) : query.trim() === "" ? (
                 <Empty>
-                  <span className="font-mono text-xs uppercase">Type to search</span>
+                  <span className="font-mono text-xs uppercase">{m.docsTypeToSearch()}</span>
                 </Empty>
               ) : hits.length === 0 ? (
                 <Empty>
-                  No results for <span className="font-mono text-foreground">"{query}"</span>
+                  {m.docsNoResultsPrefix()}{" "}
+                  <span className="font-mono text-foreground">"{query}"</span>
                 </Empty>
               ) : (
                 <ul className="flex flex-col">
@@ -230,11 +241,11 @@ export function DocsSearchDialog({
             <div className="flex items-center justify-between border-border border-t px-4 py-2 font-mono text-[0.65rem] text-muted-foreground uppercase">
               <span className="flex items-center gap-3">
                 <KeyHint label="↑↓" />
-                <span>Navigate</span>
+                <span>{m.docsSearchNavigate()}</span>
                 <KeyHint label="↵" />
-                <span>Open</span>
+                <span>{m.docsSearchOpen()}</span>
               </span>
-              <span>{sectionCount} sections indexed</span>
+              <span>{m.docsSearchSectionsIndexed({ count: sectionCount })}</span>
             </div>
           </motion.dialog>
         </motion.div>
@@ -304,14 +315,14 @@ export function DocsSearchTrigger({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Search docs"
+        aria-label={m.docsSearch()}
         className={cn(
           "inline-flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground",
           className,
         )}
       >
         <SearchIcon className="size-3.5" />
-        <span className="hidden font-mono sm:inline">Search docs</span>
+        <span className="hidden font-mono sm:inline">{m.docsSearch()}</span>
         <kbd className="hidden items-center gap-0.5 font-mono text-[0.65rem] uppercase sm:inline-flex">
           <span>{getModifierLabel()}</span>
           <span>K</span>

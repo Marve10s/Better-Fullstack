@@ -1,14 +1,11 @@
 declare module "virtual:content-meta" {
-  export const docsMeta: ReadonlyArray<{
+  type ContentMetaEntry = {
     filePath: string;
     frontmatter: Record<string, unknown>;
-  }>;
-  export const guidesMeta: ReadonlyArray<{
-    filePath: string;
-    frontmatter: Record<string, unknown>;
-  }>;
-  export const blogMeta: ReadonlyArray<{
-    filePath: string;
-    frontmatter: Record<string, unknown>;
-  }>;
+    localizedFrontmatter?: Partial<Record<"es" | "zh", Record<string, unknown>>>;
+  };
+
+  export const docsMeta: ReadonlyArray<ContentMetaEntry>;
+  export const guidesMeta: ReadonlyArray<ContentMetaEntry>;
+  export const blogMeta: ReadonlyArray<ContentMetaEntry>;
 }

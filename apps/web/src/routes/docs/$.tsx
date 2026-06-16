@@ -2,7 +2,12 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { DocsPageContent } from "@/components/docs/docs-page";
 import { docsPageHead } from "@/lib/docs/seo";
-import { getNeighbors, getPage, preloadDocPageContent } from "@/lib/docs/source";
+import {
+  getLocalizedDocFrontmatter,
+  getNeighbors,
+  getPage,
+  preloadDocPageContent,
+} from "@/lib/docs/source";
 
 /**
  * Catch-all for nested docs paths (`/docs/cli/create`, `/docs/ecosystems/go`,
@@ -20,6 +25,7 @@ export const Route = createFileRoute("/docs/$")({
     return {
       slug: page.slug,
       frontmatter: page.frontmatter,
+      localizedFrontmatter: page.localizedFrontmatter,
       neighbors: getNeighbors(page.slug),
     };
   },
@@ -27,9 +33,9 @@ export const Route = createFileRoute("/docs/$")({
     loaderData
       ? docsPageHead({
           url: `/docs/${loaderData.slug.join("/")}`,
-          frontmatter: loaderData.frontmatter,
+          frontmatter: getLocalizedDocFrontmatter(loaderData),
         })
-      : docsPageHead({ url: "/docs", frontmatter: { title: "Docs" } }),
+      : docsPageHead({ url: "/docs", frontmatter: {} }),
   component: DocsSplatPage,
 });
 

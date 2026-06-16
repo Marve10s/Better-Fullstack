@@ -1,6 +1,5 @@
 import type { DocPage } from "./source";
 import {
-  DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_URL,
@@ -10,7 +9,9 @@ import {
   SITE_NAME,
   SITE_URL,
   canonicalUrl,
+  getDefaultDescription,
 } from "@/lib/seo";
+import { m } from "@/paraglide/messages.js";
 
 type JsonLdMeta = {
   "script:ld+json": Record<string, unknown>;
@@ -19,11 +20,11 @@ type JsonLdMeta = {
 function docsPageTitle(page: Pick<DocPage, "frontmatter">) {
   return page.frontmatter.title
     ? `${page.frontmatter.title} | ${SITE_NAME}`
-    : `Docs | ${SITE_NAME}`;
+    : `${m.navDocs()} | ${SITE_NAME}`;
 }
 
 function docsPageDescription(page: Pick<DocPage, "frontmatter">) {
-  return page.frontmatter.description ?? DEFAULT_DESCRIPTION;
+  return page.frontmatter.description ?? getDefaultDescription();
 }
 
 function docsPageImage(page: Pick<DocPage, "frontmatter">) {

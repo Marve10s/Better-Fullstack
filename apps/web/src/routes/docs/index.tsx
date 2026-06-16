@@ -2,7 +2,12 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { DocsPageContent } from "@/components/docs/docs-page";
 import { docsPageHead } from "@/lib/docs/seo";
-import { getNeighbors, getPage, preloadDocPageContent } from "@/lib/docs/source";
+import {
+  getLocalizedDocFrontmatter,
+  getNeighbors,
+  getPage,
+  preloadDocPageContent,
+} from "@/lib/docs/source";
 
 /**
  * Exact match for `/docs` — renders the docs index page (`content/docs/index.mdx`).
@@ -19,13 +24,14 @@ export const Route = createFileRoute("/docs/")({
     return {
       slug: page.slug,
       frontmatter: page.frontmatter,
+      localizedFrontmatter: page.localizedFrontmatter,
       neighbors: getNeighbors([]),
     };
   },
   head: ({ loaderData }) =>
     docsPageHead({
       url: "/docs",
-      frontmatter: loaderData?.frontmatter ?? { title: "Docs" },
+      frontmatter: loaderData ? getLocalizedDocFrontmatter(loaderData) : {},
     }),
   component: DocsIndexPage,
 });

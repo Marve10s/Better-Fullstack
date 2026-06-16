@@ -22,6 +22,7 @@ type MdxModule = {
   frontmatter?: GuideFrontmatter;
   toc?: TocEntry[];
 };
+type LocalizedFrontmatter<T> = Partial<Record<"es" | "zh", T>>;
 
 /**
  * Per-guide metadata. The compiled MDX component and toc are loaded on demand
@@ -33,6 +34,7 @@ export type GuidePage = {
   path: string;
   filePath: string;
   frontmatter: GuideFrontmatter;
+  localizedFrontmatter?: LocalizedFrontmatter<GuideFrontmatter>;
 };
 
 /** Heavy per-guide bundle, loaded lazily for the page being viewed. */
@@ -77,7 +79,7 @@ function normalizeMdxPath(filePath: string): { relativePath: string; slug: strin
 
 const pagesBySlug = new Map<string, GuidePage>();
 
-for (const { filePath, frontmatter } of guidesMeta) {
+for (const { filePath, frontmatter, localizedFrontmatter } of guidesMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/guides" + (slug.length ? `/${slug.join("/")}` : "");
   pagesBySlug.set(slug.join("/"), {
@@ -86,6 +88,7 @@ for (const { filePath, frontmatter } of guidesMeta) {
     path: relativePath,
     filePath,
     frontmatter: frontmatter ?? {},
+    localizedFrontmatter: localizedFrontmatter ?? {},
   });
 }
 

@@ -13,13 +13,14 @@ export const Route = createFileRoute("/guides/")({
     preloadGuidePageContent(page.slug);
     return {
       frontmatter: page.frontmatter,
+      localizedFrontmatter: page.localizedFrontmatter,
     };
   },
   head: ({ loaderData }) =>
     guidePageHead({
       url: "/guides",
       frontmatter: loaderData
-        ? localizeGuideFrontmatter([], loaderData.frontmatter)
+        ? localizeGuideFrontmatter([], loaderData.frontmatter, loaderData.localizedFrontmatter)
         : { title: m.navGuides() },
     }),
   component: GuidesIndexPage,

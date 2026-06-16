@@ -3,8 +3,14 @@ import { motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 
 import { DocsSearchTrigger } from "@/components/docs/search-dialog";
-import { type FolderNode, type PageNode, pageTree, type PageTreeNode } from "@/lib/docs/source";
+import {
+  type FolderNode,
+  getLocalizedPageTree,
+  type PageNode,
+  type PageTreeNode,
+} from "@/lib/docs/source";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
 
@@ -22,10 +28,11 @@ const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } a
 export function DocsSidebar({ className }: { className?: string }) {
   const location = useLocation();
   const currentUrl = location.pathname.replace(/\/$/, "") || "/docs";
+  const pageTree = getLocalizedPageTree();
 
   return (
     <nav
-      aria-label="Documentation"
+      aria-label={m.navDocs()}
       className={cn("flex w-full flex-col gap-5 px-3 py-6 font-mono text-sm", className)}
     >
       <DocsSearchTrigger className="w-full justify-between border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 px-3 py-2 text-[0.78rem] shadow-sm backdrop-blur" />

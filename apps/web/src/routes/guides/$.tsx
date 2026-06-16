@@ -15,13 +15,18 @@ export const Route = createFileRoute("/guides/$")({
     return {
       slug: page.slug,
       frontmatter: page.frontmatter,
+      localizedFrontmatter: page.localizedFrontmatter,
     };
   },
   head: ({ loaderData }) =>
     loaderData
       ? guidePageHead({
           url: `/guides/${loaderData.slug.join("/")}`,
-          frontmatter: localizeGuideFrontmatter(loaderData.slug, loaderData.frontmatter),
+          frontmatter: localizeGuideFrontmatter(
+            loaderData.slug,
+            loaderData.frontmatter,
+            loaderData.localizedFrontmatter,
+          ),
         })
       : guidePageHead({ url: "/guides", frontmatter: { title: m.navGuides() } }),
   component: GuidesSplatPage,

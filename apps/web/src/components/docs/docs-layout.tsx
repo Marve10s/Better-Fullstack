@@ -10,6 +10,7 @@ import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Three-column docs shell rendered under `/docs/*`. Layout is:
@@ -59,7 +60,7 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
         type="button"
         onClick={() => setMobileOpen(true)}
         className="fixed bottom-6 left-6 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/95 text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground md:hidden"
-        aria-label="Open docs navigation"
+        aria-label={m.docsOpenNavigation()}
       >
         <Menu className="size-4" />
       </button>
@@ -91,7 +92,7 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
           >
             <button
               type="button"
-              aria-label="Close docs navigation"
+              aria-label={m.docsCloseNavigation()}
               className="absolute inset-0 bg-background/80 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
@@ -106,12 +107,12 @@ export function DocsLayout({ toc, children }: { toc: TocEntry[]; children: React
             >
               <div className="flex items-center justify-between border-[var(--docs-border-subtle)] border-b px-4 py-3">
                 <span className="font-mono text-[0.72rem] uppercase text-muted-foreground">
-                  Docs
+                  {m.navDocs()}
                 </span>
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  aria-label="Close"
+                  aria-label={m.uiClose()}
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <X className="size-4" />

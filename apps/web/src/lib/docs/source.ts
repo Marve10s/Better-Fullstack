@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { docsMeta } from "virtual:content-meta";
 
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
+import { getLocale } from "@/paraglide/runtime.js";
 
 import type { TocEntry } from "./remark-extract-toc";
 
@@ -29,6 +30,8 @@ type MdxModule = {
 };
 
 type RawMdxModule = string;
+type ContentLocale = "en" | "es" | "zh";
+type LocalizedFrontmatter<T> = Partial<Record<Exclude<ContentLocale, "en">, T>>;
 
 /**
  * Sidebar config per directory (mirrors Fumadocs `meta.json` shape so we can
@@ -82,6 +85,7 @@ export type DocPage = {
   path: string;
   filePath: string;
   frontmatter: DocFrontmatter;
+  localizedFrontmatter?: LocalizedFrontmatter<DocFrontmatter>;
 };
 
 /** Heavy per-page bundle, loaded lazily for the page being viewed. */
@@ -92,6 +96,19 @@ export type DocPageContent = {
 };
 
 const CONTENT_PREFIX = "/content/docs/";
+const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title: string }>> = {
+  "AI Agents": { es: { title: "Agentes de IA" }, zh: { title: "AI 代理" } },
+  "Better Fullstack": {
+    es: { title: "Better Fullstack" },
+    zh: { title: "Better Fullstack" },
+  },
+  CLI: { es: { title: "CLI" }, zh: { title: "CLI" } },
+  Ecosystems: { es: { title: "Ecosistemas" }, zh: { title: "生态系统" } },
+  "Getting Started": { es: { title: "Primeros pasos" }, zh: { title: "入门" } },
+  Options: { es: { title: "Opciones" }, zh: { title: "选项" } },
+  Reference: { es: { title: "Referencia" }, zh: { title: "参考" } },
+  Sections: { es: { title: "Secciones" }, zh: { title: "功能分区" } },
+};
 
 // Lazy: each page's compiled MDX module / raw markdown is its own chunk.
 // Frontmatter comes from `virtual:content-meta` (see vite-plugins/content-meta)
@@ -107,6 +124,44 @@ const metaModules = import.meta.glob<{ default: MetaFile }>(
   "../../../content/docs/**/meta.json",
   { eager: true },
 );
+
+function currentContentLocale(): ContentLocale {
+  const locale = getLocale();
+  return locale === "es" || locale === "zh" ? locale : "en";
+}
+
+function localizedFilePath(filePath: string, locale: ContentLocale): string {
+  if (locale === "en") return filePath;
+  return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
+}
+
+function hasLocalizedContent(filePath: string, locale: ContentLocale): boolean {
+  return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
+}
+
+function contentCacheKey(page: DocPage, locale: ContentLocale): string {
+  return `${page.slug.join("/")}:${locale}`;
+}
+
+function localizedFolderName(name: string, locale = currentContentLocale()): string {
+  if (locale === "en") return name;
+  return DOC_FOLDER_TITLE_TRANSLATIONS[name]?.[locale]?.title ?? name;
+}
+
+export function getLocalizedDocFrontmatter(
+  page: Pick<DocPage, "frontmatter" | "localizedFrontmatter">,
+  locale = currentContentLocale(),
+): DocFrontmatter {
+  if (locale === "en") return page.frontmatter;
+  return page.localizedFrontmatter?.[locale] ?? page.frontmatter;
+}
+
+export function localizeDocPage(page: DocPage): DocPage {
+  return {
+    ...page,
+    frontmatter: getLocalizedDocFrontmatter(page),
+  };
+}
 
 /**
  * Convert a Vite glob path like `../../../content/docs/cli/create.mdx` into a
@@ -135,7 +190,7 @@ function normalizeMetaPath(filePath: string): { dirSlug: string[] } {
  * O(1).
  */
 const pagesBySlug = new Map<string, DocPage>();
-for (const { filePath, frontmatter } of docsMeta) {
+for (const { filePath, frontmatter, localizedFrontmatter } of docsMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/docs" + (slug.length ? "/" + slug.join("/") : "");
   const key = slug.join("/");
@@ -145,17 +200,22 @@ for (const { filePath, frontmatter } of docsMeta) {
     path: relativePath,
     filePath,
     frontmatter: frontmatter ?? {},
+    localizedFrontmatter: localizedFrontmatter ?? {},
   });
 }
 
 const contentCache = createSuspenseCache<DocPageContent>();
 
 async function loadPageContent(page: DocPage): Promise<DocPageContent> {
+  const locale = currentContentLocale();
+  const filePath = hasLocalizedContent(page.filePath, locale)
+    ? localizedFilePath(page.filePath, locale)
+    : page.filePath;
   const [module, raw] = await Promise.all([
-    mdxLoaders[page.filePath]?.(),
-    rawMdxLoaders[page.filePath]?.(),
+    mdxLoaders[filePath]?.(),
+    rawMdxLoaders[filePath]?.(),
   ]);
-  if (!module) throw new Error(`Docs content module missing for ${page.filePath}`);
+  if (!module) throw new Error(`Docs content module missing for ${filePath}`);
   return {
     raw: raw ?? "",
     toc: module.toc ?? [],
@@ -168,14 +228,16 @@ async function loadPageContent(page: DocPage): Promise<DocPageContent> {
  * the chunk loads. Callers must render inside a `<Suspense>` boundary.
  */
 export function useDocPageContent(page: DocPage): DocPageContent {
-  return contentCache.read(page.slug.join("/"), () => loadPageContent(page));
+  return contentCache.read(contentCacheKey(page, currentContentLocale()), () =>
+    loadPageContent(page),
+  );
 }
 
 /** Start fetching a page's content chunk early (e.g. from a route loader). */
 export function preloadDocPageContent(slug: string[] | undefined): void {
   const page = getPage(slug);
   if (!page) return;
-  contentCache.preload(page.slug.join("/"), () => loadPageContent(page));
+  contentCache.preload(contentCacheKey(page, currentContentLocale()), () => loadPageContent(page));
 }
 
 /**
@@ -183,10 +245,14 @@ export function preloadDocPageContent(slug: string[] | undefined): void {
  * the search index — heavy, so callers must be lazy (e.g. on dialog open).
  */
 export async function loadAllRawPages(): Promise<Map<string, string>> {
+  const locale = currentContentLocale();
   const entries = await Promise.all(
-    Object.entries(rawMdxLoaders).map(
-      async ([filePath, load]) => [filePath, await load()] as const,
-    ),
+    getAllPages().map(async (page) => {
+      const filePath = hasLocalizedContent(page.filePath, locale)
+        ? localizedFilePath(page.filePath, locale)
+        : page.filePath;
+      return [page.filePath, (await rawMdxLoaders[filePath]?.()) ?? ""] as const;
+    }),
   );
   return new Map(entries);
 }
@@ -309,12 +375,38 @@ export function getAllPages(): DocPage[] {
   return Array.from(pagesBySlug.values());
 }
 
+function localizePageNode(node: PageNode): PageNode {
+  const page = pagesBySlug.get(node.slug.join("/"));
+  const frontmatter = page ? getLocalizedDocFrontmatter(page) : node.frontmatter;
+  return {
+    ...node,
+    name: frontmatter.title ?? node.name,
+    frontmatter,
+  };
+}
+
+function localizePageTreeNode(node: PageTreeNode): PageTreeNode {
+  if (node.type === "separator") return node;
+  if (node.type === "page") return localizePageNode(node);
+  return {
+    ...node,
+    name: localizedFolderName(node.name),
+    index: node.index ? localizeDocPage(node.index) : undefined,
+    children: node.children.map(localizePageTreeNode),
+  };
+}
+
+export function getLocalizedPageTree(): FolderNode {
+  return localizePageTreeNode(pageTree) as FolderNode;
+}
+
 /**
  * Flatten the page tree into a linear list of pages in sidebar order — used
  * to compute prev/next pagination links and to render the linear list in
  * mobile menus.
  */
 export function flattenPages(node: PageTreeNode = pageTree): PageNode[] {
+  const localizedRoot = node === pageTree ? getLocalizedPageTree() : node;
   const out: PageNode[] = [];
   const walk = (n: PageTreeNode) => {
     if (n.type === "separator") return;
@@ -333,7 +425,7 @@ export function flattenPages(node: PageTreeNode = pageTree): PageNode[] {
     }
     for (const child of n.children) walk(child);
   };
-  walk(node);
+  walk(localizedRoot);
   return out;
 }
 

@@ -23,6 +23,7 @@ type MdxModule = {
   frontmatter?: BlogFrontmatter;
   toc?: TocEntry[];
 };
+type LocalizedFrontmatter<T> = Partial<Record<"es" | "zh", T>>;
 
 /**
  * Per-post metadata. The compiled MDX component and toc are loaded on demand
@@ -35,6 +36,7 @@ export type BlogPost = {
   path: string;
   filePath: string;
   frontmatter: BlogFrontmatter;
+  localizedFrontmatter?: LocalizedFrontmatter<BlogFrontmatter>;
 };
 
 /** Heavy per-post bundle, loaded lazily for the post being viewed. */
@@ -79,7 +81,7 @@ function normalizeMdxPath(filePath: string): { relativePath: string; slug: strin
 
 const postsBySlug = new Map<string, BlogPost>();
 
-for (const { filePath, frontmatter } of blogMeta) {
+for (const { filePath, frontmatter, localizedFrontmatter } of blogMeta) {
   const { relativePath, slug } = normalizeMdxPath(filePath);
   const url = "/blog" + (slug.length ? `/${slug.join("/")}` : "");
   postsBySlug.set(slug.join("/"), {
@@ -88,6 +90,7 @@ for (const { filePath, frontmatter } of blogMeta) {
     path: relativePath,
     filePath,
     frontmatter: frontmatter ?? {},
+    localizedFrontmatter: localizedFrontmatter ?? {},
   });
 }
 

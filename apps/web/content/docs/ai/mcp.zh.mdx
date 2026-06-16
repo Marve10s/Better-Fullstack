@@ -1,0 +1,131 @@
+---
+title: MCP 服务器
+description: 将 Better Fullstack 连接到 Claude Code、Cursor、VS Code 和兼容 MCP 的 AI coding agents。
+---
+
+Better Fullstack MCP server 允许 agents 通过结构化 tool calls scaffold projects，而不是猜测 CLI flags。它处理 schema lookup、compatibility validation、dry-run previews、project creation 和 feature additions。
+
+此页面描述 Better Fullstack MCP server。生成项目的 `mcp` addon 是另一回事：它会把 MCP client/server 配置写入 scaffolded app，并可能运行外部 setup commands。
+
+如果想使用更轻的 CLI-driven agent workflow，请安装 [Better Fullstack agent skill](/docs/ai/skills/)。skill 和 MCP server 都使用同一个 generator；skill 针对快速 flag-based scaffolding 优化，而 MCP 针对结构化 tool calls 优化。
+
+## Setup
+
+使用你使用的 package manager 启动 server：
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
+### Claude Code
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+```
+
+如果你更喜欢 pnpm、Bun 或 Yarn，请使用上方同一 launcher 表。
+
+### Cursor
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### VS Code
+
+```json
+{
+  "servers": {
+    "better-fullstack": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### 其他 MCP clients
+
+在 Claude Desktop、Zed、Cursor、Codex、OpenCode、Gemini CLI、Goose 或其他 MCP-compatible tools 中使用同样的 stdio command。
+
+| Package manager | `command` | `args` |
+| --- | --- | --- |
+| npm | `npx` | `["-y", "create-better-fullstack@latest", "mcp"]` |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| Yarn | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## 工具
+
+完整 inputs、outputs、examples 和安全写入行为请参阅 [MCP tools reference](/docs/ai/mcp-tools/)。
+
+| 工具 | 用途 |
+| --- | --- |
+| `bfs_get_guidance` | 返回 workflow rules 和 field semantics。先调用它。 |
+| `bfs_get_schema` | 返回配置分类的有效选项。 |
+| `bfs_check_compatibility` | 验证 stack，并返回带 warnings 的调整后 selections。 |
+| `bfs_plan_project` | 在内存中 dry-run project generation。 |
+| `bfs_create_project` | 将新项目写入磁盘。 |
+| `bfs_plan_addition` | 验证现有项目的 addon changes。 |
+| `bfs_add_feature` | 向现有项目添加受支持的 addons。 |
+
+<Callout kind="info" title="安装行为">
+MCP project creation 会跳过普通依赖安装，以避免长时间 agent calls。如果生成项目包含 `mcp` addon，该 addon setup 仍可能为 MCP client configuration 运行外部 setup commands。
+</Callout>
+
+## 资源
+
+server 暴露这些 MCP resources：
+
+| Resource | 内容 |
+| --- | --- |
+| `docs://compatibility-rules` | stack combinations 的兼容性规则。 |
+| `docs://stack-options` | 按分类列出的可用技术选项。 |
+| `docs://getting-started` | 支持生态系统的 quick-start recipes。 |
+
+## 推荐工具顺序
+
+新项目：
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+现有项目：
+
+1. `bfs_plan_addition`
+2. `bfs_add_feature`
+
+## Agents 关键规则
+
+- `frontend` 是 array，可以包含多个 frontend targets。
+- `none` 会禁用一个分类。
+- 先设置 `ecosystem`，这样 agent 会使用正确的字段族。
+- Array fields 包括 `frontend`、`addons`、`examples`、`rustLibraries`、`pythonAi`、`javaLibraries` 和 `javaTestingLibraries`。
+- Project planning、creation 和 addition responses 包含 `graphSummary`、`effectiveStack` 和 `stackPartSpecs`，用于 graph-backed stack view。
+- 当前 MCP project schemas 不把 `aiDocs` 暴露为 create field；project creation 使用 server 内置的 AI-doc behavior。
+- 创建项目前始终调用 `bfs_check_compatibility`。
+
+## Agent prompt
+
+```text
+Use Better Fullstack MCP. First call bfs_get_guidance to understand
+the rules, then bfs_get_schema for the relevant categories, then
+bfs_check_compatibility to validate the stack, then bfs_plan_project
+for a dry-run. Only call bfs_create_project after the dry-run succeeds.
+Skip normal dependency installation and tell me the exact commands to
+install, test, and run the project.
+```

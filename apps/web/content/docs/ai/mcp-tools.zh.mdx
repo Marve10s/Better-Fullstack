@@ -1,0 +1,178 @@
+---
+title: MCP 工具参考
+description: Better Fullstack MCP tools、inputs、outputs 和安全 workflows 的详细参考。
+---
+
+MCP server 为 agents 暴露结构化工具。请使用它们，而不是让 agent 从文字中猜 CLI flags，或手动复制长命令。
+
+## 推荐 workflows
+
+### 新项目
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+### 现有项目
+
+1. `bfs_get_guidance`
+2. `bfs_plan_addition`
+3. `bfs_add_feature`
+
+<Callout kind="warn" title="变更行为">
+`bfs_plan_project` 只做 dry-run。`bfs_create_project` 会把新项目写入磁盘。`bfs_add_feature` 会修改现有项目。MCP project creation 和 feature addition 不会安装依赖。
+</Callout>
+
+<Callout kind="info" title="图 metadata">
+Project planning、creation 和 addition tools 包含 `graphSummary`、`effectiveStack` 和 `stackPartSpecs`，让 agents 可以检查与 `bts.jsonc` 持久化内容相同的 graph-derived stack view。
+</Callout>
+
+## 工具参考
+
+### `bfs_get_guidance`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 返回 workflow rules、field semantics、ambiguity rules 和 critical constraints。 |
+| 何时调用 | 首先调用，在其他 Better Fullstack MCP tools 之前。 |
+| 写入文件 | 否。 |
+| 必需 inputs | 无。 |
+| 可选 inputs | 无。 |
+| Output | JSON guidance，覆盖推荐工具顺序、array fields、ecosystem rules 和 examples。 |
+
+```json
+{}
+```
+
+### `bfs_get_schema`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 返回某个分类或所有分类的有效选项值。 |
+| 何时调用 | 在规划 stack 前调用，尤其当用户以非正式方式命名技术时。 |
+| 写入文件 | 否。 |
+| 必需 inputs | 无。 |
+| 可选 inputs | `category`, `ecosystem`. |
+| Output | 按 category 或 ecosystem 过滤的 JSON schema/options data。 |
+
+```json
+{
+  "category": "database",
+  "ecosystem": "typescript"
+}
+```
+
+### `bfs_check_compatibility`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 验证 stack combination，并返回带 warnings 的调整后 selections。 |
+| 何时调用 | 在 `bfs_plan_project` 或 `bfs_create_project` 之前。 |
+| 写入文件 | 否。 |
+| 必需 inputs | `ecosystem`. |
+| 可选 inputs | Frontend、backend、runtime、database、ORM、API、auth、services、UI/CSS、mobile fields、addons、examples、package manager、deployment fields 和 ecosystem-specific fields。 |
+| Output | JSON compatibility analysis，包含 changes、notes 和 adjusted stack data。 |
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["next"],
+  "backend": "self",
+  "runtime": "none",
+  "database": "postgres",
+  "orm": "drizzle",
+  "api": "trpc"
+}
+```
+
+### `bfs_plan_project`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 在内存中生成项目，并返回 file-tree summary。 |
+| 何时调用 | 在 compatibility validation 之后、写入文件之前。 |
+| 写入文件 | 否。 |
+| 必需 inputs | 无，但推荐 `projectName` 和 `ecosystem`。 |
+| 可选 inputs | 完整 project stack selections。 |
+| Output | JSON success flag，加上生成的 file/directory summary、`graphSummary`、`effectiveStack` 和 `stackPartSpecs`。 |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle"
+}
+```
+
+### `bfs_create_project`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 将新生成项目写入磁盘。 |
+| 何时调用 | 仅在 `bfs_plan_project` 成功且用户批准后调用。 |
+| 写入文件 | 是，会创建项目目录和生成文件。 |
+| 必需 inputs | `projectName`. |
+| 可选 inputs | 完整 project stack selections。 |
+| Output | JSON success flag、project directory、file count、graph metadata、addon warnings 和 install command guidance。 |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "java",
+  "javaWebFramework": "spring-boot",
+  "javaBuildTool": "maven",
+  "javaTestingLibraries": ["junit5"]
+}
+```
+
+### `bfs_plan_addition`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 读取 `bts.jsonc` 并验证现有项目的 proposed additions。 |
+| 何时调用 | 在用 `bfs_add_feature` 修改现有项目前。 |
+| 写入文件 | 否。 |
+| 必需 inputs | `projectDir`. |
+| 可选 inputs | `addons`, `webDeploy`, `serverDeploy`. |
+| Output | Existing config summary、proposed additions、二者的 graph metadata、already-present addons 和 compatibility warnings。 |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["mcp", "skills"]
+}
+```
+
+### `bfs_add_feature`
+
+| 字段 | 详情 |
+| --- | --- |
+| 用途 | 向现有 Better Fullstack 项目添加受支持的 addons 或 deployment settings。 |
+| 何时调用 | 在 `bfs_plan_addition` 成功且用户批准后。 |
+| 写入文件 | 是，会修改现有项目。 |
+| 必需 inputs | `projectDir`. |
+| 可选 inputs | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
+| Output | add handler 的 JSON result、更新后的 graph metadata，以及可用时的 install guidance。 |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["biome"],
+  "packageManager": "bun"
+}
+```
+
+## Agent Rules
+
+- 将 `frontend`、`addons`、`examples`、`rustLibraries`、`pythonAi`、`javaLibraries` 和 `javaTestingLibraries` 视为 arrays。
+- 在选择 ecosystem-specific fields 前设置 `ecosystem`。
+- 当用户明确希望禁用某个分类时，优先使用 `none`。
+- MCP project creation 目前不会暴露每个 CLI workflow flag。例如，project creation 期间 `aiDocs` 使用 server 内置默认值。
+- 在用户批准 dry-run 或 addition plan 之前，不要调用写入工具。
+- 在 MCP creation 或 addition 后告诉用户要运行哪些 install/test commands，因为 MCP 不会安装依赖。

@@ -7,7 +7,8 @@ import type { DocPage, PageNode } from "@/lib/docs/source";
 import { DocsLayout } from "@/components/docs/docs-layout";
 import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
-import { useDocPageContent } from "@/lib/docs/source";
+import { localizeDocPage, useDocPageContent } from "@/lib/docs/source";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Shared docs page renderer used by both the splat route (`/docs/$`) and
@@ -21,9 +22,14 @@ export type DocsPageContentProps = {
 };
 
 export function DocsPageContent(props: DocsPageContentProps) {
+  const localizedPage = localizeDocPage(props.page);
+  const localizedNeighbors = {
+    previous: props.neighbors.previous,
+    next: props.neighbors.next,
+  };
   return (
-    <Suspense fallback={<DocsPageShell page={props.page} />}>
-      <DocsPageBody {...props} />
+    <Suspense fallback={<DocsPageShell page={localizedPage} />}>
+      <DocsPageBody page={localizedPage} neighbors={localizedNeighbors} />
     </Suspense>
   );
 }
@@ -45,7 +51,7 @@ function DocsPageHeader({ page, markdown }: { page: DocPage; markdown?: string }
     <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase">
-          Docs / {sectionLabel}
+          {m.navDocs()} / {sectionLabel}
         </p>
         {markdown !== undefined ? <DocsPageActions path={page.path} markdown={markdown} /> : null}
       </div>
@@ -82,7 +88,7 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
 
         {(neighbors.previous || neighbors.next) && (
           <nav
-            aria-label="Page navigation"
+            aria-label={m.docsPageNavigation()}
             className="mt-14 grid grid-cols-1 gap-3 border-[var(--docs-border-subtle)] border-t pt-8 sm:grid-cols-2"
           >
             {neighbors.previous ? (
@@ -91,7 +97,7 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
                 className="group flex flex-col gap-1 rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4 transition-colors hover:border-[var(--docs-accent)] hover:bg-[var(--docs-surface-elevated)]"
               >
                 <span className="font-mono text-[0.7rem] text-muted-foreground uppercase">
-                  ← Previous
+                  ← {m.docsPrevious()}
                 </span>
                 <span className="text-sm font-medium text-foreground">
                   {neighbors.previous.name}
@@ -106,7 +112,7 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
                 className="group flex flex-col items-end gap-1 rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4 transition-colors hover:border-[var(--docs-accent)] hover:bg-[var(--docs-surface-elevated)] sm:text-right"
               >
                 <span className="font-mono text-[0.7rem] text-muted-foreground uppercase">
-                  Next →
+                  {m.docsNext()} →
                 </span>
                 <span className="text-sm font-medium text-foreground">{neighbors.next.name}</span>
               </Link>
@@ -121,9 +127,25 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
 }
 
 function formatSectionLabel(segment: string | undefined) {
-  if (!segment) return "Overview";
-  return segment
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  switch (segment) {
+    case undefined:
+      return m.docsSectionOverview();
+    case "ai":
+      return m.docsSectionAi();
+    case "cli":
+      return m.docsSectionCli();
+    case "ecosystems":
+      return m.docsSectionEcosystems();
+    case "getting-started":
+      return m.docsSectionGettingStarted();
+    case "reference":
+      return m.docsSectionReference();
+    case "sections":
+      return m.docsSectionSections();
+    default:
+      return segment
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+  }
 }

@@ -1,7 +1,8 @@
 import { buildSearchSections, type SearchSection } from "./search";
-import { getAllPages, loadAllRawPages } from "./source";
+import { getAllPages, getLocalizedDocFrontmatter, loadAllRawPages } from "./source";
+import { getLocale } from "@/paraglide/runtime.js";
 
-let sectionsPromise: Promise<SearchSection[]> | null = null;
+const sectionsPromises = new Map<string, Promise<SearchSection[]>>();
 
 /**
  * Build the search index data on demand: the raw markdown of every docs page
@@ -9,14 +10,19 @@ let sectionsPromise: Promise<SearchSection[]> | null = null;
  * bundled into the client eagerly.
  */
 export function loadSearchSections(): Promise<SearchSection[]> {
-  sectionsPromise ??= loadAllRawPages().then((rawByFilePath) =>
+  const locale = getLocale();
+  const existing = sectionsPromises.get(locale);
+  if (existing) return existing;
+
+  const promise = loadAllRawPages().then((rawByFilePath) =>
     buildSearchSections(
       getAllPages().map((page) => ({
         url: page.url,
         rawSource: rawByFilePath.get(page.filePath) ?? "",
-        frontmatter: page.frontmatter,
+        frontmatter: getLocalizedDocFrontmatter(page),
       })),
     ),
   );
-  return sectionsPromise;
+  sectionsPromises.set(locale, promise);
+  return promise;
 }

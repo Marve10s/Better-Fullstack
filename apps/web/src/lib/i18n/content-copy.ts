@@ -5,6 +5,7 @@ import { getLocale } from "@/paraglide/runtime.js";
 
 type ContentLocale = "en" | "es" | "zh";
 type LocalizedText = Record<Exclude<ContentLocale, "en">, string>;
+type LocalizedFrontmatter<T> = Partial<Record<Exclude<ContentLocale, "en">, T>>;
 
 function currentContentLocale(): ContentLocale {
   const locale = getLocale();
@@ -373,20 +374,22 @@ function localizeFrontmatter<T extends BlogFrontmatter | GuideFrontmatter>(
   kind: "blog" | "guide",
   slug: readonly string[],
   frontmatter: T,
+  localizedFrontmatter?: LocalizedFrontmatter<T>,
 ): T {
   const locale = currentContentLocale();
   if (locale === "en") return frontmatter;
 
   const key = keyFor(kind, slug);
-  const title = TITLE_TRANSLATIONS[key]?.[locale] ?? frontmatter.title;
+  const fileFrontmatter = localizedFrontmatter?.[locale];
+  const sourceFrontmatter = fileFrontmatter ? { ...frontmatter, ...fileFrontmatter } : frontmatter;
+  const title = fileFrontmatter?.title ?? TITLE_TRANSLATIONS[key]?.[locale] ?? frontmatter.title;
   const description =
+    fileFrontmatter?.description ??
     DESCRIPTION_TRANSLATIONS[key]?.[locale] ??
-    (frontmatter.description
-      ? translateGuideDescription(frontmatter.description, locale)
-      : frontmatter.description);
+    (frontmatter.description ? translateGuideDescription(frontmatter.description, locale) : undefined);
 
   return {
-    ...frontmatter,
+    ...sourceFrontmatter,
     title,
     description,
   };
@@ -395,15 +398,17 @@ function localizeFrontmatter<T extends BlogFrontmatter | GuideFrontmatter>(
 export function localizeBlogFrontmatter(
   slug: readonly string[],
   frontmatter: BlogFrontmatter,
+  localizedFrontmatter?: LocalizedFrontmatter<BlogFrontmatter>,
 ): BlogFrontmatter {
-  return localizeFrontmatter("blog", slug, frontmatter);
+  return localizeFrontmatter("blog", slug, frontmatter, localizedFrontmatter);
 }
 
 export function localizeGuideFrontmatter(
   slug: readonly string[],
   frontmatter: GuideFrontmatter,
+  localizedFrontmatter?: LocalizedFrontmatter<GuideFrontmatter>,
 ): GuideFrontmatter {
-  const localized = localizeFrontmatter("guide", slug, frontmatter);
+  const localized = localizeFrontmatter("guide", slug, frontmatter, localizedFrontmatter);
   const locale = currentContentLocale();
   if (locale === "en") return localized;
 
@@ -421,17 +426,17 @@ export function localizeGuideFrontmatter(
   };
 }
 
-export function localizeBlogPost<T extends BlogPost>(post: T): T {
+export function localizeBlogPost(post: BlogPost): BlogPost {
   return {
     ...post,
-    frontmatter: localizeBlogFrontmatter(post.slug, post.frontmatter),
+    frontmatter: localizeBlogFrontmatter(post.slug, post.frontmatter, post.localizedFrontmatter),
   };
 }
 
-export function localizeGuidePage<T extends GuidePage>(page: T): T {
+export function localizeGuidePage(page: GuidePage): GuidePage {
   return {
     ...page,
-    frontmatter: localizeGuideFrontmatter(page.slug, page.frontmatter),
+    frontmatter: localizeGuideFrontmatter(page.slug, page.frontmatter, page.localizedFrontmatter),
   };
 }
 
