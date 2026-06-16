@@ -62,6 +62,7 @@ describe("country locale detection", () => {
     const response = withLocaleResponseHeaders(new Response("ok"), request("/new"), "es");
 
     expect(response.headers.get("Vary")).toContain("Accept-Language");
+    expect(response.headers.get("Vary")).toContain("Cookie");
     expect(response.headers.get("Vary")).toContain("x-vercel-ip-country");
     expect(response.headers.get("Set-Cookie")).toContain(`${LOCALE_COOKIE_NAME}=es`);
     expect(await response.text()).toBe("ok");

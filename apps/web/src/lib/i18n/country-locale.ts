@@ -135,7 +135,7 @@ export function withLocaleResponseHeaders(
   locale?: SupportedLocale,
 ): Response {
   const headers = new Headers(response.headers);
-  appendVary(headers, ["Accept-Language", ...COUNTRY_HEADER_NAMES]);
+  appendVary(headers, ["Accept-Language", "Cookie", ...COUNTRY_HEADER_NAMES]);
 
   if (locale && locale !== DEFAULT_LOCALE) {
     const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
