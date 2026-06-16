@@ -1,7 +1,27 @@
-import { withMiddlewareAuthRequired } from "@auth0/nextjs-auth0/edge";
+import { auth0 } from "@/lib/auth0";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export default withMiddlewareAuthRequired();
+export async function middleware(request: NextRequest) {
+  const authResponse = await auth0.middleware(request);
+
+  if (request.nextUrl.pathname.startsWith("/auth")) {
+    return authResponse;
+  }
+
+  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    const session = await auth0.getSession(request);
+
+    if (!session) {
+      const loginUrl = new URL("/auth/login", request.nextUrl.origin);
+      loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  return authResponse;
+}
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 };

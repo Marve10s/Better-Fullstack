@@ -167,7 +167,7 @@ describe("processAuthDeps", () => {
     });
   }
 
-  it("keeps Auth0 on the v3 SDK until the templates migrate", () => {
-    expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toBe("^3.8.0");
+  it("uses the Auth0 v4 SDK expected by the Next templates", () => {
+    expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toBe("^4.22.0");
   });
 });

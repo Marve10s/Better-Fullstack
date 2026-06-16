@@ -110,6 +110,33 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
   });
 
+  it("wires the Next provider to the GraphQL Yoga query client", async () => {
+    const result = await createVirtual({
+      projectName: "next-graphql-yoga",
+      frontend: ["next"],
+      backend: "self",
+      runtime: "none",
+      api: "graphql-yoga",
+      database: "sqlite",
+      orm: "sequelize",
+      auth: "none",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const providers = readTextFromTree(result.tree!, "apps/web/src/components/providers.tsx");
+    const graphqlClient = readTextFromTree(result.tree!, "apps/web/src/utils/graphql.ts");
+
+    expect(providers).toContain('import { queryClient } from "@/utils/graphql"');
+    expect(providers).toContain("<QueryClientProvider client={queryClient}>");
+    expect(graphqlClient).toContain("export const queryClient");
+  });
+
   it("projects backend-owned Better Auth organizations into generated auth files", async () => {
     const result = await createVirtual({
       projectName: "better-auth-orgs",
@@ -194,6 +221,10 @@ describe("Virtual Generator Regressions", () => {
 
       expect(serverPackageJson?.dependencies?.[provider.dependency]).toBeDefined();
       expect(integrationFile).toContain(provider.fileSnippet);
+      if (provider.observability === "axiom") {
+        expect(integrationFile).toContain('from "@obs-axiom/env/server"');
+        expect(integrationFile).not.toContain("process.env.AXIOM_TOKEN");
+      }
       for (const envVar of provider.envVars) {
         expect(serverEnv).toContain(envVar);
         expect(serverDotEnv).toContain(`${envVar}=`);
@@ -357,6 +388,56 @@ describe("Virtual Generator Regressions", () => {
       }
     });
   }
+
+  it("generates Auth0 v4 fullstack Next auth files, deps, and env vars", async () => {
+    const result = await createVirtual({
+      projectName: "auth-auth0",
+      frontend: ["next"],
+      backend: "self",
+      runtime: "none",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "auth0",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const webPackageJson = readJsonFromTree(result.tree!, "apps/web/package.json");
+    const auth0Client = readTextFromTree(result.tree!, "apps/web/src/lib/auth0.ts");
+    const legacyRoute = readTextFromTree(result.tree!, "apps/web/src/app/api/auth/[auth0]/route.ts");
+    const middleware = readTextFromTree(result.tree!, "apps/web/src/middleware.ts");
+    const authClient = readTextFromTree(result.tree!, "apps/web/src/lib/auth-client.tsx");
+    const providers = readTextFromTree(result.tree!, "apps/web/src/components/providers.tsx");
+    const serverEnv = readTextFromTree(result.tree!, "packages/env/src/server.ts");
+    const webDotEnv = readTextFromTree(result.tree!, "apps/web/.env");
+
+    expect(webPackageJson?.dependencies?.["@auth0/nextjs-auth0"]).toBeDefined();
+    expect(auth0Client).toContain('from "@auth0/nextjs-auth0/server"');
+    expect(middleware).toContain("auth0.middleware(request)");
+    expect(middleware).toContain('new URL("/auth/login"');
+    expect(legacyRoute).toBeUndefined();
+    expect(authClient).toContain('from "@auth0/nextjs-auth0"');
+    expect(authClient).toContain('window.location.href = "/auth/login"');
+    expect(authClient).toContain('window.location.href = "/auth/logout"');
+    expect(providers).toContain("<AuthProvider>");
+
+    for (const envVar of [
+      "AUTH0_DOMAIN",
+      "AUTH0_CLIENT_ID",
+      "AUTH0_CLIENT_SECRET",
+      "AUTH0_SECRET",
+      "APP_BASE_URL",
+    ]) {
+      expect(serverEnv).toContain(envVar);
+      expect(webDotEnv).toContain(`${envVar}=`);
+    }
+  });
 
   it("scaffolds a default .NET Minimal API project", async () => {
     const result = await createVirtual({

@@ -28,6 +28,9 @@ import { queryClient } from "@/utils/trpc";
 {{#if (eq api "garph")}}
 import { queryClient } from "@/utils/garph";
 {{/if}}
+{{#if (eq api "graphql-yoga")}}
+import { queryClient } from "@/utils/graphql";
+{{/if}}
 {{#if (eq api "ts-rest")}}
 import { queryClient } from "@/utils/ts-rest";
 {{/if}}

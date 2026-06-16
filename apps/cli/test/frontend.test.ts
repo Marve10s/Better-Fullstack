@@ -467,6 +467,7 @@ describe("Frontend Configurations", () => {
 
       if (result.projectDir) {
         const rootDenoJson = await Bun.file(`${result.projectDir}/deno.json`).json();
+        const rootTsconfig = await Bun.file(`${result.projectDir}/tsconfig.json`).json();
         const denoJson = await Bun.file(`${result.projectDir}/apps/web/deno.json`).text();
         const webPkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).json();
         const readme = await Bun.file(`${result.projectDir}/README.md`).text();
@@ -481,6 +482,13 @@ describe("Frontend Configurations", () => {
           lock: false,
           nodeModulesDir: "auto",
           workspace: ["./apps/web"],
+        });
+        expect(rootTsconfig.extends).toBeUndefined();
+        expect(rootTsconfig.compilerOptions).toMatchObject({
+          jsx: "react-jsx",
+          jsxImportSource: "preact",
+          moduleResolution: "bundler",
+          types: ["vite/client"],
         });
         expect(denoJson).toContain('"fresh": "jsr:@fresh/core@^2.3.3"');
         expect(denoJson).toContain(

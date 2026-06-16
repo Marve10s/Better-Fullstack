@@ -234,7 +234,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
     type: "local",
     src: "https://cdn.prod.website-files.com/621f54116cab10f6e9215d8b/621f549024eb2947f6f2f7f7_Favicon%20256x256.png",
   },
-  kinde: { type: "local", src: "https://kinde.com/favicon.ico" },
+  kinde: { type: "local", src: "/icon/kinde.svg" },
 
   // ─── Rate Limiting ────────────────────────────────────────────────────────
   arcjet: { type: "local", src: "https://arcjet.com/favicon.png" },
