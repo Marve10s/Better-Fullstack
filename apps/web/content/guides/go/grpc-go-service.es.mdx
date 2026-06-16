@@ -16,7 +16,7 @@ keywords:
   - go microservice starter
 ---
 
-Usa este stack cuando tu servicio Go necesite contratos gRPC junto a una forma de proyecto backend generada.
+Usa este stack cuando tu servicio Go necesite contratos gRPC junto con una estructura de backend ya generada.
 
 ```npm
 npm create better-fullstack@latest my-go-grpc -- \
@@ -29,25 +29,25 @@ npm create better-fullstack@latest my-go-grpc -- \
   --go-auth none
 ```
 
-## Que crea
+## Qué crea
 
 - Un backend Go usando Gin.
-- gRPC-Go como opcion API.
+- gRPC-Go como opción de API.
 - GORM para acceso a datos.
 - Zap para logging.
 
 ## Forma generada
 
-Este stack crea un servicio Go con frontera gRPC tipada. Gin todavia puede servir endpoints HTTP operacionales, mientras gRPC-Go controla el contrato usado por otros clientes backend.
+Este stack crea un servicio Go con una frontera gRPC tipada. Gin todavía puede servir endpoints HTTP operacionales, como health checks, mientras gRPC-Go controla el contrato usado por otros clientes backend.
 
-El servicio es mas mantenible cuando:
+El servicio es más mantenible cuando:
 
 - Los archivos protobuf definen contratos de request y response.
-- Handlers gRPC traducen input de transporte a llamadas de servicio.
-- Modelos GORM quedan en la capa de persistencia.
-- Rutas Gin se mantienen separadas de la superficie gRPC.
+- Los handlers gRPC traducen el input de transporte a llamadas de servicio.
+- Los modelos GORM se quedan en la capa de persistencia.
+- Las rutas Gin se mantienen separadas de la superficie gRPC.
 
-## Arbol representativo
+## Árbol representativo
 
 ```txt
 my-go-grpc/
@@ -59,28 +59,121 @@ my-go-grpc/
       main.go
   internal/
     grpc/
+      users.go
     http/
+      health.go
     models/
+      user.go
     services/
+      users.go
 ```
 
-Mantiene la salida protobuf generada donde el scaffold espera y evita editar archivos generados directamente.
+Mantén la salida protobuf generada en la ubicación que espera el scaffold y evita editar archivos generados directamente.
 
-## Compatibilidad
+## Ejemplos de proto y servicio
 
-Mantiene `--go-api grpc-go` cuando quieras wiring gRPC generado. Si cambias a `--go-api none`, esto se vuelve un backend HTTP normal y el flujo protobuf deja de formar parte del scaffold. `--go-cli none` mantiene el proyecto como servicio, no como herramienta CLI.
+Un servicio protobuf debería modelar el contrato que los clientes realmente necesitan:
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "my-go-grpc/internal/gen/users/v1;usersv1";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+La implementación en Go debería convertir errores de dominio en códigos de estado gRPC:
+
+```go
+package grpc
+
+import (
+	"context"
+
+	usersv1 "my-go-grpc/internal/gen/users/v1"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type UserServer struct {
+	usersv1.UnimplementedUserServiceServer
+	Users *UserService
+}
+
+func (s *UserServer) GetUser(
+	ctx context.Context,
+	req *usersv1.GetUserRequest,
+) (*usersv1.User, error) {
+	user, err := s.Users.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
+	return &usersv1.User{
+		Id:    user.ID,
+		Email: user.Email,
+		Name:  user.Name,
+	}, nil
+}
+```
+
+Usa Gin para endpoints operacionales cuando haga falta:
+
+```go
+func RegisterHTTP(router *gin.Engine) {
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+}
+```
+
+## Notas de compatibilidad
+
+Mantén `--go-api grpc-go` cuando quieras wiring gRPC generado. Si cambias a `--go-api none`, esto se vuelve un backend HTTP normal y el flujo protobuf deja de formar parte del scaffold. `--go-cli none` mantiene el proyecto como servicio, no como herramienta CLI.
+
+## Cuándo elegirlo
+
+Elige este stack para servicios backend donde los contratos de servicio fuertemente tipados importan más que rutas JSON orientadas al navegador.
+
+## Tradeoffs
+
+gRPC agrega un flujo de contratos y generación de clientes. Para una API HTTP más simple, empieza con [Gin con PostgreSQL y GORM](/guides/go/gin-postgres-gorm/).
+
+GORM mantiene la persistencia accesible, pero los contratos protobuf no deberían copiar a ciegas los modelos de base de datos. Trata los archivos `.proto` como contratos públicos del servicio y los modelos GORM como detalles internos de almacenamiento.
 
 ## Pruebas y despliegue
 
-Prueba metodos de servicio directamente, luego agrega pruebas de integracion gRPC con un servidor de test para comportamiento importante de cara al cliente.
+Prueba métodos de servicio directamente, luego agrega pruebas de integración gRPC con un servidor de test para el comportamiento importante de cara al cliente.
 
 ```bash
 go test ./...
 ```
 
-En despliegue, expone el puerto gRPC esperado por los clientes y conserva health checks HTTP en el puerto que tu plataforma sondea. Si la generacion protobuf forma parte del build, asegura que CI instale las herramientas necesarias.
+En despliegue, expón el puerto gRPC esperado por los clientes y conserva los health checks HTTP en el puerto que tu plataforma sondea. Si la generación protobuf forma parte del build, asegúrate de que CI instale las herramientas necesarias.
+
+## Troubleshooting
+
+- Si los clientes reciben `unknown service`, confirma que el servidor gRPC registra la implementación generada del servicio.
+- Si los paquetes protobuf generados no importan correctamente, revisa la opción `go_package` y la ruta de salida del scaffold.
+- Si los health checks pasan pero gRPC falla, verifica que el contenedor o la plataforma exponga el listener gRPC, no solo el listener de Gin.
+- Si errores de base de datos se filtran a los clientes, conviértelos deliberadamente a `codes.NotFound`, `codes.InvalidArgument` o `codes.Internal`.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none).
-- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).
+- Lee la [documentación del ecosistema Go](/docs/ecosystems/go/).

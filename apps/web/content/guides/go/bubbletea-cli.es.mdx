@@ -1,6 +1,6 @@
 ---
 title: Go CLI con Bubble Tea
-description: Crea una aplicacion de terminal en Go con Bubble Tea usando el scaffolding Go CLI de Better Fullstack.
+description: Crea una aplicación de terminal en Go con Bubble Tea usando el scaffolding Go CLI de Better Fullstack.
 updated: 2026-05-12
 category: Go
 tags:
@@ -28,17 +28,24 @@ npm create better-fullstack@latest my-go-cli -- \
   --go-auth none
 ```
 
-## Que crea
+## Qué crea
 
 - Un proyecto Go CLI.
-- Bubble Tea como opcion de UI de terminal.
-- Sin web framework, ORM, gRPC ni addon de auth.
+- Bubble Tea como opción de UI de terminal.
+- Sin web framework, ORM, gRPC ni add-on de auth.
 
 ## Forma generada
 
-Este stack crea una aplicacion interactiva de terminal, no un servidor. Bubble Tea organiza el programa alrededor de model, messages, update y view.
+Este stack crea una aplicación interactiva de terminal, no un servidor. Bubble Tea organiza el programa alrededor de un modelo, mensajes, updates y vistas.
 
-Forma representativa:
+El loop principal es sencillo:
+
+- El modelo guarda el estado actual de la aplicación.
+- Los mensajes describen input, ticks o resultados de comandos.
+- `Update` cambia el modelo y devuelve comandos posteriores.
+- `View` renderiza el modelo actual como texto de terminal.
+
+## Árbol representativo
 
 ```txt
 my-go-cli/
@@ -53,36 +60,121 @@ my-go-cli/
       view.go
 ```
 
-Mantiene efectos secundarios en comandos Bubble Tea cuando sea posible. Asi el model y view son mas faciles de probar sin ejecutar una terminal real.
+Mantén los efectos secundarios dentro de comandos Bubble Tea siempre que puedas. Así el modelo y la vista son más fáciles de probar sin ejecutar una terminal real.
 
-## Modelo de trabajo
+## Ejemplos de modelo y update
 
-- El model conserva el estado actual.
-- Messages describen input, ticks o resultados de comandos.
-- `Update` cambia el model y devuelve comandos posteriores.
-- `View` renderiza el estado actual como texto de terminal.
+Un modelo de Bubble Tea puede empezar con el estado mínimo para renderizar y reaccionar al input:
 
-## Compatibilidad
+```go
+package tui
 
-Los proyectos CLI deberian mantener categorias de servidor en `none` salvo que sean herramientas hibridas a proposito.
+type Model struct {
+	Items    []string
+	Selected int
+	Quitting bool
+}
 
-Mantiene `--go-cli bubbletea` junto a `--go-web-framework none`, `--go-orm none` y `--go-api none` para una app terminal-first. Si luego el CLI habla con una API, pon ese cliente en un paquete separado y llamalo desde commands, no desde `View`.
+func NewModel() Model {
+	return Model{
+		Items: []string{"Build", "Test", "Deploy"},
+	}
+}
+```
 
-## Pruebas y distribucion
+La función update controla las transiciones de estado:
 
-Prueba las transiciones del model directamente:
+```go
+package tui
+
+import tea "github.com/charmbracelet/bubbletea"
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "q", "ctrl+c":
+			m.Quitting = true
+			return m, tea.Quit
+		case "j", "down":
+			if len(m.Items) > 0 {
+				m.Selected = (m.Selected + 1) % len(m.Items)
+			}
+		case "k", "up":
+			if len(m.Items) > 0 {
+				m.Selected = (m.Selected - 1 + len(m.Items)) % len(m.Items)
+			}
+		}
+	}
+
+	return m, nil
+}
+```
+
+La vista debería renderizar desde el estado sin hacer trabajo externo:
+
+```go
+package tui
+
+import "strings"
+
+func (m Model) View() string {
+	if m.Quitting {
+		return ""
+	}
+
+	var b strings.Builder
+	b.WriteString("Tasks\n\n")
+
+	for i, item := range m.Items {
+		cursor := " "
+		if i == m.Selected {
+			cursor = ">"
+		}
+		b.WriteString(cursor + " " + item + "\n")
+	}
+
+	b.WriteString("\nq: quit  j/k: move\n")
+	return b.String()
+}
+```
+
+## Notas de compatibilidad
+
+Los proyectos CLI deberían mantener las categorías solo de servidor en `none`, salvo que sean herramientas híbridas a propósito.
+
+Mantén `--go-cli bubbletea` junto a `--go-web-framework none`, `--go-orm none` y `--go-api none` para una app terminal-first. Si luego el CLI habla con una API, pon ese cliente en un paquete separado y llámalo desde comandos, no desde `View`.
+
+## Cuándo elegirlo
+
+Elige Bubble Tea para dashboards de terminal, herramientas de desarrollo e interfaces de línea de comandos donde la interacción importa.
+
+Encaja bien en herramientas que necesitan selección, progreso, formularios o estado en vivo sin construir una UI de navegador.
+
+## Pruebas y distribución
+
+Prueba las transiciones del modelo directamente:
 
 ```bash
 go test ./...
 ```
 
-Para distribuir, compila un binario unico y documenta variables de entorno o archivos de configuracion soportados:
+Para distribuir, compila un binario único y documenta variables de entorno o archivos de configuración soportados:
 
 ```bash
 go build ./cmd/app
 ```
 
+Si el proyecto generado usa otra ruta de comando, sigue la ruta que aparezca en su directorio `cmd/`.
+
+## Troubleshooting
+
+- Si las teclas no hacen nada, verifica que la terminal enfocada esté enviando la secuencia que Bubble Tea recibe.
+- Si la pantalla deja salida obsoleta al salir, revisa las opciones de arranque y apagado relacionadas con la alternate screen.
+- Si las pruebas son difíciles de escribir, mueve los efectos secundarios a funciones `tea.Cmd` y mantén `Update` determinista.
+- Si la salida se ajusta mal, prueba con anchos estrechos y haz que el formato de `View` responda al espacio disponible cuando el modelo conoce las dimensiones.
+
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=go&gwf=none&gorm=none&gapi=none&gcli=bubbletea&glog=none&gauth=none).
-- Lee la [documentacion del ecosistema Go](/docs/ecosystems/go/).
+- Lee la [documentación del ecosistema Go](/docs/ecosystems/go/).

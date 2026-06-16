@@ -16,7 +16,7 @@ keywords:
   - astro react api starter
 ---
 
-Usa este stack cuando quieras Astro para paginas con mucho contenido e islas, junto con un servidor API TypeScript.
+Usa este stack cuando quieras Astro para páginas de contenido e islands, junto con un servidor API TypeScript.
 
 ```npm
 npm create better-fullstack@latest my-astro-app -- \
@@ -33,18 +33,18 @@ npm create better-fullstack@latest my-astro-app -- \
   --ui-library daisyui \
 ```
 
-## Que crea
+## Qué crea
 
-- Un frontend Astro con integracion React.
-- Un backend Hono que corre en Bun.
+- Un frontend Astro con integración React.
+- Un backend Hono ejecutándose en Bun.
 - SQLite y Drizzle.
 - Better Auth.
-- tRPC, porque esta configuracion de Astro usa React.
+- tRPC, porque esta configuración de Astro usa integración React.
 - Tailwind CSS y DaisyUI.
 
 ## Forma generada
 
-Este stack combina el frontend centrado en contenido de Astro con un servidor API Hono separado. Las islas React quedan habilitadas por `--astro-integration react`, por eso tRPC esta disponible en esta guia.
+Este stack combina el frontend content-first de Astro con un servidor API Hono separado. Las React islands se activan mediante `--astro-integration react`, por eso tRPC está disponible en esta guía.
 
 Forma representativa:
 
@@ -58,39 +58,70 @@ my-astro-app/
     shared/
 ```
 
-Las paginas Astro deberian centrarse en rutas, contenido y composicion de islas. Hono deberia hacerse cargo de rutas API, comportamiento de servidor con auth y acceso a la base de datos.
+Las páginas Astro deben centrarse en routing, contenido y composición de islands. Hono debe ser dueño de las rutas API, el comportamiento de servidor sensible a auth y el acceso a base de datos.
 
-## Patron de uso
+## Astro island de ejemplo
 
-Usa Astro para el contorno de la pagina y React solo donde haga falta interactividad. Eso mantiene baratas las paginas estaticas o casi estaticas, y aun permite que los componentes interactivos llamen a la API tipada.
+Usa Astro para la carcasa de la página y React solo donde haga falta interactividad:
 
-Los endpoints sencillos y los health checks pertenecen en Hono. Para endpoints con base de datos, deja las consultas Drizzle detras de helpers solo de servidor y exponlas mediante procedimientos tRPC o rutas Hono.
+```astro
+---
+import ProjectPicker from "../components/ProjectPicker.tsx";
+---
+
+<main class="mx-auto max-w-5xl p-6">
+  <h1 class="text-3xl font-semibold">Project docs</h1>
+  <ProjectPicker client:load />
+</main>
+```
+
+Así las páginas estáticas o casi estáticas siguen siendo baratas, mientras los componentes React interactivos pueden llamar a la API tipada.
+
+## Endpoint Hono de ejemplo
+
+Los health checks y endpoints de servicio simples pertenecen en Hono:
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => c.json({ ok: true }));
+
+export default app;
+```
+
+Para endpoints con base de datos, mantén las queries Drizzle detrás de helpers server-only y expónlas mediante procedimientos tRPC o rutas Hono.
 
 ## Compatibilidad
 
-La compatibilidad de API en Astro depende de la integracion de UI elegida. Esta pagina usa `--astro-integration react`, lo que mantiene disponible tRPC. Para integraciones Astro que no sean React, prefiere oRPC.
+La compatibilidad de API en Astro depende de la integración UI seleccionada. Esta página usa `--astro-integration react`, lo que mantiene tRPC disponible. Para integraciones Astro que no sean React, prefiere oRPC.
 
-DaisyUI se selecciona como libreria UI en este comando. Si luego cambias a shadcn/ui, revisa que la integracion Astro React y Tailwind sigan alineadas con la libreria de componentes.
+DaisyUI se selecciona como librería UI en este comando. Si luego cambias a shadcn/ui, asegúrate de que la integración React de Astro y Tailwind sigan alineadas con la librería de componentes elegida.
 
-## Cuando elegirlo
+## Cuándo elegirlo
 
-Elige Astro cuando contenido, docs, paginas de marketing o hidratacion parcial sean centrales para la app, pero aun necesites un backend generado y una base de datos.
+Elige Astro cuando el contenido, docs, páginas de marketing o partial hydration sean centrales para la app, pero todavía necesites backend generado y base de datos.
 
 ## Despliegue
 
-Planifica origenes claros para el frontend Astro y la API Hono. El frontend necesita la URL publica de la API. El servicio Hono necesita secretos de base de datos y auth. SQLite puede servir para desarrollo local, pero produccion necesita almacenamiento persistente si decides conservar SQLite.
+Planifica orígenes claros para el frontend Astro y la API Hono. El frontend necesita la URL pública de la API. El servicio Hono necesita secretos de base de datos y auth. SQLite puede servir para desarrollo local, pero el hosting de producción debe ofrecer almacenamiento persistente si mantienes SQLite.
 
-Si frontend y API se despliegan por separado, configura CORS y cookies de auth para los dominios finales, no para el comportamiento de localhost.
+Si frontend y API se despliegan por separado, configura CORS y cookies de auth para los dominios finales en vez de depender del comportamiento de localhost.
 
 ## Solucion de problemas
 
-- Si las islas React no hidratan, revisa la directiva cliente de Astro y que el componente importe codigo de navegador de forma segura.
-- Si tRPC deja de estar disponible tras cambiar integraciones, confirma que la integracion Astro siga siendo React.
-- Si las llamadas API fallan desde paginas desplegadas, verifica el origen publico de la API y la configuracion CORS.
-- Si los datos SQLite desaparecen tras desplegar, confirma que tu hosting ofrece almacenamiento persistente.
+- Si las React islands no hidratan, revisa la directiva client de Astro y si el componente importa código browser-only de forma segura.
+- Si tRPC deja de estar disponible tras cambiar integraciones, confirma que la integración de Astro sigue siendo React.
+- Si las llamadas API fallan desde páginas desplegadas, verifica el origen público de la API y la configuración de CORS.
+- Si los datos SQLite desaparecen tras desplegar, confirma que tu plataforma de hosting soporta almacenamiento escribible persistente.
+
+## Notas de comparacion
+
+Elige esto cuando las páginas de contenido y la interactividad selectiva importen más que una carcasa React completa. Elige [Hono con tRPC y Drizzle](/guides/typescript/hono-trpc-drizzle/) cuando el frontend deba ser una app React dedicada con TanStack Router.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=typescript&fe-w=astro&ai=react&be=hono&rt=bun&db=sqlite&orm=drizzle&au=better-auth&api=trpc&ui=daisyui).
-- Lee la [documentacion del ecosistema TypeScript](/docs/ecosystems/typescript/).
+- Lee la [documentación del ecosistema TypeScript](/docs/ecosystems/typescript/).
 - Compara con [SvelteKit con Hono y Drizzle](/guides/typescript/sveltekit-hono-drizzle/).

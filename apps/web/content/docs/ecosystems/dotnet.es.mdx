@@ -53,13 +53,13 @@ npm create better-fullstack@latest my-dotnet-app -- \
 
 - Las opciones de .NET solo aplican con `--ecosystem dotnet`.
 - ASP.NET Core es un framework web .NET independiente; las opciones de frontend y backend de TypeScript se ignoran.
-- `--dotnet-testing` y `--dotnet-observability` aceptan multiples valores.
+- `--dotnet-testing` y `--dotnet-observability` aceptan múltiples valores.
 - `ef-core` selecciona el provider desde `--database`: `postgres` usa Npgsql, cualquier otro valor cae a SQLite.
-- `aspnet-identity` registra stores de Identity solo cuando se combina con `ef-core`; sin el, el scaffold registra servicios simples de autenticacion y autorizacion.
+- `aspnet-identity` registra stores de Identity solo cuando se combina con `ef-core`; sin el, el scaffold registra servicios simples de autenticación y autorizacion.
 - Defaults no interactivos cuando se configura `--ecosystem dotnet`: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog` y `docker`.
 
 ## Comportamiento generado
 
 - El proyecto incluye un `.csproj`, `Program.cs`, `appsettings.json`, un archivo de requests `.http`, un proyecto de tests, `.gitignore` y notas de setup en el README.
-- Las selecciones de EF Core conectan un `DbContext` con el provider Npgsql o SQLite mas el paquete design-time para migraciones.
-- Las selecciones opcionales agregan codigo ASP.NET Core funcional para Identity, GraphQL con Hot Chocolate, servicios gRPC, hubs SignalR, jobs Hangfire o Quartz.NET, pipelines Serilog/NLog/OpenTelemetry, cache Redis y un Dockerfile multi-stage.
+- Las selecciones de EF Core conectan un `DbContext` con el provider Npgsql o SQLite más el paquete design-time para migraciones.
+- Las selecciones opcionales agregan código ASP.NET Core funcional para Identity, GraphQL con Hot Chocolate, servicios gRPC, hubs SignalR, jobs Hangfire o Quartz.NET, pipelines Serilog/NLog/OpenTelemetry, cache Redis y un Dockerfile multi-stage.

@@ -16,7 +16,7 @@ keywords:
   - spring boot postgresql api
 ---
 
-当你需要带 Spring ecosystem 和 relational persistence 的 Java API 时，使用这个 stack。
+当你需要一个带 Spring 生态和关系型持久化的 Java API 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-spring-api -- \
@@ -30,49 +30,175 @@ npm create better-fullstack@latest my-spring-api -- \
 
 ## 创建内容
 
-- 使用 Spring Boot 的 Java project。
+- 使用 Spring Boot 的 Java 项目。
 - Maven 作为 build tool。
-- PostgreSQL 作为 database option。
-- JPA 用于 persistence。
-- JUnit 5 用于 testing。
+- PostgreSQL 作为数据库选项。
+- JPA 用于持久化。
+- JUnit 5 用于测试。
 
 ## 生成结构
 
-这个 stack 创建传统 Spring Boot API。Spring Boot 拥有 HTTP runtime，Spring Data JPA 拥有 repositories 和 persistence，PostgreSQL 提供 relational backing store。
-
-代表性结构：
+这个 scaffold 是一个传统 Spring Boot 服务，包含 wrapper scripts、source sets、health controller，以及由 JPA 支撑的示例用户 endpoints。package name 会根据项目名生成在 `com.example` 下。
 
 ```txt
 my-spring-api/
-  pom.xml
-  src/
-    main/
-      java/
-        .../
-          controllers/
-          entities/
-          repositories/
-          services/
-      resources/
-        application.yml
-    test/
+├── mvnw
+├── .mvn/
+├── pom.xml
+├── src/main/java/com/example/myspringapi/
+│   ├── Application.java
+│   ├── controller/
+│   │   ├── HealthController.java
+│   │   └── UserController.java
+│   ├── domain/
+│   │   └── AppUser.java
+│   ├── repository/
+│   │   └── AppUserRepository.java
+│   └── service/
+│       └── AppUserService.java
+├── src/main/resources/
+│   └── application.yml
+└── src/test/java/com/example/myspringapi/
+    └── ApplicationTests.java
 ```
 
-Controllers 应专注 HTTP，services 处理 business decisions，repositories 处理 data access。JPA entities 应描述 persistence，不要把所有 API decisions 直接泄漏出去。
+生成的本地 JPA datasource 使用 H2 file database，并开启 PostgreSQL compatibility mode。把 `--database postgres` 看作目标数据库选择；在真实 PostgreSQL 环境中，需要切换 datasource URL、driver、credentials 和 JDBC dependency。
 
-## 兼容性
+## 何时选择
 
-本指南保持 `--java-web-framework spring-boot`、`--java-build-tool maven`、`--database postgres` 和 `--java-orm spring-data-jpa` 组合。如果把 build tool 改为 Gradle，即使 build files 改变，也应保持相同 package boundaries。
+当你想要一个传统 Java backend，依赖大型 Spring 生态、常见 enterprise integrations 和可预测的应用结构时，选择 Spring Boot。
 
-## 测试与部署
+如果你想要一个带持久化的最小 Spring Boot API，并且第一天不需要 security 和 migration tooling，选择这篇指南。如果每个 endpoint 一开始就应该由 Spring Security 保护，并且 Testcontainers integration testing 是基线的一部分，选择安全版 Spring 指南。
 
-用 Maven 运行生成项目的 tests：
+| 决策点 | Minimal Spring JPA | Secure Spring API |
+| --- | --- | --- |
+| Build tool | Maven | Gradle |
+| Security | 未选择 | 已选择 Spring Security |
+| 数据库变更 | Hibernate `ddl-auto` 本地循环 | Flyway migration path |
+| Tests | JUnit 5 | JUnit 5 加 Testcontainers |
+| 适合 | 学习、原型、内部 CRUD | 面向生产的 API baseline |
+
+## 代表性片段
+
+生成的 domain model 是标准 JPA entity。当字段属于被持久化的 aggregate 时，在这里添加。
+
+```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.time.Instant;
+
+@Entity
+public class AppUser {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  private String email;
+  private String displayName;
+  private Instant createdAt = Instant.now();
+
+  protected AppUser() {
+  }
+
+  public AppUser(String email, String displayName) {
+    this.email = email;
+    this.displayName = displayName;
+  }
+}
+```
+
+Repositories 会保持很小，因为 Spring Data JPA 可以从方法名派生常见查询。
+
+```java
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+  Optional<AppUser> findByEmail(String email);
+}
+```
+
+Controller 通过 service layer 暴露 `GET /users` 和 `POST /users`。
+
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
+  private final AppUserService userService;
+
+  public UserController(AppUserService userService) {
+    this.userService = userService;
+  }
+
+  @GetMapping
+  public List<UserResponse> listUsers() {
+    return userService.findAll().stream().map(UserResponse::from).toList();
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public UserResponse createUser(@RequestBody CreateUserRequest request) {
+    AppUser createdUser = userService.create(request.email(), request.displayName());
+    return UserResponse.from(createdUser);
+  }
+}
+```
+
+## 迁移与测试
+
+这个最小 stack 不会选择 Flyway 或 Liquibase。早期开发中，Hibernate 可以让本地 H2 schema 持续变化；但在多个环境开始依赖数据库形状之前，请添加 migration library。
 
 ```bash
 ./mvnw test
+./mvnw spring-boot:run
+./mvnw package
 ```
 
-部署前，为目标环境配置 PostgreSQL URL、credentials 和 Spring profiles。明确 migrations 是通过 Flyway/Liquibase、pipeline，还是其他 release process 执行。
+添加生产 PostgreSQL 时，从本地 defaults 迁移到由环境驱动的 datasource settings：
+
+```yaml
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+```
+
+## 兼容性说明
+
+- `--java-orm spring-data-jpa` 需要 Spring Boot 和 Java build tool。
+- Flyway 和 Liquibase 在 Better Fullstack 中绑定到 Spring Data JPA 路径。
+- 本指南使用 `--java-build-tool maven`；除非你有意用 Gradle 重新生成，否则使用 Maven wrapper commands。
+- 尽管这个 stack 的目标是 PostgreSQL，生成的本地 datasource 和 dependency 仍然是 H2。在部署到 managed Postgres database 前，添加 PostgreSQL JDBC driver 并覆盖 `spring.datasource.*`。
+
+## 部署说明
+
+用 Maven 构建 jar，提供 Java 21 或更新版本，并用环境特定的 datasource settings 运行应用。
+
+```bash
+./mvnw package
+java -jar target/*.jar
+```
+
+生产环境中，添加 migrations，添加 PostgreSQL JDBC driver，通过 Spring Boot datasource properties 配置 connection pooling，并避免依赖 `ddl-auto: update`。通过平台 health check 暴露 `/health`。
+
+## 故障排查
+
+| 症状 | 检查 |
+| --- | --- |
+| App 启动时使用 H2 而不是 Postgres | 在环境特定配置中覆盖 `spring.datasource.*`。 |
+| `POST /users` 接受不完整 input | 在未来 scaffold 中添加 `--java-libraries spring-validation`，或手动添加 Bean Validation。 |
+| JPA entities 没有出现 | 把 entities 保持在生成的 application package 下，让 component scanning 能找到它们。 |
+| Maven commands 失败 | 使用 `./mvnw`，不要使用版本不同的全局 Maven。 |
+
+## 取舍
+
+Spring Boot 比极简 API frameworks 更重，但当你需要成熟约定、库生态深度和长期 backend 可维护性时，它会带来回报。
 
 ## 下一步
 

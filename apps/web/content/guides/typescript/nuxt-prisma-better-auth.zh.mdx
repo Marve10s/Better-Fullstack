@@ -16,7 +16,7 @@ keywords:
   - nuxt orpc starter
 ---
 
-当你需要带 relational data、authentication 和 typed API contracts 的 Vue/Nuxt fullstack app 时，使用这个 stack。
+当你想要带 relational data、authentication 和 typed API contracts 的 Vue/Nuxt fullstack app 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-nuxt-app -- \
@@ -32,16 +32,16 @@ npm create better-fullstack@latest my-nuxt-app -- \
 
 ## 创建内容
 
-- fullstack mode 的 Nuxt app。
+- 一个 fullstack mode 的 Nuxt app。
 - PostgreSQL 和 Prisma。
 - Better Auth。
-- oRPC 用于 typed API contracts。
+- 用于 typed API contracts 的 oRPC。
 - Tailwind CSS。
-- 可复现的 `bts.jsonc` stack 配置。
+- 可复现的 `bts.jsonc` stack configuration。
 
 ## 生成结构
 
-这个 stack 将应用保留在 Nuxt 的 fullstack model 中。Prisma 负责 database schema 和 migrations，Better Auth 负责 authentication behavior，oRPC 提供不依赖 React frontend 的 typed contracts。
+这个 stack 把应用保持在 Nuxt fullstack model 中。Prisma 负责 database schema 和 migrations，Better Auth 负责 authentication behavior，oRPC 提供 typed contracts，并且不假设你使用 React frontend。
 
 代表性结构：
 
@@ -54,25 +54,73 @@ my-nuxt-app/
     schema.prisma
 ```
 
-关键边界是：server-only database 和 auth code 留在 Nuxt server modules 或 API handlers 中，Vue components 调用 typed server contracts。
+把它看作代表性 layout。关键边界是：server-only database 和 auth code 留在 Nuxt server modules 或 API handlers 中，而 Vue components 调用 typed server contracts。
 
-## Models 与 contracts
+## 示例 Prisma model
 
-小型 product model 可以从 Prisma 开始，并通过 identifier 引用 auth users。保持 Better Auth 需要的 models 与 adapter documentation 对齐，并与应用自己的 tables 分开。
+一个小的 product model 可以这样开始：
 
-用 oRPC 描述 Nuxt app 的已验证 server operations。Authorization checks 应放在 server implementation 中，而不只是 Vue components 中。Client-side guards 改善 UX，但不能保护数据。
+```prisma
+model Workspace {
+  id        String   @id
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+```
+
+Better Auth 需要的 models 应与 adapter 文档保持一致，并与产品自己的表分开。Product tables 应通过 identifier 引用 auth users，不要复制 login data。
+
+## 示例 oRPC contract shape
+
+使用 oRPC 描述 Nuxt app 的 validated server operations：
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Authorization checks 要放在 server implementation 中，而不只是在 Vue components 里。Client-side guards 能改善 UX，但不能保护数据。
 
 ## 兼容性
 
-Nuxt 在 Better Fullstack 中使用 oRPC 做 typed contracts。tRPC 保留给 React-based TypeScript frontends，因此本指南故意使用 `--api orpc`。
+Nuxt 在 Better Fullstack 中使用 oRPC 做 typed contracts。tRPC 保留给 React-based TypeScript frontends，因此本指南有意使用 `--api orpc`。
 
-`--backend self` 是 Nuxt fullstack 的正确选择。如果你想要单独部署的 API server，请选择支持该组合的 backend option，例如 Hono。
+`--backend self` 是 Nuxt fullstack 的正确选择。如果想要单独部署的 API server，请在支持该组合的 stack 中使用 Hono 等 backend option。
+
+## 何时选择
+
+当团队偏好 Vue、需要 server-capable routing，并且想要 fullstack app shape 而不是独立 frontend 与 API server 时，选择 Nuxt。
 
 ## 部署
 
-在部署环境中设置 PostgreSQL connection string、Better Auth secrets 和 public app URL。部署依赖新 schema 的代码前，先运行 Prisma migrations。
+在部署环境中设置 PostgreSQL connection string、Better Auth secrets 和 public app URL。在部署依赖新 schema 的代码之前，先运行 Prisma migrations。
 
-对于 serverless platforms，请检查 Prisma Client 如何生成，以及 database connections 如何 pooling。Managed PostgreSQL providers 通常会说明 serverless runtimes 最安全的 connection string。
+对于 serverless platforms，检查 Prisma client 的生成方式和 database connections 的 pooling 方式。Managed PostgreSQL providers 通常会说明 serverless runtimes 最安全的 connection string。
+
+## 故障排查
+
+- 如果 Prisma Client types 过期，修改 `schema.prisma` 后重新生成 client。
+- 如果 oRPC calls 只在 production 失败，检查 server route base URL 和 deployment adapter behavior。
+- 如果 auth redirects 循环，检查 trusted origins、cookies，以及 Better Auth 使用的 app URL。
+- 如果 migrations 指向错误 database，检查 local commands 和 deployed runtime 使用的 environment variable。
+
+## 对比说明
+
+当 Vue 和 Nuxt conventions 是主要优先级时，使用这个 stack。React-first stack 选择 [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/)；想要独立 Hono backend 时，选择 [SvelteKit with Hono and Drizzle](/guides/typescript/sveltekit-hono-drizzle/)。
 
 ## 下一步
 

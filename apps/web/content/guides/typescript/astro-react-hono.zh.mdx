@@ -16,7 +16,7 @@ keywords:
   - astro react api starter
 ---
 
-当你希望用 Astro 承载内容密集页面和 islands，同时保留一个 TypeScript API server 时，使用这个 stack。
+当你想用 Astro 构建内容密集页面和 islands，同时还需要 TypeScript API server 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-astro-app -- \
@@ -39,12 +39,12 @@ npm create better-fullstack@latest my-astro-app -- \
 - 运行在 Bun 上的 Hono backend。
 - SQLite 和 Drizzle。
 - Better Auth。
-- tRPC，因为这个 Astro 配置使用 React。
+- tRPC，因为这个 Astro 配置使用 React integration。
 - Tailwind CSS 和 DaisyUI。
 
 ## 生成结构
 
-这个 stack 将 Astro 的内容优先 frontend 与独立的 Hono API server 组合起来。`--astro-integration react` 会启用 React islands，因此本指南可以使用 tRPC。
+这个 stack 把 Astro 的 content-first frontend 和独立 Hono API server 组合在一起。React islands 通过 `--astro-integration react` 启用，因此本指南可以使用 tRPC。
 
 代表性结构：
 
@@ -58,36 +58,67 @@ my-astro-app/
     shared/
 ```
 
-Astro pages 应该专注于 routing、content 和 island composition。Hono 应该负责 API routes、需要 auth 的 server behavior，以及 database access。
+Astro pages 应专注于 routing、content 和 island composition。Hono 应负责 API routes、auth-aware server behavior 和 database access。
 
-## 使用模式
+## 示例 Astro island
 
-用 Astro 承载页面外壳，只在需要交互的位置使用 React。这样静态或近似静态页面仍然很轻，同时交互式组件也能调用 typed API。
+用 Astro 承载页面外壳，只在需要交互的地方使用 React：
 
-简单 endpoint 和 health check 放在 Hono 中。涉及数据库的 endpoint 应把 Drizzle queries 放在 server-only helpers 后面，再通过 tRPC procedures 或 Hono routes 暴露。
+```astro
+---
+import ProjectPicker from "../components/ProjectPicker.tsx";
+---
+
+<main class="mx-auto max-w-5xl p-6">
+  <h1 class="text-3xl font-semibold">Project docs</h1>
+  <ProjectPicker client:load />
+</main>
+```
+
+这样静态或近似静态页面保持轻量，同时交互式 React components 仍然可以调用 typed API。
+
+## 示例 Hono endpoint
+
+Health checks 和简单 service endpoints 适合放在 Hono：
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => c.json({ ok: true }));
+
+export default app;
+```
+
+对于 database-backed endpoints，把 Drizzle queries 放在 server-only helpers 后面，再通过 tRPC procedures 或 Hono routes 暴露。
 
 ## 兼容性
 
-Astro 的 API 兼容性取决于所选 UI integration。本页使用 `--astro-integration react`，所以 tRPC 可用。对于非 React 的 Astro integration，优先使用 oRPC。
+Astro API 兼容性取决于选择的 UI integration。本页使用 `--astro-integration react`，因此 tRPC 可用。对于非 React 的 Astro integrations，优先使用 oRPC。
 
-这个命令选择 DaisyUI 作为 UI library。如果之后切换到 shadcn/ui，请同时检查 Astro React integration 和 Tailwind 设置是否仍然匹配所选组件库。
+这个命令选择 DaisyUI 作为 UI library。如果之后切到 shadcn/ui，确认 Astro React integration 和 Tailwind setup 仍然匹配你选择的 component library。
 
 ## 何时选择
 
-当内容、docs、marketing pages 或 partial hydration 是应用核心，同时你仍然需要生成好的 backend 和 database setup 时，选择 Astro。
+当 content、docs、marketing pages 或 partial hydration 是应用核心，但你仍需要生成 backend 和 database setup 时，选择 Astro。
 
 ## 部署
 
-为 Astro frontend 和 Hono API 明确配置 origins。frontend 需要公开的 API URL；Hono service 需要 database 和 auth secrets。SQLite 适合本地开发，但如果生产环境继续使用 SQLite，hosting 必须提供持久化存储。
+为 Astro frontend 和 Hono API 明确配置 origins。frontend 需要 public API URL；Hono service 需要 database 和 auth secrets。SQLite 可以用于 local development，但如果生产环境继续使用 SQLite，hosting 必须提供 persistent storage。
 
-如果 frontend 和 API 分开部署，请按最终域名配置 CORS 和 auth cookies，而不是依赖 localhost 行为。
+如果 frontend 和 API 分开部署，请按最终 domains 配置 CORS 和 auth cookies，不要依赖 localhost 行为。
 
 ## 故障排查
 
-- 如果 React islands 没有 hydrate，检查 Astro client directive，以及组件是否安全地导入了 browser-only code。
-- 如果切换 integration 后 tRPC 不可用，确认 Astro integration 仍然是 React。
-- 如果部署后 API calls 失败，验证公开 API origin 和 CORS 设置。
-- 如果部署后 SQLite 数据消失，确认 hosting platform 支持持久化可写存储。
+- 如果 React islands 没有 hydrate，检查 Astro client directive，以及 component 是否安全地导入 browser-only code。
+- 如果更换 integrations 后 tRPC 不可用，确认 Astro integration 仍然是 React。
+- 如果 deployed pages 的 API calls 失败，检查 public API origin 和 CORS settings。
+- 如果 deploy 后 SQLite data 消失，确认 hosting platform 支持 persistent writable storage。
+
+## 对比说明
+
+当内容页面和选择性 interactivity 比完整 React app shell 更重要时，选择这个 stack。当 frontend 应该是专用 TanStack Router React app 时，选择 [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/)。
 
 ## 下一步
 

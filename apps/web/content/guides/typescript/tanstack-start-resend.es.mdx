@@ -16,7 +16,7 @@ keywords:
   - resend fullstack starter
 ---
 
-Usa este stack cuando tu app TanStack Start necesite email transaccional para login, notificaciones de producto, invitaciones u onboarding.
+Usa este stack cuando tu app TanStack Start necesite email transaccional para flujos de inicio de sesión, notificaciones de producto, invitaciones u onboarding.
 
 ```npm
 npm create better-fullstack@latest my-email-app -- \
@@ -32,17 +32,17 @@ npm create better-fullstack@latest my-email-app -- \
   --ui-library shadcn-ui \
 ```
 
-## Que crea
+## Qué crea
 
 - Una app TanStack Start con su propia capa de rutas de servidor.
-- Resend como opcion de proveedor de email.
-- Better Auth con soporte de base relacional.
+- Resend como opción de proveedor de email.
+- Better Auth con soporte de base de datos relacional.
 - Drizzle y SQLite para desarrollo local.
 - Tailwind CSS y shadcn/ui para la interfaz.
 
 ## Forma generada
 
-Este stack parte de la forma fullstack de TanStack Start y agrega configuracion de proveedor de email. El proveedor se elige con `--email resend`; el resto de la app sigue usando `--backend self`, asi que no necesitas un servidor API separado solo para enviar correo.
+Este stack parte de la forma fullstack de TanStack Start y agrega configuración de proveedor de email. El proveedor se selecciona con `--email resend`; el resto de la app sigue usando `--backend self`, así que no necesitas un servidor API separado solo para enviar correos.
 
 Forma representativa:
 
@@ -57,30 +57,105 @@ my-email-app/
       email/
 ```
 
-El codigo de entrega de email deberia vivir detras de un helper pequeno solo de servidor para que los componentes React nunca importen secretos del proveedor.
+Trata el árbol anterior como una guía de ownership, no como una promesa de rutas exactas. El código de entrega de email debe vivir detrás de un helper server-only pequeño para que los componentes React nunca importen secretos del proveedor.
 
-## Casos de uso
+## Helper de email de ejemplo
 
-- Magic links y emails de verificacion.
-- Invitaciones de equipo.
-- Emails de prueba u onboarding.
+Una buena primera abstracción es una función estrecha para cada email de producto. Eso mantiene los detalles de Resend fuera de callbacks de auth, flujos de onboarding y route handlers:
+
+```ts
+type SendInviteEmailInput = {
+  to: string;
+  inviterName: string;
+  inviteUrl: string;
+};
+
+export async function sendInviteEmail(input: SendInviteEmailInput) {
+  const subject = `${input.inviterName} invited you`;
+
+  return sendTransactionalEmail({
+    to: input.to,
+    subject,
+    html: `
+      <p>${input.inviterName} invited you to join their workspace.</p>
+      <p><a href="${input.inviteUrl}">Accept the invite</a></p>
+    `,
+  });
+}
+```
+
+La implementación concreta de `sendTransactionalEmail` debe leer la API key de Resend desde variables de entorno de servidor y no debe importarse desde componentes cliente.
+
+## Uso en ruta de ejemplo
+
+Envía email después de la transacción de base de datos que crea el estado durable del producto. Para invitaciones, crea primero el registro de invitación y luego envía el correo:
+
+```ts
+import { z } from "zod";
+
+const inviteInput = z.object({
+  email: z.string().email(),
+  workspaceId: z.string().min(1),
+});
+
+export async function inviteMember(rawInput: unknown) {
+  const input = inviteInput.parse(rawInput);
+
+  const invite = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    workspaceId: input.workspaceId,
+  };
+
+  await sendInviteEmail({
+    to: invite.email,
+    inviterName: "A teammate",
+    inviteUrl: `https://example.com/invites/${invite.id}`,
+  });
+
+  return invite;
+}
+```
+
+Para sistemas en producción, considera una cola de jobs o tabla de reintentos para emails que deben entregarse aunque el proveedor tenga una falla temporal.
+
+## Cuándo elegirlo
+
+Elige esto cuando el email sea parte del workflow del producto, no una ocurrencia tardía. Resend encaja bien con email transaccional orientado a desarrolladores y mantiene el stack generado simple.
+
+## Casos de uso comunes
+
+- Magic links y emails de verificación.
+- Invitaciones a equipos.
+- Emails de trial u onboarding.
 - Notificaciones de producto desde server actions o rutas API.
 
 ## Compatibilidad
 
 - `--email resend` es aditivo. No reemplaza `--auth better-auth`, `--api trpc` ni `--backend self`.
-- El envio de email debe ejecutarse en servidor. Nunca expongas la API key de Resend en variables publicas ni bundles del navegador.
-- SQLite es comodo para desarrollo local. Si los flujos de email dependen de auditoria durable, reintentos o registros de equipo, PostgreSQL puede ser mejor en produccion.
-- Los flujos de email de Better Auth y las notificaciones de producto pueden compartir proveedor, pero conviene separarlos a nivel de funcion.
+- La entrega de email debe ejecutarse del lado servidor. Nunca expongas la API key de Resend mediante variables públicas o bundles del navegador.
+- SQLite es conveniente para desarrollo local. Si los flujos de email dependen de auditorías durables, reintentos o registros de equipo, PostgreSQL puede ser una mejor base de producción.
+- Los flujos de email de Better Auth y las notificaciones de producto deben compartir configuración de proveedor, pero mantenerse separados a nivel de función.
 
 ## Despliegue
 
-Configura API key de Resend, dominio remitente, secretos de Better Auth y URL de app en el entorno de despliegue. Completa verificacion de dominio antes de depender de correo de produccion.
+Configura la API key de Resend, el dominio remitente, los secretos de Better Auth y la app URL en el entorno de despliegue. Completa la verificación de dominio antes de depender del envío de correo en producción.
 
-Para previews, usa un remitente restringido o una allowlist de destinatarios de prueba si la app puede disparar emails desde trafico no confiable.
+Para previews, usa un remitente restringido o una allowlist de destinatarios de prueba si tu app puede disparar emails desde tráfico preview no confiable.
+
+## Solucion de problemas
+
+- Si los emails no llegan, revisa los logs del proveedor antes de cambiar código de la app.
+- Si los links apuntan a localhost, actualiza la app URL de producción usada para construir callbacks o invitaciones.
+- Si los emails de auth funcionan pero los de producto fallan, verifica que ambos caminos usen la misma configuración server-only del proveedor.
+- Si los tests locales envían email real por accidente, agrega un transporte de desarrollo o guard alrededor de entornos no productivos.
+
+## Notas de comparacion
+
+Usa la guía más amplia de [TanStack Start](/guides/typescript/create-tanstack-start-project/) cuando todavía no necesites email. Elige el comando de esta página cuando el email transaccional sea parte del contrato inicial del producto, porque registra esa decisión en `bts.jsonc` desde el primer día.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc).
 - Compara opciones de email en la [referencia de CLI create](/docs/cli/create/).
-- Empieza por la guia mas amplia de [TanStack Start](/guides/typescript/create-tanstack-start-project/).
+- Empieza desde la guía más amplia de [TanStack Start](/guides/typescript/create-tanstack-start-project/).

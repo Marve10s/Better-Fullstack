@@ -3,28 +3,28 @@ title: Matriz de compatibilidad
 description: Comprueba si las opciones de Better Fullstack funcionan con un stack base seleccionado.
 ---
 
-Better Fullstack valida las opciones de stack antes de generar. El builder, la CLI y el servidor MCP usan la misma logica de compatibilidad, asi que las combinaciones invalidas se rechazan o ajustan de forma consistente.
+Better Fullstack valida las opciones de stack antes de generar. El builder, la CLI y el servidor MCP usan la misma lógica de compatibilidad, asi que las combinaciones invalidas se rechazan o ajustan de forma consistente.
 
 <CompatibilityMatrix />
 
-## Que comprueba
+## Qué comprueba
 
 - Si una opcion es compatible con el stack base seleccionado.
-- La razon disabled compartida cuando una combinacion esta bloqueada.
+- La razon disabled compartida cuando una combinacion está bloqueada.
 - Cualquier nota de ajuste automatico del mismo analizador de compatibilidad que usa el builder.
 
-## Como usarla
+## Cómo usarla
 
 1. Elige un ecosistema.
 2. Ajusta los campos del stack base que importan para tu pregunta.
-3. Elige una categoria para inspeccionar.
+3. Elige una categoría para inspeccionar.
 4. Revisa que opciones son compatibles y por que algunas estan bloqueadas.
 
-Esta es una matriz practica, no todas las combinaciones pairwise posibles. Para validacion completa de proyecto, ejecuta la CLI, usa el Stack Builder o llama `bfs_check_compatibility` mediante MCP antes de crear el scaffold.
+Esta es una matriz práctica, no todas las combinaciones pairwise posibles. Para validación completa de proyecto, ejecuta la CLI, usa el Stack Builder o llama `bfs_check_compatibility` mediante MCP antes de crear el scaffold.
 
 ## Comportamiento de compatibilidad
 
-- `none` deshabilita categorias opcionales cuando se soporta.
+- `none` deshabilita categorías opcionales cuando se soporta.
 - Algunas selecciones disparan ajustes automaticos, como Convex reemplazando opciones de base de datos/API propiedad del backend.
 - Algunas opciones de frontend estrechan intencionalmente el soporte de API, UI, runtime o deploy.
-- Java, Rust, Python y Go usan categorias especificas de ecosistema en lugar de toda la superficie TypeScript.
+- Java, Rust, Python y Go usan categorías específicas de ecosistema en lugar de toda la superficie TypeScript.

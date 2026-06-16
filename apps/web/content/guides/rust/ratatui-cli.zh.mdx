@@ -15,7 +15,7 @@ keywords:
   - rust tui starter
 ---
 
-当你想构建 terminal UI，而不是 web service 时，使用这个 stack。
+当你想构建终端 UI，而不是 web service 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-rust-cli -- \
@@ -30,15 +30,22 @@ npm create better-fullstack@latest my-rust-cli -- \
 
 ## 创建内容
 
-- Rust CLI project。
-- Ratatui 作为 terminal UI option。
+- Rust CLI 项目。
+- Ratatui 作为终端 UI 选项。
 - 不包含 web framework、frontend、ORM 或 API layer。
 
 ## 生成结构
 
-这个 stack 创建 terminal application，而不是 server。Ratatui 负责把 widgets 渲染到 terminal 中，app code 拥有 state、events 和 command behavior。
+这个 stack 创建的是终端应用，而不是 server。Ratatui 负责把 widget 渲染到 terminal 中，app code 拥有 state、event 和 command behavior。
 
-代表性结构：
+一个有用的心智模型是这样的循环：
+
+- 读取键盘或终端事件。
+- 更新应用状态。
+- 将当前状态渲染成 Ratatui widget。
+- 当用户要求退出时干净地关闭。
+
+## 代表性文件树
 
 ```txt
 my-rust-cli/
@@ -50,27 +57,109 @@ my-rust-cli/
     ui.rs
 ```
 
-把 state 和 transitions 保持在 terminal layer 下方，这样 tests 不依赖真实 rendering。
+让 `app.rs` 专注状态转换，`event.rs` 专注输入处理，`ui.rs` 专注绘制。这样的拆分让终端行为更容易测试。
 
-## 兼容性
+## CLI 与 UI 示例
 
-`--rust-web-framework none`、`--rust-frontend none`、`--rust-orm none` 和 `--rust-api none` 明确表示项目是 CLI-first。如果之后需要调用 service，请添加独立 client，并保持 UI 解耦。
+一个小的 app state 类型可以让 UI 渲染保持确定性：
+
+```rust
+#[derive(Debug, Default)]
+pub struct App {
+    pub should_quit: bool,
+    pub selected_index: usize,
+    pub items: Vec<String>,
+}
+
+impl App {
+    pub fn quit(&mut self) {
+        self.should_quit = true;
+    }
+
+    pub fn next(&mut self) {
+        if !self.items.is_empty() {
+            self.selected_index = (self.selected_index + 1) % self.items.len();
+        }
+    }
+}
+```
+
+draw 函数应该接收状态并渲染它，不要改变应用行为：
+
+```rust
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
+    Frame,
+};
+
+use crate::app::App;
+
+pub fn draw(frame: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(frame.area());
+
+    let items = app.items.iter().map(|item| ListItem::new(item.as_str()));
+    let list = List::new(items).block(Block::default().title("Tasks").borders(Borders::ALL));
+    let help = Paragraph::new("q: quit  j/k: move");
+
+    frame.render_widget(list, chunks[0]);
+    frame.render_widget(help, chunks[1]);
+}
+```
+
+事件处理可以保持小而明确：
+
+```rust
+use crossterm::event::{KeyCode, KeyEvent};
+
+use crate::app::App;
+
+pub fn handle_key(app: &mut App, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('q') => app.quit(),
+        KeyCode::Char('j') | KeyCode::Down => app.next(),
+        _ => {}
+    }
+}
+```
+
+## 兼容性说明
+
+CLI 项目应避免无关的 web framework 和数据库选择，除非你明确需要它们。本指南将这些 flag 保持为 `none`。
+
+为 terminal-first 项目保留 `--rust-cli ratatui`，并让 web/API/database flag 保持为 `none`。如果之后添加 backend 或 database，请把它当作 hybrid app，并引入清晰的模块边界，不要把网络调用混进 rendering code。
+
+## 何时选择
+
+Ratatui 适合 dashboard、开发者工具、基础设施工具和 terminal-first workflow。
+
+当用户大部分时间都在 shell 里，并且需要一个专注界面来反复执行操作时，它尤其有用。
 
 ## 测试与分发
 
-大多数 Ratatui logic 最适合在 terminal layer 以下测试：
+大多数 Ratatui logic 最适合在 terminal layer 以下测试。直接测试 state transition 和 command parsing：
 
 ```bash
 cargo test
 ```
 
-release build 使用：
+release build 使用 Cargo 的常规优化构建：
 
 ```bash
 cargo build --release
 ```
 
-分发 binary 时，记录 color support、keyboard shortcuts、config file locations，以及工具读取的 environment variables。
+分发 binary 时，记录 terminal expectation，例如 color support、keyboard shortcut、config file location，以及工具读取的 environment variable。
+
+## 故障排查
+
+- 如果 crash 后 terminal 留在异常模式，确保 app 在 shutdown 时恢复 raw mode 并退出 alternate screen。
+- 如果渲染闪烁，检查 event loop 是否在没有 input 或 tick 的情况下过度重绘。
+- 如果文本意外裁切，用窄 terminal width 测试，并使用 Ratatui layout constraint，而不是 hard-coded 坐标。
+- 如果键盘快捷键在 remote shell 中不起作用，先比较 terminal emulator 行为，再修改 app logic。
 
 ## 下一步
 

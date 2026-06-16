@@ -3,20 +3,20 @@ title: Ecosistemas
 description: Ecosistemas de lenguaje soportados y que genera Better Fullstack para cada uno.
 ---
 
-Better Fullstack usa una sola CLI para multiples ecosistemas. Cada ecosistema tiene su propia superficie de scaffold, toolchain y reglas de compatibilidad.
+Better Fullstack usa una sola CLI para múltiples ecosistemas. Cada ecosistema tiene su propia superficie de scaffold, toolchain y reglas de compatibilidad.
 
 Para stacks de producto que cruzan lenguajes, usa [modo Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/). Modela el proyecto como partes de stack, por ejemplo `frontend:typescript:next`, `backend:go:gin`, `backend.orm:go:gorm` y `database:universal:postgres`.
 
 | Ecosistema | Mejor para | Notas |
 | --- | --- | --- |
-| [TypeScript](/docs/ecosystems/typescript/) | Web fullstack, APIs, workers, desktop y la matriz mas grande de integraciones web. | Las opciones web son TypeScript-first. |
-| [React Native](/docs/ecosystems/react-native/) | Apps Expo mobile con navegacion, UI, storage, testing, push, OTA y deep linking. | Usa la superficie React Native en vez de categorias de frontend web TypeScript. |
+| [TypeScript](/docs/ecosystems/typescript/) | Web fullstack, APIs, workers, desktop y la matriz más grande de integraciones web. | Las opciones web son TypeScript-first. |
+| [React Native](/docs/ecosystems/react-native/) | Apps Expo mobile con navegacion, UI, storage, testing, push, OTA y deep linking. | Usa la superficie React Native en vez de categorías de frontend web TypeScript. |
 | [Rust](/docs/ecosystems/rust/) | Servicios backend, CLIs, GraphQL/gRPC, frontends Rust web y librerias fuertemente tipadas. | Usa Cargo; las plantillas son condicionales segun las opciones Rust elegidas. |
-| [Python](/docs/ecosystems/python/) | Servicios API y orientados a IA con framework, ORM, validacion, colas, GraphQL y calidad. | Usa `uv`; Python AI es una categoria multi-select separada. |
+| [Python](/docs/ecosystems/python/) | Servicios API y orientados a IA con framework, ORM, validación, colas, GraphQL y calidad. | Usa `uv`; Python AI es una categoría multi-select separada. |
 | [Go](/docs/ecosystems/go/) | Servicios API, gRPC, CLIs, logging, ORM y helpers de auth Go. | Usa Go modules; GoBetterAuth se selecciona con `--auth go-better-auth`. |
 | [Java](/docs/ecosystems/java/) | Spring Boot, Quarkus o proyectos Java planos con Maven/Gradle, persistencia, auth, librerias y tests. | Java usa wrappers Maven o Gradle cuando se selecciona una herramienta de build. |
 | [Elixir](/docs/ecosystems/elixir/) | Apps Phoenix y Phoenix LiveView con Ecto, Absinthe, realtime, jobs, testing, calidad y deploy. | Usa Mix; algunas opciones de schema siguen deshabilitadas hasta que las plantillas alcancen cobertura. |
-| [.NET](/docs/ecosystems/dotnet/) | Servicios ASP.NET Core con EF Core o Dapper, Identity, Minimal APIs o Hot Chocolate, SignalR, jobs y tests. | Usa el SDK .NET; testing y observability son categorias multi-select. |
+| [.NET](/docs/ecosystems/dotnet/) | Servicios ASP.NET Core con EF Core o Dapper, Identity, Minimal APIs o Hot Chocolate, SignalR, jobs y tests. | Usa el SDK .NET; testing y observability son categorías multi-select. |
 
 ## Baseline CLI por defecto
 
@@ -45,4 +45,4 @@ Runtime y package manager son decisiones separadas. Por ejemplo, un proyecto Typ
 
 ## Las opciones compartidas no son universales
 
-Algunos flags son globales porque se guardan en una sola configuracion de proyecto, pero no todos aplican a cada ecosistema. Usa las paginas de ecosistema para ver que se genera y [Reference Options](/docs/reference/options/) para valores exactos de CLI.
+Algunos flags son globales porque se guardan en una sola configuración de proyecto, pero no todos aplican a cada ecosistema. Usa las paginas de ecosistema para ver que se genera y [Reference Options](/docs/reference/options/) para valores exactos de CLI.

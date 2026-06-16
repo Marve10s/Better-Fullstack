@@ -16,7 +16,7 @@ keywords:
   - solidstart fullstack boilerplate
 ---
 
-Usa este stack cuando quieras la reactividad fina de Solid con un framework fullstack y contratos API tipados.
+Usa este stack cuando quieras la reactividad fina de Solid con un framework fullstack y contratos de API tipados.
 
 ```npm
 npm create better-fullstack@latest my-solidstart-app -- \
@@ -30,7 +30,7 @@ npm create better-fullstack@latest my-solidstart-app -- \
   --css-framework tailwind \
 ```
 
-## Que crea
+## Qué crea
 
 - Una app SolidStart fullstack.
 - SQLite y Drizzle.
@@ -40,7 +40,7 @@ npm create better-fullstack@latest my-solidstart-app -- \
 
 ## Forma generada
 
-Este stack mantiene SolidStart como framework fullstack. La app puede renderizar UI Solid, llamar contratos de servidor tipados y persistir datos con Drizzle sin introducir un servicio backend separado.
+Este stack mantiene SolidStart como framework fullstack. La app puede renderizar UI Solid, llamar contratos tipados de servidor y persistir datos con Drizzle sin introducir un servicio backend separado.
 
 Forma representativa:
 
@@ -56,26 +56,71 @@ my-solidstart-app/
       rpc/
 ```
 
-Usa este arbol como mapa de propiedad. El codigo UI pertenece en componentes y rutas Solid; base de datos y auth deben permanecer solo de servidor.
+Usa este árbol como mapa de ownership. El código UI pertenece a componentes y rutas Solid; el código de base de datos y auth debe permanecer server-only.
+
+## Componente de ruta de ejemplo
+
+Las rutas SolidStart pueden centrarse en renderizar mientras el código de servidor maneja acceso a datos:
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+Mantén las mutaciones de servidor detrás de funciones validadas para que la UI no sea la única fuente de verdad para las reglas de input.
+
+## Modelo Drizzle de ejemplo
+
+SQLite es un valor por defecto práctico para apps SolidStart pequeñas y desarrollo local:
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Pásate a PostgreSQL cuando varias instancias desplegadas necesiten compartir datos relacionales durables.
 
 ## Compatibilidad
 
-SolidStart usa oRPC en Better Fullstack. tRPC esta orientado a React, asi que este stack mantiene `--api orpc` de forma intencional.
+SolidStart usa oRPC en Better Fullstack. tRPC está orientado a React, por eso este stack mantiene `--api orpc`.
 
-`--backend self` significa que SolidStart controla la capa de servidor. No agregues Hono salvo que quieras una API desplegada por separado.
+`--backend self` significa que SolidStart es dueño de la capa servidor. No agregues Hono salvo que quieras intencionalmente un despliegue API separado.
 
-## Cuando elegirlo
+## Cuándo elegirlo
 
-Elige SolidStart cuando quieras el modelo runtime de Solid, pero tambien un proyecto fullstack generado con base de datos, auth y API tipada.
+Elige SolidStart cuando quieras el modelo runtime de Solid pero también necesites un proyecto fullstack generado con base de datos, auth y wiring de API tipada.
 
 ## Despliegue
 
-Define secretos de Better Auth, URL de app y ruta o cadena de conexion de base de datos para el entorno destino. Si tu plataforma no da disco persistente, no dependas de SQLite en archivo para datos de produccion.
+Configura los secretos de Better Auth, la app URL y la ruta o cadena de conexión de base de datos para el entorno destino. Si tu plataforma de despliegue no ofrece disco persistente, no dependas de SQLite basado en archivo para datos de producción.
 
-Para herramientas internas pequenas, SQLite puede bastar. Para apps SaaS multiusuario, PostgreSQL suele ser mas facil de operar entre despliegues.
+Para herramientas internas pequeñas, SQLite puede ser suficiente. Para apps de producción multiusuario tipo SaaS, PostgreSQL suele ser más fácil de operar entre despliegues.
+
+## Solucion de problemas
+
+- Si las llamadas oRPC fallan tras desplegar, revisa la ruta base y si el adapter de despliegue maneja rutas de servidor como esperas.
+- Si las sesiones de auth desaparecen, revisa seguridad de cookies y valores de app URL.
+- Si los datos SQLite se resetean, confirma si el host ofrece almacenamiento persistente.
+- Si componentes Solid importan módulos de servidor por accidente, mueve la llamada detrás de una server function o contrato API.
+
+## Notas de comparacion
+
+Elige esto sobre TanStack Start cuando la reactividad fina de Solid sea la razón del proyecto. Elige [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/) cuando prefieras React y TanStack Router.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc).
-- Compara con [Crear un proyecto TanStack Start](/guides/typescript/create-tanstack-start-project/).
+- Compara con [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/).
 - Lee la [referencia de compatibilidad](/docs/reference/compatibility/).

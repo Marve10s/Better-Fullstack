@@ -16,7 +16,7 @@ keywords:
   - mobile app starter
 ---
 
-当你想要 mobile-first Expo app，并且不需要在同一个 scaffold 中生成 backend 时，使用这个 stack。
+当你想先做移动端 Expo app，并且不需要在同一个 scaffold 里生成 backend 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-mobile-app -- \
@@ -35,15 +35,15 @@ npm create better-fullstack@latest my-mobile-app -- \
 
 ## 创建内容
 
-- 使用 Uniwind 的 Expo native app。
-- Expo Router 用于 file-based native routes。
-- MMKV storage、React Native Testing Library、Maestro、push notifications、OTA updates 和 deep linking。
-- 默认不包含 web frontend、backend、database、ORM、auth 或 API layer。
-- 之后可以连接 API 的 mobile-first project shape。
+- 一个使用 Uniwind 的 Expo native app。
+- 用 Expo Router 做基于文件的 native routes。
+- MMKV、React Native Testing Library、Maestro、push notifications、OTA updates 和 deep linking。
+- 默认不生成 web frontend、backend、database、ORM、auth 或 API layer。
+- 一个 mobile-first 项目基础，之后可以再接 API。
 
 ## 生成结构
 
-这个命令创建 native frontend foundation，而不是 fullstack web app。它把 backend decisions 留在初始 scaffold 之外，让 mobile app 之后可以指向已有 API 或单独生成的 service。
+这个命令创建的是 native frontend 基础，而不是 fullstack web app。它把 backend 决策留到初始 scaffold 之外，这样移动 app 之后可以指向现有 API，或指向单独生成的服务。
 
 代表性结构：
 
@@ -56,26 +56,70 @@ my-mobile-app/
   maestro/
 ```
 
-具体 Expo paths 取决于 template version，但 ownership 很直接：native screens 和 components 位于 app 中，server concerns 被有意排除。
+具体 Expo 路径会随 template 版本变化，但职责边界很直接：native screens 和 components 在 app 里，server concerns 刻意不生成。
+
+## 示例 screen
+
+Uniwind 让你可以在 React Native components 中使用 utility-style classes：
+
+```tsx
+import { Text, View } from "react-native";
+
+export default function HomeScreen() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white px-6">
+      <Text className="text-2xl font-semibold text-slate-950">
+        Mobile app
+      </Text>
+      <Text className="mt-2 text-center text-slate-600">
+        Connect an API when the product contract is ready.
+      </Text>
+    </View>
+  );
+}
+```
+
+添加 backend 时，把 API clients 收在一个小模块后面。这样切换 local、staging、production API origins 时，不需要改 screens。
 
 ## 兼容性
 
-React Native 在 Better Fullstack 中是独立 ecosystem。使用 `--ecosystem react-native`；不要把 TypeScript web frontend flags 与 native frontend flags 混用。
+React Native 在 Better Fullstack 中是独立生态。使用 `--ecosystem react-native`；不要把 TypeScript web frontend flags 和 native frontend flags 混在一起。
 
-本指南刻意不在 mobile scaffold 中生成 backend、database、ORM、auth 或 API。Mobile authentication 和 server APIs 需要 platform-specific decisions，最好在 product requirements 清楚后再决定。
+这篇指南有意不在 mobile scaffold 里生成 backend、database、ORM、auth 和 API。移动端认证和 server APIs 涉及平台特定决策，最好等产品需求明确之后再做。
+
+## 何时选择
+
+适合移动端原型、companion apps，以及 API 可能单独创建的 native app foundations。
 
 ## 之后添加 API
 
-常见下一步包括：轻量 TypeScript backend 的 Hono API、如果也需要 web surface 则使用 Next.js 或 TanStack Start app，或者连接 Better Fullstack 之外已有的 dedicated backend。
+常见下一步包括：用 Hono 做轻量 TypeScript backend；如果还需要 web surface，则创建 Next.js 或 TanStack Start app；或者接入 Better Fullstack 之外已经存在的专用 backend。
 
-添加 API 时，决定 native app 如何处理 environment-specific API base URLs、device 上的 auth session storage、refresh tokens、offline behavior，以及 development/preview/production 的 native build profiles。
+添加 API 前，先决定 native app 如何处理：
+
+- 不同环境的 API base URLs。
+- 设备上的 auth session storage。
+- Refresh tokens 或 session renewal。
+- Offline behavior 和 optimistic updates。
+- development、preview、production 的 native build profiles。
 
 ## 部署
 
-Expo deployment 不同于 web deployment。规划 native build profiles、app identifiers、signing credentials 和 build time 使用的 environment variables。不要把 server secrets 放入 mobile bundle；native apps 应调用由 server-side 保存 secrets 的 backend。
+Expo 部署不同于 web 部署。需要规划 native build profiles、app identifiers、signing credentials，以及 build time 使用的 environment variables。不要把 server secrets 放进 mobile bundle；native apps 应该调用由服务器保存 secrets 的 backend。
+
+## 故障排查
+
+- 如果没有生成 web files，这是预期行为：这个 stack 使用 native frontend，不生成 web frontend。
+- 如果没有 backend routes，命令明确选择了 `--backend none`。
+- 如果样式没有生效，检查生成 app 中的 Uniwind setup 和 class scanning 配置。
+- 如果 API calls 在 simulator 可用但真机不可用，检查 API base URL 是否指向设备可访问的 host。
+
+## 对比说明
+
+Mobile-first 工作选择这个 stack。产品从 web SaaS app 开始时，选择 [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/)；如果仓库本身需要生成 AI-agent guidance，选择 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。
 
 ## 下一步
 
 - 打开 [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false)。
 - 查看 [CLI create reference](/docs/cli/create/)。
-- 如果 app 也需要 web 和 agent tooling，对比 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。
+- 如果你的 app 还需要 web 和 agent tooling，可以对比 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。

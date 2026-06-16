@@ -1,11 +1,11 @@
 ---
 title: 代理 Skill
-description: 为 Codex、Claude Code、Cursor 和其他 agents 安装 Better Fullstack agent skill，以进行快速 CLI-driven scaffolding。
+description: 为 Codex、Claude Code、Cursor 和其他代理安装 Better Fullstack agent skill，用于快速通过 CLI 生成项目。
 ---
 
-Better Fullstack agent skill 会教 coding agents 使用 CLI，而不是手写 starter projects。它会把请求的 stack 映射到 graph parts，先运行 dry-run，在禁用依赖安装的情况下 scaffold，并报告精确的后续命令。
+Better Fullstack agent skill 会教代码代理使用 CLI，而不是手写 starter 项目。它会把请求的技术栈映射到 graph parts，先执行 dry-run，再在禁用依赖安装的情况下生成项目，并报告精确的后续命令。
 
-当你的 agent 支持 skills，并且你想从 prompt 快速到达生成的 Better Fullstack 项目时使用它。当你需要结构化 schema lookup 和 tool-call planning 时，使用 [MCP server](/docs/ai/mcp/)。
+当你的代理支持 skills，并且你希望从一句提示词快速生成 Better Fullstack 项目时，使用它。当你需要结构化的 schema 查询和工具调用规划时，请改用 [MCP server](/docs/ai/mcp/)。
 
 ## 安装
 
@@ -20,7 +20,7 @@ Better Fullstack agent skill 会教 coding agents 使用 CLI，而不是手写 s
   yarn="yarn dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
 />
 
-为几个常见 agents 安装：
+为几个常见代理安装：
 
 ```bash
 bunx skills@latest add Marve10s/Better-Fullstack \
@@ -30,7 +30,7 @@ bunx skills@latest add Marve10s/Better-Fullstack \
   --yes
 ```
 
-如需项目本地安装，从同一命令中省略 `--global`。当团队希望把 skill version 与仓库一起记录时，项目安装很有用。
+如需项目本地安装，从同一命令中省略 `--global`。当团队希望把 skill 版本与仓库一起记录时，项目安装很有用。
 
 ## 使用
 
@@ -40,21 +40,21 @@ bunx skills@latest add Marve10s/Better-Fullstack \
 Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.
 ```
 
-也可以自然提问。支持 implicit skill matching 的 agents 可以在请求涉及 Better Fullstack 项目的 scaffolding、planning 或 extending 时选择该 skill。
+也可以自然提问。支持隐式 skill 匹配的代理，可以在请求涉及 Better Fullstack 项目的生成、规划或扩展时选择该 skill。
 
 ## Skill 做什么
 
-1. 将请求的 stack 映射为 Better Fullstack graph parts 和 CLI flags。
+1. 将请求的技术栈映射为 Better Fullstack graph parts 和 CLI flags。
 2. 运行非交互式 CLI dry-run。
 3. 当计划成功时，运行不带 `--dry-run` 的同一命令。
 4. 除非你明确要求这些副作用，否则使用 `--no-install` 和 `--no-git`。
-5. 报告使用的命令、任何兼容性调整，以及下一步 install/test/run commands。
+5. 报告使用的命令、任何兼容性调整，以及下一步安装、测试和运行命令。
 
 ## Skill vs MCP
 
 | 路径 | 最适合 |
 | --- | --- |
-| Agent skill | 当 stack 可以表示为 flags 或 graph parts 时，用于快速 CLI-driven scaffolding。 |
-| MCP server | 通过 tool calls 进行结构化 schema lookup、compatibility checks、dry-run planning 和 existing-project mutation。 |
+| Agent skill | 当技术栈可以表示为 flags 或 graph parts 时，用于快速通过 CLI 生成项目。 |
+| MCP server | 通过工具调用进行结构化 schema 查询、兼容性检查、dry-run 规划和现有项目修改。 |
 
 两条路径使用同一个 Better Fullstack generator。skill 是更轻的路径；MCP 是更结构化的路径。

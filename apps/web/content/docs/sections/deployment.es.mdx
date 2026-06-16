@@ -1,9 +1,9 @@
 ---
 title: Despliegue
-description: Elige destinos de despliegue web y servidor como una sola seccion de stack.
+description: Elige destinos de despliegue web y servidor como una sola sección de stack.
 ---
 
-Deployment es una seccion de stack, no un pilar separado de docs. Controla si Better Fullstack emite archivos de plataforma durante la creacion del proyecto con `--web-deploy` y `--server-deploy`.
+Deployment es una sección de stack, no un pilar separado de docs. Controla si Better Fullstack emite archivos de plataforma durante la creación del proyecto con `--web-deploy` y `--server-deploy`.
 
 Usa flags de deployment al crear el scaffold cuando quieras que los archivos de plataforma generados coincidan con el frontend, backend, runtime y layout de workspace seleccionados.
 
@@ -33,9 +33,9 @@ Las opciones de deployment se verifican por compatibilidad contra el stack. Algu
 
 - Configura variables de entorno de produccion para secretos de auth, URLs de base de datos, keys de providers y URLs publicas de app.
 - Ejecuta migraciones de base de datos contra la base de produccion antes de enrutar trafico.
-- Confirma que la configuracion de plataforma generada coincide con la app que debe recibir requests.
+- Confirma que la configuración de plataforma generada coincide con la app que debe recibir requests.
 - Mantiene contenedores de servicios locales, credenciales de prueba y logs generados fuera del control de versiones.
 
-## Agregar despues del scaffold
+## Agregar después del scaffold
 
 El comando `add` puede registrar flags de deployment, pero actualmente procesa addons primero. Si no se selecciona ningun addon nuevo, los comandos `add` solo de deployment salen temprano. Prefiere elegir destinos de deployment durante `create` hasta que se amplien los flujos add solo de deployment.
