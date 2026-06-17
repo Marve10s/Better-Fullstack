@@ -605,6 +605,10 @@ export const dependencyVersionMap = {
   dodopayments: "^2.38.1",
   "dodopayments-checkout": "^1.9.4",
 
+  // Payments - RevenueCat
+  "react-native-purchases": "^9.10.5",
+  "convex-revenuecat": "^0.3.2",
+
   // File Upload - UploadThing
   uploadthing: "^7.7.4",
   "@uploadthing/react": "^7.3.3",

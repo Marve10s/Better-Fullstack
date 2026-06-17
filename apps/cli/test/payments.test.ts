@@ -686,6 +686,54 @@ describe("Payments Options", () => {
     });
   });
 
+  describe("RevenueCat payments", () => {
+    test("revenuecat with native-bare frontend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "revenuecat-native-bare",
+          frontend: ["native-bare"],
+          backend: "hono",
+          api: "none",
+          payments: "revenuecat",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("revenuecat with native-unistyles frontend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "revenuecat-native-unistyles",
+          frontend: ["native-unistyles"],
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          payments: "revenuecat",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("revenuecat with native-uniwind and better-auth (convex combined webhook)", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "revenuecat-uniwind-better-auth",
+          frontend: ["native-uniwind"],
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          auth: "better-auth",
+          payments: "revenuecat",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
   describe("No payments option", () => {
     test("none payments option", async () => {
       const result = await runTRPCTest(

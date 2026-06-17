@@ -4,10 +4,14 @@ import { authComponent, createAuth } from "./auth";
 {{#if (eq payments "polar")}}
 import { polar } from "./polar";
 {{/if}}
+{{#if (eq payments "revenuecat")}}
+import { revenuecat } from "./revenuecat";
+{{/if}}
 
 const http = httpRouter();
 
-{{#if (or (includes frontend "tanstack-router") (includes frontend "react-router") (includes frontend "nuxt") (includes frontend "svelte") (includes frontend "solid"))}}
+{{#if (or (includes frontend "tanstack-router") (includes frontend "react-router") (includes frontend "nuxt") (includes
+frontend "svelte") (includes frontend "solid"))}}
 authComponent.registerRoutes(http, createAuth, { cors: true });
 {{else}}
 authComponent.registerRoutes(http, createAuth);
@@ -15,6 +19,10 @@ authComponent.registerRoutes(http, createAuth);
 {{#if (eq payments "polar")}}
 
 polar.registerRoutes(http as any);
+{{/if}}
+{{#if (eq payments "revenuecat")}}
+
+revenuecat.registerRoutes(http);
 {{/if}}
 
 export default http;

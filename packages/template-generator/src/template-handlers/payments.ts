@@ -18,6 +18,14 @@ export async function processPaymentsTemplates(
   const hasSvelteWeb = config.frontend.includes("svelte");
   const hasSolidWeb = config.frontend.includes("solid");
 
+  const nativeVariant = config.frontend.includes("native-bare")
+    ? "bare"
+    : config.frontend.includes("native-uniwind")
+      ? "uniwind"
+      : config.frontend.includes("native-unistyles")
+        ? "unistyles"
+        : null;
+
   if (config.backend === "convex") {
     processTemplatesFromPrefix(
       vfs,
@@ -26,6 +34,16 @@ export async function processPaymentsTemplates(
       "packages/backend",
       config,
     );
+
+    if (config.payments === "revenuecat" && config.auth !== "better-auth") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        "payments/revenuecat/convex/no-better-auth",
+        "packages/backend",
+        config,
+      );
+    }
   } else if (config.backend !== "none") {
     processTemplatesFromPrefix(
       vfs,
@@ -36,12 +54,30 @@ export async function processPaymentsTemplates(
     );
   }
 
+  if (nativeVariant) {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `payments/${config.payments}/native/base`,
+      "apps/native",
+      config,
+    );
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `payments/${config.payments}/native/${nativeVariant}`,
+      "apps/native",
+      config,
+    );
+  }
+
+
   if (hasReactWeb) {
     const reactFramework = config.frontend.includes("react-vite")
       ? "react-router"
       : config.frontend.find((f) =>
-          ["tanstack-router", "react-router", "tanstack-start", "next", "vinext"].includes(f),
-        );
+        ["tanstack-router", "react-router", "tanstack-start", "next", "vinext"].includes(f),
+      );
     if (reactFramework) {
       processTemplatesFromPrefix(
         vfs,

@@ -21,6 +21,10 @@ import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
 import { SignUp } from "@/components/sign-up";
+{{#if (eq payments "revenuecat")}}
+import { SubscriptionStatusCard } from "@/components/subscription-status-card";
+import { PaywallExample } from "@/components/paywall-example";
+{{/if}}
 {{else if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
@@ -106,7 +110,8 @@ return (
             : "API Disconnected"}
           </Text>
         </View>
-        {isLoading && <Spinner size="sm" />}
+        {isLoading &&
+        <Spinner size="sm" />}
         {!isLoading && isConnected && (
         <Ionicons name="checkmark-circle" size={18} color={successColor} />
         )}
@@ -133,10 +138,14 @@ return (
   <Unauthenticated>
     <View className="mt-4 gap-3">
       <Link href="/(auth)/sign-in" asChild>
-        <Button variant="secondary"><Button.Label>Sign In</Button.Label></Button>
+      <Button variant="secondary">
+        <Button.Label>Sign In</Button.Label>
+      </Button>
       </Link>
       <Link href="/(auth)/sign-up" asChild>
-        <Button variant="ghost"><Button.Label>Sign Up</Button.Label></Button>
+      <Button variant="ghost">
+        <Button.Label>Sign Up</Button.Label>
+      </Button>
       </Link>
     </View>
   </Unauthenticated>
@@ -155,13 +164,10 @@ return (
         <Text className="text-foreground font-medium">{user.name}</Text>
         <Text className="text-muted text-xs mt-0.5">{user.email}</Text>
       </View>
-      <Button
-        variant="destructive"
-        size="sm"
-        onPress={() => {
-          authClient.signOut();
+      <Button variant="destructive" size="sm" onPress={()=> {
+        authClient.signOut();
         }}
-      >
+        >
         Sign Out
       </Button>
     </View>
@@ -186,6 +192,11 @@ return (
     <SignUp />
   </View>
   )}
+  {{#if (eq payments "revenuecat")}}
+  <View className="mt-6">
+    <SubscriptionStatusCard />
+    <PaywallExample />
+  </View>
   {{/if}}
 </Container>
 );

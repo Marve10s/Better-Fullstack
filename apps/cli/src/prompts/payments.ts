@@ -38,6 +38,15 @@ export function resolvePaymentsPrompt(
     (context.auth === "better-auth" || context.auth === "better-auth-organizations") &&
     (context.frontends?.length === 0 || splitFrontends(context.frontends).web.length > 0);
 
+  const hasNativeFrontend = (context.frontends ?? []).some(
+    (frontend) =>
+      frontend === "native-bare" ||
+      frontend === "native-uniwind" ||
+      frontend === "native-unistyles",
+  );
+
+  const isRevenueCatCompatible = hasNativeFrontend;
+
   const options: Array<{ value: Payments; label: string; hint: string }> = [];
 
   if (isPolarCompatible) {
@@ -75,6 +84,15 @@ export function resolvePaymentsPrompt(
       hint: "No payments integration",
     },
   );
+
+  if (isRevenueCatCompatible) {
+    options.push({
+      value: "revenuecat" as Payments,
+      label: "RevenueCat",
+      hint: "In-app subscriptions and cross-platform monetization for mobile.",
+    });
+  }
+
 
   return {
     shouldPrompt: true,

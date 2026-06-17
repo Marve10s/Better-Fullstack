@@ -39,6 +39,10 @@ import { StatusBar } from "expo-status-bar";
 {{#if (eq mobileOTA "expo-updates")}}
 import { useUpdateCheck } from "@/lib/updates";
 {{/if}}
+{{#if (eq payments "revenuecat")}}
+import { RevenueCatProvider } from "@/contexts/revenuecat-context";
+{{/if}}
+
 
 export const unstable_settings = {
   initialRouteName: "(drawer)",
@@ -66,6 +70,9 @@ export default function RootLayout() {
   const { theme } = useUnistyles();
 
   return (
+  {{#if (eq payments "revenuecat")}}
+    <RevenueCatProvider>
+  {{/if}}
     {{#if (eq backend "convex")}}
     {{#if (eq auth "clerk")}}
     <ClerkProvider
@@ -185,6 +192,9 @@ export default function RootLayout() {
       </GestureHandlerRootView>
       {{/unless}}
     {{/if}}
+  {{#if (eq payments "revenuecat")}}
+    </RevenueCatProvider>
+  {{/if}}
   );
 }
 {{/if}}
