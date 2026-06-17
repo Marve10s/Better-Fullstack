@@ -321,7 +321,10 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   payments: {
     schemaValues: PAYMENTS_VALUES,
     resolve: resolvePaymentsPrompt,
-    coverageContexts: [{ auth: "better-auth", backend: "hono", frontends: ["next"] }],
+    coverageContexts: [
+      { auth: "better-auth", backend: "hono", frontends: ["next"] },
+      { auth: "better-auth", backend: "hono", frontends: ["native-bare"] },
+    ],
   },
   realtime: {
     schemaValues: REALTIME_VALUES,
