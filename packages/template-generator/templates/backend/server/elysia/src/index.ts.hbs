@@ -2,8 +2,11 @@ import { env } from "@{{projectName}}/env/server";
 {{#if (eq runtime "node")}}
 import { node } from "@elysiajs/node";
 {{/if}}
-import { Elysia } from "elysia";
+import { Elysia{{#if (eq api "openapi")}}, t{{/if}} } from "elysia";
 import { cors } from "@elysiajs/cors";
+{{#if (eq api "openapi")}}
+import { openapi } from "@elysiajs/openapi";
+{{/if}}
 {{#if (includes examples "ai")}}
 import { google } from "@ai-sdk/google";
 import { convertToModelMessages, streamText, wrapLanguageModel } from "ai";
@@ -53,6 +56,32 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 new Elysia({ adapter: node() })
 {{else}}
 new Elysia()
+{{/if}}
+{{#if (eq api "openapi")}}
+	.use(
+		openapi({
+			path: "/docs",
+			specPath: "/openapi.json",
+			provider: "scalar",
+			documentation: {
+				info: {
+					title: "{{projectName}} API",
+					version: "0.1.0",
+				},
+				components: {
+{{#if (isBetterAuth auth)}}
+					securitySchemes: {
+						bearerAuth: {
+							type: "http",
+							scheme: "bearer",
+							bearerFormat: "JWT",
+						},
+					},
+{{/if}}
+				},
+			},
+		})
+	)
 {{/if}}
 	.use(
 		cors({
@@ -111,6 +140,55 @@ new Elysia()
 		});
 		return res;
 	})
+{{/if}}
+{{#if (eq api "openapi")}}
+	.get(
+		"/health",
+		() => ({ status: "ok" as const }),
+		{
+			tags: ["System"],
+			response: t.Object({
+				status: t.Literal("ok"),
+			}),
+		}
+	)
+{{#if (isBetterAuth auth)}}
+	.get(
+		"/private",
+		async ({ request, status }) => {
+			const session = await auth.api.getSession({
+				headers: request.headers,
+			});
+			if (!session) {
+				return status(401, { message: "Authentication required" });
+			}
+
+			return {
+				message: "This is private",
+				user: session.user,
+			};
+		},
+		{
+			tags: ["Example"],
+			detail: {
+				security: [{ bearerAuth: [] }],
+			},
+			response: {
+				200: t.Object({
+					message: t.String(),
+					user: t.Object({
+						id: t.String(),
+						email: t.String(),
+						name: t.Nullable(t.String()),
+					}),
+				}),
+				401: t.Object({
+					message: t.String(),
+				}),
+			},
+		}
+	)
+{{/if}}
 {{/if}}
 {{#if (includes examples "ai")}}
 	.post("/ai", async (context) => {

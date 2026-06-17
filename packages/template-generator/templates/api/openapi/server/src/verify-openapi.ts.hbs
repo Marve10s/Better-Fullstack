@@ -1,0 +1,15 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { createOpenApiDocument } from "./index";
+
+const committedPath = join(import.meta.dirname, "openapi.json");
+const expectedDocument = JSON.stringify(JSON.parse(readFileSync(committedPath, "utf-8")), null, 2);
+const regeneratedDocument = JSON.stringify(createOpenApiDocument(), null, 2);
+
+if (expectedDocument !== regeneratedDocument) {
+	console.error("OpenAPI document drift detected. Regenerate the committed spec.");
+	process.exit(1);
+}
+
+console.log("OpenAPI document is up to date.");

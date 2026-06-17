@@ -569,6 +569,10 @@ export function validateAddonsAgainstFrontends(
   javaWebFramework?: string,
   database?: Database,
 ) {
+  if (addons.includes("nx") && addons.includes("turborepo")) {
+    exitWithError("Nx and Turborepo are alternative workspace runners. Choose one addon.");
+  }
+
   for (const addon of addons) {
     if (addon === "none") continue;
     const { isCompatible, reason } = validateAddonCompatibility(

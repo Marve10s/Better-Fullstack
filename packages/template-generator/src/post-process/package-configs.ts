@@ -31,6 +31,8 @@ type PackageManagerConfig = {
   filter: (workspace: string, script: string) => string;
 };
 
+type WorkspaceTool = "turbo" | "nx" | null;
+
 const VIRTUAL_PACKAGE_MANAGER_VERSIONS: Record<ProjectConfig["packageManager"], string> = {
   npm: "10.9.2",
   pnpm: "10.17.1",
@@ -85,13 +87,13 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   const backendPackageName = backend === "convex" ? `@${projectName}/backend` : "server";
   const dbPackageName = `@${projectName}/db`;
-  const hasTurborepo = addons.includes("turborepo");
+  const workspaceTool = getWorkspaceTool(addons);
 
   const needsDbScripts =
     backend !== "convex" && database !== "none" && orm !== "none" && orm !== "mongoose";
   const isD1Alchemy = dbSetup === "d1" && serverDeploy === "cloudflare";
 
-  const pmConfig = getPackageManagerConfig(packageManager, hasTurborepo);
+  const pmConfig = getPackageManagerConfig(packageManager, workspaceTool);
   const graphBackend = getGraphBackendConnection(config);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
@@ -241,14 +243,22 @@ function applyBetterAuthKyselyOverride(pkgJson: PackageJson, config: ProjectConf
 
 function getPackageManagerConfig(
   packageManager: ProjectConfig["packageManager"],
-  hasTurborepo: boolean,
+  workspaceTool: WorkspaceTool,
 ): PackageManagerConfig {
-  if (hasTurborepo) {
+  if (workspaceTool === "turbo") {
     return {
       dev: "turbo dev",
       build: "turbo build",
       checkTypes: "turbo check-types",
       filter: (workspace, script) => `turbo -F ${workspace} ${script}`,
+    };
+  }
+  if (workspaceTool === "nx") {
+    return {
+      dev: "nx run-many -t dev",
+      build: "nx run-many -t build",
+      checkTypes: "nx run-many -t check-types",
+      filter: (workspace, script) => `nx run ${workspace}:${script}`,
     };
   }
 
@@ -286,6 +296,12 @@ function getPackageManagerConfig(
       throw new Error(`Unknown package manager: ${_exhaustive}`);
     }
   }
+}
+
+function getWorkspaceTool(addons: ProjectConfig["addons"]): WorkspaceTool {
+  if (addons.includes("nx")) return "nx";
+  if (addons.includes("turborepo")) return "turbo";
+  return null;
 }
 
 function updateDbPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): void {

@@ -151,6 +151,16 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   trpc: ["@trpc/server", "@trpc/client", "@trpc/tanstack-react-query"],
   orpc: ["@orpc/server", "@orpc/client", "@orpc/openapi", "@orpc/zod", "@orpc/tanstack-query"],
   "ts-rest": ["@ts-rest/core", "@ts-rest/react-query", "@ts-rest/serverless", "@ts-rest/next"],
+  openapi: [
+    "@hono/zod-openapi",
+    "@scalar/hono-api-reference",
+    "@asteasolutions/zod-to-openapi",
+    "@scalar/express-api-reference",
+    "@fastify/swagger",
+    "fastify-type-provider-zod",
+    "@scalar/fastify-api-reference",
+    "@elysiajs/openapi",
+  ],
   angular: [
     "@angular/core",
     "@angular/common",

@@ -662,8 +662,33 @@ function validateFrontendConstraints(
   validateWebDeployFrontendTemplates(config.webDeploy, frontend);
 }
 
-function validateApiConstraints(_config: Partial<ProjectConfig>, _options: CLIInput) {
-  // No API constraints currently needed
+function validateApiConstraints(config: Partial<ProjectConfig>, _options: CLIInput) {
+  if (config.api !== "openapi") return;
+
+  const frontend = config.frontend ?? [];
+  if (
+    frontend.some((item) => ["native-bare", "native-uniwind", "native-unistyles"].includes(item))
+  ) {
+    incompatibilityError({
+      message: "OpenAPI is currently available for web frontends, not React Native.",
+      provided: { api: "openapi", frontend },
+      suggestions: ["Use --api trpc", "Use --api orpc", "Use a web frontend"],
+    });
+  }
+
+  const supportedBackends = ["hono", "express", "fastify", "elysia"];
+  if (!config.backend || !supportedBackends.includes(config.backend)) {
+    incompatibilityError({
+      message: "OpenAPI currently supports Hono, Express, Fastify, and Elysia backends.",
+      provided: { api: "openapi", backend: config.backend ?? "none" },
+      suggestions: [
+        "Use --backend hono",
+        "Use --backend express",
+        "Use --backend fastify",
+        "Use --backend elysia",
+      ],
+    });
+  }
 }
 
 function validateJavaConstraints(

@@ -26,6 +26,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Turborepo";
       hint = "High-performance build system";
       break;
+    case "nx":
+      label = "Nx";
+      hint = "Smart monorepo task runner and cache";
+      break;
     case "pwa":
       label = "PWA";
       hint = "Make your app installable and work offline";
@@ -131,7 +135,7 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
 }
 
 const ADDON_GROUPS: Record<string, Addons[]> = {
-  Tooling: ["turborepo", "biome", "oxlint", "ultracite", "husky", "lefthook"],
+  Tooling: ["turborepo", "nx", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
   Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
   Integrations: ["msw", "storybook", "backend-utils"],

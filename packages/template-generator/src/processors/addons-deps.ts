@@ -109,6 +109,10 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     addPackageDependency({ vfs, packagePath: "package.json", devDependencies: ["turbo"] });
   }
 
+  if (config.addons.includes("nx")) {
+    addPackageDependency({ vfs, packagePath: "package.json", devDependencies: ["nx"] });
+  }
+
   if (config.addons.includes("pwa") && hasPwaCompatibleFrontend) {
     if (vfs.exists(webPkgPath)) {
       addPackageDependency({
