@@ -1,0 +1,103 @@
+---
+title: Erstes Projekt
+description: Erstellen, prüfen, installieren und führen Sie ein Better Fullstack-Projekt aus.
+---
+
+Diese exemplarische Vorgehensweise erstellt ein Projekt, zeigt eine Vorschau dessen an, was CLI generieren kann, und zeigt, wo nach den Gerüstenden gesucht werden muss.
+
+## 1. Erstellen Sie ein Projekt
+
+Führen Sie den Assistenten aus:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+Akzeptieren Sie die Standardeinstellungen für einen TypeScript-Starter oder ändern Sie die Eingabeaufforderungen, um sie an den gewünschten Stapel anzupassen.
+
+## 2. Vorschau ohne Schreiben
+
+Verwenden Sie `--dry-run`, wenn Sie zuerst den generierten Dateibaum überprüfen möchten:
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+Der Probelauf ist nützlich, bevor Sie ein neues Ökosystem, Bereitstellungsziel oder einen Multi-Ökosystem-Stack ausprobieren.
+
+## 3. Gerüst aus einem Befehl
+
+Explizite Flags machen das Gerüst wiederholbar. In diesem Beispiel wird ein Next.js Self-Backend-Projekt erstellt und install/Git übersprungen, sodass Sie die Dateien zuerst überprüfen können:
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai none \
+  --payments none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="Prompt behavior">
+Explizite Flags überspringen die Kategorien, die sie abdecken. `--yes` akzeptiert Standardwerte und Konflikte mit Core-Stack-Flags wie `--frontend`, `--backend` und `--database`. Verwenden Sie `none` für optionale Kategorien, die Sie deaktivieren möchten.
+</Callout>
+
+## 4. Installieren Sie Abhängigkeiten
+
+Wenn Sie `--no-install` verwendet haben, installieren Sie es manuell im Projekt:
+
+```bash
+cd my-app
+```
+
+```npm
+npm install
+```
+
+Sprachnative Ökosysteme nutzen ihre eigenen Werkzeuge:
+
+```bash
+cargo build
+uv sync
+go mod tidy
+./mvnw test
+./gradlew test
+```
+
+## 5. Überprüfen Sie das Projekt
+
+Zu den generierten Projekten gehören:
+
+- `bts.jsonc` mit der ausgewählten Stapel- und Schemareferenz.
+- Framework-, Paket- und Konfigurationsdateien für das ausgewählte Ökosystem.
+- Ein reproduzierbarer Befehl, der vom CLI gedruckt wird.
+- Optionale AI-Dokumente wie `CLAUDE.md`, `Agents.md` oder `.cursorrules`.
+- README-Datei und Einrichtungshinweise, sofern die ausgewählten Vorlagen diese bereitstellen.
+
+## 6. Fügen Sie später unterstützte Funktionen hinzu
+
+Verwenden Sie innerhalb eines generierten Projekts `add` für unterstützte Add-ons:
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+Der Befehl `add` liest `bts.jsonc`, überspringt bereits vorhandene Add-ons und gibt Installationsanweisungen aus, wenn Abhängigkeiten nicht automatisch installiert werden.
+
+## Nächste
+
+- [CLI Erstellen](/docs/cli/create/) listet alle Gerüstflags auf.
+- [CLI Add](/docs/cli/add/) erläutert Add-On-Updates für bestehende Projekte.
+- [Ökosysteme](/docs/ecosystems/) vergleicht die unterstützten Projektfamilien.

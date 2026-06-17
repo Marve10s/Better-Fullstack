@@ -1,0 +1,126 @@
+---
+title: SolidStart と oRPC および Drizzle
+description: Better Fullstack を使用して、oRPC、Drizzle、SQLite、Better Auth、および Tailwind CSS を備えた SolidStart フルスタック アプリを作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+フルスタック フレームワークと型付き API コントラクトを使用した Solid のきめ細かい反応性が必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## これが生み出すもの
+
+- SolidStart フルスタック アプリ。
+- SQLite および Drizzle。
+- Better Auth。
+- oRPC (型付き契約の場合)。
+- Tailwind CSS。
+
+## 生成された形状
+
+このスタックは、SolidStart をフルスタック フレームワークとして保持します。アプリは、別のバックエンド サービスを導入することなく、Solid UI をレンダリングし、型指定されたサーバー コントラクトを呼び出し、Drizzle を通じてデータを保持できます。
+
+代表的な形状：
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+このツリーを所有権マップとして使用します。 UI コードは Solid コンポーネントとルートに属します。データベースと認証コードはサーバーのみのままにする必要があります。
+
+## ルートコンポーネントの例
+
+SolidStart ルートは、サーバー コードがデータ アクセスを処理している間、レンダリングに集中できます。
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+UI が入力ルールの信頼できる唯一の情報源にならないように、サーバーの変更を検証された関数の背後に置きます。
+
+## Drizzle モデルの例
+
+SQLite は、小規模な SolidStart アプリとローカル開発の実用的なデフォルトです。
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+デプロイされた複数のインスタンスが永続的なリレーショナル データを共有する必要がある場合は、PostgreSQL に移動します。
+
+## 互換性に関する注意事項
+
+SolidStart は Better Fullstack の oRPC を使用します。 tRPC は React 指向であるため、このスタックは意図的に `--api orpc` を保持します。
+
+`--backend self` は、SolidStart がサーバー層を所有していることを意味します。意図的に別の API デプロイメントが必要な場合を除き、Hono を追加しないでください。
+
+## いつ選択するか
+
+Solid のランタイム モデルが必要だが、データベース、認証、および型指定された API 配線を備えた生成されたフルスタック プロジェクトが必要な場合は、SolidStart を選択します。
+
+## 導入メモ
+
+Better Auth シークレット、アプリ URL、およびターゲット環境のデータベース パスまたは接続文字列を設定します。デプロイメント プラットフォームが永続ディスクを提供していない場合は、運用データとしてファイルにバックアップされた SQLite に依存しないでください。
+
+小規模な内部ツールの場合は、SQLite で十分です。 SaaS スタイルのマルチユーザー実稼働アプリの場合、通常、PostgreSQL の方がデプロイメント間での操作が簡単です。
+
+## トラブルシューティング
+
+- デプロイ後に oRPC 呼び出しが失敗した場合は、ルート ベース パスと、デプロイメント アダプタがサーバー ルートを期待どおりに処理するかどうかを確認してください。
+- 認証セッションが消えた場合は、Cookie のセキュリティ設定とアプリの URL 値を確認してください。
+- SQLite データがリセットされた場合は、ホストが永続ストレージを提供しているかどうかを確認してください。
+- Solid コンポーネントが誤ってサーバー モジュールをインポートした場合は、呼び出しをサーバー関数または API コントラクトの後ろに移動します。
+
+## 比較メモ
+
+Solid のきめ細かい反応性がプロジェクトの理由である場合は、TanStack Start ではなくこれを選択してください。 React と TanStack Router を優先する場合は、[TanStack Start プロジェクトの作成](/guides/typescript/create-tanstack-start-project/) を選択します。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc) を開きます。
+- [TanStack Start プロジェクトの作成](/guides/typescript/create-tanstack-start-project/) と比較してください。
+- [互換性リファレンス](/docs/reference/compatibility/) をお読みください。

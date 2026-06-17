@@ -1,0 +1,48 @@
+---
+title: Ökosysteme
+description: Unterstützte Sprachökosysteme und welche Better Fullstack-Gerüste sie jeweils bieten.
+---
+
+Better Fullstack verwendet ein CLI für mehrere Ökosysteme. Jedes Ökosystem verfügt über seine eigene Gerüstoberfläche, Toolchain und Kompatibilitätsregeln.
+
+Für sprachübergreifende Produktstapel verwenden Sie den [Multi-Ökosystem-Modus](/docs/ecosystems/multi-ecosystem/). Es modelliert das Projekt als Stapelteile, z. B. `frontend:typescript:next`, `backend:go:gin`, `backend.orm:go:gorm` und `database:universal:postgres`.
+
+| Ökosystem | Am besten für | Notizen |
+| --- | --- | --- |
+| [TypeScript](/docs/ecosystems/typescript/) | Fullstack-Web, APIs, Worker, Desktop und die größte Web-Integrationsmatrix. | Weboptionen sind TypeScript-first. |
+| [React Native](/docs/ecosystems/react-native/) | Expo mobile Apps mit Navigation, Benutzeroberfläche, Speicher, Tests, Push, OTA und Deep Linking. | Verwendet die Ökosystemoberfläche React Native anstelle der Web-Frontend-Kategorien TypeScript. |
+| [Rust](/docs/ecosystems/rust/) | Backend-Dienste, CLI-Apps, GraphQL/gRPC, Rust-Web-Frontends und stark typisierte Bibliotheken. | Verwendet Fracht; Vorlagen sind von ausgewählten Rust-Optionen abhängig. |
+| [Python](/docs/ecosystems/python/) | API- und AI-orientierte Dienste mit Framework, ORM, Validierung, Warteschlange, GraphQL und Qualitätsauswahl. | Verwendet `uv`; Python AI ist eine separate Mehrfachauswahlkategorie. |
+| [Los](/docs/ecosystems/go/) | API-Dienste, gRPC, CLIs, Protokollierung, ORM und Go-Authentifizierungshelfer. | Verwendet Go-Module; GoBetterAuth wird mit globalem `--auth go-better-auth` ausgewählt. |
+| [Java](/docs/ecosystems/java/) | Spring Boot, Quarkus oder einfache Java-Projekte mit Maven/Gradle, Persistenz, Authentifizierung, Bibliotheken und Tests. | Java verwendet die Wrapper Maven oder Gradle, wenn ein Build-Tool ausgewählt wird. |
+| [Elixier](/docs/ecosystems/elixir/) | Phoenix- und Phoenix LiveView-Apps mit Ecto, Absinthe, Echtzeit, Jobs, Tests, Qualität und Bereitstellungsoptionen. | Verwendet Mischung; Einige Optionen auf Schemaebene bleiben deaktiviert, bis die Vorlagen aufholen. |
+| [.NET](/docs/ecosystems/dotnet/) | ASP.NET Core-Dienste mit EF Core oder Dapper, Identity, Minimal APIs oder Hot Chocolate, SignalR, Jobs und Tests. | Verwendet das .NET SDK; Testen und Beobachtbarkeit sind Mehrfachauswahlkategorien. |
+
+## Standardmäßige CLI-Basislinie
+
+Durch das Akzeptieren der Standardeinstellungen wird ein TypeScript-Webprojekt erstellt. Der Paketmanager folgt dem Paketmanager, der zum Starten von CLI verwendet wurde.
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle",
+  "auth": "better-auth",
+  "api": "trpc",
+  "cssFramework": "tailwind",
+  "uiLibrary": "shadcn-ui",
+  "testing": "vitest",
+  "addons": ["turborepo"],
+  "versionChannel": "stable",
+  "aiDocs": ["claude-md"]
+}
+```
+
+Laufzeit- und Paketmanager sind separate Optionen. Beispielsweise kann ein generiertes TypeScript-Projekt npm, pnpm, Yarn oder Bun für Installationen verwenden und gleichzeitig Bun als Anwendungslaufzeit auswählen.
+
+## Geteilte Optionen sind nicht universell
+
+Einige Flags sind global, da sie in einer Projektkonfiguration gespeichert sind, aber nicht jedes Flag gilt für jedes Ökosystem. Verwenden Sie die folgenden Ökosystemseiten für das, was generiert wird, und verwenden Sie [Referenzoptionen](/docs/reference/options/) für genaue CLI-Werte.

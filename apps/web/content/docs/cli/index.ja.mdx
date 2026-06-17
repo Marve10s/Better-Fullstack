@@ -1,0 +1,63 @@
+---
+title: CLI リファレンス
+description: プロジェクトの作成、生成されたアプリの更新、リソースを開いて、AI-agent ワークフローを実行するためのコマンド。
+---
+
+Better Fullstack には小さなコマンド サーフェスがあります。ほとんどのユーザーは `create`、`add`、および `history` のみを必要とします。 AI エージェント ワークフローは `mcp` を使用します。
+
+## コマンド
+
+| 指示 | 目的 |
+| --- | --- |
+| `create` | スタック構成から新しいプロジェクトをスキャフォールディングします。これはデフォルトのコマンドです。 |
+| `add` | サポートされているアドオンまたはデプロイ設定を既存の Better Fullstack プロジェクトに追加します。 |
+| `history` | ローカルのスキャフォールド履歴と再現可能なコマンドを表示、エクスポート、またはクリアします。 |
+| `mcp` | AI コーディング エージェントの Better Fullstack MCP サーバーを標準入出力経由で起動します。 |
+
+## ユーティリティコマンド
+
+| 指示 | 目的 |
+| --- | --- |
+| `docs` | ブラウザでパブリック Better Fullstack ドキュメント サイトを開きます。 |
+| `builder` | インタラクティブな Stack Builder を開きます。 |
+| `sponsors` | Better Fullstack スポンサーを表示します。 |
+
+## ユーティリティコマンドを実行する
+
+ドキュメントを開く:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest docs"
+  pnpm="pnpm dlx create-better-fullstack@latest docs"
+  bun="bunx create-better-fullstack@latest docs"
+  yarn="yarn dlx create-better-fullstack@latest docs"
+/>
+
+ビルダーを開きます。
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest builder"
+  pnpm="pnpm dlx create-better-fullstack@latest builder"
+  bun="bunx create-better-fullstack@latest builder"
+  yarn="yarn dlx create-better-fullstack@latest builder"
+/>
+
+番組スポンサー:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest sponsors"
+  pnpm="pnpm dlx create-better-fullstack@latest sponsors"
+  bun="bunx create-better-fullstack@latest sponsors"
+  yarn="yarn dlx create-better-fullstack@latest sponsors"
+/>
+
+## メンテナコマンド
+
+`update-deps` は、依存関係のバージョンを確認および更新する管理者用です。通常のユーザー ワークフローからは意図的に省略されています。
+
+## 次
+
+- [作成コマンド](/docs/cli/create/) はすべてのスキャフォールド フラグをカバーします。
+- [コマンドの追加](/docs/cli/add/) は、既存のプロジェクトの更新をカバーします。
+- [履歴コマンド](/docs/cli/history/) は、再現可能なコマンド履歴をカバーします。
+- [MCP コマンド](/docs/cli/mcp/) は、stdio MCP の起動をカバーします。

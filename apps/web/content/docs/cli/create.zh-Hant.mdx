@@ -1,0 +1,258 @@
+---
+title: Create 指令
+description: 使用 prompts、defaults 或明確 flags scaffold 一個新的 Better Fullstack 項目。
+---
+
+`create` 指令會從類型化 stack configuration 寫入一個新專案。探索時可以互動使用；當你每次都需要相同項目形狀時，傳入 flags。
+
+<PMTabs
+  npm="npm create better-fullstack@latest [project-name] -- [flags]"
+  pnpm="pnpm create better-fullstack@latest [project-name] [flags]"
+  bun="bun create better-fullstack@latest [project-name] [flags]"
+  yarn="yarn create better-fullstack@latest [project-name] [flags]"
+/>
+
+使用 npm 時，Better Fullstack flags 放在 `--` 之後。產生的 npm 指令可能使用 `npx create-better-fullstack@latest`；這會以非互動形式執行同一個 package entrypoint。
+
+## 命令模式
+
+| 模式 | 命令形狀 | 適合場景 |
+| --- | --- | --- |
+| Wizard | `[launcher] my-app` | 你想要 prompts 和 defaults。 |
+| Defaults | `[launcher] my-app [flags] --yes` | 你想要預設 stack，不想回答 prompts。 |
+| Scripted | `[launcher] my-app [flags]` | 你想要可重複 output。 |
+| Dry run | `[launcher] my-app [flags] --dry-run` | 你想在寫入前檢查文件。 |
+
+## Prompt 行為
+
+- 顯式 flags 只跳過它們覆蓋的 categories。
+- `--yes` 接受 defaults，並與 `--frontend`、`--backend`、`--database`、`--orm`、`--auth`、`--api` 等核心 stack flags 衝突。
+- 使用 `none` 關閉可選 categories，包括 `--ai-docs none`。
+- 想在副作用前檢查產生檔案時使用 `--no-install` 和 `--no-git`。
+- `--verify` 會在 scaffold 後執行產生的 checks，不啟動 dev servers。
+
+## 常用 flags
+
+| Flag | 值或行為 |
+| --- | --- |
+| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java` `elixir`。預設 `typescript`。 |
+| `--template` | `t3` `mern` `pern` `uniwind` `none`。 |
+| `--part` | 新增 multi-ecosystem stack part，例如 `frontend:typescript:next` 或 `backend.orm:go:gorm`。每個 part 重複一次。 |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `mcp` `skills` `turborepo` __11010 __FS `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` __BFS__BFS_20__ 12120 20__FS `backend-utils` `docker-compose` `none`。 |
+| `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`。 |
+| `--ai-docs` | `claude-md` `agents-md` `cursorrules` `none`。 |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn`。 |
+| `--version-channel` | `stable` `latest` `beta`。 |
+| `--web-deploy` | `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `vercel` `none`。 |
+| `--server-deploy` | `cloudflare` `fly` `railway` `render` `docker` `sst` `vercel` `none`。 |
+| `--directory-conflict` | 目標目錄已存在時的處理策略。 |
+| `--dry-run` | 預覽生成文件，不寫入。 |
+| `--verify` | 在支援時運行 scaffold 後的生成 checks。 |
+| `--yes` | 接受 defaults。與核心 stack flags 不相容。 |
+| `--yolo` | 在支援時跳過安全確認。 |
+| `--install` / `--no-install` | 安裝或跳過依賴安裝。 |
+| `--git` / `--no-git` | 初始化或跳過 Git。 |
+| `--disable-analytics` | 關閉匿名 CLI analytics。 |
+| `--verbose` | 列印詳細 scaffold output。 |
+
+## TypeScript flags
+
+與 `--ecosystem typescript` 一起使用。
+
+| Flag | 值 |
+| --- | --- |
+| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `svelte` `solid` `solid-start` __11010 __FS `angular` `redwood` `fresh` `none`。 |
+| `--backend` | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `nitro` `encore` `convex` __BFS__B 10__ __BFS__B 10__ __BFS。 |
+| `--runtime` | `bun` `node` `workers` `none`。 |
+| `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none`。 |
+| `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none`。 |
+| `--db-setup` | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none`。 |
+| `--manual-db` | 適用時跳過 provider-specific database setup prompts。 |
+| `--auth` | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none`。 |
+| `--api` | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none`。 |
+| `--astro-integration` | `react` `vue` `svelte` `solid` `none`。 |
+
+### 服務
+
+| Flag | 值 |
+| --- | --- |
+| `--ai` | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `langchain` `llamaindex` `tanstack-ai` __BFS__B 10__ __BFS__B 10__ __BFS。 |
+| `--payments` | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none`。 |
+| `--email` | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none`。 |
+| `--realtime` | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none`。 |
+| `--job-queue` | `bullmq` `trigger-dev` `inngest` `temporal` `none`。 |
+| `--cms` | `payload` `sanity` `strapi` `tinacms` `directus` `none`。 |
+| `--caching` | `upstash-redis` `none`。 |
+| `--search` | `meilisearch` `typesense` `elasticsearch` `algolia` `none`。 |
+| `--file-storage` | `s3` `r2` `cloudinary` `none`。 |
+| `--file-upload` | `uploadthing` `filepond` `uppy` `none`。 |
+| `--analytics` | `plausible` `umami` `none`。 |
+| `--feature-flags` | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none`。 |
+
+### UI 和應用程式行為
+
+| Flag | 值 |
+| --- | --- |
+| `--css-framework` | `tailwind` `scss` `less` `postcss-only` `none`。 |
+| `--ui-library` | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `nextui` `mantine` `mui` __11010 __FS `ark-ui` `react-aria` `none`。 |
+| `--state-management` | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none`。 |
+| `--forms` | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none`。 |
+| `--validation` | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none`。 |
+| `--testing` | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none`。 |
+| `--logging` | `pino` `winston` `evlog` `none`。 |
+| `--observability` | `opentelemetry` `sentry` `grafana` `none`。 |
+| `--animation` | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none`。 |
+| `--i18n` | `i18next` `next-intl` `none`。 |
+| `--effect` | `effect` `effect-full` `none`。 |
+
+### shadcn/ui flags
+
+| Flag | 值 |
+| --- | --- |
+| `--shadcn-base` | `radix` `base`。 |
+| `--shadcn-style` | `vega` `nova` `maia` `lyra` `mira`。 |
+| `--shadcn-icon-library` | `lucide` `tabler` `hugeicons` `phosphor` `remixicon`。 |
+| `--shadcn-color-theme` | `neutral` `stone` `zinc` `gray` `amber` `blue` `cyan` `emerald` `fuchsia` `green` `emerald` `fuchsia` `green` __11010 __FS `orange` `pink` `purple` `red` `rose` `sky` `teal` `violet` __BFS_PH_20。 |
+| `--shadcn-base-color` | `neutral` `stone` `zinc` `gray`。 |
+| `--shadcn-font` | `inter` `geist` `noto-sans` `nunito-sans` `figtree` `roboto` `raleway` `dm-sans` `public-sans` `outfit` `dm-sans` `public-sans` `outfit` __BFS__B 10__ __BFS__B 10__ __BFS。 |
+| `--shadcn-radius` | `default` `none` `small` `medium` `large`。 |
+
+## React Native flags
+
+與 `--ecosystem react-native` 一起使用。
+
+| Flag | 值 |
+| --- | --- |
+| `--frontend` | `native-bare` `native-uniwind` `native-unistyles`。 |
+| `--mobile-navigation` | `expo-router` `react-navigation` `none`。 |
+| `--mobile-ui` | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none`。 |
+| `--mobile-storage` | `mmkv` `none`。 |
+| `--mobile-testing` | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none`。 |
+| `--mobile-push` | `expo-notifications` `none`。 |
+| `--mobile-ota` | `expo-updates` `none`。 |
+| `--mobile-deep-linking` | `expo-linking` `none`。 |
+
+## 語言生態 flags
+
+### Rust
+
+| Flag | 值 |
+| --- | --- |
+| `--rust-web-framework` | `axum` `actix-web` `rocket` `none`。 |
+| `--rust-frontend` | `leptos` `dioxus` `none`。 |
+| `--rust-orm` | `sea-orm` `sqlx` `diesel` `none`。 |
+| `--rust-api` | `tonic` `async-graphql` `none`。 |
+| `--rust-cli` | `clap` `ratatui` `none`。 |
+| `--rust-libraries` | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `secrecy` `tokio-util` `utoipa` __11010 __FS `argon2` `tokio-test` `mockall` `proptest` `insta` `none`。 |
+| `--rust-logging` | `tracing` `env-logger` `none`。 |
+| `--rust-error-handling` | `anyhow-thiserror` `eyre` `none`。 |
+| `--rust-caching` | `moka` `redis` `none`。 |
+| `--rust-auth` | `oauth2` `none`。 |
+
+### Python
+
+| Flag | 值 |
+| --- | --- |
+| `--python-web-framework` | `fastapi` `django` `flask` `litestar` `none`。 |
+| `--python-orm` | `sqlalchemy` `sqlmodel` `tortoise-orm` `none`。 |
+| `--python-validation` | `pydantic` `none`。 |
+| `--python-ai` | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `none`。 |
+| `--python-auth` | `authlib` `jwt` `none`。 |
+| `--python-api` | `django-rest-framework` `django-ninja` `none`。 |
+| `--python-task-queue` | `celery` `rq` `dramatiq` `huey` `none`。 |
+| `--python-graphql` | `strawberry` `ariadne` `none`。 |
+| `--python-quality` | `ruff` `mypy` `pyright` `none`。 |
+
+### Go
+
+| Flag | 值 |
+| --- | --- |
+| `--go-web-framework` | `gin` `echo` `fiber` `chi` `none`。 |
+| `--go-orm` | `gorm` `sqlc` `ent` `none`。 |
+| `--go-api` | `grpc-go` `none`。 |
+| `--go-cli` | `cobra` `bubbletea` `urfave-cli` `none`。 |
+| `--go-logging` | `zap` `zerolog` `slog` `logrus` `none`。 |
+| `--go-auth` | `casbin` `jwt` `none`。 |
+
+GoBetterAuth 透過全域 `--auth go-better-auth` 值選擇。 Go-native helpers 使用 `--go-auth`。
+
+### Java
+
+| Flag | 值 |
+| --- | --- |
+| `--java-web-framework` | `spring-boot` `quarkus` `none`。 |
+| `--java-build-tool` | `maven` `gradle` `none`。 |
+| `--java-orm` | `spring-data-jpa` `none`。 |
+| `--java-auth` | `spring-security` `none`。 |
+| `--java-libraries` | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `caffeine` `resilience4j` `spring-webflux` __11010 __FS `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `none`。 |
+| `--java-testing-libraries` | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none`。 |
+
+### Elixir
+
+| Flag | 值 |
+| --- | --- |
+| `--elixir-web-framework` | `phoenix` `phoenix-live-view` `none`。 |
+| `--elixir-orm` | `ecto` `ecto-sql` `none`。 |
+| `--elixir-auth` | `phx-gen-auth` `ueberauth` `guardian` `none`。 |
+| `--elixir-api` | `rest` `absinthe` `none`。 |
+| `--elixir-realtime` | `channels` `presence` `pubsub` `live-view-streams` `none`。 |
+| `--elixir-jobs` | `oban` `quantum` `none`。 |
+| `--elixir-validation` | `ecto-changesets` `nimble-options` `none`。 |
+| `--elixir-http` | `req` `finch` `none`。 |
+| `--elixir-json` | `jason` `none`。 |
+| `--elixir-email` | `swoosh` `none`。 |
+| `--elixir-caching` | `cachex` `nebulex` `none`。 |
+| `--elixir-observability` | `telemetry` `opentelemetry` `prom_ex` `none`。 |
+| `--elixir-testing` | `ex_unit` `mox` `bypass` `wallaby` `none`。 |
+| `--elixir-quality` | `credo` `dialyxir` `sobelow` `none`。 |
+| `--elixir-deploy` | `docker` `fly` `gigalixir` `mix-release` `none`。 |
+
+## 範例
+
+用明確 flags 建立 TypeScript app：
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --ai none \
+  --payments none \
+  --email none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+建立 multi-ecosystem 專案：
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## 相容性
+
+- CLI 會在生成前驗證 stack 相容性。
+- TypeScript `backend self` 用於 fullstack frontends，並與 `runtime none` 搭配。
+- tRPC 面向 React。
+- Workers runtime 支援取決於 frontend/backend 組合。
+- UI libraries、deployment targets、providers 和 addons 都受 stack 約束。
+- 想視覺化檢查，使用 [Compatibility Matrix](/docs/reference/compatibility/) 或 [Stack Builder](https://better-fullstack.dev/new)。

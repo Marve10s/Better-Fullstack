@@ -1,0 +1,185 @@
+---
+title: Gin avec PostgreSQL et GORM
+description: Créez un projet Go API avec Gin, PostgreSQL, GORM, la journalisation Zap et une structure de projet Better Fullstack propre.
+updated: 2026-05-12
+category: Aller
+tags:
+  - gin
+  - postgres
+  - gorm
+  - go
+keywords:
+  - gin postgres starter
+  - go api boilerplate
+  - gin gorm starter
+  - create go api project
+  - go postgres api
+---
+
+Utilisez cette pile lorsque vous souhaitez un Go HTTP API avec un routeur familier, un accès à la base de données relationnelle et une structure de projet pragmatique.
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The generated Go service is organized around these responsibilities."
+  items={[
+    { label: "HTTP", value: "Gin", detail: "Routing, request binding, middleware, and responses." },
+    { label: "Data", value: "PostgreSQL + GORM", detail: "Model mapping and persistence for CRUD-heavy services." },
+    { label: "Logging", value: "Zap", detail: "Structured logs that can carry request and dependency context." },
+    { label: "Shape", value: "cmd + internal", detail: "A backend service layout that keeps app code behind package boundaries." },
+  ]}
+/>
+
+## Ce que cela crée
+
+- Un projet Go API utilisant Gin.
+- PostgreSQL comme option de base de données.
+- GORM pour l'accès à la base de données.
+- Zap pour une journalisation structurée.
+- Une présentation de projet générée prête pour le développement backend.
+
+## Forme générée
+
+Cette pile crée un Go HTTP API conventionnel. Gin gère le routage et le middleware, GORM possède le mappage de modèles et la persistance, PostgreSQL est le magasin de sauvegarde et Zap fournit des journaux structurés.
+
+La limite d'application générée la plus propre est :
+
+- Les gestionnaires HTTP analysent les entrées et renvoient les réponses.
+- Les services possèdent leurs propres décisions commerciales.
+- Les modèles GORM décrivent les enregistrements persistants.
+- La configuration de la base de données et la configuration de l'enregistreur ont lieu une fois au démarrage.
+
+## Arborescence de fichiers représentative
+
+```txt
+my-go-api/
+  go.mod
+  .env.example
+  cmd/
+    server/
+      main.go
+  internal/
+    config/
+      config.go
+    database/
+      postgres.go
+    handlers/
+      health.go
+      users.go
+    models/
+      user.go
+    services/
+      users.go
+```
+
+Les projets Go générés varient selon l'ensemble d'options, mais c'est la forme à conserver à mesure que l'application se développe : conservez le code du framework à proximité des gestionnaires et le code de persistance derrière les services ou les référentiels.
+
+## Exemples de gestionnaires et de modèles
+
+Un gestionnaire Gin doit lier les données de la requête, appeler le code de l'application et renvoyer un statut HTTP clair :
+
+```go
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type CreateUserRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	Name  string `json:"name" binding:"required"`
+}
+
+func (h *UserHandler) Create(c *gin.Context) {
+	var input CreateUserRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.Users.Create(c.Request.Context(), input.Email, input.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "create user"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, user)
+}
+```
+
+Le modèle GORM correspondant peut rester petit et explicite :
+
+```go
+package models
+
+import "time"
+
+type User struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Email     string    `json:"email" gorm:"uniqueIndex;not null"`
+	Name      string    `json:"name" gorm:"not null"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+```
+
+L’enregistrement de la route doit conserver les points de terminaison associés ensemble :
+
+```go
+func RegisterRoutes(router *gin.Engine, users *UserHandler) {
+	router.GET("/health", Health)
+
+	api := router.Group("/api")
+	api.POST("/users", users.Create)
+	api.GET("/users/:id", users.Get)
+}
+```
+
+## Remarques sur la compatibilité
+
+<GuideCompatibilityNote kind="supported" title="Compatibility rule">
+Gardez `--go-web-framework gin`, `--database postgres` et `--go-orm gorm` ensemble pour le déroulement de ce guide. Si vous modifiez `--go-orm sqlc`, attendez-vous à des fichiers SQL et des types de requêtes générés au lieu des modèles GORM. Si vous définissez `--go-web-framework none`, cela devient un projet non-serveur et les exemples de gestionnaire Gin ne s'appliquent plus.
+</GuideCompatibilityNote>
+
+## Quand le choisir
+
+Choisissez Gin lorsque vous souhaitez un Go API direct avec des modèles de middleware courants et une faible surcharge de framework.
+
+## Compromis
+
+Gin et GORM sont des choix familiers pour de nombreuses équipes de Go. Si vous préférez une surface de routeur plus petite ou un style API différent, comparez les autres options du framework Go dans le constructeur.
+
+GORM est productif pour les applications lourdes CRUD, mais il peut masquer les détails SQL. Pour les services nécessitant beaucoup de requêtes pour lesquels le SQL exact fait partie du contrat, comparez le guide Echo avec SQLC.
+
+## Notes de tests et de déploiement
+
+Utilisez `httptest` pour les tests de gestionnaire et une véritable base de données PostgreSQL pour les tests d'intégration autour du comportement GORM.
+
+```bash
+go test ./...
+```
+
+Avant le déploiement, vérifiez que l'application générée lit l'URL de la base de données à partir de l'environnement et que les migrations ou le comportement de migration automatique correspondent à la politique de publication de votre équipe. Utilisez les champs Zap pour les ID de demande, les ID d'utilisateur et les échecs de dépendance afin que les journaux de production puissent être filtrés sans analyse de chaîne.
+
+## Dépannage
+
+- Si les requêtes renvoient 400, inspectez les balises de liaison Gin avant de déboguer le code du service.
+- Si les insertions échouent avec des erreurs de clé en double, vérifiez ensemble les index GORM et les contraintes PostgreSQL.
+- Si l'application ne parvient pas à se connecter à PostgreSQL, vérifiez l'hôte, le port, le mode SSL et les noms des variables d'environnement générées.
+- Si les journaux ne sont pas structurés, assurez-vous que l'enregistreur Zap est transmis aux gestionnaires et aux services au lieu d'utiliser `fmt.Println`.
+
+## Prochaines étapes
+
+- Ouvrez le [Stack Builder](/new?eco=go&gwf=gin&db=postgres&gorm=gorm&glog=zap).
+- Lisez les [documents de l'écosystème Go](/docs/ecosystems/go/).
+- Consultez la [CLI référence de création](/docs/cli/create/).

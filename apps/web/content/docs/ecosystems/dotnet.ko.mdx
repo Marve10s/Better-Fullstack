@@ -1,0 +1,65 @@
+---
+title: .그물
+description: EF Core 또는 Dapper, Identity, Minimal APIs 또는 Hot Chocolate, SignalR, 백그라운드 작업, 테스트 및 배포 파일이 포함된 ASP.NET Core 스캐폴드.
+---
+
+.NET 프로젝트는 표준 `dotnet` 규칙을 따르는 ASP.NET Core 애플리케이션을 생성합니다. 웹 프레임워크, 데이터 액세스, 인증, API 스타일, 실시간, 백그라운드 작업, 관찰 가능성, 캐싱, 테스트 및 파일 배포에 대한 .NET 옵션을 선택합니다.
+
+## 전제조건
+
+- .NET SDK 10 이상.
+- PostgreSQL `ef-core`을 `postgres` 데이터베이스와 함께 사용할 때; SQLite에는 서버가 필요하지 않습니다.
+- `docker` 배포 대상 또는 `testcontainers-dotnet`을 사용하는 경우 Docker.
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NET 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프레임워크 | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| 데이터 액세스 | `ef-core` `dapper` `linq2db` `none` |
+| 인증 | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| 테스트 | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| 백그라운드 작업 | `hangfire` `quartz-net` `hosted-services` `none` |
+| 실시간 | `signalr` `none` |
+| 관찰 가능성 | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| 확인 | `fluentvalidation` `data-annotations` `none` |
+| 캐싱 | `redis` `memory-cache` `none` |
+| 배포 | `docker` `azure` `aws` `none` |
+
+## 호환성 참고사항
+
+- .NET 옵션은 `--ecosystem dotnet`에만 적용됩니다.
+- ASP.NET Core는 독립형 .NET 웹 프레임워크입니다. TypeScript 프런트엔드 및 백엔드 옵션은 무시됩니다.
+- `--dotnet-testing` 및 `--dotnet-observability`은 여러 값을 허용합니다.
+- `ef-core`은 `--database`에서 공급자를 선택합니다. `postgres`는 Npgsql을 사용하고 다른 모든 것은 SQLite으로 대체됩니다.
+- `aspnet-identity`은 `ef-core`과 쌍을 이루는 경우에만 ID 저장소를 등록합니다. 이것이 없으면 스캐폴드는 일반 인증 및 권한 부여 서비스를 등록합니다.
+- `--ecosystem dotnet`이 설정된 경우 비대화형 기본값: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog` 및 `docker`.
+
+## 생성된 동작
+
+- 프로젝트에는 `.csproj`, `Program.cs`, `appsettings.json`, `.http` 요청 파일, 테스트 프로젝트, `.gitignore` 및 README의 설정 참고 사항이 포함되어 있습니다.
+- EF Core 선택은 `DbContext`을 Npgsql 또는 SQLite 공급자와 마이그레이션을 위한 디자인 타임 패키지와 연결합니다.
+- 선택적으로 선택하면 Identity용 ASP.NET Core 코드, Hot Chocolate GraphQL, gRPC 서비스, SignalR 허브, Hangfire 또는 Quartz.NET 작업, Serilog/NLog/OpenTelemetry 파이프라인, Redis 캐싱 및 다단계 Dockerfile이 추가됩니다.

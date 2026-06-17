@@ -1,0 +1,37 @@
+---
+title: データとストレージ
+description: データベース、ORM、プロバイダーのセットアップ、キャッシュ、検索、アップロード、ファイル ストレージを選択します。
+---
+
+データの選択により、生成されたアプリがレコードを保存し、作業をキャッシュし、コンテンツを検索し、ファイルを保存する場所が決まります。
+
+## データベースとORM
+
+共有データベース カテゴリには、SQLite、PostgreSQL、MySQL、MongoDB、EdgeDB、Redis、およびなしが含まれます。 ORM は実際にはエコシステム固有です。
+
+| 生態系 | ORM またはデータ層 |
+| --- | --- |
+| TypeScript | Drizzle、Prisma、Mongoose、TypeORM、Kysely、MikroORM、Sequelize、またはなし。 |
+| さび | SeaORM、SQLx、ディーゼル、またはなし。 |
+| パイソン | SQLAlchemy、SQLModel、Tortoise ORM、またはなし。 |
+| 行く | GORM、sqlc、Ent、またはなし。 |
+| ジャワ | Spring Data JPA またはなし。 |
+| エリクサー | Ecto、Ecto SQL、またはなし。 |
+
+## プロバイダーのセットアップ
+
+`--db-setup` は、Turso、Neon、Prisma Postgres、PlanetScale、MongoDB Atlas、Supabase、Upstash、Cloudflare D1、Docker のホスティング/プロバイダー設定を追加することも、何も追加することもできません。
+
+## ストレージ型サービス
+
+データに隣接するセクションには次のものが含まれます。
+
+- キャッシュ: TypeScript の Upstash Redis と、サポートされている場合はエコシステム固有のキャッシュの選択肢。
+- 検索: Meil​​isearch、Typesense、Elasticsearch、Algolia、およびエコシステム固有の検索パス。
+- ファイルのアップロード: UploadThing、FilePond、Uppy、またはなし。
+- ファイル ストレージ: S3、R2、Cloudinary、またはなし。
+
+## 参考文献
+
+- [参照オプション](/docs/reference/options/)
+- [互換性](/docs/reference/compatibility/)

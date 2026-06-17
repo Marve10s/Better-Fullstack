@@ -1,0 +1,37 @@
+---
+title: 資料和儲存
+description: 選擇資料庫、ORM、provider setup、快取、搜尋、上傳和檔案儲存。
+---
+
+資料選擇決定產生的應用程式在哪裡持久化記錄、快取工作、搜尋內容並儲存檔案。
+
+## 資料庫和 ORM
+
+共享資料庫分類包括 SQLite、PostgreSQL、MySQL、MongoDB、EdgeDB、Redis 和 none。實踐中 ORM 是生態系專用的：
+
+| 生態系統 | ORM 或資料層 |
+| --- | --- |
+| TypeScript | Drizzle、Prisma、Mongoose、TypeORM、Kysely、MikroORM、Sequelize 或 none。 |
+| Rust | SeaORM、SQLx、Diesel 或 none。 |
+| Python | SQLAlchemy、SQLModel、Tortoise ORM 或 none。 |
+| Go | GORM、sqlc、Ent 或 none。 |
+| Java | Spring Data JPA 或 none。 |
+| Elixir | Ecto、Ecto SQL 或 none。 |
+
+## Provider setup
+
+`--db-setup` 可以為 Turso、Neon、Prisma Postgres、PlanetScale、MongoDB Atlas、Supabase、Upstash、Cloudflare D1、Docker 或 none 新增託管/provider setup。
+
+## Storage 風格服務
+
+資料相鄰分區包含：
+
+- 快取：TypeScript 中的 Upstash Redis，以及支援時的生態系統專用快取選擇。
+- 搜尋：Meilisearch、Typesense、Elasticsearch、Algolia，以及生態系統專用搜尋路徑。
+- 檔案上傳：UploadThing、FilePond、Uppy 或 none。
+- 檔案儲存：S3、R2、Cloudinary 或 none。
+
+## 參考
+
+- [參考選項](/docs/reference/options/)
+- [相容性](/docs/reference/compatibility/)

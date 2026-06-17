@@ -34,6 +34,11 @@ export function ogLocale(locale: string) {
     en: "en_US",
     es: "es_ES",
     zh: "zh_CN",
+    ja: "ja_JP",
+    ko: "ko_KR",
+    "zh-Hant": "zh_TW",
+    de: "de_DE",
+    fr: "fr_FR",
   };
   return locales[locale] ?? "en_US";
 }

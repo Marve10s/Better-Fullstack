@@ -1,0 +1,58 @@
+---
+title: Geschichtskommando
+description: Anzeigen, Löschen und Exportieren reproduzierbarer Befehle aus früheren Better Fullstack-Gerüsten.
+---
+
+Der Befehl `history` zeigt kürzlich erstellte Gerüstprojekte und die reproduzierbaren Befehle an, mit denen sie erstellt wurden. Verwenden Sie es, wenn Sie einen Stapel neu erstellen, die generierte Ausgabe vergleichen oder einen bekanntermaßen funktionierenden Befehl freigeben möchten.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history"
+  pnpm="pnpm dlx create-better-fullstack@latest history"
+  bun="bunx create-better-fullstack@latest history"
+  yarn="yarn dlx create-better-fullstack@latest history"
+/>
+
+## Flaggen
+
+| Flagge | Standard | Beschreibung |
+| --- | --- | --- |
+| `--limit` | `10` | Anzahl der anzuzeigenden Verlaufseinträge. |
+| `--clear` | `false` | Löschen Sie den gesamten gespeicherten Gerüstverlauf. |
+| `--json` | `false` | Drucken Sie den Verlauf als JSON für Skripte. |
+
+## Beispiele
+
+Die fünf aktuellsten Einträge anzeigen:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --limit 5"
+  pnpm="pnpm dlx create-better-fullstack@latest history --limit 5"
+  bun="bunx create-better-fullstack@latest history --limit 5"
+  yarn="yarn dlx create-better-fullstack@latest history --limit 5"
+/>
+
+Export-Verlauf als JSON:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --json"
+  pnpm="pnpm dlx create-better-fullstack@latest history --json"
+  bun="bunx create-better-fullstack@latest history --json"
+  yarn="yarn dlx create-better-fullstack@latest history --json"
+/>
+
+Lokale Geschichte löschen:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest history --clear"
+  pnpm="pnpm dlx create-better-fullstack@latest history --clear"
+  bun="bunx create-better-fullstack@latest history --clear"
+  yarn="yarn dlx create-better-fullstack@latest history --clear"
+/>
+
+## Reproduzierbarer Arbeitsablauf
+
+1. Führen Sie `history` aus.
+2. Kopieren Sie den reproduzierbaren Befehl für den gewünschten Stapel.
+3. Führen Sie es erneut mit einem neuen Projektnamen oder angepassten Flags aus.
+
+Der Verlauf wird lokal in Ihrem Benutzerverzeichnis gespeichert und hat keinen Einfluss auf generierte Projektdateien.

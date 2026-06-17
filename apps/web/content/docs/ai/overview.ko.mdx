@@ -1,0 +1,83 @@
+---
+title: AI 에이전트
+description: AI 코딩 에이전트가 Better Fullstack을 안전하고 안정적으로 사용하는 방법
+---
+
+Better Fullstack은 세 가지 AI 워크플로를 지원합니다.
+
+- `--ai-docs`을 사용하여 프로젝트-로컬 지침 파일을 생성합니다.
+- 코딩 에이전트가 직접 작성하는 시작 파일 대신 CLI을 사용하도록 Better Fullstack 에이전트 스킬을 설치합니다.
+- AI 코딩 에이전트가 스키마 조회, 호환성 검사, 테스트 실행 및 프로젝트 생성을 위해 Better Fullstack MCP 서버를 사용하도록 합니다.
+
+## 선호하는 작업흐름
+
+1. 대상 생태계를 선택하십시오: `typescript`, `react-native`, `rust`, `python`, `go`, `java` 또는 `elixir`.
+2. Better Fullstack 에이전트 스킬, MCP 서버 또는 명시적인 CLI 참조를 사용하세요.
+3. 스캐폴딩 전에 호환성을 검증하십시오.
+4. 시험 실행하여 파일 트리를 검사합니다.
+5. 에이전트가 흐름을 구동할 때 종속성 설치가 비활성화된 스캐폴드입니다.
+6. 사용자에게 정확한 설치, 테스트 및 실행 명령을 알려줍니다.
+
+## AI 문서 생성됨
+
+`--ai-docs`을 사용하여 코딩 에이전트를 위한 프로젝트-로컬 컨텍스트 파일을 생성합니다.
+
+| 값 | 파일이 생성됨 |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | AI 문서 없음 |
+
+여러 값이 허용됩니다.
+
+```npm
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+이 파일을 비활성화하려면 `--ai-docs none`을 사용하세요.
+
+## CLI 작업 흐름
+
+MCP 액세스 권한이 없는 에이전트의 경우 명시적 플래그를 전달하고 부작용을 방지하세요.
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai-docs agents-md \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="CLI rules for agents">
+`--yes`은 기본값을 허용하며 코어 스택 플래그와 호환되지 않습니다. 명시적 플래그는 해당하는 범주만 건너뜁니다. 비활성화하려는 선택적 범주에 대해 `none`을 전달합니다.
+</Callout>
+
+## 상담원 기술 워크플로
+
+Better Fullstack 에이전트 기술은 이 저장소에 상주하며 지원되는 에이전트에게 벤치마킹된 빠른 워크플로(스택 매핑, 테스트 실행 실행, 설치 또는 Git 부작용 없는 스캐폴드)와 함께 CLI을 사용하도록 가르친 후 후속 명령을 보고합니다.
+
+Codex, Claude Code, Cursor, GitHub Copilot 및 Gemini CLI 설치 명령은 [에이전트 스킬 설정 가이드](/docs/ai/skills/)를 참조하세요.
+
+## AI 공급자 옵션
+
+TypeScript 프로젝트는 `--ai`을 사용하여 하나의 AI 옵션을 선택할 수 있습니다: `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli` 또는 `none`.
+
+Python 프로젝트는 `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai` 또는 `none`과 함께 별도의 다중 선택 `--python-ai` 옵션을 사용합니다.
+
+종속성 배치는 선택한 프레임워크 및 백엔드에 따라 다릅니다. 서버 측 패키지는 서버 패키지 또는 자체 백엔드 앱에 추가됩니다. 지원되는 프런트엔드 통합은 일치하는 클라이언트 후크 또는 패키지를 받습니다.
+
+## MCP 작업 흐름
+
+Better Fullstack MCP 서버는 스키마 조회, 호환성 검사, 테스트 실행 미리 보기, 프로젝트 생성 및 기능 추가를 구조화된 도구로 공개합니다. [MCP 설정 가이드](/docs/ai/mcp/)를 참조하세요.
+
+이는 생성된 프로젝트 `mcp` 애드온과 다릅니다. 서버는 에이전트가 Better Fullstack 프로젝트를 생성하는 데 도움을 줍니다. 애드온은 생성된 프로젝트 내에 MCP 구성을 작성합니다.

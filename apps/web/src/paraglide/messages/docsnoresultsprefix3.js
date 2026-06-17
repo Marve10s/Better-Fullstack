@@ -17,19 +17,44 @@ const zh_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) 
 	return /** @type {LocalizedString} */ (`没有结果：`)
 };
 
+const ja_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`結果はありません`)
+};
+
+const ko_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`다음에 대한 검색결과가 없습니다.`)
+};
+
+const zh_hant1_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`沒有結果：`)
+};
+
+const de_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Keine Ergebnisse für`)
+};
+
+const fr_docsnoresultsprefix3 = /** @type {(inputs: Docsnoresultsprefix3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Aucun résultat pour`)
+};
+
 /**
 * | output |
 * | --- |
 * | "No results for" |
 *
 * @param {Docsnoresultsprefix3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docsnoresultsprefix3 = /** @type {((inputs?: Docsnoresultsprefix3Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsnoresultsprefix3Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsnoresultsprefix3 = /** @type {((inputs?: Docsnoresultsprefix3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsnoresultsprefix3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docsnoresultsprefix3(inputs)
 	if (locale === "es") return es_docsnoresultsprefix3(inputs)
-	return zh_docsnoresultsprefix3(inputs)
+	if (locale === "zh") return zh_docsnoresultsprefix3(inputs)
+	if (locale === "ja") return ja_docsnoresultsprefix3(inputs)
+	if (locale === "ko") return ko_docsnoresultsprefix3(inputs)
+	if (locale === "zh-Hant") return zh_hant1_docsnoresultsprefix3(inputs)
+	if (locale === "de") return de_docsnoresultsprefix3(inputs)
+	return fr_docsnoresultsprefix3(inputs)
 });
 export { docsnoresultsprefix3 as "docsNoResultsPrefix" }

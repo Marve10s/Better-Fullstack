@@ -1,0 +1,181 @@
+---
+title: Django REST API Starter
+description: 使用 Better Fullstack 建立帶有 Django、Django REST Framework、SQLAlchemy、Pydantic 和 Ruff 的 Python backend。
+updated: 2026-05-12
+category: Python
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+當你想要 Django 的約定，同時希望項目形態以 API 為中心時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## 創建內容
+
+- 使用 Django 的 Python 專案。
+- Django REST Framework 作為 Python API 選項。
+- SQLAlchemy 和 Pydantic 選項。
+- Ruff 用於代碼品質。
+
+## 生成結構
+
+這個 stack 面向想要 Django 生態，但需要 API-first 起點的開發者。產生的項目會記錄 `--python-api django-rest-framework`，包含 Django 和 DRF 依賴，在應用程式入口中接取一個最小 Django settings 模組，並揭露一個類似 health check 的 API 回應。
+
+```txt
+my-django-api/
+├── pyproject.toml
+├── alembic.ini
+├── migrations/
+│   ├── env.py
+│   └── versions/
+├── src/app/
+│   ├── main.py
+│   ├── settings.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── database.py
+│   └── crud.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+當你想要在 Django HTTP 層之外保留明確的 Python 資料模型和服務層校驗時，SQLAlchemy 與 Pydantic 仍然有價值。如果團隊希望走更典型的 Django 路線，需要提前規劃專案成長後是否把持久化移轉到 Django models 和 DRF serializers。
+
+## 何時選擇
+
+如果約定、面向 admin 的結構和生態深度比極簡 API 表面更重要，選擇 Django。
+
+如果你預期會加入 Django admin、Django auth、傳統 middleware，或多個 Django apps，選擇這個 stack 而不是 FastAPI 指南。如果服務應該保持小而專注於路由，並且容易和 AI 或資料處理代碼放在一起，選擇 FastAPI。
+
+| 決策點 | Django REST API | FastAPI 服務 |
+| --- | --- | --- |
+| 團隊預期 | Django 約定與生態 | 明確的 Python 模組和路由函數 |
+| API 層 | Django REST Framework | FastAPI + Pydantic |
+| Back-office/admin | 天然擴充點 | 新增單獨工具 |
+| Middleware/auth | Django 原生路徑 | 顯式組合 |
+| 啟動複雜度 | 更多 framework 結構 | 初始表面更小 |
+
+## 代表性片段
+
+產生的 DRF endpoint 會刻意保持很小。隨著 API 成長，可以把 view functions 移到應用程式模組中繼續擴充。
+
+```python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+def api_status(request):
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+```
+
+對於實際資源 endpoint，即使繼續使用 SQLAlchemy 作為持久化工具，也建議新增一個類似 serializer 的邊界。
+
+```python
+from pydantic import BaseModel, EmailStr
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str | None = None
+
+
+@api_view(["POST"])
+def create_user(request):
+    payload = UserCreate.model_validate(request.data)
+    user = user_service.create_user(email=payload.email, name=payload.name)
+    return Response({"id": user.id, "email": user.email}, status=201)
+```
+
+如果之後轉向更典型的 DRF serializers，也保留同樣的邊界：校驗請求數據，調用應用邏輯，並返回穩定的回應形狀。
+
+```python
+from rest_framework import serializers
+
+
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField()
+    name = serializers.CharField(required=False, allow_blank=True)
+```
+
+## 遷移與測試
+
+如果採用 Django models，就使用 Django migrations。如果繼續讓 SQLAlchemy 作為持久化的事實來源，就使用 Alembic。除非 ownership 劃分非常清楚，否則不要讓兩個遷移系統管理同一批表。
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+在傳統 Django 項目 layout 中使用 Django-model 持久化時：
+
+```bash
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+```
+
+使用 SQLAlchemy 持久化時：
+
+```bash
+uv run alembic revision --autogenerate -m "add users"
+uv run alembic upgrade head
+```
+
+路由測試應該使用 Django test client 或 DRF API test client，並斷言 JSON 契約，而不僅是 view 實作細節。
+
+## 相容性說明
+
+- `--python-api django-rest-framework` 需要 `--python-web-framework django`。
+- 不要把 `--python-api django-rest-framework` 加到 FastAPI stack;CLI validation 會拒絕這個組合。
+- `--python-orm sqlalchemy` 在 Python 生態中可用，但 Django 內建 admin 和 generic views 是圍繞 Django models 設計的。
+- `--python-validation pydantic` 適合服務層 payload 校驗，而 DRF serializers 是 DRF views 中傳統的 request/response 工具。
+
+## 部署說明
+
+Django 部署需要常規的生產 settings 檢查：設定 `SECRET_KEY`、`ALLOWED_HOSTS`、trusted origins、資料庫憑證和靜態資源處理。如果產生的 app 仍然很小，把它當作起點，在生產前把 settings 移到明確的、由環境驅動的模組中。
+
+```bash
+HOST=0.0.0.0 PORT="${PORT:-8000}" uv run python -m app.main
+```
+
+如果你繼續使用產生的輕量 entrypoint，而不是完整 Django project layout，請記錄 settings 從哪裡加載，避免後續 Django 開發者誤以為預設的 `settings.py` 和 `manage.py` 結構完整存在。生產前，也要加入平台期望的 WSGI/ASGI server 與部署 settings。
+
+## 故障排查
+
+| 症狀 | 檢查 |
+| --- | --- |
+| DRF imports 失敗 | 確認項目是用 `--python-api django-rest-framework` 建立的。 |
+| Django settings 未配置 | 確保在匯入 Django models 或 views 前設定了 `DJANGO_SETTINGS_MODULE`。 |
+| 遷移 ownership 混亂 | 為每張表選擇 Django migrations 或 Alembic 作為 owner。 |
+| FastAPI 範例不適用 | 這個 stack 使用 Django/DRF routing，而不是 FastAPI decorators。 |
+
+## 取捨
+
+如果想要更小的 API 服務，使用 [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/)。如果需要 Django 約定，這個 stack 比較適合。
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff)。
+- 閱讀 [Python ecosystem docs](/docs/ecosystems/python/)。

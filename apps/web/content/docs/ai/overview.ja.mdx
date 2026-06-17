@@ -1,0 +1,83 @@
+---
+title: AI エージェント
+description: AI コーディング エージェントが Better Fullstack を安全かつ確実に使用する方法。
+---
+
+Better Fullstack は、3 つの AI ワークフローをサポートします。
+
+- `--ai-docs` を使用してプロジェクト ローカルの命令ファイルを生成します。
+- Better Fullstack エージェント スキルをインストールすると、コーディング エージェントはスターター ファイルを手書きする代わりに CLI を使用します。
+- AI コーディング エージェントが、スキーマ検索、互換性チェック、ドライラン、およびプロジェクト作成に Better Fullstack MCP サーバーを使用できるようにします。
+
+## 推奨されるワークフロー
+
+1. ターゲット エコシステムを選択します: `typescript`、`react-native`、`rust`、`python`、`go`、`java`、または `elixir`。
+2. Better Fullstack エージェント スキル、MCP サーバー、または明示的な CLI 参照を使用します。
+3. スキャフォールディングの前に互換性を検証します。
+4. ドライランを実行してファイル ツリーを検査します。
+5. エージェントがフローを駆動している場合、依存関係のインストールが無効になっているスキャフォールド。
+6. ユーザーに正確なインストール、テスト、および実行コマンドを伝えます。
+
+## 生成された AI ドキュメント
+
+`--ai-docs` を使用して、コーディング エージェント用のプロジェクト ローカル コンテキスト ファイルを生成します。
+
+| 価値 | 生成されたファイル |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | AI ドキュメントはありません |
+
+複数の値が受け入れられます。
+
+```npm
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+これらのファイルを無効にするには、`--ai-docs none` を使用します。
+
+## CLI ワークフロー
+
+MCP アクセス権を持たないエージェントの場合は、明示的なフラグを渡して副作用を回避します。
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai-docs agents-md \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="CLI rules for agents">
+`--yes` はデフォルトを受け入れますが、コア スタック フラグと互換性がありません。明示的なフラグは、そのフラグがカバーするカテゴリのみをスキップします。無効にするオプションのカテゴリには `none` を渡します。
+</Callout>
+
+## エージェント スキルのワークフロー
+
+Better Fullstack エージェント スキルはこのリポジトリに存在し、サポートされているエージェントに、ベンチマークされた高速ワークフローで CLI を使用するよう教えます。つまり、スタックをマップし、予行演習を実行し、インストールや Git の副作用なしでスキャフォールドを実行し、フォローアップ コマンドを報告します。
+
+Codex、Claude Code、Cursor、GitHub Copilot、および Gemini CLI インストール コマンドについては、[エージェント スキル セットアップ ガイド](/docs/ai/skills/) を参照してください。
+
+## AI プロバイダー オプション
+
+TypeScript プロジェクトは、`--ai` で AI オプションを 1 つ選択できます: `vercel-ai`、`mastra`、`voltagent`、`langgraph`、`openai-agents`、`google-adk`、`modelfusion`、`langchain`、 `llamaindex`、`tanstack-ai`、`ai-cli`、または `none`。
+
+Python プロジェクトでは、`langchain`、`llamaindex`、`openai-sdk`、`anthropic-sdk`、`langgraph`、`crewai`、または `none` とともに個別の複数選択 `--python-ai` オプションを使用します。
+
+依存関係の配置は、選択したフレームワークとバックエンドによって異なります。サーバー側パッケージは、サーバー パッケージまたはセルフバックエンド アプリに追加されます。サポートされているフロントエンド統合は、対応するクライアント フックまたはパッケージを受け取ります。
+
+## MCP ワークフロー
+
+Better Fullstack MCP サーバーは、スキーマ ルックアップ、互換性チェック、ドライラン プレビュー、プロジェクト作成、機能追加を構造化ツールとして公開します。 [MCP セットアップ ガイド](/docs/ai/mcp/) を参照してください。
+
+これは、生成されたプロジェクト `mcp` アドオンとは異なります。サーバーは、エージェントが Better Fullstack プロジェクトを作成するのに役立ちます。アドオンは、生成されたプロジェクト内に MCP 構成を書き込みます。

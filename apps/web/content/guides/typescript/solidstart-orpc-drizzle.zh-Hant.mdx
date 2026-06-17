@@ -1,0 +1,126 @@
+---
+title: SolidStart with oRPC and Drizzle
+description: 使用 Better Fullstack 建立包含 oRPC、Drizzle、SQLite、Better Auth 和 Tailwind CSS 的 SolidStart fullstack app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+當你想要 Solid 的 fine-grained reactivity，同時還需要 fullstack framework 和 typed API contracts 時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## 創建內容
+
+- 一個 SolidStart fullstack app。
+- SQLite 和 Drizzle。
+- Better Auth。
+- 用於 typed contracts 的 oRPC。
+- Tailwind CSS。
+
+## 生成結構
+
+這個 stack 保持 SolidStart 作為 fullstack framework。 app 可以渲染 Solid UI、呼叫 typed server contracts，並透過 Drizzle 持久化數據，不需要引入獨立 backend service。
+
+代表性結構：
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+把這個 tree 當作 ownership map。 UI code 屬於 Solid components 和 routes；database 與 auth code 應保持 server-only。
+
+## 範例 route component
+
+SolidStart routes 可以專注於 rendering，讓 server code 處理 data access：
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+把 server mutations 放在 validated functions 後面，避免 UI 成為 input rules 的唯一來源。
+
+## 範例 Drizzle model
+
+SQLite 對小型 SolidStart apps 和 local development 是實用預設值：
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+當多個 deployed instances 需要共用 durable relational data 時，遷移到 PostgreSQL。
+
+## 相容性
+
+SolidStart 在 Better Fullstack 中使用 oRPC。 tRPC 偏向 React，因此這個 stack 有意保留 `--api orpc`。
+
+`--backend self` 表示 SolidStart 負責 server layer。除非你有意想要獨立 API deployment，否則不要加上 Hono。
+
+## 何時選擇
+
+當你想要 Solid 的 runtime model，同時需要產生好的 fullstack project，包含 database、auth 和 typed API wiring 時，選擇 SolidStart。
+
+## 部署
+
+為目標環境設定 Better Auth secrets、app URL，以及 database path 或 connection string。如果部署平台不提供 persistent disk，不要依賴 file-backed SQLite 儲存 production data。
+
+對於小型 internal tools，SQLite 可能足夠。對於 SaaS-style multi-user production apps，PostgreSQL 通常更容易跨 deployments 運作。
+
+## 故障排查
+
+- 如果 oRPC calls 部署後失敗，檢查 route base path，以及 deployment adapter 是否如預期處理 server routes。
+- 如果 auth sessions 消失，請檢查 cookie security settings 和 app URL values。
+- 如果 SQLite data 重置，確認 host 是否提供 persistent storage。
+- 如果 Solid components 意外導入 server modules，把呼叫移到 server function 或 API contract 後面。
+
+## 對比說明
+
+當 Solid 的 fine-grained reactivity 是專案理由時，選擇它而不是 TanStack Start。當你偏好 React 和 TanStack Router 時，選擇 [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/)。
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc)。
+- 對比 [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/)。
+- 閱讀 [compatibility reference](/docs/reference/compatibility/)。

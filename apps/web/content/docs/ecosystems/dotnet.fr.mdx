@@ -1,0 +1,65 @@
+---
+title: .FILET
+description: Échafaudages ASP.NET Core avec EF Core ou Dapper, Identity, Minimal APIs ou Hot Chocolate, SignalR, tâches en arrière-plan, tests et fichiers de déploiement.
+---
+
+Les projets .NET génèrent des applications ASP.NET Core qui suivent les conventions standard `dotnet`. Choisissez les options .NET pour le framework Web, l'accès aux données, l'authentification, le style API, le temps réel, les tâches en arrière-plan, l'observabilité, la mise en cache, les tests et le déploiement de fichiers.
+
+## Conditions préalables
+
+- .NET SDK 10 ou version ultérieure.
+- PostgreSQL lors de l'utilisation de `ef-core` avec la base de données `postgres` ; SQLite n'a besoin d'aucun serveur.
+- Docker lors de l'utilisation de la cible de déploiement `docker` ou `testcontainers-dotnet`.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## Catégories .NET
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Cadre Web | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| Accès aux données | `ef-core` `dapper` `linq2db` `none` |
+| Authentification | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| Essai | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| Travaux en arrière-plan | `hangfire` `quartz-net` `hosted-services` `none` |
+| Temps réel | `signalr` `none` |
+| Observabilité | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| Validation | `fluentvalidation` `data-annotations` `none` |
+| Mise en cache | `redis` `memory-cache` `none` |
+| Déployer | `docker` `azure` `aws` `none` |
+
+## Remarques sur la compatibilité
+
+- Les options .NET s'appliquent uniquement avec `--ecosystem dotnet`.
+- ASP.NET Core est un framework Web .NET autonome ; Les options frontend et backend TypeScript sont ignorées.
+- `--dotnet-testing` et `--dotnet-observability` acceptent plusieurs valeurs.
+- `ef-core` sélectionne le fournisseur parmi `--database` : `postgres` utilise Npgsql, tout le reste revient à SQLite.
+- `aspnet-identity` enregistre les magasins d'identités uniquement lorsqu'ils sont associés à `ef-core` ; sans cela, l'échafaudage enregistre les services d'authentification et d'autorisation simples.
+- Valeurs par défaut non interactives lorsque `--ecosystem dotnet` est défini : `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog` et `docker`.
+
+## Comportement généré
+
+- Le projet comprend un `.csproj`, `Program.cs`, `appsettings.json`, un fichier de requête `.http`, un projet de test, `.gitignore` et des notes de configuration dans le README.
+- Les sélections EF Core connectent un `DbContext` au fournisseur Npgsql ou SQLite ainsi qu’au package au moment de la conception pour les migrations.
+- Les sélections facultatives ajoutent du code ASP.NET Core fonctionnel pour les services Identity, Hot Chocolate GraphQL, gRPC, les hubs SignalR, les tâches Hangfire ou Quartz.NET, les pipelines Serilog/NLog/OpenTelemetry, la mise en cache Redis et un Dockerfile à plusieurs étapes.

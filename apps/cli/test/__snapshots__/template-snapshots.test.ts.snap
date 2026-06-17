@@ -12710,13 +12710,13 @@ export default defineConfig({
     "dev": "nx run-many -t dev",
     "build": "nx run-many -t build",
     "check-types": "nx run-many -t check-types",
-    "dev:web": "nx run web:dev",
-    "dev:server": "nx run server:dev",
-    "db:push": "nx run @snapshot-nx-root-tooling/db:db:push",
-    "db:studio": "nx run @snapshot-nx-root-tooling/db:db:studio",
-    "db:generate": "nx run @snapshot-nx-root-tooling/db:db:generate",
-    "db:migrate": "nx run @snapshot-nx-root-tooling/db:db:migrate",
-    "db:local": "nx run @snapshot-nx-root-tooling/db:db:local"
+    "dev:web": "nx run web --target=dev",
+    "dev:server": "nx run server --target=dev",
+    "db:push": "nx run @snapshot-nx-root-tooling/db --target=db:push",
+    "db:studio": "nx run @snapshot-nx-root-tooling/db --target=db:studio",
+    "db:generate": "nx run @snapshot-nx-root-tooling/db --target=db:generate",
+    "db:migrate": "nx run @snapshot-nx-root-tooling/db --target=db:migrate",
+    "db:local": "nx run @snapshot-nx-root-tooling/db --target=db:local"
   },
   "packageManager": "bun@1.3.5",
   "dependencies": {

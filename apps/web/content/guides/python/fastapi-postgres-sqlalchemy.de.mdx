@@ -1,0 +1,199 @@
+---
+title: FastAPI mit PostgreSQL und SQLAlchemy
+description: Erstellen Sie ein Python-Projekt API mit FastAPI, PostgreSQL, SQLAlchemy, Pydantic und Ruff unter Verwendung von Better Fullstack.
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - postgres
+  - sqlalchemy
+  - pydantic
+keywords:
+  - fastapi postgres starter
+  - fastapi sqlalchemy starter
+  - python api boilerplate
+  - create fastapi project
+  - fastapi pydantic postgres
+---
+
+Verwenden Sie diesen Stack, wenn Sie ein Python API mit einem vertrauten asynchron-freundlichen Webframework und einer relationalen Datenbank wünschen.
+
+```npm
+npm create better-fullstack@latest my-fastapi-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff \
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The runtime boundary this stack is optimized for."
+  items={[
+    { label: "HTTP", value: "FastAPI", detail: "Route functions, dependency injection, and OpenAPI output." },
+    { label: "Data", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models with a PostgreSQL driver selected by the scaffold." },
+    { label: "Validation", value: "Pydantic", detail: "Request and response schemas close to the API edge." },
+    { label: "Quality", value: "Ruff", detail: "Fast linting and formatting for the generated Python package." },
+  ]}
+/>
+
+## Was dadurch entsteht
+
+- Ein Python-Projekt mit FastAPI.
+- PostgreSQL als Datenbankoption.
+- SQLAlchemy für den Datenbankzugriff.
+- Pydantic zur Validierung.
+- Ruff für die Qualität des Python-Codes.
+- Eine Better Fullstack-Konfigurationsdatei für wiederholbares Gerüst.
+
+## Erzeugte Form
+
+Das Gerüst ist ein kompakter API-Dienst und kein vollständiges Monorepo. FastAPI besitzt die HTTP-Grenze, SQLAlchemy besitzt die Persistenz und Pydantic besitzt Anforderungs- und Antwortverträge. Die generierte App umfasst Gesundheitsprüfungen, Beispielbenutzer- und Post-CRUD-Code, Datenbanksitzungsverkabelung, Alembic-Konfiguration und Tests.
+
+```txt
+my-fastapi-api/
+├── pyproject.toml
+├── alembic.ini
+├── migrations/
+│   ├── env.py
+│   └── versions/
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   └── crud.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+Die Standard-Datenbank-URL greift auf die lokale SQLite zurück, sodass das Projekt sofort gestartet werden kann. Da in dieser Anleitung `--database postgres` ausgewählt wird, umfassen die generierten Abhängigkeiten `psycopg[binary]`; Setzen Sie `DATABASE_URL` auf eine Verbindungszeichenfolge PostgreSQL, wenn Sie die tatsächliche Zieldatenbank nutzen möchten.
+
+```bash
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_fastapi_api"
+```
+
+## Wann man es wählt
+
+Wählen Sie FastAPI für APIs, AI-benachbarte Dienste, interne Plattformen und Backend-Dienste, bei denen der Zugriff auf das Python-Ökosystem von Bedeutung ist.
+
+FastAPI eignet sich besser als Django, wenn Sie explizite Routenfunktionen, OpenAPI-First-Request/Response-Modellierung und eine kleine Projektoberfläche wünschen. Django eignet sich besser, wenn Sie Administratorkonventionen, App-Struktur und ausgereifte Standardeinstellungen für das integrierte Web-Framework wünschen.
+
+| Entscheidungspunkt | FastAPI + SQLAlchemy | Django REST API |
+| --- | --- | --- |
+| Projektform | Kleiner Dienst mit expliziten Modulen | Konventionsintensives Django-Projekt |
+| API Modellierung | Pydantische Schemata in der Nähe von Routen | DRF-Serialisierer/Ansichten zu Django-Konventionen |
+| Admin/Backoffice | Separat hinzufügen | Das Admin-Ökosystem Django ist der natürliche Weg |
+| Async-angrenzende Arbeit | Gemeinsame Übereinstimmung für die Dienstgrenzen API und AI | Möglich, aber weniger minimal |
+| ORM-Präferenz | SQLAlchemy-first | Django ORM ist konventionell, obwohl dieser Stapel die Auswahl SQLAlchemy aufzeichnet |
+
+## Repräsentative Auszüge
+
+Die generierte Modellebene verwendet zugeordnete Spalten im SQLAlchemy 2-Stil. Erweitern Sie die Beispielmodelle `User` und `Post`, anstatt Datenbanklogik direkt in Routenhandlern hinzuzufügen.
+
+```python
+from datetime import datetime
+
+from sqlalchemy import DateTime, Integer, String, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+```
+
+Routen hängen von einer Datenbanksitzung pro Anfrage ab und delegieren die Persistenz an `crud.py`.
+
+```python
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app import crud
+from app.database import get_db
+from app.schemas import UserCreate, UserResponse
+
+
+@app.post("/users", response_model=UserResponse)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    existing = crud.get_user_by_email(db, user.email)
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    return crud.create_user(db, user)
+```
+
+## Migrationen und Tests
+
+Die generierte App kann beim Start Tabellen für eine schnelle lokale Schleife erstellen, Produktionsteams sollten jedoch Alembic-Migrationen als Quelle für den Datenbank-Änderungsverlauf verwenden.
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+Wenn Sie Modelle hinzufügen oder ändern, erstellen Sie eine Migration und überprüfen Sie diese, bevor Sie sie anwenden:
+
+```bash
+uv run alembic revision --autogenerate -m "add account status"
+uv run alembic upgrade head
+```
+
+Teilen Sie die Tests zwischen Routenverhalten und Datenbankverhalten auf. Routentests sollten den Testclient von FastAPI verwenden und HTTP-Statuscodes bestätigen, während Datenbanktests eine isolierte Test-Engine oder Transaktionsgrenze erstellen sollten.
+
+## Kompatibilitätshinweise
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Compatibility rule"
+  items={[
+    "`--python-web-framework fastapi` pairs naturally with `--python-orm sqlalchemy` and `--python-validation pydantic`.",
+    "Django API options such as `--python-api django-rest-framework` are only valid with `--python-web-framework django`.",
+    "The `--database postgres` selection adds PostgreSQL driver support, but the runtime connection is controlled by `DATABASE_URL`.",
+  ]}
+/>
+
+## Bereitstellungshinweise
+
+Führen Sie die App hinter einem ASGI-Server wie Uvicorn aus. Legen Sie in der Produktion `DATABASE_URL` fest, deaktivieren Sie breite CORS-Ursprünge und führen Sie Migrationen aus, bevor Sie neue Anwendungsinstanzen starten.
+
+```bash
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+Wenn Ihre Bereitstellungsplattform aus dem Repository-Stammverzeichnis erstellt, stellen Sie sicher, dass sie die Python-Projektabhängigkeiten von `pyproject.toml` installiert und auf `PYTHONPATH` oder das Arbeitsverzeichnis im generierten Paketlayout verweist.
+
+## Fehlerbehebung
+
+| Symptom | Überprüfen |
+| --- | --- |
+| `psycopg` Verbindungsfehler | Bestätigen Sie, dass `DATABASE_URL` eine PostgreSQL-URL verwendet, die über die App-Laufzeit erreichbar ist. |
+| Tabellen sind lokal vorhanden, aber nicht in der Produktion | Führen Sie vor dem Booten Alembic-Migrationen für die Produktionsdatenbank durch. |
+| Importfehler für `app.main` | Beginnen Sie im Projektstammverzeichnis oder konfigurieren Sie das Quellverzeichnis konsistent. |
+| CORS funktioniert lokal, schlägt jedoch bei einer Browserbereitstellung fehl | Ersetzen Sie den Platzhalter CORS durch den bereitgestellten Frontend-Ursprung. |
+
+## Kompromisse
+
+FastAPI ist ein starker API-Standardwert. Wenn Sie ein Web-Framework mit mehr Batterien und Verwaltungskonventionen benötigen, vergleichen Sie es mit Django.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff).
+- Lesen Sie die [Dokumente zum Python-Ökosystem](/docs/ecosystems/python/).
+- Überprüfen Sie die [CLI Erstellungsflags](/docs/cli/create/).

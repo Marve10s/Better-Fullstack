@@ -1,0 +1,127 @@
+---
+title: Astro mit React und Hono
+description: Erstellen Sie eine Astro-App mit React-Integration, Hono, tRPC, Drizzle, SQLite, Better Auth, Tailwind CSS und DaisyUI mit Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - astro
+  - react
+  - hono
+  - drizzle
+keywords:
+  - astro react hono
+  - astro trpc starter
+  - astro drizzle starter
+  - create astro fullstack app
+  - astro react api starter
+---
+
+Verwenden Sie diesen Stack, wenn Sie Astro für inhaltsintensive Seiten und Inseln sowie einen TypeScript API Server benötigen.
+
+```npm
+npm create better-fullstack@latest my-astro-app -- \
+  --ecosystem typescript \
+  --frontend astro \
+  --astro-integration react \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library daisyui \
+```
+
+## Was dadurch entsteht
+
+- Ein Astro-Frontend mit React-Integration.
+- Ein Hono-Backend, das auf Bun ausgeführt wird.
+- SQLite und Drizzle.
+- Better Auth.
+- tRPC, da dieses Astro-Setup die React-Integration verwendet.
+- Tailwind CSS und DaisyUI.
+
+## Erzeugte Form
+
+Dieser Stack kombiniert das Content-First-Frontend von Astro mit einem separaten Server Hono API. Reaktionsinseln werden durch `--astro-integration react` aktiviert, weshalb tRPC in diesem Handbuch verfügbar ist.
+
+Repräsentative Form:
+
+```txt
+my-astro-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Astro Seiten sollten sich weiterhin auf Routing, Inhalt und Inselzusammensetzung konzentrieren. Hono sollte über API-Routen, authentifiziertes Serververhalten und Datenbankzugriff verfügen.
+
+## Beispiel Astro Insel
+
+Verwenden Sie Astro für die Seiten-Shell und reagieren Sie nur dort, wo Interaktivität erforderlich ist:
+
+```astro
+---
+import ProjectPicker from "../components/ProjectPicker.tsx";
+---
+
+<main class="mx-auto max-w-5xl p-6">
+  <h1 class="text-3xl font-semibold">Project docs</h1>
+  <ProjectPicker client:load />
+</main>
+```
+
+Dadurch bleiben statische oder größtenteils statische Seiten kostengünstig, während interaktive React-Komponenten weiterhin den typisierten API aufrufen können.
+
+## Beispiel Hono Endpunkt
+
+Zustandsprüfungen und einfache Dienstendpunkte gehören in Hono:
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => c.json({ ok: true }));
+
+export default app;
+```
+
+Halten Sie bei datenbankgestützten Endpunkten Drizzle-Abfragen hinter reinen Server-Helpern und machen Sie sie über tRPC-Prozeduren oder Hono-Routen verfügbar.
+
+## Kompatibilitätshinweise
+
+Die Kompatibilität von Astro API hängt von der ausgewählten UI-Integration ab. Diese Seite verwendet `--astro-integration react`, wodurch tRPC verfügbar bleibt. Für Nicht-React Astro-Integrationen bevorzugen Sie oRPC.
+
+In diesem Befehl wird DaisyUI als UI-Bibliothek ausgewählt. Wenn Sie später zu shadcn/ui wechseln, stellen Sie sicher, dass die Astro React-Integration und das Tailwind-Setup weiterhin mit der von Ihnen ausgewählten Komponentenbibliothek übereinstimmen.
+
+## Wann man es wählt
+
+Wählen Sie Astro, wenn Inhalte, Dokumente, Marketingseiten oder teilweise Hydratation im Mittelpunkt der App stehen, Sie aber dennoch ein generiertes Backend und eine Datenbankeinrichtung benötigen.
+
+## Bereitstellungshinweise
+
+Planen Sie, dass das Astro-Frontend und Hono API klar konfigurierte Ursprünge haben. Das Frontend benötigt die öffentliche URL API. Der Dienst Hono benötigt Datenbank- und Authentifizierungsgeheimnisse. SQLite kann für die lokale Entwicklung in Ordnung sein, aber das Produktionshosting muss dauerhaften Speicher bereitstellen, wenn Sie SQLite behalten.
+
+Wenn das Frontend und API separat bereitgestellt werden, konfigurieren Sie CORS und Authentifizierungscookies für die endgültigen Domänen, anstatt sich auf das Verhalten von localhost zu verlassen.
+
+## Fehlerbehebung
+
+- Wenn React-Inseln nicht hydratisiert werden, überprüfen Sie die Client-Anweisung Astro und ob die Komponente Nur-Browser-Code sicher importiert.
+- Wenn tRPC nach dem Ändern der Integrationen nicht verfügbar ist, bestätigen Sie, dass die Astro-Integration immer noch React ist.
+- Wenn API-Aufrufe von bereitgestellten Seiten fehlschlagen, überprüfen Sie den öffentlichen API-Ursprung und die CORS-Einstellungen.
+- Wenn SQLite-Daten nach der Bereitstellung verschwinden, stellen Sie sicher, dass Ihre Hosting-Plattform dauerhaften beschreibbaren Speicher unterstützt.
+
+## Vergleichshinweise
+
+Wählen Sie diese Option, wenn Inhaltsseiten und selektive Interaktivität wichtiger sind als eine vollständige React-App-Shell. Wählen Sie [Hono mit tRPC und Drizzle](/guides/typescript/hono-trpc-drizzle/), wenn das Frontend eine dedizierte TanStack Router React-App sein soll.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=typescript&fe-w=astro&ai=react&be=hono&rt=bun&db=sqlite&orm=drizzle&au=better-auth&api=trpc&ui=daisyui).
+- Lesen Sie die [TypeScript Ökosystemdokumente](/docs/ecosystems/typescript/).
+- Vergleichen Sie mit [SvelteKit mit Hono und Drizzle](/guides/typescript/sveltekit-hono-drizzle/).

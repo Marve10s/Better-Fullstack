@@ -17,19 +17,44 @@ const zh_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3In
 	return /** @type {LocalizedString} */ (`已复制！`)
 };
 
+const ja_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`コピーしました！`)
+};
+
+const ko_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`복사되었습니다!`)
+};
+
+const zh_hant1_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`已複製！`)
+};
+
+const de_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Kopiert!`)
+};
+
+const fr_sharebuttoncopiedtitle3 = /** @type {(inputs: Sharebuttoncopiedtitle3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copié!`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Copied!" |
 *
 * @param {Sharebuttoncopiedtitle3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const sharebuttoncopiedtitle3 = /** @type {((inputs?: Sharebuttoncopiedtitle3Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharebuttoncopiedtitle3Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharebuttoncopiedtitle3 = /** @type {((inputs?: Sharebuttoncopiedtitle3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharebuttoncopiedtitle3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharebuttoncopiedtitle3(inputs)
 	if (locale === "es") return es_sharebuttoncopiedtitle3(inputs)
-	return zh_sharebuttoncopiedtitle3(inputs)
+	if (locale === "zh") return zh_sharebuttoncopiedtitle3(inputs)
+	if (locale === "ja") return ja_sharebuttoncopiedtitle3(inputs)
+	if (locale === "ko") return ko_sharebuttoncopiedtitle3(inputs)
+	if (locale === "zh-Hant") return zh_hant1_sharebuttoncopiedtitle3(inputs)
+	if (locale === "de") return de_sharebuttoncopiedtitle3(inputs)
+	return fr_sharebuttoncopiedtitle3(inputs)
 });
 export { sharebuttoncopiedtitle3 as "shareButtonCopiedTitle" }

@@ -1,0 +1,101 @@
+---
+title: 설치
+description: 환경을 설정하고 첫 번째 Better Fullstack 프로젝트를 발판으로 삼으세요.
+---
+
+Better Fullstack은 `create-better-fullstack` 패키지를 통해 실행됩니다. 전역적으로 설치할 필요는 없습니다. 패키지 관리자로 실행하고 프롬프트에 응답하면 CLI가 선택한 프로젝트를 작성합니다.
+
+<Callout kind="tip" title="Online preview">
+시각적으로 선택하는 것을 선호하시나요? [Stack Builder](https://better-fullstack.dev/new)을 열고 호환 가능한 스택을 선택한 후 생성된 명령을 복사합니다.
+</Callout>
+
+## 전제조건
+
+- Node.js CLI의 경우 20 이상입니다.
+- 터미널.
+- CLI에서 저장소를 초기화하려는 경우에만 Git입니다.
+- 귀하가 생성한 프로젝트만을 위한 생태계별 도구입니다.
+
+| 생태계 | 추가 툴링 |
+| --- | --- |
+| TypeScript | npm, pnpm, Yarn 또는 Bun |
+| React Native | 시뮬레이터 또는 장치에서 실행 시 Expo 호환 iOS/Android 도구 |
+| 녹 | Rust 툴체인과 Cargo |
+| 파이썬 | 파이썬과 `uv` |
+| 가다 | Go 툴체인 |
+| 자바 | 자바 21 |
+| 엘릭서 | 데이터베이스 기반 Phoenix 흐름을 위한 Elixir, Erlang/OTP 및 PostgreSQL |
+
+## CLI 실행
+
+<PMTabs
+  npm="npm create better-fullstack@latest"
+  pnpm="pnpm create better-fullstack@latest"
+  bun="bun create better-fullstack@latest"
+  yarn="yarn create better-fullstack@latest"
+/>
+
+마법사를 시작하려면 프로젝트 이름을 추가하세요.
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+마법사는 에코시스템, 스택 옵션, 선택적 애드온, Git 및 종속성 설치를 요청합니다.
+
+## 명시적인 플래그 사용
+
+명시적 플래그는 해당하는 프롬프트를 건너뜁니다. 이는 스크립트, 문서, 생성된 명령 및 재현 가능한 버그 보고서에 가장 적합한 형식입니다.
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --db-setup none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+`npm create`을 사용하면 Better Fullstack 플래그가 `--` 뒤에 옵니다. 렌더링된 pnpm, Bun 및 Yarn 탭은 npm 전용 구분 기호를 제거합니다.
+
+AI 명령어 파일을 생성하지 않으려면 `--ai-docs none`을 사용하세요. 종속성 설치 전에 파일을 검사하려면 `--no-install`을 사용하세요.
+
+## 템플릿
+
+템플릿은 일반적인 스택을 줄여서 표현한 것입니다.
+
+| 주형 | 스택 |
+| --- | --- |
+| `t3` | Next.js, tRPC, Prisma, PostgreSQL, Better Auth |
+| `mern` | MongoDB, Express, React Router, Node.js |
+| `pern` | PostgreSQL, Express, TanStack Router, Node.js |
+| `uniwind` | Expo + Uniwind, 모바일 전용 |
+| `none` | 속기 템플릿 없음 |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
+## 파일을 쓰기 전에 유효성을 검사하세요
+
+프로젝트를 작성하지 않고 생성된 파일을 미리 보려면 `--dry-run`을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+스캐폴딩 후에 CLI이 생성된 검사를 실행하도록 하려면 `--verify`을 사용하세요. 개발 서버는 시작되지 않습니다.
+
+## 다음
+
+- [첫 번째 프로젝트](/docs/getting-started/first-project/) 흐름을 살펴보세요.
+- [CLI 생성](/docs/cli/create/)에서 모든 플래그를 찾아보세요.
+- [생태계](/docs/ecosystems/)의 언어 지원을 비교해 보세요.

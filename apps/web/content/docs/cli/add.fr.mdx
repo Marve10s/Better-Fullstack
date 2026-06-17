@@ -1,0 +1,61 @@
+---
+title: Ajouter des fonctionnalités
+description: Ajoutez des modules complémentaires pris en charge aux projets Better Fullstack existants.
+---
+
+La commande `add` met à jour un projet Better Fullstack existant. Il lit `bts.jsonc`, valide les modules complémentaires demandés, écrit les fichiers pris en charge et met à jour la configuration du projet.
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+## Qu'est-ce que l'ajout
+
+- Lit `bts.jsonc` à partir du projet en cours ou à partir de `--project-dir`.
+- Demande des modules complémentaires compatibles lorsque `--addons` est omis.
+- Ignore les modules complémentaires déjà installés.
+- Écrit des modèles de modules complémentaires et des modifications de dépendances lorsqu'un nouveau module complémentaire est sélectionné.
+- Imprime une commande d'installation lorsque l'installation des dépendances est ignorée.
+
+<Callout kind="warn" title="Addon-first command">
+`add` se ferme actuellement lorsqu'aucun nouveau module complémentaire n'est sélectionné. Choisissez les cibles de déploiement pendant `create` lorsque cela est possible ; Les flux de déploiement uniquement `add --web-deploy ...` ou `add --server-deploy ...` ne sont pas encore terminés.
+</Callout>
+
+## Drapeaux
+
+| Drapeau | Valeurs ou comportement |
+| --- | --- |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+| `--project-dir` | Chemin d'accès au projet généré. La valeur par défaut est le répertoire actuel. |
+| `--install` | Installez les dépendances après avoir ajouté des fichiers. La valeur par défaut est false pour `add`. |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
+| `--web-deploy` | Enregistre une cible de déploiement Web après le traitement du module complémentaire. |
+| `--server-deploy` | Enregistre une cible de déploiement de serveur après le traitement du module complémentaire. |
+
+## Référence du module complémentaire
+
+| Ajouter sur | But |
+| --- | --- |
+| `mcp` | Configuration du serveur MCP du projet généré pour les agents de codage. |
+| `skills` | Fichiers de compétences d'agent de codage organisés. |
+| `turborepo` | Orchestration monorepo. |
+| `docker-compose` | Orchestration de services locaux pour les piles prises en charge. |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Qualité du code et crochets. |
+| `starlight` `fumadocs` | Sites de documentation lorsqu'ils sont compatibles avec la pile. |
+| `tauri` `pwa` `wxt` | Prise en charge des ordinateurs de bureau, des applications Web progressives et des extensions de navigateur. |
+| `msw` `storybook` | Utilitaires de test et de développement de composants. |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Récupération de données et utilitaires d'interface utilisateur. |
+| `backend-utils` | asyncHandler, ApiResponse et un gestionnaire d'erreurs global pour les serveurs Hono, Express, Fastify, Elysia, feTS ou NestJS. |
+| `opentui` | Prise en charge de l'interface utilisateur du terminal. |
+
+## Idempotence
+
+`bts.jsonc` est la source de vérité pour les modules complémentaires installés. Si chaque module complémentaire demandé est déjà présent, `add` signale qu'aucun nouveau module complémentaire n'a été sélectionné et se ferme sans appliquer de modifications sans rapport.
+
+## Flux de travail recommandé
+
+1. Validez ou cachez le travail en cours.
+2. Exécutez `add` avec des indicateurs de module complémentaire explicites.
+3. Examinez les modifications de fichiers générées.
+4. Installez les dépendances si la commande a ignoré l'installation.
+5. Exécutez la commande test, lint ou typecheck du projet.

@@ -1,0 +1,62 @@
+---
+title: 녹
+description: Rust 백엔드, CLI, WebAssembly 프런트엔드, GraphQL, gRPC, 데이터베이스, 로깅, 캐싱 및 인증 스캐폴드.
+---
+
+Rust 프로젝트는 Cargo 및 언어 기반 템플릿을 사용합니다. 백엔드 서비스, CLIs, GraphQL/gRPC, WebAssembly 프런트엔드, 로깅, 캐싱 및 인증 도우미에 대한 Rust 옵션을 선택하세요.
+
+## 전제조건
+
+- Rust 툴체인과 Cargo.
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## 녹 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프레임워크 | `axum` `actix-web` `rocket` `none` |
+| 프런트엔드 | `leptos` `dioxus` `none` |
+| ORM | `sea-orm` `sqlx` `diesel` `none` |
+| API | `tonic` `async-graphql` `none` |
+| CLI | `clap` `ratatui` `none` |
+| 도서관 | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |
+| 벌채 반출 | `tracing` `env-logger` `none` |
+| 오류 처리 | `anyhow-thiserror` `eyre` `none` |
+| 캐싱 | `moka` `redis` `none` |
+| 인증 | `oauth2` `torii` `none` |
+| 실시간 | `tokio-tungstenite` `none` |
+| 메시지 대기열 | `lapin` `none` |
+| 관찰 가능성 | `opentelemetry` `none` |
+| 템플릿 | `askama` `tera` `none` |
+
+## 생성된 동작
+
+- `cargo build`은 설치가 활성화된 경우의 설치/확인 경로입니다.
+- Leptos, Dioxus, Tonic, Clap 및 Ratatui 템플릿 파일은 해당 일치 옵션을 선택한 경우에만 포함됩니다.
+- `rustLibraries`은 다중 선택입니다. `none`을 전달하거나 원하지 않는 라이브러리를 생략하세요.
+- AI 명령 파일은 `--ai-docs none`을 포함하여 `--ai-docs`을 통해 계속 사용할 수 있습니다.

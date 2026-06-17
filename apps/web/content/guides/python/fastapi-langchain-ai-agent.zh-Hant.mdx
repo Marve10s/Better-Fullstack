@@ -1,0 +1,188 @@
+---
+title: FastAPI AI Agent with LangChain
+description: 使用 Better Fullstack 建立包含 FastAPI、LangChain、SQLModel、Pydantic 和 Ruff 的 Python AI API。
+updated: 2026-05-12
+category: Python
+tags:
+  - fastapi
+  - langchain
+  - ai
+  - sqlmodel
+keywords:
+  - fastapi langchain starter
+  - python ai agent starter
+  - fastapi ai api
+  - create langchain api
+  - python ai boilerplate
+---
+
+當你需要為 AI 應用程式碼準備好的 Python API 時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-python-ai-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-ai langchain \
+  --python-quality ruff
+```
+
+## 創建內容
+
+- FastAPI 項目。
+- LangChain 作為 Python AI library 選項。
+- SQLModel 和 Pydantic。
+- Ruff 用於代碼品質。
+
+## 生成結構
+
+這個 scaffold 從 HTTP API、SQLModel 持久化和 LangChain helper modules 開始。路由層處理 validation 和 streaming responses，AI client module 負責模型呼叫。當 prompts、retrieval、tools 和 persistence 以不同速度變化時，這種分離會非常重要。
+
+```txt
+my-python-ai-api/
+├── pyproject.toml
+├── alembic.ini
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── crud.py
+│   ├── langchain_client.py
+│   ├── langchain_schemas.py
+│   └── settings.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+產生的依賴包含 `langchain` 和 `langchain-openai`。在呼叫 AI endpoints 前，透過環境變數設定 provider credentials。
+
+```bash
+OPENAI_API_KEY="sk-..."
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_python_ai_api"
+```
+
+## 何時選擇
+
+適用於 AI APIs、retrieval workflows、agent backends，以及需要在模型或 tool 編排外包一層 web boundary 的 Python 服務。
+
+當核心 workflow 是模型編排時，選擇它而不是普通 FastAPI database API。當服務核心是持久化、AI 可能之後再新增時，選擇 SQLAlchemy 指南。
+
+| 需求 | 這個 LangChain stack | 普通 FastAPI API |
+| --- | --- | --- |
+| Chat/completion endpoint | 生成起點 | 手動新增 |
+| Streaming responses | AI route pattern 中已包含 | 需要時再添加 |
+| 資料模型風格 | SQLModel 結合表模型和 Pydantic shape | SQLAlchemy models 加 Pydantic schemas |
+| Prompt/tool 成長 | AI client module 提供明確歸屬 | 自行選擇模組邊界 |
+| 生產關注點 | Provider keys、latency、retries、observability | 資料庫和 HTTP 行為優先 |
+
+## 代表性片段
+
+SQLModel 讓小型服務中的持久化和校驗保持接近。
+
+```python
+from datetime import datetime
+
+from pydantic import EmailStr
+from sqlmodel import Field, SQLModel
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(index=True, unique=True)
+    name: str | None = Field(default=None, max_length=255)
+
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+```
+
+保持 route 夠薄，讓 `langchain_client.py` 負責模型細節。
+
+```python
+from fastapi.responses import StreamingResponse
+
+from app.langchain_client import chat, chat_stream
+from app.langchain_schemas import ChatRequest, ChatResponse
+
+
+@app.post("/ai/chat", response_model=ChatResponse)
+async def langchain_chat(request: ChatRequest):
+    response = await chat(request.message, history=request.history)
+    return ChatResponse(response=response)
+
+
+@app.post("/ai/chat/stream")
+async def langchain_chat_stream(request: ChatRequest):
+    return StreamingResponse(
+        chat_stream(request.message, history=request.history),
+        media_type="text/event-stream",
+    )
+```
+
+隨著 agent 增長，使用明確的 tool functions，而不是讓 routes 負責拼接 prompt strings。
+
+```python
+from langchain_core.tools import tool
+
+
+@tool
+def lookup_customer(customer_id: str) -> str:
+    """Return customer context for support workflows."""
+    return customer_repository.summary(customer_id)
+```
+
+## 遷移與測試
+
+產生的 SQLModel 路徑包含 Alembic 配置。用它讓資料庫變更可重複，尤其是當你儲存 conversations、tool calls、evaluation traces 或 document chunks 時。
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+```bash
+uv run alembic revision --autogenerate -m "add conversation tables"
+uv run alembic upgrade head
+```
+
+新增兩層測試：route tests 覆蓋 request validation 和 streaming behavior；client tests 覆蓋 prompt/tool orchestration，並 mock 掉模型 provider。不要在常規 unit test lane 中呼叫付費模型 API。
+
+## 相容性說明
+
+Python AI 選項透過 `--python-ai` 選擇。它和 web app AI SDK 選項使用的 TypeScript `--ai` flag 是分開的。
+
+- `--python-ai langchain` 是 Python 生態中的 array-style 選項；支援時可以選擇額外的 Python AI libraries。
+- `--python-orm sqlmodel` 很適合緊湊的 API/database 範例，因為 response schemas 和 table models 可以共用 base classes。
+- 產生的 `DATABASE_URL` fallback 是本地 SQLite。透過設定 `DATABASE_URL` 使用 PostgreSQL。
+- FastAPI streaming responses 要求部署目標支援長時間運行的 HTTP responses。
+
+## 部署說明
+
+像部署 FastAPI 服務一樣部署它，但要為 AI 特有問題留出空間：provider credentials、request timeouts、retries、rate limits 和 response streaming。發布前運行 migrations，並把 model/provider settings 放在鏡像之外。
+
+```bash
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+生產 agent workflows 中，為每次 model call 新增 request IDs 和 structured logs。如果引進 retrieval，把 embeddings、vector indexes 和 source documents 與應用部署分開 version。
+
+## 故障排查
+
+| 症狀 | 檢查 |
+| --- | --- |
+| AI route 回傳 provider errors | 驗證 `OPENAI_API_KEY` 或 provider-specific 環境變數。 |
+| Streaming 本地正常但生產環境被 buffer | 確認 proxy/platform 支援 streaming responses。 |
+| Tests 緩慢或 flaky | 在 unit tests 中 mock LangChain/provider clients。 |
+| SQLModel tables 缺失 | 執行 Alembic migrations，或在存取 routes 之前初始化資料庫。 |
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff)。
+- 對比 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。
+- 閱讀 [Python ecosystem docs](/docs/ecosystems/python/)。

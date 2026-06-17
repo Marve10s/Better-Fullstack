@@ -1,0 +1,38 @@
+---
+title: 백엔드 및 API
+description: 지원되는 생태계 전반에서 서버 프레임워크, 런타임, API 레이어를 선택하세요.
+---
+
+백엔드 선택에 따라 애플리케이션 로직이 실행되는 위치와 클라이언트가 애플리케이션 로직과 통신하는 방식이 결정됩니다.
+
+## 백엔드 프레임워크
+
+TypeScript 백엔드 옵션에는 Hono, Express, Fastify, Elysia, NestJS, AdonisJS, Nitro, Encore, Convex, feTS, `self` 및 `none`이 포함됩니다.
+
+언어 생태계는 자체 백엔드 표면을 노출합니다.
+
+| 생태계 | 백엔드 선택 |
+| --- | --- |
+| 녹 | Axum, Actix Web, Rocket 또는 없음. |
+| 파이썬 | FastAPI, Django, Flask, Litestar 또는 없음. |
+| 가다 | 진, 에코, 파이버, 치 또는 없음. |
+| 자바 | Spring Boot, Quarkus 또는 없음. |
+| 엘릭서 | Phoenix, Phoenix LiveView 또는 없음. |
+
+## 실행 시간
+
+TypeScript 서버는 Bun, Node.js, 작업자를 대상으로 하거나 별도의 런타임을 대상으로 하지 않을 수 있습니다. TypeScript이 아닌 생태계는 Cargo, uv, Go 모듈, Maven/Gradle 또는 Mix와 같은 기본 툴체인을 사용합니다.
+
+## API 레이어
+
+API 선택에는 TypeScript RPC/GraphQL 옵션, Rust Tonic 또는 async-graphql, Python Django API/GraphQL 옵션, Go gRPC 및 Elixir REST 또는 Absinthe가 포함됩니다.
+
+## 다중 생태계 소유권
+
+다중 모드에서는 API, ORM 및 인증 기능이 선택한 백엔드에 연결됩니다. 예를 들어 `backend.api:rust:tonic`은 Rust 백엔드에 속하고 `backend.orm:go:gorm`은 Go 백엔드에 속합니다.
+
+## 참고자료
+
+- [다중 생태계](/docs/ecosystems/multi-ecosystem/)
+- [호환성](/docs/reference/compatibility/)
+- [CLI 생성](/docs/cli/create/)

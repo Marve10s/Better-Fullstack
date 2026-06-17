@@ -1,0 +1,65 @@
+---
+title: .NETTO
+description: ASP.NET Core-Gerüste mit EF Core oder Dapper, Identity, Minimal APIs oder Hot Chocolate, SignalR, Hintergrundjobs, Tests und Bereitstellungsdateien.
+---
+
+.NET-Projekte generieren ASP.NET Core-Anwendungen, die den Standardkonventionen `dotnet` folgen. Wählen Sie .NET-Optionen für das Webframework, Datenzugriff, Authentifizierung, API-Stil, Echtzeit, Hintergrundjobs, Beobachtbarkeit, Caching, Tests und Bereitstellungsdateien.
+
+## Voraussetzungen
+
+- .NET SDK 10 oder neuer.
+- PostgreSQL bei Verwendung von `ef-core` mit der Datenbank `postgres`; SQLite benötigt keinen Server.
+- Docker bei Verwendung des Bereitstellungsziels `docker` oder `testcontainers-dotnet`.
+- Git, wenn Sie eine Repository-Initialisierung wünschen.
+
+## Skriptbeispiel
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NET-Kategorien
+
+| Kategorie | Werte |
+| --- | --- |
+| Web-Framework | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| Datenzugriff | `ef-core` `dapper` `linq2db` `none` |
+| Auth | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| Testen | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| Hintergrundjobs | `hangfire` `quartz-net` `hosted-services` `none` |
+| Echtzeit | `signalr` `none` |
+| Beobachtbarkeit | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| Validierung | `fluentvalidation` `data-annotations` `none` |
+| Caching | `redis` `memory-cache` `none` |
+| Einsetzen | `docker` `azure` `aws` `none` |
+
+## Kompatibilitätshinweise
+
+- .NET-Optionen gelten nur mit `--ecosystem dotnet`.
+- ASP.NET Core ist ein eigenständiges .NET-Webframework. TypeScript Frontend- und Backend-Optionen werden ignoriert.
+- `--dotnet-testing` und `--dotnet-observability` akzeptieren mehrere Werte.
+- `ef-core` wählt den Anbieter aus `--database` aus: `postgres` verwendet Npgsql, alles andere fällt auf SQLite zurück.
+- `aspnet-identity` registriert Identitätsspeicher nur, wenn es mit `ef-core` gekoppelt ist; Ohne sie registriert das Gerüst einfache Authentifizierungs- und Autorisierungsdienste.
+- Nicht interaktive Standardwerte, wenn `--ecosystem dotnet` festgelegt ist: `aspnet-minimal`, `ef-core`, `aspnet-identity`, `minimal-api`, `xunit`, `signalr`, `serilog` und `docker`.
+
+## Generiertes Verhalten
+
+- Das Projekt enthält eine `.csproj`, `Program.cs`, `appsettings.json`, eine `.http`-Anfragedatei, ein Testprojekt, `.gitignore`, und Einrichtungshinweise in der README-Datei.
+- EF Core-Auswahlen verbinden einen `DbContext` mit dem Npgsql- oder SQLite-Anbieter sowie dem Entwurfszeitpaket für Migrationen.
+- Durch optionale Auswahlmöglichkeiten werden funktionierender ASP.NET Core-Code für Identity, Hot Chocolate GraphQL, gRPC-Dienste, SignalR-Hubs, Hangfire- oder Quartz.NET-Jobs, Serilog/NLog/OpenTelemetry-Pipelines, Redis-Caching und eine mehrstufige Docker-Datei hinzugefügt.

@@ -1,0 +1,59 @@
+---
+title: Java API を作成する
+description: Spring Boot、Spring Security、Spring Data JPA、Flyway、Gradle、JUnit 5、および Testcontainers を使用して Java API を作成します。
+updated: 2026-05-21
+category: パック
+tags:
+  - java
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - create java api
+  - spring boot api starter
+  - java rest api starter
+  - spring security api
+  - spring boot jpa starter
+---
+
+セキュリティ、永続性、移行、テストが最初から含まれている Spring サービスが必要な場合は、Java API パックを使用します。
+
+<StarterPackCta id="java-api" />
+
+## Java API スターターを生成する
+
+[Stack Builder の Java API パック](/new?preset=java-secure&view=command) を開くか、次のコマンドを実行します。
+
+```bash
+bun create better-fullstack@latest my-java-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## パックの内容
+
+- API アプリケーションの場合は Spring Boot。
+- 保護されたルートの場合は Spring Security。
+- 永続化のための Spring Data JPA。
+- データベース移行の場合は Flyway。
+- ビルド用の Gradle。
+- JUnit 5 とテスト用の Testcontainers。
+
+## 最初にカスタマイズすること
+
+1. サンプル エンティティを集約ルートおよびリポジトリに置き換えます。
+2. 実際の認証モデルに基づいて Spring Security を構成します。
+3. 生成されたスキーマの動作に依存する前に、Flyway 移行を追加してください。
+4. Testcontainers を API コントラクト テストの近くに配置します。
+
+## これが適切なパックの場合
+
+エンタープライズ API、チーム所有のバックエンド サービス、安全な管理システム、および Java/Spring エコシステムが運用基盤となるプロジェクトの場合は、これを選択してください。
+
+スタックレベルのチュートリアルについては、[Secure Spring Boot API](/guides/java/spring-security-api/) を参照してください。

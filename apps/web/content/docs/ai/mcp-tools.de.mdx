@@ -1,0 +1,178 @@
+---
+title: MCP Tools-Referenz
+description: Detaillierte Referenz für Better Fullstack MCP Tools, Eingaben, Ausgaben und sichere Arbeitsabläufe.
+---
+
+Der MCP-Server stellt strukturierte Tools für Agenten bereit. Verwenden Sie sie, anstatt einen Agenten zu bitten, CLI-Flags aus Prosa zu erraten oder lange Befehle von Hand zu kopieren.
+
+## Empfohlene Arbeitsabläufe
+
+### Neues Projekt
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+### Bestehendes Projekt
+
+1. `bfs_get_guidance`
+2. `bfs_plan_addition`
+3. `bfs_add_feature`
+
+<Callout kind="warn" title="Mutation behavior">
+`bfs_plan_project` ist nur für den Probelauf geeignet. `bfs_create_project` schreibt ein neues Projekt auf die Festplatte. `bfs_add_feature` mutiert ein bestehendes Projekt. MCP Durch die Projekterstellung und das Hinzufügen von Funktionen werden keine Abhängigkeiten installiert.
+</Callout>
+
+<Callout kind="info" title="Graph metadata">
+Zu den Tools für die Projektplanung, -erstellung und -ergänzung gehören `graphSummary`, `effectiveStack` und `stackPartSpecs`, sodass Agenten dieselbe vom Diagramm abgeleitete Stapelansicht überprüfen können, die `bts.jsonc` beibehalten wird.
+</Callout>
+
+## Werkzeugreferenz
+
+### `bfs_get_guidance`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Gibt Workflowregeln, Feldsemantik, Mehrdeutigkeitsregeln und kritische Einschränkungen zurück. |
+| Wann Sie anrufen sollten | Zuerst vor anderen Better Fullstack MCP Tools. |
+| Schreibt Dateien | NEIN. |
+| Erforderliche Eingaben | Keiner. |
+| Optionale Eingaben | Keiner. |
+| Ausgabe | JSON-Leitfaden mit empfohlener Werkzeugreihenfolge, Array-Feldern, Ökosystemregeln und Beispielen. |
+
+```json
+{}
+```
+
+### `bfs_get_schema`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Gibt gültige Optionswerte für eine Kategorie oder alle Kategorien zurück. |
+| Wann Sie anrufen sollten | Vor der Planung eines Stacks, insbesondere wenn der Benutzer Technologien informell benannt hat. |
+| Schreibt Dateien | NEIN. |
+| Erforderliche Eingaben | Keiner. |
+| Optionale Eingaben | `category`, `ecosystem`. |
+| Ausgabe | JSON-Schema-/Optionsdaten, gefiltert nach Kategorie oder Ökosystem. |
+
+```json
+{
+  "category": "database",
+  "ecosystem": "typescript"
+}
+```
+
+### `bfs_check_compatibility`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Validiert eine Stapelkombination und gibt angepasste Auswahlen mit Warnungen zurück. |
+| Wann Sie anrufen sollten | Vor `bfs_plan_project` oder `bfs_create_project`. |
+| Schreibt Dateien | NEIN. |
+| Erforderliche Eingaben | `ecosystem`. |
+| Optionale Eingaben | Frontend, Backend, Laufzeit, Datenbank, ORM, API, Authentifizierung, Dienste, UI/CSS, mobile Felder, Add-ons, Beispiele, Paketmanager, Bereitstellungsfelder und ökosystemspezifische Felder. |
+| Ausgabe | JSON-Kompatibilitätsanalyse mit Änderungen, Notizen und angepassten Stack-Daten. |
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["next"],
+  "backend": "self",
+  "runtime": "none",
+  "database": "postgres",
+  "orm": "drizzle",
+  "api": "trpc"
+}
+```
+
+### `bfs_plan_project`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Erstellt ein Projekt im Speicher und gibt eine Dateibaumzusammenfassung zurück. |
+| Wann Sie anrufen sollten | Nach der Kompatibilitätsvalidierung und vor dem Schreiben von Dateien. |
+| Schreibt Dateien | NEIN. |
+| Erforderliche Eingaben | Keine, aber `projectName` und `ecosystem` werden empfohlen. |
+| Optionale Eingaben | Vollständige Projekt-Stack-Auswahl. |
+| Ausgabe | JSON-Erfolgsflag plus generierte Datei-/Verzeichniszusammenfassung, `graphSummary`, `effectiveStack` und `stackPartSpecs`. |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle"
+}
+```
+
+### `bfs_create_project`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Schreibt ein neu generiertes Projekt auf die Festplatte. |
+| Wann Sie anrufen sollten | Erst nachdem `bfs_plan_project` erfolgreich war und der Benutzer zustimmt. |
+| Schreibt Dateien | Ja, erstellt das Projektverzeichnis und generierte Dateien. |
+| Erforderliche Eingaben | `projectName`. |
+| Optionale Eingaben | Vollständige Projekt-Stack-Auswahl. |
+| Ausgabe | JSON-Erfolgsflag, Projektverzeichnis, Dateianzahl, Diagrammmetadaten, Add-on-Warnungen und Anleitung zum Installationsbefehl. |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "java",
+  "javaWebFramework": "spring-boot",
+  "javaBuildTool": "maven",
+  "javaTestingLibraries": ["junit5"]
+}
+```
+
+### `bfs_plan_addition`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Liest `bts.jsonc` und validiert vorgeschlagene Ergänzungen für ein bestehendes Projekt. |
+| Wann Sie anrufen sollten | Bevor Sie ein vorhandenes Projekt mit `bfs_add_feature` mutieren. |
+| Schreibt Dateien | NEIN. |
+| Erforderliche Eingaben | `projectDir`. |
+| Optionale Eingaben | `addons`, `webDeploy`, `serverDeploy`. |
+| Ausgabe | Zusammenfassung der vorhandenen Konfiguration, vorgeschlagene Ergänzungen, Diagrammmetadaten für beide, bereits vorhandene Add-ons und Kompatibilitätswarnungen. |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["mcp", "skills"]
+}
+```
+
+### `bfs_add_feature`
+
+| Feld | Einzelheiten |
+| --- | --- |
+| Zweck | Fügt unterstützte Add-ons oder Bereitstellungseinstellungen zu einem vorhandenen Better Fullstack-Projekt hinzu. |
+| Wann Sie anrufen sollten | Nachdem `bfs_plan_addition` erfolgreich war und der Benutzer zustimmt. |
+| Schreibt Dateien | Ja, mutiert das bestehende Projekt. |
+| Erforderliche Eingaben | `projectDir`. |
+| Optionale Eingaben | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
+| Ausgabe | JSON-Ergebnis aus dem Add-Handler, Diagrammmetadaten nach dem Update und Installationsanleitung, sofern verfügbar. |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["biome"],
+  "packageManager": "bun"
+}
+```
+
+## Agentenregeln
+
+- Behandeln Sie `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries` und `javaTestingLibraries` als Arrays.
+- Legen Sie `ecosystem` fest, bevor Sie ökosystemspezifische Felder auswählen.
+- Bevorzugen Sie `none`, wenn der Benutzer eine Kategorie explizit deaktivieren möchte.
+- Bei der Projekterstellung MCP werden derzeit nicht alle CLI-Workflow-Flags verfügbar gemacht. Beispielsweise verwendet `aiDocs` die integrierte Standardeinstellung des Servers während der Projekterstellung.
+- Rufen Sie Schreibtools erst auf, wenn der Benutzer den Probelauf- oder Ergänzungsplan genehmigt hat.
+- Teilen Sie dem Benutzer mit, welche Installations-/Testbefehle nach der Erstellung oder Hinzufügung von MCP ausgeführt werden sollen, da MCP keine Abhängigkeiten installiert.

@@ -1,0 +1,140 @@
+---
+title: Hono と tRPC および Drizzle
+description: Hono、tRPC、Drizzle、PostgreSQL、TanStack Router、Tailwind CSS、および Better Auth を使用して TypeScript フルスタック アプリを作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+高速な TypeScript API サーバーと、型指定されたクライアント/サーバー呼び出しを備えた別個の React フロントエンドが必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## これが生み出すもの
+
+- TanStack Router フロントエンド。
+- Bun で実行されている Hono バックエンド。
+- PostgreSQL および Drizzle。
+- Better Auth。
+- Web アプリと API の間の tRPC。
+- フロントエンドおよびサーバーパッケージのモノリポジトリ構造。
+
+## 生成された形状
+
+このコマンドは、分割アプリ形状を作成します。フロントエンドとバックエンドは別個のパッケージですが、これらは一緒に生成され、同じスタック構成を共有します。これにより、TypeScript 推論を放棄することなく、API 境界が明確になります。
+
+代表的な形状：
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+正確なワークスペース名は異なる場合がありますが、アーキテクチャのポイントは同じです。TanStack Router はブラウザ アプリを所有し、Hono は HTTP を所有し、Drizzle はデータベース アクセスを所有し、tRPC はそれらの間の型指定されたコントラクトです。
+
+## Hono ルートの例
+
+Hono は、リクエスト処理を明示的かつ軽量に保つ必要がある場合に役立ちます。
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => {
+  return c.json({ ok: true });
+});
+
+export default app;
+```
+
+フレームワークレベルのミドルウェア、認証コンテキスト、およびリクエストログをサーバーパッケージに保持します。 Hono リクエスト オブジェクトが共有ビジネス ロジックに漏洩しないようにします。
+
+## tRPC プロシージャ形状の例
+
+tRPC プロシージャは、サーバー操作に関する小規模で検証済みのエントリ ポイントである必要があります。
+
+```ts
+import { z } from "zod";
+
+const createTaskInput = z.object({
+  title: z.string().min(1),
+});
+
+export const taskProcedures = {
+  create: async (rawInput: unknown, userId: string) => {
+    const input = createTaskInput.parse(rawInput);
+
+    return {
+      id: crypto.randomUUID(),
+      title: input.title,
+      ownerId: userId,
+    };
+  },
+};
+```
+
+大規模なアプリの場合は、クライアントとサーバーの両方で検証スキーマが必要な場合にのみ、検証スキーマを共有モジュールに配置します。データベースへの書き込みはサーバーのみで行う必要があります。
+
+## いつ選択するか
+
+バックエンドを小型、高速、明示的に維持する必要がある場合は、Hono を選択します。この設定は、API 以降の製品、ダッシュボード、内部ツール、および後でフロントエンドとバックエンドの展開を分割する可能性があるサービスに適しています。
+
+## 互換性に関する注意事項
+
+- `--frontend tanstack-router` と `--backend hono` を組み合わせると、個別の React Web アプリと API サーバーが提供されます。
+- このガイドでは、`--runtime bun` は Hono サービスに対して Bun を選択します。
+- フロントエンドは React ベースであるため、ここでは `--api trpc` が適切です。 SvelteKit、Nuxt、または SolidStart ガイドの場合、Better Fullstack は代わりに oRPC を使用します。
+- PostgreSQL と Drizzle は、この分割サービス形状の実稼働指向のペアです。
+
+## 導入メモ
+
+ホストがフロントエンドと Hono サーバーを別々に扱う場合は、2 つのデプロイ可能なターゲットを計画します。 CORS、認証 Cookie ドメイン、およびパブリック API URL を意図的に構成します。分割サービスにより、これらの詳細が可視化されます。
+
+API サーバーには、PostgreSQL 接続文字列と認証シークレットが必要です。 Web アプリには、API 起点とパブリック アプリ URL の値が必要です。フロントエンドのビルド時のパブリック変数にシークレットを含めないでください。
+
+## トラブルシューティング
+
+- Hono に到達する前にブラウザーのリクエストが失敗した場合は、CORS と構成された API ベース URL を検査してください。
+- ドメイン間で認証 Cookie が欠落している場合は、同一サイト設定、セキュア Cookie、および Web/API ドメインが意図した展開と一致するかどうかを確認してください。
+- tRPC がコンパイルを呼び出しても実行時に失敗する場合は、Hono tRPC アダプターがクライアントが使用するのと同じパスにマウントされていることを確認してください。
+- 生成されたアプリがローカルで PostgreSQL に接続できない場合は、データベースが実行中であり、接続文字列が選択したデータベースと一致していることを確認してください。
+
+## トレードオフ
+
+単一のフレームワークでアプリ全体を所有したい場合は、[TanStack Start](/guides/typescript/create-tanstack-start-project/) または [Next.js](/guides/typescript/nextjs-drizzle-better-auth/) を使用します。個別の API 境界が必要な場合は、Hono がよりクリーンなデフォルトです。
+
+セルフバックエンド フルスタック フレームワークと比較して、このスタックにはより多くの可動部分があります。その成果は、サービス境界がより明確になり、API に重点を置いたテストが容易になり、後で複数のクライアントにサービスを提供できるバックエンドになります。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc) を開きます。
+- [TypeScript エコシステム ドキュメント](/docs/ecosystems/typescript/) を読んでください。
+- [CLI フラグの作成](/docs/cli/create/) を確認してください。

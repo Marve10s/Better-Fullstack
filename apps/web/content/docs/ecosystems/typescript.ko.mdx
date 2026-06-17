@@ -1,0 +1,81 @@
+---
+title: TypeScript
+description: 풀스택 웹, 데스크톱, API, 작업자 및 통합 스캐폴드.
+---
+
+TypeScript은(는) 가장 광범위한 Better Fullstack 생태계입니다. 웹 앱, APIs, 작업자, 데스크톱 셸, 브라우저 확장, 문서 사이트, 서비스 통합 및 대부분의 애드온 워크플로에 사용하세요.
+
+React Native/Expo 모바일 비계는 전용 [React Native](/docs/ecosystems/react-native/) 생태계에 살고 있습니다.
+
+## 전제조건
+
+- Node.js 20+.
+- npm, pnpm, Yarn 또는 Bun.
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## 핵심 비계 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프론트엔드 | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| 백엔드 | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| 실행 시간 | `bun` `node` `workers` `none` |
+| 데이터 베이스 | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| 인증 | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## UI 및 앱 기능
+
+| 범주 | 가치 |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| UI 라이브러리 | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |
+| 상태 | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| 양식 | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| 확인 | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| 예 | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## 서비스 및 도구
+
+| 범주 | 가치 |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |
+| 결제 | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| 이메일 | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| 실시간 | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| 채용 정보 | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| 저장 | `s3` `r2` `cloudinary` `none` |
+| 기능 플래그 | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| 애드온 | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+
+## 호환성 참고사항
+
+- tRPC은 React 기반 프런트엔드용입니다.
+- `self` 백엔드는 풀스택 프레임워크용이며 `runtime none`과 쌍을 이룹니다.
+- Qwik, Angular, Redwood 및 Fresh는 전체 옵션 표보다 API/백엔드 지원 범위가 더 좁습니다.
+- 작업자 런타임 지원은 백엔드에 따라 다릅니다.
+- UI 라이브러리는 프런트엔드 제품군과 CSS 프레임워크에 의존하는 경우가 많습니다. 예를 들어 shadcn/ui은 React 지향적이고 Tailwind 기반입니다.
+- 일부 제공업체에는 Better Auth이 필요한 Polar와 웹 프런트엔드와 같은 추가 제약이 있습니다.
+- 모든 템플릿 경로가 동일하게 깊어지기 전에 호환성 또는 종속성 지원을 위해 일부 옵션이 표시됩니다. 대규모 조합을 스캐폴딩하기 전에 호환성 검사기 또는 Stack Builder을 실행하세요.

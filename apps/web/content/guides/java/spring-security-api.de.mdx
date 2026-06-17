@@ -1,0 +1,213 @@
+---
+title: Sicher Spring Boot API
+description: Erstellen Sie ein sicheres Java API mit Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5 und Testcontainern.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - spring security api starter
+  - secure spring boot starter
+  - spring boot testcontainers
+  - spring boot flyway jpa
+  - java secure api boilerplate
+---
+
+Verwenden Sie diesen Stack, wenn Sie ein Spring Boot-Backend mit Persistenz, Sicherheit, Datenbankmigrationen und Integrationstesttools wünschen.
+
+```npm
+npm create better-fullstack@latest my-secure-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## Was dadurch entsteht
+
+- Ein Spring Boot Java API.
+- Gradle als Build-Tool.
+- Federdaten JPA.
+- Spring Security.
+- Federantrieb und Flyway.
+- JUnit 5 und Testcontainer.
+
+## Erzeugte Form
+
+Dieser Stapel beginnt näher an einer Produktionsbasislinie API. Es umfasst Gradle Wrapper-Dateien, Spring Security Konfiguration, JPA Beispielendpunkte, Flyway Migrationsdateien, Aktuatorendpunkte und einen Testcontainers-Testpfad.
+
+```txt
+my-secure-spring-api/
+├── gradlew
+├── gradle/
+├── build.gradle.kts
+├── settings.gradle.kts
+├── src/main/java/com/example/mysecurespringapi/
+│   ├── Application.java
+│   ├── config/
+│   │   └── SecurityConfig.java
+│   ├── controller/
+│   │   ├── HealthController.java
+│   │   └── UserController.java
+│   ├── domain/
+│   │   └── AppUser.java
+│   ├── repository/
+│   │   └── AppUserRepository.java
+│   └── service/
+│       └── AppUserService.java
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/V1__init.sql
+└── src/test/java/com/example/mysecurespringapi/
+    ├── ApplicationTests.java
+    └── ApplicationContainerTests.java
+```
+
+Der generierte Sicherheitspfad verwendet HTTP Basic mit einem In-Memory-Benutzer. Es handelt sich um einen praktischen sicheren Standard für lokale und interne API-Arbeiten, nicht um ein vollständiges Produktauthentifizierungssystem.
+
+## Kompatibilitätshinweise
+
+Spring Security, JPA und Spring-Bibliotheken erfordern Spring Boot mit einem Java-Build-Tool. Flyway ist mit dem Spring Data-Pfad JPA in Better Fullstack gepaart.
+
+Zusätzliche Kompatibilitätsdetails:
+
+- `--java-auth spring-security` wird nur für Spring Boot-Projekte mit Maven oder Gradle ausgegeben.
+- `--java-libraries flyway` wird nur beibehalten, wenn `--java-orm spring-data-jpa` ausgewählt ist.
+- Wenn sowohl Flyway als auch Liquibase in einem breiteren Stapel ausgewählt werden, behält der Generator Flyway bei und löscht Liquibase für diesen Pfad.
+- `--java-testing-libraries testcontainers` fügt Unterstützung für Container-basierte Integrationstests hinzu, sodass die lokale Docker-Verfügbarkeit für diese Testreihe von Bedeutung ist.
+
+## Wann man es wählt
+
+Wählen Sie dies für produktionsorientierte Java APIs, bei denen Sicherheit, Migrationen und Integrationstests frühzeitig vorhanden sein sollten.
+
+Wählen Sie den minimalen Spring-Leitfaden, wenn Sie das kleinste JPA-Beispiel benötigen und planen, später Sicherheit hinzuzufügen. Wählen Sie diesen Leitfaden, wenn bereits beim ersten Commit die Frage beantwortet werden soll: „Wie werden Endpunkte geschützt, wie ändern sich Schemata und wie testen wir anhand einer echten Datenbank?“
+
+| Entscheidungspunkt | Sicherer Frühling API | Minimaler Frühling JPA |
+| --- | --- | --- |
+| Sicherheit | HTTP Basic bis Spring Security | Nicht ausgewählt |
+| Migrationen | Flyway von Anfang an | Später hinzufügen |
+| Tests | JUnit 5 plus Testcontainer | JUnit 5 |
+| Sichtbarkeit zur Laufzeit | Aktuatorzustand/Informationen/Metriken | Grundlegender Gesundheitsendpunkt |
+| Kosten | Weitere generierte Dateien und Konfigurationen | Kleinerer Ausgangspunkt |
+
+## Repräsentative Auszüge
+
+Die generierte Sicherheitskonfiguration lässt `/health` zu und schützt den Rest der Anwendung mit HTTP Basic.
+
+```java
+@Configuration
+public class SecurityConfig {
+  @Bean
+  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+      .csrf((csrf) -> csrf.disable())
+      .authorizeHttpRequests((authorize) -> authorize
+        .requestMatchers("/health").permitAll()
+        .anyRequest().authenticated()
+      )
+      .httpBasic(Customizer.withDefaults());
+
+    return http.build();
+  }
+}
+```
+
+Anmeldeinformationen werden aus umgebungsgestützten Eigenschaften mit lokalen Standardwerten gelesen.
+
+```java
+@Bean
+UserDetailsService userDetailsService(
+  @Value("${APP_BASIC_USERNAME:admin}") String username,
+  @Value("${APP_BASIC_PASSWORD:change-me}") String password,
+  PasswordEncoder passwordEncoder
+) {
+  UserDetails user = User.withUsername(username)
+    .password(passwordEncoder.encode(password))
+    .roles("USER")
+    .build();
+
+  return new InMemoryUserDetailsManager(user);
+}
+```
+
+Verwenden Sie die geschützten Endpunkte mit Basic-Authentifizierung während der Entwicklung:
+
+```bash
+curl -u "$APP_BASIC_USERNAME:$APP_BASIC_PASSWORD" \
+  http://localhost:8080/users
+```
+
+Flyway ist bei Auswahl Eigentümer der Schemaerstellung:
+
+```sql
+CREATE TABLE IF NOT EXISTS app_users (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  display_name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL
+);
+```
+
+## Migrationen und Tests
+
+Flyway ändert den Hibernate-Status: Die generierte Konfiguration validiert das Schema, anstatt es Hibernate frei aktualisieren zu lassen. Fügen Sie für jede Datenbankänderung eine neue `V2__...sql`-Datei hinzu und sorgen Sie dafür, dass Migrationen überprüfbar sind.
+
+```bash
+./gradlew test
+./gradlew bootRun
+./gradlew build
+```
+
+Führen Sie die Testcontainers-Spur aus, wenn Docker verfügbar ist. Wenn Docker in Ihrer lokalen Umgebung nicht verfügbar ist, trennen Sie Unit-Tests von Container-Tests, damit die Überholspur weiterhin genutzt werden kann.
+
+```java
+@SpringBootTest
+class ApplicationContainerTests {
+  @Test
+  void contextLoadsAgainstContainerDatabase() {
+  }
+}
+```
+
+## Bereitstellungshinweise
+
+Ersetzen Sie vor der Bereitstellung die lokalen Anmeldeinformationen, fügen Sie den JDBC-Treiber PostgreSQL hinzu, wenn Ihr generierter Build immer noch nur H2 enthält, konfigurieren Sie eine verwaltete PostgreSQL-Datenquelle und führen Sie Flyway-Migrationen als Teil der Start- oder Release-Orchestrierung aus.
+
+```bash
+export APP_BASIC_USERNAME="service-admin"
+export APP_BASIC_PASSWORD="replace-with-secret"
+export SPRING_DATASOURCE_URL="jdbc:postgresql://db.example.com:5432/my_secure_spring_api"
+export SPRING_DATASOURCE_DRIVER_CLASS_NAME="org.postgresql.Driver"
+export SPRING_DATASOURCE_USERNAME="app"
+export SPRING_DATASOURCE_PASSWORD="replace-with-secret"
+./gradlew build
+java -jar build/libs/*.jar
+```
+
+Der Aktor wird über `--java-libraries spring-actuator` ausgewählt, sodass Integritäts- und Metrikendpunkte für Plattformprüfungen verfügbar sind. Überprüfen Sie die Gefährdung des Endpunkts, bevor Sie den Dienst in das öffentliche Internet stellen.
+
+## Fehlerbehebung
+
+| Symptom | Überprüfen |
+| --- | --- |
+| Jeder Endpunkt gibt 401 zurück | Senden Sie grundlegende Authentifizierungsdaten für alles außer `/health`. |
+| Flyway schlägt beim Start fehl | Stellen Sie sicher, dass die Datenbank erreichbar ist und der Migrationsverlauf mit dem Schema übereinstimmt. |
+| Testcontainers-Tests schlagen lokal fehl | Stellen Sie sicher, dass Docker ausgeführt wird und der aktuelle Benutzer Container starten kann. |
+| App verwendet Standard `admin/change-me` | Legen Sie `APP_BASIC_USERNAME` und `APP_BASIC_PASSWORD` in der Laufzeitumgebung fest. |
+| Aktuator-Endpunkt fehlt | Bestätigen Sie, dass `spring-actuator` noch in `--java-libraries` vorhanden ist. |
+
+## Kompromisse
+
+Dies ist schwerer als ein minimales Spring Boot API. Wenn Sie einen kleineren Ausgangspunkt wünschen, verwenden Sie [Spring Boot mit PostgreSQL und JPA](/guides/java/spring-boot-postgres-jpa/) oder entfernen Sie optionale Bibliotheken im Builder.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=gradle&db=postgres&jorm=spring-data-jpa&jauth=spring-security&jlib=spring-actuator,flyway&jtest=junit5,testcontainers).
+- Lesen Sie die [Dokumente zum Java-Ökosystem](/docs/ecosystems/java/).

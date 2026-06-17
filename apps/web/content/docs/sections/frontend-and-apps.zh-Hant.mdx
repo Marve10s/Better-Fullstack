@@ -1,0 +1,32 @@
+---
+title: 前端和應用
+description: 選擇產生的 Web 前端、行動應用程式和應用平台 addons。
+---
+
+這個分割區控制 Better Fullstack 產生的使用者導向的應用介面。
+
+## Web 前端
+
+TypeScript Web 前端透過 `--frontend` 選擇。此分類支援 React、Vinext、Vue/Nuxt、SvelteKit、Solid、Astro、Qwik、Angular、Redwood、Fresh 和 `none`。
+
+後端專用服務使用 `none`。當框架擁有服務端路由時，將 fullstack 前端模式與 `--backend self` 一起使用。
+
+## React Native 應用
+
+React Native 是獨立生態系。可以用 `--ecosystem react-native` 選擇它，或在 multi-ecosystem 中作為 `mobile:react-native:native-bare` part 選擇。
+
+行動端選擇包括導航、UI、storage、testing、push notifications、OTA updates 和 deep linking。它們不會隱含 TypeScript Web 後端或部署分類。
+
+## Rust WASM 前端
+
+Rust 可以透過 `--rust-frontend` 產生 Leptos 或 Dioxus 前端介面。這些是 Rust 生態系統選擇，與 TypeScript Web 前端分開。
+
+## 應用平台
+
+Tauri、PWA、WXT 和 OpenTUI 等 app-platform addons 會圍繞相容 stack 添加 shell、offline、extension 或 terminal app 能力。
+
+## 參考
+
+- [TypeScript 選項](/docs/reference/options/typescript/)
+- [React Native 選項](/docs/reference/options/react-native/)
+- [Rust 選項](/docs/reference/options/rust/)

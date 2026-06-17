@@ -1,0 +1,33 @@
+---
+title: 인증 및 결제
+description: ID, 인증 도우미, 결제 제공업체를 선택하세요.
+---
+
+인증 및 결제는 생성된 스키마, 환경 변수, 콜백, 미들웨어 및 공급자 설정 메모에 영향을 미칩니다.
+
+## 인증
+
+TypeScript 인증 공급자에는 Better Auth, Clerk, NextAuth, Stack Auth, Supabase Auth, Auth0 및 없음이 포함됩니다.
+
+다른 생태계에서는 템플릿이 존재하는 곳에 기본 도우미를 노출합니다.
+
+| 생태계 | 인증 선택 |
+| --- | --- |
+| 녹 | OAuth2 또는 없음. |
+| 파이썬 | Authlib, JWT 또는 없음. |
+| 가다 | Casbin, JWT 도우미 또는 없음. GoBetterAuth는 전역 `--auth go-better-auth` 값을 사용합니다. |
+| 자바 | Spring Security 또는 없음. |
+| 엘릭서 | phx.gen.auth, Ueberauth, Guardian 또는 없음. 일부 Elixir 인증 선택은 템플릿이 따라잡을 때까지 그래프가 비활성화된 상태로 유지됩니다. |
+
+## 결제
+
+현재 결제 제공업체는 Polar, Stripe, Lemon Squeezy, Paddle, Dodo 또는 없음 등 TypeScript 우선입니다.
+
+일부 공급자는 특정 인증 또는 프런트엔드 선택을 요구합니다. 예를 들어 Polar에는 Better Auth 및 웹 프런트엔드가 필요합니다.
+
+## 참고자료
+
+- [TypeScript 옵션](/docs/reference/options/typescript/)
+- [이동 옵션](/docs/reference/options/go/)
+- [엘릭서 옵션](/docs/reference/options/elixir/)
+- [호환성](/docs/reference/compatibility/)

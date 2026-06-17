@@ -1,0 +1,81 @@
+---
+title: TypeScript
+description: Web fullstack, ordinateur de bureau, API, échafaudages de travail et d'intégration.
+---
+
+TypeScript est l'écosystème Better Fullstack le plus vaste. Utilisez-le pour les applications Web, les API, les travailleurs, les shells de bureau, les extensions de navigateur, les sites de documentation, les intégrations de services et la plupart des flux de travail complémentaires.
+
+Les échafaudages mobiles React Native/Expo vivent dans l'écosystème dédié [React Native](/docs/ecosystems/react-native/).
+
+## Conditions préalables
+
+- Node.js 20+.
+- npm, pnpm, Yarn ou Bun.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## Catégories principales d'échafaudages
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Interface Web | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| Back-end | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| Durée d'exécution | `bun` `node` `workers` `none` |
+| Base de données | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| Authentification | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## Fonctionnalités de l'interface utilisateur et de l'application
+
+| Catégorie | Valeurs |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| Bibliothèque d'interface utilisateur | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |
+| État | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| Formulaires | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| Validation | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| Exemples | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## Services et outillage
+
+| Catégorie | Valeurs |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |
+| Paiements | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| E-mail | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| Temps réel | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| Emplois | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| Stockage | `s3` `r2` `cloudinary` `none` |
+| Indicateurs de fonctionnalités | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| Modules complémentaires | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+
+## Remarques sur la compatibilité
+
+- tRPC est destiné aux interfaces basées sur React.
+- Le backend `self` est destiné aux frameworks fullstack et s'associe à `runtime none`.
+- Qwik, Angular, Redwood et Fresh ont une prise en charge API/backend plus étroite que le tableau d'options complet.
+- La prise en charge du runtime des Workers dépend du backend.
+- Les bibliothèques d'interface utilisateur dépendent souvent de la famille frontend et du framework CSS. Par exemple, shadcn/ui est orienté React et basé sur Tailwind.
+- Certains fournisseurs ont des contraintes supplémentaires, comme Polar nécessitant Better Auth et une interface Web.
+- Certaines options sont présentées pour la compatibilité ou la prise en charge des dépendances avant que chaque chemin de modèle ne soit également profond. Exécutez le vérificateur de compatibilité ou Stack Builder avant d’échafauder de grandes combinaisons.

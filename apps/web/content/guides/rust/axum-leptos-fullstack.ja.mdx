@@ -1,0 +1,164 @@
+---
+title: Axum および Leptos を使用したフルスタック Rust
+description: Axum、Leptos、SeaORM、Better Fullstack の Rust プロジェクト スキャフォールディングを使用してフルスタック Rust アプリを作成します。
+updated: 2026-05-12
+category: さび
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+生成されたアプリのサーバー側とフロントエンド側の両方で Rust が必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## これが生み出すもの
+
+- Axum ベースの Rust サーバー。
+- Leptos を Rust フロントエンド オプションとして使用します。
+- SeaORM データベースアクセス用。
+- トレースおよび構造化エラー処理のデフォルト。
+
+## 生成された形状
+
+このスタックは、Rust ファーストのフルスタック アプリです。 Axum はサーバー ランタイムを所有し、Leptos はフロントエンド サーフェスを所有し、SeaORM はバックエンドに型付き永続層を与えます。
+
+生成されたアプリは、1 つの Rust ワークスペースに保持したい場合に便利です。
+
+- サーバーの起動、ルーティング、共有状態。
+- Leptos ビューと対話型 UI コード。
+- データベース エンティティとサーバー側のデータ アクセス。
+- ロギングとエラー処理は最初から構成されています。
+
+## 代表的なファイルツリー
+
+サーバーの懸念事項と UI の懸念事項を 1 つのプロジェクト内に保ちながら、これらを分離するレイアウトが期待されます。
+
+```txt
+my-rust-fullstack/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    app.rs
+    error.rs
+    routes/
+      mod.rs
+      api.rs
+    entities/
+      mod.rs
+      user.rs
+    pages/
+      mod.rs
+      home.rs
+      users.rs
+    components/
+      mod.rs
+```
+
+生成されたツリーを境界ガイドとして使用します。Leptos コンポーネントはレンダリングと対話に重点を置き、データベース作業はサーバー側に留める必要があります。
+
+## サーバーとUIの例
+
+Axum ルートは、サーバー側のアクションまたは統合クライアントの JSON エンドポイントを公開できます。
+
+```rust
+use axum::{extract::State, Json};
+use serde::Serialize;
+
+use crate::{error::AppError, AppState};
+
+#[derive(Debug, Serialize)]
+pub struct HealthResponse {
+    pub status: &'static str,
+}
+
+pub async fn health(State(_state): State<AppState>) -> Result<Json<HealthResponse>, AppError> {
+    Ok(Json(HealthResponse { status: "ok" }))
+}
+```
+
+Leptos ページは、UI コードからデータベース接続を開くのではなく、サーバー関数または API ヘルパーを呼び出す必要があります。
+
+```rust
+use leptos::prelude::*;
+
+#[component]
+pub fn HomePage() -> impl IntoView {
+    view! {
+        <main>
+            <h1>"Dashboard"</h1>
+            <p>"Rust server, Rust UI, and one generated project shape."</p>
+        </main>
+    }
+}
+```
+
+データベースを使用した UI の場合は、データベース操作をサーバー境界の内側に保ちます。
+
+```rust
+use sea_orm::{DatabaseConnection, EntityTrait};
+
+use crate::entities::user;
+
+pub async fn list_users(db: &DatabaseConnection) -> Result<Vec<user::Model>, sea_orm::DbErr> {
+    user::Entity::find().all(db).await
+}
+```
+
+## 互換性に関する注意事項
+
+このガイドでは、TypeScript フロントエンド/バックエンド フラグの代わりに Rust 固有のフラグを使用します。 Rust フロントエンドの選択肢は `--rust-frontend` の下に置いてください。
+
+`--rust-api none` フラグと `--rust-cli none` フラグは、このスキャフォールドを Web アプリに集中させ続けます。生成されたプロジェクトが意図的に複数のインターフェイスを提供する場合にのみ、gRPC または CLI オプションを追加します。 API のみのバックエンドが必要な場合は、`--rust-frontend none` を使用し、代わりに Axum API ガイドに従ってください。
+
+## いつ選択するか
+
+プロジェクトがアプリの境界を越えて Rust ファースト アーキテクチャの恩恵を受けており、チームが Rust のコンパイル時モデルに慣れている場合は、これを選択してください。
+
+これは、JavaScript フロントエンド エコシステムを採用するよりもサーバーと UI 全体で Rust の型と検証を共有する方が価値がある内部ツール、管理画面、製品分野に非常に適しています。
+
+## トレードオフ
+
+Fullstack Rust は言語の切り替えを軽減しますが、フロントエンドのワークフローは React、Vue、または Svelte とは異なります。 Rust のコンパイル時間、Leptos 固有のルーティング パターン、Rust で生成された UI コードからブラウザーの動作をデバッグできるチームを計画します。
+
+## テストと導入に関するメモ
+
+サービスとモデル ロジックに対して Rust 単体テストを使用し、最も重要なフローの周囲にルート レベルまたはブラウザ レベルのテストを追加します。
+
+```bash
+cargo test
+```
+
+デプロイメントでは、アプリの両方の部分を検証します。サーバーは環境変数を受け取る必要があり、生成されたプロジェクト スクリプトを使用してフロントエンド アセットを構築する必要があります。アプリがユーザー データを保存する場合は、デプロイ パスでデータベースの移行を維持します。
+
+## トラブルシューティング
+
+- UI は構築されたがサーバー データが欠落している場合は、サーバー ルートまたはサーバー関数が Axum ルーターに登録されていることを確認してください。
+- データベース タイプがドリフトする場合は、スキャフォールドのドキュメントのワークフローを通じて SeaORM エンティティを再生成または更新します。
+- ブラウザー ルートがローカルでは機能するが、展開後は機能しない場合は、生成されたサーバー ルーティングと静的アセット構成を一緒に確認してください。
+- ログの量が少なすぎる場合は、サーバーを起動する前に `RUST_LOG=info` を設定します。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror) を開きます。
+- [Axum と PostgreSQL および SeaORM](/guides/rust/axum-postgres-seaorm/) と比較します。
+- [Rust エコシステム ドキュメント](/docs/ecosystems/rust/) を読んでください。

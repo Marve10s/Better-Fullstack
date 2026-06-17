@@ -1,0 +1,59 @@
+---
+title: 자바 API 생성
+description: Spring Boot, Spring Security, Spring 데이터 JPA, Flyway, Gradle, JUnit 5 및 Testcontainers를 사용하여 Java API을 만듭니다.
+updated: 2026-05-21
+category: 팩
+tags:
+  - java
+  - spring-boot
+  - spring-security
+  - jpa
+  - testcontainers
+keywords:
+  - create java api
+  - spring boot api starter
+  - java rest api starter
+  - spring security api
+  - spring boot jpa starter
+---
+
+처음부터 보안, 지속성, 마이그레이션 및 테스트가 포함된 Spring 서비스를 원할 경우 Java API 팩을 사용하세요.
+
+<StarterPackCta id="java-api" />
+
+## Java API 스타터 생성
+
+[Stack Builder의 Java API 팩](/new?preset=java-secure&view=command)을 열거나 다음을 실행합니다.
+
+```bash
+bun create better-fullstack@latest my-java-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool gradle \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-libraries spring-actuator flyway \
+  --java-testing-libraries junit5 testcontainers
+```
+
+## 팩에 포함된 내용
+
+- Spring Boot(API 애플리케이션용)
+- 보호된 경로의 경우 Spring Security.
+- 지속성을 위한 스프링 데이터 JPA.
+- 데이터베이스 마이그레이션을 위한 Flyway.
+- 빌드용 Gradle.
+- 테스트용 JUnit 5 및 Testcontainers.
+
+## 가장 먼저 사용자 정의해야 할 사항
+
+1. 샘플 엔터티를 집계 루트 및 저장소로 바꿉니다.
+2. 실제 인증 모델을 중심으로 Spring Security을 구성하세요.
+3. 생성된 스키마 동작에 의존하기 전에 Flyway 마이그레이션을 추가하세요.
+4. 테스트 컨테이너를 API 계약 테스트와 가깝게 유지하세요.
+
+## 이것이 올바른 팩일 때
+
+Java/Spring 생태계가 예상되는 프로덕션 기반인 엔터프라이즈 APIs, 팀 소유 백엔드 서비스, 보안 관리 시스템 및 프로젝트에 대해 이것을 선택하십시오.
+
+스택 수준 연습을 보려면 [Secure Spring Boot API](/guides/java/spring-security-api/)를 읽어보세요.

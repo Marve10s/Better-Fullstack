@@ -1,0 +1,167 @@
+---
+title: Rouille CLI avec Ratatui
+description: Créez une application d'interface utilisateur de terminal Rust avec Ratatui à l'aide de l'échafaudage de projet Rust CLI de Better Fullstack.
+updated: 2026-05-12
+category: Rouiller
+tags:
+  - rust
+  - cli
+  - ratatui
+keywords:
+  - rust ratatui starter
+  - rust cli boilerplate
+  - create rust cli
+  - ratatui terminal app
+  - rust tui starter
+---
+
+Utilisez cette pile lorsque vous souhaitez créer une interface utilisateur de terminal au lieu d'un service Web.
+
+```npm
+npm create better-fullstack@latest my-rust-cli -- \
+  --ecosystem rust \
+  --rust-web-framework none \
+  --rust-frontend none \
+  --rust-orm none \
+  --rust-api none \
+  --rust-cli ratatui \
+  --rust-logging none
+```
+
+## Ce que cela crée
+
+- Un projet Rust CLI.
+- Ratatui comme option de l'interface utilisateur du terminal.
+- Aucun framework Web, frontend, ORM ou couche API.
+
+## Forme générée
+
+Cette pile crée une application de terminal plutôt qu'un serveur. Ratatui gère le rendu des widgets dans le terminal, tandis que le code de votre application possède l'état, les événements et le comportement des commandes.
+
+Le modèle mental utile est une boucle :
+
+- Lire les événements du clavier ou du terminal.
+- Mettre à jour l'état de l'application.
+- Rendre l'état actuel dans les widgets Ratatui.
+- Quittez proprement lorsque l'utilisateur demande à quitter.
+
+## Arborescence de fichiers représentative
+
+```txt
+my-rust-cli/
+  Cargo.toml
+  src/
+    main.rs
+    app.rs
+    event.rs
+    ui.rs
+```
+
+Gardez `app.rs` concentré sur les transitions d'état, `event.rs` concentré sur la gestion des entrées et `ui.rs` concentré sur le dessin. Cette division rend le comportement du terminal plus facile à tester.
+
+## CLI et exemples d'interface utilisateur
+
+Un petit type d’état d’application maintient le rendu de l’interface utilisateur déterministe :
+
+```rust
+#[derive(Debug, Default)]
+pub struct App {
+    pub should_quit: bool,
+    pub selected_index: usize,
+    pub items: Vec<String>,
+}
+
+impl App {
+    pub fn quit(&mut self) {
+        self.should_quit = true;
+    }
+
+    pub fn next(&mut self) {
+        if !self.items.is_empty() {
+            self.selected_index = (self.selected_index + 1) % self.items.len();
+        }
+    }
+}
+```
+
+La fonction draw doit recevoir l'état et le restituer, sans muter le comportement de l'application :
+
+```rust
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
+    Frame,
+};
+
+use crate::app::App;
+
+pub fn draw(frame: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(frame.area());
+
+    let items = app.items.iter().map(|item| ListItem::new(item.as_str()));
+    let list = List::new(items).block(Block::default().title("Tasks").borders(Borders::ALL));
+    let help = Paragraph::new("q: quit  j/k: move");
+
+    frame.render_widget(list, chunks[0]);
+    frame.render_widget(help, chunks[1]);
+}
+```
+
+La gestion des événements peut rester petite et explicite :
+
+```rust
+use crossterm::event::{KeyCode, KeyEvent};
+
+use crate::app::App;
+
+pub fn handle_key(app: &mut App, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char('q') => app.quit(),
+        KeyCode::Char('j') | KeyCode::Down => app.next(),
+        _ => {}
+    }
+}
+```
+
+## Remarques sur la compatibilité
+
+Les projets CLI doivent éviter les choix de framework Web et de base de données sans rapport, sauf si vous en avez explicitement besoin. Ce guide conserve ces indicateurs définis sur `none`.
+
+Conservez `--rust-cli ratatui` et les indicateurs web/API/database définis sur `none` pour un projet axé sur le terminal. Si vous ajoutez ultérieurement un backend ou une base de données, traitez-le comme une application hybride et introduisez des limites de module claires au lieu de mélanger les appels réseau dans le code de rendu.
+
+## Quand le choisir
+
+Choisissez Ratatui pour les tableaux de bord, les outils de développement, les outils d'infrastructure et les workflows axés sur le terminal.
+
+Ceci est particulièrement utile lorsque les utilisateurs passent la majeure partie de leur journée dans un shell et ont besoin d’une interface ciblée pour des opérations répétées.
+
+## Notes de tests et de déploiement
+
+La plupart des logiques Ratatui sont plus faciles à tester sous la couche terminale. Transitions d'état de test unitaire et analyse directe des commandes :
+
+```bash
+cargo test
+```
+
+Pour les versions release, utilisez la version optimisée normale de Cargo :
+
+```bash
+cargo build --release
+```
+
+Lors de la distribution du binaire, documentez les attentes du terminal telles que la prise en charge des couleurs, les raccourcis clavier, les emplacements des fichiers de configuration et toutes les variables d'environnement lues par l'outil.
+
+## Dépannage
+
+- Si le terminal reste dans un mode inhabituel après un crash, assurez-vous que l'application restaure le mode brut et quitte l'écran alternatif pendant l'arrêt.
+- Si le rendu scintille, vérifiez que la boucle d'événements n'est pas redessinée de manière agressive sans entrée ni ticks.
+- Si le texte est coupé de manière inattendue, testez avec des largeurs de terminal étroites et utilisez les contraintes de mise en page Ratatui au lieu des coordonnées codées en dur.
+- Si les raccourcis clavier ne fonctionnent pas dans un shell distant, comparez le comportement de l'émulateur de terminal avant de modifier la logique de l'application.
+
+## Prochaines étapes
+
+- Ouvrez le [Stack Builder](/new?eco=rust&rwf=none&rfe=none&rorm=none&rapi=none&rcli=ratatui&rlog=none).
+- Lisez les [documents de l'écosystème Rust](/docs/ecosystems/rust/).

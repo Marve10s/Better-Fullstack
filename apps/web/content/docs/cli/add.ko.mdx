@@ -1,0 +1,61 @@
+---
+title: 기능 추가
+description: 기존 Better Fullstack 프로젝트에 지원되는 애드온을 추가합니다.
+---
+
+`add` 명령은 기존 Better Fullstack 프로젝트를 업데이트합니다. `bts.jsonc`을 읽고, 요청된 애드온의 유효성을 검사하고, 지원되는 파일을 쓰고, 프로젝트 구성을 업데이트합니다.
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+## 추가 기능은 무엇입니까?
+
+- 현재 프로젝트 또는 `--project-dir`에서 `bts.jsonc`을 읽습니다.
+- `--addons`이 생략되면 호환되는 애드온을 묻는 메시지가 표시됩니다.
+- 이미 설치된 애드온을 건너뜁니다.
+- 새 애드온이 선택되면 애드온 템플릿과 종속성 변경 사항을 작성합니다.
+- 종속성 설치를 건너뛸 때 설치 명령을 인쇄합니다.
+
+<Callout kind="warn" title="Addon-first command">
+`add`은 현재 새 애드온을 선택하지 않으면 종료됩니다. 가능하다면 `create` 중에 배포 대상을 선택하세요. 배포 전용 `add --web-deploy ...` 또는 `add --server-deploy ...` 흐름이 아직 완료되지 않았습니다.
+</Callout>
+
+## 플래그
+
+| 깃발 | 가치 또는 행동 |
+| --- | --- |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+| `--project-dir` | 생성된 프로젝트의 경로입니다. 기본값은 현재 디렉터리입니다. |
+| `--install` | 파일을 추가한 후 종속성을 설치합니다. `add`의 기본값은 false입니다. |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
+| `--web-deploy` | 애드온 처리 후 웹 배포 대상을 기록합니다. |
+| `--server-deploy` | 애드온 처리 후 서버 배포 대상을 기록합니다. |
+
+## 애드온 참조
+
+| 애드온 | 목적 |
+| --- | --- |
+| `mcp` | 코딩 에이전트를 위한 생성된 프로젝트 MCP 서버 구성입니다. |
+| `skills` | 선별된 코딩 에이전트 기술 파일. |
+| `turborepo` | 모노레포 오케스트레이션. |
+| `docker-compose` | 지원되는 스택에 대한 로컬 서비스 오케스트레이션. |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | 코드 품질 및 후크. |
+| `starlight` `fumadocs` | 스택과 호환되는 경우 문서 사이트. |
+| `tauri` `pwa` `wxt` | 데스크톱, 프로그레시브 웹 앱, 브라우저 확장 지원. |
+| `msw` `storybook` | 테스트 및 구성요소 개발 유틸리티. |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | 데이터 가져오기 및 UI 유틸리티. |
+| `backend-utils` | asyncHandler, ApiResponse 및 Hono, Express, Fastify, Elysia, feTS 또는 NestJS 서버용 전역 오류 처리기입니다. |
+| `opentui` | 터미널 UI 지원. |
+
+## 멱등성
+
+`bts.jsonc`은 설치된 애드온의 정보 소스입니다. 요청한 모든 애드온이 이미 존재하는 경우 `add`은 새 애드온이 선택되지 않았다고 보고하고 관련 없는 변경 사항을 적용하지 않고 종료됩니다.
+
+## 권장 워크플로
+
+1. 현재 작업을 커밋하거나 숨깁니다.
+2. 명시적인 애드온 플래그를 사용하여 `add`을 실행하세요.
+3. 생성된 파일 변경 사항을 검토합니다.
+4. 명령이 설치를 건너뛴 경우 종속성을 설치합니다.
+5. 프로젝트의 test, lint 또는 typecheck 명령을 실행합니다.

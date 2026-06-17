@@ -258,7 +258,7 @@ function getPackageManagerConfig(
       dev: "nx run-many -t dev",
       build: "nx run-many -t build",
       checkTypes: "nx run-many -t check-types",
-      filter: (workspace, script) => `nx run ${workspace}:${script}`,
+      filter: (workspace, script) => `nx run ${workspace} --target=${script}`,
     };
   }
 

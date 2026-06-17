@@ -17,19 +17,44 @@ const zh_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => Local
 	return /** @type {LocalizedString} */ (`打开文档菜单`)
 };
 
+const ja_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ドキュメントメニューを開く`)
+};
+
+const ko_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`문서 메뉴 열기`)
+};
+
+const zh_hant1_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`開啟文件選單`)
+};
+
+const de_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dokumentationsmenü öffnen`)
+};
+
+const fr_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ouvrir le menu Documentation`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Open documentation menu" |
 *
 * @param {Navopendocsmenu3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopendocsmenu3Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopendocsmenu3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_navopendocsmenu3(inputs)
 	if (locale === "es") return es_navopendocsmenu3(inputs)
-	return zh_navopendocsmenu3(inputs)
+	if (locale === "zh") return zh_navopendocsmenu3(inputs)
+	if (locale === "ja") return ja_navopendocsmenu3(inputs)
+	if (locale === "ko") return ko_navopendocsmenu3(inputs)
+	if (locale === "zh-Hant") return zh_hant1_navopendocsmenu3(inputs)
+	if (locale === "de") return de_navopendocsmenu3(inputs)
+	return fr_navopendocsmenu3(inputs)
 });
 export { navopendocsmenu3 as "navOpenDocsMenu" }

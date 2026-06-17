@@ -1,0 +1,65 @@
+---
+title: 。ネット
+description: EF Core または Dapper、Identity、Minimal APIs または Hot Chocolate、SignalR、バックグラウンド ジョブ、テスト、およびデプロイ ファイルを使用した ASP.NET Core スキャフォールド。
+---
+
+.NET プロジェクトは、標準の `dotnet` 規則に従う ASP.NET Core アプリケーションを生成します。 Web フレームワーク、データ アクセス、認証、API スタイル、リアルタイム、バックグラウンド ジョブ、可観測性、キャッシュ、テスト、ファイルのデプロイの .NET オプションを選択します。
+
+## 前提条件
+
+- .NET SDK 10 以降。
+- PostgreSQL `ef-core` を `postgres` データベースとともに使用する場合。 SQLite にはサーバーは必要ありません。
+- `docker` デプロイ ターゲットまたは `testcontainers-dotnet` を使用する場合の Docker。
+- リポジトリの初期化が必要な場合は Git を使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NETカテゴリ
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| Webフレームワーク | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| データアクセス | `ef-core` `dapper` `linq2db` `none` |
+| 認証 | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| テスト | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| バックグラウンドジョブ | `hangfire` `quartz-net` `hosted-services` `none` |
+| リアルタイム | `signalr` `none` |
+| 可観測性 | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| 検証 | `fluentvalidation` `data-annotations` `none` |
+| キャッシング | `redis` `memory-cache` `none` |
+| 展開する | `docker` `azure` `aws` `none` |
+
+## 互換性に関する注意事項
+
+- .NET オプションは `--ecosystem dotnet` にのみ適用されます。
+- ASP.NET Core はスタンドアロンの .NET Web フレームワークです。 TypeScript フロントエンドおよびバックエンドのオプションは無視されます。
+- `--dotnet-testing` および `--dotnet-observability` は複数の値を受け入れます。
+- `ef-core` は `--database` からプロバイダーを選択します。 `postgres` は Npgsql を使用し、それ以外は SQLite にフォールバックします。
+- `aspnet-identity` は、`ef-core` と組み合わせた場合にのみ ID ストアを登録します。これがないと、スキャフォールドは単純な認証および認可サービスを登録します。
+- `--ecosystem dotnet` が設定されている場合の非対話型デフォルト: `aspnet-minimal`、`ef-core`、`aspnet-identity`、`minimal-api`、`xunit`、`signalr`、`serilog`、および `docker`。
+
+## 生成された動作
+
+- プロジェクトには、`.csproj`、`Program.cs`、`appsettings.json`、`.http` リクエスト ファイル、テスト プロジェクト、`.gitignore`、および README のセットアップ ノートが含まれています。
+- EF Core を選択すると、`DbContext` が Npgsql または SQLite プロバイダーに加え、移行用のデザイン時パッケージに接続されます。
+- オプションの選択により、Identity、Hot Chocolate GraphQL、gRPC サービス、SignalR ハブ、Hangfire または Quartz.NET ジョブ、Serilog/NLog/OpenTelemetry パイプライン、Redis キャッシュ、およびマルチステージ Dockerfile 用の動作する ASP.NET Core コードが追加されます。

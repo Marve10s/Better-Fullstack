@@ -1,6 +1,7 @@
 import { getLocale } from "@/paraglide/runtime.js";
+import { type SupportedLocale, toSupportedLocale } from "@/lib/i18n/locales";
 
-type Locale = "en" | "es" | "zh";
+type Locale = SupportedLocale;
 type LocalizedMap = Partial<Record<Locale, string>>;
 
 type PresetTemplate = {
@@ -146,12 +147,15 @@ const PRESET_DESCRIPTIONS: Record<string, LocalizedMap> = {
 };
 
 function currentLocale(): Locale {
-  const locale = getLocale();
-  return locale === "es" || locale === "zh" ? locale : "en";
+  return toSupportedLocale(getLocale()) ?? "en";
 }
 
 function translated(value: string, translations: Record<string, LocalizedMap>, locale = currentLocale()) {
   return translations[value]?.[locale] ?? value;
+}
+
+function isChineseLocale(locale: Locale): locale is "zh" | "zh-Hant" {
+  return locale === "zh" || locale === "zh-Hant";
 }
 
 function patternTranslate(description: string, locale: Locale): string {
@@ -160,31 +164,41 @@ function patternTranslate(description: string, locale: Locale): string {
   const skipMatch = description.match(/^Skip (.+?)( setup| integration)?$/);
   if (skipMatch) {
     const target = skipMatch[1];
-    return locale === "es" ? `Omitir ${target}` : `跳过 ${target}`;
+    if (locale === "es") return `Omitir ${target}`;
+    if (isChineseLocale(locale)) return `跳过 ${target}`;
+    return description;
   }
 
   const noMatch = description.match(/^No (.+)$/);
   if (noMatch) {
     const target = noMatch[1];
-    return locale === "es" ? `Sin ${target}` : `无 ${target}`;
+    if (locale === "es") return `Sin ${target}`;
+    if (isChineseLocale(locale)) return `无 ${target}`;
+    return description;
   }
 
   const useMatch = description.match(/^Use (.+)$/);
   if (useMatch) {
     const target = useMatch[1];
-    return locale === "es" ? `Usar ${target}` : `使用 ${target}`;
+    if (locale === "es") return `Usar ${target}`;
+    if (isChineseLocale(locale)) return `使用 ${target}`;
+    return description;
   }
 
   const deployToMatch = description.match(/^Deploy to (.+)$/);
   if (deployToMatch) {
     const target = deployToMatch[1];
-    return locale === "es" ? `Desplegar en ${target}` : `部署到 ${target}`;
+    if (locale === "es") return `Desplegar en ${target}`;
+    if (isChineseLocale(locale)) return `部署到 ${target}`;
+    return description;
   }
 
   const deployWithMatch = description.match(/^Deploy with (.+)$/);
   if (deployWithMatch) {
     const target = deployWithMatch[1];
-    return locale === "es" ? `Desplegar con ${target}` : `使用 ${target} 部署`;
+    if (locale === "es") return `Desplegar con ${target}`;
+    if (isChineseLocale(locale)) return `使用 ${target} 部署`;
+    return description;
   }
 
   return description;
@@ -209,4 +223,3 @@ export function getLocalizedPresetTemplate<T extends PresetTemplate>(preset: T):
     description: PRESET_DESCRIPTIONS[preset.description]?.[locale] ?? preset.description,
   };
 }
-

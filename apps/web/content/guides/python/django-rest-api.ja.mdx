@@ -1,0 +1,181 @@
+---
+title: Django REST API スターター
+description: Django、Django REST フレームワーク、SQLAlchemy、Pydantic、Better Fullstack を使用する Ruff を使用して Python バックエンドを作成します。
+updated: 2026-05-12
+category: パイソン
+tags:
+  - django
+  - django-rest-framework
+  - python
+  - api
+keywords:
+  - django rest api starter
+  - django rest framework boilerplate
+  - create django api
+  - python django starter
+  - django api project generator
+---
+
+API に重点を置いたプロジェクト形状で Django 規則が必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-django-api -- \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-api django-rest-framework \
+  --python-quality ruff
+```
+
+## これが生み出すもの
+
+- Django を使用する Python プロジェクト。
+- Django REST Python API オプションとしてのフレームワーク。
+- SQLAlchemy および Pydantic セレクション。
+- コードの品質についてはラフです。
+
+## 生成された形状
+
+このスタックは、Django エコシステムを必要とするが、API を最初の出発点として使用したい開発者向けです。生成されたプロジェクトは `--python-api django-rest-framework` を記録し、Django と DRF の依存関係を含み、アプリのエントリポイント内に最小限の Django 設定モジュールを接続し、ヘルス スタイルの API 応答を公開します。
+
+```txt
+my-django-api/
+├── pyproject.toml
+├── alembic.ini
+├── migrations/
+│   ├── env.py
+│   └── versions/
+├── src/app/
+│   ├── main.py
+│   ├── settings.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── database.py
+│   └── crud.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+SQLAlchemy および Pydantic の選択は、明示的な Python データ モデルと Django HTTP サーフェスに関するサービス層の検証が必要な場合に引き続き役立ちます。チームが最も慣用的な Django パスを必要とする場合は、プロジェクトの成長に合わせて永続性を Django モデルと DRF シリアライザーに移行するかどうかを計画します。
+
+## いつ選択するか
+
+最小の API 表面よりも、規約、管理者指向の構造、エコシステムの深さが重要な場合は、Django を選択してください。
+
+Django 管理者、Django 認証、従来のミドルウェア、または複数の Django アプリを追加する予定がある場合は、FastAPI ガイドではなくこれを選択してください。サービスを小規模にし、ルートに重点を置き、AI またはデータ処理コードの横に簡単に埋め込む必要がある場合は、FastAPI を選択してください。
+
+| 決定点 | Django REST API | FastAPI サービス |
+| --- | --- | --- |
+| チームの期待 | Django 規約とエコシステム | 明示的な Python モジュールとルート関数 |
+| API レイヤー | Django REST フレームワーク | FastAPI + ピダンティック |
+| バックオフィス/管理者 | 自然な拡張ポイント | 別のツールを追加する |
+| ミドルウェア/認証 | Django - ネイティブ パス | 明示的に作成する |
+| 起動の複雑さ | さらなるフレームワーク構造 | 初期表面が小さい |
+
+## 代表的なスニペット
+
+生成された DRF エンドポイントは意図的に小さくなっています。 API が大きくなったら、ビュー関数をアプリ モジュールに移動して、これを拡張します。
+
+```python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+def api_status(request):
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+```
+
+実用的なリソース エンドポイントの場合は、永続化ツールとして SQLAlchemy を使用する場合でも、シリアライザーのような境界を追加します。
+
+```python
+from pydantic import BaseModel, EmailStr
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str | None = None
+
+
+@api_view(["POST"])
+def create_user(request):
+    payload = UserCreate.model_validate(request.data)
+    user = user_service.create_user(email=payload.email, name=payload.name)
+    return Response({"id": user.id, "email": user.email}, status=201)
+```
+
+後で慣用的な DRF シリアライザーに移行する場合は、同じ境界を維持します。つまり、リクエスト データを検証し、アプリケーション ロジックを呼び出し、安定した応答形状を返します。
+
+```python
+from rest_framework import serializers
+
+
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField()
+    name = serializers.CharField(required=False, allow_blank=True)
+```
+
+## 移行とテスト
+
+Django モデルを採用する場合は、Django 移行を使用します。 SQLAlchemy を信頼できる永続ソースとして保持する場合は、Alembic を使用してください。明確な所有権分割がない限り、同じテーブルに対して両方の移行システムを実行しないでください。
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+従来の Django プロジェクト レイアウトでの Django モデルの永続性の場合:
+
+```bash
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+```
+
+SQLAlchemy 永続性の場合:
+
+```bash
+uv run alembic revision --autogenerate -m "add users"
+uv run alembic upgrade head
+```
+
+ルート テストでは、実装の詳細を表示するだけでなく、Django のテスト クライアントまたは DRF の API テスト クライアントを使用し、JSON コントラクトをアサートする必要があります。
+
+## 互換性に関する注意事項
+
+- `--python-api django-rest-framework` には `--python-web-framework django` が必要です。
+- `--python-api django-rest-framework` を FastAPI スタックに追加しないでください。 CLI 検証ではその組み合わせが拒否されます。
+- `--python-orm sqlalchemy` は Python エコシステムで利用できますが、Django の組み込み管理ビューと汎用ビューは Django モデルを中心に設計されています。
+- `--python-validation pydantic` はサービス層のペイロード検証に役立ちますが、DRF シリアライザーは DRF ビュー内の従来の要求/応答ツールです。
+
+## 導入メモ
+
+Django デプロイメントには、通常の実稼働設定パスが必要です。`SECRET_KEY`、`ALLOWED_HOSTS`、信頼されたオリジン、データベース資格情報、および静的資産処理を構成します。生成されたアプリがまだ最小限である場合は、それを開始点として扱い、実稼働前に設定を明示的な環境駆動型モジュールに移動します。
+
+```bash
+HOST=0.0.0.0 PORT="${PORT:-8000}" uv run python -m app.main
+```
+
+完全な Django プロジェクト レイアウトではなく、生成された軽量エントリポイントを使用する場合は、将来の Django コントリビューターがデフォルトの `settings.py` および `manage.py` 構造が変更されずに存在すると想定しないように、設定がロードされる場所を文書化します。実稼働前に、プラットフォームが期待する WSGI/ASGI サーバーと展開設定を追加します。
+
+## トラブルシューティング
+
+| 症状 | チェック |
+| --- | --- |
+| DRF インポートが失敗する | プロジェクトが `--python-api django-rest-framework` で作成されたことを確認します。 |
+| Django 設定が構成されていません | Django モデルまたはビューをインポートする前に、`DJANGO_SETTINGS_MODULE` が設定されていることを確認してください。 |
+| 移行の混乱 | 各テーブルの所有者として Django 移行または Alembic を選択します。 |
+| FastAPI の例は適用されません | このスタックは、FastAPI デコレーターではなく、Django/DRF ルーティングを使用します。 |
+
+## トレードオフ
+
+小規模な API サービスの場合は、[FastAPI と PostgreSQL および SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/) を使用します。 Django 規則の場合、このスタックの方が適しています。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=python&pwf=django&porm=sqlalchemy&pval=pydantic&papi=django-rest-framework&pq=ruff) を開きます。
+- [Python エコシステム ドキュメント](/docs/ecosystems/python/) を読んでください。

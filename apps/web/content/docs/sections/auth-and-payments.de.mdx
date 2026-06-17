@@ -1,0 +1,33 @@
+---
+title: Authentifizierung und Zahlungen
+description: Wählen Sie Identität, Authentifizierungshilfen und Zahlungsanbieter.
+---
+
+Authentifizierung und Zahlungen wirken sich auf generierte Schemata, Umgebungsvariablen, Rückrufe, Middleware und Hinweise zur Anbietereinrichtung aus.
+
+## Auth
+
+Zu den Authentifizierungsanbietern TypeScript gehören Better Auth, Clerk, NextAuth, Stack Auth, Supabase Auth, Auth0 und keine.
+
+Andere Ökosysteme stellen native Helfer bereit, wenn Vorlagen vorhanden sind:
+
+| Ökosystem | Authentifizierungsoptionen |
+| --- | --- |
+| Rost | OAuth2 oder keine. |
+| Python | Authlib, JWT oder keine. |
+| Gehen | Casbin, JWT Helfer oder keine. GoBetterAuth verwendet den globalen Wert `--auth go-better-auth`. |
+| Java | Spring Security oder keine. |
+| Elixier | phx.gen.auth, Ueberauth, Guardian oder keines. Einige Elixir-Authentifizierungsoptionen bleiben grafisch deaktiviert, bis die Vorlagen aufholen. |
+
+## Zahlungen
+
+Zahlungsanbieter stehen heute an erster Stelle: Polar, Stripe, Lemon Squeezy, Paddle, Dodo oder keine.
+
+Einige Anbieter erfordern spezielle Authentifizierungs- oder Frontend-Optionen. Polar benötigt beispielsweise Better Auth und ein Web-Frontend.
+
+## Referenzen
+
+- [TypeScript Optionen](/docs/reference/options/typescript/)
+- [Go-Optionen](/docs/reference/options/go/)
+- [Elixieroptionen](/docs/reference/options/elixir/)
+- [Kompatibilität](/docs/reference/compatibility/)

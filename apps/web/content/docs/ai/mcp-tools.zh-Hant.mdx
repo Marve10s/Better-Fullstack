@@ -1,0 +1,178 @@
+---
+title: MCP 工具參考
+description: Better Fullstack MCP 工具、輸入、輸出和安全工作流程的詳細參考。
+---
+
+MCP server 為代理暴露結構化工具。請使用它們，而不是讓代理從文字中猜 CLI flags，或手動複製長命令。
+
+## 推薦工作流程
+
+### 新專案
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+### 現有項目
+
+1. `bfs_get_guidance`
+2. `bfs_plan_addition`
+3. `bfs_add_feature`
+
+<Callout kind="warn" title="变更行为">
+`bfs_plan_project` 只做 dry-run。 `bfs_create_project` 會把新項目寫入磁碟。 `bfs_add_feature` 會修改現有項目。透過 MCP 建立專案或新增功能時不會安裝依賴。
+</Callout>
+
+<Callout kind="info" title="图元数据">
+專案規劃、建立和功能新增工具都會傳回 `graphSummary`、`effectiveStack` 和 `stackPartSpecs`，讓代理程式可以檢查由 graph 推導出的技術堆疊視圖，並與 `bts.jsonc` 中持久化的內容保持一致。
+</Callout>
+
+## 工具參考
+
+### `bfs_get_guidance`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 傳回工作流程規則、欄位語意、歧義處理規則和關鍵約束。 |
+| 何時調用 | 首先調用，在其他 Better Fullstack MCP 工具之前。 |
+| 寫入文件 | 否。 |
+| 必需輸入 | 無。 |
+| 可選輸入 | 無。 |
+| 輸出 | JSON 指南，涵蓋建議工具順序、陣列欄位、生態規則和範例。 |
+
+```json
+{}
+```
+
+### `bfs_get_schema`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 傳回某個分類或所有分類的有效選項值。 |
+| 何時調用 | 在規劃 stack 前調用，尤其當使用者以非正式方式命名技術時。 |
+| 寫入文件 | 否。 |
+| 必需 inputs | 無。 |
+| 可選輸入 | `category`, `ecosystem`. |
+| 輸出 | 按 category 或 ecosystem 過濾的 JSON schema/options 資料。 |
+
+```json
+{
+  "category": "database",
+  "ecosystem": "typescript"
+}
+```
+
+### `bfs_check_compatibility`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 驗證技術堆疊組合，並傳回帶有 warnings 的調整後選擇。 |
+| 何時調用 | 在 `bfs_plan_project` 或 `bfs_create_project` 之前。 |
+| 寫入文件 | 否。 |
+| 必需輸入 | `ecosystem`. |
+| 可選輸入 | Frontend、backend、runtime、database、ORM、API、auth、services、UI/CSS、mobile fields、addons、examples、package manager、deployment fields 和 ecosystem-specific fields。 |
+| 輸出 | JSON 相容性分析，包含 changes、notes 和調整後的技術堆疊資料。 |
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["next"],
+  "backend": "self",
+  "runtime": "none",
+  "database": "postgres",
+  "orm": "drizzle",
+  "api": "trpc"
+}
+```
+
+### `bfs_plan_project`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 在記憶體中產生項目，並傳回文件樹摘要。 |
+| 何時調用 | 在相容性驗證之後、寫入檔案之前。 |
+| 寫入文件 | 否。 |
+| 必需輸入 | 無，但建議 `projectName` 和 `ecosystem`。 |
+| 可選輸入 | 完整專案技術棧選擇。 |
+| 輸出 | JSON 成功標記，加上產生的檔案/目錄摘要、`graphSummary`、`effectiveStack` 和 `stackPartSpecs`。 |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle"
+}
+```
+
+### `bfs_create_project`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 將新生成項目寫入磁碟。 |
+| 何時調用 | 僅在 `bfs_plan_project` 成功且使用者批准後呼叫。 |
+| 寫入文件 | 是，會建立專案目錄和生成檔案。 |
+| 必需輸入 | `projectName`. |
+| 可選輸入 | 完整專案技術棧選擇。 |
+| 輸出 | JSON 成功標記、專案目錄、檔案數量、圖元資料、addon warnings 和安裝指令指引。 |
+
+```json
+{
+  "projectName": "my-app",
+  "ecosystem": "java",
+  "javaWebFramework": "spring-boot",
+  "javaBuildTool": "maven",
+  "javaTestingLibraries": ["junit5"]
+}
+```
+
+### `bfs_plan_addition`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 讀取 `bts.jsonc` 並驗證現有項目的擬添加內容。 |
+| 何時調用 | 在用 `bfs_add_feature` 修改現有項目前。 |
+| 寫入文件 | 否。 |
+| 必需輸入 | `projectDir`. |
+| 可選輸入 | `addons`, `webDeploy`, `serverDeploy`. |
+| 輸出 | 現有組態摘要、擬新增內容、二者的圖元資料、已存在的 addons 和相容性 warnings。 |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["mcp", "skills"]
+}
+```
+
+### `bfs_add_feature`
+
+| 欄位 | 詳情 |
+| --- | --- |
+| 用途 | 在現有 Better Fullstack 專案中新增支援的 addons 或部署設定。 |
+| 何時調用 | 在 `bfs_plan_addition` 成功且使用者批准後。 |
+| 寫入文件 | 是，會修改現有項目。 |
+| 必需輸入 | `projectDir`. |
+| 可選輸入 | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
+| 輸出 | add handler 的 JSON 結果、更新後的圖元數據，以及可用時的安裝指引。 |
+
+```json
+{
+  "projectDir": "/absolute/path/to/my-app",
+  "addons": ["biome"],
+  "packageManager": "bun"
+}
+```
+
+## 代理規則
+
+- 將 `frontend`、`addons`、`examples`、`rustLibraries`、`pythonAi`、`javaLibraries` 和 `javaTestingLibraries` 視為陣列。
+- 在選擇生態專屬欄位前設定 `ecosystem`。
+- 當使用者明確希望停用某個分類時，優先使用 `none`。
+- 透過 MCP 建立專案目前不會暴露每個 CLI workflow flag。例如，在建立專案期間 `aiDocs` 使用 server 內建預設值。
+- 在使用者批准 dry-run 或新增計劃之前，請勿呼叫寫入工具。
+- 在 MCP 建立或新增功能後告訴使用者要執行哪些安裝/測試命令，因為 MCP 不會安裝依賴。

@@ -1,0 +1,185 @@
+---
+title: Gin with PostgreSQL and GORM
+description: 建立帶有 Gin、PostgreSQL、GORM、Zap logging 和清晰 Better Fullstack 專案結構的 Go API project。
+updated: 2026-05-12
+category: Go
+tags:
+  - gin
+  - postgres
+  - gorm
+  - go
+keywords:
+  - gin postgres starter
+  - go api boilerplate
+  - gin gorm starter
+  - create go api project
+  - go postgres api
+---
+
+當你需要一個 Go HTTP API，並且希望它有熟悉的路由器、關係型資料庫訪問，以及務實清晰的專案結構時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap
+```
+
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="生成的 Go 服务围绕这些职责组织。"
+  items={[
+    { label: "HTTP", value: "Gin", detail: "路由、request binding、middleware 和响应。" },
+    { label: "数据", value: "PostgreSQL + GORM", detail: "面向 CRUD 服务的模型映射与持久化。" },
+    { label: "日志", value: "Zap", detail: "可携带 request 和 dependency context 的结构化日志。" },
+    { label: "结构", value: "cmd + internal", detail: "把应用代码保持在 package 边界内的 backend service layout。" },
+  ]}
+/>
+
+## 創建內容
+
+- 一個使用 Gin 的 Go API 項目。
+- PostgreSQL 作為資料庫選項。
+- GORM 用於資料庫存取。
+- Zap 用於結構化 logging。
+- 一個可以直接開始 backend development 的生成專案佈局。
+
+## 生成結構
+
+這個 stack 會建立一個常規的 Go HTTP API。 Gin 處理路由和 middleware，GORM 負責模型映射與持久化，PostgreSQL 是後端資料存儲，Zap 提供結構化日誌。
+
+生成應用程式裡最清晰的邊界是：
+
+- HTTP handlers 解析 input 並傳回 response。
+- Services 承擔業務決策。
+- GORM models 描述持久化記錄。
+- Database setup 和 logger setup 只在 startup 時執行一次。
+
+## 代表性文件樹
+
+```txt
+my-go-api/
+  go.mod
+  .env.example
+  cmd/
+    server/
+      main.go
+  internal/
+    config/
+      config.go
+    database/
+      postgres.go
+    handlers/
+      health.go
+      users.go
+    models/
+      user.go
+    services/
+      users.go
+```
+
+產生的 Go 項目會隨 option set 而變化，但應用程式成長時應保持這種形狀：framework code 靠近 handlers，persistence code 放在 services 或 repositories 後面。
+
+## Handler 和 model 範例
+
+Gin handler 應該綁定 request data，呼叫應用程式碼，並傳回清晰的 HTTP status：
+
+```go
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type CreateUserRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	Name  string `json:"name" binding:"required"`
+}
+
+func (h *UserHandler) Create(c *gin.Context) {
+	var input CreateUserRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.Users.Create(c.Request.Context(), input.Email, input.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "create user"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, user)
+}
+```
+
+對應的 GORM model 可以保持小而明確：
+
+```go
+package models
+
+import "time"
+
+type User struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Email     string    `json:"email" gorm:"uniqueIndex;not null"`
+	Name      string    `json:"name" gorm:"not null"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+```
+
+註冊路由時，應把相關 endpoints 放在一起：
+
+```go
+func RegisterRoutes(router *gin.Engine, users *UserHandler) {
+	router.GET("/health", Health)
+
+	api := router.Group("/api")
+	api.POST("/users", users.Create)
+	api.GET("/users/:id", users.Get)
+}
+```
+
+## 相容性
+
+<GuideCompatibilityNote kind="supported" title="兼容性规则">
+本指南流程需要保持 `--go-web-framework gin`、`--database postgres` 和 `--go-orm gorm` 組合。如果改成 `--go-orm sqlc`，應預期 SQL files 和 generated query types，而不是 GORM models。如果設定 `--go-web-framework none`，專案會變成非 server project，Gin handler 範例也不再適用。
+</GuideCompatibilityNote>
+
+## 何時選擇它
+
+當你想要一個直接的 Go API，並且需要常見 middleware 模式與較低的 framework overhead 時，選擇 Gin。
+
+## 取捨
+
+Gin 和 GORM 對許多 Go 團隊來說都是熟悉的選擇。如果你偏好較小的 router surface 或不同的 API 風格，可以在 builder 中比較其他 Go framework options。
+
+GORM 對 CRUD-heavy 應用很高效，但它也可能隱藏 SQL 細節。對於查詢密集、且精確 SQL 是介面契約一部分的服務，可以比較 Echo with SQLC 指南。
+
+## 測試與部署
+
+用 `httptest` 測試 handlers，並用真實 PostgreSQL database 做圍繞 GORM behavior 的 integration tests。
+
+```bash
+go test ./...
+```
+
+部署前確認 generated app 從環境讀取 database URL，並確認 migrations 或 auto-migration behavior 符合團隊 release policy。使用 Zap fields 記錄 request IDs、user IDs 和 dependency failures，這樣生產日誌可以不用解析字串就完成過濾。
+
+## 故障排查
+
+- 如果 requests 回傳 400，先檢查 Gin binding tags，再去偵錯 service code。
+- 如果 insert 因 duplicate key errors 失敗，請同時檢查 GORM indexes 和 PostgreSQL constraints。
+- 如果 app 無法連線 PostgreSQL，確認 host、port、SSL mode，以及產生的環境變數名稱。
+- 如果 logs 不是結構化的，請確保 Zap logger 被傳入 handlers 和 services，而不是使用 `fmt.Println`。
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=go&gwf=gin&db=postgres&gorm=gorm&glog=zap)。
+- 閱讀 [Go ecosystem docs](/docs/ecosystems/go/)。
+- 查看 [CLI create reference](/docs/cli/create/)。

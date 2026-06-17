@@ -1,0 +1,62 @@
+---
+title: さび
+description: Rust バックエンド、CLI、WebAssembly フロントエンド、GraphQL、gRPC、データベース、ロギング、キャッシュ、および認証スキャフォールド。
+---
+
+Rust プロジェクトは Cargo と言語ネイティブのテンプレートを使用します。バックエンド サービス、CLIs、GraphQL/gRPC、WebAssembly フロントエンド、ロギング、キャッシュ、および認証ヘルパーの Rust オプションを選択します。
+
+## 前提条件
+
+- Rust ツールチェーンとカーゴ。
+- リポジトリの初期化が必要な場合は Git を使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## 錆のカテゴリ
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| Webフレームワーク | `axum` `actix-web` `rocket` `none` |
+| フロントエンド | `leptos` `dioxus` `none` |
+| ORM | `sea-orm` `sqlx` `diesel` `none` |
+| API | `tonic` `async-graphql` `none` |
+| CLI | `clap` `ratatui` `none` |
+| 図書館 | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |
+| ロギング | `tracing` `env-logger` `none` |
+| エラー処理 | `anyhow-thiserror` `eyre` `none` |
+| キャッシング | `moka` `redis` `none` |
+| 認証 | `oauth2` `torii` `none` |
+| リアルタイム | `tokio-tungstenite` `none` |
+| メッセージキュー | `lapin` `none` |
+| 可観測性 | `opentelemetry` `none` |
+| テンプレート化 | `askama` `tera` `none` |
+
+## 生成された動作
+
+- `cargo build` は、インストールが有効な場合のインストール/検証パスです。
+- Leptos、Dioxus、Tonic、Clap、および Ratatui テンプレート ファイルは、それらの一致するオプションが選択されている場合にのみ含まれます。
+- `rustLibraries` は複数選択です。 `none` を渡すか、不要なライブラリを省略してください。
+- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。

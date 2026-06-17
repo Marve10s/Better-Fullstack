@@ -1,0 +1,57 @@
+---
+title: モバイルアプリを作成する
+description: Better Fullstack モバイル アプリ パックを使用して、Expo、React Native、および Uniwind でモバイル アプリを作成します。
+updated: 2026-05-21
+category: パック
+tags:
+  - mobile
+  - expo
+  - react-native
+  - uniwind
+  - typescript
+keywords:
+  - create mobile app
+  - expo app starter
+  - react native starter
+  - uniwind starter
+  - create expo app
+---
+
+最初の画面を Web ではなくネイティブにする必要がある場合は、モバイル アプリ パックを使用します。 Expo と Uniwind から始まるため、バックエンド サービスを追加する前にモバイル インターフェイスを構築できます。
+
+<StarterPackCta id="mobile-app" />
+
+## モバイルスターターを生成する
+
+[Stack Builder のモバイル アプリ パック](/new?preset=uniwind&view=command) を開くか、次のコマンドを実行します。
+
+```bash
+bun create better-fullstack@latest my-mobile-app \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --api none \
+  --css-framework none \
+  --ui-library none
+```
+
+## パックの内容
+
+- ネイティブ アプリ ランタイムの場合は Expo。
+- React Native を UI 基盤として使用します。
+- Uniwind はユーティリティファーストのネイティブ スタイルです。
+- バックエンドの選択が必要になるまで軽量なフロントエンド専用のプロジェクト形状。
+
+## 最初にカスタマイズすること
+
+1. サンプル画面をコアモバイルフローに置き換えます。
+2. 認証をネイティブのみにするか、API ベースにするか、Web アプリと共有するかを決定します。
+3. バックエンド サービスは、アプリのデータ境界が明確になってから追加してください。
+4. 小さいデバイスサイズと大きなサイズのデバイスのレイアウトを早期に検証します。
+
+## これが適切なパックの場合
+
+モバイル ファーストの製品、コンパニオン アプリ、ネイティブな感触が必要なプロトタイプ、およびサーバー インフラストラクチャを選択する前にデバイス エクスペリエンスから始めたいチームには、これを選択してください。
+
+スタックレベルのチュートリアルについては、[Expo Uniwind ネイティブ アプリ](/guides/react-native/expo-uniwind-native/) を参照してください。

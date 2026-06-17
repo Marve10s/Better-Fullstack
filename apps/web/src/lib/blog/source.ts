@@ -1,9 +1,13 @@
-import type { ComponentType } from "react";
-
 import { blogMeta } from "virtual:content-meta";
 
+import { blogMdxLoaders as mdxLoaders, type BlogMdxModule } from "@/lib/blog/mdx-loaders";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
+import {
+  type LocalizedContentLocale,
+  type SupportedLocale,
+  toSupportedLocale,
+} from "@/lib/i18n/locales";
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 import { getLocale } from "@/paraglide/runtime.js";
 
@@ -18,12 +22,7 @@ export type BlogFrontmatter = {
   keywords?: string[];
 };
 
-type MdxModule = {
-  default: ComponentType<{ components?: Record<string, ComponentType<unknown>> }>;
-  frontmatter?: BlogFrontmatter;
-  toc?: TocEntry[];
-};
-type LocalizedFrontmatter<T> = Partial<Record<"es" | "zh", T>>;
+type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
 
 /**
  * Per-post metadata. The compiled MDX component and toc are loaded on demand
@@ -42,31 +41,29 @@ export type BlogPost = {
 /** Heavy per-post bundle, loaded lazily for the post being viewed. */
 export type BlogPostContent = {
   toc: TocEntry[];
-  Component: MdxModule["default"];
+  Component: BlogMdxModule["default"];
 };
 
 const CONTENT_PREFIX = "/content/blog/";
 
-// Lazy: each post's compiled MDX module is its own chunk. Frontmatter comes
-// from `virtual:content-meta` (see vite-plugins/content-meta) — importing it
-// from the MDX modules here would fuse them into this chunk.
-const mdxLoaders = import.meta.glob<MdxModule>("../../../content/blog/**/*.mdx");
-
-function currentContentLocale(): "en" | "es" | "zh" {
-  const locale = getLocale();
-  return locale === "es" || locale === "zh" ? locale : "en";
+function currentContentLocale(): SupportedLocale {
+  return toSupportedLocale(getLocale()) ?? "en";
 }
 
-function localizedFilePath(filePath: string, locale: "en" | "es" | "zh"): string {
+export function canRenderBlogPostContent(): boolean {
+  return !import.meta.env.SSR || currentContentLocale() === "en";
+}
+
+function localizedFilePath(filePath: string, locale: SupportedLocale): string {
   if (locale === "en") return filePath;
   return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
 }
 
-function hasLocalizedContent(filePath: string, locale: "en" | "es" | "zh"): boolean {
+function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
   return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
 }
 
-function contentCacheKey(post: BlogPost, locale: "en" | "es" | "zh"): string {
+function contentCacheKey(post: BlogPost, locale: SupportedLocale): string {
   return `${post.slug.join("/")}:${locale}`;
 }
 
@@ -119,6 +116,7 @@ export function useBlogPostContent(post: BlogPost): BlogPostContent {
 
 /** Start fetching a post's content chunk early (e.g. from a route loader). */
 export function preloadBlogPostContent(slug: string[] | undefined): void {
+  if (!canRenderBlogPostContent()) return;
   const post = getBlogPost(slug);
   if (!post) return;
   contentCache.preload(contentCacheKey(post, currentContentLocale()), () => loadBlogContent(post));

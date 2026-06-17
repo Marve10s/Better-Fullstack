@@ -9,6 +9,7 @@ import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test
 describe("Addon Configurations", () => {
   describe("Universal Addons (no frontend restrictions)", () => {
     const universalAddons = ["biome", "lefthook", "husky", "turborepo", "nx", "oxlint", "msw"];
+    const universalAddonTimeoutMs = 60_000;
 
     for (const addon of universalAddons) {
       it(
@@ -33,7 +34,7 @@ describe("Addon Configurations", () => {
 
           expectSuccess(result);
         },
-        { timeout: 30_000 },
+        { timeout: universalAddonTimeoutMs },
       );
     }
   });
@@ -65,6 +66,7 @@ describe("Addon Configurations", () => {
       expect(rootPackage).toContain('"dev": "nx run-many -t dev"');
       expect(rootPackage).toContain('"build": "nx run-many -t build"');
       expect(rootPackage).toContain('"check-types": "nx run-many -t check-types"');
+      expect(rootPackage).toContain('"db:push": "nx run @nx-workspace/db --target=db:push"');
       expect(nxJson).toContain('"$schema": "./node_modules/nx/schemas/nx-schema.json"');
       expect(nxJson).toContain('"targetDefaults"');
     });

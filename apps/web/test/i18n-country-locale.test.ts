@@ -19,7 +19,13 @@ describe("country locale detection", () => {
     expect(localeFromCountry("ES")).toBe("es");
     expect(localeFromCountry("mx")).toBe("es");
     expect(localeFromCountry("CN")).toBe("zh");
-    expect(localeFromCountry("sg")).toBe("zh");
+    expect(localeFromCountry("TW")).toBe("zh-Hant");
+    expect(localeFromCountry("HK")).toBe("zh-Hant");
+    expect(localeFromCountry("JP")).toBe("ja");
+    expect(localeFromCountry("KR")).toBe("ko");
+    expect(localeFromCountry("DE")).toBe("de");
+    expect(localeFromCountry("FR")).toBe("fr");
+    expect(localeFromCountry("sg")).toBeUndefined();
     expect(localeFromCountry("US")).toBeUndefined();
   });
 

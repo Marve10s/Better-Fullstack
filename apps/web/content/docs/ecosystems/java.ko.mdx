@@ -1,0 +1,57 @@
+---
+title: 자바
+description: Spring Boot 및 Maven 또는 Gradle 래퍼, ORM, 인증, 라이브러리 및 테스트가 포함된 일반 Java 스캐폴드.
+---
+
+Java 프로젝트는 Spring Boot, Quarkus 및 일반 Java 템플릿을 지원합니다. 빌드 도구, 지속성, 인증, 애플리케이션 라이브러리 및 테스트 라이브러리에 대한 Java 옵션을 선택합니다.
+
+## 전제조건
+
+- 자바 21.
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-java-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-api spring-graphql \
+  --java-logging logback \
+  --java-libraries spring-actuator spring-validation flyway \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## 자바 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프레임워크 | `spring-boot` `quarkus` `none` |
+| 빌드 도구 | `maven` `gradle` `none` |
+| ORM | `spring-data-jpa` `jooq` `mybatis` `none` |
+| 인증 | `spring-security` `keycloak` `none` |
+| API | `spring-graphql` `none` |
+| 벌채 반출 | `logback` `none` |
+| 도서관 | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `spring-amqp` `opentelemetry-java` `none` |
+| 테스트 라이브러리 | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none` |
+
+## 호환성 참고사항
+
+- Spring Boot 및 Quarkus에는 Maven 또는 Gradle이 필요합니다.
+- Java ORM, 인증 및 Spring 관련 라이브러리에는 Spring Boot과 Maven 또는 Gradle이 필요합니다.
+- Flyway에는 스프링 데이터 JPA이 필요합니다.
+- 일부 라이브러리는 프레임워크별로 다릅니다. 예를 들어 Spring Batch, Spring Kafka, Spring Mail, Spring WebFlux, Springdoc OpenAPI, Actuator 및 Spring Security는 Spring Boot 프로젝트를 대상으로 합니다.
+
+## 생성된 동작
+
+- Maven 프로젝트는 설치가 활성화되면 확인을 위해 `./mvnw test`을 사용합니다.
+- Gradle 프로젝트는 설치가 활성화되면 확인을 위해 `./gradlew test`을 사용합니다.
+- 일반 Java 동작은 프레임워크 종속 범주에 대해 `--java-web-framework none` 및 호환 가능한 `none` 값을 사용하여 선택됩니다.
+- AI 명령 파일은 `--ai-docs none`을 포함하여 `--ai-docs`을 통해 계속 사용할 수 있습니다.

@@ -1,0 +1,383 @@
+---
+title: "ScaffBench: 用真實全端腳手架任務評測程式碼代理"
+description: "102 次運行，覆蓋 Claude Code、Codex CLI、Gemini CLI、Kilo 和 opencode，衡量速度、成本、tokens 與 builds。"
+date: 2026-06-12
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+---
+
+Coding agents 很擅長寫程式碼，卻出乎意料地不擅長「開始」專案。讓一個 agent scaffold 一個生產級 fullstack monorepo，它可能會花十分鐘手寫 manifests、lockfiles 和 config，最後生成的項目還經常 build 不起來。
+
+ScaffBench 測量的正是這件事：agent 位於空 workspace 中，拿到一個 project spec，最後回答一個硬問題：**產生的專案能 install 並且 build 嗎？ ** 我們用三條建立路徑運行同一組 specs，隔離 tooling 的幫助：
+
+- **MCP**：agent 使用 Better-Fullstack MCP server 規劃並 scaffold 專案。
+- **BF mention**：沒有 MCP；prompt 指向 Better-Fullstack CLI 和 docs，agent 自己組合 `create` 指令。
+- **Prompt**：完全不使用 Better-Fullstack；agent 從零手寫所有檔案。
+
+完整 suite 跑了兩次：6 月 10 日用 **OpenAI Codex CLI** 和三個 GPT models，6 月 12 日用 **Claude Code** 和三個 Claude models。隨後加入 [輕量 sweep](#轻量-sweepgeminikilo-和-opencode)：**Gemini CLI**、**Kilo** 和 **opencode**。總計 102 runs，十五個 models。
+
+## 核心結果
+
+核心數字來自 Claude Code 的一輪 sweep：36 次運行、三個模型、三個創建路徑、四份項目規格。同一台機器、同一套 harness、相同 prompts，只有創建模式的說明不同。 [GPT sweep](#codex-cli-上的-gpt-models) 呈現出相同的結構，下面單獨報告。
+
+| 創建路徑 | 平均時間 | 中位數時間 | 平均輸出 tokens | 通過 build |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | 113.4s | 85.9s | 5,553 | 12/12 (100%) |
+| BF mention | 219.6s | 172.1s | 11,060 | 9/9 (100%)* |
+| Prompt | 516.2s | 424.0s | 25,859 | 9/12 (75%) |
+
+\* 三個 BF-mention runs 因為我們自己的 generator bug 而排除，不計入 agent 失敗；見 [評分政策](#什么算失败)。
+
+最突出的三點：
+
+1. **MCP 平均約比 prompt-only 快 4.6 倍**，輸出 tokens 約少 4.7 倍。
+2. **每個 MCP run 都經過驗證**，覆寫所有 models。 Prompt-only 的 pass rate 是 75%。
+3. **Tooling 壓縮了 model 差異。 ** 在 MCP path 上，最小 model 也保持 100% pass rate。
+
+## 方法
+
+### 三條創建路徑
+
+每次 run 都從空目錄開始，基礎 prompt 相同：
+
+```text
+You are running in an empty benchmark workspace:
+{run_dir}
+
+Create exactly one project directory named `{project_name}`.
+Do not ask questions. Do not start a dev server. Do not write outside the
+current working directory.
+At the end, report the commands you ran and any errors you hit.
+
+Benchmark target: {spec_title}
+Requirements:
+{spec_requirements}
+```
+
+三條路徑的差別在於追加的 creation instruction。 Prompt-only 明確禁止 MCP、CLI、website 和 Better-Fullstack repo files：
+
+```text
+Creation mode: prompt-only.
+Do not use the Better-Fullstack MCP server, Better-Fullstack CLI,
+Better-Fullstack website, or files from the Better-Fullstack repository.
+Create the project from scratch by writing the files and manifests needed
+for a runnable starter.
+```
+
+MCP 收到相反的指令：
+
+```text
+Creation mode: Better-Fullstack MCP.
+Use the Better-Fullstack MCP tools, starting with bfs_get_guidance. Then use
+schema/compatibility/plan as needed and call bfs_create_project to create
+the project.
+```
+
+BF mention 位於中間：沒有 MCP tools，但可以讀取 CLI/docs，並組合 non-interactive `create` command。
+
+### 四個專案 specs
+
+四個 specs 從輕到重：
+
+| Spec | 要求 |
+| --- | --- |
+| `light-ts` | React + Vite、Bun 上的 Hono、tRPC、SQLite + Drizzle、Tailwind + DaisyUI、Pino、Vitest、Biomements，不含 auth/pay/pay/pay/pay |
+| `heavy-ts` | Next.js **和** Expo/React Native app、Bun 上的 Hono、oRPC、PostgreSQL + Drizzle、Better AuthBFS_PHd、1115%、Sc​​nd:5__、__BFS、L111%、Tupd:111% Store/Form/Query、Valibot、Vitest + Playwright、Vercel AI SDK、Socket.IO、Inngest、Framer Motion、OpenTelemetry、PostHog、Umami、Sanity、Upstash Redis、Algolia、SS3、__BFS_m.SL、SPHcon、Girpo、Sgcon、Gircon、SPH |
+| `python-ai` | FastAPI、SQLModel、PostgreSQL、Pydantic、JWT auth、Celery、Strawberry GraphQL、LangChain、OpenAI SDK、LangGraph、CrewAI、Ruff |
+| `multi-ecosystem` | TypeScript Next.js frontend、Python FastAPI backend (SQLModel/Pydantic/LangChain/Celery)、Go Gin service (GORM、gRPC、Cobra、ZFS、PH_ |
+
+`heavy-ts` 是壓力測試，也是這次 benchmark 裡幾乎所有有趣的失敗發生的地方。
+
+### Harness
+
+兩輪主 sweep，使用同一套 harness 設計：
+
+- **Claude sweep：** Claude Code headless mode (`claude -p`)，每次 run 捕捉 JSON event stream。模型：`claude-fable-5`、`claude-opus-4-8`、`claude-sonnet-4-6`，預設 reasoning effort。
+- **GPT sweep：** OpenAI Codex CLI (`codex exec`)，每次 run 捕捉 JSON event stream。模型：`gpt-5.3-codex-spark` (high effort)、`gpt-5.4` (medium)、`gpt-5.5` (medium)。
+- **隔離：** 每次 run 拿到全新的空 workspace；MCP runs 使用嚴格 MCP config，只掛 Better-Fullstack server。
+- **Timeout：** 每次 run 900 秒。超時算 agent failure。
+- **指標：** wall-clock time、agent 自己 usage report 裡的 token usage、event stream 裡的 MCP tool calls。美元成本只在 Claude sweep 中記錄；Codex harness 不報告 metered cost。
+
+有一個重要的不對稱：GPT sweep 早兩天運行，當時 generator 還沒有修掉這輪 benchmark 暴露出的 template bugs。所以 generator-bug exclusions 對 GPT 結果影響更大，也因此不應該把兩輪 sweep 的 pass rate 直接橫向比較。
+
+### 什麼算透過
+
+驗證在 agent 結束後運行。 TypeScript 執行 `bun install` 和專案本身的 build/check/lint/test script；Python 用 `compileall`；Go 下載 modules 並必須 compile。只有所有適用檢查都回傳零，才算 pass。
+
+### 什麼算失敗
+
+<Callout kind="info">
+**評分政策：** 由我們自己的範本產生器 bug 導致的失敗，會從 pass-rate 的分母中排除。這個 benchmark 衡量的是 agents，不會把我們的 bug 算成它們的失敗。相應地，我們會在分析中公開這些 generator bugs，而不是把它們藏起來。
+</Callout>
+
+在 Claude sweep 中，這正好影響了三次：三個模型都在 BF mention 路徑上正確通過 CLI scaffold 了 `heavy-ts`，但撞到了我們 Expo native template 中同一個 generator bug。這三次被排除。 Prompt-only 的失敗則是 agent 自己寫出的結果，完整計入。
+
+GPT sweep 運行在修復前的 generator 上，因此影響了七次：三個模型的 `heavy-ts` 在 MCP 和 CLI 兩條路徑上都因為後來修復的 Storybook/Expo bug chain 失敗，另外還有一次沒有生成的 Storybook/Expo bug chain 失敗，另外還有一次沒有生成的 PH_FS_FS。這七次同樣排除。 GPT agents 自己造成的失敗，也就是 prompt-only 路徑上三次手寫 build 失敗，則完整計入。
+
+## 結果
+
+### 按 model 和 path
+
+| Model | Path | 平均時間 | 平均輸出 tokens | 成本 (4 specs) | 通過 build |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Fable 5 | MCP | 172.6s | 7,590 | $9.34 | 4/4 |
+| Fable 5 | BF mention | 405.7s | 17,748 | $15.66 | 3/3* |
+| Fable 5 | Prompt | 572.8s | 24,905 | $11.26† | 3/4 |
+| Opus 4.8 | MCP | 97.1s | 5,206 | $3.43 | 4/4 |
+| Opus 4.8 | BF mention | 154.7s | 10,596 | $4.12 | 3/3* |
+| Opus 4.8 | Prompt | 510.8s | 21,485 | $6.89† | 3/4 |
+| Sonnet 4.6 | MCP | 70.3s | 3,863 | $1.47 | 4/4 |
+| Sonnet 4.6 | BF mention | 98.3s | 4,834 | $1.31 | 3/3* |
+| Sonnet 4.6 | Prompt | 464.9s | 31,188 | $7.11 | 3/4 |
+
+\* `heavy-ts` 因 generator bug 排除。 † timeout runs 不報告成本，因此這些總數低估了實際花費。
+
+### 成本
+
+Claude sweep 的 metered API usage 是 **$60.60**。真實成本會更高一點，因為兩個 timeout runs 報告 $0，而 Codex harness 完全不報告成本。比總額更有趣的是分佈：
+
+- 最便宜的 passing run：**$0.12**，Sonnet 4.6 透過 CLI 在 21 秒內 scaffold `light-ts`。
+- 最貴的 passing runs：**$3.50–$4.21**，Fable 5 在 prompt-only 路徑上手寫項目。
+- 對 Sonnet 來說，prompt path 的成本約為 MCP path 的 5 倍（$7.11 vs $1.47），速度約慢 6.6 倍，pass rate 還更低。
+
+三個模型裡都是同一個模式：agent 需要自己寫的項目越多，你花的錢越多，結果就越不可靠。
+
+## Codex CLI 上的 GPT models
+
+GPT sweep 使用相同 specs 和 prompts，在 Claude sweep 兩天前透過 Codex CLI 運行。 Generator-bug failures 依相同政策排除。
+
+| Model | Path | 平均時間 | 平均輸出 tokens | 通過 build |
+| --- | --- | ---: | ---: | ---: |
+| GPT-5.3 Codex Spark | MCP | 32.4s | 5,798 | 3/3* |
+| GPT-5.3 Codex Spark | BF mention | 65.6s | 9,894 | 3/3* |
+| GPT-5.3 Codex Spark | Prompt | 44.8s | 31,418 | 2/4 |
+| GPT-5.4 | MCP | 92.0s | 5,172 | 3/3* |
+| GPT-5.4 | BF mention | 156.0s | 7,084 | 3/3* |
+| GPT-5.4 | Prompt | 203.1s | 13,328 | 3/4 |
+| GPT-5.5 | MCP | 76.5s | 3,838 | 2/2* |
+| GPT-5.5 | BF mention | 74.1s | 4,548 | 3/3* |
+| GPT-5.5 | Prompt | 264.2s | 15,650 | 4/4 |
+
+\* 排除的是當時版本中已識別或之後修復的 generator bugs。
+
+GPT sweep 補充了幾個訊號：
+
+- **這個結構不依賴某個 vendor。 ** 每個 GPT model 裡，MCP 都是最快 path，prompt-only 都消耗最多 output tokens；這和 Claude 結果是同一個形狀，只是換了模型供應商和 agent CLI。
+- **Spark 的速度定位很明顯。 ** GPT-5.3 Codex Spark 的 MCP scaffold 平均 32 秒，是整個 benchmark 裡最快的單元格。但在 prompt path 上，這種速度犧牲了可靠性：它在一分鐘內手寫項目，只有一半 build 通過。
+- **GPT-5.5 是 prompt path 的 outlier。 ** 它是兩輪主 sweep 中唯一通過所有 prompt-only specs 的模型，包括 `heavy-ts`；那次 run 花了 542 秒和 28k output tokens，而 MCP 只用了 108 秒。
+- **GPT models 更頻繁地使用工具。 ** Codex runs 每個 scaffold 呼叫 10–34 次 MCP，而 Claude 是 3–10 次；它們會更反覆地檢查相容性和重新規劃，但最終結果相同。
+
+需要重複這個 caveat：兩輪 sweep 使用不同 agent harness、不同日期、不同 generator versions。實驗比較的是同一 sweep 內的路徑；跨 sweep 排 vendor 名次不是這個 benchmark 的目標。
+
+## 輕量 sweep：Gemini、Kilo 和 opencode
+
+下一批 models 使用一個刻意輕量的版本：**一個 spec (`light-ts`) × 三個 paths × 每個 cell 一次 run**。三個 CLIs 上九個 models，全部在 6 月 12 日運行：
+
+- **Gemini CLI**：Gemini 3.1 Pro，CLI 預設模型。
+- **opencode** (Go subscription)：Kimi K2.6、GLM-5.1、MiniMax M3、Qwen3.7 Max、DeepSeek-V4 Pro。
+- **Kilo CLI** (free model tier)：Step-3.7 Flash、Laguna m.1、Nex N2-Pro。
+
+Prompts、900 秒預算和 validation 都與主 sweep 相同。 Gemini 意外重複跑了一遍三條路徑，我們保留下來，作為一份免費的 variance sample：總計 30 runs。第十個模型 Nemotron-3 Ultra 在 Kilo free tier 上被排除，因為 endpoint 太慢，無法有效驅動 agent；請參閱 appendix note。
+
+| Model | MCP | BF mention | Prompt-only |
+| --- | --- | --- | --- |
+| Gemini 3.1 Pro | ✅ 60s · 1.6k | ✅ 27s · 0.9k | ✅ 124s · 13.2k |
+| Kimi K2.6 | ✅ 311s · 2.8k | ✅ 24s · 1.6k | ✅ 372s · 13.5k |
+| GLM-5.1 | ✅ 46s · 1.2k | ✅ 67s · 2.2k | ✅ 694s · 29.5k |
+| MiniMax M3 | ✅ 69s · 2.5k | ✅ 32s · 0.8k | ❌ build break |
+| Qwen3.7 Max | ✅ 80s · 2.7k | ✅ 35s · 0.8k | ✅ 379s · 13.3k |
+| DeepSeek-V4 Pro | ✅ 43s · 1.4k | ✅ 40s · 1.4k | ✅ 357s · 11.7k |
+| Step-3.7 Flash | ✅ 45s · 2.0k | ✅ 16s · 0.6k | ❌ broken install |
+| Laguna m.1 | ✅ 225s · 1.6k | ✅ 592s · 3.7k | ✅ 900s (timeout) · 9.4k |
+| Nex N2-Pro | ✅ 227s · 2.4k | ✅ 146s · 1.3k | ❌ build break |
+
+輕量 sweep 帶來四個訊號：
+
+- **Assisted paths 是 18/18。 ** 每個 model 在 MCP 和 BF mention 上都 pass。這裡包括 Step-3.7 Flash，一個小而快的免費模型，它透過 BF mention 在 16 秒、640 output tokens 內 scaffold 出了正確的 fullstack monorepo。
+- **Prompt-only 是分化點。 ** 九個 models 中有三個交付了 broken projects：Step-3.7 Flash 把 `pino-http` 固定到不存在的版本，導致 install 失敗；MiniMax M3 把 tRPC procedure 固定到不存在的版本，導致 install 失敗；MiniMax M3 把 tRPC procedure 命名為 `useContext` 把和 tRPC procedure 命名為 `useContext` 把和 tRPC3 定義為衝突的方法； import，Rollup 失敗。
+- **經濟性在第三、第四、第五個 harness 上仍成立。 ** 每個 assisted run 都低於 3k output tokens。每個 prompt-only run 都在 8k–36k；MiniMax M3 的 36k 是目前 ScaffBench 中最貴的單次 run，而且項目沒有 build 通過。
+- **Gemini 3.1 Pro 很適合這項任務。 ** 它有整個 benchmark 中最快的 BF mention cell（26.7 秒、863 tokens）、一個 textbook 四調用 MCP flow，也是少數 prompt-only 通過的模型之一。它的 repeat sample 也提醒我們：單 run cell 只能看方向，不是最終統計結論。
+
+輕量 sweep 的 caveats：每個 cell 只有一次 run，而且 25 次 run 並發執行，所以 wall-clock time 有 contention noise。把路徑結構和 pass/fail 當作訊號，具體秒數只當近似值。
+
+## 定性分析
+
+### MCP 讓 agents 保持在軌道上
+
+MCP runs 收斂到相同序列：`bfs_get_guidance`、compatibility check、plan、`bfs_create_project`。輸出很小，因為 agent 的任務被壓縮成選擇配置；檔案寫入由 generator 確定性完成。因此 spec 變大時 pass rate 不會下降。
+
+### Prompt-only 被 heavy spec 淹沒
+
+在 prompt-only path 上，`heavy-ts` 擊敗了幾乎所有人。有些 models 撞到 15 分鐘 timeout；有些完成了項目但 build 不起來。唯一清晰的例外是 GPT-5.5，它用 542 秒和 28k output tokens 通過了 `heavy-ts` prompt-only。 Frontier models 能手寫 starter，但這是最慢、最貴、最脆弱的方式。
+
+### Benchmark 也審計了我們的 templates
+
+驗證每個 generated project 暴露了我們 generator 中的六個 template bugs，大多隱藏在 `heavy-ts` 的 Storybook/Expo 症狀背後。其中五個在本文發布前已修復並隨 `create-better-fullstack` 2.0.2 發布。把自己的產品放進 agent benchmark，結果成了一次非常強力的 QA pass。
+
+六個 bugs 是：
+
+1. Storybook templates 用 equality check 判斷 frontend，但 `frontend` 實際上是 array。
+2. 資料庫 package path mismatch 導致 DB package 在 graph-part mode 下缺乏依賴。
+3. Native template 的一個 variant 缺少 `expo-network`。
+4. Storybook 8 framework packages 不再 re-export `Meta`/`StoryObj` types，imports 必須移到 renderer packages。
+5. `@better-auth/expo` 需要明確安裝四個 Expo peer dependencies。
+6. Native `app.json` 設定了只適用於 `expo-router` 的 static web output mode；這個仍然 open，也是三次 BF-mention excluded runs 背後的 bug。
+
+### 模型性格
+
+Sonnet 4.6 在每條路徑上都是最快、最便宜的；有 tooling 時，它在可靠性上沒有任何損失。 Fable 5 最謹慎：token counts 最高、runs 最長，而在 prompt path 上，這種謹慎仍然沒能讓 `heavy-ts` 躲過 timeout。 Opus 4.8 穩定地處於中間。模型排序沒有因為路徑而改變；改變的是差距。 Tooling 是 equalizer：MCP 上最好和最差模型相差 102 秒；prompt-only 上差距是數分鐘，而且兩次撞到時間上限。
+
+## 局限
+
+- **多個部分只有每 cell 一次 run。 ** 102 runs 足以看出結構，不足以給出精細信賴區間。
+- **各 sweep 不是 head-to-head。 ** GPT、Claude 和輕量 sweep 使用不同 CLIs、日期、versions 和 models。
+- **我們評測的是自己的工具。 ** tooling vs no tooling 的 path comparison 是發現，不是對所有 scaffolders 的斷言。
+- **驗證的是 builds，不是完整功能。 ** build 透過不代表每個 auth flow 或 webhook 都正確。
+- **timeout 成本被低報。 ** 900s 被 kill 的 runs 報 $0，這會讓 prompt-only 看起來更便宜。
+
+## Appendix：全部 102 runs
+
+### Claude sweep（Claude Code，6 月 12 日）
+
+| Model | Path | Spec | Time | Output tokens | Cost | Result |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Fable 5 | MCP | heavy-ts | 290s | 11,891 | $2.97 | pass |
+| Fable 5 | MCP | light-ts | 82s | 4,166 | $1.62 | pass |
+| Fable 5 | MCP | multi-ecosystem | 240s | 10,895 | $3.22 | pass |
+| Fable 5 | MCP | python-ai | 78s | 3,406 | $1.54 | pass |
+| Fable 5 | BF mention | heavy-ts | 613s | 30,259 | $6.98 | build failed* |
+| Fable 5 | BF mention | light-ts | 314s | 16,132 | $3.74 | pass |
+| Fable 5 | BF mention | multi-ecosystem | 470s | 15,196 | $2.98 | pass |
+| Fable 5 | BF mention | python-ai | 226s | 9,404 | $1.95 | pass |
+| Fable 5 | Prompt | heavy-ts | 900s | — | — | timed out |
+| Fable 5 | Prompt | light-ts | 413s | 32,080 | $3.50 | pass |
+| Fable 5 | Prompt | multi-ecosystem | 570s | 37,436 | $4.21 | pass |
+| Fable 5 | Prompt | python-ai | 408s | 30,103 | $3.55 | pass |
+| Opus 4.8 | MCP | heavy-ts | 178s | 5,805 | $0.88 | pass |
+| Opus 4.8 | MCP | light-ts | 46s | 2,894 | $0.72 | pass |
+| Opus 4.8 | MCP | multi-ecosystem | 118s | 8,903 | $1.10 | pass |
+| Opus 4.8 | MCP | python-ai | 47s | 3,223 | $0.74 | pass |
+| Opus 4.8 | BF mention | heavy-ts | 345s | 24,383 | $2.29 | build failed* |
+| Opus 4.8 | BF mention | light-ts | 39s | 2,754 | $0.32 | pass |
+| Opus 4.8 | BF mention | multi-ecosystem | 116s | 8,038 | $0.70 | pass |
+| Opus 4.8 | BF mention | python-ai | 118s | 7,211 | $0.81 | pass |
+| Opus 4.8 | Prompt | heavy-ts | 900s | — | — | timed out |
+| Opus 4.8 | Prompt | light-ts | 435s | 33,390 | $2.50 | pass |
+| Opus 4.8 | Prompt | multi-ecosystem | 395s | 28,598 | $2.43 | pass |
+| Opus 4.8 | Prompt | python-ai | 313s | 23,952 | $1.96 | pass |
+| Sonnet 4.6 | MCP | heavy-ts | 90s | 5,094 | $0.41 | pass |
+| Sonnet 4.6 | MCP | light-ts | 47s | 2,530 | $0.33 | pass |
+| Sonnet 4.6 | MCP | multi-ecosystem | 101s | 5,904 | $0.42 | pass |
+| Sonnet 4.6 | MCP | python-ai | 43s | 1,923 | $0.31 | pass |
+| Sonnet 4.6 | BF mention | heavy-ts | 98s | 5,527 | $0.28 | build failed* |
+| Sonnet 4.6 | BF mention | light-ts | 21s | 795 | $0.12 | pass |
+| Sonnet 4.6 | BF mention | multi-ecosystem | 237s | 11,333 | $0.73 | pass |
+| Sonnet 4.6 | BF mention | python-ai | 38s | 1,682 | $0.18 | pass |
+| Sonnet 4.6 | Prompt | heavy-ts | 767s | 52,926 | $3.18 | build failed |
+| Sonnet 4.6 | Prompt | light-ts | 520s | 32,767 | $1.88 | pass |
+| Sonnet 4.6 | Prompt | multi-ecosystem | 347s | 22,642 | $1.20 | pass |
+| Sonnet 4.6 | Prompt | python-ai | 226s | 16,418 | $0.85 | pass |
+
+\* 失敗來自我們自己的 template generator bug，已從 agent pass rate 中排除。 Sonnet 4.6 prompt-path 的 `heavy-ts` failure 是 agent-authored，計入失敗。
+
+### GPT sweep（Codex CLI，6 月 10 日 — pre-fix generator）
+
+| Model | Path | Spec | Time | Output tokens | Result |
+| --- | --- | --- | ---: | ---: | --- |
+| GPT-5.3 Codex Spark | MCP | heavy-ts | 26s | 5,300 | build failed* |
+| GPT-5.3 Codex Spark | MCP | light-ts | 18s | 2,870 | pass |
+| GPT-5.3 Codex Spark | MCP | multi-ecosystem | 66s | 10,988 | pass |
+| GPT-5.3 Codex Spark | MCP | python-ai | 19s | 4,035 | pass |
+| GPT-5.3 Codex Spark | BF mention | heavy-ts | 52s | 10,742 | build failed* |
+| GPT-5.3 Codex Spark | BF mention | light-ts | 11s | 1,221 | pass |
+| GPT-5.3 Codex Spark | BF mention | multi-ecosystem | 147s | 18,676 | pass |
+| GPT-5.3 Codex Spark | BF mention | python-ai | 53s | 8,936 | pass |
+| GPT-5.3 Codex Spark | Prompt | heavy-ts | 68s | 54,325 | build failed |
+| GPT-5.3 Codex Spark | Prompt | light-ts | 51s | 27,446 | build failed |
+| GPT-5.3 Codex Spark | Prompt | multi-ecosystem | 38s | 21,353 | pass |
+| GPT-5.3 Codex Spark | Prompt | python-ai | 23s | 22,549 | pass |
+| GPT-5.4 | MCP | heavy-ts | 51s | 3,016 | build failed* |
+| GPT-5.4 | MCP | light-ts | 44s | 2,153 | pass |
+| GPT-5.4 | MCP | multi-ecosystem | 217s | 13,235 | pass |
+| GPT-5.4 | MCP | python-ai | 55s | 2,284 | pass |
+| GPT-5.4 | BF mention | heavy-ts | 322s | 13,834 | build failed* |
+| GPT-5.4 | BF mention | light-ts | 30s | 753 | pass |
+| GPT-5.4 | BF mention | multi-ecosystem | 144s | 7,870 | pass |
+| GPT-5.4 | BF mention | python-ai | 128s | 5,881 | pass |
+| GPT-5.4 | Prompt | heavy-ts | 236s | 15,502 | build failed |
+| GPT-5.4 | Prompt | light-ts | 251s | 15,271 | pass |
+| GPT-5.4 | Prompt | multi-ecosystem | 170s | 11,795 | pass |
+| GPT-5.4 | Prompt | python-ai | 155s | 10,745 | pass |
+| GPT-5.5 | MCP | heavy-ts | 108s | 6,704 | build failed* |
+| GPT-5.5 | MCP | light-ts | 58s | 2,544 | pass |
+| GPT-5.5 | MCP | multi-ecosystem | 97s | 4,101 | build failed* |
+| GPT-5.5 | MCP | python-ai | 43s | 2,003 | pass |
+| GPT-5.5 | BF mention | heavy-ts | 120s | 6,851 | build failed* |
+| GPT-5.5 | BF mention | light-ts | 26s | 1,513 | pass |
+| GPT-5.5 | BF mention | multi-ecosystem | 84s | 5,480 | pass |
+| GPT-5.5 | BF mention | python-ai | 66s | 4,347 | pass |
+| GPT-5.5 | Prompt | heavy-ts | 542s | 28,342 | pass |
+| GPT-5.5 | Prompt | light-ts | 163s | 10,601 | pass |
+| GPT-5.5 | Prompt | multi-ecosystem | 242s | 15,787 | pass |
+| GPT-5.5 | Prompt | python-ai | 110s | 7,869 | pass |
+
+\* 失敗來自我們這邊後來修復的 template generator bug，已從 pass rate 中排除；這輪 sweep 運行在 fixes 發布之前。 GPT prompt-path failures 是 agent-authored，計入失敗。
+
+### 輕量 sweep（Gemini CLI / Kilo / opencode，6 月 12 日 — 僅 light-ts）
+
+| Model | Agent CLI | Path | Time | Output tokens | Result |
+| --- | --- | --- | ---: | ---: | --- |
+| Gemini 3.1 Pro | Gemini CLI | MCP | 60.2s | 1,584 | pass |
+| Gemini 3.1 Pro | Gemini CLI | BF mention | 26.7s | 863 | pass |
+| Gemini 3.1 Pro | Gemini CLI | Prompt | 123.6s | 13,188 | pass\*\* |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | MCP | 69.6s | 1,280 | pass |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | BF mention | 50.5s | 873 | pass |
+| Gemini 3.1 Pro (repeat) | Gemini CLI | Prompt | 254.8s | 15,752 | pass |
+| Laguna m.1 | Kilo | MCP | 224.8s | 1,560 | pass |
+| Laguna m.1 | Kilo | BF mention | 592.5s | 3,653 | pass |
+| Laguna m.1 | Kilo | Prompt | 900.0s† | 9,439 | pass |
+| Nex N2-Pro | Kilo | MCP | 226.6s | 2,362 | pass |
+| Nex N2-Pro | Kilo | BF mention | 146.2s | 1,294 | pass |
+| Nex N2-Pro | Kilo | Prompt | 426.4s | 7,806 | fail (build) |
+| Step-3.7 Flash | Kilo | MCP | 45.5s | 1,985 | pass |
+| Step-3.7 Flash | Kilo | BF mention | 15.6s | 640 | pass |
+| Step-3.7 Flash | Kilo | Prompt | 166.0s | 12,738 | fail (install) |
+| DeepSeek-V4 Pro | opencode | MCP | 42.9s | 1,369 | pass |
+| DeepSeek-V4 Pro | opencode | BF mention | 40.0s | 1,391 | pass |
+| DeepSeek-V4 Pro | opencode | Prompt | 357.4s | 11,740 | pass |
+| GLM-5.1 | opencode | MCP | 45.9s | 1,172 | pass |
+| GLM-5.1 | opencode | BF mention | 67.4s | 2,197 | pass |
+| GLM-5.1 | opencode | Prompt | 693.9s | 29,527 | pass |
+| Kimi K2.6 | opencode | MCP | 311.2s | 2,816 | pass |
+| Kimi K2.6 | opencode | BF mention | 24.3s | 1,618 | pass |
+| Kimi K2.6 | opencode | Prompt | 371.9s | 13,527 | pass |
+| MiniMax M3 | opencode | MCP | 68.7s | 2,473 | pass |
+| MiniMax M3 | opencode | BF mention | 31.9s | 846 | pass |
+| MiniMax M3 | opencode | Prompt | 712.9s | 36,034 | fail (build) |
+| Qwen3.7 Max | opencode | MCP | 80.2s | 2,669 | pass |
+| Qwen3.7 Max | opencode | BF mention | 35.2s | 843 | pass |
+| Qwen3.7 Max | opencode | Prompt | 378.9s | 13,313 | pass |
+
+註：
+
+- Laguna m.1 prompt-only 撞到 900 秒預算，但 cutoff 前寫出的項目可以 install 並 build。
+- Gemini 3.1 Pro prompt-only 通過了 install + build；它失敗的是專案自己的 Biome lint script，而 headline criterion 不計這個。
+
+我們也嘗試了 Kilo free tier 上的 **Nemotron-3 Ultra 550B**，但它的 runs 不納入結果：endpoint 對 agentic work 來說基本上不可用（每輪數分鐘，每條路徑 15 分鐘預算內只能執行零到一次 tool）。這是 infrastructure failure，不是關於這個模型本身的 benchmark result。
+
+## 結論
+
+ScaffBench 的結論很直接：當 agents 不必發明 scaffold 時，它們表現好得多。透過 MCP 或清晰 CLI，models pass 更多、消耗 tokens 更少、完成更快。 Prompt-only 仍然令人印象深刻，但對真實 fullstack scaffolding 來說，它是昂貴且脆弱的路徑。
+
+想試試快速路徑？把你的 agent 指向 [Better-Fullstack MCP server](/mcp)，然後讓它 scaffold 一個重項目。

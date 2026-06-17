@@ -17,19 +17,44 @@ const zh_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => Local
 	return /** @type {LocalizedString} */ (`快速 + 可靠 ↗`)
 };
 
+const ja_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`高速 + 信頼性の高い ↗`)
+};
+
+const ko_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`빠르고 안정적 ​​↗`)
+};
+
+const zh_hant1_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`快 + 可靠 ↗`)
+};
+
+const de_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`schnell + zuverlässig ↗`)
+};
+
+const fr_llmfastreliable2 = /** @type {(inputs: Llmfastreliable2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`rapide + fiable ↗`)
+};
+
 /**
 * | output |
 * | --- |
 * | "fast + reliable ↗" |
 *
 * @param {Llmfastreliable2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const llmfastreliable2 = /** @type {((inputs?: Llmfastreliable2Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmfastreliable2Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const llmfastreliable2 = /** @type {((inputs?: Llmfastreliable2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmfastreliable2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_llmfastreliable2(inputs)
 	if (locale === "es") return es_llmfastreliable2(inputs)
-	return zh_llmfastreliable2(inputs)
+	if (locale === "zh") return zh_llmfastreliable2(inputs)
+	if (locale === "ja") return ja_llmfastreliable2(inputs)
+	if (locale === "ko") return ko_llmfastreliable2(inputs)
+	if (locale === "zh-Hant") return zh_hant1_llmfastreliable2(inputs)
+	if (locale === "de") return de_llmfastreliable2(inputs)
+	return fr_llmfastreliable2(inputs)
 });
 export { llmfastreliable2 as "llmFastReliable" }

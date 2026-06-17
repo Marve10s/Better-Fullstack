@@ -1,0 +1,62 @@
+---
+title: Python
+description: Échafaudages orientés Python API et AI avec des frameworks Web, des ORM, une validation, des files d'attente, GraphQL et des outils de qualité.
+---
+
+Les projets Python utilisent `uv` et des modèles natifs Python. Choisissez les options Python pour les frameworks API, les ORM, la validation, les bibliothèques AI, les assistants d'authentification, les files d'attente de tâches, GraphQL et les outils de qualité.
+
+## Conditions préalables
+
+- Python.
+- `uv`.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Catégories Python
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Cadre Web | `fastapi` `django` `flask` `litestar` `starlette` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |
+| Validation | `pydantic` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `none` |
+| Authentification | `authlib` `jwt` `fastapi-users` `none` |
+| API | `django-rest-framework` `django-ninja` `none` |
+| File d'attente des tâches | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |
+| GraphQL | `strawberry` `ariadne` `none` |
+| Qualité | `ruff` `mypy` `pyright` `none` |
+| Test (sélection multiple) | `pytest` `hypothesis` `none` |
+| Mise en cache | `redis` `aiocache` `none` |
+| Temps réel | `python-socketio` `websockets` `none` |
+| Observabilité | `opentelemetry` `none` |
+| Outillage CLI (sélection multiple) | `typer` `click` `rich` `none` |
+
+## Comportement généré
+
+- `uv sync` est le chemin d'installation lorsque l'installation est activée.
+- `pythonAi` est une catégorie à sélection multiple et est distincte de TypeScript `--ai`.
+- Les fichiers de modèle Python conditionnels vides sont ignorés lorsque les options sélectionnées n’en ont pas besoin.
+- Les fichiers d'instructions AI sont toujours disponibles via `--ai-docs`, y compris `--ai-docs none`.

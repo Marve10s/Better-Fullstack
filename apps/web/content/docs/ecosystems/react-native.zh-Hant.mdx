@@ -1,0 +1,60 @@
+---
+title: React Native
+description: 以生產整合為導向的 Expo 和 React Native mobile scaffolds。
+---
+
+React Native 是專門的 mobile 生態。它產生 Expo 項目，並把 mobile choices 與 TypeScript web frontend、backend、database 和 deploy categories 分開。
+
+## 前置條件
+
+- Node.js 20+。
+- npm、pnpm、Yarn 或 Bun。
+- 當你想在 simulator 或 device 上驗證時，需要 Expo-compatible iOS/Android tooling。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## Mobile scaffold categories
+
+| Category | 值 |
+| --- | --- |
+| Native frontend | `native-bare` `native-uniwind` `native-unistyles` |
+| Navigation | `expo-router` `react-navigation` `none` |
+| UI | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| Storage | `mmkv` `none` |
+| Testing | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| Push | `expo-notifications` `none` |
+| OTA | `expo-updates` `none` |
+| Deep linking | `expo-linking` `none` |
+
+## 產生的集成
+
+- 選擇 deep linking 或 OTA 時產生 scheme/runtime settings 的 Expo config。
+- 根據 navigation 產生 Expo Router route files 或 React Navigation entrypoint。
+- 為 Tamagui、Gluestack UI、Uniwind 或 Unistyles 產生 mobile UI provider/theme files。
+- 選擇 storage 時產生 MMKV client helpers。
+- 產生 Jest Expo 和 React Native Testing Library 範例、Maestro flows，或兩者都有。
+- 為 Expo Notifications 產生 push notification registration helpers。
+- 為 Expo Updates 產生 OTA update helpers。
+- `.env.example` 使用 `EXPO_PUBLIC_` 約定存放 mobile client configuration。
+
+## 相容性說明
+
+- React Native 不暴露 TypeScript web frontend、backend、database、web UI、web deploy 或 server deploy categories。
+- Uniwind 和 Unistyles UI modes 與對應 Expo frontend variants 綁定。
+- Tamagui 和 Gluestack UI 使用 bare Expo variant，以避免 styling setup 衝突。
+- 當 mobile auth flow 需要 redirect URI 範例時，會自動啟用 deep linking。

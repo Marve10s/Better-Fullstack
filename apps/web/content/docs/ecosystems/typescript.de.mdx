@@ -1,0 +1,81 @@
+---
+title: TypeScript
+description: Fullstack-Web-, Desktop-, API-, Worker- und Integrationsgerüste.
+---
+
+TypeScript ist das umfassendste Better Fullstack-Ökosystem. Verwenden Sie es für Web-Apps, APIs, Worker, Desktop-Shells, Browser-Erweiterungen, Dokumentationsseiten, Service-Integrationen und die meisten Add-on-Workflows.
+
+React Native/Expo mobile Gerüste leben im dedizierten [React Native](/docs/ecosystems/react-native/) Ökosystem.
+
+## Voraussetzungen
+
+- Node.js 20+.
+- npm, pnpm, Garn oder Bun.
+- Git, wenn Sie eine Repository-Initialisierung wünschen.
+
+## Skriptbeispiel
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## Kernkategorien des Gerüsts
+
+| Kategorie | Werte |
+| --- | --- |
+| Web-Frontend | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| Backend | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| Laufzeit | `bun` `node` `workers` `none` |
+| Datenbank | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| Auth | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## UI- und App-Funktionen
+
+| Kategorie | Werte |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| UI-Bibliothek | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |
+| Zustand | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| Formulare | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| Validierung | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| Beispiele | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## Dienstleistungen und Werkzeuge
+
+| Kategorie | Werte |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |
+| Zahlungen | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| E-Mail | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| Echtzeit | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| Jobs | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| Lagerung | `s3` `r2` `cloudinary` `none` |
+| Feature-Flags | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| Add-ons | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+
+## Kompatibilitätshinweise
+
+- tRPC ist für React-basierte Frontends.
+- `self` Backend ist für Fullstack-Frameworks und Paare mit `runtime none`.
+- Qwik, Angular, Redwood und Fresh bieten eine engere API/Backend-Unterstützung als die vollständige Optionstabelle.
+- Die Unterstützung der Worker-Laufzeit ist vom Backend abhängig.
+- UI-Bibliotheken hängen oft von der Frontend-Familie und dem CSS-Framework ab. Beispielsweise ist shadcn/ui reaktionsorientiert und rückenwindbasiert.
+- Bei einigen Anbietern gelten zusätzliche Einschränkungen, beispielsweise erfordert Polar Better Auth und ein Web-Frontend.
+- Einige Optionen werden aus Gründen der Kompatibilität oder Abhängigkeitsunterstützung angezeigt, bevor jeder Vorlagenpfad gleich tief ist. Führen Sie die Kompatibilitätsprüfung oder Stack Builder aus, bevor Sie große Kombinationen erstellen.

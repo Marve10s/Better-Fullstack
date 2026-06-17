@@ -1,0 +1,83 @@
+---
+title: AI 代理
+description: AI 代碼代理程式如何安全可靠地使用 Better Fullstack。
+---
+
+Better Fullstack 支援三種面向 AI 代理程式的工作流程：
+
+- 使用 `--ai-docs` 產生專案本地指令檔。
+- 安裝 Better Fullstack agent skill，讓程式碼代理程式使用 CLI，而不是手寫起始檔。
+- 讓 AI 程式碼代理程式使用 Better Fullstack MCP server 完成 schema 查詢、相容性檢查、dry-run 預覽和專案建立。
+
+## 推薦工作流程
+
+1. 選擇目標生態系：`typescript`、`react-native`、`rust`、`python`、`go`、`java` 或 `elixir`。
+2. 使用 Better Fullstack agent skill、MCP server，或一組明確的 CLI 參數。
+3. 在生成專案之前驗證相容性。
+4. 透過 dry-run 檢查文件樹。
+5. 當流程由代理程式驅動時，在停用依賴安裝的情況下產生專案。
+6. 告訴使用者精確的安裝、測試和運行命令。
+
+## 產生的 AI docs
+
+使用 `--ai-docs` 為代碼代理程式產生專案本地上下文檔案：
+
+| 值 | 產生檔案 |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | 不產生 AI docs |
+
+接受多個值：
+
+```npm
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+使用 `--ai-docs none` 停用這些檔案。
+
+## CLI 工作流程
+
+對於沒有 MCP 存取權限的代理，傳入明確參數並避免副作用：
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai-docs agents-md \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="面向代理的 CLI 规则">
+`--yes` 會接受預設值，並且與核心 stack 參數不相容。明確參數只會跳過它們所覆蓋的分類。對你想停用的可選分類傳入 `none`。
+</Callout>
+
+## Agent skill 工作流程
+
+Better Fullstack agent skill 位於此倉庫中，會教導受支援的代理程式使用 CLI 和經過基準驗證的快速流程：對應 stack、執行 dry-run、在沒有安裝或 Git 副作用的情況下產生項目，然後報告後續命令。
+
+請參閱 [agent skill setup guide](/docs/ai/skills/)，以了解 Codex、Claude Code、Cursor、GitHub Copilot 和 Gemini CLI 的安裝指令。
+
+## AI provider 選項
+
+TypeScript 項目可以透過 `--ai` 選擇一個 AI選項：`vercel-ai`、`mastra`、`voltagent`、`langgraph`、`openai-agents`、`google-adk`、`modelfusion`、`langchain`、`llamaindex`、`modelfusion`、`langchain`、`llamaindex`、`tanstack-ai`12PH_FS_FS__、__BFS_FS_FS10__112_FS_FS_2。
+
+Python 專案使用單獨的多重選擇 `--python-ai` 選項，包含 `langchain`、`llamaindex`、`openai-sdk`、`anthropic-sdk`、`langgraph`、`crewai` 或 `none`。
+
+依賴放置取決於選取的框架和後端。 Server-side packages 會加入到 server package 或 self-backend app；支援的前端整合會獲得對應的 client hooks 或 packages。
+
+## MCP 工作流程
+
+Better Fullstack MCP server 以結構化工具的形式提供 schema 查詢、相容性檢查、dry-run 預覽、專案建立和功能新增。請參閱 [MCP setup guide](/docs/ai/mcp/)。
+
+這不同於生成專案時選擇的 `mcp` addon。 server 幫助代理程式建立 Better Fullstack 項目；addon 則會在生成項目中寫入 MCP 配置。

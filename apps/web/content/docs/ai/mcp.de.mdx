@@ -1,0 +1,131 @@
+---
+title: MCP Server
+description: Verbinden Sie Better Fullstack mit Claude Code, Cursor, VS Code und MCP-kompatiblen AI Codierungsagenten.
+---
+
+Mit dem Server Better Fullstack MCP können Agenten Projekte durch strukturierte Toolaufrufe aufbauen, anstatt CLI-Flags zu erraten. Es übernimmt die Schemasuche, Kompatibilitätsvalidierung, Probelaufvorschauen, Projekterstellung und Funktionserweiterungen.
+
+Auf dieser Seite wird der Server Better Fullstack MCP beschrieben. Das generierte Projekt-Add-on `mcp` ist separat: Es schreibt die Client-/Serverkonfiguration MCP in eine Gerüst-App und führt möglicherweise externe Setup-Befehle aus.
+
+Für einen einfacheren CLI-gesteuerten Agenten-Workflow installieren Sie den [Better Fullstack Agenten-Skill](/docs/ai/skills/). Der Skill und der MCP-Server verwenden beide denselben Generator; Der Skill ist für schnelles Flag-basiertes Gerüst optimiert, während MCP für strukturierte Toolaufrufe optimiert ist.
+
+## Aufstellen
+
+Starten Sie den Server mit dem von Ihnen verwendeten Paketmanager:
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
+### Claude Code
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+```
+
+Verwenden Sie die gleiche Launcher-Tabelle oben, wenn Sie pnpm, Bun oder Yarn bevorzugen.
+
+### Cursor
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### VS-Code
+
+```json
+{
+  "servers": {
+    "better-fullstack": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### Andere MCP-Clients
+
+Verwenden Sie denselben stdio-Befehl mit Clients wie Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose oder anderen MCP-kompatiblen Tools.
+
+| Paketmanager | `command` | `args` |
+| --- | --- | --- |
+| npm | `npx` | `["-y", "create-better-fullstack@latest", "mcp"]` |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| Garn | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## Werkzeuge
+
+Vollständige Eingaben, Ausgaben, Beispiele und sicheres Schreibverhalten finden Sie in der [MCP-Tools-Referenz](/docs/ai/mcp-tools/).
+
+| Werkzeug | Zweck |
+| --- | --- |
+| `bfs_get_guidance` | Gibt Workflowregeln und Feldsemantik zurück. Rufen Sie dies zuerst an. |
+| `bfs_get_schema` | Gibt gültige Optionen für Konfigurationskategorien zurück. |
+| `bfs_check_compatibility` | Validiert einen Stapel und gibt angepasste Auswahlen mit Warnungen zurück. |
+| `bfs_plan_project` | Führt einen Probelauf der Projektgenerierung im Speicher durch. |
+| `bfs_create_project` | Schreibt ein neues Projekt auf die Festplatte. |
+| `bfs_plan_addition` | Validiert Add-on-Änderungen für ein vorhandenes Projekt. |
+| `bfs_add_feature` | Fügt unterstützte Add-ons zu einem vorhandenen Projekt hinzu. |
+
+<Callout kind="info" title="Install behavior">
+Bei der Projekterstellung MCP wird die normale Abhängigkeitsinstallation übersprungen, um langwierige Agentenaufrufe zu vermeiden. Wenn das generierte Projekt das Add-on `mcp` enthält, führt dieses Add-on-Setup möglicherweise weiterhin externe Setup-Befehle für die Clientkonfiguration MCP aus.
+</Callout>
+
+## Ressourcen
+
+Der Server stellt diese MCP-Ressourcen bereit:
+
+| Ressource | Inhalt |
+| --- | --- |
+| `docs://compatibility-rules` | Kompatibilitätsregeln für Stapelkombinationen. |
+| `docs://stack-options` | Verfügbare Technologieoptionen nach Kategorie. |
+| `docs://getting-started` | Schnellstartrezepte für unterstützte Ökosysteme. |
+
+## Empfohlene Werkzeugbestellung
+
+Für ein neues Projekt:
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+Für ein bestehendes Projekt:
+
+1. `bfs_plan_addition`
+2. `bfs_add_feature`
+
+## Wichtige Regeln für Agenten
+
+- `frontend` ist ein Array und kann mehrere Frontend-Ziele enthalten.
+- `none` deaktiviert eine Kategorie.
+- Legen Sie zuerst `ecosystem` fest, damit der Agent die richtige Feldfamilie verwendet.
+- Zu den Array-Feldern gehören `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries` und `javaTestingLibraries`.
+- Zu den Projektplanungs-, Erstellungs- und Ergänzungsantworten gehören `graphSummary`, `effectiveStack` und `stackPartSpecs` für die diagrammgestützte Stapelansicht.
+- Aktuelle MCP-Projektschemata stellen `aiDocs` nicht als Erstellungsfeld zur Verfügung; Bei der Projekterstellung wird das integrierte AI-doc-Verhalten des Servers verwendet.
+- Rufen Sie immer `bfs_check_compatibility` auf, bevor Sie ein Projekt erstellen.
+
+## Agentenaufforderung
+
+```text
+Use Better Fullstack MCP. First call bfs_get_guidance to understand
+the rules, then bfs_get_schema for the relevant categories, then
+bfs_check_compatibility to validate the stack, then bfs_plan_project
+for a dry-run. Only call bfs_create_project after the dry-run succeeds.
+Skip normal dependency installation and tell me the exact commands to
+install, test, and run the project.
+```

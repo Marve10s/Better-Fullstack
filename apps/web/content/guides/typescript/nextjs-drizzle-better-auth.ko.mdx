@@ -1,0 +1,139 @@
+---
+title: Next.js(Drizzle 및 Better Auth 포함)
+description: Better Fullstack을 사용하여 Drizzle, PostgreSQL, Better Auth, Tailwind CSS, shadcn/ui 및 tRPC로 Next.js 풀 스택 앱을 만듭니다.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+관계형 데이터, 인증 및 형식화된 API 레이어가 포함된 주류 React 풀스택 앱을 원할 때 이 스택을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## 이것이 만드는 것
+
+- 풀스택 모드의 Next.js 앱.
+- PostgreSQL을 관계형 데이터베이스로 사용합니다.
+- Drizzle은 TypeScript ORM입니다.
+- 인증을 위한 Better Auth.
+- 엔드 투 엔드 유형의 API에 대한 tRPC.
+- 프런트엔드 스타일 지정을 위한 Tailwind CSS 및 shadcn/ui
+
+## 생성된 모양
+
+생성된 앱은 Next.js을 웹 및 서버 경계로 사용합니다. PostgreSQL 및 Drizzle는 서버 전용 모듈 뒤에 있는 반면, tRPC은 애플리케이션 데이터가 필요한 클라이언트 구성 요소에 대해 형식화된 호출을 제공합니다.
+
+대표적인 형태:
+
+```txt
+my-next-app/
+  bts.jsonc
+  app/
+  components/
+  lib/
+    auth/
+    db/
+    trpc/
+```
+
+정확한 경로는 생성기 버전에 따라 다를 수 있지만 의도된 분할은 일관됩니다. UI 구성 요소는 제품 경험을 렌더링하고 경로 처리기 및 서버 코드 자체 요청 경계를 렌더링하며 데이터베이스 액세스는 브라우저 번들에서 벗어납니다.
+
+## 예 Drizzle 모델
+
+제품 테이블을 명시적으로 유지하고 쉽게 마이그레이션할 수 있습니다.
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Better Auth은(는) 인증 테이블과 세션 동작을 소유해야 합니다. 제품 테이블은 사용자 ID를 참조해야 하며 세션 필드를 애플리케이션 모델에 복사하지 않아야 합니다.
+
+## 입력된 절차의 예
+
+추론된 입력 및 출력 유형을 프런트엔드에서 활용하는 작업에는 tRPC을 사용하세요.
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+승인 확인을 돌연변이에 가깝게 유지하세요. 작업 영역 만들기 작업은 항목을 삽입하기 전에 로그인한 사용자가 있음을 증명해야 합니다.
+
+## 그것을 선택하는 경우
+
+Next.js 호스팅 익숙함이 중요한 SaaS 앱, 계정 기반 제품, 대시보드, 관리 포털 및 프로젝트에 대해 이 옵션을 선택하세요.
+
+## Drizzle 및 Better Auth인 이유
+
+Drizzle는 TypeScript에 가까운 데이터베이스 액세스를 유지합니다. Better Auth은 기본적으로 호스팅 ID 공급자를 강제하지 않고 앱에 최신 인증 계층을 제공합니다.
+
+## 호환성 참고사항
+
+- `--backend self`은 Next.js이 서버 경계를 소유하고 있음을 의미합니다. 명시적인 서비스 분할을 원하지 않는 한 별도의 백엔드를 추가하지 마세요.
+- `--database postgres`은 프로덕션 호스팅, 풀링된 연결 및 관리형 데이터베이스 공급자와 잘 어울립니다.
+- `--api trpc`은 이 React 기반 스택에 적합합니다. Better Fullstack의 Non-React TypeScript 프런트엔드는 일반적으로 oRPC을 대신 사용합니다.
+- shadcn/ui은 Tailwind 및 React를 기대합니다. 나중에 구성요소를 재생성하거나 추가하는 경우 해당 선택 사항을 정렬된 상태로 유지하세요.
+
+## 배포 참고사항
+
+배포 환경에서 PostgreSQL 연결 문자열, Better Auth 비밀 및 앱 기본 URL을 설정합니다. 새 열이나 테이블이 필요한 새 코드로 프로덕션 트래픽을 보내기 전에 마이그레이션을 실행하세요.
+
+서버리스 호스팅에서는 데이터베이스 공급자의 풀링 권장 사항을 확인하세요. 많은 서버리스 인스턴스가 한 번에 시작되면 직접 PostgreSQL 연결로 한도가 빠르게 소진될 수 있습니다.
+
+## 문제 해결
+
+- 인증이 로컬에서는 작동하지만 프로덕션에서는 작동하지 않는 경우 콜백 URL, 신뢰할 수 있는 원본, 쿠키 및 프로덕션 앱 URL을 확인하세요.
+- 마이그레이션이 실행되지만 앱에 여전히 이전 스키마 오류가 표시되는 경우 동일한 데이터베이스에서 앱과 마이그레이션 명령 지점을 확인하세요.
+- 클라이언트 구성 요소가 서버 전용 데이터베이스 모듈을 가져오는 경우 쿼리를 경로 처리기, 서버 작업 또는 입력된 API 프로시저 뒤로 이동하세요.
+- tRPC 유형이 업데이트되지 않으면 TypeScript 서버를 다시 시작하고 대상 앱 유형 검사를 다시 실행하세요.
+
+## 비교 참고 사항
+
+가장 광범위한 Next.js 배포 사례와 생태계 친숙성을 원할 경우 TanStack Start 대신 이 스택을 선택하세요. TanStack Router 및 더 작은 React 풀스택 프레임워크가 Next.js 규칙보다 더 중요한 경우 [TanStack Start](/guides/typescript/create-tanstack-start-project/)을 선택하세요.
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc)을 엽니다.
+- 이를 [TanStack Start 프로젝트 생성](/guides/typescript/create-tanstack-start-project/)과 비교해 보세요.
+- [호환성 참조](/docs/reference/compatibility/)를 읽어보세요.

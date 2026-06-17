@@ -1,0 +1,207 @@
+---
+title: Spring Boot mit PostgreSQL und JPA
+description: Erstellen Sie ein Java-Projekt API mit Spring Boot, PostgreSQL, Maven, JPA, JUnit 5 und optionalen Spring-Bibliotheken mit Better Fullstack.
+updated: 2026-05-12
+category: Java
+tags:
+  - spring-boot
+  - postgres
+  - jpa
+  - java
+keywords:
+  - spring boot postgres starter
+  - spring boot jpa boilerplate
+  - java api starter
+  - create spring boot project
+  - spring boot postgresql api
+---
+
+Verwenden Sie diesen Stack, wenn Sie ein Java API mit dem Spring-Ökosystem und relationaler Persistenz wünschen.
+
+```npm
+npm create better-fullstack@latest my-spring-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --database postgres \
+  --java-orm spring-data-jpa \
+  --java-testing-libraries junit5
+```
+
+## Was dadurch entsteht
+
+- Ein Java-Projekt mit Spring Boot.
+- Maven als Build-Tool.
+- PostgreSQL als Datenbankoption.
+- JPA für Persistenz.
+- JUnit 5 zum Testen.
+
+## Erzeugte Form
+
+Das Gerüst ist ein herkömmlicher Spring Boot-Dienst mit Wrapper-Skripten, Quellsätzen, einem Integritätscontroller und JPA-gestützten Beispielbenutzerendpunkten. Der Paketname leitet sich vom Projektnamen unter `com.example` ab.
+
+```txt
+my-spring-api/
+├── mvnw
+├── .mvn/
+├── pom.xml
+├── src/main/java/com/example/myspringapi/
+│   ├── Application.java
+│   ├── controller/
+│   │   ├── HealthController.java
+│   │   └── UserController.java
+│   ├── domain/
+│   │   └── AppUser.java
+│   ├── repository/
+│   │   └── AppUserRepository.java
+│   └── service/
+│       └── AppUserService.java
+├── src/main/resources/
+│   └── application.yml
+└── src/test/java/com/example/myspringapi/
+    └── ApplicationTests.java
+```
+
+Die generierte lokale JPA-Datenquelle verwendet eine H2-Dateidatenbank im PostgreSQL-Kompatibilitätsmodus. Behandeln Sie `--database postgres` als Zieldatenbankauswahl und ändern Sie die Datenquellen-URL, den Treiber, die Anmeldeinformationen und die JDBC-Abhängigkeit für eine echte PostgreSQL-Umgebung.
+
+## Wann man es wählt
+
+Wählen Sie Spring Boot, wenn Sie ein herkömmliches Java-Backend mit einem großen Ökosystem, gemeinsamen Unternehmensintegrationen und einer vorhersehbaren Anwendungsstruktur wünschen.
+
+Wählen Sie diesen Leitfaden, wenn Sie am ersten Tag ein minimales Spring Boot API mit Persistenz, aber ohne Sicherheit und Migrationstools wünschen. Wählen Sie den sicheren Spring-Leitfaden, wenn jeder Endpunkt hinter Spring Security beginnen sollte und Integrationstests mit Testcontainern Teil der Basislinie sind.
+
+| Entscheidungspunkt | Minimaler Frühling JPA | Sicherer Frühling API |
+| --- | --- | --- |
+| Build-Tool | Maven | Gradle |
+| Sicherheit | Nicht ausgewählt | Spring Security ausgewählt |
+| Datenbankänderungen | Lokale Schleife `ddl-auto` in den Ruhezustand versetzen | Flyway Migrationspfad |
+| Tests | JUnit 5 | JUnit 5 plus Testcontainer |
+| Am besten für | Lernen, Prototypen, internes CRUD | Produktionsorientierte API-Basislinie |
+
+## Repräsentative Auszüge
+
+Das generierte Domänenmodell ist eine Standardentität vom Typ JPA. Fügen Sie hier Felder hinzu, wenn sie zum persistenten Aggregat gehören.
+
+```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.time.Instant;
+
+@Entity
+public class AppUser {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  private String email;
+  private String displayName;
+  private Instant createdAt = Instant.now();
+
+  protected AppUser() {
+  }
+
+  public AppUser(String email, String displayName) {
+    this.email = email;
+    this.displayName = displayName;
+  }
+}
+```
+
+Repositorys bleiben klein, da Spring Data JPA häufige Abfragen aus Methodennamen ableitet.
+
+```java
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+  Optional<AppUser> findByEmail(String email);
+}
+```
+
+Der Controller stellt `GET /users` und `POST /users` über die Serviceschicht bereit.
+
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
+  private final AppUserService userService;
+
+  public UserController(AppUserService userService) {
+    this.userService = userService;
+  }
+
+  @GetMapping
+  public List<UserResponse> listUsers() {
+    return userService.findAll().stream().map(UserResponse::from).toList();
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public UserResponse createUser(@RequestBody CreateUserRequest request) {
+    AppUser createdUser = userService.create(request.email(), request.displayName());
+    return UserResponse.from(createdUser);
+  }
+}
+```
+
+## Migrationen und Tests
+
+Dieser minimale Stapel wählt weder Flyway noch Liquibase aus. Hibernate kann das lokale H2-Schema während der frühen Entwicklung in Bewegung halten, aber eine Migrationsbibliothek hinzufügen, bevor mehrere Umgebungen von der Datenbankform abhängig sind.
+
+```bash
+./mvnw test
+./mvnw spring-boot:run
+./mvnw package
+```
+
+Wechseln Sie beim Hinzufügen von Produktions-PostgreSQL von lokalen Standardeinstellungen zu umgebungsgesteuerten Datenquelleneinstellungen:
+
+```yaml
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+```
+
+## Kompatibilitätshinweise
+
+- `--java-orm spring-data-jpa` erfordert Spring Boot und ein Java-Build-Tool.
+- Flyway und Liquibase sind an den Spring Data-Pfad JPA in Better Fullstack gebunden.
+- Dieses Handbuch verwendet `--java-build-tool maven`; Verwenden Sie die Wrapper-Befehle Maven, es sei denn, Sie generieren absichtlich mit Gradle neu.
+- Die lokal generierte Datenquelle und Abhängigkeit sind H2, obwohl dieser Stack auf PostgreSQL abzielt. Fügen Sie den JDBC-Treiber PostgreSQL hinzu und überschreiben Sie `spring.datasource.*`, bevor Sie ihn für eine verwaltete Postgres-Datenbank bereitstellen.
+
+## Bereitstellungshinweise
+
+Erstellen Sie das JAR mit Maven, stellen Sie Java 21 oder neuer bereit und führen Sie die Anwendung mit umgebungsspezifischen Datenquelleneinstellungen aus.
+
+```bash
+./mvnw package
+java -jar target/*.jar
+```
+
+Fügen Sie für die Produktion Migrationen hinzu, fügen Sie den JDBC-Treiber PostgreSQL hinzu, konfigurieren Sie das Verbindungspooling über die Datenquelleneigenschaften Spring Boot und verlassen Sie sich nicht auf `ddl-auto: update`. Expose `/health` durch Ihre Plattform-Gesundheitsprüfung.
+
+## Fehlerbehebung
+
+| Symptom | Überprüfen |
+| --- | --- |
+| App startet mit H2 statt Postgres | Überschreiben Sie `spring.datasource.*` in der umgebungsspezifischen Konfiguration. |
+| `POST /users` akzeptiert unvollständige Eingaben | Fügen Sie `--java-libraries spring-validation` in einem zukünftigen Gerüst hinzu oder fügen Sie die Bean-Validierung manuell hinzu. |
+| JPA-Entitäten werden nicht angezeigt | Behalten Sie Entitäten unter dem generierten Anwendungspaket, damit sie beim Komponenten-Scan gefunden werden. |
+| Maven-Befehle schlagen fehl | Verwenden Sie `./mvnw`, kein global installiertes Maven mit einer anderen Version. |
+
+## Kompromisse
+
+Spring Boot ist schwerer als minimale API-Frameworks, aber es zahlt sich aus, wenn Sie etablierte Konventionen, Bibliothekstiefe und langlebige Backend-Wartbarkeit benötigen.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=java&jwf=spring-boot&jbt=maven&db=postgres&jorm=spring-data-jpa&jtest=junit5).
+- Lesen Sie die [Dokumente zum Java-Ökosystem](/docs/ecosystems/java/).
+- Überprüfen Sie die [CLI Referenz erstellen](/docs/cli/create/).

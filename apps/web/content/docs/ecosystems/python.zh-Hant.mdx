@@ -1,0 +1,62 @@
+---
+title: Python
+description: Python API 和 AI-oriented scaffolds，包含 web frameworks、ORMs、validation、queues、GraphQL 和 quality tooling。
+---
+
+Python 專案使用 `uv` 和 Python-native templates。為 API frameworks、ORMs、validation、AI libraries、auth helpers、task queues、GraphQL 和 quality tooling 選擇 Python options。
+
+## 前置條件
+
+- Python。
+- `uv`。
+- 如果想初始化倉庫，需要 Git。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Python categories
+
+| Category | 值 |
+| --- | --- |
+| Web framework | `fastapi` `django` `flask` `litestar` `starlette` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |
+| Validation | `pydantic` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `pydantic-ai` `google-adk` `smolagents` __BFS__BFS__ |
+| Auth | `authlib` `jwt` `fastapi-users` `none` |
+| API | `django-rest-framework` `django-ninja` `none` |
+| Task queue | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |
+| GraphQL | `strawberry` `ariadne` `none` |
+| Quality | `ruff` `mypy` `pyright` `none` |
+| Testing (multi-select) | `pytest` `hypothesis` `none` |
+| Caching | `redis` `aiocache` `none` |
+| Realtime | `python-socketio` `websockets` `none` |
+| Observability | `opentelemetry` `none` |
+| CLI tooling (multi-select) | `typer` `click` `rich` `none` |
+
+## 生成行為
+
+- 啟用 install 時，`uv sync` 是安裝路徑。
+- `pythonAi` 是 multi-select category，且獨立於 TypeScript `--ai`。
+- 當所選 options 不需要時，空的 conditional Python template files 會被跳過。
+- AI instruction files 仍可透過 `--ai-docs` 使用，包含 `--ai-docs none`。

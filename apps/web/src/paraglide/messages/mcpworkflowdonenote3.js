@@ -17,19 +17,44 @@ const zh_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) 
 	return /** @type {LocalizedString} */ (`运行 bun install 完成安装`)
 };
 
+const ja_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`bun install を実行して完了します`)
+};
+
+const ko_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`bun install을 실행하여 완료하세요.`)
+};
+
+const zh_hant1_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`運行 bun install 完成安裝`)
+};
+
+const de_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Führen Sie bun install aus, um den Vorgang abzuschließen`)
+};
+
+const fr_mcpworkflowdonenote3 = /** @type {(inputs: Mcpworkflowdonenote3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`lancez bun install pour terminer`)
+};
+
 /**
 * | output |
 * | --- |
 * | "run bun install to finish" |
 *
 * @param {Mcpworkflowdonenote3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonenote3Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const mcpworkflowdonenote3 = /** @type {((inputs?: Mcpworkflowdonenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_mcpworkflowdonenote3(inputs)
 	if (locale === "es") return es_mcpworkflowdonenote3(inputs)
-	return zh_mcpworkflowdonenote3(inputs)
+	if (locale === "zh") return zh_mcpworkflowdonenote3(inputs)
+	if (locale === "ja") return ja_mcpworkflowdonenote3(inputs)
+	if (locale === "ko") return ko_mcpworkflowdonenote3(inputs)
+	if (locale === "zh-Hant") return zh_hant1_mcpworkflowdonenote3(inputs)
+	if (locale === "de") return de_mcpworkflowdonenote3(inputs)
+	return fr_mcpworkflowdonenote3(inputs)
 });
 export { mcpworkflowdonenote3 as "mcpWorkflowDoneNote" }

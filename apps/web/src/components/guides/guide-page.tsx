@@ -4,7 +4,12 @@ import { Suspense } from "react";
 
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
-import { getRelatedGuidePages, type GuidePage, useGuidePageContent } from "@/lib/guides/source";
+import {
+  canRenderGuidePageContent,
+  getRelatedGuidePages,
+  type GuidePage,
+  useGuidePageContent,
+} from "@/lib/guides/source";
 import { localizeGuidePage, localizeTocEntries } from "@/lib/i18n/content-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
@@ -24,10 +29,21 @@ function formatGuideDate(date: string): string {
 export function GuidePageContent({ page }: { page: GuidePage }) {
   // The MDX body chunk loads on demand; render nothing extra while waiting —
   // the surrounding route shell (navbar etc.) stays visible.
+  if (!canRenderGuidePageContent()) return <GuidePageShell page={localizeGuidePage(page)} />;
   return (
     <Suspense fallback={null}>
       <GuidePageBody page={page} />
     </Suspense>
+  );
+}
+
+function GuidePageShell({ page }: { page: GuidePage }) {
+  return (
+    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
+      <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
+        <GuidePageHeader page={page} isIndex={page.slug.length === 0} />
+      </article>
+    </main>
   );
 }
 
@@ -41,46 +57,7 @@ function GuidePageBody({ page }: { page: GuidePage }) {
   return (
     <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_16rem] xl:justify-center">
       <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
-        <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
-          <Link
-            to="/guides"
-            className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
-          >
-            {m.navGuides()}
-          </Link>
-          {localizedPage.frontmatter.category && !isIndex ? (
-            <span className="ml-2 font-mono text-[0.72rem] text-muted-foreground uppercase">
-              / {localizedPage.frontmatter.category}
-            </span>
-          ) : null}
-          {localizedPage.frontmatter.title ? (
-            <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
-              {localizedPage.frontmatter.title}
-            </h1>
-          ) : null}
-          {localizedPage.frontmatter.description ? (
-            <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
-              {localizedPage.frontmatter.description}
-            </p>
-          ) : null}
-          {localizedPage.frontmatter.updated && !isIndex ? (
-            <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
-              {m.guidesUpdated({ date: formatGuideDate(localizedPage.frontmatter.updated) })}
-            </p>
-          ) : null}
-          {localizedPage.frontmatter.tags?.length ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {localizedPage.frontmatter.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </header>
+        <GuidePageHeader page={localizedPage} isIndex={isIndex} />
 
         <div className="docs-prose">
           <MDXProvider components={localizedContentMdxComponents}>
@@ -122,5 +99,50 @@ function GuidePageBody({ page }: { page: GuidePage }) {
         <TableOfContents toc={localizeTocEntries(content.toc)} />
       </aside>
     </main>
+  );
+}
+
+function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean }) {
+  return (
+    <header className="mb-10 border-[var(--docs-border-subtle)] border-b pb-8">
+      <Link
+        to="/guides"
+        className="font-mono text-[0.72rem] text-[var(--docs-accent)] uppercase transition-colors hover:text-foreground"
+      >
+        {m.navGuides()}
+      </Link>
+      {page.frontmatter.category && !isIndex ? (
+        <span className="ml-2 font-mono text-[0.72rem] text-muted-foreground uppercase">
+          / {page.frontmatter.category}
+        </span>
+      ) : null}
+      {page.frontmatter.title ? (
+        <h1 className="mt-5 font-semibold text-4xl text-foreground leading-[1.08] md:text-5xl">
+          {page.frontmatter.title}
+        </h1>
+      ) : null}
+      {page.frontmatter.description ? (
+        <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
+          {page.frontmatter.description}
+        </p>
+      ) : null}
+      {page.frontmatter.updated && !isIndex ? (
+        <p className="mt-4 font-mono text-[0.72rem] text-muted-foreground uppercase">
+          {m.guidesUpdated({ date: formatGuideDate(page.frontmatter.updated) })}
+        </p>
+      ) : null}
+      {page.frontmatter.tags?.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {page.frontmatter.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground uppercase"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </header>
   );
 }

@@ -1,0 +1,30 @@
+---
+title: Matrice de compatibilité
+description: Vérifiez si les options Better Fullstack fonctionnent avec une pile de référence sélectionnée.
+---
+
+Better Fullstack valide les choix de pile avant la génération. Le générateur, CLI et le serveur MCP utilisent la même logique de compatibilité, de sorte que les combinaisons non valides sont rejetées ou ajustées de manière cohérente.
+
+<CompatibilityMatrix />
+
+## Ce qu'il vérifie
+
+- Si une option est compatible avec la pile de référence sélectionnée.
+- Raison de désactivation partagée lorsqu'une combinaison est bloquée.
+- Toutes notes d'ajustement automatique provenant du même analyseur de compatibilité utilisé par le constructeur.
+
+## Comment l'utiliser
+
+1. Choisissez un écosystème.
+2. Ajustez les champs de la pile de base qui sont importants pour votre question.
+3. Choisissez une catégorie à inspecter.
+4. Vérifiez quelles options sont compatibles et pourquoi certaines sont bloquées.
+
+Il s’agit d’une matrice pratique, et non de toutes les combinaisons possibles par paires. Pour une validation complète du projet, exécutez le CLI, utilisez le Stack Builder ou appelez `bfs_check_compatibility` via MCP avant l'échafaudage.
+
+## Comportement de compatibilité
+
+- `none` désactive les catégories facultatives lorsqu'elles sont prises en charge.
+- Certaines sélections déclenchent des ajustements automatiques, tels que Convex remplaçant les choix de base de données appartenant au backend/API.
+- Certains choix d'interface limitent intentionnellement la prise en charge de API, de l'interface utilisateur, de l'exécution ou du déploiement.
+- Java, Rust, Python et Go utilisent des catégories spécifiques à l'écosystème au lieu de la surface complète de la pile TypeScript.

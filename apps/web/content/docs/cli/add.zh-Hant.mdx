@@ -1,0 +1,61 @@
+---
+title: 新增功能
+description: 在現有 Better Fullstack 項目中新增支援的 addons。
+---
+
+`add` 指令會更新現有 Better Fullstack 項目。它讀取 `bts.jsonc`，驗證請求的 addons，寫入支援的文件，並更新專案配置。
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+## add 會做什麼
+
+- 從目前項目或 `--project-dir` 讀取 `bts.jsonc`。
+- 省略 `--addons` 時提示選擇相容 addons。
+- 跳過已經安裝的 addons。
+- 選擇新 addon 時寫入 addon templates 和依賴變更。
+- 跳過依賴安裝時列印安裝指令。
+
+<Callout kind="warn" title="Addon-first 命令">
+`add` 目前在沒有選擇新 addon 時會退出。盡可能在 `create` 階段選擇 deployment targets；僅 deployment 的 `add --web-deploy ...` 或 `add --server-deploy ...` flows 還不完整。
+</Callout>
+
+## Flags
+
+| Flag | 值或行為 |
+| --- | --- |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `mcp` `skills` `turborepo` __11010 __FS `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` __BFS__BFS_20__ 12120 20__FS `backend-utils` `docker-compose` `none` |
+| `--project-dir` | 生成專案的路徑。預設是當前目錄。 |
+| `--install` | 新增檔案後安裝相依性。對 `add` 預設是 false。 |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
+| `--web-deploy` | addon 處理後記錄 web deployment target。 |
+| `--server-deploy` | addon 處理後記錄 server deployment target。 |
+
+## Addon 參考
+
+| Addon | 用途 |
+| --- | --- |
+| `mcp` | 為代碼代理程式產生專案內 MCP server 配置。 |
+| `skills` | 產生精選 coding-agent skill 檔案。 |
+| `turborepo` | Monorepo 編排。 |
+| `docker-compose` | 為支援的 stacks 提供本地服務編排。 |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | 代碼品質和 hooks。 |
+| `starlight` `fumadocs` | 與 stack 相容時產生文檔網站。 |
+| `tauri` `pwa` `wxt` | Desktop、progressive web app 和瀏覽器擴充功能支援。 |
+| `msw` `storybook` | Testing 和元件開發工具。 |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | 資料擷取和 UI 工具。 |
+| `backend-utils` | 為 Hono、Express、Fastify、Elysia、feTS 或 NestJS servers 提供 asyncHandler、ApiResponse 和全域錯誤 handler。 |
+| `opentui` | Terminal UI 支援。 |
+
+## 冪等性
+
+`bts.jsonc` 是已安裝 addons 的 source of truth。如果要求的所有 addons 都已經存在，`add` 會報告沒有選擇新 addon，並且不會套用無關變更。
+
+## 推薦 workflow
+
+1. Commit 或 stash 目前工作。
+2. 使用明確 addon flags 執行 `add`。
+3. 審查產生的文件變更。
+4. 如果命令跳過安裝，則安裝相依性。
+5. 執行專案的 test、lint 或 typecheck 指令。

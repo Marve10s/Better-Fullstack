@@ -1,0 +1,81 @@
+---
+title: TypeScript
+description: Fullstack web、desktop、API、worker 和 integration scaffolds。
+---
+
+TypeScript 是 Better Fullstack 最廣的生態。可用於 web apps、APIs、workers、desktop shells、瀏覽器擴充功能、文件網站、service integrations，以及大多數 addon workflows。
+
+React Native/Expo mobile scaffolds 位於專門的 [React Native](/docs/ecosystems/react-native/) 生態。
+
+## 前置條件
+
+- Node.js 20+。
+- npm、pnpm、Yarn 或 Bun。
+- 如果想初始化倉庫，需要 Git。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## 核心 scaffold categories
+
+| Category | 值 |
+| --- | --- |
+| Web frontend | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `svelte` `solid` `solid-start` __11010 __FS `angular` `redwood` `fresh` `none` |
+| Backend | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `nitro` `encore` `convex` __11010 __FS |
+| Runtime | `bun` `node` `workers` `none` |
+| Database | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| Auth | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## UI 和應用 features
+
+| Category | 值 |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| UI library | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `nextui` `mantine` `mui` __11010 __FS `ark-ui` `react-aria` `none` |
+| State | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| Forms | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| Validation | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| Examples | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## 服務和 tooling
+
+| Category | 值 |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `langchain` `llamaindex` `tanstack-ai` __11010 __FS |
+| Payments | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| Email | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| Realtime | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| Jobs | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| Storage | `s3` `r2` `cloudinary` `none` |
+| Feature flags | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| Addons | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `mcp` `skills` `turborepo` __11010 __FS `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` __BFS__BFS_20__ 12120 20__FS `backend-utils` `docker-compose` `none` |
+
+## 相容性說明
+
+- tRPC 面向基於 React 的 frontends。
+- `self` backend 用於 fullstack frameworks，並與 `runtime none` 搭配。
+- Qwik、Angular、Redwood 和 Fresh 的 API/backend 支援比完整選項表更窄。
+- Workers runtime 支援取決於 backend。
+- UI libraries 通常依賴 frontend family 和 CSS framework。例如 shadcn/ui 面向 React，並基於 Tailwind。
+- 有些 providers 有額外約束，例如 Polar 需要 Better Auth 和 web frontend。
+- 有些選項會先作為相容或依賴支援暴露，然後每條 template path 再逐步補齊深度。產生大型組合前先執行 compatibility checker 或 Stack Builder。

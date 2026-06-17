@@ -1,10 +1,18 @@
-import type { ComponentType } from "react";
-
 import { docsMeta } from "virtual:content-meta";
 
+import {
+  type LocalizedContentLocale,
+  type SupportedLocale,
+  toSupportedLocale,
+} from "@/lib/i18n/locales";
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 import { getLocale } from "@/paraglide/runtime.js";
 
+import {
+  docsMdxLoaders as mdxLoaders,
+  docsRawMdxLoaders as rawMdxLoaders,
+  type DocMdxModule,
+} from "@/lib/docs/mdx-loaders";
 import type { TocEntry } from "./remark-extract-toc";
 
 /**
@@ -23,15 +31,8 @@ export type DocFrontmatter = {
  * Each compiled MDX module exposes the React component as default and the
  * named exports our remark plugins emit.
  */
-type MdxModule = {
-  default: ComponentType<{ components?: Record<string, ComponentType<unknown>> }>;
-  frontmatter?: DocFrontmatter;
-  toc?: TocEntry[];
-};
-
-type RawMdxModule = string;
-type ContentLocale = "en" | "es" | "zh";
-type LocalizedFrontmatter<T> = Partial<Record<Exclude<ContentLocale, "en">, T>>;
+type ContentLocale = SupportedLocale;
+type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
 
 /**
  * Sidebar config per directory (mirrors Fumadocs `meta.json` shape so we can
@@ -92,33 +93,84 @@ export type DocPage = {
 export type DocPageContent = {
   raw: string;
   toc: TocEntry[];
-  Component: MdxModule["default"];
+  Component: DocMdxModule["default"];
 };
 
 const CONTENT_PREFIX = "/content/docs/";
 const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title: string }>> = {
-  "AI Agents": { es: { title: "Agentes de IA" }, zh: { title: "AI 代理" } },
+  "AI Agents": {
+    es: { title: "Agentes de IA" },
+    zh: { title: "AI 代理" },
+    ja: { title: "AI エージェント" },
+    ko: { title: "AI 에이전트" },
+    "zh-Hant": { title: "AI 代理" },
+    de: { title: "KI-Agenten" },
+    fr: { title: "Agents IA" },
+  },
   "Better Fullstack": {
     es: { title: "Better Fullstack" },
     zh: { title: "Better Fullstack" },
+    ja: { title: "Better Fullstack" },
+    ko: { title: "Better Fullstack" },
+    "zh-Hant": { title: "Better Fullstack" },
+    de: { title: "Better Fullstack" },
+    fr: { title: "Better Fullstack" },
   },
-  CLI: { es: { title: "CLI" }, zh: { title: "CLI" } },
-  Ecosystems: { es: { title: "Ecosistemas" }, zh: { title: "生态系统" } },
-  "Getting Started": { es: { title: "Primeros pasos" }, zh: { title: "入门" } },
-  Options: { es: { title: "Opciones" }, zh: { title: "选项" } },
-  Reference: { es: { title: "Referencia" }, zh: { title: "参考" } },
-  Sections: { es: { title: "Secciones" }, zh: { title: "功能分区" } },
+  CLI: {
+    es: { title: "CLI" },
+    zh: { title: "CLI" },
+    ja: { title: "CLI" },
+    ko: { title: "CLI" },
+    "zh-Hant": { title: "CLI" },
+    de: { title: "CLI" },
+    fr: { title: "CLI" },
+  },
+  Ecosystems: {
+    es: { title: "Ecosistemas" },
+    zh: { title: "生态系统" },
+    ja: { title: "エコシステム" },
+    ko: { title: "생태계" },
+    "zh-Hant": { title: "生態系統" },
+    de: { title: "Ökosysteme" },
+    fr: { title: "Écosystèmes" },
+  },
+  "Getting Started": {
+    es: { title: "Primeros pasos" },
+    zh: { title: "入门" },
+    ja: { title: "はじめに" },
+    ko: { title: "시작하기" },
+    "zh-Hant": { title: "入門" },
+    de: { title: "Erste Schritte" },
+    fr: { title: "Bien démarrer" },
+  },
+  Options: {
+    es: { title: "Opciones" },
+    zh: { title: "选项" },
+    ja: { title: "オプション" },
+    ko: { title: "옵션" },
+    "zh-Hant": { title: "選項" },
+    de: { title: "Optionen" },
+    fr: { title: "Options" },
+  },
+  Reference: {
+    es: { title: "Referencia" },
+    zh: { title: "参考" },
+    ja: { title: "リファレンス" },
+    ko: { title: "참조" },
+    "zh-Hant": { title: "參考" },
+    de: { title: "Referenz" },
+    fr: { title: "Référence" },
+  },
+  Sections: {
+    es: { title: "Secciones" },
+    zh: { title: "功能分区" },
+    ja: { title: "セクション" },
+    ko: { title: "섹션" },
+    "zh-Hant": { title: "功能分區" },
+    de: { title: "Abschnitte" },
+    fr: { title: "Sections" },
+  },
 };
-
-// Lazy: each page's compiled MDX module / raw markdown is its own chunk.
-// Frontmatter comes from `virtual:content-meta` (see vite-plugins/content-meta)
-// — importing it from the MDX modules here would fuse them into this chunk.
-const mdxLoaders = import.meta.glob<MdxModule>("../../../content/docs/**/*.mdx");
-
-const rawMdxLoaders = import.meta.glob<RawMdxModule>("../../../content/docs/**/*.mdx", {
-  query: "?raw",
-  import: "default",
-});
 
 const metaModules = import.meta.glob<{ default: MetaFile }>(
   "../../../content/docs/**/meta.json",
@@ -126,8 +178,11 @@ const metaModules = import.meta.glob<{ default: MetaFile }>(
 );
 
 function currentContentLocale(): ContentLocale {
-  const locale = getLocale();
-  return locale === "es" || locale === "zh" ? locale : "en";
+  return toSupportedLocale(getLocale()) ?? "en";
+}
+
+export function canRenderDocPageContent(): boolean {
+  return !import.meta.env.SSR || currentContentLocale() === "en";
 }
 
 function localizedFilePath(filePath: string, locale: ContentLocale): string {
@@ -235,6 +290,7 @@ export function useDocPageContent(page: DocPage): DocPageContent {
 
 /** Start fetching a page's content chunk early (e.g. from a route loader). */
 export function preloadDocPageContent(slug: string[] | undefined): void {
+  if (!canRenderDocPageContent()) return;
   const page = getPage(slug);
   if (!page) return;
   contentCache.preload(contentCacheKey(page, currentContentLocale()), () => loadPageContent(page));

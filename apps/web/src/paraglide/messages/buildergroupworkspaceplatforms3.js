@@ -17,19 +17,44 @@ const zh_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworks
 	return /** @type {LocalizedString} */ (`工作区与平台`)
 };
 
+const ja_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ワークスペースとプラットフォーム`)
+};
+
+const ko_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`작업 공간 및 플랫폼`)
+};
+
+const zh_hant1_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`工作區與平台`)
+};
+
+const de_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Arbeitsbereich und Plattformen`)
+};
+
+const fr_buildergroupworkspaceplatforms3 = /** @type {(inputs: Buildergroupworkspaceplatforms3Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Espace de travail et plateformes`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Workspace & Platforms" |
 *
 * @param {Buildergroupworkspaceplatforms3Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildergroupworkspaceplatforms3 = /** @type {((inputs?: Buildergroupworkspaceplatforms3Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupworkspaceplatforms3Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildergroupworkspaceplatforms3 = /** @type {((inputs?: Buildergroupworkspaceplatforms3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupworkspaceplatforms3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildergroupworkspaceplatforms3(inputs)
 	if (locale === "es") return es_buildergroupworkspaceplatforms3(inputs)
-	return zh_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "zh") return zh_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "ja") return ja_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "ko") return ko_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "zh-Hant") return zh_hant1_buildergroupworkspaceplatforms3(inputs)
+	if (locale === "de") return de_buildergroupworkspaceplatforms3(inputs)
+	return fr_buildergroupworkspaceplatforms3(inputs)
 });
 export { buildergroupworkspaceplatforms3 as "builderGroupWorkspacePlatforms" }

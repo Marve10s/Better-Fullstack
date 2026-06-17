@@ -1,0 +1,514 @@
+---
+title: "ScaffBench : mesure des agents de codage sur un véritable échafaudage fullstack"
+description: "102 fonctionne sur Claude Code, Codex CLI, Gemini CLI, Kilo et opencode, mesurant la vitesse, le coût, les jetons et si les projets générés sont installés et construits."
+date: 2026-06-12
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+---
+
+Les agents de codage sont très bons pour écrire du code et étonnamment mauvais pour *démarrer* des projets. Demandez à quelqu'un de
+échafaudez un monorepo fullstack de qualité production et il passera volontiers dix minutes à écrire à la main
+manifestes, fichiers de verrouillage et configuration – et le résultat ne se construit souvent pas.
+
+ScaffBench mesure exactement cela : un agent dans un espace de travail vide, une spécification de projet et un disque dur.
+question à la fin — **le projet généré s'installe-t-il et se construit-il ?** Nous avons exécuté les mêmes spécifications
+à travers trois chemins de création pour isoler dans quelle mesure les outils sont utiles :
+
+- **MCP** — l'agent utilise le serveur Better-Fullstack MCP pour planifier et échafauder le projet.
+- **Mention BF** — non MCP ; l'invite pointe l'agent vers Better-Fullstack CLI et la documentation, et il
+compose la commande `create` elle-même.
+- **Invite** — pas de Better-Fullstack du tout ; l'agent écrit manuellement chaque fichier à partir de zéro.
+
+Nous avons exécuté la suite complète deux fois, sur deux agents CLI différents : **OpenAI Codex CLI** avec trois GPT
+modèles (10 juin) et **Claude Code** avec trois modèles Claude (12 juin) — 72 exécutions au total. Même
+spécifications, mêmes invites, même validation. Nous avons ensuite ajouté délibérément un [troisième balayage léger](#the-light-sweep-gemini-kilo-and-opencode)
+— neuf modèles supplémentaires sur **Gemini CLI**, **Kilo** et **opencode**, sur les spécifications les plus légères uniquement —
+portant le total à 102 courses et quinze modèles.
+
+## Résultats principaux
+
+Les numéros de titre proviennent du balayage Claude Code — 36 runs : trois modèles (Fable 5, Opus 4.8,
+Sonnet 4.6) × trois chemins de création × quatre spécifications de projet. Même machine, même harnais, mêmes invites
+en dehors des instructions du mode création. Le [balayage GPT](#gpt-models-on-codex-cli) affiche le
+même structure et est présenté séparément ci-dessous.
+
+| Chemin de création | Temps moyen | Temps médian | Jetons de sortie moyens | Construit en passant |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | 113,4 s | 85,9 s | 5 553 | 12/12 (100%) |
+| mention petit ami | 219,6 s | 172,1 s | 11 060 | 9/9 (100%)* |
+| Rapide | 516,2 s | 424,0s | 25 859 | 9/12 (75%) |
+
+\* Trois exécutions avec mention BF sont exclues du dénominateur car elles ont échoué sur un modèle
+bug du générateur de notre côté, pas sur ce que l'agent a fait - voir [la politique de notation] (#what-counts-as-a-failure).
+
+Trois choses sont ressorties :
+
+1. **MCP est ~4,6× plus rapide que l'invite uniquement** en moyenne (et ~4,9× sur les médianes), avec ~4,7× de moins
+jetons de sortie. L'agent fournit la configuration, pas le code.
+2. **Chaque exécution de MCP a réussi la validation**, pour chaque modèle. Les exécutions avec invite uniquement ont dépassé 75 % – deux exécutions ont été réalisées
+le délai d'attente de 15 minutes et l'un d'entre eux ont produit un monorepo qui n'a pas été construit.
+3. **Les outils compressent les différences de modèle.** Sur le chemin MCP, même le plus petit modèle correspondait au
+modèles frontières à un taux de réussite de 100 % – ils sont simplement arrivés plus rapidement et moins cher.
+
+## Méthodologie
+
+### Les trois chemins de création
+
+Chaque exécution démarre dans un répertoire vide avec la même invite de base :
+
+```text
+You are running in an empty benchmark workspace:
+{run_dir}
+
+Create exactly one project directory named `{project_name}`.
+Do not ask questions. Do not start a dev server. Do not write outside the
+current working directory.
+At the end, report the commands you ran and any errors you hit.
+
+Benchmark target: {spec_title}
+Requirements:
+{spec_requirements}
+```
+
+La seule différence entre les chemins réside dans l'instruction de mode de création ajoutée à cette invite.
+Il est explicitement interdit aux exécutions d'invites uniquement de toucher à quoi que ce soit de nous :
+
+```text
+Creation mode: prompt-only.
+Do not use the Better-Fullstack MCP server, Better-Fullstack CLI,
+Better-Fullstack website, or files from the Better-Fullstack repository.
+Create the project from scratch by writing the files and manifests needed
+for a runnable starter.
+```
+
+MCP exécute le contraire :
+
+```text
+Creation mode: Better-Fullstack MCP.
+Use the Better-Fullstack MCP tools, starting with bfs_get_guidance. Then use
+schema/compatibility/plan as needed and call bfs_create_project to create
+the project.
+```
+
+Et les exécutions avec mention BF se situent entre les deux - pas d'outils MCP, mais l'invite nomme le CLI et un README le
+L'agent peut lire avant de composer lui-même une commande `create` non interactive.
+
+### Les quatre spécifications du projet
+
+Les spécifications sont délibérément réparties du "projet du week-end" à "la pile", dirait une vraie équipe.
+environ pendant une semaine » :
+
+| Spécification | Ce qu'il demande |
+| --- | --- |
+| `light-ts` | React + Vite, Hono sur Bun, tRPC, SQLite + Drizzle, Tailwind + DaisyUI, Pino, Vitest, Biome — pas d'authentification, pas de paiement |
+| `heavy-ts` | Next.js **et** une application Expo/React Native, Hono sur Bun, oRPC, PostgreSQL + Drizzle, Better Auth, Stripe, Resend, UploadThing, Effect, TanStack Store/Form/Query, Valibot, Vitest + Playwright, Vercel AI SDK, Socket.IO, Inngest, Framer Motion, OpenTelemetry, PostHog, Umami, Sanity, Upstash Redis, Algolia, S3, shadcn/ui, Turborepo, MSW, Storybook, PWA, Docker compose |
+| `python-ai` | FastAPI, SQLModel, PostgreSQL, Pydantic, JWT auth, Céleri, Strawberry GraphQL, LangChain + OpenAI SDK + LangGraph + CrewAI, Ruff |
+| `multi-ecosystem` | Frontend TypeScript Next.js, backend Python FastAPI (SQLModel/Pydantic/LangChain/Celery), service Go Gin (GORM, gRPC, Cobra, Zap), partagé PostgreSQL |
+
+`heavy-ts` est le test de résistance. C'est aussi là que chaque échec intéressant de ce benchmark
+arrivé.
+
+### Le harnais
+
+Deux balayages, une conception de harnais :
+
+- **Claude Sweep :** Claude Code en mode sans tête (`claude -p`), flux d'événements JSON capturé par
+courir. Modèles : `claude-fable-5`, `claude-opus-4-8`, `claude-sonnet-4-6`, effort de raisonnement par défaut.
+- ** Balayage GPT :** OpenAI Codex CLI (`codex exec`), flux d'événements JSON capturé par exécution. Modèles :
+`gpt-5.3-codex-spark` (effort élevé), `gpt-5.4` (moyen), `gpt-5.5` (moyen).
+- **Isolement :** chaque exécution obtient un nouvel espace de travail vide ; MCP exécute une configuration MCP stricte avec seulement
+le serveur Better-Fullstack connecté.
+- **Délai d'expiration :** 900 secondes par exécution. Un délai d'attente compte comme un échec pour l'agent.
+- **Mesures :** temps d'horloge, utilisation des jetons à partir du propre rapport d'utilisation de l'agent, appels d'outils MCP depuis
+le flux d'événements. Le coût en dollars est capturé uniquement sur le balayage Claude - notre harnais Codex ne le fait pas
+signaler le coût mesuré.
+
+Une asymétrie importante : le balayage GPT a eu lieu deux jours plus tôt, contre le générateur *avant* nous
+correction des bugs du modèle qu'il exposait. C'est pourquoi les exclusions de bogues du générateur ci-dessous touchent le GPT.
+les résultats sont plus difficiles – et pourquoi les deux balayages ne devraient pas être comparés face à face sur les taux de réussite.
+
+### Ce qui compte comme un passage
+
+La validation s'exécute *après* la fin de l'agent, par rapport à ce qu'il a laissé sur le disque :
+
+- **TypeScript :** `bun install`, puis le propre script `build` (ou `check`/`lint`/`test`) du projet.
+- **Python :** `compileall` dans l'ensemble du projet, à l'exclusion des virtualenvs et des packages vendus.
+- **Allez :** `go mod download` et le module doit compiler.
+
+Une exécution ne réussit que si chaque contrôle applicable sort de zéro. « Ça ressemble à un projet » ne compte pas ;
+il faut qu'il se construise.
+
+### Ce qui compte comme un échec
+
+<Callout kind="info">
+**Politique de notation :** les échecs causés par des bugs dans notre propre générateur de modèles sont exclus de la
+dénominateur du taux de réussite : seuls les échecs créés par l'agent sont pris en compte pour l'agent. Le benchmark
+Le travail consiste à mesurer les agents, pas à blanchir nos bugs dans leur score. Le revers de la médaille : nous publions
+ces bugs du générateur ci-dessous au lieu de les cacher.
+</Callout>
+
+Lors du balayage Claude, cela comptait exactement trois fois : les trois modèles, sur le chemin de la mention BF,
+échafaudé correctement `heavy-ts` via le CLI - et tous les trois ont rencontré le même bug de générateur dans notre
+modèle natif (Expo) où `app.json` définit un mode de sortie Web qui ne fonctionne qu'avec `expo-router`.
+Les agents ont tout fait correctement ; le modèle n'a pas pu être construit. Ces trois courses sont exclues.
+Les échecs du chemin d'invite (deux délais d'attente, une version écrite à la main cassée) sont entièrement créés par l'agent et
+compter au complet.
+
+Lors du balayage GPT – qui s'est déroulé contre le générateur de préfixes – cela comptait sept fois : `heavy-ts`
+via MCP et via CLI ont échoué pour les trois modèles sur le bug Storybook/Expo corrigé depuis
+chaîne, plus un échafaudage multi-écosystèmes dont le service Go a été livré sans `go.sum` généré.
+Tous les sept sont exclus pour la même raison ; les propres échecs des agents GPT (trois échecs
+les versions manuscrites sur le chemin de l'invite) comptent dans leur intégralité.
+
+## Résultats
+
+### Par modèle et chemin
+
+Les temps et les jetons sont des moyennes pour les quatre spécifications ; le coût est le total API mesuré pour ces quatre exécutions.
+
+| Modèle | Chemin | Temps moyen | Jetons de sortie moyens | Coût (4 spécifications) | Construit en passant |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Fable 5 | MCP | 172,6 s | 7 590 | 9,34 $ | 4/4 |
+| Fable 5 | mention petit ami | 405,7 s | 17 748 | 15,66 $ | 3/3* |
+| Fable 5 | Rapide | 572,8 s | 24 905 | 11,26 $† | 3/4 |
+| Opus 4.8 | MCP | 97,1 s | 5 206 | 3,43 $ | 4/4 |
+| Opus 4.8 | mention petit ami | 154,7 s | 10 596 | 4,12 $ | 3/3* |
+| Opus 4.8 | Rapide | 510,8 s | 21 485 | 6,89 $† | 3/4 |
+| Sonnet 4.6 | MCP | 70,3 s | 3 863 | 1,47 $ | 4/4 |
+| Sonnet 4.6 | mention petit ami | 98,3 s | 4 834 | 1,31 $ | 3/3* |
+| Sonnet 4.6 | Rapide | 464,9 s | 31 188 | 7,11 $ | 3/4 |
+
+\* `heavy-ts` exclu (bug du générateur de notre côté). † Les exécutions expirées ne rapportent aucun coût, donc ces
+les totaux sous-estiment les dépenses réelles.
+
+### Coût
+
+Le balayage Claude a coûté **60,60 $** en utilisation mesurée API (moins que le nombre réel — les deux
+les exécutions expirées rapportent 0 $ ; le harnais Codex ne rapporte pas du tout le coût). Lire le spread est
+plus intéressant que le total :
+
+- Passage le moins cher : **0,12 $** – échafaudage Sonnet 4.6 `light-ts` à travers le CLI en 21 secondes.
+- Passages les plus chers : **3,50 $ à 4,21 $** — Projets d'écriture manuscrite Fable 5 sur le chemin d'invite.
+- Pour Sonnet, le chemin d'invite coûtait environ 5 fois son chemin MCP (7,11 $ contre 1,47 $) et était environ 6,6 fois plus lent, pour un
+*taux de réussite *inférieur*.
+
+Le modèle s'applique aux trois modèles : plus l'agent doit créer de projet
+en soi, plus vous payez cher pour un résultat moins fiable.
+
+## Modèles GPT sur Codex CLI
+
+Le balayage GPT a exécuté les spécifications et les invites identiques via Codex CLI d'OpenAI deux jours avant le
+Balayage de Claude : `gpt-5.3-codex-spark` à effort de raisonnement élevé, `gpt-5.4` et `gpt-5.5` à moyen.
+Les échecs liés aux bogues du générateur sont exclus exactement comme ci-dessus (sept exécutions ici — ce balayage est antérieur au
+correctifs de modèles).
+
+| Modèle | Chemin | Temps moyen | Jetons de sortie moyens | Construit en passant |
+| --- | --- | ---: | ---: | ---: |
+| GPT-5.3 Codex Étincelle | MCP | 32,4 s | 5 798 | 3/3* |
+| GPT-5.3 Codex Étincelle | mention petit ami | 65,6 s | 9 894 | 3/3* |
+| GPT-5.3 Codex Étincelle | Rapide | 44,8 s | 31 418 | 2/4 |
+| GPT-5.4 | MCP | 92,0s | 5 172 | 3/3* |
+| GPT-5.4 | mention petit ami | 156,0 s | 7 084 | 3/3* |
+| GPT-5.4 | Rapide | 203,1 s | 13 328 | 3/4 |
+| GPT-5.5 | MCP | 76,5 s | 3 838 | 2/2* |
+| GPT-5.5 | mention petit ami | 74,1 s | 4 548 | 3/3* |
+| GPT-5.5 | Rapide | 264,2 s | 15 650 | 4/4 |
+
+\* `heavy-ts` exclu sur MCP et mention BF pour les trois modèles, plus un multi-écosystème GPT-5.5
+MCP run — le tout sur des bogues du générateur corrigés depuis (ce balayage s'est exécuté avant la livraison des correctifs).
+
+Ce que le balayage GPT ajoute au tableau :
+
+- **La structure est indépendante du fournisseur.** Pour chaque modèle GPT, MCP est le chemin le plus rapide et
+l'invite uniquement est la plus chère en jetons de sortie - la même forme que les résultats de Claude, sur un
+modèles de fournisseurs différents *et* un agent différent CLI.
+- **Spark est conçu pour la vitesse, et cela se voit.** GPT-5.3 Codex Spark en moyenne 32 secondes par MCP
+échafaudage - les cellules les plus rapides de tout le benchmark - mais sur le chemin rapide, sa vitesse est arrivée à
+le prix de la fiabilité : il a écrit des projets à la main en moins d'une minute et seulement la moitié d'entre eux ont été construits.
+- **GPT-5.5 est la valeur aberrante du chemin d'invite.** C'était le seul modèle dans les deux balayages à réussir *tous*
+spécification d'invite uniquement, y compris `heavy-ts` - à 542 secondes et 28 000 jetons de sortie pour cette seule exécution,
+contre 108 secondes jusqu'à MCP.
+- **Les modèles GPT s'appuient davantage sur les outils.** Les exécutions du Codex ont effectué 10 à 34 appels MCP par échafaudage, contre
+Claude a un score de 3 à 10, revérifiant la compatibilité et replanifiant plus souvent – ​​avec le même résultat final.
+
+Une mise en garde mérite d'être répétée : les deux balayages se sont déroulés avec des harnais d'agents différents, des jours différents et
+différentes versions de générateur. Comparer les chemins au sein d’un balayage est l’expérience ; comparer les fournisseurs
+à travers les balayages ne l'est pas.
+
+## Le balayage de lumière : Gemini, Kilo et opencode
+
+La suite complète coûte de l'argent réel et un budget réel limité, donc pour le prochain lot de modèles que nous avons exécutés
+une version volontairement allégée : **une spécification (`light-ts`) × trois chemins de création × une exécution par cellule**.
+Neuf modèles répartis sur trois autres agents CLI, tous le 12 juin :
+
+- **Gemini CLI** — Gemini 3.1 Pro (la dernière version de Google et la valeur par défaut de CLI).
+- **opencode** (abonnement Go) — Kimi K2.6, GLM-5.1, MiniMax M3, Qwen3.7 Max, DeepSeek-V4 Pro :
+le niveau phare actuel des poids ouverts.
+- **Kilo CLI** (niveau de modèle gratuit) — Step-3.7 Flash, Laguna m.1, Nex N2-Pro.
+
+Mêmes invites, même budget de 900 secondes, même validation que les balayages principaux. Le score correspond au
+critère principal : le projet **installe-t-il et construit** - donc les échecs liés uniquement aux peluches ne comptent pas
+contre une exécution (les journaux stricts sont dans les artefacts d'exécution). Les Gémeaux ont eu une seconde répétition accidentelle de
+les trois chemins, que nous avons conservés comme échantillon à variance libre : 30 exécutions au total. (Un dixième modèle,
+Nemotron-3 Ultra sur l'offre gratuite de Kilo est exclu : le point de terminaison était trop lent pour piloter un agent à
+tous; voir la note en annexe.)
+
+| Modèle | MCP | mention petit ami | Invite uniquement |
+| --- | --- | --- | --- |
+| Gémeaux 3.1 Pro | ✅ Années 60 · 1,6k | ✅ 27s · 0,9k | ✅ 124s · 13,2k |
+| Kimi K2.6 | ✅ 311 · 2,8k | ✅ 24s · 1,6k | ✅ 372s · 13,5k |
+| GLM-5.1 | ✅ 46s · 1,2k | ✅ 67s · 2,2k | ✅ 694 · 29,5k |
+| MiniMax M3 | ✅ 69s · 2,5k | ✅ 32s · 0,8k | ❌ pause construction |
+| Qwen3.7 Max | ✅ Années 80 · 2,7k | ✅ 35s · 0,8k | ✅ 379s · 13,3k |
+| DeepSeek-V4 Pro | ✅ 43s · 1,4k | ✅ 40 ans · 1,4k | ✅ 357 · 11,7k |
+| Étape 3.7 Flash | ✅ 45s · 2,0k | ✅ 16s · 0,6k | ❌ installation cassée |
+| Lagune m.1 | ✅ 225s · 1,6k | ✅ 592s · 3,7k | ✅ 900 s (délai d'attente) · 9,4k |
+| Nex N2-Pro | ✅ 227s · 2,4k | ✅ 146s · 1,3k | ❌ pause construction |
+
+Ce que le balayage lumineux ajoute :
+
+- **Les chemins assistés ont été de 18 pour 18.** Chaque modèle a réussi les mentions MCP et BF. Cela comprend
+Étape 3.7 Flash - un petit modèle rapide et gratuit - échafaudant un monorepo fullstack correct en 16
+secondes et 640 jetons de sortie via le chemin de mention BF. La structure que nous avons vue sur Claude et GPT
+n'est pas un phénomène de type frontière ; l'outillage uniformise les règles du jeu jusqu'au bout.
+- **L'invite uniquement est l'endroit où le champ est divisé.** Trois des neuf modèles ont expédié des projets défectueux, chacun dans
+de manière instructive : Étape 3.7 Flash a épinglé `pino-http` sur une version qui n'existe pas (installer
+échoué); MiniMax M3 a nommé une procédure tRPC `useContext`, entrant en collision avec le client intégré de tRPC
+méthode (échec de la vérification du type) ; Nex N2-Pro a écrit une importation qui ne se résout pas (échec du rollup).
+Aucun de ces modes de défaillance n'existe sur les chemins assistés, car l'agent n'écrit jamais manuellement un
+manifeste.
+- **Les données économiques s'appuient sur un troisième, un quatrième et un cinquième harnais.** Chaque course assistée s'est terminée sous
+3 000 jetons de sortie. Chaque exécution avec invite uniquement coûte entre 8 et 36 000 – 36 000 du MiniMax M3 étant le plus cher
+une seule exécution dans ScaffBench jusqu'à présent, pour un projet qui n'a pas été construit.
+- **Gemini 3.1 Pro est excellent dans cette tâche.** Cellule de mention BF la plus rapide de l'ensemble du benchmark
+(26,7 secondes, 863 jetons), un flux MCP à quatre appels manuel et l'un des rares modèles à réussir
+invite uniquement. Son échantillon répété constitue également un contrôle d'honnêteté utile : la première exécution de l'invite a échoué. Biome
+charpie, la seconde s'est déroulée proprement - les cellules à passage unique sont directionnelles et non définitives.
+
+Mises en garde concernant le balayage léger : une exécution par cellule et 25 des exécutions exécutées simultanément, donc horloge murale
+les temps comportent du bruit de contention (la course de mention BF de Gemini mesurait 27 secondes en solo et 50 secondes en parallèle
+lot – même résultat, trafic différent). Traitez la structure du chemin et la réussite/l'échec comme le signal, exact
+secondes à titre approximatif.
+
+## Analyse qualitative
+
+### MCP maintient les agents sur les rails
+
+MCP exécutions ont convergé sur la même séquence d'outils : `bfs_get_guidance` → contrôle de compatibilité → plan →
+`bfs_create_project`, entre 3 et 10 appels par exécution (la spécification multi-écosystèmes était la plus nécessaire
+itérations pour établir une pile valide). La production reste faible car le travail de l'agent se réduit à
+*choisir une configuration* — l'écriture du fichier est effectuée par le générateur, de manière déterministe. C'est
+aussi pourquoi les taux de réussite ne se dégradent pas à mesure que la spécification augmente : `heavy-ts` à MCP réussis pour chaque
+modèle.
+
+### Les agents rapides se noient dans les spécifications lourdes
+
+Sur le chemin de l'invite, `heavy-ts` a vaincu presque tout le monde. Fable 5 et Opus 4.8 étaient encore en train d'écrire
+fichiers après un délai d'attente de 15 minutes. Sonnet 4.6 a terminé un monorepo de 90 fichiers en 767 secondes — et il
+n'a pas construit. GPT-5.3 Codex Spark a sprinté vers un projet écrit à la main en 68 secondes – ce n'est pas le cas
+construire non plus. La seule exception dans les deux balayages était GPT-5.5, qui a été corrigée via `heavy-ts`.
+invite seulement en 542 secondes et réussi. Les spécifications les plus légères ont pour la plupart satisfait aux invites uniquement, mais en quelques minutes
+d'horloge murale et de 10 000 à 37 000 jetons de sortie chacun. Écrire à la main un démarreur est quelque chose de pionnier
+*peut* faire ; c'est simplement le moyen le plus lent, le plus coûteux et le moins fiable d'en obtenir un.
+
+### Le benchmark a audité nos propres modèles
+
+Les échecs les plus utiles furent les nôtres. La validation de chaque projet généré a fait surface **six couches
+bogues de modèle** dans notre générateur, la plupart se cachant derrière un seul symptôme « Échec de la construction du livre d'histoires » sur
+`heavy-ts`. Le balayage GPT les a frappés en premier : huit de ses neuf builds `heavy-ts` ont échoué, six d'entre elles ont échoué.
+les sur cette chaîne de générateurs - et le balayage de Claude deux jours plus tard a confirmé quels correctifs étaient retenus :
+
+1. Les modèles de livre d'histoires ont testé le frontend avec une vérification d'égalité, mais `frontend` est un tableau.
+2. Une incompatibilité de chemin de package de base de données a laissé le package de base de données sans ses dépendances en mode partie graphique.
+3. `expo-network` manquait dans une variante de modèle natif.
+4. Les packages de framework Storybook 8 ne réexportent pas les types `Meta`/`StoryObj` - les importations ont dû être déplacées vers
+les packages de rendu.
+5. `@better-auth/expo` nécessitait quatre dépendances homologues Expo installées explicitement.
+6. Native `app.json` définit un mode de sortie Web statique qui ne fonctionne qu'avec `expo-router` — celui-ci est
+toujours ouvert, et c'est le bug derrière les trois exécutions exclues de la mention BF.
+
+Cinq des six ont été corrigés et expédiés dans `create-better-fullstack` 2.0.2 avant la publication de ce message.
+dehors. Exécuter votre propre produit via un benchmark d'agent s'avère être un contrôle qualité extrêmement efficace
+passer.
+
+### Caractère du modèle
+
+Sonnet 4.6 était le plus rapide et le moins cher sur tous les chemins, et avec ses outils, il n'a rien cédé dans
+fiabilité. Fable 5 était la plus délibérée – le plus grand nombre de jetons, les séries les plus longues et, sur le
+chemin rapide, cette minutie n'était toujours pas suffisante pour battre le délai d'attente sur `heavy-ts`. Opus 4.8 samedi
+fiable entre les deux. Le classement n'a jamais changé d'une voie à l'autre ; l'*écart* l'a fait. L'outillage est le meilleur
+égaliseur : sur MCP, l'écart entre le meilleur et le pire modèle était de 102 secondes ; rapide-seulement c'était
+minutes variables et, deux fois, une horloge murale au plafond.
+
+## Limites
+
+- **Une exécution par cellule.** 102 exécutions suffisent pour voir la structure, pas pour mettre des intervalles de confiance
+dessus. Les temps d'échafaudage varient également en fonction de la charge API - et le lot parallèle du balayage léger ajoute
+bruit de contention en haut (la propre répétition de Gemini montrait à la fois un écart de temps de 2 × et un échec/réussite de charpie
+retourner entre des courses identiques).
+- **Les balayages ne se font pas en face-à-face.** Les exécutions GPT ont utilisé un agent différent CLI (Codex), différent
+paramètres d'effort de raisonnement, une version antérieure du générateur et rapport sans coût financier ; la lumière
+le balayage couvre une spécification sur trois autres CLI. Les comparaisons au sein du chemin de balayage sont solides ;
+Les classements des modèles multi-fournisseurs ne sont pas ce que mesure cette référence.
+- **Nous avons comparé notre propre outil.** L'exploitation, les invites et la validation sont publiques dans l'esprit —
+les invites et la politique sont citées ci-dessus – et le tableau complet par exécution se trouve en annexe. Traitez le
+comparaison entre les chemins (outillage vs pas d'outillage) comme découverte, et non comme affirmation sur d'autres
+échafaudages.
+- **Builds, pas fonctionnalités.** La validation prouve que le projet s'installe et se construit - pas que l'authentification
+le flux fonctionne ou le webhook Stripe est correctement câblé. Un projet de réussite avec invite uniquement peut toujours être
+il manque plus de spécifications qu'une spécification générée.
+- **Sous-déclaration du coût du délai d'attente.** Les exécutions tuées à 900 s rapportent un coût de 0 $, ce qui flatte l'invite
+les totaux du chemin.
+
+## Annexe : les 102 courses
+
+### Balayage Claude (Claude Code, 12 juin)
+
+| Modèle | Chemin | Spécification | Temps | Jetons de sortie | Coût | Résultat |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Fable 5 | MCP | lourd-ts | 290 | 11 891 | 2,97 $ | passer |
+| Fable 5 | MCP | lumière-ts | 82s | 4 166 | 1,62 $ | passer |
+| Fable 5 | MCP | multi-écosystème | 240s | 10 895 | 3,22 $ | passer |
+| Fable 5 | MCP | python-ai | 78s | 3 406 | 1,54 $ | passer |
+| Fable 5 | mention petit ami | lourd-ts | 613 | 30 259 | 6,98 $ | la construction a échoué* |
+| Fable 5 | mention petit ami | lumière-ts | 314 | 16 132 | 3,74 $ | passer |
+| Fable 5 | mention petit ami | multi-écosystème | 470 | 15 196 | 2,98 $ | passer |
+| Fable 5 | mention petit ami | python-ai | 226 | 9 404 | 1,95 $ | passer |
+| Fable 5 | Rapide | lourd-ts | années 900 | — | — | expiré |
+| Fable 5 | Rapide | lumière-ts | 413 | 32 080 | 3,50 $ | passer |
+| Fable 5 | Rapide | multi-écosystème | 570 | 37 436 | 4,21 $ | passer |
+| Fable 5 | Rapide | python-ai | 408 | 30 103 | 3,55 $ | passer |
+| Opus 4.8 | MCP | lourd-ts | 178 | 5 805 | 0,88 $ | passer |
+| Opus 4.8 | MCP | lumière-ts | 46s | 2 894 | 0,72 $ | passer |
+| Opus 4.8 | MCP | multi-écosystème | 118s | 8 903 | 1,10 $ | passer |
+| Opus 4.8 | MCP | python-ai | 47s | 3 223 | 0,74 $ | passer |
+| Opus 4.8 | mention petit ami | lourd-ts | 345s | 24 383 | 2,29 $ | la construction a échoué* |
+| Opus 4.8 | mention petit ami | lumière-ts | 39s | 2 754 | 0,32 $ | passer |
+| Opus 4.8 | mention petit ami | multi-écosystème | 116 | 8 038 | 0,70 $ | passer |
+| Opus 4.8 | mention petit ami | python-ai | 118s | 7 211 | 0,81 $ | passer |
+| Opus 4.8 | Rapide | lourd-ts | années 900 | — | — | expiré |
+| Opus 4.8 | Rapide | lumière-ts | 435s | 33 390 | 2,50 $ | passer |
+| Opus 4.8 | Rapide | multi-écosystème | 395 | 28 598 | 2,43 $ | passer |
+| Opus 4.8 | Rapide | python-ai | 313 | 23 952 | 1,96 $ | passer |
+| Sonnet 4.6 | MCP | lourd-ts | années 90 | 5 094 | 0,41 $ | passer |
+| Sonnet 4.6 | MCP | lumière-ts | 47s | 2 530 | 0,33 $ | passer |
+| Sonnet 4.6 | MCP | multi-écosystème | 101 | 5 904 | 0,42 $ | passer |
+| Sonnet 4.6 | MCP | python-ai | 43s | 1 923 | 0,31 $ | passer |
+| Sonnet 4.6 | mention petit ami | lourd-ts | années 98 | 5 527 | 0,28 $ | la construction a échoué* |
+| Sonnet 4.6 | mention petit ami | lumière-ts | 21s | 795 | 0,12 $ | passer |
+| Sonnet 4.6 | mention petit ami | multi-écosystème | 237 | 11 333 | 0,73 $ | passer |
+| Sonnet 4.6 | mention petit ami | python-ai | 38s | 1 682 | 0,18 $ | passer |
+| Sonnet 4.6 | Rapide | lourd-ts | 767 | 52 926 | 3,18 $ | échec de la construction |
+| Sonnet 4.6 | Rapide | lumière-ts | 520 | 32 767 | 1,88 $ | passer |
+| Sonnet 4.6 | Rapide | multi-écosystème | 347 | 22 642 | 1,20 $ | passer |
+| Sonnet 4.6 | Rapide | python-ai | 226 | 16 418 | 0,85 $ | passer |
+
+\* Échec sur un bug du générateur de modèles identifié depuis de notre côté (exclu du pass agent
+tarifs). L'échec du chemin d'invite `heavy-ts` de Sonnet 4.6 est créé par l'agent et compte.
+
+### Balayage GPT (Codex CLI, 10 juin – générateur de préfixes)
+
+| Modèle | Chemin | Spécification | Temps | Jetons de sortie | Résultat |
+| --- | --- | --- | ---: | ---: | --- |
+| GPT-5.3 Codex Étincelle | MCP | lourd-ts | 26s | 5 300 | la construction a échoué* |
+| GPT-5.3 Codex Étincelle | MCP | lumière-ts | 18 ans | 2 870 | passer |
+| GPT-5.3 Codex Étincelle | MCP | multi-écosystème | 66 | 10 988 | passer |
+| GPT-5.3 Codex Étincelle | MCP | python-ai | 19s | 4 035 | passer |
+| GPT-5.3 Codex Étincelle | mention petit ami | lourd-ts | 52s | 10 742 | la construction a échoué* |
+| GPT-5.3 Codex Étincelle | mention petit ami | lumière-ts | 11s | 1 221 | passer |
+| GPT-5.3 Codex Étincelle | mention petit ami | multi-écosystème | 147 | 18 676 | passer |
+| GPT-5.3 Codex Étincelle | mention petit ami | python-ai | 53s | 8 936 | passer |
+| GPT-5.3 Codex Étincelle | Rapide | lourd-ts | 68 ans | 54 325 | échec de la construction |
+| GPT-5.3 Codex Étincelle | Rapide | lumière-ts | 51s | 27 446 | échec de la construction |
+| GPT-5.3 Codex Étincelle | Rapide | multi-écosystème | 38s | 21 353 | passer |
+| GPT-5.3 Codex Étincelle | Rapide | python-ai | 23s | 22 549 | passer |
+| GPT-5.4 | MCP | lourd-ts | 51s | 3 016 | la construction a échoué* |
+| GPT-5.4 | MCP | lumière-ts | 44s | 2 153 | passer |
+| GPT-5.4 | MCP | multi-écosystème | 217 | 13 235 | passer |
+| GPT-5.4 | MCP | python-ai | 55s | 2 284 | passer |
+| GPT-5.4 | mention petit ami | lourd-ts | 322s | 13 834 | la construction a échoué* |
+| GPT-5.4 | mention petit ami | lumière-ts | années 30 | 753 | passer |
+| GPT-5.4 | mention petit ami | multi-écosystème | 144s | 7 870 | passer |
+| GPT-5.4 | mention petit ami | python-ai | 128s | 5 881 | passer |
+| GPT-5.4 | Rapide | lourd-ts | 236 | 15 502 | échec de la construction |
+| GPT-5.4 | Rapide | lumière-ts | 251 | 15 271 | passer |
+| GPT-5.4 | Rapide | multi-écosystème | années 170 | 11 795 | passer |
+| GPT-5.4 | Rapide | python-ai | 155s | 10 745 | passer |
+| GPT-5.5 | MCP | lourd-ts | 108s | 6 704 | la construction a échoué* |
+| GPT-5.5 | MCP | lumière-ts | 58s | 2 544 | passer |
+| GPT-5.5 | MCP | multi-écosystème | années 97 | 4 101 | la construction a échoué* |
+| GPT-5.5 | MCP | python-ai | 43s | 2 003 | passer |
+| GPT-5.5 | mention petit ami | lourd-ts | 120s | 6 851 | la construction a échoué* |
+| GPT-5.5 | mention petit ami | lumière-ts | 26s | 1 513 | passer |
+| GPT-5.5 | mention petit ami | multi-écosystème | 84s | 5 480 | passer |
+| GPT-5.5 | mention petit ami | python-ai | 66 | 4 347 | passer |
+| GPT-5.5 | Rapide | lourd-ts | 542s | 28 342 | passer |
+| GPT-5.5 | Rapide | lumière-ts | 163 | 10 601 | passer |
+| GPT-5.5 | Rapide | multi-écosystème | 242s | 15 787 | passer |
+| GPT-5.5 | Rapide | python-ai | 110s | 7 869 | passer |
+
+\* Échec d'un bug du générateur de modèles corrigé depuis de notre côté (exclu des taux de réussite des agents) —
+ce balayage s'est exécuté avant la livraison des correctifs. Les échecs du chemin d'invite GPT sont créés par l'agent et comptent.
+
+### Balayage de lumière (Gemini CLI / Kilo / opencode, 12 juin — light-ts uniquement)
+
+| Modèle | Agent CLI | Chemin | Temps | Jetons de sortie | Résultat |
+| --- | --- | --- | ---: | ---: | --- |
+| Gémeaux 3.1 Pro | Gemini CLI | MCP | 60,2 s | 1 584 | passer |
+| Gémeaux 3.1 Pro | Gemini CLI | mention petit ami | 26,7 s | 863 | passer |
+| Gémeaux 3.1 Pro | Gemini CLI | Rapide | 123,6 s | 13 188 | passer\*\* |
+| Gemini 3.1 Pro (répéter) | Gemini CLI | MCP | 69,6 s | 1 280 | passer |
+| Gemini 3.1 Pro (répéter) | Gemini CLI | mention petit ami | 50,5 s | 873 | passer |
+| Gemini 3.1 Pro (répéter) | Gemini CLI | Rapide | 254,8 s | 15 752 | passer |
+| Lagune m.1 | Kilo | MCP | 224,8 s | 1 560 | passer |
+| Lagune m.1 | Kilo | mention petit ami | 592,5 s | 3 653 | passer |
+| Lagune m.1 | Kilo | Rapide | 900,0s† | 9 439 | passer |
+| Nex N2-Pro | Kilo | MCP | 226,6 s | 2 362 | passer |
+| Nex N2-Pro | Kilo | mention petit ami | 146,2 s | 1 294 | passer |
+| Nex N2-Pro | Kilo | Rapide | 426,4 s | 7 806 | échouer (construire) |
+| Étape 3.7 Flash | Kilo | MCP | 45,5 s | 1 985 | passer |
+| Étape 3.7 Flash | Kilo | mention petit ami | 15,6 s | 640 | passer |
+| Étape 3.7 Flash | Kilo | Rapide | 166,0 s | 12 738 | échouer (installer) |
+| DeepSeek-V4 Pro | code ouvert | MCP | 42,9 s | 1 369 | passer |
+| DeepSeek-V4 Pro | code ouvert | mention petit ami | 40,0s | 1 391 | passer |
+| DeepSeek-V4 Pro | code ouvert | Rapide | 357,4 s | 11 740 | passer |
+| GLM-5.1 | code ouvert | MCP | 45,9 s | 1 172 | passer |
+| GLM-5.1 | code ouvert | mention petit ami | 67,4 s | 2 197 | passer |
+| GLM-5.1 | code ouvert | Rapide | 693,9 s | 29 527 | passer |
+| Kimi K2.6 | code ouvert | MCP | 311,2 s | 2 816 | passer |
+| Kimi K2.6 | code ouvert | mention petit ami | 24,3 s | 1 618 | passer |
+| Kimi K2.6 | code ouvert | Rapide | 371,9 s | 13 527 | passer |
+| MiniMax M3 | code ouvert | MCP | 68,7 s | 2 473 | passer |
+| MiniMax M3 | code ouvert | mention petit ami | 31,9 s | 846 | passer |
+| MiniMax M3 | code ouvert | Rapide | 712,9 s | 36 034 | échouer (construire) |
+| Qwen3.7 Max | code ouvert | MCP | 80,2 s | 2 669 | passer |
+| Qwen3.7 Max | code ouvert | mention petit ami | 35,2 s | 843 | passer |
+| Qwen3.7 Max | code ouvert | Rapide | 378,9 s | 13 313 | passer |
+
+Remarques :
+
+- Laguna m.1 a atteint uniquement le budget de 900 secondes, mais le projet a été écrit avant la date limite
+installe et construit.
+- Gemini 3.1 Pro a réussi l'installation et la construction avec invite uniquement ; il a échoué avec le propre script Biome Lint du projet,
+lequel le critère du titre ne compte pas.
+
+Nous avons également essayé le **Nemotron-3 Ultra 550B** avec l'offre gratuite de Kilo, mais ses exécutions sont exclues de
+les résultats : le point final était effectivement inutilisable pour le travail agent dans notre harnais (minutes par
+tour, zéro ou une exécution d'outil par budget de 15 minutes sur chaque chemin). C'est une infrastructure
+échec - nous n'avons pas pu atteindre le modèle de manière significative - pas un résultat de référence sur le modèle.
+
+---
+
+Vous voulez voir le chemin rapide vous-même ? Dirigez votre agent vers le
+[Serveur Better-Fullstack MCP](/mcp) et demandez-lui d'échafauder quelque chose de lourd.

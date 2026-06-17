@@ -20,7 +20,7 @@ export const baseLocale = "en";
  *     throw new Error('Locale is not available');
  *   }
  */
-export const locales = /** @type {const} */ (["en","es","zh"]);
+export const locales = /** @type {const} */ (["en","es","zh","ja","ko","zh-Hant","de","fr"]);
 /** @type {string} */
 export const cookieName = "BFS_LOCALE";
 /** @type {number} */
@@ -66,6 +66,26 @@ export const urlPatterns = [
       [
         "zh",
         ":protocol://:domain(.*)::port?/zh/:path(.*)?"
+      ],
+      [
+        "ja",
+        ":protocol://:domain(.*)::port?/ja/:path(.*)?"
+      ],
+      [
+        "ko",
+        ":protocol://:domain(.*)::port?/ko/:path(.*)?"
+      ],
+      [
+        "zh-Hant",
+        ":protocol://:domain(.*)::port?/zh-Hant/:path(.*)?"
+      ],
+      [
+        "de",
+        ":protocol://:domain(.*)::port?/de/:path(.*)?"
+      ],
+      [
+        "fr",
+        ":protocol://:domain(.*)::port?/fr/:path(.*)?"
       ],
       [
         "en",

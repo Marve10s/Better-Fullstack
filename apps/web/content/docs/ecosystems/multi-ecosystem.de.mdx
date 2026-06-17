@@ -1,0 +1,66 @@
+---
+title: Multi-Ökosystem
+description: Erstellen Sie ein Better Fullstack-Projekt aus Frontend-, Backend-, Datenbank- und mobilen Teilen über mehrere Ökosysteme hinweg.
+---
+
+Der Multi-Ökosystem-Modus modelliert ein Projekt als verbundene Stapelteile anstelle einer flachen Ökosystemauswahl. Verwenden Sie es, wenn ein Produkt mehrere Sprachen umfasst, zum Beispiel ein TypeScript-Frontend, Go API, eine gemeinsam genutzte PostgreSQL-Datenbank und eine mobile React Native-App.
+
+Öffnen Sie es im [Stack Builder](https://better-fullstack.dev/new?mode=multi) oder übergeben Sie wiederholte `--part`-Flags an CLI.
+
+## Teile stapeln
+
+Jedes Teil verwendet diese Form:
+
+```txt
+role:ecosystem:tool
+owner.role:ecosystem:tool
+```
+
+Rollen der obersten Ebene beschreiben generierte Apps oder eine gemeinsam genutzte Infrastruktur. Eigene Rollen fügen einem übergeordneten Teil eine Funktion hinzu.
+
+| Beispiel | Bedeutung |
+| --- | --- |
+| `frontend:typescript:next` | Generieren Sie ein TypeScript Next.js Frontend. |
+| `backend:go:gin` | Generieren Sie ein Go Gin-Backend. |
+| `backend.orm:go:gorm` | Hängen Sie GORM an das ausgewählte Backend an. |
+| `backend.api:rust:tonic` | Hängen Sie Tonic gRPC an ein Rust-Backend an. |
+| `database:universal:postgres` | Fügen Sie einen gemeinsam genutzten Datenbankteil PostgreSQL hinzu. |
+| `mobile:react-native:native-bare` | Generieren Sie eine mobile App React Native. |
+
+## Skriptbeispiel
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## Quelle der Wahrheit
+
+Multi-Ökosystem-Projekte schreiben `stackParts` bis `bts.jsonc`. Diese Teile sind die Quelle der Wahrheit für die generierte Struktur, den Verlauf und die reproduzierbaren Befehle. Ältere Felder wie `backend`, `orm` oder `frontend` werden möglicherweise weiterhin als aus dem Diagramm abgeleitete Kompatibilitäts-Fallbacks angezeigt.
+
+Generierte Befehle behalten das Diagramm als wiederholte `--part`-Flags bei, sodass das Projekt neu erstellt werden kann, ohne auf den ausgeblendeten Builder-Status angewiesen zu sein.
+
+## Builder-Flow
+
+Der Multi-Ökosystem-Modus des Stack Builder durchläuft Folgendes:
+
+1. Frontend – TypeScript Web-Frontends.
+2. Backend – TypeScript, Rust-, Python-, Go-, Java-, Elixir- oder .NET-Backends und eigene Backend-Funktionen.
+3. Datenbank – gemeinsame universelle Datenbankauswahl.
+4. Mobil – React Native App-Auswahl.
+5. Finalisieren – Add-ons, AI-Dokumente, Installation, Git und Versionseinstellungen.
+
+## Kompatibilität
+
+- Im aktuellen Diagrammmodell wird nur ein ausgewähltes Primärteil pro Rolle unterstützt.
+- Teile der Fähigkeit im Besitz müssen auf einen Eigentümer verweisen, z. B. `backend.orm:go:gorm`.
+- Fähigkeitsökosysteme müssen im Allgemeinen zu ihrem Eigentümerökosystem passen.
+- Universelle Datenbankteile können über Ökosysteme hinweg gemeinsam genutzt werden.
+- Einige Werkzeuge enthalten implizite Teile. Beispielsweise können ausgewählte Backends Datenbank- oder Routing-Annahmen bereitstellen, die im generierten `stackParts` erscheinen.
+- Der Kompatibilitätsprüfer validiert Diagrammteile vor der Generierung und meldet Probleme mit Eigentümern, Duplikaten und nicht unterstützten Tools.

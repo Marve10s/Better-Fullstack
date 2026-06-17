@@ -1,0 +1,164 @@
+---
+title: Fullstack Rust mit Axum und Leptos
+description: Erstellen Sie eine Fullstack-Rust-App mit dem Rust-Projektgerüst von Axum, Leptos, SeaORM und Better Fullstack.
+updated: 2026-05-12
+category: Rost
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+Verwenden Sie diesen Stack, wenn Sie Rust sowohl auf der Server- als auch auf der Frontend-Seite der generierten App haben möchten.
+
+```npm
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Was dadurch entsteht
+
+- Ein Axum-basierter Rust-Server.
+- Leptos als Rust-Frontend-Option.
+- SeaORM für den Datenbankzugriff.
+- Nachverfolgung und strukturierte Fehlerbehandlung von Vorgaben.
+
+## Erzeugte Form
+
+Dieser Stack ist eine Rust-First-Fullstack-App. Axum besitzt die Serverlaufzeit, Leptos besitzt die Frontend-Oberfläche und SeaORM verleiht dem Backend eine typisierte Persistenzschicht.
+
+Die generierte App ist nützlich, wenn Sie möchten, dass ein Rust-Arbeitsbereich Folgendes enthält:
+
+- Serverstart, Routing und gemeinsam genutzter Status.
+- Leptos Ansichten und interaktiver UI-Code.
+- Datenbankentitäten und serverseitiger Datenzugriff.
+- Protokollierung und Fehlerbehandlung von Anfang an konfiguriert.
+
+## Repräsentativer Dateibaum
+
+Erwarten Sie ein Layout, das Serverbelange von UI-Belangen trennt und sie gleichzeitig in einem Projekt zusammenhält:
+
+```txt
+my-rust-fullstack/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    app.rs
+    error.rs
+    routes/
+      mod.rs
+      api.rs
+    entities/
+      mod.rs
+      user.rs
+    pages/
+      mod.rs
+      home.rs
+      users.rs
+    components/
+      mod.rs
+```
+
+Verwenden Sie den generierten Baum als Grenzleitfaden: Leptos-Komponenten sollten sich weiterhin auf Rendering und Interaktion konzentrieren, während die Datenbankarbeit serverseitig bleiben sollte.
+
+## Server- und UI-Beispiele
+
+Eine Axum-Route kann JSON-Endpunkte für serverseitige Aktionen oder Integrationsclients verfügbar machen:
+
+```rust
+use axum::{extract::State, Json};
+use serde::Serialize;
+
+use crate::{error::AppError, AppState};
+
+#[derive(Debug, Serialize)]
+pub struct HealthResponse {
+    pub status: &'static str,
+}
+
+pub async fn health(State(_state): State<AppState>) -> Result<Json<HealthResponse>, AppError> {
+    Ok(Json(HealthResponse { status: "ok" }))
+}
+```
+
+Eine Leptos-Seite sollte Serverfunktionen oder API-Helfer aufrufen, anstatt Datenbankverbindungen über den UI-Code zu öffnen:
+
+```rust
+use leptos::prelude::*;
+
+#[component]
+pub fn HomePage() -> impl IntoView {
+    view! {
+        <main>
+            <h1>"Dashboard"</h1>
+            <p>"Rust server, Rust UI, and one generated project shape."</p>
+        </main>
+    }
+}
+```
+
+Behalten Sie für eine datenbankgestützte Benutzeroberfläche den Datenbankvorgang hinter der Servergrenze:
+
+```rust
+use sea_orm::{DatabaseConnection, EntityTrait};
+
+use crate::entities::user;
+
+pub async fn list_users(db: &DatabaseConnection) -> Result<Vec<user::Model>, sea_orm::DbErr> {
+    user::Entity::find().all(db).await
+}
+```
+
+## Kompatibilitätshinweise
+
+In dieser Anleitung werden Rust-spezifische Flags anstelle der Frontend-/Backend-Flags TypeScript verwendet. Behalten Sie die Rust-Frontend-Auswahl unter `--rust-frontend` bei.
+
+Die Flags `--rust-api none` und `--rust-cli none` sorgen dafür, dass sich dieses Gerüst auf die Web-App konzentriert. Fügen Sie die Option gRPC oder CLI nur hinzu, wenn das generierte Projekt absichtlich mehrere Schnittstellen bedient. Wenn Sie ein reines API-Backend wünschen, verwenden Sie `--rust-frontend none` und befolgen Sie stattdessen die Anleitung Axum API.
+
+## Wann man es wählt
+
+Wählen Sie diese Option, wenn das Projekt von einer Rust-First-Architektur über die App-Grenze hinweg profitiert und Ihr Team mit dem Kompilierzeitmodell von Rust vertraut ist.
+
+Es eignet sich hervorragend für interne Tools, Admin-Oberflächen und Produktbereiche, in denen die gemeinsame Nutzung von Rust-Typen und -Validierung auf dem Server und der Benutzeroberfläche wertvoller ist als die Einführung eines JavaScript-Frontend-Ökosystems.
+
+## Kompromisse
+
+Fullstack Rust reduziert den Sprachwechsel, aber der Frontend-Workflow unterscheidet sich von React, Vue oder Svelte. Planen Sie Rust-Kompilierungszeiten, Leptos-spezifische Routing-Muster und ein Team ein, das sich mit dem Debuggen des Browserverhaltens anhand von Rust-generiertem UI-Code auskennt.
+
+## Test- und Bereitstellungshinweise
+
+Verwenden Sie Rust-Unit-Tests für Dienste und Modelllogik und fügen Sie dann Tests auf Routen- oder Browserebene rund um die Abläufe hinzu, die am wichtigsten sind.
+
+```bash
+cargo test
+```
+
+Überprüfen Sie für die Bereitstellung beide Hälften der App: Der Server muss seine Umgebungsvariablen erhalten und die Frontend-Assets müssen mithilfe der generierten Projektskripts erstellt werden. Behalten Sie Datenbankmigrationen im Bereitstellungspfad bei, wenn die App Benutzerdaten speichert.
+
+## Fehlerbehebung
+
+- Wenn die Benutzeroberfläche erstellt wird, aber Serverdaten fehlen, überprüfen Sie, ob die Serverroute oder Serverfunktion im Router Axum registriert ist.
+- Wenn Datenbanktypen abweichen, generieren oder aktualisieren Sie SeaORM-Entitäten über den Workflow der Gerüstdokumente neu.
+- Wenn eine Browser-Route lokal, aber nach der Bereitstellung nicht funktioniert, überprüfen Sie das generierte Server-Routing und die statische Asset-Konfiguration zusammen.
+- Wenn die Protokolle zu leise sind, legen Sie `RUST_LOG=info` fest, bevor Sie den Server starten.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror).
+- Vergleichen Sie mit [Axum mit PostgreSQL und SeaORM](/guides/rust/axum-postgres-seaorm/).
+- Lesen Sie die [Dokumente zum Rust-Ökosystem](/docs/ecosystems/rust/).

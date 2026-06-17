@@ -1,0 +1,62 @@
+---
+title: Erstellen Sie ein internes Tool
+description: Erstellen Sie ein internes Tool mit TanStack Router, Hono, Drizzle, PostgreSQL, Better Auth, tRPC, Tailwind CSS und shadcn/ui.
+updated: 2026-05-21
+category: Packungen
+tags:
+  - internal-tool
+  - tanstack-router
+  - hono
+  - drizzle
+  - trpc
+keywords:
+  - create internal tool
+  - internal tool starter
+  - admin dashboard starter
+  - tanstack hono starter
+  - crud dashboard starter
+---
+
+Verwenden Sie das interne Toolpaket, wenn Sie eine funktionierende CRUD-orientierte App für den Betrieb, Verwaltungsworkflows, Supportteams oder Produkt-Dashboards benötigen.
+
+<StarterPackCta id="internal-tool" />
+
+## Generieren Sie den internen Werkzeugstarter
+
+Öffnen Sie das [Interne Tool-Paket im Stack Builder](/new?preset=tanstack-hono&view=command) oder führen Sie Folgendes aus:
+
+```bash
+bun create better-fullstack@latest my-internal-tool \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## Was im Paket enthalten ist
+
+- TanStack Router für die Web-App.
+- Hono auf Bun für das Backend.
+- PostgreSQL und Drizzle für typisierte Persistenz.
+- Better Auth für geschützten internen Zugriff.
+- tRPC für typisierte Frontend-zu-Backend-Aufrufe.
+- Tailwind CSS und shadcn/ui für die Dashboard-Benutzeroberfläche.
+
+## Erste Dinge, die angepasst werden müssen
+
+1. Modellieren Sie die betrieblichen Objekte, die Ihr Team täglich bearbeitet.
+2. Fügen Sie Rollenprüfungen hinzu, bevor Sie destruktive Aktionen offenlegen.
+3. Erstellen Sie Listen-, Detail-, Erstellungs-, Bearbeitungs- und Prüfansichten rund um denselben typisierten API.
+4. Fügen Sie Bereitstellungsgeheimnisse und Datenbankmigrationen hinzu, bevor Sie Teamkollegen einladen.
+
+## Wenn das das richtige Paket ist
+
+Wählen Sie dies für Admin-Panels, interne Dashboards, Support-Tools, Back-Office-Workflows und CRUD-Apps, bei denen es auf Geschwindigkeit ankommt, aber die Typsicherheit dennoch wichtig ist.
+
+Für die exemplarische Vorgehensweise auf Stapelebene lesen Sie [Hono mit tRPC und Drizzle](/guides/typescript/hono-trpc-drizzle/).

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { STACK_SELECTION_URL_KEYS } from "@better-fullstack/types/stack-translation";
 
 import { buildSearchSections } from "../src/lib/docs/search";
+import { LOCALIZED_CONTENT_LOCALES } from "../src/lib/i18n/locales";
 
 const WEB_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTENT_ROOT = join(WEB_ROOT, "content");
@@ -54,7 +55,7 @@ function readContentFiles(): ContentFile[] {
 }
 
 function isLocalizedMdxFile(path: string): boolean {
-  return /\.(es|zh)\.mdx$/.test(path);
+  return LOCALIZED_CONTENT_LOCALES.some((locale) => path.endsWith(`.${locale}.mdx`));
 }
 
 function parseFrontmatter(source: string): Map<string, string> {

@@ -1,0 +1,103 @@
+---
+title: 첫 번째 프로젝트
+description: Better Fullstack 프로젝트를 스캐폴드, 검사, 설치 및 실행합니다.
+---
+
+이 연습에서는 프로젝트를 만들고, CLI이 생성할 수 있는 내용을 미리 보고, 스캐폴드가 완료된 후 확인할 위치를 보여줍니다.
+
+## 1. 프로젝트 생성
+
+마법사를 실행합니다:
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+TypeScript 스타터의 기본값을 수락하거나 원하는 스택과 일치하도록 프롬프트를 변경하세요.
+
+## 2. 쓰지 않고 미리보기
+
+생성된 파일 트리를 먼저 검사하려면 `--dry-run`을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+연습 실행은 새로운 생태계, 배포 대상 또는 다중 생태계 스택을 시도하기 전에 유용합니다.
+
+## 3. 명령의 비계
+
+명시적 플래그는 스캐폴드를 반복 가능하게 만듭니다. 이 예에서는 Next.js 자체 백엔드 프로젝트를 생성하고 설치/Git를 건너뛰므로 먼저 파일을 검토할 수 있습니다.
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai none \
+  --payments none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="Prompt behavior">
+명시적 플래그는 해당하는 범주를 건너뜁니다. `--yes`은 기본값을 허용하며 `--frontend`, `--backend` 및 `--database`과 같은 코어 스택 플래그와의 충돌을 허용합니다. 비활성화하려는 선택적 카테고리에는 `none`를 사용하세요.
+</Callout>
+
+## 4. 종속성 설치
+
+`--no-install`을 사용한 경우 프로젝트 내부에 수동으로 설치하세요.
+
+```bash
+cd my-app
+```
+
+```npm
+npm install
+```
+
+언어 기반 생태계는 자체 도구를 사용합니다.
+
+```bash
+cargo build
+uv sync
+go mod tidy
+./mvnw test
+./gradlew test
+```
+
+## 5. 프로젝트 검사
+
+생성된 프로젝트에는 다음이 포함됩니다.
+
+- `bts.jsonc`을(를) 선택한 스택 및 스키마 참조로 바꿉니다.
+- 선택한 생태계에 대한 프레임워크, 패키지 및 구성 파일입니다.
+- CLI에 의해 인쇄되는 재현 가능한 명령입니다.
+- `CLAUDE.md`, `Agents.md` 또는 `.cursorrules`와 같은 선택적 AI 문서.
+- 선택한 템플릿이 제공하는 README 및 설정 참고 사항입니다.
+
+## 6. 나중에 지원되는 기능 추가
+
+생성된 프로젝트 내에서 지원되는 애드온에 `add`을 사용하세요.
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+`add` 명령은 `bts.jsonc`을 읽고, 이미 존재하는 애드온을 건너뛰고, 종속성이 자동으로 설치되지 않을 때 설치 지침을 인쇄합니다.
+
+## 다음
+
+- [CLI 만들기](/docs/cli/create/)는 모든 스캐폴드 플래그를 나열합니다.
+- [CLI 추가](/docs/cli/add/)는 기존 프로젝트 애드온 업데이트를 설명합니다.
+- [생태계](/docs/ecosystems/)는 지원되는 프로젝트 계열을 비교합니다.

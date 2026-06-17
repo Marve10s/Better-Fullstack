@@ -59,7 +59,7 @@ export default function Home() {
   const [healthCheck, setHealthCheck] = useState({ isLoading: true, data: false });
   useEffect(() => {
     let active = true;
-    fetch(`${env.NEXT_PUBLIC_SERVER_URL}/health`)
+    fetch(`${env.VITE_SERVER_URL}/health`)
       .then((response) => {
         if (active) setHealthCheck({ isLoading: false, data: response.ok });
       })

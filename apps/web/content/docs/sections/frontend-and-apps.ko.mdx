@@ -1,0 +1,32 @@
+---
+title: 프런트엔드 및 앱
+description: 생성된 웹 프런트엔드, 모바일 앱, 앱 플랫폼 애드온을 선택하세요.
+---
+
+이 섹션에서는 Better Fullstack이 생성하는 사용자 대상 앱 표면을 제어합니다.
+
+## 웹 프론트엔드
+
+TypeScript 웹 프런트엔드는 `--frontend`으로 선택됩니다. 해당 카테고리는 React, Vinext, Vue/Nuxt, SvelteKit, Solid, Astro, Qwik, Angular, Redwood, Fresh 및 `none`을 지원합니다.
+
+백엔드 전용 서비스에는 `none`을 사용하세요. 프레임워크가 서버 경로를 소유하는 경우 `--backend self`과 함께 전체 스택 프런트엔드 모드를 사용합니다.
+
+## React Native 앱
+
+React Native는 자체 생태계입니다. `--ecosystem react-native`로 선택하거나 `mobile:react-native:native-bare`로 다중 생태계 부분으로 선택하세요.
+
+모바일 선택에는 탐색, UI, 저장소, 테스트, 푸시 알림, OTA 업데이트 및 딥 링크가 포함됩니다. 이는 TypeScript 웹 백엔드 또는 배포 범주를 의미하지 않습니다.
+
+## Rust WASM 프런트엔드
+
+Rust는 `--rust-frontend`을 통해 Leptos 또는 Dioxus 프런트엔드 표면을 생성할 수 있습니다. 이는 TypeScript 웹 프런트엔드와 별개인 Rust 생태계 선택입니다.
+
+## 앱 플랫폼
+
+Tauri, PWA, WXT 및 OpenTUI와 같은 앱 플랫폼 애드온은 호환되는 스택에 셸, 오프라인, 확장 또는 터미널 앱 기능을 추가합니다.
+
+## 참고자료
+
+- [TypeScript 옵션](/docs/reference/options/typescript/)
+- [React Native 옵션](/docs/reference/options/react-native/)
+- [러스트 옵션](/docs/reference/options/rust/)

@@ -1,0 +1,126 @@
+---
+title: SolidStart mit oRPC und Drizzle
+description: Erstellen Sie eine SolidStart Fullstack-App mit oRPC, Drizzle, SQLite, Better Auth und Tailwind CSS unter Verwendung von Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - solidstart
+  - orpc
+  - drizzle
+  - better-auth
+keywords:
+  - solidstart orpc
+  - solidstart drizzle starter
+  - solidstart better auth
+  - create solidstart app
+  - solidstart fullstack boilerplate
+---
+
+Verwenden Sie diesen Stack, wenn Sie die feinkörnige Reaktivität von Solid mit einem Fullstack-Framework und typisierten API-Verträgen wünschen.
+
+```npm
+npm create better-fullstack@latest my-solidstart-app -- \
+  --ecosystem typescript \
+  --frontend solid-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## Was dadurch entsteht
+
+- Eine SolidStart Fullstack-App.
+- SQLite und Drizzle.
+- Better Auth.
+- oRPC für typisierte Verträge.
+- Tailwind CSS.
+
+## Erzeugte Form
+
+Dieser Stack behält SolidStart als Fullstack-Framework bei. Die App kann Solid UI rendern, typisierte Serververträge aufrufen und Daten über Drizzle speichern, ohne einen separaten Backend-Dienst einzuführen.
+
+Repräsentative Form:
+
+```txt
+my-solidstart-app/
+  bts.jsonc
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      rpc/
+```
+
+Verwenden Sie diesen Baum als Eigentumskarte. UI-Code gehört zu Solid-Komponenten und -Routen; Datenbank und Authentifizierungscode sollten nur für den Server gelten.
+
+## Beispiel einer Routenkomponente
+
+SolidStart-Routen können sich weiterhin auf das Rendern konzentrieren, während der Servercode den Datenzugriff übernimmt:
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+Halten Sie Servermutationen hinter validierten Funktionen, damit die Benutzeroberfläche nicht zur einzigen Quelle der Wahrheit für Eingaberegeln wird.
+
+## Beispielmodell Drizzle
+
+SQLite ist ein praktischer Standard für kleine SolidStart Apps und lokale Entwicklung:
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Wechseln Sie zu PostgreSQL, wenn mehrere bereitgestellte Instanzen dauerhafte relationale Daten gemeinsam nutzen müssen.
+
+## Kompatibilitätshinweise
+
+SolidStart verwendet oRPC in Better Fullstack. tRPC ist reaktionsorientiert, daher behält dieser Stapel absichtlich `--api orpc` bei.
+
+`--backend self` bedeutet, dass SolidStart die Serverebene besitzt. Fügen Sie Hono nicht hinzu, es sei denn, Sie möchten absichtlich eine separate API-Bereitstellung.
+
+## Wann man es wählt
+
+Wählen Sie SolidStart, wenn Sie das Laufzeitmodell von Solid möchten, aber dennoch ein generiertes Fullstack-Projekt mit Datenbank, Authentifizierung und typisierter API-Verkabelung benötigen.
+
+## Bereitstellungshinweise
+
+Legen Sie Better Auth-Geheimnisse, die App-URL und den Datenbankpfad oder die Verbindungszeichenfolge für die Zielumgebung fest. Wenn Ihre Bereitstellungsplattform keine persistente Festplatte bereitstellt, verlassen Sie sich für Produktionsdaten nicht auf dateigestützte SQLite.
+
+Für kleine interne Tools kann SQLite ausreichen. Für Mehrbenutzer-Produktionsanwendungen im SaaS-Stil ist PostgreSQL in der Regel einfacher über Bereitstellungen hinweg zu bedienen.
+
+## Fehlerbehebung
+
+- Wenn oRPC-Aufrufe nach der Bereitstellung fehlschlagen, überprüfen Sie den Routenbasispfad und ob der Bereitstellungsadapter Serverrouten wie erwartet verarbeitet.
+- Wenn Authentifizierungssitzungen verschwinden, überprüfen Sie die Cookie-Sicherheitseinstellungen und App-URL-Werte.
+- Wenn die Daten von SQLite zurückgesetzt werden, überprüfen Sie, ob der Host dauerhaften Speicher bereitstellt.
+- Wenn Solid-Komponenten versehentlich Servermodule importieren, verschieben Sie den Aufruf hinter eine Serverfunktion oder einen API-Vertrag.
+
+## Vergleichshinweise
+
+Wählen Sie dies gegenüber TanStack Start, wenn die feinkörnige Reaktivität von Solid der Grund für das Projekt ist. Wählen Sie [Ein TanStack Start-Projekt erstellen] (/guides/typescript/create-tanstack-start-project/), wenn React und TanStack Router bevorzugt werden.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=typescript&fe-w=solid-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=orpc).
+- Vergleichen Sie mit [Erstellen Sie ein TanStack Start-Projekt](/guides/typescript/create-tanstack-start-project/).
+- Lesen Sie die [Kompatibilitätsreferenz](/docs/reference/compatibility/).

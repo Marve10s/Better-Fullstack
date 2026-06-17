@@ -1,15 +1,19 @@
 import type { BlogFrontmatter, BlogPost } from "@/lib/blog/source";
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import type { GuideFrontmatter, GuidePage } from "@/lib/guides/source";
+import {
+  type LocalizedContentLocale,
+  type SupportedLocale,
+  toSupportedLocale,
+} from "@/lib/i18n/locales";
 import { getLocale } from "@/paraglide/runtime.js";
 
-type ContentLocale = "en" | "es" | "zh";
-type LocalizedText = Record<Exclude<ContentLocale, "en">, string>;
-type LocalizedFrontmatter<T> = Partial<Record<Exclude<ContentLocale, "en">, T>>;
+type ContentLocale = SupportedLocale;
+type LocalizedText = Partial<Record<LocalizedContentLocale, string>>;
+type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
 
 function currentContentLocale(): ContentLocale {
-  const locale = getLocale();
-  return locale === "es" || locale === "zh" ? locale : "en";
+  return toSupportedLocale(getLocale()) ?? "en";
 }
 
 const TITLE_TRANSLATIONS: Record<string, LocalizedText> = {
@@ -318,12 +322,16 @@ function keyFor(kind: "blog" | "guide", slug: readonly string[]) {
   return `${kind}:${slug.join("/")}`;
 }
 
+function isChineseLocale(locale: ContentLocale): locale is "zh" | "zh-Hant" {
+  return locale === "zh" || locale === "zh-Hant";
+}
+
 function translated(value: string, map: Record<string, LocalizedText>, locale = currentContentLocale()) {
   if (locale === "en") return value;
   return map[value]?.[locale] ?? value;
 }
 
-function translateSubject(subject: string, locale: Exclude<ContentLocale, "en">) {
+function translateSubject(subject: string, locale: LocalizedContentLocale) {
   return SUBJECT_TRANSLATIONS[subject]?.[locale] ?? subject;
 }
 
@@ -334,18 +342,26 @@ function translateGuideDescription(description: string, locale = currentContentL
   if (learnMatch) {
     const subject = translateSubject(learnMatch[1], locale);
     const stack = learnMatch[2];
-    return locale === "es"
-      ? `Aprende a crear ${subject} con ${stack} usando Better Fullstack.`
-      : `学习如何使用 Better Fullstack 创建包含 ${stack} 的${subject}。`;
+    if (locale === "es") {
+      return `Aprende a crear ${subject} con ${stack} usando Better Fullstack.`;
+    }
+    if (isChineseLocale(locale)) {
+      return `学习如何使用 Better Fullstack 创建包含 ${stack} 的${subject}。`;
+    }
+    return description;
   }
 
   const createWithBfsMatch = description.match(/^Create an? (.+?) with (.+?) using Better Fullstack(?:'s .+?)?\.$/);
   if (createWithBfsMatch) {
     const subject = translateSubject(createWithBfsMatch[1], locale);
     const stack = createWithBfsMatch[2];
-    return locale === "es"
-      ? `Crea ${subject} con ${stack} usando Better Fullstack.`
-      : `使用 Better Fullstack 创建包含 ${stack} 的${subject}。`;
+    if (locale === "es") {
+      return `Crea ${subject} con ${stack} usando Better Fullstack.`;
+    }
+    if (isChineseLocale(locale)) {
+      return `使用 Better Fullstack 创建包含 ${stack} 的${subject}。`;
+    }
+    return description;
   }
 
   const createMinimalMatch = description.match(
@@ -355,16 +371,22 @@ function translateGuideDescription(description: string, locale = currentContentL
     const subject = translateSubject(createMinimalMatch[1], locale);
     const stack = createMinimalMatch[2];
     const purpose = createMinimalMatch[3];
-    return locale === "es"
-      ? `Crea ${subject} con ${stack} y una configuracion minima de Better Fullstack para ${purpose}.`
-      : `创建包含 ${stack} 的${subject}，并使用面向 ${purpose} 的最小 Better Fullstack 配置。`;
+    if (locale === "es") {
+      return `Crea ${subject} con ${stack} y una configuracion minima de Better Fullstack para ${purpose}.`;
+    }
+    if (isChineseLocale(locale)) {
+      return `创建包含 ${stack} 的${subject}，并使用面向 ${purpose} 的最小 Better Fullstack 配置。`;
+    }
+    return description;
   }
 
   const createWithMatch = description.match(/^Create an? (.+?) with (.+?)\.$/);
   if (createWithMatch) {
     const subject = translateSubject(createWithMatch[1], locale);
     const stack = createWithMatch[2];
-    return locale === "es" ? `Crea ${subject} con ${stack}.` : `创建包含 ${stack} 的${subject}。`;
+    if (locale === "es") return `Crea ${subject} con ${stack}.`;
+    if (isChineseLocale(locale)) return `创建包含 ${stack} 的${subject}。`;
+    return description;
   }
 
   return description;
@@ -413,9 +435,33 @@ export function localizeGuideFrontmatter(
   if (locale === "en") return localized;
 
   const categoryTranslations: Record<string, LocalizedText> = {
-    "AI Tools": { es: "Herramientas de IA", zh: "AI 工具" },
-    Guides: { es: "Guias", zh: "指南" },
-    Packs: { es: "Packs", zh: "套件" },
+    "AI Tools": {
+      es: "Herramientas de IA",
+      zh: "AI 工具",
+      ja: "AI ツール",
+      ko: "AI 도구",
+      "zh-Hant": "AI 工具",
+      de: "KI-Tools",
+      fr: "Outils IA",
+    },
+    Guides: {
+      es: "Guias",
+      zh: "指南",
+      ja: "ガイド",
+      ko: "가이드",
+      "zh-Hant": "指南",
+      de: "Guides",
+      fr: "Guides",
+    },
+    Packs: {
+      es: "Packs",
+      zh: "套件",
+      ja: "パック",
+      ko: "팩",
+      "zh-Hant": "套件",
+      de: "Packs",
+      fr: "Packs",
+    },
   };
 
   return {

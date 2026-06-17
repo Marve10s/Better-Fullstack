@@ -1,0 +1,176 @@
+---
+title: TanStack Start プロジェクトを作成する
+description: Better Fullstack を使用して、ルーティング、API ルート、Drizzle、SQLite、Better Auth、Tailwind CSS、shadcn/ui を含む TanStack Start フルスタック アプリを作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - react
+  - drizzle
+  - better-auth
+keywords:
+  - create tanstack start project
+  - tanstack start starter
+  - tanstack start boilerplate
+  - tanstack start fullstack app
+  - tanstack start drizzle
+---
+
+TanStack Router および TanStack Start のサーバー ルート モデルを中心に React フルスタック アプリを構築する場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-tanstack-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The key choices Better Fullstack records for this TanStack Start project."
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React, file routes, and server routes in one deployable app." },
+    { label: "Backend", value: "Self-hosted app server", detail: "Use TanStack Start's server layer instead of a separate API package." },
+    { label: "API", value: "tRPC", detail: "Typed procedures for React routes and server-side mutations." },
+    { label: "Data", value: "SQLite + Drizzle", detail: "Local relational schema with a clear path to PostgreSQL later." },
+  ]}
+/>
+
+## これが生み出すもの
+
+- ファイルベースのルートを備えた TanStack Start Web アプリ。
+- フレームワークの組み込みサーバー層を介したフルスタック ルーティング。
+- SQLite および Drizzle は、小規模なローカル リレーショナル データベース セットアップ用です。
+- Better Auth は生成されたアプリに接続されます。
+- フロントエンド用の Tailwind CSS および shadcn/ui。
+- `bts.jsonc` での再現可能なスタック構成。
+
+## 生成された形状
+
+生成されたプロジェクトは、分割されたフロントエンド/API ワークスペースではなく、単一のデプロイ可能な Web アプリになることを目的としています。 TanStack Start はルーティング、サーバー機能、リクエスト処理を所有し、Drizzle はデータベース スキーマとクエリを所有します。
+
+代表的な形状：
+
+```txt
+my-tanstack-app/
+  bts.jsonc
+  package.json
+  src/
+    routes/
+    components/
+    lib/
+      auth/
+      db/
+      trpc/
+```
+
+正確なファイル名はジェネレーターの進化に応じて変更される可能性がありますが、重要な境界は安定しています。ルート コードは TanStack Start アプリに残り、データベース コードは Drizzle ヘルパーの背後に残り、API プロシージャは選択された `--api trpc` レイヤーを通じて公開されます。
+
+## ルートと API パターンの例
+
+一般的なルートは、React で UI 状態を保持し、フェッチ URL を手動で構築する代わりに、型指定された API ヘルパーを呼び出します。
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardPage,
+});
+
+function DashboardPage() {
+  return (
+    <main className="mx-auto max-w-5xl p-6">
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <p className="text-muted-foreground">
+        Load account data through the generated server API layer.
+      </p>
+    </main>
+  );
+}
+```
+
+新しい API 作業では、テーブル型の CRUD をすぐに公開するのではなく、ユースケースの周りに狭いプロシージャを追加します。
+
+```ts
+import { z } from "zod";
+
+export const projectInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createProject(input: z.infer<typeof projectInput>) {
+  const values = projectInput.parse(input);
+
+  return {
+    id: crypto.randomUUID(),
+    name: values.name,
+  };
+}
+```
+
+## データベースモデルの例
+
+Drizzle は、スキーマ定義が小さく明示的である場合に最適に機能します。代表的な SQLite テーブルは次のようになります。
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const project = sqliteTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+auth が所有するテーブルを製品テーブルから分離してください。 Better Auth は、選択したアダプターに応じて独自のスキーマを生成または予期する場合があります。製品モデルは、認証状態を複製するのではなく、ユーザー識別子を参照する必要があります。
+
+## いつ選択するか
+
+React、型付きルーティング、コロケートされたフルスタックの動作、およびバッテリーを含む大規模なアプリケーション フレームワークよりも小さなフレームワーク サーフェスが必要な場合は、TanStack Start を選択してください。
+
+これは、ルート タイプの安全性が重要となるダッシュボード、内部ツール、SaaS プロトタイプ、アプリに適しています。
+
+## 互換性に関する注意事項
+
+<GuideCompatibilityNote
+  kind="supported"
+  title="Compatibility rule"
+  items={[
+    "`--backend self` is the right choice here because TanStack Start provides the app server layer.",
+    "`--api trpc` is compatible with this React stack and gives end-to-end typed calls.",
+    "SQLite is a good default for local development and small deployments. Move to PostgreSQL when you need managed production databases, pooling, replicas, or stronger operational tooling.",
+    "shadcn/ui assumes a Tailwind-based React UI. If you remove Tailwind later, revisit generated component imports and class names together.",
+  ]}
+/>
+
+## 導入メモ
+
+デプロイする前に、実稼働環境変数がデータベース、Better Auth シークレット値、および認証コールバックで使用されるパブリック アプリケーション URL に対して定義されていることを確認してください。 SQLite デプロイメントの場合は、ホストが永続的な書き込み可能なストレージをサポートしていることを確認してください。多くのサーバーレス プラットフォームではそうではありません。
+
+サーバーレス プラットフォームを対象とする場合は、通常、ローカルの SQLite ファイルよりも PostgreSQL を選択する方が安全です。 `bts.jsonc` をコミットしたままにして、将来のチームメイトやエージェントが目的のスタックを再構築できるようにします。
+
+## トラブルシューティング
+
+- 認証コールバックが間違ったホストにリダイレクトする場合は、まずアプリのベース URL と Better Auth 環境変数を確認してください。
+- データベース クエリがローカルでは機能するが、デプロイ後に失敗する場合は、運用データベースの URL と、デプロイされたデータベースに対して移行が実行されたかどうかを確認してください。
+- 生成されたルート タイプが古いと思われる場合は、フレームワーク タイプの生成プロセスを再起動し、関連する最小のタイプチェックを再実行します。
+- tRPC クライアント呼び出しが 404 で失敗した場合は、生成された API ルートがクライアントが予期する場所にまだマウントされていることを確認してください。
+
+## トレードオフ
+
+TanStack エコシステムを活用したい場合は、TanStack Start の方が適しています。最大のホスティングおよびドキュメントのエコシステムが必要な場合は、[Next.js と Drizzle および Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) と比較してください。
+
+個別の Hono バックエンドと比較して、このスタックにはデプロイ可能なサービスとクロスオリジン セットアップが少なくなります。 Next.js と比較すると、TanStack Router ファーストのメンタル モデルとフレームワークのフットプリントが小さくなりますが、より若いエコシステムが得られます。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=trpc) を開きます。
+- [TypeScript エコシステム ドキュメント](/docs/ecosystems/typescript/) を読んでください。
+- [CLI 参照の作成](/docs/cli/create/) を確認してください。

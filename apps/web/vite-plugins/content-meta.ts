@@ -4,6 +4,11 @@ import path from "node:path";
 import type { Plugin } from "vite";
 import { parse as parseYaml } from "yaml";
 
+import {
+  LOCALIZED_CONTENT_LOCALES,
+  type LocalizedContentLocale,
+} from "../src/lib/i18n/locales";
+
 /**
  * Build-time frontmatter extraction for docs/guides MDX content.
  *
@@ -21,9 +26,6 @@ import { parse as parseYaml } from "yaml";
 const VIRTUAL_ID = "virtual:content-meta";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
 
-const LOCALIZED_CONTENT_LOCALES = ["es", "zh"] as const;
-
-type LocalizedContentLocale = (typeof LOCALIZED_CONTENT_LOCALES)[number];
 type MetaEntry = {
   filePath: string;
   frontmatter: Record<string, unknown>;
@@ -57,7 +59,7 @@ function collectMdxFiles(dir: string): string[] {
 }
 
 function isLocalizedMdxFile(fileName: string): boolean {
-  return /\.(es|zh)\.mdx$/.test(fileName);
+  return LOCALIZED_CONTENT_LOCALES.some((locale) => fileName.endsWith(`.${locale}.mdx`));
 }
 
 export function contentMetaPlugin(): Plugin {
