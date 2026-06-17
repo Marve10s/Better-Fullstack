@@ -10,11 +10,11 @@ const en_homelikeddescription2 = /** @type {(inputs: Homelikeddescription2Inputs
 };
 
 const es_homelikeddescription2 = /** @type {(inputs: Homelikeddescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Builders que marcaron el lanzamiento.`)
+	return /** @type {LocalizedString} */ (`Desarrolladores que marcaron el lanzamiento como favorito.`)
 };
 
 const zh_homelikeddescription2 = /** @type {(inputs: Homelikeddescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`为发布点过赞的 builders。`)
+	return /** @type {LocalizedString} */ (`为发布点赞的开发者。`)
 };
 
 /**

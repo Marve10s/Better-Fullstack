@@ -1,7 +1,17 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { ArrowRight, Check, ChevronDown, ClipboardCopy, Github, Languages } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  ClipboardCopy,
+  Github,
+  Languages,
+  Menu,
+  Moon,
+  Sun,
+} from "lucide-react";
 import { motion, LayoutGroup } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -12,11 +22,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type BuilderMode, useBuilderMode } from "@/lib/builder-mode-bridge";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
 import { isStackShareSlug } from "@/lib/stack-share-slugs";
+import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 import { getLocale, setLocale, locales, type Locale } from "@/paraglide/runtime.js";
@@ -29,6 +41,8 @@ const DOCS_SKILL_PARAMS = { _splat: "ai/skills" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
+const MOBILE_MENU_ITEM_CLASS =
+  "cursor-pointer font-mono text-[11px] uppercase tracking-[0.14em]";
 
 function getFirstPathSegment(pathname: string): string {
   return pathname.split("/").find(Boolean) ?? "";
@@ -241,7 +255,7 @@ function LocaleMenu() {
           <button
             type="button"
             aria-label={m.navLanguage()}
-            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           />
         }
       >
@@ -252,7 +266,7 @@ function LocaleMenu() {
           <DropdownMenuItem
             key={availableLocale}
             onClick={() => setLocale(availableLocale as Locale)}
-            className="font-mono text-[11px] uppercase tracking-[0.14em]"
+            className={MOBILE_MENU_ITEM_CLASS}
           >
             <span className="flex-1">
               {LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}
@@ -260,6 +274,126 @@ function LocaleMenu() {
             {locale === availableLocale ? <Check className="h-3.5 w-3.5" /> : null}
           </DropdownMenuItem>
         ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function MobileThemeMenuItem() {
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const switchToLight = mounted && resolvedTheme === "dark";
+  const label = mounted
+    ? switchToLight
+      ? m.themeSwitchToLight()
+      : m.themeSwitchToDark()
+    : m.themeToggle();
+
+  return (
+    <DropdownMenuItem
+      onClick={() => {
+        if (!mounted) return;
+        setTheme(switchToLight ? "light" : "dark");
+      }}
+      className={MOBILE_MENU_ITEM_CLASS}
+    >
+      {switchToLight ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+      <span>{label}</span>
+    </DropdownMenuItem>
+  );
+}
+
+function MobileLocaleItems() {
+  const locale = getLocale();
+
+  return (
+    <>
+      <div
+        className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
+        role="presentation"
+      >
+        {m.navLanguage()}
+      </div>
+      {locales.map((availableLocale) => (
+        <DropdownMenuItem
+          key={availableLocale}
+          onClick={() => setLocale(availableLocale as Locale)}
+          className={cn(
+            MOBILE_MENU_ITEM_CLASS,
+            locale === availableLocale && "text-foreground",
+          )}
+        >
+          <span className="flex-1">
+            {LOCALE_LABELS[availableLocale as keyof typeof LOCALE_LABELS]}
+          </span>
+          {locale === availableLocale ? <Check className="h-3.5 w-3.5" /> : null}
+        </DropdownMenuItem>
+      ))}
+    </>
+  );
+}
+
+function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
+  const builderItems = onBuilder
+    ? null
+    : [
+        <DropdownMenuItem
+          key="builder"
+          render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
+          className={MOBILE_MENU_ITEM_CLASS}
+        >
+          {m.navBuilder()}
+        </DropdownMenuItem>,
+        <DropdownMenuItem
+          key="presets"
+          render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
+          className={MOBILE_MENU_ITEM_CLASS}
+        >
+          {m.navPresets()}
+        </DropdownMenuItem>,
+      ];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label={m.navOpenMenu()}
+            className="flex h-8 w-8 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+          />
+        }
+      >
+        <Menu className="h-4 w-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {builderItems}
+        <DropdownMenuItem render={<Link to="/docs" />} className={MOBILE_MENU_ITEM_CLASS}>
+          {m.navDocs()}
+        </DropdownMenuItem>
+        <DocsMenuItems />
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            window.open(
+              "https://github.com/Marve10s/Better-Fullstack",
+              "_blank",
+              "noopener,noreferrer",
+            );
+          }}
+          className={MOBILE_MENU_ITEM_CLASS}
+        >
+          <Github className="h-3.5 w-3.5" />
+          <span>{m.navGithubRepository()}</span>
+        </DropdownMenuItem>
+        <MobileThemeMenuItem />
+        <DropdownMenuSeparator />
+        <MobileLocaleItems />
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -295,8 +429,8 @@ export function Navbar() {
           </Link>
           {!onBuilder && (
             <>
-              <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
-              <div className="hidden items-center gap-5 sm:flex sm:gap-7">
+              <span className="hidden h-4 w-px bg-border lg:block" aria-hidden />
+              <div className="hidden items-center gap-7 lg:flex">
                 <Link
                   to="/new"
                   search={BUILDER_COMMAND_SEARCH}
@@ -319,8 +453,8 @@ export function Navbar() {
           )}
           {onBuilder && (
             <>
-              <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
-              <div className="hidden sm:block">
+              <span className="hidden h-4 w-px bg-border lg:block" aria-hidden />
+              <div className="hidden lg:block">
                 <BuilderDocsMenu />
               </div>
             </>
@@ -333,7 +467,7 @@ export function Navbar() {
           </div>
         )}
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <a
             href="https://github.com/Marve10s/Better-Fullstack"
             target="_blank"
@@ -358,6 +492,19 @@ export function Navbar() {
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
             </Link>
           )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          {!onBuilder ? (
+            <Link
+              to="/new"
+              search={BUILDER_COMMAND_SEARCH}
+              className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]"
+            >
+              {m.navTryNow()}
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          ) : null}
+          <MobileNavMenu onBuilder={onBuilder} />
         </div>
       </nav>
     </header>

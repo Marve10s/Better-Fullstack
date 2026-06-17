@@ -1,15 +1,15 @@
 ---
 title: Skill de agente
-description: Instala la agent skill de Better Fullstack para scaffolding rapido guiado por CLI en Codex, Claude Code, Cursor y otros agentes.
+description: Instala la agent skill de Better Fullstack para scaffolding rápido guiado por CLI en Codex, Claude Code, Cursor y otros agentes.
 ---
 
-La agent skill de Better Fullstack ensena a los agentes de codigo a usar la CLI en lugar de escribir proyectos starter a mano. Mapea el stack solicitado a partes de grafo, ejecuta primero un dry-run, genera el scaffold con la instalacion de dependencias deshabilitada y reporta los comandos exactos de seguimiento.
+La skill de agente de Better Fullstack enseña a los agentes de código a usar la CLI en lugar de escribir proyectos starter a mano. Mapea el stack solicitado a partes de grafo, ejecuta primero un dry-run, genera el scaffold con la instalación de dependencias deshabilitada y reporta los comandos exactos de seguimiento.
 
-Usa esto cuando tu agente soporte skills y quieras la ruta mas rapida desde un prompt hasta un proyecto Better Fullstack generado. Usa el [servidor MCP](/docs/ai/mcp/) cuando quieras busqueda estructurada de schema y planificacion con tool-calls.
+Usa esto cuando tu agente soporte skills y quieras la ruta más rápida desde un prompt hasta un proyecto Better Fullstack generado. Usa el [servidor MCP](/docs/ai/mcp/) cuando quieras búsqueda estructurada de schema y planificación con tool-calls.
 
 ## Instalar
 
-La skill vive en este repositorio en `.agents/skills/better-fullstack`. Como el repo tambien contiene otras skills internas, instala solo `better-fullstack`.
+La skill vive en este repositorio en `.agents/skills/better-fullstack`. Cómo el repo también contiene otras skills internas, instala solo `better-fullstack`.
 
 Instalar para Codex:
 
@@ -42,11 +42,11 @@ Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, t
 
 O pregunta de forma natural. Los agentes que soportan matching implicito de skills pueden elegir la skill cuando la solicitud trate de scaffolding, planificacion o extension de un proyecto Better Fullstack.
 
-## Que hace la skill
+## Qué hace la skill
 
 1. Mapea el stack solicitado a partes de grafo y flags CLI de Better Fullstack.
 2. Ejecuta un dry-run no interactivo de CLI.
-3. Ejecuta el mismo comando sin `--dry-run` cuando el plan tiene exito.
+3. Ejecuta el mismo comando sin `--dry-run` cuando el plan tiene éxito.
 4. Usa `--no-install` y `--no-git` salvo que pidas explicitamente esos efectos secundarios.
 5. Reporta el comando usado, cualquier ajuste de compatibilidad y los proximos comandos de install/test/run.
 
@@ -57,4 +57,4 @@ O pregunta de forma natural. Los agentes que soportan matching implicito de skil
 | Agent skill | Scaffolding rapido guiado por CLI cuando el stack puede expresarse como flags o partes de grafo. |
 | Servidor MCP | Busqueda estructurada de schema, comprobaciones de compatibilidad, planificacion dry-run y mutacion de proyectos existentes mediante tool calls. |
 
-Ambas rutas usan el mismo generador Better Fullstack. La skill es la ruta mas ligera; MCP es la ruta mas estructurada.
+Ambas rutas usan el mismo generador Better Fullstack. La skill es la ruta más ligera; MCP es la ruta más estructurada.

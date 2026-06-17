@@ -16,7 +16,7 @@ keywords:
   - python ai boilerplate
 ---
 
-当你需要为 AI application code 准备好的 Python API 时，使用这个 stack。
+当你需要为 AI 应用代码准备好的 Python API 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-python-ai-api -- \
@@ -30,49 +30,159 @@ npm create better-fullstack@latest my-python-ai-api -- \
 
 ## 创建内容
 
-- FastAPI project。
-- LangChain 作为 Python AI library option。
+- FastAPI 项目。
+- LangChain 作为 Python AI library 选项。
 - SQLModel 和 Pydantic。
-- Ruff 用于 code quality。
+- Ruff 用于代码质量。
 
 ## 生成结构
 
-这个 scaffold 从 HTTP API、SQLModel persistence 和 LangChain helper modules 开始。route layer 处理 validation 和 streaming responses，AI client module 拥有 model calls。当 prompts、retrieval、tools 和 persistence 以不同速度变化时，这种分离很重要。
-
-代表性结构：
+这个 scaffold 从 HTTP API、SQLModel 持久化和 LangChain helper modules 开始。路由层处理 validation 和 streaming responses，AI client module 负责模型调用。当 prompts、retrieval、tools 和 persistence 以不同速度变化时，这种分离会非常重要。
 
 ```txt
 my-python-ai-api/
-  pyproject.toml
-  app/
-    main.py
-    api/
-    ai/
-    models/
-  tests/
+├── pyproject.toml
+├── alembic.ini
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── crud.py
+│   ├── langchain_client.py
+│   ├── langchain_schemas.py
+│   └── settings.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
 ```
 
-## 兼容性
+生成的依赖包含 `langchain` 和 `langchain-openai`。在调用 AI endpoints 前，通过环境变量设置 provider credentials。
 
-`--python-ai langchain` 会向项目添加 AI pieces，但不会替代 FastAPI、SQLModel 或 Pydantic。将 AI provider keys 和 tool credentials 保存在 server environment variables 中，绝不要放入 public responses。
+```bash
+OPENAI_API_KEY="sk-..."
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_python_ai_api"
+```
 
 ## 何时选择
 
-适合 AI APIs、agent workbenches、带 retrieval 的 prototypes，以及需要在 model calls 外面包一层 HTTP endpoint 的产品。
+适合 AI APIs、retrieval workflows、agent backends，以及需要在模型或 tool 编排外面包一层 web boundary 的 Python 服务。
 
-## 测试与部署
+当核心 workflow 是模型编排时，选择它而不是普通 FastAPI database API。当服务核心是持久化、AI 可能之后再添加时，选择 SQLAlchemy 指南。
 
-发布改动前，至少验证项目能 compile 并让 Ruff 通过：
+| 需求 | 这个 LangChain stack | 普通 FastAPI API |
+| --- | --- | --- |
+| Chat/completion endpoint | 生成起点 | 手动添加 |
+| Streaming responses | AI route pattern 中已包含 | 需要时再添加 |
+| 数据模型风格 | SQLModel 结合表模型和 Pydantic shape | SQLAlchemy models 加 Pydantic schemas |
+| Prompt/tool 增长 | AI client module 提供明确归属 | 自行选择模块边界 |
+| 生产关注点 | Provider keys、latency、retries、observability | 数据库和 HTTP 行为优先 |
 
-```bash
-python -m compileall .
-ruff check .
+## 代表性片段
+
+SQLModel 让小型服务中的持久化和校验保持接近。
+
+```python
+from datetime import datetime
+
+from pydantic import EmailStr
+from sqlmodel import Field, SQLModel
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(index=True, unique=True)
+    name: str | None = Field(default=None, max_length=255)
+
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 ```
 
-部署时配置 AI provider secrets、timeout limits 和 logging policy。没有明确 retention policy 时，不要记录包含敏感数据的 prompts。
+保持 route 足够薄，让 `langchain_client.py` 负责模型细节。
+
+```python
+from fastapi.responses import StreamingResponse
+
+from app.langchain_client import chat, chat_stream
+from app.langchain_schemas import ChatRequest, ChatResponse
+
+
+@app.post("/ai/chat", response_model=ChatResponse)
+async def langchain_chat(request: ChatRequest):
+    response = await chat(request.message, history=request.history)
+    return ChatResponse(response=response)
+
+
+@app.post("/ai/chat/stream")
+async def langchain_chat_stream(request: ChatRequest):
+    return StreamingResponse(
+        chat_stream(request.message, history=request.history),
+        media_type="text/event-stream",
+    )
+```
+
+随着 agent 增长，使用明确的 tool functions，而不是让 routes 负责拼接 prompt strings。
+
+```python
+from langchain_core.tools import tool
+
+
+@tool
+def lookup_customer(customer_id: str) -> str:
+    """Return customer context for support workflows."""
+    return customer_repository.summary(customer_id)
+```
+
+## 迁移与测试
+
+生成的 SQLModel 路径包含 Alembic 配置。用它让数据库变更可重复，尤其是在你存储 conversations、tool calls、evaluation traces 或 document chunks 时。
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+```bash
+uv run alembic revision --autogenerate -m "add conversation tables"
+uv run alembic upgrade head
+```
+
+添加两层测试：route tests 覆盖 request validation 和 streaming behavior；client tests 覆盖 prompt/tool orchestration，并 mock 掉模型 provider。不要在常规 unit test lane 中调用付费模型 API。
+
+## 兼容性说明
+
+Python AI 选项通过 `--python-ai` 选择。它和 web app AI SDK 选项使用的 TypeScript `--ai` flag 是分开的。
+
+- `--python-ai langchain` 是 Python 生态中的 array-style 选项；支持时可以选择额外的 Python AI libraries。
+- `--python-orm sqlmodel` 很适合紧凑的 API/database 示例，因为 response schemas 和 table models 可以共享 base classes。
+- 生成的 `DATABASE_URL` fallback 是本地 SQLite。通过设置 `DATABASE_URL` 使用 PostgreSQL。
+- FastAPI streaming responses 要求部署目标支持长时间运行的 HTTP responses。
+
+## 部署说明
+
+像部署 FastAPI 服务一样部署它，但要为 AI 特有问题留出空间：provider credentials、request timeouts、retries、rate limits 和 response streaming。发布前运行 migrations，并把 model/provider settings 放在镜像之外。
+
+```bash
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+生产 agent workflows 中，为每次 model call 添加 request IDs 和 structured logs。如果引入 retrieval，把 embeddings、vector indexes 和 source documents 与应用部署分开 version。
+
+## 故障排查
+
+| 症状 | 检查 |
+| --- | --- |
+| AI route 返回 provider errors | 验证 `OPENAI_API_KEY` 或 provider-specific 环境变量。 |
+| Streaming 本地正常但生产环境被 buffer | 确认 proxy/platform 支持 streaming responses。 |
+| Tests 缓慢或 flaky | 在 unit tests 中 mock LangChain/provider clients。 |
+| SQLModel tables 缺失 | 运行 Alembic migrations，或在访问 routes 前初始化数据库。 |
 
 ## 下一步
 
 - 打开 [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff)。
-- 阅读 [AI docs](/docs/ai/overview/)。
-- 对比 [FastAPI with PostgreSQL and SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/)。
+- 对比 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)。
+- 阅读 [Python ecosystem docs](/docs/ecosystems/python/)。

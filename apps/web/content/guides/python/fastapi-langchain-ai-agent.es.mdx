@@ -16,7 +16,7 @@ keywords:
   - python ai boilerplate
 ---
 
-Usa este stack cuando quieras una API Python preparada para codigo de aplicaciones AI.
+Usa este stack cuando quieras una API Python preparada para código de aplicaciones AI.
 
 ```npm
 npm create better-fullstack@latest my-python-ai-api -- \
@@ -28,51 +28,161 @@ npm create better-fullstack@latest my-python-ai-api -- \
   --python-quality ruff
 ```
 
-## Que crea
+## Qué crea
 
 - Un proyecto FastAPI.
-- LangChain como opcion de libreria AI Python.
+- LangChain como opción de librería AI para Python.
 - SQLModel y Pydantic.
-- Ruff para calidad de codigo.
+- Ruff para calidad de código.
 
 ## Forma generada
 
-Este scaffold arranca con una API HTTP, persistencia SQLModel y modulos helper LangChain. La capa de rutas maneja validacion y respuestas streaming, mientras el modulo AI controla llamadas de modelo. Esa separacion importa cuando prompts, retrieval, tools y persistencia cambian a ritmos distintos.
-
-Forma representativa:
+Este scaffold arranca con una API HTTP, persistencia con SQLModel y módulos helper para LangChain. La capa de rutas maneja validación y respuestas streaming, mientras que el módulo de cliente AI es dueño de las llamadas al modelo. Esa separación importa cuando prompts, retrieval, tools y persistencia empiezan a cambiar a ritmos distintos.
 
 ```txt
 my-python-ai-api/
-  pyproject.toml
-  app/
-    main.py
-    api/
-    ai/
-    models/
-  tests/
+├── pyproject.toml
+├── alembic.ini
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── crud.py
+│   ├── langchain_client.py
+│   ├── langchain_schemas.py
+│   └── settings.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
 ```
 
-## Compatibilidad
-
-`--python-ai langchain` agrega piezas AI al proyecto, pero no reemplaza FastAPI, SQLModel ni Pydantic. Mantiene keys de proveedores AI y credenciales de tools en variables de entorno de servidor, nunca en respuestas publicas.
-
-## Cuando elegirlo
-
-Elige este stack para APIs AI, agent workbenches, prototipos con retrieval o productos que necesiten endpoint HTTP alrededor de llamadas de modelo.
-
-## Pruebas y despliegue
-
-Valida al menos que el proyecto compile y que Ruff pase antes de publicar cambios:
+Las dependencias generadas incluyen `langchain` y `langchain-openai`. Configura las credenciales del proveedor mediante variables de entorno antes de llamar a los endpoints AI.
 
 ```bash
-python -m compileall .
-ruff check .
+OPENAI_API_KEY="sk-..."
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_python_ai_api"
 ```
 
-En despliegue, configura secretos de proveedor AI, limites de timeout y politica de logging. No registres prompts con datos sensibles sin una politica explicita de retencion.
+## Cuándo elegirlo
+
+Elige este stack para APIs AI, workflows de retrieval, backends de agentes y servicios Python que necesitan una frontera web alrededor de orquestación de modelos o tools.
+
+Elígelo antes que una API FastAPI de base de datos simple cuando el workflow principal sea la orquestación de modelos. Elige la guía de SQLAlchemy cuando la persistencia sea el centro del servicio y AI pueda agregarse más tarde.
+
+| Necesidad | Este stack con LangChain | API FastAPI simple |
+| --- | --- | --- |
+| Endpoint de chat/completion | Punto de partida generado | Agregar a mano |
+| Respuestas streaming | Incluidas en el patrón de rutas AI | Agregar cuando haga falta |
+| Estilo de modelo de datos | SQLModel combina tablas y formas Pydantic | Modelos SQLAlchemy más schemas Pydantic |
+| Crecimiento de prompts/tools | El módulo de cliente AI da un hogar claro | Tú eliges la frontera del módulo |
+| Preocupación de producción | Keys de proveedor, latencia, retries, observabilidad | Base de datos y comportamiento HTTP primero |
+
+## Fragmentos representativos
+
+SQLModel mantiene persistencia y validación cerca para servicios pequeños.
+
+```python
+from datetime import datetime
+
+from pydantic import EmailStr
+from sqlmodel import Field, SQLModel
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(index=True, unique=True)
+    name: str | None = Field(default=None, max_length=255)
+
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+```
+
+Mantén la ruta delgada y deja que `langchain_client.py` sea dueño de los detalles del modelo.
+
+```python
+from fastapi.responses import StreamingResponse
+
+from app.langchain_client import chat, chat_stream
+from app.langchain_schemas import ChatRequest, ChatResponse
+
+
+@app.post("/ai/chat", response_model=ChatResponse)
+async def langchain_chat(request: ChatRequest):
+    response = await chat(request.message, history=request.history)
+    return ChatResponse(response=response)
+
+
+@app.post("/ai/chat/stream")
+async def langchain_chat_stream(request: ChatRequest):
+    return StreamingResponse(
+        chat_stream(request.message, history=request.history),
+        media_type="text/event-stream",
+    )
+```
+
+A medida que el agente crezca, introduce funciones de tool explícitas en vez de dejar que las rutas armen strings de prompt.
+
+```python
+from langchain_core.tools import tool
+
+
+@tool
+def lookup_customer(customer_id: str) -> str:
+    """Return customer context for support workflows."""
+    return customer_repository.summary(customer_id)
+```
+
+## Migraciones y pruebas
+
+La ruta generada con SQLModel incluye configuración de Alembic. Úsala para hacer repetibles los cambios de base de datos, especialmente si guardas conversaciones, llamadas a tools, trazas de evaluación o fragmentos de documentos.
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+```bash
+uv run alembic revision --autogenerate -m "add conversation tables"
+uv run alembic upgrade head
+```
+
+Agrega pruebas en dos niveles: pruebas de rutas para validación de requests y comportamiento streaming, y pruebas del cliente alrededor de la orquestación de prompts/tools con el proveedor de modelos mockeado. Evita llamar APIs de modelos de pago en el lane normal de unit tests.
+
+## Notas de compatibilidad
+
+Las opciones AI de Python se seleccionan con `--python-ai`. Esto es independiente del flag TypeScript `--ai` usado por opciones de AI SDK en apps web.
+
+- `--python-ai langchain` es una opción estilo array del ecosistema Python; se pueden seleccionar librerías AI adicionales en stacks que las soporten.
+- `--python-orm sqlmodel` funciona bien para ejemplos compactos de API/base de datos porque los schemas de respuesta y los modelos de tabla pueden compartir clases base.
+- El fallback generado de `DATABASE_URL` es SQLite local. Usa PostgreSQL definiendo `DATABASE_URL`.
+- Las respuestas streaming de FastAPI requieren que el target de despliegue soporte respuestas HTTP de larga duración.
+
+## Notas de despliegue
+
+Despliega esto como un servicio FastAPI, pero reserva presupuesto técnico para preocupaciones específicas de AI: credenciales de proveedor, timeouts, retries, rate limits y streaming de respuestas. Ejecuta migraciones antes de la release y mantén los settings de modelo/proveedor fuera de la imagen.
+
+```bash
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+Para workflows de agentes en producción, agrega request IDs y logs estructurados alrededor de cada llamada de modelo. Si introduces retrieval, versiona embeddings, índices vectoriales y documentos fuente por separado del deploy de la aplicación.
+
+## Troubleshooting
+
+| Síntoma | Revisa |
+| --- | --- |
+| La ruta AI devuelve errores del proveedor | Verifica `OPENAI_API_KEY` o las variables de entorno específicas del proveedor. |
+| Streaming funciona localmente pero se bufferiza en producción | Confirma que el proxy o la plataforma soporta respuestas streaming. |
+| Las pruebas son lentas o flaky | Mockea clientes LangChain/proveedor en unit tests. |
+| Faltan tablas de SQLModel | Ejecuta migraciones de Alembic o inicializa la base antes de llamar rutas. |
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff).
-- Lee la [documentacion AI](/docs/ai/overview/).
-- Compara con [FastAPI con PostgreSQL y SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/).
+- Compara con [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/).
+- Lee la [documentación del ecosistema Python](/docs/ecosystems/python/).

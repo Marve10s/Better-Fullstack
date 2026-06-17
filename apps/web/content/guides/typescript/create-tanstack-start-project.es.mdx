@@ -31,18 +31,29 @@ npm create better-fullstack@latest my-tanstack-app -- \
   --ui-library shadcn-ui \
 ```
 
-## Que crea
+<GuideStackSnapshot
+  title="Snapshot del stack generado"
+  description="Las decisiones clave que Better Fullstack registra para este proyecto TanStack Start."
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React, file routes y server routes en una sola app desplegable." },
+    { label: "Backend", value: "Servidor de app propio", detail: "Usa la capa server de TanStack Start en vez de un paquete API separado." },
+    { label: "API", value: "tRPC", detail: "Procedures tipados para rutas React y mutaciones server-side." },
+    { label: "Datos", value: "SQLite + Drizzle", detail: "Schema relacional local con camino claro hacia PostgreSQL más adelante." },
+  ]}
+/>
+
+## Qué crea
 
 - Una app TanStack Start con rutas basadas en archivos.
 - Routing fullstack mediante la capa de servidor del framework.
 - SQLite y Drizzle para una base relacional local.
 - Better Auth integrado en la app generada.
 - Tailwind CSS y shadcn/ui para el frontend.
-- Una configuracion reproducible en `bts.jsonc`.
+- Una configuración reproducible en `bts.jsonc`.
 
 ## Forma generada
 
-El proyecto generado esta pensado como una sola app web desplegable, no como un workspace frontend/API separado. TanStack Start controla rutas, funciones de servidor y manejo de requests; Drizzle controla el esquema de base de datos y las consultas.
+El proyecto generado está pensado como una sola app web desplegable, no como un workspace frontend/API separado. TanStack Start controla rutas, funciones de servidor y manejo de requests; Drizzle controla el esquema de base de datos y las consultas.
 
 Forma representativa:
 
@@ -59,35 +70,107 @@ my-tanstack-app/
       trpc/
 ```
 
-Los nombres exactos pueden cambiar, pero la frontera importante se mantiene: el codigo de rutas vive con TanStack Start, el codigo de base de datos queda detras de helpers Drizzle, y los procedimientos API se exponen con `--api trpc`.
+Los nombres exactos pueden cambiar, pero la frontera importante se mantiene: el código de rutas vive con TanStack Start, el código de base de datos queda detrás de helpers Drizzle, y los procedimientos API se exponen con `--api trpc`.
 
-## Patron de ruta y API
+## Patrón de ruta y API
 
-Una ruta tipica mantiene el estado de UI en React y llama a helpers de API tipados en vez de construir URLs `fetch` a mano. Para trabajo nuevo de API, crea procedimientos estrechos alrededor de casos de uso, no CRUD con forma de tabla desde el primer dia.
+Una ruta típica mantiene el estado de UI en React y llama a un helper de API tipado en vez de construir URLs `fetch` a mano:
 
-Drizzle funciona mejor cuando las definiciones de esquema son pequenas y explicitas. Mantiene las tablas de Better Auth separadas de las tablas de producto; los modelos de producto deberian referenciar el identificador de usuario, no duplicar estado de auth.
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
 
-## Cuando elegirlo
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardPage,
+});
 
-Elige TanStack Start cuando quieras React, routing tipado, comportamiento fullstack colocalizado y una superficie de framework mas pequena que un framework con muchas decisiones incluidas.
+function DashboardPage() {
+  return (
+    <main className="mx-auto max-w-5xl p-6">
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <p className="text-muted-foreground">
+        Load account data through the generated server API layer.
+      </p>
+    </main>
+  );
+}
+```
+
+Para trabajo nuevo de API, crea procedimientos estrechos alrededor de casos de uso en vez de exponer CRUD con forma de tabla desde el primer día:
+
+```ts
+import { z } from "zod";
+
+export const projectInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createProject(input: z.infer<typeof projectInput>) {
+  const values = projectInput.parse(input);
+
+  return {
+    id: crypto.randomUUID(),
+    name: values.name,
+  };
+}
+```
+
+## Ejemplo de modelo de base de datos
+
+Drizzle funciona mejor cuando las definiciones de esquema son pequeñas y explícitas. Una tabla SQLite representativa podría verse así:
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const project = sqliteTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Mantén las tablas administradas por auth separadas de las tablas de producto. Better Auth puede generar o esperar su propio esquema según el adapter seleccionado; los modelos de producto deberían referenciar el identificador de usuario en vez de duplicar estado de auth.
+
+## Cuándo elegirlo
+
+Elige TanStack Start cuando quieras React, routing tipado, comportamiento fullstack colocalizado y una superficie de framework más pequeña que un framework con muchas decisiones incluidas.
 
 Encaja bien para dashboards, herramientas internas, prototipos SaaS y apps donde la seguridad de tipos en rutas importa.
 
 ## Compatibilidad
 
-- `--backend self` es la opcion correcta porque TanStack Start proporciona la capa de servidor de la app.
-- `--api trpc` es compatible con este stack React y da llamadas tipadas de extremo a extremo.
-- SQLite es buen valor por defecto para desarrollo local y despliegues pequenos. Migra a PostgreSQL cuando necesites bases gestionadas, pooling, replicas u operacion mas fuerte.
-- shadcn/ui asume una UI React basada en Tailwind. Si luego quitas Tailwind, revisa imports y clases generadas.
+<GuideCompatibilityNote
+  kind="supported"
+  title="Regla de compatibilidad"
+  items={[
+    "`--backend self` es la opción correcta aquí porque TanStack Start proporciona la capa de servidor de la app.",
+    "`--api trpc` es compatible con este stack React y da llamadas tipadas de extremo a extremo.",
+    "SQLite es un buen valor por defecto para desarrollo local y despliegues pequeños. Migra a PostgreSQL cuando necesites bases gestionadas, pooling, réplicas u operación más fuerte.",
+    "shadcn/ui asume una UI React basada en Tailwind. Si luego quitas Tailwind, revisa imports y clases generadas.",
+  ]}
+/>
 
 ## Despliegue
 
-Antes de desplegar, define variables de entorno para la base de datos, secretos de Better Auth y la URL publica usada por callbacks de auth. Para despliegues SQLite, confirma que el host soporte almacenamiento persistente escribible; muchas plataformas serverless no lo hacen.
+Antes de desplegar, define variables de entorno para la base de datos, secretos de Better Auth y la URL pública usada por callbacks de auth. Para despliegues SQLite, confirma que el host soporte almacenamiento persistente escribible; muchas plataformas serverless no lo hacen.
 
-Si apuntas a serverless, PostgreSQL suele ser una base de datos de produccion mas segura que un archivo SQLite local. Mantiene `bts.jsonc` versionado para que futuros companeros y agentes puedan reconstruir el stack previsto.
+Si apuntas a serverless, PostgreSQL suele ser una base de datos de producción más segura que un archivo SQLite local. Mantén `bts.jsonc` versionado para que futuros compañeros y agentes puedan reconstruir el stack previsto.
+
+## Solución de problemas
+
+- Si los callbacks de auth redirigen al host incorrecto, revisa primero la URL base de la app y las variables de entorno de Better Auth.
+- Si las consultas de base de datos funcionan localmente pero fallan después del despliegue, verifica la URL de base de datos de producción y si las migraciones se ejecutaron contra la base desplegada.
+- Si los tipos de rutas generados parecen obsoletos, reinicia el proceso de generación de tipos del framework y vuelve a ejecutar el typecheck relevante más pequeño.
+- Si las llamadas del cliente tRPC fallan con 404, confirma que la ruta API generada siga montada donde el cliente la espera.
+
+## Tradeoffs
+
+TanStack Start encaja mejor cuando quieres apoyarte en el ecosistema TanStack. Si quieres el ecosistema más grande de hosting y documentación, compáralo con [Next.js con Drizzle y Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+
+Comparado con un backend Hono separado, este stack tiene menos servicios desplegables y menos configuración cross-origin. Comparado con Next.js, te da un modelo mental centrado en TanStack Router y una huella de framework más pequeña, pero un ecosistema más joven.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&api=trpc).
-- Lee la [documentacion del ecosistema TypeScript](/docs/ecosystems/typescript/).
+- Lee la [documentación del ecosistema TypeScript](/docs/ecosystems/typescript/).
 - Revisa la [referencia de CLI create](/docs/cli/create/).

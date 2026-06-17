@@ -3,13 +3,13 @@ title: Agregar features
 description: Agrega addons soportados a proyectos Better Fullstack existentes.
 ---
 
-El comando `add` actualiza un proyecto Better Fullstack existente. Lee `bts.jsonc`, valida los addons solicitados, escribe archivos soportados y actualiza la configuracion del proyecto.
+El comando `add` actualiza un proyecto Better Fullstack existente. Lee `bts.jsonc`, valida los addons solicitados, escribe archivos soportados y actualiza la configuración del proyecto.
 
 ```npm
 npm create better-fullstack@latest add -- --addons mcp skills
 ```
 
-## Que hace add
+## Qué hace add
 
 - Lee `bts.jsonc` desde el proyecto actual o desde `--project-dir`.
 - Pregunta por addons compatibles cuando se omite `--addons`.
@@ -27,21 +27,21 @@ npm create better-fullstack@latest add -- --addons mcp skills
 | --- | --- |
 | `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
 | `--project-dir` | Ruta al proyecto generado. Por defecto usa el directorio actual. |
-| `--install` | Instala dependencias despues de agregar archivos. Por defecto es false para `add`. |
+| `--install` | Instala dependencias después de agregar archivos. Por defecto es false para `add`. |
 | `--package-manager` | `npm` `pnpm` `bun` `yarn` |
-| `--web-deploy` | Registra un target de deployment web despues de procesar addons. |
-| `--server-deploy` | Registra un target de deployment server despues de procesar addons. |
+| `--web-deploy` | Registra un target de deployment web después de procesar addons. |
+| `--server-deploy` | Registra un target de deployment server después de procesar addons. |
 
 ## Referencia de addons
 
-| Addon | Proposito |
+| Addon | Propósito |
 | --- | --- |
-| `mcp` | Configuracion MCP del proyecto generado para agentes de codigo. |
-| `skills` | Archivos de skills curadas para agentes de codigo. |
+| `mcp` | Configuracion MCP del proyecto generado para agentes de código. |
+| `skills` | Archivos de skills curadas para agentes de código. |
 | `turborepo` | Orquestacion monorepo. |
 | `docker-compose` | Orquestacion de servicios locales para stacks soportados. |
-| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Calidad de codigo y hooks. |
-| `starlight` `fumadocs` | Sitios de documentacion cuando son compatibles con el stack. |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Calidad de código y hooks. |
+| `starlight` `fumadocs` | Sitios de documentación cuando son compatibles con el stack. |
 | `tauri` `pwa` `wxt` | Soporte desktop, progressive web app y extension de navegador. |
 | `msw` `storybook` | Utilidades de testing y desarrollo de componentes. |
 | `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Utilidades de fetching de datos y UI. |

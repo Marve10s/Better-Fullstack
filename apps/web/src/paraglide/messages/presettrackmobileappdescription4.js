@@ -10,7 +10,7 @@ const en_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobil
 };
 
 const es_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobileappdescription4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo con Uniwind para una shell de app native-first antes de necesitar servicios backend.`)
+	return /** @type {LocalizedString} */ (`Expo con Uniwind para una shell de app con enfoque nativo primero antes de necesitar servicios backend.`)
 };
 
 const zh_presettrackmobileappdescription4 = /** @type {(inputs: Presettrackmobileappdescription4Inputs) => LocalizedString} */ () => {

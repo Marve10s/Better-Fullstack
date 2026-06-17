@@ -1,11 +1,11 @@
 ---
 title: Referencia de herramientas MCP
-description: Referencia detallada de herramientas MCP de Better Fullstack, inputs, outputs y workflows seguros.
+description: Referencia detallada de herramientas MCP de Better Fullstack, inputs, outputs y flujos seguros.
 ---
 
-El servidor MCP expone herramientas estructuradas para agentes. Usalas en lugar de pedirle a un agente que adivine flags de CLI desde prosa o copie comandos largos a mano.
+El servidor MCP expone herramientas estructuradas para agentes. Úsalas en lugar de pedirle a un agente que adivine flags de CLI desde prosa o copie comandos largos a mano.
 
-## Workflows recomendados
+## Flujos recomendados
 
 ### Proyecto nuevo
 
@@ -21,12 +21,12 @@ El servidor MCP expone herramientas estructuradas para agentes. Usalas en lugar 
 2. `bfs_plan_addition`
 3. `bfs_add_feature`
 
-<Callout kind="warn" title="Comportamiento de mutacion">
-`bfs_plan_project` es solo dry-run. `bfs_create_project` escribe un proyecto nuevo en disco. `bfs_add_feature` muta un proyecto existente. La creacion de proyecto y adicion de features via MCP no instalan dependencias.
+<Callout kind="warn" title="Comportamiento de mutación">
+`bfs_plan_project` es solo dry-run. `bfs_create_project` escribe un proyecto nuevo en disco. `bfs_add_feature` muta un proyecto existente. La creación de proyectos y la adición de funcionalidades vía MCP no instalan dependencias.
 </Callout>
 
 <Callout kind="info" title="Metadata de grafo">
-Las herramientas de planificacion, creacion y adicion de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para que los agentes inspeccionen la misma vista de stack derivada del grafo que persiste `bts.jsonc`.
+Las herramientas de planificación, creación y adición de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para que los agentes inspeccionen la misma vista de stack derivada del grafo que persiste `bts.jsonc`.
 </Callout>
 
 ## Referencia de herramientas
@@ -35,12 +35,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Devuelve reglas de workflow, semantica de campos, reglas de ambiguedad y restricciones criticas. |
-| Cuando llamarla | Primero, antes de otras herramientas MCP de Better Fullstack. |
+| Propósito | Devuelve reglas de flujo, semántica de campos, reglas de ambigüedad y restricciones críticas. |
+| Cuándo llamarla | Primero, antes de otras herramientas MCP de Better Fullstack. |
 | Escribe archivos | No. |
 | Inputs requeridos | Ninguno. |
 | Inputs opcionales | Ninguno. |
-| Output | Guia JSON que cubre orden recomendado de herramientas, campos array, reglas de ecosistema y ejemplos. |
+| Output | Guía JSON que cubre el orden recomendado de herramientas, campos array, reglas de ecosistema y ejemplos. |
 
 ```json
 {}
@@ -50,12 +50,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Devuelve valores de opcion validos para una categoria o todas las categorias. |
-| Cuando llamarla | Antes de planificar un stack, especialmente cuando el usuario nombro tecnologias informalmente. |
+| Propósito | Devuelve valores de opción válidos para una categoría o todas las categorías. |
+| Cuándo llamarla | Antes de planificar un stack, especialmente cuando el usuario nombró tecnologías informalmente. |
 | Escribe archivos | No. |
 | Inputs requeridos | Ninguno. |
 | Inputs opcionales | `category`, `ecosystem`. |
-| Output | Datos JSON de schema/opciones filtrados por categoria o ecosistema. |
+| Output | Datos JSON de esquema/opciones filtrados por categoría o ecosistema. |
 
 ```json
 {
@@ -68,12 +68,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Valida una combinacion de stack y devuelve selecciones ajustadas con warnings. |
-| Cuando llamarla | Antes de `bfs_plan_project` o `bfs_create_project`. |
+| Propósito | Valida una combinación de stack y devuelve selecciones ajustadas con warnings. |
+| Cuándo llamarla | Antes de `bfs_plan_project` o `bfs_create_project`. |
 | Escribe archivos | No. |
 | Inputs requeridos | `ecosystem`. |
-| Inputs opcionales | Frontend, backend, runtime, database, ORM, API, auth, servicios, UI/CSS, campos mobile, addons, examples, package manager, campos de deployment y campos especificos de ecosistema. |
-| Output | Analisis JSON de compatibilidad con cambios, notas y datos de stack ajustados. |
+| Inputs opcionales | Frontend, backend, runtime, database, ORM, API, auth, servicios, UI/CSS, campos mobile, addons, examples, package manager, campos de deployment y campos específicos de ecosistema. |
+| Output | Análisis JSON de compatibilidad con cambios, notas y datos de stack ajustados. |
 
 ```json
 {
@@ -91,12 +91,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Genera un proyecto en memoria y devuelve un resumen del arbol de archivos. |
-| Cuando llamarla | Despues de validar compatibilidad y antes de escribir archivos. |
+| Propósito | Genera un proyecto en memoria y devuelve un resumen del árbol de archivos. |
+| Cuándo llamarla | Después de validar compatibilidad y antes de escribir archivos. |
 | Escribe archivos | No. |
 | Inputs requeridos | Ninguno, pero se recomiendan `projectName` y `ecosystem`. |
 | Inputs opcionales | Selecciones completas del stack de proyecto. |
-| Output | Flag JSON de exito mas resumen de archivos/directorios generados, `graphSummary`, `effectiveStack` y `stackPartSpecs`. |
+| Output | Indicador JSON de éxito más resumen de archivos/directorios generados, `graphSummary`, `effectiveStack` y `stackPartSpecs`. |
 
 ```json
 {
@@ -114,12 +114,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Escribe un proyecto generado nuevo en disco. |
-| Cuando llamarla | Solo despues de que `bfs_plan_project` tenga exito y el usuario apruebe. |
-| Escribe archivos | Si, crea el directorio del proyecto y los archivos generados. |
+| Propósito | Escribe un proyecto generado nuevo en disco. |
+| Cuándo llamarla | Solo después de que `bfs_plan_project` tenga éxito y el usuario apruebe. |
+| Escribe archivos | Sí, crea el directorio del proyecto y los archivos generados. |
 | Inputs requeridos | `projectName`. |
-| Inputs opcionales | Selecciones completas del stack de proyecto. |
-| Output | Flag JSON de exito, directorio del proyecto, conteo de archivos, metadata de grafo, warnings de addons y guia de comando de install. |
+| Inputs opcionales | Selecciones completas del stack del proyecto. |
+| Output | Indicador JSON de éxito, directorio del proyecto, conteo de archivos, metadatos de grafo, warnings de addons y guía del comando de instalación. |
 
 ```json
 {
@@ -135,12 +135,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Lee `bts.jsonc` y valida adiciones propuestas para un proyecto existente. |
-| Cuando llamarla | Antes de mutar un proyecto existente con `bfs_add_feature`. |
+| Propósito | Lee `bts.jsonc` y valida adiciones propuestas para un proyecto existente. |
+| Cuándo llamarla | Antes de mutar un proyecto existente con `bfs_add_feature`. |
 | Escribe archivos | No. |
 | Inputs requeridos | `projectDir`. |
 | Inputs opcionales | `addons`, `webDeploy`, `serverDeploy`. |
-| Output | Resumen de config existente, adiciones propuestas, metadata de grafo para ambas, addons ya presentes y warnings de compatibilidad. |
+| Output | Resumen de configuración existente, adiciones propuestas, metadatos de grafo para ambas, addons ya presentes y warnings de compatibilidad. |
 
 ```json
 {
@@ -153,12 +153,12 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 
 | Campo | Detalles |
 | --- | --- |
-| Proposito | Agrega addons soportados o ajustes de deployment a un proyecto Better Fullstack existente. |
-| Cuando llamarla | Despues de que `bfs_plan_addition` tenga exito y el usuario apruebe. |
-| Escribe archivos | Si, muta el proyecto existente. |
+| Propósito | Agrega addons soportados o ajustes de deployment a un proyecto Better Fullstack existente. |
+| Cuándo llamarla | Después de que `bfs_plan_addition` tenga éxito y el usuario apruebe. |
+| Escribe archivos | Sí, muta el proyecto existente. |
 | Inputs requeridos | `projectDir`. |
 | Inputs opcionales | `addons`, `webDeploy`, `serverDeploy`, `packageManager`. |
-| Output | Resultado JSON del handler add, metadata de grafo despues de la actualizacion y guia de install cuando este disponible. |
+| Output | Resultado JSON del handler add, metadatos de grafo después de la actualización y guía de instalación cuando esté disponible. |
 
 ```json
 {
@@ -171,8 +171,8 @@ Las herramientas de planificacion, creacion y adicion de proyecto incluyen `grap
 ## Reglas para agentes
 
 - Trata `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries` y `javaTestingLibraries` como arrays.
-- Configura `ecosystem` antes de seleccionar campos especificos de ecosistema.
-- Prefiere `none` cuando el usuario quiera deshabilitar explicitamente una categoria.
-- La creacion de proyectos MCP actualmente no expone todos los flags de workflow de CLI. Por ejemplo, `aiDocs` usa el default incorporado del servidor durante la creacion de proyecto.
-- No llames herramientas de escritura hasta que el usuario apruebe el dry-run o el plan de adicion.
-- Di al usuario que comandos de install/test ejecutar despues de creacion o adicion MCP, porque MCP no instala dependencias.
+- Configura `ecosystem` antes de seleccionar campos específicos de ecosistema.
+- Prefiere `none` cuando el usuario quiera deshabilitar explícitamente una categoría.
+- La creación de proyectos MCP actualmente no expone todos los flags de flujo de CLI. Por ejemplo, `aiDocs` usa el default incorporado del servidor durante la creación del proyecto.
+- No llames herramientas de escritura hasta que el usuario apruebe el dry-run o el plan de adición.
+- Di al usuario qué comandos de instalación/test ejecutar después de la creación o adición MCP, porque MCP no instala dependencias.

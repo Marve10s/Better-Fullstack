@@ -14,7 +14,7 @@ const es_homereactions1 = /** @type {(inputs: Homereactions1Inputs) => Localized
 };
 
 const zh_homereactions1 = /** @type {(inputs: Homereactions1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`+ 反应`)
+	return /** @type {LocalizedString} */ (`+ 条互动`)
 };
 
 /**

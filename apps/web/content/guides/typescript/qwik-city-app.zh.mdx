@@ -15,7 +15,7 @@ keywords:
   - better fullstack qwik
 ---
 
-当你希望第一天只创建 Qwik app，而不添加单独 backend 或 database 时，使用这个 stack。
+当你想要一个 Qwik app，并且第一天不添加独立 backend 或 database 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-qwik-app -- \
@@ -32,14 +32,14 @@ npm create better-fullstack@latest my-qwik-app -- \
 
 ## 创建内容
 
-- Qwik app。
+- 一个 Qwik app。
 - Tailwind CSS。
 - 默认不包含 database、ORM、auth 或 API layer。
-- 之后可以扩展的生成项目配置。
+- 一个之后可以继续扩展的 generated project configuration。
 
 ## 生成结构
 
-本指南刻意从 frontend-only Qwik City app 开始。当你想先放好 application shell、routing 和 styling，再选择 backend 或 persistence layer 时，这很有用。
+这篇指南有意从 frontend-only Qwik City app 开始。当你想先搭好 application shell、routing 和 styling，再选择 backend 或 persistence layer 时，它很有用。
 
 代表性结构：
 
@@ -51,21 +51,62 @@ my-qwik-app/
     components/
 ```
 
-生成的 `bts.jsonc` 会记录 backend、runtime、database、ORM、auth 和 API 都是 `none`。这样 stack 的最小性质是显式的，而不是隐含的。
+生成的 `bts.jsonc` 会记录 backend、runtime、database、ORM、auth 和 API 都是 `none`。这样 stack 的最小化是显式的，而不是隐含的。
+
+## 示例 route
+
+Qwik City routes 可以从很小的页面开始：
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+
+export default component$(() => {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-3xl font-semibold">Qwik app</h1>
+      <p class="text-slate-600">Add server features when the product needs them.</p>
+    </main>
+  );
+});
+```
+
+早期 routes 应专注于 UI 和 data requirements。只有当出现真实 server-side responsibility，比如 auth、persistence、webhooks 或 private API calls 时，再添加 backend。
 
 ## 兼容性
 
-与 React、Nuxt、Svelte 或 Solid 选项相比，Qwik 在 Better Fullstack 中的 backend/API 支持更窄。本指南故意保持 stack 最小且兼容。
+Qwik 在 Better Fullstack 中的 backend/API support 比 React、Nuxt、Svelte 或 Solid options 更窄。本指南有意保持 stack minimal 且兼容。
 
-由于命令使用 `--backend none`、`--database none`、`--orm none`、`--auth none` 和 `--api none`，它不应生成 server contracts 或 database models。如果第一天就需要这些，请选择 Better Fullstack 支持更完整的 framework/backend 组合。
+因为命令使用 `--backend none`、`--database none`、`--orm none`、`--auth none` 和 `--api none`，它不应生成 server contracts 或 database models。如果第一天就需要这些能力，请选择 Better Fullstack 支持更完整的 framework/backend pairing。
 
 ## 何时选择
 
-当 resumability 和较小初始 payload 比第一天生成 backend 更重要时，为 frontend-first apps 选择 Qwik。
+当 resumability 和 minimal initial payload 比第一天生成 backend 更重要时，选择 Qwik 做 frontend-first apps。
 
 ## 之后添加 backend
 
-当 app 需要数据时，决定 Qwik 是否继续作为 frontend，并由另一个 service 拥有 API；或者另一个 Better Fullstack preset 是否更匹配 fullstack 需求。对许多团队来说，添加独立 Hono API 比把 backend concerns 强塞进 frontend-first scaffold 更清晰。
+当 app 需要数据时，决定 Qwik 是否继续作为 frontend，而由另一个 service 负责 API；或者另一个 Better Fullstack preset 是否更匹配 fullstack requirement。对很多团队来说，添加一个独立 Hono API service 比把 backend concerns 强行塞进 frontend-first scaffold 更清晰。
+
+有用的后续添加项包括：
+
+- 用于 private server logic 的 Hono API。
+- PostgreSQL 加 Drizzle 或 Prisma，用于 relational data。
+- 当 account management 成为产品一部分时添加 Better Auth。
+- 当 frontend 和 API 需要 shared types 时，添加 oRPC 或其他 typed contract layer。
+
+## 部署
+
+最小 Qwik app 可以作为 web app 或 static-capable frontend 直接部署，具体取决于生成的 adapter 和 hosting target。由于这个命令不添加 database 或 auth，production setup 主要关注 build output、routes 和 public environment variables。
+
+## 故障排查
+
+- 如果你预期有 database files，请检查命令：本指南有意传入 `--database none` 和 `--orm none`。
+- 如果 auth routes 缺失，这个 stack 使用 `--auth none`。
+- 如果 Tailwind classes 不生效，检查生成的 Tailwind content paths 和 framework integration。
+- 如果之后添加 API，保持 public client variables 与 private server secrets 分离。
+
+## 对比说明
+
+当 resumability 和 Qwik component model 是项目主要理由时，选择它而不是 Astro。当内容页面从一开始就需要生成 Hono backend 和 database 时，选择 [Astro with React and Hono](/guides/typescript/astro-react-hono/)。
 
 ## 下一步
 

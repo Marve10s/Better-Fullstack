@@ -1,13 +1,13 @@
 ---
 title: Servidor MCP
-description: Conecta Better Fullstack a Claude Code, Cursor, VS Code y agentes de codigo compatibles con MCP.
+description: Conecta Better Fullstack a Claude Code, Cursor, VS Code y agentes de código compatibles con MCP.
 ---
 
-El servidor MCP de Better Fullstack permite a los agentes crear scaffolds mediante tool calls estructuradas en lugar de adivinar flags de CLI. Maneja busqueda de schema, validacion de compatibilidad, previews dry-run, creacion de proyectos y agregados de features.
+El servidor MCP de Better Fullstack permite a los agentes generar proyectos mediante llamadas a herramientas estructuradas en lugar de adivinar flags de CLI. Gestiona la búsqueda de esquemas, la validación de compatibilidad, las vistas previas dry-run, la creación de proyectos y la incorporación de funcionalidades.
 
-Esta pagina describe el servidor MCP de Better Fullstack. El addon `mcp` del proyecto generado es separado: escribe configuracion de cliente/servidor MCP en una app scaffolded y puede ejecutar comandos externos de setup.
+Esta página describe el servidor MCP de Better Fullstack. El addon `mcp` del proyecto generado es algo separado: escribe configuración de cliente/servidor MCP en la app generada y puede ejecutar comandos externos de setup.
 
-Para un workflow de agente mas ligero guiado por CLI, instala la [agent skill de Better Fullstack](/docs/ai/skills/). La skill y el servidor MCP usan el mismo generador; la skill esta optimizada para scaffolding rapido basado en flags, mientras que MCP esta optimizado para tool calls estructuradas.
+Para un flujo de agente más ligero y guiado por CLI, instala la [agent skill de Better Fullstack](/docs/ai/skills/). La skill y el servidor MCP usan el mismo generador; la skill está optimizada para scaffolding rápido basado en flags, mientras que MCP está optimizado para llamadas estructuradas a herramientas.
 
 ## Setup
 
@@ -70,18 +70,18 @@ Usa el mismo comando stdio con clientes como Claude Desktop, Zed, Cursor, Codex,
 
 Para inputs, outputs, ejemplos y comportamiento de escritura segura completos, consulta la [referencia de herramientas MCP](/docs/ai/mcp-tools/).
 
-| Herramienta | Proposito |
+| Herramienta | Propósito |
 | --- | --- |
-| `bfs_get_guidance` | Devuelve reglas de workflow y semantica de campos. Llamala primero. |
-| `bfs_get_schema` | Devuelve opciones validas para categorias de configuracion. |
+| `bfs_get_guidance` | Devuelve reglas de flujo y semántica de campos. Llámala primero. |
+| `bfs_get_schema` | Devuelve opciones válidas para categorías de configuración. |
 | `bfs_check_compatibility` | Valida un stack y devuelve selecciones ajustadas con warnings. |
-| `bfs_plan_project` | Hace dry-run de generacion de proyecto en memoria. |
+| `bfs_plan_project` | Hace dry-run de generación de proyecto en memoria. |
 | `bfs_create_project` | Escribe un proyecto nuevo en disco. |
 | `bfs_plan_addition` | Valida cambios de addons para un proyecto existente. |
 | `bfs_add_feature` | Agrega addons soportados a un proyecto existente. |
 
 <Callout kind="info" title="Comportamiento de install">
-La creacion de proyectos MCP salta la instalacion normal de dependencias para evitar llamadas de agente largas. Si el proyecto generado incluye el addon `mcp`, el setup de ese addon aun puede ejecutar comandos externos para configuracion de clientes MCP.
+La creación de proyectos MCP salta la instalación normal de dependencias para evitar llamadas de agente largas. Si el proyecto generado incluye el addon `mcp`, el setup de ese addon aún puede ejecutar comandos externos para configuración de clientes MCP.
 </Callout>
 
 ## Recursos
@@ -91,8 +91,8 @@ El servidor expone estos recursos MCP:
 | Recurso | Contenido |
 | --- | --- |
 | `docs://compatibility-rules` | Reglas de compatibilidad para combinaciones de stack. |
-| `docs://stack-options` | Opciones de tecnologia disponibles por categoria. |
-| `docs://getting-started` | Recetas quick-start para ecosistemas soportados. |
+| `docs://stack-options` | Opciones de tecnología disponibles por categoría. |
+| `docs://getting-started` | Recetas de inicio rápido para ecosistemas soportados. |
 
 ## Orden recomendado de herramientas
 
@@ -111,12 +111,12 @@ Para un proyecto existente:
 
 ## Reglas clave para agentes
 
-- `frontend` es un array y puede contener multiples targets frontend.
-- `none` deshabilita una categoria.
+- `frontend` es un array y puede contener múltiples destinos frontend.
+- `none` deshabilita una categoría.
 - Configura `ecosystem` primero para que el agente use la familia correcta de campos.
 - Los campos array incluyen `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries` y `javaTestingLibraries`.
-- Las respuestas de planificacion, creacion y adicion de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para la vista de stack respaldada por grafo.
-- Los schemas MCP actuales de proyecto no exponen `aiDocs` como campo de create; la creacion de proyectos usa el comportamiento AI-doc incorporado del servidor.
+- Las respuestas de planificación, creación y adición de proyecto incluyen `graphSummary`, `effectiveStack` y `stackPartSpecs` para la vista de stack respaldada por grafo.
+- Los esquemas MCP actuales de proyecto no exponen `aiDocs` como campo de creación; la creación de proyectos usa el comportamiento AI-doc incorporado del servidor.
 - Siempre llama `bfs_check_compatibility` antes de crear un proyecto.
 
 ## Prompt para agente

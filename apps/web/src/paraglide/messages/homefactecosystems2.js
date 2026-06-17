@@ -6,21 +6,21 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Homefactecosystems2Inputs */
 
 const en_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Across TypeScript, React Native, Rust, Python, Go, and Java`)
+	return /** @type {LocalizedString} */ (`Across TypeScript, React Native, Rust, Python, Go, Java, and Elixir`)
 };
 
 const es_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`En TypeScript, React Native, Rust, Python, Go y Java`)
+	return /** @type {LocalizedString} */ (`En TypeScript, React Native, Rust, Python, Go, Java y Elixir`)
 };
 
 const zh_homefactecosystems2 = /** @type {(inputs: Homefactecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`覆盖 TypeScript、React Native、Rust、Python、Go 和 Java`)
+	return /** @type {LocalizedString} */ (`覆盖 TypeScript、React Native、Rust、Python、Go、Java 和 Elixir`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Across TypeScript, React Native, Rust, Python, Go, and Java" |
+* | "Across TypeScript, React Native, Rust, Python, Go, Java, and Elixir" |
 *
 * @param {Homefactecosystems2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" }} options

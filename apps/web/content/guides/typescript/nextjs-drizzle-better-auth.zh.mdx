@@ -16,7 +16,7 @@ keywords:
   - create nextjs fullstack app
 ---
 
-当你需要主流 React fullstack app，并且需要 relational data、authentication 和 typed API layer 时，使用这个 stack。
+当你想要主流 React fullstack app，并包含 relational data、authentication 和 typed API layer 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-next-app -- \
@@ -33,16 +33,16 @@ npm create better-fullstack@latest my-next-app -- \
 
 ## 创建内容
 
-- fullstack mode 的 Next.js app。
+- 一个 fullstack mode 的 Next.js app。
 - PostgreSQL 作为 relational database。
 - Drizzle 作为 TypeScript ORM。
 - Better Auth 用于 authentication。
-- tRPC 提供 end-to-end typed APIs。
+- tRPC 用于 end-to-end typed APIs。
 - Tailwind CSS 和 shadcn/ui 用于 frontend styling。
 
 ## 生成结构
 
-生成的 app 使用 Next.js 作为 web 和 server boundary。PostgreSQL 与 Drizzle 放在 server-only modules 后面；tRPC 为需要 application data 的 client components 提供 typed calls。
+生成的 app 使用 Next.js 作为 web 和 server boundary。PostgreSQL 与 Drizzle 位于 server-only modules 后面，而 tRPC 为需要 application data 的 client components 提供 typed calls。
 
 代表性结构：
 
@@ -57,30 +57,80 @@ my-next-app/
     trpc/
 ```
 
-确切路径会随 generator 版本变化，但预期拆分一致：UI components 渲染产品体验，route handlers 和 server code 拥有 request boundaries，database access 不进入 browser bundles。
+确切路径会随 generator 版本变化，但意图一致：UI components 渲染产品体验，route handlers 和 server code 负责 request boundaries，database access 不进入 browser bundles。
 
-## Model 与 typed procedure
+## 示例 Drizzle model
 
-保持 product tables 明确且易迁移。Better Auth 应拥有 authentication tables 和 session behavior。Product tables 应引用 user IDs，避免复制 session fields。
+保持 product tables 明确且易于 migrate：
 
-在 frontend 需要 inferred input/output types 的操作中使用 tRPC。把 authorization check 放在 mutation 附近；创建 workspace 前应证明用户已登录。
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Better Auth 应负责 authentication tables 和 session behavior。Product tables 应引用 user IDs，避免把 session fields 复制进 application models。
+
+## 示例 typed procedure
+
+对于 frontend 能从 inferred input/output types 受益的操作，使用 tRPC：
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Authorization check 应靠近 mutation。创建 workspace 前，应证明存在 signed-in user。
 
 ## 何时选择
 
 适合 SaaS apps、account-based products、dashboards、admin portals，以及重视 Next.js hosting familiarity 的项目。
 
+## 为什么选择 Drizzle 和 Better Auth
+
+Drizzle 让 database access 贴近 TypeScript。Better Auth 提供现代 auth layer，同时默认不强迫使用 hosted identity provider。
+
 ## 兼容性
 
-- `--backend self` 表示 Next.js 拥有 server boundary；除非想要明确 service split，否则不要再添加单独 backend。
+- `--backend self` 表示 Next.js 负责 server boundary；除非你明确想拆分服务，否则不要添加独立 backend。
 - `--database postgres` 适合 production hosting、pooled connections 和 managed database providers。
 - `--api trpc` 很适合这个 React-based stack。Better Fullstack 中非 React TypeScript frontends 通常使用 oRPC。
-- shadcn/ui 需要 Tailwind 和 React。如果以后 regenerate 或添加 components，请保持这些选择一致。
+- shadcn/ui 期待 Tailwind 和 React。如果之后重新生成或添加组件，保持这些选择一致。
 
 ## 部署
 
-在部署环境中设置 PostgreSQL connection string、Better Auth secrets 和 app base URL。部署依赖新 columns 或 tables 的代码前，先运行 migrations。
+在部署环境中设置 PostgreSQL connection string、Better Auth secrets 和 app base URL。在把依赖新 columns 或 tables 的代码导入 production traffic 前，先运行 migrations。
 
-在 serverless hosting 上，检查 database provider 的 pooling 建议。大量 serverless instances 同时启动时，直接 PostgreSQL connections 很容易耗尽限制。
+在 serverless hosting 上，检查 database provider 的 pooling recommendation。许多 serverless instances 同时启动时，直接 PostgreSQL connections 很快会耗尽 limits。
+
+## 故障排查
+
+- 如果 auth 本地可用但 production 不可用，检查 callback URLs、trusted origins、cookies 和 production app URL。
+- 如果 migrations 运行成功但 app 仍看到旧 schema errors，确认 app 和 migration command 指向同一个 database。
+- 如果 client components 导入 server-only database modules，把 query 移到 route handler、server action 或 typed API procedure 后面。
+- 如果 tRPC types 没有更新，重启 TypeScript server，并重新运行目标 app 的 typecheck。
+
+## 对比说明
+
+当你想要最广泛的 Next.js deployment examples 和 ecosystem familiarity 时，选择这个 stack 而不是 TanStack Start。当 TanStack Router 和更小的 React fullstack framework 比 Next.js conventions 更重要时，选择 [TanStack Start](/guides/typescript/create-tanstack-start-project/)。
 
 ## 下一步
 

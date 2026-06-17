@@ -1,26 +1,26 @@
 ---
 title: Agentes de IA
-description: Como los agentes de codigo con IA deben usar Better Fullstack de forma segura y fiable.
+description: Cómo los agentes de código con IA pueden usar Better Fullstack de forma segura y fiable.
 ---
 
-Better Fullstack soporta tres workflows de IA:
+Better Fullstack soporta tres flujos de trabajo con IA:
 
 - Generar archivos de instrucciones locales al proyecto con `--ai-docs`.
-- Instalar la skill de agente Better Fullstack para que los agentes de codigo usen la CLI en lugar de escribir archivos starter a mano.
-- Permitir que un agente de codigo con IA use el servidor MCP de Better Fullstack para buscar schema, comprobar compatibilidad, hacer dry-runs y crear proyectos.
+- Instalar la skill de agente Better Fullstack para que los agentes de código usen la CLI en lugar de escribir archivos iniciales a mano.
+- Permitir que un agente de código con IA use el servidor MCP de Better Fullstack para consultar el schema, comprobar compatibilidad, hacer dry-runs y crear proyectos.
 
-## Workflow recomendado
+## Flujo recomendado
 
 1. Elige el ecosistema objetivo: `typescript`, `react-native`, `rust`, `python`, `go`, `java` o `elixir`.
-2. Usa la skill de agente Better Fullstack, el servidor MCP o una referencia CLI explicita.
+2. Usa la skill de agente Better Fullstack, el servidor MCP o una referencia CLI explícita.
 3. Valida compatibilidad antes de crear el scaffold.
-4. Haz un dry-run para inspeccionar el arbol de archivos.
-5. Genera el scaffold con la instalacion de dependencias deshabilitada cuando un agente conduzca el flujo.
-6. Di al usuario los comandos exactos de install, test y run.
+4. Haz un dry-run para inspeccionar el árbol de archivos.
+5. Genera el proyecto con la instalación de dependencias deshabilitada cuando un agente conduzca el flujo.
+6. Da al usuario los comandos exactos de instalación, prueba y ejecución.
 
 ## Docs de IA generados
 
-Usa `--ai-docs` para generar archivos de contexto locales al proyecto para agentes de codigo:
+Usa `--ai-docs` para generar archivos de contexto locales al proyecto para agentes de código:
 
 | Valor | Archivo generado |
 | --- | --- |
@@ -29,7 +29,7 @@ Usa `--ai-docs` para generar archivos de contexto locales al proyecto para agent
 | `cursorrules` | `.cursorrules` |
 | `none` | Sin docs de IA |
 
-Se aceptan multiples valores:
+Se aceptan múltiples valores:
 
 ```npm
 npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
@@ -37,9 +37,9 @@ npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
 
 Usa `--ai-docs none` para deshabilitar estos archivos.
 
-## Workflow de CLI
+## Flujo con CLI
 
-Para agentes sin acceso MCP, pasa flags explicitos y evita efectos secundarios:
+Para agentes sin acceso MCP, pasa flags explícitos y evita efectos secundarios:
 
 ```npm
 npm create better-fullstack@latest my-app -- \
@@ -59,25 +59,25 @@ npm create better-fullstack@latest my-app -- \
 ```
 
 <Callout kind="info" title="Reglas CLI para agentes">
-`--yes` acepta defaults y es incompatible con flags del stack core. Los flags explicitos saltan solo las categorias que cubren. Pasa `none` para categorias opcionales que quieras deshabilitar.
+`--yes` acepta defaults y es incompatible con flags del stack core. Los flags explícitos saltan solo las categorías que cubren. Pasa `none` para categorías opcionales que quieras deshabilitar.
 </Callout>
 
-## Workflow de agent skill
+## Flujo con agent skill
 
-La skill de agente Better Fullstack vive en este repositorio y ensena a los agentes soportados a usar la CLI con el workflow rapido medido: mapear el stack, ejecutar un dry-run, generar el scaffold sin efectos secundarios de install ni Git, y luego reportar comandos de seguimiento.
+La skill de agente Better Fullstack vive en este repositorio y enseña a los agentes soportados a usar la CLI con el flujo rápido medido: mapear el stack, ejecutar un dry-run, generar el proyecto sin efectos secundarios de instalación ni Git, y luego reportar comandos de seguimiento.
 
-Consulta la [guia de setup de agent skill](/docs/ai/skills/) para comandos de instalacion en Codex, Claude Code, Cursor, GitHub Copilot y Gemini CLI.
+Consulta la [guía de setup de agent skill](/docs/ai/skills/) para comandos de instalación en Codex, Claude Code, Cursor, GitHub Copilot y Gemini CLI.
 
 ## Opciones de providers de IA
 
-Los proyectos TypeScript pueden seleccionar una opcion de IA con `--ai`: `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli` o `none`.
+Los proyectos TypeScript pueden seleccionar una opción de IA con `--ai`: `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli` o `none`.
 
-Los proyectos Python usan la opcion separada multi-select `--python-ai` con `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai` o `none`.
+Los proyectos Python usan la opción separada multi-select `--python-ai` con `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai` o `none`.
 
-La ubicacion de dependencias depende del framework y backend seleccionados. Los paquetes server-side se agregan al paquete servidor o a la app self-backend; las integraciones frontend soportadas reciben sus hooks o paquetes cliente correspondientes.
+La ubicación de dependencias depende del framework y backend seleccionados. Los paquetes server-side se agregan al paquete servidor o a la app self-backend; las integraciones frontend soportadas reciben sus hooks o paquetes cliente correspondientes.
 
-## Workflow MCP
+## Flujo MCP
 
-El servidor MCP de Better Fullstack expone busqueda de schema, comprobaciones de compatibilidad, previews dry-run, creacion de proyectos y agregados de features como herramientas estructuradas. Consulta la [guia de setup MCP](/docs/ai/mcp/).
+El servidor MCP de Better Fullstack expone búsqueda de schema, comprobaciones de compatibilidad, previews dry-run, creación de proyectos y agregado de features como herramientas estructuradas. Consulta la [guía de setup MCP](/docs/ai/mcp/).
 
-Esto es distinto del addon `mcp` del proyecto generado. El servidor ayuda a un agente a crear proyectos Better Fullstack; el addon escribe configuracion MCP dentro de un proyecto generado.
+Esto es distinto del addon `mcp` del proyecto generado. El servidor ayuda a un agente a crear proyectos Better Fullstack; el addon escribe configuración MCP dentro de un proyecto generado.

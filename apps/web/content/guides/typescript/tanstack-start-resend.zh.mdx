@@ -34,15 +34,15 @@ npm create better-fullstack@latest my-email-app -- \
 
 ## 创建内容
 
-- 带自身 server route layer 的 TanStack Start app。
+- 一个带自身 server route layer 的 TanStack Start app。
 - Resend 作为 email provider option。
-- Better Auth，带 relational database support。
-- Drizzle 和 SQLite 用于 local development。
-- Tailwind CSS 和 shadcn/ui 用于 interface。
+- 带 relational database support 的 Better Auth。
+- 用于 local development 的 Drizzle 和 SQLite。
+- 用于界面的 Tailwind CSS 和 shadcn/ui。
 
 ## 生成结构
 
-这个 stack 从 TanStack Start fullstack shape 开始，并添加 email provider configuration。email provider 通过 `--email resend` 选择；应用其余部分仍然使用 `--backend self`，所以不需要为了发送邮件而单独创建 API server。
+这个 stack 从 TanStack Start fullstack shape 开始，并添加 email provider configuration。Email provider 通过 `--email resend` 选择；应用其余部分仍然使用 `--backend self`，因此不需要为了发邮件再加一个独立 API server。
 
 代表性结构：
 
@@ -57,9 +57,73 @@ my-email-app/
       email/
 ```
 
-Email delivery code 应放在小型 server-only helper 后面，确保 React components 永远不会导入 provider secrets。
+把上面的 tree 看作 ownership 指南，而不是确切路径承诺。Email delivery code 应放在小型 server-only helper 后面，避免 React components 导入 provider secrets。
 
-## 使用场景
+## 示例 email helper
+
+好的第一层抽象是为每种 product email 建一个窄函数。这样 Resend-specific details 不会散落到 auth callbacks、onboarding flows 和 route handlers 中：
+
+```ts
+type SendInviteEmailInput = {
+  to: string;
+  inviterName: string;
+  inviteUrl: string;
+};
+
+export async function sendInviteEmail(input: SendInviteEmailInput) {
+  const subject = `${input.inviterName} invited you`;
+
+  return sendTransactionalEmail({
+    to: input.to,
+    subject,
+    html: `
+      <p>${input.inviterName} invited you to join their workspace.</p>
+      <p><a href="${input.inviteUrl}">Accept the invite</a></p>
+    `,
+  });
+}
+```
+
+具体的 `sendTransactionalEmail` implementation 应从 server environment variables 读取 Resend API key，并且不应被 client components 导入。
+
+## 示例 route usage
+
+在创建 durable product state 的 database transaction 之后再发送邮件。对于 invites，先创建 invite record，再发送 email：
+
+```ts
+import { z } from "zod";
+
+const inviteInput = z.object({
+  email: z.string().email(),
+  workspaceId: z.string().min(1),
+});
+
+export async function inviteMember(rawInput: unknown) {
+  const input = inviteInput.parse(rawInput);
+
+  const invite = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    workspaceId: input.workspaceId,
+  };
+
+  await sendInviteEmail({
+    to: invite.email,
+    inviterName: "A teammate",
+    inviteUrl: `https://example.com/invites/${invite.id}`,
+  });
+
+  return invite;
+}
+```
+
+生产系统中，如果邮件必须在 provider 临时失败后仍能送达，考虑使用 job queue 或 retry table。
+
+## 何时选择
+
+当 email 是产品 workflow 的一部分，而不是事后补充时，选择这个 stack。Resend 很适合 developer-focused transactional email，并能让生成的 stack 保持直接。
+
+## 常见使用场景
 
 - Magic links 和 verification emails。
 - Team invites。
@@ -68,16 +132,27 @@ Email delivery code 应放在小型 server-only helper 后面，确保 React com
 
 ## 兼容性
 
-- `--email resend` 是 additive，不会替换 `--auth better-auth`、`--api trpc` 或 `--backend self`。
+- `--email resend` 是 additive。它不会替代 `--auth better-auth`、`--api trpc` 或 `--backend self`。
 - Email delivery 必须在 server side 运行。不要通过 public environment variables 或 browser bundles 暴露 Resend API key。
-- SQLite 适合 local development。如果 email workflows 依赖 durable audit trails、retries 或 team-scale records，PostgreSQL 可能更适合生产环境。
-- Better Auth email flows 和 product notification flows 可以共享 provider configuration，但 function level 应保持分离。
+- SQLite 适合 local development。如果 email workflows 依赖 durable audit trails、retries 或 team-scale records，PostgreSQL 可能是更好的生产数据库。
+- Better Auth email flows 和 product notification flows 应共享 provider configuration，但在函数层面保持分离。
 
 ## 部署
 
-在部署环境中配置 Resend API key、sender domain、Better Auth secrets 和 app URL。依赖生产邮件前，请先完成 domain verification。
+在部署环境中配置 Resend API key、sender domain、Better Auth secrets 和 app URL。依赖 production mail delivery 之前，应完成 domain verification。
 
-对于 preview deployments，如果 app 可能从不可信 preview traffic 触发邮件，请使用 restricted sender 或 test recipient allowlist。
+对于 preview deployments，如果 app 可能从不可信 preview traffic 触发邮件，使用受限 sender 或 test recipient allowlist。
+
+## 故障排查
+
+- 如果 emails 没有到达，先检查 provider logs，再改 application code。
+- 如果 links 指向 localhost，更新用于构建 callback 或 invite links 的 production app URL。
+- 如果 auth emails 可用但 product emails 失败，确认两条路径使用同一个 server-only provider configuration。
+- 如果 local tests 意外发送真实邮件，添加 development transport 或 non-production environment guard。
+
+## 对比说明
+
+暂时不需要 email 时，使用更宽泛的 [TanStack Start guide](/guides/typescript/create-tanstack-start-project/)。当 transactional email 是初始 product contract 的一部分时，选择本页命令，因为它会从第一天就在 `bts.jsonc` 中记录这个决策。
 
 ## 下一步
 

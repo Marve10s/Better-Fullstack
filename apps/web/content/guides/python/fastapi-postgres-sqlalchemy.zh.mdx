@@ -16,7 +16,7 @@ keywords:
   - fastapi pydantic postgres
 ---
 
-当你需要熟悉、async-friendly 的 Python web framework，并搭配 relational database 时，使用这个 stack。
+当你需要一个 Python API，并希望它使用熟悉、适合 async-adjacent 工作的 web framework，同时搭配关系型数据库时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-fastapi-api -- \
@@ -28,52 +28,172 @@ npm create better-fullstack@latest my-fastapi-api -- \
   --python-quality ruff \
 ```
 
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="这个 stack 优化的 runtime 边界。"
+  items={[
+    { label: "HTTP", value: "FastAPI", detail: "Route functions、dependency injection 和 OpenAPI output。" },
+    { label: "数据", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models，以及 scaffold 选择的 PostgreSQL driver。" },
+    { label: "验证", value: "Pydantic", detail: "靠近 API edge 的 request 和 response schemas。" },
+    { label: "质量", value: "Ruff", detail: "为生成的 Python package 提供快速 linting 和 formatting。" },
+  ]}
+/>
+
 ## 创建内容
 
-- FastAPI API。
-- PostgreSQL 作为 database。
-- SQLAlchemy 用于 data access。
-- Pydantic 用于 request 和 response schemas。
-- Ruff 用于 linting 和 formatting。
+- 一个使用 FastAPI 的 Python 项目。
+- PostgreSQL 作为数据库选项。
+- SQLAlchemy 用于数据库访问。
+- Pydantic 用于验证。
+- Ruff 用于 Python 代码质量。
+- 一个 Better Fullstack configuration file，用于可重复的 scaffolding。
 
 ## 生成结构
 
-这个 stack 让 FastAPI 位于 HTTP boundary。Pydantic 在 API edge 附近验证数据，SQLAlchemy 拥有 models 和 queries，PostgreSQL 提供 relational persistence。
-
-代表性结构：
+这个 scaffold 是一个紧凑的 API service，而不是完整 monorepo。FastAPI 负责 HTTP boundary，SQLAlchemy 负责 persistence，Pydantic 负责 request 和 response contracts。生成的 app 包含 health checks、示例 user 和 post CRUD code、database session wiring、Alembic configuration 和 tests。
 
 ```txt
 my-fastapi-api/
-  pyproject.toml
-  app/
-    main.py
-    api/
-      routes/
-    db/
-    models/
-    schemas/
-  tests/
+├── pyproject.toml
+├── alembic.ini
+├── migrations/
+│   ├── env.py
+│   └── versions/
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   └── crud.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
 ```
 
-保持 routes 轻薄。把 business decisions 放在 services 中，把 queries 放在 database modules 后面，避免 handlers 同时承担 validation、SQL 和 response mapping。
+默认 database URL 会 fallback 到本地 SQLite，让项目可以立即启动。因为本指南选择了 `--database postgres`，生成的 dependencies 会包含 `psycopg[binary]`；当你要测试真实目标数据库时，把 `DATABASE_URL` 设置为 PostgreSQL connection string。
+
+```bash
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_fastapi_api"
+```
+
+## 何时选择它
+
+选择 FastAPI 来构建 APIs、AI-adjacent services、internal platforms，以及需要访问 Python 生态的 backend services。
+
+当你想要明确的 route functions、OpenAPI-first 的 request/response modeling，以及较小的项目 surface 时，FastAPI 比 Django 更合适。当你需要 Django 的 admin conventions、app structure 和成熟内置 web framework defaults 时，Django 更合适。
+
+| 决策点 | FastAPI + SQLAlchemy | Django REST API |
+| --- | --- | --- |
+| 项目形态 | 使用显式模块的小型服务 | 约定更重的 Django project |
+| API modeling | 靠近 routes 的 Pydantic schemas | 基于 Django conventions 的 DRF serializers/views |
+| Admin/back-office | 单独添加 | Django admin ecosystem 是自然路径 |
+| Async-adjacent work | 常适合 API 和 AI service boundaries | 可以做到，但不够 minimal |
+| ORM preference | SQLAlchemy-first | Django ORM 更常规，虽然这个 stack 记录的是 SQLAlchemy 选择 |
+
+## 代表性代码片段
+
+生成的 model layer 使用 SQLAlchemy 2 风格的 mapped columns。扩展示例 `User` 和 `Post` models，而不是把 database logic 直接写进 route handlers。
+
+```python
+from datetime import datetime
+
+from sqlalchemy import DateTime, Integer, String, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+```
+
+Routes 依赖 per-request database session，并把 persistence 委托给 `crud.py`。
+
+```python
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app import crud
+from app.database import get_db
+from app.schemas import UserCreate, UserResponse
+
+
+@app.post("/users", response_model=UserResponse)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    existing = crud.get_user_by_email(db, user.email)
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    return crud.create_user(db, user)
+```
+
+## 迁移和测试
+
+生成的 app 可以在 startup 时创建 tables，以支持快速本地 loop；但生产团队应把 Alembic migrations 作为 database change history 的来源。
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+添加或修改 models 时，创建 migration，并在应用前 review：
+
+```bash
+uv run alembic revision --autogenerate -m "add account status"
+uv run alembic upgrade head
+```
+
+测试应拆分 route behavior 和 database behavior。Route tests 应使用 FastAPI 的 test client 并断言 HTTP status codes；database tests 应创建隔离的 test engine 或 transaction boundary。
 
 ## 兼容性
 
-`--python-web-framework fastapi`、`--database postgres`、`--python-orm sqlalchemy` 和 `--python-validation pydantic` 是核心组合。如果把 SQLAlchemy 换成 SQLModel，请一起检查 models 和 session handling。
+<GuideCompatibilityNote
+  kind="supported"
+  title="兼容性规则"
+  items={[
+    "`--python-web-framework fastapi` 与 `--python-orm sqlalchemy` 和 `--python-validation pydantic` 自然搭配。",
+    "Django API options（如 `--python-api django-rest-framework`）只在 `--python-web-framework django` 下有效。",
+    "`--database postgres` 会添加 PostgreSQL driver 支持，但 runtime connection 由 `DATABASE_URL` 控制。",
+  ]}
+/>
 
-## 测试与部署
+## 部署说明
 
-部署前运行 Python validations：
+在 ASGI server（例如 Uvicorn）后运行 app。生产环境中设置 `DATABASE_URL`，关闭过宽的 CORS origins，并在启动新的 application instances 前运行 migrations。
 
 ```bash
-python -m compileall .
-ruff check .
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
 ```
 
-生产环境中设置 PostgreSQL URL、secrets 和 CORS configuration。部署依赖新 columns 或 tables 的代码前，先运行 migrations。
+如果你的 deployment platform 从 repository root 构建，确保它从 `pyproject.toml` 安装 Python project dependencies，并把 `PYTHONPATH` 或 working directory 指向生成的 package layout。
+
+## 故障排查
+
+| 现象 | 检查项 |
+| --- | --- |
+| `psycopg` connection errors | 确认 `DATABASE_URL` 使用 app runtime 可以访问的 PostgreSQL URL。 |
+| Tables 本地存在但生产不存在 | 在启动前，对 production database 运行 Alembic migrations。 |
+| `app.main` import errors | 从 project root 启动，或一致地配置 source directory。 |
+| CORS 本地可用但浏览器 deploy 失败 | 用已部署 frontend origin 替换 wildcard CORS。 |
+
+## 取舍
+
+FastAPI 是很强的 API default。如果你需要更 batteries-included 的 web framework 和 admin-style conventions，可以和 Django 比较。
 
 ## 下一步
 
 - 打开 [Stack Builder](/new?eco=python&pwf=fastapi&db=postgres&porm=sqlalchemy&pval=pydantic&pq=ruff)。
 - 阅读 [Python ecosystem docs](/docs/ecosystems/python/)。
-- 对比 [FastAPI AI Agent with LangChain](/guides/python/fastapi-langchain-ai-agent/)。
+- 查看 [CLI create flags](/docs/cli/create/)。

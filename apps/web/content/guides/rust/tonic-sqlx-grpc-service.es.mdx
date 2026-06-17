@@ -30,7 +30,7 @@ npm create better-fullstack@latest my-rust-grpc -- \
   --rust-error-handling anyhow-thiserror
 ```
 
-## Que crea
+## Qué crea
 
 - Un servicio Rust usando Axum.
 - Tonic para gRPC.
@@ -39,39 +39,155 @@ npm create better-fullstack@latest my-rust-grpc -- \
 
 ## Forma generada
 
-Este stack combina endpoints operacionales Axum con una frontera gRPC Tonic. SQLx mantiene el acceso a datos explicito, y tracing da observabilidad desde startup hasta requests de servicio.
+Este stack está pensado para llamadas tipadas servicio-a-servicio. Tonic controla el contrato gRPC y la implementación del servidor, SQLx controla el acceso a datos, y Axum todavía puede proporcionar rutas HTTP operacionales como health checks cuando el proyecto generado las incluye.
 
-Forma representativa:
+Los límites principales son:
+
+- `proto/` define el contrato del servicio.
+- Los tipos gRPC generados en Rust se mantienen cerca de la implementación Tonic.
+- Las queries SQLx viven en módulos de repositorio o servicio, no dentro de handlers de transporte.
+- Las rutas Axum, si se usan, son endpoints operacionales en vez de la API principal de producto.
+
+## Árbol representativo
 
 ```txt
 my-rust-grpc/
   Cargo.toml
-  proto/
   build.rs
+  proto/
+    users.proto
   src/
     main.rs
+    config.rs
+    error.rs
     grpc/
+      mod.rs
+      users.rs
+    repositories/
+      mod.rs
+      users.rs
     routes/
-    db/
+      mod.rs
+      health.rs
 ```
 
-Mantiene contratos protobuf como la superficie publica del servicio. El SQL y las migraciones pertenecen en la capa de datos, no en handlers gRPC.
+El archivo `build.rs` suele ser donde se conecta la generación protobuf. Mantén el código generado fuera de la lógica de negocio editada a mano.
 
-## Compatibilidad
+## Ejemplos de proto y servicio
 
-`--rust-api tonic` agrega el flujo gRPC. `--rust-orm sqlx` significa que debes gestionar SQL, migraciones y compatibilidad de queries con cuidado. Para APIs HTTP de cara al navegador, empieza con [Axum con PostgreSQL y SeaORM](/guides/rust/axum-postgres-seaorm/).
+Un contrato protobuf pequeño da a clientes y servidores la misma frontera tipada:
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+La implementación Tonic debería traducir errores de transporte a estados gRPC y mantener el acceso a base de datos en un módulo separado:
+
+```rust
+use tonic::{Request, Response, Status};
+
+use crate::grpc::users_v1::{
+    user_service_server::UserService, GetUserRequest, User,
+};
+use crate::repositories::users::UserRepository;
+
+pub struct UsersGrpc {
+    repo: UserRepository,
+}
+
+#[tonic::async_trait]
+impl UserService for UsersGrpc {
+    async fn get_user(
+        &self,
+        request: Request<GetUserRequest>,
+    ) -> Result<Response<User>, Status> {
+        let id = request.into_inner().id;
+        let user = self
+            .repo
+            .find_by_id(id)
+            .await
+            .map_err(|error| Status::internal(error.to_string()))?
+            .ok_or_else(|| Status::not_found("user not found"))?;
+
+        Ok(Response::new(User {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+        }))
+    }
+}
+```
+
+SQLx mantiene explícita la forma de las queries:
+
+```rust
+use sqlx::PgPool;
+
+pub struct UserRow {
+    pub id: i64,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn find_user(pool: &PgPool, id: i64) -> Result<Option<UserRow>, sqlx::Error> {
+    sqlx::query_as!(
+        UserRow,
+        "select id, email, name from users where id = $1",
+        id
+    )
+    .fetch_optional(pool)
+    .await
+}
+```
+
+## Notas de compatibilidad
+
+Mantén `--rust-api tonic` cuando quieras wiring generado para servicios gRPC. Si cambias a `--rust-api none`, los ejemplos protobuf y Tonic de esta guía pasan a ser una adición manual. SQLx encaja bien con contratos de servicio porque la salida de queries puede mapearse directamente a tipos de respuesta protobuf.
+
+## Cuándo elegirlo
+
+Elige este stack para servicios internos, microservicios y sistemas backend donde los contratos gRPC encajan mejor que rutas JSON.
+
+## Tradeoffs
+
+gRPC es excelente para fronteras de servicio fuertemente tipadas, pero agrega expectativas de protocolo y tooling. Para APIs HTTP orientadas al navegador, empieza con [Axum con PostgreSQL y SeaORM](/guides/rust/axum-postgres-seaorm/).
+
+SQLx mantiene transparente el comportamiento de base de datos, pero necesitas gestionar SQL files, migraciones y compatibilidad de queries de forma deliberada.
 
 ## Pruebas y despliegue
 
-Prueba comportamiento a nivel protobuf con clientes generados o tipos Tonic, y prueba funciones de repository contra PostgreSQL real cuando la correccion de queries importe.
+Prueba comportamiento a nivel protobuf con clientes generados o tipos Tonic, y prueba funciones de repository contra PostgreSQL real cuando la corrección de queries importe.
 
 ```bash
 cargo test
 ```
 
-En CI, asegura que el tooling protobuf este disponible si el proyecto genera tipos Rust durante el build. En despliegue, expone el puerto gRPC esperado por clientes y manten health routes HTTP separadas si tu plataforma requiere probes distintos.
+En CI, asegúrate de que el tooling protobuf esté disponible si el proyecto genera tipos Rust durante el build. En despliegue, expón el puerto gRPC esperado por clientes y mantén cualquier health route HTTP separada de la dirección del servicio gRPC si tu plataforma requiere probes distintos.
+
+## Troubleshooting
+
+- Si faltan tipos protobuf, revisa `build.rs` y confirma que la ruta `.proto` esté incluida.
+- Si las comprobaciones compile-time de SQLx fallan, verifica la database URL o el metadata offline de queries que espera el proyecto generado.
+- Si los clientes reciben `UNIMPLEMENTED`, confirma que el generated service server se haya agregado al builder del servidor Tonic.
+- Si los health checks pasan pero las llamadas gRPC fallan, revisa que el puerto gRPC sea el que expone tu process manager o contenedor.
 
 ## Siguientes pasos
 
 - Abre el [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror).
-- Lee la [documentacion del ecosistema Rust](/docs/ecosystems/rust/).
+- Lee la [documentación del ecosistema Rust](/docs/ecosystems/rust/).

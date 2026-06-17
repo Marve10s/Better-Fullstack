@@ -1,6 +1,6 @@
 ---
 title: Comando MCP
-description: Inicia el servidor MCP de Better Fullstack sobre stdio para agentes de codigo IA.
+description: Inicia el servidor MCP de Better Fullstack sobre stdio para agentes de código IA.
 ---
 
 El comando `mcp` inicia el servidor MCP de Better Fullstack sobre stdio. Los agentes pueden usarlo para inspeccionar schemas, validar compatibilidad, previsualizar archivos generados, crear proyectos y agregar features soportadas a proyectos existentes.
@@ -22,7 +22,7 @@ Claude Code con npm:
 claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
 
-Para pnpm, Bun o Yarn, reemplaza el comando despues de `--` por el launcher correspondiente:
+Para pnpm, Bun o Yarn, reemplaza el comando después de `--` por el launcher correspondiente:
 
 | Package manager | Launcher |
 | --- | --- |
@@ -54,17 +54,17 @@ Comando/args equivalentes para otros package managers:
 
 ## Superficie de herramientas
 
-| Herramienta | Proposito |
+| Herramienta | Propósito |
 | --- | --- |
 | `bfs_get_guidance` | Devuelve reglas de workflow y semantica de campos. |
-| `bfs_get_schema` | Devuelve opciones validas para una categoria o todas las categorias. |
+| `bfs_get_schema` | Devuelve opciones validas para una categoría o todas las categorías. |
 | `bfs_check_compatibility` | Valida selecciones de stack antes de generar. |
 | `bfs_plan_project` | Hace dry-run de la generacion en memoria. |
 | `bfs_create_project` | Escribe un proyecto nuevo en disco. |
 | `bfs_plan_addition` | Planifica adiciones de features para un proyecto existente. |
 | `bfs_add_feature` | Agrega features soportadas a un proyecto existente. |
 
-Las respuestas de planificacion, creacion y adicion incluyen metadata de grafo (`graphSummary`, `effectiveStack` y `stackPartSpecs`) junto al resumen de archivos generados o mutaciones.
+Las respuestas de planificacion, creación y adición incluyen metadata de grafo (`graphSummary`, `effectiveStack` y `stackPartSpecs`) junto al resumen de archivos generados o mutaciones.
 
 Consulta la [referencia de herramientas MCP](/docs/ai/mcp-tools/) para inputs, outputs y workflows seguros.
 
@@ -73,11 +73,11 @@ Consulta la [referencia de herramientas MCP](/docs/ai/mcp-tools/) para inputs, o
 - `bfs_plan_project` no escribe archivos.
 - `bfs_create_project` escribe archivos pero no instala dependencias.
 - `bfs_add_feature` muta un proyecto Better Fullstack existente y no instala dependencias.
-- Los agentes deberian llamar a `bfs_get_guidance` y `bfs_check_compatibility` antes de crear proyectos.
+- Los agentes deberían llamar a `bfs_get_guidance` y `bfs_check_compatibility` antes de crear proyectos.
 
 ## Comandos relacionados
 
-- `docs` abre el sitio publico de documentacion.
+- `docs` abre el sitio público de documentación.
 - `builder` abre el Stack Builder interactivo.
 - `sponsors` muestra sponsors de Better Fullstack.
 

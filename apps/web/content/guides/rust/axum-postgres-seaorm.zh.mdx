@@ -28,6 +28,17 @@ npm create better-fullstack@latest my-rust-api -- \
   --rust-error-handling anyhow-thiserror
 ```
 
+<GuideStackSnapshot
+  title="生成的 stack 快照"
+  description="Rust service 增长时应保留的边界。"
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Typed extractors、shared router state 和 explicit handlers。" },
+    { label: "数据", value: "PostgreSQL + SeaORM", detail: "Entity-style database access 和 active models。" },
+    { label: "可观测性", value: "tracing", detail: "从 startup 到 request handling 的 structured logs。" },
+    { label: "错误", value: "Anyhow + Thiserror", detail: "Domain errors 在 edge 转换成 HTTP responses。" },
+  ]}
+/>
+
 ## 创建内容
 
 - 使用 Axum 的 Rust API project。
@@ -49,6 +60,8 @@ npm create better-fullstack@latest my-rust-api -- \
 
 ## 代表性文件树
 
+准确文件名可能随 generator 演进而变化，但这是 Axum API 搭配 PostgreSQL 和 SeaORM 时应预期的结构：
+
 ```txt
 my-rust-api/
   Cargo.toml
@@ -58,15 +71,96 @@ my-rust-api/
     config.rs
     error.rs
     routes/
+      mod.rs
+      health.rs
+      users.rs
     entities/
+      mod.rs
+      prelude.rs
+      user.rs
     services/
+      mod.rs
+      users.rs
 ```
 
 用 `routes/` 放 HTTP mechanics，`services/` 放 application behavior，`entities/` 放 SeaORM generated 或 maintained database model types。
 
+## Route 和 model 示例
+
+Axum handler 通常应接受提取出的 state 和 typed request data，然后返回一个 result，让共享 error type 可以把它转换成 response：
+
+```rust
+use axum::{extract::State, Json};
+use serde::{Deserialize, Serialize};
+
+use crate::{error::AppError, services::users::UserService, AppState};
+
+#[derive(Debug, Deserialize)]
+pub struct CreateUserRequest {
+    pub email: String,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UserResponse {
+    pub id: i32,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn create_user(
+    State(state): State<AppState>,
+    Json(input): Json<CreateUserRequest>,
+) -> Result<Json<UserResponse>, AppError> {
+    let user = UserService::new(state.db)
+        .create(input.email, input.name)
+        .await?;
+
+    Ok(Json(UserResponse {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+    }))
+}
+```
+
+SeaORM 通过 active models 让 inserts 保持显式：
+
+```rust
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
+
+use crate::entities::user;
+
+pub async fn create_user(
+    db: &DatabaseConnection,
+    email: String,
+    name: String,
+) -> Result<user::Model, sea_orm::DbErr> {
+    user::ActiveModel {
+        email: Set(email),
+        name: Set(name),
+        ..Default::default()
+    }
+    .insert(db)
+    .await
+}
+```
+
 ## 兼容性
 
-当你需要本指南的 shape 时，请保持 `--rust-web-framework axum`、`--database postgres` 和 `--rust-orm sea-orm` 组合。如果 ORM 切换到 `sqlx`，会有更多 handwritten SQL 和更少 entity-style model types。如果设置 `--rust-web-framework none`，本指南的 route examples 不再适用。
+<GuideCompatibilityNote kind="supported" title="兼容性规则">
+  当你需要本指南的 shape 时，请保持 `--rust-web-framework axum`、`--database postgres` 和 `--rust-orm sea-orm` 组合。如果 ORM 切换到 `sqlx`，会有更多 handwritten SQL 和更少 entity-style model types。如果设置 `--rust-web-framework none`，本指南的 route examples 不再适用。
+</GuideCompatibilityNote>
+
+## 何时选择
+
+当性能、正确性和显式 server code 很重要时，选择 Axum。它适合 APIs、backend services，以及 Rust type system 是产品策略一部分的系统。
+
+## Tradeoffs
+
+相比 TypeScript、Python 或 Go，Rust 通常需要更多 upfront type modeling。作为回报，你会得到强编译期检查和可预测的 runtime behavior。
+
+当团队想要 generated entity types 和 composable query builders 时，SeaORM 很高效。对于大量查询、且 handwritten SQL 是设计一部分的服务，它可能会比 SQLx 显得更重。
 
 ## 测试与部署
 
@@ -76,11 +170,18 @@ my-rust-api/
 cargo test
 ```
 
-部署前确保 runtime environment 提供 PostgreSQL connection string，以及项目使用的 migration step。生产环境中显式设置 `RUST_LOG`：
+部署前确保 runtime environment 提供 PostgreSQL connection string，以及项目使用的 migration step。生产环境中保持 `RUST_LOG` 显式设置，这样 tracing output 有用但不会过于嘈杂：
 
 ```bash
 RUST_LOG=info cargo run
 ```
+
+## 故障排查
+
+- 如果 app 能启动但 database calls 失败，请确认生成的 `.env.example` keys 与 shell 或 deployment platform 中设置的变量一致。
+- 如果 SeaORM types 与 database 不匹配，请重新运行项目的 entity 或 migration workflow，而不是手动编辑 generated code。
+- 如果 errors 返回为 generic 500 responses，请检查 shared error type 及其 `IntoResponse` implementation。
+- 如果 logs 缺少 request context，请确认 tracing subscriber 在 router 开始服务流量前完成初始化。
 
 ## 下一步
 

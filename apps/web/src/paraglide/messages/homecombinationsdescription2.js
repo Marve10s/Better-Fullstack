@@ -10,7 +10,7 @@ const en_homecombinationsdescription2 = /** @type {(inputs: Homecombinationsdesc
 };
 
 const es_homecombinationsdescription2 = /** @type {(inputs: Homecombinationsdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Combina frameworks, bases de datos, auth, pagos, IA y más. Cada combinación crea un codebase funcional y listo para producción.`)
+	return /** @type {LocalizedString} */ (`Combina frameworks, bases de datos, auth, pagos, IA y más. Cada combinación crea una base de código funcional y lista para producción.`)
 };
 
 const zh_homecombinationsdescription2 = /** @type {(inputs: Homecombinationsdescription2Inputs) => LocalizedString} */ () => {

@@ -1,9 +1,9 @@
 ---
 title: MCP 命令
-description: 通过 stdio 为 AI coding agents 启动 Better Fullstack MCP server。
+description: 通过 stdio 为 AI 代码代理启动 Better Fullstack MCP server。
 ---
 
-`mcp` 命令通过 stdio 启动 Better Fullstack MCP server。Agents 可以用它检查 schemas、验证兼容性、预览生成文件、创建项目，并向现有项目添加支持的 features。
+`mcp` 命令通过 stdio 启动 Better Fullstack MCP server。代理可以用它检查 schemas、验证兼容性、预览生成文件、创建项目，并向现有项目添加支持的功能。
 
 <PMTabs
   npm="npx -y create-better-fullstack@latest mcp"
@@ -62,7 +62,7 @@ claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullst
 | `bfs_plan_project` | 在内存中 dry-run 项目生成。 |
 | `bfs_create_project` | 将新项目写入磁盘。 |
 | `bfs_plan_addition` | 为现有项目规划 feature additions。 |
-| `bfs_add_feature` | 向现有项目添加支持的 features。 |
+| `bfs_add_feature` | 向现有项目添加支持的功能。 |
 
 项目规划、创建和添加响应会在 generated file 或 mutation summary 之外，包含 graph metadata（`graphSummary`、`effectiveStack` 和 `stackPartSpecs`）。
 

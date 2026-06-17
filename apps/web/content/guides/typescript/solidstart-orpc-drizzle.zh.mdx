@@ -16,7 +16,7 @@ keywords:
   - solidstart fullstack boilerplate
 ---
 
-当你想要 Solid 的 fine-grained reactivity，同时需要 fullstack framework 和 typed API contracts 时，使用这个 stack。
+当你想要 Solid 的 fine-grained reactivity，同时还需要 fullstack framework 和 typed API contracts 时，使用这个 stack。
 
 ```npm
 npm create better-fullstack@latest my-solidstart-app -- \
@@ -32,15 +32,15 @@ npm create better-fullstack@latest my-solidstart-app -- \
 
 ## 创建内容
 
-- SolidStart fullstack app。
+- 一个 SolidStart fullstack app。
 - SQLite 和 Drizzle。
 - Better Auth。
-- oRPC 用于 typed contracts。
+- 用于 typed contracts 的 oRPC。
 - Tailwind CSS。
 
 ## 生成结构
 
-这个 stack 让 SolidStart 作为 fullstack framework。应用可以渲染 Solid UI、调用 typed server contracts，并通过 Drizzle 持久化数据，不需要引入独立 backend service。
+这个 stack 保持 SolidStart 作为 fullstack framework。app 可以渲染 Solid UI、调用 typed server contracts，并通过 Drizzle 持久化数据，不需要引入独立 backend service。
 
 代表性结构：
 
@@ -56,23 +56,68 @@ my-solidstart-app/
       rpc/
 ```
 
-把这棵树当作 ownership map。UI code 属于 Solid components 和 routes；database 与 auth code 应保持 server-only。
+把这个 tree 当作 ownership map。UI code 属于 Solid components 和 routes；database 与 auth code 应保持 server-only。
+
+## 示例 route component
+
+SolidStart routes 可以专注于 rendering，让 server code 处理 data access：
+
+```tsx
+export default function ProjectsPage() {
+  return (
+    <main class="mx-auto max-w-4xl p-6">
+      <h1 class="text-2xl font-semibold">Projects</h1>
+      <p class="text-gray-600">Create typed server calls for project data.</p>
+    </main>
+  );
+}
+```
+
+把 server mutations 放在 validated functions 后面，避免 UI 成为 input rules 的唯一来源。
+
+## 示例 Drizzle model
+
+SQLite 对小型 SolidStart apps 和 local development 是实用默认值：
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const note = sqliteTable("note", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+当多个 deployed instances 需要共享 durable relational data 时，迁移到 PostgreSQL。
 
 ## 兼容性
 
-SolidStart 在 Better Fullstack 中使用 oRPC。tRPC 偏向 React，因此这个 stack 故意保留 `--api orpc`。
+SolidStart 在 Better Fullstack 中使用 oRPC。tRPC 偏向 React，因此这个 stack 有意保留 `--api orpc`。
 
-`--backend self` 表示 SolidStart 拥有 server layer。除非你明确需要单独 API deployment，否则不要添加 Hono。
+`--backend self` 表示 SolidStart 负责 server layer。除非你有意想要独立 API deployment，否则不要添加 Hono。
 
 ## 何时选择
 
-当你想要 Solid runtime model，同时还需要生成好的 fullstack project、database、auth 和 typed API wiring 时，选择 SolidStart。
+当你想要 Solid 的 runtime model，同时需要生成好的 fullstack project，包含 database、auth 和 typed API wiring 时，选择 SolidStart。
 
 ## 部署
 
-为目标环境设置 Better Auth secrets、app URL，以及 database path 或 connection string。如果部署平台不提供 persistent disk，不要依赖 file-backed SQLite 保存生产数据。
+为目标环境设置 Better Auth secrets、app URL，以及 database path 或 connection string。如果部署平台不提供 persistent disk，不要依赖 file-backed SQLite 存 production data。
 
-小型 internal tools 可能用 SQLite 就足够。对 SaaS-style multi-user production apps，PostgreSQL 通常更容易跨部署运行。
+对于小型 internal tools，SQLite 可能足够。对于 SaaS-style multi-user production apps，PostgreSQL 通常更容易跨 deployments 运营。
+
+## 故障排查
+
+- 如果 oRPC calls 部署后失败，检查 route base path，以及 deployment adapter 是否按预期处理 server routes。
+- 如果 auth sessions 消失，检查 cookie security settings 和 app URL values。
+- 如果 SQLite data 重置，确认 host 是否提供 persistent storage。
+- 如果 Solid components 意外导入 server modules，把调用移到 server function 或 API contract 后面。
+
+## 对比说明
+
+当 Solid 的 fine-grained reactivity 是项目理由时，选择它而不是 TanStack Start。当你偏好 React 和 TanStack Router 时，选择 [Create a TanStack Start Project](/guides/typescript/create-tanstack-start-project/)。
 
 ## 下一步
 

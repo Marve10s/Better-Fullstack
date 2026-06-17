@@ -10,7 +10,7 @@ const en_compareaiintegrations2 = /** @type {(inputs: Compareaiintegrations2Inpu
 };
 
 const es_compareaiintegrations2 = /** @type {(inputs: Compareaiintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integraciones AI / LLM`)
+	return /** @type {LocalizedString} */ (`Integraciones de IA / LLM`)
 };
 
 const zh_compareaiintegrations2 = /** @type {(inputs: Compareaiintegrations2Inputs) => LocalizedString} */ () => {

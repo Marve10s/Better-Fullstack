@@ -1,6 +1,6 @@
 ---
 title: 创建 AI 代理应用
-description: 使用 Next.js、AI CLI workflow docs、MCP、skills、Better Auth、Drizzle、SQLite、Tailwind CSS 和 shadcn/ui 创建 AI 代理应用。
+description: 使用 Next.js、AI CLI 工作流文档、MCP、skills、Better Auth、Drizzle、SQLite、Tailwind CSS 和 shadcn/ui 创建 AI 代理应用。
 updated: 2026-05-21
 category: Packs
 tags:
@@ -17,7 +17,7 @@ keywords:
   - mcp app starter
 ---
 
-当你希望应用和代理 workflow 一起开始时，请使用 AI Agent App pack。它会准备一个 Next.js 项目，并加入面向 AI CLI 的文档和本地代理 tooling。
+当你希望应用和代理工作流一起起步时，请使用 AI Agent App pack。它会准备一个 Next.js 项目，并加入面向 AI CLI 的文档和本地代理工具。
 
 <StarterPackCta id="ai-agent-app" />
 
@@ -42,20 +42,20 @@ bun create better-fullstack@latest my-ai-agent-app \
 ## Pack 包含什么
 
 - Next.js 用于产品界面。
-- SQLite 和 Drizzle 用于 local-first persistence。
-- Better Auth 用于账户和 sessions。
-- AI CLI setup、MCP 支持、skills，以及生成的代理 docs。
-- Biome 和 Ruler，让代理指令和代码质量规则与 repo 放在一起。
+- SQLite 和 Drizzle 用于本地优先的持久化。
+- Better Auth 用于账户和会话。
+- AI CLI 设置、MCP 支持、skills，以及生成的代理文档。
+- Biome 和 Ruler，让代理指令和代码质量规则与仓库放在一起。
 
 ## 首先要自定义的内容
 
-1. 定义面向用户的代理任务：research、coding、support、automation 或 analysis。
+1. 定义面向用户的代理任务：研究、编码、支持、自动化或分析。
 2. 加入代理允许读取和写入的应用数据模型。
 3. 在连接外部服务之前，收紧 MCP/tool 指令。
-4. 当协作或生产 hosting 需要时，从 SQLite 迁移到托管数据库。
+4. 当协作或生产托管需要时，从 SQLite 迁移到托管数据库。
 
 ## 什么时候适合这个 pack
 
-选择它来构建 AI-assisted developer tools、内部自动化、代理 dashboards、workflow copilots，或那些应用结构和代理指令需要一起演进的实验。
+选择它来构建 AI 辅助开发工具、内部自动化、代理仪表盘、工作流助手，或那些应用结构和代理指令需要一起演进的实验。
 
-如需 stack 层面的 walkthrough，请阅读 [Next.js AI CLI 代理工作台](/guides/ai/nextjs-ai-cli-agent-workbench/)。
+如需技术栈层面的 walkthrough，请阅读 [Next.js AI CLI 代理工作台](/guides/ai/nextjs-ai-cli-agent-workbench/)。

@@ -3,7 +3,7 @@ title: Comando Create
 description: Genera un proyecto Better Fullstack nuevo con prompts, defaults o flags explicitos.
 ---
 
-El comando `create` escribe un proyecto nuevo desde una configuracion de stack tipada. Usalo de forma interactiva para explorar, o pasa flags cuando necesites la misma forma de proyecto cada vez.
+El comando `create` escribe un proyecto nuevo desde una configuración de stack tipada. Úsalo de forma interactiva para explorar, o pasa flags cuando necesites la misma forma de proyecto cada vez.
 
 <PMTabs
   npm="npm create better-fullstack@latest [project-name] -- [flags]"
@@ -12,11 +12,11 @@ El comando `create` escribe un proyecto nuevo desde una configuracion de stack t
   yarn="yarn create better-fullstack@latest [project-name] [flags]"
 />
 
-Con npm, los flags de Better Fullstack van despues de `--`. Los comandos npm generados pueden usar `npx create-better-fullstack@latest`; eso ejecuta el mismo entrypoint del paquete en forma no interactiva.
+Con npm, los flags de Better Fullstack van después de `--`. Los comandos npm generados pueden usar `npx create-better-fullstack@latest`; eso ejecuta el mismo entrypoint del paquete en forma no interactiva.
 
 ## Modos del comando
 
-| Modo | Forma del comando | Usalo cuando |
+| Modo | Forma del comando | Úsalo cuando |
 | --- | --- | --- |
 | Wizard | `[launcher] my-app` | Quieres prompts y defaults. |
 | Defaults | `[launcher] my-app [flags] --yes` | Quieres el stack por defecto sin prompts. |
@@ -25,11 +25,11 @@ Con npm, los flags de Better Fullstack van despues de `--`. Los comandos npm gen
 
 ## Comportamiento de prompts
 
-- Los flags explicitos saltan solo las categorias que cubren.
+- Los flags explicitos saltan solo las categorías que cubren.
 - `--yes` acepta defaults y entra en conflicto con flags centrales del stack como `--frontend`, `--backend`, `--database`, `--orm`, `--auth` y `--api`.
-- Usa `none` para desactivar categorias opcionales, incluido `--ai-docs none`.
+- Usa `none` para desactivar categorías opcionales, incluido `--ai-docs none`.
 - Usa `--no-install` y `--no-git` cuando quieras inspeccionar archivos generados antes de efectos secundarios.
-- `--verify` ejecuta checks generados despues del scaffold sin iniciar dev servers.
+- `--verify` ejecuta checks generados después del scaffold sin iniciar dev servers.
 
 ## Flags comunes
 
@@ -47,9 +47,9 @@ Con npm, los flags de Better Fullstack van despues de `--`. Los comandos npm gen
 | `--server-deploy` | `cloudflare` `fly` `railway` `render` `docker` `sst` `vercel` `none`. |
 | `--directory-conflict` | Estrategia para un directorio destino existente. |
 | `--dry-run` | Previsualiza archivos generados sin escribirlos. |
-| `--verify` | Ejecuta checks generados despues del scaffold cuando esta soportado. |
+| `--verify` | Ejecuta checks generados después del scaffold cuando está soportado. |
 | `--yes` | Acepta defaults. Incompatible con flags centrales del stack. |
-| `--yolo` | Salta confirmaciones de seguridad donde esta soportado. |
+| `--yolo` | Salta confirmaciones de seguridad donde está soportado. |
 | `--install` / `--no-install` | Instala o salta la instalacion de dependencias. |
 | `--git` / `--no-git` | Inicializa o salta Git. |
 | `--disable-analytics` | Desactiva analytics anonimos de la CLI. |
@@ -67,7 +67,7 @@ Usalos con `--ecosystem typescript`.
 | `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none`. |
 | `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none`. |
 | `--db-setup` | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none`. |
-| `--manual-db` | Salta prompts de setup de base de datos especificos de provider cuando aplica. |
+| `--manual-db` | Salta prompts de setup de base de datos específicos de provider cuando aplica. |
 | `--auth` | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none`. |
 | `--api` | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none`. |
 | `--astro-integration` | `react` `vue` `svelte` `solid` `none`. |
@@ -252,7 +252,7 @@ npm create better-fullstack@latest my-mixed-app -- \
 
 - La CLI valida compatibilidad de stack antes de generar.
 - TypeScript `backend self` es para frontends fullstack y se combina con `runtime none`.
-- tRPC esta orientado a React.
+- tRPC está orientado a React.
 - El soporte de Workers runtime depende de la combinacion frontend/backend.
 - UI libraries, targets de deployment, providers y addons dependen del stack.
 - Para una comprobacion visual, usa la [Compatibility Matrix](/docs/reference/compatibility/) o el [Stack Builder](https://better-fullstack.dev/new).
