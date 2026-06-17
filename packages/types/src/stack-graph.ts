@@ -336,6 +336,7 @@ const FRONTEND_DATA_FETCHING_ADDONS = new Set([
 const FRONTEND_TESTING_ADDONS = new Set(["msw", "storybook"]);
 const WORKSPACE_TOOLING_ADDONS = new Set([
   "turborepo",
+  "nx",
   "docker-compose",
   "ruler",
   "mcp",

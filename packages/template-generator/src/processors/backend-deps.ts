@@ -63,6 +63,12 @@ export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig
     else if (backend === "elysia") deps.push("@elysiajs/trpc");
   } else if (api === "orpc") {
     deps.push("@orpc/server", "@orpc/openapi", "@orpc/zod");
+  } else if (api === "openapi") {
+    if (backend === "hono") deps.push("@hono/zod-openapi", "@scalar/hono-api-reference");
+    else if (backend === "express") deps.push("@asteasolutions/zod-to-openapi", "@scalar/express-api-reference");
+    else if (backend === "fastify")
+      deps.push("@fastify/swagger", "fastify-type-provider-zod", "@scalar/fastify-api-reference");
+    else if (backend === "elysia") deps.push("@elysiajs/openapi");
   }
 
   if (isBetterAuth(auth)) deps.push("better-auth");

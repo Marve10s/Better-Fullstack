@@ -1,6 +1,16 @@
 import { env } from "@{{projectName}}/env/server";
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
+{{#if (eq api "openapi")}}
+import swagger from "@fastify/swagger";
+import { apiReference } from "@scalar/fastify-api-reference";
+import {
+	jsonSchemaTransform,
+	serializerCompiler,
+	validatorCompiler,
+} from "fastify-type-provider-zod";
+import { createOpenApiDocument, HealthResponseSchema } from "@{{projectName}}/api";
+{{/if}}
 
 {{#if (eq api "trpc")}}
 import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from "@trpc/server/adapters/fastify";
@@ -28,6 +38,20 @@ import { devToolsMiddleware } from "@ai-sdk/devtools";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
+{{#if (and (eq api "openapi") (isBetterAuth auth))}}
+function nodeHeadersToHeaders(headers: Record<string, string | string[] | undefined>) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
+{{/if}}
 const baseCorsConfig = {
 	origin: env.CORS_ORIGIN,
 	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -68,6 +92,23 @@ const fastify = Fastify({
 {{else}}
 const fastify = Fastify({
 	logger: true,
+});
+{{/if}}
+
+{{#if (eq api "openapi")}}
+fastify.setValidatorCompiler(validatorCompiler);
+fastify.setSerializerCompiler(serializerCompiler);
+await fastify.register(swagger, {
+	openapi: createOpenApiDocument(),
+	transform: jsonSchemaTransform,
+});
+await fastify.register(apiReference, {
+	routePrefix: "/docs",
+	configuration: {
+		spec: {
+			url: "/openapi.json",
+		},
+	},
 });
 {{/if}}
 
@@ -146,6 +187,42 @@ fastify.register(fastifyTRPCPlugin, {
 		},
 	} satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
 });
+{{/if}}
+
+{{#if (eq api "openapi")}}
+fastify.get(
+	"/health",
+	{
+		schema: {
+			tags: ["System"],
+			response: {
+				200: HealthResponseSchema,
+			},
+		},
+	},
+	async () => {
+		return { status: "ok" as const };
+	}
+);
+
+{{#if (isBetterAuth auth)}}
+fastify.get("/private", async (request, reply) => {
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(request.headers),
+	});
+	if (!session) {
+		reply.status(401).send({ message: "Authentication required" });
+		return;
+	}
+
+	return {
+		message: "This is private",
+		user: session.user,
+	};
+});
+
+{{/if}}
+fastify.get("/openapi.json", async () => createOpenApiDocument());
 {{/if}}
 
 {{#if (includes examples "ai")}}

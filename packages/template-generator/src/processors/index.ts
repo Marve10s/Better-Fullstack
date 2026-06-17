@@ -39,6 +39,7 @@ import { processRuntimeDeps } from "./runtime-deps";
 import { processSearchDeps } from "./search-deps";
 import { processStateManagementDeps } from "./state-management-deps";
 import { processTestingDeps } from "./testing-deps";
+import { processNxConfig } from "./nx-generator";
 import { processTurboConfig } from "./turbo-generator";
 import { processValidationDeps } from "./validation-deps";
 import { processWorkspaceDeps } from "./workspace-deps";
@@ -78,6 +79,7 @@ export function processDependencies(vfs: VirtualFileSystem, config: ProjectConfi
   processI18nDeps(vfs, config);
   processSearchDeps(vfs, config);
   processFileStorageDeps(vfs, config);
+  processNxConfig(vfs, config);
   processTurboConfig(vfs, config);
 }
 
@@ -116,6 +118,7 @@ export {
   processStateManagementDeps,
   processTestingDeps,
   processValidationDeps,
+  processNxConfig,
   processTurboConfig,
   processWorkspaceDeps,
   processAuthPlugins,

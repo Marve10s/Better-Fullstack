@@ -676,6 +676,7 @@ const DOCUMENTATION_VALUES = ["starlight", "fumadocs"] as const satisfies readon
 
 const APP_PLATFORM_VALUES = [
   "turborepo",
+  "nx",
   "pwa",
   "tauri",
   "wxt",
@@ -856,7 +857,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
-  api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga" },
+  api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga", openapi: "OpenAPI" },
   webFrontend: {
     next: "Next.js",
     vinext: "Vinext",

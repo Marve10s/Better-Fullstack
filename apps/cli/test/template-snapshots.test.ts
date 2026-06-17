@@ -86,6 +86,18 @@ const SNAPSHOT_CONFIGS: Array<{
       auth: "none",
     },
   },
+  {
+    name: "hono-openapi",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "openapi",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+    },
+  },
 
   // === AUTH VARIATIONS ===
   {
@@ -182,6 +194,18 @@ const SNAPSHOT_CONFIGS: Array<{
       orm: "drizzle",
       auth: "none",
       ai: "ai-cli",
+    },
+  },
+  {
+    name: "nx-root-tooling",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["nx"],
     },
   },
 

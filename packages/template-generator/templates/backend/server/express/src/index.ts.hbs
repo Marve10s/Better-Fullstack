@@ -13,8 +13,12 @@ import { onError } from "@orpc/server";
 import { appRouter } from "@{{projectName}}/api/routers/index";
 import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
+{{#if (eq api "openapi")}}
+import { createOpenApiDocument } from "@{{projectName}}/api";
+import { apiReference } from "@scalar/express-api-reference";
+{{/if}}
 import cors from "cors";
-import express from "express";
+import express{{#if (and (eq api "openapi") (isBetterAuth auth))}}, { type Request }{{/if}} from "express";
 {{#if (includes examples "ai")}}
 import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
@@ -91,6 +95,46 @@ app.use(async (req, res, next) => {
 {{/if}}
 
 app.use(express.json());
+{{#if (eq api "openapi")}}
+app.get("/health", (_req, res) => {
+	res.status(200).json({ status: "ok" });
+});
+
+{{#if (isBetterAuth auth)}}
+function nodeHeadersToHeaders(headers: Request["headers"]) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
+app.get("/private", async (req, res) => {
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(req.headers),
+	});
+	if (!session) {
+		res.status(401).json({ message: "Authentication required" });
+		return;
+	}
+
+	res.status(200).json({
+		message: "This is private",
+		user: session.user,
+	});
+});
+
+{{/if}}
+app.get("/openapi.json", (_req, res) => {
+	res.status(200).json(createOpenApiDocument());
+});
+app.use("/docs", apiReference({ spec: { url: "/openapi.json" } }));
+
+{{/if}}
 
 {{#if (includes examples "ai")}}
 app.post("/ai", async (req, res) => {
