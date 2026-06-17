@@ -19,10 +19,33 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.0.3",
+    publishedAt: "2026-06-17T00:00:00Z",
+    displayDate: "June 17, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.0.3`,
+    title: "OpenAPI clients and Nx workspace tooling",
+    summary:
+      "This release adds OpenAPI API generation and Nx root tooling across the CLI, web builder, template generator, snapshots, and release checks. It also fixes the Vinext OpenAPI health check env key and makes Nx database scripts use explicit targets so db:* scripts work reliably.",
+    highlights: [
+      "Added OpenAPI as a first-class API option across CLI prompts, web builder state, compatibility metadata, generated templates, preview wiring, and snapshot coverage.",
+      "Added Nx workspace tooling as an addon/root-tooling path with generated workspace scripts, CLI/web parity, and matrix coverage.",
+      "Hardened Nx database scripts by emitting explicit targets for db:* commands, preserving package-script targets that contain colons.",
+      "Fixed Vinext OpenAPI clients to read env.VITE_SERVER_URL for health checks instead of the Next-only NEXT_PUBLIC_SERVER_URL.",
+      "Expanded release coverage with OpenAPI and Nx snapshots, package config regression tests, CLI addon tests, and strict smoke checks.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract colorful gradient artwork",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v2.0.2",
     publishedAt: "2026-06-12T00:00:00Z",
     displayDate: "June 12, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.0.2`,
     title: "Agent benchmark, .NET ecosystem, and a 42% lighter install",
     summary:
