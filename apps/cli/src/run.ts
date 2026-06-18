@@ -323,6 +323,32 @@ export const router = os.router({
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");
     }),
+  doctor: os
+    .meta({
+      description:
+        "Diagnose a scaffolded Better Fullstack project: verify its bts.jsonc, installed dependencies, required env vars, and run ecosystem build/type checks",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .optional()
+          .describe("Project directory to diagnose (defaults to current directory)"),
+        z.object({
+          skipChecks: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Skip the ecosystem build/type checks (config + deps + env only)"),
+          json: z.boolean().optional().default(false).describe("Output the diagnosis as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [projectDir, options] = input;
+      const { doctorCommand } = await import("./commands/doctor.js");
+      await doctorCommand({ projectDir, ...options });
+    }),
 });
 
 const caller = createRouterClient(router, { context: {} });
@@ -415,4 +441,14 @@ export async function telemetry(
   options?: { json?: boolean },
 ) {
   return caller.telemetry([action, { json: options?.json ?? false }]);
+}
+
+export async function doctor(
+  projectDir?: string,
+  options?: { skipChecks?: boolean; json?: boolean },
+) {
+  return caller.doctor([
+    projectDir,
+    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+  ]);
 }
