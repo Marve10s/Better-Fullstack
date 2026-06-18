@@ -4,6 +4,7 @@ import {
   type AddInput,
   AddonsSchema,
   AISchema,
+  AiDocsSchema,
   AnalyticsSchema,
   AnimationSchema,
   APISchema,
@@ -130,6 +131,7 @@ import {
   TestingSchema,
   UILibrarySchema,
   ValidationSchema,
+  VersionChannelSchema,
   WebDeploySchema,
   analyzeStackCompatibility,
   CATEGORY_ORDER,
@@ -625,8 +627,6 @@ function buildProjectConfig(
     mobileDeepLinking:
       (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
       (hasMobileProject ? "expo-linking" : "none"),
-    astroIntegration: "none",
-    versionChannel: "stable",
     shadcnBase: "radix",
     shadcnStyle: "nova",
     shadcnIconLibrary: "lucide",
@@ -634,7 +634,7 @@ function buildProjectConfig(
     shadcnBaseColor: "neutral",
     shadcnFont: "inter",
     shadcnRadius: "default",
-    aiDocs: ["claude-md"],
+    aiDocs: (input.aiDocs as ProjectConfig["aiDocs"]) ?? ["claude-md", "agents-md"],
     git: !!overrides,
     install: false,
   };
@@ -1076,6 +1076,18 @@ export async function startMcpServer() {
     ...mobileInputSchema,
     fileUpload: FileUploadSchema.optional().describe("File upload"),
     ...deploymentInputSchema,
+    effect: EffectSchema.optional().describe("Effect ecosystem (effect, effect-full)"),
+    analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics provider"),
+    astroIntegration: AstroIntegrationSchema.optional().describe(
+      "Astro UI framework integration (react, vue, svelte, solid)",
+    ),
+    aiDocs: z
+      .array(AiDocsSchema)
+      .optional()
+      .describe("AI documentation files (claude-md, agents-md, cursorrules)"),
+    versionChannel: VersionChannelSchema.optional().describe(
+      "Dependency version channel (stable, latest, beta)",
+    ),
     ...crossEcosystemInputSchema,
   };
 
@@ -1112,7 +1124,7 @@ export async function startMcpServer() {
   registerTool(
     "bfs_create_project",
     "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
-    mcpInputSchema({ ...planCreateSchema, projectName: z.string().describe("Project name (kebab-case). Will be the directory name.") }),
+    mcpInputSchema({ ...planCreateSchema, projectName: z.string().describe("Project name (kebab-case). Will be the directory name."), targetDir: z.string().optional().describe("Absolute path to the parent directory in which to create the project folder (default: current working directory).") }),
     async (input: Record<string, unknown> & { projectName: string }) => {
       try {
         const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import("@better-fullstack/template-generator");
@@ -1120,7 +1132,10 @@ export async function startMcpServer() {
         const path = await import("node:path");
 
         const projectName = sanitizePath(input.projectName);
-        const projectDir = path.resolve(process.cwd(), projectName);
+        const targetDir = input.targetDir
+          ? sanitizePath(input.targetDir as string)
+          : undefined;
+        const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
 
         const fs = await import("node:fs/promises");
