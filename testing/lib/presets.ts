@@ -649,6 +649,26 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       elixirDeploy: "mix-release",
     },
   },
+  "native-uniwind-trpc": {
+    ecosystem: "react-native",
+    overrides: {
+      frontend: ["native-uniwind"],
+      backend: "hono",
+      runtime: "bun",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+      api: "trpc",
+      packageManager: "bun",
+      mobileNavigation: "expo-router",
+      mobileUI: "none",
+      mobileStorage: "none",
+      mobileTesting: "none",
+      mobilePush: "none",
+      mobileOTA: "none",
+      mobileDeepLinking: "none",
+    },
+  },
 };
 
 const PRESET_GROUPS = {
@@ -663,6 +683,7 @@ const PRESET_GROUPS = {
     "go-gin-gorm",
     "java-spring-maven",
     "elixir-plain-worker",
+    "native-uniwind-trpc",
     "frontend-only-react-vite",
   ],
   "pr-broad": [
