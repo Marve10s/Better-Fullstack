@@ -486,7 +486,37 @@ await writeFile(
   }),
 );
 
-const hasTemplateBug = results.some((r) =>
-  r.steps.some((s) => !s.success && !s.skipped && s.classification === "template"),
+// CI gating: fail on any real (non-skipped, non-advisory) step failure.
+// Previously only `template`-classified failures gated CI, so genuine
+// compile/build/typecheck errors whose output didn't match a curated
+// TEMPLATE_PATTERN were classified `unknown` and silently passed. Transient
+// `environment` failures (network/registry/timeouts) stay non-gating to avoid
+// flakiness, but are surfaced so real hangs/regressions are not invisible.
+const realFailures = results.flatMap((r) =>
+  r.steps
+    .filter((s) => !s.success && !s.skipped && !s.advisory)
+    .map((s) => ({
+      combo: r.comboName,
+      step: s.step,
+      classification: s.classification ?? "unknown",
+    })),
 );
-if (hasTemplateBug) process.exitCode = 1;
+const environmentFailures = realFailures.filter((f) => f.classification === "environment");
+const gatingFailures = realFailures.filter((f) => f.classification !== "environment");
+
+if (environmentFailures.length > 0) {
+  console.warn(
+    `\n⚠ ${environmentFailures.length} environment-classified failure(s) did not gate CI (possible flakiness):`,
+  );
+  for (const f of environmentFailures) {
+    console.warn(`  - ${f.combo}: ${f.step}`);
+  }
+}
+
+if (gatingFailures.length > 0) {
+  console.error(`\n✗ ${gatingFailures.length} step failure(s) gating CI:`);
+  for (const f of gatingFailures) {
+    console.error(`  - ${f.combo}: ${f.step} [${f.classification}]`);
+  }
+  process.exitCode = 1;
+}
