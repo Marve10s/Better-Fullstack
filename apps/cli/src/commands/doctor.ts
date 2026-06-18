@@ -233,7 +233,7 @@ async function runBuildChecks(config: ProjectConfig, json: boolean): Promise<Doc
         checks.push({
           label: "check-types",
           status: "fail",
-          detail: `\`${pm} run check-types\` exited with code ${result.exitCode}`,
+          detail: `\`${pm} run check-types\` exited with code ${result.exitCode ?? `signal ${result.signal}`}`,
         });
       }
     }
@@ -281,8 +281,9 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
           2,
         ),
       );
-      process.exitCode = 1;
-      return;
+      // Exit synchronously: trpc-cli calls process.exit(0) after the handler
+      // resolves, which would override process.exitCode and break doctor as a gate.
+      process.exit(1);
     }
     handleError(`No Better Fullstack project found in ${projectDir}. Make sure bts.jsonc exists.`);
   }
@@ -350,7 +351,10 @@ export async function doctorCommand(input: DoctorCommandInput): Promise<void> {
     }
   }
 
+  // Exit synchronously on failure: trpc-cli calls process.exit(0) after the
+  // handler resolves, which would override process.exitCode and let CI pipelines
+  // (e.g. `bfs doctor && deploy`) proceed despite a failed diagnosis.
   if (counts.fail > 0) {
-    process.exitCode = 1;
+    process.exit(1);
   }
 }
