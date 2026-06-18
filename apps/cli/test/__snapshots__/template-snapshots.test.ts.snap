@@ -1577,7 +1577,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*"
@@ -1725,6 +1727,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -1892,6 +1895,7 @@ export default nextConfig;
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start"
@@ -2200,7 +2204,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-next-self-fullstack/config": "workspace:*"
@@ -2308,7 +2314,9 @@ export type AppRouter = typeof appRouter;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-next-self-fullstack/config": "workspace:*"
@@ -2454,6 +2462,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
@@ -2885,7 +2894,9 @@ export const orpc = createTanstackQueryUtils(client)
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-astro-react-integration/config": "workspace:*"
@@ -3031,6 +3042,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -3408,7 +3420,9 @@ export default defineNuxtConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*"
@@ -3554,6 +3568,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -4179,7 +4194,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
@@ -4306,6 +4323,7 @@ export type AppRouter = typeof appRouter;
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
@@ -4966,7 +4984,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*"
@@ -5113,6 +5133,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -5796,6 +5817,7 @@ export default defineConfig({
   },
   "type": "module",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "openapi:verify": "bun src/verify-openapi.ts"
   },
   "devDependencies": {
@@ -5989,7 +6011,9 @@ export const openApiDocument = createOpenApiDocument();
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-hono-openapi/config": "workspace:*"
@@ -6141,6 +6165,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -6915,7 +6940,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*"
@@ -7023,7 +7050,9 @@ export type AppRouter = typeof appRouter;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*"
@@ -7175,6 +7204,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
@@ -7964,6 +7994,7 @@ export default nextConfig;
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start"
@@ -8245,7 +8276,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-self-next-clerk/config": "workspace:*"
@@ -8393,6 +8426,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -8939,7 +8973,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*"
@@ -9085,6 +9121,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -9702,7 +9739,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*"
@@ -9828,7 +9867,9 @@ export type AppRouter = typeof appRouter;
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*"
@@ -10431,7 +10472,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*"
@@ -10558,6 +10601,7 @@ export type AppRouter = typeof appRouter;
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
@@ -11185,7 +11229,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*"
@@ -11333,6 +11379,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -11969,7 +12016,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*"
@@ -12117,6 +12166,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -12748,7 +12798,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-nx-root-tooling/config": "workspace:*"
@@ -12896,6 +12948,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -13681,6 +13734,7 @@ fontWeight: "bold",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
@@ -13955,7 +14009,9 @@ export default app;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-native-react-native/config": "workspace:*"
@@ -14103,6 +14159,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -14384,6 +14441,7 @@ registerRootComponent(App);
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
@@ -14706,7 +14764,9 @@ export default app;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-native-mobile-integrations/config": "workspace:*"

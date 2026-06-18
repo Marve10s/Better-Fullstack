@@ -4,6 +4,7 @@
   "private": true,
   "main": "{{#if (eq mobileNavigation 'expo-router')}}expo-router/entry{{else}}index.js{{/if}}",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "start": "expo start",
     "dev": "expo start --clear",
     "build": "expo export",

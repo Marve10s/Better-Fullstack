@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "{{#if (eq mobileNavigation 'expo-router')}}expo-router/entry{{else}}index.js{{/if}}",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
