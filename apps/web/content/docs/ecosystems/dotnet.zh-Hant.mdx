@@ -1,0 +1,65 @@
+---
+title: .NET
+description: ASP.NET Core 鷹架，包含 EF Core 或 Dapper、Identity、Minimal APIs 或 Hot Chocolate、SignalR、後台任務、測試和部署檔案。
+---
+
+.NET 專案會產生遵循標準 `dotnet` 約定的 ASP.NET Core 應用程式。為 Web 框架、資料存取、auth、API 風格、即時能力、後台任務、可觀測性、快取、測試和部署檔案選擇 .NET 選項。
+
+## 前要求
+
+- .NET SDK 10 或更新版本。
+- 使用帶有 `postgres` 資料庫的 `ef-core` 時需要 PostgreSQL；SQLite 不需要伺服器。
+- 使用 `docker` 部署目標或 `testcontainers-dotnet` 時需要 Docker。
+- 如果要初始化倉庫，需要 Git。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-dotnet-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue hangfire \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-caching redis \
+  --dotnet-deploy docker \
+  --database postgres \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## .NET 分類
+
+| 分類 | 值 |
+| --- | --- |
+| Web 框架 | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |
+| 資料存取 | `ef-core` `dapper` `linq2db` `none` |
+| Auth | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |
+| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |
+| 測試 | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |
+| 後台任務 | `hangfire` `quartz-net` `hosted-services` `none` |
+| 即時能力 | `signalr` `none` |
+| 可觀測性 | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |
+| 驗證 | `fluentvalidation` `data-annotations` `none` |
+| 快取 | `redis` `memory-cache` `none` |
+| 部署 | `docker` `azure` `aws` `none` |
+
+## 相容性說明
+
+- .NET 選項只在 `--ecosystem dotnet` 下生效。
+- ASP.NET Core 是獨立的 .NET Web 框架；TypeScript 前端和後端選項會被忽略。
+- `--dotnet-testing` 和 `--dotnet-observability` 接受多個值。
+- `ef-core` 從 `--database` 選擇 provider：`postgres` 使用 Npgsql，其他任何值都會回退到 SQLite。
+- `aspnet-identity` 只有與 `ef-core` 搭配時才註冊 Identity stores；沒有它時，腳手架會註冊普通的認證和授權服務。
+- 設定 `--ecosystem dotnet` 時的非互動預設值：`aspnet-minimal`、`ef-core`、`aspnet-identity`、`minimal-api`、`xunit`、`signalr`、`serilog` 和 `docker`。
+
+## 生成行為
+
+- 項目包含 `.csproj`、`Program.cs`、`appsettings.json`、`.http` 請求檔、測試項目、`.gitignore` 和 README 中的 setup notes。
+- EF Core 選擇會將 `DbContext` 連接到 Npgsql 或 SQLite provider，並加入用於遷移的 design-time 套件。
+- 選用選擇會新增可運作的 ASP.NET Core 程式碼，用於 Identity、Hot Chocolate GraphQL、gRPC 服務、SignalR hubs、Hangfire 或 Quartz.NET 工作、Serilog/NLog/OpenTelemetry pipelines、Redis 快取和多階段 Dockerfile。

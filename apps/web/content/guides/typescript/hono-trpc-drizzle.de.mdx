@@ -1,0 +1,140 @@
+---
+title: Hono mit tRPC und Drizzle
+description: Erstellen Sie eine TypeScript Fullstack-App mit Hono, tRPC, Drizzle, PostgreSQL, TanStack Router, Tailwind CSS und Better Auth.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+Verwenden Sie diesen Stack, wenn Sie einen schnellen TypeScript API-Server und ein separates React-Frontend mit typisierten Client-Server-Aufrufen wünschen.
+
+```npm
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Was dadurch entsteht
+
+- Ein TanStack Router-Frontend.
+- Ein Hono-Backend, das auf Bun ausgeführt wird.
+- PostgreSQL und Drizzle.
+- Better Auth.
+- tRPC zwischen der Web-App und API.
+- Eine Monorepo-Struktur für Frontend- und Serverpakete.
+
+## Erzeugte Form
+
+Dieser Befehl erstellt eine geteilte App-Form: Das Frontend und das Backend sind separate Pakete, aber sie werden zusammen generiert und teilen sich die gleiche Stack-Konfiguration. Dadurch wird die API-Grenze explizit, ohne dass die TypeScript-Inferenz aufgegeben wird.
+
+Repräsentative Form:
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Die genauen Arbeitsbereichsnamen können unterschiedlich sein, aber der architektonische Punkt ist derselbe: TanStack Router besitzt die Browser-App, Hono besitzt HTTP, Drizzle besitzt den Datenbankzugriff und tRPC ist der typisierte Vertrag zwischen ihnen.
+
+## Beispielroute Hono
+
+Hono ist nützlich, wenn die Anforderungsverarbeitung explizit und unkompliziert bleiben soll:
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => {
+  return c.json({ ok: true });
+});
+
+export default app;
+```
+
+Behalten Sie Middleware, Authentifizierungskontext und Anforderungsprotokollierung auf Framework-Ebene im Serverpaket bei. Vermeiden Sie, dass Hono-Anforderungsobjekte in die gemeinsame Geschäftslogik gelangen.
+
+## Beispiel für die Prozedurform tRPC
+
+tRPC-Prozeduren sollten kleine, validierte Einstiegspunkte für Servervorgänge sein:
+
+```ts
+import { z } from "zod";
+
+const createTaskInput = z.object({
+  title: z.string().min(1),
+});
+
+export const taskProcedures = {
+  create: async (rawInput: unknown, userId: string) => {
+    const input = createTaskInput.parse(rawInput);
+
+    return {
+      id: crypto.randomUUID(),
+      title: input.title,
+      ownerId: userId,
+    };
+  },
+};
+```
+
+Platzieren Sie Validierungsschemata bei größeren Apps nur dann in einem gemeinsam genutzten Modul, wenn sowohl Client als auch Server sie benötigen. Datenbankschreibvorgänge sollten nur auf dem Server erfolgen.
+
+## Wann man es wählt
+
+Wählen Sie Hono, wenn das Backend klein, schnell und explizit bleiben soll. Dieses Setup eignet sich gut für API-First-Produkte, Dashboards, interne Tools und Dienste, die später möglicherweise die Front-End- und Backend-Bereitstellung aufteilen.
+
+## Kompatibilitätshinweise
+
+- `--frontend tanstack-router` plus `--backend hono` ergibt eine separate React-Web-App und einen API-Server.
+- `--runtime bun` wählt in diesem Handbuch Bun für den Dienst Hono aus.
+- `--api trpc` ist hier geeignet, da das Frontend React-basiert ist. Für die Leitfäden SvelteKit, Nuxt oder SolidStart verwendet Better Fullstack stattdessen oRPC.
+- PostgreSQL und Drizzle sind ein produktionsorientiertes Paar für diese Split-Service-Form.
+
+## Bereitstellungshinweise
+
+Planen Sie zwei bereitstellbare Ziele ein, wenn Ihr Host das Frontend und den Hono-Server getrennt behandelt. Konfigurieren Sie CORS, Authentifizierungs-Cookie-Domänen und öffentliche API-URLs bewusst; Split-Services machen diese Details sichtbar.
+
+Der Server API benötigt die Verbindungszeichenfolge PostgreSQL und Authentifizierungsgeheimnisse. Die Web-App benötigt den Ursprung API und alle öffentlichen App-URL-Werte. Halten Sie Geheimnisse aus öffentlichen Frontend-Build-Zeit-Variablen fern.
+
+## Fehlerbehebung
+
+- Wenn Browseranfragen fehlschlagen, bevor sie Hono erreichen, überprüfen Sie CORS und die konfigurierte Basis-URL API.
+- Wenn Authentifizierungscookies in allen Domänen fehlen, überprüfen Sie die Einstellungen für die gleiche Website, sichere Cookies und ob die Domänen web/API mit Ihrer beabsichtigten Bereitstellung übereinstimmen.
+- Wenn tRPC die Kompilierung aufruft, aber zur Laufzeit fehlschlägt, überprüfen Sie, ob der Adapter Hono tRPC im gleichen Pfad gemountet ist, der vom Client verwendet wird.
+- Wenn generierte Apps keine lokale Verbindung zu PostgreSQL herstellen können, stellen Sie sicher, dass die Datenbank ausgeführt wird und die Verbindungszeichenfolge mit der ausgewählten Datenbank übereinstimmt.
+
+## Kompromisse
+
+Wenn Sie möchten, dass ein einzelnes Framework die gesamte App besitzt, verwenden Sie [TanStack Start](/guides/typescript/create-tanstack-start-project/) oder [Next.js](/guides/typescript/nextjs-drizzle-better-auth/). Wenn Sie eine separate API-Grenze wünschen, ist Hono die sauberere Standardeinstellung.
+
+Im Vergleich zu einem Self-Backend-Fullstack-Framework verfügt dieser Stack über mehr bewegliche Teile. Der Vorteil ist eine sauberere Servicegrenze, einfachere API-fokussierte Tests und ein Backend, das später mehrere Clients bedienen kann.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Lesen Sie die [TypeScript Ökosystemdokumente](/docs/ecosystems/typescript/).
+- Überprüfen Sie die [CLI Erstellungsflags](/docs/cli/create/).

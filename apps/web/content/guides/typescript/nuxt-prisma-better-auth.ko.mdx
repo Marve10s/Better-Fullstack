@@ -1,0 +1,129 @@
+---
+title: Nuxt(Prisma 및 Better Auth 포함)
+description: PostgreSQL, Prisma, Better Auth, oRPC, Tailwind CSS 및 생성된 Better Fullstack 프로젝트 구조를 사용하여 Nuxt 풀 스택 앱을 만듭니다.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+관계형 데이터, 인증 및 입력된 API 계약이 포함된 Vue/Nuxt 풀스택 앱을 원할 때 이 스택을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## 이것이 만드는 것
+
+- 풀스택 모드의 Nuxt 앱.
+- PostgreSQL 및 Prisma.
+- Better Auth.
+- 유형이 지정된 API 계약의 경우 oRPC.
+- Tailwind CSS.
+- 재현 가능한 `bts.jsonc` 스택 구성.
+
+## 생성된 모양
+
+이 스택은 Nuxt의 전체 스택 모델 내에 애플리케이션을 유지합니다. Prisma은 데이터베이스 스키마와 마이그레이션을 소유하고, Better Auth은 인증 동작을 소유하며, oRPC은 React 프런트엔드를 가정하지 않고 형식화된 계약을 제공합니다.
+
+대표적인 형태:
+
+```txt
+my-nuxt-app/
+  bts.jsonc
+  app/
+  server/
+  prisma/
+    schema.prisma
+```
+
+이를 대표적인 레이아웃으로 취급합니다. 중요한 경계는 서버 전용 데이터베이스와 인증 코드가 Nuxt 서버 모듈 또는 API 핸들러에 유지되는 반면 Vue 구성 요소는 형식화된 서버 계약을 호출한다는 것입니다.
+
+## 예 Prisma 모델
+
+소규모 제품 모델은 다음과 같이 시작할 수 있습니다.
+
+```prisma
+model Workspace {
+  id        String   @id
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+```
+
+Better Auth의 필수 모델을 어댑터 문서와 일치시키고 애플리케이션별 테이블과 별도로 유지하세요. 제품 테이블은 로그인 데이터를 복제하는 대신 식별자로 인증 사용자를 참조해야 합니다.
+
+## 예시 oRPC 계약 형태
+
+oRPC을 사용하여 Nuxt 앱에 대한 검증된 서버 작업을 설명합니다.
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Vue 구성요소뿐만 아니라 서버 구현에도 인증 확인을 배치하세요. 클라이언트 측 가드는 UX를 개선하지만 데이터를 보호하지는 않습니다.
+
+## 호환성 참고사항
+
+Nuxt은 형식화된 계약에 대해 Better Fullstack의 oRPC을 사용합니다. tRPC은 React 기반 TypeScript 프런트엔드용으로 예약되어 있으므로 이 가이드에서는 의도적으로 `--api orpc`을 사용합니다.
+
+`--backend self`은 올바른 Nuxt 풀스택 선택입니다. 별도로 배포된 API 서버를 원하는 경우 해당 페어링을 지원하는 스택에서 Hono와 같은 백엔드 옵션을 사용하세요.
+
+## 그것을 선택하는 경우
+
+팀에서 Vue를 선호하고 서버 지원 라우팅을 원하며 별도의 프런트엔드와 API 서버가 아닌 풀스택 앱 형태가 필요한 경우 Nuxt을 선택하세요.
+
+## 배포 참고사항
+
+배포 환경에서 PostgreSQL 연결 문자열, Better Auth 비밀 및 공용 앱 URL을 설정합니다. 새 스키마에 의존하는 코드를 배포하기 전에 Prisma 마이그레이션을 실행하세요.
+
+서버리스 플랫폼의 경우 Prisma 클라이언트가 생성되는 방식과 데이터베이스 연결이 풀링되는 방식을 검토하세요. 관리형 PostgreSQL 공급자는 서버리스 런타임에 대해 가장 안전한 연결 문자열을 문서화하는 경우가 많습니다.
+
+## 문제 해결
+
+- Prisma 클라이언트 유형이 오래된 경우 `schema.prisma`을 변경한 후 클라이언트를 다시 생성하세요.
+- oRPC 호출이 프로덕션에서만 실패하는 경우 서버 경로 기본 URL과 배포 어댑터 동작을 확인하세요.
+- 인증이 루프를 리디렉션하는 경우 신뢰할 수 있는 원본, 쿠키 및 Better Auth에서 사용하는 앱 URL을 확인하세요.
+- 마이그레이션이 잘못된 데이터베이스를 가리키는 경우 로컬 명령과 배포된 런타임 모두에서 사용되는 환경 변수를 검사하세요.
+
+## 비교 참고 사항
+
+Vue 및 Nuxt 규칙이 주요 우선순위일 때 이 스택을 사용하십시오. React-first 스택의 경우 [Drizzle 및 Better Auth이 포함된 Next.js](/guides/typescript/nextjs-drizzle-better-auth/)를 선택하고, 별도의 Hono 백엔드가 필요한 경우 [Hono 및 Drizzle이 포함된 SvelteKit](/guides/typescript/sveltekit-hono-drizzle/)를 선택합니다.
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc)을 엽니다.
+- [Next.js, Drizzle 및 Better Auth](/guides/typescript/nextjs-drizzle-better-auth/)과 비교하세요.
+- [호환성 참조](/docs/reference/compatibility/)를 읽어보세요.

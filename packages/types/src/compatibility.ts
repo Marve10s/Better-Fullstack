@@ -1894,6 +1894,26 @@ export const getDisabledReason = (
     }
   }
 
+  if (category === "api" && optionId === "openapi") {
+    if (currentStack.backend === "self") {
+      return "OpenAPI server scaffolding currently requires a standalone TypeScript backend";
+    }
+    if (currentStack.nativeFrontend.length > 0) {
+      return "OpenAPI is currently available for web frontends, not React Native";
+    }
+    if (!["hono", "express", "fastify", "elysia"].includes(currentStack.backend)) {
+      return "OpenAPI currently supports Hono, Express, Fastify, and Elysia backends";
+    }
+  }
+
+  if (category === "appPlatforms" && optionId === "nx" && currentStack.appPlatforms.includes("turborepo")) {
+    return "Choose either Nx or Turborepo, not both";
+  }
+
+  if (category === "appPlatforms" && optionId === "turborepo" && currentStack.appPlatforms.includes("nx")) {
+    return "Choose either Turborepo or Nx, not both";
+  }
+
   // ============================================
   // ASTRO INTEGRATION CONSTRAINTS
   // ============================================
@@ -3124,6 +3144,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   husky: [],
   lefthook: [],
   turborepo: [],
+  nx: [],
   starlight: [],
   ultracite: [],
   ruler: [],
@@ -3237,7 +3258,14 @@ export function allowedApisForFrontends(
   const includesAngular = frontends.includes("angular");
   const includesRedwood = frontends.includes("redwood");
   const includesFresh = frontends.includes("fresh");
-  const base: API[] = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "none"];
+  const includesNative = frontends.some((frontend) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(frontend),
+  );
+  const base: API[] = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"];
+
+  if (includesNative) {
+    return ["trpc", "orpc", "ts-rest", "garph", "none"] as API[];
+  }
 
   if (includesQwik || includesAngular || includesRedwood || includesFresh) {
     return ["graphql-yoga", "none"] as API[];
@@ -3245,11 +3273,11 @@ export function allowedApisForFrontends(
 
   const includesSolidStartApi = frontends.includes("solid-start");
   if (includesNuxt || includesSvelte || includesSolid || includesSolidStartApi) {
-    return ["orpc", "graphql-yoga", "none"] as API[];
+    return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
   }
 
   if (includesAstro && astroIntegration && astroIntegration !== "react") {
-    return ["orpc", "graphql-yoga", "none"] as API[];
+    return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
   }
 
   return base;
@@ -3258,6 +3286,7 @@ export function allowedApisForFrontends(
 function getReactOnlyApiDisplayName(api: API) {
   if (api === "trpc") return "tRPC";
   if (api === "ts-rest") return "ts-rest";
+  if (api === "openapi") return "OpenAPI";
   return "garph";
 }
 

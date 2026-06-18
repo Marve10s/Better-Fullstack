@@ -1,0 +1,67 @@
+---
+title: SaaS アプリを作成する
+description: Better Fullstack を使用して、Next.js、Better Auth、Stripe、PostgreSQL、Drizzle、React Email、Tailwind CSS、shadcn/ui を使用して SaaS アプリを作成する方法を学びます。
+updated: 2026-05-21
+category: パック
+tags:
+  - saas
+  - nextjs
+  - stripe
+  - better-auth
+  - drizzle
+keywords:
+  - create saas app
+  - how to make saas app
+  - build saas app
+  - create sass app
+  - nextjs saas starter
+  - saas boilerplate
+---
+
+SaaS アプリの作成方法を探している場合は、SaaS パックから始めてください。最初の顧客がサインアップする前に、ほとんどのサブスクリプション製品に必要な要素 (アカウント、データベース テーブル、請求書、電子メール、UI、型指定されたアプリ構造) が提供されます。
+
+<StarterPackCta id="saas-app" />
+
+## SaaS スターターを生成する
+
+[Stack Builder の SaaS パック](/new?preset=nextjs-saas&view=command) を開くか、以下のコマンドを実行します。
+
+```bash
+bun create better-fullstack@latest my-saas-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --email react-email \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## パックの内容
+
+- Next.js を Web とサーバーの境界として使用します。
+- リレーショナル製品データの場合は、PostgreSQL と Drizzle。
+- Better Auth (サインイン、セッション、アカウント フロー用)。
+- サブスクリプション請求用の Stripe。
+- トランザクション電子メール テンプレート用の React Email。
+- 製品インターフェイスの Tailwind CSS および shadcn/ui。
+- React UI とサーバー コード間の型付き呼び出しの tRPC。
+
+## 最初にカスタマイズすること
+
+1. 生成された製品名、メタデータ、およびナビゲーションを置き換えます。
+2. Drizzle スキーマの隣にコア製品テーブルを追加します。
+3. Better Auth シークレットと信頼できるオリジンを構成します。
+4. Stripe 製品を作成し、アプリのプランにマッピングします。
+5. サインアップ、請求、チームへの招待のためのトランザクション電子メールを追加します。
+
+## これが適切なパックの場合
+
+このパックは、サブスクリプション製品、B2B ダッシュボード、有料開発者ツール、チーム ワークスペース、および認証と課金が最初の動作バージョンの一部である必要がある製品に使用します。
+
+スタックレベルのチュートリアルについては、[Next.js と Drizzle および Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) を参照してください。

@@ -1,0 +1,66 @@
+---
+title: Multi-Ecosystem
+description: 用跨生態系的前端、後端、資料庫和行動端部分組合一個 Better Fullstack 項目。
+---
+
+Multi-Ecosystem 模式將專案建模為相互連接的 stack parts，而不是一個扁平的生態系統選擇。當產品跨語言時使用它，例如 TypeScript 前端、Go API、共用 PostgreSQL 資料庫和 React Native 行動應用。
+
+可以在 [Stack Builder](https://better-fullstack.dev/new?mode=multi) 中打開，或向 CLI 傳入重複的 `--part` flags。
+
+## Stack parts
+
+每個 part 使用這種形狀：
+
+```txt
+role:ecosystem:tool
+owner.role:ecosystem:tool
+```
+
+頂層 roles 描述產生的應用或共享基礎設施。有 owner 的 roles 會把能力掛到父級 part 上。
+
+| 範例 | 意義 |
+| --- | --- |
+| `frontend:typescript:next` | 產生 TypeScript Next.js 前端。 |
+| `backend:go:gin` | 產生 Go Gin 後端。 |
+| `backend.orm:go:gorm` | 把 GORM 附加到選取的後端。 |
+| `backend.api:rust:tonic` | 把 Tonic gRPC 附加到 Rust 後端。 |
+| `database:universal:postgres` | 新增共享 PostgreSQL 資料庫 part。 |
+| `mobile:react-native:native-bare` | 產生 React Native 行動應用程式。 |
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## 真相來源
+
+Multi-ecosystem 專案會把 `stackParts` 寫入 `bts.jsonc`。這些 parts 是產生結構、歷史記錄和可重現命令的真相來源。 `backend`、`orm` 或 `frontend` 等舊欄位仍可能作為從圖派生的相容性 fallback 出現。
+
+產生的指令會把圖保留為重複的 `--part` flags，因此可以在不依賴隱藏 builder 狀態的情況下重建項目。
+
+## Builder 流程
+
+Stack Builder 的 Multi-Ecosystem 模式會依序走過：
+
+1. Frontend - TypeScript Web 前端。
+2. Backend - TypeScript、Rust、Python、Go、Java、Elixir 或 .NET 後端，以及 owner 的後端能力。
+3. Database - 共享的通用資料庫選擇。
+4. Mobile - React Native 應用選擇。
+5. Finalize - addons、AI docs、install、Git 和 version 設定。
+
+## 相容性
+
+- 目前圖模型每個 role 只支援一個被選取的 primary part。
+- 帶有 owner 的 capability parts 必須引用 owner，例如 `backend.orm:go:gorm`。
+- capability 的生態系通常需要與 owner 生態系相符。
+- 通用 database parts 可以跨生態系共享。
+- 有些工具會提供隱含 parts。例如，被選取的後端可能提供資料庫或路由假設，這些假設會出現在產生的 `stackParts` 中。
+- compatibility checker 會在產生前驗證圖 parts，並報告 owner、重複和不支援工具的問題。

@@ -1,0 +1,83 @@
+---
+title: AIAgents
+description: Comment les agents de codage AI doivent utiliser Better Fullstack de manière sûre et fiable.
+---
+
+Better Fullstack prend en charge trois flux de travail AI :
+
+- Générez des fichiers d'instructions locaux du projet avec `--ai-docs`.
+- Installez la compétence d'agent Better Fullstack afin que les agents de codage utilisent le CLI au lieu d'écrire manuellement les fichiers de démarrage.
+- Laissez un agent de codage AI utiliser le serveur Better Fullstack MCP pour la recherche de schéma, les vérifications de compatibilité, les essais à blanc et la création de projets.
+
+## Flux de travail préféré
+
+1. Choisissez l'écosystème cible : `typescript`, `react-native`, `rust`, `python`, `go`, `java` ou `elixir`.
+2. Utilisez la compétence d'agent Better Fullstack, le serveur MCP ou la référence explicite CLI.
+3. Validez la compatibilité avant l’échafaudage.
+4. Exécution à sec pour inspecter l’arborescence des fichiers.
+5. Échafaudage avec installation de dépendances désactivée lorsqu’un agent pilote le flux.
+6. Indiquez à l'utilisateur les commandes exactes d'installation, de test et d'exécution.
+
+## Documents AI générés
+
+Utilisez `--ai-docs` pour générer des fichiers de contexte locaux du projet pour les agents de codage :
+
+| Valeur | Fichier généré |
+| --- | --- |
+| `claude-md` | `CLAUDE.md` |
+| `agents-md` | `Agents.md` |
+| `cursorrules` | `.cursorrules` |
+| `none` | Aucun document AI |
+
+Plusieurs valeurs sont acceptées :
+
+```npm
+npm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md
+```
+
+Utilisez `--ai-docs none` pour désactiver ces fichiers.
+
+## Flux de travail CLI
+
+Pour les agents sans accès MCP, transmettez les indicateurs explicites et évitez les effets secondaires :
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai-docs agents-md \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="CLI rules for agents">
+`--yes` accepte les valeurs par défaut et est incompatible avec les indicateurs de la pile principale. Les indicateurs explicites ignorent uniquement les catégories qu'ils couvrent. Transmettez `none` pour les catégories facultatives que vous souhaitez désactiver.
+</Callout>
+
+## Flux de travail des compétences d'agent
+
+La compétence d'agent Better Fullstack réside dans ce référentiel et apprend aux agents pris en charge à utiliser CLI avec le flux de travail rapide évalué : mapper la pile, exécuter un essai à blanc, échafauder sans installation ni effets secondaires Git, puis signaler les commandes de suivi.
+
+Consultez le [guide de configuration des compétences d'agent](/docs/ai/skills/) pour les commandes d'installation Codex, Claude Code, Cursor, GitHub Copilot et Gemini CLI.
+
+## Options du fournisseur AI
+
+Les projets TypeScript peuvent sélectionner une option AI avec `--ai` : `vercel-ai`, `mastra`, `voltagent`, `langgraph`, `openai-agents`, `google-adk`, `modelfusion`, `langchain`, `llamaindex`, `tanstack-ai`, `ai-cli` ou `none`.
+
+Les projets Python utilisent l'option `--python-ai` à sélection multiple distincte avec `langchain`, `llamaindex`, `openai-sdk`, `anthropic-sdk`, `langgraph`, `crewai` ou `none`.
+
+Le placement des dépendances dépend du framework et du backend sélectionnés. Les packages côté serveur sont ajoutés au package serveur ou à l'application auto-backend ; les intégrations frontales prises en charge reçoivent leurs hooks ou packages clients correspondants.
+
+## Flux de travail MCP
+
+Le serveur Better Fullstack MCP expose la recherche de schéma, les contrôles de compatibilité, les aperçus à sec, la création de projets et les ajouts de fonctionnalités en tant qu'outils structurés. Consultez le [guide de configuration MCP](/docs/ai/mcp/).
+
+Ceci est distinct du module complémentaire `mcp` du projet généré. Le serveur aide un agent à créer des projets Better Fullstack ; l'addon écrit la configuration MCP dans un projet généré.

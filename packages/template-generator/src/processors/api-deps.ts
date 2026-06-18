@@ -63,7 +63,7 @@ export function processApiDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
   addSelfBackendWebDeps(vfs, api, backend, frontendType);
   addWebClientDeps(vfs, api, backend, frontendType);
   if (frontendType.hasNative) addNativeDeps(vfs, api, backend);
-  addQueryDeps(vfs, frontend, backend);
+  if (api !== "openapi") addQueryDeps(vfs, frontend, backend);
 }
 
 function addApiPackageDeps(
@@ -105,6 +105,12 @@ function addApiPackageDeps(
       vfs,
       packagePath: pkgPath,
       dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
+    });
+  } else if (api === "openapi") {
+    addPackageDependency({
+      vfs,
+      packagePath: pkgPath,
+      dependencies: ["@asteasolutions/zod-to-openapi", "zod"],
     });
   }
 
@@ -167,6 +173,20 @@ function addServerDeps(vfs: VirtualFileSystem, api: API, backend: Backend): void
       packagePath: serverPath,
       dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
     });
+  } else if (api === "openapi") {
+    const dependencies: AvailableDependencies[] = [];
+    if (backend === "hono") {
+      dependencies.push("@hono/zod-openapi", "@scalar/hono-api-reference");
+    } else if (backend === "express") {
+      dependencies.push("@asteasolutions/zod-to-openapi", "@scalar/express-api-reference");
+    } else if (backend === "fastify") {
+      dependencies.push("@fastify/swagger", "fastify-type-provider-zod", "@scalar/fastify-api-reference");
+    } else if (backend === "elysia") {
+      dependencies.push("@elysiajs/openapi");
+    }
+    if (dependencies.length > 0) {
+      addPackageDependency({ vfs, packagePath: serverPath, dependencies });
+    }
   }
 }
 

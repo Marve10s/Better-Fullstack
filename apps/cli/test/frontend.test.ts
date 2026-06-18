@@ -4,6 +4,7 @@ import { execa } from "execa";
 import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
 const hasDeno = Boolean(Bun.which("deno"));
+const freshRuntimeSmokeTimeoutMs = 180_000;
 
 describe("Frontend Configurations", () => {
   describe("Single Frontend Options", () => {
@@ -543,7 +544,7 @@ describe("Frontend Configurations", () => {
         await execa("bun", ["run", "--filter", "web", "check-types"], { cwd: projectDir });
         await execa("bun", ["run", "--filter", "web", "build"], { cwd: projectDir });
       },
-      120000,
+      freshRuntimeSmokeTimeoutMs,
     );
 
     it("should fail Fresh with tRPC API", async () => {

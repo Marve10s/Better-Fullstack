@@ -1,0 +1,41 @@
+---
+title: 部署
+description: 將 Web 和 server 部署目標作為一個 stack 分割區來選擇。
+---
+
+部署是一個 stack 分區，不是獨立的文檔支柱。它控制 Better Fullstack 是否在專案建立時透過 `--web-deploy` 和 `--server-deploy` 輸出平台檔案。
+
+當你希望產生的平台檔案與選取的前端、後端、runtime 和 workspace layout 相符時，請在 scaffold 階段使用部署 flags。
+
+## 部署 flags
+
+| Flag | 值 |
+| --- | --- |
+| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |
+| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `docker` `sst` `none` |
+
+部署選擇會根據 stack 做相容性檢查。有些 fullstack 框架透過 Web app 部署，有些後端不需要單獨的 server deployment，而 Convex 或 Encore 會管理自己的平台路徑。
+
+## 目標
+
+| 目標 | 最適合 | 說明 |
+| --- | --- | --- |
+| Docker | Self-hosting、可重現的生產鏡像和本地服務編排。 | 與 `docker-compose` addon 分開，後者專注於本地服務。 |
+| Vercel | 支援的 React、Nuxt、SvelteKit、Solid 和 serverless 部署。 | Fullstack 前端通常透過 Web app 部署，而不是單獨的 server target。 |
+| Cloudflare | Workers runtime stack 和 edge-first Hono servers。 | 相容性限定在 Workers-compatible server runtimes。 |
+| Fly.io | Docker-backed app hosting，支援區域放置和 long-running services。 | 適合持久性服務端進程。 |
+| Railway | Git-connected app hosting，基於 Dockerfile 建置並提供 managed services。 | 部署前配置生產環境變數。 |
+| Render | Blueprint-driven app hosting，基於 Dockerfile 建置（repo 根目錄下的 `render.yaml`）。 | Web 和 server 以獨立 Docker services 部署；在 Render dashboard 設定 env vars。 |
+| Netlify | 靜態和 SSR Web 前端（Next.js、Vite SPAs、SvelteKit、Nuxt）。 | 僅 Web 目標；將 site base directory 設定為 `apps/web`。 |
+| SST | 面向 AWS 的 infrastructure as code，用於 TypeScript app workflows。 | 當你想要明確擁有 AWS 資源時最適合。 |
+
+## 部署前
+
+- 為 auth secrets、database URLs、provider keys 和 public app URLs 設定生產環境變數。
+- 在路由流量前，對生產資料庫運行遷移。
+- 確認產生的平台配置與應接收請求的 app 相符。
+- 將僅本機服務容器、測試憑證和產生日誌排除在來源碼控制之外。
+
+## Scaffold 後添加
+
+`add` 指令可以記錄部署 flags，但它目前會先處理 addons。如果沒有選擇新的 addon，僅部署的 `add` 指令會提前退出。在 deployment-only add flows 擴充之前，優先在 `create` 時選擇部署目標。

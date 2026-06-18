@@ -1,0 +1,84 @@
+---
+title: MCP Befehl
+description: Starten Sie den Server Better Fullstack MCP über stdio für AI Codierungsagenten.
+---
+
+Der Befehl `mcp` startet den Server Better Fullstack MCP über stdio. Agenten können damit Schemata überprüfen, die Kompatibilität validieren, eine Vorschau generierter Dateien anzeigen, Projekte erstellen und unterstützte Funktionen zu vorhandenen Projekten hinzufügen.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
+Der Server verwendet stdio-Transport. Konfigurieren Sie Ihren MCP-Client so, dass er den Befehl startet und über die Standardeingabe/-ausgabe kommuniziert.
+
+## Kundenbeispiele
+
+Claude Code mit npm:
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+```
+
+Ersetzen Sie für pnpm, Bun oder Yarn den Befehl nach `--` durch den passenden Launcher:
+
+| Paketmanager | Launcher |
+| --- | --- |
+| npm | `npx -y create-better-fullstack@latest mcp` |
+| pnpm | `pnpm dlx create-better-fullstack@latest mcp` |
+| Bun | `bunx create-better-fullstack@latest mcp` |
+| Garn | `yarn dlx create-better-fullstack@latest mcp` |
+
+Generische MCP-Clientkonfiguration mit npm:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+Äquivalenter Befehl/Argumente für andere Paketmanager:
+
+| Paketmanager | `command` | `args` |
+| --- | --- | --- |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| Garn | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## Werkzeugoberfläche
+
+| Werkzeug | Zweck |
+| --- | --- |
+| `bfs_get_guidance` | Gibt Workflowregeln und Feldsemantik zurück. |
+| `bfs_get_schema` | Gibt gültige Optionen für eine Kategorie oder alle Kategorien zurück. |
+| `bfs_check_compatibility` | Validiert die Stapelauswahl vor der Generierung. |
+| `bfs_plan_project` | Generierung von Probeläufen im Speicher. |
+| `bfs_create_project` | Schreibt ein neues Projekt auf die Festplatte. |
+| `bfs_plan_addition` | Pläne beinhalten Ergänzungen für ein bestehendes Projekt. |
+| `bfs_add_feature` | Fügt unterstützte Funktionen zu einem vorhandenen Projekt hinzu. |
+
+Projektplanungs-, Erstellungs- und Ergänzungsantworten umfassen Diagrammmetadaten (`graphSummary`, `effectiveStack` und `stackPartSpecs`) neben der generierten Datei- oder Mutationszusammenfassung.
+
+Informationen zu Eingaben, Ausgaben und sicheren Arbeitsabläufen finden Sie in der [MCP-Tools-Referenz](/docs/ai/mcp-tools/).
+
+## Sicherheitshinweise
+
+- `bfs_plan_project` schreibt keine Dateien.
+- `bfs_create_project` schreibt Dateien, installiert aber keine Abhängigkeiten.
+- `bfs_add_feature` mutiert ein vorhandenes Better Fullstack-Projekt und installiert keine Abhängigkeiten.
+- Agenten sollten vor der Projekterstellung `bfs_get_guidance` und `bfs_check_compatibility` aufrufen.
+
+## Verwandte Befehle
+
+- `docs` öffnet die öffentliche Dokumentationsseite.
+- `builder` öffnet das interaktive Stack Builder.
+- `sponsors` zeigt Better Fullstack Sponsoren.
+
+Beispiele für diese Dienstprogrammbefehle finden Sie in der [CLI-Referenz](/docs/cli/).

@@ -1,0 +1,69 @@
+---
+title: Elixir
+description: Phoenix 鷹架，包含 Ecto SQL、PostgreSQL 就緒配置、REST 或 Absinthe、即時能力、任務、測試和部署檔案。
+---
+
+Elixir 專案會產生遵循 Mix 和 Phoenix 約定的 Phoenix 應用。為 LiveView、Ecto SQL、auth、API、即時能力、任務、測試、品質和部署檔案選擇 Elixir 選項。
+
+## 前要求
+
+- 與 Phoenix 1.7 相容的 Elixir 和 Erlang/OTP。
+- 使用 `ecto-sql`、`phx-gen-auth` 或 `oban` 時需要 PostgreSQL。
+- 如果要初始化倉庫，需要 Git。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-phoenix-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth phx-gen-auth \
+  --elixir-api absinthe \
+  --elixir-realtime presence \
+  --elixir-jobs oban \
+  --elixir-http req \
+  --elixir-json jason \
+  --elixir-observability telemetry \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## Elixir 分類
+
+| 分類 | 值 |
+| --- | --- |
+| Web 框架 | `phoenix` `phoenix-live-view` |
+| 持久化 | `ecto-sql` `none` |
+| Auth | `phx-gen-auth` `ueberauth` `guardian` `none` |
+| API | `rest` `absinthe` `grpc` `none` |
+| 庫（多選） | `broadway` `nx` `none` |
+| 即時能力 | `channels` `presence` `pubsub` `live-view-streams` `none` |
+| 任務 | `oban` `quantum` `none` |
+| HTTP | `req` `finch` `none` |
+| JSON | `jason` |
+| Email | `swoosh` `none` |
+| 快取 | `cachex` `nebulex` `none` |
+| 可觀測性 | `telemetry` `opentelemetry` `prom_ex` `none` |
+| 測試 | `ex_unit` `mox` `bypass` `wallaby` `none` |
+| 品質 | `credo` `dialyxir` `sobelow` `none` |
+| 部署 | `docker` `fly` `gigalixir` `mix-release` `none` |
+
+## 相容性說明
+
+- Elixir 選項只在 `--ecosystem elixir` 下生效。
+- Phoenix 和 Phoenix LiveView 是獨立的 Elixir Web 框架；TypeScript 前端和後端選項會被忽略。
+- `phx-gen-auth` 和 Oban 需要 Ecto SQL，因為產生程式碼需要 Repo 和遷移。
+- Oban 面對由 PostgreSQL 支撐的 Ecto SQL 專案。
+- LiveView streams 需要 `phoenix-live-view`。
+- 在匹配模板存在之前，圖驗證器會有意拒絕一些 schema 级选择：`ecto`、`ueberauth`、`guardian`、`nimble-options`、`nebulex`、`opentelemetry`、`prom_ex`、`mox`、`bypass`、`wallaby`、`fly` 和 `gigalixir`。 CLI 和 builder 會把它們顯示為不支援的工具訊息，而不是產生不完整的 Phoenix 程式碼。
+
+## 生成行為
+
+- 專案包含 `mix.exs`、Phoenix 設定、router、endpoint、controllers、tests、`.env.example` 和 setup notes。
+- Ecto SQL 選擇會包含 Repo、遷移、schema/context 程式碼和 PostgreSQL 設定。
+- 可選選擇會新增可工作的 Phoenix 文件，用於 LiveView、Channels/Presence、Oban 或 Quantum 任務、Absinthe schema/resolvers、Req/Finch HTTP 用戶端、Swoosh mailer、Cachex、Dockerfile 和 release 配置。

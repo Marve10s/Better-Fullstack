@@ -1,0 +1,163 @@
+---
+title: SQLCによるエコー
+description: Echo、SQLC、Zap ロギング、および Better Fullstack の Go プロジェクト スキャフォールディングを使用して Go API プロジェクトを作成します。
+updated: 2026-05-12
+category: 行く
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+Echo および SQL ファーストのデータベース アクセスを備えた Go API が必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## これが生み出すもの
+
+- Echo を使用した Go API プロジェクト。
+- Go ORM/データベース アクセス オプションとしての SQLC。
+- ログ記録用のザップ。
+- デフォルトでは、gRPC、CLI、または Go auth アドオンはありません。
+
+## 生成された形状
+
+このスタックは SQL-first Go API です。 Echo は HTTP レイヤーを提供し、SQLC は SQL から型指定された Go メソッドを生成し、Zap は構造化ログを処理します。
+
+主な設計目標は、データベースの動作を可視化することです。
+
+- SQL ファイルはクエリを定義します。
+- SQLC は Go の型とクエリ メソッドを生成します。
+- ハンドラーは、SQL を埋め込むのではなく、サービスまたはストアを呼び出します。
+- Echo ミドルウェアは、ロギング、リカバリ、CORS などのリクエストの問題を処理します。
+
+## 代表的なファイルツリー
+
+```txt
+my-echo-api/
+  go.mod
+  sqlc.yaml
+  queries/
+    users.sql
+  migrations/
+    001_create_users.sql
+  cmd/
+    server/
+      main.go
+  internal/
+    db/
+      generated/
+    handlers/
+      users.go
+    services/
+      users.go
+```
+
+SQL をバージョン管理下に置き、Go コードと同じように注意してクエリの変更をレビューします。 SQLC は Go 側をより安全にしますが、スキーマ設計を置き換えるものではありません。
+
+## クエリとハンドラーの例
+
+SQLC クエリ ファイルは、生成されたメソッドの信頼できる情報源です。
+
+```sql
+-- name: GetUser :one
+select id, email, name, created_at
+from users
+where id = $1;
+
+-- name: CreateUser :one
+insert into users (email, name)
+values ($1, $2)
+returning id, email, name, created_at;
+```
+
+Echo ハンドラーは JSON をバインドし、サービスを通じて生成されたクエリ レイヤーを呼び出すことができます。
+
+```go
+package handlers
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/labstack/echo/v4"
+)
+
+func (h *UserHandler) Get(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	user, err := h.Users.Get(c.Request().Context(), id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "user not found")
+	}
+
+	return c.JSON(http.StatusOK, user)
+}
+```
+
+API サーフェスを簡単にスキャンできるように、起動近くにルートを登録します。
+
+```go
+func RegisterRoutes(e *echo.Echo, users *UserHandler) {
+	e.GET("/health", Health)
+
+	api := e.Group("/api")
+	api.GET("/users/:id", users.Get)
+	api.POST("/users", users.Create)
+}
+```
+
+## 互換性に関する注意事項
+
+このガイドでは、`--go-api none`、`--go-cli none`、および `--go-auth none` を意図的に使用しているため、スキャフォールドは HTTP API に集中したままになります。 SQL からクエリ コードを生成する場合は、`--go-orm sqlc` を保持してください。サービス境界を JSON ではなく protobuf にする必要がある場合は、gRPC ガイドを使用してください。
+
+## いつ選択するか
+
+上位レベルの ORM を採用せずに明示的な SQL と生成された Go 型が必要な場合は、Echo with SQLC を選択します。
+
+## トレードオフ
+
+SQLC はデータベースの動作を可視化したままにしますが、より多くの SQL を所有することになります。より従来的な ORM フローが必要な場合は、[Gin with PostgreSQL および GORM](/guides/go/gin-postgres-gorm/) を使用してください。
+
+Echo は軽量で柔軟性があるため、プロジェクトの規則が重要になります。リクエストの検証、サービス呼び出し、エラー マッピングが存在する場所については一貫性を保ってください。
+
+## テストと導入に関するメモ
+
+ハンドラーとサービスに対して Go テストを実行し、重要な SQL クエリに対してデータベースに基づく統合テストを組み込みます。
+
+```bash
+go test ./...
+```
+
+SQL が変更された場合は、コンパイラのフィードバックを信頼する前に、生成されたプロジェクトに文書化されているコマンドを使用して SQLC 出力を再生成します。デプロイメントでは、API を開始する前に移行を実行して、生成されたクエリ タイプがライブ スキーマと一致するようにします。
+
+## トラブルシューティング
+
+- 生成された SQLC コードが古い場合は、プロジェクトの SQLC 生成コマンドを再実行し、スキャフォールドが生成されたファイルを追跡している場合は、SQL と生成された Go の両方の変更をコミットします。
+- クエリがコンパイルされても予期しないデータが返された場合は、まず SQL を確認してください。 SQLC は、製品のセマンティクスではなく型を検証します。
+- Echo がプレーン テキスト エラーを返した場合は、応答の一貫性が保たれるように HTTP エラー処理を一元化します。
+- `go test ./...` がデータベース テストでのみ失敗する場合は、テスト データベース URL と移行状態を確認します。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none) を開きます。
+- [Go エコシステムのドキュメント](/docs/ecosystems/go/) を読んでください。

@@ -1,0 +1,149 @@
+---
+title: Next.js AI CLI エージェント ワークベンチ
+description: Better Fullstack を使用して、AI、CLI、MCP、スキル、Better Auth、Drizzle、SQLite、エージェントのドキュメントを含む Next.js アプリを作成します。
+updated: 2026-05-12
+category: AI ツール
+tags:
+  - nextjs
+  - ai-cli
+  - mcp
+  - agents
+keywords:
+  - nextjs ai cli starter
+  - ai agent workbench starter
+  - mcp nextjs starter
+  - create ai app nextjs
+  - ai coding agent project
+---
+
+AI 支援開発ワークフロー、ローカル MCP ツール、および生成されたエージェント ドキュメント用に Next.js プロジェクトを準備する場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-agent-workbench -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons mcp skills \
+  --ai-docs claude-md agents-md cursorrules \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## これが生み出すもの
+
+- ローカル フルスタック セットアップを備えた Next.js アプリ。
+- SQLite および Drizzle。
+- Better Auth。
+- AI CLI 構成。
+- MCP およびスキル アドオン。
+- 選択したフラグに応じて、`CLAUDE.md`、`AGENTS.md`、`.cursorrules` などのエージェント向けドキュメント ファイル。
+
+## 生成された形状
+
+このプリセットは、アプリケーション スキャフォールドとエージェント ワークフロー スキャフォールドの両方です。 Web アプリは通常の Next.js フルスタック プロジェクトですが、アドオンはコーディング エージェントとローカル AI ツール用のリポジトリ コンテキストを作成します。
+
+代表的な形状：
+
+```txt
+my-agent-workbench/
+  bts.jsonc
+  AGENTS.md
+  CLAUDE.md
+  .cursorrules
+  app/
+  components/
+  lib/
+    auth/
+    db/
+```
+
+正確なドキュメント ファイルは `--ai-docs claude-md agents-md cursorrules` に依存します。示されているコマンドは 3 つすべてを要求するため、さまざまなエージェント ツールが好みの形式でプロジェクト ガイダンスを見つけることができます。
+
+## AI ピースの適合方法
+
+`--ai ai-cli` は、AI CLI のサポートを選択します。 `--addons mcp skills` は、MCP およびスキルに関するローカル エージェント機能を追加します。 `--ai-docs` は、どのリポジトリ命令ファイルを生成するかを制御します。
+
+これらの部分をさまざまなジョブに使用します。
+
+| ピース | 目的 | 一般的な使用方法 |
+| --- | --- | --- |
+| AI CLI | ローカル コマンドライン AI ワークフロー | エージェント支援のプロジェクト タスクの実行 |
+| MCP | ツール/コンテキストブリッジ | Expoエージェントにプロジェクトまたはサービスの機能を説明する |
+| スキル | 再利用可能なエージェントの説明 | デバッグや機能作業などのワークフローの標準化 |
+| エージェントのドキュメント | リポジトリのガイダンス | このプロジェクトの構成をエージェントに伝える |
+
+## エージェントの指示の例
+
+エージェント向けのドキュメントは具体的である必要があります。遵守および検証できるプロジェクト ルールを優先します。
+
+```md
+## Verification
+
+After editing authentication, run the smallest auth-related test or typecheck.
+Do not run broad workspace commands unless the change crosses package boundaries.
+
+## Project boundaries
+
+Database access belongs in server-only modules.
+Client components should call typed API helpers instead of importing Drizzle code.
+```
+
+アーキテクチャが変更された場合でも、これらのドキュメントを最新の状態に保ってください。エージェントの指示が古くなると、今後の作業が間違ったファイルに確実にルーティングされるため、指示がないよりも悪くなります。
+
+## アプリケーションモデルの例
+
+アプリ側は通常の Better Fullstack TypeScript スタックのままです。小さな SQLite テーブルは次のようになります。
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const agentRun = sqliteTable("agent_run", {
+  id: text("id").primaryKey(),
+  goal: text("goal").notNull(),
+  status: text("status").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+アプリケーション テーブルは、シークレットの保存には使用せず、製品データに使用します。 MCP 資格情報、プロバイダー トークン、および AI サービス キーは、環境変数またはプロバイダー固有の安全なストレージに存在する必要があります。
+
+## いつ選択するか
+
+リポジトリ自体をコーディング エージェントが理解し、変更しやすいようにする必要がある場合は、これを選択します。これは、エージェント ワークフロー、MCP ツール、生成されたプロジェクト コンテキストを標準化するチームに役立ちます。
+
+## 互換性に関する注意事項
+
+- このプリセットは、`--backend self` を備えた TypeScript Next.js アプリを使用するため、Next.js がサーバー境界を所有します。
+- `--addons mcp skills` は開発ワークフローの追加です。これらは、アプリ認証、データベース、または API の選択肢を置き換えるものではありません。
+- `--ai-docs claude-md agents-md cursorrules` は、さまざまなツールに対して複数の命令形式を意図的に生成します。
+- SQLite は、ローカル ワークベンチ スタイルのプロジェクトに便利です。ワークベンチが共有状態のマルチユーザー実稼働製品になる場合は、PostgreSQL を使用します。
+
+## 導入メモ
+
+通常のフルスタック アプリケーションと同様に Next.js アプリをデプロイします。Better Auth シークレット、アプリ URL、およびデータベース設定を構成します。 AI プロバイダー キー、MCP 資格情報、およびツール トークンをサーバー側のシークレットとして扱います。
+
+エージェントのドキュメントは通常、ソース管理に属します。ローカル認証情報、生成されたログ、およびマシン固有の MCP 構成は通常、そうではありません。コミットする前に、生成された無視ファイルを確認してください。
+
+## トラブルシューティング
+
+- AI ツールがリポジトリのガイダンスを無視する場合は、`--ai-docs` で選択した生成されたファイル名を読み取ることを確認してください。
+- MCP ツールが使用できない場合は、ローカルの MCP セットアップと、消費エージェントがそのセットアップを指しているかどうかを確認してください。
+- スクリプトの実行中にスキャフォールドされたアドオンのセットアップ プロンプトが表示される場合は、このガイドのように明示的なフラグを使用して、デフォルトが決定的になるようにします。
+- アプリがローカルで動作するものの、デプロイ後に認証が失敗する場合は、Next.js スタックで検査するのと同じ Better Auth URL と Cookie 設定を確認してください。
+
+## トレードオフ
+
+このスタックは、最小限の Next.js スターターよりも意見がまとまっています。エージェント ツールを使用せずに製品アプリのみが必要な場合は、[Next.js と Drizzle および Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) を使用します。
+
+追加のファイルは、人間とエージェントがリポジトリで繰り返し作業する場合に役立ちます。使い捨てプロトタイプにとってはオーバーヘッドです。チームが指示を維持しない場合は、より単純な Next.js ガイドから始めて、後で AI ドキュメントを追加します。
+
+## 次のステップ
+
+- [Stack Builder](/new?preset=ai-cli-agent-workbench&view=command) を開きます。
+- [AI エージェントのドキュメント](/docs/ai/overview/) を読んでください。
+- [Better Fullstack MCP サーバー](/mcp) がどのように機能するかを学びます。

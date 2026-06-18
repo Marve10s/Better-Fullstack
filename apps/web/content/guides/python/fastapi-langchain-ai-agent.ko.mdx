@@ -1,0 +1,188 @@
+---
+title: FastAPI AI LangChain의 에이전트
+description: Better Fullstack을 사용하여 FastAPI, LangChain, SQLModel, Pydantic 및 Ruff를 사용하여 Python AI API을 만듭니다.
+updated: 2026-05-12
+category: 파이썬
+tags:
+  - fastapi
+  - langchain
+  - ai
+  - sqlmodel
+keywords:
+  - fastapi langchain starter
+  - python ai agent starter
+  - fastapi ai api
+  - create langchain api
+  - python ai boilerplate
+---
+
+AI 애플리케이션 코드를 위해 Python API을 준비하려면 이 스택을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-python-ai-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlmodel \
+  --python-validation pydantic \
+  --python-ai langchain \
+  --python-quality ruff
+```
+
+## 이것이 만드는 것
+
+- FastAPI 프로젝트.
+- LangChain을 Python AI 라이브러리 옵션으로 사용합니다.
+- SQLModel 및 Pydantic.
+- 코드 품질을 위한 러프.
+
+## 생성된 모양
+
+이 스캐폴드는 HTTP API, SQLModel 지속성 및 LangChain 도우미 모듈로 시작됩니다. 경로 계층은 유효성 검사 및 스트리밍 응답을 처리하는 반면 AI 클라이언트 모듈은 모델 호출을 소유합니다. 일단 프롬프트, 검색, 도구 및 지속성이 다른 속도로 변경되기 시작하면 분리가 중요합니다.
+
+```txt
+my-python-ai-api/
+├── pyproject.toml
+├── alembic.ini
+├── src/app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── crud.py
+│   ├── langchain_client.py
+│   ├── langchain_schemas.py
+│   └── settings.py
+└── tests/
+    ├── test_main.py
+    └── test_database.py
+```
+
+생성된 종속성에는 `langchain` 및 `langchain-openai`이 포함됩니다. AI 엔드포인트를 호출하기 전에 환경 변수를 통해 공급자 자격 증명을 설정하세요.
+
+```bash
+OPENAI_API_KEY="sk-..."
+DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/my_python_ai_api"
+```
+
+## 그것을 선택하는 경우
+
+모델 또는 도구 오케스트레이션 주위에 웹 경계가 필요한 AI APIs, 검색 워크플로, 에이전트 백엔드 및 Python 서비스에 대해 이 옵션을 선택하세요.
+
+최고 수준의 워크플로가 모델 오케스트레이션인 경우 일반 FastAPI 데이터베이스 API 대신 이를 선택하세요. 지속성이 서비스의 중심이고 AI이 나중에 추가될 수 있는 경우 SQLAlchemy 가이드를 선택하세요.
+
+| 필요 | 이 LangChain 스택 | 일반 FastAPI API |
+| --- | --- | --- |
+| 채팅/완료 엔드포인트 | 생성된 시작점 | 직접 추가 |
+| 스트리밍 응답 | AI 경로 패턴에 포함됨 | 필요할 때 추가하세요 |
+| 데이터 모델 스타일 | SQLModel은 테이블과 Pydantic 모양을 결합합니다. | SQLAlchemy 모델과 Pydantic 스키마 |
+| 신속한/도구 성장 | AI 클라이언트 모듈은 명확한 홈을 제공합니다. | 모듈 경계를 선택합니다. |
+| 생산 우려 | 공급자 키, 대기 시간, 재시도, 관측 가능성 | 데이터베이스 및 HTTP 동작 우선 |
+
+## 대표 조각
+
+SQLModel은 소규모 서비스에 대해 지속성과 유효성 검사를 긴밀하게 유지합니다.
+
+```python
+from datetime import datetime
+
+from pydantic import EmailStr
+from sqlmodel import Field, SQLModel
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(index=True, unique=True)
+    name: str | None = Field(default=None, max_length=255)
+
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+```
+
+경로를 얇게 유지하고 `langchain_client.py`이 모델 세부 정보를 소유하게 하세요.
+
+```python
+from fastapi.responses import StreamingResponse
+
+from app.langchain_client import chat, chat_stream
+from app.langchain_schemas import ChatRequest, ChatResponse
+
+
+@app.post("/ai/chat", response_model=ChatResponse)
+async def langchain_chat(request: ChatRequest):
+    response = await chat(request.message, history=request.history)
+    return ChatResponse(response=response)
+
+
+@app.post("/ai/chat/stream")
+async def langchain_chat_stream(request: ChatRequest):
+    return StreamingResponse(
+        chat_stream(request.message, history=request.history),
+        media_type="text/event-stream",
+    )
+```
+
+에이전트가 성장함에 따라 경로가 프롬프트 문자열을 조합하도록 허용하는 대신 명시적인 도구 기능을 도입하십시오.
+
+```python
+from langchain_core.tools import tool
+
+
+@tool
+def lookup_customer(customer_id: str) -> str:
+    """Return customer context for support workflows."""
+    return customer_repository.summary(customer_id)
+```
+
+## 마이그레이션 및 테스트
+
+생성된 SQLModel 경로에는 Alembic 구성이 포함됩니다. 특히 대화, 도구 호출, 평가 추적 또는 문서 청크를 저장하는 경우 데이터베이스 변경을 반복 가능하게 만드는 데 사용합니다.
+
+```bash
+uv run ruff check .
+uv run pytest
+```
+
+```bash
+uv run alembic revision --autogenerate -m "add conversation tables"
+uv run alembic upgrade head
+```
+
+두 가지 수준의 테스트를 추가합니다. 요청 유효성 검사 및 스트리밍 동작을 위한 라우팅 테스트와 모의 모델 공급자를 사용한 프롬프트/도구 오케스트레이션에 대한 클라이언트 테스트입니다. 일반 단위 테스트 레인에서는 유료 모델 APIs를 호출하지 마세요.
+
+## 호환성 참고사항
+
+Python AI 옵션은 `--python-ai`을 통해 선택됩니다. 이는 웹 앱 AI SDK 선택에서 사용되는 TypeScript `--ai` 플래그와는 별개입니다.
+
+- `--python-ai langchain`은 배열 스타일 Python 생태계 옵션입니다. 추가 Python AI 라이브러리는 이를 지원하는 스택에서 선택할 수 있습니다.
+- `--python-orm sqlmodel`은 응답 스키마와 테이블 모델이 기본 클래스를 공유할 수 있으므로 컴팩트 API/데이터베이스 예제에 적합합니다.
+- 생성된 `DATABASE_URL` 대체는 로컬 SQLite입니다. `DATABASE_URL`을 설정하여 PostgreSQL을 사용하세요.
+- FastAPI 스트리밍 응답을 사용하려면 배포 대상이 장기 실행 HTTP 응답을 지원해야 합니다.
+
+## 배포 참고사항
+
+이를 FastAPI 서비스처럼 배포하되 공급자 자격 증명, 요청 시간 초과, 재시도, 속도 제한 및 응답 스트리밍과 같은 AI 관련 문제에 대한 예산을 책정하세요. 출시 전에 마이그레이션을 실행하고 모델/공급자 설정을 이미지 외부에 유지하세요.
+
+```bash
+uv run alembic upgrade head
+uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+프로덕션 에이전트 워크플로의 경우 각 모델 호출에 요청 ID와 구조화된 로그를 추가하세요. 검색을 도입하는 경우 임베딩, 벡터 인덱스 및 소스 문서의 버전을 애플리케이션 배포와 별도로 유지하세요.
+
+## 문제 해결
+
+| 징후 | 확인하다 |
+| --- | --- |
+| AI 경로가 공급자 오류를 반환합니다. | `OPENAI_API_KEY` 또는 공급자별 환경 변수를 확인하세요. |
+| 스트리밍은 로컬에서 작동하지만 프로덕션에서는 버퍼링됩니다. | 프록시/플랫폼이 스트리밍 응답을 지원하는지 확인하세요. |
+| 테스트가 느리거나 불안정합니다. | 단위 테스트에서 LangChain/provider 클라이언트를 모의합니다. |
+| SQLModel 테이블이 누락되었습니다. | 경로에 도달하기 전에 Alembic 마이그레이션을 실행하거나 데이터베이스를 초기화하세요. |
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=python&pwf=fastapi&porm=sqlmodel&pval=pydantic&pai=langchain&pq=ruff)을 엽니다.
+- [Next.js AI CLI 에이전트 워크벤치](/guides/ai/nextjs-ai-cli-agent-workbench/)와 비교하세요.
+- [Python 생태계 문서](/docs/ecosystems/python/)를 읽어보세요.

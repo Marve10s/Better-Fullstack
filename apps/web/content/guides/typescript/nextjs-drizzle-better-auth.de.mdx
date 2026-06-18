@@ -1,0 +1,139 @@
+---
+title: Next.js mit Drizzle und Better Auth
+description: Erstellen Sie eine Next.js Fullstack-App mit Drizzle, PostgreSQL, Better Auth, Tailwind CSS, shadcn/ui und tRPC mit Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+Verwenden Sie diesen Stack, wenn Sie eine Mainstream-React-Fullstack-App mit relationalen Daten, Authentifizierung und einer typisierten API-Ebene wünschen.
+
+```npm
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Was dadurch entsteht
+
+- Eine Next.js-App im Fullstack-Modus.
+- PostgreSQL als relationale Datenbank.
+- Drizzle als TypeScript ORM.
+- Better Auth zur Authentifizierung.
+- tRPC für durchgängig typisierte APIs.
+- Tailwind CSS und shadcn/ui für das Frontend-Styling.
+
+## Erzeugte Form
+
+Die generierte App verwendet Next.js als Web- und Servergrenze. PostgreSQL und Drizzle sitzen hinter reinen Servermodulen, während tRPC typisierte Aufrufe für Clientkomponenten bereitstellt, die Anwendungsdaten benötigen.
+
+Repräsentative Form:
+
+```txt
+my-next-app/
+  bts.jsonc
+  app/
+  components/
+  lib/
+    auth/
+    db/
+    trpc/
+```
+
+Die genauen Pfade können je nach Generatorversion variieren, aber die beabsichtigte Aufteilung ist konsistent: UI-Komponenten rendern das Produkterlebnis, Routenhandler und Servercode besitzen eigene Anforderungsgrenzen, und der Datenbankzugriff bleibt aus Browserpaketen ausgeschlossen.
+
+## Beispielmodell Drizzle
+
+Halten Sie Produkttabellen explizit und einfach zu migrieren:
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Better Auth sollte Authentifizierungstabellen und Sitzungsverhalten besitzen. Produkttabellen sollten auf Benutzer-IDs verweisen und das Kopieren von Sitzungsfeldern in Anwendungsmodelle vermeiden.
+
+## Beispiel einer typisierten Prozedur
+
+Verwenden Sie tRPC für Vorgänge, bei denen das Frontend von abgeleiteten Eingabe- und Ausgabetypen profitiert:
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Halten Sie die Berechtigungsprüfung in der Nähe der Mutation. Beim Erstellen eines Arbeitsbereichs sollte vor dem Einfügen von Inhalten nachgewiesen werden, dass ein Benutzer angemeldet ist.
+
+## Wann man es wählt
+
+Wählen Sie dies für SaaS-Apps, kontobasierte Produkte, Dashboards, Admin-Portale und Projekte, bei denen es auf die Vertrautheit mit dem Hosting von Next.js ankommt.
+
+## Warum Drizzle und Better Auth
+
+Drizzle hält den Datenbankzugriff nahe bei TypeScript. Better Auth verleiht der App eine moderne Authentifizierungsebene, ohne standardmäßig einen gehosteten Identitätsanbieter zu erzwingen.
+
+## Kompatibilitätshinweise
+
+- `--backend self` bedeutet, dass Next.js die Servergrenze besitzt; Fügen Sie kein separates Backend hinzu, es sei denn, Sie möchten eine explizite Dienstaufteilung.
+- `--database postgres` lässt sich gut mit Produktionshosting, gepoolten Verbindungen und verwalteten Datenbankanbietern kombinieren.
+- `--api trpc` passt gut zu diesem React-basierten Stack. Nicht-React-TypeScript-Frontends in Better Fullstack verwenden stattdessen häufig oRPC.
+- shadcn/ui erwartet Rückenwind und Reaktion. Behalten Sie diese Auswahl bei, wenn Sie später Komponenten neu generieren oder hinzufügen.
+
+## Bereitstellungshinweise
+
+Legen Sie die Verbindungszeichenfolge PostgreSQL, die Geheimnisse Better Auth und die App-Basis-URL in der Bereitstellungsumgebung fest. Führen Sie Migrationen durch, bevor Sie Produktionsdatenverkehr an neuen Code senden, der neue Spalten oder Tabellen erwartet.
+
+Überprüfen Sie beim serverlosen Hosting die Pooling-Empfehlung des Datenbankanbieters. Direkte PostgreSQL-Verbindungen können die Grenzen schnell erschöpfen, wenn viele serverlose Instanzen gleichzeitig starten.
+
+## Fehlerbehebung
+
+- Wenn die Authentifizierung lokal, aber nicht in der Produktion funktioniert, überprüfen Sie Rückruf-URLs, vertrauenswürdige Ursprünge, Cookies und die URL der Produktions-App.
+- Wenn Migrationen ausgeführt werden, die App jedoch immer noch alte Schemafehler erkennt, bestätigen Sie, dass sich der App- und Migrationsbefehlspunkt in derselben Datenbank befindet.
+- Wenn Clientkomponenten nur Server-Datenbankmodule importieren, verschieben Sie die Abfrage hinter einen Routenhandler, eine Serveraktion oder eine typisierte API-Prozedur.
+- Wenn tRPC-Typen nicht aktualisiert werden, starten Sie den TypeScript-Server neu und führen Sie die Typprüfung der Ziel-App erneut aus.
+
+## Vergleichshinweise
+
+Wählen Sie diesen Stack gegenüber TanStack Start, wenn Sie die umfassendsten Next.js-Bereitstellungsbeispiele und die Vertrautheit mit dem Ökosystem wünschen. Wählen Sie [TanStack Start](/guides/typescript/create-tanstack-start-project/), wenn TanStack Router und ein kleineres React-Fullstack-Framework wichtiger sind als Next.js-Konventionen.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc).
+- Vergleichen Sie dies mit [Ein TanStack Start-Projekt erstellen](/guides/typescript/create-tanstack-start-project/).
+- Lesen Sie die [Kompatibilitätsreferenz](/docs/reference/compatibility/).

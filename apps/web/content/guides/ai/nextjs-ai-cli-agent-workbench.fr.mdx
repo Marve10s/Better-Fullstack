@@ -1,0 +1,149 @@
+---
+title: Next.js AI CLI Pupitre d'agent
+description: Créez une application Next.js avec AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite et la documentation de l'agent à l'aide de Better Fullstack.
+updated: 2026-05-12
+category: AI Outils
+tags:
+  - nextjs
+  - ai-cli
+  - mcp
+  - agents
+keywords:
+  - nextjs ai cli starter
+  - ai agent workbench starter
+  - mcp nextjs starter
+  - create ai app nextjs
+  - ai coding agent project
+---
+
+Utilisez cette pile lorsque vous souhaitez qu'un projet Next.js soit préparé pour les workflows de développement assistés par AI, les outils MCP locaux et la documentation de l'agent générée.
+
+```npm
+npm create better-fullstack@latest my-agent-workbench -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons mcp skills \
+  --ai-docs claude-md agents-md cursorrules \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Ce que cela crée
+
+- Une application Next.js avec une configuration fullstack locale.
+- SQLite et Drizzle.
+- Better Auth.
+- Configuration AI CLI.
+- MCP et modules complémentaires de compétences.
+- Fichiers de documentation destinés aux agents tels que `CLAUDE.md`, `AGENTS.md` ou `.cursorrules` en fonction des indicateurs sélectionnés.
+
+## Forme générée
+
+Ce préréglage est à la fois un échafaudage d’application et un échafaudage de flux de travail d’agent. L'application Web est un projet fullstack Next.js normal, tandis que les modules complémentaires créent un contexte de référentiel pour les agents de codage et les outils AI locaux.
+
+Forme représentative :
+
+```txt
+my-agent-workbench/
+  bts.jsonc
+  AGENTS.md
+  CLAUDE.md
+  .cursorrules
+  app/
+  components/
+  lib/
+    auth/
+    db/
+```
+
+Les fichiers de documentation exacts dépendent de `--ai-docs claude-md agents-md cursorrules`. La commande affichée demande les trois afin que les différents outils d'agent puissent trouver des conseils de projet dans leur format préféré.
+
+## Comment les pièces AI s'ajustent
+
+`--ai ai-cli` sélectionne la prise en charge de AI CLI. `--addons mcp skills` ajoute des capacités d'agent local autour de MCP et des compétences. `--ai-docs` contrôle quels fichiers d'instructions de référentiel sont générés.
+
+Utilisez ces pièces pour différents travaux :
+
+| Morceau | But | Utilisation typique |
+| --- | --- | --- |
+| AI CLI | Workflow AI de ligne de commande locale | Exécution de tâches de projet assistées par un agent |
+| MCP | Pont outil/contexte | Expoprésenter les capacités du projet ou du service aux agents |
+| Compétences | Instructions pour les agents réutilisables | Standardiser les flux de travail tels que le débogage ou le travail sur les fonctionnalités |
+| Documents des agents | Conseils pour le référentiel | Expliquer aux agents comment ce projet est structuré |
+
+## Exemple d'instruction d'agent
+
+Les documents destinés aux agents doivent être concrets. Préférez les règles du projet qui peuvent être suivies et vérifiées :
+
+```md
+## Verification
+
+After editing authentication, run the smallest auth-related test or typecheck.
+Do not run broad workspace commands unless the change crosses package boundaries.
+
+## Project boundaries
+
+Database access belongs in server-only modules.
+Client components should call typed API helpers instead of importing Drizzle code.
+```
+
+Gardez ces documents à jour lorsque l'architecture change. Les instructions d'agent périmées sont pires que l'absence d'instructions, car elles acheminent en toute confiance les travaux futurs vers les mauvais fichiers.
+
+## Exemple de modèle d'application
+
+Le côté application reste une pile Better Fullstack TypeScript normale. Une petite table SQLite pourrait ressembler à ceci :
+
+```ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const agentRun = sqliteTable("agent_run", {
+  id: text("id").primaryKey(),
+  goal: text("goal").notNull(),
+  status: text("status").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+Utilisez des tables d'application pour les données produit, et non pour stocker des secrets. Les informations d'identification MCP, les jetons du fournisseur et les clés de service AI doivent résider dans des variables d'environnement ou dans un stockage sécurisé spécifique au fournisseur.
+
+## Quand le choisir
+
+Choisissez cette option lorsque le référentiel lui-même doit être facile à comprendre et à modifier pour les agents de codage. Il est utile pour les équipes qui normalisent les flux de travail des agents, les outils MCP et le contexte de projet généré.
+
+## Remarques sur la compatibilité
+
+- Ce préréglage utilise une application TypeScript Next.js avec `--backend self`, donc Next.js possède les limites du serveur.
+- `--addons mcp skills` sont des ajouts au workflow de développement. Ils ne remplacent pas les choix d’authentification de l’application, de base de données ou API.
+- `--ai-docs claude-md agents-md cursorrules` génère intentionnellement plusieurs formats d'instructions pour différents outils.
+- SQLite est pratique pour les projets locaux de type établi. Utilisez PostgreSQL si le plan de travail devient un produit de production multi-utilisateurs avec un état partagé.
+
+## Notes de déploiement
+
+Déployez l'application Next.js comme une application fullstack normale : configurez les secrets Better Auth, l'URL de l'application et les paramètres de la base de données. Traitez les clés du fournisseur AI, les informations d'identification MCP et tous les jetons d'outil comme des secrets côté serveur.
+
+Les documents d'agent appartiennent généralement au contrôle de code source. Les informations d'identification locales, les journaux générés et la configuration MCP spécifique à la machine ne le font généralement pas. Examinez les fichiers ignorés générés avant de les valider.
+
+## Dépannage
+
+- Si un outil AI ignore les instructions du référentiel, confirmez qu'il lit le nom de fichier généré que vous avez sélectionné avec `--ai-docs`.
+- Si les outils MCP ne sont pas disponibles, vérifiez la configuration locale de MCP et si l'agent consommateur a été pointé dessus.
+- Si la configuration du module complémentaire échafaudé vous y invite lors des exécutions de script, utilisez des indicateurs explicites comme le fait ce guide afin que les valeurs par défaut soient déterministes.
+- Si l'application fonctionne localement mais que l'authentification échoue après le déploiement, vérifiez la même URL Better Auth et les mêmes paramètres de cookies que vous inspecteriez dans n'importe quelle pile Next.js.
+
+## Compromis
+
+Cette pile est plus opiniâtre qu'un starter Next.js minimal. Si vous n'avez besoin que d'une application produit sans outils d'agent, utilisez [Next.js avec Drizzle et Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).
+
+Les fichiers supplémentaires sont précieux lorsque les humains et les agents travaillent de manière répétée dans le dépôt. Ils sont au-dessus d'un prototype jetable. Si l'équipe ne maintient pas les instructions, commencez par le guide Next.js plus simple et ajoutez les documents AI plus tard.
+
+## Prochaines étapes
+
+- Ouvrez le [Stack Builder](/new?preset=ai-cli-agent-workbench&view=command).
+- Lisez la [documentation des agents AI](/docs/ai/overview/).
+- Découvrez comment fonctionne le [serveur Better Fullstack MCP](/mcp).

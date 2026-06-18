@@ -1,0 +1,62 @@
+---
+title: 파이썬
+description: 웹 프레임워크, ORM, 유효성 검사, 큐, GraphQL 및 품질 도구를 갖춘 Python API 및 AI 지향 스캐폴드입니다.
+---
+
+Python 프로젝트는 `uv` 및 Python 기본 템플릿을 사용합니다. API 프레임워크, ORM, 유효성 검사, AI 라이브러리, 인증 도우미, 작업 대기열, GraphQL 및 품질 도구에 대한 Python 옵션을 선택하세요.
+
+## 전제조건
+
+- 파이썬.
+- `uv`.
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## 파이썬 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프레임워크 | `fastapi` `django` `flask` `litestar` `starlette` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |
+| 확인 | `pydantic` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `none` |
+| 인증 | `authlib` `jwt` `fastapi-users` `none` |
+| API | `django-rest-framework` `django-ninja` `none` |
+| 작업 대기열 | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |
+| GraphQL | `strawberry` `ariadne` `none` |
+| 품질 | `ruff` `mypy` `pyright` `none` |
+| 테스트(다중 선택) | `pytest` `hypothesis` `none` |
+| 캐싱 | `redis` `aiocache` `none` |
+| 실시간 | `python-socketio` `websockets` `none` |
+| 관찰 가능성 | `opentelemetry` `none` |
+| CLI 도구(다중 선택) | `typer` `click` `rich` `none` |
+
+## 생성된 동작
+
+- `uv sync`은 설치가 활성화된 경우의 설치 경로입니다.
+- `pythonAi`은 다중 선택 범주이며 TypeScript `--ai`과 별개입니다.
+- 선택한 옵션에 필요하지 않은 경우 빈 조건부 Python 템플릿 파일을 건너뜁니다.
+- AI 명령 파일은 `--ai-docs none`을 포함하여 `--ai-docs`을 통해 계속 사용할 수 있습니다.

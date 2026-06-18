@@ -1,0 +1,56 @@
+---
+title: REST API 생성
+description: Better Fullstack REST API 팩을 사용하여 FastAPI, PostgreSQL, SQLAlchemy, Pydantic 및 Ruff로 REST API을 만듭니다.
+updated: 2026-05-21
+category: 팩
+tags:
+  - rest-api
+  - fastapi
+  - python
+  - sqlalchemy
+  - pydantic
+keywords:
+  - create rest api
+  - build rest api
+  - fastapi rest api starter
+  - python api starter
+  - fastapi postgres sqlalchemy
+---
+
+프런트엔드 없이 경로, 유효성 검사, 지속성 및 Linting에 집중된 백엔드 서비스가 필요한 경우 REST API 팩을 사용하세요.
+
+<StarterPackCta id="rest-api" />
+
+## REST API 스타터 생성
+
+Stack Builder](/new?preset=python-fastapi&view=command)에서 [REST API 팩을 열거나 다음을 실행합니다.
+
+```bash
+bun create better-fullstack@latest my-rest-api \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff
+```
+
+## 팩에 포함된 내용
+
+- REST 엔드포인트 및 OpenAPI 문서의 경우 FastAPI.
+- 데이터베이스 모델 및 쿼리용 SQLAlchemy.
+- 요청 및 응답 검증을 위한 Pydantic.
+- Python 린팅 및 서식 지정을 위한 Ruff입니다.
+- API 서비스로 배포하기 쉬운 소규모 프로젝트 레이아웃입니다.
+
+## 가장 먼저 사용자 정의해야 할 사항
+
+1. 샘플 리소스를 도메인 모델로 바꾸세요.
+2. API이 공개되지 않은 경우 인증을 추가하세요.
+3. 읽기 전용 경로와 데이터를 변경하는 경로를 결정합니다.
+4. 계약을 정의하는 경로에 대한 통합 테스트를 추가하세요.
+
+## 이것이 올바른 팩일 때
+
+공개 API, 서비스 백엔드, 내부 플랫폼 API, 웹훅 수신기 및 프런트엔드가 별도로 구축되는 제품의 경우 이 옵션을 선택하세요.
+
+스택 수준 연습을 보려면 [FastAPI with PostgreSQL 및 SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/)를 읽어보세요.

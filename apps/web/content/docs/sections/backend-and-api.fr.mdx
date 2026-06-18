@@ -1,0 +1,38 @@
+---
+title: Backend et API
+description: Choisissez des infrastructures de serveur, des environnements d'exécution et des couches API dans les écosystèmes pris en charge.
+---
+
+Les choix du backend déterminent où la logique de l'application s'exécute et comment les clients lui communiquent.
+
+## Cadre back-end
+
+Les options backend TypeScript incluent Hono, Express, Fastify, Elysia, NestJS, AdonisJS, Nitro, Encore, Convex, feTS, `self` et `none`.
+
+Les écosystèmes linguistiques exposent leurs propres surfaces backend :
+
+| Écosystème | Choix du back-end |
+| --- | --- |
+| Rouiller | Axum, Actix Web, Rocket ou aucun. |
+| Python | FastAPI, Django, Flask, Litestar ou aucun. |
+| Aller | Gin, Echo, Fibre, Chi ou aucun. |
+| Java | Spring Boot, Quarkus ou aucun. |
+| Élixir | Phoenix, Phoenix LiveView ou aucun. |
+
+## Durée d'exécution
+
+Les serveurs TypeScript peuvent cibler Bun, Node.js, Workers ou aucun environnement d'exécution distinct. Les écosystèmes non TypeScript utilisent leurs chaînes d'outils natives : modules Cargo, uv, Go, Maven/Gradle ou Mix.
+
+## Couche API
+
+Les choix API incluent les options TypeScript RPC/GraphQL, Rust Tonic ou async-graphql, Python Django API/GraphQL, Go gRPC et Elixir REST ou Absinthe.
+
+## Propriété multi-écosystèmes
+
+En mode multi, les fonctionnalités API, ORM et d'authentification s'attachent au backend sélectionné. Par exemple, `backend.api:rust:tonic` appartient à un backend Rust, tandis que `backend.orm:go:gorm` appartient à un backend Go.
+
+## Références
+
+- [Multi-écosystème](/docs/ecosystems/multi-ecosystem/)
+- [Compatibilité](/docs/reference/compatibility/)
+- [CLI créer](/docs/cli/create/)

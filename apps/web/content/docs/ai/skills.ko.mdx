@@ -1,0 +1,60 @@
+---
+title: 에이전트 스킬
+description: Codex, Claude Code, Cursor 및 기타 에이전트에서 빠른 CLI 기반 스캐폴딩을 위해 Better Fullstack 에이전트 스킬을 설치하세요.
+---
+
+Better Fullstack 에이전트 기술은 코딩 에이전트에게 손으로 쓰는 시작 프로젝트 대신 CLI을 사용하도록 가르칩니다. 요청된 스택을 그래프 부분에 매핑하고, 먼저 테스트 실행을 실행하고, 종속성 설치가 비활성화된 스캐폴드를 실행하고, 정확한 후속 명령을 보고합니다.
+
+에이전트가 기술을 지원하고 프롬프트에서 생성된 Better Fullstack 프로젝트까지 가장 빠른 경로를 원하는 경우 이를 사용하세요. 대신 구조화된 스키마 조회 및 도구 호출 계획을 원하는 경우 [MCP 서버](/docs/ai/mcp/)를 사용하세요.
+
+## 설치하다
+
+스킬은 `.agents/skills/better-fullstack`의 이 저장소에 있습니다. 저장소에는 다른 내부 기술도 포함되어 있으므로 `better-fullstack`만 설치하세요.
+
+Codex용으로 설치:
+
+<PMTabs
+  npm="npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  pnpm="pnpm dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  bun="bunx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+  yarn="yarn dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"
+/>
+
+여러 일반 에이전트에 대해 설치:
+
+```bash
+bunx skills@latest add Marve10s/Better-Fullstack \
+  --skill better-fullstack \
+  --agent codex claude-code cursor github-copilot gemini-cli \
+  --global \
+  --yes
+```
+
+프로젝트-로컬 설치의 경우 동일한 명령에서 `--global`을 생략합니다. 프로젝트 설치는 팀이 리포지토리에 기록된 기술 버전을 원할 때 유용합니다.
+
+## 사용
+
+스킬을 명시적으로 호출합니다.
+
+```text
+Use $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.
+```
+
+아니면 자연스럽게 물어보세요. 암시적 기술 매칭을 지원하는 에이전트는 요청이 Better Fullstack 프로젝트의 스캐폴딩, 계획 또는 확장에 관한 것일 때 기술을 선택할 수 있습니다.
+
+## 스킬이 하는 일
+
+1. 요청된 스택을 Better Fullstack 그래프 부분과 CLI 플래그에 매핑합니다.
+2. 비대화형 CLI 테스트 실행을 실행합니다.
+3. 계획이 성공하면 `--dry-run` 없이 동일한 명령을 실행합니다.
+4. 해당 부작용을 명시적으로 요청하지 않는 한 `--no-install` 및 `--no-git`을 사용합니다.
+5. 사용된 명령, 호환성 조정 및 다음 설치/테스트/실행 명령을 보고합니다.
+
+## 스킬 대 MCP
+
+| 길 | 다음에 가장 적합 |
+| --- | --- |
+| 에이전트 스킬 | 스택이 플래그 또는 그래프 부분으로 표현될 수 있는 경우 빠른 CLI 기반 스캐폴딩. |
+| MCP 서버 | 도구 호출을 통한 구조화된 스키마 조회, 호환성 확인, 테스트 실행 계획 및 기존 프로젝트 변형. |
+
+두 경로 모두 동일한 Better Fullstack 생성기를 사용합니다. 스킬은 더 가벼운 경로입니다. MCP은 더 구조화된 경로입니다.

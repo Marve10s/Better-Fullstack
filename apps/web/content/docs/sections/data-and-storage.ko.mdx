@@ -1,0 +1,37 @@
+---
+title: 데이터 및 스토리지
+description: 데이터베이스, ORM, 공급자 설정, 캐싱, 검색, 업로드 및 파일 저장을 선택합니다.
+---
+
+데이터 선택은 생성된 앱이 기록을 유지하고, 작업을 캐시하고, 콘텐츠를 검색하고, 파일을 저장하는 위치를 결정합니다.
+
+## 데이터베이스와 ORM
+
+공유 데이터베이스 범주에는 SQLite, PostgreSQL, MySQL, MongoDB, EdgeDB, Redis가 포함되며 없음이 포함됩니다. ORM은 실제로 생태계에 따라 다릅니다.
+
+| 생태계 | ORM 또는 데이터 계층 |
+| --- | --- |
+| TypeScript | Drizzle, Prisma, Mongoose, TypeORM, Kysely, MikroORM, Sequelize 또는 없음. |
+| 녹 | SeaORM, SQLx, 디젤 또는 없음. |
+| 파이썬 | SQLAlchemy, SQLModel, Tortoise ORM 또는 없음. |
+| 가다 | GORM, sqlc, Ent 또는 없음. |
+| 자바 | 스프링 데이터 JPA 또는 없음. |
+| 엘릭서 | Ecto, Ecto SQL 또는 없음. |
+
+## 제공업체 설정
+
+`--db-setup`은 Turso, Neon, Prisma Postgres, PlanetScale, MongoDB Atlas, Supabase, Upstash, Cloudflare D1, Docker에 대한 호스팅/공급자 설정을 추가하거나 없음을 추가할 수 있습니다.
+
+## 스토리지 스타일 서비스
+
+데이터 인접 섹션에는 다음이 포함됩니다.
+
+- 캐싱: TypeScript의 Upstash Redis와 지원되는 경우 생태계별 캐시 선택.
+- 검색: Meilisearch, Typesense, Elasticsearch, Algolia 및 생태계별 검색 경로.
+- 파일 업로드: UploadThing, FilePond, Uppy 또는 없음.
+- 파일 스토리지: S3, R2, Cloudinary 또는 없음.
+
+## 참고자료
+
+- [참조 옵션](/docs/reference/options/)
+- [호환성](/docs/reference/compatibility/)

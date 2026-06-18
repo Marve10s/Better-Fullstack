@@ -1,0 +1,193 @@
+---
+title: Tonic 및 SQLx을 사용한 Rust gRPC 서비스
+description: Axum, Tonic, SQLx, 추적 및 Better Fullstack을 사용한 구조적 오류 처리 기능을 갖춘 Rust gRPC 서비스를 만듭니다.
+updated: 2026-05-12
+category: 녹
+tags:
+  - rust
+  - tonic
+  - grpc
+  - sqlx
+keywords:
+  - rust grpc starter
+  - tonic sqlx starter
+  - axum tonic grpc
+  - create rust grpc service
+  - rust microservice boilerplate
+---
+
+서비스 간 APIs 및 유형화된 gRPC 계약을 위해 형성된 Rust 백엔드가 필요할 때 이 스택을 사용하십시오.
+
+```npm
+npm create better-fullstack@latest my-rust-grpc -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sqlx \
+  --rust-api tonic \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## 이것이 만드는 것
+
+- Axum을 사용하는 Rust 서비스.
+- gRPC에 대한 Tonic.
+- 데이터베이스 액세스용 SQLx.
+- 추적 및 구조적 오류 처리.
+
+## 생성된 모양
+
+이 스택은 유형이 지정된 서비스 간 호출을 위해 구성되었습니다. Tonic은 gRPC 계약 및 서버 구현을 소유하고, SQLx는 데이터베이스 액세스를 소유하며, Axum은 생성된 프로젝트에 포함된 경우 상태 확인과 같은 작동 HTTP 경로를 계속 제공할 수 있습니다.
+
+핵심 경계는 다음과 같습니다.
+
+- `proto/`은 서비스 계약을 정의합니다.
+- 생성된 Rust gRPC 유형은 Tonic 서비스 구현에 가깝습니다.
+- SQLx 쿼리는 전송 핸들러 내부가 아닌 저장소 또는 서비스 모듈에 유지됩니다.
+- Axum 경로는 사용되는 경우 기본 제품 API이 아닌 운영 끝점입니다.
+
+## 대표 파일 트리
+
+```txt
+my-rust-grpc/
+  Cargo.toml
+  build.rs
+  proto/
+    users.proto
+  src/
+    main.rs
+    config.rs
+    error.rs
+    grpc/
+      mod.rs
+      users.rs
+    repositories/
+      mod.rs
+      users.rs
+    routes/
+      mod.rs
+      health.rs
+```
+
+`build.rs` 파일은 일반적으로 protobuf 생성이 연결되는 위치입니다. 생성된 코드를 직접 편집한 비즈니스 로직에서 제외하세요.
+
+## 프로토 및 서비스 예시
+
+작은 protobuf 계약은 클라이언트와 서버에 동일한 유형의 경계를 제공합니다.
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+Tonic 구현은 전송 오류를 gRPC 상태로 변환하고 데이터베이스 액세스를 별도의 모듈에 유지해야 합니다.
+
+```rust
+use tonic::{Request, Response, Status};
+
+use crate::grpc::users_v1::{
+    user_service_server::UserService, GetUserRequest, User,
+};
+use crate::repositories::users::UserRepository;
+
+pub struct UsersGrpc {
+    repo: UserRepository,
+}
+
+#[tonic::async_trait]
+impl UserService for UsersGrpc {
+    async fn get_user(
+        &self,
+        request: Request<GetUserRequest>,
+    ) -> Result<Response<User>, Status> {
+        let id = request.into_inner().id;
+        let user = self
+            .repo
+            .find_by_id(id)
+            .await
+            .map_err(|error| Status::internal(error.to_string()))?
+            .ok_or_else(|| Status::not_found("user not found"))?;
+
+        Ok(Response::new(User {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+        }))
+    }
+}
+```
+
+SQLx은 쿼리 형태를 명시적으로 유지합니다.
+
+```rust
+use sqlx::PgPool;
+
+pub struct UserRow {
+    pub id: i64,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn find_user(pool: &PgPool, id: i64) -> Result<Option<UserRow>, sqlx::Error> {
+    sqlx::query_as!(
+        UserRow,
+        "select id, email, name from users where id = $1",
+        id
+    )
+    .fetch_optional(pool)
+    .await
+}
+```
+
+## 호환성 참고사항
+
+gRPC 서비스 연결을 생성하려면 `--rust-api tonic`을 유지하세요. `--rust-api none`을 변경하면 이 가이드의 protobuf 및 Tonic 예제는 수동으로 추가됩니다. SQLx은 쿼리 출력을 protobuf 응답 유형에 직접 매핑할 수 있으므로 서비스 계약에 적합합니다.
+
+## 그것을 선택하는 경우
+
+gRPC 계약이 JSON 경로보다 더 적합한 내부 서비스, 마이크로서비스 및 백엔드 시스템의 경우 이 옵션을 선택하세요.
+
+## 트레이드오프
+
+gRPC는 강력한 형식의 서비스 경계에 탁월하지만 프로토콜 및 도구 기대치를 추가합니다. 브라우저 연결 HTTP API의 경우 [Axum with PostgreSQL 및 SeaORM](/guides/rust/axum-postgres-seaorm/)로 시작합니다.
+
+SQLx은 데이터베이스 동작을 투명하게 유지하지만 SQL 파일, 마이그레이션 및 쿼리 호환성을 의도적으로 관리해야 합니다.
+
+## 테스트 및 배포 참고 사항
+
+생성된 클라이언트 또는 Tonic 요청 유형을 사용하여 protobuf 수준 동작을 테스트한 다음 쿼리 정확성이 중요한 경우 실제 PostgreSQL 데이터베이스에 대해 저장소 기능을 테스트합니다.
+
+```bash
+cargo test
+```
+
+CI에서는 프로젝트가 빌드 중에 Rust 유형을 생성하는 경우 protobuf 도구를 사용할 수 있는지 확인하세요. 배포를 위해 클라이언트가 예상하는 gRPC 포트를 노출하고 플랫폼에 고유한 프로브가 필요한 경우 HTTP 상태 경로를 gRPC 서비스 주소와 별도로 유지하세요.
+
+## 문제 해결
+
+- protobuf 유형이 누락된 경우 `build.rs`을 확인하고 `.proto` 경로가 포함되어 있는지 확인하세요.
+- SQLx 컴파일 타임 검사가 실패하면 생성된 프로젝트에서 예상하는 데이터베이스 URL 또는 오프라인 쿼리 메타데이터를 확인하세요.
+- 클라이언트가 `UNIMPLEMENTED`을 수신하면 생성된 서비스 서버가 Tonic 서버 빌더에 추가되었는지 확인합니다.
+- 상태 확인은 통과했지만 gRPC 호출이 실패하는 경우 gRPC 포트가 프로세스 관리자 또는 컨테이너에 의해 노출된 포트인지 확인하세요.
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=rust&rwf=axum&rfe=none&rorm=sqlx&rapi=tonic&rcli=none&rlog=tracing&reh=anyhow-thiserror)을 엽니다.
+- [Rust 생태계 문서](/docs/ecosystems/rust/)를 읽어보세요.

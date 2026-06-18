@@ -1,0 +1,101 @@
+---
+title: 安裝
+description: 準備環境並產生你的第一個 Better Fullstack 專案。
+---
+
+Better Fullstack 透過 `create-better-fullstack` 套件運作。你不需要全域安裝它；用你的 package manager 執行，回答 prompts，CLI 就會寫入所選項目。
+
+<Callout kind="tip" title="在线预览">
+更想可視化選擇？開啟 [Stack Builder](https://better-fullstack.dev/new)，選擇相容 stack，然後複製產生的指令。
+</Callout>
+
+## 前置條件
+
+- CLI 需要 Node.js 20 或更高版本。
+- 一個終端。
+- 只有在你希望 CLI 初始化倉庫時才需要 Git。
+- 只為你要產生的專案安裝對應生態工具。
+
+| 生態系統 | 額外 tooling |
+| --- | --- |
+| TypeScript | npm、pnpm、Yarn 或 Bun |
+| React Native | 在模擬器或裝置上運行時，需要 Expo 相容的 iOS/Android tooling |
+| Rust | Rust toolchain 和 Cargo |
+| Python | Python 和 `uv` |
+| Go | Go toolchain |
+| Java | Java 21 |
+| Elixir | 資料庫驅動的 Phoenix flows 需要 Elixir、Erlang/OTP 和 PostgreSQL |
+
+## 運行 CLI
+
+<PMTabs
+  npm="npm create better-fullstack@latest"
+  pnpm="pnpm create better-fullstack@latest"
+  bun="bun create better-fullstack@latest"
+  yarn="yarn create better-fullstack@latest"
+/>
+
+新增專案名來啟動精靈：
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+嚮導會詢問生態系統、stack 選項、可選 addons、Git 和依賴安裝。
+
+## 使用顯式 flags
+
+明確 flags 會跳過它們所覆蓋的 prompts。這最適合 scripts、docs、產生指令和可重複 bug reports。
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --db-setup none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+使用 `npm create` 時，Better Fullstack flags 要放在 `--` 之後。渲染後的 pnpm、Bun 和 Yarn tabs 會移除這個 npm 專屬分隔符號。
+
+不想產生 AI 指令檔時使用 `--ai-docs none`。想在安裝依賴前先檢查檔案時使用 `--no-install`。
+
+## 範本
+
+範本是常見 stack 的簡寫：
+
+| 範本 | Stack |
+| --- | --- |
+| `t3` | Next.js、tRPC、Prisma、PostgreSQL、Better Auth |
+| `mern` | MongoDB、Express、React Router、Node.js |
+| `pern` | PostgreSQL、Express、TanStack Router、Node.js |
+| `uniwind` | Expo + Uniwind，僅 mobile |
+| `none` | 不使用簡寫模板 |
+
+```npm
+npm create better-fullstack@latest my-app -- --template t3
+```
+
+## 寫入文件前先驗證
+
+使用 `--dry-run` 預覽產生文件，不寫入項目：
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+當你希望 CLI 在 scaffold 後執行產生的 checks 時使用 `--verify`。它不會啟動 dev servers。
+
+## 下一步
+
+- 走一遍 [第一個專案](/docs/getting-started/first-project/) 流程。
+- 在 [CLI Create](/docs/cli/create/) 瀏覽所有 flags。
+- 在 [生態系](/docs/ecosystems/) 比較語言支援。

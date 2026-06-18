@@ -121,11 +121,13 @@ export const dependencyVersionMap = {
   "@elysiajs/node": "^1.4.5",
 
   "@elysiajs/cors": "^1.4.2",
+  "@elysiajs/openapi": "^1.4.15",
   "@elysiajs/trpc": "^1.1.0",
   elysia: "^1.4.28",
 
   "@hono/node-server": "^2.0.4",
   "@hono/trpc-server": "^0.4.2",
+  "@hono/zod-openapi": "^1.4.0",
   hono: "^4.12.25",
   "@netlify/functions": "^5.3.0",
   "@octokit/rest": "^22.0.1",
@@ -141,6 +143,8 @@ export const dependencyVersionMap = {
 
   fastify: "^5.8.5",
   "@fastify/cors": "^11.2.0",
+  "@fastify/swagger": "^9.7.0",
+  "fastify-type-provider-zod": "^6.1.0",
 
   "@nestjs/core": "^11.1.27",
   "@nestjs/common": "^11.1.27",
@@ -165,6 +169,7 @@ export const dependencyVersionMap = {
   fets: "^0.8.7",
 
   turbo: "^2.9.18",
+  nx: "^23.0.0",
 
   // Chat SDK (Vercel)
   chat: "^4.30.0",
@@ -238,6 +243,12 @@ export const dependencyVersionMap = {
 
   // GraphQL Yoga + Pothos
   "@pothos/core": "^4.12.0",
+
+  // OpenAPI
+  "@asteasolutions/zod-to-openapi": "^8.5.0",
+  "@scalar/express-api-reference": "^0.10.3",
+  "@scalar/fastify-api-reference": "^1.59.3",
+  "@scalar/hono-api-reference": "^0.11.3",
 
   "@trpc/tanstack-react-query": "^11.17.0",
   "@trpc/server": "^11.17.0",

@@ -1,0 +1,161 @@
+---
+title: TanStack Start und erneut senden
+description: Erstellen Sie eine TanStack Start-App mit E-Mail-Unterstützung für erneutes Senden, Better Auth, Drizzle, SQLite, Tailwind CSS und shadcn/ui mit Better Fullstack.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - resend
+  - email
+  - better-auth
+keywords:
+  - tanstack start resend
+  - tanstack start email
+  - tanstack start transactional email
+  - create tanstack start resend app
+  - resend fullstack starter
+---
+
+Verwenden Sie diesen Stack, wenn Ihre TanStack Start-App Transaktions-E-Mails für Anmeldeabläufe, Produktbenachrichtigungen, Einladungen oder Onboarding-Nachrichten benötigt.
+
+```npm
+npm create better-fullstack@latest my-email-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --email resend \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## Was dadurch entsteht
+
+- Eine TanStack Start-App mit eigener Serverroutenebene.
+- Option „Als E-Mail-Anbieter erneut senden“.
+- Better Auth mit relationaler Datenbankunterstützung.
+- Drizzle und SQLite für die lokale Entwicklung.
+- Tailwind CSS und shadcn/ui für die Schnittstelle.
+
+## Erzeugte Form
+
+Dieser Stapel beginnt mit der Fullstack-Form TanStack Start und fügt die E-Mail-Anbieterkonfiguration hinzu. Der E-Mail-Anbieter wird mit `--email resend` ausgewählt; Der Rest der App verwendet weiterhin `--backend self`, sodass Sie keinen separaten API-Server nur zum Senden von E-Mails benötigen.
+
+Repräsentative Form:
+
+```txt
+my-email-app/
+  bts.jsonc
+  src/
+    routes/
+    lib/
+      auth/
+      db/
+      email/
+```
+
+Betrachten Sie den Baum oben als Leitfaden zum Besitz und nicht als Versprechen exakt generierter Pfade. Der E-Mail-Zustellungscode sollte sich hinter einem kleinen, nur auf den Server beschränkten Helfer befinden, damit React-Komponenten niemals Anbietergeheimnisse importieren.
+
+## Beispiel für einen E-Mail-Helfer
+
+Eine gute erste Abstraktion ist eine enge Funktion für jede Produkt-E-Mail. Dadurch werden Resend-spezifische Details aus Authentifizierungsrückrufen, Onboarding-Abläufen und Routenhandlern ausgeschlossen:
+
+```ts
+type SendInviteEmailInput = {
+  to: string;
+  inviterName: string;
+  inviteUrl: string;
+};
+
+export async function sendInviteEmail(input: SendInviteEmailInput) {
+  const subject = `${input.inviterName} invited you`;
+
+  return sendTransactionalEmail({
+    to: input.to,
+    subject,
+    html: `
+      <p>${input.inviterName} invited you to join their workspace.</p>
+      <p><a href="${input.inviteUrl}">Accept the invite</a></p>
+    `,
+  });
+}
+```
+
+Die konkrete `sendTransactionalEmail`-Implementierung sollte den Schlüssel „Resend API“ aus Serverumgebungsvariablen lesen und nicht aus Clientkomponenten importiert werden.
+
+## Beispielhafte Routennutzung
+
+Senden Sie eine E-Mail nach der Datenbanktransaktion, die den dauerhaften Produktstatus erstellt. Erstellen Sie für Einladungen zuerst den Einladungsdatensatz und senden Sie dann die E-Mail:
+
+```ts
+import { z } from "zod";
+
+const inviteInput = z.object({
+  email: z.string().email(),
+  workspaceId: z.string().min(1),
+});
+
+export async function inviteMember(rawInput: unknown) {
+  const input = inviteInput.parse(rawInput);
+
+  const invite = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    workspaceId: input.workspaceId,
+  };
+
+  await sendInviteEmail({
+    to: invite.email,
+    inviterName: "A teammate",
+    inviteUrl: `https://example.com/invites/${invite.id}`,
+  });
+
+  return invite;
+}
+```
+
+Erwägen Sie für Produktionssysteme eine Auftragswarteschlange oder eine Wiederholungstabelle für E-Mails, die auch bei einem vorübergehenden Ausfall des Anbieters zugestellt werden müssen.
+
+## Wann man es wählt
+
+Wählen Sie diese Option, wenn E-Mail Teil des Produktworkflows ist und kein nachträglicher Einfall. Resend eignet sich hervorragend für entwicklerorientierte Transaktions-E-Mails und sorgt dafür, dass der generierte Stack übersichtlich bleibt.
+
+## Häufige Anwendungsfälle
+
+- Magische Links und Bestätigungs-E-Mails.
+- Team lädt ein.
+- Test- oder Onboarding-E-Mails.
+- Produktbenachrichtigungen von Serveraktionen oder API-Routen.
+
+## Kompatibilitätshinweise
+
+- `--email resend` ist additiv. Es ersetzt nicht `--auth better-auth`, `--api trpc` oder `--backend self`.
+- Der E-Mail-Versand muss serverseitig erfolgen. Legen Sie den Schlüssel „Resend API“ niemals über öffentliche Umgebungsvariablen oder Browser-Bundles offen.
+- SQLite ist praktisch für die lokale Entwicklung. Wenn E-Mail-Workflows von dauerhaften Prüfprotokollen, Wiederholungsversuchen oder Datensätzen auf Teamebene abhängen, ist PostgreSQL möglicherweise die bessere Produktionsdatenbank.
+- Better Auth E-Mail-Flows und Produktbenachrichtigungsflows sollten die Anbieterkonfiguration teilen, aber auf Funktionsebene getrennt bleiben.
+
+## Bereitstellungshinweise
+
+Konfigurieren Sie den Schlüssel „Erneut senden“ API, die Absenderdomäne, die Geheimnisse Better Auth und die App-URL in der Bereitstellungsumgebung. Bevor Sie sich auf die Zustellung von Produktionsmails verlassen, sollte die Domänenüberprüfung abgeschlossen sein.
+
+Verwenden Sie für Vorschaubereitstellungen einen eingeschränkten Absender oder eine Zulassungsliste für Testempfänger, wenn Ihre App E-Mails aus nicht vertrauenswürdigem Vorschauverkehr auslösen kann.
+
+## Fehlerbehebung
+
+- Wenn keine E-Mails eingehen, überprüfen Sie die Protokolle des Anbieters, bevor Sie den Anwendungscode ändern.
+- Wenn Links auf localhost verweisen, aktualisieren Sie die URL der Produktions-App, die beim Erstellen von Rückruf- oder Einladungslinks verwendet wird.
+- Wenn Authentifizierungs-E-Mails funktionieren, Produkt-E-Mails jedoch fehlschlagen, überprüfen Sie, ob beide Pfade dieselbe reine Server-Anbieterkonfiguration verwenden.
+- Wenn lokale Tests versehentlich echte E-Mails senden, fügen Sie einen Entwicklungstransport hinzu oder schützen Sie Nicht-Produktionsumgebungen.
+
+## Vergleichshinweise
+
+Verwenden Sie den umfassenderen [TanStack Start-Leitfaden](/guides/typescript/create-tanstack-start-project/), wenn Sie noch keine E-Mail benötigen. Wählen Sie den Befehl dieser Seite, wenn Transaktions-E-Mails Teil des ursprünglichen Produktvertrags sind, da diese Entscheidung vom ersten Tag an in `bts.jsonc` aufgezeichnet wird.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc).
+- Vergleichen Sie die E-Mail-Optionen in der [CLI Referenz erstellen](/docs/cli/create/).
+- Beginnen Sie mit dem umfassenderen [TanStack Start-Leitfaden](/guides/typescript/create-tanstack-start-project/).

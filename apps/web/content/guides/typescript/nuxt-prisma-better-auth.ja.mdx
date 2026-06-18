@@ -1,0 +1,129 @@
+---
+title: Nuxt と Prisma および Better Auth
+description: PostgreSQL、Prisma、Better Auth、oRPC、Tailwind CSS、および生成された Better Fullstack プロジェクト構造を使用して、Nuxt フルスタック アプリを作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nuxt
+  - prisma
+  - better-auth
+  - postgres
+keywords:
+  - nuxt prisma better auth
+  - nuxt postgres starter
+  - nuxt fullstack boilerplate
+  - create nuxt fullstack app
+  - nuxt orpc starter
+---
+
+リレーショナル データ、認証、および型付き API コントラクトを備えた Vue/Nuxt フルスタック アプリが必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-nuxt-app -- \
+  --ecosystem typescript \
+  --frontend nuxt \
+  --backend self \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+```
+
+## これが生み出すもの
+
+- フルスタック モードの Nuxt アプリ。
+- PostgreSQL および Prisma。
+- Better Auth。
+- oRPC (型付き API コントラクト)。
+- Tailwind CSS。
+- 再現可能な `bts.jsonc` スタック構成。
+
+## 生成された形状
+
+このスタックは、アプリケーションを Nuxt のフルスタック モデル内に保持します。 Prisma はデータベース スキーマと移行を所有し、Better Auth は認証動作を所有し、oRPC は React フロントエンドを想定せずに型付きコントラクトを提供します。
+
+代表的な形状：
+
+```txt
+my-nuxt-app/
+  bts.jsonc
+  app/
+  server/
+  prisma/
+    schema.prisma
+```
+
+これを代表的なレイアウトとして扱います。重要な境界は、Vue コンポーネントが型指定されたサーバー コントラクトを呼び出す一方で、サーバー専用のデータベースと認証コードが Nuxt サーバー モジュールまたは API ハンドラーに留まるという点です。
+
+## Prisma モデルの例
+
+小規模な製品モデルは次のように開始できます。
+
+```prisma
+model Workspace {
+  id        String   @id
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+```
+
+Better Auth の必要なモデルをアダプターのドキュメントと整合させ、アプリケーション固有の表から切り離してください。製品テーブルでは、ログイン データを複製するのではなく、識別子によって認証ユーザーを参照する必要があります。
+
+## oRPC コントラクト形状の例
+
+oRPC を使用して、Nuxt アプリの検証済みサーバー操作を記述します。
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+Vue コンポーネントだけでなく、サーバー実装にも認可チェックを配置します。クライアント側のガードは UX を向上させますが、データは保護しません。
+
+## 互換性に関する注意事項
+
+Nuxt は、型付きコントラクトに Better Fullstack の oRPC を使用します。 tRPC は React ベースの TypeScript フロントエンド用に予約されているため、このガイドでは意図的に `--api orpc` を使用します。
+
+`--backend self` は、Nuxt フルスタックの正しい選択です。 API サーバーを個別にデプロイする場合は、そのペアをサポートするスタックで Hono などのバックエンド オプションを使用します。
+
+## いつ選択するか
+
+チームが Vue を好み、サーバー対応のルーティングが必要で、別個のフロントエンドと API サーバーではなくフルスタック アプリの形状が必要な場合は、Nuxt を選択してください。
+
+## 導入メモ
+
+デプロイメント環境で PostgreSQL 接続文字列、Better Auth シークレット、およびパブリック アプリ URL を設定します。新しいスキーマに依存するコードをデプロイする前に、Prisma 移行を実行します。
+
+サーバーレス プラットフォームの場合は、Prisma クライアントがどのように生成されるか、およびデータベース接続がどのようにプールされるかを確認してください。マネージド PostgreSQL プロバイダーは、多くの場合、サーバーレス ランタイム用の最も安全な接続文字列を文書化します。
+
+## トラブルシューティング
+
+- Prisma クライアント タイプが古い場合は、`schema.prisma` を変更した後にクライアントを再生成します。
+- oRPC 呼び出しが運用環境でのみ失敗する場合は、サーバーのルート ベース URL とデプロイメント アダプターの動作を確認してください。
+- 認証リダイレクト ループの場合は、信頼できるオリジン、Cookie、Better Auth によって使用されるアプリ URL を確認してください。
+- 移行が間違ったデータベースを指している場合は、ローカル コマンドとデプロイされたランタイムの両方で使用される環境変数を調べてください。
+
+## 比較メモ
+
+Vue および Nuxt 規則が主な優先事項である場合は、このスタックを使用します。 React-first スタックの場合は [Next.js with Drizzle および Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) を選択し、別の Hono バックエンドが必要な場合は [SvelteKit with Hono および Drizzle](/guides/typescript/sveltekit-hono-drizzle/) を選択します。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=nuxt&be=self&db=postgres&orm=prisma&au=better-auth&api=orpc) を開きます。
+- [Next.js と Drizzle および Better Auth](/guides/typescript/nextjs-drizzle-better-auth/) と比較します。
+- [互換性リファレンス](/docs/reference/compatibility/) をお読みください。

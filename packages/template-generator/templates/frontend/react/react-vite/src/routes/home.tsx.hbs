@@ -16,6 +16,10 @@ import { query, resolved } from "@/utils/garph";
 import { graphqlFetch } from "@/utils/graphql";
   {{/if}}
 {{/if}}
+{{#if (eq api "openapi")}}
+import { env } from "@{{projectName}}/env/web";
+import { useEffect, useState } from "react";
+{{/if}}
 
 const TITLE_TEXT = `
  ██████╗ ███████╗████████╗████████╗███████╗██████╗
@@ -50,6 +54,21 @@ export default function Home() {
     queryKey: ["healthCheck"],
     queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),
   });
+  {{else if (eq api "openapi")}}
+  const [healthCheck, setHealthCheck] = useState({ isLoading: true, data: false });
+  useEffect(() => {
+    let active = true;
+    fetch(`${env.VITE_SERVER_URL}/health`)
+      .then((response) => {
+        if (active) setHealthCheck({ isLoading: false, data: response.ok });
+      })
+      .catch(() => {
+        if (active) setHealthCheck({ isLoading: false, data: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
   {{/if}}
 
   return (
@@ -71,7 +90,7 @@ export default function Home() {
                   : "Error"}
             </span>
           </div>
-          {{else if (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph"))}}
+          {{else if (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "openapi"))}}
           <div className="flex items-center gap-2">
             <div
               className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}

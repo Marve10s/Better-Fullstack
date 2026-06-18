@@ -121,6 +121,34 @@ describe("processPackageConfigs", () => {
     expect(db?.scripts?.["db:migrate"]).toBeUndefined();
   });
 
+  it("uses explicit Nx targets so db scripts with colons are not parsed as configurations", () => {
+    const vfs = createSeededVFS();
+    vfs.writeJson("package.json", {
+      name: "starter",
+      scripts: {},
+      workspaces: [],
+    });
+
+    processPackageConfigs(
+      vfs,
+      makeConfig({
+        projectName: "nx-demo",
+        addons: ["nx"],
+        database: "postgres",
+        orm: "prisma",
+      }),
+    );
+
+    expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
+      "dev:web": "nx run web --target=dev",
+      "dev:native": "nx run native --target=dev",
+      "dev:server": "nx run server --target=dev",
+      "db:push": "nx run @nx-demo/db --target=db:push",
+      "db:generate": "nx run @nx-demo/db --target=db:generate",
+      "db:migrate": "nx run @nx-demo/db --target=db:migrate",
+    });
+  });
+
   it("pins Better Auth's Kysely peer with the package-manager override field", () => {
     for (const [packageManager, expected] of [
       ["bun", { overrides: { kysely: "0.28.17" } }],

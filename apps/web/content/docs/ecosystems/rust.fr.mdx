@@ -1,0 +1,62 @@
+---
+title: Rouiller
+description: Backend Rust, CLI, interface WebAssembly, GraphQL, gRPC, base de données, journalisation, mise en cache et échafaudages d'authentification.
+---
+
+Les projets Rust utilisent des modèles Cargo et natifs du langage. Choisissez les options Rust pour les services backend, CLIs, GraphQL/gRPC, les interfaces WebAssembly, la journalisation, la mise en cache et les assistants d'authentification.
+
+## Conditions préalables
+
+- Chaîne d'outils Rust et Cargo.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Catégories de rouille
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Cadre Web | `axum` `actix-web` `rocket` `none` |
+| L'extrémité avant | `leptos` `dioxus` `none` |
+| ORM | `sea-orm` `sqlx` `diesel` `none` |
+| API | `tonic` `async-graphql` `none` |
+| CLI | `clap` `ratatui` `none` |
+| Bibliothèques | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |
+| Enregistrement | `tracing` `env-logger` `none` |
+| Gestion des erreurs | `anyhow-thiserror` `eyre` `none` |
+| Mise en cache | `moka` `redis` `none` |
+| Authentification | `oauth2` `torii` `none` |
+| Temps réel | `tokio-tungstenite` `none` |
+| File d'attente des messages | `lapin` `none` |
+| Observabilité | `opentelemetry` `none` |
+| Modèles | `askama` `tera` `none` |
+
+## Comportement généré
+
+- `cargo build` est le chemin d'installation/vérification lorsque l'installation est activée.
+- Les fichiers modèles Leptos, Dioxus, Tonic, Clap et Ratatui sont inclus uniquement lorsque leurs options de correspondance sont sélectionnées.
+- `rustLibraries` est à sélection multiple ; transmettez `none` ou omettez les bibliothèques dont vous ne voulez pas.
+- Les fichiers d'instructions AI sont toujours disponibles via `--ai-docs`, y compris `--ai-docs none`.

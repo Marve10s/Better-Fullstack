@@ -1,0 +1,60 @@
+---
+title: React Native
+description: Expo 및 React Native 생산 중심 통합을 갖춘 모바일 스캐폴드.
+---
+
+React Native은 모바일 전용 생태계입니다. Expo 프로젝트를 스캐폴드하고 모바일 선택 사항을 TypeScript 웹 프런트엔드, 백엔드, 데이터베이스 및 배포 범주와 별도로 유지합니다.
+
+## 전제조건
+
+- Node.js 20+.
+- npm, pnpm, Yarn 또는 Bun.
+- 시뮬레이터 또는 장치 검증이 필요한 경우 Expo 호환 iOS/Android 도구입니다.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## 모바일 비계 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 네이티브 프런트엔드 | `native-bare` `native-uniwind` `native-unistyles` |
+| 항해 | `expo-router` `react-navigation` `none` |
+| UI | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| 저장 | `mmkv` `none` |
+| 테스트 | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| 푸시 | `expo-notifications` `none` |
+| 오타 | `expo-updates` `none` |
+| 딥링킹 | `expo-linking` `none` |
+
+## 생성된 통합
+
+- Expo 딥 링크 또는 OTA가 선택된 경우 구성표/런타임 설정이 포함된 구성입니다.
+- Expo 탐색에 따라 라우터 경로 파일 또는 React Navigation 진입점.
+- Tamagui, Gluestack UI, Uniwind 또는 Unistyles용 모바일 UI 공급자/테마 파일입니다.
+- 스토리지가 선택된 경우 MMKV 클라이언트 도우미.
+- Jest Expo 및 React Native 테스트 라이브러리 예제, Maestro 흐름 또는 둘 다.
+- Expo 알림에 대한 푸시 알림 등록 도우미입니다.
+- Expo 업데이트를 위한 OTA 업데이트 도우미.
+- 모바일 클라이언트 구성을 위한 `EXPO_PUBLIC_` 규칙을 사용하는 `.env.example`.
+
+## 호환성 참고사항
+
+- React Native은(는) TypeScript 웹 프런트엔드, 백엔드, 데이터베이스, 웹 UI, 웹 배포 또는 서버 배포 카테고리를 노출하지 않습니다.
+- Uniwind 및 Unistyles UI 모드는 일치하는 Expo 프런트엔드 변형과 연결되어 있습니다.
+- Tamagui와 Gluestack UI는 충돌하는 스타일 설정을 피하기 위해 기본 Expo 변형을 사용합니다.
+- 모바일 인증 흐름에 리디렉션 URI 예제가 필요한 경우 딥링킹이 자동으로 활성화됩니다.

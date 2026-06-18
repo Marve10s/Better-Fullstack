@@ -69,6 +69,13 @@ export const TECH_OPTIONS: Record<
       color: "from-pink-500 to-rose-600",
     },
     {
+      id: "openapi",
+      name: "OpenAPI",
+      description: "REST endpoints with OpenAPI 3.1 and Scalar docs",
+      icon: "https://cdn.simpleicons.org/openapiinitiative/6BA539",
+      color: "from-emerald-500 to-green-700",
+    },
+    {
       id: "none",
       name: "No API",
       description: "No API layer (API routes disabled)",
@@ -2246,6 +2253,14 @@ export const TECH_OPTIONS: Record<
       icon: "https://cdn.simpleicons.org/turborepo/EF4444",
       color: "from-gray-400 to-gray-700",
       default: true,
+    },
+    {
+      id: "nx",
+      name: "Nx",
+      description: "Smart monorepo task runner and cache",
+      icon: "https://cdn.simpleicons.org/nx/143055",
+      color: "from-sky-500 to-cyan-700",
+      default: false,
     },
     {
       id: "pwa",

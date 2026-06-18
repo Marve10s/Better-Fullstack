@@ -1,0 +1,66 @@
+---
+title: Better Fullstack 文檔
+description: 了解 Better Fullstack 如何為 web、mobile 和語言原生生態產生類型化項目。
+---
+
+Better Fullstack 是針對類型化產品 stack 的專案產生器。選擇 frontend、backend、資料層、服務、tooling 和目標生態；CLI 會寫入符合的文件，並且把 stack 記錄到 `bts.jsonc`。
+
+需要引導式設定時使用互動式 CLI；想視覺化比較選項時使用 [Stack Builder](https://better-fullstack.dev/new)；需要給 CI、文件或其他 developer 留下可重複指令時使用明確 flags。
+
+## 要求
+
+CLI 運行在 Node.js 20 或更高版本。
+
+```bash
+node --version
+```
+
+產生的專案也可能需要對應生態的 toolchain：React Native 需要 Expo tooling，Rust 需要 Cargo，Python 需要 `uv`，Go 需要 Go，Java 需要 Java 21，Phoenix 專案需要 Elixir/Erlang。
+
+## 創建第一個項目
+
+運行嚮導並回答 prompts：
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+使用 npm 時，Better Fullstack flags 要放在 `--` 分隔符號之後。 package-manager tabs 會顯示對應的 pnpm、Bun 和 Yarn 指令，這些指令不需要 npm 專屬的分隔符號。
+
+## 預設配置會創建什麼
+
+接受 defaults 會建立一個 TypeScript 項目，包含：
+
+- TanStack Router frontend 和 Hono backend。
+- Bun runtime、SQLite、Drizzle、Better Auth 和 tRPC。
+- Tailwind CSS、shadcn/ui、Vitest 和 Turborepo。
+- 啟動 CLI 時使用的 package manager、穩定依賴版本、Git、啟用安裝，以及 `CLAUDE.md`。
+
+你可以保留這個 stack，從模板開始，或完全切換到其他生態。
+
+## 選擇 stack 的方式
+
+| 路徑 | 適合場景 |
+| --- | --- |
+| CLI 精靈 | 你想要 prompts 和合理 defaults。 |
+| Stack Builder | 你想在生成前探索兼容組合。 |
+| 顯式 flags | 你想要在 scripts、docs 或 issue reports 中得到可重複 output。 |
+| Agent Skill | 你想讓 coding agent 使用 CLI workflow，而不是手寫 starter 檔案。 |
+| MCP server | 你想讓 AI coding agent 檢查 schema、驗證相容性，並且安全地 dry-run。 |
+
+## 生成項目的上下文
+
+每個生成項目都會包含：
+
+- 記錄所選 stack 的 `bts.jsonc`。
+- CLI 列印的可複現指令。
+- 面向所選生態的 framework、package 和 config 檔案。
+- 可選的 AI 指令文件，例如 `CLAUDE.md`、`Agents.md` 或 `.cursorrules`。
+
+## 下一步
+
+- [安裝](/docs/getting-started/installation/) 解釋 launchers 和 toolchains。
+- [第一個項目](/docs/getting-started/first-project/) 逐步介紹 scaffold、dry-run、安裝和檢查。
+- [CLI Create](/docs/cli/create/) 列出 flags 和腳本化範例。
+- [生態系](/docs/ecosystems/) 比較 TypeScript、React Native、Rust、Python、Go、Java 和 Elixir。
+- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) 展示如何在一個專案中組合 web、backend、database 和 mobile parts。

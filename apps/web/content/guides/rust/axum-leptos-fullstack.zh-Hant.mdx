@@ -1,0 +1,164 @@
+---
+title: Fullstack Rust with Axum and Leptos
+description: 使用 Better Fullstack 的 Rust project scaffolding 建立包含 Axum、Leptos 和 SeaORM 的 fullstack Rust app。
+updated: 2026-05-12
+category: Rust
+tags:
+  - rust
+  - axum
+  - leptos
+  - seaorm
+keywords:
+  - fullstack rust starter
+  - axum leptos starter
+  - rust leptos fullstack
+  - create rust fullstack app
+  - axum seaorm leptos
+---
+
+當你希望產生的應用程式在 server 和 frontend 兩側都使用 Rust 時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-rust-fullstack -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend leptos \
+  --rust-orm sea-orm \
+  --rust-api none \
+  --rust-cli none \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## 創建內容
+
+- 基於 Axum 的 Rust server。
+- Leptos 作為 Rust frontend 選項。
+- SeaORM 用於資料庫存取。
+- tracing 和結構化錯誤處理預設配置。
+
+## 生成結構
+
+這個 stack 是 Rust-first 的 fullstack app。 Axum 負責 server runtime，Leptos 負責 frontend surface，SeaORM 為後端提供類型化持久化層。
+
+當你希望一個 Rust workspace 同時包含這些內容時，產生的 app 很有用：
+
+- Server startup、routing 和 shared state。
+- Leptos view 與互動式 UI code。
+- Database entity 與 server-side data access。
+- 從一開始就配置好的 logging 和 error handling。
+
+## 代表性文件樹
+
+你會看到一個在單一專案中分離 server concern 和 UI concern 的 layout：
+
+```txt
+my-rust-fullstack/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    app.rs
+    error.rs
+    routes/
+      mod.rs
+      api.rs
+    entities/
+      mod.rs
+      user.rs
+    pages/
+      mod.rs
+      home.rs
+      users.rs
+    components/
+      mod.rs
+```
+
+把生成的樹當作邊界指南：Leptos component 應該專注渲染和交互，資料庫工作應留在 server-side。
+
+## Server 與 UI 範例
+
+Axum route 可以為 server-side action 或 integration client 暴露 JSON endpoint：
+
+```rust
+use axum::{extract::State, Json};
+use serde::Serialize;
+
+use crate::{error::AppError, AppState};
+
+#[derive(Debug, Serialize)]
+pub struct HealthResponse {
+    pub status: &'static str,
+}
+
+pub async fn health(State(_state): State<AppState>) -> Result<Json<HealthResponse>, AppError> {
+    Ok(Json(HealthResponse { status: "ok" }))
+}
+```
+
+Leptos page 應該呼叫 server function 或 API helper，而不是從 UI code 開啟資料庫連線：
+
+```rust
+use leptos::prelude::*;
+
+#[component]
+pub fn HomePage() -> impl IntoView {
+    view! {
+        <main>
+            <h1>"Dashboard"</h1>
+            <p>"Rust server, Rust UI, and one generated project shape."</p>
+        </main>
+    }
+}
+```
+
+對於 database-backed UI，把資料庫操作放在 server boundary 後面：
+
+```rust
+use sea_orm::{DatabaseConnection, EntityTrait};
+
+use crate::entities::user;
+
+pub async fn list_users(db: &DatabaseConnection) -> Result<Vec<user::Model>, sea_orm::DbErr> {
+    user::Entity::find().all(db).await
+}
+```
+
+## 相容性說明
+
+本指南使用 Rust-specific flag，而非 TypeScript frontend/backend flag。 Rust frontend 選擇應放在 `--rust-frontend` 下。
+
+`--rust-api none` 和 `--rust-cli none` 讓這個 scaffold 專注於 web app。只有當生成項目明確要服務多個 interface 時，才新增 gRPC 或 CLI 選項。如果你想要 API-only 後端，請使用 `--rust-frontend none` 並參考 Axum API guide。
+
+## 何時選擇
+
+當專案受益於跨 app boundary 的 Rust-first 架構，並且團隊適應 Rust compile-time model 時，選擇這個 stack。
+
+它很適合 internal tool、admin surface，以及那些共享 Rust 類型和 validation 比採用 JavaScript frontend ecosystem 更有價值的產品區域。
+
+## 取捨
+
+Fullstack Rust 減少語言切換，但 frontend workflow 不同於 React、Vue 或 Svelte。需要為 Rust compile time、Leptos-specific routing pattern，以及從 Rust-generated UI 調試瀏覽器行為的團隊能力做計劃。
+
+## 測試與部署
+
+對 service 和 model logic 使用 Rust unit test，並圍繞最重要的 flow 添加 route 或 browser-level test。
+
+```bash
+cargo test
+```
+
+部署時驗證兩部分：server 必須接收環境變量，frontend asset 必須透過 generated project script 建置。如果應用儲存用戶數據，請把 database migration 放進部署路徑。
+
+## 故障排查
+
+- 如果 UI 能建置但缺少 server data，檢查 server route 或 server function 是否已註冊到 Axum router。
+- 如果 database type 發生 drift，請依照 scaffold 文件中的 workflow 重新產生或更新 SeaORM entity。
+- 如果瀏覽器 route 在本地可用但部署後不可用，請同時檢查產生 server routing 和 static asset 設定。
+- 如果日誌太少，在啟動 server 前設定 `RUST_LOG=info`。
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=rust&rwf=axum&rfe=leptos&rorm=sea-orm&rapi=none&rcli=none&rlog=tracing&reh=anyhow-thiserror)。
+- 對比 [Axum with PostgreSQL and SeaORM](/guides/rust/axum-postgres-seaorm/)。
+- 閱讀 [Rust ecosystem docs](/docs/ecosystems/rust/)。

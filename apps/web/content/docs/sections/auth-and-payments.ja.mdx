@@ -1,0 +1,33 @@
+---
+title: 認証と支払い
+description: ID、認証ヘルパー、および支払いプロバイダーを選択します。
+---
+
+認証と支払いは、生成されたスキーマ、環境変数、コールバック、ミドルウェア、プロバイダーのセットアップに関するメモに影響します。
+
+## 認証
+
+TypeScript 認証プロバイダーには、Better Auth、Clerk、NextAuth、Stack Auth、Supabase Auth、Auth0、および none が含まれます。
+
+他のエコシステムでは、テンプレートが存在するネイティブ ヘルパーを公開しています。
+
+| 生態系 | 認証の選択肢 |
+| --- | --- |
+| さび | OAuth2 またはなし。 |
+| パイソン | Authlib、JWT、またはなし。 |
+| 行く | Casbin、JWT ヘルパー、またはなし。 GoBetterAuth はグローバル `--auth go-better-auth` 値を使用します。 |
+| ジャワ | Spring Security またはなし。 |
+| エリクサー | phx.gen.auth、Ueberauth、Guardian、またはなし。一部の Elixir 認証の選択肢は、テンプレートが追いつくまでグラフが無効のままです。 |
+
+## 支払い
+
+今日の支払いプロバイダーは TypeScript です: Polar、Stripe、Lemon Squeezy、Paddle、Dodo、またはなし。
+
+一部のプロバイダーでは、特定の認証またはフロントエンドの選択が必要です。たとえば、Polar には Better Auth と Web フロントエンドが必要です。
+
+## 参考文献
+
+- [TypeScript オプション](/docs/reference/options/typescript/)
+- [移動オプション](/docs/reference/options/go/)
+- [エリクサーオプション](/docs/reference/options/elixir/)
+- [互換性](/docs/reference/compatibility/)

@@ -1,0 +1,84 @@
+---
+title: MCP コマンド
+description: AI コーディング エージェントの Better Fullstack MCP サーバーを標準入出力経由で起動します。
+---
+
+`mcp` コマンドは、stdio 経由で Better Fullstack MCP サーバーを起動します。エージェントはこれを使用して、スキーマの検査、互換性の検証、生成されたファイルのプレビュー、プロジェクトの作成、サポートされている機能の既存プロジェクトへの追加を行うことができます。
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
+サーバーは標準入出力トランスポートを使用します。コマンドを起動し、標準入出力を介して通信するように MCP クライアントを構成します。
+
+## クライアントの例
+
+Claude Code と npm:
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+```
+
+pnpm、Bun、または Yarn の場合は、`--` の後のコマンドを一致するランチャーに置き換えます。
+
+| パッケージマネージャー | ランチャー |
+| --- | --- |
+| npm | `npx -y create-better-fullstack@latest mcp` |
+| pnpm | `pnpm dlx create-better-fullstack@latest mcp` |
+| Bun | `bunx create-better-fullstack@latest mcp` |
+| 糸 | `yarn dlx create-better-fullstack@latest mcp` |
+
+npm を使用した汎用 MCP クライアント構成:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+他のパッケージ マネージャーの同等のコマンド/引数:
+
+| パッケージマネージャー | `command` | `args` |
+| --- | --- | --- |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| 糸 | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## 工具表面
+
+| 道具 | 目的 |
+| --- | --- |
+| `bfs_get_guidance` | ワークフロー ルールとフィールド セマンティクスを返します。 |
+| `bfs_get_schema` | 1 つのカテゴリまたはすべてのカテゴリに対して有効なオプションを返します。 |
+| `bfs_check_compatibility` | 生成前にスタックの選択を検証します。 |
+| `bfs_plan_project` | メモリ内で生成をドライランします。 |
+| `bfs_create_project` | 新しいプロジェクトをディスクに書き込みます。 |
+| `bfs_plan_addition` | プランには、既存のプロジェクトの機能が追加されます。 |
+| `bfs_add_feature` | サポートされている機能を既存のプロジェクトに追加します。 |
+
+プロジェクトの計画、作成、および追加の応答には、生成されたファイルまたはミューテーションの概要とともにグラフ メタデータ (`graphSummary`、`effectiveStack`、および `stackPartSpecs`) が含まれます。
+
+入力、出力、安全なワークフローについては、[MCP ツール リファレンス](/docs/ai/mcp-tools/) を参照してください。
+
+## 安全上の注意事項
+
+- `bfs_plan_project` はファイルを書き込みません。
+- `bfs_create_project` はファイルを書き込みますが、依存関係をインストールしません。
+- `bfs_add_feature` は既存の Better Fullstack プロジェクトを変更しますが、依存関係はインストールされません。
+- エージェントは、プロジェクトを作成する前に `bfs_get_guidance` および `bfs_check_compatibility` を呼び出す必要があります。
+
+## 関連コマンド
+
+- `docs` は、公開ドキュメント サイトを開きます。
+- `builder` は、対話型の Stack Builder を開きます。
+- `sponsors` は Better Fullstack スポンサーを示します。
+
+これらのユーティリティ コマンドの例については、[CLI リファレンス](/docs/cli/) を参照してください。

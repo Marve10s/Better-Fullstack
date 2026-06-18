@@ -1,0 +1,57 @@
+---
+title: 建立 Rust 後端
+description: 使用 Better Fullstack 建立包含 Axum、SeaORM、PostgreSQL、tracing 和結構化錯誤處理的 Rust 後端。
+updated: 2026-05-21
+category: Packs
+tags:
+  - rust
+  - axum
+  - seaorm
+  - postgres
+  - backend
+keywords:
+  - create rust backend
+  - rust api starter
+  - axum postgres starter
+  - seaorm api starter
+  - rust backend boilerplate
+---
+
+當你想要一個緊湊的 API 服務，並且需要強型別、可預測效能和編譯器約束的結構時，請使用 Rust Backend pack。
+
+<StarterPackCta id="rust-backend" />
+
+## 生成 Rust backend starter
+
+開啟 [Stack Builder 中的 Rust Backend pack](/new?preset=rust-api&view=command)，或執行：
+
+```bash
+bun create better-fullstack@latest my-rust-backend \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Pack 包含什麼
+
+- Axum 用於 HTTP routes。
+- SeaORM 用於類型化資料庫存取。
+- 面向 PostgreSQL 的 backend 結構。
+- Tracing 用於結構化應用日誌。
+- anyhow 和 thiserror 模式，用於實用的錯誤處理。
+
+## 首先要自訂的內容
+
+1. 圍繞 resources 或 workflows 定義 route modules。
+2. 為真實 domain 加入資料庫 entities 和 migrations。
+3. 保持 handler errors 顯式，這樣 API failures 更容易 debug。
+4. 隨著專案成長，執行 `cargo check` 和 `cargo clippy -- -D warnings`。
+
+## 什麼時候適合這個 pack
+
+選擇它來建構高信心 backend services、對效能有嚴格預期的 APIs、帶有 HTTP surface 的系統工具，以及偏好 Rust compile-time guarantees 的團隊專案。
+
+如需 stack 層面的 walkthrough，請閱讀 [Axum 與 PostgreSQL 和 SeaORM](/guides/rust/axum-postgres-seaorm/)。

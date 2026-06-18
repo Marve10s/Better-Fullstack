@@ -1,0 +1,125 @@
+---
+title: Expo Uniwind 네이티브 앱
+description: 모바일 우선 프로젝트를 위한 Uniwind 및 최소 Better Fullstack 구성을 사용하여 Expo 네이티브 앱을 만듭니다.
+updated: 2026-05-12
+category: React Native
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+모바일 우선 Expo 앱을 원하고 동일한 스캐폴드에서 생성된 백엔드가 필요하지 않은 경우 이 스택을 사용하십시오.
+
+```npm
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-uniwind \
+  --mobile-navigation expo-router \
+  --mobile-ui uniwind \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## 이것이 만드는 것
+
+- Uniwind을 사용하는 Expo 네이티브 앱.
+- Expo 파일 기반 기본 경로를 위한 라우터입니다.
+- MMKV 스토리지, React Native 테스트 라이브러리, Maestro, 푸시 알림, OTA 업데이트 및 딥 링크.
+- 기본적으로 웹 프런트엔드, 백엔드, 데이터베이스, ORM, 인증 또는 API 레이어가 없습니다.
+- 나중에 API과 결합할 수 있는 모바일 우선 프로젝트 형태입니다.
+
+## 생성된 모양
+
+이 명령은 전체 스택 웹 앱이 아닌 기본 프런트엔드 기반을 만듭니다. 모바일 앱이 나중에 기존 API 또는 별도로 생성된 서비스를 가리킬 수 있도록 초기 스캐폴드에서 백엔드 결정을 유지합니다.
+
+대표적인 형태:
+
+```txt
+my-mobile-app/
+  bts.jsonc
+  app/
+  components/
+  package.json
+  maestro/
+```
+
+정확한 Expo 경로는 템플릿 버전에 따라 달라질 수 있지만 소유권은 간단합니다. 기본 화면과 구성 요소는 앱에 있지만 서버 문제는 의도적으로 없습니다.
+
+## 예시 화면
+
+Uniwind을 사용하면 React Native 구성 요소에서 유틸리티 스타일 클래스를 사용할 수 있습니다.
+
+```tsx
+import { Text, View } from "react-native";
+
+export default function HomeScreen() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white px-6">
+      <Text className="text-2xl font-semibold text-slate-950">
+        Mobile app
+      </Text>
+      <Text className="mt-2 text-center text-slate-600">
+        Connect an API when the product contract is ready.
+      </Text>
+    </View>
+  );
+}
+```
+
+백엔드를 추가할 때 작은 모듈 뒤에 API 클라이언트를 유지하세요. 이를 통해 화면을 변경하지 않고도 로컬, 스테이징 및 프로덕션 API 원본을 더 쉽게 교체할 수 있습니다.
+
+## 호환성 참고사항
+
+React Native은(는) Better Fullstack의 자체 생태계입니다. `--ecosystem react-native`을 사용하세요. TypeScript 웹 프런트엔드 플래그를 기본 프런트엔드 플래그와 결합하지 마세요.
+
+이 가이드에서는 의도적으로 백엔드, 데이터베이스, ORM, 인증 및 API 생성을 모바일 스캐폴드에서 제외합니다. 모바일 인증 및 서버 API에는 제품 요구 사항이 명확한 후에 더 나은 플랫폼별 결정이 필요합니다.
+
+## 그것을 선택하는 경우
+
+API을 별도로 생성할 수 있는 모바일 프로토타입, 컴패니언 앱 및 기본 앱 기반의 경우 이 옵션을 선택하세요.
+
+## 나중에 API 추가
+
+일반적인 다음 단계는 경량 TypeScript 백엔드를 위한 Hono API, 웹 표면이 필요한 경우 Next.js 또는 TanStack Start 웹 앱, 또는 이미 Better Fullstack 외부에 존재하는 전용 백엔드입니다.
+
+API을 추가할 때 기본 앱이 다음을 처리하는 방법을 결정하세요.
+
+- 환경별 API 기본 URL.
+- 기기의 인증 세션 저장 공간입니다.
+- 새로 고침 토큰 또는 세션 갱신.
+- 오프라인 행동과 낙관적인 업데이트.
+- 개발, 미리보기 및 프로덕션을 위한 기본 빌드 프로필입니다.
+
+## 배포 참고사항
+
+Expo 배포는 웹 배포와 다릅니다. 빌드 시 사용되는 기본 빌드 프로필, 앱 식별자, 서명 자격 증명 및 환경 변수를 계획합니다. 서버 비밀을 모바일 번들에 넣지 마십시오. 기본 앱은 서버 측 비밀을 보유하는 백엔드를 호출해야 합니다.
+
+## 문제 해결
+
+- 생성된 웹 파일이 없는 경우 이는 예상되는 현상입니다. 이 스택은 웹 프런트엔드가 아닌 기본 프런트엔드를 사용합니다.
+- 백엔드 경로가 없으면 명령은 `--backend none`을 명시적으로 선택합니다.
+- 스타일이 적용되지 않는 경우 생성된 앱에서 Uniwind 설정 및 클래스 검색 구성을 확인하세요.
+- API 호출이 시뮬레이터에서는 작동하지만 장치에서는 작동하지 않는 경우 API 기본 URL이 장치에서 연결할 수 있는 호스트를 가리키는지 확인하세요.
+
+## 비교 참고 사항
+
+모바일 우선 작업에 이 스택을 사용하세요. 제품이 웹 SaaS 앱으로 시작되는 경우 [Drizzle 및 Better Auth과 함께 Next.js](/guides/typescript/nextjs-drizzle-better-auth/)를 사용하거나 저장소 자체에서 AI 에이전트 지침을 생성해야 하는 경우 [Next.js AI CLI 에이전트 워크벤치](/guides/ai/nextjs-ai-cli-agent-workbench/)를 사용하세요.
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false)을 엽니다.
+- [CLI 생성 참조](/docs/cli/create/)를 검토하세요.
+- 앱에 웹 및 에이전트 도구도 필요한 경우 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)와 비교하세요.

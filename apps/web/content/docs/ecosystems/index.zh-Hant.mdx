@@ -1,0 +1,48 @@
+---
+title: 生態系統
+description: 支持的語言生態，以及 Better Fullstack 為每個生態生成什麼。
+---
+
+Better Fullstack 用一個 CLI 覆寫多個生態。每個生態都有自己的 scaffold surface、toolchain 和相容性規則。
+
+當產品 stack 跨語言時，使用 [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/)。它把項目建模成 stack parts，例如 `frontend:typescript:next`、`backend:go:gin`、`backend.orm:go:gorm` 和 `database:universal:postgres`。
+
+| 生態系統 | 最適合 | 說明 |
+| --- | --- | --- |
+| [TypeScript](/docs/ecosystems/typescript/) | Fullstack web、APIs、workers、desktop，以及最大的 web integration matrix。 | Web 選項是 TypeScript-first。 |
+| [React Native](/docs/ecosystems/react-native/) | 帶有 navigation、UI、storage、testing、push、OTA 和 deep linking 的 Expo mobile apps。 | 使用 React Native 生態 surface，而不是 TypeScript web frontend categories。 |
+| [Rust](/docs/ecosystems/rust/) | Backend services、CLI apps、GraphQL/gRPC、Rust web frontends 和強型別 libraries。 | 使用 Cargo；templates 會根據所選 Rust options 條件產生。 |
+| [Python](/docs/ecosystems/python/) | API 和 AI-oriented services，包含 framework、ORM、validation、queue、GraphQL 和 quality choices。 | 使用 `uv`；Python AI 是獨立的 multi-select category。 |
+| [Go](/docs/ecosystems/go/) | API services、gRPC、CLIs、logging、ORM 和 Go auth helpers。 | 使用 Go modules；GoBetterAuth 透過全域 `--auth go-better-auth` 選擇。 |
+| [Java](/docs/ecosystems/java/) | Spring Boot、Quarkus 或 plain Java 項目，包含 Maven/Gradle、persistence、auth、libraries 和 tests。 | 選擇 build tool 時 Java 使用 Maven 或 Gradle wrappers。 |
+| [Elixir](/docs/ecosystems/elixir/) | Phoenix 和 Phoenix LiveView apps，包含 Ecto、Absinthe、realtime、jobs、testing、quality 和 deploy choices。 | 使用 Mix；少數 schema-level options 會在 templates 跟上前保持停用。 |
+| [.NET](/docs/ecosystems/dotnet/) | ASP.NET Core services，包含 EF Core 或 Dapper、Identity、Minimal APIs 或 Hot Chocolate、SignalR、jobs 和 tests。 | 使用 .NET SDK；testing 和 observability 是 multi-select categories。 |
+
+## 預設 CLI baseline
+
+接受 defaults 會建立一個 TypeScript web 項目。 package manager 會跟著啟動 CLI 時所使用的 package manager。
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle",
+  "auth": "better-auth",
+  "api": "trpc",
+  "cssFramework": "tailwind",
+  "uiLibrary": "shadcn-ui",
+  "testing": "vitest",
+  "addons": ["turborepo"],
+  "versionChannel": "stable",
+  "aiDocs": ["claude-md"]
+}
+```
+
+Runtime 和 package manager 是獨立選擇。例如，產生的 TypeScript 項目可以用 npm、pnpm、Yarn 或 Bun 安裝依賴，同時選擇 Bun 作為 application runtime。
+
+## 共享選項並不通用
+
+有些 flags 是全域的，因為它們儲存在同一個專案配置裡，但不是每個 flag 都適用於每個生態。查看下面的生態頁面以了解實際產生內容，使用 [Reference Options](/docs/reference/options/) 查看準確 CLI values。

@@ -1,0 +1,179 @@
+---
+title: gRPC サービスに移動
+description: Gin、gRPC-Go、GORM、Zap ロギング、および Better Fullstack の Go サービス スキャフォールディングを使用して Go バックエンドを作成します。
+updated: 2026-05-12
+category: 行く
+tags:
+  - go
+  - grpc
+  - gin
+  - gorm
+keywords:
+  - go grpc starter
+  - grpc-go boilerplate
+  - gin grpc service
+  - create go grpc service
+  - go microservice starter
+---
+
+Go サービスが生成されたバックエンド プロジェクト シェイプとともに gRPC コントラクトを必要とする場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-go-grpc -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-api grpc-go \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## これが生み出すもの
+
+- Gin を使用した Go バックエンド。
+- gRPC - API オプションとして使用します。
+- GORM データベースアクセス用。
+- ログ記録用のザップ。
+
+## 生成された形状
+
+このスタックは、型付き gRPC 境界を持つ Go サービスを作成します。 gRPC-Go は、他のバックエンド クライアントが使用するサービス コントラクトを所有していますが、Gin は引き続き正常性または動作中の HTTP エンドポイントにサービスを提供できます。
+
+次の場合、サービスの保守が最も簡単になります。
+
+- Protobuf ファイルは、リクエストとレスポンスのコントラクトを定義します。
+- gRPC ハンドラーは、トランスポート入力をサービス呼び出しに変換します。
+- GORM モデルは永続層に残ります。
+- ジン ルートは、gRPC サービス サーフェスから分離されたままになります。
+
+## 代表的なファイルツリー
+
+```txt
+my-go-grpc/
+  go.mod
+  proto/
+    users/v1/users.proto
+  cmd/
+    server/
+      main.go
+  internal/
+    grpc/
+      users.go
+    http/
+      health.go
+    models/
+      user.go
+    services/
+      users.go
+```
+
+生成された protobuf 出力をスキャフォールドが予期する場所に保持し、生成されたファイルを直接編集しないようにします。
+
+## プロトとサービスの例
+
+protobuf サービスは、クライアントが実際に必要とするコントラクトをモデル化する必要があります。
+
+```proto
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "my-go-grpc/internal/gen/users/v1;usersv1";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+}
+```
+
+Go 実装では、ドメイン エラーを gRPC ステータス コードにマッピングする必要があります。
+
+```go
+package grpc
+
+import (
+	"context"
+
+	usersv1 "my-go-grpc/internal/gen/users/v1"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type UserServer struct {
+	usersv1.UnimplementedUserServiceServer
+	Users *UserService
+}
+
+func (s *UserServer) GetUser(
+	ctx context.Context,
+	req *usersv1.GetUserRequest,
+) (*usersv1.User, error) {
+	user, err := s.Users.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
+	return &usersv1.User{
+		Id:    user.ID,
+		Email: user.Email,
+		Name:  user.Name,
+	}, nil
+}
+```
+
+必要に応じて、運用エンドポイントに Jin を使用します。
+
+```go
+func RegisterHTTP(router *gin.Engine) {
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+}
+```
+
+## 互換性に関する注意事項
+
+gRPC 配線を生成する場合は、`--go-api grpc-go` を保持してください。 `--go-api none` を変更すると、これは通常の HTTP バックエンドになり、protobuf フローはスキャフォールドの一部ではなくなります。 `--go-cli none` は、プロジェクトをコマンドライン ツールではなくサービスとして保持します。
+
+## いつ選択するか
+
+ブラウザ向けの JSON ルートよりも、厳密に型指定されたサービス コントラクトが重要なバックエンド サービスの場合は、これを選択します。
+
+## トレードオフ
+
+gRPC は、契約とクライアント生成のワークフローを追加します。より単純な HTTP API の場合は、[PostgreSQL および GORM を使用した Gin](/guides/go/gin-postgres-gorm/) から始めます。
+
+GORM は永続性を実現しやすく保ちますが、protobuf コントラクトはデータベース モデルを盲目的にミラーリングすべきではありません。 `.proto` ファイルを公共サービス契約として扱い、GORM モデルを内部ストレージの詳細として扱います。
+
+## テストと導入に関するメモ
+
+サービス メソッドを直接テストし、クライアント側の重要な動作についてテスト サーバーとの gRPC 統合テストを追加します。
+
+```bash
+go test ./...
+```
+
+デプロイメントでは、クライアントが予期する gRPC ポートを公開し、プラットフォームがプローブするポート上で HTTP ヘルス チェックを維持します。 protobuf 生成がビルドの一部である場合は、必要なジェネレーター ツールが CI にインストールされていることを確認してください。
+
+## トラブルシューティング
+
+- クライアントが `unknown service` を受信した場合は、gRPC サーバーが生成されたサービス実装を登録していることを確認します。
+- 生成された protobuf パッケージが正しくインポートされない場合は、`go_package` オプションとスキャフォールドの出力パスを確認してください。
+- ヘルスチェックは合格したが、gRPC が失敗した場合は、コンテナーまたはプラットフォームが、Gin リスナーだけでなく gRPC リスナーを公開していることを確認します。
+- データベース エラーがクライアントに漏れる場合は、意図的にエラーを `codes.NotFound`、`codes.InvalidArgument`、または `codes.Internal` にマップします。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=go&gwf=gin&gorm=gorm&gapi=grpc-go&gcli=none&glog=zap&gauth=none) を開きます。
+- [Go エコシステムのドキュメント](/docs/ecosystems/go/) を読んでください。

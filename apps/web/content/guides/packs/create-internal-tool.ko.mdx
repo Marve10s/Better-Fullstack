@@ -1,0 +1,62 @@
+---
+title: 내부 도구 만들기
+description: TanStack Router, Hono, Drizzle, PostgreSQL, Better Auth, tRPC, Tailwind CSS 및 shadcn/ui를 사용하여 내부 도구를 만듭니다.
+updated: 2026-05-21
+category: 팩
+tags:
+  - internal-tool
+  - tanstack-router
+  - hono
+  - drizzle
+  - trpc
+keywords:
+  - create internal tool
+  - internal tool starter
+  - admin dashboard starter
+  - tanstack hono starter
+  - crud dashboard starter
+---
+
+운영, 관리 워크플로, 지원 팀 또는 제품 대시보드를 위해 작동하는 CRUD 지향 앱이 필요할 때 내부 도구 팩을 사용하세요.
+
+<StarterPackCta id="internal-tool" />
+
+## 내부 도구 스타터 생성
+
+[Stack Builder의 내부 도구 팩](/new?preset=tanstack-hono&view=command)을 열거나 다음을 실행합니다.
+
+```bash
+bun create better-fullstack@latest my-internal-tool \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## 팩에 포함된 내용
+
+- 웹 앱의 경우 TanStack Router입니다.
+- 백엔드용 Bun의 Hono.
+- 형식화된 지속성을 위한 PostgreSQL 및 Drizzle.
+- 보호된 내부 액세스를 위한 Better Auth.
+- tRPC(입력된 프런트엔드-백엔드 호출용)
+- 대시보드 UI용 Tailwind CSS 및 shadcn/ui
+
+## 가장 먼저 사용자 정의해야 할 사항
+
+1. 팀이 매일 편집하는 운영 개체를 모델링하세요.
+2. 파괴적인 작업을 노출하기 전에 역할 확인을 추가하세요.
+3. 동일한 유형의 API 주위에 목록, 세부 정보, 생성, 편집 및 감사 보기를 구축합니다.
+4. 팀원을 초대하기 전에 배포 비밀과 데이터베이스 마이그레이션을 추가하세요.
+
+## 이것이 올바른 팩일 때
+
+속도가 중요하지만 유형 안전성도 여전히 중요한 관리 패널, 내부 대시보드, 지원 도구, 백오피스 워크플로 및 CRUD 앱에 대해 이 옵션을 선택하세요.
+
+스택 수준 연습을 보려면 [Hono with tRPC 및 Drizzle](/guides/typescript/hono-trpc-drizzle/)을 읽어보세요.

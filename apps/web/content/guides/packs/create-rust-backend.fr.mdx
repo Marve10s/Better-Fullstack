@@ -1,0 +1,57 @@
+---
+title: Créer un back-end Rust
+description: Créez un backend Rust avec Axum, SeaORM, PostgreSQL, le traçage et la gestion structurée des erreurs à l'aide de Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - rust
+  - axum
+  - seaorm
+  - postgres
+  - backend
+keywords:
+  - create rust backend
+  - rust api starter
+  - axum postgres starter
+  - seaorm api starter
+  - rust backend boilerplate
+---
+
+Utilisez le pack Rust Backend lorsque vous souhaitez un service API compact avec des types forts, des performances prévisibles et une structure appliquée par le compilateur.
+
+<StarterPackCta id="rust-backend" />
+
+## Générer le démarreur backend Rust
+
+Ouvrez le [pack Rust Backend dans Stack Builder](/new?preset=rust-api&view=command) ou exécutez :
+
+```bash
+bun create better-fullstack@latest my-rust-backend \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-frontend none \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+## Ce que comprend le pack
+
+- Axum pour les routes HTTP.
+- SeaORM pour l'accès à la base de données typée.
+- Forme backend orientée PostgreSQL.
+- Traçage des journaux d'application structurés.
+- de toute façon et ces modèles d'erreur pour une gestion pratique des erreurs.
+
+## Premières choses à personnaliser
+
+1. Définissez vos modules de routage autour de ressources ou de workflows.
+2. Ajoutez des entités de base de données et des migrations pour le domaine réel.
+3. Gardez les erreurs du gestionnaire explicites afin que les échecs API soient faciles à déboguer.
+4. Exécutez `cargo check` et `cargo clippy -- -D warnings` à mesure que le projet se développe.
+
+## Quand c'est le bon pack
+
+Choisissez ceci pour les services backend de haute confiance, les API avec des attentes de performances strictes, les outils système avec des surfaces HTTP et les équipes qui préfèrent les garanties de compilation de Rust.
+
+Pour une présentation pas à pas au niveau de la pile, lisez [Axum avec PostgreSQL et SeaORM](/guides/rust/axum-postgres-seaorm/).

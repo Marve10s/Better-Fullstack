@@ -1,0 +1,161 @@
+---
+title: TanStack Start と再送信
+description: Better Fullstack を使用して、電子メール再送信サポートを備えた TanStack Start アプリ、Better Auth、Drizzle、SQLite、Tailwind CSS、および shadcn/ui を作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - tanstack-start
+  - resend
+  - email
+  - better-auth
+keywords:
+  - tanstack start resend
+  - tanstack start email
+  - tanstack start transactional email
+  - create tanstack start resend app
+  - resend fullstack starter
+---
+
+TanStack Start アプリで、サインイン フロー、製品通知、招待、またはオンボーディング メッセージ用のトランザクション電子メールが必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-email-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --email resend \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## これが生み出すもの
+
+- 独自のサーバー ルート レイヤーを持つ TanStack Start アプリ。
+- 電子メールプロバイダーオプションとして再送信します。
+- Better Auth はリレーショナル データベースをサポートします。
+- ローカル開発用の Drizzle および SQLite。
+- インターフェイスの Tailwind CSS および shadcn/ui。
+
+## 生成された形状
+
+このスタックは TanStack Start フルスタック形状から始まり、電子メール プロバイダー構成を追加します。電子メール プロバイダーは `--email resend` で選択されます。アプリの残りの部分は引き続き `--backend self` を使用するため、メールを送信するためだけに別の API サーバーは必要ありません。
+
+代表的な形状：
+
+```txt
+my-email-app/
+  bts.jsonc
+  src/
+    routes/
+    lib/
+      auth/
+      db/
+      email/
+```
+
+上記のツリーは、正確に生成されたパスを約束するものではなく、所有権へのガイドとして扱ってください。電子メール配信コードは、React コンポーネントがプロバイダー シークレットをインポートしないように、小規模なサーバー専用ヘルパーの背後に存在する必要があります。
+
+## 電子メールヘルパーの例
+
+適切な最初の抽象化は、各製品電子メールの狭い関数です。これにより、再送信固有の詳細が認証コールバック、オンボーディング フロー、ルート ハンドラーに含まれないようになります。
+
+```ts
+type SendInviteEmailInput = {
+  to: string;
+  inviterName: string;
+  inviteUrl: string;
+};
+
+export async function sendInviteEmail(input: SendInviteEmailInput) {
+  const subject = `${input.inviterName} invited you`;
+
+  return sendTransactionalEmail({
+    to: input.to,
+    subject,
+    html: `
+      <p>${input.inviterName} invited you to join their workspace.</p>
+      <p><a href="${input.inviteUrl}">Accept the invite</a></p>
+    `,
+  });
+}
+```
+
+具体的な `sendTransactionalEmail` 実装は、サーバー環境変数から Resend API キーを読み取る必要があり、クライアント コンポーネントからインポートしないでください。
+
+## ルートの使用例
+
+耐久性のある製品の状態を作成するデータベース トランザクションの後にメールを送信します。招待の場合は、最初に招待レコードを作成してから、電子メールを送信します。
+
+```ts
+import { z } from "zod";
+
+const inviteInput = z.object({
+  email: z.string().email(),
+  workspaceId: z.string().min(1),
+});
+
+export async function inviteMember(rawInput: unknown) {
+  const input = inviteInput.parse(rawInput);
+
+  const invite = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    workspaceId: input.workspaceId,
+  };
+
+  await sendInviteEmail({
+    to: invite.email,
+    inviterName: "A teammate",
+    inviteUrl: `https://example.com/invites/${invite.id}`,
+  });
+
+  return invite;
+}
+```
+
+実稼働システムの場合は、プロバイダーに一時的な障害が発生した場合でも配信する必要がある電子メールのジョブ キューまたは再試行テーブルを検討してください。
+
+## いつ選択するか
+
+電子メールが後付けではなく製品ワークフローの一部である場合は、これを選択してください。再送信は、開発者中心のトランザクション電子メールに非常に適しており、生成されたスタックを簡単に保ちます。
+
+## 一般的な使用例
+
+- マジックリンクと確認メール。
+- チームが招待します。
+- トライアルまたはオンボーディングのメール。
+- サーバーアクションまたはAPIルートからの製品通知。
+
+## 互換性に関する注意事項
+
+- `--email resend` は追加的です。 `--auth better-auth`、`--api trpc`、または `--backend self` を置き換えるものではありません。
+- 電子メール配信はサーバー側で実行する必要があります。 Resend API キーをパブリック環境変数やブラウザ バンドルを通じて公開しないでください。
+- SQLite はローカル開発に便利です。電子メールのワークフローが永続的な監査証跡、再試行、またはチーム規模の記録に依存している場合は、PostgreSQL がより優れた運用データベースである可能性があります。
+- Better Auth 電子メール フローと製品通知フローはプロバイダー構成を共有する必要がありますが、機能レベルでは分離されたままにする必要があります。
+
+## 導入メモ
+
+デプロイメント環境で、再送信 API キー、送信者ドメイン、Better Auth シークレット、およびアプリ URL を構成します。運用メールの配信に依存する前に、ドメインの検証を完了する必要があります。
+
+プレビュー展開の場合、アプリが信頼できないプレビュー トラフィックから電子メールをトリガーできる場合は、制限付き送信者またはテスト受信者の許可リストを使用します。
+
+## トラブルシューティング
+
+- メールが届かない場合は、アプリケーションコードを変更する前にプロバイダーのログを確認してください。
+- リンクがローカルホストを指している場合は、コールバックまたは招待リンクを構築するときに使用される運用アプリの URL を更新します。
+- 認証電子メールは機能するが、製品電子メールが失敗する場合は、両方のパスが同じサーバー専用プロバイダー構成を使用していることを確認してください。
+- ローカル テストが誤って実際の電子メールを送信した場合は、開発トランスポートを追加するか、非運用環境を保護してください。
+
+## 比較メモ
+
+まだ電子メールが必要ない場合は、より広範な [TanStack Start ガイド](/guides/typescript/create-tanstack-start-project/) を使用してください。トランザクション電子メールが最初の製品契約の一部である場合は、このページのコマンドを選択します。これは、その決定が初日から `bts.jsonc` に記録されるためです。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=tanstack-start&be=self&db=sqlite&orm=drizzle&au=better-auth&em=resend&api=trpc) を開きます。
+- [CLI 作成リファレンス](/docs/cli/create/) で電子メール オプションを比較します。
+- より広範な [TanStack Start ガイド](/guides/typescript/create-tanstack-start-project/) から始めます。

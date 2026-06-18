@@ -1,0 +1,61 @@
+---
+title: AI 에이전트 앱 만들기
+description: Next.js, AI CLI 워크플로 문서, MCP, 기술, Better Auth, Drizzle, SQLite, Tailwind CSS 및 shadcn/ui를 사용하여 AI 에이전트 앱을 만듭니다.
+updated: 2026-05-21
+category: 팩
+tags:
+  - ai-agent
+  - nextjs
+  - mcp
+  - ai-cli
+  - skills
+keywords:
+  - create ai agent app
+  - build ai agent app
+  - nextjs ai agent starter
+  - ai cli starter
+  - mcp app starter
+---
+
+애플리케이션과 에이전트 워크플로를 함께 시작하려면 AI 에이전트 앱 팩을 사용하세요. Next.js 프로젝트와 AI CLI 지향 문서 및 로컬 에이전트 도구를 준비합니다.
+
+<StarterPackCta id="ai-agent-app" />
+
+## AI 에이전트 스타터 생성
+
+Stack Builder에서 [AI 에이전트 앱 팩](/new?preset=ai-cli-agent-workbench&view=command)을 열거나 다음을 실행합니다.
+
+```bash
+bun create better-fullstack@latest my-ai-agent-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons biome ruler turborepo mcp skills \
+  --ai-docs claude-md agents-md cursorrules
+```
+
+## 팩에 포함된 내용
+
+- 제품 표면의 경우 Next.js.
+- 로컬 우선 지속성을 위한 SQLite 및 Drizzle.
+- 계정 및 세션의 경우 Better Auth.
+- AI CLI 설정, MCP 지원, 기술 및 생성된 상담원 문서.
+- Biome 및 Ruler를 사용하면 에이전트 지침과 코드 품질이 저장소와 함께 유지됩니다.
+
+## 가장 먼저 사용자 정의해야 할 사항
+
+1. 연구, 코딩, 지원, 자동화 또는 분석 등 사용자 대면 에이전트 작업을 정의합니다.
+2. 에이전트가 읽고 쓸 수 있는 앱 데이터 모델을 추가합니다.
+3. 외부 서비스를 연결하기 전에 MCP/tool ​​지침을 강화하세요.
+4. 협업이나 프로덕션 호스팅에 필요할 경우 SQLite에서 관리형 데이터베이스로 이동하세요.
+
+## 이것이 올바른 팩일 때
+
+AI 지원 개발자 도구, 내부 자동화, 에이전트 대시보드, 워크플로 부조종사 또는 앱 구조와 에이전트 지침이 함께 발전해야 하는 실험에 대해 이 옵션을 선택하세요.
+
+스택 수준 연습을 보려면 [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/)를 읽어보세요.

@@ -1,0 +1,190 @@
+---
+title: Axum と PostgreSQL および SeaORM
+description: Axum、PostgreSQL、SeaORM、トレース、Better Fullstack を使用した構造化エラー処理を備えた Rust API プロジェクトを作成します。
+updated: 2026-05-12
+category: さび
+tags:
+  - axum
+  - postgres
+  - seaorm
+  - tracing
+keywords:
+  - axum postgres starter
+  - rust api boilerplate
+  - axum seaorm starter
+  - create rust api project
+  - rust postgres api
+---
+
+最新の HTTP フレームワーク、リレーショナル永続性、ロギング、および明示的なエラー処理を備えた Rust バックエンドが必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sea-orm \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror
+```
+
+<GuideStackSnapshot
+  title="Generated stack snapshot"
+  description="The boundaries to preserve as the Rust service grows."
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Typed extractors, shared router state, and explicit handlers." },
+    { label: "Data", value: "PostgreSQL + SeaORM", detail: "Entity-style database access and active models." },
+    { label: "Observability", value: "tracing", detail: "Structured logs from startup through request handling." },
+    { label: "Errors", value: "Anyhow + Thiserror", detail: "Domain errors converted into HTTP responses at the edge." },
+  ]}
+/>
+
+## これが生み出すもの
+
+- Axum を使用する Rust API プロジェクト。
+- PostgreSQL をデータベース オプションとして使用します。
+- SeaORM データベースアクセス用。
+- 構造化ログのトレース。
+- とにかく、Thiserror スタイルのエラー処理。
+
+## 生成された形状
+
+このスタックは、フルスタック アプリではなく、バックエンド サービスを生成することを目的としています。生成されたプロジェクトにより、Axum の型付き HTTP 境界、SeaORM が所有するデータベース層、および `tracing` を介したリクエスト スコープのロギングが提供されます。
+
+重要な実装境界は次のとおりです。
+
+- ルートは薄いままで、HTTP 入力をアプリケーション呼び出しに変換します。
+- SeaORM モデルとエンティティは独自のデータベース マッピングを持ちます。
+- エラーは明示的にモデル化され、エッジで HTTP 応答に変換されます。
+- 構成は起動時に一度読み取られるため、データベース プール、ルーター、ロギングを予測どおりに接続できます。
+
+## 代表的なファイルツリー
+
+正確なファイル名はジェネレーターが進化するにつれて変わる可能性がありますが、これは PostgreSQL および SeaORM を備えた Axum API から予想される形状です。
+
+```txt
+my-rust-api/
+  Cargo.toml
+  .env.example
+  src/
+    main.rs
+    config.rs
+    error.rs
+    routes/
+      mod.rs
+      health.rs
+      users.rs
+    entities/
+      mod.rs
+      prelude.rs
+      user.rs
+    services/
+      mod.rs
+      users.rs
+```
+
+HTTP メカニズムには `routes/` を、アプリケーションの動作には `services/` を、SeaORM の生成または維持されるデータベース モデル タイプには `entities/` を使用します。
+
+## ルートとモデルの例
+
+Axum ハンドラーは通常、抽出された状態と型指定された要求データを受け入れ、共有エラー タイプを応答に変換できる結果を返す必要があります。
+
+```rust
+use axum::{extract::State, Json};
+use serde::{Deserialize, Serialize};
+
+use crate::{error::AppError, services::users::UserService, AppState};
+
+#[derive(Debug, Deserialize)]
+pub struct CreateUserRequest {
+    pub email: String,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UserResponse {
+    pub id: i32,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn create_user(
+    State(state): State<AppState>,
+    Json(input): Json<CreateUserRequest>,
+) -> Result<Json<UserResponse>, AppError> {
+    let user = UserService::new(state.db)
+        .create(input.email, input.name)
+        .await?;
+
+    Ok(Json(UserResponse {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+    }))
+}
+```
+
+SeaORM は、アクティブなモデルを通じて明示的な挿入を維持します。
+
+```rust
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection};
+
+use crate::entities::user;
+
+pub async fn create_user(
+    db: &DatabaseConnection,
+    email: String,
+    name: String,
+) -> Result<user::Model, sea_orm::DbErr> {
+    user::ActiveModel {
+        email: Set(email),
+        name: Set(name),
+        ..Default::default()
+    }
+    .insert(db)
+    .await
+}
+```
+
+## 互換性に関する注意事項
+
+<GuideCompatibilityNote kind="supported" title="Compatibility rule">
+このガイドの形状が必要な場合は、`--rust-web-framework axum`、`--database postgres`、および `--rust-orm sea-orm` をまとめておいてください。 ORM を `sqlx` に切り替えると、手書き SQL が増え、エンティティ スタイル モデル タイプが少なくなることが予想されます。 `--rust-web-framework none` を設定すると、このガイドのルート例は適用されなくなります。
+</GuideCompatibilityNote>
+
+## いつ選択するか
+
+パフォーマンス、正確性、明示的なサーバー コードが重要な場合は、Axum を選択してください。これは、API、バックエンド サービス、および Rust の型システムが製品戦略の一部であるシステムに適しています。
+
+## トレードオフ
+
+Rust は通常、TypeScript、Python、Go よりも多くのアップフロント型モデリングを要求します。その代わりに、強力なコンパイル時チェックと予測可能な実行時の動作が得られます。
+
+SeaORM は、チームが生成されたエンティティ タイプと構成可能なクエリ ビルダーを必要とする場合に生産的です。設計の一部に手書きの SQL が含まれるクエリの多いサービスの場合、SQLx よりも重く感じることがあります。
+
+## テストと導入に関するメモ
+
+まず、ハンドラーとサービスを個別にテストします。ハンドラー テストはテスト状態を使用して Axum ルーターを構築できますが、サービス テストは使い捨ての PostgreSQL データベースに対して実行できます。
+
+```bash
+cargo test
+```
+
+デプロイメントの前に、ランタイム環境が PostgreSQL 接続文字列とプロジェクトで使用する移行ステップを提供していることを確認してください。本番環境では、`RUST_LOG` を明示的に維持して、ノイズが多すぎずにトレース出力が役立つようにします。
+
+```bash
+RUST_LOG=info cargo run
+```
+
+## トラブルシューティング
+
+- アプリは起動してもデータベース呼び出しが失敗する場合は、生成された `.env.example` キーがシェルまたはデプロイメント プラットフォームに設定されている変数と一致することを確認してください。
+- SeaORM タイプがデータベースと一致しない場合は、生成されたコードを手動で編集する代わりに、プロジェクトのエンティティまたは移行ワークフローを再実行します。
+- エラーが汎用 500 応答として返された場合は、共有エラー タイプとその `IntoResponse` 実装を確認してください。
+- ログにリクエスト コンテキストが欠落している場合は、ルータがトラフィックの処理を開始する前にトレース サブスクライバが初期化されていることを確認してください。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=rust&rwf=axum&db=postgres&rorm=sea-orm&rlog=tracing&reh=anyhow-thiserror) を開きます。
+- [Rust エコシステム ドキュメント](/docs/ecosystems/rust/) を読んでください。
+- [CLI 作成リファレンス](/docs/cli/create/) を確認してください。

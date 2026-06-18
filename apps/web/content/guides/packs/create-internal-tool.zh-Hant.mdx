@@ -1,0 +1,62 @@
+---
+title: 創建內部工具
+description: 使用 TanStack Router、Hono、Drizzle、PostgreSQL、Better Auth、tRPC、Tailwind CSS 和 shadcn/ui 建立內部工具。
+updated: 2026-05-21
+category: Packs
+tags:
+  - internal-tool
+  - tanstack-router
+  - hono
+  - drizzle
+  - trpc
+keywords:
+  - create internal tool
+  - internal tool starter
+  - admin dashboard starter
+  - tanstack hono starter
+  - crud dashboard starter
+---
+
+當你需要一個面向 CRUD 的可運行應用，用於 operations、admin workflows、support teams 或 product dashboards 時，請使用 Internal Tool pack。
+
+<StarterPackCta id="internal-tool" />
+
+## 生成內部工具 starter
+
+開啟 [Stack Builder 中的 Internal Tool pack](/new?preset=tanstack-hono&view=command)，或執行：
+
+```bash
+bun create better-fullstack@latest my-internal-tool \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## Pack 包含什麼
+
+- TanStack Router 用於 web app。
+- Hono on Bun 用於 backend。
+- PostgreSQL 和 Drizzle 用於類型化 persistence。
+- Better Auth 用於受保護的內部存取。
+- tRPC 用於類型化 frontend-to-backend calls。
+- Tailwind CSS 和 shadcn/ui 用於 dashboard UI。
+
+## 首先要自訂的內容
+
+1. 建模團隊每天編輯的 operational objects。
+2. 在暴露 destructive actions 之前加入 role checks。
+3. 圍繞同一個 typed API 建立 list、detail、create、edit 和 audit views。
+4. 在邀請 teammates 前加入 deployment secrets 和 database migrations。
+
+## 什麼時候適合這個 pack
+
+選擇它來建構 admin panels、internal dashboards、support tools、back-office workflows，以及速度很重要但 type safety 也同樣重要的 CRUD apps。
+
+如需 stack 層面的 walkthrough，請閱讀 [Hono 與 tRPC 和 Drizzle](/guides/typescript/hono-trpc-drizzle/)。

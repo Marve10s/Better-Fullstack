@@ -1,0 +1,60 @@
+---
+title: React Native
+description: Expo および React Native は、実稼働志向の統合を備えたモバイル スキャフォールドです。
+---
+
+React Native は、専用のモバイル エコシステムです。 Expo プロジェクトを足場にし、モバイルの選択肢を TypeScript Web フロントエンド、バックエンド、データベース、およびデプロイのカテゴリから分離します。
+
+## 前提条件
+
+- Node.js 20 歳以上。
+- npm、pnpm、Yarn、または Bun。
+- シミュレータまたはデバイスの検証が必要な場合は、Expo 互換の iOS/Android ツールを使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## 移動式足場のカテゴリー
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| ネイティブフロントエンド | `native-bare` `native-uniwind` `native-unistyles` |
+| ナビゲーション | `expo-router` `react-navigation` `none` |
+| UI | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| ストレージ | `mmkv` `none` |
+| テスト | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| 押す | `expo-notifications` `none` |
+| 太田 | `expo-updates` `none` |
+| ディープリンク | `expo-linking` `none` |
+
+## 生成された統合
+
+- ディープ リンクまたは OTA が選択されている場合のスキーム/ランタイム設定を含む Expo 構成。
+- Expo ナビゲーションに応じて、ルーターのルート ファイルまたは React Navigation エントリポイント。
+- Tamagui、Gluestack UI、Uniwind、または Unistyles のモバイル UI プロバイダー/テーマ ファイル。
+- ストレージが選択されている場合の MMKV クライアント ヘルパー。
+- Jest Expo および React Native テスト ライブラリのサンプル、Maestro フロー、またはその両方。
+- Expo 通知のプッシュ通知登録ヘルパー。
+- Expo アップデート用の OTA アップデート ヘルパー。
+- `.env.example` と `EXPO_PUBLIC_` のモバイル クライアント構成規則。
+
+## 互換性に関する注意事項
+
+- React Native は、TypeScript Web フロントエンド、バックエンド、データベース、Web UI、Web デプロイ、またはサーバー デプロイ カテゴリを公開しません。
+- Uniwind および Unistyles UI モードは、対応する Expo フロントエンド バリアントに関連付けられています。
+- Tamagui と Gluestack UI は、スタイル設定の競合を避けるために、裸の Expo バリアントを使用します。
+- モバイル認証フローでリダイレクト URI の例が必要な場合、ディープ リンクは自動的に有効になります。

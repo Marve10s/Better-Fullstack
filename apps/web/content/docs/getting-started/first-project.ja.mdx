@@ -1,0 +1,103 @@
+---
+title: 最初のプロジェクト
+description: Better Fullstack プロジェクトをスキャフォールディング、検査、インストール、実行します。
+---
+
+このチュートリアルでは、プロジェクトを作成し、CLI が生成できるものをプレビューし、足場の完成後にどこを見るべきかを示します。
+
+## 1. プロジェクトを作成する
+
+ウィザードを実行します。
+
+```npm
+npm create better-fullstack@latest my-app
+```
+
+TypeScript スターターのデフォルトを受け入れるか、必要なスタックに一致するようにプロンプ​​トを変更します。
+
+## 2. 書かずにプレビューする
+
+生成されたファイル ツリーを最初に検査したい場合は、`--dry-run` を使用します。
+
+```npm
+npm create better-fullstack@latest my-app -- --dry-run
+```
+
+ドライランは、新しいエコシステム、デプロイメントターゲット、またはマルチエコシステムスタックを試す前に役立ちます。
+
+## 3. コマンドからのスキャフォールド
+
+明示的なフラグにより​​、スキャフォールドが再現可能になります。この例では、Next.js セルフバックエンド プロジェクトを作成し、インストール/Git をスキップして、最初にファイルを確認できるようにします。
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --db-setup none \
+  --ai none \
+  --payments none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+<Callout kind="info" title="Prompt behavior">
+明示的なフラグは、そのフラグがカバーするカテゴリをスキップします。 `--yes` はデフォルトを受け入れ、`--frontend`、`--backend`、`--database` などのコア スタック フラグと競合します。無効にするオプションのカテゴリには `none` を使用します。
+</Callout>
+
+## 4. 依存関係をインストールする
+
+`--no-install` を使用した場合は、プロジェクト内に手動でインストールします。
+
+```bash
+cd my-app
+```
+
+```npm
+npm install
+```
+
+言語ネイティブのエコシステムは独自のツールを使用します。
+
+```bash
+cargo build
+uv sync
+go mod tidy
+./mvnw test
+./gradlew test
+```
+
+## 5. プロジェクトを検査する
+
+生成されたプロジェクトには次のものが含まれます。
+
+- `bts.jsonc` を選択したスタックとスキーマ参照に置き換えます。
+- 選択したエコシステムのフレームワーク、パッケージ、および構成ファイル。
+- CLI によって出力される再現可能なコマンド。
+- `CLAUDE.md`、`Agents.md`、`.cursorrules` などのオプションの AI ドキュメント。
+- 選択したテンプレートが提供する README およびセットアップ ノート。
+
+## 6. サポートされる機能を後で追加する
+
+生成されたプロジェクト内で、サポートされているアドオンに `add` を使用します。
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+`add` コマンドは `bts.jsonc` を読み取り、既存のアドオンをスキップし、依存関係が自動的にインストールされない場合はインストール ガイダンスを出力します。
+
+## 次
+
+- [CLI Create](/docs/cli/create/) は、すべてのスキャフォールド フラグをリストします。
+- [CLI 追加](/docs/cli/add/) は、既存プロジェクトのアドオンの更新について説明します。
+- [エコシステム](/docs/ecosystems/) は、サポートされているプロジェクト ファミリを比較します。

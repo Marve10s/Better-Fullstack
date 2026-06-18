@@ -3,17 +3,15 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ChangelogModal } from "@/components/changelog-modal";
 import { latestChangelogRelease } from "@/lib/changelog";
+import {
+  type ChangelogInteractionState,
+  markChangelogReleaseInteracted,
+  shouldShowChangelogRelease,
+} from "@/lib/changelog-visibility";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
-
-const CHANGELOG_INTERACTION_STORAGE_PREFIX = "better-fullstack.changelog.interaction";
-const HAS_VISITED_KEY = "better-fullstack.has-visited";
-
-function getInteractionStorageKey() {
-  return `${CHANGELOG_INTERACTION_STORAGE_PREFIX}:${latestChangelogRelease?.version ?? "unknown"}`;
-}
 
 function formatReleaseDate(publishedAt: string, fallback: string): string {
   const parsed = new Date(publishedAt);
@@ -34,22 +32,21 @@ export function ChangelogWidget() {
     if (!latestChangelogRelease) return;
 
     try {
-      const hasVisited = window.localStorage.getItem(HAS_VISITED_KEY);
-      if (!hasVisited) {
-        window.localStorage.setItem(HAS_VISITED_KEY, "true");
-        setIsVisible(false);
-        return;
-      }
-
-      setIsVisible(window.localStorage.getItem(getInteractionStorageKey()) === null);
+      setIsVisible(
+        shouldShowChangelogRelease(window.localStorage, latestChangelogRelease.version),
+      );
     } catch {
       setIsVisible(false);
     }
   }, []);
 
-  const markInteracted = useCallback((state: "opened" | "closed") => {
+  const markInteracted = useCallback((state: ChangelogInteractionState) => {
     try {
-      window.localStorage.setItem(getInteractionStorageKey(), state);
+      markChangelogReleaseInteracted(
+        window.localStorage,
+        latestChangelogRelease?.version,
+        state,
+      );
     } catch {}
   }, []);
 

@@ -17,19 +17,44 @@ const zh_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4In
 	return /** @type {LocalizedString} */ (`REST API`)
 };
 
+const ja_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`REST API`)
+};
+
+const ko_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`REST API`)
+};
+
+const zh_hant1_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`REST API`)
+};
+
+const de_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`REST API`)
+};
+
+const fr_presettrackrestapiname4 = /** @type {(inputs: Presettrackrestapiname4Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`REST API`)
+};
+
 /**
 * | output |
 * | --- |
 * | "REST API" |
 *
 * @param {Presettrackrestapiname4Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const presettrackrestapiname4 = /** @type {((inputs?: Presettrackrestapiname4Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiname4Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const presettrackrestapiname4 = /** @type {((inputs?: Presettrackrestapiname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrestapiname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_presettrackrestapiname4(inputs)
 	if (locale === "es") return es_presettrackrestapiname4(inputs)
-	return zh_presettrackrestapiname4(inputs)
+	if (locale === "zh") return zh_presettrackrestapiname4(inputs)
+	if (locale === "ja") return ja_presettrackrestapiname4(inputs)
+	if (locale === "ko") return ko_presettrackrestapiname4(inputs)
+	if (locale === "zh-Hant") return zh_hant1_presettrackrestapiname4(inputs)
+	if (locale === "de") return de_presettrackrestapiname4(inputs)
+	return fr_presettrackrestapiname4(inputs)
 });
 export { presettrackrestapiname4 as "presetTrackRestApiName" }

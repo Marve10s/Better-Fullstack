@@ -8,7 +8,8 @@ import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test
 
 describe("Addon Configurations", () => {
   describe("Universal Addons (no frontend restrictions)", () => {
-    const universalAddons = ["biome", "lefthook", "husky", "turborepo", "oxlint", "msw"];
+    const universalAddons = ["biome", "lefthook", "husky", "turborepo", "nx", "oxlint", "msw"];
+    const universalAddonTimeoutMs = 60_000;
 
     for (const addon of universalAddons) {
       it(
@@ -33,9 +34,63 @@ describe("Addon Configurations", () => {
 
           expectSuccess(result);
         },
-        { timeout: 30_000 },
+        { timeout: universalAddonTimeoutMs },
       );
     }
+  });
+
+  describe("Nx Addon", () => {
+    it("should generate Nx workspace config and root scripts", async () => {
+      const result = await runTRPCTest({
+        projectName: "nx-workspace",
+        addons: ["nx"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const rootPackage = readFileSync(join(result.projectDir!, "package.json"), "utf-8");
+      const nxJson = readFileSync(join(result.projectDir!, "nx.json"), "utf-8");
+
+      expect(rootPackage).toContain('"nx"');
+      expect(rootPackage).toContain('"dev": "nx run-many -t dev"');
+      expect(rootPackage).toContain('"build": "nx run-many -t build"');
+      expect(rootPackage).toContain('"check-types": "nx run-many -t check-types"');
+      expect(rootPackage).toContain('"db:push": "nx run @nx-workspace/db --target=db:push"');
+      expect(nxJson).toContain('"$schema": "./node_modules/nx/schemas/nx-schema.json"');
+      expect(nxJson).toContain('"targetDefaults"');
+    });
+
+    it("should reject selecting Nx and Turborepo together", async () => {
+      const result = await runTRPCTest({
+        projectName: "nx-turbo-fail",
+        addons: ["nx", "turborepo"],
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        api: "trpc",
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Nx and Turborepo are alternative workspace runners");
+    });
   });
 
   describe("Frontend-Specific Addons", () => {

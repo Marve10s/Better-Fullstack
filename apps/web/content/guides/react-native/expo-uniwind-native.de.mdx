@@ -1,0 +1,125 @@
+---
+title: Expo Uniwind Native App
+description: Erstellen Sie eine native Expo-App mit Uniwind und einer minimalen Better Fullstack-Konfiguration für Mobile-First-Projekte.
+updated: 2026-05-12
+category: React Native
+tags:
+  - expo
+  - react-native
+  - uniwind
+  - mobile
+keywords:
+  - expo uniwind starter
+  - react native uniwind starter
+  - create expo app
+  - expo native boilerplate
+  - mobile app starter
+---
+
+Verwenden Sie diesen Stack, wenn Sie eine Mobile-First-App Expo wünschen und kein generiertes Backend im selben Gerüst benötigen.
+
+```npm
+npm create better-fullstack@latest my-mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-uniwind \
+  --mobile-navigation expo-router \
+  --mobile-ui uniwind \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## Was dadurch entsteht
+
+- Eine native Expo-App, die Uniwind verwendet.
+- Expo Router für dateibasierte native Routen.
+- MMKV-Speicher, React Native Testing Library, Maestro, Push-Benachrichtigungen, OTA-Updates und Deep Linking.
+- Standardmäßig gibt es kein Web-Frontend, Backend, Datenbank, ORM, Authentifizierung oder API-Ebene.
+- Eine Mobile-First-Projektform, die später mit einem API gepaart werden kann.
+
+## Erzeugte Form
+
+Dieser Befehl erstellt eine native Frontend-Grundlage anstelle einer Fullstack-Webanwendung. Es hält Backend-Entscheidungen vom anfänglichen Gerüst fern, sodass die mobile App später auf einen vorhandenen API oder einen separat generierten Dienst verweisen kann.
+
+Repräsentative Form:
+
+```txt
+my-mobile-app/
+  bts.jsonc
+  app/
+  components/
+  package.json
+  maestro/
+```
+
+Die genauen Expo-Pfade können von der Vorlagenversion abhängen, aber die Eigentümerschaft ist unkompliziert: Native Bildschirme und Komponenten sind in der App vorhanden, während Serverprobleme absichtlich weggelassen werden.
+
+## Beispielbildschirm
+
+Mit Uniwind können Sie Klassen im Utility-Stil in React Native-Komponenten verwenden:
+
+```tsx
+import { Text, View } from "react-native";
+
+export default function HomeScreen() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white px-6">
+      <Text className="text-2xl font-semibold text-slate-950">
+        Mobile app
+      </Text>
+      <Text className="mt-2 text-center text-slate-600">
+        Connect an API when the product contract is ready.
+      </Text>
+    </View>
+  );
+}
+```
+
+Behalten Sie API-Clients hinter einem kleinen Modul, wenn Sie ein Backend hinzufügen. Dadurch ist es einfacher, lokale, Staging- und Produktions-API-Ursprünge auszutauschen, ohne die Bildschirme zu ändern.
+
+## Kompatibilitätshinweise
+
+React Native ist ein eigenes Ökosystem in Better Fullstack. Verwenden Sie `--ecosystem react-native`; Kombinieren Sie TypeScript Web-Frontend-Flags nicht mit nativen Frontend-Flags.
+
+Dieser Leitfaden lässt Backend, Datenbank, ORM, Authentifizierung und API-Generierung absichtlich aus dem mobilen Gerüst heraus. Mobile Authentifizierung und Server-APIs erfordern plattformspezifische Entscheidungen, die besser getroffen werden können, nachdem die Produktanforderungen klar sind.
+
+## Wann man es wählt
+
+Wählen Sie dies für mobile Prototypen, Begleit-Apps und native App-Grundlagen, bei denen API separat erstellt werden kann.
+
+## Später wird ein API hinzugefügt
+
+Übliche nächste Schritte sind ein Hono API für ein leichtes TypeScript-Backend, eine Next.js- oder TanStack Start-Webanwendung, wenn Sie auch eine Weboberfläche benötigen, oder ein dediziertes Backend, das bereits außerhalb von Better Fullstack vorhanden ist.
+
+Entscheiden Sie beim Hinzufügen eines API, wie die native App damit umgehen soll:
+
+- Umgebungsspezifische API-Basis-URLs.
+- Authentifizierungssitzungsspeicher auf dem Gerät.
+- Aktualisierungstoken oder Sitzungserneuerung.
+- Offline-Verhalten und optimistische Updates.
+- Native Build-Profile für Entwicklung, Vorschau und Produktion.
+
+## Bereitstellungshinweise
+
+Die Bereitstellung von Expo unterscheidet sich von der Webbereitstellung. Planen Sie native Build-Profile, App-IDs, Anmeldeinformationen und Umgebungsvariablen ein, die zur Build-Zeit verwendet werden. Geben Sie keine Servergeheimnisse in das Mobilpaket ein; Native Apps sollten ein Backend aufrufen, das serverseitig Geheimnisse birgt.
+
+## Fehlerbehebung
+
+- Wenn keine generierten Webdateien vorhanden sind, ist dies zu erwarten: Dieser Stack verwendet ein natives Frontend und kein Web-Frontend.
+- Wenn keine Backend-Routen vorhanden sind, wählt der Befehl explizit `--backend none` aus.
+- Wenn das Styling nicht zutrifft, überprüfen Sie das Uniwind-Setup und die Klassenscan-Konfiguration in der generierten App.
+- Wenn API-Aufrufe im Simulator, aber nicht auf dem Gerät funktionieren, prüfen Sie, ob die Basis-URL API auf einen vom Gerät aus erreichbaren Host verweist.
+
+## Vergleichshinweise
+
+Verwenden Sie diesen Stack für Mobile-First-Arbeiten. Verwenden Sie [Next.js mit Drizzle und Better Auth](/guides/typescript/nextjs-drizzle-better-auth/), wenn das Produkt als Web-SaaS-App startet, oder [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/), wenn das Repository selbst eine generierte AI-Agent-Anleitung benötigt.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=react-native&fe-n=native-uniwind&mn=expo-router&mui=uniwind&mst=mmkv&mte=maestro-react-native-testing-library&mpu=expo-notifications&mota=expo-updates&mdl=expo-linking&aid=none&i=false).
+- Überprüfen Sie die [CLI Referenz erstellen](/docs/cli/create/).
+- Vergleichen Sie mit [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/), wenn Ihre App auch Web- und Agent-Tools benötigt.

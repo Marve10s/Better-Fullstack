@@ -1,9 +1,13 @@
-import type { ComponentType } from "react";
-
 import { guidesMeta } from "virtual:content-meta";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
+import { guideMdxLoaders as mdxLoaders, type GuideMdxModule } from "@/lib/guides/mdx-loaders";
 
+import {
+  type LocalizedContentLocale,
+  type SupportedLocale,
+  toSupportedLocale,
+} from "@/lib/i18n/locales";
 import { createSuspenseCache } from "@/lib/mdx-suspense-cache";
 import { getLocale } from "@/paraglide/runtime.js";
 
@@ -17,12 +21,7 @@ export type GuideFrontmatter = {
   keywords?: string[];
 };
 
-type MdxModule = {
-  default: ComponentType<{ components?: Record<string, ComponentType<unknown>> }>;
-  frontmatter?: GuideFrontmatter;
-  toc?: TocEntry[];
-};
-type LocalizedFrontmatter<T> = Partial<Record<"es" | "zh", T>>;
+type LocalizedFrontmatter<T> = Partial<Record<LocalizedContentLocale, T>>;
 
 /**
  * Per-guide metadata. The compiled MDX component and toc are loaded on demand
@@ -40,31 +39,29 @@ export type GuidePage = {
 /** Heavy per-guide bundle, loaded lazily for the page being viewed. */
 export type GuidePageContent = {
   toc: TocEntry[];
-  Component: MdxModule["default"];
+  Component: GuideMdxModule["default"];
 };
 
 const CONTENT_PREFIX = "/content/guides/";
 
-// Lazy: each guide's compiled MDX module is its own chunk. Frontmatter comes
-// from `virtual:content-meta` (see vite-plugins/content-meta) — importing it
-// from the MDX modules here would fuse them into this chunk.
-const mdxLoaders = import.meta.glob<MdxModule>("../../../content/guides/**/*.mdx");
-
-function currentContentLocale(): "en" | "es" | "zh" {
-  const locale = getLocale();
-  return locale === "es" || locale === "zh" ? locale : "en";
+function currentContentLocale(): SupportedLocale {
+  return toSupportedLocale(getLocale()) ?? "en";
 }
 
-function localizedFilePath(filePath: string, locale: "en" | "es" | "zh"): string {
+export function canRenderGuidePageContent(): boolean {
+  return !import.meta.env.SSR || currentContentLocale() === "en";
+}
+
+function localizedFilePath(filePath: string, locale: SupportedLocale): string {
   if (locale === "en") return filePath;
   return filePath.replace(/\.mdx$/, `.${locale}.mdx`);
 }
 
-function hasLocalizedContent(filePath: string, locale: "en" | "es" | "zh"): boolean {
+function hasLocalizedContent(filePath: string, locale: SupportedLocale): boolean {
   return locale !== "en" && localizedFilePath(filePath, locale) in mdxLoaders;
 }
 
-function contentCacheKey(page: GuidePage, locale: "en" | "es" | "zh"): string {
+function contentCacheKey(page: GuidePage, locale: SupportedLocale): string {
   return `${page.slug.join("/")}:${locale}`;
 }
 
@@ -117,6 +114,7 @@ export function useGuidePageContent(page: GuidePage): GuidePageContent {
 
 /** Start fetching a guide's content chunk early (e.g. from a route loader). */
 export function preloadGuidePageContent(slug: string[] | undefined): void {
+  if (!canRenderGuidePageContent()) return;
   const page = getGuidePage(slug);
   if (!page) return;
   contentCache.preload(contentCacheKey(page, currentContentLocale()), () => loadGuideContent(page));

@@ -1,0 +1,67 @@
+---
+title: Erstellen Sie eine SaaS-App
+description: Erfahren Sie, wie Sie eine SaaS-App mit Next.js, Better Auth, Stripe, PostgreSQL, Drizzle, React Email, Tailwind CSS und shadcn/ui mit Better Fullstack erstellen.
+updated: 2026-05-21
+category: Packungen
+tags:
+  - saas
+  - nextjs
+  - stripe
+  - better-auth
+  - drizzle
+keywords:
+  - create saas app
+  - how to make saas app
+  - build saas app
+  - create sass app
+  - nextjs saas starter
+  - saas boilerplate
+---
+
+Wenn Sie nach Möglichkeiten suchen, eine SaaS-App zu erstellen, beginnen Sie mit dem SaaS-Paket. Es bietet Ihnen die Teile, die die meisten Abonnementprodukte benötigen, bevor sich der erste Kunde anmeldet: Konten, Datenbanktabellen, Abrechnung, E-Mail, Benutzeroberfläche und eine typisierte App-Struktur.
+
+<StarterPackCta id="saas-app" />
+
+## Generieren Sie den SaaS-Starter
+
+Öffnen Sie das [SaaS-Paket im Stack Builder](/new?preset=nextjs-saas&view=command) oder führen Sie den folgenden Befehl aus.
+
+```bash
+bun create better-fullstack@latest my-saas-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --email react-email \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --package-manager bun
+```
+
+## Was im Paket enthalten ist
+
+- Next.js als Web- und Servergrenze.
+- PostgreSQL mit Drizzle für relationale Produktdaten.
+- Better Auth für Anmeldung, Sitzungen und Kontoflüsse.
+- Stripe für die Abonnementabrechnung.
+- React Email für transaktionale E-Mail-Vorlagen.
+- Tailwind CSS und shadcn/ui für die Produktschnittstelle.
+- tRPC für typisierte Aufrufe zwischen React UI und Servercode.
+
+## Erste Dinge, die angepasst werden müssen
+
+1. Ersetzen Sie den generierten Produktnamen, die Metadaten und die Navigation.
+2. Fügen Sie Ihre Kernprodukttabellen neben dem Schema Drizzle hinzu.
+3. Konfigurieren Sie Better Auth-Geheimnisse und vertrauenswürdige Ursprünge.
+4. Erstellen Sie Stripe-Produkte und ordnen Sie sie Ihren App-Plänen zu.
+5. Fügen Sie Transaktions-E-Mails für Anmeldung, Abrechnung und Teameinladungen hinzu.
+
+## Wenn das das richtige Paket ist
+
+Verwenden Sie dieses Paket für Abonnementprodukte, B2B-Dashboards, kostenpflichtige Entwicklertools, Teamarbeitsbereiche und Produkte, bei denen Authentifizierung und Abrechnung Teil der ersten funktionierenden Version sein müssen.
+
+Für eine exemplarische Vorgehensweise auf Stack-Ebene lesen Sie [Next.js mit Drizzle und Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).

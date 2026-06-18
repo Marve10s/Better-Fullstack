@@ -1,0 +1,62 @@
+---
+title: パイソン
+description: Web フレームワーク、ORM、検証、キュー、GraphQL、品質ツールを備えた Python API および AI 指向のスキャフォールド。
+---
+
+Python プロジェクトは `uv` と Python ネイティブ テンプレートを使用します。 API フレームワーク、ORM、検証、AI ライブラリ、認証ヘルパー、タスク キュー、GraphQL、品質ツールの Python オプションを選択します。
+
+## 前提条件
+
+- パイソン。
+- `uv`。
+- リポジトリの初期化が必要な場合は Git を使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest my-python-api -- \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-ai none \
+  --python-auth jwt \
+  --python-task-queue none \
+  --python-graphql none \
+  --python-quality ruff \
+  --python-testing pytest hypothesis \
+  --python-caching redis \
+  --python-realtime python-socketio \
+  --python-observability opentelemetry \
+  --python-cli typer rich \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Pythonのカテゴリ
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| Webフレームワーク | `fastapi` `django` `flask` `litestar` `starlette` `none` |
+| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |
+| 検証 | `pydantic` `none` |
+| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `none` |
+| 認証 | `authlib` `jwt` `fastapi-users` `none` |
+| API | `django-rest-framework` `django-ninja` `none` |
+| タスクキュー | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |
+| グラフQL | `strawberry` `ariadne` `none` |
+| 品質 | `ruff` `mypy` `pyright` `none` |
+| テスト (複数選択) | `pytest` `hypothesis` `none` |
+| キャッシング | `redis` `aiocache` `none` |
+| リアルタイム | `python-socketio` `websockets` `none` |
+| 可観測性 | `opentelemetry` `none` |
+| CLI ツール (複数選択) | `typer` `click` `rich` `none` |
+
+## 生成された動作
+
+- `uv sync` は、インストールが有効な場合のインストール パスです。
+- `pythonAi` は複数選択カテゴリであり、TypeScript `--ai` とは別のものです。
+- 選択したオプションに空の条件付き Python テンプレート ファイルが必要ない場合、そのファイルはスキップされます。
+- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。

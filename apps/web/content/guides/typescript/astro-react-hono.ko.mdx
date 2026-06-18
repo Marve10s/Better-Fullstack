@@ -1,0 +1,127 @@
+---
+title: Astro(React 및 Hono 포함)
+description: Better Fullstack을 사용하여 React 통합, Hono, tRPC, Drizzle, SQLite, Better Auth, Tailwind CSS 및 DaisyUI가 포함된 Astro 앱을 만듭니다.
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - astro
+  - react
+  - hono
+  - drizzle
+keywords:
+  - astro react hono
+  - astro trpc starter
+  - astro drizzle starter
+  - create astro fullstack app
+  - astro react api starter
+---
+
+콘텐츠가 많은 페이지와 섬에 Astro과 TypeScript API 서버를 원할 때 이 스택을 사용하세요.
+
+```npm
+npm create better-fullstack@latest my-astro-app -- \
+  --ecosystem typescript \
+  --frontend astro \
+  --astro-integration react \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library daisyui \
+```
+
+## 이것이 만드는 것
+
+- React 통합이 포함된 Astro 프런트엔드.
+- Bun에서 실행되는 Hono 백엔드.
+- SQLite 및 Drizzle.
+- Better Auth.
+- tRPC, 이 Astro 설정은 React 통합을 사용하기 때문입니다.
+- Tailwind CSS 및 DaisyUI.
+
+## 생성된 모양
+
+이 스택은 Astro의 콘텐츠 우선 프런트엔드를 별도의 Hono API 서버와 결합합니다. React Island는 `--astro-integration react`을 통해 활성화되므로 이 가이드에서는 tRPC을 사용할 수 있습니다.
+
+대표적인 형태:
+
+```txt
+my-astro-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+Astro 페이지는 경로, 콘텐츠 및 섬 구성에 초점을 맞춰야 합니다. Hono은(는) API 경로, 인증 인식 서버 동작 및 데이터베이스 액세스를 소유해야 합니다.
+
+## 예 Astro 섬
+
+페이지 셸에는 Astro을 사용하고 상호작용이 필요한 경우에만 React를 사용하세요.
+
+```astro
+---
+import ProjectPicker from "../components/ProjectPicker.tsx";
+---
+
+<main class="mx-auto max-w-5xl p-6">
+  <h1 class="text-3xl font-semibold">Project docs</h1>
+  <ProjectPicker client:load />
+</main>
+```
+
+이는 대화형 React 구성 요소가 입력된 API을 호출할 수 있도록 허용하면서 정적 또는 대부분 정적 페이지를 저렴하게 유지합니다.
+
+## 예 Hono 엔드포인트
+
+상태 확인 및 단순 서비스 엔드포인트는 Hono에 속합니다.
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => c.json({ ok: true }));
+
+export default app;
+```
+
+데이터베이스 지원 엔드포인트의 경우 서버 전용 도우미 뒤에 Drizzle 쿼리를 유지하고 tRPC 프로시저 또는 Hono 경로를 통해 노출합니다.
+
+## 호환성 참고사항
+
+Astro API 호환성은 선택한 UI 통합에 따라 다릅니다. 이 페이지에서는 tRPC을(를) 계속 사용할 수 있도록 유지하는 `--astro-integration react`을(를) 사용합니다. 비React Astro 통합의 경우 oRPC를 선호합니다.
+
+이 명령에서는 DaisyUI가 UI 라이브러리로 선택되었습니다. 나중에 shadcn/ui로 전환하는 경우 Astro React 통합 및 Tailwind 설정이 선택한 구성 요소 라이브러리와 여전히 일치하는지 확인하세요.
+
+## 그것을 선택하는 경우
+
+콘텐츠, 문서, 마케팅 페이지 또는 부분적인 수분 공급이 앱의 핵심이지만 여전히 생성된 백엔드 및 데이터베이스 설정이 필요한 경우 Astro을 선택하세요.
+
+## 배포 참고사항
+
+Astro 프런트엔드 및 Hono API의 원본이 명확하게 구성되도록 계획하세요. 프런트엔드에는 공개 API URL이 필요합니다. Hono 서비스에는 데이터베이스 및 인증 비밀이 필요합니다. SQLite은 로컬 개발에 적합할 수 있지만 SQLite을 유지하는 경우 프로덕션 호스팅은 영구 저장소를 제공해야 합니다.
+
+프런트엔드와 API이 별도로 배포되는 경우 localhost 동작에 의존하기보다는 최종 도메인에 대해 CORS 및 인증 쿠키를 구성하세요.
+
+## 문제 해결
+
+- React 아일랜드가 하이드레이트되지 않으면 Astro 클라이언트 지시문을 확인하고 구성 요소가 브라우저 전용 코드를 안전하게 가져오는지 여부를 확인하세요.
+- 통합을 변경한 후 tRPC을 사용할 수 없는 경우 Astro 통합이 여전히 React인지 확인하세요.
+- 배포된 페이지에서 API 호출이 실패하면 공개 API 원본 및 CORS 설정을 확인하세요.
+- 배포 후 SQLite 데이터가 사라지면 호스팅 플랫폼이 영구 쓰기 가능 저장소를 지원하는지 확인하세요.
+
+## 비교 참고 사항
+
+전체 React 앱 셸보다 콘텐츠 페이지와 선택적 상호 작용이 더 중요한 경우 이를 선택하세요. 프런트엔드가 전용 TanStack Router React 앱이어야 하는 경우 [tRPC 및 Drizzle이 있는 Hono](/guides/typescript/hono-trpc-drizzle/)을 선택합니다.
+
+## 다음 단계
+
+- [Stack Builder](/new?eco=typescript&fe-w=astro&ai=react&be=hono&rt=bun&db=sqlite&orm=drizzle&au=better-auth&api=trpc&ui=daisyui)을 엽니다.
+- [TypeScript 생태계 문서](/docs/ecosystems/typescript/)를 읽어보세요.
+- [SvelteKit(Hono 및 Drizzle 포함)(/guides/typescript/sveltekit-hono-drizzle/)과 비교하세요.

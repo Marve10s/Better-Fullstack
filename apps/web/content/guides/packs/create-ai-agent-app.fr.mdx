@@ -1,0 +1,61 @@
+---
+title: Créer une application d'agent AI
+description: Créez une application d'agent AI avec Next.js, AI CLI documents de workflow, MCP, compétences, Better Auth, Drizzle, SQLite, Tailwind CSS et shadcn/ui.
+updated: 2026-05-21
+category: Packs
+tags:
+  - ai-agent
+  - nextjs
+  - mcp
+  - ai-cli
+  - skills
+keywords:
+  - create ai agent app
+  - build ai agent app
+  - nextjs ai agent starter
+  - ai cli starter
+  - mcp app starter
+---
+
+Utilisez le pack d'applications d'agent AI lorsque vous souhaitez que l'application et le flux de travail de l'agent démarrent ensemble. Il prépare un projet Next.js plus une documentation orientée AI CLI et des outils d'agent local.
+
+<StarterPackCta id="ai-agent-app" />
+
+## Générer le démarreur d'agent AI
+
+Ouvrez le pack d'applications d'agent [AI dans Stack Builder](/new?preset=ai-cli-agent-workbench&view=command) ou exécutez :
+
+```bash
+bun create better-fullstack@latest my-ai-agent-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --ai ai-cli \
+  --addons biome ruler turborepo mcp skills \
+  --ai-docs claude-md agents-md cursorrules
+```
+
+## Ce que comprend le pack
+
+- Next.js pour la surface du produit.
+- SQLite et Drizzle pour la persistance locale d'abord.
+- Better Auth pour les comptes et les sessions.
+- Configuration de AI CLI, prise en charge de MCP, compétences et documents d'agent générés.
+- Biome et Ruler afin que les instructions de l'agent et la qualité du code soient en direct avec le dépôt.
+
+## Premières choses à personnaliser
+
+1. Définissez le travail de l'agent orienté utilisateur : recherche, codage, support, automatisation ou analyse.
+2. Ajoutez le modèle de données d'application que l'agent est autorisé à lire et à écrire.
+3. Serrez les instructions MCP/tool ​​avant de connecter des services externes.
+4. Passez de SQLite à une base de données gérée lorsque l'hébergement de collaboration ou de production en a besoin.
+
+## Quand c'est le bon pack
+
+Choisissez cette option pour les outils de développement assistés par AI, l'automatisation interne, les tableaux de bord d'agent, les copilotes de flux de travail ou les expériences dans lesquelles la structure de l'application et les instructions de l'agent doivent évoluer ensemble.
+
+Pour la procédure pas à pas au niveau de la pile, lisez [Next.js AI CLI Agent Workbench](/guides/ai/nextjs-ai-cli-agent-workbench/).

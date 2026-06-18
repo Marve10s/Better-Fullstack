@@ -936,6 +936,7 @@ const COMMAND_ADDONS = new Set([
   "lefthook",
   "husky",
   "turborepo",
+  "nx",
   "docker-compose",
   "ultracite",
   "fumadocs",

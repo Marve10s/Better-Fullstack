@@ -17,19 +17,44 @@ const zh_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) =>
 	return /** @type {LocalizedString} */ (`导航`)
 };
 
+const ja_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ナビゲート`)
+};
+
+const ko_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`탐색`)
+};
+
+const zh_hant1_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`導航`)
+};
+
+const de_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Navigieren`)
+};
+
+const fr_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Naviguer`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Navigate" |
 *
 * @param {Docssearchnavigate2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const docssearchnavigate2 = /** @type {((inputs?: Docssearchnavigate2Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchnavigate2Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const docssearchnavigate2 = /** @type {((inputs?: Docssearchnavigate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchnavigate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_docssearchnavigate2(inputs)
 	if (locale === "es") return es_docssearchnavigate2(inputs)
-	return zh_docssearchnavigate2(inputs)
+	if (locale === "zh") return zh_docssearchnavigate2(inputs)
+	if (locale === "ja") return ja_docssearchnavigate2(inputs)
+	if (locale === "ko") return ko_docssearchnavigate2(inputs)
+	if (locale === "zh-Hant") return zh_hant1_docssearchnavigate2(inputs)
+	if (locale === "de") return de_docssearchnavigate2(inputs)
+	return fr_docssearchnavigate2(inputs)
 });
 export { docssearchnavigate2 as "docsSearchNavigate" }

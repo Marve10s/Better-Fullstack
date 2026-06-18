@@ -1,0 +1,61 @@
+---
+title: Funktionen hinzufügen
+description: Fügen Sie unterstützte Add-ons zu vorhandenen Better Fullstack-Projekten hinzu.
+---
+
+Der Befehl `add` aktualisiert ein vorhandenes Better Fullstack-Projekt. Es liest `bts.jsonc`, validiert angeforderte Add-ons, schreibt unterstützte Dateien und aktualisiert die Projektkonfiguration.
+
+```npm
+npm create better-fullstack@latest add -- --addons mcp skills
+```
+
+## Was add macht
+
+- Liest `bts.jsonc` aus dem aktuellen Projekt oder aus `--project-dir`.
+- Fordert nach kompatiblen Add-ons, wenn `--addons` weggelassen wird.
+- Überspringt bereits installierte Add-ons.
+- Schreibt Add-on-Vorlagen und Abhängigkeitsänderungen, wenn ein neues Add-on ausgewählt wird.
+- Gibt einen Installationsbefehl aus, wenn die Abhängigkeitsinstallation übersprungen wird.
+
+<Callout kind="warn" title="Addon-first command">
+`add` wird derzeit beendet, wenn kein neues Add-on ausgewählt ist. Wählen Sie nach Möglichkeit Bereitstellungsziele während `create` aus; Die reinen Bereitstellungsflüsse `add --web-deploy ...` oder `add --server-deploy ...` sind noch nicht abgeschlossen.
+</Callout>
+
+## Flaggen
+
+| Flagge | Werte oder Verhalten |
+| --- | --- |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+| `--project-dir` | Pfad zum generierten Projekt. Standardmäßig wird das aktuelle Verzeichnis verwendet. |
+| `--install` | Installieren Sie Abhängigkeiten, nachdem Sie Dateien hinzugefügt haben. Der Standardwert ist „false“ für `add`. |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn` |
+| `--web-deploy` | Zeichnet ein Webbereitstellungsziel nach der Add-on-Verarbeitung auf. |
+| `--server-deploy` | Zeichnet ein Serverbereitstellungsziel nach der Add-on-Verarbeitung auf. |
+
+## Addon-Referenz
+
+| Hinzufügen Auf | Zweck |
+| --- | --- |
+| `mcp` | Generierte Projekt-Serverkonfiguration MCP für Codierungsagenten. |
+| `skills` | Kuratierte Dateien für Coding-Agent-Skills. |
+| `turborepo` | Monorepo-Orchestrierung. |
+| `docker-compose` | Lokale Service-Orchestrierung für unterstützte Stacks. |
+| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | Codequalität und Hooks. |
+| `starlight` `fumadocs` | Dokumentationsseiten, sofern mit dem Stack kompatibel. |
+| `tauri` `pwa` `wxt` | Unterstützung für Desktops, progressive Web-Apps und Browsererweiterungen. |
+| `msw` `storybook` | Dienstprogramme für Tests und Komponentenentwicklung. |
+| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | Datenabruf- und UI-Dienstprogramme. |
+| `backend-utils` | asyncHandler, ApiResponse und ein globaler Fehlerhandler für Hono-, Express-, Fastify-, Elysia-, feTS- oder NestJS-Server. |
+| `opentui` | Unterstützung der Terminal-Benutzeroberfläche. |
+
+## Idempotenz
+
+`bts.jsonc` ist die Quelle der Wahrheit für installierte Add-ons. Wenn jedes angeforderte Add-on bereits vorhanden ist, meldet `add`, dass keine neuen Add-ons ausgewählt wurden und wird beendet, ohne nicht verwandte Änderungen vorzunehmen.
+
+## Empfohlener Arbeitsablauf
+
+1. Übernehmen oder speichern Sie die aktuelle Arbeit.
+2. Führen Sie `add` mit expliziten Add-on-Flags aus.
+3. Überprüfen Sie die generierten Dateiänderungen.
+4. Installieren Sie Abhängigkeiten, wenn der Befehl die Installation übersprungen hat.
+5. Führen Sie den Test-, Lint- oder Typecheck-Befehl des Projekts aus.

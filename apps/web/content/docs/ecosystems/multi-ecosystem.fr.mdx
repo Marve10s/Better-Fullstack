@@ -1,0 +1,66 @@
+---
+title: Multi-écosystème
+description: Composez un projet Better Fullstack à partir des parties frontend, backend, base de données et mobiles à travers les écosystèmes.
+---
+
+Le mode multi-écosystèmes modélise un projet sous forme de parties de pile connectées au lieu d'une sélection d'écosystème plate. Utilisez-le lorsqu'un produit couvre plusieurs langues, par exemple une interface TypeScript, Go API, une base de données PostgreSQL partagée et une application mobile React Native.
+
+Ouvrez-le dans le [Stack Builder](https://better-fullstack.dev/new?mode=multi) ou transmettez les indicateurs `--part` répétés au CLI.
+
+## Pièces de pile
+
+Chaque pièce utilise cette forme :
+
+```txt
+role:ecosystem:tool
+owner.role:ecosystem:tool
+```
+
+Les rôles de niveau supérieur décrivent les applications générées ou l'infrastructure partagée. Les rôles détenus attachent une capacité à un article parent.
+
+| Exemple | Signification |
+| --- | --- |
+| `frontend:typescript:next` | Générez une interface TypeScript Next.js. |
+| `backend:go:gin` | Générez un backend Go Gin. |
+| `backend.orm:go:gorm` | Attachez GORM au backend sélectionné. |
+| `backend.api:rust:tonic` | Attachez Tonic gRPC à un backend Rust. |
+| `database:universal:postgres` | Ajoutez une partie de base de données PostgreSQL partagée. |
+| `mobile:react-native:native-bare` | Générez une application mobile React Native. |
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## Source de vérité
+
+Les projets multi-écosystèmes écrivent `stackParts` à `bts.jsonc`. Ces parties sont la source de vérité pour la structure générée, l’historique et les commandes reproductibles. Les champs hérités tels que `backend`, `orm` ou `frontend` peuvent toujours apparaître comme solutions de secours de compatibilité dérivées du graphique.
+
+Les commandes générées conservent le graphique sous forme d'indicateurs `--part` répétés, afin que le projet puisse être recréé sans s'appuyer sur l'état caché du générateur.
+
+## Flux de constructeur
+
+Le mode multi-écosystèmes du Stack Builder parcourt :
+
+1. Frontend – interfaces Web TypeScript.
+2. Backend – backends TypeScript, Rust, Python, Go, Java, Elixir ou .NET et capacités backend détenues.
+3. Base de données - choix de bases de données universelles partagées.
+4. Mobile – Choix d'applications React Native.
+5. Finaliser : modules complémentaires, documents AI, installations, Git et paramètres de version.
+
+## Compatibilité
+
+- Un seul article principal sélectionné par rôle est pris en charge dans le modèle de graphique actuel.
+- Les éléments de capacité détenus doivent faire référence à un propriétaire, tel que `backend.orm:go:gorm`.
+- Les écosystèmes de capacités doivent généralement correspondre à l’écosystème de leur propriétaire.
+- Les parties de la base de données universelle peuvent être partagées entre les écosystèmes.
+- Certains outils fournissent des parties implicites. Par exemple, les backends sélectionnés peuvent fournir des hypothèses de base de données ou de routage qui apparaissent dans le `stackParts` généré.
+- Le vérificateur de compatibilité valide les parties du graphique avant la génération et signale les problèmes de propriétaire, de doublon et d'outil non pris en charge.

@@ -1,0 +1,32 @@
+---
+title: フロントエンドとアプリ
+description: 生成された Web フロントエンド、モバイル アプリ、アプリ プラットフォーム アドオンを選択します。
+---
+
+このセクションは、Better Fullstack が生成するユーザー向けアプリのサーフェスを制御します。
+
+## ウェブフロントエンド
+
+TypeScript Web フロントエンドは `--frontend` で選択されます。このカテゴリは、React、Vinext、Vue/Nuxt、SvelteKit、Solid、Astro、Qwik、Angular、Redwood、Fresh、および `none` をサポートしています。
+
+バックエンドのみのサービスには `none` を使用します。フレームワークがサーバー ルートを所有する場合は、`--backend self` でフルスタック フロントエンド モードを使用します。
+
+## React Native アプリ
+
+React Native は独自のエコシステムです。 `--ecosystem react-native` を使用して選択するか、`mobile:react-native:native-bare` を使用してマルチエコシステム パーツとして選択します。
+
+モバイルの選択肢には、ナビゲーション、UI、ストレージ、テスト、プッシュ通知、OTA アップデート、ディープ リンクが含まれます。これらは、TypeScript Web バックエンドやデプロイ カテゴリを意味するものではありません。
+
+## Rust WASM フロントエンド
+
+Rust は、`--rust-frontend` を通じて Leptos または Dioxus フロントエンド サーフェスを生成できます。これらは Rust エコシステムの選択肢であり、TypeScript Web フロントエンドとは別のものです。
+
+## アプリプラットフォーム
+
+Tauri、PWA、WXT、OpenTUI などのアプリ プラットフォーム アドオンは、互換性のあるスタックにシェル、オフライン、拡張機能、またはターミナル アプリの機能を追加します。
+
+## 参考文献
+
+- [TypeScript オプション](/docs/reference/options/typescript/)
+- [React Native オプション](/docs/reference/options/react-native/)
+- [Rustオプション](/docs/reference/options/rust/)

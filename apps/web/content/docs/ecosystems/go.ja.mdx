@@ -1,0 +1,72 @@
+---
+title: 行く
+description: API、サービス、gRPC、CLI、ロギング、ORM、および認証ヘルパー スキャフォールドに進みます。
+---
+
+Go プロジェクトは Go モジュールと Go ネイティブ テンプレートを使用します。 HTTP サービス、gRPC、CLIs、ロギング、ORM、および Go 認証ヘルパーの Go オプションを選択します。
+
+## 前提条件
+
+- ツールチェーンに進みます。
+- リポジトリの初期化が必要な場合は Git を使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-logging zap \
+  --go-auth jwt \
+  --go-api none \
+  --go-cli none \
+  --go-testing testify \
+  --go-realtime gorilla-websocket \
+  --go-message-queue nats \
+  --go-caching redis \
+  --go-config viper \
+  --go-observability opentelemetry \
+  --auth none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## 囲碁のカテゴリー
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| Webフレームワーク | `gin` `echo` `fiber` `chi` `none` |
+| ORM | `gorm` `sqlc` `ent` `none` |
+| API | `grpc-go` `gqlgen` `none` |
+| CLI | `cobra` `bubbletea` `urfave-cli` `none` |
+| ロギング | `zap` `zerolog` `slog` `logrus` `none` |
+| Go 認証ヘルパー | `casbin` `jwt` `goth` `none` |
+| テスト (複数選択) | `testify` `gomock` `none` |
+| リアルタイム | `gorilla-websocket` `centrifuge` `none` |
+| メッセージキュー | `nats` `watermill` `none` |
+| キャッシング | `redis` `ristretto` `none` |
+| 構成 | `viper` `koanf` `none` |
+| 可観測性 | `opentelemetry` `none` |
+
+## 認証分割
+
+Go には 2 つの認証関連フィールドがあります。
+
+- `--go-auth casbin|jwt|none` は Go ネイティブの認証ヘルパーを追加します。
+- `--auth go-better-auth` は、グローバル認証フィールドを通じて GoBetterAuth を選択します。
+
+Clerk、NextAuth、Stack Auth、Supabase Auth、Auth0 などの他のグローバル認証プロバイダーは TypeScript 指向であり、一般的な Go スキャフォールド サポートとして提示されるべきではありません。
+
+## 生成された動作
+
+- `go mod tidy` は、インストールが有効な場合のインストール/検証パスです。
+- gRPC、Cobra、および Bubble Tea ファイルは、選択した場合にのみ含まれます。
+- テスト、リアルタイム、メッセージキュー、キャッシュ、構成、可観測性の選択により、
+`internal/` の下のスタンドアロン パッケージ (および `testify`/`gomock` のサンプル テスト)。
+- `gqlgen` スキャフォールド `graph/schema.graphqls` + `gqlgen.yml`; `go generate ./graph` を実行して生成します
+GraphQL サーバー コード (Ent コード生成フローを反映)。
+- `goth` は、`GOOGLE_CLIENT_ID`/`GITHUB_CLIENT_ID` スタイルの環境資格情報から OAuth プロバイダーを登録します。
+- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。

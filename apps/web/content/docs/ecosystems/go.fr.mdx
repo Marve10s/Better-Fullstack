@@ -1,0 +1,72 @@
+---
+title: Aller
+description: Accédez à API, service, gRPC, CLI, journalisation, ORM et échafaudages d'aide à l'authentification.
+---
+
+Les projets Go utilisent des modules Go et des modèles Go-natifs. Choisissez les options Go pour les services HTTP, gRPC, CLIs, la journalisation, les ORM et les assistants d'authentification Go.
+
+## Conditions préalables
+
+- Allez à la chaîne d'outils.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-go-api -- \
+  --ecosystem go \
+  --go-web-framework gin \
+  --go-orm gorm \
+  --go-logging zap \
+  --go-auth jwt \
+  --go-api none \
+  --go-cli none \
+  --go-testing testify \
+  --go-realtime gorilla-websocket \
+  --go-message-queue nats \
+  --go-caching redis \
+  --go-config viper \
+  --go-observability opentelemetry \
+  --auth none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Aller aux catégories
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Cadre Web | `gin` `echo` `fiber` `chi` `none` |
+| ORM | `gorm` `sqlc` `ent` `none` |
+| API | `grpc-go` `gqlgen` `none` |
+| CLI | `cobra` `bubbletea` `urfave-cli` `none` |
+| Enregistrement | `zap` `zerolog` `slog` `logrus` `none` |
+| Aller aux assistants d'authentification | `casbin` `jwt` `goth` `none` |
+| Test (sélection multiple) | `testify` `gomock` `none` |
+| Temps réel | `gorilla-websocket` `centrifuge` `none` |
+| File d'attente des messages | `nats` `watermill` `none` |
+| Mise en cache | `redis` `ristretto` `none` |
+| Configuration | `viper` `koanf` `none` |
+| Observabilité | `opentelemetry` `none` |
+
+## Division d'authentification
+
+Go a deux champs liés à l'authentification :
+
+- `--go-auth casbin|jwt|none` ajoute des assistants d'authentification Go-natifs.
+- `--auth go-better-auth` sélectionne GoBetterAuth via le champ d'authentification global.
+
+D'autres fournisseurs d'authentification globaux tels que Clerk, NextAuth, Stack Auth, Supabase Auth et Auth0 sont orientés TypeScript et ne doivent pas être présentés comme une prise en charge générale de l'échafaudage Go.
+
+## Comportement généré
+
+- `go mod tidy` est le chemin d'installation/vérification lorsque l'installation est activée.
+- Les fichiers gRPC, Cobra et Bubble Tea sont inclus uniquement lorsqu'ils sont sélectionnés.
+- Les sélections de tests, de temps réel, de file d'attente de messages, de mise en cache, de configuration et d'observabilité génèrent
+packages autonomes sous `internal/` (plus des exemples de tests pour `testify`/`gomock`).
+- `gqlgen` échafaudages `graph/schema.graphqls` + `gqlgen.yml` ; exécutez `go generate ./graph` pour produire
+le code du serveur GraphQL (reflète le flux de génération de code Ent).
+- `goth` enregistre les fournisseurs OAuth à partir des informations d'identification d'environnement de style `GOOGLE_CLIENT_ID`/`GITHUB_CLIENT_ID`.
+- Les fichiers d'instructions AI sont toujours disponibles via `--ai-docs`, y compris `--ai-docs none`.

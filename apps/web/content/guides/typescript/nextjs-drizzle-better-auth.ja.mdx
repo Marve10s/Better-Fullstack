@@ -1,0 +1,139 @@
+---
+title: Next.js と Drizzle および Better Auth
+description: Better Fullstack を使用して、Drizzle、PostgreSQL、Better Auth、Tailwind CSS、shadcn/ui、および tRPC を備えた Next.js フルスタック アプリを作成します。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - nextjs
+  - drizzle
+  - better-auth
+  - postgres
+keywords:
+  - nextjs drizzle better auth
+  - nextjs postgres starter
+  - nextjs fullstack boilerplate
+  - nextjs drizzle auth starter
+  - create nextjs fullstack app
+---
+
+リレーショナル データ、認証、型付き API レイヤーを備えた主流の React フルスタック アプリが必要な場合は、このスタックを使用します。
+
+```npm
+npm create better-fullstack@latest my-next-app -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## これが生み出すもの
+
+- フルスタック モードの Next.js アプリ。
+- PostgreSQL をリレーショナル データベースとして使用します。
+- Drizzle を TypeScript ORM として使用します。
+- 認証には Better Auth を使用します。
+- tRPC (エンドツーエンド型の API)。
+- フロントエンドのスタイル用の Tailwind CSS および shadcn/ui。
+
+## 生成された形状
+
+生成されたアプリは、Web とサーバーの境界として Next.js を使用します。 PostgreSQL と Drizzle はサーバー専用モジュールの背後にあり、tRPC はアプリケーション データを必要とするクライアント コンポーネントの型指定された呼び出しを提供します。
+
+代表的な形状：
+
+```txt
+my-next-app/
+  bts.jsonc
+  app/
+  components/
+  lib/
+    auth/
+    db/
+    trpc/
+```
+
+正確なパスはジェネレーターのバージョンによって異なる場合がありますが、意図された分割は一貫しています。UI コンポーネントは製品エクスペリエンスをレンダリングし、ルート ハンドラーとサーバー コードは独自のリクエスト境界を持ち、データベース アクセスはブラウザー バンドルの外に留まります。
+
+## Drizzle モデルの例
+
+製品テーブルを明示的に保ち、移行しやすいようにします。
+
+```ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+Better Auth は、認証テーブルとセッション動作を所有する必要があります。製品テーブルはユーザー ID を参照し、セッション フィールドをアプリケーション モデルにコピーしないようにする必要があります。
+
+## 型付きプロシージャの例
+
+フロントエンドが推論された入力および出力型から恩恵を受ける操作には、tRPC を使用します。
+
+```ts
+import { z } from "zod";
+
+export const createWorkspaceInput = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function createWorkspace(rawInput: unknown, userId: string) {
+  const input = createWorkspaceInput.parse(rawInput);
+
+  return {
+    id: crypto.randomUUID(),
+    name: input.name,
+    ownerId: userId,
+  };
+}
+```
+
+認可チェックをミューテーションの近くに置いてください。ワークスペースの作成操作では、何かを挿入する前に、サインインしているユーザーが存在することを証明する必要があります。
+
+## いつ選択するか
+
+SaaS アプリ、アカウントベースの製品、ダッシュボード、管理ポータル、および Next.js ホスティングの習熟度が重要なプロジェクトの場合は、これを選択してください。
+
+## Drizzle と Better Auth を使用する理由
+
+Drizzle は、データベース アクセスを TypeScript に近づけます。 Better Auth は、デフォルトでホスト型 ID プロバイダーを強制せずに、アプリに最新の認証レイヤーを提供します。
+
+## 互換性に関する注意事項
+
+- `--backend self` は、Next.js がサーバー境界を所有していることを意味します。明示的なサービス分割が必要な場合を除き、別のバックエンドを追加しないでください。
+- `--database postgres` は、運用ホスティング、プールされた接続、およびマネージド データベース プロバイダーとうまく組み合わせます。
+- `--api trpc` は、この React ベースのスタックに適しています。 Better Fullstack の非 React TypeScript フロントエンドは、通常、代わりに oRPC を使用します。
+- shadcn/ui は Tailwind と React を期待しています。後でコンポーネントを再生成または追加する場合は、これらの選択肢を揃えておいてください。
+
+## 導入メモ
+
+デプロイメント環境で PostgreSQL 接続文字列、Better Auth シークレット、およびアプリのベース URL を設定します。新しい列またはテーブルを必要とする新しいコードに運用トラフィックを送信する前に、移行を実行します。
+
+サーバーレス ホスティングでは、データベース プロバイダーのプーリング推奨事項を確認してください。直接 PostgreSQL 接続では、多くのサーバーレス インスタンスが一度に起動すると、すぐに制限を使い果たす可能性があります。
+
+## トラブルシューティング
+
+- 認証がローカルでは機能するが実稼働環境では機能しない場合は、コールバック URL、信頼できるオリジン、Cookie、実稼働アプリの URL を確認します。
+- 移行が実行されてもアプリに古いスキーマ エラーが表示される場合は、アプリと移行コマンドが同じデータベースを指していることを確認してください。
+- クライアント コンポーネントがサーバー専用データベース モジュールをインポートする場合は、クエリをルート ハンドラー、サーバー アクション、または型指定された API プロシージャの後ろに移動します。
+- tRPC 型が更新されない場合は、TypeScript サーバーを再起動し、対象のアプリの型チェックを再実行します。
+
+## 比較メモ
+
+最も広範な Next.js デプロイメント例とエコシステムに精通したい場合は、TanStack Start ではなくこのスタックを選択してください。 TanStack Router および小規模な React フルスタック フレームワークが Next.js 規則よりも重要な場合は、[TanStack Start](/guides/typescript/create-tanstack-start-project/) を選択します。
+
+## 次のステップ
+
+- [Stack Builder](/new?eco=typescript&fe-w=next&be=self&db=postgres&orm=drizzle&au=better-auth&api=trpc) を開きます。
+- これを [TanStack Start プロジェクトの作成](/guides/typescript/create-tanstack-start-project/) と比較してください。
+- [互換性リファレンス](/docs/reference/compatibility/) をお読みください。

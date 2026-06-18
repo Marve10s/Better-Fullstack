@@ -31,6 +31,11 @@ const API_PROMPT_OPTION_MAP: Record<API, PromptOption<API>> = {
     label: "GraphQL Yoga",
     hint: "Batteries-included GraphQL server with Pothos schema builder",
   },
+  openapi: {
+    value: "openapi",
+    label: "OpenAPI",
+    hint: "REST scaffolding with an OpenAPI 3.1 spec and Scalar docs",
+  },
   none: {
     value: "none",
     label: "None",

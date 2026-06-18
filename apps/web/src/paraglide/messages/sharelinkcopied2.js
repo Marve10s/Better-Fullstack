@@ -17,19 +17,44 @@ const zh_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => Local
 	return /** @type {LocalizedString} */ (`链接已复制到剪贴板！`)
 };
 
+const ja_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`リンクがクリップボードにコピーされました!`)
+};
+
+const ko_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`링크가 클립보드에 복사되었습니다!`)
+};
+
+const zh_hant1_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`連結已複製到剪貼簿！`)
+};
+
+const de_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Link in die Zwischenablage kopiert!`)
+};
+
+const fr_sharelinkcopied2 = /** @type {(inputs: Sharelinkcopied2Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Lien copié dans le presse-papier !`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Link copied to clipboard!" |
 *
 * @param {Sharelinkcopied2Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const sharelinkcopied2 = /** @type {((inputs?: Sharelinkcopied2Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopied2Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const sharelinkcopied2 = /** @type {((inputs?: Sharelinkcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Sharelinkcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_sharelinkcopied2(inputs)
 	if (locale === "es") return es_sharelinkcopied2(inputs)
-	return zh_sharelinkcopied2(inputs)
+	if (locale === "zh") return zh_sharelinkcopied2(inputs)
+	if (locale === "ja") return ja_sharelinkcopied2(inputs)
+	if (locale === "ko") return ko_sharelinkcopied2(inputs)
+	if (locale === "zh-Hant") return zh_hant1_sharelinkcopied2(inputs)
+	if (locale === "de") return de_sharelinkcopied2(inputs)
+	return fr_sharelinkcopied2(inputs)
 });
 export { sharelinkcopied2 as "shareLinkCopied" }

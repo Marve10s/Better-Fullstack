@@ -1,0 +1,57 @@
+---
+title: Créer une application mobile
+description: Créez une application mobile avec Expo, React Native et Uniwind à l'aide du pack d'applications mobiles Better Fullstack.
+updated: 2026-05-21
+category: Packs
+tags:
+  - mobile
+  - expo
+  - react-native
+  - uniwind
+  - typescript
+keywords:
+  - create mobile app
+  - expo app starter
+  - react native starter
+  - uniwind starter
+  - create expo app
+---
+
+Utilisez le pack d'applications mobiles lorsque le premier écran doit être natif et non Web. Cela commence par Expo et Uniwind afin que vous puissiez créer une interface mobile avant d'ajouter des services backend.
+
+<StarterPackCta id="mobile-app" />
+
+## Générer le démarreur mobile
+
+Ouvrez le [pack d'applications mobiles dans Stack Builder](/new?preset=uniwind&view=command) ou exécutez :
+
+```bash
+bun create better-fullstack@latest my-mobile-app \
+  --ecosystem typescript \
+  --frontend native-uniwind \
+  --backend none \
+  --database none \
+  --api none \
+  --css-framework none \
+  --ui-library none
+```
+
+## Ce que comprend le pack
+
+- Expo pour le runtime de l'application native.
+- React Native comme base de l'interface utilisateur.
+- Uniwind pour un style natif axé sur les utilitaires.
+- Une forme de projet frontend uniquement qui reste légère jusqu'à ce que des choix backend soient nécessaires.
+
+## Premières choses à personnaliser
+
+1. Remplacez les exemples d’écrans par le flux mobile principal.
+2. Décidez si l'authentification doit être native uniquement, soutenue par API ou partagée avec une application Web.
+3. Ajoutez des services backend uniquement une fois que les limites des données de l'application sont claires.
+4. Validez dès le début les mises en page sur les appareils de petite et grande taille.
+
+## Quand c'est le bon pack
+
+Choisissez cette option pour les produits axés sur les mobiles, les applications complémentaires, les prototypes nécessitant une sensation native et les équipes qui souhaitent commencer par l'expérience de l'appareil avant de choisir l'infrastructure de serveur.
+
+Pour la procédure pas à pas au niveau de la pile, lisez [Expo Uniwind Native App](/guides/react-native/expo-uniwind-native/).

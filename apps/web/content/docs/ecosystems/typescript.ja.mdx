@@ -1,0 +1,81 @@
+---
+title: TypeScript
+description: フルスタック Web、デスクトップ、API、ワーカー、および統合足場。
+---
+
+TypeScript は、最も広範な Better Fullstack エコシステムです。 Web アプリ、API、ワーカー、デスクトップ シェル、ブラウザ拡張機能、ドキュメント サイト、サービス統合、およびほとんどのアドオン ワークフローに使用します。
+
+React Native/Expo モバイル足場は、専用の [React Native](/docs/ecosystems/react-native/) エコシステム内に存在します。
+
+## 前提条件
+
+- Node.js 20 歳以上。
+- npm、pnpm、Yarn、または Bun。
+- リポジトリの初期化が必要な場合は Git を使用します。
+
+## スクリプト化された例
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --addons turborepo \
+  --examples none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install
+```
+
+## コア足場カテゴリー
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| ウェブフロントエンド | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |
+| バックエンド | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |
+| ランタイム | `bun` `node` `workers` `none` |
+| データベース | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |
+| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |
+| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none` |
+| 認証 | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none` |
+
+## UIとアプリの機能
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| CSS | `tailwind` `scss` `less` `postcss-only` `none` |
+| UIライブラリ | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |
+| 州 | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |
+| フォーム | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |
+| 検証 | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |
+| 例 | `ai` `chat-sdk` `tanstack-showcase` `none` |
+
+## サービスとツール
+
+| カテゴリ | 価値観 |
+| --- | --- |
+| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |
+| 支払い | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |
+| 電子メール | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |
+| リアルタイム | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |
+| 求人 | `bullmq` `trigger-dev` `inngest` `temporal` `none` |
+| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `none` |
+| ストレージ | `s3` `r2` `cloudinary` `none` |
+| 機能フラグ | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |
+| アドオン | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none` |
+
+## 互換性に関する注意事項
+
+- tRPC は React ベースのフロントエンド用です。
+- `self` バックエンドはフルスタック フレームワーク用であり、`runtime none` とペアになります。
+- Qwik、Angular、Redwood、および Fresh では、完全なオプション テーブルよりも狭い API/バックエンド サポートが提供されます。
+- ワーカー ランタイムのサポートはバックエンドに依存します。
+- UI ライブラリは多くの場合、フロントエンド ファミリと CSS フレームワークに依存します。たとえば、shadcn/ui は React 指向であり、Tailwind ベースです。
+- 一部のプロバイダーには追加の制約があります (Polar では Better Auth と Web フロントエンドが必要です)。
+- 一部のオプションは、すべてのテンプレート パスが同じ深さになる前に、互換性または依存関係のサポートのために表示されます。大きな組み合わせをスキャフォールディングする前に、互換性チェッカーまたは Stack Builder を実行します。

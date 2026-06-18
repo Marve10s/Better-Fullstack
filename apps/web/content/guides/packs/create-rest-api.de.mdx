@@ -1,0 +1,56 @@
+---
+title: Erstellen Sie ein REST API
+description: Erstellen Sie ein REST API mit FastAPI, PostgreSQL, SQLAlchemy, Pydantic und Ruff unter Verwendung des Pakets Better Fullstack REST API.
+updated: 2026-05-21
+category: Packungen
+tags:
+  - rest-api
+  - fastapi
+  - python
+  - sqlalchemy
+  - pydantic
+keywords:
+  - create rest api
+  - build rest api
+  - fastapi rest api starter
+  - python api starter
+  - fastapi postgres sqlalchemy
+---
+
+Verwenden Sie das Paket REST API, wenn Sie einen fokussierten Backend-Dienst benötigen: Routen, Validierung, Persistenz und Linting ohne Frontend.
+
+<StarterPackCta id="rest-api" />
+
+## Generieren Sie den Starter REST API
+
+Öffnen Sie das Paket [REST API im Stack Builder](/new?preset=python-fastapi&view=command) oder führen Sie Folgendes aus:
+
+```bash
+bun create better-fullstack@latest my-rest-api \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff
+```
+
+## Was im Paket enthalten ist
+
+- FastAPI für REST-Endpunkte und OpenAPI-Dokumente.
+- SQLAlchemy für Datenbankmodelle und Abfragen.
+- Pydantic zur Anforderungs- und Antwortvalidierung.
+- Ruff für Python-Linting und -Formatierung.
+- Ein kleines Projektlayout, das einfach als API-Dienst bereitgestellt werden kann.
+
+## Erste Dinge, die angepasst werden müssen
+
+1. Ersetzen Sie Beispielressourcen durch Ihre Domänenmodelle.
+2. Fügen Sie eine Authentifizierung hinzu, wenn API nicht öffentlich ist.
+3. Entscheiden Sie, welche Routen schreibgeschützt sind und welche Daten mutieren.
+4. Fügen Sie Integrationstests für die Routen hinzu, die Ihren Vertrag definieren.
+
+## Wenn das das richtige Paket ist
+
+Wählen Sie dies für öffentliche APIs, Service-Backends, interne Plattform-APIs, Webhook-Empfänger und Produkte, bei denen ein Frontend separat erstellt wird.
+
+Für eine exemplarische Vorgehensweise auf Stack-Ebene lesen Sie [FastAPI mit PostgreSQL und SQLAlchemy](/guides/python/fastapi-postgres-sqlalchemy/).

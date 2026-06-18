@@ -36,11 +36,21 @@ const SPANISH_COUNTRIES = [
   "PR",
 ] as const;
 
-const CHINESE_COUNTRIES = ["CN", "HK", "MO", "TW", "SG"] as const;
+const SIMPLIFIED_CHINESE_COUNTRIES = ["CN"] as const;
+const TRADITIONAL_CHINESE_COUNTRIES = ["HK", "MO", "TW"] as const;
+const JAPANESE_COUNTRIES = ["JP"] as const;
+const KOREAN_COUNTRIES = ["KR"] as const;
+const GERMAN_COUNTRIES = ["DE"] as const;
+const FRENCH_COUNTRIES = ["FR"] as const;
 
 const COUNTRY_LOCALE_ENTRIES: Array<[readonly string[], SupportedLocale]> = [
   [SPANISH_COUNTRIES, "es"],
-  [CHINESE_COUNTRIES, "zh"],
+  [SIMPLIFIED_CHINESE_COUNTRIES, "zh"],
+  [TRADITIONAL_CHINESE_COUNTRIES, "zh-Hant"],
+  [JAPANESE_COUNTRIES, "ja"],
+  [KOREAN_COUNTRIES, "ko"],
+  [GERMAN_COUNTRIES, "de"],
+  [FRENCH_COUNTRIES, "fr"],
 ];
 
 const COUNTRY_LOCALE_MAP = new Map<string, SupportedLocale>();

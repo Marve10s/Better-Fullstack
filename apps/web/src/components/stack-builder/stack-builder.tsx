@@ -176,7 +176,7 @@ const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
 const APP_PLATFORM_OPTION_GROUPS = [
   {
     headingKey: "workspacePlatforms",
-    ids: ["turborepo", "docker-compose", "pwa", "tauri", "wxt", "opentui"],
+    ids: ["turborepo", "nx", "docker-compose", "pwa", "tauri", "wxt", "opentui"],
   },
   {
     headingKey: "aiAgents",

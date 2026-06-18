@@ -1,4 +1,4 @@
-import { BookOpen, Check, Pencil, Terminal, Zap } from "lucide-react";
+import { Check, Pencil, Zap } from "lucide-react";
 
 import type { StackState } from "@/lib/constant";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/constant";
@@ -104,42 +104,97 @@ function getStarterTrackName(track: StarterTrack) {
   }
 }
 
-function getStarterTrackIntent(track: StarterTrack) {
-  switch (track.id) {
-    case "saas-app":
-      return m.presetTrackSaasIntent();
-    case "ai-agent-app":
-      return m.presetTrackAiAgentIntent();
-    case "rest-api":
-      return m.presetTrackRestApiIntent();
-    case "java-api":
-      return m.presetTrackJavaApiIntent();
-    case "rust-backend":
-      return m.presetTrackRustBackendIntent();
-    case "mobile-app":
-      return m.presetTrackMobileAppIntent();
-    case "internal-tool":
-      return m.presetTrackInternalToolIntent();
-  }
+type PresetTemplate = (typeof PRESET_TEMPLATES)[number];
+
+interface PresetCardProps {
+  preset: PresetTemplate;
+  stack: StackState;
+  title?: string;
+  onApplyPreset: (presetId: string) => void;
+  onCustomizePreset: (presetId: string) => void;
 }
 
-function getStarterTrackDescription(track: StarterTrack) {
-  switch (track.id) {
-    case "saas-app":
-      return m.presetTrackSaasDescription();
-    case "ai-agent-app":
-      return m.presetTrackAiAgentDescription();
-    case "rest-api":
-      return m.presetTrackRestApiDescription();
-    case "java-api":
-      return m.presetTrackJavaApiDescription();
-    case "rust-backend":
-      return m.presetTrackRustBackendDescription();
-    case "mobile-app":
-      return m.presetTrackMobileAppDescription();
-    case "internal-tool":
-      return m.presetTrackInternalToolDescription();
-  }
+function PresetCard({
+  preset,
+  stack,
+  title,
+  onApplyPreset,
+  onCustomizePreset,
+}: PresetCardProps) {
+  const localizedPreset = getLocalizedPresetTemplate(preset);
+  const active = isPresetActive(preset.stack, stack);
+  const highlights = getPresetHighlights(preset.stack);
+
+  return (
+    <button
+      type="button"
+      tabIndex={0}
+      onClick={() => onApplyPreset(preset.id)}
+      className={cn(
+        "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
+        active
+          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+          : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
+      )}
+    >
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role */}
+        <span
+          role="button" // eslint-disable-line
+          tabIndex={0}
+          title={m.presetCustomize()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCustomizePreset(preset.id);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.stopPropagation();
+              e.preventDefault();
+              onCustomizePreset(preset.id);
+            }
+          }}
+          className={cn(
+            "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors",
+            active
+              ? "text-primary hover:bg-primary/20"
+              : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted",
+          )}
+        >
+          <Pencil className="h-2.5 w-2.5" />
+        </span>
+        {active && (
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <Check className="h-3 w-3" />
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1 pr-6">
+        <h3 className="font-mono text-sm font-medium">{title ?? localizedPreset.name}</h3>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {localizedPreset.description}
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {highlights.map((tech) => (
+          <span
+            key={tech}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
+              active
+                ? "border-primary/20 bg-primary/10 text-primary"
+                : "border-border bg-muted/50 text-muted-foreground group-hover:border-muted-foreground/20",
+            )}
+          >
+            <TechIcon techId={tech} name={tech} className="h-3 w-3" />
+            {tech}
+          </span>
+        ))}
+      </div>
+    </button>
+  );
 }
 
 export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePreset }: PresetsPanelProps) {
@@ -174,64 +229,17 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {starterTracks.map((track) => {
                   const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
-                  const active = preset ? isPresetActive(preset.stack, stack) : false;
-                  const trackName = getStarterTrackName(track);
+                  if (!preset) return null;
 
                   return (
-                    <article
+                    <PresetCard
                       key={track.id}
-                      className={cn(
-                        "group flex min-h-[230px] flex-col rounded-md border p-4 transition-all",
-                        active
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                          : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background">
-                          <TechIcon techId={track.icon} name={trackName} className="h-4 w-4" />
-                        </div>
-                        <span className="rounded-md border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {getStarterTrackIntent(track)}
-                        </span>
-                      </div>
-
-                      <div className="mt-4">
-                        <h3 className="font-mono text-sm font-medium">{trackName}</h3>
-                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                          {getStarterTrackDescription(track)}
-                        </p>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-1.5">
-                        {track.highlights.slice(0, 4).map((highlight) => (
-                          <span
-                            key={highlight}
-                            className="rounded-md border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
-                          >
-                            {highlight}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="mt-auto flex items-center gap-2 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => onApplyPreset(track.presetId)}
-                          className="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground transition-all group-hover:gap-2"
-                        >
-                          <Terminal className="h-3.5 w-3.5" />
-                          {m.presetApply()}
-                        </button>
-                        <a
-                          href={track.guideHref}
-                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium transition-colors hover:border-muted-foreground/40 hover:bg-muted"
-                        >
-                          <BookOpen className="h-3.5 w-3.5" />
-                          {m.presetGuide()}
-                        </a>
-                      </div>
-                    </article>
+                      preset={preset}
+                      stack={stack}
+                      title={getStarterTrackName(track)}
+                      onApplyPreset={onApplyPreset}
+                      onCustomizePreset={onCustomizePreset}
+                    />
                   );
                 })}
               </div>
@@ -259,83 +267,15 @@ export function PresetsPanel({ stack, ecosystem, onApplyPreset, onCustomizePrese
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {categoryPresets.map((preset) => {
-                    const localizedPreset = getLocalizedPresetTemplate(preset);
-                    const active = isPresetActive(preset.stack, stack);
-                    const highlights = getPresetHighlights(preset.stack);
-
-                    return (
-                      <button
-                        type="button"
-                        key={preset.id}
-                        tabIndex={0}
-                        onClick={() => onApplyPreset(preset.id)}
-                        className={cn(
-                          "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
-                          active
-                            ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                            : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
-                        )}
-                      >
-                        <div className="absolute top-3 right-3 flex items-center gap-1">
-                          {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role */}
-                          <span
-                            role="button" // eslint-disable-line
-                            tabIndex={0}
-                            title={m.presetCustomize()}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onCustomizePreset(preset.id);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onCustomizePreset(preset.id);
-                              }
-                            }}
-                            className={cn(
-                              "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors",
-                              active
-                                ? "text-primary hover:bg-primary/20"
-                                : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted",
-                            )}
-                          >
-                            <Pencil className="h-2.5 w-2.5" />
-                          </span>
-                          {active && (
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                              <Check className="h-3 w-3" />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-1 pr-6">
-                          <h3 className="font-mono text-sm font-medium">{localizedPreset.name}</h3>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {localizedPreset.description}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {highlights.map((tech) => (
-                            <span
-                              key={tech}
-                              className={cn(
-                                "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
-                                active
-                                  ? "border-primary/20 bg-primary/10 text-primary"
-                                  : "border-border bg-muted/50 text-muted-foreground group-hover:border-muted-foreground/20",
-                              )}
-                            >
-                              <TechIcon techId={tech} name={tech} className="h-3 w-3" />
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {categoryPresets.map((preset) => (
+                    <PresetCard
+                      key={preset.id}
+                      preset={preset}
+                      stack={stack}
+                      onApplyPreset={onApplyPreset}
+                      onCustomizePreset={onCustomizePreset}
+                    />
+                  ))}
                 </div>
               </section>
             );

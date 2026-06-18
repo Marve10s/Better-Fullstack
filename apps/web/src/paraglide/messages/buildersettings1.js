@@ -17,19 +17,44 @@ const zh_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => Local
 	return /** @type {LocalizedString} */ (`构建器设置`)
 };
 
+const ja_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`ビルダー設定`)
+};
+
+const ko_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`빌더 설정`)
+};
+
+const zh_hant1_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`建構器設定`)
+};
+
+const de_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Builder-Einstellungen`)
+};
+
+const fr_buildersettings1 = /** @type {(inputs: Buildersettings1Inputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Paramètres du constructeur`)
+};
+
 /**
 * | output |
 * | --- |
 * | "Builder settings" |
 *
 * @param {Buildersettings1Inputs} inputs
-* @param {{ locale?: "en" | "es" | "zh" }} options
+* @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }} options
 * @returns {LocalizedString}
 */
-const buildersettings1 = /** @type {((inputs?: Buildersettings1Inputs, options?: { locale?: "en" | "es" | "zh" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersettings1Inputs, { locale?: "en" | "es" | "zh" }, {}>} */ ((inputs = {}, options = {}) => {
+const buildersettings1 = /** @type {((inputs?: Buildersettings1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersettings1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" }, {}>} */ ((inputs = {}, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return en_buildersettings1(inputs)
 	if (locale === "es") return es_buildersettings1(inputs)
-	return zh_buildersettings1(inputs)
+	if (locale === "zh") return zh_buildersettings1(inputs)
+	if (locale === "ja") return ja_buildersettings1(inputs)
+	if (locale === "ko") return ko_buildersettings1(inputs)
+	if (locale === "zh-Hant") return zh_hant1_buildersettings1(inputs)
+	if (locale === "de") return de_buildersettings1(inputs)
+	return fr_buildersettings1(inputs)
 });
 export { buildersettings1 as "builderSettings" }

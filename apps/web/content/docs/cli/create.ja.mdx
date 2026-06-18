@@ -1,0 +1,258 @@
+---
+title: コマンドの作成
+description: プロンプト、デフォルト、または明示的なフラグを使用して、新しい Better Fullstack プロジェクトをスキャフォールディングします。
+---
+
+`create` コマンドは、型指定されたスタック構成から新しいプロジェクトを書き込みます。探索のためにインタラクティブに使用するか、毎回同じプロジェクト形状が必要な場合にフラグを渡します。
+
+<PMTabs
+  npm="npm create better-fullstack@latest [project-name] -- [flags]"
+  pnpm="pnpm create better-fullstack@latest [project-name] [flags]"
+  bun="bun create better-fullstack@latest [project-name] [flags]"
+  yarn="yarn create better-fullstack@latest [project-name] [flags]"
+/>
+
+npm の場合、Better Fullstack フラグは `--` の後に続きます。生成された npm コマンドは `npx create-better-fullstack@latest` を使用する場合があります。同じパッケージ エントリポイントを非対話形式で実行します。
+
+## コマンドモード
+
+| モード | コマンド形状 | こんなときに使います |
+| --- | --- | --- |
+| ウィザード | `[launcher] my-app` | プロンプトとデフォルトが必要です。 |
+| デフォルト | `[launcher] my-app [flags] --yes` | プロンプトのないデフォルトのスタックが必要です。 |
+| スクリプト化された | `[launcher] my-app [flags]` | 反復可能な出力が必要です。 |
+| ドライラン | `[launcher] my-app [flags] --dry-run` | 書き込む前にファイルを検査したい。 |
+
+## 素早い行動
+
+- 明示的なフラグは、そのフラグがカバーするカテゴリのみをスキップします。
+- `--yes` はデフォルトを受け入れ、`--frontend`、`--backend`、`--database`、`--orm`、`--auth`、`--api` などのコア スタック フラグと競合します。
+- `none` を使用して、`--ai-docs none` などのオプションのカテゴリを無効にします。
+- 副作用が発生する前に生成されたファイルを検査する場合は、`--no-install` および `--no-git` を使用します。
+- `--verify` は、開発サーバーを起動せずにスキャフォールディング後に生成されたチェックを実行します。
+
+## 共通フラグ
+
+| フラグ | 価値観とか行動とか |
+| --- | --- |
+| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java` `elixir`。デフォルトは `typescript` です。 |
+| `--template` | `t3` `mern` `pern` `uniwind` `none`。 |
+| `--part` | `frontend:typescript:next` や `backend.orm:go:gorm` などのマルチエコシステム スタック パーツを追加します。パーツごとに繰り返します。 |
+| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `docker-compose` `none`。 |
+| `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`。 |
+| `--ai-docs` | `claude-md` `agents-md` `cursorrules` `none`。 |
+| `--package-manager` | `npm` `pnpm` `bun` `yarn`。 |
+| `--version-channel` | `stable` `latest` `beta`。 |
+| `--web-deploy` | `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `vercel` `none`。 |
+| `--server-deploy` | `cloudflare` `fly` `railway` `render` `docker` `sst` `vercel` `none`。 |
+| `--directory-conflict` | 既存のターゲット ディレクトリの戦略。 |
+| `--dry-run` | 生成されたファイルを書き込まずにプレビューします。 |
+| `--verify` | サポートされている場合は、スキャフォールディングの後に生成されたチェックを実行します。 |
+| `--yes` | デフォルトを受け入れます。コアスタックフラグと互換性がありません。 |
+| `--yolo` | サポートされている場合は、安全性の確認をスキップします。 |
+| `--install` / `--no-install` | 依存関係のインストールをインストールまたはスキップします。 |
+| `--git` / `--no-git` | Git を初期化するかスキップします。 |
+| `--disable-analytics` | 匿名の CLI 分析をオプトアウトします。 |
+| `--verbose` | 詳細なスキャフォールド出力を出力します。 |
+
+## TypeScript フラグ
+
+これらは `--ecosystem typescript` とともに使用します。
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none`。 |
+| `--backend` | `hono` `express` `fastify` `elysia` `fets` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none`。 |
+| `--runtime` | `bun` `node` `workers` `none`。 |
+| `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none`。 |
+| `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none`。 |
+| `--db-setup` | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none`。 |
+| `--manual-db` | 該当する場合、プロバイダー固有のデータベース設定プロンプトをスキップします。 |
+| `--auth` | `better-auth` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `none`。 |
+| `--api` | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `none`。 |
+| `--astro-integration` | `react` `vue` `svelte` `solid` `none`。 |
+
+### サービス
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--ai` | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none`。 |
+| `--payments` | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none`。 |
+| `--email` | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none`。 |
+| `--realtime` | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none`。 |
+| `--job-queue` | `bullmq` `trigger-dev` `inngest` `temporal` `none`。 |
+| `--cms` | `payload` `sanity` `strapi` `tinacms` `directus` `none`。 |
+| `--caching` | `upstash-redis` `none`。 |
+| `--search` | `meilisearch` `typesense` `elasticsearch` `algolia` `none`。 |
+| `--file-storage` | `s3` `r2` `cloudinary` `none`。 |
+| `--file-upload` | `uploadthing` `filepond` `uppy` `none`。 |
+| `--analytics` | `plausible` `umami` `none`。 |
+| `--feature-flags` | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none`。 |
+
+### UIとアプリの動作
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--css-framework` | `tailwind` `scss` `less` `postcss-only` `none`。 |
+| `--ui-library` | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none`。 |
+| `--state-management` | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none`。 |
+| `--forms` | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none`。 |
+| `--validation` | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none`。 |
+| `--testing` | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none`。 |
+| `--logging` | `pino` `winston` `evlog` `none`。 |
+| `--observability` | `opentelemetry` `sentry` `grafana` `none`。 |
+| `--animation` | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none`。 |
+| `--i18n` | `i18next` `next-intl` `none`。 |
+| `--effect` | `effect` `effect-full` `none`。 |
+
+### shadcn/ui フラグ
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--shadcn-base` | `radix` `base`。 |
+| `--shadcn-style` | `vega` `nova` `maia` `lyra` `mira`。 |
+| `--shadcn-icon-library` | `lucide` `tabler` `hugeicons` `phosphor` `remixicon`。 |
+| `--shadcn-color-theme` | `neutral` `stone` `zinc` `gray` `amber` `blue` `cyan` `emerald` `fuchsia` `green` `indigo` `lime` `orange` `pink` `purple` `red` `rose` `sky` `teal` `violet` `yellow`。 |
+| `--shadcn-base-color` | `neutral` `stone` `zinc` `gray`。 |
+| `--shadcn-font` | `inter` `geist` `noto-sans` `nunito-sans` `figtree` `roboto` `raleway` `dm-sans` `public-sans` `outfit` `jetbrains-mono` `geist-mono`。 |
+| `--shadcn-radius` | `default` `none` `small` `medium` `large`。 |
+
+## React Native フラグ
+
+これらは `--ecosystem react-native` とともに使用します。
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--frontend` | `native-bare` `native-uniwind` `native-unistyles`。 |
+| `--mobile-navigation` | `expo-router` `react-navigation` `none`。 |
+| `--mobile-ui` | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none`。 |
+| `--mobile-storage` | `mmkv` `none`。 |
+| `--mobile-testing` | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none`。 |
+| `--mobile-push` | `expo-notifications` `none`。 |
+| `--mobile-ota` | `expo-updates` `none`。 |
+| `--mobile-deep-linking` | `expo-linking` `none`。 |
+
+## 言語エコシステムのフラグ
+
+### さび
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--rust-web-framework` | `axum` `actix-web` `rocket` `none`。 |
+| `--rust-frontend` | `leptos` `dioxus` `none`。 |
+| `--rust-orm` | `sea-orm` `sqlx` `diesel` `none`。 |
+| `--rust-api` | `tonic` `async-graphql` `none`。 |
+| `--rust-cli` | `clap` `ratatui` `none`。 |
+| `--rust-libraries` | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none`。 |
+| `--rust-logging` | `tracing` `env-logger` `none`。 |
+| `--rust-error-handling` | `anyhow-thiserror` `eyre` `none`。 |
+| `--rust-caching` | `moka` `redis` `none`。 |
+| `--rust-auth` | `oauth2` `none`。 |
+
+### パイソン
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--python-web-framework` | `fastapi` `django` `flask` `litestar` `none`。 |
+| `--python-orm` | `sqlalchemy` `sqlmodel` `tortoise-orm` `none`。 |
+| `--python-validation` | `pydantic` `none`。 |
+| `--python-ai` | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `none`。 |
+| `--python-auth` | `authlib` `jwt` `none`。 |
+| `--python-api` | `django-rest-framework` `django-ninja` `none`。 |
+| `--python-task-queue` | `celery` `rq` `dramatiq` `huey` `none`。 |
+| `--python-graphql` | `strawberry` `ariadne` `none`。 |
+| `--python-quality` | `ruff` `mypy` `pyright` `none`。 |
+
+### 行く
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--go-web-framework` | `gin` `echo` `fiber` `chi` `none`。 |
+| `--go-orm` | `gorm` `sqlc` `ent` `none`。 |
+| `--go-api` | `grpc-go` `none`。 |
+| `--go-cli` | `cobra` `bubbletea` `urfave-cli` `none`。 |
+| `--go-logging` | `zap` `zerolog` `slog` `logrus` `none`。 |
+| `--go-auth` | `casbin` `jwt` `none`。 |
+
+GoBetterAuth はグローバル `--auth go-better-auth` 値で選択されます。 Go ネイティブ ヘルパーは `--go-auth` を使用します。
+
+### ジャワ
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--java-web-framework` | `spring-boot` `quarkus` `none`。 |
+| `--java-build-tool` | `maven` `gradle` `none`。 |
+| `--java-orm` | `spring-data-jpa` `none`。 |
+| `--java-auth` | `spring-security` `none`。 |
+| `--java-libraries` | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `none`。 |
+| `--java-testing-libraries` | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none`。 |
+
+### エリクサー
+
+| フラグ | 価値観 |
+| --- | --- |
+| `--elixir-web-framework` | `phoenix` `phoenix-live-view` `none`。 |
+| `--elixir-orm` | `ecto` `ecto-sql` `none`。 |
+| `--elixir-auth` | `phx-gen-auth` `ueberauth` `guardian` `none`。 |
+| `--elixir-api` | `rest` `absinthe` `none`。 |
+| `--elixir-realtime` | `channels` `presence` `pubsub` `live-view-streams` `none`。 |
+| `--elixir-jobs` | `oban` `quantum` `none`。 |
+| `--elixir-validation` | `ecto-changesets` `nimble-options` `none`。 |
+| `--elixir-http` | `req` `finch` `none`。 |
+| `--elixir-json` | `jason` `none`。 |
+| `--elixir-email` | `swoosh` `none`。 |
+| `--elixir-caching` | `cachex` `nebulex` `none`。 |
+| `--elixir-observability` | `telemetry` `opentelemetry` `prom_ex` `none`。 |
+| `--elixir-testing` | `ex_unit` `mox` `bypass` `wallaby` `none`。 |
+| `--elixir-quality` | `credo` `dialyxir` `sobelow` `none`。 |
+| `--elixir-deploy` | `docker` `fly` `gigalixir` `mix-release` `none`。 |
+
+## 例
+
+明示的なフラグを使用して TypeScript アプリを作成します。
+
+```npm
+npm create better-fullstack@latest my-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database postgres \
+  --orm drizzle \
+  --db-setup none \
+  --api orpc \
+  --auth better-auth \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+  --ai none \
+  --payments none \
+  --email none \
+  --examples none \
+  --addons none \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+マルチエコシステム プロジェクトを作成します。
+
+```npm
+npm create better-fullstack@latest my-mixed-app -- \
+  --part frontend:typescript:next \
+  --part backend:go:gin \
+  --part backend.orm:go:gorm \
+  --part backend.auth:go:jwt \
+  --part database:universal:postgres \
+  --part mobile:react-native:native-bare \
+  --addons turborepo docker-compose
+```
+
+## 互換性
+
+- CLI は、生成前にスタックの互換性を検証します。
+- TypeScript `backend self` はフルスタック フロントエンド用であり、`runtime none` とペアになります。
+- tRPC は React 指向です。
+- ワーカー ランタイムのサポートは、フロントエンドとバックエンドの組み合わせによって異なります。
+- UI ライブラリ、デプロイメント ターゲット、プロバイダー、アドオンはスタックに依存します。
+- 視覚的に確認するには、[互換性マトリックス](/docs/reference/compatibility/) または [Stack Builder](https://better-fullstack.dev/new) を使用してください。

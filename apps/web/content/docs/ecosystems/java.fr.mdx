@@ -1,0 +1,57 @@
+---
+title: Java
+description: Spring Boot et échafaudages Java simples avec des wrappers Maven ou Gradle, ORM, authentification, bibliothèques et tests.
+---
+
+Les projets Java prennent en charge Spring Boot, Quarkus et les modèles Java simples. Choisissez les options Java pour les outils de génération, la persistance, l'authentification, les bibliothèques d'applications et les bibliothèques de test.
+
+## Conditions préalables
+
+- Java 21.
+- Git si vous souhaitez initialiser le référentiel.
+
+## Exemple de script
+
+```npm
+npm create better-fullstack@latest my-java-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-api spring-graphql \
+  --java-logging logback \
+  --java-libraries spring-actuator spring-validation flyway \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Catégories Java
+
+| Catégorie | Valeurs |
+| --- | --- |
+| Cadre Web | `spring-boot` `quarkus` `none` |
+| Outil de construction | `maven` `gradle` `none` |
+| ORM | `spring-data-jpa` `jooq` `mybatis` `none` |
+| Authentification | `spring-security` `keycloak` `none` |
+| API | `spring-graphql` `none` |
+| Enregistrement | `logback` `none` |
+| Bibliothèques | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `spring-amqp` `opentelemetry-java` `none` |
+| Test des bibliothèques | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none` |
+
+## Remarques sur la compatibilité
+
+- Spring Boot et Quarkus nécessitent Maven ou Gradle.
+- Les bibliothèques Java ORM, auth et spécifiques à Spring nécessitent Spring Boot plus Maven ou Gradle.
+- Flyway nécessite les données Spring JPA.
+- Certaines bibliothèques sont spécifiques au framework. Par exemple, Spring Batch, Spring Kafka, Spring Mail, Spring WebFlux, Springdoc OpenAPI, Actuator et Spring Security ciblent les projets Spring Boot.
+
+## Comportement généré
+
+- Les projets Maven utilisent `./mvnw test` pour la vérification lorsque l'installation est activée.
+- Les projets Gradle utilisent `./gradlew test` pour la vérification lorsque l'installation est activée.
+- Le comportement Java simple est sélectionné à l'aide de valeurs `--java-web-framework none` et `none` compatibles pour les catégories dépendantes du framework.
+- Les fichiers d'instructions AI sont toujours disponibles via `--ai-docs`, y compris `--ai-docs none`.

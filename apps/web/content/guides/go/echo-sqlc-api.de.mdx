@@ -1,0 +1,163 @@
+---
+title: Echo mit SQLC
+description: Erstellen Sie ein Go API-Projekt mit Echo, SQLC, Zap-Protokollierung und dem Go-Projektgerüst von Better Fullstack.
+updated: 2026-05-12
+category: Gehen
+tags:
+  - echo
+  - sqlc
+  - go
+  - api
+keywords:
+  - echo sqlc starter
+  - go echo api starter
+  - go sqlc boilerplate
+  - create go echo project
+  - go api project generator
+---
+
+Verwenden Sie diesen Stack, wenn Sie einen Go API mit Echo und SQL-First-Datenbankzugriff wünschen.
+
+```npm
+npm create better-fullstack@latest my-echo-api -- \
+  --ecosystem go \
+  --go-web-framework echo \
+  --go-orm sqlc \
+  --go-api none \
+  --go-cli none \
+  --go-logging zap \
+  --go-auth none
+```
+
+## Was dadurch entsteht
+
+- Ein Go API-Projekt mit Echo.
+- SQLC als Go ORM/Datenbankzugriffsoption.
+- Zap für die Protokollierung.
+- Standardmäßig ist kein gRPC-, CLI- oder Go-Authentifizierungs-Add-on vorhanden.
+
+## Erzeugte Form
+
+Dieser Stapel ist ein SQL-first Go API. Echo stellt die HTTP-Schicht bereit, SQLC generiert typisierte Go-Methoden aus SQL und Zap übernimmt die strukturierte Protokollierung.
+
+Das Hauptziel des Entwurfs besteht darin, das Datenbankverhalten sichtbar zu halten:
+
+- SQL-Dateien definieren die Abfragen.
+- SQLC generiert Go-Typen und Abfragemethoden.
+- Handler rufen Dienste oder Geschäfte auf, anstatt SQL einzubetten.
+- Die Echo-Middleware kümmert sich um Anforderungsprobleme wie Protokollierung, Wiederherstellung und CORS.
+
+## Repräsentativer Dateibaum
+
+```txt
+my-echo-api/
+  go.mod
+  sqlc.yaml
+  queries/
+    users.sql
+  migrations/
+    001_create_users.sql
+  cmd/
+    server/
+      main.go
+  internal/
+    db/
+      generated/
+    handlers/
+      users.go
+    services/
+      users.go
+```
+
+Halten Sie SQL unter Versionskontrolle und überprüfen Sie Abfrageänderungen mit der gleichen Sorgfalt wie Go-Code. SQLC macht die Go-Seite sicherer, ersetzt jedoch nicht das Schemadesign.
+
+## Beispiele für Abfragen und Handler
+
+Eine SQLC-Abfragedatei ist die Quelle der Wahrheit für generierte Methoden:
+
+```sql
+-- name: GetUser :one
+select id, email, name, created_at
+from users
+where id = $1;
+
+-- name: CreateUser :one
+insert into users (email, name)
+values ($1, $2)
+returning id, email, name, created_at;
+```
+
+Ein Echo-Handler kann JSON binden und die generierte Abfrageschicht über einen Dienst aufrufen:
+
+```go
+package handlers
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/labstack/echo/v4"
+)
+
+func (h *UserHandler) Get(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	user, err := h.Users.Get(c.Request().Context(), id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "user not found")
+	}
+
+	return c.JSON(http.StatusOK, user)
+}
+```
+
+Registrieren Sie Routen kurz vor dem Start, damit die API-Oberfläche leicht gescannt werden kann:
+
+```go
+func RegisterRoutes(e *echo.Echo, users *UserHandler) {
+	e.GET("/health", Health)
+
+	api := e.Group("/api")
+	api.GET("/users/:id", users.Get)
+	api.POST("/users", users.Create)
+}
+```
+
+## Kompatibilitätshinweise
+
+In diesem Leitfaden werden absichtlich `--go-api none`, `--go-cli none` und `--go-auth none` verwendet, damit sich das Gerüst weiterhin auf ein HTTP API konzentriert. Behalten Sie `--go-orm sqlc` bei, wenn Sie Abfragecode aus SQL generieren möchten. Verwenden Sie die Anleitung gRPC, wenn die Dienstgrenze Protobuf statt JSON sein soll.
+
+## Wann man es wählt
+
+Wählen Sie Echo mit SQLC, wenn Sie explizites SQL und generierte Go-Typen wünschen, ohne ein übergeordnetes ORM zu übernehmen.
+
+## Kompromisse
+
+SQLC hält das Datenbankverhalten sichtbar, aber Sie besitzen mehr SQL. Wenn Sie einen konventionelleren ORM-Ablauf wünschen, verwenden Sie [Gin mit PostgreSQL und GORM](/guides/go/gin-postgres-gorm/).
+
+Echo ist leichtgewichtig und flexibel, sodass Ihre Projektkonventionen wichtig sind. Seien Sie konsistent darüber, wo die Anforderungsvalidierung, Serviceanrufe und Fehlerzuordnung stattfinden.
+
+## Test- und Bereitstellungshinweise
+
+Führen Sie Go-Tests für Handler und Dienste durch und schließen Sie datenbankgestützte Integrationstests für wichtige SQL-Abfragen ein.
+
+```bash
+go test ./...
+```
+
+Wenn sich SQL ändert, generieren Sie die SQLC-Ausgabe mithilfe des im generierten Projekt dokumentierten Befehls neu, bevor Sie dem Compiler-Feedback vertrauen. Führen Sie bei der Bereitstellung Migrationen aus, bevor Sie API starten, damit die generierten Abfragetypen mit dem Live-Schema übereinstimmen.
+
+## Fehlerbehebung
+
+- Wenn der generierte SQLC-Code veraltet ist, führen Sie den SQLC-Generierungsbefehl des Projekts erneut aus und übernehmen Sie sowohl SQL als auch generierte Go-Änderungen, wenn das Gerüst generierte Dateien verfolgt.
+- Wenn eine Abfrage kompiliert wird, aber unerwartete Daten zurückgibt, überprüfen Sie zuerst die SQL; SQLC validiert Typen, nicht die Produktsemantik.
+- Wenn Echo Klartextfehler zurückgibt, zentralisieren Sie die HTTP-Fehlerbehandlung, damit die Antworten konsistent bleiben.
+- Wenn `go test ./...` nur in Datenbanktests fehlschlägt, überprüfen Sie die Testdatenbank-URL und den Migrationsstatus.
+
+## Nächste Schritte
+
+- Öffnen Sie [Stack Builder](/new?eco=go&gwf=echo&gorm=sqlc&gapi=none&gcli=none&glog=zap&gauth=none).
+- Lesen Sie die [Dokumente zum Go-Ökosystem](/docs/ecosystems/go/).

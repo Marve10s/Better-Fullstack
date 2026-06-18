@@ -1,0 +1,140 @@
+---
+title: Hono with tRPC 和 Drizzle
+description: 建立包含 Hono、tRPC、Drizzle、PostgreSQL、TanStack Router、Tailwind CSS 和 Better Auth 的 TypeScript fullstack app。
+updated: 2026-05-12
+category: TypeScript
+tags:
+  - hono
+  - trpc
+  - drizzle
+  - tanstack-router
+keywords:
+  - hono trpc drizzle
+  - hono postgres starter
+  - typescript hono starter
+  - tanstack router hono
+  - hono fullstack boilerplate
+---
+
+當你想要一個快速的 TypeScript API server，並搭配獨立 React frontend 做 typed client-server calls 時，使用這個 stack。
+
+```npm
+npm create better-fullstack@latest my-hono-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui \
+```
+
+## 創建內容
+
+- 一 TanStack Router frontend。
+- 執行在 Bun 上的 Hono backend。
+- PostgreSQL 和 Drizzle。
+- Better Auth。
+- web app 與 API 之間的 tRPC。
+- 用於 frontend 和 server packages 的 monorepo structure。
+
+## 生成結構
+
+這個指令建立 split app shape：frontend 和 backend 是分開的 packages，但一起產生並共用同一個 stack configuration。這樣 API boundary 很明確，同時保留 TypeScript inference。
+
+代表性結構：
+
+```txt
+my-hono-app/
+  bts.jsonc
+  apps/
+    web/
+    server/
+  packages/
+    shared/
+```
+
+特定 workspace 名稱可能不同，但架構重點相同：TanStack Router 負責 browser app，Hono 負責 HTTP，Drizzle 負責 database access，tRPC 是它們之間的 typed contract。
+
+## 範例 Hono route
+
+當 request handling 需要保持 explicit 和 lightweight 時，Hono 很適合：
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/health", (c) => {
+  return c.json({ ok: true });
+});
+
+export default app;
+```
+
+Framework-level middleware、auth context 和 request logging 應留在 server package 中。避免把 Hono request objects 洩漏進 shared business logic。
+
+## 範例 tRPC procedure shape
+
+tRPC procedures 應該是圍繞 server operations 的小型 validated entry points：
+
+```ts
+import { z } from "zod";
+
+const createTaskInput = z.object({
+  title: z.string().min(1),
+});
+
+export const taskProcedures = {
+  create: async (rawInput: unknown, userId: string) => {
+    const input = createTaskInput.parse(rawInput);
+
+    return {
+      id: crypto.randomUUID(),
+      title: input.title,
+      ownerId: userId,
+    };
+  },
+};
+```
+
+大型 apps 中，只有當 client 和 server 都需要 validation schemas 時，才把它們放入 shared module。 Database writes 應保持 server-only。
+
+## 何時選擇
+
+當 backend 需要保持小、快、明確時，選擇 Hono。這個配置適合 API-first products、dashboards、internal tools，以及之後可能拆分 frontend/backend deployment 的服務。
+
+## 相容性
+
+- `--frontend tanstack-router` 加 `--backend hono` 會得到獨立 React web app 和 API server。
+- 本指南中 `--runtime bun` 為 Hono service 選擇 Bun。
+- 這裡適合 `--api trpc`，因為 frontend 是 React-based。 SvelteKit、Nuxt 或 SolidStart guides 中 Better Fullstack 使用 oRPC。
+- PostgreSQL 和 Drizzle 是適合這種 split service shape 的 production-oriented 組合。
+
+## 部署
+
+如果 hosting 把 frontend 和 Hono server 當成兩個 targets，就按兩個 deployable targets 規劃。認真設定 CORS、auth cookie domains 和 public API URLs；split services 會把這些細節明確揭露出來。
+
+API server 需要 PostgreSQL connection string 和 auth secrets。 web app 需要 API origin 和任何 public app URL values。不要把 secrets 放進 frontend build-time public variables。
+
+## 故障排查
+
+- 如果 browser requests 在到達 Hono 前失敗，請檢查 CORS 和配置的 API base URL。
+- 如果跨網域時 auth cookies 缺失，檢查 same-site settings、secure cookies，以及 web/API domains 是否符合預期部署。
+- 如果 tRPC calls 可以編譯但 runtime 失敗，確認 Hono tRPC adapter 掛載在 client 使用的相同路徑。
+- 如果產生的 apps 無法連接本地 PostgreSQL，確認 database 正在運行，並且 connection string 匹配所選 database。
+
+## Tradeoffs
+
+如果你想讓一個 framework 管完整個 app，使用 [TanStack Start](/guides/typescript/create-tanstack-start-project/) 或 [Next.js](/guides/typescript/nextjs-drizzle-better-auth/)。如果你想要獨立 API boundary，Hono 是更清晰的預設選擇。
+
+比起 self-backend fullstack framework，這個 stack 的 moving parts 更多。回報是更乾淨的 service boundary、更容易做 API-focused testing，以及之後可以服務多個 clients 的 backend。
+
+## 下一步
+
+- 開啟 [Stack Builder](/new?eco=typescript&fe-w=tanstack-router&be=hono&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=trpc)。
+- 閱讀 [TypeScript ecosystem docs](/docs/ecosystems/typescript/)。
+- 查看 [CLI create flags](/docs/cli/create/)。

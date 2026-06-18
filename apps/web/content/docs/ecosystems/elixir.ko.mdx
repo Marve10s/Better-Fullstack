@@ -1,0 +1,69 @@
+---
+title: 엘릭서
+description: Ecto SQL, PostgreSQL-ready 구성, REST 또는 Absinthe, 실시간, 작업, 테스트 및 배포 파일이 포함된 Phoenix 스캐폴드.
+---
+
+Elixir 프로젝트는 Mix 및 Phoenix 규칙을 따르는 Phoenix 애플리케이션을 생성합니다. LiveView, Ecto SQL, 인증, APIs, 실시간, 작업, 테스트, 품질 및 배포 파일에 대한 Elixir 옵션을 선택하세요.
+
+## 전제조건
+
+- Phoenix 1.7과 호환되는 Elixir 및 Erlang/OTP.
+- PostgreSQL(`ecto-sql`, `phx-gen-auth` 또는 `oban` 사용 시)
+- 저장소 초기화를 원하는 경우 Git.
+
+## 스크립트 예시
+
+```npm
+npm create better-fullstack@latest my-phoenix-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth phx-gen-auth \
+  --elixir-api absinthe \
+  --elixir-realtime presence \
+  --elixir-jobs oban \
+  --elixir-http req \
+  --elixir-json jason \
+  --elixir-observability telemetry \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker \
+  --ai-docs none \
+  --no-install \
+  --no-git
+```
+
+## 엘릭서 카테고리
+
+| 범주 | 가치 |
+| --- | --- |
+| 웹 프레임워크 | `phoenix` `phoenix-live-view` |
+| 고집 | `ecto-sql` `none` |
+| 인증 | `phx-gen-auth` `ueberauth` `guardian` `none` |
+| API | `rest` `absinthe` `grpc` `none` |
+| 라이브러리(다중 선택) | `broadway` `nx` `none` |
+| 실시간 | `channels` `presence` `pubsub` `live-view-streams` `none` |
+| 채용 정보 | `oban` `quantum` `none` |
+| HTTP | `req` `finch` `none` |
+| JSON | `jason` |
+| 이메일 | `swoosh` `none` |
+| 캐싱 | `cachex` `nebulex` `none` |
+| 관찰 가능성 | `telemetry` `opentelemetry` `prom_ex` `none` |
+| 테스트 | `ex_unit` `mox` `bypass` `wallaby` `none` |
+| 품질 | `credo` `dialyxir` `sobelow` `none` |
+| 배포 | `docker` `fly` `gigalixir` `mix-release` `none` |
+
+## 호환성 참고사항
+
+- Elixir 옵션은 `--ecosystem elixir`에만 적용됩니다.
+- Phoenix와 Phoenix LiveView는 독립형 Elixir 웹 프레임워크입니다. TypeScript 프런트엔드 및 백엔드 옵션은 무시됩니다.
+- `phx-gen-auth` 및 Oban에는 생성된 코드에 Repo 및 마이그레이션이 필요하므로 Ecto SQL이 필요합니다.
+- Oban은 PostgreSQL 지원 Ecto SQL 프로젝트를 목표로 합니다.
+- LiveView 스트림에는 `phoenix-live-view`이 필요합니다.
+- 몇 가지 스키마 수준 선택 사항은 일치하는 템플릿이 존재할 때까지 그래프 유효성 검사기에 의해 의도적으로 거부됩니다: `ecto`, `ueberauth`, `guardian`, `nimble-options`, `nebulex`, `opentelemetry`, `prom_ex`, `mox`, `bypass`, `wallaby`, `fly` 및 `gigalixir`. CLI 및 빌더는 부분 Phoenix 코드를 생성하는 대신 지원되지 않는 도구 메시지로 이를 표시합니다.
+
+## 생성된 동작
+
+- 프로젝트에는 `mix.exs`, Phoenix 구성, 라우터, 엔드포인트, 컨트롤러, 테스트, `.env.example` 및 설정 노트가 포함됩니다.
+- Ecto SQL 선택에는 Repo, 마이그레이션, 스키마/컨텍스트 코드 및 PostgreSQL 구성이 포함됩니다.
+- 선택 사항으로 LiveView, Channels/Presence, Oban 또는 Quantum 작업, Absinthe 스키마/리졸버, Req/Finch HTTP 클라이언트, Swoosh 메일러, Cachex, Dockerfile 및 릴리스 구성에 대해 작동하는 Phoenix 파일을 추가합니다.

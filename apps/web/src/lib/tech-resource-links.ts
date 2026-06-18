@@ -17,6 +17,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://the-guild.dev/graphql/yoga-server/docs",
     githubUrl: "https://github.com/dotansimha/graphql-yoga",
   },
+  openapi: {
+    docsUrl: "https://spec.openapis.org/oas/latest.html",
+    githubUrl: "https://github.com/OAI/OpenAPI-Specification",
+  },
   "tanstack-router": {
     docsUrl: "https://tanstack.com/router/latest",
     githubUrl: "https://github.com/TanStack/router",
@@ -1411,6 +1415,10 @@ const BASE_LINKS: LinkMap = {
 };
 
 const CATEGORY_LINKS: LinkMap = {
+  "appPlatforms:nx": {
+    docsUrl: "https://nx.dev/docs",
+    githubUrl: "https://github.com/nrwl/nx",
+  },
   "ai:langchain": {
     docsUrl: "https://js.langchain.com/",
     githubUrl: "https://github.com/langchain-ai/langchainjs",

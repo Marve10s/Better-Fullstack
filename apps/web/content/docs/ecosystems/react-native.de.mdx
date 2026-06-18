@@ -1,0 +1,60 @@
+---
+title: React Native
+description: Expo und React Native mobile Gerüste mit produktionsorientierten Integrationen.
+---
+
+React Native ist das dedizierte mobile Ökosystem. Es bildet das Gerüst für Expo-Projekte und trennt die mobilen Optionen von den TypeScript-Web-Frontend-, Backend-, Datenbank- und Bereitstellungskategorien.
+
+## Voraussetzungen
+
+- Node.js 20+.
+- npm, pnpm, Garn oder Bun.
+- Expo-kompatible iOS-/Android-Tools, wenn Sie eine Simulator- oder Gerätevalidierung wünschen.
+
+## Skriptbeispiel
+
+```npm
+npm create better-fullstack@latest mobile-app -- \
+  --ecosystem react-native \
+  --frontend native-bare \
+  --mobile-navigation expo-router \
+  --mobile-ui tamagui \
+  --mobile-storage mmkv \
+  --mobile-testing maestro-react-native-testing-library \
+  --mobile-push expo-notifications \
+  --mobile-ota expo-updates \
+  --mobile-deep-linking expo-linking \
+  --ai-docs none \
+  --no-install
+```
+
+## Kategorien mobiler Gerüste
+
+| Kategorie | Werte |
+| --- | --- |
+| Natives Frontend | `native-bare` `native-uniwind` `native-unistyles` |
+| Navigation | `expo-router` `react-navigation` `none` |
+| Benutzeroberfläche | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |
+| Lagerung | `mmkv` `none` |
+| Testen | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |
+| Drücken | `expo-notifications` `none` |
+| OTA | `expo-updates` `none` |
+| Deep-Linking | `expo-linking` `none` |
+
+## Generierte Integrationen
+
+- Expo-Konfiguration mit Schema-/Laufzeiteinstellungen, wenn Deep Linking oder OTA ausgewählt ist.
+- Expo Router-Routendateien oder ein React Navigation-Einstiegspunkt, je nach Navigation.
+- Mobile UI-Anbieter-/Themendateien für Tamagui, Gluestack UI, Uniwind oder Unistyles.
+- MMKV-Client-Helfer, wenn Speicher ausgewählt ist.
+- Jest Expo und React Native Testbibliotheksbeispiele, Maestro-Flows oder beides.
+- Registrierungshilfen für Push-Benachrichtigungen für Expo-Benachrichtigungen.
+- OTA-Update-Helfer für Expo-Updates.
+- `.env.example` mit `EXPO_PUBLIC_`-Konventionen für die Konfiguration mobiler Clients.
+
+## Kompatibilitätshinweise
+
+- React Native stellt die Web-Frontend-, Backend-, Datenbank-, Web-UI-, Web-Bereitstellungs- oder Server-Bereitstellungskategorien TypeScript nicht zur Verfügung.
+- Die UI-Modi Uniwind und Unistyles sind an die entsprechenden Frontend-Varianten Expo gebunden.
+- Tamagui und Gluestack UI verwenden die bloße Variante Expo, um widersprüchliche Stileinstellungen zu vermeiden.
+- Deep Linking wird automatisch aktiviert, wenn ein mobiler Authentifizierungsfluss Beispiele für Umleitungs-URIs erfordert.

@@ -1,0 +1,62 @@
+---
+title: Rost
+description: Rust-Backend, CLI, WebAssembly-Frontend, GraphQL, gRPC, Datenbank, Protokollierung, Caching und Authentifizierungsgerüste.
+---
+
+Rust-Projekte verwenden Cargo und sprachnative Vorlagen. Wählen Sie Rust-Optionen für Backend-Dienste, CLIs, GraphQL/gRPC, WebAssembly-Frontends, Protokollierung, Caching und Authentifizierungshilfen.
+
+## Voraussetzungen
+
+- Rust-Toolchain und Cargo.
+- Git, wenn Sie eine Repository-Initialisierung wünschen.
+
+## Skriptbeispiel
+
+```npm
+npm create better-fullstack@latest my-rust-api -- \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --rust-orm sqlx \
+  --rust-libraries serde validator \
+  --rust-logging tracing \
+  --rust-error-handling anyhow-thiserror \
+  --rust-api none \
+  --rust-frontend none \
+  --rust-cli none \
+  --rust-caching none \
+  --rust-auth none \
+  --rust-realtime tokio-tungstenite \
+  --rust-message-queue lapin \
+  --rust-observability opentelemetry \
+  --rust-templating askama \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Rostkategorien
+
+| Kategorie | Werte |
+| --- | --- |
+| Web-Framework | `axum` `actix-web` `rocket` `none` |
+| Frontend | `leptos` `dioxus` `none` |
+| ORM | `sea-orm` `sqlx` `diesel` `none` |
+| API | `tonic` `async-graphql` `none` |
+| CLI | `clap` `ratatui` `none` |
+| Bibliotheken | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |
+| Protokollierung | `tracing` `env-logger` `none` |
+| Fehlerbehandlung | `anyhow-thiserror` `eyre` `none` |
+| Caching | `moka` `redis` `none` |
+| Auth | `oauth2` `torii` `none` |
+| Echtzeit | `tokio-tungstenite` `none` |
+| Nachrichtenwarteschlange | `lapin` `none` |
+| Beobachtbarkeit | `opentelemetry` `none` |
+| Vorlage | `askama` `tera` `none` |
+
+## Generiertes Verhalten
+
+- `cargo build` ist der Installations-/Überprüfungspfad, wenn die Installation aktiviert ist.
+- Die Vorlagendateien Leptos, Dioxus, Tonic, Clap und Ratatui werden nur einbezogen, wenn die entsprechenden Optionen ausgewählt sind.
+- `rustLibraries` ist eine Mehrfachauswahl; Übergeben Sie `none` oder lassen Sie nicht gewünschte Bibliotheken weg.
+- AI-Anweisungsdateien sind weiterhin über `--ai-docs` verfügbar, einschließlich `--ai-docs none`.

@@ -960,7 +960,7 @@ describe("API Configurations", () => {
   });
 
   describe("All API Types", () => {
-    const apis = ["trpc", "orpc", "ts-rest", "garph", "none"];
+    const apis = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"];
 
     for (const api of apis) {
       it(`should work with ${api} API`, async () => {
@@ -995,6 +995,103 @@ describe("API Configurations", () => {
         expectSuccess(result);
       });
     }
+  });
+
+  describe("OpenAPI API", () => {
+    const supportedBackends: Backend[] = ["hono", "express", "fastify", "elysia"];
+
+    for (const backend of supportedBackends) {
+      it(`should generate OpenAPI routes and docs for ${backend}`, async () => {
+        const result = await runTRPCTest({
+          projectName: `openapi-${backend}`,
+          api: "openapi",
+          frontend: ["tanstack-router"],
+          backend,
+          runtime: backend === "elysia" ? "bun" : "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const projectDir = result.projectDir!;
+        const apiIndex = await readFile(`${projectDir}/packages/api/src/index.ts`, "utf-8");
+        const openApiJson = await readFile(`${projectDir}/packages/api/src/openapi.json`, "utf-8");
+        const serverIndex = await readFile(`${projectDir}/apps/server/src/index.ts`, "utf-8");
+        const apiPackage = await readFile(`${projectDir}/packages/api/package.json`, "utf-8");
+        const serverPackage = await readFile(`${projectDir}/apps/server/package.json`, "utf-8");
+
+        expect(apiIndex).toContain('openapi: "3.1.0"');
+        expect(openApiJson).toContain('"openapi": "3.1.0"');
+        expect(openApiJson).toContain('"/health"');
+        expect(apiPackage).toContain('"openapi:verify"');
+
+        if (backend === "hono") {
+          expect(serverIndex).toContain("@hono/zod-openapi");
+          expect(serverPackage).toContain('"@scalar/hono-api-reference"');
+        } else if (backend === "express") {
+          expect(serverIndex).toContain("@scalar/express-api-reference");
+          expect(serverPackage).toContain('"@asteasolutions/zod-to-openapi"');
+        } else if (backend === "fastify") {
+          expect(serverIndex).toContain("fastify-type-provider-zod");
+          expect(serverPackage).toContain('"@fastify/swagger"');
+        } else if (backend === "elysia") {
+          expect(serverIndex).toContain("@elysiajs/openapi");
+          expect(serverIndex).toContain('path: "/docs"');
+        }
+      });
+    }
+
+    it("should include bearer security only with Better Auth", async () => {
+      const result = await runTRPCTest({
+        projectName: "openapi-better-auth",
+        api: "openapi",
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const openApiJson = await readFile(`${result.projectDir}/packages/api/src/openapi.json`, "utf-8");
+      expect(openApiJson).toContain('"bearerAuth"');
+      expect(openApiJson).toContain('"/private"');
+    });
+
+    it("should reject OpenAPI for unsupported backends", async () => {
+      const result = await runTRPCTest({
+        projectName: "openapi-self-fail",
+        api: "openapi",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "OpenAPI currently supports Hono, Express, Fastify, and Elysia backends");
+    });
   });
 
   describe("API Edge Cases", () => {

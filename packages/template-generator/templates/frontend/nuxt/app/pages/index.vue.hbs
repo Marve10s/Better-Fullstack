@@ -7,6 +7,8 @@ import { useConvexQuery } from "convex-vue";
 import { useQuery } from '@tanstack/vue-query'
 
 const { $orpc } = useNuxtApp()
+  {{else if (eq api "openapi")}}
+const config = useRuntimeConfig()
   {{/if}}
 {{/if}}
 
@@ -31,6 +33,11 @@ const healthCheck = useConvexQuery(api.healthCheck.get, {});
 {{else}}
   {{#if (eq api "orpc")}}
 const healthCheck = useQuery($orpc.healthCheck.queryOptions())
+  {{else if (eq api "openapi")}}
+const healthCheck = useAsyncData("healthCheck", async () => {
+  const response = await $fetch.raw(`${config.public.serverUrl}/health`)
+  return response.status >= 200 && response.status < 300
+})
   {{/if}}
 {{/if}}
 </script>
@@ -87,6 +94,28 @@ const healthCheck = useQuery($orpc.healthCheck.queryOptions())
             </template>
             <template v-else>
               Idle
+            </template>
+          </span>
+        </div>
+        {{else if (eq api "openapi")}}
+        <div class="flex items-center gap-2">
+          <UIcon
+            :name="healthCheck.pending.value ? 'i-lucide-loader-2' : healthCheck.data.value ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
+            :class="[
+              healthCheck.pending.value ? 'animate-spin text-muted' : '',
+              healthCheck.data.value ? 'text-success' : '',
+              healthCheck.error.value ? 'text-error' : ''
+            ]"
+          />
+          <span class="text-sm">
+            <template v-if="healthCheck.pending.value">
+              Checking...
+            </template>
+            <template v-else-if="healthCheck.data.value">
+              Connected
+            </template>
+            <template v-else>
+              Disconnected
             </template>
           </span>
         </div>

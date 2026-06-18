@@ -1,0 +1,57 @@
+---
+title: Java
+description: Spring Boot 和普通 Java 鷹架，包含 Maven 或 Gradle wrapper、ORM、認證、函式庫和測試。
+---
+
+Java 專案支援 Spring Boot、Quarkus 和普通 Java 範本。為建置工具、持久化、認證、應用程式庫和測試庫選擇 Java 選項。
+
+## 前要求
+
+- Java 21。
+- 如果要初始化倉庫，需要 Git。
+
+## 腳本化範例
+
+```npm
+npm create better-fullstack@latest my-java-api -- \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-auth spring-security \
+  --java-api spring-graphql \
+  --java-logging logback \
+  --java-libraries spring-actuator spring-validation flyway \
+  --java-testing-libraries junit5 mockito testcontainers \
+  --ai-docs none \
+  --version-channel stable \
+  --no-install \
+  --no-git
+```
+
+## Java 分類
+
+| 分類 | 值 |
+| --- | --- |
+| Web 框架 | `spring-boot` `quarkus` `none` |
+| 建構工具 | `maven` `gradle` `none` |
+| ORM | `spring-data-jpa` `jooq` `mybatis` `none` |
+| Auth | `spring-security` `keycloak` `none` |
+| API | `spring-graphql` `none` |
+| 紀錄 | `logback` `none` |
+| 庫 | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `caffeine` `resilience4j` `spring-webflux` __11010 __FS `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `spring-amqp` `opentelemetry-java` `none` |
+| 測試庫 | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none` |
+
+## 相容性說明
+
+- Spring Boot 和 Quarkus 需要 Maven 或 Gradle。
+- Java ORM、auth 和 Spring 專用函式庫需要 Spring Boot 加 Maven 或 Gradle。
+- Flyway 需要 Spring Data JPA。
+- 有些函式庫是框架專用的。例如 Spring Batch、Spring Kafka、Spring Mail、Spring WebFlux、Springdoc OpenAPI、Actuator 和 Spring Security 面向 Spring Boot 專案。
+
+## 生成行為
+
+- 啟用安裝時，Maven 項目使用 `./mvnw test` 驗證。
+- 啟用安裝時，Gradle 項目使用 `./gradlew test` 驗證。
+- 透過使用 `--java-web-framework none`，並為依賴框架的分類選擇相容的 `none` 值，可以選擇普通 Java 行為。
+- AI 指令檔仍可透過 `--ai-docs` 使用，包括 `--ai-docs none`。

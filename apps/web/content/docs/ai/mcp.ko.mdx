@@ -1,0 +1,131 @@
+---
+title: MCP 서버
+description: Better Fullstack을(를) Claude Code, 커서, VS Code 및 MCP 호환 AI 코딩 에이전트에 연결합니다.
+---
+
+Better Fullstack MCP 서버를 사용하면 에이전트는 CLI 플래그를 추측하는 대신 구조화된 도구 호출을 통해 프로젝트를 스캐폴드할 수 있습니다. 스키마 조회, 호환성 유효성 검사, 테스트 실행 미리 보기, 프로젝트 생성 및 기능 추가를 처리합니다.
+
+이 페이지에서는 Better Fullstack MCP 서버에 대해 설명합니다. 생성된 프로젝트 `mcp` 애드온은 별개입니다. MCP 클라이언트/서버 구성을 스캐폴드된 앱에 쓰고 외부 설정 명령을 실행할 수 있습니다.
+
+보다 가벼운 CLI 기반 에이전트 워크플로를 위해 [Better Fullstack 에이전트 기술](/docs/ai/skills/)을 설치하세요. 스킬과 MCP 서버는 모두 동일한 생성기를 사용합니다. 이 스킬은 빠른 플래그 기반 스캐폴딩에 최적화되어 있는 반면, MCP은 구조화된 도구 호출에 최적화되어 있습니다.
+
+## 설정
+
+사용하는 패키지 관리자로 서버를 시작합니다.
+
+<PMTabs
+  npm="npx -y create-better-fullstack@latest mcp"
+  pnpm="pnpm dlx create-better-fullstack@latest mcp"
+  bun="bunx create-better-fullstack@latest mcp"
+  yarn="yarn dlx create-better-fullstack@latest mcp"
+/>
+
+### Claude Code
+
+```bash
+claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+```
+
+pnpm, Bun 또는 Yarn을 선호하는 경우 위와 동일한 실행기 테이블을 사용하세요.
+
+### 커서
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### VS 코드
+
+```json
+{
+  "servers": {
+    "better-fullstack": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+### 다른 MCP 클라이언트
+
+Claude Desktop, Zed, Cursor, Codex, OpenCode, Gemini CLI, Goose 또는 기타 MCP 호환 도구와 같은 클라이언트에서 동일한 stdio 명령을 사용하세요.
+
+| 패키지 관리자 | `command` | `args` |
+| --- | --- | --- |
+| npm | `npx` | `["-y", "create-better-fullstack@latest", "mcp"]` |
+| pnpm | `pnpm` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+| Bun | `bunx` | `["create-better-fullstack@latest", "mcp"]` |
+| 방사 | `yarn` | `["dlx", "create-better-fullstack@latest", "mcp"]` |
+
+## 도구
+
+전체 입력, 출력, 예제 및 안전한 쓰기 동작을 보려면 [MCP 도구 참조](/docs/ai/mcp-tools/)를 확인하세요.
+
+| 도구 | 목적 |
+| --- | --- |
+| `bfs_get_guidance` | 워크플로 규칙 및 필드 의미를 반환합니다. 먼저 전화해 ​​보세요. |
+| `bfs_get_schema` | 구성 범주에 대한 유효한 옵션을 반환합니다. |
+| `bfs_check_compatibility` | 스택의 유효성을 검사하고 경고와 함께 조정된 선택 항목을 반환합니다. |
+| `bfs_plan_project` | 메모리에서 프로젝트 생성을 테스트 실행합니다. |
+| `bfs_create_project` | 디스크에 새 프로젝트를 씁니다. |
+| `bfs_plan_addition` | 기존 프로젝트의 애드온 변경 사항을 확인합니다. |
+| `bfs_add_feature` | 기존 프로젝트에 지원되는 애드온을 추가합니다. |
+
+<Callout kind="info" title="Install behavior">
+MCP 프로젝트 생성에서는 장기 실행 에이전트 호출을 피하기 위해 일반 종속성 설치를 건너뜁니다. 생성된 프로젝트에 `mcp` 애드온이 포함된 경우 해당 애드온 설정은 MCP 클라이언트 구성에 대한 외부 설정 명령을 계속 실행할 수 있습니다.
+</Callout>
+
+## 자원
+
+서버는 다음 MCP 리소스를 노출합니다.
+
+| 의지 | 내용물 |
+| --- | --- |
+| `docs://compatibility-rules` | 스택 조합에 대한 호환성 규칙. |
+| `docs://stack-options` | 카테고리별로 사용 ​​가능한 기술 옵션. |
+| `docs://getting-started` | 지원되는 생태계를 위한 빠른 시작 레시피. |
+
+## 권장 도구 순서
+
+새 프로젝트의 경우:
+
+1. `bfs_get_guidance`
+2. `bfs_get_schema`
+3. `bfs_check_compatibility`
+4. `bfs_plan_project`
+5. `bfs_create_project`
+
+기존 프로젝트의 경우:
+
+1. `bfs_plan_addition`
+2. `bfs_add_feature`
+
+## 상담원의 주요 규칙
+
+- `frontend`은 배열이며 여러 프런트엔드 대상을 포함할 수 있습니다.
+- `none`은 카테고리를 비활성화합니다.
+- 에이전트가 올바른 필드 계열을 사용하도록 `ecosystem`을 먼저 설정하십시오.
+- 배열 필드에는 `frontend`, `addons`, `examples`, `rustLibraries`, `pythonAi`, `javaLibraries` 및 `javaTestingLibraries`이 포함됩니다.
+- 프로젝트 계획, 생성 및 추가 응답에는 그래프 지원 스택 뷰에 대한 `graphSummary`, `effectiveStack` 및 `stackPartSpecs`이 포함됩니다.
+- 현재 MCP 프로젝트 스키마는 `aiDocs`을 생성 필드로 노출하지 않습니다. 프로젝트 생성은 서버의 내장 AI-doc 동작을 사용합니다.
+- 프로젝트를 생성하기 전에 항상 `bfs_check_compatibility`을 호출하세요.
+
+## 상담원 프롬프트
+
+```text
+Use Better Fullstack MCP. First call bfs_get_guidance to understand
+the rules, then bfs_get_schema for the relevant categories, then
+bfs_check_compatibility to validate the stack, then bfs_plan_project
+for a dry-run. Only call bfs_create_project after the dry-run succeeds.
+Skip normal dependency installation and tell me the exact commands to
+install, test, and run the project.
+```

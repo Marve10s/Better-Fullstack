@@ -4,6 +4,7 @@ import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { fileURLToPath } from "node:url";
 import { nitro } from "nitro/vite";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
@@ -23,6 +24,31 @@ const buildDate = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric",
 }).format(new Date()).toLowerCase();
+
+const ssrMdxLoaderAliases = new Map([
+  [
+    "@/lib/docs/mdx-loaders",
+    fileURLToPath(new URL("./src/lib/docs/mdx-loaders.ssr.ts", import.meta.url)),
+  ],
+  [
+    "@/lib/guides/mdx-loaders",
+    fileURLToPath(new URL("./src/lib/guides/mdx-loaders.ssr.ts", import.meta.url)),
+  ],
+  [
+    "@/lib/blog/mdx-loaders",
+    fileURLToPath(new URL("./src/lib/blog/mdx-loaders.ssr.ts", import.meta.url)),
+  ],
+]);
+
+function ssrMdxLoaderAliasPlugin(): PluginOption {
+  return {
+    name: "better-fullstack:ssr-mdx-loader-alias",
+    enforce: "pre",
+    resolveId(source, _importer, options) {
+      return options.ssr ? ssrMdxLoaderAliases.get(source) : undefined;
+    },
+  };
+}
 
 export default defineConfig({
   server: {
@@ -45,6 +71,7 @@ export default defineConfig({
   },
   plugins: [
     contentMetaPlugin(),
+    ssrMdxLoaderAliasPlugin(),
     paraglideVitePlugin(paraglideCompilerOptions),
     tsconfigPaths({
       projects: ["./tsconfig.json"],
@@ -84,7 +111,10 @@ export default defineConfig({
     nitro({
       config: {
         preset: "vercel",
-        minify: true,
+        // The client bundles remain minified by Vite. Keeping the final Nitro
+        // server bundle unminified avoids a large heap spike when many MDX
+        // chunks are present for localized content.
+        minify: false,
         sourceMap: false,
         routeRules: {
           "/": {

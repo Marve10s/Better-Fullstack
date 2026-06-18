@@ -7,7 +7,11 @@ import type { DocPage, PageNode } from "@/lib/docs/source";
 import { DocsLayout } from "@/components/docs/docs-layout";
 import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
-import { localizeDocPage, useDocPageContent } from "@/lib/docs/source";
+import {
+  canRenderDocPageContent,
+  localizeDocPage,
+  useDocPageContent,
+} from "@/lib/docs/source";
 import { m } from "@/paraglide/messages.js";
 
 /**
@@ -27,6 +31,7 @@ export function DocsPageContent(props: DocsPageContentProps) {
     previous: props.neighbors.previous,
     next: props.neighbors.next,
   };
+  if (!canRenderDocPageContent()) return <DocsPageShell page={localizedPage} />;
   return (
     <Suspense fallback={<DocsPageShell page={localizedPage} />}>
       <DocsPageBody page={localizedPage} neighbors={localizedNeighbors} />

@@ -1,0 +1,48 @@
+---
+title: 生態系
+description: サポートされている言語エコシステムと、それぞれの Better Fullstack のスキャフォールディング。
+---
+
+Better Fullstack は、複数のエコシステムに対して 1 つの CLI を使用します。各エコシステムには独自の足場サーフェス、ツールチェーン、互換性ルールがあります。
+
+複数の言語にまたがる製品スタックの場合は、[マルチエコシステム モード](/docs/ecosystems/multi-ecosystem/) を使用します。プロジェクトを、`frontend:typescript:next`、`backend:go:gin`、`backend.orm:go:gorm`、`database:universal:postgres` などのスタック パーツとしてモデル化します。
+
+| 生態系 | こんな方に最適 | 注意事項 |
+| --- | --- | --- |
+| [TypeScript](/docs/ecosystems/typescript/) | フルスタック Web、APIs、ワーカー、デスクトップ、および最大の Web 統合マトリックス。 | Web オプションは TypeScript からです。 |
+| [React Native](/docs/ecosystems/react-native/) | Expo ナビゲーション、UI、ストレージ、テスト、プッシュ、OTA、ディープ リンクを備えたモバイル アプリ。 | TypeScript Web フロントエンド カテゴリの代わりに React Native エコシステム サーフェスを使用します。 |
+| [錆](/docs/ecosystems/rust/) | バックエンド サービス、CLI アプリ、GraphQL/gRPC、Rust Web フロントエンド、および厳密に型指定されたライブラリ。 | 貨物を使用します。テンプレートは、選択した Rust オプションによって条件付きになります。 |
+| [Python](/docs/ecosystems/python/) | フレームワーク、ORM、検証、キュー、GraphQL、品質の選択肢を備えた API および AI 指向のサービス。 | `uv` を使用します。 Python AI は別個の複数選択カテゴリです。 |
+| [行く](/docs/ecosystems/go/) | API サービス、gRPC、CLIs、ロギング、ORM、および Go 認証ヘルパー。 | Go モジュールを使用します。 GoBetterAuth はグローバル `--auth go-better-auth` で選択されます。 |
+| [Java](/docs/ecosystems/java/) | Spring Boot、Quarkus、または Maven/Gradle、永続性、認証、ライブラリ、およびテストを備えたプレーン Java プロジェクト。 | Java は、ビルド ツールが選択されている場合、Maven または Gradle ラッパーを使用します。 |
+| [エリクサー](/docs/ecosystems/elixir/) | Ecto、Absinthe、リアルタイム、ジョブ、テスト、品質、展開の選択肢を備えた Phoenix および Phoenix LiveView アプリ。 | ミックスを使用します。いくつかのスキーマレベルのオプションは、テンプレートが追いつくまで無効のままです。 |
+| [.NET](/docs/ecosystems/dotnet/) | EF Core または Dapper、Identity、Minimal APIs または Hot Chocolate を使用した ASP.NET Core サービス、SignalR、ジョブ、およびテスト。 | .NET SDKを使用します。テストと可観測性は複数選択のカテゴリです。 |
+
+## デフォルトの CLI ベースライン
+
+デフォルトを受け入れると、TypeScript Web プロジェクトが作成されます。パッケージ マネージャーは、CLI の起動に使用されるパッケージ マネージャーに従います。
+
+```json
+{
+  "ecosystem": "typescript",
+  "frontend": ["tanstack-router"],
+  "backend": "hono",
+  "runtime": "bun",
+  "database": "sqlite",
+  "orm": "drizzle",
+  "auth": "better-auth",
+  "api": "trpc",
+  "cssFramework": "tailwind",
+  "uiLibrary": "shadcn-ui",
+  "testing": "vitest",
+  "addons": ["turborepo"],
+  "versionChannel": "stable",
+  "aiDocs": ["claude-md"]
+}
+```
+
+ランタイムとパッケージマネージャーは別の選択肢です。たとえば、生成された TypeScript プロジェクトは、アプリケーション ランタイムとして Bun を選択しながら、インストールに npm、pnpm、Yarn、または Bun を使用できます。
+
+## 共有オプションは普遍的ではありません
+
+一部のフラグは 1 つのプロジェクト構成に保存されるためグローバルですが、すべてのフラグがすべてのエコシステムに適用されるわけではありません。生成される内容については以下のエコシステム ページを使用し、正確な CLI 値については [参照オプション](/docs/reference/options/) を使用してください。
