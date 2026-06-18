@@ -77,7 +77,7 @@ export const DEFAULT_STACK_SELECTION: StackSelectionState = {
   versionChannel: "stable",
   examples: [],
   aiSdk: "none",
-  aiDocs: ["claude-md"],
+  aiDocs: ["claude-md", "agents-md"],
   git: "true",
   install: "true",
   api: "trpc",

@@ -2919,7 +2919,7 @@ export const TECH_OPTIONS: Record<
     },
     {
       id: "agents-md",
-      name: "Agents.md",
+      name: "AGENTS.md",
       description: "Generic AI assistant docs",
       icon: "",
       color: "from-purple-400 to-purple-600",
