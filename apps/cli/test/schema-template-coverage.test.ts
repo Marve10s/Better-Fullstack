@@ -167,17 +167,33 @@ const files: string[] = [];
 collect(TEMPLATES_DIR, { dirs: dirNames, files });
 collect(SRC_DIR, { files });
 
-let corpus = "";
-for (const file of files) {
-  if (BINARY_EXT.test(file)) continue;
-  try {
-    corpus += `\n${readFileSync(file, "utf8")}`;
-  } catch {
-    // ignore unreadable/binary files
+function buildCorpus(fileList: string[]): string {
+  let text = "";
+  for (const file of fileList) {
+    if (BINARY_EXT.test(file)) continue;
+    try {
+      text += `\n${readFileSync(file, "utf8")}`;
+    } catch {
+      // ignore unreadable/binary files
+    }
   }
+  return text;
 }
 
-function isGeneratable(value: string): boolean {
+const corpus = buildCorpus(files);
+
+// .NET is a stub ecosystem whose values are gated only inside templates/dotnet-base
+// and the dotnet handler. Matching dotnet values against the GLOBAL corpus
+// false-positives (e.g. "aspnet-mvc"/"aspnet-blazor" appear only as keys in the
+// graph-backend display-name map; "aws" appears in the SST deploy template), which
+// would mask genuinely selectable-but-not-generated .NET options. So dotnet
+// categories are scoped to dotnet-relevant files only.
+const dotnetCorpus = buildCorpus(files.filter((file) => file.includes("dotnet")));
+
+function isGeneratable(value: string, category: string): boolean {
+  if (category.startsWith("dotnet")) {
+    return dotnetCorpus.includes(`"${value}"`) || dotnetCorpus.includes(`'${value}'`);
+  }
   return dirNames.has(value) || corpus.includes(`"${value}"`) || corpus.includes(`'${value}'`);
 }
 
@@ -332,6 +348,19 @@ const ALLOWLIST = new Map<string, string>([
     "Baseline: JUnit5 always-on via starter-test; never gated on the literal.",
   ],
   // .NET: dotnet-base only implements a subset of each enum.
+  [
+    "dotnetWebFramework:aspnet-minimal",
+    "Baseline: dotnet-base emits the minimal-API scaffold unconditionally; never gated on the literal.",
+  ],
+  [
+    "dotnetWebFramework:aspnet-mvc",
+    "Unimplemented: dotnet-base never branches on dotnetWebFramework; MVC yields the same minimal-API scaffold.",
+  ],
+  [
+    "dotnetWebFramework:aspnet-blazor",
+    "Unimplemented: dotnet-base never branches on dotnetWebFramework; Blazor yields the same minimal-API scaffold (no Blazor components).",
+  ],
+  ["dotnetDeploy:aws", "Unimplemented: no AWS target; dotnet-base only handles docker."],
   ["dotnetOrm:dapper", "Unimplemented: dotnet-base only implements ef-core; no dapper branch."],
   ["dotnetOrm:linq2db", "Unimplemented: dotnet-base only implements ef-core; no linq2db branch."],
   [
@@ -369,7 +398,7 @@ describe("schema/template generatability coverage", () => {
         if (value === "none") continue;
         const key = `${category}:${value}`;
         if (ALLOWLIST.has(key)) continue;
-        if (!isGeneratable(value)) offenders.push(key);
+        if (!isGeneratable(value, category)) offenders.push(key);
       }
     }
     // A non-empty list means a schema enum value can be selected by users but
@@ -396,7 +425,7 @@ describe("schema/template generatability coverage", () => {
         stale.push(`${key} (value not in ${category} enum)`);
         continue;
       }
-      if (isGeneratable(value)) {
+      if (isGeneratable(value, category)) {
         stale.push(`${key} (now generatable — remove from allowlist)`);
       }
     }
