@@ -397,9 +397,8 @@ export async function createProjectHandler(
       }
 
       if (input.dryRun) {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import(
-          "@better-fullstack/template-generator"
-        );
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
+          await import("@better-fullstack/template-generator");
         const result = await generateVirtualProject({
           config,
           templates: EMBEDDED_TEMPLATES,
@@ -470,9 +469,10 @@ export async function createProjectHandler(
         };
       }
 
-      await createProject(config, {
+      const createResult = await createProject(config, {
         manualDb: cliInput.manualDb ?? input.manualDb,
       });
+      const setupFailures = createResult?.setupFailures ?? [];
 
       if (cliInput.verify ?? input.verify) {
         await runGeneratedChecks(config);
@@ -503,9 +503,26 @@ export async function createProjectHandler(
       const elapsedTimeMs = Date.now() - startTime;
       if (!isSilent()) {
         const elapsedTimeInSeconds = (elapsedTimeMs / 1000).toFixed(2);
-        outro(
-          pc.magenta(`Project created successfully in ${pc.bold(elapsedTimeInSeconds)} seconds!`),
-        );
+        if (setupFailures.length > 0) {
+          const stepList = setupFailures.map((f) => f.step).join(", ");
+          const installCmd =
+            config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
+          log.warn(
+            pc.yellow(
+              `Project files were scaffolded in ${config.relativePath}, but ${setupFailures.length} setup step(s) did not complete: ${stepList}.\n` +
+                `Review the errors above, then finish setup manually (for example, run '${installCmd}' inside the project).`,
+            ),
+          );
+          outro(
+            pc.yellow(
+              `Project created with ${setupFailures.length} unfinished setup step(s) in ${pc.bold(elapsedTimeInSeconds)}s.`,
+            ),
+          );
+        } else {
+          outro(
+            pc.magenta(`Project created successfully in ${pc.bold(elapsedTimeInSeconds)} seconds!`),
+          );
+        }
       }
 
       return {
@@ -516,6 +533,7 @@ export async function createProjectHandler(
         elapsedTimeMs,
         projectDirectory: config.projectDir,
         relativePath: config.relativePath,
+        setupFailures,
       };
     } catch (error) {
       if (error instanceof UserCancelledError) {
