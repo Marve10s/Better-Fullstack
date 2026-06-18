@@ -1108,7 +1108,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   aiDocs: {
     "claude-md": "CLAUDE.md",
-    "agents-md": "Agents.md",
+    "agents-md": "AGENTS.md",
     cursorrules: ".cursorrules",
   },
   git: { true: "Git", false: "No Git" },

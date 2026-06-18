@@ -745,7 +745,7 @@ export const ElixirDeploySchema = z
 
 export const AiDocsSchema = z
   .enum(["claude-md", "agents-md", "cursorrules", "none"])
-  .describe("AI documentation files (CLAUDE.md, Agents.md, .cursorrules)");
+  .describe("AI documentation files (CLAUDE.md, AGENTS.md, .cursorrules)");
 
 export const CSSFrameworkSchema = z
   .enum(["tailwind", "scss", "less", "postcss-only", "none"])
