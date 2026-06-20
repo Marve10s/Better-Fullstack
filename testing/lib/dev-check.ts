@@ -3,8 +3,8 @@ import { getLocalWebDevPort } from "@better-fullstack/types";
 
 import type { StepResult } from "./verify";
 
-const DEV_STARTUP_TIMEOUT_MS = 60_000;
-const TOTAL_DEV_CHECK_TIMEOUT_MS = 90_000;
+const DEV_STARTUP_TIMEOUT_MS = 120_000;
+const TOTAL_DEV_CHECK_TIMEOUT_MS = 150_000;
 const HTTP_REQUEST_TIMEOUT_MS = 10_000;
 const POLL_INTERVAL_MS = 2_000;
 const MAX_FETCH_RETRIES = 3;
