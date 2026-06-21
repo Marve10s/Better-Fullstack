@@ -327,9 +327,9 @@ export const I18nSchema = z
   .describe("Internationalization (i18n) library");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "elasticsearch", "algolia", "none"])
+  .enum(["meilisearch", "typesense", "elasticsearch", "opensearch", "algolia", "none"])
   .describe(
-    "Search engine solution (meilisearch, typesense, elasticsearch, or algolia for fast search experiences)",
+    "Search engine solution (meilisearch, typesense, elasticsearch, opensearch, or algolia for fast search experiences)",
   );
 
 export const FileStorageSchema = z

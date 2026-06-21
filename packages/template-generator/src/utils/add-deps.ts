@@ -750,6 +750,9 @@ export const dependencyVersionMap = {
   // Search - Elasticsearch
   "@elastic/elasticsearch": "^9.4.2",
 
+  // Search - OpenSearch
+  "@opensearch-project/opensearch": "^3.6.0",
+
   // Search - Algolia
   algoliasearch: "^5.54.0",
 

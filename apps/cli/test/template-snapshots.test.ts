@@ -182,6 +182,18 @@ const SNAPSHOT_CONFIGS: Array<{
       search: "algolia",
     },
   },
+  {
+    name: "opensearch-search-hono",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      search: "opensearch",
+    },
+  },
 
   // === AI VARIATIONS ===
   {

@@ -938,6 +938,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.elastic.co/docs",
     githubUrl: "https://github.com/elastic/elasticsearch",
   },
+  opensearch: {
+    docsUrl: "https://opensearch.org/docs/latest/",
+    githubUrl: "https://github.com/opensearch-project/OpenSearch",
+  },
   algolia: {
     docsUrl: "https://www.algolia.com/doc/",
     githubUrl: "https://github.com/algolia/algoliasearch-client-javascript",
