@@ -304,8 +304,13 @@ function getWorkspaceTool(addons: ProjectConfig["addons"]): WorkspaceTool {
   return null;
 }
 
-function updateDbPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const pkgJson = vfs.readJson<PackageJson>("packages/db/package.json");
+export function updateDbPackageJson(
+  vfs: VirtualFileSystem,
+  config: ProjectConfig,
+  dbDir = "packages/db",
+): void {
+  const dbPkgPath = `${dbDir}/package.json`;
+  const pkgJson = vfs.readJson<PackageJson>(dbPkgPath);
   if (!pkgJson) return;
 
   pkgJson.name = `@${config.projectName}/db`;
@@ -345,7 +350,7 @@ function updateDbPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): voi
     scripts["db:down"] = "docker compose down";
   }
 
-  vfs.writeJson("packages/db/package.json", pkgJson);
+  vfs.writeJson(dbPkgPath, pkgJson);
 }
 
 function updateAuthPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): void {

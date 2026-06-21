@@ -4,12 +4,16 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "../utils/add-deps";
 
-export function processDatabaseDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
+export function processDatabaseDeps(
+  vfs: VirtualFileSystem,
+  config: ProjectConfig,
+  dbPackageDir = "packages/db",
+): void {
   const { database, orm, backend } = config;
 
   if (backend === "convex" || database === "none") return;
 
-  const dbPkgPath = "packages/db/package.json";
+  const dbPkgPath = `${dbPackageDir}/package.json`;
   const webPkgPath = "apps/web/package.json";
 
   if (!vfs.exists(dbPkgPath)) return;

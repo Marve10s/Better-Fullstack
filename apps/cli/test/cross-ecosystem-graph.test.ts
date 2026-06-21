@@ -393,4 +393,49 @@ describe("Cross-ecosystem graph generation", () => {
       "policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()",
     );
   });
+
+  it("populates the database package with drizzle deps and scripts in graph mode", async () => {
+    const result = await createVirtual({
+      projectName: "graph-db",
+      frontend: [],
+      backend: "none",
+      api: "none",
+      runtime: "none",
+      stackParts: graphParts([
+        "frontend:typescript:next",
+        "backend:typescript:hono",
+        "backend.database:typescript:sqlite",
+        "backend.orm:typescript:drizzle",
+      ]),
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+
+    const dbPackage = JSON.parse(fileContent(root, "packages/db/package.json")) as {
+      scripts?: Record<string, string>;
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+
+    // Regression: graph mode previously ran the database post-processing against
+    // the raw graph config (database/orm live in stackParts there), leaving the
+    // database package without any drizzle deps or scripts.
+    expect(dbPackage.dependencies?.["drizzle-orm"]).toBeDefined();
+    expect(dbPackage.dependencies?.["@libsql/client"]).toBeDefined();
+    expect(dbPackage.dependencies?.libsql).toBeDefined();
+    expect(dbPackage.devDependencies?.["drizzle-kit"]).toBeDefined();
+    expect(dbPackage.scripts?.["db:push"]).toBe("drizzle-kit push");
+    expect(dbPackage.scripts?.["db:generate"]).toBe("drizzle-kit generate");
+    expect(dbPackage.scripts?.["db:studio"]).toBe("drizzle-kit studio");
+    expect(dbPackage.scripts?.["db:migrate"]).toBe("drizzle-kit migrate");
+    expect(dbPackage.scripts?.["db:local"]).toBe("turso dev --db-file local.db");
+
+    // The catalog refs the database package relies on must be registered at root.
+    const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
+      workspaces?: { catalog?: Record<string, string> };
+    };
+    expect(rootPackage.workspaces?.catalog?.["@libsql/client"]).toBeDefined();
+    expect(rootPackage.workspaces?.catalog?.libsql).toBeDefined();
+  });
 });
