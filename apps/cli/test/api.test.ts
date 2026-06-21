@@ -1117,6 +1117,28 @@ describe("API Configurations", () => {
 
       expectError(result, "Apollo Server API requires React-based frontends");
     });
+
+    it("should reject Apollo Server for Astro without React integration", async () => {
+      const result = await runTRPCTest({
+        projectName: "apollo-server-astro-none-fail",
+        api: "apollo-server",
+        frontend: ["astro"],
+        astroIntegration: "none",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Apollo Server API requires React integration with Astro");
+    });
   });
 
   describe("OpenAPI API", () => {

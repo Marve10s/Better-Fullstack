@@ -207,6 +207,14 @@ const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "solid",
   "solid-start",
 ]);
+const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
@@ -1849,6 +1857,23 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'trpc' cannot be selected with the '${frontendTool}' frontend.`,
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "typescript" &&
+    part.role === "api" &&
+    part.toolId === "apollo-server"
+  ) {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool && !TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS.has(frontendTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
       });
     }
   }
