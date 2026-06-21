@@ -10,7 +10,7 @@ import { getDefaultConfig } from "../../constants";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
-import { trackProjectCreation } from "../../utils/analytics";
+import { maybeShowTelemetryNotice, trackProjectCreation } from "../../utils/analytics";
 import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
@@ -118,6 +118,10 @@ export async function createProjectHandler(
         renderTitle();
       }
       if (!isSilent()) intro(pc.magenta("Creating a new Better Fullstack project"));
+
+      // One-time notice about anonymous telemetry (self-gated: interactive only,
+      // skipped once a preference is persisted or an env override is set).
+      await maybeShowTelemetryNotice();
 
       if (!isSilent() && input.yolo) {
         consola.fatal("YOLO mode enabled - skipping checks. Things may break!");

@@ -5,6 +5,7 @@ import { createCli } from "trpc-cli";
 import z from "zod";
 
 import { historyHandler } from "./commands/history";
+import { telemetryHandler } from "./commands/telemetry";
 import { CreateCommandInputSchema } from "./create-command-input";
 import type { AddResult } from "./helpers/core/add-handler";
 import { createProjectHandler } from "./helpers/core/command-handlers";
@@ -265,6 +266,27 @@ export const router = os.router({
     .handler(async ({ input }) => {
       await historyHandler(input);
     }),
+  telemetry: os
+    .meta({
+      description:
+        "View or change anonymous usage telemetry collection (status | enable | disable)",
+    })
+    .input(
+      z.tuple([
+        z
+          .enum(["status", "enable", "disable"])
+          .optional()
+          .default("status")
+          .describe("Action to perform: status (default), enable, or disable"),
+        z.object({
+          json: z.boolean().optional().default(false).describe("Output status as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [action, options] = input;
+      await telemetryHandler({ action, json: options.json });
+    }),
   "update-deps": os
     .meta({ description: "Check and update dependency versions in add-deps.ts" })
     .input(
@@ -386,4 +408,11 @@ export async function history(options?: { limit?: number; clear?: boolean; json?
     clear: options?.clear ?? false,
     json: options?.json ?? false,
   });
+}
+
+export async function telemetry(
+  action: "status" | "enable" | "disable" = "status",
+  options?: { json?: boolean },
+) {
+  return caller.telemetry([action, { json: options?.json ?? false }]);
 }

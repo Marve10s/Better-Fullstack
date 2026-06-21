@@ -1,7 +1,7 @@
 // Lean public entry: re-exports the CLI (run.ts) and the programmatic API.
 // The bin entry (cli.ts) imports ./run.js directly so plain CLI startup
 // never pays the cost of loading the embedded templates bundle below.
-export { router, createBtsCli, create, sponsors, docs, builder, add, history } from "./run";
+export { router, createBtsCli, create, sponsors, docs, builder, add, history, telemetry } from "./run";
 
 import type { ProjectConfig } from "./types";
 
