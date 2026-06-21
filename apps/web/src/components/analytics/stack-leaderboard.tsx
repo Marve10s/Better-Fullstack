@@ -8,6 +8,12 @@ const DIVIDER = "border-[#e1e0d8] dark:border-[rgba(237,235,228,0.10)]";
 const MUTED = "text-[#71706a] dark:text-[#8f8d84]";
 const TRACK = "bg-black/[0.06] dark:bg-white/[0.07]";
 
+const NAME_WIDTH = {
+  sm: "w-24 sm:w-28",
+  md: "w-28 sm:w-40",
+  lg: "w-40 sm:w-56",
+} as const;
+
 const countFormatter = new Intl.NumberFormat("en-US");
 
 function LeaderboardRow({
@@ -29,10 +35,7 @@ function LeaderboardRow({
       <div className={cn("relative h-2.5 flex-1 overflow-hidden rounded-[3px]", TRACK)}>
         <div className="h-full rounded-[3px] bg-[#C6E853]" style={{ width: barWidth }} />
       </div>
-      <span className="w-12 shrink-0 text-right font-mono text-[12px] tabular-nums">
-        {countFormatter.format(item.value)}
-      </span>
-      <span className={cn("w-9 shrink-0 text-right font-mono text-[12px] tabular-nums", MUTED)}>
+      <span className="w-11 shrink-0 text-right font-mono text-[12px] font-medium tabular-nums">
         {Math.round(item.pct * 100)}%
       </span>
     </li>
@@ -42,14 +45,14 @@ function LeaderboardRow({
 function Leaderboard({
   title,
   items,
-  wide = false,
+  size = "sm",
 }: {
   title: string;
   items: StackDistribution;
-  wide?: boolean;
+  size?: keyof typeof NAME_WIDTH;
 }) {
   const max = items[0]?.value ?? 0;
-  const nameClass = wide ? "w-40 sm:w-56" : "w-24 sm:w-28";
+  const nameClass = NAME_WIDTH[size];
 
   return (
     <section aria-label={title}>
@@ -71,7 +74,7 @@ function Leaderboard({
 }
 
 export function StackLeaderboard({ data }: { data: StackAnalyticsData }) {
-  const { totalProjects, topStacks, frontend, backend, database, orm } = data;
+  const { totalProjects, ecosystems, topStacks, frontend, backend, database, orm } = data;
   const hasData = totalProjects > 0;
 
   return (
@@ -99,15 +102,16 @@ export function StackLeaderboard({ data }: { data: StackAnalyticsData }) {
       </header>
 
       {hasData ? (
-        <div className="px-5 py-6 sm:px-7">
-          <Leaderboard title="Top stacks" items={topStacks} wide />
-          <div className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2">
+        <div className="space-y-8 px-5 py-6 sm:px-7">
+          <Leaderboard title="Ecosystem" items={ecosystems} size="md" />
+          <Leaderboard title="Top stacks" items={topStacks} size="lg" />
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
             <Leaderboard title="Frontend" items={frontend} />
             <Leaderboard title="Backend" items={backend} />
             <Leaderboard title="Database" items={database} />
             <Leaderboard title="ORM" items={orm} />
           </div>
-          <p className={cn("mt-8 border-t pt-4 font-mono text-[10px] uppercase tracking-[0.16em]", DIVIDER, MUTED)}>
+          <p className={cn("border-t pt-4 font-mono text-[10px] uppercase tracking-[0.16em]", DIVIDER, MUTED)}>
             Aggregated from anonymous, opt-in CLI telemetry
           </p>
         </div>
