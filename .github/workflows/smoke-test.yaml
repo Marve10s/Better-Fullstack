@@ -205,10 +205,22 @@ jobs:
 
       - name: Upload Results
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: smoke-results
-          path: testing/.smoke-output/
+          path: |
+            testing/.smoke-output/
+            !testing/.smoke-output/**/node_modules/**
+            !testing/.smoke-output/**/.git/**
+            !testing/.smoke-output/**/target/**
+            !testing/.smoke-output/**/dist/**
+            !testing/.smoke-output/**/build/**
+            !testing/.smoke-output/**/.next/**
+            !testing/.smoke-output/**/.expo/**
+            !testing/.smoke-output/**/.turbo/**
+            !testing/.smoke-output/**/.venv/**
+            !testing/.smoke-output/**/__pycache__/**
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
