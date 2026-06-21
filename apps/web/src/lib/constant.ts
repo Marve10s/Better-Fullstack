@@ -2282,7 +2282,7 @@ export const TECH_OPTIONS: Record<
       id: "devcontainer",
       name: "DevContainer",
       description: "VS Code container config with forwarded services",
-      icon: "https://cdn.simpleicons.org/visualstudiocode/007ACC",
+      icon: "https://cdn.simpleicons.org/docker/2496ED",
       color: "from-sky-500 to-blue-700",
       default: false,
     },
