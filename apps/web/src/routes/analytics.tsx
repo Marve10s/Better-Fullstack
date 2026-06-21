@@ -1,18 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
 
-import type { AggregatedAnalyticsData } from "@/components/analytics/types";
-
-import { AnalyticsHeader } from "@/components/analytics/analytics-header";
-import { DevToolsSection } from "@/components/analytics/dev-environment-charts";
-import { MetricsCards } from "@/components/analytics/metrics-cards";
-import { StackSection } from "@/components/analytics/stack-configuration-charts";
-import { TimelineSection } from "@/components/analytics/timeline-charts";
+import { StackLeaderboard } from "@/components/analytics/stack-leaderboard";
 import Footer from "@/components/home/footer";
 import {
-  EMPTY_ANALYTICS_DATA,
-  buildAggregatedAnalyticsData,
+  EMPTY_STACK_ANALYTICS,
+  buildStackAnalytics,
   type RawAnalyticsStats,
+  type StackAnalyticsData,
 } from "@/lib/analytics-aggregate";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -24,13 +18,9 @@ import {
   canonicalUrl,
 } from "@/lib/seo";
 
-// Fetch and aggregate analytics server-side via Convex's lightweight HTTP client
-// (no reactive Convex React SDK in the client bundle). The live event feed is
-// intentionally omitted here — it needs a client-side subscription and is a
-// separate follow-up. Degrades to an empty dashboard when Convex is unconfigured.
-async function loadAnalytics(): Promise<AggregatedAnalyticsData> {
+async function loadAnalytics(): Promise<StackAnalyticsData> {
   const convexUrl = import.meta.env.VITE_CONVEX_URL;
-  if (!convexUrl) return EMPTY_ANALYTICS_DATA;
+  if (!convexUrl) return EMPTY_STACK_ANALYTICS;
 
   try {
     const [{ ConvexHttpClient }, { api }] = await Promise.all([
@@ -38,14 +28,11 @@ async function loadAnalytics(): Promise<AggregatedAnalyticsData> {
       import("@better-fullstack/backend/convex/_generated/api"),
     ]);
     const client = new ConvexHttpClient(convexUrl);
-    const [stats, daily] = await Promise.all([
-      client.query(api.analytics.getStats, {}),
-      client.query(api.analytics.getDailyStats, { days: 30 }),
-    ]);
-    if (!stats) return EMPTY_ANALYTICS_DATA;
-    return buildAggregatedAnalyticsData(stats as RawAnalyticsStats, daily ?? []);
+    const stats = await client.query(api.analytics.getStats, {});
+    if (!stats) return EMPTY_STACK_ANALYTICS;
+    return buildStackAnalytics(stats as RawAnalyticsStats);
   } catch {
-    return EMPTY_ANALYTICS_DATA;
+    return EMPTY_STACK_ANALYTICS;
   }
 }
 
@@ -53,7 +40,7 @@ export const Route = createFileRoute("/analytics")({
   head: () => {
     const title = "Analytics — Better Fullstack";
     const description =
-      "See which stacks developers actually pick: the most popular frontends, backends, databases, ORMs, and full stack combinations scaffolded with Better Fullstack.";
+      "A live leaderboard of the stacks developers actually pick: the most popular frontends, backends, databases, ORMs, and full-stack combinations scaffolded with Better Fullstack.";
 
     return {
       meta: [
@@ -83,28 +70,11 @@ export const Route = createFileRoute("/analytics")({
 
 function AnalyticsRoute() {
   const { data } = Route.useLoaderData();
-  const legacy = useMemo(
-    () => ({
-      total: data.totalProjects,
-      avgPerDay: data.avgProjectsPerDay,
-      lastUpdatedIso: data.lastUpdated ?? "",
-      source: "convex",
-    }),
-    [data],
-  );
 
   return (
-    <div className="mx-auto min-h-svh">
-      <div className="container mx-auto space-y-10 px-4 py-8 pt-16">
-        <AnalyticsHeader
-          lastUpdated={data.lastUpdated}
-          legacy={legacy}
-          connectionStatus="disabled"
-        />
-        <MetricsCards data={data} />
-        <TimelineSection data={data} />
-        <StackSection data={data} />
-        <DevToolsSection data={data} />
+    <div className="min-h-svh">
+      <div className="mx-auto max-w-[1100px] px-4 py-16 sm:px-8 sm:py-20">
+        <StackLeaderboard data={data} />
       </div>
       <Footer />
     </div>

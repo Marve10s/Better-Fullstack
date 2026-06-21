@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StackRouteImport } from './routes/stack'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -36,11 +35,6 @@ const StackRoute = StackRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShowcaseRoute = ShowcaseRouteImport.update({
-  id: '/showcase',
-  path: '/showcase',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewRoute = NewRouteImport.update({
@@ -127,7 +121,6 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -147,7 +140,6 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -168,7 +160,6 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -190,7 +181,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/showcase'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -210,7 +200,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/showcase'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -230,7 +219,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/showcase'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -251,7 +239,6 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
-  ShowcaseRoute: typeof ShowcaseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StackRoute: typeof StackRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
@@ -278,13 +265,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/showcase': {
-      id: '/showcase'
-      path: '/showcase'
-      fullPath: '/showcase'
-      preLoaderRoute: typeof ShowcaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/new': {
@@ -403,7 +383,6 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
-  ShowcaseRoute: ShowcaseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
   ApiPreviewRoute: ApiPreviewRoute,
