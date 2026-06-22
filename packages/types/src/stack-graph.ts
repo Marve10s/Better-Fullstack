@@ -207,6 +207,14 @@ const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "solid",
   "solid-start",
 ]);
+const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
@@ -338,6 +346,7 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "turborepo",
   "nx",
   "docker-compose",
+  "devcontainer",
   "ruler",
   "mcp",
   "skills",
@@ -1512,14 +1521,16 @@ function createAddonCompatibilityIssue(
   }
 
   if (part.role === "workspaceTooling") {
-    if (part.toolId === "docker-compose") {
+    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
+      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+
       if (backendTool === "convex") {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Convex backend.",
+          message: `${title} is not compatible with Convex backend.`,
         });
       }
       if (runtimeTool === "workers") {
@@ -1528,7 +1539,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Cloudflare Workers runtime.",
+          message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
       if (
@@ -1541,7 +1552,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not wired for the selected web frontend.",
+          message: `${title} is not wired for the selected web frontend.`,
         });
       }
       if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
@@ -1550,7 +1561,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose self-backend support currently requires Next.js.",
+          message: `${title} self-backend support currently requires Next.js.`,
         });
       }
     }
@@ -1873,6 +1884,23 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'trpc' cannot be selected with the '${frontendTool}' frontend.`,
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "typescript" &&
+    part.role === "api" &&
+    part.toolId === "apollo-server"
+  ) {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool && !TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS.has(frontendTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
       });
     }
   }

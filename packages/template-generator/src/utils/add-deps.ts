@@ -244,6 +244,9 @@ export const dependencyVersionMap = {
   // GraphQL Yoga + Pothos
   "@pothos/core": "^4.12.0",
 
+  // Apollo Server
+  "@apollo/server": "^5.5.1",
+
   // OpenAPI
   "@asteasolutions/zod-to-openapi": "^8.5.0",
   "@scalar/express-api-reference": "^0.10.3",
@@ -760,6 +763,9 @@ export const dependencyVersionMap = {
 
   // Search - Elasticsearch
   "@elastic/elasticsearch": "^9.4.2",
+
+  // Search - OpenSearch
+  "@opensearch-project/opensearch": "^3.6.0",
 
   // Search - Algolia
   algoliasearch: "^5.54.0",

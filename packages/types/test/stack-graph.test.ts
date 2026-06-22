@@ -149,6 +149,17 @@ function compareLegacyConfigToStackParts(
   return diagnostics;
 }
 
+function getTypeScriptApiOptionsForFrontend(frontend: string) {
+  return getStackPartOptions({
+    role: "api",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    ownerToolId: "hono",
+    primaryToolIdsByRole: { frontend, backend: "hono" },
+  });
+}
+
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
     const stackParts = parseStackPartSpecs([
@@ -322,6 +333,13 @@ describe("stack graph", () => {
     expect(djangoOptions).toContain("django-ninja");
   });
 
+  it("filters Apollo Server API options by frontend graph context", () => {
+    expect(getTypeScriptApiOptionsForFrontend("tanstack-router")).toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("svelte")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("solid")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("astro")).not.toContain("apollo-server");
+  });
+
   it("filters Elixir capability options by owner and generated support", () => {
     const phoenixRealtimeOptions = getStackPartOptions({
       role: "realtime",
@@ -469,6 +487,16 @@ describe("stack graph", () => {
       "backend:typescript:hono",
       "backend.api:typescript:trpc",
     ]);
+    const apolloSvelteParts = parseStackPartSpecs([
+      "frontend:typescript:svelte",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
+    const apolloAstroParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
     const betterAuthParts = parseStackPartSpecs([
       "backend:typescript:hono",
       "backend.orm:typescript:typeorm",
@@ -478,6 +506,20 @@ describe("stack graph", () => {
 
     expect(validateStackParts(trpcParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
+    );
+    expect(validateStackParts(apolloSvelteParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
+    );
+    expect(validateStackParts(apolloAstroParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
     );
     expect(validateStackParts(betterAuthParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",

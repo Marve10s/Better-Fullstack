@@ -11,6 +11,7 @@ import { gatherConfig } from "../../prompts/config-prompts";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
 import { trackProjectCreation } from "../../utils/analytics";
+import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError } from "../../utils/errors";
@@ -85,8 +86,17 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
   };
 }
 
-function shouldPromptForVersionChannel(input: CreateInput & { projectName?: string }): boolean {
-  if (input.yes || input.part?.length || input.versionChannel !== undefined || isSilent()) {
+function shouldPromptForVersionChannel(
+  input: CreateInput & { projectName?: string },
+  hasConfigBase: boolean,
+): boolean {
+  if (
+    input.yes ||
+    input.part?.length ||
+    hasConfigBase ||
+    input.versionChannel !== undefined ||
+    isSilent()
+  ) {
     return false;
   }
 
@@ -94,7 +104,7 @@ function shouldPromptForVersionChannel(input: CreateInput & { projectName?: stri
 }
 
 export async function createProjectHandler(
-  input: CreateInput & { projectName?: string },
+  input: CreateInput & { projectName?: string; fromHistory?: number; config?: string },
   options: CreateHandlerOptions = {},
 ) {
   const { silent = false } = options;
@@ -113,10 +123,25 @@ export async function createProjectHandler(
         consola.fatal("YOLO mode enabled - skipping checks. Things may break!");
       }
 
+      const configBase = await resolveCreateConfigBase(input);
+      const hasConfigBase = configBase !== undefined;
+      if (hasConfigBase && !isSilent()) {
+        log.info(
+          pc.cyan(
+            input.config
+              ? `Using stack from config file: ${input.config}`
+              : `Using stack from history entry #${input.fromHistory}`,
+          ),
+        );
+      }
+
+      // A config base (from history or a file) supplies a complete stack, so we
+      // skip the interactive project-name prompt just like --yes does.
+      const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
-      if (input.yes && input.projectName) {
+      if (useDefaultsForName && input.projectName) {
         currentPathInput = input.projectName;
-      } else if (input.yes) {
+      } else if (useDefaultsForName) {
         const defaultConfig = getDefaultConfig();
         let defaultName: string = defaultConfig.relativePath;
         let counter = 1;
@@ -132,9 +157,9 @@ export async function createProjectHandler(
         currentPathInput = await getProjectName(input.projectName);
       }
 
-      const versionChannel = shouldPromptForVersionChannel(input)
+      const versionChannel = shouldPromptForVersionChannel(input, hasConfigBase)
         ? await getVersionChannelChoice()
-        : (input.versionChannel ?? "stable");
+        : (input.versionChannel ?? configBase?.versionChannel ?? "stable");
 
       let finalResolvedPath: string;
       let finalBaseName: string;
@@ -310,12 +335,24 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
-      const originalInput = {
-        ...input,
+      // Overlay any explicitly-passed flags on top of the config base so the
+      // user can override individual options from a replayed/loaded config.
+      const definedInput = Object.fromEntries(
+        Object.entries(input).filter(([, value]) => value !== undefined),
+      ) as typeof input;
+      const explicitInput = {
+        ...definedInput,
         projectDirectory: input.projectName,
       };
+      const originalInput = {
+        ...configBase,
+        ...explicitInput,
+      };
 
-      const providedFlags = getProvidedFlags(originalInput);
+      // Only flags the user explicitly passed count as "provided" for strict
+      // compatibility checks; config-base values are treated as defaults (the
+      // same leniency --yes uses for a trusted config).
+      const providedFlags = getProvidedFlags(explicitInput);
 
       let cliInput = originalInput;
 
@@ -348,7 +385,7 @@ export async function createProjectHandler(
       const { validatePreflightConfig } = await import("@better-fullstack/template-generator");
 
       let config: ProjectConfig;
-      if (cliInput.yes || cliInput.part?.length) {
+      if (cliInput.yes || cliInput.part?.length || hasConfigBase) {
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
         config = {

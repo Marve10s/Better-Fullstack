@@ -130,6 +130,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   trpc: { type: "si", slug: "trpc", hex: "398CCB" },
   orpc: { type: "local", src: "/icon/orpc.svg", needsInvert: "dark" }, // black circle SVG
   "graphql-yoga": { type: "si", slug: "graphql", hex: "E10098" },
+  "apollo-server": { type: "si", slug: "apollographql", hex: "311C87" },
   openapi: { type: "si", slug: "openapiinitiative", hex: "6BA539" },
 
   // ─── Web Frontend ──────────────────────────────────────────────────────────
@@ -213,6 +214,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   upstash: { type: "si", slug: "upstash", hex: "00E9A3" },
   docker: { type: "si", slug: "docker", hex: "2496ED" },
   "docker-compose": { type: "si", slug: "docker", hex: "2496ED" },
+  devcontainer: { type: "si", slug: "docker", hex: "2496ED" },
   nx: { type: "si", slug: "nx", hex: "143055", needsInvert: "dark" },
 
   // ─── Deploy ────────────────────────────────────────────────────────────────
@@ -386,6 +388,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   meilisearch: { type: "si", slug: "meilisearch", hex: "FF5CAA" },
   typesense: { type: "local", src: "/icon/typesense.png" },
   elasticsearch: { type: "si", slug: "elasticsearch", hex: "005571" },
+  opensearch: { type: "si", slug: "opensearch", hex: "005EB8" },
   algolia: { type: "si", slug: "algolia", hex: "003DFF" },
 
   // ─── File Storage ──────────────────────────────────────────────────────────

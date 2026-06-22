@@ -8,8 +8,9 @@ import {
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
 
 import { VirtualFileSystem } from "./core/virtual-fs";
-import { processCatalogs, processPackageConfigs } from "./post-process";
+import { processCatalogs, processPackageConfigs, updateDbPackageJson } from "./post-process";
 import {
+  processDatabaseDeps,
   processDependencies,
   processReadme,
   processAuthPlugins,
@@ -154,6 +155,12 @@ async function processGraphTemplates(
       dbConfig.database === "redis"
     ) {
       await processDbTemplates(vfs, templates, dbConfig, databaseTargetPath);
+      // The shared post-process pass below runs against the raw graph config,
+      // where database/orm live in stackParts instead of the legacy fields, so it
+      // skips the database package. Populate its deps + scripts here using the
+      // resolved dbConfig so part-mode matches solo mode.
+      processDatabaseDeps(vfs, dbConfig, databaseTargetPath);
+      updateDbPackageJson(vfs, dbConfig, databaseTargetPath);
     }
     if (!vfs.directoryExists(databaseTargetPath)) {
       vfs.writeFile(

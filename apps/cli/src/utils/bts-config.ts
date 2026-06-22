@@ -240,7 +240,7 @@ function syncUpdatedStackParts(
   return next;
 }
 
-function buildBtsConfigForPersistence(
+export function buildBtsConfigForPersistence(
   projectConfig: ProjectConfig,
   metadata: Partial<BtsConfigMetadata> = {},
 ): BetterTStackConfig {
@@ -575,6 +575,42 @@ export async function readBtsConfig(projectDir: string) {
 
     if (errors.length > 0) {
       console.warn("Warning: Found errors parsing bts.jsonc:", errors);
+      return null;
+    }
+
+    return buildBtsConfigForPersistence(config as unknown as ProjectConfig, {
+      version: config.version,
+      createdAt: config.createdAt,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function readBtsConfigFromFile(filePath: string) {
+  try {
+    const resolved = path.resolve(process.cwd(), filePath);
+
+    if (!(await fs.pathExists(resolved))) {
+      return null;
+    }
+
+    const stats = await fs.stat(resolved);
+    const configPath = stats.isDirectory() ? path.join(resolved, BTS_CONFIG_FILE) : resolved;
+
+    if (!(await fs.pathExists(configPath))) {
+      return null;
+    }
+
+    const configContent = await fs.readFile(configPath, "utf-8");
+
+    const errors: JSONC.ParseError[] = [];
+    const config = JSONC.parse(configContent, errors, {
+      allowTrailingComma: true,
+      disallowComments: false,
+    }) as BetterTStackConfig;
+
+    if (errors.length > 0 || config === undefined || typeof config !== "object") {
       return null;
     }
 

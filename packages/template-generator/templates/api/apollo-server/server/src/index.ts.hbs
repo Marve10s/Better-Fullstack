@@ -1,0 +1,157 @@
+import { ApolloServer, HeaderMap } from "@apollo/server";
+import type { HTTPGraphQLRequest } from "@apollo/server";
+{{#if (isBetterAuth auth)}}
+import type { Session, User } from "better-auth";
+{{/if}}
+
+{{#if (isBetterAuth auth)}}
+type AuthSession = { user: User; session: Session } | null;
+
+{{/if}}
+{{#if (isBetterAuth auth)}}
+export type ApolloContext = {
+	session: AuthSession;
+};
+{{else}}
+export type ApolloContext = Record<string, never>;
+{{/if}}
+
+export const typeDefs = `#graphql
+	type Query {
+		health: String!
+{{#if (isBetterAuth auth)}}
+		me: User
+{{/if}}
+	}
+
+{{#if (isBetterAuth auth)}}
+	type User {
+		id: ID!
+		email: String!
+		name: String
+	}
+
+{{/if}}
+	type Mutation {
+		_empty: String
+	}
+`;
+
+export const resolvers = {
+	Query: {
+		health: () => "OK",
+{{#if (isBetterAuth auth)}}
+		me: (_parent: unknown, _args: unknown, context: ApolloContext) => {
+			if (!context.session) return null;
+			return {
+				id: context.session.user.id,
+				email: context.session.user.email,
+				name: context.session.user.name,
+			};
+		},
+{{/if}}
+	},
+	Mutation: {
+		_empty: () => null,
+	},
+};
+
+export const apolloServer = new ApolloServer<ApolloContext>({
+	typeDefs,
+	resolvers,
+});
+
+let apolloStartPromise: Promise<void> | undefined;
+
+async function ensureApolloStarted() {
+	apolloStartPromise ??= apolloServer.start();
+	await apolloStartPromise;
+}
+
+async function parseRequestBody(request: Request) {
+	if (request.method === "GET" || request.method === "HEAD") return undefined;
+	if (!request.headers.get("content-type")?.includes("application/json")) return undefined;
+
+	const text = await request.text();
+	if (text.trim() === "") return undefined;
+
+	return JSON.parse(text) as unknown;
+}
+
+function getApolloHeaders(request: Request) {
+	const headers = new HeaderMap();
+	request.headers.forEach((value, key) => {
+		headers.set(key, value);
+	});
+	return headers;
+}
+
+function getResponseHeaders(headers: HeaderMap) {
+	const responseHeaders = new Headers();
+	for (const [key, value] of headers) {
+		responseHeaders.set(key, value);
+	}
+	return responseHeaders;
+}
+
+export async function executeApolloRequest(
+	request: Request,
+{{#if (isBetterAuth auth)}}
+	context: ApolloContext = {
+		session: null,
+	},
+{{else}}
+	context: ApolloContext = {},
+{{/if}}
+): Promise<Response> {
+	await ensureApolloStarted();
+
+	let body: unknown;
+	try {
+		body = await parseRequestBody(request);
+	} catch {
+		return Response.json({ errors: [{ message: "Invalid JSON request body" }] }, { status: 400 });
+	}
+
+	const url = new URL(request.url);
+	const httpGraphQLRequest: HTTPGraphQLRequest = {
+		method: request.method.toUpperCase(),
+		headers: getApolloHeaders(request),
+		search: url.search,
+		body,
+	};
+
+	const result = await apolloServer.executeHTTPGraphQLRequest({
+		httpGraphQLRequest,
+		context: async () => context,
+	});
+
+	const responseHeaders = getResponseHeaders(result.headers);
+	const status = result.status ?? 200;
+	const responseBody = result.body;
+
+	if (responseBody.kind === "complete") {
+		return new Response(responseBody.string, {
+			status,
+			headers: responseHeaders,
+		});
+	}
+
+	const encoder = new TextEncoder();
+	const stream = new ReadableStream({
+		async start(controller) {
+			try {
+				for await (const chunk of responseBody.asyncIterator) {
+					controller.enqueue(encoder.encode(chunk));
+				}
+			} finally {
+				controller.close();
+			}
+		},
+	});
+
+	return new Response(stream, {
+		status,
+		headers: responseHeaders,
+	});
+}

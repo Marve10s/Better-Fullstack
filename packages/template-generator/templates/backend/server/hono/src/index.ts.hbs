@@ -25,6 +25,9 @@ import {
 {{/if}}
 } from "@{{projectName}}/api";
 {{/if}}
+{{#if (eq api "apollo-server")}}
+import { executeApolloRequest } from "@{{projectName}}/api";
+{{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
@@ -121,6 +124,18 @@ app.use(
 		},
 	})
 );
+{{/if}}
+{{#if (eq api "apollo-server")}}
+app.on(["GET", "POST"], "/graphql", async (c) => {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({
+		headers: c.req.raw.headers,
+	});
+	return executeApolloRequest(c.req.raw, { session });
+{{else}}
+	return executeApolloRequest(c.req.raw);
+{{/if}}
+});
 {{/if}}
 {{#if (eq api "openapi")}}
 const openApiApp = new OpenAPIHono();

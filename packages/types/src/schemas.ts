@@ -164,6 +164,7 @@ export const AddonsSchema = z
     "tanstack-db",
     "tanstack-pacer",
     "backend-utils",
+    "devcontainer",
     "docker-compose",
     "none",
   ])
@@ -197,7 +198,7 @@ export const DatabaseSetupSchema = z
   .describe("Database hosting setup");
 
 export const APISchema = z
-  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"])
+  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "apollo-server", "openapi", "none"])
   .describe("API type");
 
 export const AuthSchema = z
@@ -327,9 +328,9 @@ export const I18nSchema = z
   .describe("Internationalization (i18n) library");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "elasticsearch", "algolia", "none"])
+  .enum(["meilisearch", "typesense", "elasticsearch", "opensearch", "algolia", "none"])
   .describe(
-    "Search engine solution (meilisearch, typesense, elasticsearch, or algolia for fast search experiences)",
+    "Search engine solution (meilisearch, typesense, elasticsearch, opensearch, or algolia for fast search experiences)",
   );
 
 export const FileStorageSchema = z

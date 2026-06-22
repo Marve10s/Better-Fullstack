@@ -69,6 +69,13 @@ export const TECH_OPTIONS: Record<
       color: "from-pink-500 to-rose-600",
     },
     {
+      id: "apollo-server",
+      name: "Apollo Server",
+      description: "Schema-first GraphQL server for Node.js runtimes",
+      icon: "https://cdn.simpleicons.org/apollographql/311C87",
+      color: "from-indigo-500 to-violet-700",
+    },
+    {
       id: "openapi",
       name: "OpenAPI",
       description: "REST endpoints with OpenAPI 3.1 and Scalar docs",
@@ -2279,6 +2286,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "devcontainer",
+      name: "DevContainer",
+      description: "VS Code container config with forwarded services",
+      icon: "https://cdn.simpleicons.org/docker/2496ED",
+      color: "from-sky-500 to-blue-700",
+      default: false,
+    },
+    {
       id: "wxt",
       name: "WXT",
       description: "Build browser extensions",
@@ -2704,6 +2719,14 @@ export const TECH_OPTIONS: Record<
         "Distributed full-text search and analytics engine for local or cloud deployments",
       icon: "https://cdn.simpleicons.org/elasticsearch/005571",
       color: "from-cyan-500 to-blue-700",
+      default: false,
+    },
+    {
+      id: "opensearch",
+      name: "OpenSearch",
+      description: "Open-source search and analytics suite for self-managed or managed clusters",
+      icon: "https://cdn.simpleicons.org/opensearch/005EB8",
+      color: "from-blue-500 to-sky-700",
       default: false,
     },
     {
