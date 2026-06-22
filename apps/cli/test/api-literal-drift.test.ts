@@ -47,7 +47,7 @@ const DRIZZLE_MYSQL_TEMPLATE = resolve(
 );
 
 // Bumping this requires an intentional template change (see file header).
-const EXPECTED_STRIPE_API_VERSION = "2024-12-18";
+const EXPECTED_STRIPE_API_VERSION = "2026-05-27.dahlia";
 
 // Drizzle's mysql2 driver expects a flat connection string plus `mode`.
 // The old, broken shape was `connection: { uri: env.DATABASE_URL }`.

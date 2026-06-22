@@ -7191,7 +7191,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-hono-apollo-server/config": "workspace:*"
