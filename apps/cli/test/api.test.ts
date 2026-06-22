@@ -960,7 +960,16 @@ describe("API Configurations", () => {
   });
 
   describe("All API Types", () => {
-    const apis = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"];
+    const apis = [
+      "trpc",
+      "orpc",
+      "ts-rest",
+      "garph",
+      "graphql-yoga",
+      "apollo-server",
+      "openapi",
+      "none",
+    ];
 
     for (const api of apis) {
       it(`should work with ${api} API`, async () => {
@@ -995,6 +1004,141 @@ describe("API Configurations", () => {
         expectSuccess(result);
       });
     }
+  });
+
+  describe("Apollo Server API", () => {
+    const supportedBackends: Backend[] = ["hono", "express", "fastify", "elysia"];
+
+    for (const backend of supportedBackends) {
+      it(`should generate Apollo Server routes for ${backend}`, async () => {
+        const result = await runTRPCTest({
+          projectName: `apollo-server-${backend}`,
+          api: "apollo-server",
+          frontend: ["tanstack-router"],
+          backend,
+          runtime: backend === "elysia" ? "bun" : "node",
+          database: "sqlite",
+          orm: "drizzle",
+          auth: "none",
+          addons: ["none"],
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        const projectDir = result.projectDir!;
+        const apiIndex = await readFile(`${projectDir}/packages/api/src/index.ts`, "utf-8");
+        const serverIndex = await readFile(`${projectDir}/apps/server/src/index.ts`, "utf-8");
+        const apiPackage = await readFile(`${projectDir}/packages/api/package.json`, "utf-8");
+        const webGraphql = await readFile(`${projectDir}/apps/web/src/utils/graphql.ts`, "utf-8");
+
+        expect(apiIndex).toContain('from "@apollo/server"');
+        expect(apiIndex).toContain("new ApolloServer");
+        expect(apiIndex).toContain("executeHTTPGraphQLRequest");
+        expect(apiIndex).toContain("health: () => \"OK\"");
+        expect(serverIndex).toContain('"/graphql"');
+        expect(serverIndex).toContain("executeApolloRequest");
+        expect(apiPackage).toContain('"@apollo/server"');
+        expect(apiPackage).toContain('"graphql"');
+        expect(webGraphql).toContain("/graphql");
+      });
+    }
+
+    it("should include Better Auth session context", async () => {
+      const result = await runTRPCTest({
+        projectName: "apollo-server-better-auth",
+        api: "apollo-server",
+        frontend: ["tanstack-router"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const apiIndex = await readFile(`${result.projectDir}/packages/api/src/index.ts`, "utf-8");
+      const serverIndex = await readFile(`${result.projectDir}/apps/server/src/index.ts`, "utf-8");
+
+      expect(apiIndex).toContain("export type ApolloContext = {");
+      expect(apiIndex).toContain("session: AuthSession;");
+      expect(apiIndex).toContain("me: User");
+      expect(serverIndex).toContain("auth.api.getSession");
+      expect(serverIndex).toContain("executeApolloRequest(c.req.raw, { session })");
+    });
+
+    it("should reject Apollo Server for unsupported backends", async () => {
+      const result = await runTRPCTest({
+        projectName: "apollo-server-self-fail",
+        api: "apollo-server",
+        frontend: ["next"],
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Apollo Server currently supports Hono, Express, Fastify, and Elysia backends");
+    });
+
+    it("should reject Apollo Server for non-React web frontends", async () => {
+      const result = await runTRPCTest({
+        projectName: "apollo-server-svelte-fail",
+        api: "apollo-server",
+        frontend: ["svelte"],
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Apollo Server API requires React-based frontends");
+    });
+
+    it("should reject Apollo Server for Astro without React integration", async () => {
+      const result = await runTRPCTest({
+        projectName: "apollo-server-astro-none-fail",
+        api: "apollo-server",
+        frontend: ["astro"],
+        astroIntegration: "none",
+        backend: "hono",
+        runtime: "bun",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "none",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        expectError: true,
+      });
+
+      expectError(result, "Apollo Server API requires React integration with Astro");
+    });
   });
 
   describe("OpenAPI API", () => {

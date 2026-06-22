@@ -1,7 +1,11 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-{{#if (eq astroIntegration "react")}}
+{{#if (or (eq astroIntegration "react") (and (eq cms "keystatic") (ne runtime "workers")))}}
 import react from '@astrojs/react';
+{{/if}}
+{{#if (and (eq cms "keystatic") (ne runtime "workers"))}}
+import markdoc from '@astrojs/markdoc';
+import keystatic from '@keystatic/astro';
 {{/if}}
 {{#if (eq astroIntegration "vue")}}
 import vue from '@astrojs/vue';
@@ -12,7 +16,7 @@ import svelte from '@astrojs/svelte';
 {{#if (eq astroIntegration "solid")}}
 import solidJs from '@astrojs/solid-js';
 {{/if}}
-{{#if (eq backend "self")}}
+{{#if (or (eq backend "self") (and (eq cms "keystatic") (ne runtime "workers")))}}
 import node from '@astrojs/node';
 {{/if}}
 {{#if (eq runtime "workers")}}
@@ -21,8 +25,12 @@ import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
 	integrations: [
-{{#if (eq astroIntegration "react")}}
+{{#if (or (eq astroIntegration "react") (and (eq cms "keystatic") (ne runtime "workers")))}}
 		react(),
+{{/if}}
+{{#if (and (eq cms "keystatic") (ne runtime "workers"))}}
+		markdoc(),
+		keystatic(),
 {{/if}}
 {{#if (eq astroIntegration "vue")}}
 		vue(),
@@ -37,12 +45,12 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 	},
-{{#if (or (eq backend "self") (eq runtime "workers"))}}
+{{#if (or (eq backend "self") (eq runtime "workers") (and (eq cms "keystatic") (ne runtime "workers")))}}
 	output: 'server',
-{{#if (eq backend "self")}}
-	adapter: node({ mode: 'standalone' }),
-{{else if (eq runtime "workers")}}
+{{#if (eq runtime "workers")}}
 	adapter: cloudflare(),
+{{else if (or (eq backend "self") (and (eq cms "keystatic") (ne runtime "workers")))}}
+	adapter: node({ mode: 'standalone' }),
 {{/if}}
 {{/if}}
 });

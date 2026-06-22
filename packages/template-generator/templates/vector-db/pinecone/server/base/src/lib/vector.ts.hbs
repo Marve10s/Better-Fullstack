@@ -1,0 +1,53 @@
+import { Pinecone, type RecordMetadata } from "@pinecone-database/pinecone";
+
+/**
+ * Pinecone vector database client.
+ * @see https://docs.pinecone.io/
+ */
+export const vectorClient = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+
+const DEFAULT_INDEX = process.env.PINECONE_INDEX ?? "embeddings";
+
+export interface VectorRecord {
+  id: string;
+  values: number[];
+  metadata?: RecordMetadata;
+}
+
+/**
+ * Insert or update vectors in an index.
+ */
+export async function upsertVectors(
+  records: VectorRecord[],
+  indexName: string = DEFAULT_INDEX,
+): Promise<void> {
+  await vectorClient.index(indexName).upsert(records);
+}
+
+/**
+ * Query an index for the nearest vectors.
+ */
+export async function queryVectors(
+  vector: number[],
+  topK = 5,
+  indexName: string = DEFAULT_INDEX,
+) {
+  const result = await vectorClient.index(indexName).query({
+    vector,
+    topK,
+    includeMetadata: true,
+  });
+  return result.matches ?? [];
+}
+
+/**
+ * Delete vectors by id.
+ */
+export async function deleteVectors(
+  ids: string[],
+  indexName: string = DEFAULT_INDEX,
+): Promise<void> {
+  await vectorClient.index(indexName).deleteMany(ids);
+}

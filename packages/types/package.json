@@ -63,6 +63,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "fast-check": "^4.8.0",
     "tsdown": "^0.17.2",
     "typescript": "^5.9.3"
   }

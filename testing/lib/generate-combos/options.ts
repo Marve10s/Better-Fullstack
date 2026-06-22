@@ -565,6 +565,45 @@ function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeDotnetDraft(args: GeneratorArgs): CandidateDraft {
+  // .NET template coverage is currently a stub: only the API style
+  // (minimal-api / graphql-hotchocolate / grpc-dotnet) and validation
+  // (fluentvalidation / data-annotations) actually drive generation, and the
+  // generated test project only compiles with xunit. Restrict the pools to
+  // values that produce a buildable project: avoid aspnet-mvc/blazor, dapper,
+  // linq2db, and the auth/extra values that have no template yet.
+  return {
+    ecosystem: "dotnet",
+    options: {
+      ...createCommonOptions("dotnet", args),
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: sampleScalar(["ef-core", "none"] as const, 0.3, "dotnetOrm"),
+      dotnetAuth: "none",
+      dotnetApi: sampleScalar(
+        ["minimal-api", "graphql-hotchocolate", "grpc-dotnet"] as const,
+        0,
+        "dotnetApi",
+      ),
+      dotnetTesting: ["xunit"],
+      dotnetJobQueue: sampleScalar(["hosted-services", "none"] as const, 0.5, "dotnetJobQueue"),
+      dotnetRealtime: sampleScalar(["signalr", "none"] as const, 0.5, "dotnetRealtime"),
+      dotnetObservability: sampleArray(
+        ["serilog", "health-checks"] as const,
+        0.4,
+        2,
+        "dotnetObservability",
+      ),
+      dotnetValidation: sampleScalar(
+        ["fluentvalidation", "data-annotations", "none"] as const,
+        0.3,
+        "dotnetValidation",
+      ),
+      dotnetCaching: sampleScalar(["memory-cache", "none"] as const, 0.5, "dotnetCaching"),
+      dotnetDeploy: sampleScalar(["docker", "none"] as const, 0.4, "dotnetDeploy"),
+    },
+  };
+}
+
 function buildProvidedFlags(options: CLIInput): Set<string> {
   const providedFlags = new Set<string>();
 
@@ -802,6 +841,8 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
       return makeJavaDraft(args);
     case "elixir":
       return makeElixirDraft(args);
+    case "dotnet":
+      return makeDotnetDraft(args);
   }
 }
 

@@ -479,6 +479,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedGraphStringFlag(
       flags,
       config,
+      "vectorDb",
+      "typescript",
+      "vectorDb",
+      config.vectorDb,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
       "fileStorage",
       "typescript",
       "file-storage",
@@ -850,6 +859,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--i18n ${config.i18n}`);
   flags.push(`--cms ${config.cms}`);
   flags.push(`--search ${config.search}`);
+  flags.push(`--vector-db ${config.vectorDb}`);
   flags.push(`--file-storage ${config.fileStorage}`);
   flags.push(`--mobile-navigation ${config.mobileNavigation}`);
   flags.push(`--mobile-ui ${config.mobileUI}`);

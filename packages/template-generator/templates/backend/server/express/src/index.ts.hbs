@@ -17,8 +17,11 @@ import { createContext } from "@{{projectName}}/api/context";
 import { createOpenApiDocument } from "@{{projectName}}/api";
 import { apiReference } from "@scalar/express-api-reference";
 {{/if}}
+{{#if (eq api "apollo-server")}}
+import { executeApolloRequest } from "@{{projectName}}/api";
+{{/if}}
 import cors from "cors";
-import express{{#if (and (eq api "openapi") (isBetterAuth auth))}}, { type Request }{{/if}} from "express";
+import express{{#if (or (eq api "apollo-server") (and (eq api "openapi") (isBetterAuth auth)))}}, { type Request }{{/if}} from "express";
 {{#if (includes examples "ai")}}
 import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
@@ -95,6 +98,48 @@ app.use(async (req, res, next) => {
 {{/if}}
 
 app.use(express.json());
+{{#if (eq api "apollo-server")}}
+function expressHeadersToWebHeaders(headers: Request["headers"]) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
+function expressRequestToWebRequest(req: Request) {
+	const headers = expressHeadersToWebHeaders(req.headers);
+	const url = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+	const init: RequestInit = {
+		method: req.method,
+		headers,
+	};
+	if (req.method !== "GET" && req.method !== "HEAD" && req.body !== undefined) {
+		init.body = JSON.stringify(req.body);
+	}
+	return new Request(url, init);
+}
+
+app.all("/graphql", async (req, res) => {
+	const webRequest = expressRequestToWebRequest(req);
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({
+		headers: webRequest.headers,
+	});
+	const apolloResponse = await executeApolloRequest(webRequest, { session });
+{{else}}
+	const apolloResponse = await executeApolloRequest(webRequest);
+{{/if}}
+	res.status(apolloResponse.status);
+	apolloResponse.headers.forEach((value, key) => res.setHeader(key, value));
+	res.send(await apolloResponse.text());
+});
+
+{{/if}}
 {{#if (eq api "openapi")}}
 app.get("/health", (_req, res) => {
 	res.status(200).json({ status: "ok" });

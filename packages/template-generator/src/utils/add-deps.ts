@@ -244,6 +244,9 @@ export const dependencyVersionMap = {
   // GraphQL Yoga + Pothos
   "@pothos/core": "^4.12.0",
 
+  // Apollo Server
+  "@apollo/server": "^5.5.1",
+
   // OpenAPI
   "@asteasolutions/zod-to-openapi": "^8.5.0",
   "@scalar/express-api-reference": "^0.10.3",
@@ -346,7 +349,9 @@ export const dependencyVersionMap = {
   "@react-email/components": "^1.0.12",
   "react-email": "^6.6.0",
   react: "^19.2.7",
+  "react-dom": "^19.2.7",
   "@types/react": "^19.2.17",
+  "@types/react-dom": "^19.2.3",
   nodemailer: "^9.0.0",
   "@types/nodemailer": "^8.0.1",
   postmark: "^4.0.7",
@@ -710,6 +715,7 @@ export const dependencyVersionMap = {
   // Headless CMS - Strapi
   "@strapi/client": "^1.6.2",
   qs: "^6.15.2",
+  "@types/qs": "^6.14.0",
 
   // Headless CMS - Directus
   "@directus/sdk": "^22.0.0",
@@ -717,6 +723,15 @@ export const dependencyVersionMap = {
   // Headless CMS - TinaCMS
   tinacms: "^3.9.2",
   "@tinacms/cli": "^2.5.0",
+
+  // Headless CMS - Keystatic
+  "@keystatic/core": "^0.5.50",
+  "@keystatic/next": "^5.0.4",
+  "@keystatic/astro": "^5.1.0",
+  "@markdoc/markdoc": "^0.5.7",
+  "@astrojs/react": "^5.0.7",
+  "@astrojs/markdoc": "^1.0.6",
+  "@astrojs/node": "^10.1.4",
 
   // File Storage - Cloudinary
   cloudinary: "^2.10.0",
@@ -738,6 +753,9 @@ export const dependencyVersionMap = {
   "i18next-browser-languagedetector": "^8.2.1",
   "i18next-http-backend": "^4.0.0",
 
+  // i18n - Paraglide
+  "@inlang/paraglide-js": "^2.20.1",
+
   // i18n - next-intl
   "next-intl": "^4.13.0",
 
@@ -750,8 +768,23 @@ export const dependencyVersionMap = {
   // Search - Elasticsearch
   "@elastic/elasticsearch": "^9.4.2",
 
+  // Search - OpenSearch
+  "@opensearch-project/opensearch": "^3.6.0",
+
   // Search - Algolia
   algoliasearch: "^5.54.0",
+
+  // Vector DB - pgvector (Postgres driver)
+  postgres: "^3.4.7",
+
+  // Vector DB - Qdrant
+  "@qdrant/js-client-rest": "^1.15.1",
+
+  // Vector DB - Chroma
+  chromadb: "^1.10.5",
+
+  // Vector DB - Pinecone
+  "@pinecone-database/pinecone": "^6.1.2",
 
   // EdgeDB
   edgedb: "^2.0.1",

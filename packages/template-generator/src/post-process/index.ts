@@ -1,2 +1,2 @@
 export { processCatalogs } from "./catalogs";
-export { processPackageConfigs } from "./package-configs";
+export { processPackageConfigs, updateDbPackageJson } from "./package-configs";

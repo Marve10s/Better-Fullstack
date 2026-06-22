@@ -98,6 +98,18 @@ const SNAPSHOT_CONFIGS: Array<{
       auth: "better-auth",
     },
   },
+  {
+    name: "hono-apollo-server",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "apollo-server",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+    },
+  },
 
   // === AUTH VARIATIONS ===
   {
@@ -180,6 +192,46 @@ const SNAPSHOT_CONFIGS: Array<{
       orm: "drizzle",
       auth: "none",
       search: "algolia",
+    },
+  },
+  {
+    name: "opensearch-search-hono",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      search: "opensearch",
+    },
+  },
+
+  // === CMS VARIATIONS ===
+  {
+    name: "cms-keystatic-next",
+    config: {
+      frontend: ["next"],
+      backend: "self",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      cms: "keystatic",
+    },
+  },
+
+  // === I18N VARIATIONS ===
+  {
+    name: "i18n-paraglide-tanstack-router",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      i18n: "paraglide",
     },
   },
 

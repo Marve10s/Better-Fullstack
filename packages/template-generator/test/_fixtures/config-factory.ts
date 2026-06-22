@@ -58,6 +58,7 @@ const DEFAULT_CONFIG = {
   caching: "none",
   i18n: "none",
   search: "none",
+  vectorDb: "none",
   fileStorage: "none",
   rateLimit: "none",
   rustWebFramework: "none",

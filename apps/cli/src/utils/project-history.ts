@@ -2,8 +2,9 @@ import envPaths from "env-paths";
 import fs from "fs-extra";
 import path from "node:path";
 
-import type { ProjectConfig } from "../types";
+import type { BetterTStackConfig, ProjectConfig } from "../types";
 
+import { buildBtsConfigForPersistence } from "./bts-config";
 import { getLatestCLIVersion } from "./get-latest-cli-version";
 
 const paths = envPaths("better-fullstack", { suffix: "" });
@@ -30,6 +31,12 @@ export type ProjectHistoryEntry = {
   };
   cliVersion: string;
   reproducibleCommand: string;
+  /**
+   * Full project configuration snapshot (same shape as bts.jsonc). Used to
+   * replay the exact stack via `create --from-history <n>`. Optional so older
+   * history entries written before this field existed still load.
+   */
+  config?: BetterTStackConfig;
 };
 
 type HistoryData = {
@@ -78,6 +85,13 @@ export async function addToHistory(
 ): Promise<void> {
   const history = await readHistory();
 
+  let configSnapshot: BetterTStackConfig | undefined;
+  try {
+    configSnapshot = buildBtsConfigForPersistence(config);
+  } catch {
+    configSnapshot = undefined;
+  }
+
   const entry: ProjectHistoryEntry = {
     id: generateId(),
     projectName: config.projectName,
@@ -99,6 +113,7 @@ export async function addToHistory(
     },
     cliVersion: getLatestCLIVersion(),
     reproducibleCommand,
+    ...(configSnapshot ? { config: configSnapshot } : {}),
   };
 
   history.entries.unshift(entry);
@@ -112,6 +127,23 @@ export async function addToHistory(
 export async function getHistory(limit = 10): Promise<ProjectHistoryEntry[]> {
   const history = await readHistory();
   return history.entries.slice(0, limit);
+}
+
+/**
+ * Returns the entry at a 1-based position (1 = most recent), or null when the
+ * position is out of range.
+ */
+export async function getHistoryEntry(position: number): Promise<ProjectHistoryEntry | null> {
+  if (!Number.isInteger(position) || position < 1) {
+    return null;
+  }
+  const history = await readHistory();
+  return history.entries[position - 1] ?? null;
+}
+
+export async function getHistoryCount(): Promise<number> {
+  const history = await readHistory();
+  return history.entries.length;
 }
 
 export async function clearHistory(): Promise<void> {

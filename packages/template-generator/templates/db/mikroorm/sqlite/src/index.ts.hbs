@@ -2,13 +2,13 @@ import { MikroORM, type Options } from "@mikro-orm/core";
 import { BetterSqliteDriver } from "@mikro-orm/better-sqlite";
 import { env } from "@{{projectName}}/env/server";
 
-const config: Options<BetterSqliteDriver> = {
+const config = {
 	driver: BetterSqliteDriver,
 	dbName: env.DATABASE_URL.replace("file:", ""),
 	entities: ["./src/entities"],
 	entitiesTs: ["./src/entities"],
 	debug: process.env.NODE_ENV !== "production",
-};
+} as Options<BetterSqliteDriver>;
 
 let orm: MikroORM<BetterSqliteDriver> | null = null;
 

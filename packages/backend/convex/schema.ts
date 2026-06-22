@@ -79,6 +79,7 @@ export default defineSchema({
     cli_version: v.optional(v.string()),
     node_version: v.optional(v.string()),
     platform: v.optional(v.string()),
+    options: v.optional(v.record(v.string(), v.union(v.string(), v.array(v.string())))),
   }),
 
   analyticsStats: defineTable({
@@ -144,6 +145,7 @@ export default defineSchema({
     hourlyDistribution: v.optional(distributionValidator),
     stackCombinations: v.optional(distributionValidator),
     dbOrmCombinations: v.optional(distributionValidator),
+    optionStats: v.optional(v.record(v.string(), distributionValidator)),
   }),
 
   analyticsDailyStats: defineTable({

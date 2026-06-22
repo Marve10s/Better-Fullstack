@@ -8,12 +8,14 @@ import {
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "./types";
 
 import { VirtualFileSystem } from "./core/virtual-fs";
-import { processCatalogs, processPackageConfigs } from "./post-process";
+import { processCatalogs, processPackageConfigs, updateDbPackageJson } from "./post-process";
 import {
+  processDatabaseDeps,
   processDependencies,
   processReadme,
   processAuthPlugins,
   processAlchemyPlugins,
+  processParaglidePlugins,
   processPwaPlugins,
   processEnvVariables,
 } from "./processors";
@@ -50,6 +52,7 @@ import {
   processCMSTemplates,
   processI18nTemplates,
   processSearchTemplates,
+  processVectorDbTemplates,
   processFileStorageTemplates,
   processTestingTemplates,
 } from "./template-handlers";
@@ -126,6 +129,7 @@ async function processGraphTemplates(
     await processCMSTemplates(vfs, templates, tsConfig);
     await processI18nTemplates(vfs, templates, tsConfig);
     await processSearchTemplates(vfs, templates, tsConfig);
+    await processVectorDbTemplates(vfs, templates, tsConfig);
     await processFileStorageTemplates(vfs, templates, tsConfig);
     await processTestingTemplates(vfs, templates, tsConfig);
     processPackageConfigs(vfs, tsConfig);
@@ -134,6 +138,7 @@ async function processGraphTemplates(
     processGraphBackendConnection(vfs, tsConfig);
     await processAuthPlugins(vfs, tsConfig);
     await processAlchemyPlugins(vfs, tsConfig);
+    await processParaglidePlugins(vfs, tsConfig);
     await processPwaPlugins(vfs, tsConfig);
     processCatalogs(vfs, tsConfig);
   }
@@ -154,6 +159,12 @@ async function processGraphTemplates(
       dbConfig.database === "redis"
     ) {
       await processDbTemplates(vfs, templates, dbConfig, databaseTargetPath);
+      // The shared post-process pass below runs against the raw graph config,
+      // where database/orm live in stackParts instead of the legacy fields, so it
+      // skips the database package. Populate its deps + scripts here using the
+      // resolved dbConfig so part-mode matches solo mode.
+      processDatabaseDeps(vfs, dbConfig, databaseTargetPath);
+      updateDbPackageJson(vfs, dbConfig, databaseTargetPath);
     }
     if (!vfs.directoryExists(databaseTargetPath)) {
       vfs.writeFile(
@@ -229,6 +240,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processCMSTemplates(vfs, templates, config);
       await processI18nTemplates(vfs, templates, config);
       await processSearchTemplates(vfs, templates, config);
+      await processVectorDbTemplates(vfs, templates, config);
       await processFileStorageTemplates(vfs, templates, config);
       await processTestingTemplates(vfs, templates, config);
 
@@ -237,6 +249,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       processEnvVariables(vfs, config);
       await processAuthPlugins(vfs, config);
       await processAlchemyPlugins(vfs, config);
+      await processParaglidePlugins(vfs, config);
       await processPwaPlugins(vfs, config);
       processCatalogs(vfs, config);
     }

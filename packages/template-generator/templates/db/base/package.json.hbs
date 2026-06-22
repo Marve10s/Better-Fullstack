@@ -9,6 +9,8 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "{{#if (eq orm "prisma")}}tsc --noEmit --declaration false --declarationMap false --composite false{{else}}tsc --noEmit{{/if}}"
+  },
   "devDependencies": {}
 }

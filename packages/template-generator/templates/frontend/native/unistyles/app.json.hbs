@@ -23,7 +23,9 @@
       "package": "{{nativeApplicationId}}"
     },
     "web": {
+      {{#if (eq mobileNavigation "expo-router")}}
       "output": "static",
+      {{/if}}
       "favicon": "./assets/images/favicon.png"
     },
     {{#if (eq mobileOTA "expo-updates")}}

@@ -1,0 +1,50 @@
+import { ChromaClient, type Metadata } from "chromadb";
+
+/**
+ * Chroma vector database client.
+ * @see https://docs.trychroma.com/
+ */
+export const vectorClient = new ChromaClient({
+  path: process.env.CHROMA_URL ?? "http://localhost:8000",
+});
+
+export interface EmbeddingInput {
+  ids: string[];
+  embeddings: number[][];
+  documents?: string[];
+  metadatas?: Metadata[];
+}
+
+/**
+ * Insert or update embeddings in a collection (created if missing).
+ */
+export async function addEmbeddings(
+  collectionName: string,
+  items: EmbeddingInput,
+): Promise<void> {
+  const collection = await vectorClient.getOrCreateCollection({ name: collectionName });
+  await collection.add(items);
+}
+
+/**
+ * Query a collection for the nearest embeddings.
+ */
+export async function queryEmbeddings(
+  collectionName: string,
+  queryEmbedding: number[],
+  nResults = 5,
+) {
+  const collection = await vectorClient.getOrCreateCollection({ name: collectionName });
+  return collection.query({ queryEmbeddings: [queryEmbedding], nResults });
+}
+
+/**
+ * Delete embeddings by id.
+ */
+export async function deleteEmbeddings(
+  collectionName: string,
+  ids: string[],
+): Promise<void> {
+  const collection = await vectorClient.getOrCreateCollection({ name: collectionName });
+  await collection.delete({ ids });
+}

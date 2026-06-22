@@ -238,6 +238,47 @@ export async function createContext(_opts?: CreateContextOptions) {
 }
 {{/if}}
 
+{{else if (eq backend 'adonisjs')}}
+import type { IncomingHttpHeaders } from "node:http";
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+{{/if}}
+
+type CreateContextOptions = {
+	req: {
+		headers: IncomingHttpHeaders;
+	};
+};
+
+{{#if (isBetterAuth auth)}}
+function nodeHeadersToHeaders(headers: IncomingHttpHeaders) {
+	const webHeaders = new Headers();
+	for (const [key, value] of Object.entries(headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) webHeaders.append(key, item);
+		} else if (typeof value === "string") {
+			webHeaders.set(key, value);
+		}
+	}
+	return webHeaders;
+}
+
+export async function createContext({ req }: CreateContextOptions) {
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(req.headers),
+	});
+	return {
+		session,
+	};
+}
+{{else}}
+export async function createContext(_opts: CreateContextOptions) {
+	return {
+		session: null,
+	};
+}
+{{/if}}
+
 {{else}}
 export async function createContext() {
   return {

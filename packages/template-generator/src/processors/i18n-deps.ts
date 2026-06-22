@@ -10,6 +10,18 @@ export function processI18nDeps(vfs: VirtualFileSystem, config: ProjectConfig): 
   // Skip if not selected or set to "none"
   if (!i18n || i18n === "none") return;
 
+  if (i18n === "paraglide") {
+    const webPath = "apps/web/package.json";
+    if (vfs.exists(webPath)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        devDependencies: ["@inlang/paraglide-js"],
+      });
+    }
+    return;
+  }
+
   if (i18n === "next-intl") {
     // next-intl goes into the web package only (Next.js frontend)
     const webPath = "apps/web/package.json";

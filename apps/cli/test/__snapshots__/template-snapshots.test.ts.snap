@@ -2,6 +2,7 @@
 
 exports[`Template Snapshots File Structure Snapshots file structure: tanstack-router-minimal 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -58,6 +59,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: tanstack-ro
 
 exports[`Template Snapshots File Structure Snapshots file structure: next-self-fullstack 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -122,6 +124,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: next-self-f
 
 exports[`Template Snapshots File Structure Snapshots file structure: astro-react-integration 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -164,6 +167,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
 
 exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standalone 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -206,6 +210,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
 
 exports[`Template Snapshots File Structure Snapshots file structure: express-node-trpc 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -261,6 +266,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: express-nod
 
 exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-orpc 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -317,6 +323,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-or
 
 exports[`Template Snapshots File Structure Snapshots file structure: hono-openapi 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -379,8 +386,73 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-openap
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: hono-apollo-server 1`] = `
+[
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "apps/server/.env",
+  "apps/server/package.json",
+  "apps/server/src/index.ts",
+  "apps/server/tsconfig.json",
+  "apps/server/tsdown.config.ts",
+  "apps/web/.env",
+  "apps/web/index.html",
+  "apps/web/package.json",
+  "apps/web/src/components/header.tsx",
+  "apps/web/src/components/loader.tsx",
+  "apps/web/src/components/mode-toggle.tsx",
+  "apps/web/src/components/sign-in-form.tsx",
+  "apps/web/src/components/sign-up-form.tsx",
+  "apps/web/src/components/theme-provider.tsx",
+  "apps/web/src/components/ui/button.tsx",
+  "apps/web/src/components/ui/card.tsx",
+  "apps/web/src/components/ui/checkbox.tsx",
+  "apps/web/src/components/ui/dropdown-menu.tsx",
+  "apps/web/src/components/ui/input.tsx",
+  "apps/web/src/components/ui/label.tsx",
+  "apps/web/src/components/ui/skeleton.tsx",
+  "apps/web/src/components/ui/sonner.tsx",
+  "apps/web/src/components/user-menu.tsx",
+  "apps/web/src/index.css",
+  "apps/web/src/lib/auth-client.ts",
+  "apps/web/src/lib/utils.ts",
+  "apps/web/src/main.tsx",
+  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/routes/dashboard.tsx",
+  "apps/web/src/routes/index.tsx",
+  "apps/web/src/routes/login.tsx",
+  "apps/web/src/utils/graphql.ts",
+  "apps/web/tsconfig.json",
+  "apps/web/vite.config.ts",
+  "bunfig.toml",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/auth/package.json",
+  "packages/auth/src/index.ts",
+  "packages/auth/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/auth.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
 exports[`Template Snapshots File Structure Snapshots file structure: better-auth-full 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -446,6 +518,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: better-auth
 
 exports[`Template Snapshots File Structure Snapshots file structure: convex-clerk 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -494,6 +567,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: convex-cler
 
 exports[`Template Snapshots File Structure Snapshots file structure: self-next-clerk 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -550,6 +624,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
 
 exports[`Template Snapshots File Structure Snapshots file structure: self-tanstack-start-clerk 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -603,6 +678,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
 
 exports[`Template Snapshots File Structure Snapshots file structure: mongodb-mongoose 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -656,6 +732,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: mongodb-mon
 
 exports[`Template Snapshots File Structure Snapshots file structure: postgres-prisma 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -711,6 +788,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: postgres-pr
 
 exports[`Template Snapshots File Structure Snapshots file structure: algolia-search-hono 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -766,9 +844,188 @@ exports[`Template Snapshots File Structure Snapshots file structure: algolia-sea
 ]
 `;
 
+exports[`Template Snapshots File Structure Snapshots file structure: opensearch-search-hono 1`] = `
+[
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "apps/server/.env",
+  "apps/server/package.json",
+  "apps/server/src/index.ts",
+  "apps/server/src/lib/search.ts",
+  "apps/server/tsconfig.json",
+  "apps/server/tsdown.config.ts",
+  "apps/web/.env",
+  "apps/web/index.html",
+  "apps/web/package.json",
+  "apps/web/src/components/header.tsx",
+  "apps/web/src/components/loader.tsx",
+  "apps/web/src/components/mode-toggle.tsx",
+  "apps/web/src/components/theme-provider.tsx",
+  "apps/web/src/components/ui/button.tsx",
+  "apps/web/src/components/ui/card.tsx",
+  "apps/web/src/components/ui/checkbox.tsx",
+  "apps/web/src/components/ui/dropdown-menu.tsx",
+  "apps/web/src/components/ui/input.tsx",
+  "apps/web/src/components/ui/label.tsx",
+  "apps/web/src/components/ui/skeleton.tsx",
+  "apps/web/src/components/ui/sonner.tsx",
+  "apps/web/src/index.css",
+  "apps/web/src/lib/utils.ts",
+  "apps/web/src/main.tsx",
+  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/routes/index.tsx",
+  "apps/web/src/utils/trpc.ts",
+  "apps/web/tsconfig.json",
+  "apps/web/vite.config.ts",
+  "bunfig.toml",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
+exports[`Template Snapshots File Structure Snapshots file structure: cms-keystatic-next 1`] = `
+[
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "apps/web/.env",
+  "apps/web/keystatic.config.ts",
+  "apps/web/next-env.d.ts",
+  "apps/web/next.config.ts",
+  "apps/web/package.json",
+  "apps/web/postcss.config.mjs",
+  "apps/web/src/app/api/keystatic/[...params]/route.ts",
+  "apps/web/src/app/api/trpc/[trpc]/route.ts",
+  "apps/web/src/app/keystatic/[[...params]]/page.tsx",
+  "apps/web/src/app/keystatic/keystatic.ts",
+  "apps/web/src/app/keystatic/layout.tsx",
+  "apps/web/src/app/layout.tsx",
+  "apps/web/src/app/page.tsx",
+  "apps/web/src/components/header.tsx",
+  "apps/web/src/components/loader.tsx",
+  "apps/web/src/components/mode-toggle.tsx",
+  "apps/web/src/components/providers.tsx",
+  "apps/web/src/components/theme-provider.tsx",
+  "apps/web/src/components/ui/button.tsx",
+  "apps/web/src/components/ui/card.tsx",
+  "apps/web/src/components/ui/checkbox.tsx",
+  "apps/web/src/components/ui/dropdown-menu.tsx",
+  "apps/web/src/components/ui/input.tsx",
+  "apps/web/src/components/ui/label.tsx",
+  "apps/web/src/components/ui/skeleton.tsx",
+  "apps/web/src/components/ui/sonner.tsx",
+  "apps/web/src/content/posts/hello-world.mdoc",
+  "apps/web/src/index.css",
+  "apps/web/src/lib/utils.ts",
+  "apps/web/src/utils/trpc.ts",
+  "apps/web/tsconfig.json",
+  "bunfig.toml",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
+exports[`Template Snapshots File Structure Snapshots file structure: i18n-paraglide-tanstack-router 1`] = `
+[
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "apps/server/.env",
+  "apps/server/package.json",
+  "apps/server/src/index.ts",
+  "apps/server/tsconfig.json",
+  "apps/server/tsdown.config.ts",
+  "apps/web/.env",
+  "apps/web/index.html",
+  "apps/web/messages/en.json",
+  "apps/web/messages/fr.json",
+  "apps/web/package.json",
+  "apps/web/project.inlang/settings.json",
+  "apps/web/src/components/header.tsx",
+  "apps/web/src/components/loader.tsx",
+  "apps/web/src/components/mode-toggle.tsx",
+  "apps/web/src/components/theme-provider.tsx",
+  "apps/web/src/components/ui/button.tsx",
+  "apps/web/src/components/ui/card.tsx",
+  "apps/web/src/components/ui/checkbox.tsx",
+  "apps/web/src/components/ui/dropdown-menu.tsx",
+  "apps/web/src/components/ui/input.tsx",
+  "apps/web/src/components/ui/label.tsx",
+  "apps/web/src/components/ui/skeleton.tsx",
+  "apps/web/src/components/ui/sonner.tsx",
+  "apps/web/src/index.css",
+  "apps/web/src/lib/utils.ts",
+  "apps/web/src/main.tsx",
+  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/routes/index.tsx",
+  "apps/web/src/utils/trpc.ts",
+  "apps/web/tsconfig.json",
+  "apps/web/vite.config.ts",
+  "bunfig.toml",
+  "package.json",
+  "packages/api/package.json",
+  "packages/api/src/context.ts",
+  "packages/api/src/index.ts",
+  "packages/api/src/routers/index.ts",
+  "packages/api/tsconfig.json",
+  "packages/config/package.json",
+  "packages/config/tsconfig.base.json",
+  "packages/db/drizzle.config.ts",
+  "packages/db/package.json",
+  "packages/db/src/index.ts",
+  "packages/db/src/schema/example.ts",
+  "packages/db/src/schema/index.ts",
+  "packages/db/tsconfig.json",
+  "packages/env/package.json",
+  "packages/env/src/native.ts",
+  "packages/env/src/server.ts",
+  "packages/env/src/web.ts",
+  "packages/env/tsconfig.json",
+  "tsconfig.json",
+]
+`;
+
 exports[`Template Snapshots File Structure Snapshots file structure: ai-cli-root-tooling 1`] = `
 [
   ".env",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -825,6 +1082,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: ai-cli-root
 
 exports[`Template Snapshots File Structure Snapshots file structure: nx-root-tooling 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/server/.env",
@@ -882,6 +1140,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nx-root-too
 
 exports[`Template Snapshots File Structure Snapshots file structure: frontend-only-no-backend 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/web/.env",
@@ -921,6 +1180,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: frontend-on
 
 exports[`Template Snapshots File Structure Snapshots file structure: native-react-native 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/native/.env",
@@ -977,6 +1237,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
 
 exports[`Template Snapshots File Structure Snapshots file structure: native-mobile-integrations 1`] = `
 [
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "apps/native/.env",
@@ -1029,6 +1290,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-mobi
 exports[`Template Snapshots File Structure Snapshots file structure: java-spring-boot-jpa-security 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "build.gradle.kts",
@@ -1056,6 +1318,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 [
   ".env.example",
   ".mvn/wrapper/maven-wrapper.properties",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "mvnw",
@@ -1085,8 +1348,12 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -1577,7 +1844,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*"
@@ -1725,6 +1994,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -1859,8 +2129,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: next-self-fullstack 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -1892,6 +2166,7 @@ export default nextConfig;
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start"
@@ -2200,7 +2475,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-next-self-fullstack/config": "workspace:*"
@@ -2308,7 +2585,9 @@ export type AppRouter = typeof appRouter;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-next-self-fullstack/config": "workspace:*"
@@ -2454,6 +2733,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
@@ -2680,8 +2960,12 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 42,
+  "fileCount": 43,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -2885,7 +3169,9 @@ export const orpc = createTanstackQueryUtils(client)
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-astro-react-integration/config": "workspace:*"
@@ -3031,6 +3317,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -3164,8 +3451,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 42,
+  "fileCount": 43,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -3408,7 +3699,9 @@ export default defineNuxtConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*"
@@ -3554,6 +3847,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -3689,8 +3983,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: express-node-trpc 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -4179,7 +4477,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
@@ -4306,6 +4606,7 @@ export type AppRouter = typeof appRouter;
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit --declaration false --declarationMap false --composite false",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
@@ -4436,8 +4737,12 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -4966,7 +5271,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*"
@@ -5113,6 +5420,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -5247,8 +5555,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-openapi 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 66,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -5796,6 +6108,7 @@ export default defineConfig({
   },
   "type": "module",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "openapi:verify": "bun src/verify-openapi.ts"
   },
   "devDependencies": {
@@ -5989,7 +6302,9 @@ export const openApiDocument = createOpenApiDocument();
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-hono-openapi/config": "workspace:*"
@@ -6141,6 +6456,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -6383,10 +6699,1102 @@ export const accountRelations = relations(account, ({ one }) => ({
 }
 `;
 
+exports[`Template Snapshots Key File Content Snapshots key files: hono-apollo-server 1`] = `
+{
+  "fileCount": 65,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/.env",
+    },
+    {
+      "content": 
+"{
+  "name": "server",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*",
+    "@snapshot-hono-apollo-server/api": "workspace:*",
+    "@snapshot-hono-apollo-server/auth": "workspace:*",
+    "@snapshot-hono-apollo-server/db": "workspace:*",
+    "hono": "catalog:",
+    "better-auth": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsdown": "^0.22.2",
+    "@snapshot-hono-apollo-server/config": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
+"
+,
+      "path": "apps/server/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-hono-apollo-server/env/server";
+import { executeApolloRequest } from "@snapshot-hono-apollo-server/api";
+import { auth } from "@snapshot-hono-apollo-server/auth";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+app.use(logger());
+app.use(
+	"/*",
+	cors({
+		origin: env.CORS_ORIGIN,
+		allowMethods: ["GET", "POST", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization"],
+		credentials: true,
+	})
+);
+
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+
+
+app.on(["GET", "POST"], "/graphql", async (c) => {
+	const session = await auth.api.getSession({
+		headers: c.req.raw.headers,
+	});
+	return executeApolloRequest(c.req.raw, { session });
+});
+
+
+
+app.get("/", (c) => {
+	return c.text("OK");
+});
+
+export default app;
+"
+,
+      "path": "apps/server/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+		"outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  }
+}
+"
+,
+      "path": "apps/server/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/tsdown.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/index.html",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite",
+    "check-types": "tsr generate && tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "@tailwindcss/vite": "^4.3.1",
+    "tw-animate-css": "^1.4.0",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*",
+    "@snapshot-hono-apollo-server/api": "workspace:*",
+    "@snapshot-hono-apollo-server/auth": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@tanstack/react-query": "^5.101.0",
+    "better-auth": "catalog:",
+    "@tanstack/react-form": "^1.33.0",
+    "lucide-react": "^1.18.0"
+  },
+  "devDependencies": {
+    "@tanstack/react-router-devtools": "^1.167.0",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
+    "vite": "^8.0.16",
+    "typescript": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.101.0"
+  }
+}
+"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/header.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/loader.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/mode-toggle.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/sign-in-form.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/sign-up-form.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/theme-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/card.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/checkbox.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/dropdown-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/input.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/label.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/skeleton.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/sonner.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/user-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/index.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/auth-client.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/utils.ts",
+    },
+    {
+      "content": 
+"import { RouterProvider, createRouter } from "@tanstack/react-router";
+import ReactDOM from "react-dom/client";
+import Loader from "./components/loader";
+import { routeTree } from "./routeTree.gen";
+
+  import { QueryClientProvider } from "@tanstack/react-query";
+  import { queryClient } from "./utils/graphql";
+
+const router = createRouter({
+  routeTree,
+  defaultPreload: "intent",
+  defaultPendingComponent: () => <Loader />,
+  context: { queryClient },
+  Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  },
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+const rootElement = document.getElementById("app");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<RouterProvider router={router} />);
+}
+"
+,
+      "path": "apps/web/src/main.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/__root.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/dashboard.tsx",
+    },
+    {
+      "content": 
+"import { createFileRoute } from "@tanstack/react-router";
+import { graphqlFetch } from "@/utils/graphql";
+import { useQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/")({
+  component: HomeComponent,
+});
+
+const TITLE_TEXT = \`
+ ██████╗ ███████╗████████╗████████╗███████╗██████╗
+ ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
+ ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
+ ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
+ ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
+ ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+ ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
+ ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+    ██║       ███████╗   ██║   ███████║██║     █████╔╝
+    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
+    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
+    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+ \`;
+
+function HomeComponent() {
+  const healthCheck = useQuery({
+    queryKey: ["healthCheck"],
+    queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),
+  });
+
+  return (
+    <div className="container mx-auto max-w-3xl px-4 py-2">
+      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
+      <div className="grid gap-6">
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-2 font-medium">API Status</h2>
+            <div className="flex items-center gap-2">
+              <div
+                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+              />
+              <span className="text-sm text-muted-foreground">
+                {healthCheck.isLoading
+                  ? "Checking..."
+                  : healthCheck.data
+                    ? "Connected"
+                    : "Disconnected"}
+              </span>
+            </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+"
+,
+      "path": "apps/web/src/routes/index.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/login.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/utils/graphql.ts",
+    },
+    {
+      "content": 
+"{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "rootDirs": ["."],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": 
+"import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),
+    tanstackRouter({}),
+    react(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    port: 3001,
+  },
+});
+"
+,
+      "path": "apps/web/vite.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-hono-apollo-server",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "typescript": "^6.0.3",
+      "@types/bun": "^1.3.14",
+      "hono": "^4.12.25",
+      "better-auth": "^1.6.18",
+      "@libsql/client": "^0.17.3",
+      "libsql": "^0.5.29"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "db:push": "bun run --filter @snapshot-hono-apollo-server/db db:push",
+    "db:studio": "bun run --filter @snapshot-hono-apollo-server/db db:studio",
+    "db:generate": "bun run --filter @snapshot-hono-apollo-server/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-hono-apollo-server/db db:migrate",
+    "db:local": "bun run --filter @snapshot-hono-apollo-server/db db:local"
+  },
+  "packageManager": "bun@1.3.5",
+  "overrides": {
+    "kysely": "0.28.17"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-hono-apollo-server/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*",
+    "@snapshot-hono-apollo-server/auth": "workspace:*",
+    "@snapshot-hono-apollo-server/db": "workspace:*",
+    "@apollo/server": "^5.5.1",
+    "graphql": "^16.14.2",
+    "better-auth": "catalog:",
+    "hono": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": 
+"import { ApolloServer, HeaderMap } from "@apollo/server";
+import type { HTTPGraphQLRequest } from "@apollo/server";
+import type { Session, User } from "better-auth";
+
+type AuthSession = { user: User; session: Session } | null;
+
+export type ApolloContext = {
+	session: AuthSession;
+};
+
+export const typeDefs = \`#graphql
+	type Query {
+		health: String!
+		me: User
+	}
+
+	type User {
+		id: ID!
+		email: String!
+		name: String
+	}
+
+	type Mutation {
+		_empty: String
+	}
+\`;
+
+export const resolvers = {
+	Query: {
+		health: () => "OK",
+		me: (_parent: unknown, _args: unknown, context: ApolloContext) => {
+			if (!context.session) return null;
+			return {
+				id: context.session.user.id,
+				email: context.session.user.email,
+				name: context.session.user.name,
+			};
+		},
+	},
+	Mutation: {
+		_empty: () => null,
+	},
+};
+
+export const apolloServer = new ApolloServer<ApolloContext>({
+	typeDefs,
+	resolvers,
+});
+
+let apolloStartPromise: Promise<void> | undefined;
+
+async function ensureApolloStarted() {
+	apolloStartPromise ??= apolloServer.start();
+	await apolloStartPromise;
+}
+
+async function parseRequestBody(request: Request) {
+	if (request.method === "GET" || request.method === "HEAD") return undefined;
+	if (!request.headers.get("content-type")?.includes("application/json")) return undefined;
+
+	const text = await request.text();
+	if (text.trim() === "") return undefined;
+
+	return JSON.parse(text) as unknown;
+}
+
+function getApolloHeaders(request: Request) {
+	const headers = new HeaderMap();
+	request.headers.forEach((value, key) => {
+		headers.set(key, value);
+	});
+	return headers;
+}
+
+function getResponseHeaders(headers: HeaderMap) {
+	const responseHeaders = new Headers();
+	for (const [key, value] of headers) {
+		responseHeaders.set(key, value);
+	}
+	return responseHeaders;
+}
+
+export async function executeApolloRequest(
+	request: Request,
+	context: ApolloContext = {
+		session: null,
+	},
+): Promise<Response> {
+	await ensureApolloStarted();
+
+	let body: unknown;
+	try {
+		body = await parseRequestBody(request);
+	} catch {
+		return Response.json({ errors: [{ message: "Invalid JSON request body" }] }, { status: 400 });
+	}
+
+	const url = new URL(request.url);
+	const httpGraphQLRequest: HTTPGraphQLRequest = {
+		method: request.method.toUpperCase(),
+		headers: getApolloHeaders(request),
+		search: url.search,
+		body,
+	};
+
+	const result = await apolloServer.executeHTTPGraphQLRequest({
+		httpGraphQLRequest,
+		context: async () => context,
+	});
+
+	const responseHeaders = getResponseHeaders(result.headers);
+	const status = result.status ?? 200;
+	const responseBody = result.body;
+
+	if (responseBody.kind === "complete") {
+		return new Response(responseBody.string, {
+			status,
+			headers: responseHeaders,
+		});
+	}
+
+	const encoder = new TextEncoder();
+	const stream = new ReadableStream({
+		async start(controller) {
+			try {
+				for await (const chunk of responseBody.asyncIterator) {
+					controller.enqueue(encoder.encode(chunk));
+				}
+			} finally {
+				controller.close();
+			}
+		},
+	});
+
+	return new Response(stream, {
+		status,
+		headers: responseHeaders,
+	});
+}
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-hono-apollo-server/auth",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*",
+    "@snapshot-hono-apollo-server/db": "workspace:*",
+    "better-auth": "catalog:",
+    "@better-auth/drizzle-adapter": "^1.6.18"
+  }
+}
+"
+,
+      "path": "packages/auth/package.json",
+    },
+    {
+      "content": 
+"
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { env } from "@snapshot-hono-apollo-server/env/server";
+import { db } from "@snapshot-hono-apollo-server/db";
+import * as schema from "@snapshot-hono-apollo-server/db/schema/auth";
+
+
+export const auth = betterAuth({
+	database: drizzleAdapter(db, {
+
+provider: "sqlite",
+
+		schema: schema,
+	}),
+	trustedOrigins: [
+		env.CORS_ORIGIN,
+	],
+	emailAndPassword: {
+		enabled: true,
+	},
+	advanced: {
+		defaultCookieAttributes: {
+			sameSite: "none",
+			secure: true,
+			httpOnly: true,
+		},
+	},
+	plugins: [
+	],
+});
+
+
+
+
+"
+,
+      "path": "packages/auth/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/auth/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-hono-apollo-server/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/server/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-hono-apollo-server/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*",
+    "drizzle-kit": "^0.31.10"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-hono-apollo-server/env": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-hono-apollo-server/env/server";
+import * as schema from "./schema/index";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": 
+"import { relations, sql } from "drizzle-orm";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" })
+    .default(false)
+    .notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = sqliteTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = sqliteTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql\`(cast(unixepoch('subsecond') * 1000 as integer))\`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
+"
+,
+      "path": "packages/db/src/schema/auth.ts",
+    },
+    {
+      "content": 
+"export * from "./auth";
+"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-hono-apollo-server/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-hono-apollo-server/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-hono-apollo-server/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
 exports[`Template Snapshots Key File Content Snapshots key files: better-auth-full 1`] = `
 {
-  "fileCount": 66,
+  "fileCount": 67,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -6915,7 +8323,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*"
@@ -7023,7 +8433,9 @@ export type AppRouter = typeof appRouter;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*"
@@ -7175,6 +8587,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
@@ -7400,8 +8813,12 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1`] = `
 {
-  "fileCount": 46,
+  "fileCount": 47,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -7931,8 +9348,12 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 56,
+  "fileCount": 57,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -7964,6 +9385,7 @@ export default nextConfig;
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start"
@@ -8245,7 +9667,9 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "@snapshot-self-next-clerk/config": "workspace:*"
@@ -8393,6 +9817,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -8528,8 +9953,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 52,
+  "fileCount": 53,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -8939,7 +10368,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*"
@@ -9085,6 +10516,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -9219,8 +10651,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoose 1`] = `
 {
-  "fileCount": 53,
+  "fileCount": 54,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -9702,7 +11138,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*"
@@ -9828,7 +11266,9 @@ export type AppRouter = typeof appRouter;
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*"
@@ -9942,8 +11382,12 @@ export { client };
 
 exports[`Template Snapshots Key File Content Snapshots key files: postgres-prisma 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 56,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -10431,7 +11875,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*"
@@ -10558,6 +12004,7 @@ export type AppRouter = typeof appRouter;
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit --declaration false --declarationMap false --composite false",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
@@ -10688,8 +12135,12 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: algolia-search-hono 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 58,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -11185,7 +12636,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*"
@@ -11333,6 +12786,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -11465,13 +12919,2222 @@ export const db = drizzle({ client, schema });
 }
 `;
 
+exports[`Template Snapshots Key File Content Snapshots key files: opensearch-search-hono 1`] = `
+{
+  "fileCount": 58,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/.env",
+    },
+    {
+      "content": 
+"{
+  "name": "server",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-opensearch-search-hono/env": "workspace:*",
+    "@snapshot-opensearch-search-hono/api": "workspace:*",
+    "@snapshot-opensearch-search-hono/db": "workspace:*",
+    "hono": "catalog:",
+    "@trpc/server": "catalog:",
+    "@hono/trpc-server": "^0.4.2",
+    "@opensearch-project/opensearch": "^3.6.0"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsdown": "^0.22.2",
+    "@snapshot-opensearch-search-hono/config": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
+"
+,
+      "path": "apps/server/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-opensearch-search-hono/env/server";
+import { trpcServer } from "@hono/trpc-server";
+import { createContext } from "@snapshot-opensearch-search-hono/api/context";
+import { appRouter } from "@snapshot-opensearch-search-hono/api/routers/index";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+app.use(logger());
+app.use(
+	"/*",
+	cors({
+		origin: env.CORS_ORIGIN,
+		allowMethods: ["GET", "POST", "OPTIONS"],
+	})
+);
+
+
+
+app.use(
+	"/trpc/*",
+	trpcServer({
+		router: appRouter,
+		createContext: (_opts, context) => {
+			return createContext({ context });
+		},
+	})
+);
+
+
+
+app.get("/", (c) => {
+	return c.text("OK");
+});
+
+export default app;
+"
+,
+      "path": "apps/server/src/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/src/lib/search.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-opensearch-search-hono/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+		"outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  }
+}
+"
+,
+      "path": "apps/server/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/tsdown.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/index.html",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite",
+    "check-types": "tsr generate && tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "@tailwindcss/vite": "^4.3.1",
+    "tw-animate-css": "^1.4.0",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-opensearch-search-hono/env": "workspace:*",
+    "@snapshot-opensearch-search-hono/api": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@trpc/tanstack-react-query": "^11.17.0",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "@tanstack/react-query": "^5.101.0",
+    "lucide-react": "^1.18.0"
+  },
+  "devDependencies": {
+    "@tanstack/react-router-devtools": "^1.167.0",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
+    "vite": "^8.0.16",
+    "typescript": "catalog:",
+    "@snapshot-opensearch-search-hono/config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.101.0"
+  }
+}
+"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/header.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/loader.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/mode-toggle.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/theme-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/card.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/checkbox.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/dropdown-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/input.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/label.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/skeleton.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/sonner.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/index.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/utils.ts",
+    },
+    {
+      "content": 
+"import { RouterProvider, createRouter } from "@tanstack/react-router";
+import ReactDOM from "react-dom/client";
+import Loader from "./components/loader";
+import { routeTree } from "./routeTree.gen";
+
+  import { QueryClientProvider } from "@tanstack/react-query";
+  import { queryClient, trpc } from "./utils/trpc";
+
+const router = createRouter({
+  routeTree,
+  defaultPreload: "intent",
+  defaultPendingComponent: () => <Loader />,
+  context: { trpc, queryClient },
+  Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  },
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+const rootElement = document.getElementById("app");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<RouterProvider router={router} />);
+}
+"
+,
+      "path": "apps/web/src/main.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/__root.tsx",
+    },
+    {
+      "content": 
+"import { createFileRoute } from "@tanstack/react-router";
+import { trpc } from "@/utils/trpc";
+import { useQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/")({
+  component: HomeComponent,
+});
+
+const TITLE_TEXT = \`
+ ██████╗ ███████╗████████╗████████╗███████╗██████╗
+ ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
+ ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
+ ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
+ ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
+ ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+ ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
+ ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+    ██║       ███████╗   ██║   ███████║██║     █████╔╝
+    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
+    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
+    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+ \`;
+
+function HomeComponent() {
+  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+
+  return (
+    <div className="container mx-auto max-w-3xl px-4 py-2">
+      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
+      <div className="grid gap-6">
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-2 font-medium">API Status</h2>
+            <div className="flex items-center gap-2">
+              <div
+                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+              />
+              <span className="text-sm text-muted-foreground">
+                {healthCheck.isLoading
+                  ? "Checking..."
+                  : healthCheck.data
+                    ? "Connected"
+                    : "Disconnected"}
+              </span>
+            </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+"
+,
+      "path": "apps/web/src/routes/index.tsx",
+    },
+    {
+      "content": 
+"import type { AppRouter } from "@snapshot-opensearch-search-hono/api/routers/index";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { toast } from "sonner";
+import { env } from "@snapshot-opensearch-search-hono/env/web";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error, query) => {
+			toast.error(error.message, {
+				action: {
+					label: "retry",
+					onClick: query.invalidate,
+				},
+			});
+		},
+	}),
+});
+
+export const trpcClient = createTRPCClient<AppRouter>({
+	links: [
+		httpBatchLink({
+			url: \`\${env.VITE_SERVER_URL}/trpc\`,
+		}),
+	],
+});
+
+export const trpc = createTRPCOptionsProxy<AppRouter>({
+	client: trpcClient,
+	queryClient,
+});
+"
+,
+      "path": "apps/web/src/utils/trpc.ts",
+    },
+    {
+      "content": 
+"{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "rootDirs": ["."],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": 
+"import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),
+    tanstackRouter({}),
+    react(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    port: 3001,
+  },
+});
+"
+,
+      "path": "apps/web/vite.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-opensearch-search-hono",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "typescript": "^6.0.3",
+      "@types/bun": "^1.3.14",
+      "hono": "^4.12.25",
+      "@trpc/server": "^11.17.0",
+      "@libsql/client": "^0.17.3",
+      "libsql": "^0.5.29",
+      "@trpc/client": "^11.17.0"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "db:push": "bun run --filter @snapshot-opensearch-search-hono/db db:push",
+    "db:studio": "bun run --filter @snapshot-opensearch-search-hono/db db:studio",
+    "db:generate": "bun run --filter @snapshot-opensearch-search-hono/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-opensearch-search-hono/db db:migrate",
+    "db:local": "bun run --filter @snapshot-opensearch-search-hono/db db:local"
+  },
+  "packageManager": "bun@1.3.5",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-opensearch-search-hono/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-opensearch-search-hono/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-opensearch-search-hono/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-opensearch-search-hono/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-opensearch-search-hono/env": "workspace:*",
+    "@snapshot-opensearch-search-hono/db": "workspace:*",
+    "@trpc/server": "catalog:",
+    "@trpc/client": "catalog:",
+    "hono": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { initTRPC } from "@trpc/server";
+import type { Context } from "./context";
+
+export const t = initTRPC.context<Context>().create();
+
+export const router = t.router;
+
+export const publicProcedure = t.procedure;
+
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import {
+  publicProcedure,
+  router,
+} from "../index";
+
+export const appRouter = router({
+  healthCheck: publicProcedure.query(() => {
+    return "OK";
+  }),
+});
+export type AppRouter = typeof appRouter;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-opensearch-search-hono/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-opensearch-search-hono/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/server/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-opensearch-search-hono/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-opensearch-search-hono/config": "workspace:*",
+    "drizzle-kit": "^0.31.10"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-opensearch-search-hono/env": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-opensearch-search-hono/env/server";
+import * as schema from "./schema/index";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
+      "content": 
+"export * from "./example";
+"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-opensearch-search-hono/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-opensearch-search-hono/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-opensearch-search-hono/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-opensearch-search-hono/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-opensearch-search-hono/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: cms-keystatic-next 1`] = `
+{
+  "fileCount": 60,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/keystatic.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/next-env.d.ts",
+    },
+    {
+      "content": 
+"import "@snapshot-cms-keystatic-next/env/web";
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+	typedRoutes: true,
+	reactCompiler: true,
+};
+
+export default nextConfig;
+
+"
+,
+      "path": "apps/web/next.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "next": "catalog:",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-cms-keystatic-next/env": "workspace:*",
+    "@snapshot-cms-keystatic-next/api": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@trpc/server": "catalog:",
+    "@trpc/client": "catalog:",
+    "@trpc/tanstack-react-query": "^11.17.0",
+    "@tanstack/react-query": "^5.101.0",
+    "lucide-react": "^1.18.0",
+    "@keystatic/core": "^0.5.50",
+    "@keystatic/next": "^5.0.4",
+    "@markdoc/markdoc": "^0.5.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "tailwindcss": "^4.3.1",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5",
+    "@snapshot-cms-keystatic-next/config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.101.0"
+  }
+}
+"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/postcss.config.mjs",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/api/keystatic/[...params]/route.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/api/trpc/[trpc]/route.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/keystatic/[[...params]]/page.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/keystatic/keystatic.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/keystatic/layout.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/layout.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/app/page.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/header.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/loader.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/mode-toggle.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/providers.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/theme-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/card.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/checkbox.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/dropdown-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/input.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/label.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/skeleton.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/sonner.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/content/posts/hello-world.mdoc",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/index.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/utils.ts",
+    },
+    {
+      "content": 
+"import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import type { AppRouter } from "@snapshot-cms-keystatic-next/api/routers/index";
+import { toast } from 'sonner';
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error, query) => {
+			toast.error(error.message, {
+				action: {
+					label: "retry",
+					onClick: query.invalidate,
+				},
+			});
+		},
+	}),
+});
+
+const trpcClient = createTRPCClient<AppRouter>({
+	links: [
+		httpBatchLink({
+			url: "/api/trpc",
+		}),
+	],
+})
+
+export const trpc = createTRPCOptionsProxy<AppRouter>({
+	client: trpcClient,
+	queryClient,
+});
+
+"
+,
+      "path": "apps/web/src/utils/trpc.ts",
+    },
+    {
+      "content": 
+"{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "./next-env.d.ts",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./.next/types/**/*.ts"
+  ],
+  "exclude": [
+    "./node_modules"
+  ]
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-cms-keystatic-next",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "@types/bun": "^1.3.14",
+      "next": "^16.2.9",
+      "@libsql/client": "^0.17.3",
+      "libsql": "^0.5.29",
+      "@trpc/server": "^11.17.0",
+      "@trpc/client": "^11.17.0"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:web": "bun run --filter web dev",
+    "db:push": "bun run --filter @snapshot-cms-keystatic-next/db db:push",
+    "db:studio": "bun run --filter @snapshot-cms-keystatic-next/db db:studio",
+    "db:generate": "bun run --filter @snapshot-cms-keystatic-next/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-cms-keystatic-next/db db:migrate",
+    "db:local": "bun run --filter @snapshot-cms-keystatic-next/db db:local"
+  },
+  "packageManager": "bun@1.3.5",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-cms-keystatic-next/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "@types/bun": "catalog:",
+    "@snapshot-cms-keystatic-next/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-cms-keystatic-next/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "@snapshot-cms-keystatic-next/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-cms-keystatic-next/env": "workspace:*",
+    "@snapshot-cms-keystatic-next/db": "workspace:*",
+    "@trpc/server": "catalog:",
+    "@trpc/client": "catalog:",
+    "next": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { initTRPC } from "@trpc/server";
+import type { Context } from "./context";
+
+export const t = initTRPC.context<Context>().create();
+
+export const router = t.router;
+
+export const publicProcedure = t.procedure;
+
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import {
+  publicProcedure,
+  router,
+} from "../index";
+
+export const appRouter = router({
+  healthCheck: publicProcedure.query(() => {
+    return "OK";
+  }),
+});
+export type AppRouter = typeof appRouter;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-cms-keystatic-next/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-cms-keystatic-next/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/web/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-cms-keystatic-next/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "@snapshot-cms-keystatic-next/config": "workspace:*",
+    "drizzle-kit": "^0.31.10"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-cms-keystatic-next/env": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-cms-keystatic-next/env/server";
+import * as schema from "./schema/index";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
+      "content": 
+"export * from "./example";
+"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-cms-keystatic-next/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-cms-keystatic-next/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-nextjs": "^0.13.11",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "@types/bun": "catalog:",
+    "@snapshot-cms-keystatic-next/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-cms-keystatic-next/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-cms-keystatic-next/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
+exports[`Template Snapshots Key File Content Snapshots key files: i18n-paraglide-tanstack-router 1`] = `
+{
+  "fileCount": 60,
+  "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/.env",
+    },
+    {
+      "content": 
+"{
+  "name": "server",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/env": "workspace:*",
+    "@snapshot-i18n-paraglide-tanstack-router/api": "workspace:*",
+    "@snapshot-i18n-paraglide-tanstack-router/db": "workspace:*",
+    "hono": "catalog:",
+    "@trpc/server": "catalog:",
+    "@hono/trpc-server": "^0.4.2"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsdown": "^0.22.2",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
+"
+,
+      "path": "apps/server/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-i18n-paraglide-tanstack-router/env/server";
+import { trpcServer } from "@hono/trpc-server";
+import { createContext } from "@snapshot-i18n-paraglide-tanstack-router/api/context";
+import { appRouter } from "@snapshot-i18n-paraglide-tanstack-router/api/routers/index";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+app.use(logger());
+app.use(
+	"/*",
+	cors({
+		origin: env.CORS_ORIGIN,
+		allowMethods: ["GET", "POST", "OPTIONS"],
+	})
+);
+
+
+
+app.use(
+	"/trpc/*",
+	trpcServer({
+		router: appRouter,
+		createContext: (_opts, context) => {
+			return createContext({ context });
+		},
+	})
+);
+
+
+
+app.get("/", (c) => {
+	return c.text("OK");
+});
+
+export default app;
+"
+,
+      "path": "apps/server/src/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-i18n-paraglide-tanstack-router/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+		"outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  }
+}
+"
+,
+      "path": "apps/server/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/server/tsdown.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/.env",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/index.html",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/messages/en.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/messages/fr.json",
+    },
+    {
+      "content": 
+"{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite",
+    "check-types": "tsr generate && tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "@tailwindcss/vite": "^4.3.1",
+    "tw-animate-css": "^1.4.0",
+    "@tanstack/react-router": "^1.170.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/env": "workspace:*",
+    "@snapshot-i18n-paraglide-tanstack-router/api": "workspace:*",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:",
+    "@trpc/tanstack-react-query": "^11.17.0",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "@tanstack/react-query": "^5.101.0",
+    "lucide-react": "^1.18.0"
+  },
+  "devDependencies": {
+    "@tanstack/react-router-devtools": "^1.167.0",
+    "@tanstack/router-cli": "^1.167.17",
+    "@tanstack/router-plugin": "^1.168.18",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
+    "vite": "^8.0.16",
+    "typescript": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.101.0",
+    "@inlang/paraglide-js": "^2.20.1"
+  }
+}
+"
+,
+      "path": "apps/web/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/project.inlang/settings.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/header.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/loader.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/mode-toggle.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/theme-provider.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/button.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/card.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/checkbox.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/dropdown-menu.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/input.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/label.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/skeleton.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/components/ui/sonner.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/index.css",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/lib/utils.ts",
+    },
+    {
+      "content": 
+"import { RouterProvider, createRouter } from "@tanstack/react-router";
+import ReactDOM from "react-dom/client";
+import Loader from "./components/loader";
+import { routeTree } from "./routeTree.gen";
+
+  import { QueryClientProvider } from "@tanstack/react-query";
+  import { queryClient, trpc } from "./utils/trpc";
+
+const router = createRouter({
+  routeTree,
+  defaultPreload: "intent",
+  defaultPendingComponent: () => <Loader />,
+  context: { trpc, queryClient },
+  Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  },
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+const rootElement = document.getElementById("app");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<RouterProvider router={router} />);
+}
+"
+,
+      "path": "apps/web/src/main.tsx",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/src/routes/__root.tsx",
+    },
+    {
+      "content": 
+"import { createFileRoute } from "@tanstack/react-router";
+import { trpc } from "@/utils/trpc";
+import { useQuery } from "@tanstack/react-query";
+
+export const Route = createFileRoute("/")({
+  component: HomeComponent,
+});
+
+const TITLE_TEXT = \`
+ ██████╗ ███████╗████████╗████████╗███████╗██████╗
+ ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
+ ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
+ ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
+ ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
+ ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+ ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
+ ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+    ██║       ███████╗   ██║   ███████║██║     █████╔╝
+    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
+    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
+    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+ \`;
+
+function HomeComponent() {
+  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+
+  return (
+    <div className="container mx-auto max-w-3xl px-4 py-2">
+      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
+      <div className="grid gap-6">
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-2 font-medium">API Status</h2>
+            <div className="flex items-center gap-2">
+              <div
+                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+              />
+              <span className="text-sm text-muted-foreground">
+                {healthCheck.isLoading
+                  ? "Checking..."
+                  : healthCheck.data
+                    ? "Connected"
+                    : "Disconnected"}
+              </span>
+            </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+"
+,
+      "path": "apps/web/src/routes/index.tsx",
+    },
+    {
+      "content": 
+"import type { AppRouter } from "@snapshot-i18n-paraglide-tanstack-router/api/routers/index";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { toast } from "sonner";
+import { env } from "@snapshot-i18n-paraglide-tanstack-router/env/web";
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error, query) => {
+			toast.error(error.message, {
+				action: {
+					label: "retry",
+					onClick: query.invalidate,
+				},
+			});
+		},
+	}),
+});
+
+export const trpcClient = createTRPCClient<AppRouter>({
+	links: [
+		httpBatchLink({
+			url: \`\${env.VITE_SERVER_URL}/trpc\`,
+		}),
+	],
+});
+
+export const trpc = createTRPCOptionsProxy<AppRouter>({
+	client: trpcClient,
+	queryClient,
+});
+"
+,
+      "path": "apps/web/src/utils/trpc.ts",
+    },
+    {
+      "content": 
+"{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "rootDirs": ["."],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+"
+,
+      "path": "apps/web/tsconfig.json",
+    },
+    {
+      "content": 
+"import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { defineConfig } from "vite";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),
+    tanstackRouter({}),
+    react(),
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/paraglide",
+      emitTsDeclarations: true,
+    })
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    port: 3001,
+  },
+});
+"
+,
+      "path": "apps/web/vite.config.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "bunfig.toml",
+    },
+    {
+      "content": "[exists]",
+      "path": "CLAUDE.md",
+    },
+    {
+      "content": 
+"{
+  "name": "snapshot-i18n-paraglide-tanstack-router",
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.4.2",
+      "zod": "^4.4.3",
+      "typescript": "^6.0.3",
+      "@types/bun": "^1.3.14",
+      "hono": "^4.12.25",
+      "@trpc/server": "^11.17.0",
+      "@libsql/client": "^0.17.3",
+      "libsql": "^0.5.29",
+      "@trpc/client": "^11.17.0"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "check-types": "bun run --if-present --filter '*' check-types",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "db:push": "bun run --filter @snapshot-i18n-paraglide-tanstack-router/db db:push",
+    "db:studio": "bun run --filter @snapshot-i18n-paraglide-tanstack-router/db db:studio",
+    "db:generate": "bun run --filter @snapshot-i18n-paraglide-tanstack-router/db db:generate",
+    "db:migrate": "bun run --filter @snapshot-i18n-paraglide-tanstack-router/db db:migrate",
+    "db:local": "bun run --filter @snapshot-i18n-paraglide-tanstack-router/db db:local"
+  },
+  "packageManager": "bun@1.3.5",
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/env": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "package.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-i18n-paraglide-tanstack-router/api",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/env": "workspace:*",
+    "@snapshot-i18n-paraglide-tanstack-router/db": "workspace:*",
+    "@trpc/server": "catalog:",
+    "@trpc/client": "catalog:",
+    "hono": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/api/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/api/src/context.ts",
+    },
+    {
+      "content": 
+"import { initTRPC } from "@trpc/server";
+import type { Context } from "./context";
+
+export const t = initTRPC.context<Context>().create();
+
+export const router = t.router;
+
+export const publicProcedure = t.procedure;
+
+"
+,
+      "path": "packages/api/src/index.ts",
+    },
+    {
+      "content": 
+"import {
+  publicProcedure,
+  router,
+} from "../index";
+
+export const appRouter = router({
+  healthCheck: publicProcedure.query(() => {
+    return "OK";
+  }),
+});
+export type AppRouter = typeof appRouter;
+"
+,
+      "path": "packages/api/src/routers/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-i18n-paraglide-tanstack-router/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/api/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-i18n-paraglide-tanstack-router/config",
+  "version": "0.0.0",
+  "private": true
+}
+"
+,
+      "path": "packages/config/package.json",
+    },
+    {
+      "content": 
+"{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": [
+        "bun"
+
+    ]
+  }
+}
+"
+,
+      "path": "packages/config/tsconfig.base.json",
+    },
+    {
+      "content": 
+"import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+
+dotenv.config({
+    path: "../../apps/server/.env",
+});
+
+export default defineConfig({
+  schema: "./src/schema",
+  out: "./src/migrations",
+  dialect: "turso",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "",
+  },
+});
+"
+,
+      "path": "packages/db/drizzle.config.ts",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-i18n-paraglide-tanstack-router/db",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
+    "drizzle-kit": "^0.31.10"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/env": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "@libsql/client": "catalog:",
+    "libsql": "catalog:"
+  }
+}
+"
+,
+      "path": "packages/db/package.json",
+    },
+    {
+      "content": 
+"import { env } from "@snapshot-i18n-paraglide-tanstack-router/env/server";
+import * as schema from "./schema/index";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+	url: env.DATABASE_URL,
+});
+
+export const db = drizzle({ client, schema });
+
+"
+,
+      "path": "packages/db/src/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/example.ts",
+    },
+    {
+      "content": 
+"export * from "./example";
+"
+,
+      "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-i18n-paraglide-tanstack-router/config/tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "composite": true
+  }
+}
+"
+,
+      "path": "packages/db/tsconfig.json",
+    },
+    {
+      "content": 
+"{
+  "name": "@snapshot-i18n-paraglide-tanstack-router/env",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./web": "./src/web.ts"
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*"
+  }
+}
+"
+,
+      "path": "packages/env/package.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/native.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/server.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/env/src/web.ts",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-i18n-paraglide-tanstack-router/config/tsconfig.base.json",
+}
+"
+,
+      "path": "packages/env/tsconfig.json",
+    },
+    {
+      "content": "[exists]",
+      "path": "README.md",
+    },
+    {
+      "content": 
+"{
+  "extends": "@snapshot-i18n-paraglide-tanstack-router/config/tsconfig.base.json",
+}
+"
+,
+      "path": "tsconfig.json",
+    },
+  ],
+}
+`;
+
 exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-tooling 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 58,
   "files": [
     {
       "content": "[exists]",
       "path": ".env",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -11969,7 +15632,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*"
@@ -12117,6 +15782,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -12251,8 +15917,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nx-root-tooling 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 58,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/server/.env",
@@ -12748,7 +16418,9 @@ export default defineConfig({
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-nx-root-tooling/config": "workspace:*"
@@ -12896,6 +16568,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -13030,8 +16703,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-no-backend 1`] = `
 {
-  "fileCount": 36,
+  "fileCount": 37,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/web/.env",
@@ -13431,8 +17108,12 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 66,
+  "fileCount": 67,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/native/.env",
@@ -13681,6 +17362,7 @@ fontWeight: "bold",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
@@ -13710,6 +17392,7 @@ fontWeight: "bold",
     "expo-web-browser": "^56.0.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "@babel/runtime": "^7.29.7",
     "react-native": "^0.86.0",
     "react-native-gesture-handler": "^3.0.1",
     "react-native-reanimated": "^4.4.1",
@@ -13955,7 +17638,9 @@ export default app;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-native-react-native/config": "workspace:*"
@@ -14103,6 +17788,7 @@ export default defineConfig({
     }
   },
   "scripts": {
+    "check-types": "tsc --noEmit",
     "db:local": "turso dev --db-file local.db",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -14237,8 +17923,12 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-mobile-integrations 1`] = `
 {
-  "fileCount": 60,
+  "fileCount": 61,
   "files": [
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
+    },
     {
       "content": "[exists]",
       "path": "apps/native/__tests__/mobile-ui-provider.test.tsx",
@@ -14384,6 +18074,7 @@ registerRootComponent(App);
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
@@ -14417,6 +18108,7 @@ registerRootComponent(App);
     "expo-web-browser": "^56.0.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "@babel/runtime": "^7.29.7",
     "react-native": "^0.86.0",
     "react-native-mmkv": "^4.3.1",
     "react-native-gesture-handler": "^3.0.1",
@@ -14706,7 +18398,9 @@ export default app;
     }
   },
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@snapshot-native-mobile-integrations/config": "workspace:*"
@@ -14883,7 +18577,7 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
 
 exports[`Template Snapshots Key File Content Snapshots key files: java-spring-boot-jpa-security 1`] = `
 {
-  "fileCount": 23,
+  "fileCount": 24,
   "files": [
     {
       "content": 
@@ -14894,6 +18588,10 @@ APP_BASIC_PASSWORD=change-me
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -14982,6 +18680,7 @@ CORS_ORIGIN=http://localhost:3001"
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-leptos-seaorm 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15006,6 +18705,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: actix-dioxus-sqlx 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15029,6 +18729,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: cli-clap 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15050,6 +18751,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-envlogger 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15069,6 +18771,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: axum-eyre 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15088,6 +18791,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file structure: rocket-seaorm 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Cargo.toml",
   "README.md",
@@ -15106,7 +18810,7 @@ exports[`Template Snapshots - Rust Ecosystem Rust File Structure Snapshots file 
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-leptos-seaorm 1`] = `
 {
-  "fileCount": 20,
+  "fileCount": 21,
   "files": [
     {
       "content": 
@@ -15130,6 +18834,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -15533,7 +19241,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: actix-dioxus-sqlx 1`] = `
 {
-  "fileCount": 19,
+  "fileCount": 20,
   "files": [
     {
       "content": 
@@ -15557,6 +19265,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -15951,7 +19663,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: cli-clap 1`] = `
 {
-  "fileCount": 17,
+  "fileCount": 18,
   "files": [
     {
       "content": 
@@ -15975,6 +19687,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -16366,7 +20082,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-envlogger 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 16,
   "files": [
     {
       "content": 
@@ -16390,6 +20106,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -16627,7 +20347,7 @@ async fn main() -> anyhow::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: axum-eyre 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 16,
   "files": [
     {
       "content": 
@@ -16651,6 +20371,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -16861,7 +20585,7 @@ async fn main() -> eyre::Result<()> {
 
 exports[`Template Snapshots - Rust Ecosystem Rust Key File Content Snapshots key files: rocket-seaorm 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 16,
   "files": [
     {
       "content": 
@@ -16885,6 +20609,10 @@ DATABASE_URL=postgres://user:password@localhost:5432/dbname
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": 
@@ -17111,6 +20839,7 @@ async fn rocket() -> _ {
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: gin-gorm-zap 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17124,6 +20853,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: echo-sqlc-grpc 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17145,6 +20875,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: fiber-gorm-zap 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17158,6 +20889,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: chi-gorm 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17171,6 +20903,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: cli-cobra 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/cli/main.go",
@@ -17182,6 +20915,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: gin-gorm-zerolog 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17195,6 +20929,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: echo-sqlc-slog 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17212,6 +20947,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: gin-casbin 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "auth_model.conf",
@@ -17226,6 +20962,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file structure: echo-jwt-auth 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "cmd/server/main.go",
@@ -17237,7 +20974,7 @@ exports[`Template Snapshots - Go Ecosystem Go File Structure Snapshots file stru
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: gin-gorm-zap 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -17256,6 +20993,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17291,7 +21032,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-sqlc-grpc 1`] = `
 {
-  "fileCount": 17,
+  "fileCount": 18,
   "files": [
     {
       "content": 
@@ -17310,6 +21051,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17377,7 +21122,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: fiber-gorm-zap 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -17396,6 +21141,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17431,7 +21180,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: chi-gorm 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -17450,6 +21199,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17485,7 +21238,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: cli-cobra 1`] = `
 {
-  "fileCount": 7,
+  "fileCount": 8,
   "files": [
     {
       "content": 
@@ -17504,6 +21257,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17531,7 +21288,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: gin-gorm-zerolog 1`] = `
 {
-  "fileCount": 9,
+  "fileCount": 10,
   "files": [
     {
       "content": 
@@ -17550,6 +21307,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17585,7 +21346,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-sqlc-slog 1`] = `
 {
-  "fileCount": 13,
+  "fileCount": 14,
   "files": [
     {
       "content": 
@@ -17604,6 +21365,10 @@ LOG_LEVEL=debug
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17655,7 +21420,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: gin-casbin 1`] = `
 {
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "content": 
@@ -17678,6 +21443,10 @@ CASBIN_POLICY=auth_policy.csv
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17717,7 +21486,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Go Ecosystem Go Key File Content Snapshots key files: echo-jwt-auth 1`] = `
 {
-  "fileCount": 8,
+  "fileCount": 9,
   "files": [
     {
       "content": 
@@ -17739,6 +21508,10 @@ JWT_SECRET=change-me-to-a-real-secret
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17771,6 +21544,7 @@ CORS_ORIGIN=http://localhost:3001"
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: fastapi-sqlalchemy-celery 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "alembic.ini",
@@ -17796,6 +21570,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: django-sqlmodel-langchain 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "alembic.ini",
@@ -17819,6 +21594,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: fastapi-ai-multi 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "pyproject.toml",
@@ -17838,6 +21614,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: flask-pydantic-ruff 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "pyproject.toml",
@@ -17853,6 +21630,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: litestar-pydantic-ruff 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "pyproject.toml",
@@ -17868,6 +21646,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots file structure: fastapi-tortoise-orm 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "pyproject.toml",
@@ -17884,7 +21663,7 @@ exports[`Template Snapshots - Python Ecosystem Python File Structure Snapshots f
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: fastapi-sqlalchemy-celery 1`] = `
 {
-  "fileCount": 21,
+  "fileCount": 22,
   "files": [
     {
       "content": 
@@ -17911,6 +21690,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -17994,7 +21777,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: django-sqlmodel-langchain 1`] = `
 {
-  "fileCount": 19,
+  "fileCount": 20,
   "files": [
     {
       "content": 
@@ -18021,6 +21804,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18096,7 +21883,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: fastapi-ai-multi 1`] = `
 {
-  "fileCount": 15,
+  "fileCount": 16,
   "files": [
     {
       "content": 
@@ -18123,6 +21910,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18182,7 +21973,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: flask-pydantic-ruff 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 12,
   "files": [
     {
       "content": 
@@ -18209,6 +22000,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18252,7 +22047,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: litestar-pydantic-ruff 1`] = `
 {
-  "fileCount": 11,
+  "fileCount": 12,
   "files": [
     {
       "content": 
@@ -18279,6 +22074,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18322,7 +22121,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Python Ecosystem Python Key File Content Snapshots key files: fastapi-tortoise-orm 1`] = `
 {
-  "fileCount": 13,
+  "fileCount": 14,
   "files": [
     {
       "content": 
@@ -18349,6 +22148,10 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18401,6 +22204,7 @@ CORS_ORIGIN=http://localhost:3001"
 exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-ecto-rest 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "README.md",
   "config/config.exs",
@@ -18438,6 +22242,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-liveview-full 1`] = `
 [
   ".env.example",
+  "AGENTS.md",
   "CLAUDE.md",
   "Dockerfile",
   "README.md",
@@ -18486,7 +22291,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
 {
-  "fileCount": 33,
+  "fileCount": 34,
   "files": [
     {
       "content": 
@@ -18502,6 +22307,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",
@@ -18633,7 +22442,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 46,
   "files": [
     {
       "content": 
@@ -18649,6 +22458,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test
 CORS_ORIGIN=http://localhost:3001"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": "AGENTS.md",
     },
     {
       "content": "[exists]",

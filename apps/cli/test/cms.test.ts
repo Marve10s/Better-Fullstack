@@ -3,6 +3,107 @@ import { describe, expect, test } from "bun:test";
 import { createCustomConfig, expectSuccess, runTRPCTest } from "./test-utils";
 
 describe("CMS Options", () => {
+  describe("Keystatic CMS", () => {
+    test("keystatic with Next.js emits admin route, config, content, and dependencies", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "keystatic-next",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          database: "sqlite",
+          cms: "keystatic",
+        }),
+      );
+
+      expectSuccess(result);
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const config = await Bun.file(`${result.projectDir}/apps/web/keystatic.config.ts`).text();
+      const route = await Bun.file(
+        `${result.projectDir}/apps/web/src/app/api/keystatic/[...params]/route.ts`,
+      ).text();
+      const admin = await Bun.file(
+        `${result.projectDir}/apps/web/src/app/keystatic/keystatic.ts`,
+      ).text();
+      const content = await Bun.file(
+        `${result.projectDir}/apps/web/src/content/posts/hello-world.mdoc`,
+      ).text();
+
+      expect(pkg).toContain('"@keystatic/core"');
+      expect(pkg).toContain('"@keystatic/next"');
+      expect(pkg).toContain('"@markdoc/markdoc"');
+      expect(config).toContain('kind: "local"');
+      expect(config).toContain("fields.markdoc");
+      expect(route).toContain("makeRouteHandler");
+      expect(admin).toContain("makePage");
+      expect(content).toContain("Keystatic-powered content collection");
+    });
+
+    test("keystatic with Astro emits integration config, content, and dependencies", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "keystatic-astro",
+          frontend: ["astro"],
+          astroIntegration: "vue",
+          backend: "self",
+          runtime: "none",
+          api: "orpc",
+          database: "sqlite",
+          cms: "keystatic",
+        }),
+      );
+
+      expectSuccess(result);
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const astroConfig = await Bun.file(`${result.projectDir}/apps/web/astro.config.mjs`).text();
+      const config = await Bun.file(`${result.projectDir}/apps/web/keystatic.config.ts`).text();
+      const content = await Bun.file(
+        `${result.projectDir}/apps/web/src/content/posts/hello-world.mdoc`,
+      ).text();
+
+      expect(pkg).toContain('"@keystatic/core"');
+      expect(pkg).toContain('"@keystatic/astro"');
+      expect(pkg).toContain('"@astrojs/react"');
+      expect(pkg).toContain('"@astrojs/markdoc"');
+      expect(pkg).toContain('"@astrojs/node"');
+      expect(astroConfig).toContain("@keystatic/astro");
+      expect(astroConfig).toContain("react()");
+      expect(astroConfig).toContain("markdoc()");
+      expect(astroConfig).toContain("keystatic()");
+      expect(astroConfig).toContain("adapter: node");
+      expect(astroConfig).toContain("standalone");
+      expect(config).toContain('kind: "local"');
+      expect(content).toContain("Keystatic-powered content collection");
+    });
+
+    test("keystatic with Astro and Workers skips unsupported CMS scaffolding", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "keystatic-astro-workers-skip",
+          frontend: ["astro"],
+          astroIntegration: "vue",
+          backend: "hono",
+          runtime: "workers",
+          serverDeploy: "cloudflare",
+          api: "orpc",
+          database: "none",
+          orm: "none",
+          cms: "keystatic",
+        }),
+      );
+
+      expectSuccess(result);
+      const pkg = await Bun.file(`${result.projectDir}/apps/web/package.json`).text();
+      const astroConfig = await Bun.file(`${result.projectDir}/apps/web/astro.config.mjs`).text();
+
+      expect(pkg).not.toContain("@keystatic/core");
+      expect(pkg).not.toContain("@keystatic/astro");
+      expect(astroConfig).not.toContain("@keystatic/astro");
+      expect(astroConfig).not.toContain("keystatic()");
+      expect(await Bun.file(`${result.projectDir}/apps/web/keystatic.config.ts`).exists()).toBe(false);
+    });
+  });
+
   describe("Directus CMS", () => {
     test("directus with TanStack Router", async () => {
       const result = await runTRPCTest(

@@ -173,6 +173,12 @@ function DocsMenuItems() {
       >
         {m.navSkill()}
       </DropdownMenuItem>
+      <DropdownMenuItem
+        render={<Link to="/analytics" />}
+        className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em]"
+      >
+        {m.navAnalytics()}
+      </DropdownMenuItem>
     </>
   );
 }

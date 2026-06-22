@@ -176,7 +176,7 @@ const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
 const APP_PLATFORM_OPTION_GROUPS = [
   {
     headingKey: "workspacePlatforms",
-    ids: ["turborepo", "nx", "docker-compose", "pwa", "tauri", "wxt", "opentui"],
+    ids: ["turborepo", "nx", "docker-compose", "github-actions", "pwa", "tauri", "wxt", "opentui"],
   },
   {
     headingKey: "aiAgents",
@@ -334,6 +334,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "i18n",
     "cms",
     "search",
+    "vectorDb",
     "fileStorage",
   ],
   rust: [
@@ -1000,6 +1001,7 @@ const INITIALLY_COLLAPSED_SET = new Set([
   "caching",
   "rateLimit",
   "search",
+  "vectorDb",
   "fileStorage",
   "animation",
   "cms",

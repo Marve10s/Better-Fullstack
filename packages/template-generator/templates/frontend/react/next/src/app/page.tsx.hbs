@@ -2,7 +2,7 @@
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
-{{else if (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga"))}}
+{{else if (or (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga")) (eq api "apollo-server"))}}
 import { useQuery } from "@tanstack/react-query";
   {{#if (eq api "orpc")}}
 import { orpc } from "@/utils/orpc";
@@ -13,7 +13,7 @@ import { trpc } from "@/utils/trpc";
   {{#if (eq api "garph")}}
 import { query, resolved } from "@/utils/garph";
   {{/if}}
-  {{#if (eq api "graphql-yoga")}}
+  {{#if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
 import { graphqlFetch } from "@/utils/graphql";
   {{/if}}
 {{/if}}
@@ -50,7 +50,7 @@ export default function Home() {
     queryKey: ["healthCheck"],
     queryFn: () => resolved(() => query.health),
   });
-  {{else if (eq api "graphql-yoga")}}
+  {{else if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
   const healthCheck = useQuery({
     queryKey: ["healthCheck"],
     queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),
@@ -91,7 +91,7 @@ export default function Home() {
                   : "Error"}
             </span>
           </div>
-          {{else if (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "openapi"))}}
+          {{else if (or (or (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga")) (eq api "apollo-server")) (eq api "openapi"))}}
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}

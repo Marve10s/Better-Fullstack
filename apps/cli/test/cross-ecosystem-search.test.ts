@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
+import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
 import {
   expectError,
   runTRPCTest,
@@ -110,6 +111,16 @@ describe("Cross-ecosystem search services", () => {
       result,
       "Meilisearch search for Java requires Maven or Gradle to manage the SDK dependency",
     );
+  });
+
+  it("allows TypeScript search providers when ecosystem defaults to TypeScript", () => {
+    expect(() =>
+      validateConfigForProgrammaticUse({
+        backend: "hono",
+        frontend: ["tanstack-router"],
+        search: "opensearch",
+      }),
+    ).not.toThrow();
   });
 
   it("rejects non-TypeScript search providers that are not implemented cross-ecosystem", async () => {

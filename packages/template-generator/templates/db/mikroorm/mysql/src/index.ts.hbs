@@ -2,7 +2,7 @@ import { MikroORM, type Options } from "@mikro-orm/core";
 import { MySqlDriver } from "@mikro-orm/mysql";
 import { env } from "@{{projectName}}/env/server";
 
-const config: Options<MySqlDriver> = {
+const config = {
 	driver: MySqlDriver,
 	clientUrl: env.DATABASE_URL,
 	entities: ["./src/entities"],
@@ -16,8 +16,8 @@ const config: Options<MySqlDriver> = {
 			},
 		},
 	},
-{{/if}}
-};
+	{{/if}}
+} as Options<MySqlDriver>;
 
 let orm: MikroORM<MySqlDriver> | null = null;
 

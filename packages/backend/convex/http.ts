@@ -73,6 +73,112 @@ http.route({
       return new Response("Bad Request", { status: 400 });
     }
 
+    const EXTRA_OPTIONS_BY_ECOSYSTEM: Record<string, readonly string[]> = {
+      typescript: ["vectorDb", "search", "i18n", "featureFlags", "rateLimit", "fileStorage", "analytics"],
+      "react-native": [
+        "mobileNavigation",
+        "mobileUI",
+        "mobileStorage",
+        "mobileTesting",
+        "mobilePush",
+        "mobileOTA",
+        "mobileDeepLinking",
+      ],
+      rust: [
+        "rustLogging",
+        "rustErrorHandling",
+        "rustCaching",
+        "rustAuth",
+        "rustRealtime",
+        "rustMessageQueue",
+        "rustObservability",
+        "rustTemplating",
+      ],
+      python: [
+        "pythonWebFramework",
+        "pythonOrm",
+        "pythonValidation",
+        "pythonAi",
+        "pythonAuth",
+        "pythonApi",
+        "pythonTaskQueue",
+        "pythonGraphql",
+        "pythonQuality",
+        "pythonTesting",
+        "pythonCaching",
+        "pythonRealtime",
+        "pythonObservability",
+        "pythonCli",
+      ],
+      go: [
+        "goWebFramework",
+        "goOrm",
+        "goApi",
+        "goCli",
+        "goLogging",
+        "goAuth",
+        "goTesting",
+        "goRealtime",
+        "goMessageQueue",
+        "goCaching",
+        "goConfig",
+        "goObservability",
+      ],
+      java: [
+        "javaWebFramework",
+        "javaBuildTool",
+        "javaOrm",
+        "javaAuth",
+        "javaApi",
+        "javaLogging",
+        "javaLibraries",
+        "javaTestingLibraries",
+      ],
+      dotnet: [
+        "dotnetWebFramework",
+        "dotnetOrm",
+        "dotnetAuth",
+        "dotnetApi",
+        "dotnetTesting",
+        "dotnetJobQueue",
+        "dotnetRealtime",
+        "dotnetObservability",
+        "dotnetValidation",
+        "dotnetCaching",
+        "dotnetDeploy",
+      ],
+      elixir: [
+        "elixirWebFramework",
+        "elixirOrm",
+        "elixirAuth",
+        "elixirApi",
+        "elixirRealtime",
+        "elixirJobs",
+        "elixirValidation",
+        "elixirHttp",
+        "elixirJson",
+        "elixirEmail",
+        "elixirCaching",
+        "elixirObservability",
+        "elixirTesting",
+        "elixirQuality",
+        "elixirDeploy",
+        "elixirLibraries",
+      ],
+    };
+    const raw = body as Record<string, unknown>;
+    const relevantKeys =
+      EXTRA_OPTIONS_BY_ECOSYSTEM[typeof body.ecosystem === "string" ? body.ecosystem : ""] ?? [];
+    const options: Record<string, string | string[]> = {};
+    for (const key of relevantKeys) {
+      const value = raw[key];
+      if (typeof value === "string") {
+        if (value) options[key] = value;
+      } else if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
+        if (value.length > 0) options[key] = value as string[];
+      }
+    }
+
     const ingest = internal.analytics?.ingestEvent;
     if (ingest) {
       try {
@@ -133,6 +239,7 @@ http.route({
           cli_version: body.cli_version,
           node_version: body.node_version,
           platform: body.platform,
+          options,
         });
       } catch (error) {
         console.error("Failed to ingest analytics:", error);
