@@ -201,6 +201,19 @@ const WEB_FRONTENDS = FRONTEND_VALUES.filter(
 );
 const DJANGO_API_TOOLS = new Set(["django-rest-framework", "django-ninja"]);
 const JAVA_SPRING_CAPABILITY_TOOLS = new Set(["spring-data-jpa", "spring-security"]);
+const PARAGLIDE_COMPATIBLE_FRONTENDS = new Set([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
 const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "nuxt",
   "svelte",
@@ -975,6 +988,21 @@ function createTypeScriptFrontendCompatibilityIssue(
       role: part.role,
       toolId: part.toolId,
       message: "'next-intl' can only be selected for a Next.js frontend.",
+    });
+  }
+
+  if (
+    part.role === "i18n" &&
+    part.toolId === "paraglide" &&
+    context.ownerToolId &&
+    !PARAGLIDE_COMPATIBLE_FRONTENDS.has(context.ownerToolId)
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: `Paraglide is not yet wired for the '${context.ownerToolId}' frontend`,
     });
   }
 

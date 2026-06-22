@@ -31,6 +31,7 @@ import { processJobQueueDeps } from "./job-queue-deps";
 import { processLoggingDeps } from "./logging-deps";
 import { processObservabilityDeps } from "./observability-deps";
 import { processPaymentsDeps } from "./payments-deps";
+import { processParaglidePlugins } from "./paraglide-plugins";
 import { processPwaPlugins } from "./pwa-plugins";
 import { processRateLimitDeps } from "./rate-limit-deps";
 import { processReadme } from "./readme-generator";
@@ -123,6 +124,7 @@ export {
   processWorkspaceDeps,
   processAuthPlugins,
   processAlchemyPlugins,
+  processParaglidePlugins,
   processPwaPlugins,
   processEnvVariables,
 };

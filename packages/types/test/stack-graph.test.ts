@@ -623,6 +623,10 @@ describe("stack graph", () => {
       "frontend:typescript:react-vite",
       "frontend.i18n:typescript:next-intl",
     ]);
+    const paraglideQwikParts = parseStackPartSpecs([
+      "frontend:typescript:qwik",
+      "frontend.i18n:typescript:paraglide",
+    ]);
     const freshParts = parseStackPartSpecs([
       "frontend:typescript:fresh",
       "frontend.animation:typescript:lottie",
@@ -636,6 +640,9 @@ describe("stack graph", () => {
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
     expect(validateStackParts(nextIntlParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
+    );
+    expect(validateStackParts(paraglideQwikParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_TOOL",
     );
     expect(validateStackParts(freshParts).issues.map((issue) => issue.code)).toContain(

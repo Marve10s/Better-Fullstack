@@ -2671,6 +2671,14 @@ export const TECH_OPTIONS: Record<
   ],
   i18n: [
     {
+      id: "paraglide",
+      name: "Paraglide",
+      description: "Compiler-based, type-safe i18n with tree-shakeable message functions",
+      icon: "https://raw.githubusercontent.com/opral/paraglide-js/refs/heads/main/assets/paraglideNoBg.png",
+      color: "from-sky-500 to-cyan-600",
+      default: false,
+    },
+    {
       id: "i18next",
       name: "i18next",
       description: "Full-featured i18n framework with plugins for all major frontends",

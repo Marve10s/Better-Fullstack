@@ -255,6 +255,31 @@ describe("compatibility issue helpers", () => {
     }
   });
 
+  it("disables Paraglide i18n for frontend templates that are not wired", () => {
+    const baseStack = {
+      ...DEFAULT_STACK_SELECTION,
+      nativeFrontend: [],
+      backend: "hono",
+    };
+
+    expect(
+      getDisabledReason({ ...baseStack, webFrontend: ["tanstack-router"] }, "i18n", "paraglide"),
+    ).toBeNull();
+    expect(getDisabledReason({ ...baseStack, webFrontend: ["next"] }, "i18n", "paraglide")).toBeNull();
+    expect(getDisabledReason({ ...baseStack, webFrontend: ["angular"] }, "i18n", "paraglide")).toBe(
+      "Paraglide is not yet wired for the 'angular' frontend",
+    );
+    expect(getDisabledReason({ ...baseStack, webFrontend: ["qwik"] }, "i18n", "paraglide")).toBe(
+      "Paraglide is not yet wired for the 'qwik' frontend",
+    );
+    expect(getDisabledReason({ ...baseStack, webFrontend: ["fresh"] }, "i18n", "paraglide")).toBe(
+      "Paraglide is not yet wired for the 'fresh' frontend",
+    );
+    expect(getDisabledReason({ ...baseStack, webFrontend: [] }, "i18n", "paraglide")).toBe(
+      "i18n requires a web frontend",
+    );
+  });
+
   it("disables Netlify server deploy outside the supported Hono Node path", () => {
     const baseStack = {
       ...DEFAULT_STACK_SELECTION,

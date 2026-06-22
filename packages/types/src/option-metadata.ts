@@ -985,6 +985,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "trigger-dev": "Trigger.dev",
   },
   i18n: {
+    paraglide: "Paraglide",
     i18next: "i18next",
     "next-intl": "next-intl",
   },

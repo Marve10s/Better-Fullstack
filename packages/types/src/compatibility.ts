@@ -221,6 +221,19 @@ export type CompatibilityInput = {
 };
 
 const DEFAULT_RUNTIME = "bun";
+const PARAGLIDE_COMPATIBLE_FRONTENDS = new Set<Frontend>([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
 
 export function validateProjectName(name: string): string | undefined {
   const INVALID_CHARS = ["<", ">", ":", '"', "|", "?", "*", "/", "\\"];
@@ -2536,6 +2549,21 @@ export const getDisabledReason = (
   // I18N RULES
   // ============================================
   if (category === "i18n") {
+    if (optionId !== "none" && !currentStack.webFrontend.some((f) => f !== "none")) {
+      return "i18n requires a web frontend";
+    }
+
+    if (optionId === "paraglide") {
+      const unsupportedFrontend = currentStack.webFrontend.find(
+        (frontend) =>
+          frontend !== "none" && !PARAGLIDE_COMPATIBLE_FRONTENDS.has(frontend as Frontend),
+      );
+
+      if (unsupportedFrontend) {
+        return `Paraglide is not yet wired for the '${unsupportedFrontend}' frontend`;
+      }
+    }
+
     if (optionId === "next-intl") {
       if (!currentStack.webFrontend.includes("next")) {
         return "next-intl requires Next.js";

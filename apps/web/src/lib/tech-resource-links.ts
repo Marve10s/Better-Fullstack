@@ -926,6 +926,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://upstash.com/docs/redis",
     githubUrl: "https://github.com/upstash/redis-js",
   },
+  paraglide: {
+    docsUrl: "https://paraglidejs.com/",
+    githubUrl: "https://github.com/opral/paraglide-js",
+  },
   i18next: {
     docsUrl: "https://www.i18next.com/",
     githubUrl: "https://github.com/i18next/i18next",

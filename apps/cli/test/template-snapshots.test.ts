@@ -221,6 +221,20 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
 
+  // === I18N VARIATIONS ===
+  {
+    name: "i18n-paraglide-tanstack-router",
+    config: {
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      api: "trpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      i18n: "paraglide",
+    },
+  },
+
   // === AI VARIATIONS ===
   {
     name: "ai-cli-root-tooling",

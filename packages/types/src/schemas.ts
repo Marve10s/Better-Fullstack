@@ -324,7 +324,7 @@ export const RateLimitSchema = z
   .describe("Rate limiting and abuse protection");
 
 export const I18nSchema = z
-  .enum(["i18next", "next-intl", "none"])
+  .enum(["paraglide", "i18next", "next-intl", "none"])
   .describe("Internationalization (i18n) library");
 
 export const SearchSchema = z

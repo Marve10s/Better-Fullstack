@@ -15,6 +15,7 @@ import {
   processReadme,
   processAuthPlugins,
   processAlchemyPlugins,
+  processParaglidePlugins,
   processPwaPlugins,
   processEnvVariables,
 } from "./processors";
@@ -135,6 +136,7 @@ async function processGraphTemplates(
     processGraphBackendConnection(vfs, tsConfig);
     await processAuthPlugins(vfs, tsConfig);
     await processAlchemyPlugins(vfs, tsConfig);
+    await processParaglidePlugins(vfs, tsConfig);
     await processPwaPlugins(vfs, tsConfig);
     processCatalogs(vfs, tsConfig);
   }
@@ -244,6 +246,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       processEnvVariables(vfs, config);
       await processAuthPlugins(vfs, config);
       await processAlchemyPlugins(vfs, config);
+      await processParaglidePlugins(vfs, config);
       await processPwaPlugins(vfs, config);
       processCatalogs(vfs, config);
     }

@@ -381,6 +381,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "upstash-redis": { type: "si", slug: "upstash", hex: "00E9A3" },
 
   // ─── i18n ─────────────────────────────────────────────────────────────────
+  paraglide: {
+    type: "local",
+    src: "https://raw.githubusercontent.com/opral/paraglide-js/refs/heads/main/assets/paraglideNoBg.png",
+  },
   i18next: { type: "si", slug: "i18next", hex: "26A69A" },
   "next-intl": { type: "local", src: "/icon/next-intl.svg" },
 
