@@ -21,6 +21,11 @@ const SEARCH_PROMPT_OPTIONS = [
     hint: "Distributed search and analytics engine with local and cloud deployments",
   },
   {
+    value: "opensearch" as const,
+    label: "OpenSearch",
+    hint: "Open-source search and analytics suite compatible with Elasticsearch APIs",
+  },
+  {
     value: "algolia" as const,
     label: "Algolia",
     hint: "Hosted search API with instant results, typo tolerance, and analytics",

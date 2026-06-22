@@ -985,6 +985,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     meilisearch: "Meilisearch",
     typesense: "Typesense",
     elasticsearch: "Elasticsearch",
+    opensearch: "OpenSearch",
     algolia: "Algolia",
   },
   fileStorage: {

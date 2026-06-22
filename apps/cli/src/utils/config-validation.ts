@@ -1011,10 +1011,11 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
 
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
-  if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
+  const ecosystem = config.ecosystem ?? "typescript";
+  if (ecosystem !== "typescript" && config.search !== "meilisearch") {
     incompatibilityError({
       message: "Only Meilisearch search is available for non-TypeScript ecosystems.",
-      provided: { ecosystem: config.ecosystem ?? "typescript", search: config.search },
+      provided: { ecosystem, search: config.search },
       suggestions: ["Use --search meilisearch", "Use --search none"],
     });
   }

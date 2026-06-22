@@ -2707,6 +2707,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "opensearch",
+      name: "OpenSearch",
+      description: "Open-source search and analytics suite for self-managed or managed clusters",
+      icon: "https://cdn.simpleicons.org/opensearch/005EB8",
+      color: "from-blue-500 to-sky-700",
+      default: false,
+    },
+    {
       id: "algolia",
       name: "Algolia",
       description: "Hosted search API with instant results, typo tolerance, and analytics",
