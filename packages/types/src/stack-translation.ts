@@ -938,6 +938,7 @@ const COMMAND_ADDONS = new Set([
   "turborepo",
   "nx",
   "docker-compose",
+  "devcontainer",
   "ultracite",
   "fumadocs",
   "oxlint",

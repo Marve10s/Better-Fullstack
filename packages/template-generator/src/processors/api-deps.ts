@@ -106,6 +106,15 @@ function addApiPackageDeps(
       packagePath: pkgPath,
       dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
     });
+  } else if (api === "apollo-server") {
+    addPackageDependency({
+      vfs,
+      packagePath: pkgPath,
+      dependencies: ["@apollo/server", "graphql"],
+    });
+    if (isBetterAuth(auth)) {
+      addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["better-auth"] });
+    }
   } else if (api === "openapi") {
     addPackageDependency({
       vfs,

@@ -149,6 +149,17 @@ function compareLegacyConfigToStackParts(
   return diagnostics;
 }
 
+function getTypeScriptApiOptionsForFrontend(frontend: string) {
+  return getStackPartOptions({
+    role: "api",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    ownerToolId: "hono",
+    primaryToolIdsByRole: { frontend, backend: "hono" },
+  });
+}
+
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
     const stackParts = parseStackPartSpecs([
@@ -322,6 +333,13 @@ describe("stack graph", () => {
     expect(djangoOptions).toContain("django-ninja");
   });
 
+  it("filters Apollo Server API options by frontend graph context", () => {
+    expect(getTypeScriptApiOptionsForFrontend("tanstack-router")).toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("svelte")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("solid")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("astro")).not.toContain("apollo-server");
+  });
+
   it("filters Elixir capability options by owner and generated support", () => {
     const phoenixRealtimeOptions = getStackPartOptions({
       role: "realtime",
@@ -469,6 +487,16 @@ describe("stack graph", () => {
       "backend:typescript:hono",
       "backend.api:typescript:trpc",
     ]);
+    const apolloSvelteParts = parseStackPartSpecs([
+      "frontend:typescript:svelte",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
+    const apolloAstroParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
     const betterAuthParts = parseStackPartSpecs([
       "backend:typescript:hono",
       "backend.orm:typescript:typeorm",
@@ -479,9 +507,79 @@ describe("stack graph", () => {
     expect(validateStackParts(trpcParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
+    expect(validateStackParts(apolloSvelteParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
+    );
+    expect(validateStackParts(apolloAstroParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
+    );
     expect(validateStackParts(betterAuthParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
+  });
+
+  it("validates Keystatic CMS graph frontend and runtime support", () => {
+    const tanstackRouterParts = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const nuxtParts = parseStackPartSpecs([
+      "frontend:typescript:nuxt",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const astroWorkersParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:workers",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const nextParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const astroNodeParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "backend.cms:typescript:keystatic",
+    ]);
+
+    for (const parts of [tanstackRouterParts, nuxtParts]) {
+      expect(validateStackParts(parts).issues).toContainEqual(
+        expect.objectContaining({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          role: "cms",
+          toolId: "keystatic",
+          message: "Keystatic is currently scaffolded for Next.js and Astro frontends.",
+        }),
+      );
+    }
+    expect(validateStackParts(astroWorkersParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "cms",
+        toolId: "keystatic",
+        message: "Keystatic with Astro requires a Node-compatible runtime.",
+      }),
+    );
+    for (const parts of [nextParts, astroNodeParts]) {
+      expect(
+        validateStackParts(parts).issues.filter(
+          (issue) => issue.role === "cms" && issue.toolId === "keystatic",
+        ),
+      ).toEqual([]);
+    }
   });
 
   it("rejects incompatible backend-owned TypeScript AI graph selections", () => {
@@ -892,7 +990,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
   function getCompatibleBackendSingleConfig(field: string, value: string): Partial<ProjectConfig> {
     const config = { ...TS_BASE, [field]: value };
-    if (field === "cms" && value === "payload") {
+    if (field === "cms" && (value === "payload" || value === "keystatic")) {
       config.frontend = ["next"];
     }
     return config;

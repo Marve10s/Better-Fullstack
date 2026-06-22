@@ -244,6 +244,9 @@ export const dependencyVersionMap = {
   // GraphQL Yoga + Pothos
   "@pothos/core": "^4.12.0",
 
+  // Apollo Server
+  "@apollo/server": "^5.5.1",
+
   // OpenAPI
   "@asteasolutions/zod-to-openapi": "^8.5.0",
   "@scalar/express-api-reference": "^0.10.3",
@@ -346,7 +349,9 @@ export const dependencyVersionMap = {
   "@react-email/components": "^1.0.12",
   "react-email": "^6.6.0",
   react: "^19.2.7",
+  "react-dom": "^19.2.7",
   "@types/react": "^19.2.17",
+  "@types/react-dom": "^19.2.3",
   nodemailer: "^9.0.0",
   "@types/nodemailer": "^8.0.1",
   postmark: "^4.0.7",
@@ -718,6 +723,15 @@ export const dependencyVersionMap = {
   tinacms: "^3.9.2",
   "@tinacms/cli": "^2.5.0",
 
+  // Headless CMS - Keystatic
+  "@keystatic/core": "^0.5.50",
+  "@keystatic/next": "^5.0.4",
+  "@keystatic/astro": "^5.1.0",
+  "@markdoc/markdoc": "^0.5.7",
+  "@astrojs/react": "^5.0.7",
+  "@astrojs/markdoc": "^1.0.6",
+  "@astrojs/node": "^10.1.4",
+
   // File Storage - Cloudinary
   cloudinary: "^2.10.0",
 
@@ -752,6 +766,9 @@ export const dependencyVersionMap = {
 
   // Search - Elasticsearch
   "@elastic/elasticsearch": "^9.4.2",
+
+  // Search - OpenSearch
+  "@opensearch-project/opensearch": "^3.6.0",
 
   // Search - Algolia
   algoliasearch: "^5.54.0",

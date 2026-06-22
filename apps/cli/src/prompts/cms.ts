@@ -31,6 +31,11 @@ const CMS_PROMPT_OPTIONS = [
     hint: "Open data platform and headless CMS for SQL databases",
   },
   {
+    value: "keystatic" as const,
+    label: "Keystatic",
+    hint: "Git-backed CMS for Markdown, JSON, and YAML content",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip headless CMS setup",

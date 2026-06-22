@@ -69,6 +69,13 @@ export const TECH_OPTIONS: Record<
       color: "from-pink-500 to-rose-600",
     },
     {
+      id: "apollo-server",
+      name: "Apollo Server",
+      description: "Schema-first GraphQL server for Node.js runtimes",
+      icon: "https://cdn.simpleicons.org/apollographql/311C87",
+      color: "from-indigo-500 to-violet-700",
+    },
+    {
       id: "openapi",
       name: "OpenAPI",
       description: "REST endpoints with OpenAPI 3.1 and Scalar docs",
@@ -2279,6 +2286,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "devcontainer",
+      name: "DevContainer",
+      description: "VS Code container config with forwarded services",
+      icon: "https://cdn.simpleicons.org/docker/2496ED",
+      color: "from-sky-500 to-blue-700",
+      default: false,
+    },
+    {
       id: "wxt",
       name: "WXT",
       description: "Build browser extensions",
@@ -2715,6 +2730,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "opensearch",
+      name: "OpenSearch",
+      description: "Open-source search and analytics suite for self-managed or managed clusters",
+      icon: "https://cdn.simpleicons.org/opensearch/005EB8",
+      color: "from-blue-500 to-sky-700",
+      default: false,
+    },
+    {
       id: "algolia",
       name: "Algolia",
       description: "Hosted search API with instant results, typo tolerance, and analytics",
@@ -2905,6 +2928,14 @@ export const TECH_OPTIONS: Record<
       description: "Open data platform and headless CMS for SQL databases",
       icon: "https://cdn.simpleicons.org/directus/263238",
       color: "from-violet-500 to-fuchsia-600",
+      default: false,
+    },
+    {
+      id: "keystatic",
+      name: "Keystatic",
+      description: "Git-backed CMS for Markdown, JSON, and YAML content",
+      icon: "/icon/keystatic.svg",
+      color: "from-teal-500 to-emerald-600",
       default: false,
     },
     {

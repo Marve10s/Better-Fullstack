@@ -692,6 +692,7 @@ const APP_PLATFORM_VALUES = [
   "tanstack-db",
   "tanstack-pacer",
   "backend-utils",
+  "devcontainer",
   "docker-compose",
 ] as const satisfies readonly string[];
 
@@ -857,7 +858,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
-  api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga", openapi: "OpenAPI" },
+  api: {
+    trpc: "tRPC",
+    orpc: "oRPC",
+    "graphql-yoga": "GraphQL Yoga",
+    "apollo-server": "Apollo Server",
+    openapi: "OpenAPI",
+  },
   webFrontend: {
     next: "Next.js",
     vinext: "Vinext",
@@ -915,7 +922,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     sst: "SST",
     vercel: "Vercel",
   },
-  cms: { tinacms: "TinaCMS", directus: "Directus" },
+  cms: { tinacms: "TinaCMS", directus: "Directus", keystatic: "Keystatic" },
   auth: {
     "better-auth-organizations": "Better Auth + Organizations",
     auth0: "Auth0",
@@ -986,6 +993,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     meilisearch: "Meilisearch",
     typesense: "Typesense",
     elasticsearch: "Elasticsearch",
+    opensearch: "OpenSearch",
     algolia: "Algolia",
   },
   fileStorage: {
@@ -1074,6 +1082,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "tanstack-virtual": "TanStack Virtual",
     "tanstack-db": "TanStack DB",
     "tanstack-pacer": "TanStack Pacer",
+    devcontainer: "DevContainer",
     "docker-compose": "Docker Compose",
   },
   versionChannel: {

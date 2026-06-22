@@ -13,7 +13,7 @@ import { tsr } from "@/utils/ts-rest";
 {{else if (eq api "garph")}}
 import { query, resolved } from "@/utils/garph";
 import { useQuery } from "@tanstack/react-query";
-{{else if (eq api "graphql-yoga")}}
+{{else if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
 import { graphqlFetch } from "@/utils/graphql";
 import { useQuery } from "@tanstack/react-query";
 {{else if (eq api "openapi")}}
@@ -55,7 +55,7 @@ function HomeComponent() {
     queryKey: ["healthCheck"],
     queryFn: () => resolved(() => query.health),
   });
-  {{else if (eq api "graphql-yoga")}}
+  {{else if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
   const healthCheck = useQuery({
     queryKey: ["healthCheck"],
     queryFn: () => graphqlFetch<{ health: string }>("{ health }").then((d) => d.health),

@@ -5,10 +5,11 @@ import type { VirtualFileSystem } from "../core/virtual-fs";
 import { addPackageDependency, type AvailableDependencies } from "../utils/add-deps";
 
 export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { cms, frontend, database } = config;
+  const { cms, frontend, database, runtime } = config;
   if (!cms || cms === "none") return;
 
   const hasNext = frontend.includes("next");
+  const hasAstro = frontend.includes("astro");
   const hasWebFrontend =
     frontend.includes("next") ||
     frontend.includes("astro") ||
@@ -29,6 +30,43 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
         dependencies: getPayloadDeps(database),
       });
     }
+    return;
+  }
+
+  if (cms === "keystatic") {
+    if (!hasNext && !hasAstro) return;
+    if (!hasNext && hasAstro && runtime === "workers") return;
+
+    const webPath = "apps/web/package.json";
+    if (!vfs.exists(webPath)) return;
+
+    if (hasNext) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPath,
+        dependencies: ["@keystatic/core", "@keystatic/next", "@markdoc/markdoc"],
+      });
+      return;
+    }
+
+    const astroDependencies: AvailableDependencies[] = [
+      "@keystatic/core",
+      "@keystatic/astro",
+      "@astrojs/react",
+      "@astrojs/markdoc",
+      "react",
+      "react-dom",
+    ];
+    if (runtime !== "workers") {
+      astroDependencies.push("@astrojs/node");
+    }
+
+    addPackageDependency({
+      vfs,
+      packagePath: webPath,
+      dependencies: astroDependencies,
+      devDependencies: ["@types/react", "@types/react-dom"],
+    });
     return;
   }
 

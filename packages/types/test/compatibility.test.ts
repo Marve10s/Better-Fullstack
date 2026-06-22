@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import {
   analyzeStackCompatibility,
+  allowedApisForFrontends,
   evaluateCompatibility,
   getAIFrontendCompatibilityIssue,
   getApiFrontendCompatibilityIssue,
@@ -37,6 +38,139 @@ describe("compatibility issue helpers", () => {
 
   it("allows frontend-agnostic API options", () => {
     expect(getApiFrontendCompatibilityIssue("orpc", ["svelte"])).toBeUndefined();
+  });
+
+  it("treats Apollo Server as a React-only API option", () => {
+    const issue = getApiFrontendCompatibilityIssue("apollo-server", ["svelte"]);
+
+    expect(issue).toMatchObject({
+      code: "API_REQUIRES_REACT_FRONTEND",
+      message: "Apollo Server API requires React-based frontends.",
+      category: "api",
+      optionId: "apollo-server",
+      provided: { api: "apollo-server", frontend: "svelte" },
+    });
+    expect(allowedApisForFrontends(["tanstack-router"])).toContain("apollo-server");
+    expect(allowedApisForFrontends(["svelte"])).not.toContain("apollo-server");
+    expect(allowedApisForFrontends(["astro"])).not.toContain("apollo-server");
+    expect(allowedApisForFrontends(["astro"], "none")).not.toContain("apollo-server");
+    expect(allowedApisForFrontends(["astro"], "react")).toContain("apollo-server");
+
+    expect(getApiFrontendCompatibilityIssue("apollo-server", ["astro"], "none")).toMatchObject({
+      code: "ASTRO_API_REQUIRES_REACT_INTEGRATION",
+      message: "Apollo Server API requires React integration with Astro.",
+      category: "api",
+      optionId: "apollo-server",
+      provided: { api: "apollo-server", "astro-integration": "none" },
+    });
+  });
+
+  it("disables Apollo Server for unsupported backend and frontend selections", () => {
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "self",
+          nativeFrontend: [],
+          webFrontend: ["tanstack-router"],
+        },
+        "api",
+        "apollo-server",
+      ),
+    ).toBe("Apollo Server scaffolding currently requires a standalone TypeScript backend");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "hono",
+          nativeFrontend: [],
+          webFrontend: ["svelte"],
+        },
+        "api",
+        "apollo-server",
+      ),
+    ).toBe("svelte requires oRPC, not Apollo Server");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "hono",
+          nativeFrontend: [],
+          webFrontend: ["astro"],
+          astroIntegration: "none",
+        },
+        "api",
+        "apollo-server",
+      ),
+    ).toBe("Apollo Server requires React integration with Astro");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          api: "apollo-server",
+          backend: "hono",
+          nativeFrontend: [],
+          webFrontend: ["astro"],
+          astroIntegration: "none",
+        },
+        "astroIntegration",
+        "none",
+      ),
+    ).toBe("Apollo Server requires React integration with Astro");
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "hono",
+          nativeFrontend: [],
+          webFrontend: ["astro"],
+          astroIntegration: "react",
+        },
+        "api",
+        "apollo-server",
+      ),
+    ).toBeNull();
+
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          backend: "hono",
+          nativeFrontend: [],
+          webFrontend: ["tanstack-router"],
+        },
+        "api",
+        "apollo-server",
+      ),
+    ).toBeNull();
+  });
+
+  it("adjusts retained Apollo Server API selections for incompatible frontends", () => {
+    const svelteResult = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      backend: "hono",
+      nativeFrontend: [],
+      webFrontend: ["svelte"],
+      api: "apollo-server",
+    });
+    const astroResult = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      backend: "hono",
+      nativeFrontend: [],
+      webFrontend: ["astro"],
+      astroIntegration: "none",
+      api: "apollo-server",
+    });
+
+    expect(svelteResult.adjustedStack.api).toBe("orpc");
+    expect(astroResult.adjustedStack).toMatchObject({
+      api: "orpc",
+      astroIntegration: "none",
+    });
   });
 
   it("returns structured TanStack AI frontend issues", () => {
@@ -255,6 +389,51 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(DEFAULT_STACK_SELECTION, "cms", "payload")).toBe(
       "Payload CMS v3 requires a Next.js frontend.",
     );
+    expect(getDisabledReason(DEFAULT_STACK_SELECTION, "cms", "keystatic")).toBe(
+      "Keystatic is currently scaffolded for Next.js and Astro frontends.",
+    );
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["nuxt"],
+        },
+        "cms",
+        "keystatic",
+      ),
+    ).toBe("Keystatic is currently scaffolded for Next.js and Astro frontends.");
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["astro"],
+          runtime: "workers",
+        },
+        "cms",
+        "keystatic",
+      ),
+    ).toBe("Keystatic with Astro requires a Node-compatible runtime.");
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["next"],
+        },
+        "cms",
+        "keystatic",
+      ),
+    ).toBeNull();
+    expect(
+      getDisabledReason(
+        {
+          ...DEFAULT_STACK_SELECTION,
+          webFrontend: ["astro"],
+          runtime: "node",
+        },
+        "cms",
+        "keystatic",
+      ),
+    ).toBeNull();
 
     expect(
       getDisabledReason(
