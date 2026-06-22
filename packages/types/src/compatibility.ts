@@ -2075,31 +2075,36 @@ export const getDisabledReason = (
     if (optionId === "tauri" && !hasTauriCompatibleFrontend(currentStack.webFrontend)) {
       return "Tauri requires TanStack Router, React Router, Nuxt, Svelte, Solid, Next.js, or Astro";
     }
-    if (optionId === "docker-compose") {
+    if (optionId === "docker-compose" || optionId === "devcontainer") {
+      const title = optionId === "devcontainer" ? "DevContainer" : "Docker Compose";
+
       if (currentStack.backend === "convex") {
-        return "Docker Compose is not compatible with Convex backend (managed service)";
+        return `${title} is not compatible with Convex backend (managed service)`;
       }
       if (currentStack.runtime === "workers") {
-        return "Docker Compose is not compatible with Cloudflare Workers runtime";
+        return `${title} is not compatible with Cloudflare Workers runtime`;
+      }
+      if (!["typescript", "python", "go", "rust", "java"].includes(currentStack.ecosystem)) {
+        return `${title} currently supports TypeScript, Python, Go, Rust, or Java projects`;
       }
       if (
         currentStack.ecosystem === "typescript" &&
         !hasDockerComposeCompatibleFrontend(currentStack.webFrontend)
       ) {
-        return "Docker Compose currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro";
+        return `${title} currently supports Next.js, TanStack Router, React Router, React Vite, Solid, or Astro`;
       }
       if (
         currentStack.ecosystem === "typescript" &&
         currentStack.backend === "self" &&
         !currentStack.webFrontend.includes("next")
       ) {
-        return "Docker Compose self-backend support currently requires Next.js";
+        return `${title} self-backend support currently requires Next.js`;
       }
       if (currentStack.ecosystem === "rust" && currentStack.rustFrontend !== "none") {
-        return "Docker Compose for Rust currently supports server-only projects";
+        return `${title} for Rust currently supports server-only projects`;
       }
       if (currentStack.ecosystem === "java" && currentStack.javaWebFramework !== "spring-boot") {
-        return "Docker Compose for Java currently requires Spring Boot";
+        return `${title} for Java currently requires Spring Boot`;
       }
       if (
         currentStack.ecosystem === "python" &&
@@ -2107,7 +2112,7 @@ export const getDisabledReason = (
         currentStack.database !== "sqlite" &&
         currentStack.database !== "postgres"
       ) {
-        return "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres";
+        return `${title} for Python ORM projects currently supports SQLite defaults or Postgres`;
       }
     }
     if (optionId === "backend-utils") {
@@ -3219,6 +3224,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   ],
   "backend-utils": [],
   "docker-compose": [],
+  devcontainer: [],
   none: [],
 };
 

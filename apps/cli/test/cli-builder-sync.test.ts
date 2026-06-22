@@ -108,6 +108,7 @@ describe("CLI and Builder catalog parity", () => {
       ["javaLibraries", "spring-devtools", "Spring Boot DevTools"],
       ["javaLibraries", "micrometer-prometheus", "Micrometer Prometheus"],
       ["javaLibraries", "thymeleaf", "Thymeleaf"],
+      ["appPlatforms", "devcontainer", "DevContainer"],
     ];
 
     for (const [category, id, label] of expectedLabels) {

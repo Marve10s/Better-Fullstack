@@ -345,6 +345,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.docker.com/compose/",
     githubUrl: "https://github.com/docker/compose",
   },
+  devcontainer: {
+    docsUrl: "https://containers.dev/",
+    githubUrl: "https://github.com/devcontainers/spec",
+  },
   cloudflare: {
     docsUrl: "https://developers.cloudflare.com/",
     githubUrl: "https://github.com/cloudflare/cloudflare-docs",

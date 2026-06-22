@@ -1,0 +1,9 @@
+services:
+  devcontainer:
+    image: "{{devcontainerImage}}"
+    command: sleep infinity
+    init: true
+    environment:
+      DEVCONTAINER: "true"
+    volumes:
+      - .:/workspaces/{{projectName}}:cached

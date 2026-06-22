@@ -2279,6 +2279,14 @@ export const TECH_OPTIONS: Record<
       default: false,
     },
     {
+      id: "devcontainer",
+      name: "DevContainer",
+      description: "VS Code container config with forwarded services",
+      icon: "https://cdn.simpleicons.org/docker/2496ED",
+      color: "from-sky-500 to-blue-700",
+      default: false,
+    },
+    {
       id: "wxt",
       name: "WXT",
       description: "Build browser extensions",

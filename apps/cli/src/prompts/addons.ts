@@ -122,6 +122,10 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
       label = "Backend Utils";
       hint = "asyncHandler, ApiResponse & global error handler for your server";
       break;
+    case "devcontainer":
+      label = "DevContainer";
+      hint = "VS Code container config with stack-aware ports and extensions";
+      break;
     case "docker-compose":
       label = "Docker Compose";
       hint = "Containerize your app for deployment";
@@ -137,7 +141,7 @@ function getAddonDisplay(addon: Addons): { label: string; hint: string } {
 const ADDON_GROUPS: Record<string, Addons[]> = {
   Tooling: ["turborepo", "nx", "biome", "oxlint", "ultracite", "husky", "lefthook"],
   Documentation: ["starlight", "fumadocs"],
-  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "docker-compose"],
+  Extensions: ["pwa", "tauri", "opentui", "wxt", "ruler", "devcontainer", "docker-compose"],
   Integrations: ["msw", "storybook", "backend-utils"],
   "AI Agents": ["mcp", "skills"],
   "Data Fetching": ["swr"],
