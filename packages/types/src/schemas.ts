@@ -198,7 +198,7 @@ export const DatabaseSetupSchema = z
   .describe("Database hosting setup");
 
 export const APISchema = z
-  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"])
+  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "apollo-server", "openapi", "none"])
   .describe("API type");
 
 export const AuthSchema = z

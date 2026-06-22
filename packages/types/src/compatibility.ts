@@ -752,27 +752,28 @@ export const analyzeStackCompatibility = (
   // ============================================
 
   if (nextStack.backend !== "convex" && nextStack.backend !== "none") {
-    // Nuxt, Svelte, Solid, SolidStart require oRPC (not tRPC)
+    // Nuxt, Svelte, Solid, SolidStart require oRPC for React-only API clients.
     const needsOrpc = nextStack.webFrontend.some((f) =>
       ["nuxt", "svelte", "solid", "solid-start"].includes(f),
     );
-    if (needsOrpc && nextStack.api === "trpc") {
+    if (needsOrpc && (nextStack.api === "trpc" || nextStack.api === "apollo-server")) {
       nextStack.api = "orpc";
       changed = true;
       changes.push({ category: "api", message: "API set to 'oRPC' (required for this frontend)" });
     }
 
-    // Astro with non-React integration requires oRPC
+    // Astro with non-React integration requires oRPC for React-only API clients.
     if (
       nextStack.webFrontend.includes("astro") &&
       nextStack.astroIntegration !== "react" &&
-      nextStack.api === "trpc"
+      (nextStack.api === "trpc" || nextStack.api === "apollo-server")
     ) {
+      const apiName = nextStack.api === "apollo-server" ? "Apollo Server" : "tRPC";
       nextStack.api = "orpc";
       changed = true;
       changes.push({
         category: "api",
-        message: "API set to 'oRPC' (tRPC requires React integration with Astro)",
+        message: `API set to 'oRPC' (${apiName} requires React integration with Astro)`,
       });
     }
   }
@@ -1906,6 +1907,30 @@ export const getDisabledReason = (
     }
   }
 
+  if (category === "api" && optionId === "apollo-server") {
+    const needsReactFrontend = currentStack.webFrontend.some((f) =>
+      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+    );
+    if (needsReactFrontend) {
+      const frontendName = currentStack.webFrontend.find((f) =>
+        ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      );
+      return `${frontendName} requires oRPC, not Apollo Server`;
+    }
+    if (currentStack.webFrontend.includes("astro") && currentStack.astroIntegration !== "react") {
+      return "Apollo Server requires React integration with Astro";
+    }
+    if (currentStack.backend === "self") {
+      return "Apollo Server scaffolding currently requires a standalone TypeScript backend";
+    }
+    if (currentStack.nativeFrontend.length > 0) {
+      return "Apollo Server is currently available for web frontends, not React Native";
+    }
+    if (!["hono", "express", "fastify", "elysia"].includes(currentStack.backend)) {
+      return "Apollo Server currently supports Hono, Express, Fastify, and Elysia backends";
+    }
+  }
+
   if (category === "appPlatforms" && optionId === "nx" && currentStack.appPlatforms.includes("turborepo")) {
     return "Choose either Nx or Turborepo, not both";
   }
@@ -1921,8 +1946,20 @@ export const getDisabledReason = (
     if (!currentStack.webFrontend.includes("astro") && optionId !== "none") {
       return "Astro integration requires Astro frontend";
     }
-    // tRPC requires React integration
-    if (currentStack.api === "trpc" && optionId !== "react" && optionId !== "none") {
+    // React-only APIs require React integration
+    if (
+      currentStack.webFrontend.includes("astro") &&
+      currentStack.api === "apollo-server" &&
+      optionId !== "react"
+    ) {
+      return "Apollo Server requires React integration with Astro";
+    }
+    if (
+      currentStack.webFrontend.includes("astro") &&
+      currentStack.api === "trpc" &&
+      optionId !== "react" &&
+      optionId !== "none"
+    ) {
       return "tRPC requires React integration with Astro";
     }
   }
@@ -3258,7 +3295,16 @@ export function allowedApisForFrontends(
   const includesNative = frontends.some((frontend) =>
     ["native-bare", "native-uniwind", "native-unistyles"].includes(frontend),
   );
-  const base: API[] = ["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"];
+  const base: API[] = [
+    "trpc",
+    "orpc",
+    "ts-rest",
+    "garph",
+    "graphql-yoga",
+    "apollo-server",
+    "openapi",
+    "none",
+  ];
 
   if (includesNative) {
     return ["trpc", "orpc", "ts-rest", "garph", "none"] as API[];
@@ -3273,7 +3319,7 @@ export function allowedApisForFrontends(
     return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
   }
 
-  if (includesAstro && astroIntegration && astroIntegration !== "react") {
+  if (includesAstro && astroIntegration !== "react") {
     return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
   }
 
@@ -3284,6 +3330,7 @@ function getReactOnlyApiDisplayName(api: API) {
   if (api === "trpc") return "tRPC";
   if (api === "ts-rest") return "ts-rest";
   if (api === "openapi") return "OpenAPI";
+  if (api === "apollo-server") return "Apollo Server";
   return "garph";
 }
 
@@ -3303,7 +3350,8 @@ export function getApiFrontendCompatibilityIssue(
   const includesRedwood = frontends.includes("redwood");
   const includesFresh = frontends.includes("fresh");
   const includesSolidStart = frontends.includes("solid-start");
-  const isReactOnlyApi = api === "trpc" || api === "ts-rest" || api === "garph";
+  const isReactOnlyApi =
+    api === "trpc" || api === "ts-rest" || api === "garph" || api === "apollo-server";
 
   if ((includesNuxt || includesSvelte || includesSolid || includesSolidStart) && isReactOnlyApi) {
     const incompatibleFrontend = includesNuxt
@@ -3372,13 +3420,13 @@ export function getApiFrontendCompatibilityIssue(
     };
   }
 
-  if (includesAstro && astroIntegration && astroIntegration !== "react" && isReactOnlyApi) {
+  if (includesAstro && astroIntegration !== "react" && isReactOnlyApi) {
     return {
       code: "ASTRO_API_REQUIRES_REACT_INTEGRATION",
       message: `${getReactOnlyApiDisplayName(api)} API requires React integration with Astro.`,
       category: "api",
       optionId: api,
-      provided: { api, "astro-integration": astroIntegration },
+      provided: { api, "astro-integration": astroIntegration ?? "none" },
       suggestions: [
         "Use --api orpc (works with all Astro integrations)",
         "Use --api none",

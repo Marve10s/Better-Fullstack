@@ -244,6 +244,9 @@ export const dependencyVersionMap = {
   // GraphQL Yoga + Pothos
   "@pothos/core": "^4.12.0",
 
+  // Apollo Server
+  "@apollo/server": "^5.5.1",
+
   // OpenAPI
   "@asteasolutions/zod-to-openapi": "^8.5.0",
   "@scalar/express-api-reference": "^0.10.3",

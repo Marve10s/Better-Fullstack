@@ -17,6 +17,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://the-guild.dev/graphql/yoga-server/docs",
     githubUrl: "https://github.com/dotansimha/graphql-yoga",
   },
+  "apollo-server": {
+    docsUrl: "https://www.apollographql.com/docs/apollo-server/",
+    githubUrl: "https://github.com/apollographql/apollo-server",
+  },
   openapi: {
     docsUrl: "https://spec.openapis.org/oas/latest.html",
     githubUrl: "https://github.com/OAI/OpenAPI-Specification",

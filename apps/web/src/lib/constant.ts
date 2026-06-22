@@ -69,6 +69,13 @@ export const TECH_OPTIONS: Record<
       color: "from-pink-500 to-rose-600",
     },
     {
+      id: "apollo-server",
+      name: "Apollo Server",
+      description: "Schema-first GraphQL server for Node.js runtimes",
+      icon: "https://cdn.simpleicons.org/apollographql/311C87",
+      color: "from-indigo-500 to-violet-700",
+    },
+    {
       id: "openapi",
       name: "OpenAPI",
       description: "REST endpoints with OpenAPI 3.1 and Scalar docs",

@@ -130,6 +130,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   trpc: { type: "si", slug: "trpc", hex: "398CCB" },
   orpc: { type: "local", src: "/icon/orpc.svg", needsInvert: "dark" }, // black circle SVG
   "graphql-yoga": { type: "si", slug: "graphql", hex: "E10098" },
+  "apollo-server": { type: "si", slug: "apollographql", hex: "311C87" },
   openapi: { type: "si", slug: "openapiinitiative", hex: "6BA539" },
 
   // ─── Web Frontend ──────────────────────────────────────────────────────────
