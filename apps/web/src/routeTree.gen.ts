@@ -15,6 +15,7 @@ import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as StackShareRouteImport } from './routes/$stackShare'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
@@ -54,6 +55,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StackShareRoute = StackShareRouteImport.update({
@@ -110,6 +116,7 @@ const ApiPreviewRoute = ApiPreviewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
+  '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
+  '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
+  '/analytics': typeof AnalyticsRoute
   '/compare': typeof CompareRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$stackShare'
+    | '/analytics'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$stackShare'
+    | '/analytics'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$stackShare'
+    | '/analytics'
     | '/compare'
     | '/llms.txt'
     | '/mcp'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StackShareRoute: typeof StackShareRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   CompareRoute: typeof CompareRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$stackShare': {
@@ -358,6 +378,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StackShareRoute: StackShareRoute,
+  AnalyticsRoute: AnalyticsRoute,
   CompareRoute: CompareRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,

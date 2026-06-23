@@ -37,6 +37,13 @@ export async function processCMSTemplates(
     return;
   }
 
+  if (config.cms === "keystatic") {
+    if (config.frontend.includes("next")) {
+      processTemplatesFromPrefix(vfs, templates, "cms/keystatic/web/next", "apps/web", config);
+    }
+    return;
+  }
+
   const variant = getCMSVariant(config.frontend);
   if (!variant) return;
 

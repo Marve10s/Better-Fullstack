@@ -357,3 +357,95 @@ describe("CLI history command", () => {
     expect(parsedHistory[0]?.reproducibleCommand).toBe(expectedCommand);
   });
 });
+
+function telemetrySettingsPath(homeDir: string): string {
+  if (process.platform === "darwin") {
+    return join(homeDir, "Library", "Application Support", "better-fullstack", "telemetry.json");
+  }
+  // Linux/others: XDG_DATA_HOME is set to <homeDir>/.local/share below.
+  return join(homeDir, ".local", "share", "better-fullstack", "telemetry.json");
+}
+
+describe("CLI telemetry command", () => {
+  it("reports status, persists enable/disable, and honors env override precedence", async () => {
+    const root = await makeTempRoot("bfs-telemetry-test-");
+    const homeDir = join(root, "home");
+    await mkdir(homeDir, { recursive: true });
+
+    const sharedEnv = {
+      HOME: homeDir,
+      XDG_CONFIG_HOME: join(homeDir, ".config"),
+      XDG_DATA_HOME: join(homeDir, ".local", "share"),
+    };
+
+    // Default (no preference, no env override): enabled, source "default".
+    const statusDefault = await runCli(["telemetry", "status", "--json"], {
+      cwd: root,
+      env: sharedEnv,
+    });
+    expect(statusDefault.exitCode).toBe(0);
+    const parsedDefault = JSON.parse(cliOutput(statusDefault)) as {
+      enabled: boolean;
+      source: string;
+      persisted: boolean | null;
+    };
+    expect(parsedDefault.enabled).toBe(true);
+    expect(parsedDefault.source).toBe("default");
+    expect(parsedDefault.persisted).toBeNull();
+
+    // Disable persists the preference to disk.
+    const disableResult = await runCli(["telemetry", "disable"], { cwd: root, env: sharedEnv });
+    expect(disableResult.exitCode).toBe(0);
+    expect(cliOutput(disableResult)).toContain("Telemetry disabled");
+
+    const settingsPath = telemetrySettingsPath(homeDir);
+    const persisted = JSON.parse(await readFile(settingsPath, "utf8")) as {
+      enabled?: boolean;
+      noticeShown?: boolean;
+    };
+    expect(persisted.enabled).toBe(false);
+    expect(persisted.noticeShown).toBe(true);
+
+    // A fresh process reads the persisted preference.
+    const statusDisabled = await runCli(["telemetry", "status", "--json"], {
+      cwd: root,
+      env: sharedEnv,
+    });
+    const parsedDisabled = JSON.parse(cliOutput(statusDisabled)) as {
+      enabled: boolean;
+      source: string;
+      persisted: boolean | null;
+    };
+    expect(parsedDisabled.enabled).toBe(false);
+    expect(parsedDisabled.source).toBe("preference");
+    expect(parsedDisabled.persisted).toBe(false);
+
+    // Re-enable.
+    const enableResult = await runCli(["telemetry", "enable"], { cwd: root, env: sharedEnv });
+    expect(enableResult.exitCode).toBe(0);
+    expect(cliOutput(enableResult)).toContain("Telemetry enabled");
+
+    const statusEnabled = await runCli(["telemetry", "status", "--json"], {
+      cwd: root,
+      env: sharedEnv,
+    });
+    const parsedEnabled = JSON.parse(cliOutput(statusEnabled)) as {
+      enabled: boolean;
+      source: string;
+    };
+    expect(parsedEnabled.enabled).toBe(true);
+    expect(parsedEnabled.source).toBe("preference");
+
+    // Env override beats the persisted (enabled) preference.
+    const statusEnvOverride = await runCli(["telemetry", "status", "--json"], {
+      cwd: root,
+      env: { ...sharedEnv, BTS_TELEMETRY_DISABLED: "1" },
+    });
+    const parsedEnvOverride = JSON.parse(cliOutput(statusEnvOverride)) as {
+      enabled: boolean;
+      source: string;
+    };
+    expect(parsedEnvOverride.enabled).toBe(false);
+    expect(parsedEnvOverride.source).toBe("env");
+  });
+});

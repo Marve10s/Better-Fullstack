@@ -3,12 +3,36 @@ import type { Frontend, I18n } from "../types";
 import { exitCancelled } from "../utils/errors";
 import { isCancel, navigableSelect } from "./navigable";
 
+const PARAGLIDE_FRONTENDS = new Set<Frontend>([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
+
 export async function getI18nChoice(i18n?: I18n, frontend?: Frontend[]) {
   if (i18n !== undefined) return i18n;
 
   const hasNext = frontend?.includes("next") ?? false;
+  const hasParaglideFrontend = frontend?.some((f) => PARAGLIDE_FRONTENDS.has(f)) ?? false;
 
   const options = [
+    ...(hasParaglideFrontend
+      ? [
+          {
+            value: "paraglide" as const,
+            label: "Paraglide",
+            hint: "Type-safe, compiler-based i18n for modern web frontends",
+          },
+        ]
+      : []),
     {
       value: "i18next" as const,
       label: "i18next",

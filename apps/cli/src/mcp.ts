@@ -1,9 +1,8 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   type AddInput,
   AddonsSchema,
   AISchema,
+  AiDocsSchema,
   AnalyticsSchema,
   AnimationSchema,
   APISchema,
@@ -14,6 +13,7 @@ import {
   CachingSchema,
   CMSSchema,
   type CompatibilityInput,
+  type CreateInput,
   CSSFrameworkSchema,
   DatabaseSchema,
   DatabaseSetupSchema,
@@ -125,21 +125,30 @@ import {
   RustOrmSchema,
   RustWebFrameworkSchema,
   SearchSchema,
+  VectorDbSchema,
   ServerDeploySchema,
   StateManagementSchema,
   TestingSchema,
   UILibrarySchema,
   ValidationSchema,
+  VersionChannelSchema,
   WebDeploySchema,
   analyzeStackCompatibility,
+  evaluateCompatibility,
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  TEMPLATE_VALUES,
+  type Template,
 } from "@better-fullstack/types";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import z from "zod";
 
 import { previewBtsConfigUpdate, readBtsConfig, writeBtsConfig } from "./utils/bts-config";
+import { generateReproducibleCommand } from "./utils/generate-reproducible-command";
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
+import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
@@ -186,26 +195,22 @@ function getGuidance() {
       python:
         "Backend/AI: web framework (fastapi/django), ORM (sqlalchemy/sqlmodel), AI/ML integrations, task queues.",
       go: "Backend/CLI: web framework (gin/echo), ORM (gorm/sqlc), gRPC, CLI tools, logging.",
-      java:
-        "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
+      java: "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
       dotnet:
         "Backend/API: ASP.NET Core Minimal APIs, MVC, or Blazor with EF Core/Dapper, Identity/Auth0, SignalR, xUnit, and Docker-ready output.",
       elixir:
         "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, and Mix releases/Docker.",
     },
     fieldRules: {
-      projectName:
-        "kebab-case directory name. Required for bfs_create_project.",
-      ecosystem:
-        "Must be set first. Determines which other fields are relevant.",
+      projectName: "kebab-case directory name. Required for bfs_create_project.",
+      ecosystem: "Must be set first. Determines which other fields are relevant.",
       frontend:
         "ARRAY of strings. TypeScript only. Supports multiple frontends in one monorepo. Use [] for API-only.",
       arrayFields:
         'Use arrays for frontend, addons, examples, aiDocs, rustLibraries, pythonAi, pythonTesting, pythonCli, goTesting, javaLibraries, javaTestingLibraries, dotnetTesting, dotnetObservability, and elixirLibraries. Use [] for "none" on multi-select fields.',
       backend:
         'String. "self" means fullstack mode (Next.js/Vinext/TanStack Start/Nuxt/Astro API routes). "none" for frontend-only.',
-      runtime:
-        '"bun" or "node". Must be "none" when backend is "self" or "convex".',
+      runtime: '"bun" or "node". Must be "none" when backend is "self" or "convex".',
       addons:
         "ARRAY of strings. Monorepo tools, code quality, desktop (tauri), browser extensions (wxt), etc.",
       email:
@@ -214,6 +219,8 @@ function getGuidance() {
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support sentry or none.",
       search:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support meilisearch or none.",
+      vectorDb:
+        "String. TypeScript-only vector database for AI embeddings: pgvector, qdrant, chroma, pinecone, or none. Each provider is a standalone service (pgvector connects to a dedicated Postgres+pgvector instance via PGVECTOR_DATABASE_URL). Requires a standalone backend (not convex/none).",
     },
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",
@@ -345,13 +352,14 @@ function getSchemaOptions(category?: string, ecosystem?: string) {
   if (category) {
     const options = getMcpSchemaOptionValues(category);
     if (options.length === 0) {
-      return { error: `Unknown category: ${category}. Available: ${MCP_ALL_SCHEMA_KEYS.join(", ")}` };
+      return {
+        error: `Unknown category: ${category}. Available: ${MCP_ALL_SCHEMA_KEYS.join(", ")}`,
+      };
     }
     return { category, options };
   }
-  const allowedKeys = ecosystem && isMcpEcosystem(ecosystem)
-    ? getMcpSchemaKeysForEcosystem(ecosystem)
-    : null;
+  const allowedKeys =
+    ecosystem && isMcpEcosystem(ecosystem) ? getMcpSchemaKeysForEcosystem(ecosystem) : null;
   const result: Record<string, string[]> = {};
   for (const key of MCP_ALL_SCHEMA_KEYS) {
     if (allowedKeys && !allowedKeys.has(key)) continue;
@@ -368,10 +376,14 @@ function getInstallCommand(
   javaWebFramework?: string,
 ): string {
   switch (ecosystem) {
-    case "rust": return `cd ${projectName} && cargo build`;
-    case "python": return `cd ${projectName} && uv sync`;
-    case "go": return `cd ${projectName} && go mod tidy`;
-    case "elixir": return `cd ${projectName} && mix deps.get && mix compile && mix test`;
+    case "rust":
+      return `cd ${projectName} && cargo build`;
+    case "python":
+      return `cd ${projectName} && uv sync`;
+    case "go":
+      return `cd ${projectName} && go mod tidy`;
+    case "elixir":
+      return `cd ${projectName} && mix deps.get && mix compile && mix test`;
     case "java":
       if (javaWebFramework === "quarkus") {
         return javaBuildTool === "gradle"
@@ -381,16 +393,23 @@ function getInstallCommand(
       return javaBuildTool === "gradle"
         ? `cd ${projectName} && ./gradlew test && ./gradlew bootRun`
         : `cd ${projectName} && ./mvnw test && ./mvnw spring-boot:run`;
-    default: return `cd ${projectName} && ${packageManager ?? "bun"} install`;
+    default:
+      return `cd ${projectName} && ${packageManager ?? "bun"} install`;
   }
 }
-
 
 function mcpInputSchema<T extends Record<string, unknown>>(schema: T): Record<string, unknown> {
   return schema;
 }
 
-function filterCompatibilityResult(result: { adjustedStack: CompatibilityInput | null; notes: Record<string, unknown>; changes: { category: string; message: string }[] }, ecosystem: string) {
+function filterCompatibilityResult(
+  result: {
+    adjustedStack: CompatibilityInput | null;
+    notes: Record<string, unknown>;
+    changes: { category: string; message: string }[];
+  },
+  ecosystem: string,
+) {
   const { adjustedStack, changes } = result;
   if (!adjustedStack) return { adjustedStack: null, changes };
 
@@ -406,7 +425,14 @@ function filterCompatibilityResult(result: { adjustedStack: CompatibilityInput |
   return { adjustedStack: filtered, changes };
 }
 
-const MCP_CODE_QUALITY_ADDONS = new Set(["biome", "oxlint", "ultracite", "lefthook", "husky", "ruler"]);
+const MCP_CODE_QUALITY_ADDONS = new Set([
+  "biome",
+  "oxlint",
+  "ultracite",
+  "lefthook",
+  "husky",
+  "ruler",
+]);
 const MCP_DOCUMENTATION_ADDONS = new Set(["starlight", "fumadocs"]);
 
 const MCP_COMPATIBILITY_DEFAULTS = {
@@ -446,6 +472,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   shadcnRadius: "default",
   cms: "none",
   search: "none",
+  vectorDb: "none",
   fileStorage: "none",
   mobileUI: "none",
   mobileStorage: "none",
@@ -456,7 +483,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   versionChannel: "stable",
   examples: [],
   aiSdk: "none",
-  aiDocs: ["claude-md"],
+  aiDocs: ["claude-md", "agents-md"],
   git: "true",
   install: "false",
   api: "none",
@@ -573,17 +600,17 @@ function applyMcpInputDefaults<TDefaults extends Record<string, string | string[
 }
 
 function getMcpCompatibilityDefaults(input: Record<string, unknown>) {
-  return applyMcpInputDefaults(
-    MCP_COMPATIBILITY_DEFAULTS,
-    input,
-  ) as Pick<CompatibilityInput, keyof typeof MCP_COMPATIBILITY_DEFAULTS>;
+  return applyMcpInputDefaults(MCP_COMPATIBILITY_DEFAULTS, input) as Pick<
+    CompatibilityInput,
+    keyof typeof MCP_COMPATIBILITY_DEFAULTS
+  >;
 }
 
 function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
-  return applyMcpInputDefaults(
-    MCP_PROJECT_CONFIG_DEFAULTS,
-    input,
-  ) as Pick<ProjectConfig, keyof typeof MCP_PROJECT_CONFIG_DEFAULTS>;
+  return applyMcpInputDefaults(MCP_PROJECT_CONFIG_DEFAULTS, input) as Pick<
+    ProjectConfig,
+    keyof typeof MCP_PROJECT_CONFIG_DEFAULTS
+  >;
 }
 
 function buildProjectConfig(
@@ -625,8 +652,6 @@ function buildProjectConfig(
     mobileDeepLinking:
       (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
       (hasMobileProject ? "expo-linking" : "none"),
-    astroIntegration: "none",
-    versionChannel: "stable",
     shadcnBase: "radix",
     shadcnStyle: "nova",
     shadcnIconLibrary: "lucide",
@@ -634,7 +659,7 @@ function buildProjectConfig(
     shadcnBaseColor: "neutral",
     shadcnFont: "inter",
     shadcnRadius: "default",
-    aiDocs: ["claude-md"],
+    aiDocs: (input.aiDocs as ProjectConfig["aiDocs"]) ?? ["claude-md", "agents-md"],
     git: !!overrides,
     install: false,
   };
@@ -664,8 +689,7 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
   const codeQuality = addons.filter((a) => MCP_CODE_QUALITY_ADDONS.has(a));
   const documentation = addons.filter((a) => MCP_DOCUMENTATION_ADDONS.has(a));
   const appPlatforms = addons.filter(
-    (a) =>
-      ![...codeQuality, ...documentation, "none"].includes(a),
+    (a) => ![...codeQuality, ...documentation, "none"].includes(a),
   );
 
   return {
@@ -685,7 +709,11 @@ function buildCompatibilityInput(input: Record<string, unknown>): CompatibilityI
   };
 }
 
-function summarizeTree(tree: { fileCount: number; directoryCount: number; root: { children: { type: string; name: string; children?: unknown[] }[] } }) {
+function summarizeTree(tree: {
+  fileCount: number;
+  directoryCount: number;
+  root: { children: { type: string; name: string; children?: unknown[] }[] };
+}) {
   const paths: string[] = [];
   function walk(nodes: { type: string; name: string; children?: unknown[] }[], prefix: string) {
     for (const node of nodes) {
@@ -839,43 +867,574 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
 3. Service categories such as email and observability are scaffold-time options. To add those to an existing app, inspect the generated templates from bfs_plan_project and apply the equivalent dependency, env var, and initialization changes manually.
 `;
 
+type McpToolAnnotations = {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+};
+
+const guidanceOutputSchema = {
+  workflow: z.array(z.string()),
+  ecosystems: z.record(z.string(), z.string()),
+  fieldRules: z.record(z.string(), z.string()),
+  ambiguityRules: z.array(z.string()),
+  criticalConstraints: z.array(z.string()),
+};
+
+const schemaOutputSchema = {
+  category: z.string().optional(),
+  options: z.array(z.string()).optional(),
+  categories: z.record(z.string(), z.array(z.string())).optional(),
+  error: z.string().optional(),
+};
+
+const compatibilityIssueOutputSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  category: z.string().optional(),
+  optionId: z.string().optional(),
+  provided: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
+  suggestions: z.array(z.string()).optional(),
+});
+
+const compatibilityOutputSchema = {
+  adjustedStack: z.record(z.string(), z.unknown()).nullable(),
+  changes: z.array(z.object({ category: z.string(), message: z.string() })),
+  issues: z.array(compatibilityIssueOutputSchema),
+  hasIssues: z.boolean(),
+};
+
+const graphPreviewOutputShape = {
+  graphSummary: z.string().optional(),
+  effectiveStack: z.record(z.string(), z.string()).optional(),
+  stackPartSpecs: z.array(z.string()).optional(),
+};
+
+const planProjectOutputSchema = {
+  success: z.boolean(),
+  fileCount: z.number().optional(),
+  directoryCount: z.number().optional(),
+  files: z.array(z.string()).optional(),
+  ...graphPreviewOutputShape,
+};
+
+const createProjectOutputSchema = {
+  success: z.boolean(),
+  projectDirectory: z.string().optional(),
+  fileCount: z.number().optional(),
+  addonWarnings: z.array(z.string()).optional(),
+  message: z.string().optional(),
+  ...graphPreviewOutputShape,
+};
+
+const planAdditionOutputSchema = {
+  success: z.boolean(),
+  existingConfig: z
+    .object({
+      ecosystem: z.string(),
+      frontend: z.array(z.string()).optional(),
+      backend: z.string().optional(),
+      addons: z.array(z.string()).optional(),
+      graphSummary: z.string().optional(),
+      effectiveStack: z.record(z.string(), z.string()).optional(),
+      stackPartSpecs: z.array(z.string()),
+    })
+    .optional(),
+  proposedAdditions: z
+    .object({
+      newAddons: z.array(z.string()),
+      webDeploy: z.string().nullable(),
+      serverDeploy: z.string().nullable(),
+      graphSummary: z.string().optional(),
+      effectiveStack: z.record(z.string(), z.string()).optional(),
+      stackPartSpecs: z.array(z.string()),
+    })
+    .optional(),
+  alreadyPresent: z.array(z.string()).optional(),
+  compatibilityWarnings: z.array(z.string()).optional(),
+};
+
+const addFeatureOutputSchema = {
+  success: z.boolean(),
+  addedAddons: z.array(z.string()).optional(),
+  projectDir: z.string().optional(),
+  message: z.string().optional(),
+  ...graphPreviewOutputShape,
+};
+
+function buildPresetStackSummary(config: CreateInput): string {
+  const parts: string[] = [];
+  const frontend = (config.frontend ?? []).filter((item) => item !== "none");
+  if (frontend.length > 0) parts.push(`frontend: ${frontend.join("+")}`);
+  if (config.backend && config.backend !== "none") parts.push(`backend: ${config.backend}`);
+  if (config.runtime && config.runtime !== "none") parts.push(`runtime: ${config.runtime}`);
+  if (config.database && config.database !== "none") parts.push(`database: ${config.database}`);
+  if (config.orm && config.orm !== "none") parts.push(`orm: ${config.orm}`);
+  if (config.api && config.api !== "none") parts.push(`api: ${config.api}`);
+  if (config.auth && config.auth !== "none") parts.push(`auth: ${config.auth}`);
+  if (config.payments && config.payments !== "none") parts.push(`payments: ${config.payments}`);
+  const addons = (config.addons ?? []).filter((item) => item !== "none");
+  if (addons.length > 0) parts.push(`addons: ${addons.join("+")}`);
+  return parts.join(", ");
+}
+
+function listMcpPresets() {
+  const presets: {
+    id: Template;
+    name: string;
+    description: string;
+    ecosystem: "typescript" | "react-native";
+    stackSummary: string;
+    stack: CreateInput;
+  }[] = [];
+  for (const id of TEMPLATE_VALUES) {
+    if (id === "none") continue;
+    const config = getTemplateConfig(id);
+    if (!config) continue;
+    const frontend = (config.frontend ?? []) as string[];
+    const ecosystem = frontend.some((item) => item.startsWith("native-"))
+      ? "react-native"
+      : "typescript";
+    presets.push({
+      id,
+      name: id.toUpperCase(),
+      description: getTemplateDescription(id),
+      ecosystem,
+      stackSummary: buildPresetStackSummary(config),
+      stack: config,
+    });
+  }
+  return presets;
+}
+
+function briefMatches(text: string, keywords: string[]): boolean {
+  const tokens = new Set(text.split(/[^a-z0-9]+/i).filter(Boolean));
+  return keywords.some((keyword) =>
+    keyword.includes(" ") ? text.includes(keyword) : tokens.has(keyword),
+  );
+}
+
+function matchNearestPreset(input: Record<string, unknown>): Template | null {
+  const signatureKeys = ["database", "backend", "api", "auth"] as const;
+  const inputFrontend = (input.frontend as string[] | undefined)?.[0];
+  let best: { id: Template; score: number } | null = null;
+  for (const id of TEMPLATE_VALUES) {
+    if (id === "none") continue;
+    const config = getTemplateConfig(id);
+    if (!config) continue;
+    let score = 0;
+    for (const key of signatureKeys) {
+      const value = config[key];
+      if (value !== undefined && value === input[key]) score += 1;
+    }
+    const presetFrontend = (config.frontend ?? [])[0];
+    if (presetFrontend && presetFrontend === inputFrontend) score += 1;
+    if (!best || score > best.score) best = { id, score };
+  }
+  return best && best.score >= 3 ? best.id : null;
+}
+
+function recommendStackFromBrief(
+  brief: string,
+  ecosystemHint?: ProjectConfig["ecosystem"],
+): { input: Record<string, unknown>; rationale: string[]; matchedPreset: Template | null } {
+  const text = brief.toLowerCase();
+  const has = (...keywords: string[]) => briefMatches(text, keywords);
+  const rationale: string[] = [];
+  const input: Record<string, unknown> = {};
+
+  if (ecosystemHint && ecosystemHint !== "typescript") {
+    input.ecosystem = ecosystemHint;
+    rationale.push(
+      `Ecosystem forced to ${ecosystemHint} from the provided hint; using ${ecosystemHint} defaults.`,
+    );
+    rationale.push(
+      `Brief keyword analysis (database/auth/payments/AI feature detection) currently applies to the TypeScript ecosystem only — configure those features explicitly for ${ecosystemHint} via bfs_check_compatibility.`,
+    );
+    return { input, rationale, matchedPreset: null };
+  }
+
+  const wantsMobile =
+    has("mobile", "ios", "android", "expo") ||
+    text.includes("react native") ||
+    text.includes("react-native") ||
+    text.includes("app store") ||
+    text.includes("play store");
+  if (wantsMobile) {
+    input.ecosystem = "react-native";
+    input.frontend = ["native-uniwind"];
+    input.backend = "none";
+    input.runtime = "none";
+    input.api = "none";
+    input.database = "none";
+    input.orm = "none";
+    rationale.push(
+      "Mobile app detected: React Native (Expo) with the native-uniwind styling preset and no bundled backend.",
+    );
+    return { input, rationale, matchedPreset: "uniwind" };
+  }
+
+  input.ecosystem = "typescript";
+  input.frontend = ["tanstack-router"];
+  input.backend = "hono";
+  input.runtime = "bun";
+  input.database = "sqlite";
+  input.orm = "drizzle";
+  input.api = "trpc";
+  rationale.push(
+    "Default TypeScript fullstack baseline: TanStack Router + Hono + tRPC on SQLite/Drizzle (Bun).",
+  );
+
+  if (has("postgres", "postgresql", "supabase", "neon")) {
+    input.database = "postgres";
+    input.orm = "drizzle";
+    rationale.push("Postgres requested: database=postgres, orm=drizzle.");
+  } else if (has("mysql", "planetscale")) {
+    input.database = "mysql";
+    input.orm = "drizzle";
+    rationale.push("MySQL requested: database=mysql, orm=drizzle.");
+  } else if (has("mongo", "mongodb")) {
+    input.database = "mongodb";
+    input.orm = "mongoose";
+    rationale.push("MongoDB requested: database=mongodb, orm=mongoose.");
+  }
+
+  const wantsSaas = has(
+    "saas",
+    "payment",
+    "payments",
+    "billing",
+    "subscription",
+    "subscriptions",
+    "checkout",
+    "stripe",
+    "ecommerce",
+  );
+  if (wantsSaas) {
+    input.payments = "stripe";
+    input.auth = "better-auth";
+    if (input.database === "sqlite") {
+      input.database = "postgres";
+      input.orm = "drizzle";
+    }
+    rationale.push(
+      "SaaS/payments detected: Stripe + better-auth, upgraded to Postgres/Drizzle for production data.",
+    );
+  } else if (
+    has(
+      "auth",
+      "login",
+      "signin",
+      "signup",
+      "account",
+      "accounts",
+      "user",
+      "users",
+      "authentication",
+      "admin",
+      "dashboard",
+      "portal",
+      "members",
+      "rbac",
+      "permissions",
+      "roles",
+    )
+  ) {
+    input.auth = "better-auth";
+    rationale.push("Authentication requested: auth=better-auth.");
+  }
+
+  if (
+    has("ai", "chatbot", "llm", "gpt", "rag", "agent", "agents", "openai", "assistant", "copilot")
+  ) {
+    input.ai = "vercel-ai";
+    input.examples = ["ai"];
+    rationale.push("AI/chatbot detected: Vercel AI SDK with the bundled AI example.");
+  }
+
+  if (has("blog", "content", "cms", "marketing", "landing", "publishing")) {
+    input.cms = "sanity";
+    rationale.push("Content/marketing site detected: Sanity CMS.");
+  }
+
+  if (
+    has("realtime", "collaborative", "collaboration", "multiplayer", "presence") ||
+    text.includes("real-time") ||
+    text.includes("real time")
+  ) {
+    input.realtime = "socket-io";
+    rationale.push("Realtime/collaboration detected: Socket.IO.");
+  }
+
+  let matchedPreset: Template | null = null;
+  if (has("t3")) matchedPreset = "t3";
+  else if (has("mern")) matchedPreset = "mern";
+  else if (has("pern")) matchedPreset = "pern";
+  else matchedPreset = matchNearestPreset(input);
+  if (matchedPreset) {
+    rationale.push(`Closest ready-made preset: ${matchedPreset}.`);
+  }
+
+  return { input, rationale, matchedPreset };
+}
+
+function normalizeAdjustedToInput(
+  adjusted: Record<string, unknown>,
+  base: Record<string, unknown>,
+): Record<string, unknown> {
+  const webFrontend = (adjusted.webFrontend as string[] | undefined) ?? [];
+  const nativeFrontend = (adjusted.nativeFrontend as string[] | undefined) ?? [];
+  const frontend = [...webFrontend, ...nativeFrontend];
+  const codeQuality = (adjusted.codeQuality as string[] | undefined) ?? [];
+  const documentation = (adjusted.documentation as string[] | undefined) ?? [];
+  const appPlatforms = (adjusted.appPlatforms as string[] | undefined) ?? [];
+  return {
+    ...adjusted,
+    projectName: base.projectName,
+    ecosystem: adjusted.ecosystem ?? base.ecosystem,
+    frontend: frontend.length > 0 ? frontend : (base.frontend as string[] | undefined),
+    addons: [...codeQuality, ...documentation, ...appPlatforms],
+    ai: adjusted.aiSdk ?? base.ai,
+  };
+}
+
+function summarizeRecommendedConfig(config: ProjectConfig) {
+  // frontend/backend/runtime/api are TypeScript-web concepts; for native backend
+  // ecosystems (rust/go/python/java/dotnet/elixir) the framework lives in stackParts,
+  // so surfacing the TS-shaped defaults here would misrepresent the recommendation.
+  const isTsWeb = config.ecosystem === "typescript" || config.ecosystem === "react-native";
+  return {
+    projectName: config.projectName,
+    ecosystem: config.ecosystem,
+    ...(isTsWeb
+      ? {
+          frontend: config.frontend,
+          backend: config.backend,
+          runtime: config.runtime,
+          api: config.api,
+        }
+      : {}),
+    database: config.database,
+    orm: config.orm,
+    auth: config.auth,
+    payments: config.payments,
+    ai: config.ai,
+    cms: config.cms,
+    realtime: config.realtime,
+    examples: config.examples,
+    addons: config.addons,
+  };
+}
+
 export async function startMcpServer() {
   const server = new McpServer(
     { name: "better-fullstack", version: getLatestCLIVersion() },
     { instructions: INSTRUCTIONS, capabilities: { logging: {} } },
   );
 
-  const registerTool = server.tool.bind(server) as unknown as <Input extends Record<string, unknown>>(
+  const registerTool = <Input extends Record<string, unknown> = Record<string, unknown>>(
     name: string,
-    description: string,
-    inputSchema: Record<string, unknown>,
+    config: {
+      description: string;
+      inputSchema?: Record<string, unknown>;
+      outputSchema?: Record<string, unknown>;
+      annotations?: McpToolAnnotations;
+    },
     cb: (input: Input) => unknown,
-  ) => void;
+  ): void => {
+    (
+      server.registerTool as unknown as (
+        toolName: string,
+        toolConfig: Record<string, unknown>,
+        toolCb: (input: Input) => unknown,
+      ) => void
+    )(name, config, cb);
+  };
 
   registerTool(
     "bfs_get_guidance",
-    "Returns workflow rules, field semantics, ambiguity rules, and critical constraints. Call this FIRST before using other tools.",
-    mcpInputSchema({}),
+    {
+      description:
+        "Returns workflow rules, field semantics, ambiguity rules, and critical constraints. Call this FIRST before using other tools.",
+      inputSchema: mcpInputSchema({}),
+      outputSchema: guidanceOutputSchema,
+      annotations: {
+        title: "Get guidance",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
     async () => {
       const guidance = getGuidance();
       return {
         content: [{ type: "text", text: JSON.stringify(guidance, null, 2) }],
+        structuredContent: guidance,
       };
     },
   );
 
   registerTool(
     "bfs_get_schema",
-    "Returns valid options for a specific category (e.g., 'database', 'frontend', 'backend') or ALL categories. Use ecosystem to filter to relevant categories only.",
-    mcpInputSchema({
-      category: z.string().optional().describe("Category name (e.g., 'database', 'orm', 'frontend'). Omit for all categories."),
-      ecosystem: EcosystemSchema.optional().describe("Filter categories to this ecosystem (e.g., 'rust' returns only Rust + shared categories)."),
-    }),
-    async ({ category, ecosystem }: { category?: string; ecosystem?: ProjectConfig["ecosystem"] }) => {
+    {
+      description:
+        "Returns valid options for a specific category (e.g., 'database', 'frontend', 'backend') or ALL categories. Use ecosystem to filter to relevant categories only.",
+      inputSchema: mcpInputSchema({
+        category: z
+          .string()
+          .optional()
+          .describe(
+            "Category name (e.g., 'database', 'orm', 'frontend'). Omit for all categories.",
+          ),
+        ecosystem: EcosystemSchema.optional().describe(
+          "Filter categories to this ecosystem (e.g., 'rust' returns only Rust + shared categories).",
+        ),
+      }),
+      outputSchema: schemaOutputSchema,
+      annotations: {
+        title: "Get schema options",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({
+      category,
+      ecosystem,
+    }: {
+      category?: string;
+      ecosystem?: ProjectConfig["ecosystem"];
+    }) => {
       const result = getSchemaOptions(category, ecosystem);
+      const structuredContent =
+        "error" in result
+          ? { error: result.error }
+          : "category" in result
+            ? { category: result.category, options: result.options }
+            : { categories: result };
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent,
       };
+    },
+  );
+
+  registerTool(
+    "bfs_list_presets",
+    {
+      description:
+        "Lists the ready-made stack presets available to the CLI (mern, pern, t3, uniwind) with id, name, description, ecosystem, and a stack summary. Use to discover a starting point before bfs_recommend_stack, bfs_plan_project, or bfs_create_project.",
+      inputSchema: mcpInputSchema({}),
+      annotations: {
+        title: "List presets",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async () => {
+      const presets = listMcpPresets();
+      return {
+        content: [{ type: "text", text: JSON.stringify({ presets }, null, 2) }],
+      };
+    },
+  );
+
+  registerTool(
+    "bfs_recommend_stack",
+    {
+      description:
+        "Recommends a compatibility-validated stack from a natural-language brief using deterministic keyword rules (no LLM). Returns the config, rationale, any auto-applied compatibility adjustments, the nearest matching preset, and a reproducible CLI command.",
+      inputSchema: mcpInputSchema({
+        brief: z
+          .string()
+          .describe(
+            "Natural-language description of the app to build (e.g., 'a SaaS with payments and auth').",
+          ),
+        ecosystem: EcosystemSchema.optional().describe(
+          "Force a language ecosystem. Omit to let the brief decide (defaults to TypeScript).",
+        ),
+        projectName: z
+          .string()
+          .optional()
+          .describe("Project name (kebab-case). Default: 'my-app'."),
+      }),
+      annotations: {
+        title: "Recommend stack",
+        readOnlyHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({
+      brief,
+      ecosystem,
+      projectName,
+    }: {
+      brief: string;
+      ecosystem?: ProjectConfig["ecosystem"];
+      projectName?: string;
+    }) => {
+      try {
+        const {
+          input: recommended,
+          rationale,
+          matchedPreset,
+        } = recommendStackFromBrief(brief, ecosystem);
+        const baseInput: Record<string, unknown> = {
+          projectName: projectName ?? "my-app",
+          ...recommended,
+        };
+        const compatResult = analyzeStackCompatibility(buildCompatibilityInput(baseInput));
+        const normalizedInput = compatResult.adjustedStack
+          ? normalizeAdjustedToInput(
+              compatResult.adjustedStack as unknown as Record<string, unknown>,
+              baseInput,
+            )
+          : baseInput;
+        const finalConfig = buildProjectConfig(normalizedInput, {
+          projectDir: `/${baseInput.projectName as string}`,
+        });
+        const adjustments = compatResult.changes.map(
+          (change) => `${change.category}: ${change.message}`,
+        );
+        const graphPreview = getMcpGraphPreview(finalConfig);
+        const reproducibleCommand = generateReproducibleCommand(finalConfig);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  brief,
+                  config: summarizeRecommendedConfig(finalConfig),
+                  rationale,
+                  adjustments,
+                  matchedPreset,
+                  reproducibleCommand,
+                  ...graphPreview,
+                  nextSteps:
+                    "Call bfs_plan_project with this config to preview the files, then bfs_create_project to scaffold it.",
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Recommend stack failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
     },
   );
 
@@ -981,58 +1540,106 @@ export async function startMcpServer() {
 
   registerTool(
     "bfs_check_compatibility",
-    "Validates a stack combination and returns auto-adjusted selections with warnings. Call BEFORE creating a project to avoid invalid combinations.",
-    mcpInputSchema({
-      ecosystem: EcosystemSchema.describe("Language ecosystem"),
-      frontend: z.array(z.string()).optional().describe("Web frontend frameworks (TypeScript only)"),
-      backend: z.string().optional().describe("Backend framework"),
-      runtime: z.string().optional().describe("JavaScript runtime"),
-      database: z.string().optional().describe("Database type"),
-      orm: z.string().optional().describe("ORM"),
-      api: z.string().optional().describe("API layer"),
-      auth: z.string().optional().describe("Auth provider"),
-      payments: z.string().optional().describe("Payments provider"),
-      email: EmailSchema.optional().describe("Email provider"),
-      fileUpload: FileUploadSchema.optional().describe("File upload provider"),
-      ai: AISchema.optional().describe("AI SDK"),
-      stateManagement: StateManagementSchema.optional().describe("State management"),
-      forms: FormsSchema.optional().describe("Forms library"),
-      validation: ValidationSchema.optional().describe("Validation library"),
-      testing: TestingSchema.optional().describe("Testing framework"),
-      realtime: RealtimeSchema.optional().describe("Realtime library"),
-      jobQueue: JobQueueSchema.optional().describe("Job queue"),
-      animation: AnimationSchema.optional().describe("Animation library"),
-      logging: LoggingSchema.optional().describe("Logging library"),
-      observability: ObservabilitySchema.optional().describe("Observability provider"),
-      featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
-      analytics: AnalyticsSchema.optional().describe("Analytics provider"),
-      cms: CMSSchema.optional().describe("CMS"),
-      caching: CachingSchema.optional().describe("Caching solution"),
-      rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
-      i18n: I18nSchema.optional().describe("Internationalization library"),
-      search: SearchSchema.optional().describe("Search engine"),
-      fileStorage: FileStorageSchema.optional().describe("File storage"),
-      ...mobileInputSchema,
-      ...deploymentInputSchema,
-      astroIntegration: AstroIntegrationSchema.optional().describe("Astro UI framework integration"),
-      uiLibrary: z.string().optional().describe("UI component library"),
-      cssFramework: z.string().optional().describe("CSS framework"),
-      addons: z.array(AddonsSchema).optional().describe("Addon list"),
-      examples: z.array(ExamplesSchema).optional().describe("Example templates"),
-      packageManager: PackageManagerSchema.optional().describe("Package manager"),
-      ...crossEcosystemInputSchema,
-    }),
+    {
+      description:
+        "Validates a stack combination and returns auto-adjusted selections with warnings. Call BEFORE creating a project to avoid invalid combinations.",
+      outputSchema: compatibilityOutputSchema,
+      annotations: {
+        title: "Check stack compatibility",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+      inputSchema: mcpInputSchema({
+        ecosystem: EcosystemSchema.describe("Language ecosystem"),
+        frontend: z
+          .array(z.string())
+          .optional()
+          .describe("Web frontend frameworks (TypeScript only)"),
+        backend: z.string().optional().describe("Backend framework"),
+        runtime: z.string().optional().describe("JavaScript runtime"),
+        database: z.string().optional().describe("Database type"),
+        orm: z.string().optional().describe("ORM"),
+        api: z.string().optional().describe("API layer"),
+        auth: z.string().optional().describe("Auth provider"),
+        payments: z.string().optional().describe("Payments provider"),
+        email: EmailSchema.optional().describe("Email provider"),
+        fileUpload: FileUploadSchema.optional().describe("File upload provider"),
+        ai: AISchema.optional().describe("AI SDK"),
+        stateManagement: StateManagementSchema.optional().describe("State management"),
+        forms: FormsSchema.optional().describe("Forms library"),
+        validation: ValidationSchema.optional().describe("Validation library"),
+        testing: TestingSchema.optional().describe("Testing framework"),
+        realtime: RealtimeSchema.optional().describe("Realtime library"),
+        jobQueue: JobQueueSchema.optional().describe("Job queue"),
+        animation: AnimationSchema.optional().describe("Animation library"),
+        logging: LoggingSchema.optional().describe("Logging library"),
+        observability: ObservabilitySchema.optional().describe("Observability provider"),
+        featureFlags: FeatureFlagsSchema.optional().describe("Feature flags provider"),
+        analytics: AnalyticsSchema.optional().describe("Analytics provider"),
+        cms: CMSSchema.optional().describe("CMS"),
+        caching: CachingSchema.optional().describe("Caching solution"),
+        rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+        i18n: I18nSchema.optional().describe("Internationalization library"),
+        search: SearchSchema.optional().describe("Search engine"),
+        vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
+        fileStorage: FileStorageSchema.optional().describe("File storage"),
+        ...mobileInputSchema,
+        ...deploymentInputSchema,
+        astroIntegration: AstroIntegrationSchema.optional().describe(
+          "Astro UI framework integration",
+        ),
+        uiLibrary: z.string().optional().describe("UI component library"),
+        cssFramework: z.string().optional().describe("CSS framework"),
+        addons: z.array(AddonsSchema).optional().describe("Addon list"),
+        examples: z.array(ExamplesSchema).optional().describe("Example templates"),
+        packageManager: PackageManagerSchema.optional().describe("Package manager"),
+        ...crossEcosystemInputSchema,
+      }),
+    },
     async (input: Record<string, unknown>) => {
       try {
         const compatInput = buildCompatibilityInput(input);
         const result = analyzeStackCompatibility(compatInput);
         const filtered = filterCompatibilityResult(result, input.ecosystem as string);
+        const evaluation = evaluateCompatibility(compatInput);
+        // Filter issues to the selected ecosystem, mirroring filterCompatibilityResult.
+        // buildCompatibilityInput injects every ecosystem's defaults, so evaluate()
+        // otherwise flags cross-ecosystem leftovers (elixir*/cssFramework/etc.) as
+        // spurious INCOMPATIBLE issues on a perfectly valid stack.
+        const relevantEcosystem = isMcpEcosystem(input.ecosystem as string)
+          ? (input.ecosystem as OptionCategoryEcosystem)
+          : "typescript";
+        const relevantIssueKeys = new Set<string>([
+          ...getMcpCategoryKeysForEcosystem(relevantEcosystem),
+          ...MCP_SHARED_COMPATIBILITY_KEYS,
+        ]);
+        const issues = evaluation.issues.filter(
+          (issue) => !issue.category || relevantIssueKeys.has(issue.category),
+        );
+        const structuredContent = {
+          adjustedStack: filtered.adjustedStack,
+          changes: filtered.changes,
+          issues,
+          hasIssues: issues.length > 0,
+        };
         return {
-          content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ ...filtered, issues }, null, 2),
+            },
+          ],
+          structuredContent,
         };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Compatibility check failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [
+            {
+              type: "text",
+              text: `Compatibility check failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -1068,6 +1675,7 @@ export async function startMcpServer() {
     observability: ObservabilitySchema.optional().describe("Observability"),
     featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
     search: SearchSchema.optional().describe("Search engine"),
+    vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
     caching: CachingSchema.optional().describe("Caching solution"),
     rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
     i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
@@ -1076,33 +1684,68 @@ export async function startMcpServer() {
     ...mobileInputSchema,
     fileUpload: FileUploadSchema.optional().describe("File upload"),
     ...deploymentInputSchema,
+    effect: EffectSchema.optional().describe("Effect ecosystem (effect, effect-full)"),
+    analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics provider"),
+    astroIntegration: AstroIntegrationSchema.optional().describe(
+      "Astro UI framework integration (react, vue, svelte, solid)",
+    ),
+    aiDocs: z
+      .array(AiDocsSchema)
+      .optional()
+      .describe("AI documentation files (claude-md, agents-md, cursorrules)"),
+    versionChannel: VersionChannelSchema.optional().describe(
+      "Dependency version channel (stable, latest, beta)",
+    ),
     ...crossEcosystemInputSchema,
   };
 
   registerTool(
     "bfs_plan_project",
-    "Dry-run: generates a project in-memory and returns the file tree WITHOUT writing to disk. Use this to preview what would be created.",
-    mcpInputSchema(planCreateSchema),
+    {
+      description:
+        "Dry-run: generates a project in-memory and returns the file tree WITHOUT writing to disk. Use this to preview what would be created.",
+      inputSchema: mcpInputSchema(planCreateSchema),
+      outputSchema: planProjectOutputSchema,
+      annotations: {
+        title: "Plan project (dry run)",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
     async (input: Record<string, unknown>) => {
       try {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import("@better-fullstack/template-generator");
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
+          await import("@better-fullstack/template-generator");
         const config = buildProjectConfig(input);
         const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
 
         if (result.success && result.tree) {
           const summary = summarizeTree(result.tree);
           const graphPreview = getMcpGraphPreview(config);
+          const payload = { success: true as const, ...summary, ...graphPreview };
           return {
-            content: [{ type: "text", text: JSON.stringify({ success: true, ...summary, ...graphPreview }, null, 2) }],
+            content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+            structuredContent: payload,
           };
         }
         return {
-          content: [{ type: "text", text: JSON.stringify({ success: false, error: result.error ?? "Unknown error" }) }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ success: false, error: result.error ?? "Unknown error" }),
+            },
+          ],
           isError: true,
         };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Plan failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [
+            {
+              type: "text",
+              text: `Plan failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -1111,16 +1754,39 @@ export async function startMcpServer() {
 
   registerTool(
     "bfs_create_project",
-    "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
-    mcpInputSchema({ ...planCreateSchema, projectName: z.string().describe("Project name (kebab-case). Will be the directory name.") }),
+    {
+      description:
+        "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
+      inputSchema: mcpInputSchema({
+        ...planCreateSchema,
+        projectName: z.string().describe("Project name (kebab-case). Will be the directory name."),
+        targetDir: z
+          .string()
+          .optional()
+          .describe(
+            "Absolute path to the parent directory in which to create the project folder (default: current working directory).",
+          ),
+      }),
+      outputSchema: createProjectOutputSchema,
+      annotations: {
+        title: "Create project",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
     async (input: Record<string, unknown> & { projectName: string }) => {
       try {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import("@better-fullstack/template-generator");
-        const { writeTreeToFilesystem } = await import("@better-fullstack/template-generator/fs-writer");
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
+          await import("@better-fullstack/template-generator");
+        const { writeTreeToFilesystem } =
+          await import("@better-fullstack/template-generator/fs-writer");
         const path = await import("node:path");
 
         const projectName = sanitizePath(input.projectName);
-        const projectDir = path.resolve(process.cwd(), projectName);
+        const targetDir = input.targetDir ? sanitizePath(input.targetDir as string) : undefined;
+        const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
         const config = buildProjectConfig(input, { projectDir });
 
         const fs = await import("node:fs/promises");
@@ -1129,7 +1795,15 @@ export async function startMcpServer() {
         const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
         if (!result.success || !result.tree) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ success: false, error: result.error ?? "Generation failed" }) }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: false,
+                  error: result.error ?? "Generation failed",
+                }),
+              },
+            ],
             isError: true,
           };
         }
@@ -1153,22 +1827,26 @@ export async function startMcpServer() {
           input.javaBuildTool as string | undefined,
           input.javaWebFramework as string | undefined,
         );
+        const payload = {
+          success: true as const,
+          projectDirectory: projectDir,
+          fileCount: result.tree.fileCount,
+          ...graphPreview,
+          ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
+          message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
+        };
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              success: true,
-              projectDirectory: projectDir,
-              fileCount: result.tree.fileCount,
-              ...graphPreview,
-              ...(addonWarnings.length > 0 ? { addonWarnings } : {}),
-              message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
-            }, null, 2),
-          }],
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
         };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Project creation failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [
+            {
+              type: "text",
+              text: `Project creation failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -1177,20 +1855,48 @@ export async function startMcpServer() {
 
   registerTool(
     "bfs_plan_addition",
-    "Validates what would be added to an existing project. Reads the project config (bts.jsonc) and checks which addons are new.",
-    mcpInputSchema({
-      projectDir: z.string().describe("Absolute path to the existing project directory"),
-      addons: z.array(AddonsSchema).optional().describe("Addons to add"),
-      webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
-      serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
-    }),
-    async ({ projectDir, addons, webDeploy, serverDeploy }: { projectDir: string; addons?: ProjectConfig["addons"]; webDeploy?: ProjectConfig["webDeploy"]; serverDeploy?: ProjectConfig["serverDeploy"] }) => {
+    {
+      description:
+        "Validates what would be added to an existing project. Reads the project config (bts.jsonc) and checks which addons are new.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Absolute path to the existing project directory"),
+        addons: z.array(AddonsSchema).optional().describe("Addons to add"),
+        webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
+        serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
+      }),
+      outputSchema: planAdditionOutputSchema,
+      annotations: {
+        title: "Plan feature addition",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({
+      projectDir,
+      addons,
+      webDeploy,
+      serverDeploy,
+    }: {
+      projectDir: string;
+      addons?: ProjectConfig["addons"];
+      webDeploy?: ProjectConfig["webDeploy"];
+      serverDeploy?: ProjectConfig["serverDeploy"];
+    }) => {
       try {
         const safePath = sanitizePath(projectDir);
         const config = await readBtsConfig(safePath);
         if (!config) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ success: false, error: `No bts.jsonc found in ${safePath}. Is this a Better-Fullstack project?` }) }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: false,
+                  error: `No bts.jsonc found in ${safePath}. Is this a Better-Fullstack project?`,
+                }),
+              },
+            ],
             isError: true,
           };
         }
@@ -1213,40 +1919,43 @@ export async function startMcpServer() {
           serverDeploy: serverDeploy ?? config.serverDeploy,
         });
         const compatResult = analyzeStackCompatibility(compatInput);
-        const compatibilityWarnings = compatResult.changes.length > 0
-          ? compatResult.changes.map((c) => c.message)
-          : undefined;
+        const compatibilityWarnings =
+          compatResult.changes.length > 0 ? compatResult.changes.map((c) => c.message) : undefined;
 
+        const payload = {
+          success: true as const,
+          existingConfig: {
+            ecosystem: config.ecosystem,
+            frontend: config.frontend,
+            backend: config.backend,
+            addons: config.addons,
+            graphSummary: existingGraphPreview.graphSummary,
+            effectiveStack: existingGraphPreview.effectiveStack,
+            stackPartSpecs: existingGraphPreview.stackPartSpecs,
+          },
+          proposedAdditions: {
+            newAddons,
+            webDeploy: webDeploy ?? null,
+            serverDeploy: serverDeploy ?? null,
+            graphSummary: proposedGraphPreview.graphSummary,
+            effectiveStack: proposedGraphPreview.effectiveStack,
+            stackPartSpecs: proposedGraphPreview.stackPartSpecs,
+          },
+          alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
+          ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
+        };
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              success: true,
-              existingConfig: {
-                ecosystem: config.ecosystem,
-                frontend: config.frontend,
-                backend: config.backend,
-                addons: config.addons,
-                graphSummary: existingGraphPreview.graphSummary,
-                effectiveStack: existingGraphPreview.effectiveStack,
-                stackPartSpecs: existingGraphPreview.stackPartSpecs,
-              },
-              proposedAdditions: {
-                newAddons,
-                webDeploy: webDeploy ?? null,
-                serverDeploy: serverDeploy ?? null,
-                graphSummary: proposedGraphPreview.graphSummary,
-                effectiveStack: proposedGraphPreview.effectiveStack,
-                stackPartSpecs: proposedGraphPreview.stackPartSpecs,
-              },
-              alreadyPresent: (addons ?? []).filter((a) => existingAddons.has(a)),
-              ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
-            }, null, 2),
-          }],
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
         };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Plan addition failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [
+            {
+              type: "text",
+              text: `Plan addition failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -1255,14 +1964,25 @@ export async function startMcpServer() {
 
   registerTool(
     "bfs_add_feature",
-    "Adds addons/features to an existing Better-Fullstack project. Dependencies are NOT installed. Call bfs_plan_addition first to validate.",
-    mcpInputSchema({
-      projectDir: z.string().describe("Absolute path to the existing project directory"),
-      addons: z.array(AddonsSchema).optional().describe("Addons to add"),
-      webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
-      serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
-      packageManager: PackageManagerSchema.optional().describe("Package manager to use"),
-    }),
+    {
+      description:
+        "Adds addons/features to an existing Better-Fullstack project. Dependencies are NOT installed. Call bfs_plan_addition first to validate.",
+      inputSchema: mcpInputSchema({
+        projectDir: z.string().describe("Absolute path to the existing project directory"),
+        addons: z.array(AddonsSchema).optional().describe("Addons to add"),
+        webDeploy: WebDeploySchema.optional().describe("Web deployment option"),
+        serverDeploy: ServerDeploySchema.optional().describe("Server deployment option"),
+        packageManager: PackageManagerSchema.optional().describe("Package manager to use"),
+      }),
+      outputSchema: addFeatureOutputSchema,
+      annotations: {
+        title: "Add feature",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
     async (input: Record<string, unknown> & { projectDir: string }) => {
       try {
         const safePath = sanitizePath(input.projectDir);
@@ -1290,26 +2010,38 @@ export async function startMcpServer() {
             existingConfig?.javaBuildTool,
             existingConfig?.javaWebFramework,
           );
+          const payload = {
+            success: true as const,
+            addedAddons: result.addedAddons,
+            projectDir: result.projectDir,
+            ...graphPreview,
+            message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
+          };
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                success: true,
-                addedAddons: result.addedAddons,
-                projectDir: result.projectDir,
-                ...graphPreview,
-                message: `Added ${result.addedAddons.join(", ")} to project. Tell the user to run: ${installCmd}`,
-              }, null, 2),
-            }],
+            content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+            structuredContent: payload,
           };
         }
         return {
-          content: [{ type: "text", text: JSON.stringify({ success: false, error: result?.error ?? "Add command returned no result" }) }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                success: false,
+                error: result?.error ?? "Add command returned no result",
+              }),
+            },
+          ],
           isError: true,
         };
       } catch (error) {
         return {
-          content: [{ type: "text", text: `Add feature failed: ${error instanceof Error ? error.message : String(error)}` }],
+          content: [
+            {
+              type: "text",
+              text: `Add feature failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -1319,7 +2051,11 @@ export async function startMcpServer() {
   server.resource(
     "compatibility-rules",
     "docs://compatibility-rules",
-    { description: "Stack compatibility rules — which frontend/backend/API/ORM combinations are valid. Read this BEFORE scaffolding.", mimeType: "text/markdown" },
+    {
+      description:
+        "Stack compatibility rules — which frontend/backend/API/ORM combinations are valid. Read this BEFORE scaffolding.",
+      mimeType: "text/markdown",
+    },
     async () => ({
       contents: [{ uri: "docs://compatibility-rules", text: COMPATIBILITY_RULES_MD }],
     }),
@@ -1328,16 +2064,24 @@ export async function startMcpServer() {
   server.resource(
     "stack-options",
     "docs://stack-options",
-    { description: "All available technology options per category for every ecosystem.", mimeType: "application/json" },
+    {
+      description: "All available technology options per category for every ecosystem.",
+      mimeType: "application/json",
+    },
     async () => ({
-      contents: [{ uri: "docs://stack-options", text: JSON.stringify(getSchemaOptions(), null, 2) }],
+      contents: [
+        { uri: "docs://stack-options", text: JSON.stringify(getSchemaOptions(), null, 2) },
+      ],
     }),
   );
 
   server.resource(
     "getting-started",
     "docs://getting-started",
-    { description: "Quick start guide for scaffolding projects with Better-Fullstack MCP.", mimeType: "text/markdown" },
+    {
+      description: "Quick start guide for scaffolding projects with Better-Fullstack MCP.",
+      mimeType: "text/markdown",
+    },
     async () => ({
       contents: [{ uri: "docs://getting-started", text: GETTING_STARTED_MD }],
     }),

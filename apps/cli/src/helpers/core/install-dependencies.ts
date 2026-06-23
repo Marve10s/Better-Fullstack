@@ -5,7 +5,27 @@ import pc from "picocolors";
 
 import type { Addons, PackageManager } from "../../types";
 
-export function getInstallEnvironment(packageManager: PackageManager): NodeJS.ProcessEnv | undefined {
+/**
+ * Result of a post-scaffold setup step (dependency install, native build, db setup).
+ * Steps still log their own errors, but no longer swallow failure silently — callers
+ * collect these so the CLI reports an accurate final status instead of always
+ * printing "Project created successfully" on top of a broken install.
+ */
+export interface SetupStepResult {
+  /** Human-readable step name, e.g. "Install dependencies". */
+  step: string;
+  success: boolean;
+  /** Present when success is false. */
+  errorMessage?: string;
+}
+
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+export function getInstallEnvironment(
+  packageManager: PackageManager,
+): NodeJS.ProcessEnv | undefined {
   if (packageManager === "yarn") {
     return {
       // Fresh generated workspaces need to create yarn.lock on first install.
@@ -37,8 +57,9 @@ export async function installDependencies({
   projectDir: string;
   packageManager: PackageManager;
   addons?: Addons[];
-}) {
+}): Promise<SetupStepResult> {
   const s = spinner();
+  const step = "Install dependencies";
 
   try {
     s.start(`Running ${packageManager} install...`);
@@ -54,16 +75,22 @@ export async function installDependencies({
     })`${packageManager} ${installArgs}`;
 
     s.stop("Dependencies installed successfully");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("Failed to install dependencies"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`Installation error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Installation error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runCargoBuild({ projectDir }: { projectDir: string }) {
+export async function runCargoBuild({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
   const s = spinner();
+  const step = "Cargo build";
 
   try {
     s.start("Running cargo build...");
@@ -74,16 +101,18 @@ export async function runCargoBuild({ projectDir }: { projectDir: string }) {
     })`cargo build`;
 
     s.stop("Cargo build completed");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("Cargo build failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`Cargo build error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Cargo build error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runUvSync({ projectDir }: { projectDir: string }) {
+export async function runUvSync({ projectDir }: { projectDir: string }): Promise<SetupStepResult> {
   const s = spinner();
+  const step = "uv sync (Python dependencies)";
 
   try {
     s.start("Running uv sync...");
@@ -94,16 +123,22 @@ export async function runUvSync({ projectDir }: { projectDir: string }) {
     })`uv sync`;
 
     s.stop("Python dependencies installed successfully");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("uv sync failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`uv sync error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`uv sync error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runGoModTidy({ projectDir }: { projectDir: string }) {
+export async function runGoModTidy({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
   const s = spinner();
+  const step = "go mod tidy";
 
   try {
     s.start("Running go mod tidy...");
@@ -114,17 +149,23 @@ export async function runGoModTidy({ projectDir }: { projectDir: string }) {
     })`go mod tidy`;
 
     s.stop("Go dependencies installed successfully");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("go mod tidy failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`go mod tidy error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`go mod tidy error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runMavenTests({ projectDir }: { projectDir: string }) {
+export async function runMavenTests({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
   const s = spinner();
   const mvnw = process.platform === "win32" ? "mvnw.cmd" : "./mvnw";
+  const step = "Maven tests";
 
   try {
     s.start("Running Maven tests...");
@@ -135,17 +176,23 @@ export async function runMavenTests({ projectDir }: { projectDir: string }) {
     })`${mvnw} test`;
 
     s.stop("Maven tests completed");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("Maven tests failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`Maven test error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Maven test error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runGradleTests({ projectDir }: { projectDir: string }) {
+export async function runGradleTests({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
   const s = spinner();
   const gradlew = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
+  const step = "Gradle tests";
 
   try {
     s.start("Running Gradle tests...");
@@ -156,16 +203,22 @@ export async function runGradleTests({ projectDir }: { projectDir: string }) {
     })`${gradlew} test`;
 
     s.stop("Gradle tests completed");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("Gradle tests failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`Gradle test error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Gradle test error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }
 
-export async function runMixCompile({ projectDir }: { projectDir: string }) {
+export async function runMixCompile({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
   const s = spinner();
+  const step = "mix deps.get / compile";
 
   try {
     s.start("Running mix deps.get and mix compile...");
@@ -181,10 +234,11 @@ export async function runMixCompile({ projectDir }: { projectDir: string }) {
     })`mix compile`;
 
     s.stop("Elixir dependencies installed and project compiled");
+    return { step, success: true };
   } catch (error) {
     s.stop(pc.red("mix compile failed"));
-    if (error instanceof Error) {
-      consola.error(pc.red(`Mix error: ${error.message}`));
-    }
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`Mix error: ${errorMessage}`));
+    return { step, success: false, errorMessage };
   }
 }

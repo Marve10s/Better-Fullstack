@@ -182,5 +182,41 @@ export function createContext(astroContext: APIContext{{#if (isBetterAuth auth)}
 {{/if}}
   };
 }
+{{else}}
+{{#if (isBetterAuth auth)}}
+import type { Session, User } from "better-auth";
 {{/if}}
+
+export type Context = {
+{{#if (isBetterAuth auth)}}
+  session: { user: User; session: Session } | null;
+{{/if}}
+};
+
+export function createContext({{#if (isBetterAuth auth)}}session: { user: User; session: Session } | null{{/if}}): Context {
+  return {
+{{#if (isBetterAuth auth)}}
+    session,
+{{/if}}
+  };
+}
+{{/if}}
+{{else}}
+{{#if (isBetterAuth auth)}}
+import type { Session, User } from "better-auth";
+{{/if}}
+
+export type Context = {
+{{#if (isBetterAuth auth)}}
+  session: { user: User; session: Session } | null;
+{{/if}}
+};
+
+export function createContext({{#if (isBetterAuth auth)}}session: { user: User; session: Session } | null{{/if}}): Context {
+  return {
+{{#if (isBetterAuth auth)}}
+    session,
+{{/if}}
+  };
+}
 {{/if}}

@@ -106,6 +106,15 @@ function addApiPackageDeps(
       packagePath: pkgPath,
       dependencies: ["graphql-yoga", "graphql", "@pothos/core"],
     });
+  } else if (api === "apollo-server") {
+    addPackageDependency({
+      vfs,
+      packagePath: pkgPath,
+      dependencies: ["@apollo/server", "graphql"],
+    });
+    if (isBetterAuth(auth)) {
+      addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["better-auth"] });
+    }
   } else if (api === "openapi") {
     addPackageDependency({
       vfs,
@@ -119,8 +128,17 @@ function addApiPackageDeps(
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["next"] });
   }
 
-  // Add better-auth for express/fastify backends
-  if (isBetterAuth(auth) && (backend === "express" || backend === "fastify")) {
+  // The api package imports better-auth types directly when better-auth is
+  // selected: graphql-yoga/ts-rest/garph contexts (any backend) plus the
+  // express/fastify server wiring.
+  if (
+    isBetterAuth(auth) &&
+    (backend === "express" ||
+      backend === "fastify" ||
+      api === "graphql-yoga" ||
+      api === "ts-rest" ||
+      api === "garph")
+  ) {
     addPackageDependency({ vfs, packagePath: pkgPath, dependencies: ["better-auth"] });
   }
 

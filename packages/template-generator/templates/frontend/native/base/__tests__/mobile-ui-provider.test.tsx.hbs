@@ -6,9 +6,13 @@ import { render } from "@testing-library/react-native";
 import { Text } from "react-native";
 
 {{#if (eq mobileUI "gluestack-ui")}}
-jest.mock("@gluestack-ui/themed", () => ({
-  GluestackUIProvider: ({ children }: { children: ReactNode }) => children,
-}));
+jest.mock(
+  "@gluestack-ui/themed",
+  () => ({
+    GluestackUIProvider: ({ children }: { children: ReactNode }) => children,
+  }),
+  { virtual: true },
+);
 
 {{/if}}
 {{#if (eq mobileUI "tamagui")}}
@@ -21,8 +25,8 @@ jest.mock("tamagui", () => ({
 {{/if}}
 import { MobileUIProvider } from "@/components/mobile-ui-provider";
 
-test("renders children inside the mobile provider", () => {
-  const screen = render(
+test("renders children inside the mobile provider", async () => {
+  const screen = await render(
     <MobileUIProvider>
       <Text>Mobile ready</Text>
     </MobileUIProvider>,

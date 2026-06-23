@@ -1,4 +1,4 @@
-{{#if (eq caching "upstash-redis")}}
+{{#if (and (eq caching "upstash-redis") (not (eq goCaching "redis")))}}
 package cache
 
 import (

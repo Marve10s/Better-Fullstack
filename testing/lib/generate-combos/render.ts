@@ -160,6 +160,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["rate-limit", config.rateLimit],
     ["i18n", config.i18n],
     ["search", config.search],
+    ["vector-db", withExplicitScalar(config.vectorDb)],
     ["file-storage", config.fileStorage],
     ["mobile-navigation", withExplicitScalar(config.mobileNavigation)],
     ["mobile-ui", withExplicitScalar(config.mobileUI)],

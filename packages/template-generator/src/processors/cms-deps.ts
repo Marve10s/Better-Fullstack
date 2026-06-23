@@ -32,6 +32,20 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
     return;
   }
 
+  if (cms === "keystatic") {
+    if (!hasNext) return;
+
+    const webPath = "apps/web/package.json";
+    if (!vfs.exists(webPath)) return;
+
+    addPackageDependency({
+      vfs,
+      packagePath: webPath,
+      dependencies: ["@keystatic/core", "@keystatic/next", "@markdoc/markdoc"],
+    });
+    return;
+  }
+
   if (!hasWebFrontend) return;
 
   const webPath = "apps/web/package.json";
@@ -52,6 +66,7 @@ export function processCMSDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
       vfs,
       packagePath: webPath,
       dependencies: ["@strapi/client", "qs"],
+      devDependencies: ["@types/qs"],
     });
   }
 

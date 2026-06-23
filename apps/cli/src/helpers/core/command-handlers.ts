@@ -10,7 +10,8 @@ import { getDefaultConfig } from "../../constants";
 import { gatherConfig } from "../../prompts/config-prompts";
 import { getProjectName } from "../../prompts/project-name";
 import { getVersionChannelChoice } from "../../prompts/version-channel";
-import { trackProjectCreation } from "../../utils/analytics";
+import { maybeShowTelemetryNotice, trackProjectCreation } from "../../utils/analytics";
+import { resolveCreateConfigBase } from "../../utils/config-source";
 import { isSilent, runWithContextAsync } from "../../utils/context";
 import { displayConfig } from "../../utils/display-config";
 import { CLIError, UserCancelledError } from "../../utils/errors";
@@ -74,6 +75,7 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     rateLimit: "none",
     i18n: "none",
     search: "none",
+    vectorDb: "none",
     fileStorage: "none",
     mobileNavigation: "expo-router",
     mobileUI: "none",
@@ -85,8 +87,17 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
   };
 }
 
-function shouldPromptForVersionChannel(input: CreateInput & { projectName?: string }): boolean {
-  if (input.yes || input.part?.length || input.versionChannel !== undefined || isSilent()) {
+function shouldPromptForVersionChannel(
+  input: CreateInput & { projectName?: string },
+  hasConfigBase: boolean,
+): boolean {
+  if (
+    input.yes ||
+    input.part?.length ||
+    hasConfigBase ||
+    input.versionChannel !== undefined ||
+    isSilent()
+  ) {
     return false;
   }
 
@@ -94,7 +105,7 @@ function shouldPromptForVersionChannel(input: CreateInput & { projectName?: stri
 }
 
 export async function createProjectHandler(
-  input: CreateInput & { projectName?: string },
+  input: CreateInput & { projectName?: string; fromHistory?: number; config?: string },
   options: CreateHandlerOptions = {},
 ) {
   const { silent = false } = options;
@@ -109,14 +120,33 @@ export async function createProjectHandler(
       }
       if (!isSilent()) intro(pc.magenta("Creating a new Better Fullstack project"));
 
+      // One-time notice about anonymous telemetry (self-gated: interactive only,
+      // skipped once a preference is persisted or an env override is set).
+      await maybeShowTelemetryNotice();
+
       if (!isSilent() && input.yolo) {
         consola.fatal("YOLO mode enabled - skipping checks. Things may break!");
       }
 
+      const configBase = await resolveCreateConfigBase(input);
+      const hasConfigBase = configBase !== undefined;
+      if (hasConfigBase && !isSilent()) {
+        log.info(
+          pc.cyan(
+            input.config
+              ? `Using stack from config file: ${input.config}`
+              : `Using stack from history entry #${input.fromHistory}`,
+          ),
+        );
+      }
+
+      // A config base (from history or a file) supplies a complete stack, so we
+      // skip the interactive project-name prompt just like --yes does.
+      const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
-      if (input.yes && input.projectName) {
+      if (useDefaultsForName && input.projectName) {
         currentPathInput = input.projectName;
-      } else if (input.yes) {
+      } else if (useDefaultsForName) {
         const defaultConfig = getDefaultConfig();
         let defaultName: string = defaultConfig.relativePath;
         let counter = 1;
@@ -132,9 +162,9 @@ export async function createProjectHandler(
         currentPathInput = await getProjectName(input.projectName);
       }
 
-      const versionChannel = shouldPromptForVersionChannel(input)
+      const versionChannel = shouldPromptForVersionChannel(input, hasConfigBase)
         ? await getVersionChannelChoice()
-        : (input.versionChannel ?? "stable");
+        : (input.versionChannel ?? configBase?.versionChannel ?? "stable");
 
       let finalResolvedPath: string;
       let finalBaseName: string;
@@ -222,6 +252,7 @@ export async function createProjectHandler(
               rateLimit: "none",
               i18n: "none",
               search: "none",
+              vectorDb: "none",
               featureFlags: "none",
               analytics: "none",
               fileStorage: "none",
@@ -310,12 +341,24 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
-      const originalInput = {
-        ...input,
+      // Overlay any explicitly-passed flags on top of the config base so the
+      // user can override individual options from a replayed/loaded config.
+      const definedInput = Object.fromEntries(
+        Object.entries(input).filter(([, value]) => value !== undefined),
+      ) as typeof input;
+      const explicitInput = {
+        ...definedInput,
         projectDirectory: input.projectName,
       };
+      const originalInput = {
+        ...configBase,
+        ...explicitInput,
+      };
 
-      const providedFlags = getProvidedFlags(originalInput);
+      // Only flags the user explicitly passed count as "provided" for strict
+      // compatibility checks; config-base values are treated as defaults (the
+      // same leniency --yes uses for a trusted config).
+      const providedFlags = getProvidedFlags(explicitInput);
 
       let cliInput = originalInput;
 
@@ -348,7 +391,7 @@ export async function createProjectHandler(
       const { validatePreflightConfig } = await import("@better-fullstack/template-generator");
 
       let config: ProjectConfig;
-      if (cliInput.yes || cliInput.part?.length) {
+      if (cliInput.yes || cliInput.part?.length || hasConfigBase) {
         const flagConfig = processProvidedFlagsWithoutValidation(cliInput, finalBaseName);
 
         config = {
@@ -397,9 +440,8 @@ export async function createProjectHandler(
       }
 
       if (input.dryRun) {
-        const { generateVirtualProject, EMBEDDED_TEMPLATES } = await import(
-          "@better-fullstack/template-generator"
-        );
+        const { generateVirtualProject, EMBEDDED_TEMPLATES } =
+          await import("@better-fullstack/template-generator");
         const result = await generateVirtualProject({
           config,
           templates: EMBEDDED_TEMPLATES,
@@ -470,9 +512,10 @@ export async function createProjectHandler(
         };
       }
 
-      await createProject(config, {
+      const createResult = await createProject(config, {
         manualDb: cliInput.manualDb ?? input.manualDb,
       });
+      const setupFailures = createResult?.setupFailures ?? [];
 
       if (cliInput.verify ?? input.verify) {
         await runGeneratedChecks(config);
@@ -503,9 +546,26 @@ export async function createProjectHandler(
       const elapsedTimeMs = Date.now() - startTime;
       if (!isSilent()) {
         const elapsedTimeInSeconds = (elapsedTimeMs / 1000).toFixed(2);
-        outro(
-          pc.magenta(`Project created successfully in ${pc.bold(elapsedTimeInSeconds)} seconds!`),
-        );
+        if (setupFailures.length > 0) {
+          const stepList = setupFailures.map((f) => f.step).join(", ");
+          const installCmd =
+            config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
+          log.warn(
+            pc.yellow(
+              `Project files were scaffolded in ${config.relativePath}, but ${setupFailures.length} setup step(s) did not complete: ${stepList}.\n` +
+                `Review the errors above, then finish setup manually (for example, run '${installCmd}' inside the project).`,
+            ),
+          );
+          outro(
+            pc.yellow(
+              `Project created with ${setupFailures.length} unfinished setup step(s) in ${pc.bold(elapsedTimeInSeconds)}s.`,
+            ),
+          );
+        } else {
+          outro(
+            pc.magenta(`Project created successfully in ${pc.bold(elapsedTimeInSeconds)} seconds!`),
+          );
+        }
       }
 
       return {
@@ -516,6 +576,7 @@ export async function createProjectHandler(
         elapsedTimeMs,
         projectDirectory: config.projectDir,
         relativePath: config.relativePath,
+        setupFailures,
       };
     } catch (error) {
       if (error instanceof UserCancelledError) {

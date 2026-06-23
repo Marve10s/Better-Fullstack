@@ -119,20 +119,20 @@ dependencies = [
 {{/if}}
 {{#if (eq pythonTaskQueue "rq")}}
     "rq>=2.6.0",
-    "redis>=7.0.0",
+    "redis>=5.0.1",
 {{/if}}
 {{#if (eq pythonTaskQueue "dramatiq")}}
     "dramatiq[redis,watch]>=1.18.0",
 {{/if}}
 {{#if (eq pythonTaskQueue "huey")}}
     "huey>=2.5.0",
-    "redis>=7.0.0",
+    "redis>=5.0.1",
 {{/if}}
 {{#if (eq pythonTaskQueue "taskiq")}}
     "taskiq>=0.11.0",
 {{/if}}
 {{#if (eq pythonCaching "redis")}}
-    "redis>=7.0.0",
+    "redis>=5.0.1",
 {{/if}}
 {{#if (eq pythonCaching "aiocache")}}
     "aiocache>=0.12.3",

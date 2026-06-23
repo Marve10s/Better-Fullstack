@@ -2900,7 +2900,7 @@ describe("Python Language Support", () => {
       const pyprojectContent = getFileContent(root, "pyproject.toml");
       expect(pyprojectContent).toBeDefined();
       expect(pyprojectContent).toContain("rq>=2.6.0");
-      expect(pyprojectContent).toContain("redis>=7.0.0");
+      expect(pyprojectContent).toContain("redis>=5.0.1");
     });
 
     it("should create RQ queue and task helpers", async () => {

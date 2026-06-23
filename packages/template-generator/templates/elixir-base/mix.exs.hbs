@@ -74,7 +74,7 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirHttp "req")}}
       {:req, "~> 0.5"},
 {{/if}}
-{{#if (eq elixirHttp "finch")}}
+{{#if (or (eq elixirHttp "finch") (eq elixirEmail "swoosh"))}}
       {:finch, "~> 0.19"},
 {{/if}}
 {{#if (or (ne elixirWebFramework "none") (eq elixirJson "jason"))}}
@@ -82,7 +82,6 @@ defmodule {{elixirModuleName}}.MixProject do
 {{/if}}
 {{#if (eq elixirEmail "swoosh")}}
       {:swoosh, "~> 1.17"},
-      {:finch, "~> 0.19"},
 {{/if}}
 {{#if (eq elixirCaching "cachex")}}
       {:cachex, "~> 4.0"},

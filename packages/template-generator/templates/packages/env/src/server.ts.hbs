@@ -51,6 +51,10 @@ export const env = createEnv({
 		POLAR_ACCESS_TOKEN: z.string().min(1),
 		POLAR_SUCCESS_URL: z.url(),
 {{/if}}
+{{#if (eq payments "stripe")}}
+		STRIPE_SECRET_KEY: z.string().min(1),
+		STRIPE_WEBHOOK_SECRET: z.string().min(1),
+{{/if}}
 {{#if (eq observability "datadog")}}
 		DD_SERVICE: z.string().min(1),
 		DD_ENV: z.string().min(1),

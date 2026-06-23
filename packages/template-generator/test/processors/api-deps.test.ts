@@ -143,4 +143,29 @@ describe("processApiDeps", () => {
       "@tanstack/solid-router-devtools",
     ]);
   });
+
+  it("adds Apollo Server dependencies to the API package and React Query to the web app", () => {
+    const vfs = createSeededVFS([
+      "apps/web/package.json",
+      "apps/server/package.json",
+      "packages/api/package.json",
+    ]);
+
+    processApiDeps(
+      vfs,
+      makeConfig({
+        backend: "hono",
+        api: "apollo-server",
+        auth: "better-auth",
+        frontend: ["tanstack-router"],
+      }),
+    );
+
+    const api = getDeps(vfs, "packages/api/package.json");
+    const web = getDeps(vfs, "apps/web/package.json");
+
+    expectIncludesAll(api.deps, ["@apollo/server", "graphql", "better-auth"]);
+    expect(web.deps).toContain("@tanstack/react-query");
+    expect(web.devDeps).toContain("@tanstack/react-query-devtools");
+  });
 });

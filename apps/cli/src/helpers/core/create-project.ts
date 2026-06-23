@@ -7,8 +7,8 @@ import path from "node:path";
 import type { ProjectConfig } from "../../types";
 
 import { writeBtsConfig } from "../../utils/bts-config";
-import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { isSilent } from "../../utils/context";
+import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { exitWithError } from "../../utils/errors";
 import { formatProject } from "../../utils/file-formatter";
 import { setupAddons } from "../addons/addons-setup";
@@ -22,6 +22,7 @@ import {
   runUvSync,
   runGoModTidy,
   runMixCompile,
+  type SetupStepResult,
 } from "./install-dependencies";
 import { displayPostInstallInstructions } from "./post-installation";
 
@@ -32,6 +33,13 @@ export interface CreateProjectOptions {
 export async function createProject(options: ProjectConfig, cliInput: CreateProjectOptions = {}) {
   const projectDir = options.projectDir;
   const isConvex = options.backend === "convex";
+  const setupFailures: SetupStepResult[] = [];
+
+  // Track whether the target directory already had user content before we
+  // started writing. If it did (merge mode), we must never delete it on
+  // failure; if it was empty/new, we own everything in it and can roll back.
+  const dirHadContentBefore =
+    (await fs.pathExists(projectDir)) && (await fs.readdir(projectDir)).length > 0;
 
   try {
     await fs.ensureDir(projectDir);
@@ -58,7 +66,8 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     await ensurePackageManagerProjectFiles(projectDir, options.packageManager);
 
     if (!isConvex && options.database !== "none") {
-      await setupDatabase(options, cliInput);
+      const dbResult = await setupDatabase(options, cliInput);
+      if (dbResult && !dbResult.success) setupFailures.push(dbResult);
     }
 
     if (options.addons.length > 0 && options.addons[0] !== "none") {
@@ -78,42 +87,43 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       options.install &&
       (options.ecosystem === "typescript" || options.ecosystem === "react-native")
     ) {
-      await installDependencies({
+      const result = await installDependencies({
         projectDir,
         packageManager: options.packageManager,
       });
+      if (!result.success) setupFailures.push(result);
     }
 
     // Run cargo build for Rust projects
     if (options.install && options.ecosystem === "rust") {
-      await runCargoBuild({ projectDir });
+      const result = await runCargoBuild({ projectDir });
+      if (!result.success) setupFailures.push(result);
     }
 
     // Run uv sync for Python projects
     if (options.install && options.ecosystem === "python") {
-      await runUvSync({ projectDir });
+      const result = await runUvSync({ projectDir });
+      if (!result.success) setupFailures.push(result);
     }
 
     // Run go mod tidy for Go projects
     if (options.install && options.ecosystem === "go") {
-      await runGoModTidy({ projectDir });
+      const result = await runGoModTidy({ projectDir });
+      if (!result.success) setupFailures.push(result);
     }
 
     // Run wrapper-based verification for Java projects
-    if (
-      options.install &&
-      options.ecosystem === "java" &&
-      options.javaBuildTool !== "none"
-    ) {
-      if (options.javaBuildTool === "gradle") {
-        await runGradleTests({ projectDir });
-      } else {
-        await runMavenTests({ projectDir });
-      }
+    if (options.install && options.ecosystem === "java" && options.javaBuildTool !== "none") {
+      const result =
+        options.javaBuildTool === "gradle"
+          ? await runGradleTests({ projectDir })
+          : await runMavenTests({ projectDir });
+      if (!result.success) setupFailures.push(result);
     }
 
     if (options.install && options.ecosystem === "elixir") {
-      await runMixCompile({ projectDir });
+      const result = await runMixCompile({ projectDir });
+      if (!result.success) setupFailures.push(result);
     }
 
     await initializeGit(projectDir, options.git);
@@ -125,8 +135,9 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       });
     }
 
-    return projectDir;
+    return { projectDir, setupFailures };
   } catch (error) {
+    await rollbackPartialProject(projectDir, dirHadContentBefore);
     if (error instanceof Error) {
       if (!isSilent()) console.error(error.stack);
       exitWithError(`Error during project creation: ${error.message}`);
@@ -134,6 +145,38 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!isSilent()) console.error(error);
       exitWithError(`An unexpected error occurred: ${String(error)}`);
     }
+  }
+}
+
+/**
+ * Remove a half-written project directory after a fatal scaffolding error so the
+ * user is not left with a broken, partially generated project. Only removes
+ * directories we created ourselves (empty/new before scaffolding) — never one
+ * that already had user content (merge mode). Set BTS_KEEP_FAILED_OUTPUT=1 to
+ * keep the partial output for debugging template failures.
+ */
+async function rollbackPartialProject(
+  projectDir: string,
+  dirHadContentBefore: boolean,
+): Promise<void> {
+  if (dirHadContentBefore || process.env.BTS_KEEP_FAILED_OUTPUT) {
+    if (!isSilent() && dirHadContentBefore) {
+      log.warn(
+        `Left partially created files in ${projectDir} (directory already existed). Review and clean up manually.`,
+      );
+    }
+    return;
+  }
+
+  try {
+    await fs.remove(projectDir);
+    if (!isSilent()) {
+      log.warn(
+        `Cleaned up partially created project at ${projectDir}. Set BTS_KEEP_FAILED_OUTPUT=1 to keep it for debugging.`,
+      );
+    }
+  } catch {
+    // Best-effort cleanup; surface nothing if removal itself fails.
   }
 }
 

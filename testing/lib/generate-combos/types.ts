@@ -32,6 +32,7 @@ export const DEFAULT_ECOSYSTEM_WEIGHTS: Record<Ecosystem, number> = {
   go: 2,
   java: 2,
   elixir: 2,
+  dotnet: 2,
 };
 
 export const TEMPLATE_FINGERPRINT_KEYS = [

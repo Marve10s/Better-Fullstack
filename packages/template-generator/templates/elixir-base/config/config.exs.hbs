@@ -47,6 +47,8 @@ config :{{elixirAppName}}, {{elixirModuleName}}.Scheduler,
 
 {{#if (eq elixirEmail "swoosh")}}
 config :{{elixirAppName}}, {{elixirModuleName}}.Mailer, adapter: Swoosh.Adapters.Local
+
+config :swoosh, api_client: Swoosh.ApiClient.Finch
 {{/if}}
 
 import_config "#{config_env()}.exs"

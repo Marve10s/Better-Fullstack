@@ -117,6 +117,7 @@ const backendFeature = (
 
 const PREFLIGHT_RULES: readonly PreflightRule[] = [
   serverFeature("search-no-server", "search", "Search"),
+  serverFeature("vector-db-no-server", "vectorDb", "Vector database"),
   serverFeature("file-storage-no-server", "fileStorage", "File Storage"),
   serverFeature("job-queue-no-server", "jobQueue", "Job Queue"),
 
@@ -134,6 +135,15 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       suggestions: ["Add Next.js as your frontend", "Remove CMS"],
     }),
   ),
+  {
+    id: "cms-keystatic-requires-nextjs",
+    featureKey: "cms",
+    displayName: "CMS (Keystatic)",
+    willSkip: (c) => c.cms === "keystatic" && !c.frontend.includes("next"),
+    reason:
+      "Keystatic is currently scaffolded for Next.js only because @keystatic/astro is not Astro 7-compatible yet.",
+    suggestions: ["Add Next.js as your frontend", "Remove CMS"],
+  },
 
   {
     id: "payments-skipped-convex",

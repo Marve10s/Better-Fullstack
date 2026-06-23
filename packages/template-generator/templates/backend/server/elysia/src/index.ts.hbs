@@ -26,6 +26,9 @@ import { onError } from "@orpc/server";
 import { appRouter } from "@{{projectName}}/api/routers/index";
 import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
+{{#if (eq api "apollo-server")}}
+import { executeApolloRequest } from "@{{projectName}}/api";
+{{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
@@ -140,6 +143,24 @@ new Elysia()
 		});
 		return res;
 	})
+{{/if}}
+{{#if (eq api "apollo-server")}}
+	.all(
+		"/graphql",
+		async ({ request }) => {
+{{#if (isBetterAuth auth)}}
+			const session = await auth.api.getSession({
+				headers: request.headers,
+			});
+			return executeApolloRequest(request, { session });
+{{else}}
+			return executeApolloRequest(request);
+{{/if}}
+		},
+		{
+			parse: "none",
+		}
+	)
 {{/if}}
 {{#if (eq api "openapi")}}
 	.get(

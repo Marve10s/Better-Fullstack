@@ -38,6 +38,9 @@ import { queryClient } from "./utils/trpc";
     {{#if (eq api "garph")}}
 import { queryClient } from "./utils/garph";
     {{/if}}
+    {{#if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
+import { queryClient } from "./utils/graphql";
+    {{/if}}
   {{/unless}}
 {{/if}}
 
@@ -136,7 +139,7 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-{{else if (or (eq api "trpc") (eq api "garph"))}}
+{{else if (or (or (eq api "trpc") (eq api "garph")) (or (eq api "graphql-yoga") (eq api "apollo-server")))}}
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
