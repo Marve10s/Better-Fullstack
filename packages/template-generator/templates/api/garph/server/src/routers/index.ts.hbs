@@ -1,7 +1,7 @@
 import { g, buildSchema, type InferResolvers, queryType, mutationType } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import type { Context } from "../context{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
-export function createResolvers(ctx: Context): InferResolvers<{ Query: typeof queryType; Mutation: typeof mutationType }, { context: Context }> {
+export function createResolvers({{#if (isBetterAuth auth)}}ctx{{else}}_ctx{{/if}}: Context): InferResolvers<{ Query: typeof queryType; Mutation: typeof mutationType }, { context: Context }> {
   return {
     Query: {
       health: () => "OK",

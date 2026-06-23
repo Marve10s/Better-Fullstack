@@ -663,15 +663,17 @@ function validateFrontendConstraints(
 }
 
 function validateApiConstraints(config: Partial<ProjectConfig>, _options: CLIInput) {
-  if (config.api !== "openapi") return;
+  if (config.api !== "openapi" && config.api !== "apollo-server") return;
+
+  const apiDisplayName = config.api === "apollo-server" ? "Apollo Server" : "OpenAPI";
 
   const frontend = config.frontend ?? [];
   if (
     frontend.some((item) => ["native-bare", "native-uniwind", "native-unistyles"].includes(item))
   ) {
     incompatibilityError({
-      message: "OpenAPI is currently available for web frontends, not React Native.",
-      provided: { api: "openapi", frontend },
+      message: `${apiDisplayName} is currently available for web frontends, not React Native.`,
+      provided: { api: config.api, frontend },
       suggestions: ["Use --api trpc", "Use --api orpc", "Use a web frontend"],
     });
   }
@@ -679,8 +681,8 @@ function validateApiConstraints(config: Partial<ProjectConfig>, _options: CLIInp
   const supportedBackends = ["hono", "express", "fastify", "elysia"];
   if (!config.backend || !supportedBackends.includes(config.backend)) {
     incompatibilityError({
-      message: "OpenAPI currently supports Hono, Express, Fastify, and Elysia backends.",
-      provided: { api: "openapi", backend: config.backend ?? "none" },
+      message: `${apiDisplayName} currently supports Hono, Express, Fastify, and Elysia backends.`,
+      provided: { api: config.api, backend: config.backend ?? "none" },
       suggestions: [
         "Use --backend hono",
         "Use --backend express",
@@ -1011,10 +1013,11 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
 
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
-  if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
+  const ecosystem = config.ecosystem ?? "typescript";
+  if (ecosystem !== "typescript" && config.search !== "meilisearch") {
     incompatibilityError({
       message: "Only Meilisearch search is available for non-TypeScript ecosystems.",
-      provided: { ecosystem: config.ecosystem ?? "typescript", search: config.search },
+      provided: { ecosystem, search: config.search },
       suggestions: ["Use --search meilisearch", "Use --search none"],
     });
   }

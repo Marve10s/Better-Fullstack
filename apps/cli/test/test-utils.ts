@@ -57,6 +57,7 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     rateLimit: SHARED_TEST_DEFAULTS.rateLimit,
     i18n: SHARED_TEST_DEFAULTS.i18n,
     search: SHARED_TEST_DEFAULTS.search,
+    vectorDb: SHARED_TEST_DEFAULTS.vectorDb,
     fileStorage: SHARED_TEST_DEFAULTS.fileStorage,
     cms: SHARED_TEST_DEFAULTS.cms,
     ai: SHARED_TEST_DEFAULTS.ai,

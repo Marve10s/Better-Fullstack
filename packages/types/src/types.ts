@@ -56,6 +56,7 @@ import type {
   RateLimitSchema,
   I18nSchema,
   SearchSchema,
+  VectorDbSchema,
   FileStorageSchema,
   EcosystemSchema,
   RustWebFrameworkSchema,
@@ -196,6 +197,7 @@ export type Caching = z.infer<typeof CachingSchema>;
 export type RateLimit = z.infer<typeof RateLimitSchema>;
 export type I18n = z.infer<typeof I18nSchema>;
 export type Search = z.infer<typeof SearchSchema>;
+export type VectorDb = z.infer<typeof VectorDbSchema>;
 export type FileStorage = z.infer<typeof FileStorageSchema>;
 export type Ecosystem = z.infer<typeof EcosystemSchema>;
 export type RustWebFramework = z.infer<typeof RustWebFrameworkSchema>;

@@ -126,6 +126,7 @@ import {
   RUST_WEB_FRAMEWORK_VALUES,
   SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
+  VECTOR_DB_VALUES,
   I18N_VALUES,
   ELIXIR_HTTP_VALUES,
   ELIXIR_QUALITY_VALUES,
@@ -201,11 +202,32 @@ const WEB_FRONTENDS = FRONTEND_VALUES.filter(
 );
 const DJANGO_API_TOOLS = new Set(["django-rest-framework", "django-ninja"]);
 const JAVA_SPRING_CAPABILITY_TOOLS = new Set(["spring-data-jpa", "spring-security"]);
+const PARAGLIDE_COMPATIBLE_FRONTENDS = new Set([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
 const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "nuxt",
   "svelte",
   "solid",
   "solid-start",
+]);
+const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
 ]);
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
@@ -266,6 +288,7 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   logging: "logging",
   email: "email",
   search: "search",
+  vectorDb: "vectorDb",
   caching: "caching",
   observability: "observability",
   jobQueue: "jobQueue",
@@ -338,6 +361,8 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "turborepo",
   "nx",
   "docker-compose",
+  "devcontainer",
+  "github-actions",
   "ruler",
   "mcp",
   "skills",
@@ -712,6 +737,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(LOGGING_VALUES, "logging", "typescript", "logging"),
   ...defineTools(EMAIL_VALUES, "email", "typescript", "email"),
   ...defineTools(SEARCH_VALUES, "search", "typescript", "search"),
+  ...defineTools(VECTOR_DB_VALUES, "vectorDb", "typescript", "vectorDb"),
   ...defineTools(CACHING_VALUES, "caching", "typescript", "caching"),
   ...defineTools(OBSERVABILITY_VALUES, "observability", "typescript", "observability"),
   ...defineTools(JOB_QUEUE_VALUES, "jobQueue", "typescript", "jobQueue"),
@@ -969,6 +995,21 @@ function createTypeScriptFrontendCompatibilityIssue(
     });
   }
 
+  if (
+    part.role === "i18n" &&
+    part.toolId === "paraglide" &&
+    context.ownerToolId &&
+    !PARAGLIDE_COMPATIBLE_FRONTENDS.has(context.ownerToolId)
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: `Paraglide is not yet wired for the '${context.ownerToolId}' frontend`,
+    });
+  }
+
   if (part.role === "ui") {
     const compatibility =
       UI_LIBRARY_COMPATIBILITY[part.toolId as keyof typeof UI_LIBRARY_COMPATIBILITY];
@@ -1072,6 +1113,30 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Payload CMS v3 requires a Next.js frontend.",
+      });
+    }
+  }
+
+  if (part.role === "cms" && part.toolId === "keystatic") {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool !== "next" && frontendTool !== "astro") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Keystatic is currently scaffolded for Next.js and Astro frontends.",
+      });
+    }
+
+    const runtimeTool = context.siblingToolIdsByRole?.runtime ?? "bun";
+    if (frontendTool === "astro" && runtimeTool === "workers") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Keystatic with Astro requires a Node-compatible runtime.",
       });
     }
   }
@@ -1488,14 +1553,16 @@ function createAddonCompatibilityIssue(
   }
 
   if (part.role === "workspaceTooling") {
-    if (part.toolId === "docker-compose") {
+    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
+      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+
       if (backendTool === "convex") {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Convex backend.",
+          message: `${title} is not compatible with Convex backend.`,
         });
       }
       if (runtimeTool === "workers") {
@@ -1504,7 +1571,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Cloudflare Workers runtime.",
+          message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
       if (
@@ -1517,7 +1584,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not wired for the selected web frontend.",
+          message: `${title} is not wired for the selected web frontend.`,
         });
       }
       if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
@@ -1526,7 +1593,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose self-backend support currently requires Next.js.",
+          message: `${title} self-backend support currently requires Next.js.`,
         });
       }
     }
@@ -1849,6 +1916,23 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'trpc' cannot be selected with the '${frontendTool}' frontend.`,
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "typescript" &&
+    part.role === "api" &&
+    part.toolId === "apollo-server"
+  ) {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool && !TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS.has(frontendTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
       });
     }
   }

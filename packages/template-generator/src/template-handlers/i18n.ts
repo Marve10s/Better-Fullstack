@@ -11,6 +11,17 @@ export async function processI18nTemplates(
 ): Promise<void> {
   if (!config.i18n || config.i18n === "none") return;
 
+  if (config.i18n === "paraglide") {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      "i18n/paraglide/web/base",
+      "apps/web",
+      config,
+    );
+    return;
+  }
+
   if (config.i18n === "next-intl") {
     // next-intl templates go into apps/web (Next.js only)
     processTemplatesFromPrefix(

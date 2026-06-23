@@ -117,6 +117,7 @@ const backendFeature = (
 
 const PREFLIGHT_RULES: readonly PreflightRule[] = [
   serverFeature("search-no-server", "search", "Search"),
+  serverFeature("vector-db-no-server", "vectorDb", "Vector database"),
   serverFeature("file-storage-no-server", "fileStorage", "File Storage"),
   serverFeature("job-queue-no-server", "jobQueue", "Job Queue"),
 
@@ -134,6 +135,26 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
       suggestions: ["Add Next.js as your frontend", "Remove CMS"],
     }),
   ),
+  {
+    id: "cms-keystatic-requires-nextjs-or-astro",
+    featureKey: "cms",
+    displayName: "CMS (Keystatic)",
+    willSkip: (c) => c.cms === "keystatic" && !c.frontend.includes("next") && !c.frontend.includes("astro"),
+    reason: "Keystatic is currently scaffolded for Next.js and Astro frontends.",
+    suggestions: ["Add Next.js or Astro as your frontend", "Remove CMS"],
+  },
+  {
+    id: "cms-keystatic-astro-requires-node-runtime",
+    featureKey: "cms",
+    displayName: "CMS (Keystatic)",
+    willSkip: (c) =>
+      c.cms === "keystatic" &&
+      !c.frontend.includes("next") &&
+      c.frontend.includes("astro") &&
+      c.runtime === "workers",
+    reason: "Keystatic's Astro integration needs Node.js APIs and is not scaffolded for Workers.",
+    suggestions: ["Use a Node-compatible runtime", "Switch to Next.js", "Remove CMS"],
+  },
 
   {
     id: "payments-skipped-convex",

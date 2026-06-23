@@ -115,6 +115,7 @@ import type {
   RustWebFramework,
   Runtime,
   Search,
+  VectorDb,
   FileStorage,
   ServerDeploy,
   StateManagement,
@@ -262,6 +263,7 @@ import {
   getRustWebFrameworkChoice,
 } from "./rust-ecosystem";
 import { getSearchChoice } from "./search";
+import { getVectorDbChoice } from "./vector-db";
 import { getServerDeploymentChoice } from "./server-deploy";
 import { getShadcnOptions, type ShadcnOptions } from "./shadcn-options";
 import { getStateManagementChoice } from "./state-management";
@@ -311,6 +313,7 @@ type PromptGroupResults = {
   rateLimit: RateLimit;
   i18n: I18n;
   search: Search;
+  vectorDb: VectorDb;
   fileStorage: FileStorage;
   mobileNavigation: MobileNavigation;
   mobileUI: MobileUI;
@@ -527,13 +530,16 @@ export async function gatherConfig(
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
         return getEffectChoice(flags.effect);
       },
-      addons: ({ results }) => {
-        if (results.ecosystem !== "typescript") {
-          const nonTypeScriptAddons = (flags.addons ?? []).filter(
-            (addon): addon is Addons => addon === "docker-compose",
-          );
-          return Promise.resolve(nonTypeScriptAddons);
-        }
+        addons: ({ results }) => {
+          if (results.ecosystem !== "typescript") {
+            const nonTypeScriptAddons = (flags.addons ?? []).filter(
+              (addon): addon is Addons =>
+                addon === "docker-compose" ||
+                addon === "devcontainer" ||
+                addon === "github-actions",
+            );
+            return Promise.resolve(nonTypeScriptAddons);
+          }
         return getAddonsChoice(
           flags.addons,
           results.frontend,
@@ -668,6 +674,12 @@ export async function gatherConfig(
           return Promise.resolve("none" as Search);
         }
         return getSearchChoice(flags.search, results.backend, results.ecosystem);
+      },
+      vectorDb: ({ results }) => {
+        if (results.ecosystem !== "typescript") {
+          return Promise.resolve("none" as VectorDb);
+        }
+        return getVectorDbChoice(flags.vectorDb, results.backend, results.ecosystem);
       },
       fileStorage: ({ results }) => {
         if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);
@@ -1147,6 +1159,7 @@ export async function gatherConfig(
     rateLimit: result.rateLimit,
     i18n: result.i18n,
     search: result.search,
+    vectorDb: result.vectorDb,
     fileStorage: result.fileStorage,
     mobileNavigation: result.mobileNavigation,
     mobileUI: result.mobileUI,

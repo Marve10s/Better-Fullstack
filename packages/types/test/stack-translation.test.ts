@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import type { StackSelectionInput } from "../src/stack-translation";
+
 import {
   DEFAULT_STACK_SELECTION,
   STACK_SELECTION_KEYS,
@@ -39,13 +40,12 @@ describe("stack selection translation", () => {
   });
 
   it("checks stack defaults with array-insensitive comparison and Convex adjustments", () => {
-    expect(isStackSelectionDefault(DEFAULT_SELECTION, "aiDocs", ["claude-md"])).toBe(true);
+    // Default aiDocs is ["claude-md", "agents-md"]; reversed order must still match (array-insensitive).
+    expect(isStackSelectionDefault(DEFAULT_SELECTION, "aiDocs", ["agents-md", "claude-md"])).toBe(
+      true,
+    );
     expect(
-      isStackSelectionDefault(
-        { ...DEFAULT_SELECTION, backend: "convex" },
-        "runtime",
-        "none",
-      ),
+      isStackSelectionDefault({ ...DEFAULT_SELECTION, backend: "convex" }, "runtime", "none"),
     ).toBe(true);
   });
 
@@ -162,7 +162,9 @@ describe("stack selection translation", () => {
 
     const specs = config.stackParts?.map((part) => {
       const owner = config.stackParts?.find((candidate) => candidate.id === part.ownerPartId);
-      return owner ? `${owner.role}.${part.role}:${part.ecosystem}:${part.toolId}` : `${part.role}:${part.ecosystem}:${part.toolId}`;
+      return owner
+        ? `${owner.role}.${part.role}:${part.ecosystem}:${part.toolId}`
+        : `${part.role}:${part.ecosystem}:${part.toolId}`;
     });
 
     expect(config.database).toBe("postgres");
@@ -521,7 +523,9 @@ describe("stack selection translation", () => {
       ],
     });
 
-    expect(config.stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`)).toEqual(
+    expect(
+      config.stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`),
+    ).toEqual(
       expect.arrayContaining([
         "frontend:typescript:next",
         "backend:go:gin",
@@ -598,8 +602,9 @@ describe("stack selection translation", () => {
     expect(config.pythonAi).toEqual([]);
     expect(config.javaLibraries).toEqual(["spring-actuator"]);
     expect(config.javaTestingLibraries).toEqual(["junit5"]);
-    expect(generateStackSelectionCommand({ ...DEFAULT_SELECTION, ecosystem: "go", aiDocs: [] }))
-      .toContain("--ai-docs none");
+    expect(
+      generateStackSelectionCommand({ ...DEFAULT_SELECTION, ecosystem: "go", aiDocs: [] }),
+    ).toContain("--ai-docs none");
   });
 
   it("applies compatibility adjustments before producing ProjectConfig", () => {

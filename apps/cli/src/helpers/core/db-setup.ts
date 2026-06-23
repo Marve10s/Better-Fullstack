@@ -10,6 +10,7 @@ import path from "node:path";
 import pc from "picocolors";
 
 import type { ProjectConfig } from "../../types";
+import type { SetupStepResult } from "./install-dependencies";
 
 import { setupCloudflareD1 } from "../database-providers/d1-setup";
 import { setupDockerCompose } from "../database-providers/docker-compose-setup";
@@ -21,7 +22,10 @@ import { setupSupabase } from "../database-providers/supabase-setup";
 import { setupTurso } from "../database-providers/turso-setup";
 import { setupUpstash } from "../database-providers/upstash-setup";
 
-export async function setupDatabase(config: ProjectConfig, cliInput?: { manualDb?: boolean }) {
+export async function setupDatabase(
+  config: ProjectConfig,
+  cliInput?: { manualDb?: boolean },
+): Promise<SetupStepResult | null> {
   const { database, dbSetup, backend, projectDir } = config;
 
   if (backend === "convex" || database === "none") {
@@ -32,12 +36,12 @@ export async function setupDatabase(config: ProjectConfig, cliInput?: { manualDb
         await fs.remove(serverDbDir);
       }
     }
-    return;
+    return null;
   }
 
   const dbPackageDir = path.join(projectDir, "packages/db");
   if (!(await fs.pathExists(dbPackageDir))) {
-    return;
+    return null;
   }
 
   try {
@@ -65,9 +69,11 @@ export async function setupDatabase(config: ProjectConfig, cliInput?: { manualDb
     } else if (database === "redis" && dbSetup === "upstash") {
       await setupUpstash(config, cliInput);
     }
+
+    return { step: "Database setup", success: true };
   } catch (error) {
-    if (error instanceof Error) {
-      consola.error(pc.red(error.message));
-    }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    consola.error(pc.red(errorMessage));
+    return { step: "Database setup", success: false, errorMessage };
   }
 }

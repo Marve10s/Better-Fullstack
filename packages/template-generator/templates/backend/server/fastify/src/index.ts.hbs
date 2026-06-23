@@ -1,5 +1,5 @@
 import { env } from "@{{projectName}}/env/server";
-import Fastify from "fastify";
+import Fastify{{#if (eq api "apollo-server")}}, { type FastifyRequest }{{/if}} from "fastify";
 import fastifyCors from "@fastify/cors";
 {{#if (eq api "openapi")}}
 import swagger from "@fastify/swagger";
@@ -26,6 +26,9 @@ import { RPCHandler } from "@orpc/server/fastify";
 import { onError } from "@orpc/server";
 import { appRouter } from "@{{projectName}}/api/routers/index";
 import { createContext } from "@{{projectName}}/api/context";
+{{/if}}
+{{#if (eq api "apollo-server")}}
+import { executeApolloRequest } from "@{{projectName}}/api";
 {{/if}}
 
 {{#if (includes examples "ai")}}
@@ -64,6 +67,36 @@ const baseCorsConfig = {
 	maxAge: 86400,
 };
 
+{{#if (eq api "apollo-server")}}
+function firstHeader(value: string | string[] | undefined, fallback: string) {
+	if (Array.isArray(value)) return value[0] ?? fallback;
+	return value ?? fallback;
+}
+
+function fastifyRequestToWebRequest(request: FastifyRequest) {
+	const headers = new Headers();
+	for (const [key, value] of Object.entries(request.headers)) {
+		if (Array.isArray(value)) {
+			for (const item of value) headers.append(key, item);
+		} else if (typeof value === "string") {
+			headers.set(key, value);
+		}
+	}
+
+	const protocol = firstHeader(request.headers["x-forwarded-proto"], "http");
+	const host = firstHeader(request.headers.host, "localhost:3000");
+	const init: RequestInit = {
+		method: request.method,
+		headers,
+	};
+	if (request.method !== "GET" && request.method !== "HEAD" && request.body !== undefined) {
+		init.body = JSON.stringify(request.body);
+	}
+
+	return new Request(`${protocol}://${host}${request.url}`, init);
+}
+
+{{/if}}
 {{#if (eq api "orpc")}}
 const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
@@ -173,6 +206,27 @@ fastify.route({
 			});
 		}
 	}
+});
+{{/if}}
+
+{{#if (eq api "apollo-server")}}
+fastify.route({
+	method: ["GET", "POST"],
+	url: "/graphql",
+	async handler(request, reply) {
+		const webRequest = fastifyRequestToWebRequest(request);
+{{#if (isBetterAuth auth)}}
+		const session = await auth.api.getSession({
+			headers: webRequest.headers,
+		});
+		const apolloResponse = await executeApolloRequest(webRequest, { session });
+{{else}}
+		const apolloResponse = await executeApolloRequest(webRequest);
+{{/if}}
+		reply.status(apolloResponse.status);
+		apolloResponse.headers.forEach((value, key) => reply.header(key, value));
+		reply.send(await apolloResponse.text());
+	},
 });
 {{/if}}
 

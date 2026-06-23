@@ -27,5 +27,6 @@ export { processJobQueueTemplates } from "./job-queue";
 export { processCMSTemplates } from "./cms";
 export { processI18nTemplates } from "./i18n";
 export { processSearchTemplates } from "./search";
+export { processVectorDbTemplates } from "./vector-db";
 export { processFileStorageTemplates } from "./file-storage";
 export { processTestingTemplates } from "./testing";

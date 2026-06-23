@@ -1,0 +1,218 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  ci:
+    name: Lint, Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+{{#if (or (eq ecosystem "typescript") (eq ecosystem "react-native"))}}
+{{#if (eq packageManager "bun")}}
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+{{#if (includes addons "biome")}}
+
+      - name: Lint
+        run: bunx @biomejs/biome check .
+{{else if (includes addons "oxlint")}}
+
+      - name: Lint
+        run: bunx oxlint
+{{/if}}
+
+      - name: Type check
+        run: bun run check-types
+
+      - name: Build
+        run: bun run build
+{{else if (eq packageManager "pnpm")}}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+{{#if (includes addons "biome")}}
+
+      - name: Lint
+        run: pnpm exec biome check .
+{{else if (includes addons "oxlint")}}
+
+      - name: Lint
+        run: pnpm exec oxlint
+{{/if}}
+
+      - name: Type check
+        run: pnpm run check-types
+
+      - name: Build
+        run: pnpm run build
+{{else if (eq packageManager "yarn")}}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+{{#if (includes addons "biome")}}
+
+      - name: Lint
+        run: yarn exec biome check .
+{{else if (includes addons "oxlint")}}
+
+      - name: Lint
+        run: yarn exec oxlint
+{{/if}}
+
+      - name: Type check
+        run: yarn run check-types
+
+      - name: Build
+        run: yarn run build
+{{else}}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+{{#if (includes addons "biome")}}
+
+      - name: Lint
+        run: npx @biomejs/biome check .
+{{else if (includes addons "oxlint")}}
+
+      - name: Lint
+        run: npx oxlint
+{{/if}}
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Build
+        run: npm run build
+{{/if}}
+{{else if (eq ecosystem "rust")}}
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+{{else if (eq ecosystem "go")}}
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./...
+{{else if (eq ecosystem "python")}}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e .; fi
+
+      - name: Compile sources
+        run: python -m compileall -q .
+{{else if (eq ecosystem "elixir")}}
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.17"
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Format check
+        run: mix format --check-formatted
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Test
+        run: mix test
+{{else if (eq ecosystem "java")}}
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+{{#if (eq javaBuildTool "gradle")}}
+          cache: gradle
+
+      - name: Build & Test
+        run: ./gradlew build
+{{else}}
+          cache: maven
+
+      - name: Build & Test
+        run: ./mvnw --batch-mode verify
+{{/if}}
+{{else if (eq ecosystem "dotnet")}}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release
+{{else}}
+      - name: Build
+        run: echo "Add CI steps for the {{ecosystem}} ecosystem"
+{{/if}}

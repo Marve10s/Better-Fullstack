@@ -37,6 +37,8 @@ const BUILDER_CATEGORY_TO_CLI_OPTION_KEY: Partial<
 const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
   "ecosystem",
   "template",
+  "fromHistory",
+  "config",
   "yes",
   "yolo",
   "verbose",
@@ -106,6 +108,7 @@ describe("CLI and Builder catalog parity", () => {
       ["javaLibraries", "spring-devtools", "Spring Boot DevTools"],
       ["javaLibraries", "micrometer-prometheus", "Micrometer Prometheus"],
       ["javaLibraries", "thymeleaf", "Thymeleaf"],
+      ["appPlatforms", "devcontainer", "DevContainer"],
     ];
 
     for (const [category, id, label] of expectedLabels) {

@@ -15,8 +15,8 @@ import type { AddInput, Addons, ProjectConfig } from "../../types";
 import { getDefaultConfig } from "../../constants";
 import { getAddonsToAdd } from "../../prompts/addons";
 import { readBtsConfig, updateBtsConfig } from "../../utils/bts-config";
-import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { isSilent, runWithContextAsync } from "../../utils/context";
+import { applyDependencyVersionChannel } from "../../utils/dependency-version-channel";
 import { CLIError, UserCancelledError } from "../../utils/errors";
 import { renderTitle } from "../../utils/render-title";
 import { setupAddons } from "../addons/addons-setup";
@@ -189,11 +189,13 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
 
   await updateBtsConfig(projectDir, configUpdates);
 
+  let addonInstallFailed = false;
   if (input.install) {
-    await installDependencies({
+    const installResult = await installDependencies({
       projectDir,
       packageManager: config.packageManager,
     });
+    addonInstallFailed = !installResult.success;
   }
 
   if (!isSilent()) {
@@ -201,10 +203,16 @@ async function addHandlerInternal(input: AddInput): Promise<AddResult> {
     for (const warning of setupWarnings) {
       log.warn(pc.yellow(warning));
     }
+    const installCmd =
+      config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
     if (!input.install) {
-      const installCmd =
-        config.packageManager === "npm" ? "npm install" : `${config.packageManager} install`;
       log.info(pc.yellow(`Run '${installCmd}' to install new dependencies.`));
+    } else if (addonInstallFailed) {
+      log.warn(
+        pc.yellow(
+          `Dependency installation failed. Run '${installCmd}' after resolving the error above.`,
+        ),
+      );
     }
     outro(pc.magenta("Addons added successfully!"));
   }

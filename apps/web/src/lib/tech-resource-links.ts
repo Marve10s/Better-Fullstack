@@ -17,6 +17,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://the-guild.dev/graphql/yoga-server/docs",
     githubUrl: "https://github.com/dotansimha/graphql-yoga",
   },
+  "apollo-server": {
+    docsUrl: "https://www.apollographql.com/docs/apollo-server/",
+    githubUrl: "https://github.com/apollographql/apollo-server",
+  },
   openapi: {
     docsUrl: "https://spec.openapis.org/oas/latest.html",
     githubUrl: "https://github.com/OAI/OpenAPI-Specification",
@@ -344,6 +348,14 @@ const BASE_LINKS: LinkMap = {
   "docker-compose": {
     docsUrl: "https://docs.docker.com/compose/",
     githubUrl: "https://github.com/docker/compose",
+  },
+  devcontainer: {
+    docsUrl: "https://containers.dev/",
+    githubUrl: "https://github.com/devcontainers/spec",
+  },
+  "github-actions": {
+    docsUrl: "https://docs.github.com/actions",
+    githubUrl: "https://github.com/features/actions",
   },
   cloudflare: {
     docsUrl: "https://developers.cloudflare.com/",
@@ -918,6 +930,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://upstash.com/docs/redis",
     githubUrl: "https://github.com/upstash/redis-js",
   },
+  paraglide: {
+    docsUrl: "https://paraglidejs.com/",
+    githubUrl: "https://github.com/opral/paraglide-js",
+  },
   i18next: {
     docsUrl: "https://www.i18next.com/",
     githubUrl: "https://github.com/i18next/i18next",
@@ -938,9 +954,29 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://www.elastic.co/docs",
     githubUrl: "https://github.com/elastic/elasticsearch",
   },
+  opensearch: {
+    docsUrl: "https://opensearch.org/docs/latest/",
+    githubUrl: "https://github.com/opensearch-project/OpenSearch",
+  },
   algolia: {
     docsUrl: "https://www.algolia.com/doc/",
     githubUrl: "https://github.com/algolia/algoliasearch-client-javascript",
+  },
+  pgvector: {
+    docsUrl: "https://github.com/pgvector/pgvector",
+    githubUrl: "https://github.com/pgvector/pgvector",
+  },
+  qdrant: {
+    docsUrl: "https://qdrant.tech/documentation/",
+    githubUrl: "https://github.com/qdrant/qdrant",
+  },
+  chroma: {
+    docsUrl: "https://docs.trychroma.com/",
+    githubUrl: "https://github.com/chroma-core/chroma",
+  },
+  pinecone: {
+    docsUrl: "https://docs.pinecone.io/",
+    githubUrl: "https://github.com/pinecone-io/pinecone-ts-client",
   },
   s3: {
     docsUrl: "https://docs.aws.amazon.com/AmazonS3/",
@@ -1000,6 +1036,10 @@ const BASE_LINKS: LinkMap = {
   directus: {
     docsUrl: "https://directus.io/docs",
     githubUrl: "https://github.com/directus/directus",
+  },
+  keystatic: {
+    docsUrl: "https://keystatic.com/docs",
+    githubUrl: "https://github.com/Thinkmill/keystatic",
   },
   axum: {
     docsUrl: "https://docs.rs/axum/latest/axum/",

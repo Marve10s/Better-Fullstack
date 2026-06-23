@@ -151,6 +151,7 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   trpc: ["@trpc/server", "@trpc/client", "@trpc/tanstack-react-query"],
   orpc: ["@orpc/server", "@orpc/client", "@orpc/openapi", "@orpc/zod", "@orpc/tanstack-query"],
   "ts-rest": ["@ts-rest/core", "@ts-rest/react-query", "@ts-rest/serverless", "@ts-rest/next"],
+  "apollo-server": ["@apollo/server", "graphql"],
   openapi: [
     "@hono/zod-openapi",
     "@scalar/hono-api-reference",

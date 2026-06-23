@@ -33,6 +33,8 @@ import (
 {{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
 
 	"{{projectName}}/internal/database"
+{{/if}}
+{{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")))}}
 	"{{projectName}}/internal/handlers"
 {{/if}}
 {{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}

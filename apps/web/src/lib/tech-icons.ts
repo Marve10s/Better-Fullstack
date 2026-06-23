@@ -130,6 +130,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   trpc: { type: "si", slug: "trpc", hex: "398CCB" },
   orpc: { type: "local", src: "/icon/orpc.svg", needsInvert: "dark" }, // black circle SVG
   "graphql-yoga": { type: "si", slug: "graphql", hex: "E10098" },
+  "apollo-server": { type: "si", slug: "apollographql", hex: "311C87" },
   openapi: { type: "si", slug: "openapiinitiative", hex: "6BA539" },
 
   // ─── Web Frontend ──────────────────────────────────────────────────────────
@@ -213,6 +214,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   upstash: { type: "si", slug: "upstash", hex: "00E9A3" },
   docker: { type: "si", slug: "docker", hex: "2496ED" },
   "docker-compose": { type: "si", slug: "docker", hex: "2496ED" },
+  devcontainer: { type: "si", slug: "docker", hex: "2496ED" },
+  "github-actions": { type: "si", slug: "githubactions", hex: "2088FF" },
   nx: { type: "si", slug: "nx", hex: "143055", needsInvert: "dark" },
 
   // ─── Deploy ────────────────────────────────────────────────────────────────
@@ -379,6 +382,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "upstash-redis": { type: "si", slug: "upstash", hex: "00E9A3" },
 
   // ─── i18n ─────────────────────────────────────────────────────────────────
+  paraglide: {
+    type: "local",
+    src: "https://raw.githubusercontent.com/opral/paraglide-js/refs/heads/main/assets/paraglideNoBg.png",
+  },
   i18next: { type: "si", slug: "i18next", hex: "26A69A" },
   "next-intl": { type: "local", src: "/icon/next-intl.svg" },
 
@@ -386,7 +393,14 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   meilisearch: { type: "si", slug: "meilisearch", hex: "FF5CAA" },
   typesense: { type: "local", src: "/icon/typesense.png" },
   elasticsearch: { type: "si", slug: "elasticsearch", hex: "005571" },
+  opensearch: { type: "si", slug: "opensearch", hex: "005EB8" },
   algolia: { type: "si", slug: "algolia", hex: "003DFF" },
+
+  // ─── Vector DB ───────────────────────────────────────────────────────────────
+  pgvector: { type: "si", slug: "postgresql", hex: "4169E1" },
+  qdrant: { type: "si", slug: "qdrant", hex: "DC244C" },
+  chroma: { type: "local", src: "/icon/chroma.svg" },
+  pinecone: { type: "local", src: "/icon/pinecone.svg" },
 
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },
@@ -412,6 +426,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   strapi: { type: "si", slug: "strapi", hex: "4945FF" },
   tinacms: { type: "local", src: "/icon/tinacms.svg" },
   directus: { type: "si", slug: "directus", hex: "263238" },
+  keystatic: { type: "local", src: "/icon/keystatic.svg" },
 
   // ─── Rust ──────────────────────────────────────────────────────────────────
   axum: { type: "local", src: "/icon/axum.svg" },

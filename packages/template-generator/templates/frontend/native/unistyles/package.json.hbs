@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "expo start --clear",
     "build": "expo export",
     "android": "expo run:android",
@@ -57,6 +58,7 @@
     "expo-web-browser": "^56.0.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "@babel/runtime": "^7.29.7",
     "react-native": "^0.86.0",
 		"react-native-edge-to-edge": "^1.8.1",
     {{#if (eq mobileStorage "mmkv")}}

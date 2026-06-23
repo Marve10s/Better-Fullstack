@@ -647,6 +647,48 @@ describe("Search Options", () => {
     });
   });
 
+  describe("OpenSearch with different backends", () => {
+    test("opensearch with Hono backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "opensearch-hono",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "opensearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+
+    test("opensearch with Express backend", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "opensearch-express",
+          frontend: ["tanstack-router"],
+          backend: "express",
+          runtime: "node",
+          search: "opensearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
+  describe("OpenSearch with fullstack frameworks", () => {
+    test("opensearch with Next.js fullstack", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "opensearch-nextjs",
+          frontend: ["next"],
+          backend: "self",
+          runtime: "none",
+          search: "opensearch",
+        }),
+      );
+      expectSuccess(result);
+    });
+  });
+
   describe("Algolia with different backends", () => {
     test("algolia with Hono backend", async () => {
       const result = await runTRPCTest(
@@ -772,8 +814,38 @@ describe("Search Options", () => {
       expect(env).toContain("ELASTICSEARCH_CLOUD_ID=");
     });
 
+    test("server backends emit search helper, dependency, and env for opensearch", async () => {
+      const result = await runTRPCTest(
+        createCustomConfig({
+          projectName: "opensearch-server-files",
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          search: "opensearch",
+        }),
+      );
+      expectSuccess(result);
+
+      const projectDir = result.projectDir!;
+      const helper = await readFile(join(projectDir, "apps/server/src/lib/search.ts"), "utf-8");
+      const pkg = await readFile(join(projectDir, "apps/server/package.json"), "utf-8");
+      const env = await readFile(join(projectDir, "apps/server/.env"), "utf-8");
+
+      expect(helper).toContain('from "@opensearch-project/opensearch"');
+      expect(helper).toContain("response.body");
+      expect(pkg).toContain('"@opensearch-project/opensearch"');
+      expect(env).toContain("OPENSEARCH_NODE=http://localhost:9200");
+      expect(env).toContain("OPENSEARCH_USERNAME=");
+      expect(env).toContain("OPENSEARCH_PASSWORD=");
+    });
+
     test("self backends emit search helper, dependency, and env for all search engines", async () => {
-      const searches = ["meilisearch", "typesense", "elasticsearch", "algolia"] as const;
+      const searches = [
+        "meilisearch",
+        "typesense",
+        "elasticsearch",
+        "opensearch",
+        "algolia",
+      ] as const;
 
       for (const search of searches) {
         const result = await runTRPCTest(
@@ -803,6 +875,9 @@ describe("Search Options", () => {
           expect(pkg).toContain('"algoliasearch"');
           expect(env).toContain("ALGOLIA_APP_ID=");
           expect(env).toContain("ALGOLIA_API_KEY=");
+        } else if (search === "opensearch") {
+          expect(pkg).toContain('"@opensearch-project/opensearch"');
+          expect(env).toContain("OPENSEARCH_NODE=http://localhost:9200");
         } else {
           expect(pkg).toContain('"@elastic/elasticsearch"');
           expect(env).toContain("ELASTICSEARCH_NODE=http://localhost:9200");

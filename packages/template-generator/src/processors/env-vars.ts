@@ -1586,6 +1586,24 @@ function buildServerVars(
         "Basic auth password. Used only when ELASTICSEARCH_API_KEY is empty and both username/password are provided",
     },
     {
+      key: "OPENSEARCH_NODE",
+      value: "http://localhost:9200",
+      condition: search === "opensearch",
+      comment: "OpenSearch node URL",
+    },
+    {
+      key: "OPENSEARCH_USERNAME",
+      value: "",
+      condition: search === "opensearch",
+      comment: "OpenSearch username (optional for local development)",
+    },
+    {
+      key: "OPENSEARCH_PASSWORD",
+      value: "",
+      condition: search === "opensearch",
+      comment: "OpenSearch password (optional for local development)",
+    },
+    {
       key: "ALGOLIA_APP_ID",
       value: "",
       condition: search === "algolia",

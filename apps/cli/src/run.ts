@@ -5,6 +5,7 @@ import { createCli } from "trpc-cli";
 import z from "zod";
 
 import { historyHandler } from "./commands/history";
+import { telemetryHandler } from "./commands/telemetry";
 import { CreateCommandInputSchema } from "./create-command-input";
 import type { AddResult } from "./helpers/core/add-handler";
 import { createProjectHandler } from "./helpers/core/command-handlers";
@@ -265,6 +266,27 @@ export const router = os.router({
     .handler(async ({ input }) => {
       await historyHandler(input);
     }),
+  telemetry: os
+    .meta({
+      description:
+        "View or change anonymous usage telemetry collection (status | enable | disable)",
+    })
+    .input(
+      z.tuple([
+        z
+          .enum(["status", "enable", "disable"])
+          .optional()
+          .default("status")
+          .describe("Action to perform: status (default), enable, or disable"),
+        z.object({
+          json: z.boolean().optional().default(false).describe("Output status as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [action, options] = input;
+      await telemetryHandler({ action, json: options.json });
+    }),
   "update-deps": os
     .meta({ description: "Check and update dependency versions in add-deps.ts" })
     .input(
@@ -300,6 +322,32 @@ export const router = os.router({
     .handler(async () => {
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");
+    }),
+  doctor: os
+    .meta({
+      description:
+        "Diagnose a scaffolded Better Fullstack project: verify its bts.jsonc, installed dependencies, required env vars, and run ecosystem build/type checks",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .optional()
+          .describe("Project directory to diagnose (defaults to current directory)"),
+        z.object({
+          skipChecks: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Skip the ecosystem build/type checks (config + deps + env only)"),
+          json: z.boolean().optional().default(false).describe("Output the diagnosis as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [projectDir, options] = input;
+      const { doctorCommand } = await import("./commands/doctor.js");
+      await doctorCommand({ projectDir, ...options });
     }),
 });
 
@@ -386,4 +434,21 @@ export async function history(options?: { limit?: number; clear?: boolean; json?
     clear: options?.clear ?? false,
     json: options?.json ?? false,
   });
+}
+
+export async function telemetry(
+  action: "status" | "enable" | "disable" = "status",
+  options?: { json?: boolean },
+) {
+  return caller.telemetry([action, { json: options?.json ?? false }]);
+}
+
+export async function doctor(
+  projectDir?: string,
+  options?: { skipChecks?: boolean; json?: boolean },
+) {
+  return caller.doctor([
+    projectDir,
+    { skipChecks: options?.skipChecks ?? false, json: options?.json ?? false },
+  ]);
 }

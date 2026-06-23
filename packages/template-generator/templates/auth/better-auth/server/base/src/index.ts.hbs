@@ -325,7 +325,9 @@ import { polarClient } from "./lib/payments";
 {{/if}}
 
 export const auth = betterAuth({
+{{#if (and (ne database "none") (ne database "redis"))}}
 	database: env.DATABASE_URL,
+{{/if}}
 	trustedOrigins: [
 		env.CORS_ORIGIN,
 {{#if (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles"))}}
@@ -393,7 +395,9 @@ import { polarClient } from "./lib/payments";
 
 
 export const auth = betterAuth({
+{{#if (and (ne database "none") (ne database "redis"))}}
 	database: env.DATABASE_URL,
+{{/if}}
 	trustedOrigins: [
 		env.CORS_ORIGIN,
 {{#if (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles"))}}

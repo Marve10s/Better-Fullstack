@@ -1,0 +1,300 @@
+import {
+  Client,
+  type API,
+} from "@opensearch-project/opensearch";
+
+/**
+ * Resolve OpenSearch connection options from environment variables.
+ * Supports basic auth when OPENSEARCH_USERNAME is provided.
+ */
+function resolveConnection(): ConstructorParameters<typeof Client>[0] {
+  const username = process.env.OPENSEARCH_USERNAME;
+  const password = process.env.OPENSEARCH_PASSWORD;
+
+  return {
+    node: process.env.OPENSEARCH_NODE || "http://localhost:9200",
+    auth:
+      username && username.length > 0
+        ? {
+            username,
+            password: password || "",
+          }
+        : undefined,
+  };
+}
+
+/**
+ * OpenSearch client for distributed full-text search and analytics.
+ */
+export const searchClient = new Client(resolveConnection());
+
+export type SearchHit<T extends Record<string, unknown>> = {
+  id: string;
+  score: number | null;
+  source: T;
+};
+
+export type NormalizedSearchResponse<T extends Record<string, unknown>> = {
+  hits: SearchHit<T>[];
+  total: number;
+  took: number;
+};
+
+type SearchResponseBody<T extends Record<string, unknown>> = {
+  hits: {
+    hits: Array<{
+      _id?: string;
+      _score?: number | null;
+      _source?: T;
+    }>;
+    total?: number | { value?: number };
+  };
+  took?: number;
+};
+
+/**
+ * Search documents across one or more indices with the OpenSearch query DSL.
+ */
+export async function search<T extends Record<string, unknown>>(
+  params: API.Search_Request,
+): Promise<NormalizedSearchResponse<T>> {
+  const response = await searchClient.search(params);
+  const body = response.body as SearchResponseBody<T>;
+  const total =
+    typeof body.hits.total === "number" ? body.hits.total : body.hits.total?.value ?? 0;
+
+  return {
+    hits: body.hits.hits
+      .filter((hit) => hit._source)
+      .map((hit) => ({
+        id: hit._id ?? "",
+        score: hit._score ?? null,
+        source: hit._source as T,
+      })),
+    total,
+    took: body.took ?? 0,
+  };
+}
+
+/**
+ * Index multiple documents in bulk. Optionally provide an `id` field on each document to set the document ID.
+ */
+export async function indexDocuments<T extends Record<string, unknown>>(
+  index: string,
+  documents: Array<T & { id?: string | number }>,
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{ indexed: number; errors: boolean }> {
+  if (documents.length === 0) {
+    return { indexed: 0, errors: false };
+  }
+
+  const body: Record<string, unknown>[] = [];
+  for (const document of documents) {
+    const { id, ...source } = document;
+    body.push({ index: { _index: index, ...(id !== undefined ? { _id: String(id) } : {}) } });
+    body.push(source);
+  }
+
+  const response = await searchClient.bulk({
+    body,
+    refresh: options?.refresh,
+  });
+  const responseBody = response.body as { errors?: boolean };
+
+  return {
+    indexed: documents.length,
+    errors: Boolean(responseBody.errors),
+  };
+}
+
+/**
+ * Execute arbitrary bulk operations in a single request.
+ */
+export async function bulk(
+  operations: Record<string, unknown>[],
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{ errors: boolean; items?: unknown[] }> {
+  const response = await searchClient.bulk({
+    body: operations,
+    refresh: options?.refresh,
+  });
+  const body = response.body as { errors?: boolean; items?: unknown[] };
+
+  return {
+    errors: Boolean(body.errors),
+    items: body.items,
+  };
+}
+
+/**
+ * Update a single document by ID (partial update). Supports upsert via `docAsUpsert`.
+ */
+export async function updateDocument<T extends Record<string, unknown>>(
+  index: string,
+  id: string | number,
+  document: Partial<T>,
+  options?: { refresh?: boolean | "wait_for"; docAsUpsert?: boolean },
+): Promise<{ id: string; result: string }> {
+  const response = await searchClient.update({
+    index,
+    id: String(id),
+    body: {
+      doc: document,
+      doc_as_upsert: options?.docAsUpsert,
+    },
+    refresh: options?.refresh,
+  });
+  const body = response.body as { _id?: string; result?: string };
+
+  return {
+    id: body._id ?? String(id),
+    result: body.result ?? "",
+  };
+}
+
+/**
+ * Delete a single document by ID.
+ */
+export async function deleteDocument(
+  index: string,
+  id: string | number,
+  options?: { refresh?: boolean | "wait_for" },
+): Promise<{ id: string; result: string }> {
+  const response = await searchClient.delete({
+    index,
+    id: String(id),
+    refresh: options?.refresh,
+  });
+  const body = response.body as { _id?: string; result?: string };
+
+  return {
+    id: body._id ?? String(id),
+    result: body.result ?? "",
+  };
+}
+
+/**
+ * Delete documents matching a query.
+ */
+export async function deleteByQuery(
+  index: string,
+  query: Record<string, unknown>,
+  options?: { refresh?: boolean; conflicts?: "abort" | "proceed" },
+): Promise<{ deleted: number }> {
+  const response = await searchClient.deleteByQuery({
+    index,
+    body: { query },
+    refresh: options?.refresh,
+    conflicts: options?.conflicts,
+  });
+  const body = response.body as { deleted?: number };
+
+  return { deleted: body.deleted ?? 0 };
+}
+
+/**
+ * Delete all documents in an index.
+ */
+export async function deleteAllDocuments(
+  index: string,
+  options?: { refresh?: boolean },
+): Promise<{ deleted: number }> {
+  return deleteByQuery(index, { match_all: {} }, { refresh: options?.refresh });
+}
+
+/**
+ * Get a single document by ID. Returns null if not found.
+ */
+export async function getDocument<T extends Record<string, unknown>>(
+  index: string,
+  id: string | number,
+): Promise<T | null> {
+  try {
+    const response = await searchClient.get({
+      index,
+      id: String(id),
+    });
+    const body = response.body as { _source?: T };
+
+    return body._source ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create an index with optional mappings, settings, and aliases.
+ */
+export async function createIndex(
+  index: string,
+  options?: {
+    mappings?: API.Indices_Create_RequestBody["mappings"];
+    settings?: API.Indices_Create_RequestBody["settings"];
+    aliases?: API.Indices_Create_RequestBody["aliases"];
+  },
+): Promise<{ acknowledged: boolean; index: string }> {
+  const response = await searchClient.indices.create({
+    index,
+    body: {
+      mappings: options?.mappings,
+      settings: options?.settings,
+      aliases: options?.aliases,
+    },
+  });
+  const body = response.body as { acknowledged?: boolean };
+
+  return {
+    acknowledged: Boolean(body.acknowledged),
+    index,
+  };
+}
+
+/**
+ * Delete an index.
+ */
+export async function deleteIndex(index: string): Promise<{ acknowledged: boolean }> {
+  const response = await searchClient.indices.delete({ index });
+  const body = response.body as { acknowledged?: boolean };
+
+  return { acknowledged: Boolean(body.acknowledged) };
+}
+
+/**
+ * Check whether an index exists.
+ */
+export async function indexExists(index: string): Promise<boolean> {
+  const response = await searchClient.indices.exists({ index });
+  return Boolean(response.body);
+}
+
+/**
+ * List indices matching an optional glob pattern (defaults to all).
+ */
+export async function listIndices(
+  pattern = "*",
+): Promise<Array<{ index: string; health?: string; status?: string; docsCount?: string }>> {
+  const response = await searchClient.cat.indices({
+    index: pattern,
+    format: "json",
+  });
+  const body = response.body as Array<Record<string, string>>;
+
+  return body.map((entry) => ({
+    index: entry.index ?? "",
+    health: entry.health,
+    status: entry.status,
+    docsCount: entry["docs.count"],
+  }));
+}
+
+/**
+ * Health check for OpenSearch.
+ */
+export async function healthCheck(): Promise<{ status: "available" | "unavailable" }> {
+  try {
+    await searchClient.ping();
+    return { status: "available" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}

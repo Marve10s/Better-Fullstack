@@ -112,6 +112,7 @@ import {
   RUST_ORM_VALUES,
   RUST_WEB_FRAMEWORK_VALUES,
   SEARCH_VALUES,
+  VECTOR_DB_VALUES,
   SHADCN_BASE_COLOR_VALUES,
   SHADCN_BASE_VALUES,
   SHADCN_COLOR_THEME_VALUES,
@@ -156,6 +157,7 @@ export type OptionCategory =
   | "rateLimit"
   | "i18n"
   | "search"
+  | "vectorDb"
   | "fileStorage"
   | "animation"
   | "cssFramework"
@@ -316,6 +318,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "rateLimit",
   "i18n",
   "search",
+  "vectorDb",
   "fileStorage",
   "animation",
   "cms",
@@ -692,7 +695,9 @@ const APP_PLATFORM_VALUES = [
   "tanstack-db",
   "tanstack-pacer",
   "backend-utils",
+  "devcontainer",
   "docker-compose",
+  "github-actions",
 ] as const satisfies readonly string[];
 
 const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
@@ -747,6 +752,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   rateLimit: RATE_LIMIT_VALUES,
   i18n: I18N_VALUES,
   search: SEARCH_VALUES,
+  vectorDb: VECTOR_DB_VALUES,
   fileStorage: FILE_STORAGE_VALUES,
   animation: ANIMATION_VALUES,
   cssFramework: CSS_FRAMEWORK_VALUES,
@@ -857,7 +863,13 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
 };
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
-  api: { trpc: "tRPC", orpc: "oRPC", "graphql-yoga": "GraphQL Yoga", openapi: "OpenAPI" },
+  api: {
+    trpc: "tRPC",
+    orpc: "oRPC",
+    "graphql-yoga": "GraphQL Yoga",
+    "apollo-server": "Apollo Server",
+    openapi: "OpenAPI",
+  },
   webFrontend: {
     next: "Next.js",
     vinext: "Vinext",
@@ -915,7 +927,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     sst: "SST",
     vercel: "Vercel",
   },
-  cms: { tinacms: "TinaCMS", directus: "Directus" },
+  cms: { tinacms: "TinaCMS", directus: "Directus", keystatic: "Keystatic" },
   auth: {
     "better-auth-organizations": "Better Auth + Organizations",
     auth0: "Auth0",
@@ -978,6 +990,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "trigger-dev": "Trigger.dev",
   },
   i18n: {
+    paraglide: "Paraglide",
     i18next: "i18next",
     "next-intl": "next-intl",
   },
@@ -985,7 +998,14 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     meilisearch: "Meilisearch",
     typesense: "Typesense",
     elasticsearch: "Elasticsearch",
+    opensearch: "OpenSearch",
     algolia: "Algolia",
+  },
+  vectorDb: {
+    pgvector: "pgvector",
+    qdrant: "Qdrant",
+    chroma: "Chroma",
+    pinecone: "Pinecone",
   },
   fileStorage: {
     s3: "AWS S3",
@@ -1073,7 +1093,9 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "tanstack-virtual": "TanStack Virtual",
     "tanstack-db": "TanStack DB",
     "tanstack-pacer": "TanStack Pacer",
+    devcontainer: "DevContainer",
     "docker-compose": "Docker Compose",
+    "github-actions": "GitHub Actions",
   },
   versionChannel: {
     stable: "Stable",
@@ -1098,7 +1120,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   aiDocs: {
     "claude-md": "CLAUDE.md",
-    "agents-md": "Agents.md",
+    "agents-md": "AGENTS.md",
     cursorrules: ".cursorrules",
   },
   git: { true: "Git", false: "No Git" },
@@ -1637,6 +1659,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   rateLimit: buildCategoryMetadata("rateLimit"),
   i18n: buildCategoryMetadata("i18n"),
   search: buildCategoryMetadata("search"),
+  vectorDb: buildCategoryMetadata("vectorDb"),
   fileStorage: buildCategoryMetadata("fileStorage"),
   animation: buildCategoryMetadata("animation"),
   cssFramework: buildCategoryMetadata("cssFramework"),
