@@ -131,7 +131,7 @@
     "@better-fullstack/template-generator": "^2.0.3",
     "@better-fullstack/types": "^2.0.3",
     "@clack/core": "^0.5.0",
-    "@clack/prompts": "^1.5.1",
+    "@clack/prompts": "^1.6.0",
     "@orpc/server": "^1.14.6",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",
