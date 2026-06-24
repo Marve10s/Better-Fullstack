@@ -19,6 +19,33 @@ export async function createContext(_req: NextRequest) {
 }
 {{/if}}
 
+{{else if (and (eq backend 'self') (includes frontend "nuxt"))}}
+import type { IncomingMessage } from "node:http";
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+{{/if}}
+
+type CreateContextOptions = {
+  req: IncomingMessage;
+};
+
+{{#if (isBetterAuth auth)}}
+export async function createContext({ req }: CreateContextOptions) {
+  const session = await auth.api.getSession({
+    headers: req.headers as any,
+  });
+  return {
+    session,
+  };
+}
+{{else}}
+export async function createContext(_opts: CreateContextOptions) {
+  return {
+    session: null,
+  };
+}
+{{/if}}
+
 {{else if (and (eq backend 'self') (includes frontend "tanstack-start"))}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";

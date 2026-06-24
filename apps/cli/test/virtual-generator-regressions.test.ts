@@ -309,6 +309,36 @@ describe("Virtual Generator Regressions", () => {
     expect(graphqlClient).toContain("export const queryClient");
   });
 
+  it("wires Nuxt self-backend oRPC auth context from Nitro request headers", async () => {
+    const result = await createVirtual({
+      projectName: "nuxt-orpc-auth",
+      frontend: ["nuxt"],
+      backend: "self",
+      runtime: "none",
+      api: "orpc",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+      addons: ["turborepo"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const context = readTextFromTree(result.tree!, "packages/api/src/context.ts");
+    const router = readTextFromTree(result.tree!, "packages/api/src/routers/index.ts");
+
+    expect(context).toContain('import type { IncomingMessage } from "node:http"');
+    expect(context).toContain("req: IncomingMessage");
+    expect(context).toContain("auth.api.getSession");
+    expect(context).toContain("headers: req.headers as any");
+    expect(router).toContain("privateData: protectedProcedure.handler");
+    expect(context).not.toContain("export async function createContext() {\n  return {\n    session: null");
+  });
+
   it("projects backend-owned Better Auth organizations into generated auth files", async () => {
     const result = await createVirtual({
       projectName: "better-auth-orgs",
