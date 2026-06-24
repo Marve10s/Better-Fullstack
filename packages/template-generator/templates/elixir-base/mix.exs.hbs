@@ -74,7 +74,7 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirValidation "nimble-options")}}
       {:nimble_options, "~> 1.1"},
 {{/if}}
-{{#if (eq elixirHttp "req")}}
+{{#if (or (eq elixirHttp "req") (eq elixirTesting "bypass"))}}
       {:req, "~> 0.5"},
 {{/if}}
 {{#if (or (eq elixirHttp "finch") (eq elixirEmail "swoosh"))}}
