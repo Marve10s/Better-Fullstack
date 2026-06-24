@@ -6276,7 +6276,7 @@ export const openApiDocument = createOpenApiDocument();
     {
       "content": 
 "{
-  "extends": "@snapshot-hono-openapi/config/tsconfig/base.json",
+  "extends": "@snapshot-hono-openapi/config/tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist"

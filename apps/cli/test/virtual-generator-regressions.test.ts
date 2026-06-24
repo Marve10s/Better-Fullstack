@@ -365,6 +365,34 @@ describe("Virtual Generator Regressions", () => {
     expect(schema).toContain("export interface UserTable");
   });
 
+  it("uses the shared tsconfig base file for generated OpenAPI packages", async () => {
+    const result = await createVirtual({
+      projectName: "nuxt-express-openapi",
+      frontend: ["nuxt"],
+      backend: "express",
+      runtime: "bun",
+      api: "openapi",
+      database: "mongodb",
+      orm: "prisma",
+      auth: "better-auth",
+      email: "react-email",
+      realtime: "socket-io",
+      jobQueue: "trigger-dev",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const apiTsconfig = readTextFromTree(result.tree!, "packages/api/tsconfig.json");
+
+    expect(apiTsconfig).toContain('"extends": "@nuxt-express-openapi/config/tsconfig.base.json"');
+    expect(apiTsconfig).not.toContain("config/tsconfig/base.json");
+  });
+
   it("projects backend-owned Better Auth organizations into generated auth files", async () => {
     const result = await createVirtual({
       projectName: "better-auth-orgs",
