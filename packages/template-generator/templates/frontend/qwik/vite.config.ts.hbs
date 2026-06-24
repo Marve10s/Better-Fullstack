@@ -9,6 +9,22 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig(() => {
   return {
     plugins: [qwikCity(), qwikVite(), tsconfigPaths(){{#if (eq cssFramework "tailwind")}}, tailwindcss(){{/if}}],
+    build: {
+      rollupOptions: {
+        output: {
+          chunkFileNames: "assets/chunks/[hash].js",
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              return id
+                .replaceAll("\\", "_")
+                .replaceAll("/", "_")
+                .replaceAll(".", "_")
+                .replace(/[^a-zA-Z0-9_-]/g, "_");
+            }
+          },
+        },
+      },
+    },
     server: {
       port: 3001,
     },
