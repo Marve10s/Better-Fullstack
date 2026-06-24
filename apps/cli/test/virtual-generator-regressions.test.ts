@@ -339,6 +339,32 @@ describe("Virtual Generator Regressions", () => {
     expect(context).not.toContain("export async function createContext() {\n  return {\n    session: null");
   });
 
+  it("does not import unused Kysely Generated type for Better Auth schemas", async () => {
+    const result = await createVirtual({
+      projectName: "kysely-auth-schema",
+      frontend: ["next"],
+      backend: "nitro",
+      runtime: "node",
+      api: "none",
+      database: "mysql",
+      orm: "kysely",
+      auth: "better-auth",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const schema = readTextFromTree(result.tree!, "packages/db/src/schema/index.ts");
+
+    expect(schema).toContain('import type { ColumnType } from "kysely";');
+    expect(schema).not.toContain("Generated");
+    expect(schema).toContain("export interface UserTable");
+  });
+
   it("projects backend-owned Better Auth organizations into generated auth files", async () => {
     const result = await createVirtual({
       projectName: "better-auth-orgs",
