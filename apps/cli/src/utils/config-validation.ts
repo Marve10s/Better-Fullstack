@@ -760,68 +760,7 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
 
   const hasPhoenix = config.elixirWebFramework !== "none";
   const hasEcto = config.elixirOrm !== "none";
-
-  const unsupportedSelections = [
-    {
-      flag: "elixir-orm",
-      value: config.elixirOrm,
-      unsupported: ["ecto"],
-      message: "Plain Ecto without SQL Repo wiring is not generated yet.",
-      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-orm none"],
-    },
-    {
-      flag: "elixir-auth",
-      value: config.elixirAuth,
-      unsupported: ["ueberauth", "guardian"],
-      message: "Only phx.gen.auth currently generates Phoenix auth files.",
-      suggestions: ["Use --elixir-auth phx-gen-auth", "Use --elixir-auth none"],
-    },
-    {
-      flag: "elixir-validation",
-      value: config.elixirValidation,
-      unsupported: ["nimble-options"],
-      message: "NimbleOptions is not generated yet.",
-      suggestions: ["Use --elixir-validation ecto-changesets", "Use --elixir-validation none"],
-    },
-    {
-      flag: "elixir-caching",
-      value: config.elixirCaching,
-      unsupported: ["nebulex"],
-      message: "Nebulex cache modules are not generated yet.",
-      suggestions: ["Use --elixir-caching cachex", "Use --elixir-caching none"],
-    },
-    {
-      flag: "elixir-observability",
-      value: config.elixirObservability,
-      unsupported: ["opentelemetry", "prom_ex"],
-      message: "OpenTelemetry and PromEx setup are not generated yet.",
-      suggestions: ["Use --elixir-observability telemetry", "Use --elixir-observability none"],
-    },
-    {
-      flag: "elixir-testing",
-      value: config.elixirTesting,
-      unsupported: ["mox", "bypass", "wallaby"],
-      message: "Generated Phoenix projects currently include ExUnit tests only.",
-      suggestions: ["Use --elixir-testing ex_unit"],
-    },
-    {
-      flag: "elixir-deploy",
-      value: config.elixirDeploy,
-      unsupported: ["fly", "gigalixir"],
-      message: "Fly.io and Gigalixir config files are not generated yet.",
-      suggestions: ["Use --elixir-deploy docker", "Use --elixir-deploy mix-release"],
-    },
-  ];
-
-  for (const selection of unsupportedSelections) {
-    if (selection.value && selection.unsupported.includes(selection.value)) {
-      incompatibilityError({
-        message: selection.message,
-        provided: { [selection.flag]: selection.value },
-        suggestions: selection.suggestions,
-      });
-    }
-  }
+  const hasEctoSql = config.elixirOrm === "ecto-sql";
 
   if (!hasPhoenix) {
     const phoenixOnlySelections = [
@@ -839,6 +778,11 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
         flag: "elixir-realtime",
         value: config.elixirRealtime,
         message: "Elixir realtime scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-testing",
+        value: config.elixirTesting === "wallaby" ? config.elixirTesting : "none",
+        message: "Wallaby browser tests require Phoenix.",
       },
     ];
 
@@ -868,9 +812,9 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
     });
   }
 
-  if (config.elixirAuth === "phx-gen-auth" && !hasEcto) {
+  if (config.elixirAuth === "phx-gen-auth" && !hasEctoSql) {
     incompatibilityError({
-      message: "phx.gen.auth requires Ecto in the generated Phoenix scaffold.",
+      message: "phx.gen.auth requires Ecto SQL with PostgreSQL in the generated Phoenix scaffold.",
       provided: {
         "elixir-auth": "phx-gen-auth",
         "elixir-orm": config.elixirOrm ?? "none",

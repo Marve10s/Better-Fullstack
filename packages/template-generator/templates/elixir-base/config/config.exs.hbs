@@ -1,6 +1,6 @@
 import Config
 
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirOrm "ecto-sql")}}
 config :{{elixirAppName}},
   ecto_repos: [{{elixirModuleName}}.Repo],
   generators: [timestamp_type: :utc_datetime]
@@ -49,6 +49,36 @@ config :{{elixirAppName}}, {{elixirModuleName}}.Scheduler,
 config :{{elixirAppName}}, {{elixirModuleName}}.Mailer, adapter: Swoosh.Adapters.Local
 
 config :swoosh, api_client: Swoosh.ApiClient.Finch
+{{/if}}
+
+{{#if (eq elixirCaching "nebulex")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.Cache,
+  gc_interval: :timer.hours(12),
+  max_size: 100_000
+{{/if}}
+
+{{#if (eq elixirObservability "prom_ex")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.PromEx,
+  manual_metrics_start_delay: :no_delay,
+  drop_metrics_groups: [],
+  grafana: [
+    host: System.get_env("GRAFANA_HOST", "http://localhost:3000"),
+    auth_token: System.get_env("GRAFANA_TOKEN", ""),
+    upload_dashboards_on_start: false,
+    folder_name: "{{projectName}} Dashboards",
+    annotate_app_lifecycle: true
+  ]
+{{/if}}
+
+{{#if (eq elixirAuth "guardian")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.Auth.Guardian,
+  issuer: "{{elixirAppName}}",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY", "change-me-in-production")
+{{/if}}
+
+{{#if (eq elixirAuth "ueberauth")}}
+config :ueberauth, Ueberauth,
+  providers: []
 {{/if}}
 
 import_config "#{config_env()}.exs"

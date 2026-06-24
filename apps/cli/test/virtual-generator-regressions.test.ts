@@ -110,6 +110,178 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
   });
 
+  it("adds the deterministic Ultracite quiet-mode config at the workspace root", async () => {
+    const result = await createVirtual({
+      projectName: "ultracite-addon",
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      api: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["ultracite"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const rootPackageJson = result.tree ? readJsonFromTree(result.tree, "package.json") : undefined;
+    const biomeConfig = readTextFromTree(result.tree!, "biome.jsonc");
+
+    expect(rootPackageJson?.devDependencies?.ultracite).toBeDefined();
+    expect(rootPackageJson?.devDependencies?.["@biomejs/biome"]).toBeDefined();
+    expect(rootPackageJson?.scripts?.lint).toBe("ultracite check");
+    expect(rootPackageJson?.scripts?.format).toBe("ultracite fix");
+    expect(rootPackageJson?.scripts?.["lint:doctor"]).toBe("ultracite doctor");
+    expect(biomeConfig).toContain('"extends": ["ultracite/biome/core"]');
+  });
+
+  it("adds the WXT React extension app for the WXT addon", async () => {
+    const result = await createVirtual({
+      projectName: "wxt-addon",
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      api: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["wxt"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const extensionPackageJson = result.tree
+      ? readJsonFromTree(result.tree, "apps/extension/package.json")
+      : undefined;
+    const wxtConfig = readTextFromTree(result.tree!, "apps/extension/wxt.config.ts");
+    const background = readTextFromTree(result.tree!, "apps/extension/entrypoints/background.ts");
+    const popup = readTextFromTree(result.tree!, "apps/extension/entrypoints/popup/App.tsx");
+
+    expect(extensionPackageJson?.scripts?.dev).toBe("wxt --port 5555");
+    expect(extensionPackageJson?.scripts?.build).toBe("wxt build");
+    expect(extensionPackageJson?.dependencies?.react).toBeDefined();
+    expect(extensionPackageJson?.dependencies?.["react-dom"]).toBeDefined();
+    expect(extensionPackageJson?.devDependencies?.wxt).toBeDefined();
+    expect(extensionPackageJson?.devDependencies?.["@wxt-dev/module-react"]).toBeDefined();
+    expect(wxtConfig).toContain('@wxt-dev/module-react');
+    expect(background).toContain("defineBackground");
+    expect(popup).toContain("WXT + React");
+  });
+
+  it("adds the OpenTUI core app for the OpenTUI addon", async () => {
+    const result = await createVirtual({
+      projectName: "opentui-addon",
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      api: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["opentui"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const tuiPackageJson = result.tree
+      ? readJsonFromTree(result.tree, "apps/tui/package.json")
+      : undefined;
+    const tuiEntry = readTextFromTree(result.tree!, "apps/tui/src/index.ts");
+    const tsconfig = readTextFromTree(result.tree!, "apps/tui/tsconfig.json");
+
+    expect(tuiPackageJson?.scripts?.dev).toBe("bun src/index.ts");
+    expect(tuiPackageJson?.scripts?.["check-types"]).toBe("tsc --noEmit");
+    expect(tuiPackageJson?.dependencies?.["@opentui/core"]).toBeDefined();
+    expect(tuiPackageJson?.devDependencies?.["@types/bun"]).toBeDefined();
+    expect(tuiEntry).toContain('createCliRenderer');
+    expect(tuiEntry).toContain("Better Fullstack + OpenTUI");
+    expect(tsconfig).toContain('"types": ["bun"]');
+  });
+
+  it("adds the Fumadocs Next MDX docs app for the Fumadocs addon", async () => {
+    const result = await createVirtual({
+      projectName: "fumadocs-addon",
+      packageManager: "bun",
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      api: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["fumadocs"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const rootPackageJson = result.tree ? readJsonFromTree(result.tree, "package.json") : undefined;
+    const docsPackageJson = result.tree ? readJsonFromTree(result.tree, "apps/docs/package.json") : undefined;
+    const sourceConfig = readTextFromTree(result.tree!, "apps/docs/source.config.ts");
+    const docsPage = readTextFromTree(result.tree!, "apps/docs/app/docs/[[...slug]]/page.tsx");
+    const intro = readTextFromTree(result.tree!, "apps/docs/content/docs/index.mdx");
+
+    expect(rootPackageJson?.scripts?.["dev:docs"]).toBe("bun run --filter docs dev");
+    expect(rootPackageJson?.scripts?.["build:docs"]).toBe("bun run --filter docs build");
+    expect(rootPackageJson?.scripts?.["check:docs"]).toBe("bun run --filter docs check-types");
+    expect(docsPackageJson?.scripts?.dev).toBe("next dev --port 4000");
+    expect(docsPackageJson?.scripts?.["check-types"]).toBe("fumadocs-mdx && tsc --noEmit");
+    expect(docsPackageJson?.dependencies?.["fumadocs-core"]).toBeDefined();
+    expect(docsPackageJson?.dependencies?.["fumadocs-mdx"]).toBeDefined();
+    expect(docsPackageJson?.dependencies?.["fumadocs-ui"]).toBeDefined();
+    expect(docsPackageJson?.devDependencies?.["@types/mdx"]).toBeDefined();
+    expect(sourceConfig).toContain("defineDocs");
+    expect(docsPage).toContain("source.getPage(params.slug)");
+    expect(intro).toContain("# fumadocs-addon");
+  });
+
+  it("adds project-local Better Fullstack skill files for the skills addon", async () => {
+    const result = await createVirtual({
+      projectName: "skills-addon",
+      packageManager: "bun",
+      frontend: ["react-vite"],
+      backend: "hono",
+      runtime: "bun",
+      api: "none",
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "none",
+      addons: ["skills"],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const skill = readTextFromTree(result.tree!, ".agents/skills/better-fullstack/SKILL.md");
+    const agent = readTextFromTree(result.tree!, ".agents/skills/better-fullstack/agents/openai.yaml");
+    const readme = readTextFromTree(result.tree!, ".agents/skills/README.md");
+
+    expect(skill).toContain("name: better-fullstack");
+    expect(skill).toContain("Use `bun` for package-manager commands.");
+    expect(skill).toContain("Do not start a dev server unless the user explicitly asks.");
+    expect(agent).toContain('display_name: "Better Fullstack"');
+    expect(readme).toContain("project-local agent skills");
+  });
+
   it("wires the Next provider to the GraphQL Yoga query client", async () => {
     const result = await createVirtual({
       projectName: "next-graphql-yoga",
@@ -473,6 +645,127 @@ describe("Virtual Generator Regressions", () => {
     expect(testProject).toContain('PackageReference Include="xunit"');
   });
 
+  it("scaffolds a .NET MVC project with controller routes", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetMvc",
+      ecosystem: "dotnet",
+      database: "sqlite",
+      dotnetWebFramework: "aspnet-mvc",
+      dotnetOrm: "ef-core",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(program).toContain("using Microsoft.AspNetCore.Mvc;");
+    expect(program).toContain("builder.Services.AddControllers();");
+    expect(program).toContain("app.MapControllers();");
+    expect(program).toContain("[ApiController]");
+    expect(program).toContain("public sealed class TodosController : ControllerBase");
+    expect(program).toContain("public async Task<IActionResult> GetTodos()");
+    expect(program).not.toContain('app.MapGet("/api/todos"');
+  });
+
+  it("scaffolds a .NET Blazor project with Razor components", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetBlazor",
+      ecosystem: "dotnet",
+      database: "sqlite",
+      dotnetWebFramework: "aspnet-blazor",
+      dotnetOrm: "none",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const program = readTextFromTree(result.tree!, "Program.cs");
+    const app = readTextFromTree(result.tree!, "Components/App.razor");
+    const routes = readTextFromTree(result.tree!, "Components/Routes.razor");
+    const home = readTextFromTree(result.tree!, "Components/Pages/Home.razor");
+
+    expect(program).toContain("builder.Services.AddRazorComponents()");
+    expect(program).toContain("app.MapRazorComponents<App>()");
+    expect(program).toContain('app.MapGet("/api/status"');
+    expect(program).not.toContain('app.MapGet("/", () =>');
+    expect(app).toContain("<Routes />");
+    expect(routes).toContain('<Router AppAssembly="@typeof(Program).Assembly">');
+    expect(home).toContain('@page "/"');
+  });
+
+  it("scaffolds .NET Auth0 ASP.NET Core authentication wiring", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetAuth0",
+      ecosystem: "dotnet",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "none",
+      dotnetAuth: "auth0-aspnet",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetAuth0.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(projectFile).toContain('PackageReference Include="Auth0.AspNetCore.Authentication"');
+    expect(program).toContain("using Auth0.AspNetCore.Authentication;");
+    expect(program).toContain("builder.Services.AddAuth0WebAppAuthentication");
+    expect(program).toContain('builder.Configuration["Auth0:Domain"]');
+    expect(program).toContain("app.UseAuthentication();");
+    expect(program).toContain("app.UseAuthorization();");
+  });
+
+  it("scaffolds .NET Duende IdentityServer wiring", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetDuende",
+      ecosystem: "dotnet",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "none",
+      dotnetAuth: "duende-identityserver",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetDuende.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(projectFile).toContain('PackageReference Include="Duende.IdentityServer"');
+    expect(program).toContain("using Duende.IdentityServer.Models;");
+    expect(program).toContain(".AddIdentityServer()");
+    expect(program).toContain('new ApiScope("api", "DotnetDuende API")');
+    expect(program).toContain("AllowedGrantTypes = GrantTypes.ClientCredentials");
+    expect(program).toContain("app.UseIdentityServer();");
+  });
+
   it("pins Angular to the TypeScript range required by Angular 22", async () => {
     const result = await createVirtual({
       projectName: "AngularTs",
@@ -523,6 +816,71 @@ describe("Virtual Generator Regressions", () => {
     expect(program).toContain('app.MapGet("/api/todos", () =>');
     expect(readTextFromTree(result.tree!, "Dockerfile")).toBeUndefined();
     expect(readTextFromTree(result.tree!, "DotnetNoEf.Tests/DotnetNoEf.Tests.csproj")).toBeUndefined();
+  });
+
+  it("scaffolds .NET Minimal API data access with Dapper", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetDapper",
+      ecosystem: "dotnet",
+      database: "sqlite",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "dapper",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetDapper.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(projectFile).toContain('PackageReference Include="Dapper"');
+    expect(projectFile).toContain('PackageReference Include="Microsoft.Data.Sqlite"');
+    expect(projectFile).not.toContain("EntityFrameworkCore");
+    expect(program).toContain("using Dapper;");
+    expect(program).toContain("new SqliteConnection(connectionString)");
+    expect(program).toContain("CREATE TABLE IF NOT EXISTS Todos");
+    expect(program).toContain("QuerySingleAsync<TodoItem>");
+    expect(program).not.toContain("AppDbContext");
+  });
+
+  it("scaffolds .NET Minimal API data access with Linq2DB", async () => {
+    const result = await createVirtual({
+      projectName: "DotnetLinq2Db",
+      ecosystem: "dotnet",
+      database: "sqlite",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "linq2db",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: [],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: [],
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const projectFile = readTextFromTree(result.tree!, "DotnetLinq2Db.csproj");
+    const program = readTextFromTree(result.tree!, "Program.cs");
+
+    expect(projectFile).toContain('PackageReference Include="linq2db"');
+    expect(projectFile).toContain('PackageReference Include="Microsoft.Data.Sqlite"');
+    expect(projectFile).not.toContain("EntityFrameworkCore");
+    expect(program).toContain("using LinqToDB;");
+    expect(program).toContain("[Table(\"Todos\")]");
+    expect(program).toContain("ProviderName.SQLiteMS");
+    expect(program).toContain("TodoLinq2Db.CreateConnection");
+    expect(program).toContain("InsertWithInt32Identity");
+    expect(program).not.toContain("AppDbContext");
   });
 
   it("omits the Quantum scheduler unless Quantum jobs are selected", async () => {
@@ -690,6 +1048,23 @@ describe("Virtual Generator Regressions", () => {
   });
 
   it("keeps Phoenix LiveView demos self-contained without Ecto", async () => {
+    const baseline = await createVirtual({
+      projectName: "elixir-live-baseline",
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix-live-view",
+      elixirOrm: "none",
+      elixirApi: "none",
+      elixirRealtime: "none",
+    });
+
+    expect(baseline.success).toBe(true);
+    expect(
+      readTextFromTree(
+        baseline.tree!,
+        "lib/elixir_live_baseline_web/live/item_live/index.ex",
+      ),
+    ).toBeUndefined();
+
     const result = await createVirtual({
       projectName: "elixir-live-no-ecto",
       ecosystem: "elixir",

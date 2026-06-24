@@ -297,6 +297,10 @@ export function elixirModuleName(projectName?: string): string {
     .join("");
 }
 
+export function elixirDeployAppName(projectName?: string): string {
+  return normalizeElixirAppName(projectName).replace(/_/g, "-");
+}
+
 function nativeIdentifierSegment(value: string): string {
   const normalized = value
     .toLowerCase()
@@ -325,6 +329,10 @@ Handlebars.registerHelper("elixirAppName", function (this: ProjectConfig) {
 
 Handlebars.registerHelper("elixirModuleName", function (this: ProjectConfig) {
   return elixirModuleName(this.projectName);
+});
+
+Handlebars.registerHelper("elixirDeployAppName", function (this: ProjectConfig) {
+  return elixirDeployAppName(this.projectName);
 });
 
 Handlebars.registerHelper("nativeApplicationId", function (this: ProjectConfig) {

@@ -1,0 +1,38 @@
+defmodule {{elixirModuleName}}Web.TokenController do
+  use {{elixirModuleName}}Web, :controller
+
+  alias {{elixirModuleName}}.Auth.Guardian
+
+  def create(conn, params) do
+    subject = Map.get(params, "subject", "demo-user")
+
+    case Guardian.encode_and_sign(%{id: subject}) do
+      {:ok, token, claims} ->
+        json(conn, %{data: %{token: token, claims: claims}})
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: %{token: to_string(reason)}})
+    end
+  end
+
+  def show(conn, _params) do
+    with {:ok, token} <- bearer_token(conn),
+         {:ok, resource, claims} <- Guardian.resource_from_token(token) do
+      json(conn, %{data: %{resource: resource, claims: claims}})
+    else
+      _ ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{errors: %{authorization: "is invalid or missing"}})
+    end
+  end
+
+  defp bearer_token(conn) do
+    case get_req_header(conn, "authorization") do
+      ["Bearer " <> token] -> {:ok, token}
+      _ -> :error
+    end
+  end
+end

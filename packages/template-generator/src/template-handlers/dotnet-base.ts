@@ -5,11 +5,28 @@ import type { TemplateData } from "./utils";
 
 import { isBinaryFile, processTemplateString, transformFilename } from "../core/template-processor";
 
+const DOTNET_DOCKER_DEPLOY_TARGETS = new Set<ProjectConfig["dotnetDeploy"]>([
+  "docker",
+  "azure",
+  "aws",
+]);
+
 type DotnetTemplateContext = ProjectConfig & {
   dotnetProjectName: string;
   dotnetNamespace: string;
+  dotnetCloudName: string;
+  dotnetHasMvc: boolean;
+  dotnetHasBlazor: boolean;
+  dotnetHasMinimalApiTodos: boolean;
   dotnetHasEfCore: boolean;
+  dotnetHasDapper: boolean;
+  dotnetHasDapperTodos: boolean;
+  dotnetHasLinq2Db: boolean;
+  dotnetHasLinq2DbTodos: boolean;
   dotnetHasIdentity: boolean;
+  dotnetHasDuendeIdentityServer: boolean;
+  dotnetHasAuth0AspNet: boolean;
+  dotnetHasAuthentication: boolean;
   dotnetHasSignalR: boolean;
   dotnetHasSerilog: boolean;
   dotnetHasOpenTelemetry: boolean;
@@ -21,6 +38,8 @@ type DotnetTemplateContext = ProjectConfig & {
   dotnetHasQuartz: boolean;
   dotnetHasHostedServices: boolean;
   dotnetHasDocker: boolean;
+  dotnetHasAzureDeploy: boolean;
+  dotnetHasAwsDeploy: boolean;
   dotnetHasTests: boolean;
   dotnetHasXunit: boolean;
   dotnetHasNunit: boolean;
@@ -37,33 +56,67 @@ function toDotnetIdentifierSegment(value: string): string {
   return /^[A-Za-z_]/.test(segment) ? segment : `App${segment}`;
 }
 
+function toCloudResourceName(value: string): string {
+  const cleaned = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const resourceName = cleaned || "app";
+  return resourceName.length === 1 ? `${resourceName}-app` : resourceName;
+}
+
 function createDotnetTemplateContext(config: ProjectConfig): DotnetTemplateContext {
   const projectName = toDotnetIdentifierSegment(config.projectName);
   const dotnetTesting = config.dotnetTesting.filter((value) => value !== "none");
+  const dotnetTestingSet = new Set(dotnetTesting);
   const dotnetObservability = config.dotnetObservability.filter((value) => value !== "none");
+  const dotnetObservabilitySet = new Set(dotnetObservability);
+  const dotnetHasAzureDeploy = config.dotnetDeploy === "azure";
+  const dotnetHasAwsDeploy = config.dotnetDeploy === "aws";
+  const dotnetHasMvc = config.dotnetWebFramework === "aspnet-mvc";
+  const dotnetHasBlazor = config.dotnetWebFramework === "aspnet-blazor";
+  const dotnetHasMinimalApiTodos = config.dotnetApi === "minimal-api" && !dotnetHasMvc;
+  const dotnetHasControllerTodos = dotnetHasMinimalApiTodos || dotnetHasMvc;
+  const dotnetHasIdentity = config.dotnetAuth === "aspnet-identity";
+  const dotnetHasDuendeIdentityServer = config.dotnetAuth === "duende-identityserver";
+  const dotnetHasAuth0AspNet = config.dotnetAuth === "auth0-aspnet";
 
   return {
     ...config,
     dotnetProjectName: projectName,
     dotnetNamespace: projectName,
+    dotnetCloudName: toCloudResourceName(config.projectName),
+    dotnetHasMvc,
+    dotnetHasBlazor,
+    dotnetHasMinimalApiTodos,
     dotnetHasEfCore: config.dotnetOrm === "ef-core",
-    dotnetHasIdentity: config.dotnetAuth === "aspnet-identity",
+    dotnetHasDapper: config.dotnetOrm === "dapper",
+    dotnetHasDapperTodos: config.dotnetOrm === "dapper" && dotnetHasControllerTodos,
+    dotnetHasLinq2Db: config.dotnetOrm === "linq2db",
+    dotnetHasLinq2DbTodos: config.dotnetOrm === "linq2db" && dotnetHasControllerTodos,
+    dotnetHasIdentity,
+    dotnetHasDuendeIdentityServer,
+    dotnetHasAuth0AspNet,
+    dotnetHasAuthentication: dotnetHasIdentity || dotnetHasAuth0AspNet,
     dotnetHasSignalR: config.dotnetRealtime === "signalr",
-    dotnetHasSerilog: dotnetObservability.includes("serilog"),
-    dotnetHasOpenTelemetry: dotnetObservability.includes("opentelemetry-dotnet"),
-    dotnetHasNLog: dotnetObservability.includes("nlog"),
-    dotnetHasHealthChecks: dotnetObservability.includes("health-checks"),
+    dotnetHasSerilog: dotnetObservabilitySet.has("serilog"),
+    dotnetHasOpenTelemetry: dotnetObservabilitySet.has("opentelemetry-dotnet"),
+    dotnetHasNLog: dotnetObservabilitySet.has("nlog"),
+    dotnetHasHealthChecks: dotnetObservabilitySet.has("health-checks"),
     dotnetHasRedis: config.dotnetCaching === "redis",
     dotnetHasMemoryCache: config.dotnetCaching === "memory-cache",
     dotnetHasHangfire: config.dotnetJobQueue === "hangfire",
     dotnetHasQuartz: config.dotnetJobQueue === "quartz-net",
     dotnetHasHostedServices: config.dotnetJobQueue === "hosted-services",
-    dotnetHasDocker: config.dotnetDeploy === "docker",
+    dotnetHasDocker: DOTNET_DOCKER_DEPLOY_TARGETS.has(config.dotnetDeploy),
+    dotnetHasAzureDeploy,
+    dotnetHasAwsDeploy,
     dotnetHasTests: dotnetTesting.length > 0,
-    dotnetHasXunit: dotnetTesting.includes("xunit"),
-    dotnetHasNunit: dotnetTesting.includes("nunit"),
-    dotnetHasMoq: dotnetTesting.includes("moq"),
-    dotnetHasTestcontainers: dotnetTesting.includes("testcontainers-dotnet"),
+    dotnetHasXunit: dotnetTestingSet.has("xunit"),
+    dotnetHasNunit: dotnetTestingSet.has("nunit"),
+    dotnetHasMoq: dotnetTestingSet.has("moq"),
+    dotnetHasTestcontainers: dotnetTestingSet.has("testcontainers-dotnet"),
   };
 }
 
@@ -81,6 +134,8 @@ export async function processDotnetBaseTemplate(
   for (const [templatePath, content] of templates) {
     if (!templatePath.startsWith(prefix)) continue;
     if (!context.dotnetHasDocker && templatePath.includes("Dockerfile")) continue;
+    if (!context.dotnetHasAzureDeploy && templatePath.includes("azure.yaml")) continue;
+    if (!context.dotnetHasAwsDeploy && templatePath.includes("copilot/")) continue;
     if (!context.dotnetHasTests && templatePath.includes(".Tests/")) continue;
 
     const relativePath = templatePath.slice(prefix.length);

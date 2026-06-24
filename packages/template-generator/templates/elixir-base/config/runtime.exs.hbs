@@ -1,7 +1,7 @@
 import Config
 
 if config_env() == :prod do
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirOrm "ecto-sql")}}
   database_url = System.get_env("DATABASE_URL")
 
   if database_url do

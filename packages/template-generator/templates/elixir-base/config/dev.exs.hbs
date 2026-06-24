@@ -10,7 +10,7 @@ config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
   watchers: []
 {{/if}}
 
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirOrm "ecto-sql")}}
 config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   username: System.get_env("POSTGRES_USER", "postgres"),
   password: System.get_env("POSTGRES_PASSWORD", "postgres"),

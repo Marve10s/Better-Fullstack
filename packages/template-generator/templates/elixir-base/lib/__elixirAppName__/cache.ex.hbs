@@ -1,0 +1,9 @@
+defmodule {{elixirModuleName}}.Cache do
+  @moduledoc """
+  Application cache backed by Nebulex's local adapter.
+  """
+
+  use Nebulex.Cache,
+    otp_app: :{{elixirAppName}},
+    adapter: Nebulex.Adapters.Local
+end

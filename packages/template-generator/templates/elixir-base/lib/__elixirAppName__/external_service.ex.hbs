@@ -1,0 +1,26 @@
+defmodule {{elixirModuleName}}.ExternalService do
+  @moduledoc """
+  Example behaviour boundary for Mox-backed tests.
+  """
+
+  @callback fetch_status() :: {:ok, String.t()} | {:error, term()}
+
+  def fetch_status do
+    impl().fetch_status()
+  end
+
+  defp impl do
+    Application.get_env(:{{elixirAppName}}, :external_service, __MODULE__.Default)
+  end
+
+  defmodule Default do
+    @moduledoc false
+
+    @behaviour {{elixirModuleName}}.ExternalService
+
+    @impl true
+    def fetch_status do
+      {:ok, "ready"}
+    end
+  end
+end

@@ -4,10 +4,21 @@ import Config
 config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "test-secret-key-base-replace-before-production",
+{{#if (eq elixirTesting "wallaby")}}
+  server: true
+{{else}}
   server: false
 {{/if}}
+{{/if}}
 
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirTesting "wallaby")}}
+config :wallaby,
+  otp_app: :{{elixirAppName}},
+  driver: Wallaby.Chrome,
+  screenshot_on_failure: true
+
+{{/if}}
+{{#if (eq elixirOrm "ecto-sql")}}
 config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   username: System.get_env("POSTGRES_USER", "postgres"),
   password: System.get_env("POSTGRES_PASSWORD", "postgres"),

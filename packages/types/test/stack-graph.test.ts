@@ -361,7 +361,7 @@ describe("stack graph", () => {
     expect(phoenixRealtimeOptions).toContain("channels");
     expect(phoenixRealtimeOptions).not.toContain("live-view-streams");
     expect(liveViewRealtimeOptions).toContain("live-view-streams");
-    expect(getStackPartOptions({ role: "orm", ecosystem: "elixir" })).not.toContain("ecto");
+    expect(getStackPartOptions({ role: "orm", ecosystem: "elixir" })).toContain("ecto");
   });
 
   it("rejects invalid role bindings", () => {
@@ -793,7 +793,10 @@ describe("stack graph", () => {
       "INCOMPATIBLE_OWNER_TOOL",
     );
     expect(validateStackParts(obanParts).issues.map((issue) => issue.code)).toEqual(
-      expect.arrayContaining(["INCOMPATIBLE_GRAPH_SELECTION", "UNSUPPORTED_GRAPH_TOOL"]),
+      expect.arrayContaining(["INCOMPATIBLE_GRAPH_SELECTION"]),
+    );
+    expect(validateStackParts(obanParts).issues.map((issue) => issue.code)).not.toContain(
+      "UNSUPPORTED_GRAPH_TOOL",
     );
     expect(
       getStackPartCompatibilityIssueForPart(
@@ -805,8 +808,8 @@ describe("stack graph", () => {
           ownerPartId: phoenixBackend?.id,
         },
         phoenixParts,
-      )?.message,
-    ).toBe("Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth");
+      ),
+    ).toBeUndefined();
     expect(
       getStackPartCompatibilityIssueForPart(
         {
@@ -817,8 +820,8 @@ describe("stack graph", () => {
           ownerPartId: phoenixBackend?.id,
         },
         phoenixParts,
-      )?.message,
-    ).toBe("Fly.io config is not generated yet; use Docker or mix releases");
+      ),
+    ).toBeUndefined();
   });
 
   it("rejects ownerless Elixir Phoenix-context candidates through graph checks", () => {
@@ -892,7 +895,7 @@ describe("stack graph", () => {
         },
         [],
       )?.message,
-    ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+    ).toBe("Elixir auth scaffolds require Phoenix");
   });
 
   it("materializes provided capabilities and rejects conflicts unless overrideable", () => {
@@ -1573,22 +1576,6 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(lowered.elixirHttp).toBe("finch");
     expect(lowered.elixirQuality).toBe("credo");
     expect(lowered.elixirDeploy).toBe("docker");
-  });
-
-  it("keeps unsupported elixir extras flat-only so imported configs never fail validation", () => {
-    const parts = legacyProjectConfigToStackParts({
-      ecosystem: "elixir",
-      elixirWebFramework: "phoenix",
-      elixirOrm: "ecto-sql",
-      elixirDeploy: "fly",
-      elixirTesting: "mox",
-      elixirCaching: "nebulex",
-    });
-
-    expect(parts.some((part) => part.role === "deploy")).toBe(false);
-    expect(parts.some((part) => part.role === "testing")).toBe(false);
-    expect(parts.some((part) => part.role === "caching")).toBe(false);
-    expect(validateStackParts(parts).issues).toEqual([]);
   });
 
   it("round-trips the Rust WASM frontend selections", () => {

@@ -35,7 +35,10 @@ defmodule {{elixirModuleName}}.MixProject do
       {:phoenix_live_view, "~> 1.0"},
 {{/if}}
 {{/if}}
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirOrm "ecto")}}
+      {:ecto, "~> 3.12"},
+{{/if}}
+{{#if (eq elixirOrm "ecto-sql")}}
       {:ecto_sql, "~> 3.12"},
       {:postgrex, ">= 0.0.0"},
 {{/if}}
@@ -104,7 +107,7 @@ defmodule {{elixirModuleName}}.MixProject do
       {:bypass, "~> 2.1", only: :test},
 {{/if}}
 {{#if (eq elixirTesting "wallaby")}}
-      {:wallaby, "~> 0.30", only: :test},
+      {:wallaby, "~> 0.30", only: :test, runtime: false},
 {{/if}}
 {{#if (eq elixirQuality "credo")}}
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
@@ -125,7 +128,7 @@ defmodule {{elixirModuleName}}.MixProject do
 
   defp aliases do
     [
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirOrm "ecto-sql")}}
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],

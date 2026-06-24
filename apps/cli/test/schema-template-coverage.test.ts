@@ -331,15 +331,6 @@ const CATEGORY_VALUES: Record<string, readonly string[]> = {
  *     so it is never matched against its own enum literal.
  */
 const ALLOWLIST = new Map<string, string>([
-  // Addons selectable in the schema but with no generator output.
-  ["addons:skills", "Unimplemented: no template dir or processor/handler reference."],
-  [
-    "addons:fumadocs",
-    "Unimplemented: only in catalogs.ts version list; no template/handler output.",
-  ],
-  ["addons:ultracite", "Unimplemented: no template dir or processor/handler reference."],
-  ["addons:opentui", "Unimplemented: no template dir or processor/handler reference."],
-  ["addons:wxt", "Unimplemented: no template dir or processor/handler reference."],
   // Baseline/default values that ship unconditionally.
   [
     "forms:react-hook-form",
@@ -354,30 +345,11 @@ const ALLOWLIST = new Map<string, string>([
     "dotnetWebFramework:aspnet-minimal",
     "Baseline: dotnet-base emits the minimal-API scaffold unconditionally; never gated on the literal.",
   ],
-  [
-    "dotnetWebFramework:aspnet-mvc",
-    "Unimplemented: dotnet-base never branches on dotnetWebFramework; MVC yields the same minimal-API scaffold.",
-  ],
-  [
-    "dotnetWebFramework:aspnet-blazor",
-    "Unimplemented: dotnet-base never branches on dotnetWebFramework; Blazor yields the same minimal-API scaffold (no Blazor components).",
-  ],
-  ["dotnetDeploy:aws", "Unimplemented: no AWS target; dotnet-base only handles docker."],
-  ["dotnetOrm:dapper", "Unimplemented: dotnet-base only implements ef-core; no dapper branch."],
-  ["dotnetOrm:linq2db", "Unimplemented: dotnet-base only implements ef-core; no linq2db branch."],
-  [
-    "dotnetAuth:duende-identityserver",
-    "Unimplemented: dotnet-base only implements aspnet-identity.",
-  ],
-  ["dotnetAuth:auth0-aspnet", "Unimplemented: dotnet-base only implements aspnet-identity."],
-  ["dotnetDeploy:azure", "Unimplemented: no Azure target; dotnet-base only handles docker."],
   // Elixir: Phoenix baselines / derived-flag-gated, not literal-gated.
-  ["elixirOrm:ecto", "Baseline: Ecto ships via hasEcto derived flag; not gated on 'ecto' literal."],
   [
     "elixirRealtime:pubsub",
     "Baseline: Phoenix.PubSub configured unconditionally; not literal-gated.",
   ],
-  ["elixirRealtime:live-view-streams", "Unimplemented: no template/handler reference."],
   [
     "elixirValidation:ecto-changesets",
     "Baseline: Ecto changesets default validation; not literal-gated.",

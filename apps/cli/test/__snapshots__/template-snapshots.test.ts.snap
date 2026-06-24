@@ -22275,7 +22275,6 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "lib/snapshot_elixir_phoenix_liveview_full_web/endpoint.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/resolvers/catalog.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
-  "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web/router.ex",
   "lib/snapshot_elixir_phoenix_liveview_full_web/telemetry.ex",
   "mix.exs",
@@ -22442,7 +22441,7 @@ CORS_ORIGIN=http://localhost:3001"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 46,
+  "fileCount": 45,
   "files": [
     {
       "content": 
@@ -22546,10 +22545,6 @@ CORS_ORIGIN=http://localhost:3001"
     {
       "content": "[exists]",
       "path": "lib/snapshot_elixir_phoenix_liveview_full_web/graphql/schema.ex",
-    },
-    {
-      "content": "[exists]",
-      "path": "lib/snapshot_elixir_phoenix_liveview_full_web/live/item_live/index.ex",
     },
     {
       "content": "[exists]",

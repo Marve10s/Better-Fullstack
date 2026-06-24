@@ -17,6 +17,15 @@ const BTS_CONFIG_FILE = "bts.jsonc";
 
 type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
 type BtsConfigMetadata = Pick<BetterTStackConfig, "version" | "createdAt">;
+const MOBILE_CONFIG_FIELDS = [
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+] as const satisfies readonly (keyof ProjectConfig)[];
 
 function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
   if (!stackParts) return projectConfig;
@@ -25,8 +34,18 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
   const selectedEcosystems = new Set(
     stackParts.filter((part) => part.source !== "provided").map((part) => part.ecosystem),
   );
+  selectedEcosystems.add(projectConfig.ecosystem);
 
-  const normalized: ProjectConfig = { ...projectConfig, ...legacyConfig };
+  const hasSelectedEcosystemStackParts = stackParts.some(
+    (part) => part.source !== "provided" && part.ecosystem !== "universal",
+  );
+  const normalized: ProjectConfig = {
+    ...projectConfig,
+    ...legacyConfig,
+    ecosystem: hasSelectedEcosystemStackParts
+      ? (legacyConfig.ecosystem ?? projectConfig.ecosystem)
+      : projectConfig.ecosystem,
+  };
 
   if (!selectedEcosystems.has("rust")) {
     normalized.rustWebFramework = "none";
@@ -77,6 +96,14 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.goObservability = "none";
   }
 
+  if (
+    selectedEcosystems.has("go") &&
+    projectConfig.auth === "go-better-auth" &&
+    legacyConfig.auth === "none"
+  ) {
+    normalized.auth = projectConfig.auth;
+  }
+
   if (!selectedEcosystems.has("java")) {
     normalized.javaWebFramework = "none";
     normalized.javaBuildTool = "none";
@@ -121,7 +148,25 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.elixirLibraries = [];
   }
 
-  if (!selectedEcosystems.has("react-native")) {
+  const projectHasNativeFrontend = projectConfig.frontend.some((frontend) =>
+    frontend.startsWith("native-"),
+  );
+  const normalizedHasNativeFrontend = normalized.frontend.some((frontend) =>
+    frontend.startsWith("native-"),
+  );
+  const hasNativeFrontend = projectHasNativeFrontend || normalizedHasNativeFrontend;
+
+  if (hasNativeFrontend) {
+    for (const field of MOBILE_CONFIG_FIELDS) {
+      const projectValue = projectConfig[field];
+      const legacyValue = legacyConfig[field];
+      if (projectValue !== undefined && projectValue !== "none" && legacyValue === "none") {
+        (normalized as Record<string, unknown>)[field] = projectValue;
+      }
+    }
+  }
+
+  if (!selectedEcosystems.has("react-native") && !hasNativeFrontend) {
     normalized.mobileNavigation = "none";
     normalized.mobileUI = "none";
     normalized.mobileStorage = "none";
@@ -277,8 +322,16 @@ export function buildBtsConfigForPersistence(
     api: persistedConfig.api,
     webDeploy: persistedConfig.webDeploy,
     serverDeploy: persistedConfig.serverDeploy,
+    astroIntegration: persistedConfig.astroIntegration,
     cssFramework: persistedConfig.cssFramework,
     uiLibrary: persistedConfig.uiLibrary,
+    shadcnBase: persistedConfig.shadcnBase,
+    shadcnStyle: persistedConfig.shadcnStyle,
+    shadcnIconLibrary: persistedConfig.shadcnIconLibrary,
+    shadcnColorTheme: persistedConfig.shadcnColorTheme,
+    shadcnBaseColor: persistedConfig.shadcnBaseColor,
+    shadcnFont: persistedConfig.shadcnFont,
+    shadcnRadius: persistedConfig.shadcnRadius,
     realtime: persistedConfig.realtime,
     jobQueue: persistedConfig.jobQueue,
     animation: persistedConfig.animation,
@@ -399,8 +452,11 @@ export function previewBtsConfigUpdate(
   );
 }
 
-export async function writeBtsConfig(projectConfig: ProjectConfig) {
-  const btsConfig = buildBtsConfigForPersistence(projectConfig);
+export async function writeBtsConfig(
+  projectConfig: ProjectConfig,
+  metadata: Partial<BtsConfigMetadata> = {},
+) {
+  const btsConfig = buildBtsConfigForPersistence(projectConfig, metadata);
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
@@ -435,8 +491,16 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     api: btsConfig.api,
     webDeploy: btsConfig.webDeploy,
     serverDeploy: btsConfig.serverDeploy,
+    astroIntegration: btsConfig.astroIntegration,
     cssFramework: btsConfig.cssFramework,
     uiLibrary: btsConfig.uiLibrary,
+    shadcnBase: btsConfig.shadcnBase,
+    shadcnStyle: btsConfig.shadcnStyle,
+    shadcnIconLibrary: btsConfig.shadcnIconLibrary,
+    shadcnColorTheme: btsConfig.shadcnColorTheme,
+    shadcnBaseColor: btsConfig.shadcnBaseColor,
+    shadcnFont: btsConfig.shadcnFont,
+    shadcnRadius: btsConfig.shadcnRadius,
     realtime: btsConfig.realtime,
     jobQueue: btsConfig.jobQueue,
     animation: btsConfig.animation,
@@ -456,6 +520,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     rateLimit: btsConfig.rateLimit,
     i18n: btsConfig.i18n,
     search: btsConfig.search,
+    vectorDb: btsConfig.vectorDb,
     fileStorage: btsConfig.fileStorage,
     rustWebFramework: btsConfig.rustWebFramework,
     rustFrontend: btsConfig.rustFrontend,

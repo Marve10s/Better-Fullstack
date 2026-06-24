@@ -1,0 +1,36 @@
+defmodule {{elixirModuleName}}Web.OAuthController do
+  use {{elixirModuleName}}Web, :controller
+
+  plug Ueberauth
+
+  def request(conn, %{"provider" => provider}) do
+    json(conn, %{
+      data: %{
+        provider: provider,
+        message: "Configure a Ueberauth strategy for this provider to start the external auth flow."
+      }
+    })
+  end
+
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    json(conn, %{
+      data: %{
+        provider: to_string(auth.provider),
+        uid: auth.uid,
+        info: Map.from_struct(auth.info)
+      }
+    })
+  end
+
+  def callback(%{assigns: %{ueberauth_failure: failure}} = conn, _params) do
+    conn
+    |> put_status(:unauthorized)
+    |> json(%{errors: %{auth: inspect(failure.errors)}})
+  end
+
+  def callback(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{errors: %{auth: "provider did not return authentication data"}})
+  end
+end

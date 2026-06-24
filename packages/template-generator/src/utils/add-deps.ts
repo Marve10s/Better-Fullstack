@@ -105,6 +105,7 @@ export const dependencyVersionMap = {
   "@tauri-apps/api": "^2.11.1",
 
   "@biomejs/biome": "^2.5.0",
+  ultracite: "^7.8.3",
 
   oxlint: "^1.70.0",
   oxfmt: "^0.55.0",
@@ -351,6 +352,9 @@ export const dependencyVersionMap = {
   react: "^19.2.7",
   "react-dom": "^19.2.7",
   "@types/react": "^19.2.17",
+  "@wxt-dev/module-react": "^1.1.5",
+  wxt: "^0.20.27",
+  "@opentui/core": "^0.4.1",
   nodemailer: "^9.0.1",
   "@types/react-dom": "^19.2.3",
   "@types/nodemailer": "^8.0.1",

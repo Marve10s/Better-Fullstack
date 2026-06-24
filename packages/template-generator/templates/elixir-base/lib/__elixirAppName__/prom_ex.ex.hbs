@@ -1,0 +1,34 @@
+defmodule {{elixirModuleName}}.PromEx do
+  @moduledoc """
+  PromEx metrics capture for the {{projectName}} application.
+  """
+
+  use PromEx, otp_app: :{{elixirAppName}}
+
+  @impl true
+  def plugins do
+    [
+      PromEx.Plugins.Application,
+      PromEx.Plugins.Beam,
+      {PromEx.Plugins.Phoenix,
+       router: {{elixirModuleName}}Web.Router,
+       endpoint: {{elixirModuleName}}Web.Endpoint}
+{{#if (eq elixirOrm "ecto-sql")}},
+          {PromEx.Plugins.Ecto, repos: [{{elixirModuleName}}.Repo]}
+{{/if}}
+{{#if (eq elixirJobs "oban")}},
+      {PromEx.Plugins.Oban, oban_supervisor: Oban}
+{{/if}}
+    ]
+  end
+
+  @impl true
+  def dashboard_assigns do
+    []
+  end
+
+  @impl true
+  def dashboards do
+    []
+  end
+end

@@ -1484,6 +1484,15 @@ export const analyzeStackCompatibility = (
         message: "Elixir jobs set to 'None' (Oban requires Ecto SQL with PostgreSQL)",
       });
     }
+
+    if (nextStack.elixirAuth === "phx-gen-auth" && nextStack.elixirOrm !== "ecto-sql") {
+      nextStack.elixirAuth = "none";
+      changed = true;
+      changes.push({
+        category: "elixirAuth",
+        message: "Elixir auth set to 'None' (phx.gen.auth requires Ecto SQL with PostgreSQL)",
+      });
+    }
   }
 
   // ============================================
@@ -2697,6 +2706,15 @@ export const getDisabledReason = (
     if (currentStack.ecosystem !== "elixir") {
       return "Elixir options only apply when the Elixir ecosystem is selected";
     }
+  }
+
+  if (
+    category === "elixirTesting" &&
+    optionId === "wallaby" &&
+    currentStack.ecosystem === "elixir" &&
+    currentStack.elixirWebFramework === "none"
+  ) {
+    return "Wallaby browser tests require Phoenix";
   }
 
   if (

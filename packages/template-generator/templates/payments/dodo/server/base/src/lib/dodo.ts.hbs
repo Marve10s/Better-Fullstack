@@ -1,0 +1,25 @@
+import crypto from "node:crypto";
+import DodoPayments from "dodopayments";
+import { env } from "@{{projectName}}/env/server";
+
+export const dodo = new DodoPayments({
+  bearerToken: env.DODO_PAYMENTS_API_KEY,
+});
+
+export function getDodoEnvironment() {
+  return env.DODO_PAYMENTS_ENVIRONMENT;
+}
+
+export function verifyDodoWebhookSignature(payload: string, signature: string) {
+  const expected = crypto
+    .createHmac("sha256", env.DODO_PAYMENTS_WEBHOOK_SECRET)
+    .update(payload)
+    .digest("hex");
+
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+}
+
+export type DodoWebhookPayload = {
+  type: string;
+  data: Record<string, unknown>;
+};

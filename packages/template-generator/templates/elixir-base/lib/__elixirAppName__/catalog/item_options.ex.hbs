@@ -1,0 +1,42 @@
+defmodule {{elixirModuleName}}.Catalog.ItemOptions do
+  @moduledoc """
+  NimbleOptions schema for item creation input.
+  """
+
+  @schema [
+    name: [
+      type: :string,
+      required: true,
+      doc: "Display name for the item"
+    ],
+    description: [
+      type: :string,
+      required: false,
+      default: nil,
+      doc: "Optional item description"
+    ]
+  ]
+
+  def validate(attrs) when is_map(attrs) do
+    attrs
+    |> to_options()
+    |> NimbleOptions.validate(@schema)
+    |> case do
+      {:ok, options} -> {:ok, Map.new(options)}
+      {:error, %NimbleOptions.ValidationError{} = error} -> {:error, Exception.message(error)}
+    end
+  end
+
+  def validate(_attrs), do: {:error, "item attributes must be a map"}
+
+  defp to_options(attrs) do
+    attrs
+    |> Enum.flat_map(fn
+      {"name", value} -> [name: value]
+      {:name, value} -> [name: value]
+      {"description", value} -> [description: value]
+      {:description, value} -> [description: value]
+      _entry -> []
+    end)
+  end
+end

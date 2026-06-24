@@ -42,7 +42,9 @@ export async function writeSelectedFiles(
   filter: (filePath: string) => boolean,
 ): Promise<string[]> {
   const writtenFiles: string[] = [];
-  await writeSelectedNode(tree.root, destDir, "", filter, writtenFiles);
+  for (const child of tree.root.children) {
+    await writeSelectedNode(child, destDir, "", filter, writtenFiles);
+  }
   return writtenFiles;
 }
 

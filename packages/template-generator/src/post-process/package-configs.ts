@@ -97,6 +97,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const graphBackend = getGraphBackendConnection(config);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
+  const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
 
   if (graphBackend && hasWebWorkspace) {
     scripts.dev = pmConfig.filter("web", "dev");
@@ -118,6 +119,16 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["dev:native"] = pmConfig.filter("native", "dev");
   } else {
     delete scripts["dev:native"];
+  }
+
+  if (hasDocsWorkspace) {
+    scripts["dev:docs"] = pmConfig.filter("docs", "dev");
+    scripts["build:docs"] = pmConfig.filter("docs", "build");
+    scripts["check:docs"] = pmConfig.filter("docs", "check-types");
+  } else {
+    delete scripts["dev:docs"];
+    delete scripts["build:docs"];
+    delete scripts["check:docs"];
   }
 
   if (graphBackend) {
@@ -188,7 +199,10 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     if (!workspaces.includes("packages/*")) {
       workspaces.push("packages/*");
     }
-    const needsAppsDir = config.frontend.length > 0 || addons.includes("starlight");
+    const needsAppsDir =
+      config.frontend.length > 0 ||
+      addons.includes("starlight") ||
+      addons.includes("fumadocs");
     if (needsAppsDir && !workspaces.includes("apps/*")) {
       workspaces.push("apps/*");
     }

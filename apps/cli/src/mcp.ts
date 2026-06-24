@@ -90,6 +90,7 @@ import {
   OPTION_CATEGORY_METADATA,
   PackageManagerSchema,
   PaymentsSchema,
+  parseStackPartSpecs,
   type OptionCategory,
   type OptionCategoryEcosystem,
   type ProjectConfig,
@@ -127,6 +128,14 @@ import {
   SearchSchema,
   VectorDbSchema,
   ServerDeploySchema,
+  ShadcnBaseColorSchema,
+  ShadcnBaseSchema,
+  ShadcnColorThemeSchema,
+  ShadcnFontSchema,
+  ShadcnIconLibrarySchema,
+  ShadcnRadiusSchema,
+  ShadcnStyleSchema,
+  stackPartsToLegacyProjectConfigPartial,
   StateManagementSchema,
   TestingSchema,
   UILibrarySchema,
@@ -149,6 +158,7 @@ import { generateReproducibleCommand } from "./utils/generate-reproducible-comma
 import { getLatestCLIVersion } from "./utils/get-latest-cli-version";
 import { getEffectiveStack, getGraphSummary } from "./utils/graph-summary";
 import { getTemplateConfig, getTemplateDescription } from "./utils/templates";
+import { applyStackUpdate, planStackUpdate } from "./helpers/core/stack-update";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
@@ -165,8 +175,9 @@ RECOMMENDED WORKFLOW:
 5. Call bfs_create_project to scaffold the project on disk.
 
 For existing projects:
-1. Call bfs_plan_addition to validate proposed changes.
-2. Call bfs_add_feature to apply changes.
+1. Call bfs_plan_stack_update to preview scaffold-time capability changes.
+2. Call bfs_apply_stack_update to safely apply supported stack changes.
+3. Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.
 
 CRITICAL RULES:
 - Dependency installation is ALWAYS skipped in MCP mode (timeout risk). After scaffolding, tell the user to run install manually.
@@ -184,7 +195,8 @@ function getGuidance() {
       "Call bfs_check_compatibility to validate your planned stack before creation.",
       "Call bfs_plan_project to preview the generated project (dry-run, no files written).",
       "Call bfs_create_project to scaffold the project on disk.",
-      "For existing projects: call bfs_plan_addition, then bfs_add_feature.",
+      "For existing projects: call bfs_plan_stack_update, then bfs_apply_stack_update.",
+      "Use bfs_plan_addition / bfs_add_feature only for legacy addon/deploy-only flows.",
     ],
     ecosystems: {
       typescript:
@@ -290,13 +302,6 @@ const MCP_SCHEMA_EXCLUDED_CATEGORIES = new Set<OptionCategory>([
   "git",
   "install",
   "versionChannel",
-  "shadcnBase",
-  "shadcnStyle",
-  "shadcnIconLibrary",
-  "shadcnColorTheme",
-  "shadcnBaseColor",
-  "shadcnFont",
-  "shadcnRadius",
 ]);
 
 const MCP_SCHEMA_OPTION_OVERRIDES = {
@@ -630,7 +635,7 @@ function buildProjectConfig(
   const hasMobileProject = ecosystem === "react-native" || hasNativeFrontend;
   const defaults = getMcpProjectConfigDefaults(input);
 
-  return {
+  const config: ProjectConfig = {
     projectName,
     projectDir: overrides?.projectDir ?? "/virtual",
     relativePath: overrides ? `./${projectName}` : "./virtual",
@@ -652,17 +657,29 @@ function buildProjectConfig(
     mobileDeepLinking:
       (input.mobileDeepLinking as ProjectConfig["mobileDeepLinking"]) ??
       (hasMobileProject ? "expo-linking" : "none"),
-    shadcnBase: "radix",
-    shadcnStyle: "nova",
-    shadcnIconLibrary: "lucide",
-    shadcnColorTheme: "neutral",
-    shadcnBaseColor: "neutral",
-    shadcnFont: "inter",
-    shadcnRadius: "default",
+    shadcnBase: (input.shadcnBase as ProjectConfig["shadcnBase"]) ?? "radix",
+    shadcnStyle: (input.shadcnStyle as ProjectConfig["shadcnStyle"]) ?? "nova",
+    shadcnIconLibrary:
+      (input.shadcnIconLibrary as ProjectConfig["shadcnIconLibrary"]) ?? "lucide",
+    shadcnColorTheme:
+      (input.shadcnColorTheme as ProjectConfig["shadcnColorTheme"]) ?? "neutral",
+    shadcnBaseColor: (input.shadcnBaseColor as ProjectConfig["shadcnBaseColor"]) ?? "neutral",
+    shadcnFont: (input.shadcnFont as ProjectConfig["shadcnFont"]) ?? "inter",
+    shadcnRadius: (input.shadcnRadius as ProjectConfig["shadcnRadius"]) ?? "default",
     aiDocs: (input.aiDocs as ProjectConfig["aiDocs"]) ?? ["claude-md", "agents-md"],
     git: !!overrides,
     install: false,
   };
+
+  if (Array.isArray(input.part) && input.part.length > 0) {
+    const stackParts = parseStackPartSpecs(
+      input.part.filter((part): part is string => typeof part === "string"),
+      "selected",
+    );
+    Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
+  }
+
+  return config;
 }
 
 function sanitizePath(input: string): string {
@@ -862,9 +879,10 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
 2. Tell the user to run: cd my-elixir-app && mix deps.get && mix phx.server
 
 ## Adding Features to Existing Projects
-1. Call bfs_add_feature with projectDir pointing to the project root.
-2. Provide addons array with features to add (e.g., ["biome", "turborepo"]).
-3. Service categories such as email and observability are scaffold-time options. To add those to an existing app, inspect the generated templates from bfs_plan_project and apply the equivalent dependency, env var, and initialization changes manually.
+1. Call bfs_plan_stack_update with projectDir and any stack fields to add or change.
+2. Review filesToAdd, filesToPatch, dependencyChanges, envChanges, and manualReviewBlockers.
+3. If there are no blockers, call bfs_apply_stack_update with the same arguments.
+4. Use bfs_add_feature only for older addon/deploy-only workflows.
 `;
 
 type McpToolAnnotations = {
@@ -960,6 +978,25 @@ const addFeatureOutputSchema = {
   success: z.boolean(),
   addedAddons: z.array(z.string()).optional(),
   projectDir: z.string().optional(),
+  message: z.string().optional(),
+  ...graphPreviewOutputShape,
+};
+
+const stackUpdateOutputSchema = {
+  success: z.boolean(),
+  projectDir: z.string().optional(),
+  error: z.string().optional(),
+  requestedChanges: z.record(z.string(), z.unknown()).optional(),
+  proposedConfig: z.record(z.string(), z.unknown()).optional(),
+  filesToAdd: z.array(z.string()).optional(),
+  filesToPatch: z.array(z.string()).optional(),
+  dependencyChanges: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  scriptChanges: z.record(z.string(), z.array(z.string())).optional(),
+  envChanges: z.record(z.string(), z.array(z.string())).optional(),
+  manualReviewBlockers: z.array(z.string()).optional(),
+  compatibilityAdjustments: z.array(z.string()).optional(),
+  compatibilityWarnings: z.array(z.string()).optional(),
+  installCommand: z.string().optional(),
   message: z.string().optional(),
   ...graphPreviewOutputShape,
 };
@@ -1228,6 +1265,175 @@ function summarizeRecommendedConfig(config: ProjectConfig) {
   };
 }
 
+const mobileInputSchema = {
+  mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
+  mobileUI: MobileUISchema.optional().describe("Mobile UI"),
+  mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
+  mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
+  mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
+  mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
+  mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
+};
+
+const deploymentInputSchema = {
+  dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
+  webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
+  serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
+};
+
+const crossEcosystemInputSchema = {
+  rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
+  rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
+  rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
+  rustApi: RustApiSchema.optional().describe("Rust API layer"),
+  rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
+  rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust libraries"),
+  rustLogging: RustLoggingSchema.optional().describe("Rust logging library"),
+  rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
+  rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
+  rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
+  rustRealtime: RustRealtimeSchema.optional().describe("Rust realtime library"),
+  rustMessageQueue: RustMessageQueueSchema.optional().describe("Rust message queue"),
+  rustObservability: RustObservabilitySchema.optional().describe("Rust observability"),
+  rustTemplating: RustTemplatingSchema.optional().describe("Rust template engine"),
+  pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
+  pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
+  pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
+  pythonAi: z.array(PythonAiSchema).optional().describe("Python AI libraries"),
+  pythonAuth: PythonAuthSchema.optional().describe("Python auth library"),
+  pythonApi: PythonApiSchema.optional().describe("Python API framework"),
+  pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
+  pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
+  pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
+  pythonTesting: z.array(PythonTestingSchema).optional().describe("Python testing libraries"),
+  pythonCaching: PythonCachingSchema.optional().describe("Python caching library"),
+  pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
+  pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
+  pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
+  goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
+  goOrm: GoOrmSchema.optional().describe("Go ORM"),
+  goApi: GoApiSchema.optional().describe("Go API layer"),
+  goCli: GoCliSchema.optional().describe("Go CLI framework"),
+  goLogging: GoLoggingSchema.optional().describe("Go logging library"),
+  goAuth: GoAuthSchema.optional().describe("Go authentication library"),
+  goTesting: z.array(GoTestingSchema).optional().describe("Go testing libraries"),
+  goRealtime: GoRealtimeSchema.optional().describe("Go realtime/WebSocket library"),
+  goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
+  goCaching: GoCachingSchema.optional().describe("Go caching library"),
+  goConfig: GoConfigSchema.optional().describe("Go config management"),
+  goObservability: GoObservabilitySchema.optional().describe("Go observability"),
+  javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
+  javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
+  javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
+  javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
+  javaApi: JavaApiSchema.optional().describe("Java API layer"),
+  javaLogging: JavaLoggingSchema.optional().describe("Java logging configuration"),
+  javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
+  javaTestingLibraries: z
+    .array(JavaTestingLibrariesSchema)
+    .optional()
+    .describe("Java testing libraries"),
+  dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(".NET web framework"),
+  dotnetOrm: DotnetOrmSchema.optional().describe(".NET ORM/data access"),
+  dotnetAuth: DotnetAuthSchema.optional().describe(".NET authentication library"),
+  dotnetApi: DotnetApiSchema.optional().describe(".NET API style"),
+  dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
+  dotnetJobQueue: DotnetJobQueueSchema.optional().describe(".NET jobs and scheduling"),
+  dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime feature"),
+  dotnetObservability: z
+    .array(DotnetObservabilitySchema)
+    .optional()
+    .describe(".NET observability/logging libraries"),
+  dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
+  dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
+  dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
+  elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
+  elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
+  elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
+  elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
+  elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
+  elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
+  elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
+  elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
+  elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
+  elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
+  elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
+  elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
+  elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
+  elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
+  elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
+  elixirLibraries: z.array(ElixirLibrariesSchema).optional().describe("Elixir libraries"),
+};
+
+export const MCP_PLAN_CREATE_SCHEMA = {
+  projectName: z.string().optional().describe("Project name (kebab-case)"),
+  part: z
+    .array(z.string())
+    .optional()
+    .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
+  ecosystem: EcosystemSchema.optional().describe("Language ecosystem (default: typescript)"),
+  frontend: z.array(FrontendSchema).optional().describe("Frontend frameworks (TypeScript only)"),
+  backend: BackendSchema.optional().describe("Backend framework"),
+  runtime: RuntimeSchema.optional().describe("JavaScript runtime"),
+  database: DatabaseSchema.optional().describe("Database type"),
+  orm: ORMSchema.optional().describe("ORM"),
+  api: APISchema.optional().describe("API layer"),
+  auth: AuthSchema.optional().describe("Auth provider"),
+  payments: PaymentsSchema.optional().describe("Payments provider"),
+  email: EmailSchema.optional().describe("Email provider"),
+  addons: z.array(AddonsSchema).optional().describe("Addons"),
+  examples: z.array(ExamplesSchema).optional().describe("Example templates"),
+  packageManager: PackageManagerSchema.optional().describe("Package manager (default: bun)"),
+  cssFramework: CSSFrameworkSchema.optional().describe("CSS framework"),
+  uiLibrary: UILibrarySchema.optional().describe("UI component library"),
+  shadcnBase: ShadcnBaseSchema.optional().describe("shadcn/ui headless library"),
+  shadcnStyle: ShadcnStyleSchema.optional().describe("shadcn/ui visual style"),
+  shadcnIconLibrary: ShadcnIconLibrarySchema.optional().describe("shadcn/ui icon library"),
+  shadcnColorTheme: ShadcnColorThemeSchema.optional().describe("shadcn/ui color theme"),
+  shadcnBaseColor: ShadcnBaseColorSchema.optional().describe("shadcn/ui base neutral color"),
+  shadcnFont: ShadcnFontSchema.optional().describe("shadcn/ui font"),
+  shadcnRadius: ShadcnRadiusSchema.optional().describe("shadcn/ui border radius"),
+  ai: AISchema.optional().describe("AI SDK"),
+  stateManagement: StateManagementSchema.optional().describe("State management"),
+  forms: FormsSchema.optional().describe("Forms library"),
+  validation: ValidationSchema.optional().describe("Validation library"),
+  testing: TestingSchema.optional().describe("Testing framework"),
+  realtime: RealtimeSchema.optional().describe("Realtime library"),
+  jobQueue: JobQueueSchema.optional().describe("Job queue"),
+  animation: AnimationSchema.optional().describe("Animation library"),
+  logging: LoggingSchema.optional().describe("Logging library"),
+  observability: ObservabilitySchema.optional().describe("Observability"),
+  featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
+  search: SearchSchema.optional().describe("Search engine"),
+  vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
+  caching: CachingSchema.optional().describe("Caching solution"),
+  rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
+  i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
+  cms: CMSSchema.optional().describe("CMS"),
+  fileStorage: FileStorageSchema.optional().describe("File storage"),
+  ...mobileInputSchema,
+  fileUpload: FileUploadSchema.optional().describe("File upload"),
+  ...deploymentInputSchema,
+  effect: EffectSchema.optional().describe("Effect ecosystem (effect, effect-full)"),
+  analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics provider"),
+  astroIntegration: AstroIntegrationSchema.optional().describe(
+    "Astro UI framework integration (react, vue, svelte, solid)",
+  ),
+  aiDocs: z
+    .array(AiDocsSchema)
+    .optional()
+    .describe("AI documentation files (claude-md, agents-md, cursorrules)"),
+  versionChannel: VersionChannelSchema.optional().describe(
+    "Dependency version channel (stable, latest, beta)",
+  ),
+  ...crossEcosystemInputSchema,
+};
+
+export const MCP_STACK_UPDATE_SCHEMA = {
+  ...MCP_PLAN_CREATE_SCHEMA,
+  projectDir: z.string().describe("Absolute path to the existing Better-Fullstack project"),
+};
+
 export async function startMcpServer() {
   const server = new McpServer(
     { name: "better-fullstack", version: getLatestCLIVersion() },
@@ -1438,106 +1644,6 @@ export async function startMcpServer() {
     },
   );
 
-  const mobileInputSchema = {
-    mobileNavigation: MobileNavigationSchema.optional().describe("Mobile navigation"),
-    mobileUI: MobileUISchema.optional().describe("Mobile UI"),
-    mobileStorage: MobileStorageSchema.optional().describe("Mobile storage"),
-    mobileTesting: MobileTestingSchema.optional().describe("Mobile testing"),
-    mobilePush: MobilePushSchema.optional().describe("Mobile push notifications"),
-    mobileOTA: MobileOTASchema.optional().describe("Mobile OTA updates"),
-    mobileDeepLinking: MobileDeepLinkingSchema.optional().describe("Mobile deep linking"),
-  };
-
-  const deploymentInputSchema = {
-    dbSetup: DatabaseSetupSchema.optional().describe("Database hosting provider"),
-    webDeploy: WebDeploySchema.optional().describe("Web deployment target"),
-    serverDeploy: ServerDeploySchema.optional().describe("Server deployment target"),
-  };
-
-  const crossEcosystemInputSchema = {
-    rustWebFramework: RustWebFrameworkSchema.optional().describe("Rust web framework"),
-    rustFrontend: RustFrontendSchema.optional().describe("Rust frontend (WASM)"),
-    rustOrm: RustOrmSchema.optional().describe("Rust ORM"),
-    rustApi: RustApiSchema.optional().describe("Rust API layer"),
-    rustCli: RustCliSchema.optional().describe("Rust CLI framework"),
-    rustLibraries: z.array(RustLibrariesSchema).optional().describe("Rust libraries"),
-    rustLogging: RustLoggingSchema.optional().describe("Rust logging library"),
-    rustErrorHandling: RustErrorHandlingSchema.optional().describe("Rust error handling library"),
-    rustCaching: RustCachingSchema.optional().describe("Rust caching library"),
-    rustAuth: RustAuthSchema.optional().describe("Rust authentication library"),
-    rustRealtime: RustRealtimeSchema.optional().describe("Rust realtime library"),
-    rustMessageQueue: RustMessageQueueSchema.optional().describe("Rust message queue"),
-    rustObservability: RustObservabilitySchema.optional().describe("Rust observability"),
-    rustTemplating: RustTemplatingSchema.optional().describe("Rust template engine"),
-    pythonWebFramework: PythonWebFrameworkSchema.optional().describe("Python web framework"),
-    pythonOrm: PythonOrmSchema.optional().describe("Python ORM"),
-    pythonValidation: PythonValidationSchema.optional().describe("Python validation"),
-    pythonAi: z.array(PythonAiSchema).optional().describe("Python AI libraries"),
-    pythonAuth: PythonAuthSchema.optional().describe("Python auth library"),
-    pythonApi: PythonApiSchema.optional().describe("Python API framework"),
-    pythonTaskQueue: PythonTaskQueueSchema.optional().describe("Python task queue"),
-    pythonGraphql: PythonGraphqlSchema.optional().describe("Python GraphQL framework"),
-    pythonQuality: PythonQualitySchema.optional().describe("Python code quality"),
-    pythonTesting: z.array(PythonTestingSchema).optional().describe("Python testing libraries"),
-    pythonCaching: PythonCachingSchema.optional().describe("Python caching library"),
-    pythonRealtime: PythonRealtimeSchema.optional().describe("Python realtime library"),
-    pythonObservability: PythonObservabilitySchema.optional().describe("Python observability"),
-    pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
-    goWebFramework: GoWebFrameworkSchema.optional().describe("Go web framework"),
-    goOrm: GoOrmSchema.optional().describe("Go ORM"),
-    goApi: GoApiSchema.optional().describe("Go API layer"),
-    goCli: GoCliSchema.optional().describe("Go CLI framework"),
-    goLogging: GoLoggingSchema.optional().describe("Go logging library"),
-    goAuth: GoAuthSchema.optional().describe("Go authentication library"),
-    goTesting: z.array(GoTestingSchema).optional().describe("Go testing libraries"),
-    goRealtime: GoRealtimeSchema.optional().describe("Go realtime/WebSocket library"),
-    goMessageQueue: GoMessageQueueSchema.optional().describe("Go message queue"),
-    goCaching: GoCachingSchema.optional().describe("Go caching library"),
-    goConfig: GoConfigSchema.optional().describe("Go config management"),
-    goObservability: GoObservabilitySchema.optional().describe("Go observability"),
-    javaWebFramework: JavaWebFrameworkSchema.optional().describe("Java web framework"),
-    javaBuildTool: JavaBuildToolSchema.optional().describe("Java build tool"),
-    javaOrm: JavaOrmSchema.optional().describe("Java ORM"),
-    javaAuth: JavaAuthSchema.optional().describe("Java authentication library"),
-    javaApi: JavaApiSchema.optional().describe("Java API layer"),
-    javaLogging: JavaLoggingSchema.optional().describe("Java logging configuration"),
-    javaLibraries: z.array(JavaLibrariesSchema).optional().describe("Java application libraries"),
-    javaTestingLibraries: z
-      .array(JavaTestingLibrariesSchema)
-      .optional()
-      .describe("Java testing libraries"),
-    dotnetWebFramework: DotnetWebFrameworkSchema.optional().describe(".NET web framework"),
-    dotnetOrm: DotnetOrmSchema.optional().describe(".NET ORM/data access"),
-    dotnetAuth: DotnetAuthSchema.optional().describe(".NET authentication library"),
-    dotnetApi: DotnetApiSchema.optional().describe(".NET API style"),
-    dotnetTesting: z.array(DotnetTestingSchema).optional().describe(".NET testing libraries"),
-    dotnetJobQueue: DotnetJobQueueSchema.optional().describe(".NET jobs and scheduling"),
-    dotnetRealtime: DotnetRealtimeSchema.optional().describe(".NET realtime feature"),
-    dotnetObservability: z
-      .array(DotnetObservabilitySchema)
-      .optional()
-      .describe(".NET observability/logging libraries"),
-    dotnetValidation: DotnetValidationSchema.optional().describe(".NET validation"),
-    dotnetCaching: DotnetCachingSchema.optional().describe(".NET caching library"),
-    dotnetDeploy: DotnetDeploySchema.optional().describe(".NET deployment target"),
-    elixirWebFramework: ElixirWebFrameworkSchema.optional().describe("Elixir web framework"),
-    elixirOrm: ElixirOrmSchema.optional().describe("Elixir persistence layer"),
-    elixirAuth: ElixirAuthSchema.optional().describe("Elixir authentication"),
-    elixirApi: ElixirApiSchema.optional().describe("Elixir API layer"),
-    elixirRealtime: ElixirRealtimeSchema.optional().describe("Elixir realtime feature"),
-    elixirJobs: ElixirJobsSchema.optional().describe("Elixir jobs and scheduling"),
-    elixirValidation: ElixirValidationSchema.optional().describe("Elixir validation/data"),
-    elixirHttp: ElixirHttpSchema.optional().describe("Elixir HTTP client"),
-    elixirJson: ElixirJsonSchema.optional().describe("Elixir JSON library"),
-    elixirEmail: ElixirEmailSchema.optional().describe("Elixir email library"),
-    elixirCaching: ElixirCachingSchema.optional().describe("Elixir caching library"),
-    elixirObservability: ElixirObservabilitySchema.optional().describe("Elixir observability"),
-    elixirTesting: ElixirTestingSchema.optional().describe("Elixir testing library"),
-    elixirQuality: ElixirQualitySchema.optional().describe("Elixir code quality/security"),
-    elixirDeploy: ElixirDeploySchema.optional().describe("Elixir deployment target"),
-    elixirLibraries: z.array(ElixirLibrariesSchema).optional().describe("Elixir libraries"),
-  };
-
   registerTool(
     "bfs_check_compatibility",
     {
@@ -1591,6 +1697,13 @@ export async function startMcpServer() {
         ),
         uiLibrary: z.string().optional().describe("UI component library"),
         cssFramework: z.string().optional().describe("CSS framework"),
+        shadcnBase: ShadcnBaseSchema.optional().describe("shadcn/ui headless library"),
+        shadcnStyle: ShadcnStyleSchema.optional().describe("shadcn/ui visual style"),
+        shadcnIconLibrary: ShadcnIconLibrarySchema.optional().describe("shadcn/ui icon library"),
+        shadcnColorTheme: ShadcnColorThemeSchema.optional().describe("shadcn/ui color theme"),
+        shadcnBaseColor: ShadcnBaseColorSchema.optional().describe("shadcn/ui base neutral color"),
+        shadcnFont: ShadcnFontSchema.optional().describe("shadcn/ui font"),
+        shadcnRadius: ShadcnRadiusSchema.optional().describe("shadcn/ui border radius"),
         addons: z.array(AddonsSchema).optional().describe("Addon list"),
         examples: z.array(ExamplesSchema).optional().describe("Example templates"),
         packageManager: PackageManagerSchema.optional().describe("Package manager"),
@@ -1646,65 +1759,12 @@ export async function startMcpServer() {
     },
   );
 
-  const planCreateSchema = {
-    projectName: z.string().optional().describe("Project name (kebab-case)"),
-    ecosystem: EcosystemSchema.optional().describe("Language ecosystem (default: typescript)"),
-    frontend: z.array(FrontendSchema).optional().describe("Frontend frameworks (TypeScript only)"),
-    backend: BackendSchema.optional().describe("Backend framework"),
-    runtime: RuntimeSchema.optional().describe("JavaScript runtime"),
-    database: DatabaseSchema.optional().describe("Database type"),
-    orm: ORMSchema.optional().describe("ORM"),
-    api: APISchema.optional().describe("API layer"),
-    auth: AuthSchema.optional().describe("Auth provider"),
-    payments: PaymentsSchema.optional().describe("Payments provider"),
-    email: EmailSchema.optional().describe("Email provider"),
-    addons: z.array(AddonsSchema).optional().describe("Addons"),
-    examples: z.array(ExamplesSchema).optional().describe("Example templates"),
-    packageManager: PackageManagerSchema.optional().describe("Package manager (default: bun)"),
-    cssFramework: CSSFrameworkSchema.optional().describe("CSS framework"),
-    uiLibrary: UILibrarySchema.optional().describe("UI component library"),
-    ai: AISchema.optional().describe("AI SDK"),
-    stateManagement: StateManagementSchema.optional().describe("State management"),
-    forms: FormsSchema.optional().describe("Forms library"),
-    validation: ValidationSchema.optional().describe("Validation library"),
-    testing: TestingSchema.optional().describe("Testing framework"),
-    realtime: RealtimeSchema.optional().describe("Realtime library"),
-    jobQueue: JobQueueSchema.optional().describe("Job queue"),
-    animation: AnimationSchema.optional().describe("Animation library"),
-    logging: LoggingSchema.optional().describe("Logging library"),
-    observability: ObservabilitySchema.optional().describe("Observability"),
-    featureFlags: FeatureFlagsSchema.optional().describe("Feature flag provider"),
-    search: SearchSchema.optional().describe("Search engine"),
-    vectorDb: VectorDbSchema.optional().describe("Vector database (TypeScript only)"),
-    caching: CachingSchema.optional().describe("Caching solution"),
-    rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
-    i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
-    cms: CMSSchema.optional().describe("CMS"),
-    fileStorage: FileStorageSchema.optional().describe("File storage"),
-    ...mobileInputSchema,
-    fileUpload: FileUploadSchema.optional().describe("File upload"),
-    ...deploymentInputSchema,
-    effect: EffectSchema.optional().describe("Effect ecosystem (effect, effect-full)"),
-    analytics: AnalyticsSchema.optional().describe("Privacy-focused analytics provider"),
-    astroIntegration: AstroIntegrationSchema.optional().describe(
-      "Astro UI framework integration (react, vue, svelte, solid)",
-    ),
-    aiDocs: z
-      .array(AiDocsSchema)
-      .optional()
-      .describe("AI documentation files (claude-md, agents-md, cursorrules)"),
-    versionChannel: VersionChannelSchema.optional().describe(
-      "Dependency version channel (stable, latest, beta)",
-    ),
-    ...crossEcosystemInputSchema,
-  };
-
   registerTool(
     "bfs_plan_project",
     {
       description:
         "Dry-run: generates a project in-memory and returns the file tree WITHOUT writing to disk. Use this to preview what would be created.",
-      inputSchema: mcpInputSchema(planCreateSchema),
+      inputSchema: mcpInputSchema(MCP_PLAN_CREATE_SCHEMA),
       outputSchema: planProjectOutputSchema,
       annotations: {
         title: "Plan project (dry run)",
@@ -1758,7 +1818,7 @@ export async function startMcpServer() {
       description:
         "Creates a new fullstack project on disk. Dependencies are NOT installed (agent must tell user to install manually). Call bfs_plan_project first to preview.",
       inputSchema: mcpInputSchema({
-        ...planCreateSchema,
+        ...MCP_PLAN_CREATE_SCHEMA,
         projectName: z.string().describe("Project name (kebab-case). Will be the directory name."),
         targetDir: z
           .string()
@@ -1847,6 +1907,129 @@ export async function startMcpServer() {
               text: `Project creation failed: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  function compatibilityWarningsForStackUpdate(
+    proposedConfig: BetterTStackConfig,
+  ): string[] | undefined {
+    const compatResult = analyzeStackCompatibility(buildCompatibilityInput(proposedConfig));
+    return compatResult.changes.length > 0
+      ? compatResult.changes.map((change) => change.message)
+      : undefined;
+  }
+
+  registerTool(
+    "bfs_plan_stack_update",
+    {
+      description:
+        "Plans scaffold-time stack updates for an existing Better-Fullstack project. Supports the same stack fields as project creation (email, auth, payments, API, CMS, search, vector DB, observability, mobile/non-TS categories, addons, deploy, etc.). Does not write files.",
+      inputSchema: mcpInputSchema(MCP_STACK_UPDATE_SCHEMA),
+      outputSchema: stackUpdateOutputSchema,
+      annotations: {
+        title: "Plan stack update",
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (input: Record<string, unknown> & { projectDir: string }) => {
+      try {
+        const safePath = sanitizePath(input.projectDir);
+        const { projectDir: _projectDir, projectName: _projectName, ...requestedChanges } = input;
+        const plan = await planStackUpdate(safePath, requestedChanges);
+        if (!plan.success) {
+          return {
+            content: [{ type: "text", text: JSON.stringify(plan, null, 2) }],
+            structuredContent: plan,
+            isError: true,
+          };
+        }
+        const compatibilityWarnings = compatibilityWarningsForStackUpdate(plan.proposedConfig);
+        const { operations: _operations, filesUnchanged: _filesUnchanged, ...safePlan } = plan;
+        const payload = {
+          ...safePlan,
+          ...(plan.compatibilityAdjustments.length > 0
+            ? { compatibilityAdjustments: plan.compatibilityAdjustments }
+            : {}),
+          ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
+          message:
+            plan.manualReviewBlockers.length > 0
+              ? "Plan created, but manual review is required before applying."
+              : `Plan created. If approved, call bfs_apply_stack_update, then run: ${plan.installCommand}`,
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
+        };
+      } catch (error) {
+        const payload = {
+          success: false as const,
+          projectDir: input.projectDir,
+          error: `Plan stack update failed: ${error instanceof Error ? error.message : String(error)}`,
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
+          isError: true,
+        };
+      }
+    },
+  );
+
+  registerTool(
+    "bfs_apply_stack_update",
+    {
+      description:
+        "Applies a previously reviewed scaffold-time stack update to an existing Better-Fullstack project. Refuses to overwrite user-edited generated files and does not install dependencies.",
+      inputSchema: mcpInputSchema(MCP_STACK_UPDATE_SCHEMA),
+      outputSchema: stackUpdateOutputSchema,
+      annotations: {
+        title: "Apply stack update",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input: Record<string, unknown> & { projectDir: string }) => {
+      try {
+        const safePath = sanitizePath(input.projectDir);
+        const { projectDir: _projectDir, projectName: _projectName, ...requestedChanges } = input;
+        const result = await applyStackUpdate(safePath, requestedChanges);
+        if (!result.success) {
+          return {
+            content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+            structuredContent: result,
+            isError: true,
+          };
+        }
+        const compatibilityWarnings = compatibilityWarningsForStackUpdate(result.proposedConfig);
+        const { operations: _operations, filesUnchanged: _filesUnchanged, ...safeResult } = result;
+        const payload = {
+          ...safeResult,
+          ...(result.compatibilityAdjustments.length > 0
+            ? { compatibilityAdjustments: result.compatibilityAdjustments }
+            : {}),
+          ...(compatibilityWarnings ? { compatibilityWarnings } : {}),
+          message: `Stack update applied. Dependencies were not installed; run: ${result.installCommand}`,
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
+        };
+      } catch (error) {
+        const payload = {
+          success: false as const,
+          projectDir: input.projectDir,
+          error: `Apply stack update failed: ${error instanceof Error ? error.message : String(error)}`,
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: payload,
           isError: true,
         };
       }

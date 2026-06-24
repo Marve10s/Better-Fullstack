@@ -18,8 +18,30 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
 {{/if}}
 {{/if}}
+{{#if dotnetHasDapper}}
+    <PackageReference Include="Dapper" Version="2.1.79" />
+{{#if (eq database "postgres")}}
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+{{else}}
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+{{/if}}
+{{/if}}
+{{#if dotnetHasLinq2Db}}
+    <PackageReference Include="linq2db" Version="6.2.1" />
+{{#if (eq database "postgres")}}
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+{{else}}
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+{{/if}}
+{{/if}}
 {{#if dotnetHasIdentity}}
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+{{/if}}
+{{#if dotnetHasAuth0AspNet}}
+    <PackageReference Include="Auth0.AspNetCore.Authentication" Version="1.7.1" />
+{{/if}}
+{{#if dotnetHasDuendeIdentityServer}}
+    <PackageReference Include="Duende.IdentityServer" Version="8.0.2" />
 {{/if}}
 {{#if (eq dotnetApi "graphql-hotchocolate")}}
     <PackageReference Include="HotChocolate.AspNetCore" Version="16.0.0" />

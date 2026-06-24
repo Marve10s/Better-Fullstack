@@ -1,0 +1,14 @@
+defmodule {{elixirModuleName}}.ExternalServiceMoxTest do
+  use ExUnit.Case, async: true
+
+  import Mox
+
+  setup :verify_on_exit!
+
+  test "uses explicit behaviour expectations" do
+    {{elixirModuleName}}.MockExternalService
+    |> expect(:fetch_status, fn -> {:ok, "mocked"} end)
+
+    assert {{elixirModuleName}}.ExternalService.fetch_status() == {:ok, "mocked"}
+  end
+end
