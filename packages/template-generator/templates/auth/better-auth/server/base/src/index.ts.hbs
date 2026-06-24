@@ -323,10 +323,22 @@ import { env } from "@{{projectName}}/env/server";
 import { polar, checkout, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./lib/payments";
 {{/if}}
+{{#if (eq orm "kysely")}}
+import { db } from "@{{projectName}}/db";
+{{/if}}
 
 export const auth = betterAuth({
 {{#if (and (ne database "none") (ne database "redis"))}}
+{{#if (eq orm "kysely")}}
+	database: {
+		db,
+{{#if (eq database "postgres")}}		type: "postgres",
+{{/if}}{{#if (eq database "sqlite")}}		type: "sqlite",
+{{/if}}{{#if (eq database "mysql")}}		type: "mysql",
+{{/if}}	},
+{{else}}
 	database: env.DATABASE_URL,
+{{/if}}
 {{/if}}
 	trustedOrigins: [
 		env.CORS_ORIGIN,

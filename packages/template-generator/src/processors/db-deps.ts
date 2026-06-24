@@ -38,13 +38,13 @@ export function processDatabaseDeps(
   } else if (orm === "mongoose") {
     addPackageDependency({ vfs, packagePath: dbPkgPath, dependencies: ["mongoose"] });
   } else if (orm === "typeorm") {
-    processTypeORMDeps(vfs, config, dbPkgPath);
+    processTypeORMDeps(vfs, config, dbPkgPath, webPkgPath, webExists);
   } else if (orm === "kysely") {
-    processKyselyDeps(vfs, config, dbPkgPath);
+    processKyselyDeps(vfs, config, dbPkgPath, webPkgPath, webExists);
   } else if (orm === "mikroorm") {
-    processMikroORMDeps(vfs, config, dbPkgPath);
+    processMikroORMDeps(vfs, config, dbPkgPath, webPkgPath, webExists);
   } else if (orm === "sequelize") {
-    processSequelizeDeps(vfs, config, dbPkgPath);
+    processSequelizeDeps(vfs, config, dbPkgPath, webPkgPath, webExists);
   }
 }
 
@@ -169,6 +169,8 @@ function processTypeORMDeps(
   vfs: VirtualFileSystem,
   config: ProjectConfig,
   dbPkgPath: string,
+  webPkgPath: string,
+  webExists: boolean,
 ): void {
   const { database } = config;
 
@@ -182,6 +184,13 @@ function processTypeORMDeps(
       dependencies: deps,
       devDependencies: ["@types/better-sqlite3"],
     });
+    if (shouldExposeNativeSqliteDriverToWeb(config, webExists)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["better-sqlite3"],
+      });
+    }
   } else if (database === "postgres") {
     deps.push("pg");
     addPackageDependency({
@@ -200,7 +209,13 @@ function processTypeORMDeps(
   }
 }
 
-function processKyselyDeps(vfs: VirtualFileSystem, config: ProjectConfig, dbPkgPath: string): void {
+function processKyselyDeps(
+  vfs: VirtualFileSystem,
+  config: ProjectConfig,
+  dbPkgPath: string,
+  webPkgPath: string,
+  webExists: boolean,
+): void {
   const { database } = config;
 
   const deps: AvailableDependencies[] = ["kysely"];
@@ -213,6 +228,13 @@ function processKyselyDeps(vfs: VirtualFileSystem, config: ProjectConfig, dbPkgP
       dependencies: deps,
       devDependencies: ["@types/better-sqlite3"],
     });
+    if (shouldExposeNativeSqliteDriverToWeb(config, webExists)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["better-sqlite3"],
+      });
+    }
   } else if (database === "postgres") {
     deps.push("pg");
     addPackageDependency({
@@ -235,6 +257,8 @@ function processMikroORMDeps(
   vfs: VirtualFileSystem,
   config: ProjectConfig,
   dbPkgPath: string,
+  webPkgPath: string,
+  webExists: boolean,
 ): void {
   const { database } = config;
 
@@ -247,6 +271,13 @@ function processMikroORMDeps(
       packagePath: dbPkgPath,
       dependencies: deps,
     });
+    if (shouldExposeNativeSqliteDriverToWeb(config, webExists)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["@mikro-orm/better-sqlite"],
+      });
+    }
   } else if (database === "postgres") {
     deps.push("@mikro-orm/postgresql");
     addPackageDependency({
@@ -268,6 +299,8 @@ function processSequelizeDeps(
   vfs: VirtualFileSystem,
   config: ProjectConfig,
   dbPkgPath: string,
+  webPkgPath: string,
+  webExists: boolean,
 ): void {
   const { database } = config;
 
@@ -280,6 +313,13 @@ function processSequelizeDeps(
       packagePath: dbPkgPath,
       dependencies: deps,
     });
+    if (shouldExposeNativeSqliteDriverToWeb(config, webExists)) {
+      addPackageDependency({
+        vfs,
+        packagePath: webPkgPath,
+        dependencies: ["sqlite3"],
+      });
+    }
   } else if (database === "postgres") {
     deps.push("pg");
     addPackageDependency({
@@ -296,6 +336,18 @@ function processSequelizeDeps(
       dependencies: deps,
     });
   }
+}
+
+function shouldExposeNativeSqliteDriverToWeb(
+  config: ProjectConfig,
+  webExists: boolean,
+): boolean {
+  return (
+    webExists &&
+    config.backend === "self" &&
+    config.database === "sqlite" &&
+    config.frontend.includes("svelte")
+  );
 }
 
 function processEdgeDBDeps(vfs: VirtualFileSystem, dbPkgPath: string): void {

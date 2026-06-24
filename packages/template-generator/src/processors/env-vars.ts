@@ -912,13 +912,13 @@ function buildServerVars(
     },
     {
       key: "WORKOS_API_KEY",
-      value: "",
+      value: "sk_test_your_workos_api_key",
       condition: auth === "workos",
       comment: "WorkOS API key - get it at https://dashboard.workos.com",
     },
     {
       key: "WORKOS_CLIENT_ID",
-      value: "",
+      value: "client_your_workos_client_id",
       condition: auth === "workos",
       comment: "WorkOS client ID - get it at https://dashboard.workos.com",
     },
@@ -936,13 +936,13 @@ function buildServerVars(
     },
     {
       key: "KINDE_CLIENT_ID",
-      value: "",
+      value: "your_kinde_client_id",
       condition: auth === "kinde",
       comment: "Kinde application client ID",
     },
     {
       key: "KINDE_CLIENT_SECRET",
-      value: "",
+      value: "your_kinde_client_secret",
       condition: auth === "kinde",
       comment: "Kinde application client secret",
     },
@@ -972,7 +972,7 @@ function buildServerVars(
     },
     {
       key: "POLAR_ACCESS_TOKEN",
-      value: "",
+      value: "polar_oat_your_access_token",
       condition: payments === "polar",
     },
     {
@@ -982,13 +982,13 @@ function buildServerVars(
     },
     {
       key: "STRIPE_SECRET_KEY",
-      value: "",
+      value: "sk_test_your_stripe_secret_key",
       condition: payments === "stripe",
       comment: "Stripe secret key - get it at https://dashboard.stripe.com/apikeys",
     },
     {
       key: "STRIPE_WEBHOOK_SECRET",
-      value: "",
+      value: "whsec_your_stripe_webhook_secret",
       condition: payments === "stripe",
       comment: "Stripe webhook signing secret - get it when creating a webhook endpoint",
     },
@@ -1348,19 +1348,19 @@ function buildServerVars(
     },
     {
       key: "AXIOM_TOKEN",
-      value: "",
+      value: "xaat_your_axiom_token",
       condition: observability === "axiom",
       comment: "Axiom API token with ingest permissions",
     },
     {
       key: "AXIOM_DATASET",
-      value: "",
+      value: "local",
       condition: observability === "axiom",
       comment: "Axiom dataset name",
     },
     {
       key: "BETTERSTACK_SOURCE_TOKEN",
-      value: "",
+      value: "your_better_stack_source_token",
       condition: observability === "betterstack",
       comment: "Better Stack source token",
     },
@@ -1372,7 +1372,7 @@ function buildServerVars(
     },
     {
       key: "ARCJET_KEY",
-      value: "",
+      value: "ajkey_your_arcjet_key",
       condition: rateLimit === "arcjet",
       comment: "Arcjet site key - get it at https://app.arcjet.com",
     },
@@ -1498,13 +1498,13 @@ function buildServerVars(
     },
     {
       key: "UPSTASH_REDIS_REST_URL",
-      value: "",
+      value: "https://your-upstash-redis.upstash.io",
       condition: caching === "upstash-redis" || rateLimit === "upstash-ratelimit",
       comment: "Upstash Redis REST URL - get it at https://console.upstash.com",
     },
     {
       key: "UPSTASH_REDIS_REST_TOKEN",
-      value: "",
+      value: "your_upstash_redis_rest_token",
       condition: caching === "upstash-redis" || rateLimit === "upstash-ratelimit",
       comment: "Upstash Redis REST token - get it at https://console.upstash.com",
     },

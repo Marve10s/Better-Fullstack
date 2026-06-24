@@ -133,6 +133,45 @@ describe("Virtual Generator Regressions", () => {
     expect(viteConfig).not.toContain('chunkFileNames: "assets/[name]-[hash].js"');
   });
 
+  it("writes build-safe placeholders for required server integration env vars", async () => {
+    const result = await createVirtual({
+      projectName: "svelte-build-env",
+      frontend: ["svelte"],
+      backend: "self",
+      runtime: "none",
+      api: "none",
+      database: "sqlite",
+      orm: "kysely",
+      auth: "better-auth",
+      observability: "axiom",
+      rateLimit: "upstash-ratelimit",
+      addons: [],
+      examples: [],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+    });
+
+    expect(result.success).toBe(true);
+
+    const webDotEnv = readTextFromTree(result.tree!, "apps/web/.env");
+    const webPackageJson = readJsonFromTree(result.tree!, "apps/web/package.json");
+    const viteConfig = readTextFromTree(result.tree!, "apps/web/vite.config.ts");
+    const serverEnv = readTextFromTree(result.tree!, "packages/env/src/server.ts");
+    const authServer = readTextFromTree(result.tree!, "packages/auth/src/index.ts");
+
+    expect(serverEnv).toContain("AXIOM_TOKEN: z.string().min(1)");
+    expect(serverEnv).toContain("UPSTASH_REDIS_REST_URL: z.url()");
+    expect(webDotEnv).toContain("AXIOM_TOKEN=xaat_your_axiom_token");
+    expect(webDotEnv).toContain("AXIOM_DATASET=local");
+    expect(webDotEnv).toContain("UPSTASH_REDIS_REST_URL=https://your-upstash-redis.upstash.io");
+    expect(webDotEnv).toContain("UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token");
+    expect(webPackageJson?.dependencies?.["better-sqlite3"]).toBeDefined();
+    expect(viteConfig).toContain('external: ["better-sqlite3", "sqlite3"]');
+    expect(authServer).toContain(`import { db } from "@svelte-build-env/db";`);
+    expect(authServer).toContain("database: {\n\t\tdb,\n\t\ttype: \"sqlite\",\n\t}");
+  });
+
   it("adds the deterministic Ultracite quiet-mode config at the workspace root", async () => {
     const result = await createVirtual({
       projectName: "ultracite-addon",
