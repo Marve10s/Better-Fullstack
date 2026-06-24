@@ -110,6 +110,29 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
   });
 
+  it("uses path-safe chunk names for generated Qwik builds", async () => {
+    const result = await createVirtual({
+      projectName: "qwik-safe-chunks",
+      frontend: ["qwik"],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      cssFramework: "scss",
+    });
+
+    expect(result.success).toBe(true);
+
+    const viteConfig = readTextFromTree(result.tree!, "apps/web/vite.config.ts");
+
+    expect(viteConfig).toContain('chunkFileNames: "assets/chunks/[hash].js"');
+    expect(viteConfig).toContain('if (id.includes("node_modules"))');
+    expect(viteConfig).toContain('replace(/[^a-zA-Z0-9_-]/g, "_")');
+    expect(viteConfig).not.toContain('chunkFileNames: "assets/[name]-[hash].js"');
+  });
+
   it("adds the deterministic Ultracite quiet-mode config at the workspace root", async () => {
     const result = await createVirtual({
       projectName: "ultracite-addon",
