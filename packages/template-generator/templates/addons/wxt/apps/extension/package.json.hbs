@@ -11,7 +11,8 @@
     "build:firefox": "wxt build -b firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
-    "compile": "tsc --noEmit",
+    "check-types": "wxt prepare && tsc --noEmit",
+    "compile": "bun run check-types",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
