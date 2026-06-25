@@ -854,3 +854,20 @@ describe("ScaffBench 2.1 command discipline from trajectory (P2)", () => {
     });
   });
 });
+
+describe("ScaffBench 2.1 acceptance scoped-prefix (Codex #261)", () => {
+  it("matches a scoped-prefix pattern like @auth/ against @auth/core", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-authjs-"));
+    try {
+      await writeFile(
+        join(dir, "package.json"),
+        JSON.stringify({ dependencies: { "@auth/core": "*", "@auth/drizzle-adapter": "*" } }),
+      );
+      const { acceptance } = await scoreProject(aiSpec, dir, "natural");
+      // Auth.js via @auth/core must satisfy the auth capability (not be a miss).
+      expect(acceptance?.misses).not.toContain("auth");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
