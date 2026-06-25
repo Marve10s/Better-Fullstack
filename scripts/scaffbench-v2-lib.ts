@@ -1571,14 +1571,19 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
     steps.build = toStep(
       await runCommand(bun, ["run", "build"], projectDir, VALIDATION_TIMEOUT_MS),
     );
-  const typeScriptScript = scripts["check-types"]
-    ? "check-types"
-    : scripts.typecheck
-      ? "typecheck"
-      : null;
-  if (typeScriptScript) {
+  const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
+  if (gate === "tsc") {
+    // No typecheck script shipped: fall back to a direct `tsc --noEmit` so a TS
+    // project cannot dodge type-checking simply by omitting the script.
+    const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
+      ? `${process.env.HOME}/.bun/bin/bunx`
+      : "bunx";
     steps.typecheck = toStep(
-      await runCommand(bun, ["run", typeScriptScript], projectDir, VALIDATION_TIMEOUT_MS),
+      await runCommand(bunx, ["tsc", "--noEmit"], projectDir, VALIDATION_TIMEOUT_MS),
+    );
+  } else if (gate) {
+    steps.typecheck = toStep(
+      await runCommand(bun, ["run", gate], projectDir, VALIDATION_TIMEOUT_MS),
     );
   }
   if (options.qualityGate || scripts.lint) {
@@ -1833,6 +1838,20 @@ async function readPackageScripts(packageJsonPath: string) {
   } catch {
     return {};
   }
+}
+
+/** Decide how a TS project is type-checked: prefer its own script, else fall
+ * back to a direct `tsc --noEmit` when a tsconfig exists, so a project cannot
+ * dodge type-checking by omitting the script. Returns null when there is
+ * genuinely nothing to type-check (no script and no tsconfig). */
+export function typecheckGate(
+  scripts: Record<string, string>,
+  hasTsconfig: boolean,
+): "check-types" | "typecheck" | "tsc" | null {
+  if (scripts["check-types"]) return "check-types";
+  if (scripts.typecheck) return "typecheck";
+  if (hasTsconfig) return "tsc";
+  return null;
 }
 
 /**
