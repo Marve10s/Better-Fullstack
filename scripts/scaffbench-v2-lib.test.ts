@@ -18,14 +18,14 @@ import {
   scoreBts,
   scoreProject,
   scoreToolCompliance,
-  SCAFFBENCH_2_1_SPECS,
+  SCAFFBENCH_2_SPECS,
   typecheckGate,
   validationPassed,
   type RunResult,
 } from "./scaffbench-v2-lib";
 
-const aiSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
-const dotnetSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "multi-dotnet-ops")!;
+const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
+const dotnetSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "multi-dotnet-ops")!;
 
 function stackPart(
   id: string,
@@ -86,7 +86,7 @@ function makeRun(overrides: Partial<RunResult> = {}): RunResult {
   return { ...base, ...overrides };
 }
 
-describe("ScaffBench 2.1 harness config", () => {
+describe("ScaffBench 2 harness config", () => {
   it("defaults to the core multi-spec suite with one repeat", () => {
     const options = parseArgs([]);
 
@@ -145,7 +145,7 @@ describe("ScaffBench 2.1 harness config", () => {
   });
 });
 
-describe("ScaffBench 2.1 scoring", () => {
+describe("ScaffBench 2 scoring", () => {
   it("scores the existing AI search workbench config exactly", () => {
     const score = scoreBts(
       aiSpec,
@@ -316,7 +316,7 @@ describe("ScaffBench 2.1 scoring", () => {
   });
 });
 
-describe("ScaffBench 2.1 artifact-grounded scoring", () => {
+describe("ScaffBench 2 artifact-grounded scoring", () => {
   it("scores libraries wired in the generated artifact, not just declared", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sb21-artifact-"));
     try {
@@ -370,7 +370,7 @@ describe("ScaffBench 2.1 artifact-grounded scoring", () => {
   });
 });
 
-describe("ScaffBench 2.1 run outcomes", () => {
+describe("ScaffBench 2 run outcomes", () => {
   function stepResult(
     command: string,
     exitCode: number,
@@ -468,7 +468,7 @@ describe("ScaffBench 2.1 run outcomes", () => {
   });
 });
 
-describe("ScaffBench 2.1 statistical reporting", () => {
+describe("ScaffBench 2 statistical reporting", () => {
   const passing = () => ({
     projectExists: true,
     steps: {
@@ -560,7 +560,7 @@ describe("ScaffBench 2.1 statistical reporting", () => {
   });
 });
 
-describe("ScaffBench 2.1 resolution robustness", () => {
+describe("ScaffBench 2 resolution robustness", () => {
   it("disambiguates the project directory by manifest when a stray dir exists", async () => {
     const runDir = await mkdtemp(join(tmpdir(), "sb21-find-"));
     try {
@@ -593,7 +593,7 @@ describe("ScaffBench 2.1 resolution robustness", () => {
   });
 });
 
-describe("ScaffBench 2.1 composite index", () => {
+describe("ScaffBench 2 composite index", () => {
   const failingBuild = () => ({
     projectExists: true,
     steps: {
@@ -653,8 +653,8 @@ describe("ScaffBench 2.1 composite index", () => {
   });
 });
 
-describe("ScaffBench 2.1 discovery lane", () => {
-  const rustSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "rust-leptos-axum")!;
+describe("ScaffBench 2 discovery lane", () => {
+  const rustSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "rust-leptos-axum")!;
 
   it("drops the library names in the natural lane for specs with acceptance sets", () => {
     const naturalAi = promptFor(aiSpec, "prompt", "/tmp/run", "wb", "natural");
@@ -715,8 +715,8 @@ describe("ScaffBench 2.1 discovery lane", () => {
   });
 });
 
-describe("ScaffBench 2.1 restraint spec", () => {
-  const minimalSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "ts-minimal-restraint")!;
+describe("ScaffBench 2 restraint spec", () => {
+  const minimalSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ts-minimal-restraint")!;
 
   it("exists as an opt-in extended spec (not in the default core suite)", () => {
     expect(minimalSpec.lane).toBe("extended");
@@ -753,7 +753,7 @@ describe("ScaffBench 2.1 restraint spec", () => {
   });
 });
 
-describe("ScaffBench 2.1 acceptance matching precision (Codex #258)", () => {
+describe("ScaffBench 2 acceptance matching precision (Codex #258)", () => {
   it("does not credit acceptance from substrings (ai⊂tailwindcss, vite⊂vitest)", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sb21-substr-"));
     try {
@@ -789,7 +789,7 @@ describe("ScaffBench 2.1 acceptance matching precision (Codex #258)", () => {
   });
 });
 
-describe("ScaffBench 2.1 command discipline from trajectory (P2)", () => {
+describe("ScaffBench 2 command discipline from trajectory (P2)", () => {
   const streamJson = (...events: object[]) =>
     `${events.map((event) => JSON.stringify(event)).join("\n")}\n`;
   const claudeOutput = (stdout: string): any => ({
@@ -855,7 +855,7 @@ describe("ScaffBench 2.1 command discipline from trajectory (P2)", () => {
   });
 });
 
-describe("ScaffBench 2.1 acceptance scoped-prefix (Codex #261)", () => {
+describe("ScaffBench 2 acceptance scoped-prefix (Codex #261)", () => {
   it("matches a scoped-prefix pattern like @auth/ against @auth/core", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sb21-authjs-"));
     try {

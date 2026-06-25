@@ -231,7 +231,7 @@ type ProjectIndex = {
   allText: string;
 };
 
-const HARNESS_VERSION = "2.1.0";
+const HARNESS_VERSION = "2.0.0";
 // Below this many scored runs a Wilson interval is too wide to be informative
 // (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
 const MIN_CI_RUNS = 8;
@@ -402,7 +402,7 @@ const AI_SEARCH_FLAGS = [
   "--disable-analytics",
 ] as const;
 
-export const SCAFFBENCH_2_1_SPECS: readonly BenchmarkSpec[] = [
+export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
   {
     id: "ai-search-workbench",
     title: "AI search workbench with separate semantic and full-text search",
@@ -1089,7 +1089,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
   }
 
   const requestedOutDir = args.get("out-dir");
-  const specIds = SCAFFBENCH_2_1_SPECS.map((spec) => spec.id);
+  const specIds = SCAFFBENCH_2_SPECS.map((spec) => spec.id);
   const specsArg = args.get("specs") ?? args.get("spec");
   const specs =
     specsArg === "core" || !specsArg
@@ -1112,7 +1112,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
       ? path.resolve(process.cwd(), requestedOutDir)
       : path.resolve(
           process.cwd(),
-          "testing/llm-benchmarks/v2.1",
+          "testing/llm-benchmarks/v2",
           new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "Z"),
         ),
     maxBudgetUsd: args.get("max-budget-usd") ?? "12",
@@ -1128,7 +1128,7 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
 
 export function selectedSpecs(specIds: readonly string[]) {
   const requested = new Set(specIds);
-  return SCAFFBENCH_2_1_SPECS.filter((spec) => requested.has(spec.id));
+  return SCAFFBENCH_2_SPECS.filter((spec) => requested.has(spec.id));
 }
 
 export function canonicalCommand(spec: BenchmarkSpec, projectName: string) {
@@ -1198,7 +1198,7 @@ Do not use the Better-Fullstack CLI for creation.`;
 export async function runScaffbench(options: ScaffbenchOptions, log = console.log) {
   const specs = selectedSpecs(options.specs);
   if (options.listSpecs) {
-    for (const spec of specs.length ? specs : SCAFFBENCH_2_1_SPECS) {
+    for (const spec of specs.length ? specs : SCAFFBENCH_2_SPECS) {
       log(`${spec.id}\t${spec.lane}\t${spec.family}\t${spec.title}`);
     }
     return;
@@ -1212,7 +1212,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
 
   if (options.writeMatrixOnly) {
     await writeSummary(options.outDir, [], options, specs, await collectMetadata(options));
-    log(`Wrote ScaffBench 2.1 matrix to ${options.outDir}`);
+    log(`Wrote ScaffBench 2 matrix to ${options.outDir}`);
     return;
   }
 
@@ -2731,7 +2731,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
     )
     .join("\n");
 
-  return `# ScaffBench 2.1 Run
+  return `# ScaffBench 2 Run
 
 Harness: ${summary.harnessVersion}
 Agent: Claude Code (single agent; single model family per row)
