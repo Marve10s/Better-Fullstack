@@ -1,6 +1,6 @@
-# ScaffBench 2.1 Readiness
+# ScaffBench 2 Readiness
 
-ScaffBench 2.1 turns the V2 single hard prompt into a small, repeatable suite. The goal is to keep
+ScaffBench 2 turns a single hard prompt into a small, repeatable suite. The goal is to keep
 the current V2 results intact while making the next benchmark run harder, more reproducible, and
 more diagnostic.
 
@@ -28,7 +28,7 @@ bun run scripts/scaffbench-v2.ts \
   --specs core
 ```
 
-Publishable ScaffBench 2.1 run:
+Publishable ScaffBench 2 run:
 
 ```bash
 bun run scripts/scaffbench-v2.ts \
@@ -72,7 +72,7 @@ Matrix-only artifact check, with no Claude calls:
 ```bash
 bun run scripts/scaffbench-v2.ts \
   --write-matrix-only \
-  --out-dir testing/.tmp-scaffbench-21
+  --out-dir testing/.tmp-scaffbench-2
 ```
 
 ## Output Contract
@@ -142,7 +142,7 @@ The harness emits stable failure tags:
 - `toolchain-missing`
 - `stack-unwired`
 
-## Scope and run-outcome semantics (post-2.1 hardening)
+## Scope and run-outcome semantics (post-2 hardening)
 
 - **Single-agent ablation, not a cross-vendor leaderboard.** The harness drives one agent (Claude
   Code); every row is one model family across creation paths and reasoning effort. The rendered
@@ -197,5 +197,9 @@ to catch.
   so prompt-only projects without `bts.jsonc` are skipped instead of guessed.
 - `default` is not a reasoning level. The harness records the requested effort and a known effective
   reasoning value when the model default is known.
-- Current homepage V2 data remains the June 24-25 single-spec Opus sweep. The homepage table is now
-  ready to display 2.1 repeat counts, confidence intervals, command discipline, and failure tags.
+- The discarded V2 draft data has been removed from the homepage chart (it now shows the V1
+  cross-vendor sweep only). ScaffBench 2 results are not hand-typed: `scripts/build-benchmark-data.ts`
+  transforms a run's `summary.json` into a stable `benchmark-data.json` (version, harness + generator
+  version, and per-cell rows: Index, pass rate, macro/pass@k/pass^k, wired libs, command discipline,
+  latency, tokens, cost, failure tags). Run it on a real ScaffBench 2 `summary.json` to produce the
+  committed dataset the homepage will read; a CI step can regenerate and diff it to fail on drift.
