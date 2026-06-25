@@ -750,3 +750,39 @@ describe("ScaffBench 2.1 restraint spec", () => {
     }
   });
 });
+
+describe("ScaffBench 2.1 acceptance matching precision (Codex #258)", () => {
+  it("does not credit acceptance from substrings (ai⊂tailwindcss, vite⊂vitest)", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-substr-"));
+    try {
+      // tailwindcss contains "ai"; vitest contains "vite" — neither should
+      // satisfy the ai / web-framework capabilities under precise matching.
+      await writeFile(
+        join(dir, "package.json"),
+        JSON.stringify({ dependencies: { tailwindcss: "*", vitest: "*" } }),
+      );
+      const { acceptance } = await scoreProject(aiSpec, dir, "natural");
+      expect(acceptance?.misses).toContain("ai");
+      expect(acceptance?.misses).toContain("web-framework");
+      // vitest DOES satisfy the testing capability (exact dep)
+      expect(acceptance?.misses).not.toContain("testing");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("counts a no-project discovery run as 0 acceptance in the average", () => {
+    const wired = makeRun({
+      id: "acc-a",
+      acceptanceScore: { matched: 12, total: 12, percent: 100, misses: [] },
+    });
+    const noProject = makeRun({
+      id: "acc-b",
+      acceptanceScore: { matched: 0, total: 12, percent: 0, misses: ["project not found"] },
+    });
+
+    const [cell] = aggregateResults([wired, noProject]).leaderboard;
+
+    expect(cell?.acceptancePercent).toBe(50); // (100 + 0) / 2, not 100
+  });
+});
