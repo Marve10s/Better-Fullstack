@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   aggregateResults,
   canonicalCommand,
+  classifyOutcome,
   deriveFailureTags,
   parseArgs,
   promptFor,
@@ -112,6 +113,16 @@ describe("ScaffBench 2.1 harness config", () => {
     expect(promptOnly).toContain(aiSpec.naturalPrompt);
     expect(mcpPrompt).toContain("bfs_get_guidance");
     expect(mcpPrompt).toContain("bfs_create_project");
+  });
+
+  it("does not leak the canonical command (answer key) into agent-facing prompts", () => {
+    const cliPrompt = promptFor(aiSpec, "cli", "/tmp/run", "workbench", "explicit");
+
+    // The agent must map requirements to flags itself; the full flag list is
+    // kept only in canonical-command.txt / spec.json for grading.
+    expect(cliPrompt).not.toContain(canonicalCommand(aiSpec, "workbench"));
+    expect(cliPrompt).not.toContain("--vector-db");
+    expect(cliPrompt).not.toContain("--shadcn-base");
   });
 
   it("records missing spawned tools as failed commands", async () => {
@@ -290,6 +301,74 @@ describe("ScaffBench 2.1 scoring", () => {
       passCount: 1,
       passRate: 50,
       failureTags: { "install-failed": 1, "validation-failed": 1 },
+    });
+  });
+});
+
+describe("ScaffBench 2.1 run outcomes", () => {
+  function stepResult(command: string, exitCode: number, timedOut = false) {
+    return { command, exitCode, timedOut, durationMs: 1, stdoutTail: "", stderrTail: "" };
+  }
+
+  it("classifies a clean validation pass as success", () => {
+    expect(classifyOutcome(makeRun())).toBe("success");
+  });
+
+  it("classifies a missing toolchain (exit 127) as infra-inconclusive and does not tag a build break", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: { cargoCheck: stepResult("cargo check", 127) },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("toolchain-missing");
+    expect(tags).not.toContain("build-failed");
+  });
+
+  it("classifies an exhausted token budget as infra-inconclusive", () => {
+    const run = makeRun({
+      claude: { exitCode: 1, timedOut: false, durationMs: 60_000, terminalReason: "max_budget_exhausted" },
+      validation: { projectExists: false, steps: {} },
+    });
+
+    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(deriveFailureTags(run)).toContain("budget-exhausted");
+  });
+
+  it("keeps a real build failure as a model-failure, not inconclusive", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: { install: stepResult("bun install", 0), build: stepResult("bun run build", 1) },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("model-failure");
+  });
+
+  it("excludes infra-inconclusive runs from the pass-rate denominator", () => {
+    const ok = makeRun();
+    const inconclusive = makeRun({
+      id: "ai-search-workbench-claude-opus-4-8-high-mcp-r02",
+      trial: 2,
+      validation: {
+        projectExists: true,
+        steps: { install: stepResult("uv sync", 127) },
+      },
+    });
+
+    const aggregates = aggregateResults([ok, inconclusive]).leaderboard;
+
+    expect(aggregates).toHaveLength(1);
+    expect(aggregates[0]).toMatchObject({
+      runs: 2,
+      scoredRuns: 1,
+      inconclusiveCount: 1,
+      passCount: 1,
+      passRate: 100,
     });
   });
 });

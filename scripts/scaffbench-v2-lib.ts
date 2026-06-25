@@ -22,7 +22,11 @@ export type FailureTag =
   | "tool-violation"
   | "typecheck-failed"
   | "validation-failed"
-  | "build-failed";
+  | "build-failed"
+  | "budget-exhausted"
+  | "toolchain-missing";
+
+export type RunOutcome = "success" | "model-failure" | "infra-inconclusive";
 
 export type StrictMarker = {
   id: string;
@@ -157,6 +161,8 @@ type SummaryAggregate = {
   effectiveReasoning?: string;
   path: CreationPath;
   runs: number;
+  scoredRuns: number;
+  inconclusiveCount: number;
   passCount: number;
   passRate: number;
   passCi95: { low: number; high: number };
@@ -979,11 +985,8 @@ Create the project from scratch by writing the files and manifests needed for a 
 
 Creation mode: Better-Fullstack CLI mention.
 Do not use MCP tools. Use the Better-Fullstack CLI via \`bun create better-fullstack@latest\`.
-Map the requirements to explicit non-interactive CLI flags. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
-Use \`--no-install --no-git --disable-analytics\`.
-
-Canonical command shape for this spec:
-\`${canonicalCommand(spec, projectName)}\``;
+Map the requirements to explicit non-interactive CLI flags yourself; inspect \`--help\` if you are unsure of a flag name or value. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
+Use \`--no-install --no-git --disable-analytics\`.`;
   }
 
   return `${base}
@@ -1947,10 +1950,50 @@ export function validationPassed(result: RunResult) {
   return steps.every((step) => step.exitCode === 0 && !step.timedOut);
 }
 
+function isBudgetExhausted(terminalReason: string | undefined) {
+  return terminalReason ? /budget|cost[_-]?limit|max[_-]?cost|spend/i.test(terminalReason) : false;
+}
+
+/**
+ * Three-way run outcome so the headline pass rate reflects model capability,
+ * not the test machine. An "infra-inconclusive" run is one where the harness or
+ * environment — not the model — prevented a clean measurement (a missing
+ * toolchain binary, a validation step that timed out, an exhausted token
+ * budget, or a generation that crashed without producing anything). These are
+ * excluded from the pass-rate denominator by `aggregateBy`.
+ */
+export function classifyOutcome(result: RunResult): RunOutcome {
+  if (isInfraInconclusive(result)) return "infra-inconclusive";
+  return validationPassed(result) ? "success" : "model-failure";
+}
+
+function isInfraInconclusive(result: RunResult): boolean {
+  // NOTE: a generation timeout (claude.timedOut) is intentionally NOT here — an
+  // agent that cannot finish within the generous gen budget is a real failure
+  // (cf. SWE-bench, which scores agent-loop timeouts as unresolved). Only
+  // environment/harness problems below are excluded from the pass denominator.
+  if (isBudgetExhausted(result.claude.terminalReason)) return true;
+  // claude crashed/blipped (e.g. MCP startup failure) without producing anything
+  if (
+    result.claude.exitCode !== 0 &&
+    !result.validation.projectExists &&
+    !result.claude.outputTokens
+  ) {
+    return true;
+  }
+  for (const step of Object.values(result.validation.steps)) {
+    if (!step) continue;
+    if (step.timedOut) return true;
+    if (step.exitCode === 127) return true; // missing toolchain binary
+  }
+  return false;
+}
+
 export function deriveFailureTags(result: RunResult): FailureTag[] {
   const tags = new Set<FailureTag>();
   if (result.claude.timedOut) tags.add("claude-timeout");
   if (result.claude.exitCode !== 0) tags.add("claude-error");
+  if (isBudgetExhausted(result.claude.terminalReason)) tags.add("budget-exhausted");
   if (!result.validation.projectExists) tags.add("project-not-found");
   if (result.stackScore.matched < result.stackScore.total) tags.add("stack-mismatch");
   if (result.toolCompliance.checks.some((check) => check.status === "fail")) {
@@ -1961,6 +2004,13 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
   for (const [name, step] of Object.entries(result.validation.steps)) {
     if (!step || (step.exitCode === 0 && !step.timedOut)) continue;
     tags.add("validation-failed");
+    if (step.exitCode === 127) {
+      // Missing toolchain binary (e.g. cargo/uv/go/dotnet not on PATH): an
+      // environment problem, not a model-authored build break. Tag it as such
+      // and skip the step-specific failure tags below.
+      tags.add("toolchain-missing");
+      continue;
+    }
     if (name.includes("install") || name.includes("restore")) tags.add("install-failed");
     if (name.includes("build") || name.includes("cargoCheck")) tags.add("build-failed");
     if (name.includes("typecheck")) tags.add("typecheck-failed");
@@ -1998,8 +2048,10 @@ function aggregateBy(
   return [...groups.entries()]
     .map(([key, group]) => {
       const first = group[0];
-      const passCount = group.filter(validationPassed).length;
-      const ci = wilsonInterval(passCount, group.length);
+      const scored = group.filter((result) => classifyOutcome(result) !== "infra-inconclusive");
+      const inconclusiveCount = group.length - scored.length;
+      const passCount = scored.filter(validationPassed).length;
+      const ci = wilsonInterval(passCount, scored.length);
       return {
         key,
         specId: key.startsWith(first.specId) ? first.specId : undefined,
@@ -2008,8 +2060,10 @@ function aggregateBy(
         effectiveReasoning: first.effectiveReasoning,
         path: first.path,
         runs: group.length,
+        scoredRuns: scored.length,
+        inconclusiveCount,
         passCount,
-        passRate: Math.round((passCount / group.length) * 100),
+        passRate: scored.length > 0 ? Math.round((passCount / scored.length) * 100) : 0,
         passCi95: ci,
         stackPercent: average(group.map((result) => result.stackScore.percent)),
         commandDisciplinePercent: average(
@@ -2095,7 +2149,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         result.effectiveReasoning ?? "",
         result.model,
         result.path,
-        validationPassed(result) ? "pass" : "fail",
+        formatOutcome(classifyOutcome(result)),
         result.failureTags.join(", "),
         result.claude.exitCode ?? "null",
         formatSeconds(result.claude.durationMs),
@@ -2119,7 +2173,8 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         aggregate.effort,
         aggregate.effectiveReasoning ?? "",
         aggregate.path,
-        `${aggregate.passCount}/${aggregate.runs}`,
+        `${aggregate.passCount}/${aggregate.scoredRuns}`,
+        aggregate.inconclusiveCount > 0 ? `${aggregate.inconclusiveCount}/${aggregate.runs}` : "0",
         `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`,
         `${aggregate.stackPercent}%`,
         `${aggregate.commandDisciplinePercent}%`,
@@ -2134,14 +2189,20 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
   return `# ScaffBench 2.1 Run
 
 Harness: ${summary.harnessVersion}
+Agent: Claude Code (single agent; single model family per row)
 Specs: ${summary.specs.map((spec) => spec.id).join(", ")}
 Repeats: ${summary.options.repeats}
 Prompt style: ${summary.options.promptStyle}
 
-## Leaderboard
+## Path × effort summary
 
-| Model | Effort | Effective reasoning | Path | Pass@1 | Pass rate CI95 | Right libs | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+This is an ablation across creation paths and reasoning effort for one agent
+(Claude Code), not a cross-vendor leaderboard. Pass rate is over *scored* runs:
+infra-inconclusive runs (missing toolchain, validation timeout, exhausted token
+budget, or a crash with no output) are excluded from the denominator.
+
+| Model | Effort | Effective reasoning | Path | Pass@1 | Inconclusive | Pass rate CI95 | Right libs | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs
@@ -2150,6 +2211,12 @@ ${aggregateRows}
 | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${rows}
 `;
+}
+
+function formatOutcome(outcome: RunOutcome) {
+  if (outcome === "success") return "pass";
+  if (outcome === "infra-inconclusive") return "inconclusive";
+  return "fail";
 }
 
 function formatFailureTags(tags: Record<string, number>) {

@@ -120,6 +120,23 @@ The harness emits stable failure tags:
 - `doctor-failed`
 - `route-failed`
 - `validation-failed`
+- `budget-exhausted`
+- `toolchain-missing`
+
+## Scope and run-outcome semantics (post-2.1 hardening)
+
+- **Single-agent ablation, not a cross-vendor leaderboard.** The harness drives one agent (Claude
+  Code); every row is one model family across creation paths and reasoning effort. The rendered
+  summary heading and metadata say so explicitly. Cross-vendor comparison requires a second agent
+  adapter and is out of scope until then.
+- **CLI prompt no longer embeds the canonical command.** The agent must map requirements to flags
+  itself; the full flag list is retained only in `canonical-command.txt`/`spec.json` for grading, so
+  the CLI lane measures requirement→flag mapping rather than copy-fidelity.
+- **Three-way run outcome.** Each run is `success`, `model-failure`, or `infra-inconclusive`.
+  Infra-inconclusive runs (missing toolchain → `toolchain-missing`, validation-step timeout,
+  exhausted token budget → `budget-exhausted`, or a crash with no output) are excluded from the
+  pass-rate denominator and surfaced in a dedicated `Inconclusive` column. A generation timeout is
+  intentionally a `model-failure`, not inconclusive (cf. SWE-bench).
 
 ## Notes
 
