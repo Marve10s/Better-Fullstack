@@ -135,6 +135,7 @@ describe("ScaffBench 2.1 harness config", () => {
 
     expect(result.exitCode).toBe(127);
     expect(result.timedOut).toBe(false);
+    expect(result.spawnError).toBe(true);
     expect(result.stderr).toContain("scaffbench-missing-binary-for-test");
   });
 });
@@ -365,19 +366,31 @@ describe("ScaffBench 2.1 artifact-grounded scoring", () => {
 });
 
 describe("ScaffBench 2.1 run outcomes", () => {
-  function stepResult(command: string, exitCode: number, timedOut = false) {
-    return { command, exitCode, timedOut, durationMs: 1, stdoutTail: "", stderrTail: "" };
+  function stepResult(
+    command: string,
+    exitCode: number,
+    opts: { timedOut?: boolean; spawnError?: boolean } = {},
+  ) {
+    return {
+      command,
+      exitCode,
+      timedOut: opts.timedOut ?? false,
+      spawnError: opts.spawnError ?? false,
+      durationMs: 1,
+      stdoutTail: "",
+      stderrTail: "",
+    };
   }
 
   it("classifies a clean validation pass as success", () => {
     expect(classifyOutcome(makeRun())).toBe("success");
   });
 
-  it("classifies a missing toolchain (exit 127) as infra-inconclusive and does not tag a build break", () => {
+  it("classifies an un-spawnable validator binary as infra-inconclusive, not a build break", () => {
     const run = makeRun({
       validation: {
         projectExists: true,
-        steps: { cargoCheck: stepResult("cargo check", 127) },
+        steps: { cargoCheck: stepResult("cargo check", 127, { spawnError: true }) },
       },
     });
 
@@ -385,6 +398,24 @@ describe("ScaffBench 2.1 run outcomes", () => {
     const tags = deriveFailureTags(run);
     expect(tags).toContain("toolchain-missing");
     expect(tags).not.toContain("build-failed");
+  });
+
+  it("treats a child process exiting 127 (broken generated script) as a model-failure", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: stepResult("bun install", 0),
+          // bun ran fine; the generated `build` script referenced a missing bin.
+          build: stepResult("bun run build", 127),
+        },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("model-failure");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("build-failed");
+    expect(tags).not.toContain("toolchain-missing");
   });
 
   it("classifies an exhausted token budget as infra-inconclusive", () => {
@@ -415,7 +446,7 @@ describe("ScaffBench 2.1 run outcomes", () => {
       trial: 2,
       validation: {
         projectExists: true,
-        steps: { install: stepResult("uv sync", 127) },
+        steps: { install: stepResult("uv sync", 127, { spawnError: true }) },
       },
     });
 

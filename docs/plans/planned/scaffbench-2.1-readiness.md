@@ -140,11 +140,17 @@ The harness emits stable failure tags:
 - **CLI prompt no longer embeds the canonical command.** The agent must map requirements to flags
   itself; the full flag list is retained only in `canonical-command.txt`/`spec.json` for grading, so
   the CLI lane measures requirement→flag mapping rather than copy-fidelity.
+- **Agents run in an isolated workspace.** The agent's working directory is a temp dir disjoint from
+  the grading tree, so the answer key (`canonical-command.txt`, `spec.json`, `summary.json`, sibling
+  runs) is unreadable from the agent cwd via path traversal. The generated source is archived back
+  under `runs/<id>/<project>` (excluding `node_modules`/build dirs) after scoring.
 - **Three-way run outcome.** Each run is `success`, `model-failure`, or `infra-inconclusive`.
-  Infra-inconclusive runs (missing toolchain → `toolchain-missing`, validation-step timeout,
-  exhausted token budget → `budget-exhausted`, or a crash with no output) are excluded from the
-  pass-rate denominator and surfaced in a dedicated `Inconclusive` column. A generation timeout is
-  intentionally a `model-failure`, not inconclusive (cf. SWE-bench).
+  Infra-inconclusive runs are excluded from the pass-rate denominator and surfaced in a dedicated
+  `Inconclusive` column: a validation-step timeout, an exhausted token budget (`budget-exhausted`),
+  a crash with no output, or `toolchain-missing` — raised only when the validator binary itself
+  cannot be spawned (e.g. `cargo`/`uv`/`go`/`dotnet` absent). A generated script that runs and exits
+  127 (a broken `build`/`test` script) stays a `model-failure`, as does a generation timeout (cf.
+  SWE-bench).
 
 ## Notes
 

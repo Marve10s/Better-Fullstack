@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 export type CreationPath = "mcp" | "cli" | "prompt";
@@ -66,6 +67,10 @@ export type StepResult = {
   command: string;
   exitCode: number | null;
   timedOut: boolean;
+  /** True when the command binary itself could not be spawned (ENOENT) — an
+   * environment problem, distinct from a child process that ran and exited
+   * non-zero (e.g. a generated `bun run build` whose script is broken). */
+  spawnError?: boolean;
   durationMs: number;
   stdoutTail: string;
   stderrTail: string;
@@ -1029,6 +1034,12 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
   const metadata = await collectMetadata(options);
   const results = await readExistingResults(options.outDir);
 
+  // Agents run in an isolated workspace tree, disjoint from the grading tree
+  // (canonical-command.txt / spec.json / summary.json / sibling runs), so a
+  // CLI or MCP run cannot read the answer key out of its own working directory.
+  const workspaceRoot = path.join(os.tmpdir(), "scaffbench21-work", path.basename(options.outDir));
+  await mkdir(workspaceRoot, { recursive: true });
+
   for (const spec of specs) {
     for (const effort of options.efforts) {
       for (const pathMode of options.paths) {
@@ -1036,6 +1047,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
           const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
           const runDir = path.join(options.outDir, "runs", id);
+          const workDir = path.join(workspaceRoot, id);
           await mkdir(runDir, { recursive: true });
 
           if (results.some((result) => result.id === id)) {
@@ -1043,7 +1055,10 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
             continue;
           }
 
-          const prompt = promptFor(spec, pathMode, runDir, projectName, options.promptStyle);
+          await rm(workDir, { recursive: true, force: true }).catch(() => {});
+          await mkdir(workDir, { recursive: true });
+
+          const prompt = promptFor(spec, pathMode, workDir, projectName, options.promptStyle);
           await writeFile(path.join(runDir, "prompt.txt"), prompt);
           await writeFile(
             path.join(runDir, "canonical-command.txt"),
@@ -1053,7 +1068,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           log(`RUN ${id}`);
           const started = Date.now();
           const claude = await runClaude({
-            cwd: runDir,
+            cwd: workDir,
             prompt,
             model: options.model,
             effort,
@@ -1066,14 +1081,35 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           await writeFile(path.join(runDir, "claude.stderr.log"), claude.stderr);
 
           const parsed = parseClaudeResult(claude.stdout);
-          const projectDir = await findProjectDir(runDir, projectName);
+          const generatedDir = await findProjectDir(workDir, projectName);
           const validation = options.skipValidation
-            ? { projectExists: projectDir !== null, steps: {} }
-            : await validateProject(spec, projectDir, options);
-          const scored = projectDir
-            ? await scoreProject(spec, projectDir)
+            ? { projectExists: generatedDir !== null, steps: {} }
+            : await validateProject(spec, generatedDir, options);
+          const scored = generatedDir
+            ? await scoreProject(spec, generatedDir)
             : { artifact: emptyArtifactScore(spec), faithfulness: undefined };
-          const toolCompliance = await scoreToolCompliance(pathMode, projectDir, claude);
+          const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
+
+          // Archive the generated source under the grading tree, then drop the
+          // isolated workspace, so run artifacts stay durable without leaving
+          // the answer key reachable from the agent's working directory.
+          let projectDir = generatedDir;
+          if (generatedDir) {
+            const archivedDir = path.join(runDir, projectName);
+            try {
+              await archiveProjectSource(generatedDir, archivedDir);
+              projectDir = archivedDir;
+            } catch (error) {
+              log(
+                `WARN archive failed for ${id}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+            }
+          }
+          if (!generatedDir || projectDir !== generatedDir) {
+            await rm(workDir, { recursive: true, force: true }).catch(() => {});
+          }
           const result: RunResult = {
             id,
             specId: spec.id,
@@ -1248,6 +1284,7 @@ export async function runCommand(
   let stdout = "";
   let stderr = "";
   let timedOut = false;
+  let spawnError = false;
   const timer = setTimeout(() => {
     timedOut = true;
     child.kill("SIGTERM");
@@ -1270,6 +1307,7 @@ export async function runCommand(
     };
 
     child.on("error", (error) => {
+      spawnError = true;
       stderr += `${stderr ? "\n" : ""}${error.name}: ${error.message}`;
       finish(127);
     });
@@ -1281,6 +1319,7 @@ export async function runCommand(
     command: [command, ...args].map(quoteArg).join(" "),
     exitCode,
     timedOut,
+    spawnError,
     durationMs: Date.now() - started,
     stdout,
     stderr,
@@ -1323,6 +1362,30 @@ async function findProjectDir(runDir: string, projectName: string) {
   const dirs = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith("."));
   if (dirs.length === 1) return path.join(runDir, dirs[0].name);
   return null;
+}
+
+/** Copy the generated project source (excluding heavy build/dependency dirs)
+ * from the isolated workspace into the durable grading tree. */
+async function archiveProjectSource(srcDir: string, destDir: string) {
+  const skip = new Set([
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".next",
+    ".turbo",
+    "coverage",
+    "target",
+    ".venv",
+    "bin",
+    "obj",
+  ]);
+  await rm(destDir, { recursive: true, force: true });
+  await cp(srcDir, destDir, {
+    recursive: true,
+    force: true,
+    filter: (source) => !skip.has(path.basename(source)),
+  });
 }
 
 async function validateProject(
@@ -2024,7 +2087,7 @@ function isInfraInconclusive(result: RunResult): boolean {
   for (const step of Object.values(result.validation.steps)) {
     if (!step) continue;
     if (step.timedOut) return true;
-    if (step.exitCode === 127) return true; // missing toolchain binary
+    if (step.spawnError) return true; // validator binary itself could not be spawned
   }
   return false;
 }
@@ -2053,10 +2116,11 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
   for (const [name, step] of Object.entries(result.validation.steps)) {
     if (!step || (step.exitCode === 0 && !step.timedOut)) continue;
     tags.add("validation-failed");
-    if (step.exitCode === 127) {
-      // Missing toolchain binary (e.g. cargo/uv/go/dotnet not on PATH): an
-      // environment problem, not a model-authored build break. Tag it as such
-      // and skip the step-specific failure tags below.
+    if (step.spawnError) {
+      // The validator binary itself could not be spawned (e.g. cargo/uv/go/dotnet
+      // not on PATH): an environment problem, not a model-authored break. A child
+      // process that ran and exited 127 (e.g. a generated `bun run build` whose
+      // script references a missing bin) is NOT this — it falls through below.
       tags.add("toolchain-missing");
       continue;
     }
