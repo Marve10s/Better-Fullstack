@@ -165,6 +165,14 @@ CI job across all five ecosystems — it does not block per-PR checks. Run a
 single ecosystem locally with
 `SCAFFBENCH_SOLVABILITY_SPECS=<id> bun run scaffbench:solvability`.
 
+Build dependencies beyond the language toolchain: `rust-leptos-axum` uses
+Tonic/gRPC, whose build script compiles `.proto` files with `protoc` at
+`cargo check` time, so `protobuf-compiler` must be installed (the CI job does
+this). The first full CI run validated `ai-search-workbench`, `python-ingestion-api`,
+`go-realtime-api`, and `multi-dotnet-ops`; `rust-leptos-axum` surfaced the missing
+`protoc` build dependency — exactly the kind of environment gap this gate exists
+to catch.
+
 ## Notes
 
 - `--route-check` is implemented as an opt-in lane only. Do not use it for default runs unless the

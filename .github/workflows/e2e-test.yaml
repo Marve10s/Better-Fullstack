@@ -372,12 +372,18 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Install protoc
+        # The rust-leptos-axum spec uses Tonic/gRPC, whose prost build script
+        # compiles .proto files with protoc at `cargo check` time.
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
       - name: Show toolchains
         run: |
           echo "cargo:  $(cargo --version 2>&1 || echo MISSING)"
           echo "go:     $(go version 2>&1 || echo MISSING)"
           echo "uv:     $(uv --version 2>&1 || echo MISSING)"
           echo "dotnet: $(dotnet --version 2>&1 || echo MISSING)"
+          echo "protoc: $(protoc --version 2>&1 || echo MISSING)"
 
       - uses: actions/cache@v4
         with:
