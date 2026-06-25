@@ -2045,7 +2045,10 @@ function acceptancePatternMatch(
   if (pattern.startsWith(".")) {
     return files.some((file) => file === pattern || file.includes(`${pattern}/`));
   }
-  return deps.some((dep) => dep === pattern || dep.startsWith(`${pattern}/`));
+  // A pattern already ending in "/" is an explicit scope prefix (e.g. "@auth/"
+  // → "@auth/core"); don't append a second slash.
+  const prefix = pattern.endsWith("/") ? pattern : `${pattern}/`;
+  return deps.some((dep) => dep === pattern || dep.startsWith(prefix));
 }
 
 export function scoreBts(spec: BenchmarkSpec, raw: string): StackScore {
