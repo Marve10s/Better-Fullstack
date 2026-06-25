@@ -649,3 +649,56 @@ describe("ScaffBench 2.1 composite index", () => {
     expect(board[0]?.index ?? 0).toBeGreaterThan(board[1]?.index ?? 0);
   });
 });
+
+describe("ScaffBench 2.1 discovery lane", () => {
+  const rustSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "rust-leptos-axum")!;
+
+  it("drops the library names in the natural lane for specs with acceptance sets", () => {
+    const naturalAi = promptFor(aiSpec, "prompt", "/tmp/run", "wb", "natural");
+    const explicitAi = promptFor(aiSpec, "prompt", "/tmp/run", "wb", "explicit");
+    const naturalRust = promptFor(rustSpec, "prompt", "/tmp/run", "wb", "natural");
+
+    // ai-search has acceptance sets → discovery lane omits the scoring rule + names
+    expect(naturalAi).not.toContain("Important scoring rule");
+    expect(naturalAi).not.toContain("Qdrant");
+    // explicit lane still names the required libraries
+    expect(explicitAi).toContain("Important scoring rule");
+    // rust has no acceptance sets yet → it is NOT a discovery spec, notes stay
+    expect(naturalRust).toContain("Important scoring rule");
+  });
+
+  it("credits an accepted alternative library (pgvector for semantic search)", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-accept-"));
+    try {
+      await writeFile(
+        join(dir, "package.json"),
+        JSON.stringify({
+          dependencies: {
+            next: "*",
+            hono: "*",
+            "drizzle-orm": "*",
+            "better-auth": "*",
+            ai: "*",
+            pgvector: "*", // alternative to the canonical qdrant
+            meilisearch: "*", // alternative to the canonical opensearch
+            bullmq: "*", // alternative to the canonical inngest
+            pino: "*",
+            vitest: "*",
+            i18next: "*",
+          },
+        }),
+      );
+      await mkdir(join(dir, ".github", "workflows"), { recursive: true });
+      await writeFile(join(dir, ".github", "workflows", "ci.yml"), "name: ci");
+
+      const { acceptance } = await scoreProject(aiSpec, dir, "natural");
+      expect(acceptance).toMatchObject({ matched: 12, total: 12 });
+
+      // explicit lane returns no acceptance score (strict markers only)
+      const explicit = await scoreProject(aiSpec, dir, "explicit");
+      expect(explicit.acceptance).toBeUndefined();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});

@@ -54,6 +54,12 @@ export type BenchmarkSpec = {
   expectedParts?: readonly string[];
   expectedAddons?: readonly string[];
   strictMarkers: readonly StrictMarker[];
+  /** Discovery-lane scoring: each capability maps to the set of libraries that
+   * acceptably satisfy it (dep keys or source/text patterns). In the natural
+   * prompt style a capability counts as satisfied if ANY accepted library is
+   * wired, so a reasonable alternative (pgvector for semantic search) is not
+   * penalised the way the strict canonical markers would. */
+  acceptanceSets?: Record<string, readonly string[]>;
   validationProfile: {
     packageManager?: "bun";
     native?: readonly ("cargo" | "dotnet" | "go" | "python")[];
@@ -141,6 +147,8 @@ export type RunResult = {
   stackScore: StackScore;
   /** Assisted-path diagnostic: whether bts.jsonc echoes the requested stack. */
   generatorFaithfulness?: StackScore;
+  /** Discovery-lane (natural prompt) capability-satisfaction score. */
+  acceptanceScore?: StackScore;
   toolCompliance: ToolCompliance;
   failureTags: FailureTag[];
 };
@@ -188,6 +196,7 @@ type SummaryAggregate = {
   passAllSpecs: number;
   stackPercent: number;
   faithfulnessPercent?: number;
+  acceptancePercent?: number;
   commandDisciplinePercent: number;
   /** Single 0-100 composite (the rankable headline), weighted toward the least
    * saturated signal — see SCAFFBENCH_INDEX_WEIGHTS. */
@@ -463,6 +472,40 @@ export const SCAFFBENCH_2_1_SPECS: readonly BenchmarkSpec[] = [
       { id: "forbidden:payments", forbiddenDeps: ["stripe", "@stripe/stripe-js", "polar-sh"] },
       { id: "forbidden:email", forbiddenDeps: ["resend", "nodemailer", "@react-email/components"] },
     ],
+    acceptanceSets: {
+      "web-framework": ["@tanstack/react-router", "next", "react-router", "@remix-run", "vite"],
+      backend: ["hono", "express", "fastify", "elysia", "@nestjs/core"],
+      "relational-db": ["drizzle-orm", "@prisma/client", "kysely", "typeorm", "sequelize"],
+      auth: ["better-auth", "lucia", "@clerk", "next-auth", "@auth/", "@workos-inc"],
+      ai: ["ai", "@ai-sdk", "openai", "@anthropic-ai", "langchain"],
+      "semantic-search": [
+        "@qdrant/js-client-rest",
+        "pgvector",
+        "weaviate-ts-client",
+        "@pinecone-database/pinecone",
+        "chromadb",
+        "@zilliz/milvus2-sdk-node",
+      ],
+      "full-text-search": [
+        "@opensearch-project/opensearch",
+        "@elastic/elasticsearch",
+        "meilisearch",
+        "typesense",
+        "algoliasearch",
+      ],
+      "background-jobs": [
+        "inngest",
+        "bullmq",
+        "@trigger.dev",
+        "graphile-worker",
+        "pg-boss",
+        "bee-queue",
+      ],
+      observability: ["@opentelemetry/api", "pino", "winston", "@sentry", "@logtail"],
+      testing: ["vitest", "jest", "@playwright/test", "cypress"],
+      i18n: ["@inlang/paraglide-js", "next-intl", "i18next", "react-i18next", "lingui"],
+      ci: [".github/workflows", ".gitlab-ci.yml", "circleci"],
+    },
     validationProfile: {
       packageManager: "bun",
       qualityGate: true,
@@ -1015,6 +1058,17 @@ export function promptFor(
 Requirements:
 ${spec.requirements.map((requirement) => `- ${requirement}`).join("\n")}`;
 
+  // Discovery lane: when the spec has curated acceptance sets, the natural prompt
+  // does NOT name the required libraries — the agent must infer them from the
+  // described capabilities, and scoring credits any accepted alternative.
+  const discoveryLane = promptStyle === "natural" && spec.acceptanceSets !== undefined;
+  const libraryGuidance = discoveryLane
+    ? ""
+    : `
+
+Important scoring rule: choosing the right library matters.
+${spec.rightLibraryNotes.map((note) => `- ${note}`).join("\n")}`;
+
   const base = `You are running in an empty benchmark workspace:
 ${runDir}
 
@@ -1022,10 +1076,7 @@ Create exactly one project directory named \`${projectName}\`.
 Do not ask questions. Do not start a dev server. Do not write outside the current working directory.
 At the end, report the commands you ran and any errors you hit.
 
-${body}
-
-Important scoring rule: choosing the right library matters.
-${spec.rightLibraryNotes.map((note) => `- ${note}`).join("\n")}`;
+${body}${libraryGuidance}`;
 
   if (pathMode === "prompt") {
     return `${base}
@@ -1134,7 +1185,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
             ? { projectExists: generatedDir !== null, steps: {} }
             : await validateProject(spec, generatedDir, options);
           const scored = generatedDir
-            ? await scoreProject(spec, generatedDir)
+            ? await scoreProject(spec, generatedDir, options.promptStyle)
             : { artifact: emptyArtifactScore(spec), faithfulness: undefined };
           const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
 
@@ -1184,6 +1235,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
             validation,
             stackScore: scored.artifact,
             generatorFaithfulness: scored.faithfulness,
+            acceptanceScore: scored.acceptance,
             toolCompliance,
             failureTags: [],
           };
@@ -1805,13 +1857,39 @@ export async function scoreArtifact(spec: BenchmarkSpec, projectDir: string): Pr
 export async function scoreProject(
   spec: BenchmarkSpec,
   projectDir: string,
-): Promise<{ artifact: StackScore; faithfulness?: StackScore }> {
-  const artifact = await scoreArtifact(spec, projectDir);
+  promptStyle: PromptStyle = "explicit",
+): Promise<{ artifact: StackScore; faithfulness?: StackScore; acceptance?: StackScore }> {
+  const index = await collectProjectIndex(projectDir);
+  const artifact = scoreMarkers(spec, index);
   const btsPath = path.join(projectDir, "bts.jsonc");
   const faithfulness = existsSync(btsPath)
     ? scoreBts(spec, await readFile(btsPath, "utf8"))
     : undefined;
-  return { artifact, faithfulness };
+  // Discovery lane only: how many capabilities are satisfied by ANY accepted
+  // library, so reasonable alternatives are credited (vs. the strict markers).
+  const acceptance =
+    promptStyle === "natural" && spec.acceptanceSets
+      ? scoreAcceptance(spec.acceptanceSets, index)
+      : undefined;
+  return { artifact, faithfulness, acceptance };
+}
+
+function scoreAcceptance(
+  acceptanceSets: Record<string, readonly string[]>,
+  index: ProjectIndex,
+): StackScore {
+  const haystack = `${index.allText}\n${[...index.files].join("\n")}`;
+  const capabilities = Object.entries(acceptanceSets);
+  const misses: string[] = [];
+  let matched = 0;
+  for (const [capability, accepted] of capabilities) {
+    const satisfied = accepted.some(
+      (pattern) => index.dependencies.has(pattern) || haystack.includes(pattern),
+    );
+    if (satisfied) matched += 1;
+    else misses.push(capability);
+  }
+  return scoreFromCounts(matched, capabilities.length, misses);
 }
 
 export function scoreBts(spec: BenchmarkSpec, raw: string): StackScore {
@@ -2299,6 +2377,7 @@ function aggregateBy(
         faithfulnessPercent: maybeAverage(
           group.map((result) => result.generatorFaithfulness?.percent),
         ),
+        acceptancePercent: maybeAverage(group.map((result) => result.acceptanceScore?.percent)),
         commandDisciplinePercent,
         index,
         avgDurationMs: average(durations),
@@ -2415,6 +2494,9 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         result.generatorFaithfulness
           ? `${result.generatorFaithfulness.matched}/${result.generatorFaithfulness.total}`
           : "—",
+        result.acceptanceScore
+          ? `${result.acceptanceScore.matched}/${result.acceptanceScore.total}`
+          : "—",
         result.validation.install?.exitCode ?? "",
         result.validation.build?.exitCode ?? "",
         result.validation.checkTypes?.exitCode ?? "",
@@ -2442,6 +2524,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
           : `n<${MIN_CI_RUNS}`,
         `${aggregate.stackPercent}%`,
         aggregate.faithfulnessPercent != null ? `${aggregate.faithfulnessPercent}%` : "—",
+        aggregate.acceptancePercent != null ? `${aggregate.acceptancePercent}%` : "—",
         `${aggregate.commandDisciplinePercent}%`,
         `${formatSeconds(aggregate.medianDurationMs)} / ${formatSeconds(aggregate.p95DurationMs)}`,
         aggregate.avgOutputTokens ?? "",
@@ -2479,14 +2562,14 @@ ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.validation * 100)}% macro validation + ${M
 weighted toward the least saturated signal. Latency is median / p95 (wall-clock
 moves with provider load, so the mean alone is misleading over small samples).
 
-| Model | Effort | Effective reasoning | Path | Index | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Model | Effort | Effective reasoning | Path | Index | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs
 
-| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Wired % | Wired | Faithful | Install | Build | Typecheck | Lint | Test |
-| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Wired % | Wired | Faithful | Acceptance | Install | Build | Typecheck | Lint | Test |
+| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${rows}
 `;
 }
