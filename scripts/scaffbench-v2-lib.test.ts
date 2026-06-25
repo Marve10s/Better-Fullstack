@@ -462,3 +462,50 @@ describe("ScaffBench 2.1 run outcomes", () => {
     });
   });
 });
+
+describe("ScaffBench 2.1 statistical reporting", () => {
+  const passing = () => ({
+    projectExists: true,
+    steps: {
+      install: { command: "bun install", exitCode: 0, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+    },
+  });
+  const failing = () => ({
+    projectExists: true,
+    steps: {
+      build: { command: "bun run build", exitCode: 1, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+    },
+  });
+
+  it("macro-averages per spec and reports pass@k / pass^k instead of one pooled binomial", () => {
+    const runs = [
+      makeRun({ id: "a1", specId: "spec-a", trial: 1, validation: passing() }),
+      makeRun({ id: "a2", specId: "spec-a", trial: 2, validation: passing() }),
+      makeRun({ id: "b1", specId: "spec-b", trial: 1, validation: passing() }),
+      makeRun({ id: "b2", specId: "spec-b", trial: 2, validation: failing() }),
+    ];
+
+    const [cell] = aggregateResults(runs).leaderboard;
+
+    expect(cell).toMatchObject({
+      scoredRuns: 4,
+      passCount: 3,
+      passRate: 75, // pooled
+      macroPassRate: 75, // mean of per-spec rates (100 + 50) / 2
+      specCount: 2,
+      passAnySpecs: 2, // both specs pass at least once (pass@k)
+      passAllSpecs: 1, // only spec-a passes every repeat (pass^k)
+      ciReportable: false, // 4 < MIN_CI_RUNS
+    });
+  });
+
+  it("only reports the Wilson CI once a cell reaches the minimum sample size", () => {
+    const runs = Array.from({ length: 8 }, (_, i) =>
+      makeRun({ id: `r${i}`, specId: `spec-${i % 2}`, trial: i, validation: passing() }),
+    );
+
+    const [cell] = aggregateResults(runs).leaderboard;
+
+    expect(cell).toMatchObject({ scoredRuns: 8, ciReportable: true });
+  });
+});
