@@ -26,18 +26,13 @@ import { m } from "@/paraglide/messages.js";
  *   results/gemini-20260612-172309 (June 12; Gemini CLI, Kilo free tier, and
  *   opencode Go models; light-ts spec only, one run per model+path, so pass is
  *   0/100 and times carry parallel-contention noise)
- * - V2 Opus effort/default-flag sweeps: testing/llm-benchmarks/v2/20260624T231632Z
- *   and testing/llm-benchmarks/v2/20260625T085039Z-opus-default (June 24-25,
- *   Claude Code; AI search workbench spec; V2 pass means install + build +
- *   check-types all exit zero)
  * V1 "validation passing" = the original build-pass policy: real install +
  * build, generator-bug failures and lint-only failures excluded — see the
  * ScaffBench blog post scoring policy.
  */
 
-type BenchmarkVersionId = "v1" | "v2";
+type BenchmarkVersionId = "v1";
 type PathId = "mcp" | "cli" | "prompt";
-type ReasoningLevelId = "low" | "medium" | "high" | "xhigh" | "max";
 
 const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
 
@@ -62,11 +57,6 @@ const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = 
 type ModelId =
   | "fable"
   | "opus"
-  | "opusV2Low"
-  | "opusV2Medium"
-  | "opusV2High"
-  | "opus47Default"
-  | "opus46Default"
   | "sonnet"
   | "spark"
   | "gpt54"
@@ -81,14 +71,9 @@ type ModelId =
   | "laguna"
   | "nex";
 
-const MODELS: Record<ModelId, { label: string; short: string; reasoning?: ReasoningLevelId }> = {
+const MODELS: Record<ModelId, { label: string; short: string }> = {
   fable: { label: "Claude Fable 5", short: "Fable" },
   opus: { label: "Claude Opus 4.8", short: "Opus" },
-  opusV2Low: { label: "Claude Opus 4.8", short: "4.8 low", reasoning: "low" },
-  opusV2Medium: { label: "Claude Opus 4.8", short: "4.8 med", reasoning: "medium" },
-  opusV2High: { label: "Claude Opus 4.8", short: "4.8 high", reasoning: "high" },
-  opus47Default: { label: "Claude Opus 4.7", short: "4.7 xhigh", reasoning: "xhigh" },
-  opus46Default: { label: "Claude Opus 4.6", short: "4.6 high", reasoning: "high" },
   sonnet: { label: "Claude Sonnet 4.6", short: "Sonnet" },
   spark: { label: "GPT-5.3 Codex Spark", short: "Spark" },
   gpt54: { label: "GPT-5.4", short: "GPT-5.4" },
@@ -107,11 +92,6 @@ const MODELS: Record<ModelId, { label: string; short: string; reasoning?: Reason
 const MODEL_ORDER: readonly ModelId[] = [
   "fable",
   "opus",
-  "opusV2Low",
-  "opusV2Medium",
-  "opusV2High",
-  "opus47Default",
-  "opus46Default",
   "sonnet",
   "spark",
   "gpt54",
@@ -140,12 +120,6 @@ const MODEL_GROUPS: readonly {
     models: ["fable", "opus", "sonnet"],
   },
   {
-    version: "v2",
-    label: "Claude Code V2",
-    detail: "Jun 24-25 V2 sweeps",
-    models: ["opusV2Low", "opusV2Medium", "opusV2High", "opus47Default", "opus46Default"],
-  },
-  {
     version: "v1",
     label: "Codex CLI",
     detail: "Jun 10 sweep",
@@ -169,16 +143,7 @@ const MODEL_GROUPS: readonly {
 const DEFAULT_MODELS_BY_VERSION: Record<BenchmarkVersionId, readonly ModelId[]> = {
   // Curated default: flagship + fastest model per vendor, prompt-only struggles visible.
   v1: ["sonnet", "spark", "gpt55", "gemini31"],
-  v2: ["opusV2Low", "opusV2Medium", "opusV2High", "opus47Default", "opus46Default"],
 } as const;
-
-const V2_MODELS: readonly ModelId[] = [
-  "opusV2Low",
-  "opusV2Medium",
-  "opusV2High",
-  "opus47Default",
-  "opus46Default",
-] as const;
 
 interface ChartPalette {
   grid: string;
@@ -198,11 +163,6 @@ const CHART_PALETTE: ChartPalette = {
   models: {
     fable: "var(--ch-fable)",
     opus: "var(--ch-opus)",
-    opusV2Low: "var(--ch-opus-v2-low)",
-    opusV2Medium: "var(--ch-opus-v2-medium)",
-    opusV2High: "var(--ch-opus-v2-high)",
-    opus47Default: "var(--ch-opus-v2-47-default)",
-    opus46Default: "var(--ch-opus-v2-46-default)",
     sonnet: "var(--ch-sonnet)",
     spark: "var(--ch-spark)",
     gpt54: "var(--ch-gpt54)",
@@ -222,15 +182,11 @@ const CHART_PALETTE: ChartPalette = {
 const CHART_THEME_VARS = cn(
   "[--ch-grid:#ececec] [--ch-tick:#9c9a93] [--ch-label:#71706a] [--ch-note:#9c9a93] [--ch-stroke:#ffffff]",
   "[--ch-fable:#7ca111] [--ch-opus:#e85d11] [--ch-sonnet:#55534b]",
-  "[--ch-opus-v2-low:#0f766e] [--ch-opus-v2-medium:#7c3aed] [--ch-opus-v2-high:#e11d48]",
-  "[--ch-opus-v2-47-default:#2563eb] [--ch-opus-v2-46-default:#ca8a04]",
   "[--ch-spark:#0d9488] [--ch-gpt54:#4c5fd5] [--ch-gpt55:#c13a6e]",
   "[--ch-gemini31:#2563eb] [--ch-kimi:#9333ea] [--ch-glm51:#b45309] [--ch-minimax:#dc2626] [--ch-qwen:#0e7490]",
   "[--ch-deepseek:#4d7c0f] [--ch-step:#db2777] [--ch-laguna:#0369a1] [--ch-nex:#ca8a04]",
   "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
   "dark:[--ch-fable:#b8d75e] dark:[--ch-opus:#e0894f] dark:[--ch-sonnet:#c9c7bf]",
-  "dark:[--ch-opus-v2-low:#5eead4] dark:[--ch-opus-v2-medium:#c4b5fd] dark:[--ch-opus-v2-high:#fb7185]",
-  "dark:[--ch-opus-v2-47-default:#93c5fd] dark:[--ch-opus-v2-46-default:#facc15]",
   "dark:[--ch-spark:#4fd0c0] dark:[--ch-gpt54:#98a6f2] dark:[--ch-gpt55:#e887ad]",
   "dark:[--ch-gemini31:#82aaf2] dark:[--ch-kimi:#c08ef5] dark:[--ch-glm51:#dba05c] dark:[--ch-minimax:#ee8c8c] dark:[--ch-qwen:#5cc3dd]",
   "dark:[--ch-deepseek:#97c45c] dark:[--ch-step:#ee8fba] dark:[--ch-laguna:#6db6e3] dark:[--ch-nex:#e3b84e]",
@@ -251,163 +207,6 @@ interface ComboPoint {
   /** builds failing, % of included specs */
   error: number;
 }
-
-type ValidationCommandId = "install" | "build" | "types";
-type CommandStatus = "pass" | "fail";
-
-interface CommandStatuses {
-  install: CommandStatus;
-  build: CommandStatus;
-  types: CommandStatus;
-}
-
-interface ComboRunDetails {
-  cost: number;
-  outputTokens: number;
-  stackSelected: number;
-  stackTotal: number;
-  commands: CommandStatuses;
-  runs?: number;
-  passCi95?: readonly [number, number];
-  commandDiscipline?: number;
-  failureTags?: readonly string[];
-}
-
-const COMMAND_LABELS: Record<ValidationCommandId, string> = {
-  install: "Install",
-  build: "Build",
-  types: "Types",
-};
-const VALIDATION_COMMAND_ORDER: readonly ValidationCommandId[] = ["install", "build", "types"];
-
-const PASSING_COMMANDS: CommandStatuses = { install: "pass", build: "pass", types: "pass" };
-const FAIL_BUILD_AND_TYPES: CommandStatuses = {
-  install: "pass",
-  build: "fail",
-  types: "fail",
-};
-const FAIL_TYPES_ONLY: CommandStatuses = { install: "pass", build: "pass", types: "fail" };
-const FAIL_ALL_COMMANDS: CommandStatuses = { install: "fail", build: "fail", types: "fail" };
-const VALIDATION_FAILURES = ["validation-failed"] as const;
-
-const V2_RUN_DETAILS: Record<string, ComboRunDetails> = {
-  "opus-v2-low-mcp": {
-    cost: 1.3,
-    outputTokens: 3741,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-low-cli": {
-    cost: 0.73,
-    outputTokens: 6170,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-low-prompt": {
-    cost: 1.62,
-    outputTokens: 27525,
-    stackSelected: 17,
-    stackTotal: 17,
-    commands: FAIL_BUILD_AND_TYPES,
-    failureTags: ["build-failed", "typecheck-failed", ...VALIDATION_FAILURES],
-  },
-  "opus-v2-medium-mcp": {
-    cost: 1.16,
-    outputTokens: 3373,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-medium-cli": {
-    cost: 0.94,
-    outputTokens: 8710,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-medium-prompt": {
-    cost: 3.33,
-    outputTokens: 37867,
-    stackSelected: 17,
-    stackTotal: 17,
-    commands: FAIL_TYPES_ONLY,
-    failureTags: ["typecheck-failed", ...VALIDATION_FAILURES],
-  },
-  "opus-v2-high-mcp": {
-    cost: 1.18,
-    outputTokens: 4871,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-high-cli": {
-    cost: 0.77,
-    outputTokens: 7112,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-high-prompt": {
-    cost: 6.58,
-    outputTokens: 22314,
-    stackSelected: 17,
-    stackTotal: 17,
-    commands: FAIL_BUILD_AND_TYPES,
-    failureTags: ["build-failed", "typecheck-failed", ...VALIDATION_FAILURES],
-  },
-  "opus-v2-47-default-mcp": {
-    cost: 1.17,
-    outputTokens: 3290,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-47-default-cli": {
-    cost: 0.95,
-    outputTokens: 8203,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-47-default-prompt": {
-    cost: 4.49,
-    outputTokens: 41848,
-    stackSelected: 19,
-    stackTotal: 19,
-    commands: FAIL_ALL_COMMANDS,
-    failureTags: ["install-failed", "build-failed", "typecheck-failed", ...VALIDATION_FAILURES],
-  },
-  "opus-v2-46-default-mcp": {
-    cost: 0.79,
-    outputTokens: 2908,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-46-default-cli": {
-    cost: 0.74,
-    outputTokens: 5568,
-    stackSelected: 24,
-    stackTotal: 24,
-    commands: PASSING_COMMANDS,
-  },
-  "opus-v2-46-default-prompt": {
-    cost: 3.51,
-    outputTokens: 1942,
-    stackSelected: 17,
-    stackTotal: 19,
-    commands: FAIL_ALL_COMMANDS,
-    failureTags: [
-      "install-failed",
-      "build-failed",
-      "typecheck-failed",
-      "stack-mismatch",
-      ...VALIDATION_FAILURES,
-    ],
-  },
-};
 
 const COMBOS: readonly ComboPoint[] = [
   { id: "fable-mcp", model: "fable", path: "mcp", time: 172.6, tokens: 7.6, pass: 100, error: 0 },
@@ -431,144 +230,6 @@ const COMBOS: readonly ComboPoint[] = [
     tokens: 21.5,
     pass: 75,
     error: 25,
-  },
-  // V2 hard-mode sweeps: one AI/search workbench spec per cell. V2 pass means
-  // install + build + check-types all pass, so prompt-only failures stay visible
-  // even when the agent chose the right libraries.
-  {
-    id: "opus-v2-low-mcp",
-    model: "opusV2Low",
-    path: "mcp",
-    time: 81.7,
-    tokens: 3.7,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-low-cli",
-    model: "opusV2Low",
-    path: "cli",
-    time: 134.6,
-    tokens: 6.2,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-low-prompt",
-    model: "opusV2Low",
-    path: "prompt",
-    time: 282.1,
-    tokens: 27.5,
-    pass: 0,
-    error: 100,
-  },
-  {
-    id: "opus-v2-medium-mcp",
-    model: "opusV2Medium",
-    path: "mcp",
-    time: 48.2,
-    tokens: 3.4,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-medium-cli",
-    model: "opusV2Medium",
-    path: "cli",
-    time: 142.9,
-    tokens: 8.7,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-medium-prompt",
-    model: "opusV2Medium",
-    path: "prompt",
-    time: 469.5,
-    tokens: 37.9,
-    pass: 0,
-    error: 100,
-  },
-  {
-    id: "opus-v2-high-mcp",
-    model: "opusV2High",
-    path: "mcp",
-    time: 58.5,
-    tokens: 4.9,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-high-cli",
-    model: "opusV2High",
-    path: "cli",
-    time: 102.3,
-    tokens: 7.1,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-high-prompt",
-    model: "opusV2High",
-    path: "prompt",
-    time: 768.5,
-    tokens: 22.3,
-    pass: 0,
-    error: 100,
-  },
-  {
-    id: "opus-v2-47-default-mcp",
-    model: "opus47Default",
-    path: "mcp",
-    time: 50.2,
-    tokens: 3.3,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-47-default-cli",
-    model: "opus47Default",
-    path: "cli",
-    time: 144.2,
-    tokens: 8.2,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-47-default-prompt",
-    model: "opus47Default",
-    path: "prompt",
-    time: 631.3,
-    tokens: 41.8,
-    pass: 0,
-    error: 100,
-  },
-  {
-    id: "opus-v2-46-default-mcp",
-    model: "opus46Default",
-    path: "mcp",
-    time: 59.4,
-    tokens: 2.9,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-46-default-cli",
-    model: "opus46Default",
-    path: "cli",
-    time: 179.7,
-    tokens: 5.6,
-    pass: 100,
-    error: 0,
-  },
-  {
-    id: "opus-v2-46-default-prompt",
-    model: "opus46Default",
-    path: "prompt",
-    time: 495.2,
-    tokens: 1.9,
-    pass: 0,
-    error: 100,
   },
   { id: "sonnet-mcp", model: "sonnet", path: "mcp", time: 70.3, tokens: 3.9, pass: 100, error: 0 },
   { id: "sonnet-cli", model: "sonnet", path: "cli", time: 98.3, tokens: 4.8, pass: 100, error: 0 },
@@ -892,71 +553,8 @@ function getModelGroupDetail(detail: string): string {
   return detail;
 }
 
-function modelBenchmarkVersion(model: ModelId): BenchmarkVersionId {
-  return V2_MODELS.includes(model) ? "v2" : "v1";
-}
-
-function comboBenchmarkVersion(combo: ComboPoint): BenchmarkVersionId {
-  return modelBenchmarkVersion(combo.model);
-}
-
 function getModelLabel(model: ModelId): string {
-  const metadata = MODELS[model];
-  return metadata.reasoning
-    ? `${metadata.label} · ${metadata.reasoning} reasoning`
-    : metadata.label;
-}
-
-function getRunDetails(combo: ComboPoint): ComboRunDetails | undefined {
-  return V2_RUN_DETAILS[combo.id];
-}
-
-function formatCost(cost: number | undefined): string {
-  return typeof cost === "number" ? `$${cost.toFixed(2)}` : "—";
-}
-
-function formatOutputTokens(combo: ComboPoint, details: ComboRunDetails | undefined): string {
-  const tokens = details ? details.outputTokens / 1000 : combo.tokens;
-  return `${tokens.toFixed(tokens >= 10 ? 0 : 1)}k`;
-}
-
-function formatComboTime(combo: ComboPoint): string {
-  return `${combo.time.toFixed(1)}s`;
-}
-
-function formatStackScore(details: ComboRunDetails | undefined): string {
-  return details ? `${details.stackSelected}/${details.stackTotal}` : "—";
-}
-
-function formatRunCount(details: ComboRunDetails | undefined): string {
-  if (!details) return "—";
-  return `${details.runs ?? 1}`;
-}
-
-function formatPassCi(details: ComboRunDetails | undefined): string {
-  if (!details?.passCi95) return "—";
-  return `${details.passCi95[0]}-${details.passCi95[1]}%`;
-}
-
-function formatCommandDiscipline(details: ComboRunDetails | undefined): string {
-  if (typeof details?.commandDiscipline !== "number") return "—";
-  return `${details.commandDiscipline}%`;
-}
-
-function formatFailureTags(details: ComboRunDetails | undefined): string {
-  if (!details) return "—";
-  if (!details.failureTags?.length) return "none";
-  return details.failureTags.join(", ");
-}
-
-function stackScorePercent(details: ComboRunDetails | undefined): number {
-  return details ? (details.stackSelected / details.stackTotal) * 100 : 0;
-}
-
-function stackBarStyle(details: ComboRunDetails): CSSProperties {
-  return details.stackSelected === details.stackTotal
-    ? FULL_STACK_BAR_STYLE
-    : PARTIAL_STACK_BAR_STYLE;
+  return MODELS[model].label;
 }
 
 function getAxisLabel(key: MetricKey): string {
@@ -1188,7 +786,7 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-const blogPostParams = { _splat: "scaffbench-v2" } as const;
+const blogPostParams = { _splat: "scaffbench" } as const;
 
 export default function LLMBenchmarkSection() {
   return (
@@ -1274,27 +872,18 @@ function ScaffBenchMark({ className }: { className?: string }) {
 }
 
 function BenchmarkChartCard() {
-  const [benchmarkVersion, setBenchmarkVersion] = useState<BenchmarkVersionId>("v2");
+  const benchmarkVersion: BenchmarkVersionId = "v1";
   const [activePath, setActivePath] = useState<PathId>("prompt");
   const [tabId, setTabId] = useState<TabId>("speed");
   const [selectedModels, setSelectedModels] = useState<readonly ModelId[]>(
-    DEFAULT_MODELS_BY_VERSION.v2,
+    DEFAULT_MODELS_BY_VERSION.v1,
   );
   const [hoveredComboId, setHoveredComboId] = useState<string | null>(null);
   const baseTab = CHART_TABS.find((t) => t.id === tabId) ?? CHART_TABS[0];
-  const activeModelOrder = useMemo(
-    () => MODEL_ORDER.filter((model) => modelBenchmarkVersion(model) === benchmarkVersion),
-    [benchmarkVersion],
-  );
   const combos = useMemo(
     () =>
-      COMBOS.filter(
-        (combo) =>
-          comboBenchmarkVersion(combo) === benchmarkVersion &&
-          combo.path === activePath &&
-          selectedModels.includes(combo.model),
-      ),
-    [activePath, benchmarkVersion, selectedModels],
+      COMBOS.filter((combo) => combo.path === activePath && selectedModels.includes(combo.model)),
+    [activePath, selectedModels],
   );
   // Refit value axes to the visible selection so outliers don't crowd the rest.
   const fittedTab = useMemo(
@@ -1303,21 +892,14 @@ function BenchmarkChartCard() {
   );
   const tab = useMemo(() => localizeTab(fittedTab), [fittedTab]);
   const labelPlacements = useMemo(() => computeLabelPlacements(combos, tab), [combos, tab]);
-  const toggleModel = useCallback(
-    (model: ModelId) => {
-      setSelectedModels((prev) =>
-        prev.includes(model)
-          ? prev.length > 1
-            ? prev.filter((m) => m !== model)
-            : prev // keep at least one model selected
-          : activeModelOrder.filter((m) => m === model || prev.includes(m)),
-      );
-    },
-    [activeModelOrder],
-  );
-  const selectBenchmarkVersion = useCallback((version: BenchmarkVersionId) => {
-    setBenchmarkVersion(version);
-    setSelectedModels(DEFAULT_MODELS_BY_VERSION[version]);
+  const toggleModel = useCallback((model: ModelId) => {
+    setSelectedModels((prev) =>
+      prev.includes(model)
+        ? prev.length > 1
+          ? prev.filter((m) => m !== model)
+          : prev // keep at least one model selected
+        : MODEL_ORDER.filter((m) => m === model || prev.includes(m)),
+    );
   }, []);
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
@@ -1338,7 +920,6 @@ function BenchmarkChartCard() {
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-start justify-between gap-4 px-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <BenchmarkVersionTabs active={benchmarkVersion} onSelect={selectBenchmarkVersion} />
             <PathTabs active={activePath} onSelect={setActivePath} />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2.5">
@@ -1392,7 +973,6 @@ function BenchmarkChartCard() {
       </div>
 
       <CardLegend models={selectedModels} activePath={activePath} />
-      <BenchmarkRunDetailsTable combos={combos} benchmarkVersion={benchmarkVersion} />
     </motion.div>
   );
 }
@@ -1401,64 +981,6 @@ function BenchmarkChartCard() {
 const MODEL_SWATCH_STYLES = Object.fromEntries(
   MODEL_ORDER.map((model) => [model, { backgroundColor: CHART_PALETTE.models[model] }]),
 ) as Record<ModelId, CSSProperties>;
-const FULL_STACK_BAR_STYLE: CSSProperties = { width: "100%" };
-const PARTIAL_STACK_BAR_STYLE: CSSProperties = { width: `${(17 / 19) * 100}%` };
-
-function BenchmarkVersionTabs({
-  active,
-  onSelect,
-}: {
-  active: BenchmarkVersionId;
-  onSelect: (version: BenchmarkVersionId) => void;
-}) {
-  return (
-    <div
-      className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
-      role="tablist"
-      aria-label="ScaffBench version"
-    >
-      {(["v1", "v2"] as const).map((version) => (
-        <BenchmarkVersionTabButton
-          key={version}
-          version={version}
-          active={active === version}
-          onSelect={onSelect}
-        />
-      ))}
-    </div>
-  );
-}
-
-function BenchmarkVersionTabButton({
-  version,
-  active,
-  onSelect,
-}: {
-  version: BenchmarkVersionId;
-  active: boolean;
-  onSelect: (version: BenchmarkVersionId) => void;
-}) {
-  const handleClick = useCallback(() => {
-    onSelect(version);
-  }, [onSelect, version]);
-
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={handleClick}
-      className={cn(
-        "cursor-pointer border-r border-[#d9d8d2] px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] transition-colors last:border-r-0 dark:border-[rgba(237,235,228,0.14)]",
-        active
-          ? "bg-[#C6E853] text-[#0a0a0a]"
-          : "bg-transparent text-[#71706a] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]",
-      )}
-    >
-      {version}
-    </button>
-  );
-}
 
 function PathTabs({ active, onSelect }: { active: PathId; onSelect: (path: PathId) => void }) {
   return (
@@ -1808,246 +1330,6 @@ function CardLegend({ models, activePath }: { models: readonly ModelId[]; active
         </span>
       </div>
     </div>
-  );
-}
-
-function BenchmarkRunDetailsTable({
-  combos,
-  benchmarkVersion,
-}: {
-  combos: readonly ComboPoint[];
-  benchmarkVersion: BenchmarkVersionId;
-}) {
-  const tableNote =
-    benchmarkVersion === "v2"
-      ? "Right-library score, validation commands, and 2.1 failure taxonomy"
-      : "V1 build-pass view";
-
-  return (
-    <div className="border-t border-[#e1e0d8] bg-[#faf9f5] px-3 py-5 dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] sm:px-6">
-      <div className="mx-auto max-w-[1180px]">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 px-3">
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#1b1a17] dark:text-[#dad8d0]">
-            Run details
-          </h3>
-          <span className="text-xs text-[#71706a] dark:text-[#8f8d84]">{tableNote}</span>
-        </div>
-        <section
-          aria-label="Scrollable ScaffBench run details table"
-          className="overflow-x-auto px-3"
-          tabIndex={0}
-        >
-          <table className="w-full min-w-[1260px] border-collapse">
-            <caption className="sr-only">ScaffBench run details</caption>
-            <thead>
-              <tr className="border-y border-[#e1e0d8] dark:border-[rgba(237,235,228,0.10)]">
-                <TableHeader>Model</TableHeader>
-                <TableHeader>Path</TableHeader>
-                <TableHeader>Validation</TableHeader>
-                <TableHeader align="right">Runs</TableHeader>
-                <TableHeader align="right">CI95</TableHeader>
-                <TableHeader>Right libs</TableHeader>
-                <TableHeader align="right">Discipline</TableHeader>
-                <TableHeader>Commands</TableHeader>
-                <TableHeader>Failures</TableHeader>
-                <TableHeader align="right">Avg cost</TableHeader>
-                <TableHeader align="right">Out tok</TableHeader>
-                <TableHeader align="right">Time</TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {combos.map((combo) => (
-                <BenchmarkRunDetailsRow key={combo.id} combo={combo} />
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function TableHeader({ children, align = "left" }: { children: string; align?: "left" | "right" }) {
-  return (
-    <th
-      scope="col"
-      className={cn(
-        "px-4 py-3 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#71706a] dark:text-[#8f8d84]",
-        align === "right" ? "text-right" : "text-left",
-      )}
-    >
-      {children}
-    </th>
-  );
-}
-
-function BenchmarkRunDetailsRow({ combo }: { combo: ComboPoint }) {
-  const details = getRunDetails(combo);
-
-  return (
-    <tr className="border-b border-[#ecebe6] last:border-b-0 dark:border-[rgba(237,235,228,0.08)]">
-      <td aria-label={getModelLabel(combo.model)} className="px-4 py-3 align-middle">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span
-            aria-hidden
-            className="size-2.5 shrink-0 rounded-[2px]"
-            style={MODEL_SWATCH_STYLES[combo.model]}
-          />
-          <span className="min-w-0 text-sm font-semibold text-[#1b1a17] dark:text-[#dad8d0]">
-            {getModelLabel(combo.model)}
-          </span>
-        </div>
-      </td>
-      <td className="px-4 py-3 align-middle">
-        <span className="font-mono text-xs font-semibold text-[#55534b] dark:text-[#c9c7bf]">
-          {getPathShort(combo.path)}
-        </span>
-      </td>
-      <td className="px-4 py-3 align-middle">
-        <ValidationScoreCell combo={combo} />
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-[#55534b] dark:text-[#c9c7bf]">
-        {formatRunCount(details)}
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-xs text-[#71706a] dark:text-[#8f8d84]">
-        {formatPassCi(details)}
-      </td>
-      <td className="px-4 py-3 align-middle">
-        <RightLibrariesCell details={details} />
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-[#55534b] dark:text-[#c9c7bf]">
-        {formatCommandDiscipline(details)}
-      </td>
-      <td className="px-4 py-3 align-middle">
-        <CommandStatusGroup details={details} />
-      </td>
-      <td className="max-w-[260px] px-4 py-3 align-middle">
-        <FailureTagsCell details={details} />
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-[#55534b] dark:text-[#c9c7bf]">
-        {formatCost(details?.cost)}
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-[#55534b] dark:text-[#c9c7bf]">
-        {formatOutputTokens(combo, details)}
-      </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-[#55534b] dark:text-[#c9c7bf]">
-        {formatComboTime(combo)}
-      </td>
-    </tr>
-  );
-}
-
-function ValidationScoreCell({ combo }: { combo: ComboPoint }) {
-  if (comboBenchmarkVersion(combo) === "v1") {
-    return (
-      <span className="font-mono text-sm font-semibold text-[#55534b] dark:text-[#c9c7bf]">
-        {combo.pass}%
-      </span>
-    );
-  }
-
-  const passed = combo.pass === 100;
-
-  return (
-    <div className="flex items-center gap-2">
-      <span
-        className={cn(
-          "inline-flex min-w-12 justify-center rounded-sm border px-2 py-1 font-mono text-[10px] font-semibold uppercase leading-none",
-          passed
-            ? "border-[#91b92e] bg-[#c6e8532e] text-[#3f5b00] dark:border-[#c6e85366] dark:text-[#d9f56b]"
-            : "border-[#e85d7a55] bg-[#e85d7a14] text-[#b42345] dark:border-[#fb718566] dark:text-[#fb7185]",
-        )}
-      >
-        {passed ? "pass" : "fail"}
-      </span>
-      <span className="font-mono text-xs text-[#71706a] dark:text-[#8f8d84]">{combo.pass}%</span>
-    </div>
-  );
-}
-
-function FailureTagsCell({ details }: { details: ComboRunDetails | undefined }) {
-  const label = formatFailureTags(details);
-  const failed = Boolean(details?.failureTags?.length);
-
-  return (
-    <span
-      className={cn(
-        "block truncate font-mono text-[10px] font-semibold uppercase tracking-[0.08em]",
-        failed ? "text-[#b42345] dark:text-[#fb7185]" : "text-[#71706a] dark:text-[#8f8d84]",
-      )}
-      title={label}
-    >
-      {label}
-    </span>
-  );
-}
-
-function RightLibrariesCell({ details }: { details: ComboRunDetails | undefined }) {
-  if (!details) {
-    return <span className="font-mono text-xs text-[#71706a] dark:text-[#8f8d84]">—</span>;
-  }
-
-  const percent = stackScorePercent(details);
-
-  return (
-    <div className="flex min-w-[150px] items-center gap-3">
-      <meter
-        aria-label="Right library score"
-        className="sr-only"
-        min={0}
-        max={100}
-        value={percent}
-      />
-      <div
-        aria-hidden
-        className="h-1.5 w-24 overflow-hidden rounded-full bg-[#ecebe6] dark:bg-[rgba(237,235,228,0.10)]"
-      >
-        <div
-          className={cn(
-            "h-full rounded-full",
-            details.stackSelected === details.stackTotal ? "bg-[#C6E853]" : "bg-[#fb7185]",
-          )}
-          style={stackBarStyle(details)}
-        />
-      </div>
-      <span className="font-mono text-xs font-semibold text-[#55534b] dark:text-[#c9c7bf]">
-        {formatStackScore(details)}
-      </span>
-    </div>
-  );
-}
-
-function CommandStatusGroup({ details }: { details: ComboRunDetails | undefined }) {
-  if (!details) {
-    return <span className="text-xs text-[#71706a] dark:text-[#8f8d84]">install + build</span>;
-  }
-
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {VALIDATION_COMMAND_ORDER.map((command) => (
-        <CommandStatusPill
-          key={command}
-          label={COMMAND_LABELS[command]}
-          status={details.commands[command]}
-        />
-      ))}
-    </div>
-  );
-}
-
-function CommandStatusPill({ label, status }: { label: string; status: CommandStatus }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono text-[10px] font-semibold leading-none",
-        status === "pass"
-          ? "border-[#91b92e66] bg-[#c6e8531f] text-[#3f5b00] dark:border-[#c6e85355] dark:text-[#d9f56b]"
-          : "border-[#e85d7a55] bg-[#e85d7a14] text-[#b42345] dark:border-[#fb718566] dark:text-[#fb7185]",
-      )}
-    >
-      <span>{label}</span>
-      <span className="uppercase">{status}</span>
-    </span>
   );
 }
 

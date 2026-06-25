@@ -4,14 +4,14 @@ import { join } from "node:path";
 
 import {
   parseArgs,
-  SCAFFBENCH_2_1_SPECS,
+  SCAFFBENCH_2_SPECS,
   validateProject,
   type BenchmarkSpec,
 } from "../../../../scripts/scaffbench-v2-lib";
 import { scaffoldWithCLIBinary } from "./e2e-utils";
 
 /**
- * ScaffBench 2.1 per-spec solvability gate.
+ * ScaffBench 2 per-spec solvability gate.
  *
  * For each benchmark spec, scaffold a project from the spec's OWN canonical
  * flags (not a hand-maintained preset that can drift) and assert the expected
@@ -51,10 +51,10 @@ function selectSpecs(): BenchmarkSpec[] {
   const filter = process.env.SCAFFBENCH_SOLVABILITY_SPECS?.split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  return SCAFFBENCH_2_1_SPECS.filter((spec) => !filter?.length || filter.includes(spec.id));
+  return SCAFFBENCH_2_SPECS.filter((spec) => !filter?.length || filter.includes(spec.id));
 }
 
-describe("ScaffBench 2.1 spec solvability", () => {
+describe("ScaffBench 2 spec solvability", () => {
   beforeAll(async () => {
     await rm(SMOKE_DIR, { recursive: true, force: true });
     await mkdir(SMOKE_DIR, { recursive: true });
