@@ -151,6 +151,12 @@ The harness emits stable failure tags:
 - **CLI prompt no longer embeds the canonical command.** The agent must map requirements to flags
   itself; the full flag list is retained only in `canonical-command.txt`/`spec.json` for grading, so
   the CLI lane measures requirement→flag mapping rather than copy-fidelity.
+- **Discovery lane (natural prompt + acceptance sets).** For specs with curated `acceptanceSets`,
+  the natural prompt style does NOT name the required libraries — the agent infers them from the
+  described capabilities, and scoring credits any accepted alternative (e.g. semantic search ∈
+  {qdrant, pgvector, weaviate, …}) via an `Acceptance` (capability-satisfaction) column shown
+  alongside the strict canonical `Wired` score. `ai-search-workbench` is curated; the other specs
+  keep their explicit notes in the natural lane until their acceptance sets are added.
 - **Agents run in an isolated workspace.** The agent's working directory is a temp dir disjoint from
   the grading tree, so the answer key (`canonical-command.txt`, `spec.json`, `summary.json`, sibling
   runs) is unreadable from the agent cwd via path traversal. The generated source is archived back
