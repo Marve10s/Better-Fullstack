@@ -31,6 +31,9 @@ export type VerifyOptions = {
   devCheck?: boolean;
   strict?: boolean;
   routeCheck?: boolean;
+  qualityGate?: boolean;
+  doctorCheck?: boolean;
+  doctorCliPath?: string;
   outputDir?: string;
   config?: ProjectConfig;
 };
@@ -165,13 +168,18 @@ function getTypeScriptInstallTimeoutMs(config?: ProjectConfig): number {
 }
 
 function hasPackageScript(projectDir: string, scriptName: string): boolean {
+  return getPackageScript(projectDir, scriptName) !== null;
+}
+
+function getPackageScript(projectDir: string, scriptName: string): string | null {
   try {
     const pkgPath = join(projectDir, "package.json");
-    if (!existsSync(pkgPath)) return false;
+    if (!existsSync(pkgPath)) return null;
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-    return Boolean(pkg.scripts?.[scriptName]);
+    const script = pkg.scripts?.[scriptName];
+    return typeof script === "string" && script.length > 0 ? script : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -224,6 +232,45 @@ async function runAdvisoryStep(
 ): Promise<StepResult> {
   const result = await runStep(step, command, args, cwd, options);
   return { ...result, advisory: true };
+}
+
+async function runMaybeAdvisoryStep(
+  step: string,
+  command: string,
+  args: string[],
+  cwd: string,
+  advisory: boolean,
+  options?: RunStepOptions,
+): Promise<StepResult> {
+  const result = await runStep(step, command, args, cwd, options);
+  return advisory ? { ...result, advisory: true } : result;
+}
+
+async function runTypeScriptQualityGate(
+  projectDir: string,
+  blocking: boolean,
+): Promise<StepResult[]> {
+  const steps: StepResult[] = [];
+
+  if (hasPackageScript(projectDir, "lint")) {
+    steps.push(await runMaybeAdvisoryStep("lint", "bun", ["run", "lint"], projectDir, !blocking));
+  } else {
+    steps.push(skippedStep("lint"));
+  }
+
+  if (!blocking) {
+    return steps;
+  }
+
+  if (hasPackageScript(projectDir, "format")) {
+    steps.push(await runStep("format", "bun", ["run", "format"], projectDir));
+  } else if (hasPackageScript(projectDir, "check")) {
+    steps.push(await runStep("check", "bun", ["run", "check"], projectDir));
+  } else {
+    steps.push(skippedStep("format"));
+  }
+
+  return steps;
 }
 
 export async function verifyTypeScript(
@@ -299,11 +346,7 @@ export async function verifyTypeScript(
     steps.push(skippedStep("build"));
   }
 
-  if (hasPackageScript(projectDir, "lint")) {
-    steps.push(await runAdvisoryStep("lint", "bun", ["run", "lint"], projectDir));
-  } else {
-    steps.push(skippedStep("lint"));
-  }
+  steps.push(...(await runTypeScriptQualityGate(projectDir, Boolean(options?.qualityGate))));
 
   const typecheckScript = hasPackageScript(projectDir, "check-types")
     ? "check-types"
@@ -317,6 +360,21 @@ export async function verifyTypeScript(
     steps.push(await runStep("typecheck", "bun", ["run", typecheckScript], projectDir));
   } else {
     steps.push(skippedStep("typecheck"));
+  }
+
+  if (options?.doctorCheck) {
+    if (options.doctorCliPath) {
+      steps.push(
+        await runStep(
+          "doctor",
+          "node",
+          [options.doctorCliPath, "doctor", projectDir, "--json"],
+          projectDir,
+        ),
+      );
+    } else {
+      steps.push(templateFailure("doctor", "Missing CLI path for generated project doctor check"));
+    }
   }
 
   return wrapResult("typescript", comboName, projectDir, steps);
@@ -510,10 +568,7 @@ export async function verifyElixir(
   return wrapResult("elixir", comboName, projectDir, steps);
 }
 
-export async function verifyDotnet(
-  comboName: string,
-  projectDir: string,
-): Promise<VerifyResult> {
+export async function verifyDotnet(comboName: string, projectDir: string): Promise<VerifyResult> {
   const steps: StepResult[] = [];
 
   const entries = await readdir(projectDir, { withFileTypes: true });

@@ -27,6 +27,7 @@ Task planning documents are organized by state:
 - `docs/plans/planned/new-ecosystems.md` - future language ecosystems after Java and Elixir
 - `docs/plans/planned/elixir-ecosystem.md` - Elixir/Phoenix foundation status plus remaining follow-ups
 - `docs/plans/planned/dotnet-ecosystem.md` - .NET/ASP.NET plan
+- `docs/plans/planned/scaffbench-2.1-readiness.md` - ScaffBench 2.1 suite, run commands, scoring signals, and output contract
 
 ## Completed
 

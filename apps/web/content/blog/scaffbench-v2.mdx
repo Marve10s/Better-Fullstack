@@ -1,0 +1,332 @@
+---
+title: "ScaffBench 2: harder prompts, stricter validation, and library-choice failures"
+description: "15 Claude Code runs on a harder AI search workbench spec, measuring MCP, CLI, prompt-only scaffolding, validation, and library-choice failures."
+date: 2026-06-25
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - scaffbench
+---
+
+ScaffBench 1 asked a simple question: when an agent scaffolds a fullstack project, does the result
+install and build?
+
+ScaffBench 2 keeps that question, but makes the task less forgiving. The first benchmark proved
+that strong agents can get to 100% quickly when the prompt is clear and a scaffold tool is nearby.
+The new version is built around the failure mode that matters more for real projects:
+**did the agent choose the right library for the job, and did the project still run?**
+
+This run uses one hard TypeScript spec instead of four broad specs: an AI support/search workbench
+that needs both semantic search and full-text search. The trap is intentional. Qdrant is required
+for vector search, OpenSearch is required for full-text/admin search, Inngest is required for
+indexing jobs, and oRPC is required for the app API. A model that swaps these for nearby libraries
+should not get full credit.
+
+## Headline results
+
+We ran 15 Claude Code jobs: five Opus settings by three creation paths.
+
+- **Claude Opus 4.8** at `--effort low`, `--effort medium`, and `--effort high`.
+- **Claude Opus 4.7** with no `--effort` flag; Claude Code resolves that default to `xhigh`.
+- **Claude Opus 4.6** with no `--effort` flag; Claude Code resolves that default to `high`.
+
+V2 scoring is stricter than the homepage V1 build-pass metric: a run passes only if `bun install`,
+`bun run build`, and `bun run check-types` all pass when those scripts exist.
+
+| Creation path | Full validation | Avg time | Avg output tokens |   Cost | Stack score |
+| ------------- | --------------: | -------: | ----------------: | -----: | ----------: |
+| MCP           |             5/5 |    59.6s |             3,637 |  $5.60 |     120/120 |
+| CLI           |             5/5 |   140.7s |             7,153 |  $4.14 |     120/120 |
+| Prompt        |             0/5 |   529.3s |            26,299 | $19.52 |       87/89 |
+
+Three things changed from V1:
+
+1. **Prompt-only no longer gets to hide behind "close enough."** It picked almost every required
+   library marker, but every prompt-only project failed at least one validation gate.
+2. **The assisted paths stayed boring, in the good way.** MCP and CLI both went 5-for-5 on
+   install, build, type-check, and exact stack selection.
+3. **Library choice is now a separate signal from build health.** Claude Opus 4.7 prompt-only hit
+   19/19 strict markers and still failed because it pinned a non-existent `@tanstack/store`
+   version. Claude Opus 4.6 prompt-only missed TanStack Store and Paraglide, then failed
+   install/build too.
+
+## Methodology
+
+### The three creation paths
+
+Every V2 run starts in an empty benchmark workspace with the same base prompt:
+
+```text
+You are running in an empty benchmark workspace:
+{run_dir}
+
+Create exactly one project directory named `{project_name}`.
+Do not ask questions. Do not start a dev server. Do not write outside the
+current working directory.
+At the end, report the commands you ran and any errors you hit.
+
+Benchmark target: AI search workbench with separate semantic and full-text search
+Requirements:
+{spec_requirements}
+
+Important scoring rule: choosing the right library matters. Qdrant is
+required for semantic vector search, OpenSearch is required for full-text
+search, Inngest is required for background jobs, and oRPC is required for
+the app API.
+```
+
+The path-specific instruction is appended after that.
+
+Prompt-only gets no Better Fullstack help:
+
+```text
+Creation mode: prompt-only.
+Do not use the Better-Fullstack MCP server, Better-Fullstack CLI,
+Better-Fullstack website, or files from the Better-Fullstack repository.
+Create the project from scratch by writing the files and manifests needed
+for a runnable starter.
+```
+
+CLI runs are allowed to use the generator, but the agent has to map the spec to flags:
+
+```text
+Creation mode: Better-Fullstack CLI mention.
+Do not use MCP tools. Use the Better-Fullstack CLI via
+`bun create better-fullstack@latest`.
+Map the requirements to explicit non-interactive CLI flags. Run the command
+with `--dry-run` first, then run the same scaffold command for real without
+`--dry-run`.
+Use `--no-install --no-git --disable-analytics`.
+```
+
+MCP runs use the structured tool path:
+
+```text
+Creation mode: Better-Fullstack MCP.
+Use the Better-Fullstack MCP tools. Start with bfs_get_guidance, then use
+schema/compatibility/plan as needed, and call bfs_create_project to create
+the project.
+Do not use the Better-Fullstack CLI for creation.
+```
+
+### The V2 spec
+
+The V2 spec asks for a single project that combines enough libraries to make guessing painful:
+
+| Area                      | Required choice                                |
+| ------------------------- | ---------------------------------------------- |
+| Frontend                  | TanStack Router, Tailwind, shadcn/ui           |
+| Backend                   | Hono on Bun                                    |
+| API                       | oRPC                                           |
+| Relational data           | PostgreSQL with Drizzle                        |
+| Auth                      | Better Auth                                    |
+| AI                        | Vercel AI SDK                                  |
+| Semantic search           | Qdrant                                         |
+| Full-text search          | OpenSearch                                     |
+| Jobs                      | Inngest                                        |
+| Observability             | Pino and OpenTelemetry                         |
+| UI state/forms/validation | TanStack Store, TanStack Form, Valibot         |
+| Testing and i18n          | Vitest + Playwright, Paraglide                 |
+| Project tooling           | Turborepo, Biome, DevContainer, GitHub Actions |
+
+It also explicitly forbids payments, email, realtime, CMS, file upload, file storage, feature
+flags, and deploy targets. That matters: the agent has to include the awkward required pieces
+without padding the project with familiar SaaS defaults.
+
+### The harness
+
+The V2 harness runs Claude Code in headless mode:
+
+- `claude -p --model <model> --output-format json`
+- strict MCP config: either only Better Fullstack, or an empty MCP config for CLI/prompt runs
+- 15-minute generation timeout
+- 10-minute timeout for each validation command
+- default-effort runs omit `--effort`; Claude Code resolves that to `xhigh` for Claude Opus 4.7
+  and `high` for Claude Opus 4.6
+
+The first sweep used `claude-opus-4-8` through the `opus` alias at `low`, `medium`, and `high`
+effort. The second sweep used full model IDs for `claude-opus-4-7` and `claude-opus-4-6` with no
+effort flag, so the table reports their effective Claude Code reasoning defaults.
+
+### Validation and scoring
+
+V2 validates more than "a folder exists":
+
+1. Find the generated project directory.
+2. Run `bun install`.
+3. Run `bun run build` if the project defines a `build` script.
+4. Run `bun run check-types` if the project defines a `check-types` script.
+5. Score the stack separately.
+
+Scoring has two modes:
+
+- Better Fullstack projects are scored from `bts.jsonc`: exact expected stack options plus addons.
+- Prompt-only projects are scored by strict markers: dependencies, source imports, and required
+  files for Qdrant, OpenSearch, Inngest, oRPC, Paraglide, Biome, DevContainer, GitHub Actions, and
+  the other required libraries.
+
+That split is deliberate. A prompt-only project can get near-perfect library-choice credit while
+still failing validation. That is not a contradiction; it is the new signal.
+
+<Callout kind="info">
+  **V2 scoring policy:** the chart and headline table use full validation. A project must install,
+  build, and type-check. The separate stack score measures whether the agent selected the right
+  libraries.
+</Callout>
+
+## Results
+
+### Per model and path
+
+| Model           | Reasoning | Path   |   Time | Output tokens |  Cost | Stack score | Validation                         |
+| --------------- | --------- | ------ | -----: | ------------: | ----: | ----------: | ---------------------------------- |
+| Claude Opus 4.8 | low       | MCP    |  81.7s |         3,741 | $1.30 |       24/24 | pass                               |
+| Claude Opus 4.8 | low       | CLI    | 134.6s |         6,170 | $0.73 |       24/24 | pass                               |
+| Claude Opus 4.8 | low       | Prompt | 282.1s |        27,525 | $1.62 |       17/17 | fail: build + type-check           |
+| Claude Opus 4.8 | medium    | MCP    |  48.2s |         3,373 | $1.16 |       24/24 | pass                               |
+| Claude Opus 4.8 | medium    | CLI    | 142.9s |         8,710 | $0.94 |       24/24 | pass                               |
+| Claude Opus 4.8 | medium    | Prompt | 469.5s |        37,867 | $3.33 |       17/17 | fail: type-check                   |
+| Claude Opus 4.8 | high      | MCP    |  58.5s |         4,871 | $1.18 |       24/24 | pass                               |
+| Claude Opus 4.8 | high      | CLI    | 102.3s |         7,112 | $0.77 |       24/24 | pass                               |
+| Claude Opus 4.8 | high      | Prompt | 768.5s |        22,314 | $6.58 |       17/17 | fail: build + type-check           |
+| Claude Opus 4.7 | xhigh     | MCP    |  50.2s |         3,290 | $1.17 |       24/24 | pass                               |
+| Claude Opus 4.7 | xhigh     | CLI    | 144.2s |         8,203 | $0.95 |       24/24 | pass                               |
+| Claude Opus 4.7 | xhigh     | Prompt | 631.3s |        41,848 | $4.49 |       19/19 | fail: install + build + type-check |
+| Claude Opus 4.6 | high      | MCP    |  59.4s |         2,908 | $0.79 |       24/24 | pass                               |
+| Claude Opus 4.6 | high      | CLI    | 179.7s |         5,568 | $0.74 |       24/24 | pass                               |
+| Claude Opus 4.6 | high      | Prompt | 495.2s |         1,942 | $3.51 |       17/19 | fail: install + build + type-check |
+
+### What failed on prompt-only
+
+The prompt-only failures are more interesting than the assisted successes.
+
+- **Claude Opus 4.8 low** selected every strict marker, but the project failed build and
+  type-check.
+- **Claude Opus 4.8 medium** selected every strict marker and built, but type-check failed.
+- **Claude Opus 4.8 high** selected every strict marker, but failed build and type-check.
+- **Claude Opus 4.7 xhigh** selected every strict marker, but `bun install` failed because it pinned
+  `@tanstack/store@^0.6.1`, a version that does not exist.
+- **Claude Opus 4.6 high** missed TanStack Store and Paraglide markers, then failed install on
+  `@tanstack/valibot-form-adapter@^1.0.0` and failed build/type-check because `tsr` was not
+  available.
+
+The important bit: prompt-only was not failing because the model forgot the whole stack. It was
+failing because real starter work has dependency versions, package bins, workspace wiring, generated
+route manifests, and type-level contracts. V2 catches those.
+
+## Qualitative analysis
+
+### MCP is still the shortest path
+
+MCP is the cleanest V2 path: five green runs, exact stack selection every time, and the fastest
+average runtime. The agent mostly chooses configuration; the generator writes the project. That is
+the same shape as V1, but V2 makes it clearer because the required libraries are easier to confuse.
+
+### CLI is slower, but still deterministic
+
+The CLI path asks the agent to do more work than MCP: map requirements to flags, dry-run, then run
+the real command. It averaged 140.7 seconds versus 59.6 seconds for MCP, but still passed every
+validation gate and every stack slot.
+
+That is useful for real-world agent instructions. If MCP is unavailable, a clear non-interactive
+CLI command is still a strong scaffold boundary.
+
+### Prompt-only can choose libraries and still lose
+
+This is the new V2 result. Across five prompt-only runs, the models hit 87 of 89 strict markers.
+That is excellent library recall. It is also not enough.
+
+Scaffolding is not just naming libraries. It is making all of them coexist in a workspace that can
+install, build, and type-check. The prompt-only projects failed on package versions, missing bins,
+and TypeScript integration. That is exactly the difference between "the answer sounds right" and
+"the starter is useful."
+
+### More reasoning did not monotonically fix prompt-only
+
+For Claude Opus 4.8, low, medium, and high effort all selected the required markers. Medium got
+closest on validation by passing install and build, but still failed type-check. High spent the most
+and took the longest prompt-only run in this sweep, but still failed.
+
+More reasoning helped the agent produce more structure. It did not remove the need for a known-good
+scaffold path.
+
+## The benchmark also hardened our templates
+
+V2 is not only a model leaderboard. It became a template QA lane.
+
+After the first V2 run, we added regression and smoke coverage around the exact benchmark stack:
+
+- A virtual generator regression that asserts the AI search workbench stack wires the intended
+  libraries.
+- A CLI install-path e2e test that creates the benchmark stack, installs dependencies, builds, and
+  type-checks.
+- A deeper smoke lane that can run install/build/type-check plus route checks against generated
+  projects.
+- Route-check coverage for the generated benchmark workbench auth routes.
+- A GitHub Actions e2e workflow so this does not stay a local-only exercise.
+
+That is the nice side effect of making the benchmark harder: the same spec that catches model
+shortcuts also catches generator shortcuts.
+
+## ScaffBench 2.1 hardening
+
+The next run keeps the V2 data above, but changes the harness around it.
+
+ScaffBench 2.1 expands the benchmark from one hard TypeScript prompt into a five-spec core suite:
+
+| Spec                   | Ecosystem       | What it stresses                                                    |
+| ---------------------- | --------------- | ------------------------------------------------------------------- |
+| `ai-search-workbench`  | TypeScript      | Qdrant vs OpenSearch, Inngest, oRPC, full validation                |
+| `rust-leptos-axum`     | Rust            | Leptos + Axum + SQLx + Tonic library choice                         |
+| `python-ingestion-api` | Python          | FastAPI + SQLModel + AI workflows + queues without Django-only APIs |
+| `go-realtime-api`      | Go              | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry                     |
+| `multi-dotnet-ops`     | Multi-ecosystem | TypeScript frontend + .NET Minimal API backend through graph parts  |
+
+It also adds the pieces we need before publishing another leaderboard:
+
+- Repeated runs with Wilson 95% confidence intervals.
+- Failure tags for install, build, type-check, tool-path violations, stack mismatches, and timeouts.
+- Command-discipline scoring for Prompt, CLI, and MCP modes.
+- Reproducibility metadata: BF commit, Bun/Node version, selected specs, prompt style, model, effort,
+  and effective reasoning when known.
+- A natural-prompt lane so we can compare explicit benchmark prompts with realistic user prompts.
+
+The current V2 homepage table has been extended to display these fields once 2.1 results land. The
+existing V2 numbers remain single-run directional results; 2.1 is the publishable repeatable lane.
+
+## Limitations
+
+- **One spec, one run per cell.** V2 is intentionally harder, but this run is still directional.
+  It is not a confidence interval.
+- **Claude Code only.** These 15 runs cover Opus models in Claude Code. The V1 post remains the
+  broader cross-agent, cross-vendor sweep.
+- **Stack score is not feature completeness.** A 19/19 marker score means the expected libraries
+  appear in the right places. It does not prove the search UI is product-ready.
+- **Costs and times move with API load.** Treat path-level differences as the signal, not exact
+  second-by-second rankings.
+
+## Appendix: run artifacts
+
+The raw summaries live in the repository:
+
+- `testing/llm-benchmarks/v2/20260624T231632Z/summary.md`
+- `testing/llm-benchmarks/v2/20260625T085039Z-opus-default/summary.md`
+
+The generated prompt, canonical command, Claude stdout/stderr, validation tails, and generated
+project files are preserved under each run directory.
+
+---
+
+ScaffBench 1 showed that agents do much better when they do not have to invent the scaffold.
+ScaffBench 2 makes the next point sharper: even when an agent remembers the right libraries, the
+project still has to survive install, build, and type-check. That is where scaffold tooling earns
+its keep.

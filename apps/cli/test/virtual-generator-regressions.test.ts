@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "../src/index";
-import { runWithContext } from "../src/utils/context";
 import { validateConfigForProgrammaticUse } from "../src/utils/config-validation";
-import { getVirtualTreeFileContent } from "./virtual-tree-utils";
+import { runWithContext } from "../src/utils/context";
+import { getVirtualTreeFileContent, hasVirtualFile } from "./virtual-tree-utils";
 
 const readTextFromTree = getVirtualTreeFileContent;
 
@@ -20,6 +20,10 @@ function readJsonFromTree(
 ): PackageJsonShape | undefined {
   const content = getVirtualTreeFileContent(tree, targetPath);
   return content === undefined ? undefined : (JSON.parse(content) as PackageJsonShape);
+}
+
+function packageHasDependency(packageJson: PackageJsonShape | undefined, name: string): boolean {
+  return Boolean(packageJson?.dependencies?.[name] ?? packageJson?.devDependencies?.[name]);
 }
 
 describe("Virtual Generator Regressions", () => {
@@ -40,7 +44,9 @@ describe("Virtual Generator Regressions", () => {
 
       expect(result.success).toBe(true);
 
-      const rootPackageJson = result.tree ? readJsonFromTree(result.tree, "package.json") : undefined;
+      const rootPackageJson = result.tree
+        ? readJsonFromTree(result.tree, "package.json")
+        : undefined;
       expect(rootPackageJson?.packageManager).toMatch(
         new RegExp(`^${packageManager}@\\d+\\.\\d+\\.\\d+(?:-.+)?$`),
       );
@@ -71,11 +77,12 @@ describe("Virtual Generator Regressions", () => {
 
       expect(result.success).toBe(true);
 
-      const webPackageJson = result.tree ? readJsonFromTree(result.tree, "apps/web/package.json") : undefined;
+      const webPackageJson = result.tree
+        ? readJsonFromTree(result.tree, "apps/web/package.json")
+        : undefined;
 
       expect(
-        webPackageJson?.dependencies?.[sdkPackage] ??
-          webPackageJson?.devDependencies?.[sdkPackage],
+        webPackageJson?.dependencies?.[sdkPackage] ?? webPackageJson?.devDependencies?.[sdkPackage],
       ).toBeDefined();
       expect(webPackageJson?.dependencies?.ai).toBeDefined();
       expect(webPackageJson?.dependencies?.["@ai-sdk/google"]).toBeDefined();
@@ -108,6 +115,124 @@ describe("Virtual Generator Regressions", () => {
     expect(rootPackageJson?.scripts?.["ai:video"]).toBe("ai video");
     expect(rootPackageJson?.scripts?.["ai:models"]).toBe("ai models");
     expect(rootPackageJson?.scripts?.["ai:completions"]).toBe("ai completions");
+  });
+
+  it("wires the benchmark AI search workbench stack with the intended libraries", async () => {
+    const result = await createVirtual({
+      projectName: "ai-search-workbench",
+      frontend: ["tanstack-router"],
+      backend: "hono",
+      runtime: "bun",
+      api: "orpc",
+      database: "postgres",
+      orm: "drizzle",
+      dbSetup: "none",
+      auth: "better-auth",
+      payments: "none",
+      email: "none",
+      fileUpload: "none",
+      logging: "pino",
+      observability: "opentelemetry",
+      featureFlags: "none",
+      analytics: "none",
+      effect: "none",
+      stateManagement: "tanstack-store",
+      forms: "tanstack-form",
+      validation: "valibot",
+      testing: "vitest-playwright",
+      ai: "vercel-ai",
+      realtime: "none",
+      jobQueue: "inngest",
+      animation: "none",
+      cssFramework: "tailwind",
+      uiLibrary: "shadcn-ui",
+      shadcnBase: "radix",
+      shadcnStyle: "nova",
+      shadcnIconLibrary: "lucide",
+      shadcnColorTheme: "neutral",
+      shadcnBaseColor: "neutral",
+      shadcnFont: "inter",
+      shadcnRadius: "default",
+      cms: "none",
+      caching: "none",
+      rateLimit: "none",
+      i18n: "paraglide",
+      search: "opensearch",
+      vectorDb: "qdrant",
+      fileStorage: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      addons: ["turborepo", "biome", "devcontainer", "github-actions"],
+      examples: [],
+      aiDocs: [],
+      packageManager: "bun",
+      install: false,
+      git: false,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.tree).toBeDefined();
+    const tree = result.tree!;
+
+    const rootPackageJson = readJsonFromTree(tree, "package.json");
+    const serverPackageJson = readJsonFromTree(tree, "apps/server/package.json");
+    const webPackageJson = readJsonFromTree(tree, "apps/web/package.json");
+    const dbPackageJson = readJsonFromTree(tree, "packages/db/package.json");
+    const authPackageJson = readJsonFromTree(tree, "packages/auth/package.json");
+
+    for (const dep of [
+      "hono",
+      "@orpc/server",
+      "ai",
+      "inngest",
+      "pino",
+      "@opentelemetry/api",
+      "@opensearch-project/opensearch",
+      "@qdrant/js-client-rest",
+      "valibot",
+    ]) {
+      expect(packageHasDependency(serverPackageJson, dep)).toBe(true);
+    }
+
+    for (const dep of [
+      "@tanstack/react-router",
+      "@orpc/tanstack-query",
+      "@tanstack/store",
+      "@tanstack/react-form",
+      "@inlang/paraglide-js",
+      "valibot",
+      "lucide-react",
+    ]) {
+      expect(packageHasDependency(webPackageJson, dep)).toBe(true);
+    }
+
+    expect(packageHasDependency(dbPackageJson, "drizzle-orm")).toBe(true);
+    expect(packageHasDependency(dbPackageJson, "pg")).toBe(true);
+    expect(packageHasDependency(authPackageJson, "better-auth")).toBe(true);
+    expect(packageHasDependency(authPackageJson, "@better-auth/drizzle-adapter")).toBe(true);
+    expect(packageHasDependency(rootPackageJson, "turbo")).toBe(true);
+
+    for (const filePath of [
+      ".devcontainer/devcontainer.json",
+      ".github/workflows/ci.yml",
+      "apps/server/src/lib/vector.ts",
+      "apps/server/src/lib/search.ts",
+      "apps/server/src/lib/inngest.ts",
+      "apps/server/src/lib/logger.ts",
+      "apps/server/src/lib/tracing.ts",
+      "apps/web/components.json",
+      "apps/web/project.inlang/settings.json",
+    ]) {
+      expect(hasVirtualFile(tree.root, filePath)).toBe(true);
+    }
+
+    expect(readTextFromTree(tree, "apps/server/src/lib/vector.ts")).toContain(
+      "@qdrant/js-client-rest",
+    );
+    expect(readTextFromTree(tree, "apps/server/src/lib/search.ts")).toContain(
+      "@opensearch-project/opensearch",
+    );
+    expect(readTextFromTree(tree, "apps/server/src/lib/inngest.ts")).toContain("inngest");
   });
 
   it("uses path-safe chunk names for generated Qwik builds", async () => {
@@ -169,7 +294,7 @@ describe("Virtual Generator Regressions", () => {
     expect(webPackageJson?.dependencies?.["better-sqlite3"]).toBeDefined();
     expect(viteConfig).toContain('external: ["better-sqlite3", "sqlite3"]');
     expect(authServer).toContain(`import { db } from "@svelte-build-env/db";`);
-    expect(authServer).toContain("database: {\n\t\tdb,\n\t\ttype: \"sqlite\",\n\t}");
+    expect(authServer).toContain('database: {\n\t\tdb,\n\t\ttype: "sqlite",\n\t}');
   });
 
   it("adds the deterministic Ultracite quiet-mode config at the workspace root", async () => {
@@ -234,7 +359,7 @@ describe("Virtual Generator Regressions", () => {
     expect(extensionPackageJson?.dependencies?.["react-dom"]).toBeDefined();
     expect(extensionPackageJson?.devDependencies?.wxt).toBeDefined();
     expect(extensionPackageJson?.devDependencies?.["@wxt-dev/module-react"]).toBeDefined();
-    expect(wxtConfig).toContain('@wxt-dev/module-react');
+    expect(wxtConfig).toContain("@wxt-dev/module-react");
     expect(background).toContain("defineBackground");
     expect(popup).toContain("WXT + React");
   });
@@ -268,7 +393,7 @@ describe("Virtual Generator Regressions", () => {
     expect(tuiPackageJson?.scripts?.["check-types"]).toBe("tsc --noEmit");
     expect(tuiPackageJson?.dependencies?.["@opentui/core"]).toBeDefined();
     expect(tuiPackageJson?.devDependencies?.["@types/bun"]).toBeDefined();
-    expect(tuiEntry).toContain('createCliRenderer');
+    expect(tuiEntry).toContain("createCliRenderer");
     expect(tuiEntry).toContain("Better Fullstack + OpenTUI");
     expect(tsconfig).toContain('"types": ["bun"]');
   });
@@ -294,7 +419,9 @@ describe("Virtual Generator Regressions", () => {
     expect(result.success).toBe(true);
 
     const rootPackageJson = result.tree ? readJsonFromTree(result.tree, "package.json") : undefined;
-    const docsPackageJson = result.tree ? readJsonFromTree(result.tree, "apps/docs/package.json") : undefined;
+    const docsPackageJson = result.tree
+      ? readJsonFromTree(result.tree, "apps/docs/package.json")
+      : undefined;
     const sourceConfig = readTextFromTree(result.tree!, "apps/docs/source.config.ts");
     const docsPage = readTextFromTree(result.tree!, "apps/docs/app/docs/[[...slug]]/page.tsx");
     const intro = readTextFromTree(result.tree!, "apps/docs/content/docs/index.mdx");
@@ -334,7 +461,10 @@ describe("Virtual Generator Regressions", () => {
     expect(result.success).toBe(true);
 
     const skill = readTextFromTree(result.tree!, ".agents/skills/better-fullstack/SKILL.md");
-    const agent = readTextFromTree(result.tree!, ".agents/skills/better-fullstack/agents/openai.yaml");
+    const agent = readTextFromTree(
+      result.tree!,
+      ".agents/skills/better-fullstack/agents/openai.yaml",
+    );
     const readme = readTextFromTree(result.tree!, ".agents/skills/README.md");
 
     expect(skill).toContain("name: better-fullstack");
@@ -398,7 +528,9 @@ describe("Virtual Generator Regressions", () => {
     expect(context).toContain("auth.api.getSession");
     expect(context).toContain("headers: req.headers as any");
     expect(router).toContain("privateData: protectedProcedure.handler");
-    expect(context).not.toContain("export async function createContext() {\n  return {\n    session: null");
+    expect(context).not.toContain(
+      "export async function createContext() {\n  return {\n    session: null",
+    );
   });
 
   it("does not import unused Kysely Generated type for Better Auth schemas", async () => {
@@ -728,7 +860,10 @@ describe("Virtual Generator Regressions", () => {
 
     const webPackageJson = readJsonFromTree(result.tree!, "apps/web/package.json");
     const auth0Client = readTextFromTree(result.tree!, "apps/web/src/lib/auth0.ts");
-    const legacyRoute = readTextFromTree(result.tree!, "apps/web/src/app/api/auth/[auth0]/route.ts");
+    const legacyRoute = readTextFromTree(
+      result.tree!,
+      "apps/web/src/app/api/auth/[auth0]/route.ts",
+    );
     const middleware = readTextFromTree(result.tree!, "apps/web/src/middleware.ts");
     const authClient = readTextFromTree(result.tree!, "apps/web/src/lib/auth-client.tsx");
     const providers = readTextFromTree(result.tree!, "apps/web/src/components/providers.tsx");
@@ -783,7 +918,9 @@ describe("Virtual Generator Regressions", () => {
 
     expect(projectFile).toContain("<TargetFramework>net10.0</TargetFramework>");
     expect(projectFile).toContain('<Compile Remove="**/*.Tests/**/*.cs" />');
-    expect(projectFile).toContain('PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"');
+    expect(projectFile).toContain(
+      'PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"',
+    );
     expect(projectFile).toContain('PackageReference Include="Serilog.AspNetCore"');
     expect(program).toContain("builder.Services.AddDbContext<AppDbContext>");
     expect(program).toContain('app.MapHub<UpdatesHub>("/hubs/updates")');
@@ -961,7 +1098,9 @@ describe("Virtual Generator Regressions", () => {
     expect(program).not.toContain("EntityFrameworkCore");
     expect(program).toContain('app.MapGet("/api/todos", () =>');
     expect(readTextFromTree(result.tree!, "Dockerfile")).toBeUndefined();
-    expect(readTextFromTree(result.tree!, "DotnetNoEf.Tests/DotnetNoEf.Tests.csproj")).toBeUndefined();
+    expect(
+      readTextFromTree(result.tree!, "DotnetNoEf.Tests/DotnetNoEf.Tests.csproj"),
+    ).toBeUndefined();
   });
 
   it("scaffolds .NET Minimal API data access with Dapper", async () => {
@@ -1022,7 +1161,7 @@ describe("Virtual Generator Regressions", () => {
     expect(projectFile).toContain('PackageReference Include="Microsoft.Data.Sqlite"');
     expect(projectFile).not.toContain("EntityFrameworkCore");
     expect(program).toContain("using LinqToDB;");
-    expect(program).toContain("[Table(\"Todos\")]");
+    expect(program).toContain('[Table("Todos")]');
     expect(program).toContain("ProviderName.SQLiteMS");
     expect(program).toContain("TodoLinq2Db.CreateConnection");
     expect(program).toContain("InsertWithInt32Identity");
@@ -1151,7 +1290,9 @@ describe("Virtual Generator Regressions", () => {
     expect(result.success).toBe(true);
     const application = readTextFromTree(result.tree!, "lib/elixir_presence/application.ex");
     expect(application).toContain("ElixirPresenceWeb.Presence");
-    expect(readTextFromTree(result.tree!, "lib/elixir_presence_web/channels/presence.ex")).toBeDefined();
+    expect(
+      readTextFromTree(result.tree!, "lib/elixir_presence_web/channels/presence.ex"),
+    ).toBeDefined();
   });
 
   it("allows CLI validation for generated plain Elixir worker projects", () => {
@@ -1205,10 +1346,7 @@ describe("Virtual Generator Regressions", () => {
 
     expect(baseline.success).toBe(true);
     expect(
-      readTextFromTree(
-        baseline.tree!,
-        "lib/elixir_live_baseline_web/live/item_live/index.ex",
-      ),
+      readTextFromTree(baseline.tree!, "lib/elixir_live_baseline_web/live/item_live/index.ex"),
     ).toBeUndefined();
 
     const result = await createVirtual({
@@ -1256,7 +1394,9 @@ describe("Virtual Generator Regressions", () => {
     expect(userSchema).toContain("Bcrypt.hash_pwd_salt(password)");
     expect(userSchema).toContain("Bcrypt.verify_pass(password, hashed_password)");
     expect(userSchema).not.toContain("cast(attrs, [:email, :hashed_password])");
-    expect(readTextFromTree(result.tree!, "priv/repo/migrations/20260101000001_create_users.exs")).toBeDefined();
+    expect(
+      readTextFromTree(result.tree!, "priv/repo/migrations/20260101000001_create_users.exs"),
+    ).toBeDefined();
     expect(accounts).toContain("get_user_by_email_and_password");
     expect(router).toContain('post "/users/register", UserSessionController, :register');
     expect(router).toContain('post "/users/login", UserSessionController, :login');
@@ -1276,7 +1416,9 @@ describe("Virtual Generator Regressions", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(readTextFromTree(result.tree!, "priv/repo/migrations/20260101000001_create_users.exs")).toBeUndefined();
+    expect(
+      readTextFromTree(result.tree!, "priv/repo/migrations/20260101000001_create_users.exs"),
+    ).toBeUndefined();
   });
 
   it("normalizes Elixir app and module names that start with digits", async () => {

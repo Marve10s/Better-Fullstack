@@ -45,6 +45,8 @@ interface SmokeTestArgs {
   devCheck: boolean;
   strict?: boolean;
   routeCheck: boolean;
+  qualityGate: boolean;
+  doctorCheck: boolean;
   preset?: string;
   majorDeps?: boolean;
   majorDepsPackages?: string;
@@ -64,6 +66,8 @@ function parseArgs(argv: string[]): SmokeTestArgs {
     output: resolve(process.cwd(), "testing/.smoke-output"),
     devCheck: false,
     routeCheck: false,
+    qualityGate: false,
+    doctorCheck: false,
   };
 
   let countExplicit = false;
@@ -106,6 +110,12 @@ function parseArgs(argv: string[]): SmokeTestArgs {
       case "--route-check":
         args.routeCheck = true;
         args.devCheck = true; // route-check implies dev-check
+        break;
+      case "--quality-gate":
+        args.qualityGate = true;
+        break;
+      case "--doctor-check":
+        args.doctorCheck = true;
         break;
       case "--preset":
         if (next) args.preset = next;
@@ -266,9 +276,25 @@ async function scaffoldProject(
 function formatMarkdownSummary(
   seed: string,
   results: VerifyResult[],
-  options?: { presetId?: string; devCheckEnabled?: boolean; majorDepInfo?: MajorDepInfo[] },
+  options?: {
+    presetId?: string;
+    devCheckEnabled?: boolean;
+    strictEnabled?: boolean;
+    routeCheckEnabled?: boolean;
+    qualityGateEnabled?: boolean;
+    doctorCheckEnabled?: boolean;
+    majorDepInfo?: MajorDepInfo[];
+  },
 ): string {
-  const { presetId, devCheckEnabled, majorDepInfo: depInfo } = options ?? {};
+  const {
+    presetId,
+    devCheckEnabled,
+    strictEnabled,
+    routeCheckEnabled,
+    qualityGateEnabled,
+    doctorCheckEnabled,
+    majorDepInfo: depInfo,
+  } = options ?? {};
   const passed = results.filter((r) => r.overallSuccess).length;
   const failed = results.filter((r) => !r.overallSuccess).length;
 
@@ -325,7 +351,16 @@ function formatMarkdownSummary(
   md += `\n### Reproduce locally\n\`\`\`bash\nbun run test:smoke -- --seed ${seed}\n\`\`\`\n`;
 
   if (presetId) {
-    md += `\n\`\`\`bash\n# Preset mode:\nbun run test:smoke -- --preset ${presetId}${devCheckEnabled ? " --dev-check" : ""}\n\`\`\`\n`;
+    const flags = [
+      devCheckEnabled && "--dev-check",
+      strictEnabled && "--strict",
+      routeCheckEnabled && "--route-check",
+      qualityGateEnabled && "--quality-gate",
+      doctorCheckEnabled && "--doctor-check",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    md += `\n\`\`\`bash\n# Preset mode:\nbun run test:smoke -- --preset ${presetId}${flags ? ` ${flags}` : ""}\n\`\`\`\n`;
   }
 
   return md;
@@ -380,7 +415,13 @@ if (args.majorDeps) {
     process.exit(0);
   }
 
-  const flags = [args.devCheck && "dev-check", args.routeCheck && "route-check"]
+  const flags = [
+    args.devCheck && "dev-check",
+    args.strict && "strict",
+    args.routeCheck && "route-check",
+    args.qualityGate && "quality-gate",
+    args.doctorCheck && "doctor-check",
+  ]
     .filter(Boolean)
     .join(", ");
   console.log(
@@ -394,13 +435,31 @@ if (args.majorDeps) {
   }
 } else if (args.preset) {
   combos = getPresetCombos(args.preset);
+  const flags = [
+    args.devCheck && "dev-check",
+    args.strict && "strict",
+    args.routeCheck && "route-check",
+    args.qualityGate && "quality-gate",
+    args.doctorCheck && "doctor-check",
+  ]
+    .filter(Boolean)
+    .join(", ");
   console.log(
-    `Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${args.devCheck ? " [dev-check enabled]" : ""}\n`,
+    `Running smoke test for preset "${args.preset}" (${combos.length} combo(s))${flags ? ` [${flags}]` : ""}\n`,
   );
 } else {
   combos = generateCombos(args);
+  const flags = [
+    args.devCheck && "dev-check",
+    args.strict && "strict",
+    args.routeCheck && "route-check",
+    args.qualityGate && "quality-gate",
+    args.doctorCheck && "doctor-check",
+  ]
+    .filter(Boolean)
+    .join(", ");
   console.log(
-    `Running smoke test (seed: ${args.seed}, combos: ${combos.length})${args.devCheck ? " [dev-check enabled]" : ""}\n`,
+    `Running smoke test (seed: ${args.seed}, combos: ${combos.length})${flags ? ` [${flags}]` : ""}\n`,
   );
 }
 
@@ -442,6 +501,9 @@ for (const combo of combos) {
     devCheck: args.devCheck,
     strict: args.strict,
     routeCheck: args.routeCheck,
+    qualityGate: args.qualityGate,
+    doctorCheck: args.doctorCheck,
+    doctorCliPath: scaffoldResult.result?.cliPath,
     outputDir: args.output,
     config: combo.config,
   });
@@ -483,6 +545,10 @@ await writeFile(
   formatMarkdownSummary(args.seed, results, {
     presetId: args.preset,
     devCheckEnabled: args.devCheck,
+    strictEnabled: args.strict,
+    routeCheckEnabled: args.routeCheck,
+    qualityGateEnabled: args.qualityGate,
+    doctorCheckEnabled: args.doctorCheck,
     majorDepInfo,
   }),
 );

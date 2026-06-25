@@ -18,6 +18,10 @@ on:
         description: "Run Playwright web builder tests"
         type: boolean
         default: true
+      run_benchmark_deep:
+        description: "Run deep smoke tests for the AI search benchmark template"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -272,6 +276,76 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  benchmark-deep-smoke:
+    name: Deep Smoke Test (AI Search Workbench)
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_benchmark_deep }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: benchmark-deep-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: benchmark-deep-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Install Playwright
+        run: bunx playwright install chromium --with-deps
+
+      - name: Run Deep Smoke Test
+        run: bun run test:smoke:benchmark-deep
+
+      - name: Post Summary
+        if: always()
+        run: |
+          if [ -f testing/.smoke-output/benchmark-deep/summary.md ]; then
+            cat testing/.smoke-output/benchmark-deep/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-deep-smoke-results
+          path: testing/.smoke-output/benchmark-deep/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
+
   playwright:
     name: Playwright Web Builder Tests
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_playwright }}
@@ -365,6 +439,51 @@ jobs:
         with:
           name: web-command-roundtrip-results
           path: apps/cli/.smoke-web-command-roundtrip/
+          if-no-files-found: warn
+          retention-days: 7
+
+  benchmark-install-path:
+    name: Benchmark CLI Install Path
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_e2e }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: benchmark-install-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: benchmark-install-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Benchmark Install Path Test
+        run: bun test apps/cli/test/e2e/benchmark-install-path.test.ts --timeout 900000
+
+      - name: Upload Install Path Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-install-path-results
+          path: apps/cli/.smoke-benchmark-install-path/
           if-no-files-found: warn
           retention-days: 7
 
