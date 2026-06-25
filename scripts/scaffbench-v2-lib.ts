@@ -1459,8 +1459,13 @@ async function runClaude(input: {
       "--model",
       input.model,
       ...effortArgs,
+      // stream-json (requires --verbose) emits the full tool_use trajectory, so
+      // command discipline can be scored on actual tool calls rather than greps
+      // of the final result envelope. The final {"type":"result"} line carries
+      // the same cost/usage/session fields as --output-format json.
       "--output-format",
-      "json",
+      "stream-json",
+      "--verbose",
       "--permission-mode",
       "bypassPermissions",
       "--no-session-persistence",
@@ -1540,6 +1545,17 @@ function tail(value: string, max = 4_000) {
 }
 
 export function parseClaudeResult(stdout: string): any | null {
+  // stream-json: the final {"type":"result",...} line carries cost/usage/session.
+  const lines = stdout.trim().split("\n");
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    const candidate = lines[i]?.trim() ?? "";
+    if (candidate.startsWith("{") && candidate.includes('"type":"result"')) {
+      try {
+        return JSON.parse(candidate);
+      } catch {}
+    }
+  }
+  // Fallback for --output-format json (single object) or noisy output.
   try {
     return JSON.parse(stdout);
   } catch {
@@ -2281,66 +2297,95 @@ async function walk(dir: string, visit: (filePath: string) => Promise<void>) {
   }
 }
 
-async function scoreToolCompliance(
+/** Extract the agent's tool calls from a stream-json transcript (assistant
+ * `tool_use` blocks). Returns [] for non-stream output, so callers degrade to
+ * the bts.jsonc safety net rather than crashing. */
+export function extractToolUses(stdout: string): { name: string; command?: string }[] {
+  const uses: { name: string; command?: string }[] = [];
+  for (const line of stdout.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("{")) continue;
+    let event: any;
+    try {
+      event = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    const content = event?.message?.content;
+    if (!Array.isArray(content)) continue;
+    for (const block of content) {
+      if (block?.type === "tool_use" && typeof block.name === "string") {
+        const command = typeof block.input?.command === "string" ? block.input.command : undefined;
+        uses.push({ name: block.name, command });
+      }
+    }
+  }
+  return uses;
+}
+
+export async function scoreToolCompliance(
   pathMode: CreationPath,
   projectDir: string | null,
   claude: CommandResult,
 ): Promise<ToolCompliance> {
-  const transcript = `${claude.stdout}\n${claude.stderr}`.toLowerCase();
-  const checks: CommandDisciplineCheck[] = [];
+  const toolUses = extractToolUses(claude.stdout);
   const hasBtsConfig = projectDir ? existsSync(path.join(projectDir, "bts.jsonc")) : false;
 
+  // Grounded in the actual tool trajectory, not a grep of the result envelope.
+  const usedBfsCreate = toolUses.some((use) => /bfs_create_project/i.test(use.name));
+  const usedAnyBfsTool = toolUses.some((use) => /bfs_/i.test(use.name));
+  const bashCommands = toolUses
+    .filter((use) => /(^|_)bash$/i.test(use.name))
+    .map((use) => (use.command ?? "").toLowerCase());
+  const ranBfsCli = bashCommands.some((cmd) =>
+    /create\s+better-fullstack|create-better-fullstack/.test(cmd),
+  );
+  const ranDryRun = bashCommands.some((cmd) => cmd.includes("--dry-run"));
+
+  const checks: CommandDisciplineCheck[] = [];
   if (pathMode === "prompt") {
     checks.push({
       id: "no-bf-config",
       status: hasBtsConfig ? "fail" : "pass",
-      detail: hasBtsConfig
-        ? "prompt-only produced bts.jsonc"
-        : "prompt-only did not produce bts.jsonc",
+      detail: "prompt-only must not produce bts.jsonc",
     });
     checks.push({
-      id: "no-bf-tool-reference",
-      status:
-        transcript.includes("bfs_create_project") ||
-        transcript.includes("bun create better-fullstack") ||
-        transcript.includes("create-better-fullstack")
-          ? "fail"
-          : "pass",
-      detail: "prompt-only transcript should not show Better-Fullstack tool usage",
+      id: "no-bf-tool",
+      status: usedAnyBfsTool || ranBfsCli ? "fail" : "pass",
+      detail: "prompt-only must not call a Better-Fullstack MCP tool or CLI",
     });
   } else if (pathMode === "cli") {
     checks.push({
       id: "used-cli",
-      status:
-        transcript.includes("bun create better-fullstack") || hasBtsConfig ? "pass" : "unknown",
-      detail: "CLI path should use bun create better-fullstack@latest",
+      status: ranBfsCli || hasBtsConfig ? "pass" : "fail",
+      detail: "CLI path must run bun create better-fullstack",
     });
     checks.push({
       id: "dry-run-first",
-      status: transcript.includes("--dry-run") ? "pass" : "unknown",
-      detail: "CLI path should dry-run before writing",
+      status: ranDryRun ? "pass" : "fail",
+      detail: "CLI path must dry-run before writing",
     });
     checks.push({
       id: "no-mcp",
-      status: transcript.includes("bfs_create_project") ? "fail" : "pass",
-      detail: "CLI path should not use MCP tools",
+      status: usedBfsCreate ? "fail" : "pass",
+      detail: "CLI path must not use MCP creation",
     });
   } else {
     checks.push({
       id: "used-mcp",
-      status: transcript.includes("bfs_create_project") || hasBtsConfig ? "pass" : "unknown",
-      detail: "MCP path should use Better-Fullstack MCP creation",
+      status: usedBfsCreate || hasBtsConfig ? "pass" : "fail",
+      detail: "MCP path must call bfs_create_project",
     });
     checks.push({
       id: "no-cli-create",
-      status: transcript.includes("bun create better-fullstack") ? "fail" : "pass",
-      detail: "MCP path should not use CLI creation",
+      status: ranBfsCli ? "fail" : "pass",
+      detail: "MCP path must not run bun create better-fullstack",
     });
   }
 
-  const scored = checks.filter((check) => check.status !== "unknown" && check.status !== "skipped");
-  const score = scored.filter((check) => check.status === "pass").length;
-  return { score, total: scored.length || checks.length, checks };
+  // Every check is now definitive (pass/fail) — none are dropped from the score.
+  const score = checks.filter((check) => check.status === "pass").length;
+  return { score, total: checks.length, checks };
 }
 
 export function validationPassed(result: RunResult) {
