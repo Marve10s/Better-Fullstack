@@ -8,6 +8,7 @@ import {
   canonicalCommand,
   classifyOutcome,
   deriveFailureTags,
+  extractToolUses,
   findProjectDir,
   parseArgs,
   parseClaudeResult,
@@ -16,6 +17,7 @@ import {
   scoreArtifact,
   scoreBts,
   scoreProject,
+  scoreToolCompliance,
   SCAFFBENCH_2_1_SPECS,
   typecheckGate,
   validationPassed,
@@ -784,5 +786,71 @@ describe("ScaffBench 2.1 acceptance matching precision (Codex #258)", () => {
     const [cell] = aggregateResults([wired, noProject]).leaderboard;
 
     expect(cell?.acceptancePercent).toBe(50); // (100 + 0) / 2, not 100
+  });
+});
+
+describe("ScaffBench 2.1 command discipline from trajectory (P2)", () => {
+  const streamJson = (...events: object[]) =>
+    `${events.map((event) => JSON.stringify(event)).join("\n")}\n`;
+  const claudeOutput = (stdout: string): any => ({
+    command: "claude",
+    exitCode: 0,
+    timedOut: false,
+    spawnError: false,
+    durationMs: 1,
+    stdout,
+    stderr: "",
+    stdoutTail: "",
+    stderrTail: "",
+  });
+  const bashUse = (command: string) => ({
+    type: "assistant",
+    message: { content: [{ type: "tool_use", name: "Bash", input: { command } }] },
+  });
+  const mcpUse = (name: string) => ({
+    type: "assistant",
+    message: { content: [{ type: "tool_use", name, input: {} }] },
+  });
+  const resultEvent = {
+    type: "result",
+    subtype: "success",
+    total_cost_usd: 1.2,
+    usage: { output_tokens: 3000 },
+    session_id: "abc",
+  };
+
+  it("parses the result line and tool_use events from a stream-json transcript", () => {
+    const out = streamJson(bashUse("bun create better-fullstack@2.1.1 app --dry-run"), resultEvent);
+    expect(parseClaudeResult(out)).toMatchObject({ total_cost_usd: 1.2, session_id: "abc" });
+    const uses = extractToolUses(out);
+    expect(uses).toHaveLength(1);
+    expect(uses[0]).toMatchObject({ name: "Bash" });
+    expect(uses[0]?.command).toContain("--dry-run");
+  });
+
+  it("scores the CLI path on actual bun-create + dry-run tool calls", async () => {
+    const out = streamJson(
+      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
+      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
+      resultEvent,
+    );
+    expect(await scoreToolCompliance("cli", null, claudeOutput(out))).toMatchObject({
+      score: 3,
+      total: 3,
+    });
+  });
+
+  it("fails a prompt-only run that shells out to the BF CLI", async () => {
+    const out = streamJson(bashUse("bun create better-fullstack@2.1.1 app"), resultEvent);
+    const tc = await scoreToolCompliance("prompt", null, claudeOutput(out));
+    expect(tc.checks.find((check) => check.id === "no-bf-tool")?.status).toBe("fail");
+  });
+
+  it("passes the MCP path when bfs_create_project is actually called", async () => {
+    const out = streamJson(mcpUse("mcp__better-fullstack__bfs_create_project"), resultEvent);
+    expect(await scoreToolCompliance("mcp", null, claudeOutput(out))).toMatchObject({
+      score: 2,
+      total: 2,
+    });
   });
 });
