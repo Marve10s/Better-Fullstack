@@ -175,6 +175,17 @@ type SummaryAggregate = {
   passCount: number;
   passRate: number;
   passCi95: { low: number; high: number };
+  /** True when scoredRuns >= MIN_CI_RUNS, so the Wilson interval is worth showing. */
+  ciReportable: boolean;
+  /** Distinct specs contributing to this cell. */
+  specCount: number;
+  /** Mean of per-spec pass rates — a macro-average that treats each spec as one
+   * unit instead of pooling heterogeneous-difficulty specs into one binomial. */
+  macroPassRate: number;
+  /** pass@k: specs solved on at least one of their repeats. */
+  passAnySpecs: number;
+  /** pass^k: specs solved on every one of their repeats (consistency). */
+  passAllSpecs: number;
   stackPercent: number;
   faithfulnessPercent?: number;
   commandDisciplinePercent: number;
@@ -207,6 +218,9 @@ type ProjectIndex = {
 };
 
 const HARNESS_VERSION = "2.1.0";
+// Below this many scored runs a Wilson interval is too wide to be informative
+// (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
+const MIN_CI_RUNS = 8;
 const DEFAULT_EFFORTS: readonly Effort[] = ["low", "medium", "high"];
 const DEFAULT_PATHS: readonly CreationPath[] = ["mcp", "cli", "prompt"];
 const CLAUDE_TIMEOUT_MS = 15 * 60_000;
@@ -2165,6 +2179,26 @@ function aggregateBy(
       const inconclusiveCount = group.length - scored.length;
       const passCount = scored.filter(validationPassed).length;
       const ci = wilsonInterval(passCount, scored.length);
+
+      // Per-spec macro statistics: treat each spec as a unit rather than pooling
+      // heterogeneous-difficulty specs into one binomial (which understates
+      // variance). pass@k / pass^k summarise reliability across repeats.
+      const bySpec = new Map<string, { scored: number; pass: number }>();
+      for (const result of scored) {
+        const entry = bySpec.get(result.specId) ?? { scored: 0, pass: 0 };
+        entry.scored += 1;
+        if (validationPassed(result)) entry.pass += 1;
+        bySpec.set(result.specId, entry);
+      }
+      const specEntries = [...bySpec.values()];
+      const macroPassRate = average(
+        specEntries.map((entry) => (entry.scored > 0 ? (entry.pass / entry.scored) * 100 : 0)),
+      );
+      const passAllSpecs = specEntries.filter(
+        (entry) => entry.scored > 0 && entry.pass === entry.scored,
+      ).length;
+      const passAnySpecs = specEntries.filter((entry) => entry.pass > 0).length;
+
       return {
         key,
         specId: key.startsWith(first.specId) ? first.specId : undefined,
@@ -2178,6 +2212,11 @@ function aggregateBy(
         passCount,
         passRate: scored.length > 0 ? Math.round((passCount / scored.length) * 100) : 0,
         passCi95: ci,
+        ciReportable: scored.length >= MIN_CI_RUNS,
+        specCount: specEntries.length,
+        macroPassRate,
+        passAnySpecs,
+        passAllSpecs,
         stackPercent: average(group.map((result) => result.stackScore.percent)),
         faithfulnessPercent: maybeAverage(
           group.map((result) => result.generatorFaithfulness?.percent),
@@ -2294,7 +2333,12 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         aggregate.path,
         `${aggregate.passCount}/${aggregate.scoredRuns}`,
         aggregate.inconclusiveCount > 0 ? `${aggregate.inconclusiveCount}/${aggregate.runs}` : "0",
-        `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`,
+        `${aggregate.macroPassRate}%`,
+        `${aggregate.passAnySpecs}/${aggregate.specCount}`,
+        `${aggregate.passAllSpecs}/${aggregate.specCount}`,
+        aggregate.ciReportable
+          ? `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`
+          : `n<${MIN_CI_RUNS}`,
         `${aggregate.stackPercent}%`,
         aggregate.faithfulnessPercent != null ? `${aggregate.faithfulnessPercent}%` : "—",
         `${aggregate.commandDisciplinePercent}%`,
@@ -2323,8 +2367,14 @@ budget, or a crash with no output) are excluded from the denominator. "Wired
 libs" is scored from the generated artifact (deps + imports + files);
 "Faithful" is the assisted-path bts.jsonc-vs-requested diagnostic.
 
-| Model | Effort | Effective reasoning | Path | Pass@1 | Inconclusive | Pass rate CI95 | Wired libs | Faithful | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+Reliability is reported per spec, not pooled: "Macro" is the mean of per-spec
+pass rates; "pass@k" counts specs solved on at least one repeat and "pass^k"
+specs solved on every repeat. The Wilson "CI95" is shown only when a cell has
+≥ ${MIN_CI_RUNS} scored runs (below that it reads \`n<${MIN_CI_RUNS}\`, since e.g. 3/3 and 0/3
+intervals overlap and the interval is not informative).
+
+| Model | Effort | Effective reasoning | Path | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs

@@ -106,7 +106,14 @@ Secondary diagnostic signals:
 - command discipline and tool-path compliance
 - failure taxonomy tags
 - average cost, output tokens, and wall time
-- Wilson 95% interval for repeated pass rates
+
+Reliability is reported per spec, not pooled:
+- `Macro` — mean of per-spec pass rates (each spec is one unit, so heterogeneous
+  specs are not collapsed into a single binomial)
+- `pass@k` — specs solved on at least one repeat; `pass^k` — specs solved on
+  every repeat (consistency)
+- Wilson 95% interval, shown only when a cell has at least 8 scored runs (below
+  that it reads `n<8`, because e.g. 3/3 and 0/3 intervals overlap)
 
 ## Failure Tags
 
