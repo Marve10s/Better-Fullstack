@@ -1832,7 +1832,11 @@ function BenchmarkRunDetailsTable({
           </h3>
           <span className="text-xs text-[#71706a] dark:text-[#8f8d84]">{tableNote}</span>
         </div>
-        <div className="overflow-x-auto px-3">
+        <section
+          aria-label="Scrollable ScaffBench run details table"
+          className="overflow-x-auto px-3"
+          tabIndex={0}
+        >
           <table className="w-full min-w-[1260px] border-collapse">
             <caption className="sr-only">ScaffBench run details</caption>
             <thead>
@@ -1857,7 +1861,7 @@ function BenchmarkRunDetailsTable({
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       </div>
     </div>
   );

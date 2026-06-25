@@ -6,6 +6,7 @@ import {
   deriveFailureTags,
   parseArgs,
   promptFor,
+  runCommand,
   scoreBts,
   SCAFFBENCH_2_1_SPECS,
   validationPassed,
@@ -111,6 +112,14 @@ describe("ScaffBench 2.1 harness config", () => {
     expect(promptOnly).toContain(aiSpec.naturalPrompt);
     expect(mcpPrompt).toContain("bfs_get_guidance");
     expect(mcpPrompt).toContain("bfs_create_project");
+  });
+
+  it("records missing spawned tools as failed commands", async () => {
+    const result = await runCommand("scaffbench-missing-binary-for-test", [], process.cwd(), 1_000);
+
+    expect(result.exitCode).toBe(127);
+    expect(result.timedOut).toBe(false);
+    expect(result.stderr).toContain("scaffbench-missing-binary-for-test");
   });
 });
 

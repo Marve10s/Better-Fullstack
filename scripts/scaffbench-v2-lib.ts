@@ -1226,7 +1226,7 @@ async function runClaude(input: {
   );
 }
 
-async function runCommand(
+export async function runCommand(
   command: string,
   args: readonly string[],
   cwd: string,
@@ -1251,7 +1251,18 @@ async function runCommand(
   });
 
   const exitCode = await new Promise<number | null>((resolve) => {
-    child.on("close", (code) => resolve(code));
+    let settled = false;
+    const finish = (code: number | null) => {
+      if (settled) return;
+      settled = true;
+      resolve(code);
+    };
+
+    child.on("error", (error) => {
+      stderr += `${stderr ? "\n" : ""}${error.name}: ${error.message}`;
+      finish(127);
+    });
+    child.on("close", (code) => finish(code));
   });
   clearTimeout(timer);
 

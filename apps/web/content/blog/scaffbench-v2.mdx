@@ -1,6 +1,6 @@
 ---
 title: "ScaffBench 2: harder prompts, stricter validation, and library-choice failures"
-description: "15 Claude Code runs on a harder AI search workbench spec, measuring MCP, CLI, and prompt-only scaffolding across Claude Opus 4.8 effort levels plus Claude Opus 4.7 and Claude Opus 4.6 default-effort runs."
+description: "15 Claude Code runs on a harder AI search workbench spec, measuring MCP, CLI, prompt-only scaffolding, validation, and library-choice failures."
 date: 2026-06-25
 authors:
   - Ibrahim Elkamali
@@ -283,13 +283,13 @@ The next run keeps the V2 data above, but changes the harness around it.
 
 ScaffBench 2.1 expands the benchmark from one hard TypeScript prompt into a five-spec core suite:
 
-| Spec | Ecosystem | What it stresses |
-| ---- | --------- | ---------------- |
-| `ai-search-workbench` | TypeScript | Qdrant vs OpenSearch, Inngest, oRPC, full validation |
-| `rust-leptos-axum` | Rust | Leptos + Axum + SQLx + Tonic library choice |
-| `python-ingestion-api` | Python | FastAPI + SQLModel + AI workflows + queues without Django-only APIs |
-| `go-realtime-api` | Go | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry |
-| `multi-dotnet-ops` | Multi-ecosystem | TypeScript frontend + .NET Minimal API backend through graph parts |
+| Spec                   | Ecosystem       | What it stresses                                                    |
+| ---------------------- | --------------- | ------------------------------------------------------------------- |
+| `ai-search-workbench`  | TypeScript      | Qdrant vs OpenSearch, Inngest, oRPC, full validation                |
+| `rust-leptos-axum`     | Rust            | Leptos + Axum + SQLx + Tonic library choice                         |
+| `python-ingestion-api` | Python          | FastAPI + SQLModel + AI workflows + queues without Django-only APIs |
+| `go-realtime-api`      | Go              | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry                     |
+| `multi-dotnet-ops`     | Multi-ecosystem | TypeScript frontend + .NET Minimal API backend through graph parts  |
 
 It also adds the pieces we need before publishing another leaderboard:
 
