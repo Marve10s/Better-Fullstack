@@ -2492,6 +2492,15 @@ async function collectMetadata(options: ScaffbenchOptions) {
     ["--version"],
     process.cwd(),
   );
+  // The assisted paths exercise the PUBLISHED generator, not repo HEAD, so record
+  // the resolved create-better-fullstack version actually under test (best-effort,
+  // network — undefined offline). gitHead only describes the local checkout.
+  const bfGeneratorVersion = await tryCommandText(
+    "npm",
+    ["view", "create-better-fullstack@latest", "version"],
+    process.cwd(),
+  );
+  const toolchains = await collectToolchainVersions();
   return {
     cwd: process.cwd(),
     gitHead,
@@ -2500,12 +2509,37 @@ async function collectMetadata(options: ScaffbenchOptions) {
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,
+    // Validation runs non-frozen network installs on the host toolchains below,
+    // so a published pass/fail is qualified by this environment.
+    environmentQualified: true,
+    toolchains,
+    bfGeneratorVersion,
     model: options.model,
     effectiveReasoning: options.efforts.map((effort) => ({
       effort,
       effectiveReasoning: effectiveReasoning(options.model, effort),
     })),
   };
+}
+
+async function collectToolchainVersions() {
+  const probes: Record<string, readonly [string, readonly string[]]> = {
+    rustc: ["rustc", ["--version"]],
+    cargo: ["cargo", ["--version"]],
+    go: ["go", ["version"]],
+    dotnet: ["dotnet", ["--version"]],
+    python: ["python3", ["--version"]],
+    uv: ["uv", ["--version"]],
+    protoc: ["protoc", ["--version"]],
+    psql: ["psql", ["--version"]],
+  };
+  const entries = await Promise.all(
+    Object.entries(probes).map(async ([name, [command, args]]) => {
+      const version = await tryCommandText(command, [...args], process.cwd());
+      return [name, version] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
 }
 
 async function tryCommandText(command: string, args: readonly string[], cwd: string) {

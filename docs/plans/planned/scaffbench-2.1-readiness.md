@@ -81,6 +81,10 @@ Each run directory writes:
 
 - `spec.json` with selected specs, canonical commands, and harness options
 - `summary.json` with raw results, aggregate rows, confidence intervals, failure tags, and metadata
+  (the metadata records the resolved `create-better-fullstack` version actually under test, the host
+  toolchain versions — rustc/cargo/go/dotnet/python/uv/protoc/psql — and `environmentQualified: true`,
+  since validation runs non-frozen network installs on those toolchains; `gitHead` only describes the
+  local checkout, not the published generator the assisted paths exercise)
 - `summary.md` with a leaderboard and run table
 - `runs/<id>/prompt.txt`
 - `runs/<id>/canonical-command.txt`
