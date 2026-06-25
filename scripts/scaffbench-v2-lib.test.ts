@@ -17,6 +17,7 @@ import {
   scoreBts,
   scoreProject,
   SCAFFBENCH_2_1_SPECS,
+  typecheckGate,
   validationPassed,
   type RunResult,
 } from "./scaffbench-v2-lib";
@@ -665,6 +666,15 @@ describe("ScaffBench 2.1 discovery lane", () => {
     expect(explicitAi).toContain("Important scoring rule");
     // rust has no acceptance sets yet → it is NOT a discovery spec, notes stay
     expect(naturalRust).toContain("Important scoring rule");
+  });
+
+  it("falls back to tsc --noEmit so typecheck cannot be dodged", () => {
+    expect(typecheckGate({ "check-types": "tsc" }, true)).toBe("check-types");
+    expect(typecheckGate({ typecheck: "tsc" }, true)).toBe("typecheck");
+    // no script but a tsconfig exists → must still type-check
+    expect(typecheckGate({}, true)).toBe("tsc");
+    // genuinely nothing to type-check
+    expect(typecheckGate({}, false)).toBeNull();
   });
 
   it("credits an accepted alternative library (pgvector for semantic search)", async () => {
