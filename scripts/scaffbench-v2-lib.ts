@@ -189,7 +189,12 @@ type SummaryAggregate = {
   stackPercent: number;
   faithfulnessPercent?: number;
   commandDisciplinePercent: number;
+  /** Single 0-100 composite (the rankable headline), weighted toward the least
+   * saturated signal — see SCAFFBENCH_INDEX_WEIGHTS. */
+  index: number;
   avgDurationMs: number;
+  medianDurationMs: number;
+  p95DurationMs: number;
   avgOutputTokens?: number;
   avgCostUsd?: number;
   failureTags: Record<string, number>;
@@ -221,6 +226,12 @@ const HARNESS_VERSION = "2.1.0";
 // Below this many scored runs a Wilson interval is too wide to be informative
 // (e.g. at n=3, 3/3 → [44,100] overlaps 0/3 → [0,56]); the report suppresses it.
 const MIN_CI_RUNS = 8;
+
+// ScaffBench Index: one rankable 0-100 composite, weighted toward the least
+// saturated signal. Validation (does it actually run?) dominates; wired-libs and
+// command discipline saturate fast on assisted paths so they are weighted down.
+// Weights sum to 1.
+const SCAFFBENCH_INDEX_WEIGHTS = { validation: 0.6, wiredLibs: 0.25, discipline: 0.15 } as const;
 const DEFAULT_EFFORTS: readonly Effort[] = ["low", "medium", "high"];
 const DEFAULT_PATHS: readonly CreationPath[] = ["mcp", "cli", "prompt"];
 const CLAUDE_TIMEOUT_MS = 15 * 60_000;
@@ -2228,6 +2239,21 @@ function aggregateBy(
       // pass@k: passed on at least one repeat.
       const passAnySpecs = specEntries.filter((entry) => entry.pass > 0).length;
 
+      const stackPercent = average(group.map((result) => result.stackScore.percent));
+      const commandDisciplinePercent = average(
+        group.map((result) =>
+          result.toolCompliance.total > 0
+            ? Math.round((result.toolCompliance.score / result.toolCompliance.total) * 100)
+            : 0,
+        ),
+      );
+      const index = Math.round(
+        SCAFFBENCH_INDEX_WEIGHTS.validation * macroPassRate +
+          SCAFFBENCH_INDEX_WEIGHTS.wiredLibs * stackPercent +
+          SCAFFBENCH_INDEX_WEIGHTS.discipline * commandDisciplinePercent,
+      );
+      const durations = group.map((result) => result.claude.durationMs);
+
       return {
         key,
         specId: key.startsWith(first.specId) ? first.specId : undefined,
@@ -2246,24 +2272,24 @@ function aggregateBy(
         macroPassRate,
         passAnySpecs,
         passAllSpecs,
-        stackPercent: average(group.map((result) => result.stackScore.percent)),
+        stackPercent,
         faithfulnessPercent: maybeAverage(
           group.map((result) => result.generatorFaithfulness?.percent),
         ),
-        commandDisciplinePercent: average(
-          group.map((result) =>
-            result.toolCompliance.total > 0
-              ? Math.round((result.toolCompliance.score / result.toolCompliance.total) * 100)
-              : 0,
-          ),
-        ),
-        avgDurationMs: average(group.map((result) => result.claude.durationMs)),
+        commandDisciplinePercent,
+        index,
+        avgDurationMs: average(durations),
+        medianDurationMs: percentile(durations, 50),
+        p95DurationMs: percentile(durations, 95),
         avgOutputTokens: maybeAverage(group.map((result) => result.claude.outputTokens)),
         avgCostUsd: maybeAveragePrecise(group.map((result) => result.claude.totalCostUsd)),
         failureTags: countFailureTags(group),
       };
     })
-    .sort((a, b) => b.passRate - a.passRate || a.avgDurationMs - b.avgDurationMs);
+    .sort(
+      (a, b) =>
+        b.index - a.index || b.macroPassRate - a.macroPassRate || a.avgDurationMs - b.avgDurationMs,
+    );
 }
 
 function wilsonInterval(successes: number, total: number) {
@@ -2289,6 +2315,16 @@ function average(values: readonly number[]) {
 function averagePrecise(values: readonly number[]) {
   if (values.length === 0) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+/** Nearest-rank percentile (p in 0..100), rounded. Wall-clock and cost move with
+ * provider load, so median/p95 are reported alongside the mean. */
+function percentile(values: readonly number[], p: number) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const rank = Math.ceil((p / 100) * sorted.length);
+  const index = Math.min(sorted.length - 1, Math.max(0, rank - 1));
+  return Math.round(sorted[index] ?? 0);
 }
 
 function maybeAverage(values: readonly (number | undefined)[]) {
@@ -2372,6 +2408,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         aggregate.effort,
         aggregate.effectiveReasoning ?? "",
         aggregate.path,
+        aggregate.index,
         `${aggregate.passCount}/${aggregate.scoredRuns}`,
         aggregate.inconclusiveCount > 0 ? `${aggregate.inconclusiveCount}/${aggregate.runs}` : "0",
         `${aggregate.macroPassRate}%`,
@@ -2383,7 +2420,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         `${aggregate.stackPercent}%`,
         aggregate.faithfulnessPercent != null ? `${aggregate.faithfulnessPercent}%` : "—",
         `${aggregate.commandDisciplinePercent}%`,
-        formatSeconds(aggregate.avgDurationMs),
+        `${formatSeconds(aggregate.medianDurationMs)} / ${formatSeconds(aggregate.p95DurationMs)}`,
         aggregate.avgOutputTokens ?? "",
         aggregate.avgCostUsd?.toFixed(3) ?? "",
         formatFailureTags(aggregate.failureTags),
@@ -2414,8 +2451,13 @@ specs solved on every repeat. The Wilson "CI95" is shown only when a cell has
 ≥ ${MIN_CI_RUNS} scored runs (below that it reads \`n<${MIN_CI_RUNS}\`, since e.g. 3/3 and 0/3
 intervals overlap and the interval is not informative).
 
-| Model | Effort | Effective reasoning | Path | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+"Index" is the single rankable 0-100 composite the table is sorted by:
+${Math.round(SCAFFBENCH_INDEX_WEIGHTS.validation * 100)}% macro validation + ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.wiredLibs * 100)}% wired-libs + ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.discipline * 100)}% command discipline,
+weighted toward the least saturated signal. Latency is median / p95 (wall-clock
+moves with provider load, so the mean alone is misleading over small samples).
+
+| Model | Effort | Effective reasoning | Path | Index | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs
