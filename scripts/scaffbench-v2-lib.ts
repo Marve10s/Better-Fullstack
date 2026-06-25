@@ -232,6 +232,26 @@ const MIN_CI_RUNS = 8;
 // command discipline saturate fast on assisted paths so they are weighted down.
 // Weights sum to 1.
 const SCAFFBENCH_INDEX_WEIGHTS = { validation: 0.6, wiredLibs: 0.25, discipline: 0.15 } as const;
+
+// Resolved once at the start of a run so every assisted invocation (canonical
+// command, MCP config, doctor, CLI prompt) pins the SAME generator version that
+// metadata records — otherwise a publish mid-run/resume would make later runs
+// exercise a different package than `bfGeneratorVersion` claims. Falls back to
+// "latest" when resolution fails (offline).
+let RESOLVED_BF_VERSION = "latest";
+
+function bfSpec(pkg: "better-fullstack" | "create-better-fullstack") {
+  return `${pkg}@${RESOLVED_BF_VERSION}`;
+}
+
+async function resolveBfVersion() {
+  const version = await tryCommandText(
+    "npm",
+    ["view", "create-better-fullstack@latest", "version"],
+    process.cwd(),
+  );
+  return version && /^\d+\.\d+\.\d+/.test(version) ? version : "latest";
+}
 const DEFAULT_EFFORTS: readonly Effort[] = ["low", "medium", "high"];
 const DEFAULT_PATHS: readonly CreationPath[] = ["mcp", "cli", "prompt"];
 const CLAUDE_TIMEOUT_MS = 15 * 60_000;
@@ -976,7 +996,7 @@ export function selectedSpecs(specIds: readonly string[]) {
 }
 
 export function canonicalCommand(spec: BenchmarkSpec, projectName: string) {
-  return ["bun", "create", "better-fullstack@latest", projectName, ...spec.canonicalFlags]
+  return ["bun", "create", bfSpec("better-fullstack"), projectName, ...spec.canonicalFlags]
     .map((part) => quoteArg(part))
     .join(" ");
 }
@@ -1019,7 +1039,7 @@ Create the project from scratch by writing the files and manifests needed for a 
     return `${base}
 
 Creation mode: Better-Fullstack CLI mention.
-Do not use MCP tools. Use the Better-Fullstack CLI via \`bun create better-fullstack@latest\`.
+Do not use MCP tools. Use the Better-Fullstack CLI via \`bun create ${bfSpec("better-fullstack")}\`.
 Map the requirements to explicit non-interactive CLI flags yourself; inspect \`--help\` if you are unsure of a flag name or value. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
 Use \`--no-install --no-git --disable-analytics\`.`;
   }
@@ -1041,6 +1061,9 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
   }
 
   await mkdir(options.outDir, { recursive: true });
+  // Pin the generator version up front so the canonical command, MCP config,
+  // doctor lane, CLI prompt, and recorded metadata all reference the same build.
+  RESOLVED_BF_VERSION = await resolveBfVersion();
   await writeHarnessFiles(options.outDir, options, specs);
 
   if (options.writeMatrixOnly) {
@@ -1210,7 +1233,7 @@ async function writeMcpConfigs(emptyMcpPath: string, bfsMcpPath: string, bunx: s
         mcpServers: {
           "better-fullstack": {
             command: bunx,
-            args: ["create-better-fullstack@latest", "mcp"],
+            args: [bfSpec("create-better-fullstack"), "mcp"],
           },
         },
       },
@@ -1534,7 +1557,7 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
     steps.doctor = toStep(
       await runCommand(
         bunx,
-        ["create-better-fullstack@latest", "doctor", ".", "--skip-checks", "--json"],
+        [bfSpec("create-better-fullstack"), "doctor", ".", "--skip-checks", "--json"],
         projectDir,
         VALIDATION_TIMEOUT_MS,
       ),
@@ -2492,14 +2515,10 @@ async function collectMetadata(options: ScaffbenchOptions) {
     ["--version"],
     process.cwd(),
   );
-  // The assisted paths exercise the PUBLISHED generator, not repo HEAD, so record
-  // the resolved create-better-fullstack version actually under test (best-effort,
-  // network — undefined offline). gitHead only describes the local checkout.
-  const bfGeneratorVersion = await tryCommandText(
-    "npm",
-    ["view", "create-better-fullstack@latest", "version"],
-    process.cwd(),
-  );
+  // The assisted paths exercise the PUBLISHED generator (pinned at run start via
+  // RESOLVED_BF_VERSION and used by every assisted invocation), not repo HEAD, so
+  // record the exact version under test; gitHead only describes the local checkout.
+  const bfGeneratorVersion = RESOLVED_BF_VERSION === "latest" ? undefined : RESOLVED_BF_VERSION;
   const toolchains = await collectToolchainVersions();
   return {
     cwd: process.cwd(),
