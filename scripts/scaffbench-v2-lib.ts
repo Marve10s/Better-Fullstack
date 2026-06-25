@@ -1350,31 +1350,54 @@ function tail(value: string, max = 4_000) {
   return value.length <= max ? value : value.slice(-max);
 }
 
-function parseClaudeResult(stdout: string): any | null {
+export function parseClaudeResult(stdout: string): any | null {
   try {
     return JSON.parse(stdout);
   } catch {
+    // Tolerate leading/trailing non-JSON (banner lines, warnings) by extracting
+    // the outermost {...} span before giving up.
+    const start = stdout.indexOf("{");
+    const end = stdout.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(stdout.slice(start, end + 1));
+      } catch {}
+    }
     const line = stdout
       .trim()
       .split("\n")
       .reverse()
-      .find((candidate) => candidate.startsWith("{") && candidate.endsWith("}"));
+      .find((candidate) => candidate.trim().startsWith("{") && candidate.trim().endsWith("}"));
     if (!line) return null;
     try {
-      return JSON.parse(line);
+      return JSON.parse(line.trim());
     } catch {
       return null;
     }
   }
 }
 
-async function findProjectDir(runDir: string, projectName: string) {
+const PROJECT_MANIFESTS = ["package.json", "Cargo.toml", "go.mod", "pyproject.toml", "bts.jsonc"];
+
+export async function findProjectDir(runDir: string, projectName: string) {
   const expected = path.join(runDir, projectName);
   if (existsSync(expected)) return expected;
 
   const entries = await readdir(runDir, { withFileTypes: true });
-  const dirs = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith("."));
-  if (dirs.length === 1) return path.join(runDir, dirs[0].name);
+  const dirs = entries.filter(
+    (entry) => entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules",
+  );
+  if (dirs.length === 1 && dirs[0]) return path.join(runDir, dirs[0].name);
+
+  // Multiple (or zero) candidate dirs: disambiguate by manifest presence so a
+  // stray directory the agent created does not shadow the real project, and an
+  // ambiguous tree resolves to null rather than a wrong guess.
+  const withManifest = dirs.filter((dir) =>
+    PROJECT_MANIFESTS.some((manifest) => existsSync(path.join(runDir, dir.name, manifest))),
+  );
+  if (withManifest.length === 1 && withManifest[0]) {
+    return path.join(runDir, withManifest[0].name);
+  }
   return null;
 }
 
@@ -2183,20 +2206,26 @@ function aggregateBy(
       // Per-spec macro statistics: treat each spec as a unit rather than pooling
       // heterogeneous-difficulty specs into one binomial (which understates
       // variance). pass@k / pass^k summarise reliability across repeats.
-      const bySpec = new Map<string, { scored: number; pass: number }>();
-      for (const result of scored) {
-        const entry = bySpec.get(result.specId) ?? { scored: 0, pass: 0 };
-        entry.scored += 1;
-        if (validationPassed(result)) entry.pass += 1;
+      // Track total repeats (from the full group) alongside scored/pass so that
+      // pass^k cannot be overstated: a spec with one passing scored repeat and
+      // the rest infra-inconclusive must NOT count as "passed every repeat".
+      const bySpec = new Map<string, { total: number; scored: number; pass: number }>();
+      for (const result of group) {
+        const entry = bySpec.get(result.specId) ?? { total: 0, scored: 0, pass: 0 };
+        entry.total += 1;
+        if (classifyOutcome(result) !== "infra-inconclusive") {
+          entry.scored += 1;
+          if (validationPassed(result)) entry.pass += 1;
+        }
         bySpec.set(result.specId, entry);
       }
       const specEntries = [...bySpec.values()];
-      const macroPassRate = average(
-        specEntries.map((entry) => (entry.scored > 0 ? (entry.pass / entry.scored) * 100 : 0)),
-      );
-      const passAllSpecs = specEntries.filter(
-        (entry) => entry.scored > 0 && entry.pass === entry.scored,
-      ).length;
+      // Macro pass rate averages only specs that were actually measured.
+      const measuredSpecs = specEntries.filter((entry) => entry.scored > 0);
+      const macroPassRate = average(measuredSpecs.map((entry) => (entry.pass / entry.scored) * 100));
+      // pass^k: passed on EVERY repeat (all repeats measured and passing).
+      const passAllSpecs = specEntries.filter((entry) => entry.pass === entry.total).length;
+      // pass@k: passed on at least one repeat.
       const passAnySpecs = specEntries.filter((entry) => entry.pass > 0).length;
 
       return {
@@ -2230,7 +2259,7 @@ function aggregateBy(
         ),
         avgDurationMs: average(group.map((result) => result.claude.durationMs)),
         avgOutputTokens: maybeAverage(group.map((result) => result.claude.outputTokens)),
-        avgCostUsd: maybeAverage(group.map((result) => result.claude.totalCostUsd)),
+        avgCostUsd: maybeAveragePrecise(group.map((result) => result.claude.totalCostUsd)),
         failureTags: countFailureTags(group),
       };
     })
@@ -2252,12 +2281,24 @@ function wilsonInterval(successes: number, total: number) {
 
 function average(values: readonly number[]) {
   if (values.length === 0) return 0;
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return Math.round(averagePrecise(values));
+}
+
+/** Unrounded mean — used for sub-unit quantities like USD cost, where rounding
+ * to a whole number before formatting would print a $0.40 mean as `0.000`. */
+function averagePrecise(values: readonly number[]) {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function maybeAverage(values: readonly (number | undefined)[]) {
   const present = values.filter((value): value is number => typeof value === "number");
   return present.length > 0 ? average(present) : undefined;
+}
+
+function maybeAveragePrecise(values: readonly (number | undefined)[]) {
+  const present = values.filter((value): value is number => typeof value === "number");
+  return present.length > 0 ? averagePrecise(present) : undefined;
 }
 
 function countFailureTags(group: readonly RunResult[]) {

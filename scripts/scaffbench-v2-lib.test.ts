@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -8,7 +8,9 @@ import {
   canonicalCommand,
   classifyOutcome,
   deriveFailureTags,
+  findProjectDir,
   parseArgs,
+  parseClaudeResult,
   promptFor,
   runCommand,
   scoreArtifact,
@@ -507,5 +509,83 @@ describe("ScaffBench 2.1 statistical reporting", () => {
     const [cell] = aggregateResults(runs).leaderboard;
 
     expect(cell).toMatchObject({ scoredRuns: 8, ciReportable: true });
+  });
+
+  it("does not count a partially-inconclusive spec as pass^k", () => {
+    const stepFail127 = {
+      command: "uv sync",
+      exitCode: 127,
+      timedOut: false,
+      spawnError: true,
+      durationMs: 1,
+      stdoutTail: "",
+      stderrTail: "",
+    };
+    const runs = [
+      makeRun({ id: "x1", specId: "spec-x", trial: 1, validation: passing() }),
+      makeRun({
+        id: "x2",
+        specId: "spec-x",
+        trial: 2,
+        validation: { projectExists: true, steps: { install: stepFail127 } },
+      }),
+    ];
+
+    const [cell] = aggregateResults(runs).leaderboard;
+
+    // 1 passing scored repeat + 1 infra-inconclusive: measured once, not "every repeat".
+    expect(cell).toMatchObject({
+      scoredRuns: 1,
+      inconclusiveCount: 1,
+      passAnySpecs: 1, // solved at least once
+      passAllSpecs: 0, // NOT solved on every repeat (one was unmeasured)
+      macroPassRate: 100, // the one measured repeat passed
+    });
+  });
+
+  it("reports sub-dollar average cost without integer rounding", () => {
+    const cheap = (id: string) =>
+      makeRun({
+        id,
+        claude: { exitCode: 0, timedOut: false, durationMs: 1000, totalCostUsd: 0.4 },
+        validation: passing(),
+      });
+
+    const [cell] = aggregateResults([cheap("c1"), cheap("c2")]).leaderboard;
+
+    expect(cell?.avgCostUsd).toBeCloseTo(0.4, 5);
+  });
+});
+
+describe("ScaffBench 2.1 resolution robustness", () => {
+  it("disambiguates the project directory by manifest when a stray dir exists", async () => {
+    const runDir = await mkdtemp(join(tmpdir(), "sb21-find-"));
+    try {
+      await mkdir(join(runDir, "scratch-notes"), { recursive: true });
+      await mkdir(join(runDir, "the-project"), { recursive: true });
+      await writeFile(join(runDir, "the-project", "package.json"), "{}");
+
+      expect(await findProjectDir(runDir, "missing-name")).toBe(join(runDir, "the-project"));
+    } finally {
+      await rm(runDir, { recursive: true, force: true });
+    }
+  });
+
+  it("returns the exact project dir when present", async () => {
+    const runDir = await mkdtemp(join(tmpdir(), "sb21-find-"));
+    try {
+      await mkdir(join(runDir, "proj"), { recursive: true });
+      expect(await findProjectDir(runDir, "proj")).toBe(join(runDir, "proj"));
+    } finally {
+      await rm(runDir, { recursive: true, force: true });
+    }
+  });
+
+  it("extracts the Claude result JSON despite surrounding noise", () => {
+    expect(parseClaudeResult('warning: banner\n{"total_cost_usd":1.5}\n')).toMatchObject({
+      total_cost_usd: 1.5,
+    });
+    expect(parseClaudeResult('{"a":1}')).toMatchObject({ a: 1 });
+    expect(parseClaudeResult("no json here")).toBeNull();
   });
 });
