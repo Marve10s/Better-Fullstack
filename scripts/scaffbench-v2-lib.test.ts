@@ -712,3 +712,41 @@ describe("ScaffBench 2.1 discovery lane", () => {
     }
   });
 });
+
+describe("ScaffBench 2.1 restraint spec", () => {
+  const minimalSpec = SCAFFBENCH_2_1_SPECS.find((spec) => spec.id === "ts-minimal-restraint")!;
+
+  it("exists as an opt-in extended spec (not in the default core suite)", () => {
+    expect(minimalSpec.lane).toBe("extended");
+    expect(parseArgs([]).specs).not.toContain("ts-minimal-restraint");
+  });
+
+  it("penalizes an over-engineered project but passes a lean one", async () => {
+    const overDir = await mkdtemp(join(tmpdir(), "sb21-over-"));
+    const leanDir = await mkdtemp(join(tmpdir(), "sb21-lean-"));
+    try {
+      // over-engineered: adds a backend + auth the spec forbids
+      await writeFile(
+        join(overDir, "package.json"),
+        JSON.stringify({
+          dependencies: { react: "*", vite: "*", tailwindcss: "*", hono: "*", "better-auth": "*" },
+        }),
+      );
+      const over = await scoreArtifact(minimalSpec, overDir);
+      expect(over.misses).toContain("forbidden:backend");
+      expect(over.misses).toContain("forbidden:auth");
+      expect(over.misses).not.toContain("frontend:react-vite");
+
+      // lean: only allowed libraries → all markers (incl. absent forbidden) match
+      await writeFile(
+        join(leanDir, "package.json"),
+        JSON.stringify({ dependencies: { react: "*", vite: "*", tailwindcss: "*" } }),
+      );
+      const lean = await scoreArtifact(minimalSpec, leanDir);
+      expect(lean.matched).toBe(lean.total);
+    } finally {
+      await rm(overDir, { recursive: true, force: true });
+      await rm(leanDir, { recursive: true, force: true });
+    }
+  });
+});
