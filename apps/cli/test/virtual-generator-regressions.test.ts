@@ -1077,6 +1077,32 @@ describe("Virtual Generator Regressions", () => {
     expect(readTextFromTree(result.tree!, "priv/repo/seeds.exs")).toBeUndefined();
   });
 
+  it("uses Req for Elixir Bypass tests instead of Erlang httpc", async () => {
+    const result = await createVirtual({
+      projectName: "elixir-bypass",
+      ecosystem: "elixir",
+      elixirWebFramework: "phoenix",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirRealtime: "none",
+      elixirJobs: "none",
+      elixirHttp: "none",
+      elixirJson: "jason",
+      elixirTesting: "bypass",
+    });
+
+    expect(result.success).toBe(true);
+
+    const mixProject = readTextFromTree(result.tree!, "mix.exs");
+    const bypassTest = readTextFromTree(result.tree!, "test/elixir_bypass/bypass_test.exs");
+
+    expect(mixProject).toContain("{:bypass");
+    expect(mixProject).toContain("{:req");
+    expect(bypassTest).toContain("Req.get(url)");
+    expect(bypassTest).not.toContain(":httpc");
+  });
+
   it("keeps Elixir Dockerfiles usable before mix.lock exists", async () => {
     const result = await createVirtual({
       projectName: "elixir-docker",

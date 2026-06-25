@@ -8,13 +8,10 @@ defmodule {{elixirModuleName}}.BypassTest do
       Plug.Conn.resp(conn, 200, ~s({"ok":true}))
     end)
 
-    {:ok, _} = Application.ensure_all_started(:inets)
-    url = ~c"http://localhost:#{bypass.port}/health"
+    url = "http://localhost:#{bypass.port}/health"
 
-    assert {:ok, response} = :httpc.request(:get, {url, []}, [], [])
-    assert elem(elem(response, 0), 1) == 200
-    body = elem(response, 2)
-
-    assert to_string(body) == ~s({"ok":true})
+    assert {:ok, response} = Req.get(url)
+    assert response.status == 200
+    assert response.body == ~s({"ok":true})
   end
 end
