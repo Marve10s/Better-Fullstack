@@ -504,7 +504,7 @@ export const SCAFFBENCH_2_1_SPECS: readonly BenchmarkSpec[] = [
       observability: ["@opentelemetry/api", "pino", "winston", "@sentry", "@logtail"],
       testing: ["vitest", "jest", "@playwright/test", "cypress"],
       i18n: ["@inlang/paraglide-js", "next-intl", "i18next", "react-i18next", "lingui"],
-      ci: [".github/workflows", ".gitlab-ci.yml", "circleci"],
+      ci: [".github/workflows", ".gitlab-ci.yml", ".circleci"],
     },
     validationProfile: {
       packageManager: "bun",
@@ -1279,7 +1279,17 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
             : await validateProject(spec, generatedDir, options);
           const scored = generatedDir
             ? await scoreProject(spec, generatedDir, options.promptStyle)
-            : { artifact: emptyArtifactScore(spec), faithfulness: undefined };
+            : {
+                artifact: emptyArtifactScore(spec),
+                faithfulness: undefined,
+                // A no-project discovery run satisfies zero capabilities — score it
+                // 0 rather than leaving it undefined, or maybeAverage would drop it
+                // and overstate the cell's Acceptance.
+                acceptance:
+                  options.promptStyle === "natural" && spec.acceptanceSets
+                    ? emptyAcceptanceScore(spec)
+                    : undefined,
+              };
           const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
 
           // Archive the generated source under the grading tree, then drop the
@@ -1666,13 +1676,15 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
     );
   const gate = typecheckGate(scripts, existsSync(path.join(projectDir, "tsconfig.json")));
   if (gate === "tsc") {
-    // No typecheck script shipped: fall back to a direct `tsc --noEmit` so a TS
-    // project cannot dodge type-checking simply by omitting the script.
+    // No typecheck script shipped: fall back to `tsc --build` so a TS project
+    // cannot dodge type-checking by omitting the script. `--build` (unlike
+    // `--noEmit`) descends into project references, so a root tsconfig with
+    // `files: []` + `references` still type-checks the referenced app/packages.
     const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
       ? `${process.env.HOME}/.bun/bin/bunx`
       : "bunx";
     steps.typecheck = toStep(
-      await runCommand(bunx, ["tsc", "--noEmit"], projectDir, VALIDATION_TIMEOUT_MS),
+      await runCommand(bunx, ["tsc", "--build"], projectDir, VALIDATION_TIMEOUT_MS),
     );
   } else if (gate) {
     steps.typecheck = toStep(
@@ -1990,18 +2002,34 @@ function scoreAcceptance(
   acceptanceSets: Record<string, readonly string[]>,
   index: ProjectIndex,
 ): StackScore {
-  const haystack = `${index.allText}\n${[...index.files].join("\n")}`;
+  const deps = [...index.dependencies];
+  const files = [...index.files];
   const capabilities = Object.entries(acceptanceSets);
   const misses: string[] = [];
   let matched = 0;
   for (const [capability, accepted] of capabilities) {
-    const satisfied = accepted.some(
-      (pattern) => index.dependencies.has(pattern) || haystack.includes(pattern),
-    );
+    const satisfied = accepted.some((pattern) => acceptancePatternMatch(pattern, deps, files));
     if (satisfied) matched += 1;
     else misses.push(capability);
   }
   return scoreFromCounts(matched, capabilities.length, misses);
+}
+
+/**
+ * Match an acceptance pattern precisely — NOT a substring over all project text,
+ * which would credit `ai` from `tailwindcss` or `vite` from `vitest`. A path-like
+ * pattern (starts with `.`) matches a file path; otherwise it matches a dependency
+ * exactly or as a scoped-package prefix (`@ai-sdk` → `@ai-sdk/react`).
+ */
+function acceptancePatternMatch(
+  pattern: string,
+  deps: readonly string[],
+  files: readonly string[],
+): boolean {
+  if (pattern.startsWith(".")) {
+    return files.some((file) => file === pattern || file.includes(`${pattern}/`));
+  }
+  return deps.some((dep) => dep === pattern || dep.startsWith(`${pattern}/`));
 }
 
 export function scoreBts(spec: BenchmarkSpec, raw: string): StackScore {
@@ -2136,6 +2164,15 @@ function emptyArtifactScore(spec: BenchmarkSpec): StackScore {
     total: spec.strictMarkers.length,
     percent: 0,
     misses: ["project not found or unscorable"],
+  };
+}
+
+function emptyAcceptanceScore(spec: BenchmarkSpec): StackScore {
+  return {
+    matched: 0,
+    total: Object.keys(spec.acceptanceSets ?? {}).length,
+    percent: 0,
+    misses: ["project not found"],
   };
 }
 
