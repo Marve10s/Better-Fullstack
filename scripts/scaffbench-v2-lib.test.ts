@@ -589,3 +589,63 @@ describe("ScaffBench 2.1 resolution robustness", () => {
     expect(parseClaudeResult("no json here")).toBeNull();
   });
 });
+
+describe("ScaffBench 2.1 composite index", () => {
+  const failingBuild = () => ({
+    projectExists: true,
+    steps: {
+      build: { command: "bun run build", exitCode: 1, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+    },
+  });
+  const stack80 = { matched: 8, total: 10, percent: 80, misses: [] };
+  const tool50 = { score: 1, total: 2, checks: [] };
+
+  it("computes the weighted index and median/p95 latency", () => {
+    const runs = [
+      makeRun({
+        id: "i1",
+        specId: "spec-a",
+        trial: 1,
+        claude: { exitCode: 0, timedOut: false, durationMs: 1000 },
+        stackScore: stack80,
+        toolCompliance: tool50,
+      }),
+      makeRun({
+        id: "i2",
+        specId: "spec-a",
+        trial: 2,
+        claude: { exitCode: 0, timedOut: false, durationMs: 3000 },
+        validation: failingBuild(),
+        stackScore: stack80,
+        toolCompliance: tool50,
+      }),
+    ];
+
+    const [cell] = aggregateResults(runs).leaderboard;
+
+    expect(cell).toMatchObject({
+      macroPassRate: 50,
+      stackPercent: 80,
+      commandDisciplinePercent: 50,
+      index: 58, // round(0.6*50 + 0.25*80 + 0.15*50) = round(57.5)
+      medianDurationMs: 1000,
+      p95DurationMs: 3000,
+    });
+  });
+
+  it("sorts the leaderboard by index descending", () => {
+    const high = makeRun({ id: "h", path: "mcp" });
+    const low = makeRun({
+      id: "l",
+      path: "prompt",
+      validation: failingBuild(),
+      stackScore: { matched: 2, total: 10, percent: 20, misses: [] },
+      toolCompliance: { score: 0, total: 2, checks: [] },
+    });
+
+    const board = aggregateResults([high, low]).leaderboard;
+
+    expect(board[0]?.path).toBe("mcp");
+    expect(board[0]?.index ?? 0).toBeGreaterThan(board[1]?.index ?? 0);
+  });
+});
