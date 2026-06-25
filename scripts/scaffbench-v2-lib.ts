@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 export type CreationPath = "mcp" | "cli" | "prompt";
@@ -22,7 +23,12 @@ export type FailureTag =
   | "tool-violation"
   | "typecheck-failed"
   | "validation-failed"
-  | "build-failed";
+  | "build-failed"
+  | "budget-exhausted"
+  | "toolchain-missing"
+  | "stack-unwired";
+
+export type RunOutcome = "success" | "model-failure" | "infra-inconclusive";
 
 export type StrictMarker = {
   id: string;
@@ -61,6 +67,10 @@ export type StepResult = {
   command: string;
   exitCode: number | null;
   timedOut: boolean;
+  /** True when the command binary itself could not be spawned (ENOENT) — an
+   * environment problem, distinct from a child process that ran and exited
+   * non-zero (e.g. a generated `bun run build` whose script is broken). */
+  spawnError?: boolean;
   durationMs: number;
   stdoutTail: string;
   stderrTail: string;
@@ -127,7 +137,10 @@ export type RunResult = {
     terminalReason?: string;
   };
   validation: ProjectValidation;
+  /** Primary "right libs" signal: libraries actually wired in the generated tree. */
   stackScore: StackScore;
+  /** Assisted-path diagnostic: whether bts.jsonc echoes the requested stack. */
+  generatorFaithfulness?: StackScore;
   toolCompliance: ToolCompliance;
   failureTags: FailureTag[];
 };
@@ -157,10 +170,13 @@ type SummaryAggregate = {
   effectiveReasoning?: string;
   path: CreationPath;
   runs: number;
+  scoredRuns: number;
+  inconclusiveCount: number;
   passCount: number;
   passRate: number;
   passCi95: { low: number; high: number };
   stackPercent: number;
+  faithfulnessPercent?: number;
   commandDisciplinePercent: number;
   avgDurationMs: number;
   avgOutputTokens?: number;
@@ -979,11 +995,8 @@ Create the project from scratch by writing the files and manifests needed for a 
 
 Creation mode: Better-Fullstack CLI mention.
 Do not use MCP tools. Use the Better-Fullstack CLI via \`bun create better-fullstack@latest\`.
-Map the requirements to explicit non-interactive CLI flags. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
-Use \`--no-install --no-git --disable-analytics\`.
-
-Canonical command shape for this spec:
-\`${canonicalCommand(spec, projectName)}\``;
+Map the requirements to explicit non-interactive CLI flags yourself; inspect \`--help\` if you are unsure of a flag name or value. Run the command with \`--dry-run\` first, then run the same scaffold command for real without \`--dry-run\`.
+Use \`--no-install --no-git --disable-analytics\`.`;
   }
 
   return `${base}
@@ -1021,6 +1034,12 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
   const metadata = await collectMetadata(options);
   const results = await readExistingResults(options.outDir);
 
+  // Agents run in an isolated workspace tree, disjoint from the grading tree
+  // (canonical-command.txt / spec.json / summary.json / sibling runs), so a
+  // CLI or MCP run cannot read the answer key out of its own working directory.
+  const workspaceRoot = path.join(os.tmpdir(), "scaffbench21-work", path.basename(options.outDir));
+  await mkdir(workspaceRoot, { recursive: true });
+
   for (const spec of specs) {
     for (const effort of options.efforts) {
       for (const pathMode of options.paths) {
@@ -1028,6 +1047,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
           const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
           const runDir = path.join(options.outDir, "runs", id);
+          const workDir = path.join(workspaceRoot, id);
           await mkdir(runDir, { recursive: true });
 
           if (results.some((result) => result.id === id)) {
@@ -1035,7 +1055,10 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
             continue;
           }
 
-          const prompt = promptFor(spec, pathMode, runDir, projectName, options.promptStyle);
+          await rm(workDir, { recursive: true, force: true }).catch(() => {});
+          await mkdir(workDir, { recursive: true });
+
+          const prompt = promptFor(spec, pathMode, workDir, projectName, options.promptStyle);
           await writeFile(path.join(runDir, "prompt.txt"), prompt);
           await writeFile(
             path.join(runDir, "canonical-command.txt"),
@@ -1045,7 +1068,7 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           log(`RUN ${id}`);
           const started = Date.now();
           const claude = await runClaude({
-            cwd: runDir,
+            cwd: workDir,
             prompt,
             model: options.model,
             effort,
@@ -1058,12 +1081,35 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           await writeFile(path.join(runDir, "claude.stderr.log"), claude.stderr);
 
           const parsed = parseClaudeResult(claude.stdout);
-          const projectDir = await findProjectDir(runDir, projectName);
+          const generatedDir = await findProjectDir(workDir, projectName);
           const validation = options.skipValidation
-            ? { projectExists: projectDir !== null, steps: {} }
-            : await validateProject(spec, projectDir, options);
-          const stackScore = projectDir ? await scoreProject(spec, projectDir) : emptyScore(spec);
-          const toolCompliance = await scoreToolCompliance(pathMode, projectDir, claude);
+            ? { projectExists: generatedDir !== null, steps: {} }
+            : await validateProject(spec, generatedDir, options);
+          const scored = generatedDir
+            ? await scoreProject(spec, generatedDir)
+            : { artifact: emptyArtifactScore(spec), faithfulness: undefined };
+          const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
+
+          // Archive the generated source under the grading tree, then drop the
+          // isolated workspace, so run artifacts stay durable without leaving
+          // the answer key reachable from the agent's working directory.
+          let projectDir = generatedDir;
+          if (generatedDir) {
+            const archivedDir = path.join(runDir, projectName);
+            try {
+              await archiveProjectSource(generatedDir, archivedDir);
+              projectDir = archivedDir;
+            } catch (error) {
+              log(
+                `WARN archive failed for ${id}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+            }
+          }
+          if (!generatedDir || projectDir !== generatedDir) {
+            await rm(workDir, { recursive: true, force: true }).catch(() => {});
+          }
           const result: RunResult = {
             id,
             specId: spec.id,
@@ -1088,7 +1134,8 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
               terminalReason: parsed?.terminal_reason,
             },
             validation,
-            stackScore,
+            stackScore: scored.artifact,
+            generatorFaithfulness: scored.faithfulness,
             toolCompliance,
             failureTags: [],
           };
@@ -1237,6 +1284,7 @@ export async function runCommand(
   let stdout = "";
   let stderr = "";
   let timedOut = false;
+  let spawnError = false;
   const timer = setTimeout(() => {
     timedOut = true;
     child.kill("SIGTERM");
@@ -1259,6 +1307,7 @@ export async function runCommand(
     };
 
     child.on("error", (error) => {
+      spawnError = true;
       stderr += `${stderr ? "\n" : ""}${error.name}: ${error.message}`;
       finish(127);
     });
@@ -1270,6 +1319,7 @@ export async function runCommand(
     command: [command, ...args].map(quoteArg).join(" "),
     exitCode,
     timedOut,
+    spawnError,
     durationMs: Date.now() - started,
     stdout,
     stderr,
@@ -1314,7 +1364,31 @@ async function findProjectDir(runDir: string, projectName: string) {
   return null;
 }
 
-async function validateProject(
+/** Copy the generated project source (excluding heavy build/dependency dirs)
+ * from the isolated workspace into the durable grading tree. */
+async function archiveProjectSource(srcDir: string, destDir: string) {
+  const skip = new Set([
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".next",
+    ".turbo",
+    "coverage",
+    "target",
+    ".venv",
+    "bin",
+    "obj",
+  ]);
+  await rm(destDir, { recursive: true, force: true });
+  await cp(srcDir, destDir, {
+    recursive: true,
+    force: true,
+    filter: (source) => !skip.has(path.basename(source)),
+  });
+}
+
+export async function validateProject(
   spec: BenchmarkSpec,
   projectDir: string | null,
   options: ScaffbenchOptions,
@@ -1638,12 +1712,35 @@ async function readPackageScripts(packageJsonPath: string) {
   }
 }
 
-export async function scoreProject(spec: BenchmarkSpec, projectDir: string) {
-  const btsPath = path.join(projectDir, "bts.jsonc");
-  if (existsSync(btsPath)) {
-    return scoreBts(spec, await readFile(btsPath, "utf8"));
-  }
+/**
+ * Score the libraries actually wired into the generated tree (dependency
+ * declarations + source imports + required files). This is the primary
+ * "right libs" signal for EVERY creation path, so a broken or empty generated
+ * package (e.g. a db package that declares nothing and is imported nowhere) no
+ * longer earns full stack credit on the strength of bts.jsonc alone.
+ */
+export async function scoreArtifact(spec: BenchmarkSpec, projectDir: string): Promise<StackScore> {
   return scoreMarkers(spec, await collectProjectIndex(projectDir));
+}
+
+/**
+ * Two complementary stack signals:
+ * - `artifact`: what is actually wired in the emitted project (primary).
+ * - `faithfulness`: assisted paths only — whether Better-Fullstack's own
+ *   bts.jsonc echoes the requested stack. A generator-honesty diagnostic, not
+ *   the capability metric. A high faithfulness with a low artifact score is the
+ *   signature of a generator that recorded a library it never wired.
+ */
+export async function scoreProject(
+  spec: BenchmarkSpec,
+  projectDir: string,
+): Promise<{ artifact: StackScore; faithfulness?: StackScore }> {
+  const artifact = await scoreArtifact(spec, projectDir);
+  const btsPath = path.join(projectDir, "bts.jsonc");
+  const faithfulness = existsSync(btsPath)
+    ? scoreBts(spec, await readFile(btsPath, "utf8"))
+    : undefined;
+  return { artifact, faithfulness };
 }
 
 export function scoreBts(spec: BenchmarkSpec, raw: string): StackScore {
@@ -1769,6 +1866,15 @@ function scoreFromCounts(matched: number, total: number, misses: string[]): Stac
     total,
     percent: total > 0 ? Math.round((matched / total) * 100) : 0,
     misses,
+  };
+}
+
+function emptyArtifactScore(spec: BenchmarkSpec): StackScore {
+  return {
+    matched: 0,
+    total: spec.strictMarkers.length,
+    percent: 0,
+    misses: ["project not found or unscorable"],
   };
 }
 
@@ -1947,12 +2053,61 @@ export function validationPassed(result: RunResult) {
   return steps.every((step) => step.exitCode === 0 && !step.timedOut);
 }
 
+function isBudgetExhausted(terminalReason: string | undefined) {
+  return terminalReason ? /budget|cost[_-]?limit|max[_-]?cost|spend/i.test(terminalReason) : false;
+}
+
+/**
+ * Three-way run outcome so the headline pass rate reflects model capability,
+ * not the test machine. An "infra-inconclusive" run is one where the harness or
+ * environment — not the model — prevented a clean measurement (a missing
+ * toolchain binary, a validation step that timed out, an exhausted token
+ * budget, or a generation that crashed without producing anything). These are
+ * excluded from the pass-rate denominator by `aggregateBy`.
+ */
+export function classifyOutcome(result: RunResult): RunOutcome {
+  if (isInfraInconclusive(result)) return "infra-inconclusive";
+  return validationPassed(result) ? "success" : "model-failure";
+}
+
+function isInfraInconclusive(result: RunResult): boolean {
+  // NOTE: a generation timeout (claude.timedOut) is intentionally NOT here — an
+  // agent that cannot finish within the generous gen budget is a real failure
+  // (cf. SWE-bench, which scores agent-loop timeouts as unresolved). Only
+  // environment/harness problems below are excluded from the pass denominator.
+  if (isBudgetExhausted(result.claude.terminalReason)) return true;
+  // claude crashed/blipped (e.g. MCP startup failure) without producing anything
+  if (
+    result.claude.exitCode !== 0 &&
+    !result.validation.projectExists &&
+    !result.claude.outputTokens
+  ) {
+    return true;
+  }
+  for (const step of Object.values(result.validation.steps)) {
+    if (!step) continue;
+    if (step.timedOut) return true;
+    if (step.spawnError) return true; // validator binary itself could not be spawned
+  }
+  return false;
+}
+
 export function deriveFailureTags(result: RunResult): FailureTag[] {
   const tags = new Set<FailureTag>();
   if (result.claude.timedOut) tags.add("claude-timeout");
   if (result.claude.exitCode !== 0) tags.add("claude-error");
+  if (isBudgetExhausted(result.claude.terminalReason)) tags.add("budget-exhausted");
   if (!result.validation.projectExists) tags.add("project-not-found");
   if (result.stackScore.matched < result.stackScore.total) tags.add("stack-mismatch");
+  // bts.jsonc records the full stack but the artifact does not wire it (e.g. an
+  // empty generated package): the generator claimed more than it produced.
+  if (
+    result.generatorFaithfulness &&
+    result.generatorFaithfulness.percent === 100 &&
+    result.stackScore.percent < 100
+  ) {
+    tags.add("stack-unwired");
+  }
   if (result.toolCompliance.checks.some((check) => check.status === "fail")) {
     tags.add("tool-violation");
     tags.add("command-discipline");
@@ -1961,6 +2116,14 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
   for (const [name, step] of Object.entries(result.validation.steps)) {
     if (!step || (step.exitCode === 0 && !step.timedOut)) continue;
     tags.add("validation-failed");
+    if (step.spawnError) {
+      // The validator binary itself could not be spawned (e.g. cargo/uv/go/dotnet
+      // not on PATH): an environment problem, not a model-authored break. A child
+      // process that ran and exited 127 (e.g. a generated `bun run build` whose
+      // script references a missing bin) is NOT this — it falls through below.
+      tags.add("toolchain-missing");
+      continue;
+    }
     if (name.includes("install") || name.includes("restore")) tags.add("install-failed");
     if (name.includes("build") || name.includes("cargoCheck")) tags.add("build-failed");
     if (name.includes("typecheck")) tags.add("typecheck-failed");
@@ -1998,8 +2161,10 @@ function aggregateBy(
   return [...groups.entries()]
     .map(([key, group]) => {
       const first = group[0];
-      const passCount = group.filter(validationPassed).length;
-      const ci = wilsonInterval(passCount, group.length);
+      const scored = group.filter((result) => classifyOutcome(result) !== "infra-inconclusive");
+      const inconclusiveCount = group.length - scored.length;
+      const passCount = scored.filter(validationPassed).length;
+      const ci = wilsonInterval(passCount, scored.length);
       return {
         key,
         specId: key.startsWith(first.specId) ? first.specId : undefined,
@@ -2008,10 +2173,15 @@ function aggregateBy(
         effectiveReasoning: first.effectiveReasoning,
         path: first.path,
         runs: group.length,
+        scoredRuns: scored.length,
+        inconclusiveCount,
         passCount,
-        passRate: Math.round((passCount / group.length) * 100),
+        passRate: scored.length > 0 ? Math.round((passCount / scored.length) * 100) : 0,
         passCi95: ci,
         stackPercent: average(group.map((result) => result.stackScore.percent)),
+        faithfulnessPercent: maybeAverage(
+          group.map((result) => result.generatorFaithfulness?.percent),
+        ),
         commandDisciplinePercent: average(
           group.map((result) =>
             result.toolCompliance.total > 0
@@ -2095,7 +2265,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         result.effectiveReasoning ?? "",
         result.model,
         result.path,
-        validationPassed(result) ? "pass" : "fail",
+        formatOutcome(classifyOutcome(result)),
         result.failureTags.join(", "),
         result.claude.exitCode ?? "null",
         formatSeconds(result.claude.durationMs),
@@ -2103,6 +2273,9 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         result.claude.totalCostUsd?.toFixed(3) ?? "",
         result.stackScore.percent,
         `${result.stackScore.matched}/${result.stackScore.total}`,
+        result.generatorFaithfulness
+          ? `${result.generatorFaithfulness.matched}/${result.generatorFaithfulness.total}`
+          : "—",
         result.validation.install?.exitCode ?? "",
         result.validation.build?.exitCode ?? "",
         result.validation.checkTypes?.exitCode ?? "",
@@ -2119,9 +2292,11 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         aggregate.effort,
         aggregate.effectiveReasoning ?? "",
         aggregate.path,
-        `${aggregate.passCount}/${aggregate.runs}`,
+        `${aggregate.passCount}/${aggregate.scoredRuns}`,
+        aggregate.inconclusiveCount > 0 ? `${aggregate.inconclusiveCount}/${aggregate.runs}` : "0",
         `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`,
         `${aggregate.stackPercent}%`,
+        aggregate.faithfulnessPercent != null ? `${aggregate.faithfulnessPercent}%` : "—",
         `${aggregate.commandDisciplinePercent}%`,
         formatSeconds(aggregate.avgDurationMs),
         aggregate.avgOutputTokens ?? "",
@@ -2134,22 +2309,36 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
   return `# ScaffBench 2.1 Run
 
 Harness: ${summary.harnessVersion}
+Agent: Claude Code (single agent; single model family per row)
 Specs: ${summary.specs.map((spec) => spec.id).join(", ")}
 Repeats: ${summary.options.repeats}
 Prompt style: ${summary.options.promptStyle}
 
-## Leaderboard
+## Path × effort summary
 
-| Model | Effort | Effective reasoning | Path | Pass@1 | Pass rate CI95 | Right libs | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+This is an ablation across creation paths and reasoning effort for one agent
+(Claude Code), not a cross-vendor leaderboard. Pass rate is over *scored* runs:
+infra-inconclusive runs (missing toolchain, validation timeout, exhausted token
+budget, or a crash with no output) are excluded from the denominator. "Wired
+libs" is scored from the generated artifact (deps + imports + files);
+"Faithful" is the assisted-path bts.jsonc-vs-requested diagnostic.
+
+| Model | Effort | Effective reasoning | Path | Pass@1 | Inconclusive | Pass rate CI95 | Wired libs | Faithful | Command discipline | Avg time | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs
 
-| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Right libs % | Right libs | Install | Build | Typecheck | Lint | Test |
-| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Wired % | Wired | Faithful | Install | Build | Typecheck | Lint | Test |
+| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${rows}
 `;
+}
+
+function formatOutcome(outcome: RunOutcome) {
+  if (outcome === "success") return "pass";
+  if (outcome === "infra-inconclusive") return "inconclusive";
+  return "fail";
 }
 
 function formatFailureTags(tags: Record<string, number>) {

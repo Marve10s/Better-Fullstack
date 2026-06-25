@@ -1,13 +1,19 @@
 import { describe, expect, it } from "bun:test";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   aggregateResults,
   canonicalCommand,
+  classifyOutcome,
   deriveFailureTags,
   parseArgs,
   promptFor,
   runCommand,
+  scoreArtifact,
   scoreBts,
+  scoreProject,
   SCAFFBENCH_2_1_SPECS,
   validationPassed,
   type RunResult,
@@ -114,11 +120,22 @@ describe("ScaffBench 2.1 harness config", () => {
     expect(mcpPrompt).toContain("bfs_create_project");
   });
 
+  it("does not leak the canonical command (answer key) into agent-facing prompts", () => {
+    const cliPrompt = promptFor(aiSpec, "cli", "/tmp/run", "workbench", "explicit");
+
+    // The agent must map requirements to flags itself; the full flag list is
+    // kept only in canonical-command.txt / spec.json for grading.
+    expect(cliPrompt).not.toContain(canonicalCommand(aiSpec, "workbench"));
+    expect(cliPrompt).not.toContain("--vector-db");
+    expect(cliPrompt).not.toContain("--shadcn-base");
+  });
+
   it("records missing spawned tools as failed commands", async () => {
     const result = await runCommand("scaffbench-missing-binary-for-test", [], process.cwd(), 1_000);
 
     expect(result.exitCode).toBe(127);
     expect(result.timedOut).toBe(false);
+    expect(result.spawnError).toBe(true);
     expect(result.stderr).toContain("scaffbench-missing-binary-for-test");
   });
 });
@@ -290,6 +307,158 @@ describe("ScaffBench 2.1 scoring", () => {
       passCount: 1,
       passRate: 50,
       failureTags: { "install-failed": 1, "validation-failed": 1 },
+    });
+  });
+});
+
+describe("ScaffBench 2.1 artifact-grounded scoring", () => {
+  it("scores libraries wired in the generated artifact, not just declared", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-artifact-"));
+    try {
+      await writeFile(
+        join(dir, "package.json"),
+        JSON.stringify({ dependencies: { hono: "^4", "@qdrant/js-client-rest": "^1" } }),
+      );
+      const spec = {
+        ...aiSpec,
+        strictMarkers: [
+          { id: "backend:hono", deps: ["hono"] },
+          { id: "vectorDb:qdrant", deps: ["@qdrant/js-client-rest"] },
+          { id: "search:opensearch", deps: ["@opensearch-project/opensearch"] },
+          { id: "forbidden:stripe", forbiddenDeps: ["stripe"] },
+        ],
+      };
+
+      const score = await scoreArtifact(spec, dir);
+
+      // hono + qdrant wired, stripe correctly absent => 3; opensearch missing.
+      expect(score).toMatchObject({ matched: 3, total: 4 });
+      expect(score.misses).toEqual(["search:opensearch"]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("separates artifact from faithfulness and flags a claimed-but-unwired stack", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sb21-unwired-"));
+    try {
+      // bts.jsonc records the full requested stack => 100% faithful...
+      await writeFile(
+        join(dir, "bts.jsonc"),
+        JSON.stringify({
+          ...Object.fromEntries(Object.entries(aiSpec.expectedConfig ?? {})),
+          addons: aiSpec.expectedAddons,
+        }),
+      );
+      // ...but the emitted tree wires almost nothing => low artifact score.
+      await writeFile(join(dir, "package.json"), JSON.stringify({ dependencies: { hono: "^4" } }));
+
+      const { artifact, faithfulness } = await scoreProject(aiSpec, dir);
+      expect(faithfulness?.percent).toBe(100);
+      expect(artifact.percent).toBeLessThan(100);
+
+      const run = makeRun({ stackScore: artifact, generatorFaithfulness: faithfulness });
+      expect(deriveFailureTags(run)).toContain("stack-unwired");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("ScaffBench 2.1 run outcomes", () => {
+  function stepResult(
+    command: string,
+    exitCode: number,
+    opts: { timedOut?: boolean; spawnError?: boolean } = {},
+  ) {
+    return {
+      command,
+      exitCode,
+      timedOut: opts.timedOut ?? false,
+      spawnError: opts.spawnError ?? false,
+      durationMs: 1,
+      stdoutTail: "",
+      stderrTail: "",
+    };
+  }
+
+  it("classifies a clean validation pass as success", () => {
+    expect(classifyOutcome(makeRun())).toBe("success");
+  });
+
+  it("classifies an un-spawnable validator binary as infra-inconclusive, not a build break", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: { cargoCheck: stepResult("cargo check", 127, { spawnError: true }) },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("toolchain-missing");
+    expect(tags).not.toContain("build-failed");
+  });
+
+  it("treats a child process exiting 127 (broken generated script) as a model-failure", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: stepResult("bun install", 0),
+          // bun ran fine; the generated `build` script referenced a missing bin.
+          build: stepResult("bun run build", 127),
+        },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("model-failure");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("build-failed");
+    expect(tags).not.toContain("toolchain-missing");
+  });
+
+  it("classifies an exhausted token budget as infra-inconclusive", () => {
+    const run = makeRun({
+      claude: { exitCode: 1, timedOut: false, durationMs: 60_000, terminalReason: "max_budget_exhausted" },
+      validation: { projectExists: false, steps: {} },
+    });
+
+    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(deriveFailureTags(run)).toContain("budget-exhausted");
+  });
+
+  it("keeps a real build failure as a model-failure, not inconclusive", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: { install: stepResult("bun install", 0), build: stepResult("bun run build", 1) },
+      },
+    });
+
+    expect(classifyOutcome(run)).toBe("model-failure");
+  });
+
+  it("excludes infra-inconclusive runs from the pass-rate denominator", () => {
+    const ok = makeRun();
+    const inconclusive = makeRun({
+      id: "ai-search-workbench-claude-opus-4-8-high-mcp-r02",
+      trial: 2,
+      validation: {
+        projectExists: true,
+        steps: { install: stepResult("uv sync", 127, { spawnError: true }) },
+      },
+    });
+
+    const aggregates = aggregateResults([ok, inconclusive]).leaderboard;
+
+    expect(aggregates).toHaveLength(1);
+    expect(aggregates[0]).toMatchObject({
+      runs: 2,
+      scoredRuns: 1,
+      inconclusiveCount: 1,
+      passCount: 1,
+      passRate: 100,
     });
   });
 });

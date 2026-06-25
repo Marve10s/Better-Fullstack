@@ -22,6 +22,10 @@ on:
         description: "Run deep smoke tests for the AI search benchmark template"
         type: boolean
         default: true
+      run_solvability:
+        description: "Run ScaffBench per-spec solvability gate (all ecosystems)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -345,6 +349,61 @@ jobs:
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
+
+  scaffbench-solvability:
+    name: ScaffBench Spec Solvability
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_solvability) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install protoc
+        # The rust-leptos-axum spec uses Tonic/gRPC, whose prost build script
+        # compiles .proto files with protoc at `cargo check` time.
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Show toolchains
+        run: |
+          echo "cargo:  $(cargo --version 2>&1 || echo MISSING)"
+          echo "go:     $(go version 2>&1 || echo MISSING)"
+          echo "uv:     $(uv --version 2>&1 || echo MISSING)"
+          echo "dotnet: $(dotnet --version 2>&1 || echo MISSING)"
+          echo "protoc: $(protoc --version 2>&1 || echo MISSING)"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: solvability-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: solvability-${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Packages
+        run: |
+          bun run --cwd packages/types build
+          bun run --cwd packages/template-generator build
+          bun run --cwd apps/cli build
+
+      - name: Run Spec Solvability Gate
+        run: bun test apps/cli/test/e2e/scaffbench-solvability.test.ts --timeout 1200000
 
   playwright:
     name: Playwright Web Builder Tests
