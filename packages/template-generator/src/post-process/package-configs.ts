@@ -97,6 +97,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const graphBackend = getGraphBackendConnection(config);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
+  const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
 
   if (graphBackend && hasWebWorkspace) {
     scripts.dev = pmConfig.filter("web", "dev");
@@ -118,6 +119,16 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts["dev:native"] = pmConfig.filter("native", "dev");
   } else {
     delete scripts["dev:native"];
+  }
+
+  if (hasDocsWorkspace) {
+    scripts["dev:docs"] = pmConfig.filter("docs", "dev");
+    scripts["build:docs"] = pmConfig.filter("docs", "build");
+    scripts["check:docs"] = pmConfig.filter("docs", "check-types");
+  } else {
+    delete scripts["dev:docs"];
+    delete scripts["build:docs"];
+    delete scripts["check:docs"];
   }
 
   if (graphBackend) {
@@ -188,7 +199,10 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     if (!workspaces.includes("packages/*")) {
       workspaces.push("packages/*");
     }
-    const needsAppsDir = config.frontend.length > 0 || addons.includes("starlight");
+    const needsAppsDir =
+      config.frontend.length > 0 ||
+      addons.includes("starlight") ||
+      addons.includes("fumadocs");
     if (needsAppsDir && !workspaces.includes("apps/*")) {
       workspaces.push("apps/*");
     }
@@ -304,8 +318,13 @@ function getWorkspaceTool(addons: ProjectConfig["addons"]): WorkspaceTool {
   return null;
 }
 
-function updateDbPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const pkgJson = vfs.readJson<PackageJson>("packages/db/package.json");
+export function updateDbPackageJson(
+  vfs: VirtualFileSystem,
+  config: ProjectConfig,
+  dbDir = "packages/db",
+): void {
+  const dbPkgPath = `${dbDir}/package.json`;
+  const pkgJson = vfs.readJson<PackageJson>(dbPkgPath);
   if (!pkgJson) return;
 
   pkgJson.name = `@${config.projectName}/db`;
@@ -345,7 +364,7 @@ function updateDbPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): voi
     scripts["db:down"] = "docker compose down";
   }
 
-  vfs.writeJson("packages/db/package.json", pkgJson);
+  vfs.writeJson(dbPkgPath, pkgJson);
 }
 
 function updateAuthPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): void {

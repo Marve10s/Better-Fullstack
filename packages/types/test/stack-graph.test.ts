@@ -149,6 +149,17 @@ function compareLegacyConfigToStackParts(
   return diagnostics;
 }
 
+function getTypeScriptApiOptionsForFrontend(frontend: string) {
+  return getStackPartOptions({
+    role: "api",
+    ecosystem: "typescript",
+    ownerRole: "backend",
+    ownerEcosystem: "typescript",
+    ownerToolId: "hono",
+    primaryToolIdsByRole: { frontend, backend: "hono" },
+  });
+}
+
 describe("stack graph", () => {
   it("parses repeated part bindings and lowers them to legacy compatibility fields", () => {
     const stackParts = parseStackPartSpecs([
@@ -322,6 +333,13 @@ describe("stack graph", () => {
     expect(djangoOptions).toContain("django-ninja");
   });
 
+  it("filters Apollo Server API options by frontend graph context", () => {
+    expect(getTypeScriptApiOptionsForFrontend("tanstack-router")).toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("svelte")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("solid")).not.toContain("apollo-server");
+    expect(getTypeScriptApiOptionsForFrontend("astro")).not.toContain("apollo-server");
+  });
+
   it("filters Elixir capability options by owner and generated support", () => {
     const phoenixRealtimeOptions = getStackPartOptions({
       role: "realtime",
@@ -343,7 +361,7 @@ describe("stack graph", () => {
     expect(phoenixRealtimeOptions).toContain("channels");
     expect(phoenixRealtimeOptions).not.toContain("live-view-streams");
     expect(liveViewRealtimeOptions).toContain("live-view-streams");
-    expect(getStackPartOptions({ role: "orm", ecosystem: "elixir" })).not.toContain("ecto");
+    expect(getStackPartOptions({ role: "orm", ecosystem: "elixir" })).toContain("ecto");
   });
 
   it("rejects invalid role bindings", () => {
@@ -469,6 +487,16 @@ describe("stack graph", () => {
       "backend:typescript:hono",
       "backend.api:typescript:trpc",
     ]);
+    const apolloSvelteParts = parseStackPartSpecs([
+      "frontend:typescript:svelte",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
+    const apolloAstroParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.api:typescript:apollo-server",
+    ]);
     const betterAuthParts = parseStackPartSpecs([
       "backend:typescript:hono",
       "backend.orm:typescript:typeorm",
@@ -479,9 +507,64 @@ describe("stack graph", () => {
     expect(validateStackParts(trpcParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
+    expect(validateStackParts(apolloSvelteParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
+    );
+    expect(validateStackParts(apolloAstroParts).issues).toContainEqual(
+      expect.objectContaining({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "api",
+        toolId: "apollo-server",
+      }),
+    );
     expect(validateStackParts(betterAuthParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
+  });
+
+  it("validates Keystatic CMS graph frontend support", () => {
+    const tanstackRouterParts = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const nuxtParts = parseStackPartSpecs([
+      "frontend:typescript:nuxt",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const nextParts = parseStackPartSpecs([
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.cms:typescript:keystatic",
+    ]);
+    const astroNodeParts = parseStackPartSpecs([
+      "frontend:typescript:astro",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:node",
+      "backend.cms:typescript:keystatic",
+    ]);
+
+    for (const parts of [tanstackRouterParts, nuxtParts, astroNodeParts]) {
+      expect(validateStackParts(parts).issues).toContainEqual(
+        expect.objectContaining({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          role: "cms",
+          toolId: "keystatic",
+          message:
+            "Keystatic is currently scaffolded for Next.js only because @keystatic/astro is not Astro 7-compatible yet.",
+        }),
+      );
+    }
+    expect(
+      validateStackParts(nextParts).issues.filter(
+        (issue) => issue.role === "cms" && issue.toolId === "keystatic",
+      ),
+    ).toEqual([]);
   });
 
   it("rejects incompatible backend-owned TypeScript AI graph selections", () => {
@@ -525,6 +608,10 @@ describe("stack graph", () => {
       "frontend:typescript:react-vite",
       "frontend.i18n:typescript:next-intl",
     ]);
+    const paraglideQwikParts = parseStackPartSpecs([
+      "frontend:typescript:qwik",
+      "frontend.i18n:typescript:paraglide",
+    ]);
     const freshParts = parseStackPartSpecs([
       "frontend:typescript:fresh",
       "frontend.animation:typescript:lottie",
@@ -538,6 +625,9 @@ describe("stack graph", () => {
       "INCOMPATIBLE_GRAPH_SELECTION",
     );
     expect(validateStackParts(nextIntlParts).issues.map((issue) => issue.code)).toContain(
+      "INCOMPATIBLE_OWNER_TOOL",
+    );
+    expect(validateStackParts(paraglideQwikParts).issues.map((issue) => issue.code)).toContain(
       "INCOMPATIBLE_OWNER_TOOL",
     );
     expect(validateStackParts(freshParts).issues.map((issue) => issue.code)).toContain(
@@ -703,7 +793,10 @@ describe("stack graph", () => {
       "INCOMPATIBLE_OWNER_TOOL",
     );
     expect(validateStackParts(obanParts).issues.map((issue) => issue.code)).toEqual(
-      expect.arrayContaining(["INCOMPATIBLE_GRAPH_SELECTION", "UNSUPPORTED_GRAPH_TOOL"]),
+      expect.arrayContaining(["INCOMPATIBLE_GRAPH_SELECTION"]),
+    );
+    expect(validateStackParts(obanParts).issues.map((issue) => issue.code)).not.toContain(
+      "UNSUPPORTED_GRAPH_TOOL",
     );
     expect(
       getStackPartCompatibilityIssueForPart(
@@ -715,8 +808,8 @@ describe("stack graph", () => {
           ownerPartId: phoenixBackend?.id,
         },
         phoenixParts,
-      )?.message,
-    ).toBe("Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth");
+      ),
+    ).toBeUndefined();
     expect(
       getStackPartCompatibilityIssueForPart(
         {
@@ -727,8 +820,8 @@ describe("stack graph", () => {
           ownerPartId: phoenixBackend?.id,
         },
         phoenixParts,
-      )?.message,
-    ).toBe("Fly.io config is not generated yet; use Docker or mix releases");
+      ),
+    ).toBeUndefined();
   });
 
   it("rejects ownerless Elixir Phoenix-context candidates through graph checks", () => {
@@ -802,7 +895,7 @@ describe("stack graph", () => {
         },
         [],
       )?.message,
-    ).toBe("Ueberauth is not generated yet; use phx.gen.auth or no auth");
+    ).toBe("Elixir auth scaffolds require Phoenix");
   });
 
   it("materializes provided capabilities and rejects conflicts unless overrideable", () => {
@@ -885,7 +978,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
 
   function getCompatibleBackendSingleConfig(field: string, value: string): Partial<ProjectConfig> {
     const config = { ...TS_BASE, [field]: value };
-    if (field === "cms" && value === "payload") {
+    if (field === "cms" && (value === "payload" || value === "keystatic")) {
       config.frontend = ["next"];
     }
     return config;
@@ -1483,22 +1576,6 @@ describe("stack graph structural round-trip (phase 0)", () => {
     expect(lowered.elixirHttp).toBe("finch");
     expect(lowered.elixirQuality).toBe("credo");
     expect(lowered.elixirDeploy).toBe("docker");
-  });
-
-  it("keeps unsupported elixir extras flat-only so imported configs never fail validation", () => {
-    const parts = legacyProjectConfigToStackParts({
-      ecosystem: "elixir",
-      elixirWebFramework: "phoenix",
-      elixirOrm: "ecto-sql",
-      elixirDeploy: "fly",
-      elixirTesting: "mox",
-      elixirCaching: "nebulex",
-    });
-
-    expect(parts.some((part) => part.role === "deploy")).toBe(false);
-    expect(parts.some((part) => part.role === "testing")).toBe(false);
-    expect(parts.some((part) => part.role === "caching")).toBe(false);
-    expect(validateStackParts(parts).issues).toEqual([]);
   });
 
   it("round-trips the Rust WASM frontend selections", () => {

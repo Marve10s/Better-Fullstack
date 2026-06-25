@@ -63,6 +63,7 @@ export function createCliDefaultProjectConfigBase(
     rateLimit: "none",
     i18n: "none",
     search: "none",
+    vectorDb: "none",
     fileStorage: "none",
     rustWebFramework: "none",
     rustFrontend: "none",
@@ -139,6 +140,8 @@ export function createCliDefaultProjectConfigBase(
     elixirQuality: "credo",
     elixirDeploy: "none",
     elixirLibraries: [],
-    aiDocs: ["claude-md"],
+    // Ship both CLAUDE.md (Claude Code) and AGENTS.md (the cross-tool standard,
+    // read by Codex/Cursor/Copilot/etc.) by default, matching create-next-app.
+    aiDocs: ["claude-md", "agents-md"],
   };
 }

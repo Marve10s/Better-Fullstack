@@ -673,11 +673,13 @@ export const extractLocaleFromRequestWithStrategies = (request, strategies, url 
     let locale;
     for (const strat of strategies) {
         if (TREE_SHAKE_COOKIE_STRATEGY_USED && strat === "cookie") {
+            const cookiePrefix = cookieName + "=";
             locale = request.headers
                 .get("cookie")
-                ?.split("; ")
-                .find((c) => c.startsWith(cookieName + "="))
-                ?.split("=")[1];
+                ?.split(";")
+                .map((c) => c.trim())
+                .find((c) => c.startsWith(cookiePrefix))
+                ?.slice(cookiePrefix.length);
         }
         else if (TREE_SHAKE_URL_STRATEGY_USED && strat === "url") {
             locale = extractLocaleFromUrl(effectiveRequestUrl);

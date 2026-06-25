@@ -113,6 +113,25 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
     addPackageDependency({ vfs, packagePath: "package.json", devDependencies: ["nx"] });
   }
 
+  if (config.addons.includes("ultracite")) {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: ["@biomejs/biome", "ultracite"],
+    });
+
+    const rootPkg = vfs.readJson<PackageJson>("package.json");
+    if (rootPkg) {
+      rootPkg.scripts = {
+        ...rootPkg.scripts,
+        lint: rootPkg.scripts?.lint ?? "ultracite check",
+        format: rootPkg.scripts?.format ?? "ultracite fix",
+        "lint:doctor": rootPkg.scripts?.["lint:doctor"] ?? "ultracite doctor",
+      };
+      vfs.writeJson("package.json", rootPkg);
+    }
+  }
+
   if (config.addons.includes("pwa") && hasPwaCompatibleFrontend) {
     if (vfs.exists(webPkgPath)) {
       addPackageDependency({

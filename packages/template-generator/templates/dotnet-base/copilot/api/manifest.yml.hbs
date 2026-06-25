@@ -1,0 +1,17 @@
+name: api
+type: Load Balanced Web Service
+
+image:
+  build:
+    dockerfile: Dockerfile
+    context: .
+  port: 8080
+
+http:
+  path: '/'
+  healthcheck:
+    path: '/'
+    port: 8080
+
+variables:
+  ASPNETCORE_ENVIRONMENT: Production

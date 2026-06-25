@@ -1,0 +1,17 @@
+{
+  "name": "{{projectName}}",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.devcontainer.yml"
+  ],
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/{{projectName}}",
+  "runServices": {{devcontainerRunServices}},
+  "forwardPorts": {{devcontainerForwardPorts}},
+  "postCreateCommand": {{devcontainerPostCreateCommand}},
+  "customizations": {
+    "vscode": {
+      "extensions": {{devcontainerExtensions}}
+    }
+  }
+}

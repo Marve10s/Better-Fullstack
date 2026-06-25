@@ -1,8 +1,34 @@
 {{#if dotnetHasEfCore}}
 using Microsoft.EntityFrameworkCore;
 {{/if}}
+{{#if dotnetHasMvc}}
+using Microsoft.AspNetCore.Mvc;
+{{/if}}
+{{#if dotnetHasBlazor}}
+using {{dotnetNamespace}}.Components;
+{{/if}}
+{{#if dotnetHasDapper}}
+using Dapper;
+{{#if (eq database "postgres")}}
+using Npgsql;
+{{else}}
+using Microsoft.Data.Sqlite;
+{{/if}}
+{{/if}}
+{{#if dotnetHasLinq2Db}}
+using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
+{{/if}}
 {{#if dotnetHasIdentity}}
 using Microsoft.AspNetCore.Identity;
+{{/if}}
+{{#if dotnetHasAuth0AspNet}}
+using Auth0.AspNetCore.Authentication;
+{{/if}}
+{{#if dotnetHasDuendeIdentityServer}}
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 {{/if}}
 {{#if dotnetHasSignalR}}
 using Microsoft.AspNetCore.SignalR;
@@ -27,6 +53,13 @@ using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
+{{#if dotnetHasMvc}}
+builder.Services.AddControllers();
+{{/if}}
+{{#if dotnetHasBlazor}}
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+{{/if}}
 {{#if dotnetHasSerilog}}
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration).WriteTo.Console());
@@ -50,6 +83,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {{/if}}
 });
 {{/if}}
+{{#if (and dotnetHasMinimalApiTodos dotnetHasDapperTodos)}}
+var dapperConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+{{#if (eq database "postgres")}}
+    ?? "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres";
+{{else}}
+    ?? "Data Source={{dotnetProjectName}}.db";
+{{/if}}
+{{/if}}
+{{#if (and dotnetHasMinimalApiTodos dotnetHasLinq2DbTodos)}}
+var linq2DbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+{{#if (eq database "postgres")}}
+    ?? "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres";
+{{else}}
+    ?? "Data Source={{dotnetProjectName}}.db";
+{{/if}}
+{{/if}}
 {{#if dotnetHasIdentity}}
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
@@ -57,6 +106,34 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddEntityFrameworkStores<AppDbContext>();
 {{/if}}
+{{/if}}
+{{#if dotnetHasAuth0AspNet}}
+builder.Services.AddAuth0WebAppAuthentication(options =>
+{
+    options.Domain = builder.Configuration["Auth0:Domain"] ?? "your-tenant.us.auth0.com";
+    options.ClientId = builder.Configuration["Auth0:ClientId"] ?? "AUTH0_CLIENT_ID";
+    options.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
+});
+builder.Services.AddAuthorization();
+{{/if}}
+{{#if dotnetHasDuendeIdentityServer}}
+builder.Services
+    .AddIdentityServer()
+    .AddInMemoryApiScopes(new[]
+    {
+        new ApiScope("api", "{{projectName}} API"),
+    })
+    .AddInMemoryClients(new[]
+    {
+        new Client
+        {
+            ClientId = "{{dotnetCloudName}}-machine",
+            ClientSecrets = { new Secret("development-secret".Sha256()) },
+            AllowedGrantTypes = GrantTypes.ClientCredentials,
+            AllowedScopes = { "api" },
+        },
+    })
+    .AddDeveloperSigningCredential();
 {{/if}}
 {{#if dotnetHasSignalR}}
 builder.Services.AddSignalR();
@@ -105,20 +182,59 @@ var app = builder.Build();
 
 app.UseCors();
 
+{{#if dotnetHasAuthentication}}
+app.UseAuthentication();
+app.UseAuthorization();
+
+{{/if}}
+{{#if dotnetHasDuendeIdentityServer}}
+app.UseIdentityServer();
+
+{{/if}}
+{{#if dotnetHasBlazor}}
+app.UseAntiforgery();
+
+app.MapGet("/api/status", () => Results.Ok(new
+{
+    name = "{{projectName}}",
+    framework = "{{dotnetWebFramework}}",
+    status = "ok"
+}));
+{{else}}
 app.MapGet("/", () => Results.Ok(new
 {
     name = "{{projectName}}",
     framework = "{{dotnetWebFramework}}",
     status = "ok"
 }));
+{{/if}}
 
-{{#if (eq dotnetApi "minimal-api")}}
+{{#if dotnetHasMinimalApiTodos}}
 {{#if dotnetHasEfCore}}
 app.MapGet("/api/todos", async (AppDbContext db) =>
 {
     return Results.Ok(await db.Todos.OrderBy(todo => todo.Id).ToListAsync());
 });
-{{else}}
+{{/if}}
+{{#if dotnetHasDapperTodos}}
+app.MapGet("/api/todos", async () =>
+{
+    await using var db = TodoDapper.CreateConnection(dapperConnectionString);
+    await TodoDapper.EnsureSchemaAsync(db);
+    var todos = await db.QueryAsync<TodoItem>("SELECT Id, Title, Complete FROM Todos ORDER BY Id");
+    return Results.Ok(todos);
+});
+{{/if}}
+{{#if dotnetHasLinq2DbTodos}}
+app.MapGet("/api/todos", () =>
+{
+    using var db = TodoLinq2Db.CreateConnection(linq2DbConnectionString);
+    TodoLinq2Db.EnsureSchema(db);
+    var todos = db.Todos.OrderBy(todo => todo.Id).ToList();
+    return Results.Ok(todos);
+});
+{{/if}}
+{{#if (and (not dotnetHasEfCore) (not dotnetHasDapperTodos) (not dotnetHasLinq2DbTodos))}}
 app.MapGet("/api/todos", () =>
 {
     return Results.Ok(Array.Empty<TodoItem>());
@@ -133,13 +249,52 @@ app.MapPost("/api/todos", async (TodoInput input, AppDbContext db) =>
     await db.SaveChangesAsync();
     return Results.Created($"/api/todos/{todo.Id}", todo);
 });
+{{/if}}
+{{#if dotnetHasDapperTodos}}
+app.MapPost("/api/todos", async (TodoInput input) =>
+{
+    await using var db = TodoDapper.CreateConnection(dapperConnectionString);
+    await TodoDapper.EnsureSchemaAsync(db);
+{{#if (eq database "postgres")}}
+    const string sql = """
+        INSERT INTO Todos (Title, Complete)
+        VALUES (@Title, @Complete)
+        RETURNING Id, Title, Complete
+        """;
+    var todo = await db.QuerySingleAsync<TodoItem>(sql, new { input.Title, Complete = false });
 {{else}}
+    const string sql = """
+        INSERT INTO Todos (Title, Complete)
+        VALUES (@Title, @Complete);
+        SELECT Id, Title, Complete
+        FROM Todos
+        WHERE Id = last_insert_rowid()
+        """;
+    var todo = await db.QuerySingleAsync<TodoItem>(sql, new { input.Title, Complete = false });
+{{/if}}
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+{{/if}}
+{{#if dotnetHasLinq2DbTodos}}
+app.MapPost("/api/todos", (TodoInput input) =>
+{
+    using var db = TodoLinq2Db.CreateConnection(linq2DbConnectionString);
+    TodoLinq2Db.EnsureSchema(db);
+    var todo = new TodoItem { Title = input.Title, Complete = false };
+    todo.Id = db.InsertWithInt32Identity(todo);
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+{{/if}}
+{{#if (and (not dotnetHasEfCore) (not dotnetHasDapperTodos) (not dotnetHasLinq2DbTodos))}}
 app.MapPost("/api/todos", (TodoInput input) =>
 {
     var todo = new TodoItem { Id = 1, Title = input.Title, Complete = false };
     return Results.Created($"/api/todos/{todo.Id}", todo);
 });
 {{/if}}
+{{/if}}
+{{#if dotnetHasMvc}}
+app.MapControllers();
 {{/if}}
 {{#if (eq dotnetApi "graphql-hotchocolate")}}
 app.MapGraphQL();
@@ -153,24 +308,254 @@ app.MapHealthChecks("/health");
 {{#if dotnetHasHangfire}}
 app.MapHangfireDashboard();
 {{/if}}
+{{#if dotnetHasBlazor}}
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+{{/if}}
 
 app.Run();
 
 public partial class Program;
 
+{{#if dotnetHasLinq2DbTodos}}
+[Table("Todos")]
+{{/if}}
 public sealed class TodoItem
 {
+{{#if dotnetHasLinq2DbTodos}}
+    [PrimaryKey, Identity]
+{{/if}}
     public int Id { get; set; }
+{{#if dotnetHasLinq2DbTodos}}
+    [Column, NotNull]
+{{/if}}
     public required string Title { get; set; }
+{{#if dotnetHasLinq2DbTodos}}
+    [Column]
+{{/if}}
     public bool Complete { get; set; }
 }
 
 public sealed record TodoInput(string Title);
 
+{{#if dotnetHasMvc}}
+[ApiController]
+[Route("api/[controller]")]
+public sealed class TodosController : ControllerBase
+{
+{{#if dotnetHasEfCore}}
+    private readonly AppDbContext db;
+
+    public TodosController(AppDbContext db)
+    {
+        this.db = db;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetTodos()
+    {
+        var todos = await db.Todos.OrderBy(todo => todo.Id).ToListAsync();
+        return Ok(todos);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateTodo(TodoInput input)
+    {
+        var todo = new TodoItem { Title = input.Title, Complete = false };
+        db.Todos.Add(todo);
+        await db.SaveChangesAsync();
+        return Created($"/api/todos/{todo.Id}", todo);
+    }
+{{/if}}
+{{#if dotnetHasDapperTodos}}
+    private readonly IConfiguration configuration;
+
+    public TodosController(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetTodos()
+    {
+        await using var db = TodoDapper.CreateConnection(TodoDapper.GetConnectionString(configuration));
+        await TodoDapper.EnsureSchemaAsync(db);
+        var todos = await db.QueryAsync<TodoItem>("SELECT Id, Title, Complete FROM Todos ORDER BY Id");
+        return Ok(todos);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateTodo(TodoInput input)
+    {
+        await using var db = TodoDapper.CreateConnection(TodoDapper.GetConnectionString(configuration));
+        await TodoDapper.EnsureSchemaAsync(db);
+{{#if (eq database "postgres")}}
+        const string sql = """
+            INSERT INTO Todos (Title, Complete)
+            VALUES (@Title, @Complete)
+            RETURNING Id, Title, Complete
+            """;
+        var todo = await db.QuerySingleAsync<TodoItem>(sql, new { input.Title, Complete = false });
+{{else}}
+        const string sql = """
+            INSERT INTO Todos (Title, Complete)
+            VALUES (@Title, @Complete);
+            SELECT Id, Title, Complete
+            FROM Todos
+            WHERE Id = last_insert_rowid()
+            """;
+        var todo = await db.QuerySingleAsync<TodoItem>(sql, new { input.Title, Complete = false });
+{{/if}}
+        return Created($"/api/todos/{todo.Id}", todo);
+    }
+{{/if}}
+{{#if dotnetHasLinq2DbTodos}}
+    private readonly IConfiguration configuration;
+
+    public TodosController(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    [HttpGet]
+    public IActionResult GetTodos()
+    {
+        using var db = TodoLinq2Db.CreateConnection(TodoLinq2Db.GetConnectionString(configuration));
+        TodoLinq2Db.EnsureSchema(db);
+        var todos = db.Todos.OrderBy(todo => todo.Id).ToList();
+        return Ok(todos);
+    }
+
+    [HttpPost]
+    public IActionResult CreateTodo(TodoInput input)
+    {
+        using var db = TodoLinq2Db.CreateConnection(TodoLinq2Db.GetConnectionString(configuration));
+        TodoLinq2Db.EnsureSchema(db);
+        var todo = new TodoItem { Title = input.Title, Complete = false };
+        todo.Id = db.InsertWithInt32Identity(todo);
+        return Created($"/api/todos/{todo.Id}", todo);
+    }
+{{/if}}
+{{#if (and (not dotnetHasEfCore) (not dotnetHasDapperTodos) (not dotnetHasLinq2DbTodos))}}
+    [HttpGet]
+    public IActionResult GetTodos()
+    {
+        return Ok(Array.Empty<TodoItem>());
+    }
+
+    [HttpPost]
+    public IActionResult CreateTodo(TodoInput input)
+    {
+        var todo = new TodoItem { Id = 1, Title = input.Title, Complete = false };
+        return Created($"/api/todos/{todo.Id}", todo);
+    }
+{{/if}}
+}
+{{/if}}
+
 {{#if dotnetHasEfCore}}
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<TodoItem> Todos => Set<TodoItem>();
+}
+{{/if}}
+{{#if dotnetHasDapperTodos}}
+public static class TodoDapper
+{
+    public static async Task EnsureSchemaAsync(System.Data.Common.DbConnection db)
+    {
+{{#if (eq database "postgres")}}
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS Todos (
+                Id SERIAL PRIMARY KEY,
+                Title TEXT NOT NULL,
+                Complete BOOLEAN NOT NULL DEFAULT FALSE
+            )
+            """;
+{{else}}
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS Todos (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Title TEXT NOT NULL,
+                Complete INTEGER NOT NULL DEFAULT 0
+            )
+            """;
+{{/if}}
+        await db.ExecuteAsync(sql);
+    }
+
+    public static string GetConnectionString(IConfiguration configuration)
+    {
+{{#if (eq database "postgres")}}
+        return configuration.GetConnectionString("DefaultConnection")
+            ?? "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres";
+{{else}}
+        return configuration.GetConnectionString("DefaultConnection")
+            ?? "Data Source={{dotnetProjectName}}.db";
+{{/if}}
+    }
+
+    public static System.Data.Common.DbConnection CreateConnection(string connectionString)
+    {
+{{#if (eq database "postgres")}}
+        return new NpgsqlConnection(connectionString);
+{{else}}
+        return new SqliteConnection(connectionString);
+{{/if}}
+    }
+}
+{{/if}}
+{{#if dotnetHasLinq2DbTodos}}
+public sealed class AppDataConnection(string connectionString) : DataConnection(
+{{#if (eq database "postgres")}}
+    ProviderName.PostgreSQL,
+{{else}}
+    ProviderName.SQLiteMS,
+{{/if}}
+    connectionString)
+{
+    public ITable<TodoItem> Todos => this.GetTable<TodoItem>();
+}
+
+public static class TodoLinq2Db
+{
+    public static void EnsureSchema(AppDataConnection db)
+    {
+{{#if (eq database "postgres")}}
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS Todos (
+                Id SERIAL PRIMARY KEY,
+                Title TEXT NOT NULL,
+                Complete BOOLEAN NOT NULL DEFAULT FALSE
+            )
+            """;
+{{else}}
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS Todos (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Title TEXT NOT NULL,
+                Complete INTEGER NOT NULL DEFAULT 0
+            )
+            """;
+{{/if}}
+        db.Execute(sql);
+    }
+
+    public static string GetConnectionString(IConfiguration configuration)
+    {
+{{#if (eq database "postgres")}}
+        return configuration.GetConnectionString("DefaultConnection")
+            ?? "Host=localhost;Port=5432;Database={{projectName}};Username=postgres;Password=postgres";
+{{else}}
+        return configuration.GetConnectionString("DefaultConnection")
+            ?? "Data Source={{dotnetProjectName}}.db";
+{{/if}}
+    }
+
+    public static AppDataConnection CreateConnection(string connectionString)
+    {
+        return new AppDataConnection(connectionString);
+    }
 }
 {{/if}}
 {{#if (eq dotnetApi "graphql-hotchocolate")}}

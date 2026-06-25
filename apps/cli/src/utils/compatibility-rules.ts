@@ -486,43 +486,55 @@ export function validateAddonCompatibility(
     }
   }
 
-  // Docker Compose targets containerized/self-hosted stacks only.
-  if (addon === "docker-compose") {
+  // Docker Compose-backed addons target containerized/self-hosted stacks only.
+  if (addon === "docker-compose" || addon === "devcontainer") {
+    const label = addon === "devcontainer" ? "DevContainer" : "docker-compose";
+    const title = addon === "devcontainer" ? "DevContainer" : "Docker Compose";
+
     if (backend === "convex") {
       return {
         isCompatible: false,
-        reason: "docker-compose is not compatible with Convex backend (managed service)",
+        reason: `${label} is not compatible with Convex backend (managed service)`,
       };
     }
     if (runtime === "workers") {
       return {
         isCompatible: false,
-        reason: "docker-compose is not compatible with Cloudflare Workers runtime",
+        reason: `${label} is not compatible with Cloudflare Workers runtime`,
+      };
+    }
+    if (
+      ecosystem !== undefined &&
+      !["typescript", "python", "go", "rust", "java"].includes(ecosystem)
+    ) {
+      return {
+        isCompatible: false,
+        reason: `${title} currently supports TypeScript, Python, Go, Rust, or Java projects`,
       };
     }
     if (ecosystem === "typescript" && !hasDockerComposeCompatibleFrontend(frontend)) {
       return {
         isCompatible: false,
         reason:
-          "Docker Compose currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro",
+          `${title} currently supports Next.js, Vinext, TanStack Router, React Router, React Vite, Solid, or Astro`,
       };
     }
     if (ecosystem === "typescript" && backend === "self" && !frontend.includes("next") && !frontend.includes("vinext")) {
       return {
         isCompatible: false,
-        reason: "Docker Compose self-backend support currently requires Next.js or Vinext",
+        reason: `${title} self-backend support currently requires Next.js or Vinext`,
       };
     }
     if (ecosystem === "rust" && rustFrontend && rustFrontend !== "none") {
       return {
         isCompatible: false,
-        reason: "Docker Compose for Rust currently supports server-only projects",
+        reason: `${title} for Rust currently supports server-only projects`,
       };
     }
     if (ecosystem === "java" && javaWebFramework && javaWebFramework !== "spring-boot") {
       return {
         isCompatible: false,
-        reason: "Docker Compose for Java currently requires Spring Boot",
+        reason: `${title} for Java currently requires Spring Boot`,
       };
     }
     if (
@@ -534,7 +546,7 @@ export function validateAddonCompatibility(
     ) {
       return {
         isCompatible: false,
-        reason: "Docker Compose for Python ORM projects currently supports SQLite defaults or Postgres",
+        reason: `${title} for Python ORM projects currently supports SQLite defaults or Postgres`,
       };
     }
   }

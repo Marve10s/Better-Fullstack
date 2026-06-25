@@ -663,15 +663,17 @@ function validateFrontendConstraints(
 }
 
 function validateApiConstraints(config: Partial<ProjectConfig>, _options: CLIInput) {
-  if (config.api !== "openapi") return;
+  if (config.api !== "openapi" && config.api !== "apollo-server") return;
+
+  const apiDisplayName = config.api === "apollo-server" ? "Apollo Server" : "OpenAPI";
 
   const frontend = config.frontend ?? [];
   if (
     frontend.some((item) => ["native-bare", "native-uniwind", "native-unistyles"].includes(item))
   ) {
     incompatibilityError({
-      message: "OpenAPI is currently available for web frontends, not React Native.",
-      provided: { api: "openapi", frontend },
+      message: `${apiDisplayName} is currently available for web frontends, not React Native.`,
+      provided: { api: config.api, frontend },
       suggestions: ["Use --api trpc", "Use --api orpc", "Use a web frontend"],
     });
   }
@@ -679,8 +681,8 @@ function validateApiConstraints(config: Partial<ProjectConfig>, _options: CLIInp
   const supportedBackends = ["hono", "express", "fastify", "elysia"];
   if (!config.backend || !supportedBackends.includes(config.backend)) {
     incompatibilityError({
-      message: "OpenAPI currently supports Hono, Express, Fastify, and Elysia backends.",
-      provided: { api: "openapi", backend: config.backend ?? "none" },
+      message: `${apiDisplayName} currently supports Hono, Express, Fastify, and Elysia backends.`,
+      provided: { api: config.api, backend: config.backend ?? "none" },
       suggestions: [
         "Use --backend hono",
         "Use --backend express",
@@ -758,68 +760,7 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
 
   const hasPhoenix = config.elixirWebFramework !== "none";
   const hasEcto = config.elixirOrm !== "none";
-
-  const unsupportedSelections = [
-    {
-      flag: "elixir-orm",
-      value: config.elixirOrm,
-      unsupported: ["ecto"],
-      message: "Plain Ecto without SQL Repo wiring is not generated yet.",
-      suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-orm none"],
-    },
-    {
-      flag: "elixir-auth",
-      value: config.elixirAuth,
-      unsupported: ["ueberauth", "guardian"],
-      message: "Only phx.gen.auth currently generates Phoenix auth files.",
-      suggestions: ["Use --elixir-auth phx-gen-auth", "Use --elixir-auth none"],
-    },
-    {
-      flag: "elixir-validation",
-      value: config.elixirValidation,
-      unsupported: ["nimble-options"],
-      message: "NimbleOptions is not generated yet.",
-      suggestions: ["Use --elixir-validation ecto-changesets", "Use --elixir-validation none"],
-    },
-    {
-      flag: "elixir-caching",
-      value: config.elixirCaching,
-      unsupported: ["nebulex"],
-      message: "Nebulex cache modules are not generated yet.",
-      suggestions: ["Use --elixir-caching cachex", "Use --elixir-caching none"],
-    },
-    {
-      flag: "elixir-observability",
-      value: config.elixirObservability,
-      unsupported: ["opentelemetry", "prom_ex"],
-      message: "OpenTelemetry and PromEx setup are not generated yet.",
-      suggestions: ["Use --elixir-observability telemetry", "Use --elixir-observability none"],
-    },
-    {
-      flag: "elixir-testing",
-      value: config.elixirTesting,
-      unsupported: ["mox", "bypass", "wallaby"],
-      message: "Generated Phoenix projects currently include ExUnit tests only.",
-      suggestions: ["Use --elixir-testing ex_unit"],
-    },
-    {
-      flag: "elixir-deploy",
-      value: config.elixirDeploy,
-      unsupported: ["fly", "gigalixir"],
-      message: "Fly.io and Gigalixir config files are not generated yet.",
-      suggestions: ["Use --elixir-deploy docker", "Use --elixir-deploy mix-release"],
-    },
-  ];
-
-  for (const selection of unsupportedSelections) {
-    if (selection.value && selection.unsupported.includes(selection.value)) {
-      incompatibilityError({
-        message: selection.message,
-        provided: { [selection.flag]: selection.value },
-        suggestions: selection.suggestions,
-      });
-    }
-  }
+  const hasEctoSql = config.elixirOrm === "ecto-sql";
 
   if (!hasPhoenix) {
     const phoenixOnlySelections = [
@@ -837,6 +778,11 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
         flag: "elixir-realtime",
         value: config.elixirRealtime,
         message: "Elixir realtime scaffolds require Phoenix.",
+      },
+      {
+        flag: "elixir-testing",
+        value: config.elixirTesting === "wallaby" ? config.elixirTesting : "none",
+        message: "Wallaby browser tests require Phoenix.",
       },
     ];
 
@@ -866,9 +812,9 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
     });
   }
 
-  if (config.elixirAuth === "phx-gen-auth" && !hasEcto) {
+  if (config.elixirAuth === "phx-gen-auth" && !hasEctoSql) {
     incompatibilityError({
-      message: "phx.gen.auth requires Ecto in the generated Phoenix scaffold.",
+      message: "phx.gen.auth requires Ecto SQL with PostgreSQL in the generated Phoenix scaffold.",
       provided: {
         "elixir-auth": "phx-gen-auth",
         "elixir-orm": config.elixirOrm ?? "none",
@@ -1011,10 +957,11 @@ function validateRateLimitConstraints(config: Partial<ProjectConfig>) {
 
 function validateSearchConstraints(config: Partial<ProjectConfig>) {
   if (!config.search || config.search === "none") return;
-  if (config.ecosystem !== "typescript" && config.search !== "meilisearch") {
+  const ecosystem = config.ecosystem ?? "typescript";
+  if (ecosystem !== "typescript" && config.search !== "meilisearch") {
     incompatibilityError({
       message: "Only Meilisearch search is available for non-TypeScript ecosystems.",
-      provided: { ecosystem: config.ecosystem ?? "typescript", search: config.search },
+      provided: { ecosystem, search: config.search },
       suggestions: ["Use --search meilisearch", "Use --search none"],
     });
   }

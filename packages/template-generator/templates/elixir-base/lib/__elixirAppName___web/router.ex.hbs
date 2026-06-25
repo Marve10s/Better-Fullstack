@@ -22,10 +22,19 @@ defmodule {{elixirModuleName}}Web.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-{{#if (eq elixirWebFramework "phoenix-live-view")}}
+{{#if (eq elixirRealtime "live-view-streams")}}
     live "/items", ItemLive.Index, :index
 {{/if}}
   end
+
+{{#if (eq elixirAuth "ueberauth")}}
+  scope "/auth", {{elixirModuleName}}Web do
+    pipe_through :browser
+
+    get "/:provider", OAuthController, :request
+    get "/:provider/callback", OAuthController, :callback
+  end
+{{/if}}
 
   scope "/api", {{elixirModuleName}}Web do
     pipe_through :api
@@ -35,6 +44,10 @@ defmodule {{elixirModuleName}}Web.Router do
     post "/users/register", UserSessionController, :register
     post "/users/login", UserSessionController, :login
     delete "/users/logout", UserSessionController, :logout
+{{/if}}
+{{#if (eq elixirAuth "guardian")}}
+    post "/auth/token", TokenController, :create
+    get "/auth/me", TokenController, :show
 {{/if}}
 {{#if (and (eq elixirApi "rest") (ne elixirOrm "none"))}}
     resources "/items", ItemController, only: [:index, :show, :create]

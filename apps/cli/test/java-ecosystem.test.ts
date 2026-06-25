@@ -178,6 +178,9 @@ describe("Java Ecosystem", () => {
 
       expect(pomContent).toContain("<artifactId>spring-boot-starter-webmvc</artifactId>");
       expect(pomContent).toContain("<artifactId>spring-boot-starter-webmvc-test</artifactId>");
+      expect(pomContent).toContain("<artifactId>jetty-bom</artifactId>");
+      expect(pomContent).toContain("<artifactId>jetty-ee10-bom</artifactId>");
+      expect(pomContent).toContain("<wiremock.jetty.version>12.0.30</wiremock.jetty.version>");
       expect(pomContent).toContain("<groupId>com.example</groupId>");
       expect(pomContent).toContain("<artifactId>java-pom-check</artifactId>");
       expect(pomContent).not.toContain("package.json");
@@ -758,6 +761,12 @@ describe("Java Ecosystem", () => {
       );
       expect(gradleContent).toContain('testImplementation("org.assertj:assertj-core:3.27.7")');
       expect(gradleContent).toContain('testImplementation("io.rest-assured:rest-assured:6.0.0")');
+      expect(gradleContent).toContain(
+        'testImplementation(enforcedPlatform("org.eclipse.jetty:jetty-bom:12.0.30"))',
+      );
+      expect(gradleContent).toContain(
+        'testImplementation(enforcedPlatform("org.eclipse.jetty.ee10:jetty-ee10-bom:12.0.30"))',
+      );
       expect(gradleContent).toContain('testImplementation("org.wiremock:wiremock-jetty12:3.13.2")');
       expect(gradleContent).toContain('testImplementation("org.awaitility:awaitility:4.3.0")');
       expect(gradleContent).not.toContain("mockito-junit-jupiter");

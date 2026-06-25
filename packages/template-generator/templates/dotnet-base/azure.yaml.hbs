@@ -1,0 +1,11 @@
+name: {{dotnetCloudName}}
+metadata:
+  template: better-fullstack-dotnet-azure@0.1.0
+services:
+  api:
+    project: .
+    language: dotnet
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: .

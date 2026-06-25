@@ -1,0 +1,12 @@
+defmodule {{elixirModuleName}}Web.HomeFeatureTest do
+  use ExUnit.Case, async: true
+  use Wallaby.Feature
+
+  import Wallaby.Query, only: [css: 2]
+
+  feature "home page renders", %{session: session} do
+    session
+    |> visit("/")
+    |> assert_has(css("h1", text: "{{projectName}}"))
+  end
+end

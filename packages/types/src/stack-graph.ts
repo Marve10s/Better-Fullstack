@@ -126,6 +126,7 @@ import {
   RUST_WEB_FRAMEWORK_VALUES,
   SERVER_DEPLOY_VALUES,
   SEARCH_VALUES,
+  VECTOR_DB_VALUES,
   I18N_VALUES,
   ELIXIR_HTTP_VALUES,
   ELIXIR_QUALITY_VALUES,
@@ -141,7 +142,7 @@ export type StackPrimaryRole = Extract<
   "frontend" | "backend" | "mobile" | "database"
 >;
 type LegacyBackendEcosystem = Exclude<Ecosystem, "typescript" | "react-native">;
-type LegacyCapabilityRole = Extract<StackPartRole, "orm" | "api" | "auth">;
+type LegacyCapabilityRole = Extract<StackPartRole, "orm" | "api" | "auth" | "email" | "observability">;
 
 export type ProvidedCapabilityDefinition = {
   role: StackPartRole;
@@ -201,35 +202,42 @@ const WEB_FRONTENDS = FRONTEND_VALUES.filter(
 );
 const DJANGO_API_TOOLS = new Set(["django-rest-framework", "django-ninja"]);
 const JAVA_SPRING_CAPABILITY_TOOLS = new Set(["spring-data-jpa", "spring-security"]);
+const PARAGLIDE_COMPATIBLE_FRONTENDS = new Set([
+  "next",
+  "nuxt",
+  "vinext",
+  "tanstack-router",
+  "tanstack-start",
+  "react-router",
+  "react-vite",
+  "svelte",
+  "solid",
+  "solid-start",
+  "astro",
+]);
 const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "nuxt",
   "svelte",
   "solid",
   "solid-start",
 ]);
+const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
+  "tanstack-router",
+  "react-router",
+  "react-vite",
+  "tanstack-start",
+  "next",
+  "vinext",
+]);
 const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
-const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe", "phx-gen-auth"]);
-const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
+const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe"]);
+const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban", "phx-gen-auth"]);
 const ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES: Partial<Record<StackPartRole, string>> = {
   auth: "Elixir auth scaffolds require Phoenix",
   api: "Elixir API scaffolds require Phoenix",
   realtime: "Elixir realtime scaffolds require Phoenix",
 };
-const ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES: Record<string, string> = {
-  ecto: "Use Ecto SQL for generated Repo, migrations, schemas, and PostgreSQL wiring",
-  ueberauth: "Ueberauth is not generated yet; use phx.gen.auth or no auth",
-  guardian: "Guardian JWT wiring is not generated yet; use phx.gen.auth or no auth",
-  "nimble-options": "NimbleOptions is not generated yet; use Ecto Changesets or no extra validation",
-  nebulex: "Nebulex cache modules are not generated yet; use Cachex or no cache",
-  opentelemetry:
-    "OpenTelemetry setup is not generated yet; use Phoenix telemetry or no extra observability",
-  prom_ex: "PromEx setup is not generated yet; use Phoenix telemetry or no extra observability",
-  mox: "Mox-specific test boundaries are not generated yet; use ExUnit",
-  bypass: "Bypass-specific HTTP tests are not generated yet; use ExUnit",
-  wallaby: "Wallaby browser tests are not generated yet; use ExUnit",
-  fly: "Fly.io config is not generated yet; use Docker or mix releases",
-  gigalixir: "Gigalixir config is not generated yet; use Docker or mix releases",
-};
+const ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES: Record<string, string> = {};
 export const ELIXIR_UNSUPPORTED_GRAPH_TOOLS = new Set(
   Object.keys(ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES),
 );
@@ -251,10 +259,34 @@ const LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM = {
 } as const satisfies Record<LegacyBackendEcosystem, keyof ProjectConfig>;
 
 const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
-  rust: { orm: "rustOrm", api: "rustApi", auth: "rustAuth" },
-  python: { orm: "pythonOrm", api: "pythonApi", auth: "pythonAuth" },
-  go: { orm: "goOrm", api: "goApi", auth: "goAuth" },
-  java: { orm: "javaOrm", api: "javaApi", auth: "javaAuth" },
+  rust: {
+    orm: "rustOrm",
+    api: "rustApi",
+    auth: "rustAuth",
+    email: "email",
+    observability: "observability",
+  },
+  python: {
+    orm: "pythonOrm",
+    api: "pythonApi",
+    auth: "pythonAuth",
+    email: "email",
+    observability: "observability",
+  },
+  go: {
+    orm: "goOrm",
+    api: "goApi",
+    auth: "goAuth",
+    email: "email",
+    observability: "observability",
+  },
+  java: {
+    orm: "javaOrm",
+    api: "javaApi",
+    auth: "javaAuth",
+    email: "email",
+    observability: "observability",
+  },
   dotnet: { orm: "dotnetOrm", api: "dotnetApi", auth: "dotnetAuth" },
   elixir: { orm: "elixirOrm", api: "elixirApi", auth: "elixirAuth" },
 } as const satisfies Record<
@@ -266,6 +298,7 @@ const LEGACY_TYPESCRIPT_BACKEND_SINGLE_CATEGORIES = {
   logging: "logging",
   email: "email",
   search: "search",
+  vectorDb: "vectorDb",
   caching: "caching",
   observability: "observability",
   jobQueue: "jobQueue",
@@ -338,6 +371,8 @@ const WORKSPACE_TOOLING_ADDONS = new Set([
   "turborepo",
   "nx",
   "docker-compose",
+  "devcontainer",
+  "github-actions",
   "ruler",
   "mcp",
   "skills",
@@ -712,6 +747,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(LOGGING_VALUES, "logging", "typescript", "logging"),
   ...defineTools(EMAIL_VALUES, "email", "typescript", "email"),
   ...defineTools(SEARCH_VALUES, "search", "typescript", "search"),
+  ...defineTools(VECTOR_DB_VALUES, "vectorDb", "typescript", "vectorDb"),
   ...defineTools(CACHING_VALUES, "caching", "typescript", "caching"),
   ...defineTools(OBSERVABILITY_VALUES, "observability", "typescript", "observability"),
   ...defineTools(JOB_QUEUE_VALUES, "jobQueue", "typescript", "jobQueue"),
@@ -734,6 +770,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(RUST_ORM_VALUES, "orm", "rust", "rustOrm"),
   ...defineTools(RUST_API_VALUES, "api", "rust", "rustApi"),
   ...defineTools(RUST_AUTH_VALUES, "auth", "rust", "rustAuth"),
+  ...defineTools(["resend"], "email", "rust", "email"),
+  ...defineTools(["sentry"], "observability", "rust", "observability"),
   ...defineTools(RUST_REALTIME_VALUES, "realtime", "rust", "rustRealtime"),
   ...defineTools(RUST_MESSAGE_QUEUE_VALUES, "jobQueue", "rust", "rustMessageQueue"),
   ...defineTools(RUST_OBSERVABILITY_VALUES, "observability", "rust", "rustObservability"),
@@ -751,6 +789,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(PYTHON_AI_VALUES, "ai", "python", "pythonAi", { allowMultiple: true }),
   ...defineTools(PYTHON_API_VALUES, "api", "python", "pythonApi"),
   ...defineTools(PYTHON_AUTH_VALUES, "auth", "python", "pythonAuth"),
+  ...defineTools(["resend"], "email", "python", "email"),
+  ...defineTools(["sentry"], "observability", "python", "observability"),
   ...defineTools(PYTHON_TASK_QUEUE_VALUES, "jobQueue", "python", "pythonTaskQueue"),
   ...defineTools(PYTHON_GRAPHQL_VALUES, "api", "python", "pythonGraphql"),
   ...defineTools(PYTHON_QUALITY_VALUES, "codeQuality", "python", "pythonQuality"),
@@ -767,6 +807,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(GO_ORM_VALUES, "orm", "go", "goOrm"),
   ...defineTools(GO_API_VALUES, "api", "go", "goApi"),
   ...defineTools(GO_AUTH_VALUES, "auth", "go", "goAuth"),
+  ...defineTools(["resend"], "email", "go", "email"),
+  ...defineTools(["sentry"], "observability", "go", "observability"),
   ...defineTools(GO_CLI_VALUES, "cli", "go", "goCli"),
   ...defineTools(GO_LOGGING_VALUES, "logging", "go", "goLogging"),
   ...defineTools(GO_TESTING_VALUES, "testing", "go", "goTesting", {
@@ -782,6 +824,8 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(JAVA_ORM_VALUES, "orm", "java", "javaOrm"),
   ...defineTools(JAVA_AUTH_VALUES, "auth", "java", "javaAuth"),
   ...defineTools(JAVA_API_VALUES, "api", "java", "javaApi"),
+  ...defineTools(["resend"], "email", "java", "email"),
+  ...defineTools(["sentry"], "observability", "java", "observability"),
   ...defineTools(JAVA_LOGGING_VALUES, "logging", "java", "javaLogging"),
   ...defineTools(JAVA_LIBRARIES_VALUES, "libraries", "java", "javaLibraries", {
     allowMultiple: true,
@@ -969,6 +1013,21 @@ function createTypeScriptFrontendCompatibilityIssue(
     });
   }
 
+  if (
+    part.role === "i18n" &&
+    part.toolId === "paraglide" &&
+    context.ownerToolId &&
+    !PARAGLIDE_COMPATIBLE_FRONTENDS.has(context.ownerToolId)
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: `Paraglide is not yet wired for the '${context.ownerToolId}' frontend`,
+    });
+  }
+
   if (part.role === "ui") {
     const compatibility =
       UI_LIBRARY_COMPATIBILITY[part.toolId as keyof typeof UI_LIBRARY_COMPATIBILITY];
@@ -1072,6 +1131,20 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Payload CMS v3 requires a Next.js frontend.",
+      });
+    }
+  }
+
+  if (part.role === "cms" && part.toolId === "keystatic") {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool !== "next") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message:
+          "Keystatic is currently scaffolded for Next.js only because @keystatic/astro is not Astro 7-compatible yet.",
       });
     }
   }
@@ -1488,14 +1561,16 @@ function createAddonCompatibilityIssue(
   }
 
   if (part.role === "workspaceTooling") {
-    if (part.toolId === "docker-compose") {
+    if (part.toolId === "docker-compose" || part.toolId === "devcontainer") {
+      const title = part.toolId === "devcontainer" ? "DevContainer" : "Docker Compose";
+
       if (backendTool === "convex") {
         return createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Convex backend.",
+          message: `${title} is not compatible with Convex backend.`,
         });
       }
       if (runtimeTool === "workers") {
@@ -1504,7 +1579,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not compatible with Cloudflare Workers runtime.",
+          message: `${title} is not compatible with Cloudflare Workers runtime.`,
         });
       }
       if (
@@ -1517,7 +1592,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose is not wired for the selected web frontend.",
+          message: `${title} is not wired for the selected web frontend.`,
         });
       }
       if (backendEcosystem === "typescript" && backendTool === "self" && frontendTool !== "next") {
@@ -1526,7 +1601,7 @@ function createAddonCompatibilityIssue(
           partId: part.id,
           role: part.role,
           toolId: part.toolId,
-          message: "Docker Compose self-backend support currently requires Next.js.",
+          message: `${title} self-backend support currently requires Next.js.`,
         });
       }
     }
@@ -1855,6 +1930,23 @@ function getStackPartCompatibilityIssue(
 
   if (
     part.ecosystem === "typescript" &&
+    part.role === "api" &&
+    part.toolId === "apollo-server"
+  ) {
+    const frontendTool = context.primaryToolIdsByRole?.frontend;
+    if (frontendTool && !TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS.has(frontendTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "typescript" &&
     part.role === "auth" &&
     (part.toolId === "better-auth" || part.toolId === "better-auth-organizations")
   ) {
@@ -1902,51 +1994,6 @@ function getStackPartCompatibilityIssue(
     }
   }
 
-  if (
-    part.ecosystem === "elixir" &&
-    ELIXIR_ECTO_SQL_REQUIRED_TOOLS.has(part.toolId) &&
-    (!context.ownerRole || context.ownerRole === "backend")
-  ) {
-    const ormTool = context.siblingToolIdsByRole?.orm ?? context.selectedToolIdsByRole?.orm;
-    if (ormTool !== "ecto-sql") {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold",
-      });
-    }
-  }
-
-  if (
-    part.ecosystem === "elixir" &&
-    part.toolId === "live-view-streams" &&
-    context.ownerRole === "backend"
-  ) {
-    if (context.ownerToolId !== "phoenix-live-view") {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_OWNER_TOOL",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: "LiveView Streams require Phoenix LiveView",
-      });
-    }
-  }
-
-  const unsupportedElixirGraphToolMessage =
-    part.ecosystem === "elixir" ? ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES[part.toolId] : undefined;
-  if (unsupportedElixirGraphToolMessage) {
-    return createStackGraphIssue({
-      code: "UNSUPPORTED_GRAPH_TOOL",
-      partId: part.id,
-      role: part.role,
-      toolId: part.toolId,
-      message: unsupportedElixirGraphToolMessage,
-    });
-  }
-
   if (part.ecosystem === "elixir" && !context.ownerRole) {
     const phoenixRequiredMessage = ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES[part.role];
     if (phoenixRequiredMessage && part.toolId !== "none") {
@@ -1968,6 +2015,70 @@ function getStackPartCompatibilityIssue(
         message: "Phoenix telemetry requires Phoenix",
       });
     }
+  }
+
+  if (
+    part.ecosystem === "elixir" &&
+    ELIXIR_ECTO_SQL_REQUIRED_TOOLS.has(part.toolId) &&
+    (!context.ownerRole || context.ownerRole === "backend")
+  ) {
+    const ormTool = context.siblingToolIdsByRole?.orm ?? context.selectedToolIdsByRole?.orm;
+    if (ormTool !== "ecto-sql") {
+      const message =
+        part.toolId === "phx-gen-auth"
+          ? "phx.gen.auth requires Ecto SQL with PostgreSQL in the current Phoenix scaffold"
+          : "Oban requires Ecto SQL with PostgreSQL in the current Phoenix scaffold";
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message,
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "elixir" &&
+    part.toolId === "live-view-streams" &&
+    context.ownerRole === "backend"
+  ) {
+    if (context.ownerToolId !== "phoenix-live-view") {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "LiveView Streams require Phoenix LiveView",
+      });
+    }
+  }
+
+  if (
+    part.ecosystem === "elixir" &&
+    part.toolId === "wallaby" &&
+    context.ownerRole === "backend" &&
+    context.ownerToolId === "none"
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: "Wallaby browser tests require Phoenix",
+    });
+  }
+
+  const unsupportedElixirGraphToolMessage =
+    part.ecosystem === "elixir" ? ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES[part.toolId] : undefined;
+  if (unsupportedElixirGraphToolMessage) {
+    return createStackGraphIssue({
+      code: "UNSUPPORTED_GRAPH_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: unsupportedElixirGraphToolMessage,
+    });
   }
 
   return undefined;
@@ -2656,10 +2767,17 @@ function projectLegacyCategoryFromPart(
   const legacyCategory = getLegacyCategoryForPart(part, parts);
   if (!legacyCategory || legacyCategory === "frontend") return;
 
+  const owner = part.ownerPartId
+    ? parts.find((candidate) => candidate.id === part.ownerPartId)
+    : undefined;
+
   const canProject =
     legacyCategory === "database" ||
     legacyCategory === "dbSetup" ||
     part.ecosystem === ecosystem ||
+    (owner?.role === "mobile" &&
+      part.ecosystem === "react-native" &&
+      (ecosystem === "typescript" || ecosystem === "react-native")) ||
     (legacyCategory === "auth" &&
       (ecosystem === "typescript" || ecosystem === "react-native") &&
       (part.ecosystem === "typescript" || part.ecosystem === "react-native"));
@@ -2713,6 +2831,9 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   projectLegacyCategoryFromPart(projected, orm, ecosystem, parts);
   projectLegacyCategoryFromPart(projected, api, ecosystem, parts);
   projectLegacyCategoryFromPart(projected, auth, ecosystem, parts);
+  if (ecosystem === "go" && config.auth === "go-better-auth") {
+    projected.auth = config.auth;
+  }
 
   const backendScopedPartRoles = new Set<StackPartRole>(["database", "orm", "api", "auth"]);
   for (const part of parts) {

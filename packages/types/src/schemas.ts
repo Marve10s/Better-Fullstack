@@ -28,6 +28,7 @@ export const StackPartRoleSchema = z
     "observability",
     "email",
     "search",
+    "vectorDb",
     "fileStorage",
     "jobQueue",
     "rateLimit",
@@ -164,7 +165,9 @@ export const AddonsSchema = z
     "tanstack-db",
     "tanstack-pacer",
     "backend-utils",
+    "devcontainer",
     "docker-compose",
+    "github-actions",
     "none",
   ])
   .describe("Additional addons");
@@ -197,7 +200,7 @@ export const DatabaseSetupSchema = z
   .describe("Database hosting setup");
 
 export const APISchema = z
-  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "openapi", "none"])
+  .enum(["trpc", "orpc", "ts-rest", "garph", "graphql-yoga", "apollo-server", "openapi", "none"])
   .describe("API type");
 
 export const AuthSchema = z
@@ -311,7 +314,7 @@ export const JobQueueSchema = z
   .describe("Job queue/background worker solution");
 
 export const CMSSchema = z
-  .enum(["payload", "sanity", "strapi", "tinacms", "directus", "none"])
+  .enum(["payload", "sanity", "strapi", "tinacms", "directus", "keystatic", "none"])
   .describe("Headless CMS solution");
 
 export const CachingSchema = z
@@ -323,13 +326,19 @@ export const RateLimitSchema = z
   .describe("Rate limiting and abuse protection");
 
 export const I18nSchema = z
-  .enum(["i18next", "next-intl", "none"])
+  .enum(["paraglide", "i18next", "next-intl", "none"])
   .describe("Internationalization (i18n) library");
 
 export const SearchSchema = z
-  .enum(["meilisearch", "typesense", "elasticsearch", "algolia", "none"])
+  .enum(["meilisearch", "typesense", "elasticsearch", "opensearch", "algolia", "none"])
   .describe(
-    "Search engine solution (meilisearch, typesense, elasticsearch, or algolia for fast search experiences)",
+    "Search engine solution (meilisearch, typesense, elasticsearch, opensearch, or algolia for fast search experiences)",
+  );
+
+export const VectorDbSchema = z
+  .enum(["pgvector", "qdrant", "chroma", "pinecone", "none"])
+  .describe(
+    "Vector database for AI embeddings/semantic search (pgvector on Postgres, or Qdrant, Chroma, or Pinecone)",
   );
 
 export const FileStorageSchema = z
@@ -744,7 +753,7 @@ export const ElixirDeploySchema = z
 
 export const AiDocsSchema = z
   .enum(["claude-md", "agents-md", "cursorrules", "none"])
-  .describe("AI documentation files (CLAUDE.md, Agents.md, .cursorrules)");
+  .describe("AI documentation files (CLAUDE.md, AGENTS.md, .cursorrules)");
 
 export const CSSFrameworkSchema = z
   .enum(["tailwind", "scss", "less", "postcss-only", "none"])
@@ -911,6 +920,7 @@ export const CreateInputSchema = z.object({
   rateLimit: RateLimitSchema.optional(),
   i18n: I18nSchema.optional(),
   search: SearchSchema.optional(),
+  vectorDb: VectorDbSchema.optional(),
   fileStorage: FileStorageSchema.optional(),
   mobileNavigation: MobileNavigationSchema.optional(),
   mobileUI: MobileUISchema.optional(),
@@ -1070,6 +1080,7 @@ export const ProjectConfigSchema = z.object({
   rateLimit: RateLimitSchema,
   i18n: I18nSchema,
   search: SearchSchema,
+  vectorDb: VectorDbSchema,
   fileStorage: FileStorageSchema,
   mobileNavigation: MobileNavigationSchema,
   mobileUI: MobileUISchema,
@@ -1224,6 +1235,7 @@ export const BetterTStackConfigSchema = z.object({
   rateLimit: RateLimitSchema,
   i18n: I18nSchema,
   search: SearchSchema,
+  vectorDb: VectorDbSchema,
   fileStorage: FileStorageSchema,
   mobileNavigation: MobileNavigationSchema,
   mobileUI: MobileUISchema,
@@ -1398,6 +1410,7 @@ export const CACHING_VALUES = CachingSchema.options;
 export const RATE_LIMIT_VALUES = RateLimitSchema.options;
 export const I18N_VALUES = I18nSchema.options;
 export const SEARCH_VALUES = SearchSchema.options;
+export const VECTOR_DB_VALUES = VectorDbSchema.options;
 export const FILE_STORAGE_VALUES = FileStorageSchema.options;
 export const ECOSYSTEM_VALUES = EcosystemSchema.options;
 export const RUST_WEB_FRAMEWORK_VALUES = RustWebFrameworkSchema.options;

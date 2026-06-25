@@ -6,4 +6,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [{{#if (eq cssFramework "tailwind")}}tailwindcss(), {{/if}}sveltekit()],
+{{#if (and (eq database "sqlite") (ne dbSetup "d1"))}}
+  ssr: {
+    external: ["better-sqlite3", "sqlite3"],
+  },
+{{/if}}
 });

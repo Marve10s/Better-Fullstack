@@ -39,10 +39,10 @@ export default defineConfig({
 	},
 {{#if (or (eq backend "self") (eq runtime "workers"))}}
 	output: 'server',
-{{#if (eq backend "self")}}
-	adapter: node({ mode: 'standalone' }),
-{{else if (eq runtime "workers")}}
+{{#if (eq runtime "workers")}}
 	adapter: cloudflare(),
+{{else if (eq backend "self")}}
+	adapter: node({ mode: 'standalone' }),
 {{/if}}
 {{/if}}
 });

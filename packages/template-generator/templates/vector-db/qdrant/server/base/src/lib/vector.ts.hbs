@@ -1,0 +1,73 @@
+import { QdrantClient } from "@qdrant/js-client-rest";
+
+/**
+ * Qdrant vector database client.
+ * @see https://qdrant.tech/documentation/
+ */
+export const vectorClient = new QdrantClient({
+  url: process.env.QDRANT_URL ?? "http://localhost:6333",
+  apiKey: process.env.QDRANT_API_KEY,
+});
+
+export interface VectorPoint {
+  id: string | number;
+  vector: number[];
+  payload?: Record<string, unknown>;
+}
+
+export interface SearchHit {
+  id: string | number;
+  score: number;
+  payload: Record<string, unknown> | null;
+}
+
+/**
+ * Create a collection if it doesn't already exist.
+ */
+export async function ensureCollection(
+  collection: string,
+  size = 1536,
+  distance: "Cosine" | "Euclid" | "Dot" = "Cosine",
+): Promise<void> {
+  const { exists } = await vectorClient.collectionExists(collection);
+  if (exists) return;
+  await vectorClient.createCollection(collection, {
+    vectors: { size, distance },
+  });
+}
+
+/**
+ * Insert or update points in a collection.
+ */
+export async function upsertPoints(collection: string, points: VectorPoint[]): Promise<void> {
+  await vectorClient.upsert(collection, {
+    wait: true,
+    points: points.map((p) => ({ id: p.id, vector: p.vector, payload: p.payload })),
+  });
+}
+
+/**
+ * Search for the nearest vectors in a collection.
+ */
+export async function searchPoints(
+  collection: string,
+  vector: number[],
+  limit = 5,
+): Promise<SearchHit[]> {
+  const results = await vectorClient.search(collection, { vector, limit });
+  return results.map((r) => ({
+    id: r.id,
+    score: r.score,
+    payload: (r.payload ?? null) as Record<string, unknown> | null,
+  }));
+}
+
+/**
+ * Delete points by id.
+ */
+export async function deletePoints(
+  collection: string,
+  ids: (string | number)[],
+): Promise<void> {
+  await vectorClient.delete(collection, { wait: true, points: ids });
+}

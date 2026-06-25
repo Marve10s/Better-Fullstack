@@ -848,6 +848,125 @@ describe("Addon Configurations", () => {
       });
     });
 
+    describe("DevContainer Addon", () => {
+      it("should not generate DevContainer files when only docker-compose is selected", async () => {
+        const result = await runTRPCTest({
+          projectName: "docker-compose-no-devcontainer",
+          addons: ["docker-compose"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+        expect(existsSync(join(result.projectDir!, ".devcontainer", "devcontainer.json"))).toBe(false);
+      });
+
+      it("should generate stack-aware DevContainer files for TypeScript Docker Compose stacks", async () => {
+        const result = await runTRPCTest({
+          projectName: "devcontainer-hono-postgres",
+          addons: ["devcontainer"],
+          frontend: ["tanstack-router"],
+          backend: "hono",
+          runtime: "bun",
+          database: "postgres",
+          orm: "drizzle",
+          auth: "none",
+          api: "trpc",
+          cssFramework: "tailwind",
+          examples: ["none"],
+          dbSetup: "none",
+          webDeploy: "none",
+          serverDeploy: "none",
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const devcontainerPath = join(result.projectDir!, ".devcontainer", "devcontainer.json");
+        const overridePath = join(result.projectDir!, ".devcontainer", "docker-compose.devcontainer.yml");
+        const composePath = join(result.projectDir!, "docker-compose.yml");
+        const devcontainer = JSON.parse(readFileSync(devcontainerPath, "utf8"));
+        const override = readFileSync(overridePath, "utf8");
+
+        expect(existsSync(composePath)).toBe(true);
+        expect(devcontainer.dockerComposeFile).toEqual([
+          "../docker-compose.yml",
+          "docker-compose.devcontainer.yml",
+        ]);
+        expect(devcontainer.runServices).toEqual(["devcontainer", "web", "server", "db"]);
+        expect(devcontainer.forwardPorts).toEqual([3001, 3000, 5432]);
+        expect(devcontainer.postCreateCommand).toBe("bun install");
+        expect(devcontainer.customizations.vscode.extensions).toEqual([
+          "ms-azuretools.vscode-docker",
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "bradlc.vscode-tailwindcss",
+        ]);
+        expect(override).toContain('image: "oven/bun:1"');
+        expect(override).toContain("- .:/workspaces/devcontainer-hono-postgres:cached");
+      });
+
+      it("should generate language-aware DevContainer files for Python Docker Compose stacks", async () => {
+        const result = await runTRPCTest({
+          projectName: "devcontainer-python-postgres",
+          ecosystem: "python",
+          addons: ["devcontainer"],
+          database: "postgres",
+          pythonWebFramework: "fastapi",
+          pythonOrm: "sqlalchemy",
+          pythonValidation: "pydantic",
+          pythonAi: [],
+          pythonAuth: "none",
+          pythonApi: "none",
+          pythonTaskQueue: "none",
+          pythonGraphql: "none",
+          pythonQuality: "ruff",
+          pythonTesting: [],
+          pythonCaching: "none",
+          pythonRealtime: "none",
+          pythonObservability: "none",
+          pythonCli: [],
+          install: false,
+        });
+
+        expectSuccess(result);
+        expect(result.projectDir).toBeDefined();
+
+        const devcontainer = JSON.parse(
+          readFileSync(join(result.projectDir!, ".devcontainer", "devcontainer.json"), "utf8"),
+        );
+        const override = readFileSync(
+          join(result.projectDir!, ".devcontainer", "docker-compose.devcontainer.yml"),
+          "utf8",
+        );
+
+        expect(existsSync(join(result.projectDir!, "docker-compose.yml"))).toBe(true);
+        expect(existsSync(join(result.projectDir!, "Dockerfile"))).toBe(true);
+        expect(devcontainer.runServices).toEqual(["devcontainer", "app", "db"]);
+        expect(devcontainer.forwardPorts).toEqual([8000, 5432]);
+        expect(devcontainer.postCreateCommand).toBe("python -m pip install -e '.[dev]'");
+        expect(devcontainer.customizations.vscode.extensions).toEqual([
+          "ms-azuretools.vscode-docker",
+          "ms-python.python",
+          "ms-python.vscode-pylance",
+        ]);
+        expect(override).toContain('image: "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"');
+        expect(override).toContain("- .:/workspaces/devcontainer-python-postgres:cached");
+      });
+    });
+
     describe("MSW Addon", () => {
       const mswCompatibleFrontends = [
         "tanstack-router",

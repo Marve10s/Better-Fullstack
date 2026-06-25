@@ -34,7 +34,7 @@ function getFilename(docType: AiDocs): string {
     case "claude-md":
       return "CLAUDE.md";
     case "agents-md":
-      return "Agents.md";
+      return "AGENTS.md";
     case "cursorrules":
       return ".cursorrules";
     default:
@@ -427,7 +427,7 @@ function generateCommandsSection(config: ProjectConfig): string {
 
 function generateMaintenanceSection(docType: AiDocs): string {
   const fileName =
-    docType === "claude-md" ? "CLAUDE.md" : docType === "agents-md" ? "Agents.md" : "this file";
+    docType === "claude-md" ? "CLAUDE.md" : docType === "agents-md" ? "AGENTS.md" : "this file";
 
   return `
 ## Maintenance

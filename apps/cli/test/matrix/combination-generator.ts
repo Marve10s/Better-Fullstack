@@ -117,9 +117,9 @@ const CONVEX_INCOMPATIBLE_FRONTENDS: readonly Frontend[] = [
 
 /**
  * Frontend-API compatibility rules
- * tRPC, ts-rest, garph require React-based frontends
+ * tRPC, ts-rest, garph, and Apollo Server require React-based frontends
  */
-const REACT_ONLY_APIS: readonly API[] = ["trpc", "ts-rest", "garph"];
+const REACT_ONLY_APIS: readonly API[] = ["trpc", "ts-rest", "garph", "apollo-server"];
 
 /**
  * React-based web frontends (support tRPC and other React-only APIs)
@@ -137,7 +137,7 @@ const REACT_WEB_FRONTENDS: readonly Frontend[] = [
 const NATIVE_FRONTENDS: readonly Frontend[] = ["native-bare", "native-uniwind", "native-unistyles"];
 
 /**
- * Frontends that only support oRPC (not tRPC/ts-rest/garph)
+ * Frontends that only support oRPC (not tRPC/ts-rest/garph/Apollo Server)
  */
 const ORPC_ONLY_FRONTENDS: readonly Frontend[] = ["nuxt", "svelte", "solid"];
 
@@ -218,7 +218,7 @@ export function isValidFrontendApi(
   // oRPC works with all frontends (except NO_API_FRONTENDS, handled above)
   if (api === "orpc") return true;
 
-  // tRPC, ts-rest, garph require React-based frontends
+  // tRPC, ts-rest, garph, and Apollo Server require React-based frontends
   if (REACT_ONLY_APIS.includes(api)) {
     // React web frontends support all APIs
     if (REACT_WEB_FRONTENDS.includes(frontend)) return true;
@@ -362,7 +362,7 @@ const ALL_ORMS: readonly ORM[] = [
   "none",
 ];
 
-const ALL_APIS: readonly API[] = ["trpc", "orpc", "ts-rest", "garph", "none"];
+const ALL_APIS: readonly API[] = ["trpc", "orpc", "ts-rest", "garph", "apollo-server", "none"];
 
 const ALL_AUTHS: readonly Auth[] = ["better-auth", "clerk", "nextauth", "none"];
 

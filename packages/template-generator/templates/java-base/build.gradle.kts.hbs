@@ -152,6 +152,8 @@ dependencies {
 	testImplementation("io.rest-assured:rest-assured:6.0.0")
 {{/if}}
 {{#if hasJavaWireMock}}
+	testImplementation(enforcedPlatform("org.eclipse.jetty:jetty-bom:12.0.30"))
+	testImplementation(enforcedPlatform("org.eclipse.jetty.ee10:jetty-ee10-bom:12.0.30"))
 	testImplementation("org.wiremock:wiremock-jetty12:3.13.2")
 {{/if}}
 {{#if hasJavaAwaitility}}

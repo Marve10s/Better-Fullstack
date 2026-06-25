@@ -21,8 +21,12 @@ export async function processElixirBaseTemplate(
   const prefix = "elixir-base/";
   const hasPhoenix = config.elixirWebFramework !== "none";
   const hasLiveView = config.elixirWebFramework === "phoenix-live-view";
+  const hasLiveViewStreams = hasLiveView && config.elixirRealtime === "live-view-streams";
   const hasEcto = config.elixirOrm !== "none";
-  const hasAuth = hasPhoenix && config.elixirAuth === "phx-gen-auth" && hasEcto;
+  const hasEctoSql = config.elixirOrm === "ecto-sql";
+  const hasAuth = hasPhoenix && config.elixirAuth === "phx-gen-auth" && hasEctoSql;
+  const hasGuardian = hasPhoenix && config.elixirAuth === "guardian";
+  const hasUeberauth = hasPhoenix && config.elixirAuth === "ueberauth";
   const hasChannels =
     hasPhoenix && (config.elixirRealtime === "channels" || config.elixirRealtime === "presence");
   const hasPresence = config.elixirRealtime === "presence";
@@ -32,15 +36,26 @@ export async function processElixirBaseTemplate(
   const hasEmail = config.elixirEmail === "swoosh";
   const hasDocker = ["docker", "fly", "gigalixir", "mix-release"].includes(config.elixirDeploy);
   const hasHttpClient = config.elixirHttp !== "none";
+  const hasNimbleOptions = config.elixirValidation === "nimble-options";
+  const hasNebulex = config.elixirCaching === "nebulex";
+  const hasPromEx = hasPhoenix && config.elixirObservability === "prom_ex";
+  const hasFlyDeploy = config.elixirDeploy === "fly";
+  const hasGigalixirDeploy = config.elixirDeploy === "gigalixir";
+  const hasMox = config.elixirTesting === "mox";
+  const hasBypass = config.elixirTesting === "bypass";
+  const hasWallaby = hasPhoenix && config.elixirTesting === "wallaby";
 
   for (const [templatePath, content] of templates) {
     if (!templatePath.startsWith(prefix)) continue;
     if (!hasPhoenix && templatePath.includes("___web")) continue;
     if (!hasPhoenix && templatePath.includes("test/support/conn_case")) continue;
-    if (!hasLiveView && templatePath.includes("/live/")) continue;
-    if (!hasEcto && (templatePath.includes("/repo.ex") || templatePath.includes("/migrations/")))
+    if (!hasLiveViewStreams && templatePath.includes("/live/")) continue;
+    if (
+      !hasEctoSql &&
+      (templatePath.includes("/repo.ex") || templatePath.includes("/migrations/"))
+    )
       continue;
-    if (!hasEcto && templatePath.includes("priv/repo/seeds.exs")) continue;
+    if (!hasEctoSql && templatePath.includes("priv/repo/seeds.exs")) continue;
     if (
       !hasEcto &&
       (templatePath.includes("/catalog") || templatePath.includes("/item_controller"))
@@ -49,6 +64,9 @@ export async function processElixirBaseTemplate(
     if (!hasAuth && templatePath.includes("/accounts")) continue;
     if (!hasAuth && templatePath.includes("create_users")) continue;
     if (!hasAuth && templatePath.includes("/user_session_controller")) continue;
+    if (!hasGuardian && templatePath.includes("/auth/guardian.ex")) continue;
+    if (!hasGuardian && templatePath.includes("/token_controller")) continue;
+    if (!hasUeberauth && templatePath.includes("/oauth_controller")) continue;
     if (!hasChannels && templatePath.includes("/channels/user_socket")) continue;
     if (!hasChannels && templatePath.includes("/channels/room_channel")) continue;
     if (!hasPresence && templatePath.includes("/channels/presence")) continue;
@@ -56,8 +74,18 @@ export async function processElixirBaseTemplate(
     if (!hasOban && templatePath.includes("add_oban_jobs")) continue;
     if (!hasQuantum && templatePath.includes("/scheduler.ex")) continue;
     if (!hasAbsinthe && templatePath.includes("/graphql/")) continue;
+    if (!hasNebulex && templatePath.includes("/cache.ex")) continue;
+    if (!hasPromEx && templatePath.includes("/prom_ex.ex")) continue;
+    if (!hasNimbleOptions && templatePath.includes("/item_options.ex")) continue;
+    if (!hasMox && templatePath.includes("/external_service.ex")) continue;
+    if (!hasMox && templatePath.includes("/mocks.ex")) continue;
+    if (!hasMox && templatePath.includes("/external_service_mox_test.exs")) continue;
+    if (!hasBypass && templatePath.includes("/bypass_test.exs")) continue;
+    if (!hasWallaby && templatePath.includes("/features/")) continue;
     if (!hasEmail && templatePath.includes("/mailer.ex")) continue;
     if (!hasDocker && templatePath.includes("Dockerfile")) continue;
+    if (!hasFlyDeploy && templatePath.includes("fly.toml")) continue;
+    if (!hasGigalixirDeploy && templatePath.includes("Procfile")) continue;
     if (!hasHttpClient && templatePath.includes("/http_client.ex")) continue;
 
     const relativePath = templatePath.slice(prefix.length);

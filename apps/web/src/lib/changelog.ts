@@ -19,10 +19,34 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.1.0",
+    publishedAt: "2026-06-23T17:12:32Z",
+    displayDate: "June 23, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.1.0`,
+    title: "More stack options, stronger CLI workflows, and Astro 7-ready templates",
+    summary:
+      "This release adds Apollo Server, Keystatic, Paraglide, OpenSearch, vector databases, DevContainers, and GitHub Actions CI to the stack graph. It also improves CLI and MCP workflows, refreshes template dependencies, and keeps Astro projects on Astro 7-compatible integrations.",
+    highlights: [
+      "Added Apollo Server, Keystatic, Paraglide, OpenSearch, DevContainer, and GitHub Actions CI options across the CLI, schema, builder, compatibility rules, and generated templates.",
+      "Added a new vector database category with pgvector, Qdrant, Chroma, and Pinecone support for AI and semantic-search scaffolds.",
+      "Added bfs doctor, telemetry controls, config/history-driven creates, better scaffold rollback behavior, and AGENTS.md as the default AI-docs output.",
+      "Expanded MCP with structured outputs, tool annotations, list_presets, recommend_stack, targetDir, and ecosystem-aware compatibility guidance.",
+      "Updated Astro integrations for Astro 7 compatibility and gated Keystatic to Next.js until @keystatic/astro supports Astro 7.",
+      "Hardened release safety with compatibility property tests, schema-template coverage, API literal drift guards, stricter smoke checks, and refreshed generated outputs.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract colorful gradient artwork",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v2.0.3",
     publishedAt: "2026-06-17T00:00:00Z",
     displayDate: "June 17, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.0.3`,
     title: "OpenAPI clients and Nx workspace tooling",
     summary:

@@ -26,7 +26,7 @@ describe("processEnvVariables", () => {
 
     expect(webEnv.VITE_SERVER_URL).toBe("http://localhost:3000");
     expect(webEnv.VITE_STRIPE_PUBLISHABLE_KEY).toBe("");
-    expect(serverEnv.STRIPE_SECRET_KEY).toBe("");
+    expect(serverEnv.STRIPE_SECRET_KEY).toBe("sk_test_your_stripe_secret_key");
     expect(serverEnv.CORS_ORIGIN).toBe("http://localhost:5173");
   });
 

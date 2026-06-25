@@ -12,7 +12,7 @@ const AI_DOCS_OPTIONS = [
   },
   {
     value: "agents-md" as const,
-    label: "Agents.md",
+    label: "AGENTS.md",
     hint: "Generic AI assistant documentation",
   },
   {

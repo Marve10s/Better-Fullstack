@@ -4,19 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "vite dev",
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite"
   },
   "dependencies": {
-    "@base-ui/react": "^1.5.0",
+    "@base-ui/react": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router": "^7.17.0",
+    "react-router": "^8.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
 {{#if (eq uiLibrary "shadcn-ui")}}
@@ -41,13 +42,13 @@
     "@ts-rest/react-query": "^3.52.1",
 {{/if}}
 {{#if (eq uiLibrary "mantine")}}
-    "@mantine/core": "^9.3.1",
-    "@mantine/hooks": "^9.3.1",
+    "@mantine/core": "^9.3.2",
+    "@mantine/hooks": "^9.3.2",
 {{/if}}
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",

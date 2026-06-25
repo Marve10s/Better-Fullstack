@@ -1,7 +1,7 @@
 // Lean public entry: re-exports the CLI (run.ts) and the programmatic API.
 // The bin entry (cli.ts) imports ./run.js directly so plain CLI startup
 // never pays the cost of loading the embedded templates bundle below.
-export { router, createBtsCli, create, sponsors, docs, builder, add, history } from "./run";
+export { router, createBtsCli, create, sponsors, docs, builder, add, history, telemetry } from "./run";
 
 import type { ProjectConfig } from "./types";
 
@@ -112,6 +112,7 @@ export async function createVirtual(
       rateLimit: options.rateLimit || "none",
       i18n: options.i18n || "none",
       search: options.search || "none",
+      vectorDb: options.vectorDb || "none",
       fileStorage: options.fileStorage || "none",
       // Rust ecosystem options
       rustWebFramework: options.rustWebFramework || "none",
@@ -203,8 +204,8 @@ export async function createVirtual(
       elixirQuality: options.elixirQuality || (options.ecosystem === "elixir" ? "credo" : "none"),
       elixirDeploy: options.elixirDeploy || "none",
       elixirLibraries: options.elixirLibraries || [],
-      // AI documentation files
-      aiDocs: options.aiDocs || ["claude-md"],
+      // AI documentation files (canonical default ships both CLAUDE.md + AGENTS.md)
+      aiDocs: options.aiDocs || ["claude-md", "agents-md"],
     };
     if (options.stackParts) {
       config.stackParts = options.stackParts;

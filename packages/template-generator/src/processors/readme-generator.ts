@@ -191,13 +191,14 @@ ${serverScripts ? `${serverScripts}\n` : ""}
 function generateElixirReadmeContent(config: ProjectConfig): string {
   const hasPhoenix = config.elixirWebFramework !== "none";
   const hasEcto = config.elixirOrm !== "none";
+  const hasEctoSql = config.elixirOrm === "ecto-sql";
   const features = [
     hasPhoenix
       ? config.elixirWebFramework === "phoenix-live-view"
         ? "Phoenix LiveView"
         : "Phoenix"
       : "Plain Elixir",
-    hasEcto ? `${config.elixirOrm} with PostgreSQL` : null,
+    hasEctoSql ? "ecto-sql with PostgreSQL" : hasEcto ? config.elixirOrm : null,
     config.elixirApi !== "none" ? `API: ${config.elixirApi}` : null,
     config.elixirRealtime !== "none" ? `Realtime: ${config.elixirRealtime}` : null,
     config.elixirJobs !== "none" ? `Jobs: ${config.elixirJobs}` : null,
@@ -215,11 +216,11 @@ ${features.map((feature) => `- ${feature}`).join("\n")}
 
 ## Getting Started
 
-Make sure Elixir and Erlang/OTP${hasEcto ? ", and PostgreSQL" : ""} are installed.
+Make sure Elixir and Erlang/OTP${hasEctoSql ? ", and PostgreSQL" : ""} are installed.
 
 \`\`\`sh
 mix deps.get
-${hasEcto ? "mix ecto.setup\n" : ""}${hasPhoenix ? "mix phx.server" : "iex -S mix"}
+${hasEctoSql ? "mix ecto.setup\n" : ""}${hasPhoenix ? "mix phx.server" : "iex -S mix"}
 \`\`\`
 
 ${hasPhoenix ? "Open http://localhost:4000.\n\n" : ""}## Tests
@@ -228,7 +229,7 @@ ${hasPhoenix ? "Open http://localhost:4000.\n\n" : ""}## Tests
 mix test
 \`\`\`
 
-${hasPhoenix || hasEcto ? "Copy `.env.example` values into your environment before production release builds.\n" : ""}`;
+${hasPhoenix || hasEctoSql ? "Copy `.env.example` values into your environment before production release builds.\n" : ""}`;
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {

@@ -9,7 +9,7 @@ COPY mix.exs ./
 RUN mix deps.get --only $MIX_ENV
 COPY config config
 COPY lib lib
-{{#if (or (ne elixirWebFramework "none") (ne elixirOrm "none"))}}
+{{#if (or (ne elixirWebFramework "none") (eq elixirOrm "ecto-sql"))}}
 COPY priv priv
 {{/if}}
 RUN mix release

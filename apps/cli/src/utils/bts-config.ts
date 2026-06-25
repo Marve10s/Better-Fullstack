@@ -17,6 +17,15 @@ const BTS_CONFIG_FILE = "bts.jsonc";
 
 type StackPart = NonNullable<ProjectConfig["stackParts"]>[number];
 type BtsConfigMetadata = Pick<BetterTStackConfig, "version" | "createdAt">;
+const MOBILE_CONFIG_FIELDS = [
+  "mobileNavigation",
+  "mobileUI",
+  "mobileStorage",
+  "mobileTesting",
+  "mobilePush",
+  "mobileOTA",
+  "mobileDeepLinking",
+] as const satisfies readonly (keyof ProjectConfig)[];
 
 function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackParts: ProjectConfig["stackParts"]) {
   if (!stackParts) return projectConfig;
@@ -25,8 +34,18 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
   const selectedEcosystems = new Set(
     stackParts.filter((part) => part.source !== "provided").map((part) => part.ecosystem),
   );
+  selectedEcosystems.add(projectConfig.ecosystem);
 
-  const normalized: ProjectConfig = { ...projectConfig, ...legacyConfig };
+  const hasSelectedEcosystemStackParts = stackParts.some(
+    (part) => part.source !== "provided" && part.ecosystem !== "universal",
+  );
+  const normalized: ProjectConfig = {
+    ...projectConfig,
+    ...legacyConfig,
+    ecosystem: hasSelectedEcosystemStackParts
+      ? (legacyConfig.ecosystem ?? projectConfig.ecosystem)
+      : projectConfig.ecosystem,
+  };
 
   if (!selectedEcosystems.has("rust")) {
     normalized.rustWebFramework = "none";
@@ -77,6 +96,14 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.goObservability = "none";
   }
 
+  if (
+    selectedEcosystems.has("go") &&
+    projectConfig.auth === "go-better-auth" &&
+    legacyConfig.auth === "none"
+  ) {
+    normalized.auth = projectConfig.auth;
+  }
+
   if (!selectedEcosystems.has("java")) {
     normalized.javaWebFramework = "none";
     normalized.javaBuildTool = "none";
@@ -121,7 +148,25 @@ function normalizeGraphConfigForPersistence(projectConfig: ProjectConfig, stackP
     normalized.elixirLibraries = [];
   }
 
-  if (!selectedEcosystems.has("react-native")) {
+  const projectHasNativeFrontend = projectConfig.frontend.some((frontend) =>
+    frontend.startsWith("native-"),
+  );
+  const normalizedHasNativeFrontend = normalized.frontend.some((frontend) =>
+    frontend.startsWith("native-"),
+  );
+  const hasNativeFrontend = projectHasNativeFrontend || normalizedHasNativeFrontend;
+
+  if (hasNativeFrontend) {
+    for (const field of MOBILE_CONFIG_FIELDS) {
+      const projectValue = projectConfig[field];
+      const legacyValue = legacyConfig[field];
+      if (projectValue !== undefined && projectValue !== "none" && legacyValue === "none") {
+        (normalized as Record<string, unknown>)[field] = projectValue;
+      }
+    }
+  }
+
+  if (!selectedEcosystems.has("react-native") && !hasNativeFrontend) {
     normalized.mobileNavigation = "none";
     normalized.mobileUI = "none";
     normalized.mobileStorage = "none";
@@ -240,7 +285,7 @@ function syncUpdatedStackParts(
   return next;
 }
 
-function buildBtsConfigForPersistence(
+export function buildBtsConfigForPersistence(
   projectConfig: ProjectConfig,
   metadata: Partial<BtsConfigMetadata> = {},
 ): BetterTStackConfig {
@@ -277,8 +322,16 @@ function buildBtsConfigForPersistence(
     api: persistedConfig.api,
     webDeploy: persistedConfig.webDeploy,
     serverDeploy: persistedConfig.serverDeploy,
+    astroIntegration: persistedConfig.astroIntegration,
     cssFramework: persistedConfig.cssFramework,
     uiLibrary: persistedConfig.uiLibrary,
+    shadcnBase: persistedConfig.shadcnBase,
+    shadcnStyle: persistedConfig.shadcnStyle,
+    shadcnIconLibrary: persistedConfig.shadcnIconLibrary,
+    shadcnColorTheme: persistedConfig.shadcnColorTheme,
+    shadcnBaseColor: persistedConfig.shadcnBaseColor,
+    shadcnFont: persistedConfig.shadcnFont,
+    shadcnRadius: persistedConfig.shadcnRadius,
     realtime: persistedConfig.realtime,
     jobQueue: persistedConfig.jobQueue,
     animation: persistedConfig.animation,
@@ -298,6 +351,7 @@ function buildBtsConfigForPersistence(
     rateLimit: persistedConfig.rateLimit,
     i18n: persistedConfig.i18n,
     search: persistedConfig.search,
+    vectorDb: persistedConfig.vectorDb,
     fileStorage: persistedConfig.fileStorage,
     rustWebFramework: persistedConfig.rustWebFramework,
     rustFrontend: persistedConfig.rustFrontend,
@@ -398,8 +452,11 @@ export function previewBtsConfigUpdate(
   );
 }
 
-export async function writeBtsConfig(projectConfig: ProjectConfig) {
-  const btsConfig = buildBtsConfigForPersistence(projectConfig);
+export async function writeBtsConfig(
+  projectConfig: ProjectConfig,
+  metadata: Partial<BtsConfigMetadata> = {},
+) {
+  const btsConfig = buildBtsConfigForPersistence(projectConfig, metadata);
   const baseContent = {
     $schema: "https://better-fullstack-web.vercel.app/schema.json",
     version: btsConfig.version,
@@ -434,8 +491,16 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     api: btsConfig.api,
     webDeploy: btsConfig.webDeploy,
     serverDeploy: btsConfig.serverDeploy,
+    astroIntegration: btsConfig.astroIntegration,
     cssFramework: btsConfig.cssFramework,
     uiLibrary: btsConfig.uiLibrary,
+    shadcnBase: btsConfig.shadcnBase,
+    shadcnStyle: btsConfig.shadcnStyle,
+    shadcnIconLibrary: btsConfig.shadcnIconLibrary,
+    shadcnColorTheme: btsConfig.shadcnColorTheme,
+    shadcnBaseColor: btsConfig.shadcnBaseColor,
+    shadcnFont: btsConfig.shadcnFont,
+    shadcnRadius: btsConfig.shadcnRadius,
     realtime: btsConfig.realtime,
     jobQueue: btsConfig.jobQueue,
     animation: btsConfig.animation,
@@ -455,6 +520,7 @@ export async function writeBtsConfig(projectConfig: ProjectConfig) {
     rateLimit: btsConfig.rateLimit,
     i18n: btsConfig.i18n,
     search: btsConfig.search,
+    vectorDb: btsConfig.vectorDb,
     fileStorage: btsConfig.fileStorage,
     rustWebFramework: btsConfig.rustWebFramework,
     rustFrontend: btsConfig.rustFrontend,
@@ -575,6 +641,42 @@ export async function readBtsConfig(projectDir: string) {
 
     if (errors.length > 0) {
       console.warn("Warning: Found errors parsing bts.jsonc:", errors);
+      return null;
+    }
+
+    return buildBtsConfigForPersistence(config as unknown as ProjectConfig, {
+      version: config.version,
+      createdAt: config.createdAt,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function readBtsConfigFromFile(filePath: string) {
+  try {
+    const resolved = path.resolve(process.cwd(), filePath);
+
+    if (!(await fs.pathExists(resolved))) {
+      return null;
+    }
+
+    const stats = await fs.stat(resolved);
+    const configPath = stats.isDirectory() ? path.join(resolved, BTS_CONFIG_FILE) : resolved;
+
+    if (!(await fs.pathExists(configPath))) {
+      return null;
+    }
+
+    const configContent = await fs.readFile(configPath, "utf-8");
+
+    const errors: JSONC.ParseError[] = [];
+    const config = JSONC.parse(configContent, errors, {
+      allowTrailingComma: true,
+      disallowComments: false,
+    }) as BetterTStackConfig;
+
+    if (errors.length > 0 || config === undefined || typeof config !== "object") {
       return null;
     }
 

@@ -1,0 +1,86 @@
+import postgres from "postgres";
+
+/**
+ * pgvector vector store backed by a Postgres database with the `vector`
+ * extension. Point PGVECTOR_DATABASE_URL at any Postgres instance that has (or
+ * can install) the pgvector extension — it is intentionally separate from your
+ * primary application database so it works with any stack. Falls back to
+ * DATABASE_URL when a dedicated URL isn't provided.
+ *
+ * Run `initVectorStore()` once (e.g. in a migration or setup script) to enable
+ * the extension and create the table.
+ *
+ * @see https://github.com/pgvector/pgvector
+ */
+export const sql = postgres(process.env.PGVECTOR_DATABASE_URL ?? process.env.DATABASE_URL!);
+
+export interface EmbeddingRecord {
+  id: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SimilarityResult extends EmbeddingRecord {
+  similarity: number;
+}
+
+function serializeVector(values: number[]): string {
+  return `[${values.join(",")}]`;
+}
+
+/**
+ * Enable the pgvector extension and create the embeddings table.
+ * Call once during setup/migration.
+ */
+export async function initVectorStore(dimensions = 1536): Promise<void> {
+  await sql`CREATE EXTENSION IF NOT EXISTS vector`;
+  await sql.unsafe(
+    `CREATE TABLE IF NOT EXISTS embeddings (
+      id text PRIMARY KEY,
+      content text NOT NULL,
+      embedding vector(${dimensions}),
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb
+    )`,
+  );
+}
+
+/**
+ * Insert or update an embedding.
+ */
+export async function upsertEmbedding(
+  record: EmbeddingRecord & { embedding: number[] },
+): Promise<void> {
+  const vector = serializeVector(record.embedding);
+  await sql`
+    INSERT INTO embeddings (id, content, embedding, metadata)
+    VALUES (${record.id}, ${record.content}, ${vector}::vector, ${JSON.stringify(record.metadata ?? {})}::jsonb)
+    ON CONFLICT (id) DO UPDATE
+    SET content = EXCLUDED.content,
+        embedding = EXCLUDED.embedding,
+        metadata = EXCLUDED.metadata
+  `;
+}
+
+/**
+ * Find the most similar embeddings by cosine distance.
+ */
+export async function searchSimilar(
+  embedding: number[],
+  limit = 5,
+): Promise<SimilarityResult[]> {
+  const vector = serializeVector(embedding);
+  const rows = await sql<SimilarityResult[]>`
+    SELECT id, content, metadata, 1 - (embedding <=> ${vector}::vector) AS similarity
+    FROM embeddings
+    ORDER BY embedding <=> ${vector}::vector
+    LIMIT ${limit}
+  `;
+  return [...rows];
+}
+
+/**
+ * Delete an embedding by id.
+ */
+export async function deleteEmbedding(id: string): Promise<void> {
+  await sql`DELETE FROM embeddings WHERE id = ${id}`;
+}

@@ -3,10 +3,12 @@ import { getLocalWebDevPort } from "@better-fullstack/types";
 
 import type { StepResult } from "./verify";
 
-const DEV_STARTUP_TIMEOUT_MS = 60_000;
-const TOTAL_DEV_CHECK_TIMEOUT_MS = 90_000;
+const DEV_STARTUP_TIMEOUT_MS = 120_000;
+const TOTAL_DEV_CHECK_TIMEOUT_MS = 150_000;
 const HTTP_REQUEST_TIMEOUT_MS = 10_000;
+const STARTUP_PROBE_TIMEOUT_MS = 5_000;
 const POLL_INTERVAL_MS = 2_000;
+const STARTUP_PROBE_INTERVAL_MS = 10_000;
 const MAX_FETCH_RETRIES = 3;
 const KILL_GRACE_MS = 3_000;
 
@@ -264,6 +266,7 @@ export async function startDevServer(
 
   let serverUrl: string | null = null;
   const urlDeadline = Date.now() + DEV_STARTUP_TIMEOUT_MS;
+  let nextStartupProbeAt = Date.now() + STARTUP_PROBE_INTERVAL_MS;
 
   while (Date.now() < urlDeadline && !serverUrl) {
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
@@ -278,6 +281,18 @@ export async function startDevServer(
     const port = getExpectedPort(config);
     serverUrl =
       extractUrlFromOutput(_stdoutBuf, port) || extractUrlFromOutput(_stderrBuf, port);
+
+    if (!serverUrl && Date.now() >= nextStartupProbeAt) {
+      nextStartupProbeAt = Date.now() + STARTUP_PROBE_INTERVAL_MS;
+      const fallbackUrl = getExpectedDevUrl(config);
+      try {
+        const resp = await fetch(fallbackUrl, {
+          signal: AbortSignal.timeout(STARTUP_PROBE_TIMEOUT_MS),
+        });
+        await resp.text();
+        serverUrl = fallbackUrl;
+      } catch {}
+    }
   }
 
   if (!serverUrl) {

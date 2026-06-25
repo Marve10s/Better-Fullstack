@@ -3,8 +3,15 @@ defmodule {{elixirModuleName}}.Application do
 
   @impl true
   def start(_type, _args) do
+{{#if (and (eq elixirObservability "opentelemetry") (ne elixirWebFramework "none"))}}
+    OpentelemetryPhoenix.setup()
+
+{{/if}}
     children = [
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirObservability "prom_ex")}}
+      {{elixirModuleName}}.PromEx,
+{{/if}}
+{{#if (eq elixirOrm "ecto-sql")}}
       {{elixirModuleName}}.Repo,
 {{/if}}
 {{#if (ne elixirWebFramework "none")}}
@@ -21,6 +28,9 @@ defmodule {{elixirModuleName}}.Application do
 {{/if}}
 {{#if (eq elixirCaching "cachex")}}
       {Cachex, name: :{{elixirAppName}}_cache},
+{{/if}}
+{{#if (eq elixirCaching "nebulex")}}
+      {{elixirModuleName}}.Cache,
 {{/if}}
 {{#if (eq elixirJobs "oban")}}
       {Oban, Application.fetch_env!(:{{elixirAppName}}, Oban)},

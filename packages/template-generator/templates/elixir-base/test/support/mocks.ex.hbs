@@ -1,0 +1,2 @@
+Mox.defmock({{elixirModuleName}}.MockExternalService, for: {{elixirModuleName}}.ExternalService)
+Application.put_env(:{{elixirAppName}}, :external_service, {{elixirModuleName}}.MockExternalService)

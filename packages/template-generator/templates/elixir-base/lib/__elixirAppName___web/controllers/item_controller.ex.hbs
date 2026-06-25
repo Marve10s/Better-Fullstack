@@ -20,6 +20,6 @@ defmodule {{elixirModuleName}}Web.ItemController do
   end
 
   defp item_json(item) do
-    %{id: item.id, name: item.name, description: item.description}
+    %{id: Map.get(item, :id), name: item.name, description: item.description}
   end
 end

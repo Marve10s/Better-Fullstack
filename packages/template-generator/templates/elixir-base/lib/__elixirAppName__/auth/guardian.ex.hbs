@@ -1,0 +1,29 @@
+defmodule {{elixirModuleName}}.Auth.Guardian do
+  @moduledoc """
+  Guardian token implementation for the {{projectName}} application.
+  """
+
+  use Guardian, otp_app: :{{elixirAppName}}
+
+  @impl true
+  def subject_for_token(%{id: id}, _claims) when not is_nil(id) do
+    {:ok, to_string(id)}
+  end
+
+  def subject_for_token(subject, _claims) when is_binary(subject) do
+    {:ok, subject}
+  end
+
+  def subject_for_token(_, _claims) do
+    {:error, :invalid_subject}
+  end
+
+  @impl true
+  def resource_from_claims(%{"sub" => subject}) do
+    {:ok, %{id: subject}}
+  end
+
+  def resource_from_claims(_claims) do
+    {:error, :invalid_claims}
+  end
+end

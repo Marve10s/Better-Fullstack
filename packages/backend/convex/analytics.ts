@@ -37,6 +37,24 @@ function getMajorVersion(version: string | undefined): string | undefined {
   return `v${clean.split(".")[0]}`;
 }
 
+function mergeOptionStats(
+  current: Record<string, Record<string, number>> | undefined,
+  options: Record<string, string | string[]> | undefined,
+): Record<string, Record<string, number>> {
+  const result: Record<string, Record<string, number>> = { ...current };
+  if (!options) return result;
+  for (const [category, value] of Object.entries(options)) {
+    const values = Array.isArray(value) ? value : [value];
+    const dist = { ...result[category] };
+    for (const item of values) {
+      if (!item) continue;
+      dist[item] = (dist[item] ?? 0) + 1;
+    }
+    result[category] = dist;
+  }
+  return result;
+}
+
 export const ingestEvent = internalMutation({
   args: {
     // Core
@@ -95,6 +113,7 @@ export const ingestEvent = internalMutation({
     cli_version: v.optional(v.string()),
     node_version: v.optional(v.string()),
     platform: v.optional(v.string()),
+    options: v.optional(v.record(v.string(), v.union(v.string(), v.array(v.string())))),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -176,6 +195,7 @@ export const ingestEvent = internalMutation({
         hourlyDistribution: incrementKey(existingStats.hourlyDistribution || {}, hourKey),
         stackCombinations: incrementKey(existingStats.stackCombinations || {}, stackKey),
         dbOrmCombinations: incrementKey(existingStats.dbOrmCombinations || {}, dbOrmKey),
+        optionStats: mergeOptionStats(existingStats.optionStats, args.options),
       });
     } else {
       const emptyDist: Record<string, number> = {};
@@ -242,6 +262,7 @@ export const ingestEvent = internalMutation({
         hourlyDistribution: incrementKey(emptyDist, hourKey),
         stackCombinations: incrementKey(emptyDist, stackKey),
         dbOrmCombinations: incrementKey(emptyDist, dbOrmKey),
+        optionStats: mergeOptionStats(undefined, args.options),
       });
     }
 
@@ -329,6 +350,7 @@ export const getStats = query({
       hourlyDistribution: distributionValidator,
       stackCombinations: distributionValidator,
       dbOrmCombinations: distributionValidator,
+      optionStats: v.record(v.string(), distributionValidator),
     }),
     v.null(),
   ),
@@ -396,6 +418,7 @@ export const getStats = query({
       hourlyDistribution: stats.hourlyDistribution || {},
       stackCombinations: stats.stackCombinations || {},
       dbOrmCombinations: stats.dbOrmCombinations || {},
+      optionStats: stats.optionStats ?? {},
     };
   },
 });
@@ -523,6 +546,7 @@ export const backfillStats = mutation({
       hourlyDistribution: { ...emptyDist },
       stackCombinations: { ...emptyDist },
       dbOrmCombinations: { ...emptyDist },
+      optionStats: {} as Record<string, Record<string, number>>,
     };
 
     const dailyCounts = new Map<string, number>();
@@ -601,6 +625,7 @@ export const backfillStats = mutation({
       stats.hourlyDistribution = incrementKey(stats.hourlyDistribution, hourKey);
       stats.stackCombinations = incrementKey(stats.stackCombinations, stackKey);
       stats.dbOrmCombinations = incrementKey(stats.dbOrmCombinations, dbOrmKey);
+      stats.optionStats = mergeOptionStats(stats.optionStats, ev.options);
 
       const date = new Date(ev._creationTime).toISOString().slice(0, 10);
       dailyCounts.set(date, (dailyCounts.get(date) || 0) + 1);

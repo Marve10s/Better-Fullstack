@@ -119,6 +119,7 @@ import {
   RustOrmSchema,
   RustWebFrameworkSchema,
   SearchSchema,
+  VectorDbSchema,
   ServerDeploySchema,
   ShadcnBaseColorSchema,
   ShadcnBaseSchema,
@@ -138,6 +139,16 @@ import {
 
 export const CreateCommandOptionsSchema = z.object({
   template: TemplateSchema.optional().describe("Use a predefined template"),
+  fromHistory: z
+    .number()
+    .optional()
+    .describe(
+      "Replay the stack of the Nth most-recent project from history (1 = most recent)",
+    ),
+  config: z
+    .string()
+    .optional()
+    .describe("Path to a bts.jsonc/JSON config file to use as the base stack"),
   yes: z.boolean().optional().default(false).describe("Use default configuration"),
   yolo: z
     .boolean()
@@ -186,6 +197,9 @@ export const CreateCommandOptionsSchema = z.object({
   rateLimit: RateLimitSchema.optional().describe("Rate limiting solution"),
   i18n: I18nSchema.optional().describe("Internationalization (i18n) library"),
   search: SearchSchema.optional().describe("Search engine solution"),
+  vectorDb: VectorDbSchema.optional().describe(
+    "Vector database for AI embeddings (pgvector, qdrant, chroma, pinecone)",
+  ),
   fileStorage: FileStorageSchema.optional().describe("File storage solution (S3, R2)"),
   mobileNavigation: MobileNavigationSchema.optional().describe(
     "Mobile navigation (expo-router, react-navigation)",

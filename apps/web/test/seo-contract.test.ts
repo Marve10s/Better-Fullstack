@@ -31,8 +31,10 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/docs/cli/create");
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
+    expect(paths).not.toContain("/analytics");
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
+    expect(xml).not.toContain(canonicalUrl("/analytics"));
   });
 
   it("keeps docs canonical URLs page-specific", () => {

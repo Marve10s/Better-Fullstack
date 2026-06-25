@@ -1,0 +1,22 @@
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payment_id?: string; subscription_id?: string }>
+}) {
+  const params = await searchParams;
+  const paymentId = params.payment_id;
+  const subscriptionId = params.subscription_id;
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
+      <p className="text-gray-600 mb-4">
+        Thank you for your purchase. Your Dodo Payments checkout has completed successfully.
+      </p>
+      {paymentId && <p className="text-sm text-gray-500">Payment ID: {paymentId}</p>}
+      {subscriptionId && (
+        <p className="text-sm text-gray-500">Subscription ID: {subscriptionId}</p>
+      )}
+    </div>
+  );
+}

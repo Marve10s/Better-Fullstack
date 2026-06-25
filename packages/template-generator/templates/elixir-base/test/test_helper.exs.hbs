@@ -1,4 +1,8 @@
 ExUnit.start()
-{{#if (ne elixirOrm "none")}}
+{{#if (eq elixirTesting "wallaby")}}
+{:ok, _} = Application.ensure_all_started(:wallaby)
+Application.put_env(:wallaby, :base_url, {{elixirModuleName}}Web.Endpoint.url())
+{{/if}}
+{{#if (eq elixirOrm "ecto-sql")}}
 Ecto.Adapters.SQL.Sandbox.mode({{elixirModuleName}}.Repo, :manual)
 {{/if}}

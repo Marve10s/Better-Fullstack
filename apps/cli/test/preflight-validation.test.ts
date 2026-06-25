@@ -200,6 +200,26 @@ describe("preflight validation", () => {
     }
   });
 
+  describe("Keystatic CMS frontend support", () => {
+    test("warns without Next.js frontend", () => {
+      expect(ruleIds(config({ cms: "keystatic", frontend: ["nuxt"] }))).toContain(
+        "cms-keystatic-requires-nextjs",
+      );
+    });
+
+    test("passes with Next.js frontend", () => {
+      expect(
+        ruleIds(config({ cms: "keystatic", frontend: ["next"], backend: "self" })),
+      ).not.toContain("cms-keystatic-requires-nextjs");
+    });
+
+    test("warns with Astro frontend until @keystatic/astro supports Astro 7", () => {
+      expect(ruleIds(config({ cms: "keystatic", frontend: ["astro"], backend: "self" }))).toContain(
+        "cms-keystatic-requires-nextjs",
+      );
+    });
+  });
+
   describe("payments", () => {
     test("warns with convex backend", () => {
       expect(ruleIds(config({ payments: "stripe", backend: "convex" }))).toContain(

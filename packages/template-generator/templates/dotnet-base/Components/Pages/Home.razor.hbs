@@ -1,0 +1,19 @@
+{{#if dotnetHasBlazor}}
+@page "/"
+
+<PageTitle>{{projectName}}</PageTitle>
+
+<main style="font-family: system-ui, sans-serif; max-width: 720px; margin: 4rem auto; line-height: 1.6;">
+    <p style="text-transform: uppercase; letter-spacing: 0.08em; color: #2563eb; font-size: 0.75rem; font-weight: 700;">
+        Better Fullstack
+    </p>
+    <h1>{{projectName}}</h1>
+    <p>
+        This Blazor app was generated from the <code>dotnetWebFramework=aspnet-blazor</code>
+        stack option.
+    </p>
+    <p>
+        API status is available at <a href="/api/status">/api/status</a>.
+    </p>
+</main>
+{{/if}}

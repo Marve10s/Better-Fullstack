@@ -1,6 +1,6 @@
 {
   "name": "create-better-fullstack",
-  "version": "2.0.3",
+  "version": "2.1.1",
   "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 425 options — the CLI wires everything together.",
   "keywords": [
     "algolia",
@@ -39,6 +39,7 @@
     "next-intl",
     "nextjs",
     "nuxt",
+    "paraglide",
     "payments",
     "pnpm",
     "pothos",
@@ -127,10 +128,10 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/template-generator": "^2.0.3",
-    "@better-fullstack/types": "^2.0.3",
+    "@better-fullstack/template-generator": "^2.1.1",
+    "@better-fullstack/types": "^2.1.1",
     "@clack/core": "^0.5.0",
-    "@clack/prompts": "^1.5.1",
+    "@clack/prompts": "^1.6.0",
     "@orpc/server": "^1.14.6",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",

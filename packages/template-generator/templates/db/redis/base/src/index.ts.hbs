@@ -294,7 +294,8 @@ export const zset = {
 
   async score(key: string, member: unknown): Promise<number | null> {
     const serialized = typeof member === "string" ? member : JSON.stringify(member);
-    return redis.zscore(key, serialized);
+    const score = await redis.zscore(key, serialized);
+    return score === null ? null : Number(score);
   },
 
   async rank(key: string, member: unknown): Promise<number | null> {

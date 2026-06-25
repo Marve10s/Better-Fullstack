@@ -1,0 +1,11 @@
+{{#if dotnetHasBlazor}}
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <p role="alert">This page was not found.</p>
+    </NotFound>
+</Router>
+{{/if}}

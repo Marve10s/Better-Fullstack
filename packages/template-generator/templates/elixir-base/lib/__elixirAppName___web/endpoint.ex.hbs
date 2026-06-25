@@ -31,6 +31,9 @@ defmodule {{elixirModuleName}}Web.Endpoint do
     param_key: "request_logger",
     cookie_key: "request_logger"
 
+{{#if (eq elixirObservability "prom_ex")}}
+  plug PromEx.Plug, prom_ex_module: {{elixirModuleName}}.PromEx
+{{/if}}
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   plug Plug.Parsers, parsers: [:urlencoded, :multipart, :json], pass: ["*/*"], json_decoder: Jason
