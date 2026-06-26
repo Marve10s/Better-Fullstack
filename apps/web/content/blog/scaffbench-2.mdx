@@ -312,6 +312,32 @@ The flip side is real too. On the **prompt path**, where the agent must hand-wri
   **The bench isn't malfunctioning — it's measuring.** Every swing here is backed by something you can re-derive: distinct session IDs and real cost/token/turn deltas (Opus 4.8 `max` ≠ `default` as *runs*, even where they tie as *scores*), and honest compiler output, not score noise, for every GPT-5.5 `xhigh` move (`TS7006`, `TS2322`, `TS2883`, a `lucide-react` `Missing export`, and a Go `unknown revision`). A flat Opus curve and a GPT trade-off that points in opposite directions on different lanes are exactly what you'd expect when assisted passes are pinned by a deterministic generator and prompt failures are caught by a real toolchain. The one caveat we'll keep flagging: n=1 per cell, so these are reproducible, explainable outcomes — not statistical equivalence claims.
 </Callout>
 
+## Free models: opposite failure modes, and a bug they caught
+
+If assisted tooling is the great equalizer, the obvious stress test is: *how weak a model can it carry?* So we wired up a third agent backend — an **opencode / Kilo Code adapter** alongside Claude Code and Codex — and ran two genuinely free models through the same matrix: **North-mini Code** (Cohere, a small *coder*, via opencode) and **Nemotron-3 Super** (NVIDIA's 120B *reasoner*, via Kilo Code's free tier). Same five specs, same three paths, same scoring.
+
+They failed in exactly opposite ways.
+
+| Path | North-mini Core | North-mini wired | Nemotron Core | Nemotron wired |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | **100%** | 100% | **0%** | 48% |
+| CLI | 25% | 53% | 0% | 53% |
+| Prompt | 0% | 30% | 25% | 26% |
+
+**North-mini is the cleanest demonstration of the whole study's thesis.** Writing from scratch it Core-passes **0%**; through the CLI, **25%**; through MCP, **100%** — every one of the four scored specs builds, in ~2.4k output tokens. A free model the size of a rounding error matches Opus on the MCP path, because it makes exactly one decision (`bfs_create_project`) and the deterministic generator does the rest. Hand it the scaffolder and capability stops mattering; take it away and it has nothing.
+
+**Nemotron inverts it — and mostly by not finishing.** The reasoner *researches the task and then quits*. On three of its eight assisted cells it produced **no project at all**: on Go via MCP it called `bfs_get_guidance` and `bfs_get_schema` (154 output tokens) and stopped; on Rust via MCP it inspected the schema five times and planned twice but **never called `bfs_create_project`**; on Go via CLI it ran `bun create better-fullstack --help` and ended its turn. When it *did* finish, the output was broken in honest ways — Rust CLI compiles to `cargo check` exit 101, the TS MCP scaffold it chose fails `bun run build` (exit 127), Python lands real `ruff`/type errors (exit 2). Its one Core pass is a *prompt*-path Go project it hand-wrote end to end — the big reasoner can write code from scratch better than it can drive a tool, the mirror image of North-mini.
+
+### The bug the free tier caught
+
+For a few minutes, North-mini *topped the Full-pass leaderboard at 58%* — above every Opus and GPT config. That is exactly the kind of result that should make you distrust a benchmark, so we chased it. The cause was a real scoring bug, and a subtle one: when a weak model emits a "project" with no recognizable build entrypoint, the harness runs **zero** validation steps, and a Full pass defined as `passRate === 100` reads `0 failures ÷ 0 steps` as a perfect score. Four of North-mini's "passes" were **empty validations** — credit for producing nothing.
+
+We fixed the definition to mirror Core pass: a Full pass now requires the project to exist **and** at least one real validation step, with every step (build, typecheck, *and* the lint/format/test/doctor gate) green. That makes Full a strict subset of Core by construction, and it dropped North-mini to its real **25%** and Nemotron to **0%**. The eight paid configs were byte-for-byte unchanged — they never produced an empty validation. On the leaderboard the two free models now sit under a **Free tier** divider, below every paid config, in both views.
+
+<Callout kind="info">
+  **A free model that "wins" is a bug report, not a result.** The free tier earned its keep twice: North-mini's 0% → 100% Core climb across prompt → MCP is the sharpest evidence in the study that the assisted paths carry weak models, and its phantom 58% surfaced a vacuous-pass flaw that was quietly inflating *every* model's Full number whenever a run produced nothing to check. The bench told on itself — which is the point. Numbers you can't explain get investigated, not published.
+</Callout>
+
 ## How ScaffBench 2 borrows from the best leaderboards
 
 We benchmarked the benchmarks. A few conventions from Artificial Analysis, SWE-bench, and Aider made
