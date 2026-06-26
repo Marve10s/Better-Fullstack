@@ -44,7 +44,7 @@ const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
 
 function prettyModel(model: string): string {
   if (MODEL_LABELS[model]) return MODEL_LABELS[model];
-  if (/^gpt/i.test(model)) return model.toUpperCase().replace("GPT-", "GPT-");
+  if (/^gpt/i.test(model)) return model.toUpperCase();
   return model
     .replace(/^claude-/, "")
     .replace(/(\d)-(\d)/g, "$1.$2")

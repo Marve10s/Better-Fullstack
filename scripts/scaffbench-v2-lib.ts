@@ -2614,10 +2614,16 @@ export async function scoreToolCompliance(
   const bashCommands = toolUses
     .filter((use) => /(^|_)bash$/i.test(use.name))
     .map((use) => (use.command ?? "").toLowerCase());
-  const ranBfsCli = bashCommands.some((cmd) =>
-    /create\s+better-fullstack|create-better-fullstack/.test(cmd),
+  const isBfsCli = (cmd: string) => /create\s+better-fullstack|create-better-fullstack/.test(cmd);
+  const ranBfsCli = bashCommands.some(isBfsCli);
+  // Order matters: the FIRST real scaffold invocation must be the dry-run, so a
+  // transcript that writes for real and only dry-runs afterward fails the check.
+  // --help/--version probes inspect flags without scaffolding, so they don't count.
+  const bfsScaffoldCommands = bashCommands.filter(
+    (cmd) => isBfsCli(cmd) && !/--help|--version/.test(cmd),
   );
-  const ranDryRun = bashCommands.some((cmd) => cmd.includes("--dry-run"));
+  const dryRanFirst =
+    bfsScaffoldCommands.length > 0 && bfsScaffoldCommands[0].includes("--dry-run");
 
   const checks: CommandDisciplineCheck[] = [];
   if (pathMode === "prompt") {
@@ -2639,7 +2645,7 @@ export async function scoreToolCompliance(
     });
     checks.push({
       id: "dry-run-first",
-      status: ranDryRun ? "pass" : "fail",
+      status: dryRanFirst ? "pass" : "fail",
       detail: "CLI path must dry-run before writing",
     });
     checks.push({
@@ -2670,6 +2676,12 @@ export function validationPassed(result: RunResult) {
   const steps = Object.values(result.validation.steps).filter((step): step is StepResult =>
     Boolean(step),
   );
+  // A run with zero executed validation steps must NOT pass vacuously:
+  // `[].every(...)` is `true`. This happens when the agent leaves a directory but
+  // no recognizable manifest (package.json / Cargo.toml / pyproject.toml / go.mod),
+  // so no validator fires — an unbuildable project, not a success. Require at
+  // least one real step before a non-skip-validation run can pass.
+  if (steps.length === 0) return false;
   return steps.every((step) => step.exitCode === 0 && !step.timedOut);
 }
 

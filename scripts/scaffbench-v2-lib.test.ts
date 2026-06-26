@@ -287,6 +287,14 @@ describe("ScaffBench 2 scoring", () => {
     expect(tags).toContain("stack-mismatch");
   });
 
+  it("does not pass a run with zero executed validation steps (no manifest fired)", () => {
+    // Agent left a directory but no package.json/Cargo.toml/etc., so no validator
+    // ran. `[].every(...)` is vacuously true — guard against that inflating Pass@1.
+    const empty = makeRun({ validation: { projectExists: true, steps: {} } });
+    expect(validationPassed(empty)).toBe(false);
+    expect(classifyOutcome(empty)).toBe("model-failure");
+  });
+
   it("aggregates repeats with pass counts and failure tag counts", () => {
     const failed = makeRun({
       id: "ai-search-workbench-claude-opus-4-8-high-mcp-r02",
@@ -841,6 +849,29 @@ describe("ScaffBench 2 command discipline from trajectory (P2)", () => {
       score: 3,
       total: 3,
     });
+  });
+
+  it("fails dry-run-first when the real scaffold precedes the dry-run", async () => {
+    // Scaffolds for real, THEN dry-runs — presence is satisfied but the order is
+    // wrong, so the discipline check must fail (it previously passed on presence).
+    const out = streamJson(
+      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
+      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
+      resultEvent,
+    );
+    const tc = await scoreToolCompliance("cli", null, claudeOutput(out));
+    expect(tc.checks.find((check) => check.id === "dry-run-first")?.status).toBe("fail");
+  });
+
+  it("ignores --help probes when checking dry-run-first ordering", async () => {
+    const out = streamJson(
+      bashUse("bun create better-fullstack@2.1.1 --help"),
+      bashUse("bun create better-fullstack@2.1.1 app --dry-run"),
+      bashUse("bun create better-fullstack@2.1.1 app --no-install"),
+      resultEvent,
+    );
+    const tc = await scoreToolCompliance("cli", null, claudeOutput(out));
+    expect(tc.checks.find((check) => check.id === "dry-run-first")?.status).toBe("pass");
   });
 
   it("fails a prompt-only run that shells out to the BF CLI", async () => {
