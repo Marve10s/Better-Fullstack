@@ -60,6 +60,21 @@ function corePass(result: any): boolean {
   return core.every(([, s]: any) => s.exitCode === 0 && !s.timedOut && !s.spawnError);
 }
 
+// Full pass = every validation step (core + quality gate) passed. We compute it
+// here instead of trusting the harness `passRate === 100` because passRate is
+// VACUOUSLY 100 when zero steps ran — e.g. a model emits a project with no
+// recognizable build entrypoint, the harness validates nothing, and 0/0 reads as
+// "100%". Those are model failures, not passes (they're exactly how a weak free
+// model would otherwise leapfrog Opus). Require projectExists + at least one real
+// step, mirroring corePass; this also guarantees fullPass ⊆ corePass.
+function fullPass(result: any): boolean {
+  const v = result?.validation;
+  if (!v || !v.projectExists) return false;
+  const steps = Object.entries(v.steps || {});
+  if (!steps.length) return false;
+  return steps.every(([, s]: any) => s.exitCode === 0 && !s.timedOut && !s.spawnError);
+}
+
 type Cell = {
   modelKey: string;
   path: string;
@@ -125,7 +140,7 @@ for (const dir of RUNS) {
       spec: c.specId,
       scored,
       corePass: core,
-      fullPass: scored ? c.passRate === 100 : false,
+      fullPass: scored ? fullPass(result) : false,
       wiredPct: c.stackPercent ?? 0,
       cmdPct: c.commandDisciplinePercent ?? 0,
       costUsd: cost,
