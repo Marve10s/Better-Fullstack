@@ -97,7 +97,11 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
+          # Pinned to 2.8.x: Deno 2.9.0 (2026-06-25) regressed npm: specifier
+          # resolution in the vite/rollup build, breaking the Fresh frontend
+          # ("Rollup failed to resolve import npm:preact@^10.29.1" from
+          # @fresh/core). 2.8.3 builds clean. Revisit once 2.9.x fixes it.
+          deno-version: v2.8.x
 
       - name: Cache Dependencies
         uses: actions/cache@v4
