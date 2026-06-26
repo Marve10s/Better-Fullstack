@@ -16,6 +16,8 @@ import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
 
+import { SCAFFBENCH2_CELLS, SCAFFBENCH2_META, SCAFFBENCH2_SPECS } from "./scaffbench-2-data";
+
 /**
  * Data sources:
  * - Claude sweep: testing/llm-benchmarks/benchmark-reports/claude-20260612-005109
@@ -788,12 +790,137 @@ const headingStyle: CSSProperties = {
 
 const blogPostParams = { _splat: "scaffbench" } as const;
 
+// ── ScaffBench 2 leaderboard ────────────────────────────────────────────────
+// A pass-rate bar chart + data table for the per-path (MCP / CLI / Prompt)
+// ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
+
+type LeaderboardVersion = "v2" | "v1";
+type ValidationMode = "core" | "full";
+
+const LEADERBOARD_PATH_ORDER: readonly PathId[] = ["mcp", "cli", "prompt"] as const;
+
+const LEADERBOARD_LABELS: Record<PathId, string> = {
+  mcp: "MCP",
+  cli: "CLI",
+  prompt: "Prompt",
+};
+
+// Per-path bar colors as theme-aware CSS vars (set on the card wrapper).
+const LEADERBOARD_THEME_VARS = cn(
+  "[--bar-mcp:#0f766e] [--bar-cli:#2563eb] [--bar-prompt:#c2410c] [--bar-track:#ececec]",
+  "dark:[--bar-mcp:#5eead4] dark:[--bar-cli:#60a5fa] dark:[--bar-prompt:#fb923c] dark:[--bar-track:#edebe414]",
+);
+
+const BAR_COLOR_VAR: Record<PathId, string> = {
+  mcp: "var(--bar-mcp)",
+  cli: "var(--bar-cli)",
+  prompt: "var(--bar-prompt)",
+};
+
+const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
+
+// Shared column template so the header, every data row, and the x-axis line up.
+const LEADERBOARD_GRID =
+  "grid grid-cols-[3rem_minmax(0,1fr)_4.5rem_4rem_4rem_3rem] items-center gap-x-3";
+
+const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
+
+interface LeaderboardRow {
+  path: PathId;
+  label: string;
+  /** pass@1 as a 0–100 percentage; doubles as the bar fill width. */
+  pass: number;
+  /** tiny confidence string under pass@1 ("n<8", "±N%", or "—"). */
+  ci: string;
+  cost: string;
+  outTok: string;
+  steps: string;
+}
+
+function formatPercent(passing: number, total: number): number {
+  return total === 0 ? 0 : Math.round((100 * passing) / total);
+}
+
+function mean(values: readonly number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+/**
+ * Wilson-free Wald confidence interval. With fewer than 8 graded cells the
+ * sample is too small to be meaningful, so we surface "n<8" instead — this
+ * matches the harness convention (every current path has ≤5 graded specs).
+ */
+function passConfidence(passing: number, graded: number): string {
+  if (graded === 0) return "—";
+  if (graded < 8) return "n<8";
+  const proportion = passing / graded;
+  const margin = Math.round(100 * 1.96 * Math.sqrt((proportion * (1 - proportion)) / graded));
+  return `±${margin}%`;
+}
+
+function computeV2Rows(mode: ValidationMode, specs: ReadonlySet<string>): LeaderboardRow[] {
+  return LEADERBOARD_PATH_ORDER.map((path) => {
+    const cells = SCAFFBENCH2_CELLS.filter((cell) => cell.path === path && specs.has(cell.spec));
+    const measured = cells.filter((cell) => cell.measured);
+    const graded = measured.length;
+    const passing = measured.filter((cell) =>
+      mode === "core" ? cell.corePass : cell.fullPass,
+    ).length;
+
+    const costs = measured
+      .map((cell) => cell.costUsd)
+      .filter((value): value is number => value !== null);
+    const tokens = measured
+      .map((cell) => cell.outTokens)
+      .filter((value): value is number => value !== null);
+
+    return {
+      path,
+      label: LEADERBOARD_LABELS[path],
+      pass: formatPercent(passing, graded),
+      ci: passConfidence(passing, graded),
+      cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
+      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
+      // Steps are recorded even for unmeasured (timed-out) cells, so they're
+      // averaged across every cell in the filter — not just the graded ones.
+      steps: cells.length > 0 ? String(Math.round(mean(cells.map((cell) => cell.steps)))) : "—",
+    };
+  });
+}
+
+function computeV1Rows(): LeaderboardRow[] {
+  return LEADERBOARD_PATH_ORDER.map((path) => {
+    const combos = COMBOS.filter((combo) => combo.path === path);
+    return {
+      path,
+      label: LEADERBOARD_LABELS[path],
+      pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
+      ci: "—",
+      cost: "—",
+      // V1 tokens are already expressed in thousands.
+      outTok: combos.length > 0 ? `${mean(combos.map((combo) => combo.tokens)).toFixed(1)}k` : "—",
+      steps: "—",
+    };
+  });
+}
+
+function computeExcludedSpecs(specs: ReadonlySet<string>): string[] {
+  const excluded: string[] = [];
+  for (const spec of SCAFFBENCH2_SPECS) {
+    if (specs.has(spec) && SCAFFBENCH2_CELLS.some((cell) => cell.spec === spec && !cell.measured)) {
+      excluded.push(spec);
+    }
+  }
+  return excluded;
+}
+
 export default function LLMBenchmarkSection() {
   return (
     <section id="benchmark" className="relative scroll-mt-16 border-t border-border bg-muted/20">
       <div className="px-4 py-20 sm:px-8 sm:py-24">
         <Masthead />
         <BenchmarkChartCard />
+        <ScaffbenchLeaderboardCard />
         <AgentInstallPanel />
       </div>
     </section>
@@ -1465,5 +1592,259 @@ function OpenAIMark({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
       <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.073zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.8956zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997z" />
     </svg>
+  );
+}
+
+function ScaffbenchLeaderboardCard() {
+  const [version, setVersion] = useState<LeaderboardVersion>("v2");
+  const [mode, setMode] = useState<ValidationMode>("core");
+  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH2_SPECS);
+
+  const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
+  const rows = useMemo(
+    () => (version === "v2" ? computeV2Rows(mode, specsSet) : computeV1Rows()),
+    [version, mode, specsSet],
+  );
+  const excludedSpecs = useMemo(
+    () => (version === "v2" ? computeExcludedSpecs(specsSet) : []),
+    [version, specsSet],
+  );
+
+  const toggleSpec = useCallback((spec: string) => {
+    setSelectedSpecs((prev) =>
+      prev.includes(spec)
+        ? prev.filter((s) => s !== spec)
+        : SCAFFBENCH2_SPECS.filter((s) => s === spec || prev.includes(s)),
+    );
+  }, []);
+
+  const caption =
+    version === "v2"
+      ? `ScaffBench 2 · ${SCAFFBENCH2_META.model} · default reasoning · 1 run/cell`
+      : "V1 · cross-vendor sweep · pass-rate averaged across models";
+
+  return (
+    <motion.div
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={fadeUpTransition}
+      className={cn(
+        "mt-8 overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
+        LEADERBOARD_THEME_VARS,
+      )}
+    >
+      <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-3 px-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
+              <PillButton
+                value="v2"
+                label="v2"
+                active={version === "v2"}
+                onSelect={setVersion}
+              />
+              <PillButton
+                value="v1"
+                label="v1"
+                active={version === "v1"}
+                onSelect={setVersion}
+              />
+            </div>
+            {version === "v2" ? (
+              <div className="flex items-center gap-1" role="tablist" aria-label="Validation mode">
+                <PillButton
+                  value="core"
+                  label="Core"
+                  active={mode === "core"}
+                  onSelect={setMode}
+                />
+                <PillButton
+                  value="full"
+                  label="Full"
+                  active={mode === "full"}
+                  onSelect={setMode}
+                />
+              </div>
+            ) : null}
+          </div>
+          {version === "v2" ? (
+            <SpecFilter selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="px-3 pb-4 pt-5 sm:px-6">
+        <section
+          aria-label="ScaffBench 2 pass-rate leaderboard"
+          className="overflow-x-auto"
+          tabIndex={0}
+        >
+          <div className="mx-auto w-full min-w-[640px] max-w-[1180px] px-3">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <p className="text-sm font-semibold">Pass@1 by creation path</p>
+              <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
+                {version === "v2"
+                  ? `${mode === "core" ? "Core" : "Full"} validation`
+                  : "Validation passing"}
+              </p>
+            </div>
+
+            <div
+              className={cn(
+                LEADERBOARD_GRID,
+                "mb-1 text-[10px] font-medium uppercase tracking-[0.1em] text-[#71706a] dark:text-[#8f8d84]",
+              )}
+            >
+              <span>Path</span>
+              <span aria-hidden />
+              <span className="text-right">Pass@1</span>
+              <span className="text-right">Avg cost</span>
+              <span className="text-right">Out tok</span>
+              <span className="text-right">Steps</span>
+            </div>
+
+            {rows.map((row) => (
+              <LeaderboardBarRow key={row.path} row={row} />
+            ))}
+
+            <div className={cn(LEADERBOARD_GRID, "mt-1.5")}>
+              <span aria-hidden />
+              <div className="flex justify-between font-mono text-[10px] text-[#9c9a93] dark:text-[#6c6a61]">
+                {PASS_AXIS_TICKS.map((tick) => (
+                  <span key={tick}>{tick}%</span>
+                ))}
+              </div>
+              <span aria-hidden />
+              <span aria-hidden />
+              <span aria-hidden />
+              <span aria-hidden />
+            </div>
+
+            {excludedSpecs.length > 0 ? (
+              <p className="mt-4 text-xs text-[#71706a] dark:text-[#8f8d84]">
+                <span className="font-mono">{excludedSpecs.join(", ")}</span> excluded (no result)
+              </p>
+            ) : null}
+          </div>
+        </section>
+      </div>
+
+      <div className="border-t border-[#e1e0d8] bg-[#f6f5f1] px-5 py-3.5 dark:border-[rgba(237,235,228,0.10)] dark:bg-[#100f0e] sm:px-8">
+        <p className="text-center text-xs text-[#71706a] dark:text-[#8a8a8a]">{caption}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+function PillButton<T extends string>({
+  value,
+  label,
+  active,
+  onSelect,
+}: {
+  value: T;
+  label: string;
+  active: boolean;
+  onSelect: (value: T) => void;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(value);
+  }, [onSelect, value]);
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+        active
+          ? "bg-[#0a0a0a] text-white dark:bg-[#dad8d0] dark:text-[#100f0e]"
+          : "text-[#71706a] hover:bg-[#edebe4] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:bg-[rgba(237,235,228,0.10)] dark:hover:text-[#dad8d0]",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function LeaderboardBarRow({ row }: { row: LeaderboardRow }) {
+  const fillStyle = useMemo<CSSProperties>(
+    () => ({ width: `${row.pass}%`, backgroundColor: BAR_COLOR_VAR[row.path] }),
+    [row.pass, row.path],
+  );
+
+  return (
+    <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
+      <span className="font-mono text-sm font-bold">{row.label}</span>
+      <div className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK_STYLE}>
+        <div className="h-full rounded-full transition-[width] duration-500 ease-out" style={fillStyle} />
+      </div>
+      <span className="flex flex-col items-end leading-tight">
+        <span className="font-mono text-sm font-bold">{row.pass}%</span>
+        <span className="font-mono text-[10px] text-[#71706a] dark:text-[#8f8d84]">{row.ci}</span>
+      </span>
+      <span className="text-right font-mono text-xs">{row.cost}</span>
+      <span className="text-right font-mono text-xs">{row.outTok}</span>
+      <span className="text-right font-mono text-xs">{row.steps}</span>
+    </div>
+  );
+}
+
+function SpecFilter({
+  selectedSpecs,
+  onToggle,
+}: {
+  selectedSpecs: readonly string[];
+  onToggle: (spec: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Filter specs"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        Specs
+        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
+          {selectedSpecs.length}/{SCAFFBENCH2_SPECS.length}
+        </span>
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
+        <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
+          Specs
+        </DropdownMenuLabel>
+        {SCAFFBENCH2_SPECS.map((spec) => (
+          <SpecMenuItem
+            key={spec}
+            spec={spec}
+            checked={selectedSpecs.includes(spec)}
+            onToggle={onToggle}
+          />
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function SpecMenuItem({
+  spec,
+  checked,
+  onToggle,
+}: {
+  spec: string;
+  checked: boolean;
+  onToggle: (spec: string) => void;
+}) {
+  const handleChange = useCallback(() => {
+    onToggle(spec);
+  }, [onToggle, spec]);
+
+  return (
+    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
+      <span className="min-w-0 flex-1 font-mono text-xs">{spec}</span>
+    </DropdownMenuCheckboxItem>
   );
 }
