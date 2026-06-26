@@ -1272,14 +1272,24 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
                   useMcp: pathMode === "mcp",
                   bunx,
                 })
-              : await runClaude({
-                  cwd: workDir,
-                  prompt,
-                  model: options.model,
-                  effort,
-                  maxBudgetUsd: options.maxBudgetUsd,
-                  mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
-                });
+              : provider === "opencode" || provider === "kilo"
+                ? await runOpencode({
+                    binary: provider,
+                    cwd: workDir,
+                    prompt,
+                    model: options.model,
+                    effort,
+                    useMcp: pathMode === "mcp",
+                    bunx,
+                  })
+                : await runClaude({
+                    cwd: workDir,
+                    prompt,
+                    model: options.model,
+                    effort,
+                    maxBudgetUsd: options.maxBudgetUsd,
+                    mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
+                  });
           const durationMs = Date.now() - started;
 
           await writeFile(path.join(runDir, "claude.stdout.json"), claude.stdout);
@@ -1288,7 +1298,9 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
           const parsed =
             provider === "codex"
               ? parseCodexResult(claude.stdout, options.model)
-              : parseClaudeResult(claude.stdout);
+              : provider === "opencode" || provider === "kilo"
+                ? parseOpencodeResult(claude.stdout)
+                : parseClaudeResult(claude.stdout);
           const generatedDir = await findProjectDir(workDir, projectName);
           const validation = options.skipValidation
             ? { projectExists: generatedDir !== null, steps: {} }
@@ -1497,11 +1509,15 @@ async function runClaude(input: {
   );
 }
 
-export type AgentProvider = "claude" | "codex";
+export type AgentProvider = "claude" | "codex" | "opencode" | "kilo";
 
-/** Infer the agent that drives a model id: GPT/o-series → Codex CLI, else Claude Code. */
+/** Infer the agent that drives a model id by its prefix. opencode/* and kilo/*
+ *  models are driven by the opencode/Kilo Code CLIs; GPT/o-series by Codex. */
 export function providerForModel(model: string): AgentProvider {
-  return /^(gpt|o\d|codex)/i.test(model) ? "codex" : "claude";
+  if (/^opencode\//i.test(model)) return "opencode";
+  if (/^kilo\//i.test(model)) return "kilo";
+  if (/^(gpt|o\d|codex)/i.test(model)) return "codex";
+  return "claude";
 }
 
 // Codex (GPT) adapter — the second agent that lets ScaffBench drive non-Claude
@@ -1543,6 +1559,57 @@ async function runCodex(input: {
       "-C",
       input.cwd,
       ...mcpArgs,
+      input.prompt,
+    ],
+    input.cwd,
+    CLAUDE_TIMEOUT_MS,
+  );
+}
+
+// opencode / Kilo Code adapter — both ship the same CLI, so one function (binary =
+// "opencode" | "kilo") drives both. Runs `<bin> run --format json` in the isolated
+// workdir; for the MCP path it writes a project opencode.json wiring ONLY the
+// Better-Fullstack MCP server. opencode reports USD cost directly on each
+// step-finish (0 for free models), so no pricing table is needed. Reasoning effort
+// maps to --variant. Output is the JSONL event stream parseOpencodeResult reads.
+async function runOpencode(input: {
+  binary: "opencode" | "kilo";
+  cwd: string;
+  prompt: string;
+  model: string;
+  effort: Effort;
+  useMcp: boolean;
+  bunx: string;
+}): Promise<CommandResult> {
+  if (input.useMcp) {
+    const config = {
+      mcp: {
+        "better-fullstack": {
+          type: "local",
+          command: [input.bunx, bfSpec("create-better-fullstack"), "mcp"],
+          enabled: true,
+        },
+      },
+    };
+    await writeFile(path.join(input.cwd, "opencode.json"), `${JSON.stringify(config, null, 2)}\n`);
+  }
+  const effortArgs = input.effort === "default" ? [] : ["--variant", input.effort];
+  return runCommand(
+    input.binary,
+    [
+      "run",
+      "--format",
+      "json",
+      // Non-interactive: there is no human to approve tool calls, so without this
+      // opencode/Kilo auto-REJECT every bash/edit ("user rejected permission"),
+      // and the agent can't scaffold anything. Matches claude's
+      // --dangerously-skip-permissions and codex's --full-auto.
+      "--dangerously-skip-permissions",
+      "-m",
+      input.model,
+      ...effortArgs,
+      "--dir",
+      input.cwd,
       input.prompt,
     ],
     input.cwd,
@@ -1686,6 +1753,43 @@ export function parseCodexResult(stdout: string, model?: string): any | null {
     total_cost_usd:
       usage !== undefined && model !== undefined ? codexCostUsd(model, usage) : undefined,
     session_id: threadId,
+    duration_ms: undefined,
+    terminal_reason: undefined,
+  };
+}
+
+// opencode / Kilo Code analogue. Every JSONL event carries a sessionID; each
+// `step-finish` part carries per-step token usage and USD cost (0 for free
+// models), summed across steps. opencode reports cost directly, so unlike codex
+// no pricing table is involved.
+export function parseOpencodeResult(stdout: string): any | null {
+  let sessionId: string | undefined;
+  let outputTokens = 0;
+  let cost = 0;
+  let sawStep = false;
+  for (const line of stdout.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("{")) continue;
+    let event: any;
+    try {
+      event = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    if (typeof event?.sessionID === "string") sessionId = event.sessionID;
+    const part = event?.part;
+    if (part?.type === "step-finish") {
+      sawStep = true;
+      outputTokens += (part.tokens?.output ?? 0) + (part.tokens?.reasoning ?? 0);
+      if (typeof part.cost === "number") cost += part.cost;
+    }
+  }
+  if (!sawStep && sessionId === undefined) return null;
+  return {
+    type: "result",
+    usage: sawStep ? { output_tokens: outputTokens } : undefined,
+    total_cost_usd: sawStep ? cost : undefined,
+    session_id: sessionId,
     duration_ms: undefined,
     terminal_reason: undefined,
   };
@@ -2481,6 +2585,16 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
       } else if (item.type === "command_execution" && typeof item.command === "string") {
         uses.push({ name: "bash", command: item.command });
       }
+    }
+    // opencode / Kilo Code JSONL: a part of type "tool" carries the tool name
+    // (part.tool, e.g. "bash" or "better-fullstack_bfs_create_project") and, for
+    // the bash tool, the shell command in state.input.command.
+    if (event?.part?.type === "tool" && typeof event.part.tool === "string") {
+      const command =
+        typeof event.part.state?.input?.command === "string"
+          ? event.part.state.input.command
+          : undefined;
+      uses.push({ name: event.part.tool, command });
     }
   }
   return uses;

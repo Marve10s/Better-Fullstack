@@ -13,6 +13,7 @@ import {
   parseArgs,
   parseClaudeResult,
   parseCodexResult,
+  parseOpencodeResult,
   promptFor,
   providerForModel,
   runCommand,
@@ -901,6 +902,43 @@ describe("codex (GPT) agent adapter", () => {
     const jsonl = [
       `{"type":"item.completed","item":{"type":"mcp_tool_call","server":"bfs","tool":"bfs_create_project","arguments":{}}}`,
       `{"type":"item.completed","item":{"type":"command_execution","command":"/bin/zsh -lc 'bun create better-fullstack app --dry-run'","exit_code":0}}`,
+    ].join("\n");
+    const uses = extractToolUses(jsonl);
+    expect(uses.some((u) => /bfs_create_project/i.test(u.name))).toBe(true);
+    const bash = uses.filter((u) => /(^|_)bash$/i.test(u.name)).map((u) => u.command ?? "");
+    expect(bash.some((c) => /create\s+better-fullstack/.test(c))).toBe(true);
+    expect(bash.some((c) => c.includes("--dry-run"))).toBe(true);
+  });
+});
+
+describe("opencode / Kilo Code agent adapter", () => {
+  it("routes opencode/* and kilo/* models to their providers", () => {
+    expect(providerForModel("opencode/north-mini-code-free")).toBe("opencode");
+    expect(providerForModel("kilo/poolside/laguna-m.1:free")).toBe("kilo");
+    // Bare provider/model strings that aren't opencode/kilo fall through normally.
+    expect(providerForModel("gpt-5.5")).toBe("codex");
+    expect(providerForModel("claude-opus-4-8")).toBe("claude");
+  });
+
+  it("parses opencode JSONL session, summed tokens, and cost", () => {
+    const jsonl = [
+      `{"sessionID":"ses_0faabff1","type":"session.updated"}`,
+      `{"part":{"type":"text","text":"thinking"}}`,
+      `{"part":{"type":"step-finish","tokens":{"output":40,"reasoning":10},"cost":0}}`,
+      `{"part":{"type":"step-finish","tokens":{"output":3,"reasoning":0},"cost":0}}`,
+    ].join("\n");
+    const parsed = parseOpencodeResult(jsonl);
+    expect(parsed?.session_id).toBe("ses_0faabff1");
+    // output = answer + reasoning, summed across step-finish events: (40+10)+(3+0).
+    expect(parsed?.usage?.output_tokens).toBe(53);
+    expect(parsed?.total_cost_usd).toBe(0);
+    expect(parseOpencodeResult("not json")).toBeNull();
+  });
+
+  it("extractToolUses understands opencode tool parts (mcp + bash)", () => {
+    const jsonl = [
+      `{"part":{"type":"tool","tool":"better-fullstack_bfs_create_project","state":{"status":"completed"}}}`,
+      `{"part":{"type":"tool","tool":"bash","state":{"input":{"command":"bun create better-fullstack app --dry-run"}}}}`,
     ].join("\n");
     const uses = extractToolUses(jsonl);
     expect(uses.some((u) => /bfs_create_project/i.test(u.name))).toBe(true);
