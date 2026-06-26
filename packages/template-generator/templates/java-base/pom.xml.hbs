@@ -53,6 +53,7 @@
 {{/if}}
 {{#if hasJavaWireMock}}
 		<wiremock.version>3.13.2</wiremock.version>
+		<wiremock.jetty.version>12.0.30</wiremock.jetty.version>
 {{/if}}
 {{#if hasJavaAwaitility}}
 		<awaitility.version>4.3.0</awaitility.version>
@@ -139,6 +140,26 @@
 {{/if}}
 {{/if}}
 	</properties>
+{{#if (and isJavaSpringBoot hasJavaWireMock)}}
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-bom</artifactId>
+				<version>${wiremock.jetty.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.ee10</groupId>
+				<artifactId>jetty-ee10-bom</artifactId>
+				<version>${wiremock.jetty.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+{{/if}}
 {{#if isJavaQuarkus}}
 	<dependencyManagement>
 		<dependencies>

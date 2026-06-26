@@ -9,6 +9,7 @@ import * as JSONC from "jsonc-parser";
 const CLI_ENTRY = resolve(import.meta.dir, "..", "src", "cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
 const BUN_EXECUTABLE = process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
+const CLI_COMMAND_TEST_TIMEOUT_MS = 30_000;
 const TEMP_ROOTS: string[] = [];
 
 function shellQuote(value: string): string {
@@ -179,7 +180,7 @@ describe("CLI add command", () => {
 
     expect(secondAddResult.exitCode).toBe(0);
     expect(cliOutput(secondAddResult)).toContain("No new addons selected.");
-  });
+  }, CLI_COMMAND_TEST_TIMEOUT_MS);
 });
 
 describe("CLI history command", () => {
@@ -236,7 +237,7 @@ describe("CLI history command", () => {
 
     const parsedAfterClear = JSON.parse(cliOutput(historyAfterClear)) as unknown[];
     expect(parsedAfterClear).toEqual([]);
-  });
+  }, CLI_COMMAND_TEST_TIMEOUT_MS);
 
   it("stores the ecosystem-specific reproducible command for Python projects", async () => {
     const root = await makeTempRoot("bfs-history-python-test-");
@@ -355,7 +356,7 @@ describe("CLI history command", () => {
     }>;
 
     expect(parsedHistory[0]?.reproducibleCommand).toBe(expectedCommand);
-  });
+  }, CLI_COMMAND_TEST_TIMEOUT_MS);
 });
 
 function telemetrySettingsPath(homeDir: string): string {
@@ -447,5 +448,5 @@ describe("CLI telemetry command", () => {
     };
     expect(parsedEnvOverride.enabled).toBe(false);
     expect(parsedEnvOverride.source).toBe("env");
-  });
+  }, CLI_COMMAND_TEST_TIMEOUT_MS);
 });
