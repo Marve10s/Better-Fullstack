@@ -208,11 +208,14 @@ const CHART_THEME_VARS = cn(
   "[--ch-fable:#7ca111] [--ch-opus:#e85d11] [--ch-sonnet:#55534b]",
   "[--ch-spark:#0d9488] [--ch-gpt54:#4c5fd5] [--ch-gpt55:#c13a6e]",
   "[--ch-gemini31:#2563eb] [--ch-kimi:#9333ea] [--ch-glm51:#b45309] [--ch-minimax:#dc2626] [--ch-qwen:#0e7490]",
+  // Free-tier model dots — kept in step with the leaderboard bars (opencode violet, kilo cyan).
+  "[--ch-northmini:#6d28d9] [--ch-nemotron:#0891b2]",
   "[--ch-deepseek:#4d7c0f] [--ch-step:#db2777] [--ch-laguna:#0369a1] [--ch-nex:#ca8a04]",
   "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
   "dark:[--ch-fable:#b8d75e] dark:[--ch-opus:#e0894f] dark:[--ch-sonnet:#c9c7bf]",
   "dark:[--ch-spark:#4fd0c0] dark:[--ch-gpt54:#98a6f2] dark:[--ch-gpt55:#e887ad]",
   "dark:[--ch-gemini31:#82aaf2] dark:[--ch-kimi:#c08ef5] dark:[--ch-glm51:#dba05c] dark:[--ch-minimax:#ee8c8c] dark:[--ch-qwen:#5cc3dd]",
+  "dark:[--ch-northmini:#a78bfa] dark:[--ch-nemotron:#22d3ee]",
   "dark:[--ch-deepseek:#97c45c] dark:[--ch-step:#ee8fba] dark:[--ch-laguna:#6db6e3] dark:[--ch-nex:#e3b84e]",
 );
 
@@ -826,14 +829,18 @@ const LEADERBOARD_LABELS: Record<PathId, string> = {
 };
 
 // Per-provider bar colors as theme-aware CSS vars (set on the card wrapper).
+// claude = burnt orange, codex = green, opencode = violet, kilo = cyan
+// (the two free-tier agents get cooler hues so they read as a separate group).
 const LEADERBOARD_THEME_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-track:#edebe414]",
+  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-track:#ececec]",
+  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-track:#edebe414]",
 );
 
-const PROVIDER_BAR_COLOR: Record<"claude" | "codex", string> = {
+const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo", string> = {
   claude: "var(--bar-claude)",
   codex: "var(--bar-codex)",
+  opencode: "var(--bar-opencode)",
+  kilo: "var(--bar-kilo)",
 };
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
@@ -992,6 +999,8 @@ const V2_MODEL_COLORS: readonly string[] = [
   "var(--ch-gemini31)",
   "var(--ch-kimi)",
   "var(--ch-glm51)",
+  "var(--ch-northmini)",
+  "var(--ch-nemotron)",
 ];
 
 interface PathMetrics {

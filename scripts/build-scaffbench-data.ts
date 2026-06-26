@@ -27,13 +27,23 @@ const RUNS = [
   "gpt55-low-2026-06-26",
   "gpt55-medium-2026-06-26",
   "gpt55-xhigh-2026-06-26",
+  // Free-tier contrast: two free models driven through opencode / Kilo Code.
+  "opencode-northmini-2026-06-26",
+  "kilo-nemotron-2026-06-26",
 ];
+// The free models carry long provider/model slugs that prettyModel would mangle
+// ("Kilo/Nvidia/Nemotron 3 Super 120b A12b:Free"); give them clean display labels.
+const MODEL_LABELS: Record<string, string> = {
+  "opencode/north-mini-code-free": "North-mini Code",
+  "kilo/nvidia/nemotron-3-super-120b-a12b:free": "Nemotron-3 Super",
+};
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
 const GATE = /^(lint|format|test|doctor|clippy|fmt)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
 
 function prettyModel(model: string): string {
+  if (MODEL_LABELS[model]) return MODEL_LABELS[model];
   if (/^gpt/i.test(model)) return model.toUpperCase().replace("GPT-", "GPT-");
   return model
     .replace(/^claude-/, "")
@@ -154,8 +164,9 @@ cells.sort(
     specIds.indexOf(a.spec) - specIds.indexOf(b.spec),
 );
 
-const out = `// AUTO-GENERATED from six ScaffBench 2 run summaries (see scripts/build-scaffbench-data.ts).
-// Models: Opus 4.8/4.7/4.6/4.5 (Claude Code) + GPT-5.5 low/medium (Codex). 2026-06-26.
+const out = `// AUTO-GENERATED from ten ScaffBench 2 run summaries (see scripts/build-scaffbench-data.ts).
+// Models: Opus 4.8/4.7/4.6/4.5 (Claude Code), GPT-5.5 low/medium/xhigh (Codex), and two
+// free-tier models — North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
 // Per-cell signals from the harness bySpecCell aggregate (wired = stackPercent, cmd =
 // commandDisciplinePercent); corePass derived from validation steps minus the quality gate;
 // steps from the saved trajectory; GPT cost estimated from token usage × OpenAI pricing.
@@ -166,7 +177,7 @@ export type ScaffbenchModel = {
   model: string;
   effort: string;
   effectiveReasoning: string;
-  provider: "claude" | "codex";
+  provider: "claude" | "codex" | "opencode" | "kilo";
   label: string;
   /** overall ScaffBench Index across all scored cells — the group sort key. */
   sortIndex: number;

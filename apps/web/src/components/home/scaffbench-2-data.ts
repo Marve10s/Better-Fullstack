@@ -1,5 +1,6 @@
-// AUTO-GENERATED from six ScaffBench 2 run summaries (see scripts/build-scaffbench-data.ts).
-// Models: Opus 4.8/4.7/4.6/4.5 (Claude Code) + GPT-5.5 low/medium (Codex). 2026-06-26.
+// AUTO-GENERATED from ten ScaffBench 2 run summaries (see scripts/build-scaffbench-data.ts).
+// Models: Opus 4.8/4.7/4.6/4.5 (Claude Code), GPT-5.5 low/medium/xhigh (Codex), and two
+// free-tier models — North-mini Code (opencode) + Nemotron-3 Super (Kilo Code). 2026-06-26.
 // Per-cell signals from the harness bySpecCell aggregate (wired = stackPercent, cmd =
 // commandDisciplinePercent); corePass derived from validation steps minus the quality gate;
 // steps from the saved trajectory; GPT cost estimated from token usage × OpenAI pricing.
@@ -10,7 +11,7 @@ export type ScaffbenchModel = {
   model: string;
   effort: string;
   effectiveReasoning: string;
-  provider: "claude" | "codex";
+  provider: "claude" | "codex" | "opencode" | "kilo";
   label: string;
   /** overall ScaffBench Index across all scored cells — the group sort key. */
   sortIndex: number;
@@ -113,6 +114,24 @@ export const SCAFFBENCH2_MODELS: readonly ScaffbenchModel[] = [
     "provider": "claude",
     "label": "Opus 4.5",
     "sortIndex": 79
+  },
+  {
+    "key": "opencode/north-mini-code-free|default",
+    "model": "opencode/north-mini-code-free",
+    "effort": "default",
+    "effectiveReasoning": "default",
+    "provider": "opencode",
+    "label": "North-mini Code",
+    "sortIndex": 55
+  },
+  {
+    "key": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+    "effort": "default",
+    "effectiveReasoning": "default",
+    "provider": "kilo",
+    "label": "Nemotron-3 Super",
+    "sortIndex": 29
   }
 ];
 
@@ -1676,5 +1695,369 @@ export const SCAFFBENCH2_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 1.0043229999999999,
     "outTokens": 5867,
     "steps": 20
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "prompt",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 10,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 9966,
+    "steps": 47
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "prompt",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 13457,
+    "steps": 30
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "prompt",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 8,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 37567,
+    "steps": 109
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "prompt",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 8,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 10140,
+    "steps": 40
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "mcp",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 4596,
+    "steps": 13
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "mcp",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": true,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 1931,
+    "steps": 6
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "mcp",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 1659,
+    "steps": 5
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "mcp",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 1491,
+    "steps": 5
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "mcp",
+    "spec": "multi-dotnet-ops",
+    "scored": false,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 0,
+    "cmdPct": 50,
+    "costUsd": null,
+    "outTokens": null,
+    "steps": 0
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "cli",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 10,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 4700,
+    "steps": 15
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "cli",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 35784,
+    "steps": 109
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "cli",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 8,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 19125,
+    "steps": 77
+  },
+  {
+    "modelKey": "opencode/north-mini-code-free|default",
+    "path": "cli",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 4372,
+    "steps": 13
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "prompt",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 29,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 21307,
+    "steps": 42
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "prompt",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 58,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 24721,
+    "steps": 81
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "prompt",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 8,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 14656,
+    "steps": 36
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "prompt",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": false,
+    "wiredPct": 8,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 9073,
+    "steps": 23
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "prompt",
+    "spec": "multi-dotnet-ops",
+    "scored": false,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 0,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 15207,
+    "steps": 46
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "mcp",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 6868,
+    "steps": 5
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "mcp",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 0,
+    "cmdPct": 50,
+    "costUsd": null,
+    "outTokens": 3566,
+    "steps": 9
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "mcp",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 18773,
+    "steps": 8
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "mcp",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 0,
+    "cmdPct": 50,
+    "costUsd": null,
+    "outTokens": 154,
+    "steps": 2
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "mcp",
+    "spec": "multi-dotnet-ops",
+    "scored": false,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 77,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 10009,
+    "steps": 14
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "cli",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": true,
+    "wiredPct": 10,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 32106,
+    "steps": 25
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "cli",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 13010,
+    "steps": 8
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "cli",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 6291,
+    "steps": 13
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "cli",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 0,
+    "cmdPct": 67,
+    "costUsd": null,
+    "outTokens": 580,
+    "steps": 1
+  },
+  {
+    "modelKey": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default",
+    "path": "cli",
+    "spec": "multi-dotnet-ops",
+    "scored": false,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": null,
+    "outTokens": 5301,
+    "steps": 5
   }
 ];
