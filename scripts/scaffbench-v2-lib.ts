@@ -1223,6 +1223,9 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
   const bfsMcpPath = path.join(options.outDir, "better-fullstack-mcp.json");
   await writeMcpConfigs(emptyMcpPath, bfsMcpPath, bunx);
 
+  // The agent that drives this model: GPT/o-series → Codex CLI, else Claude Code.
+  const provider = providerForModel(options.model);
+
   const metadata = await collectMetadata(options);
   const results = await readExistingResults(options.outDir);
 
@@ -1259,20 +1262,33 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
 
           log(`RUN ${id}`);
           const started = Date.now();
-          const claude = await runClaude({
-            cwd: workDir,
-            prompt,
-            model: options.model,
-            effort,
-            maxBudgetUsd: options.maxBudgetUsd,
-            mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
-          });
+          const claude =
+            provider === "codex"
+              ? await runCodex({
+                  cwd: workDir,
+                  prompt,
+                  model: options.model,
+                  effort,
+                  useMcp: pathMode === "mcp",
+                  bunx,
+                })
+              : await runClaude({
+                  cwd: workDir,
+                  prompt,
+                  model: options.model,
+                  effort,
+                  maxBudgetUsd: options.maxBudgetUsd,
+                  mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
+                });
           const durationMs = Date.now() - started;
 
           await writeFile(path.join(runDir, "claude.stdout.json"), claude.stdout);
           await writeFile(path.join(runDir, "claude.stderr.log"), claude.stderr);
 
-          const parsed = parseClaudeResult(claude.stdout);
+          const parsed =
+            provider === "codex"
+              ? parseCodexResult(claude.stdout, options.model)
+              : parseClaudeResult(claude.stdout);
           const generatedDir = await findProjectDir(workDir, projectName);
           const validation = options.skipValidation
             ? { projectExists: generatedDir !== null, steps: {} }
@@ -1481,6 +1497,59 @@ async function runClaude(input: {
   );
 }
 
+export type AgentProvider = "claude" | "codex";
+
+/** Infer the agent that drives a model id: GPT/o-series → Codex CLI, else Claude Code. */
+export function providerForModel(model: string): AgentProvider {
+  return /^(gpt|o\d|codex)/i.test(model) ? "codex" : "claude";
+}
+
+// Codex (GPT) adapter — the second agent that lets ScaffBench drive non-Claude
+// models, mirroring runClaude. Runs `codex exec --json` with an ISOLATED config
+// (only the Better-Fullstack MCP server when on the MCP path; --ignore-user-config
+// so the host's own MCP servers/auth don't bleed in), the reasoning effort mapped
+// to model_reasoning_effort, and full access (the run lives in an isolated temp
+// dir, matching claude's bypassPermissions). Its stdout is the JSONL event stream
+// that parseCodexResult / extractToolUses understand.
+async function runCodex(input: {
+  cwd: string;
+  prompt: string;
+  model: string;
+  effort: Effort;
+  useMcp: boolean;
+  bunx: string;
+}): Promise<CommandResult> {
+  const effortArgs =
+    input.effort === "default" ? [] : ["-c", `model_reasoning_effort=${input.effort}`];
+  const mcpArgs = input.useMcp
+    ? [
+        "-c",
+        `mcp_servers.bfs.command=${JSON.stringify(input.bunx)}`,
+        "-c",
+        `mcp_servers.bfs.args=${JSON.stringify([bfSpec("create-better-fullstack"), "mcp"])}`,
+      ]
+    : [];
+  return runCommand(
+    "codex",
+    [
+      "exec",
+      "--json",
+      "-m",
+      input.model,
+      ...effortArgs,
+      "--dangerously-bypass-approvals-and-sandbox",
+      "--skip-git-repo-check",
+      "--ignore-user-config",
+      "-C",
+      input.cwd,
+      ...mcpArgs,
+      input.prompt,
+    ],
+    input.cwd,
+    CLAUDE_TIMEOUT_MS,
+  );
+}
+
 export async function runCommand(
   command: string,
   args: readonly string[],
@@ -1488,7 +1557,11 @@ export async function runCommand(
   timeoutMs: number,
 ): Promise<CommandResult> {
   const started = Date.now();
-  const child = spawn(command, args, { cwd, env: process.env });
+  // stdin is closed (EOF), not an open pipe: `codex exec` reads stdin when it is
+  // piped ("Reading additional input from stdin…") and would otherwise hang for
+  // the full timeout waiting on input that never comes. Harmless for every other
+  // spawned command (claude -p, cargo, bun, …) — none need interactive stdin.
+  const child = spawn(command, args, { cwd, env: process.env, stdio: ["ignore", "pipe", "pipe"] });
   let stdout = "";
   let stderr = "";
   let timedOut = false;
@@ -1542,6 +1615,80 @@ function quoteArg(arg: string) {
 
 function tail(value: string, max = 4_000) {
   return value.length <= max ? value : value.slice(-max);
+}
+
+type CodexUsage = {
+  input_tokens?: number;
+  cached_input_tokens?: number;
+  output_tokens?: number;
+  reasoning_output_tokens?: number;
+};
+
+// Published token pricing (USD per 1M tokens) for the models driven via Codex.
+// Codex's JSONL reports token usage but no cost, so we price it ourselves.
+// Update when provider pricing changes. Source: OpenAI API pricing, 2026.
+const CODEX_PRICING: Record<string, { input: number; cachedInput: number; output: number }> = {
+  "gpt-5.5": { input: 5, cachedInput: 0.5, output: 30 },
+};
+
+function codexPricingFor(model: string) {
+  const key = model.toLowerCase();
+  return CODEX_PRICING[key] ?? CODEX_PRICING[Object.keys(CODEX_PRICING).find((k) => key.startsWith(k)) ?? ""];
+}
+
+/** Estimated USD cost from codex token usage; undefined if the model isn't priced. */
+export function codexCostUsd(model: string, usage: CodexUsage): number | undefined {
+  const price = codexPricingFor(model);
+  if (!price) return undefined;
+  const input = usage.input_tokens ?? 0;
+  const cached = usage.cached_input_tokens ?? 0;
+  const output = (usage.output_tokens ?? 0) + (usage.reasoning_output_tokens ?? 0);
+  return (
+    (Math.max(0, input - cached) * price.input + cached * price.cachedInput + output * price.output) /
+    1_000_000
+  );
+}
+
+// Codex analogue of parseClaudeResult. The JSONL stream carries token usage on
+// the final `turn.completed` event and the session on `thread.started`. Codex
+// reports no USD cost, so we estimate it from token usage × CODEX_PRICING (pass
+// the model). Output tokens = answer + reasoning, so the cost of "thinking
+// harder" is visible in the token column.
+export function parseCodexResult(stdout: string, model?: string): any | null {
+  let usage: CodexUsage | undefined;
+  let threadId: string | undefined;
+  let sawTurn = false;
+  for (const line of stdout.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("{")) continue;
+    let event: any;
+    try {
+      event = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    if (event?.type === "thread.started" && typeof event.thread_id === "string") {
+      threadId = event.thread_id;
+    }
+    if (event?.type === "turn.completed" && event.usage) {
+      usage = event.usage;
+      sawTurn = true;
+    }
+  }
+  if (!sawTurn && !threadId) return null;
+  const outputTokens =
+    usage !== undefined
+      ? (usage.output_tokens ?? 0) + (usage.reasoning_output_tokens ?? 0)
+      : undefined;
+  return {
+    type: "result",
+    usage: outputTokens !== undefined ? { output_tokens: outputTokens } : undefined,
+    total_cost_usd:
+      usage !== undefined && model !== undefined ? codexCostUsd(model, usage) : undefined,
+    session_id: threadId,
+    duration_ms: undefined,
+    terminal_reason: undefined,
+  };
 }
 
 export function parseClaudeResult(stdout: string): any | null {
@@ -1793,7 +1940,7 @@ async function readRouteCheckConfig(projectDir: string) {
   if (!parsed) return null;
 
   const frontend = inferFrontend(parsed);
-  if (frontend.length === 0 || frontend.every((entry) => entry === "none")) return null;
+  if (frontend.every((entry) => entry === "none")) return null;
 
   return {
     ...parsed,
@@ -2314,12 +2461,25 @@ export function extractToolUses(stdout: string): { name: string; command?: strin
     } catch {
       continue;
     }
+    // Claude stream-json: message.content[] blocks of type "tool_use".
     const content = event?.message?.content;
-    if (!Array.isArray(content)) continue;
-    for (const block of content) {
-      if (block?.type === "tool_use" && typeof block.name === "string") {
-        const command = typeof block.input?.command === "string" ? block.input.command : undefined;
-        uses.push({ name: block.name, command });
+    if (Array.isArray(content)) {
+      for (const block of content) {
+        if (block?.type === "tool_use" && typeof block.name === "string") {
+          const command =
+            typeof block.input?.command === "string" ? block.input.command : undefined;
+          uses.push({ name: block.name, command });
+        }
+      }
+    }
+    // Codex JSONL: item.completed events carry mcp_tool_call (name in `tool`) and
+    // command_execution (shell string in `command`) items.
+    if (event?.type === "item.completed" && event.item) {
+      const item = event.item;
+      if (item.type === "mcp_tool_call" && typeof item.tool === "string") {
+        uses.push({ name: item.tool });
+      } else if (item.type === "command_execution" && typeof item.command === "string") {
+        uses.push({ name: "bash", command: item.command });
       }
     }
   }
@@ -2720,8 +2880,8 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
           ? `${aggregate.passRate}% (${aggregate.passCi95.low}-${aggregate.passCi95.high})`
           : `n<${MIN_CI_RUNS}`,
         `${aggregate.stackPercent}%`,
-        aggregate.faithfulnessPercent != null ? `${aggregate.faithfulnessPercent}%` : "—",
-        aggregate.acceptancePercent != null ? `${aggregate.acceptancePercent}%` : "—",
+        aggregate.faithfulnessPercent !== undefined ? `${aggregate.faithfulnessPercent}%` : "—",
+        aggregate.acceptancePercent !== undefined ? `${aggregate.acceptancePercent}%` : "—",
         `${aggregate.commandDisciplinePercent}%`,
         `${formatSeconds(aggregate.medianDurationMs)} / ${formatSeconds(aggregate.p95DurationMs)}`,
         aggregate.avgOutputTokens ?? "",

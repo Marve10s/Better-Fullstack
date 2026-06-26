@@ -12,7 +12,9 @@ import {
   findProjectDir,
   parseArgs,
   parseClaudeResult,
+  parseCodexResult,
   promptFor,
+  providerForModel,
   runCommand,
   scoreArtifact,
   scoreBts,
@@ -869,5 +871,41 @@ describe("ScaffBench 2 acceptance scoped-prefix (Codex #261)", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("codex (GPT) agent adapter", () => {
+  it("routes models to the right provider", () => {
+    expect(providerForModel("gpt-5.5")).toBe("codex");
+    expect(providerForModel("o3")).toBe("codex");
+    expect(providerForModel("codex-mini")).toBe("codex");
+    expect(providerForModel("claude-opus-4-7")).toBe("claude");
+    expect(providerForModel("opus")).toBe("claude");
+  });
+
+  it("parses codex JSONL usage + session, leaving cost undefined", () => {
+    const jsonl = [
+      `{"type":"thread.started","thread_id":"t-123"}`,
+      `{"type":"item.completed","item":{"type":"agent_message","text":"done"}}`,
+      `{"type":"turn.completed","usage":{"input_tokens":1000,"cached_input_tokens":800,"output_tokens":120,"reasoning_output_tokens":30}}`,
+    ].join("\n");
+    const parsed = parseCodexResult(jsonl);
+    expect(parsed?.session_id).toBe("t-123");
+    // output tokens = answer + reasoning, so thinking cost is visible.
+    expect(parsed?.usage?.output_tokens).toBe(150);
+    expect(parsed?.total_cost_usd).toBeUndefined();
+    expect(parseCodexResult("not json")).toBeNull();
+  });
+
+  it("extractToolUses understands codex mcp_tool_call + command_execution", () => {
+    const jsonl = [
+      `{"type":"item.completed","item":{"type":"mcp_tool_call","server":"bfs","tool":"bfs_create_project","arguments":{}}}`,
+      `{"type":"item.completed","item":{"type":"command_execution","command":"/bin/zsh -lc 'bun create better-fullstack app --dry-run'","exit_code":0}}`,
+    ].join("\n");
+    const uses = extractToolUses(jsonl);
+    expect(uses.some((u) => /bfs_create_project/i.test(u.name))).toBe(true);
+    const bash = uses.filter((u) => /(^|_)bash$/i.test(u.name)).map((u) => u.command ?? "");
+    expect(bash.some((c) => /create\s+better-fullstack/.test(c))).toBe(true);
+    expect(bash.some((c) => c.includes("--dry-run"))).toBe(true);
   });
 });
