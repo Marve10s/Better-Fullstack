@@ -19137,9 +19137,9 @@ path = "src/main.rs"
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
 mod error;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Serialize)]
 struct HealthResponse {
@@ -19168,7 +19168,6 @@ async fn health(
     })
 }
 
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Load environment variables
@@ -19176,15 +19175,17 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
 
 
     // Initialize database connection
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     tracing::info!("Connecting to database...");
     let db = Database::connect(&database_url).await?;
@@ -19592,15 +19593,17 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
 
 
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     tracing::info!("Connecting to database...");
     let pool = PgPoolOptions::new()
@@ -19885,7 +19888,9 @@ async fn main() -> Result<()> {
     // Initialize tracing with verbosity level
     let filter = if cli.verbose { "debug" } else { "info" };
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -20041,7 +20046,10 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -20274,7 +20282,6 @@ async fn health(
     })
 }
 
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Load environment variables
@@ -20286,8 +20293,7 @@ async fn main() -> anyhow::Result<()> {
 
 
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     log::info!("Connecting to database...");
     let pool = PgPoolOptions::new()
@@ -20520,7 +20526,6 @@ async fn health() -> Json<HealthResponse> {
     })
 }
 
-
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     // Load environment variables
@@ -20531,7 +20536,10 @@ async fn main() -> eyre::Result<()> {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -20783,7 +20791,10 @@ async fn rocket() -> _ {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -20794,8 +20805,7 @@ async fn rocket() -> _ {
 
 
     // Initialize database connection
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     tracing::info!("Connecting to database...");
     let db = Database::connect(&database_url).await.expect("Failed to connect to database");
