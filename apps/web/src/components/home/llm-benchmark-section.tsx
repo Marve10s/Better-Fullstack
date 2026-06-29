@@ -57,6 +57,11 @@ type BenchmarkVersionId = "v1" | "v2";
 type PathId = "mcp" | "cli" | "prompt";
 
 const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
+// V2 surfaces only the Prompt path: the MCP/CLI (assisted) paths run our own
+// generator + templates, so their pass/fail reflects our codebase (template
+// hygiene, the quality-gate fixes) more than model capability. Prompt — where the
+// model writes everything itself — is the clean model-capability signal.
+const V2_PATH_TABS: readonly PathId[] = ["prompt"] as const;
 
 const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = {
   mcp: {
@@ -1311,7 +1316,10 @@ function BenchmarkChartCard() {
   // models (like v1's fitAxis) so the dots spread across the plot — on the
   // assisted paths the models cluster, and a fixed all-path axis would crush them
   // into an unreadable corner with no room for labels.
-  const v2ModelPoints = useMemo(() => computeV2ModelPoints(activePath), [activePath]);
+  // V2 is Prompt-only (see V2_PATH_TABS): force the path so a stale v1 selection
+  // (e.g. mcp) can't leak the wrong data into the v2 chart.
+  const v2Path: PathId = version === "v2" ? "prompt" : activePath;
+  const v2ModelPoints = useMemo(() => computeV2ModelPoints(v2Path), [v2Path]);
   const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2ModelPoints), [v2Metric, v2ModelPoints]);
   const v2LabelPlacements = useMemo(
     () => computeV2LabelPlacements(v2ModelPoints, v2Axis, v2Metric),
@@ -1356,8 +1364,12 @@ function BenchmarkChartCard() {
               <PillButton value="v2" label="v2" active={isV2} onSelect={setVersion} />
               <PillButton value="v1" label="v1" active={!isV2} onSelect={setVersion} />
             </div>
-            <PathTabs active={activePath} onSelect={setActivePath} />
-            <PathsHelp />
+            <PathTabs
+              active={isV2 ? "prompt" : activePath}
+              onSelect={setActivePath}
+              paths={isV2 ? V2_PATH_TABS : PATH_TAB_ORDER}
+            />
+            {isV2 ? null : <PathsHelp />}
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2.5">
             <div
@@ -1460,10 +1472,18 @@ const MODEL_SWATCH_STYLES = Object.fromEntries(
   MODEL_ORDER.map((model) => [model, { backgroundColor: CHART_PALETTE.models[model] }]),
 ) as Record<ModelId, CSSProperties>;
 
-function PathTabs({ active, onSelect }: { active: PathId; onSelect: (path: PathId) => void }) {
+function PathTabs({
+  active,
+  onSelect,
+  paths = PATH_TAB_ORDER,
+}: {
+  active: PathId;
+  onSelect: (path: PathId) => void;
+  paths?: readonly PathId[];
+}) {
   return (
     <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Creation path">
-      {PATH_TAB_ORDER.map((path) => (
+      {paths.map((path) => (
         <PathTabButton key={path} path={path} active={active === path} onSelect={onSelect} />
       ))}
     </div>
@@ -2178,14 +2198,17 @@ function ScaffbenchLeaderboardCard() {
   // overstated Full). computeV2ModelRows still takes a mode so Full can return
   // with one line once that re-run lands.
   const MODE = "core" as const;
+  // V2 is Prompt-only (see V2_PATH_TABS): the assisted paths measure our generator,
+  // not the model. Force the path so a stale v1 selection can't leak into v2.
+  const effectiveLeaderPath: LeaderPath = version === "v2" ? "prompt" : leaderPath;
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   // One row per model, sorted best-first, for the chosen creation path.
   const rows = useMemo(
     () =>
       version === "v2"
-        ? computeV2ModelRows(leaderPath, MODE, specsSet)
-        : computeV1ModelRows(leaderPath),
-    [version, leaderPath, specsSet],
+        ? computeV2ModelRows(effectiveLeaderPath, MODE, specsSet)
+        : computeV1ModelRows(effectiveLeaderPath),
+    [version, effectiveLeaderPath, specsSet],
   );
 
   const toggleSpec = useCallback((spec: string) => {
@@ -2227,34 +2250,42 @@ function ScaffbenchLeaderboardCard() {
               />
             </div>
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
-              <PillButton
-                value="all"
-                label="All"
-                active={leaderPath === "all"}
-                onSelect={setLeaderPath}
-                accent="teal"
-              />
-              <PillButton
-                value="mcp"
-                label="MCP"
-                active={leaderPath === "mcp"}
-                onSelect={setLeaderPath}
-                accent="teal"
-              />
-              <PillButton
-                value="cli"
-                label="CLI"
-                active={leaderPath === "cli"}
-                onSelect={setLeaderPath}
-                accent="teal"
-              />
-              <PillButton
-                value="prompt"
-                label="Prompt"
-                active={leaderPath === "prompt"}
-                onSelect={setLeaderPath}
-                accent="teal"
-              />
+              {version === "v2" ? (
+                // V2 is Prompt-only (assisted paths measure our generator, not the
+                // model) — show just the Prompt path, no MCP/CLI/All.
+                <PillButton value="prompt" label="Prompt" active onSelect={setLeaderPath} accent="teal" />
+              ) : (
+                <>
+                  <PillButton
+                    value="all"
+                    label="All"
+                    active={leaderPath === "all"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="mcp"
+                    label="MCP"
+                    active={leaderPath === "mcp"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="cli"
+                    label="CLI"
+                    active={leaderPath === "cli"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="prompt"
+                    label="Prompt"
+                    active={leaderPath === "prompt"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                </>
+              )}
             </div>
           </div>
           {version === "v2" ? (
@@ -2273,7 +2304,9 @@ function ScaffbenchLeaderboardCard() {
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <p className="text-sm font-semibold">Pass 1 by model</p>
               <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
-                {leaderPath === "all" ? "All creation paths" : LEADERBOARD_LABELS[leaderPath]}
+                {effectiveLeaderPath === "all"
+                  ? "All creation paths"
+                  : LEADERBOARD_LABELS[effectiveLeaderPath]}
                 {version === "v2" ? " · Core validation" : ""}
               </p>
             </div>
