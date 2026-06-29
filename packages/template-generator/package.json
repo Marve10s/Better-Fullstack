@@ -1,6 +1,6 @@
 {
   "name": "@better-fullstack/template-generator",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Virtual file system generator for Better-Fullstack templates - works in browsers and Node.js",
   "keywords": [
     "better-fullstack",
@@ -62,7 +62,7 @@
     "sync-versions:fix": "bun scripts/sync-template-versions.ts --fix"
   },
   "dependencies": {
-    "@better-fullstack/types": "^2.1.2",
+    "@better-fullstack/types": "^2.1.3",
     "handlebars": "^4.7.9",
     "pathe": "^2.0.3",
     "ts-morph": "^27.0.2",
