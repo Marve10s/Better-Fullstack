@@ -1,4 +1,6 @@
 {{#if (eq rustCaching "moka")}}
+#![allow(dead_code)]
+
 use moka::future::Cache;
 use std::time::Duration;
 

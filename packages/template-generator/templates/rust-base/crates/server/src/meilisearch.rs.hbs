@@ -1,4 +1,6 @@
 {{#if (eq search "meilisearch")}}
+#![allow(dead_code)]
+
 use meilisearch_sdk::{client::Client, errors::Error, search::SearchResults};
 use serde::{de::DeserializeOwned, Serialize};
 

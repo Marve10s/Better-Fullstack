@@ -170,8 +170,9 @@ dependencies {
 {{/if}}
 {{#if hasJavaTestcontainers}}
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
-	testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
-	testImplementation("org.testcontainers:junit-jupiter")
+	// Spring Boot 4 manages Testcontainers 2.x, which renamed the JUnit 5 module
+	// to `testcontainers-junit-jupiter`; use the managed version (no BOM pin).
+	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 {{/if}}
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 {{/if}}

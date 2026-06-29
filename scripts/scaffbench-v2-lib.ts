@@ -77,6 +77,17 @@ export type StepResult = {
    * environment problem, distinct from a child process that ran and exited
    * non-zero (e.g. a generated `bun run build` whose script is broken). */
   spawnError?: boolean;
+  /**
+   * How to read this step when scoring:
+   * - "ran" (or absent): a real command executed — judge it by exitCode.
+   * - "skip": a check that SHOULD have run but no tool was configured/detected.
+   *   It is NOT a pass — it disqualifies a Full pass. Carries exitCode null so it
+   *   can never be mistaken for a green (=== 0) run (the old `skippedStep` set
+   *   exitCode 0, which silently passed missing lint/test — the Finding-1 bug).
+   * - "na": the check is legitimately not applicable (e.g. a scaffold with
+   *   genuinely zero tests). Excluded from scoring — neither pass nor fail.
+   */
+  status?: "ran" | "skip" | "na";
   durationMs: number;
   stdoutTail: string;
   stderrTail: string;
@@ -1520,6 +1531,21 @@ export function providerForModel(model: string): AgentProvider {
   return "claude";
 }
 
+// Human label for the agent that drove a model — for summary.md headers. Derived
+// from the model so non-Claude runs aren't mislabeled "Claude Code".
+export function agentLabelForModel(model: string): string {
+  switch (providerForModel(model)) {
+    case "codex":
+      return "Codex";
+    case "opencode":
+      return "opencode";
+    case "kilo":
+      return "Kilo Code";
+    default:
+      return "Claude Code";
+  }
+}
+
 // Codex (GPT) adapter — the second agent that lets ScaffBench drive non-Claude
 // models, mirroring runClaude. Runs `codex exec --json` with an ISOLATED config
 // (only the Better-Fullstack MCP server when on the MCP path; --ignore-user-config
@@ -1958,26 +1984,42 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
       await runCommand(bun, ["run", gate], projectDir, VALIDATION_TIMEOUT_MS),
     );
   }
+  // Quality gate — every check is READ-ONLY (never mutates the scaffold) and runs
+  // the project-LOCAL, version-pinned tool (node_modules/.bin/*) after install, so
+  // the verdict is reproducible and a step can't launder a real problem into a
+  // pass by auto-fixing it. A missing tool is a `skipStep` (disqualifies Full),
+  // never a silent exit-0 pass — that exit-0 skip + the `biome check --write`
+  // fallback were the Finding-1 inflation that made Full == Core for TS cells.
   if (options.qualityGate || scripts.lint) {
+    const biomeBin = localBin(projectDir, "biome");
+    const eslintBin = localBin(projectDir, "eslint");
     steps.lint = scripts.lint
       ? toStep(await runCommand(bun, ["run", "lint"], projectDir, VALIDATION_TIMEOUT_MS))
-      : skippedStep("bun run lint");
+      : biomeBin
+        ? toStep(await runCommand(biomeBin, ["lint", "."], projectDir, VALIDATION_TIMEOUT_MS))
+        : eslintBin
+          ? toStep(await runCommand(eslintBin, ["."], projectDir, VALIDATION_TIMEOUT_MS))
+          : skipStep("lint (no linter configured)");
   }
   if (options.qualityGate) {
-    if (scripts.format) {
-      steps.format = toStep(
-        await runCommand(bun, ["run", "format"], projectDir, VALIDATION_TIMEOUT_MS),
-      );
-    } else if (scripts.check) {
-      steps.format = toStep(
-        await runCommand(bun, ["run", "check"], projectDir, VALIDATION_TIMEOUT_MS),
-      );
-    } else {
-      steps.format = skippedStep("format/check");
-    }
+    // Read-only format check — deliberately NOT the project's `format`/`check`
+    // scripts: generated BFS projects ship `check: biome check --write .`, which
+    // auto-fixes and always exits 0. `biome format` (no --write) / `prettier
+    // --check` report formatting drift without writing. NOTE: Biome 2.5.1 removed
+    // the `--check` flag ("--check is not expected in this context"); the default
+    // `biome format` is already read-only and exits non-zero on unformatted code.
+    const biomeBin = localBin(projectDir, "biome");
+    const prettierBin = localBin(projectDir, "prettier");
+    steps.format = biomeBin
+      ? toStep(await runCommand(biomeBin, ["format", "."], projectDir, VALIDATION_TIMEOUT_MS))
+      : prettierBin
+        ? toStep(await runCommand(prettierBin, ["--check", "."], projectDir, VALIDATION_TIMEOUT_MS))
+        : skipStep("format (no formatter configured)");
+    // A scaffold with no test script is genuinely testless -> n/a (excluded from
+    // Full), neither a free pass nor a failure.
     steps.test = scripts.test
       ? toStep(await runCommand(bun, ["run", "test"], projectDir, VALIDATION_TIMEOUT_MS))
-      : skippedStep("bun run test");
+      : naStep("test (no test script)");
   }
   if (options.doctorCheck) {
     const bunx = existsSync(`${process.env.HOME}/.bun/bin/bunx`)
@@ -1995,7 +2037,7 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
   if (options.routeCheck) {
     steps.route = scripts.dev
       ? await runProjectRouteCheck(projectDir, options.outDir)
-      : skippedStep("route-check (no dev script)");
+      : naStep("route-check (no dev script)");
   }
 
   return steps;
@@ -2003,7 +2045,7 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
 
 async function runProjectRouteCheck(projectDir: string, outDir: string): Promise<StepResult> {
   const config = await readRouteCheckConfig(projectDir);
-  if (!config) return skippedStep("route-check (missing Better-Fullstack route metadata)");
+  if (!config) return naStep("route-check (missing Better-Fullstack route metadata)");
 
   const start = Date.now();
   let handle: any = null;
@@ -2124,9 +2166,22 @@ async function validatePythonProject(projectDir: string, options: ScaffbenchOpti
     steps.lint = toStep(
       await runCommand("uv", ["run", "ruff", "check", "."], projectDir, VALIDATION_TIMEOUT_MS),
     );
-    steps.test = toStep(
+    // Read-only format check, for parity with the TS/Rust/Go gates (was missing).
+    steps.format = toStep(
+      await runCommand(
+        "uv",
+        ["run", "ruff", "format", "--check", "."],
+        projectDir,
+        VALIDATION_TIMEOUT_MS,
+      ),
+    );
+    // pytest exit 5 = "no tests collected": a genuinely testless scaffold -> n/a
+    // (excluded from Full), not a failure (the old bare pytest would fail it) and
+    // not a pass. Any other non-zero stays a real test failure.
+    const pytest = toStep(
       await runCommand("uv", ["run", "pytest"], projectDir, VALIDATION_TIMEOUT_MS),
     );
+    steps.test = pytest.exitCode === 5 ? naStep("pytest (no tests collected)") : pytest;
   }
   return steps;
 }
@@ -2145,6 +2200,23 @@ async function validateGoProject(projectDir: string, options: ScaffbenchOptions)
     steps.lint = toStep(
       await runCommand("go", ["vet", "./..."], projectDir, VALIDATION_TIMEOUT_MS),
     );
+    // Read-only format check, for parity with the other gates (was missing).
+    // `gofmt -l .` lists unformatted files but exits 0 regardless, so treat any
+    // listed file as a failure.
+    const gofmt = await runCommand("gofmt", ["-l", "."], projectDir, VALIDATION_TIMEOUT_MS);
+    const unformatted = gofmt.stdout.trim();
+    steps.format = toStep(
+      gofmt.exitCode === 0 && unformatted
+        ? {
+            ...gofmt,
+            exitCode: 1,
+            stderr: `gofmt: ${unformatted.split("\n").filter(Boolean).length} file(s) need formatting:\n${unformatted}`,
+          }
+        : gofmt,
+    );
+    // go test reports "no test files" and exits 0 for a testless scaffold, which
+    // is an acceptable trivially-green test step (cf. cargo test). (TS/Python map
+    // their testless idioms to n/a; the Full outcome is the same either way.)
     steps.test = toStep(
       await runCommand("go", ["test", "./..."], projectDir, VALIDATION_TIMEOUT_MS),
     );
@@ -2192,15 +2264,42 @@ function toStep(result: CommandResult): StepResult {
   return step;
 }
 
-function skippedStep(command: string): StepResult {
+// A quality-gate check that SHOULD have run but no tool was configured/detected.
+// NOT a pass — it disqualifies a Full pass. exitCode null (never 0) so the
+// steps.every(exitCode === 0) scoring can't read it as green (the Finding-1 bug).
+function skipStep(command: string): StepResult {
   return {
     command,
-    exitCode: 0,
+    exitCode: null,
     timedOut: false,
+    status: "skip",
     durationMs: 0,
-    stdoutTail: "skipped",
+    stdoutTail: "skipped (tool not configured)",
     stderrTail: "",
   };
+}
+
+// A check that is legitimately not applicable (e.g. a scaffold with genuinely no
+// tests, or a route-check with no dev server). Excluded from scoring — neither
+// pass nor fail. exitCode null so it can never read as a green run either.
+function naStep(command: string): StepResult {
+  return {
+    command,
+    exitCode: null,
+    timedOut: false,
+    status: "na",
+    durationMs: 0,
+    stdoutTail: "n/a",
+    stderrTail: "",
+  };
+}
+
+// Resolve a project-local CLI binary (node_modules/.bin/<name>) so the gate runs
+// the version the project pins, not a bunx-latest download (which drifts the
+// verdict run-to-run). Returns null if the tool is not installed in the project.
+function localBin(projectDir: string, name: string): string | null {
+  const p = path.join(projectDir, "node_modules", ".bin", name);
+  return existsSync(p) ? p : null;
 }
 
 async function readPackageScripts(packageJsonPath: string) {
@@ -2673,16 +2772,23 @@ export async function scoreToolCompliance(
 
 export function validationPassed(result: RunResult) {
   if (!result.validation.projectExists) return false;
-  const steps = Object.values(result.validation.steps).filter((step): step is StepResult =>
+  const all = Object.values(result.validation.steps).filter((step): step is StepResult =>
     Boolean(step),
   );
-  // A run with zero executed validation steps must NOT pass vacuously:
-  // `[].every(...)` is `true`. This happens when the agent leaves a directory but
-  // no recognizable manifest (package.json / Cargo.toml / pyproject.toml / go.mod),
-  // so no validator fires — an unbuildable project, not a success. Require at
-  // least one real step before a non-skip-validation run can pass.
-  if (steps.length === 0) return false;
-  return steps.every((step) => step.exitCode === 0 && !step.timedOut);
+  // "na" steps (e.g. a genuinely testless scaffold) are excluded — neither pass
+  // nor fail. Everything else must be a real green run.
+  const applicable = all.filter((step) => step.status !== "na");
+  // A run with zero applicable steps must NOT pass vacuously (`[].every(...)` is
+  // true): the agent left a directory but no recognizable manifest, so no
+  // validator fired — an unbuildable project, not a success.
+  if (applicable.length === 0) return false;
+  // A "skip" (a check that should have run but no tool was configured) is NOT a
+  // pass — it disqualifies the run. (Pre-fix, skips carried exitCode 0 and passed
+  // silently: the Finding-1 inflation.)
+  return applicable.every(
+    (step) =>
+      step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
+  );
 }
 
 function isBudgetExhausted(terminalReason: string | undefined) {
@@ -3020,7 +3126,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
   return `# ScaffBench 2 Run
 
 Harness: ${summary.harnessVersion}
-Agent: Claude Code (single agent; single model family per row)
+Agent: ${agentLabelForModel(summary.options.model)} (single agent; single model family per row)
 Specs: ${summary.specs.map((spec) => spec.id).join(", ")}
 Repeats: ${summary.options.repeats}
 Prompt style: ${summary.options.promptStyle}
@@ -3028,7 +3134,7 @@ Prompt style: ${summary.options.promptStyle}
 ## Path × effort summary
 
 This is an ablation across creation paths and reasoning effort for one agent
-(Claude Code), not a cross-vendor leaderboard. Pass rate is over *scored* runs:
+(${agentLabelForModel(summary.options.model)}), not a cross-vendor leaderboard. Pass rate is over *scored* runs:
 infra-inconclusive runs (missing toolchain, validation timeout, exhausted token
 budget, or a crash with no output) are excluded from the denominator. "Wired
 libs" is scored from the generated artifact (deps + imports + files);

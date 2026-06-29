@@ -1,4 +1,6 @@
 {{#if (eq observability "sentry")}}
+#![allow(dead_code)]
+
 /// Initialize Sentry when SENTRY_DSN is configured.
 pub fn init_sentry() -> Option<sentry::ClientInitGuard> {
     let dsn = std::env::var("SENTRY_DSN")

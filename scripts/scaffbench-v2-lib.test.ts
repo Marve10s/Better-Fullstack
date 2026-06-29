@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import {
   aggregateResults,
+  agentLabelForModel,
   canonicalCommand,
   classifyOutcome,
   deriveFailureTags,
@@ -25,6 +26,7 @@ import {
   typecheckGate,
   validationPassed,
   type RunResult,
+  type StepResult,
 } from "./scaffbench-v2-lib";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
@@ -293,6 +295,63 @@ describe("ScaffBench 2 scoring", () => {
     const empty = makeRun({ validation: { projectExists: true, steps: {} } });
     expect(validationPassed(empty)).toBe(false);
     expect(classifyOutcome(empty)).toBe("model-failure");
+  });
+
+  const okStep = (command: string): StepResult => ({
+    command,
+    exitCode: 0,
+    timedOut: false,
+    durationMs: 1,
+    stdoutTail: "",
+    stderrTail: "",
+  });
+
+  it("treats a 'skip' gate step as a failure, not a vacuous pass (Finding 1)", () => {
+    // Core is green but the linter could not run (no tool configured) -> 'skip'
+    // (exitCode null). Pre-fix this carried exitCode 0 and passed silently.
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: okStep("bun install"),
+          build: okStep("bun run build"),
+          lint: {
+            command: "lint (no linter configured)",
+            exitCode: null,
+            timedOut: false,
+            status: "skip",
+            durationMs: 0,
+            stdoutTail: "skipped (tool not configured)",
+            stderrTail: "",
+          },
+        },
+      },
+    });
+    expect(validationPassed(run)).toBe(false);
+  });
+
+  it("excludes an 'na' step (genuinely testless scaffold) from the pass decision", () => {
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: okStep("bun install"),
+          build: okStep("bun run build"),
+          format: okStep("biome format --check ."),
+          test: {
+            command: "test (no test script)",
+            exitCode: null,
+            timedOut: false,
+            status: "na",
+            durationMs: 0,
+            stdoutTail: "n/a",
+            stderrTail: "",
+          },
+        },
+      },
+    });
+    // The 'na' test is excluded; every real step is green -> pass.
+    expect(validationPassed(run)).toBe(true);
   });
 
   it("aggregates repeats with pass counts and failure tag counts", () => {
@@ -949,6 +1008,13 @@ describe("opencode / Kilo Code agent adapter", () => {
     // Bare provider/model strings that aren't opencode/kilo fall through normally.
     expect(providerForModel("gpt-5.5")).toBe("codex");
     expect(providerForModel("claude-opus-4-8")).toBe("claude");
+  });
+
+  it("labels the driving agent from the model (no more hardcoded 'Claude Code')", () => {
+    expect(agentLabelForModel("claude-opus-4-8")).toBe("Claude Code");
+    expect(agentLabelForModel("gpt-5.5")).toBe("Codex");
+    expect(agentLabelForModel("opencode/north-mini-code-free")).toBe("opencode");
+    expect(agentLabelForModel("kilo/nvidia/nemotron-3-super-120b-a12b:free")).toBe("Kilo Code");
   });
 
   it("parses opencode JSONL session, summed tokens, and cost", () => {

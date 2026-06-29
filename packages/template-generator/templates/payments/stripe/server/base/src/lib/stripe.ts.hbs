@@ -1,9 +1,12 @@
 import Stripe from "stripe";
 import { env } from "@{{projectName}}/env/server";
 
-export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: "2026-05-27.dahlia",
-});
+// No `apiVersion` is pinned on purpose: the Stripe SDK defaults to the API
+// version it was built against (its `LatestApiVersion`), so the types always
+// line up with the installed `stripe` package. Pinning a literal here goes stale
+// on every SDK bump and breaks type-checking. Pin one explicitly only if you
+// need to lock behavior, and bump it whenever you upgrade `stripe`.
+export const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
 export async function createCheckoutSession(params: {
   priceId: string;

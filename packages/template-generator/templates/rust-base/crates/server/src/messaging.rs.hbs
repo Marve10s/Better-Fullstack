@@ -3,6 +3,8 @@
 //!
 //! Set AMQP_URL in your environment (defaults to amqp://127.0.0.1:5672/%2f).
 
+#![allow(dead_code)]
+
 use lapin::{
     options::{BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions},
     types::FieldTable,
@@ -20,7 +22,11 @@ pub async fn connect() -> Result<Connection, lapin::Error> {
 pub async fn publish(conn: &Connection, queue: &str, payload: &[u8]) -> Result<(), lapin::Error> {
     let channel = conn.create_channel().await?;
     channel
-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())
+        .queue_declare(
+            queue.into(),
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
         .await?;
     channel
         .basic_publish(
@@ -39,7 +45,11 @@ pub async fn publish(conn: &Connection, queue: &str, payload: &[u8]) -> Result<(
 pub async fn consumer(conn: &Connection, queue: &str) -> Result<lapin::Consumer, lapin::Error> {
     let channel = conn.create_channel().await?;
     channel
-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())
+        .queue_declare(
+            queue.into(),
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
         .await?;
     channel
         .basic_consume(

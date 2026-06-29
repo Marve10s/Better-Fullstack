@@ -55,6 +55,21 @@ export const env = createEnv({
 		STRIPE_SECRET_KEY: z.string().min(1),
 		STRIPE_WEBHOOK_SECRET: z.string().min(1),
 {{/if}}
+{{#if (eq payments "dodo")}}
+		DODO_PAYMENTS_API_KEY: z.string().min(1),
+		DODO_PAYMENTS_WEBHOOK_SECRET: z.string().min(1),
+		DODO_PAYMENTS_ENVIRONMENT: z.enum(["test_mode", "live_mode"]),
+{{/if}}
+{{#if (eq payments "paddle")}}
+		PADDLE_API_KEY: z.string().min(1),
+		PADDLE_WEBHOOK_SECRET: z.string().min(1),
+		PADDLE_ENVIRONMENT: z.enum(["sandbox", "production"]),
+{{/if}}
+{{#if (eq payments "lemon-squeezy")}}
+		LEMONSQUEEZY_API_KEY: z.string().min(1),
+		LEMONSQUEEZY_STORE_ID: z.string().min(1),
+		LEMONSQUEEZY_WEBHOOK_SECRET: z.string().min(1),
+{{/if}}
 {{#if (eq observability "datadog")}}
 		DD_SERVICE: z.string().min(1),
 		DD_ENV: z.string().min(1),

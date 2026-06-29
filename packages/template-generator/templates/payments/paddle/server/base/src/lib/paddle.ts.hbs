@@ -129,13 +129,13 @@ export async function getTransaction(transactionId: string): Promise<Transaction
 }
 
 // Webhook verification
-export function verifyWebhookSignature(
+export async function verifyWebhookSignature(
   requestBody: string,
   signature: string
-): EventEntity | null {
+): Promise<EventEntity | null> {
   try {
-    // Paddle SDK handles webhook verification internally
-    const event = paddle.webhooks.unmarshal(requestBody, env.PADDLE_WEBHOOK_SECRET, signature);
+    // Paddle SDK handles webhook verification internally (unmarshal is async)
+    const event = await paddle.webhooks.unmarshal(requestBody, env.PADDLE_WEBHOOK_SECRET, signature);
     return event;
   } catch (error) {
     console.error("Webhook verification failed:", error);

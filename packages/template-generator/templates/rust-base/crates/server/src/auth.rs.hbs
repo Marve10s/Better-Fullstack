@@ -1,4 +1,6 @@
 {{#if (eq rustAuth "oauth2")}}
+#![allow(dead_code)]
+
 use oauth2::basic::BasicClient;
 use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, RedirectUrl, TokenUrl};
 
@@ -11,20 +13,17 @@ use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, RedirectUrl, TokenUrl};
 /// - `OAUTH2_TOKEN_URL`    (e.g. `https://oauth2.googleapis.com/token`)
 /// - `OAUTH2_REDIRECT_URL` (e.g. `http://localhost:3000/auth/callback`)
 pub fn create_oauth2_client() -> BasicClient {
-    let client_id = ClientId::new(
-        std::env::var("OAUTH2_CLIENT_ID").expect("OAUTH2_CLIENT_ID must be set"),
-    );
+    let client_id =
+        ClientId::new(std::env::var("OAUTH2_CLIENT_ID").expect("OAUTH2_CLIENT_ID must be set"));
     let client_secret = ClientSecret::new(
         std::env::var("OAUTH2_CLIENT_SECRET").expect("OAUTH2_CLIENT_SECRET must be set"),
     );
-    let auth_url = AuthUrl::new(
-        std::env::var("OAUTH2_AUTH_URL").expect("OAUTH2_AUTH_URL must be set"),
-    )
-    .expect("Invalid authorization URL");
-    let token_url = TokenUrl::new(
-        std::env::var("OAUTH2_TOKEN_URL").expect("OAUTH2_TOKEN_URL must be set"),
-    )
-    .expect("Invalid token URL");
+    let auth_url =
+        AuthUrl::new(std::env::var("OAUTH2_AUTH_URL").expect("OAUTH2_AUTH_URL must be set"))
+            .expect("Invalid authorization URL");
+    let token_url =
+        TokenUrl::new(std::env::var("OAUTH2_TOKEN_URL").expect("OAUTH2_TOKEN_URL must be set"))
+            .expect("Invalid token URL");
     let redirect_url = RedirectUrl::new(
         std::env::var("OAUTH2_REDIRECT_URL").expect("OAUTH2_REDIRECT_URL must be set"),
     )
@@ -51,6 +50,8 @@ pub fn authorize_url(client: &BasicClient) -> (url::Url, CsrfToken) {
 //! let torii = auth::init_torii().await?;
 //! let user = torii.password().register("user@example.com", "secure-password").await?;
 //! ```
+
+#![allow(dead_code)]
 
 use std::sync::Arc;
 

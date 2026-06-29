@@ -46,9 +46,6 @@ const DRIZZLE_MYSQL_TEMPLATE = resolve(
   "index.ts.hbs",
 );
 
-// Bumping this requires an intentional template change (see file header).
-const EXPECTED_STRIPE_API_VERSION = "2026-05-27.dahlia";
-
 // Drizzle's mysql2 driver expects a flat connection string plus `mode`.
 // The old, broken shape was `connection: { uri: env.DATABASE_URL }`.
 const EXPECTED_DRIZZLE_MYSQL_CONNECTION = "connection: env.DATABASE_URL";
@@ -56,13 +53,14 @@ const EXPECTED_DRIZZLE_MYSQL_MODE = /mode:\s*"default"/;
 const FORBIDDEN_DRIZZLE_MYSQL_URI_FORM = /connection:\s*\{\s*uri\s*:/;
 
 describe("API-literal drift guard", () => {
-  it("keeps the Stripe apiVersion literal pinned", async () => {
+  it("never re-pins a literal Stripe apiVersion", async () => {
     const source = await readFile(STRIPE_LIB_TEMPLATE, "utf8");
-    const match = source.match(/apiVersion:\s*"([^"]+)"/);
 
-    expect(match).not.toBeNull();
-    // Equality (not substring) so any change to the literal fails the guard.
-    expect(match?.[1]).toBe(EXPECTED_STRIPE_API_VERSION);
+    // We intentionally do NOT pin a literal apiVersion: it goes stale on every
+    // stripe SDK bump and breaks check-types (TS2322). The SDK defaults to its
+    // own LatestApiVersion, so the template omits it (see stripe.ts.hbs). This
+    // guard fails if someone reintroduces a pinned literal.
+    expect(source).not.toMatch(/apiVersion:\s*"/);
   });
 
   it("keeps the Drizzle MySQL connection in the flat `mode`-based shape", async () => {

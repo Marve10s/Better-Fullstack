@@ -1,76 +1,81 @@
 package main
 
 import (
-{{#if (or (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none"))) (eq observability "sentry"))}}
-	"os"
+{{#if (eq goWebFramework "chi")}}
+	"encoding/json"
+{{/if}}
+{{#if (eq goLogging "slog")}}
+	"log/slog"
+{{/if}}
+{{#if (eq goApi "grpc-go")}}
+	"net"
 {{/if}}
 {{#if (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "chi")) (and (eq auth "go-better-auth") (not (eq goWebFramework "fiber"))))}}
 	"net/http"
 {{/if}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
+	"os"
+{{/if}}
+{{#if (eq goApi "grpc-go")}}
+	"sync"
+{{/if}}
+{{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (or (eq auth "go-better-auth") (ne goLogging "none")))}}
 
+{{/if}}
 {{#if (eq goWebFramework "gin")}}
 	"github.com/gin-gonic/gin"
 {{/if}}
-{{#if (eq goWebFramework "echo")}}
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+{{#if (eq goWebFramework "chi")}}
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 {{/if}}
 {{#if (eq goWebFramework "fiber")}}
-	"github.com/gofiber/fiber/v2"
 {{#if (eq auth "go-better-auth")}}
 	"github.com/gofiber/adaptor/v2"
 {{/if}}
+	"github.com/gofiber/fiber/v2"
 	fibercors "github.com/gofiber/fiber/v2/middleware/cors"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
 {{/if}}
-{{#if (eq goWebFramework "chi")}}
-	"encoding/json"
+	"github.com/joho/godotenv"
+{{#if (eq goWebFramework "echo")}}
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+{{/if}}
+{{#if (eq goLogging "zerolog")}}
+	"github.com/rs/zerolog"
+{{/if}}
+{{#if (eq goLogging "logrus")}}
+	"github.com/sirupsen/logrus"
+{{/if}}
+{{#if (eq goLogging "zap")}}
+	"go.uber.org/zap"
+{{/if}}
+{{#if (eq goApi "grpc-go")}}
+	"google.golang.org/grpc"
+{{/if}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq observability "sentry") (eq goApi "grpc-go"))}}
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+{{/if}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
+	appauth "{{projectName}}/internal/auth"
 {{/if}}
 {{#if (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent"))}}
-
 	"{{projectName}}/internal/database"
 {{/if}}
 {{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")))}}
 	"{{projectName}}/internal/handlers"
 {{/if}}
-{{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
-
-	appauth "{{projectName}}/internal/auth"
-{{/if}}
 {{#if (eq observability "sentry")}}
-
 	appobservability "{{projectName}}/internal/observability"
 {{/if}}
-{{#if (eq goLogging "zap")}}
-
-	"go.uber.org/zap"
-{{/if}}
-{{#if (eq goLogging "zerolog")}}
-
-	"github.com/rs/zerolog"
-{{/if}}
-{{#if (eq goLogging "slog")}}
-	"log/slog"
-{{/if}}
-{{#if (eq goLogging "logrus")}}
-
-	"github.com/sirupsen/logrus"
-{{/if}}
-	"github.com/joho/godotenv"
 {{#if (eq goApi "grpc-go")}}
-	"net"
-	"sync"
-
 	"{{projectName}}/proto"
-	"google.golang.org/grpc"
 {{/if}}
 )
-
 {{#if (eq goLogging "zap")}}
+
 var logger *zap.Logger
 
 func initLogger() {
@@ -87,6 +92,7 @@ func initLogger() {
 }
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
+
 var logger zerolog.Logger
 
 func initLogger() {
@@ -99,6 +105,7 @@ func initLogger() {
 }
 {{/if}}
 {{#if (eq goLogging "slog")}}
+
 var logger *slog.Logger
 
 func initLogger() {
@@ -112,6 +119,7 @@ func initLogger() {
 }
 {{/if}}
 {{#if (eq goLogging "logrus")}}
+
 var logger = logrus.New()
 
 func initLogger() {
@@ -125,14 +133,14 @@ func initLogger() {
 func main() {
 	// Load environment variables
 	godotenv.Load()
-
 {{#if (eq observability "sentry")}}
+
 	// Initialize Sentry if configured
 	appobservability.InitSentry()
 	defer appobservability.FlushSentry()
-
 {{/if}}
 {{#if (eq goLogging "zap")}}
+
 	// Initialize logger
 	initLogger()
 	defer logger.Sync()
@@ -140,25 +148,28 @@ func main() {
 	logger.Info("Starting {{projectName}} server")
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
+
 	// Initialize logger
 	initLogger()
 
 	logger.Info().Msg("Starting {{projectName}} server")
 {{/if}}
 {{#if (eq goLogging "slog")}}
+
 	// Initialize logger
 	initLogger()
 
 	logger.Info("Starting {{projectName}} server")
 {{/if}}
 {{#if (eq goLogging "logrus")}}
+
 	// Initialize logger
 	initLogger()
 
 	logger.Info("Starting {{projectName}} server")
 {{/if}}
-
 {{#if (eq auth "go-better-auth")}}
+
 	authApp := appauth.New()
 {{#if (eq goLogging "zap")}}
 	logger.Info("GoBetterAuth initialized")
@@ -170,8 +181,8 @@ func main() {
 	logger.Info("GoBetterAuth initialized")
 {{/if}}
 {{/if}}
-
 {{#if (eq goAuth "casbin")}}
+
 	// Initialize Casbin authorization
 	if err := appauth.InitCasbin(); err != nil {
 {{#if (eq goLogging "zap")}}
@@ -195,8 +206,8 @@ func main() {
 	logger.Info("Casbin authorization initialized")
 {{/if}}
 {{/if}}
-
 {{#if (eq goAuth "jwt")}}
+
 	// JWT auth helper available via appauth.GenerateToken / appauth.ValidateToken
 	_ = appauth.ErrInvalidToken // ensure auth package is imported
 {{#if (eq goLogging "zap")}}
@@ -209,8 +220,8 @@ func main() {
 	logger.Info("JWT authentication configured")
 {{/if}}
 {{/if}}
-
 {{#if (eq goAuth "goth")}}
+
 	// Register Goth OAuth providers from environment credentials
 	appauth.InitGoth()
 {{#if (eq goLogging "zap")}}
@@ -223,8 +234,8 @@ func main() {
 	logger.Info("Goth OAuth providers registered")
 {{/if}}
 {{/if}}
-
 {{#if (eq goOrm "gorm")}}
+
 	// Initialize database
 	db, err := database.InitDB()
 	if err != nil {
@@ -251,6 +262,7 @@ func main() {
 	_ = db // Use db in your handlers
 {{/if}}
 {{#if (eq goOrm "sqlc")}}
+
 	// Initialize database pool
 	pool, err := database.InitDB()
 	if err != nil {
@@ -278,6 +290,7 @@ func main() {
 	_ = pool // Use pool in your handlers
 {{/if}}
 {{#if (eq goOrm "ent")}}
+
 	// Initialize database (run `go generate ./ent` to use Ent client)
 	db, err := database.InitDB()
 	if err != nil {
@@ -304,8 +317,8 @@ func main() {
 {{/if}}
 	_ = db // Use db in your handlers
 {{/if}}
-
 {{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (eq goWebFramework "chi")) (eq goApi "grpc-go")) (eq auth "go-better-auth"))}}
+
 	// Get host from environment
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -322,9 +335,9 @@ func main() {
 {{/if}}
 
 {{#if (eq goApi "grpc-go")}}
-	// Start gRPC and HTTP servers concurrently
+	// Start the gRPC server in the background; the HTTP server runs in the main goroutine.
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 
 	// Start gRPC server
 	go func() {
@@ -374,21 +387,20 @@ func main() {
 		}
 	}()
 
-	// Start HTTP server
-	go func() {
-		defer wg.Done()
 {{/if}}
 {{#if (eq goWebFramework "gin")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("Starting HTTP server", "address", addr)
-{{/if}}
 
+{{/if}}
 	// Create Gin router
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
@@ -401,8 +413,8 @@ func main() {
 		}
 		c.Next()
 	})
-
 {{#if (eq auth "go-better-auth")}}
+
 	r.Any("/api/auth", gin.WrapH(authApp.Handler()))
 	r.Any("/api/auth/*authPath", gin.WrapH(authApp.Handler()))
 {{/if}}
@@ -461,14 +473,16 @@ func main() {
 {{#if (eq goWebFramework "echo")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("Starting HTTP server", "address", addr)
-{{/if}}
 
+{{/if}}
 	// Create Echo instance
 	e := echo.New()
 
@@ -476,8 +490,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-
 {{#if (eq auth "go-better-auth")}}
+
 	e.Any("/api/auth", echo.WrapHandler(authApp.Handler()))
 	e.Any("/api/auth/*", echo.WrapHandler(authApp.Handler()))
 {{/if}}
@@ -534,14 +548,16 @@ func main() {
 {{#if (eq goWebFramework "fiber")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("Starting HTTP server", "address", addr)
-{{/if}}
 
+{{/if}}
 	// Create Fiber app
 	app := fiber.New()
 
@@ -549,8 +565,8 @@ func main() {
 	app.Use(fiberlogger.New())
 	app.Use(fiberrecover.New())
 	app.Use(fibercors.New())
-
 {{#if (eq auth "go-better-auth")}}
+
 	app.All("/api/auth", adaptor.HTTPHandler(authApp.Handler()))
 	app.All("/api/auth/*", adaptor.HTTPHandler(authApp.Handler()))
 {{/if}}
@@ -607,14 +623,16 @@ func main() {
 {{#if (eq goWebFramework "chi")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("Starting HTTP server", "address", addr)
-{{/if}}
 
+{{/if}}
 	// Create Chi router
 	r := chi.NewRouter()
 
@@ -633,8 +651,8 @@ func main() {
 			next.ServeHTTP(w, r)
 		})
 	})
-
 {{#if (eq auth "go-better-auth")}}
+
 	r.Handle("/api/auth", authApp.Handler())
 	r.Handle("/api/auth/*", authApp.Handler())
 {{/if}}
@@ -696,14 +714,16 @@ func main() {
 {{#if (eq auth "go-better-auth")}}
 {{#if (eq goLogging "zap")}}
 	logger.Info("Starting HTTP server", zap.String("address", addr))
+
 {{/if}}
 {{#if (eq goLogging "zerolog")}}
 	logger.Info().Str("address", addr).Msg("Starting HTTP server")
+
 {{/if}}
 {{#if (eq goLogging "slog")}}
 	logger.Info("Starting HTTP server", "address", addr)
-{{/if}}
 
+{{/if}}
 	mux := http.NewServeMux()
 	mux.Handle("/api/auth", authApp.Handler())
 	mux.Handle("/api/auth/", authApp.Handler())
@@ -757,7 +777,6 @@ func main() {
 {{/if}}
 {{/if}}
 {{#if (eq goApi "grpc-go")}}
-	}()
 
 	wg.Wait()
 {{/if}}

@@ -1,4 +1,6 @@
 {{#if (eq caching "upstash-redis")}}
+#![allow(dead_code)]
+
 use redis::Client;
 
 /// Create a Redis client for Upstash Redis.

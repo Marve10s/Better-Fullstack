@@ -12,12 +12,12 @@ defmodule {{elixirModuleName}}.PromEx do
       PromEx.Plugins.Beam,
       {PromEx.Plugins.Phoenix,
        router: {{elixirModuleName}}Web.Router,
-       endpoint: {{elixirModuleName}}Web.Endpoint}
-{{#if (eq elixirOrm "ecto-sql")}},
-          {PromEx.Plugins.Ecto, repos: [{{elixirModuleName}}.Repo]}
+       endpoint: {{elixirModuleName}}Web.Endpoint},
+{{#if (eq elixirOrm "ecto-sql")}}
+      {PromEx.Plugins.Ecto, repos: [{{elixirModuleName}}.Repo]},
 {{/if}}
-{{#if (eq elixirJobs "oban")}},
-      {PromEx.Plugins.Oban, oban_supervisor: Oban}
+{{#if (eq elixirJobs "oban")}}
+      {PromEx.Plugins.Oban, oban_supervisor: Oban},
 {{/if}}
     ]
   end
