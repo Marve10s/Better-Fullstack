@@ -1,6 +1,6 @@
 {
   "name": "create-better-fullstack",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Scaffold production-ready fullstack apps in seconds. Pick your stack from 425 options — the CLI wires everything together.",
   "keywords": [
     "algolia",
