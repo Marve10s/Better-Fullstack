@@ -8,48 +8,65 @@ more diagnostic.
 
 The default `core` suite is intentionally BF-supported:
 
-| Spec | Ecosystem | Main challenge |
-| --- | --- | --- |
-| `ai-search-workbench` | TypeScript | Distinguish Qdrant, OpenSearch, Inngest, oRPC, and full validation |
-| `rust-leptos-axum` | Rust | Choose Leptos + Axum + SQLx + Tonic instead of nearby Rust alternatives |
-| `python-ingestion-api` | Python | Avoid Django-only API tools while combining FastAPI, SQLModel, AI, queues, realtime, and quality |
-| `go-realtime-api` | Go | Choose Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry under explicit constraints |
-| `multi-dotnet-ops` | Multi-ecosystem | Compose TypeScript frontend + .NET Minimal API backend through graph `--part` flags |
+| Spec                   | Ecosystem       | Main challenge                                                                                   |
+| ---------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| `ai-search-workbench`  | TypeScript      | Distinguish Qdrant, OpenSearch, Inngest, oRPC, and full validation                               |
+| `rust-leptos-axum`     | Rust            | Choose Leptos + Axum + SQLx + Tonic instead of nearby Rust alternatives                          |
+| `python-ingestion-api` | Python          | Avoid Django-only API tools while combining FastAPI, SQLModel, AI, queues, realtime, and quality |
+| `go-realtime-api`      | Go              | Choose Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry under explicit constraints                 |
+| `multi-dotnet-ops`     | Multi-ecosystem | Compose TypeScript frontend + .NET Minimal API backend through graph `--part` flags              |
 
 ## Recommended Runs
 
-Exploratory one-pass run:
+Default one-pass run. This runs one model, the default effort, all three creation paths
+(`prompt`, `mcp`, `cli`), the five core specs, and one repeat:
 
 ```bash
 bun run scripts/scaffbench-v2.ts \
-  --model claude-opus-4-8 \
-  --efforts high \
-  --paths prompt,mcp,cli \
-  --specs core
+  --model claude-opus-4-8
 ```
 
-Publishable ScaffBench 2 run:
+The default runner is two-phase: it generates and archives every missing project first, then
+automatically validates the archived projects. Re-running the same `--out-dir` resumes safely:
+completed generations are skipped and any deferred validations are picked up. A process-level queue
+prevents multiple ScaffBench runs in the same benchmark-results folder from hammering the Mac at
+once.
+
+Generation-only lane, useful before leaving validation to run later:
 
 ```bash
 bun run scripts/scaffbench-v2.ts \
   --model claude-opus-4-8 \
-  --efforts high \
-  --paths prompt,mcp,cli \
-  --specs core \
-  --repeats 3 \
+  --generate-only
+```
+
+Validate previously generated runs without making model calls:
+
+```bash
+bun run scripts/scaffbench-v2.ts \
+  --model claude-opus-4-8 \
+  --out-dir testing/llm-benchmarks/v2/<run-dir> \
+  --validate-existing
+```
+
+Validation results are cached under `validation-cache/` by archived project source hash plus the
+validation flags (`quality-gate`, `doctor-check`, `route-check`). Cache hits reuse a prior full
+validation result; they do not switch to a lighter validation mode.
+
+Quality-gated run with the same one-repeat matrix:
+
+```bash
+bun run scripts/scaffbench-v2.ts \
+  --model claude-opus-4-8 \
   --quality-gate \
   --doctor-check
 ```
 
-Natural-prompt lane:
+Natural-prompt lane with the same one-repeat matrix:
 
 ```bash
 bun run scripts/scaffbench-v2.ts \
   --model claude-opus-4-8 \
-  --efforts high \
-  --paths prompt,mcp,cli \
-  --specs core \
-  --repeats 3 \
   --prompt-style natural
 ```
 
@@ -107,11 +124,13 @@ Right-library scoring is artifact-grounded for every path:
   never wired.
 
 Secondary diagnostic signals:
+
 - command discipline and tool-path compliance
 - failure taxonomy tags
 - average cost, output tokens, and wall time
 
 Reliability is reported per spec, not pooled:
+
 - `Macro` — mean of per-spec pass rates (each spec is one unit, so heterogeneous
   specs are not collapsed into a single binomial)
 - `pass@k` — specs solved on at least one repeat; `pass^k` — specs solved on
