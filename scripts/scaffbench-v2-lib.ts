@@ -2004,12 +2004,14 @@ async function validateBunProject(projectDir: string, options: ScaffbenchOptions
   if (options.qualityGate) {
     // Read-only format check — deliberately NOT the project's `format`/`check`
     // scripts: generated BFS projects ship `check: biome check --write .`, which
-    // auto-fixes and always exits 0. `biome format --check` / `prettier --check`
-    // report formatting drift without writing.
+    // auto-fixes and always exits 0. `biome format` (no --write) / `prettier
+    // --check` report formatting drift without writing. NOTE: Biome 2.5.1 removed
+    // the `--check` flag ("--check is not expected in this context"); the default
+    // `biome format` is already read-only and exits non-zero on unformatted code.
     const biomeBin = localBin(projectDir, "biome");
     const prettierBin = localBin(projectDir, "prettier");
     steps.format = biomeBin
-      ? toStep(await runCommand(biomeBin, ["format", "--check", "."], projectDir, VALIDATION_TIMEOUT_MS))
+      ? toStep(await runCommand(biomeBin, ["format", "."], projectDir, VALIDATION_TIMEOUT_MS))
       : prettierBin
         ? toStep(await runCommand(prettierBin, ["--check", "."], projectDir, VALIDATION_TIMEOUT_MS))
         : skipStep("format (no formatter configured)");

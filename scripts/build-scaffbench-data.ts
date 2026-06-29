@@ -38,7 +38,11 @@ const MODEL_LABELS: Record<string, string> = {
   "kilo/nvidia/nemotron-3-super-120b-a12b:free": "Nemotron-3 Super",
 };
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
-const GATE = /^(lint|format|test|doctor|clippy|fmt)$/i;
+// Quality-gate steps excluded from Core pass — they only affect Full pass. A
+// failed route-check (dev server didn't boot) must not fail Core, same as a
+// failed lint/format/test/doctor. (No step uses `clippy`/`fmt` keys, so those
+// dead alternatives were removed.)
+const GATE = /^(lint|format|test|doctor|route)$/i;
 const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
 
@@ -55,11 +59,11 @@ function prettyModel(model: string): string {
 // A step is green when it actually ran and exited 0. A "skip" (a gate check that
 // should have run but no tool was configured) is NOT green — it carries exitCode
 // null and disqualifies the run. (Matches validationPassed in the harness lib.)
-function stepGreen(s: any): boolean {
+export function stepGreen(s: any): boolean {
   return s.status !== "skip" && s.exitCode === 0 && !s.timedOut && !s.spawnError;
 }
 
-function corePass(result: any): boolean {
+export function corePass(result: any): boolean {
   const v = result?.validation;
   if (!v || !v.projectExists) return false;
   // "na" steps are excluded (not applicable); core steps are the non-gate ones.
@@ -76,7 +80,7 @@ function corePass(result: any): boolean {
 // and skipped lint/test / a `biome check --write` format step exited 0 and passed
 // silently (the Finding-1 inflation). "na" steps (genuinely testless scaffolds)
 // are excluded; a "skip" disqualifies. This also keeps fullPass ⊆ corePass.
-function fullPass(result: any): boolean {
+export function fullPass(result: any): boolean {
   if (!corePass(result)) return false;
   const v = result.validation;
   const applicable = Object.entries(v.steps || {}).filter(([, s]: any) => s.status !== "na");
@@ -98,6 +102,7 @@ type Cell = {
   steps: number;
 };
 
+function main() {
 const models: any[] = [];
 const cells: Cell[] = [];
 let meta: any = null;
@@ -241,3 +246,8 @@ const target = "apps/web/src/components/home/scaffbench-2-data.ts";
 writeFileSync(target, out);
 console.error(`Wrote ${target}: ${models.length} models, ${cells.length} cells`);
 for (const m of models) console.error(`  ${m.label.padEnd(12)} ${m.effort.padEnd(8)} index=${m.sortIndex} (${m.provider})`);
+}
+
+// Only regenerate the data file when run directly (`bun run scripts/build-scaffbench-data.ts`);
+// importing this module (e.g. from the test) exposes the gate helpers without side effects.
+if (import.meta.main) main();
