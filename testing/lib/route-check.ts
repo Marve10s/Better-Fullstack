@@ -1,10 +1,12 @@
-import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
+
 import type { DevServerHandle } from "./dev-check";
-import { HTML_ERROR_PATTERNS } from "./dev-check";
 import type { StepResult } from "./verify";
+
+import { HTML_ERROR_PATTERNS } from "./dev-check";
 
 const ROUTE_CHECK_TIMEOUT_MS = 30_000;
 
@@ -25,9 +27,22 @@ const FRAMEWORK_ROUTES: Record<string, string[]> = {
   fresh: ["/"],
 };
 
-function getRoutesForConfig(config: ProjectConfig): string[] {
+const AI_SEARCH_WORKBENCH_ROUTES = ["/", "/login", "/dashboard"];
+
+function getPresetRoutes(config: ProjectConfig): string[] | null {
+  if (config.projectName?.includes("ai-search-workbench")) {
+    return AI_SEARCH_WORKBENCH_ROUTES;
+  }
+
+  return null;
+}
+
+export function getRoutesForConfig(config: ProjectConfig): string[] {
+  const presetRoutes = getPresetRoutes(config);
+  if (presetRoutes) return presetRoutes;
+
   const frontend = Array.isArray(config.frontend)
-    ? config.frontend.find((f: string) => f !== "none") ?? "none"
+    ? (config.frontend.find((f: string) => f !== "none") ?? "none")
     : config.frontend;
 
   return FRAMEWORK_ROUTES[frontend] ?? ["/"];
@@ -50,13 +65,15 @@ export async function runRouteCheck(
   try {
     const pw = await import("playwright");
     chromium = pw.chromium;
-  } catch {
+  } catch (error) {
     return {
       step: "route-check",
-      success: true,
+      success: false,
       durationMs: Date.now() - start,
-      skipped: true,
-      stdout: "Playwright not installed — skipping route check",
+      stderr: `Playwright is required for route-check but could not be imported: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      classification: "unknown",
     };
   }
 

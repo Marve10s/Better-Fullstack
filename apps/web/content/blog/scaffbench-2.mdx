@@ -1,0 +1,398 @@
+---
+title: "ScaffBench 2: six models, five ecosystems, and whether the project actually builds"
+description: "ScaffBench 2 runs Opus, GPT-5.5, and free models through five hard fullstack specs and three creation paths, scoring whether the project actually builds."
+date: 2026-06-26
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - mcp
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - mcp benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+  - scaffbench
+---
+
+[ScaffBench](/blog/scaffbench) started with a simple, slightly embarrassing observation: coding
+agents are excellent at writing code and surprisingly bad at *starting* projects. The first
+benchmark answered one question across a cross-vendor field — *does the generated project install
+and build?* — and the answer was a clean story: tooling helps, a lot.
+
+ScaffBench 2 raises the bar in every direction: five harder specs spanning **five language
+ecosystems**, three creation paths, and a scoring rig that no longer stops at "it builds." We now
+grade whether the agent wired the *right* libraries, whether it honored the creation path it was
+told to use, how much it cost, and we fold all of it into a single composite **ScaffBench Index** —
+the way the serious leaderboards (Artificial Analysis, SWE-bench, Aider) do it.
+
+We start with a deep look at one model — **Claude Opus 4.8** — then run the same matrix across
+**four Opus versions and GPT-5.5** (two reasoning efforts), driving the non-Claude model through a
+[Codex agent adapter](#six-models-tooling-is-the-great-equalizer). Here's what it found.
+
+## What changed since ScaffBench 1
+
+ScaffBench 1 was a breadth benchmark — 102 runs, many models, one question. ScaffBench 2 is a depth
+benchmark:
+
+- **Harder, multi-ecosystem specs.** Five specs, one per ecosystem, each chosen so a nearby wrong
+  answer is plausible: a TypeScript AI-search workbench, a Rust Leptos/Axum service, a Python
+  ingestion API, a Go realtime API, and a multi-ecosystem TypeScript-front + .NET-backend graph.
+- **Scoring beyond "it builds."** We added a **quality gate** (lint / format / test) on top of
+  install + build + typecheck, an artifact-grounded **wired-libraries** score, a **command-discipline**
+  score read from the agent's tool trajectory, and a composite **ScaffBench Index**.
+- **An honest run-outcome taxonomy.** Every run is `success`, `model-failure`, or
+  `infra-inconclusive` — toolchain stalls don't get charged to the model, and (per SWE-bench) a
+  generation timeout *does*.
+- **No answer-key leakage.** The agent works in an isolated temp directory disjoint from the
+  grading tree, so it can't read the canonical command or sibling runs.
+- **Reproducibility.** The exact `create-better-fullstack` version under test (here, **2.1.1**) is
+  pinned and recorded, alongside the host toolchain versions.
+
+## Headline results
+
+One model — Claude Opus 4.8 at default reasoning — one run per cell, five specs × three creation
+paths. Four of the five specs were measurable; `multi-dotnet-ops` was
+[infra-inconclusive](#the-honest-part-one-spec-we-couldnt-score) on all three paths and is excluded
+from the rates below.
+
+| Creation path | Index | Core pass | Full pass | Wired libs | Cmd discipline | Avg cost | Out tokens | Steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **MCP** | 100 | 100% (4/4) | 50% (2/4) | 100% | 100% | $1.23 | 6.1k | 8 |
+| **CLI** | 100 | 100% (4/4) | 50% (2/4) | 100% | 100% | $1.13 | 14.9k | 14 |
+| **Prompt** | 55 | 25% (1/4) | 0% (0/4) | 98% | 100% | $3.36 | 50.0k | 60 |
+
+*Core = install + build + typecheck (+ native checks). Full = Core plus the quality gate
+(lint/format/test). Index = 0.60·macro-pass + 0.25·wired-libs + 0.15·command-discipline.*
+
+Three things stood out:
+
+1. **The assisted paths scaffold perfectly, the prompt path drowns.** MCP and CLI got every
+   measurable spec to install, build, and type-check. The prompt-only path managed **one of four** —
+   and paid **~8× the output tokens, ~3× the cost, and ~7× the steps** to get there.
+2. **The agent never broke a rule.** Command discipline was **100%** on every assisted path (MCP
+   called the MCP tools; CLI used the CLI; neither cheated), and wired-libraries was **100%** for
+   MCP/CLI — the libraries the spec asked for were actually present in the tree, not just mentioned.
+3. **"Full pass" drops to 50% — and that's our bug, not the agent's.** Every Full-validation miss on
+   the assisted paths is a generated project that installs, builds, and type-checks but trips a
+   linter. That's a [template gap, not a scaffolding failure](#the-benchmark-audited-our-own-templates-again).
+
+## Methodology
+
+### The five specs
+
+Each spec is a real fullstack project with a deliberately tricky stack — the kind where a
+confident agent picks a *near* neighbour and gets it subtly wrong.
+
+| Spec | Ecosystem | The trap |
+| --- | --- | --- |
+| `ai-search-workbench` | TypeScript | Distinguish Qdrant, OpenSearch, Inngest, and oRPC from their look-alikes |
+| `rust-leptos-axum` | Rust | Choose Leptos + Axum + SQLx + Tonic over nearby Rust alternatives |
+| `python-ingestion-api` | Python | Combine FastAPI + SQLModel + AI + queues without drifting to Django-only tools |
+| `go-realtime-api` | Go | Chi + Ent + gRPC + NATS + Redis + OpenTelemetry under explicit constraints |
+| `multi-dotnet-ops` | Multi-ecosystem | Compose a TypeScript frontend + .NET Minimal API backend through graph `--part` flags |
+
+### The three creation paths
+
+The same spec runs through three increasingly hands-off paths, to isolate how much the tooling
+actually buys you:
+
+- **MCP** — the agent uses the Better-Fullstack MCP server to plan and scaffold.
+- **CLI** — no MCP; the agent maps the requirements to `create-better-fullstack` flags itself (the
+  canonical command is *not* shown to it — this measures requirement→flag mapping, not copy-fidelity).
+- **Prompt** — no tooling at all; the agent hand-writes the entire project from the spec.
+
+### What we score
+
+<Callout kind="info">
+  **Core vs Full.** *Core* validation is the load-bearing question — does the project install,
+  build, and type-check (plus native checks like `cargo check` / `go build`)? *Full* adds the
+  quality gate: lint, format, and test. We report both, because they answer different questions:
+  Core is "did the agent scaffold a working project," Full is "is that project also clean."
+</Callout>
+
+Beyond pass/fail, every run is graded on three diagnostic axes:
+
+- **Wired libraries** (primary "right stack" signal) — scores the libraries *actually present* in
+  the generated tree: dependencies, source imports, and required files, via strict markers. A
+  project that names a library in config but never wires it scores low here.
+- **Command discipline** — read from the agent's tool-call trajectory (`stream-json`): did the MCP
+  path actually call `bfs_create_project`? Did the CLI path avoid secretly invoking the MCP server?
+- **ScaffBench Index** — a single composite the leaderboard sorts by:
+  `0.60·macro-pass + 0.25·wired-libs + 0.15·command-discipline`, with the weights published so the
+  number is legible rather than magic.
+
+### The run-outcome taxonomy
+
+Borrowing from SWE-bench's rigor, each run lands in one of three buckets:
+
+- **success** / **model-failure** — both count in the denominator. A generated `build` script that
+  exits non-zero, a wrong library, *or a generation timeout* is a model failure.
+- **infra-inconclusive** — excluded from rates and surfaced separately: a validator binary that
+  can't even spawn (missing toolchain), an exhausted budget, or a tool-server that stalls. These
+  aren't the agent's fault, so they don't get charged to it.
+
+Reliability is reported per spec, not pooled (macro-average, plus pass@k / pass^k consistency).
+Confidence intervals are computed but only shown at n ≥ 8 runs — at one run per cell, this run
+doesn't qualify, and we say so rather than print a fake ±.
+
+## Results
+
+### Per spec
+
+The aggregate hides the most interesting structure. Here's every measurable cell:
+
+| Spec | Path | Core | Full | Wired | Cost | Out tokens |
+| --- | --- | :---: | :---: | ---: | ---: | ---: |
+| `ai-search-workbench` | MCP | ✅ | ✅ | 100% | $1.29 | 7,963 |
+| `ai-search-workbench` | CLI | ✅ | ✅ | 100% | $1.03 | 14,168 |
+| `ai-search-workbench` | Prompt | ❌ | ❌ | 100% | — | timeout |
+| `rust-leptos-axum` | MCP | ✅ | ❌ | 100% | $1.15 | 5,168 |
+| `rust-leptos-axum` | CLI | ✅ | ❌ | 100% | $1.59 | 22,347 |
+| `rust-leptos-axum` | Prompt | ❌ | ❌ | 92% | $3.52 | 56,222 |
+| `python-ingestion-api` | MCP | ✅ | ❌ | 100% | $1.19 | 6,036 |
+| `python-ingestion-api` | CLI | ✅ | ❌ | 100% | $0.76 | 8,254 |
+| `python-ingestion-api` | Prompt | ✅ | ❌ | 100% | $2.32 | 31,262 |
+| `go-realtime-api` | MCP | ✅ | ✅ | 100% | $1.28 | 5,119 |
+| `go-realtime-api` | CLI | ✅ | ✅ | 100% | $1.13 | 14,881 |
+| `go-realtime-api` | Prompt | ❌ | ❌ | 100% | $4.24 | 62,537 |
+
+The shape is consistent: **MCP and CLI Core-pass everything; the prompt path only lands
+`python-ingestion-api`**, times out on `ai-search-workbench`, and produces non-building projects for
+the Rust and Go specs while burning 50–62k tokens trying.
+
+### Cost
+
+The run cost **$19.49** in metered API usage (an undercount — the timed-out cells report `$0`
+because the kill signal lands before the cost line). The spread tells the story:
+
+- **Cheapest passing run: $0.76** — CLI scaffolding `python-ingestion-api` in 8,254 tokens.
+- **Most expensive run: $4.24** — the prompt path hand-writing `go-realtime-api` (62.5k tokens) into
+  a project that *didn't* build.
+- Across the suite, the prompt path cost **~2.7× the MCP path for a quarter of the pass rate.** The
+  more of the project the agent authors by hand, the more you pay for a less reliable result.
+
+## What we learned
+
+### Tooling still wins, and the gap is now stark
+
+In ScaffBench 1 the prompt path was slower and pricier but still passed 75%. ScaffBench 2's specs
+are harder — multi-ecosystem, more libraries, stricter validation — and the prompt path **collapsed
+to 25%**. The two assisted paths held at **100% Core**. When the problem gets harder, the value of
+"the agent ships configuration, not hand-written code" goes *up*, not down.
+
+### The benchmark audited our own templates (again)
+
+This was the most useful finding, and it's not flattering. On the assisted paths, **Full pass is
+50% purely because of linting** — every miss is a project that installs, builds, and type-checks but
+fails `cargo clippy -D warnings` / `cargo fmt --check` (Rust) or `ruff check` (Python). The agent
+did everything right; our **templates ship code that isn't lint-clean out of the box**.
+
+<Callout kind="info">
+  **Scoring policy, restated:** the benchmark's job is to measure the agent, not to launder our
+  bugs into its score — but we don't hide them either. The Rust and Python template lint gaps this
+  run surfaced are filed as [issue #268](https://github.com/Marve10s/Better-Fullstack/issues/268)
+  and are exactly the kind of regression the suite exists to catch.
+</Callout>
+
+This is the same dynamic as ScaffBench 1, where the benchmark caught a native-template build bug.
+A good scaffolding benchmark is also a continuous audit of the scaffolder.
+
+### The honest part: one spec we couldn't score
+
+`multi-dotnet-ops` failed on all three paths — but not because the agent failed. On the assisted
+paths the agent made a single `ToolSearch` call to load the MCP schema and then **hung for the full
+15-minute timeout with no project produced**. That's an MCP-server / tool-loading stall, not a
+scaffolding error, so the taxonomy classifies it `infra-inconclusive` and excludes it from the
+rates. It's filed as [issue #269](https://github.com/Marve10s/Better-Fullstack/issues/269) and will
+be re-run in isolation. Reporting it as a model failure would have been the easy, dishonest choice.
+
+### Discipline and right-libraries were near-perfect
+
+The two diagnostic axes designed to catch "looks right, isn't" came back clean: **100% command
+discipline** on every assisted path (no path-cheating) and **100% wired-libraries** for MCP/CLI (the
+requested stack was genuinely present, not just referenced). The one sub-100 was the Rust prompt
+run at 92% — the hand-written project drifted on one library.
+
+## Six models: tooling is the great equalizer
+
+The first run was a single agent. To see whether the findings hold across model strength and across
+*vendors*, we then ran five more configurations through the same matrix: **Opus 4.7, 4.6, and 4.5**
+(Claude Code, default reasoning) and **GPT-5.5 at low and medium reasoning** — the latter via a new
+**Codex agent adapter** we built so the harness can drive non-Claude models. Same five specs, same
+three paths, same scoring.
+
+The result is the clearest confirmation yet of ScaffBench 1's thesis — and a sharper picture of
+*where* models actually differ.
+
+**MCP path** — Core pass / Full pass:
+
+| Model | Core | Full | Wired | Out-tok |
+| --- | ---: | ---: | ---: | ---: |
+| Opus 4.8 / 4.7 / 4.6 / 4.5 | **100%** | 50% | 100% | 2.0–6.1k |
+| GPT-5.5 (low) | **100%** | 25% | 98% | 3.5k |
+| GPT-5.5 (medium) | **100%** | 25% | 100% | 3.2k |
+
+**CLI path** — *a dead heat:* all six models post **Core 100% · Full 50% · wired 100% · cmd 100%**.
+GPT-5.5 maps requirements to flags exactly as well as Opus. (Cheapest: Opus 4.6 at $0.51 / 3.6k tok.)
+
+**Prompt path** — *where they separate:*
+
+| Model | Core | Wired | Out-tok |
+| --- | ---: | ---: | ---: |
+| Opus 4.8 | 25% | 98% | 50.0k |
+| Opus 4.7 | 25% | 96% | 34.9k |
+| Opus 4.6 | 25% | 94% | 24.8k |
+| **Opus 4.5** | **0%** | 92% | 35.2k |
+| GPT-5.5 (low) | 25% | 92% | 10.8k |
+| GPT-5.5 (medium) | 25% | 95% | 14.6k |
+
+Four things fall out of this:
+
+1. **The assisted paths erase model differences.** On **MCP and CLI, every model — four Opus
+   versions *and* GPT-5.5 — Core-passes 100%.** The CLI path is a literal tie across all six. Once the
+   agent uses the tooling, capability barely registers; the generator does the load-bearing work.
+2. **The prompt path is the discriminator.** Hand-writing the hard specs is where models split: most
+   land ~25% Core, but **Opus 4.5 collapses to 0%** — the oldest model is the only one that can't get
+   a single hard spec to build unassisted. It still wires the right libraries (92%); the code just
+   doesn't compile. On the unassisted path, newer and stronger genuinely wins.
+3. **GPT-5.5's MCP scaffolds are messier than Opus's.** Same 100% Core, but Full drops to 25% vs
+   Opus's 50% — GPT's option choices trip the format gate more often (the same template-lint gap,
+   surfaced harder).
+4. **GPT-5.5 is markedly more token-frugal.** On the prompt path it spends ~11–15k output tokens to
+   Opus's 25–50k — less than a third, for the same Core result.
+
+<Callout kind="info">
+  **A note on GPT cost.** Codex reports token usage but not a dollar figure, so GPT-5.5 cost is
+  *estimated* from usage × published OpenAI pricing ($5 / $0.50-cached / $30 per 1M
+  input/cached/output tokens). The two GPT runs came to ~$9.65 (low) and ~$12.08 (medium).
+</Callout>
+
+## Does thinking harder help?
+
+The obvious next question after "does the model matter?" is "does the *amount of thinking* matter?" So we swept reasoning effort two ways: **Opus 4.8 at `max` vs `default`**, and **GPT-5.5 at `low`, `medium`, and `xhigh`** — same five specs, same three paths, same scoring. The short answer is the interesting one: more reasoning mostly moves cost and token count, not the scoreboard — and on one lane it actively makes things *worse*.
+
+### Opus 4.8: a flat curve, and why it isn't a copy-paste bug
+
+Opus 4.8 at `max` reasoning scored **identically to `default` on all 15 cells** of the Full-pass leaderboard: the same 4/15 passes (`ai-search-workbench` and `go-realtime-api` on both MCP and CLI), the same 11 failures. A flat line that clean *should* make a skeptical reader suspicious that we accidentally graded the same run twice. We didn't, and the telemetry proves it:
+
+| Cell | `max` cost / out-tok / turns | `default` cost / out-tok / turns |
+| --- | ---: | ---: |
+| `ai-search` · CLI | $2.09 / 30,233 / 22 | $1.03 / 14,168 / 11 |
+| `go-realtime` · CLI | $1.78 / 27,001 / 22 | $1.13 / 14,881 / 16 |
+| `python` · MCP | $1.85 / 14,912 / 13 | $1.19 / 6,036 / 9 |
+
+All 15 session IDs differ between the two runs, every per-cell cost/token/turn count differs, and the two runs even **time out on different cells**: `max` blew the 900s wall clock on the Go, Python, and Rust *prompt* cells where `default` finished them (the Go prompt cell ran 60 turns at $4.24 under `default`). If this were a duplicated run, the timeouts would line up. They don't. These are two real, independent executions that happen to land on the same pass/fail board.
+
+The reason they tie is structural, not a glitch. The assisted paths drive Better-Fullstack's **deterministic generator**, so the produced scaffold — and therefore its compiler, lint, and typecheck verdict — is fixed no matter how hard the model thinks. `python` · CLI fails `lint:1` in both runs; `rust` fails `format:1` + `lint:101` in both; those are template-level defects, not reasoning errors. And `multi-dotnet-ops` can't be validated at all (the harness has no .NET SDK), so it's excluded everywhere. More thinking can't relint a frozen scaffold or install a missing toolchain. The from-scratch prompt cells, meanwhile, are genuinely hard and both runs fail them — `max` just burns more wall clock doing it. Passes are capped by the generator, failures are real boundaries, and neither budges with thinking budget.
+
+### GPT-5.5 `xhigh`: better on the hard lane, worse on the easy one
+
+GPT-5.5 is where reasoning effort stops being neutral and starts *trading*. Push it to `xhigh` and it gets **better on the prompt path and worse on the assisted paths** — at the same time, for the same underlying reason.
+
+| Lane | `low` Core | `medium` Core | `xhigh` Core | What moved at `xhigh` |
+| --- | ---: | ---: | ---: | --- |
+| MCP | 100% (4/4) | 100% (4/4) | **75% (3/4)** | `ai-search` typecheck breaks |
+| CLI | 100% (4/4) | 100% (4/4) | **75% (3/4)** | `ai-search` build + typecheck break |
+| Prompt | 25% (1/4) | 25% (1/4) | **50% (2/4)** | `go-realtime` lands the first prompt-path *Full* pass |
+
+The regression is a single spec, `ai-search-workbench`, which Core-passes cleanly at `low` and `medium` and then fails at `xhigh` with **genuine compiler errors** — not flakes:
+
+- **CLI build (exit 1):** the model reached for a fancier-looking `lucide-react` icon, `ListSearch`, that doesn't exist — `Missing export` straight out of the bundler. Its typecheck also fails `TS2322` because it hand-built a custom OpenSearch analyzer object but left off the required `type: "custom"` discriminant, so it isn't assignable to `Analyzer`.
+- **MCP typecheck (exit 1):** `src/inngest/functions.ts(122,30): error TS7006: Parameter 'document' implicitly has an 'any' type` plus `TS2883` — a non-portable inferred return type from `@ai-sdk/provider` that needs an explicit annotation.
+
+Every one of those is a real failure introduced by *added complexity*, and the token counts show exactly where it came from: `xhigh` emitted **43,175 (MCP) / 56,479 (CLI)** output tokens at $3.66 / $4.77 a cell, versus `low`'s 2,651 / 5,383 and `medium`'s 3,956 / 7,627 — roughly **10–16× more code** for the identical scaffold. The model second-guessed the easy path, wrote far more elaborate code than the lean `low`/`medium` runs, and that extra elaboration is precisely where the type and build errors live. Overthinking the easy lane.
+
+The flip side is real too. On the **prompt path**, where the agent must hand-write the whole Go project — including a `go.mod` with real, published dependency versions — `low` and `medium` both died at the very first step (`go mod tidy`, exit 1) by pinning a **non-existent module revision** (`go.opentelemetry.io/contrib` otelchi at `v0.62.0` / `v0.59.0`, "unknown revision"). At `xhigh`, GPT-5.5 spent ~4× the output tokens (50,553), picked self-consistent versions, and produced a project that resolves, builds, vets, and tests clean — `passRate=100`, `stackPercent=100`, at $2.35. That's the study's **first genuine prompt-path Full pass** with real steps wired end to end. Hard, dependency-resolution work has headroom that more reasoning can actually buy; the assisted paths are already at the generator's ceiling, so the same extra thinking only finds new ways to overcomplicate a solved scaffold.
+
+<Callout kind="info">
+  **The bench isn't malfunctioning — it's measuring.** Every swing here is backed by something you can re-derive: distinct session IDs and real cost/token/turn deltas (Opus 4.8 `max` ≠ `default` as *runs*, even where they tie as *scores*), and honest compiler output, not score noise, for every GPT-5.5 `xhigh` move (`TS7006`, `TS2322`, `TS2883`, a `lucide-react` `Missing export`, and a Go `unknown revision`). A flat Opus curve and a GPT trade-off that points in opposite directions on different lanes are exactly what you'd expect when assisted passes are pinned by a deterministic generator and prompt failures are caught by a real toolchain. The one caveat we'll keep flagging: n=1 per cell, so these are reproducible, explainable outcomes — not statistical equivalence claims.
+</Callout>
+
+## Free models: opposite failure modes, and a bug they caught
+
+If assisted tooling is the great equalizer, the obvious stress test is: *how weak a model can it carry?* So we wired up a third agent backend — an **opencode / Kilo Code adapter** alongside Claude Code and Codex — and ran two genuinely free models through the same matrix: **North-mini Code** (Cohere, a small *coder*, via opencode) and **Nemotron-3 Super** (NVIDIA's 120B *reasoner*, via Kilo Code's free tier). Same five specs, same three paths, same scoring.
+
+They failed in exactly opposite ways.
+
+| Path | North-mini Core | North-mini wired | Nemotron Core | Nemotron wired |
+| --- | ---: | ---: | ---: | ---: |
+| MCP | **100%** | 100% | **0%** | 48% |
+| CLI | 25% | 53% | 0% | 53% |
+| Prompt | 0% | 30% | 25% | 26% |
+
+**North-mini is the cleanest demonstration of the whole study's thesis.** Writing from scratch it Core-passes **0%**; through the CLI, **25%**; through MCP, **100%** — every one of the four scored specs builds, in ~2.4k output tokens. A free model the size of a rounding error matches Opus on the MCP path, because it makes exactly one decision (`bfs_create_project`) and the deterministic generator does the rest. Hand it the scaffolder and capability stops mattering; take it away and it has nothing.
+
+**Nemotron inverts it — and mostly by not finishing.** The reasoner *researches the task and then quits*. On three of its eight assisted cells it produced **no project at all**: on Go via MCP it called `bfs_get_guidance` and `bfs_get_schema` (154 output tokens) and stopped; on Rust via MCP it inspected the schema five times and planned twice but **never called `bfs_create_project`**; on Go via CLI it ran `bun create better-fullstack --help` and ended its turn. When it *did* finish, the output was broken in honest ways — Rust CLI compiles to `cargo check` exit 101, the TS MCP scaffold it chose fails `bun run build` (exit 127), Python lands real `ruff`/type errors (exit 2). Its one Core pass is a *prompt*-path Go project it hand-wrote end to end — the big reasoner can write code from scratch better than it can drive a tool, the mirror image of North-mini.
+
+### The bug the free tier caught
+
+For a few minutes, North-mini *topped the Full-pass leaderboard at 58%* — above every Opus and GPT config. That is exactly the kind of result that should make you distrust a benchmark, so we chased it. The cause was a real scoring bug, and a subtle one: when a weak model emits a "project" with no recognizable build entrypoint, the harness runs **zero** validation steps, and a Full pass defined as `passRate === 100` reads `0 failures ÷ 0 steps` as a perfect score. Four of North-mini's "passes" were **empty validations** — credit for producing nothing.
+
+We fixed the definition to mirror Core pass: a Full pass now requires the project to exist **and** at least one real validation step, with every step (build, typecheck, *and* the lint/format/test/doctor gate) green. That makes Full a strict subset of Core by construction, and it dropped North-mini to its real **25%** and Nemotron to **0%**. The eight paid configs were byte-for-byte unchanged — they never produced an empty validation. On the leaderboard the two free models now sit under a **Free tier** divider, below every paid config, in both views.
+
+<Callout kind="info">
+  **A free model that "wins" is a bug report, not a result.** The free tier earned its keep twice: North-mini's 0% → 100% Core climb across prompt → MCP is the sharpest evidence in the study that the assisted paths carry weak models, and its phantom 58% surfaced a vacuous-pass flaw that was quietly inflating *every* model's Full number whenever a run produced nothing to check. The bench told on itself — which is the point. Numbers you can't explain get investigated, not published.
+</Callout>
+
+## How ScaffBench 2 borrows from the best leaderboards
+
+We benchmarked the benchmarks. A few conventions from Artificial Analysis, SWE-bench, and Aider made
+it into v2:
+
+- **Model + reasoning as a first-class identity** (Artificial Analysis): the leaderboard leads with
+  `Opus 4.8 · default reasoning`, and the three paths are scaffold *lanes* under it — so a second
+  reasoning effort or a second model just becomes another row.
+- **A transparent composite Index with published weights** (AA's Intelligence Index): one headline
+  number, but you can see the formula.
+- **A contract-adherence axis separate from task success** (Aider's correctness-vs-edit-format split):
+  *Wired* and *Cmd* are reported next to pass-rate, so "it works" is decoupled from "it followed the
+  contract."
+- **A regimented outcome taxonomy and isolated grading** (SWE-bench): no answer-key leakage,
+  timeouts count, infra stalls don't.
+
+## Limitations and what's next
+
+- **One run per cell.** Enough to read the structure, not enough for confidence intervals. The next
+  run does **≥3 repeats** (5 for the flaky prompt lane) so the Wilson interval becomes reportable and
+  pass^k consistency becomes meaningful.
+- **One run per cell, and GPT cost is estimated.** The six-model sweep is still 1 run/cell, and the
+  GPT-5.5 dollar figures are derived from token usage rather than metered (Codex reports no cost).
+  Reasoning-effort sweeps (`Opus 4.8 high/xhigh`) and the diminishing-returns curve of "thinking
+  harder" are the obvious next charts now that the harness drives two agents.
+- **`multi-dotnet-ops` needs a clean re-run** with a fresh MCP server per cell and a local .NET
+  toolchain.
+- **Fix the template lint gaps** so Full pass reflects scaffolding quality, not a linter our own
+  generator hasn't caught up with.
+
+ScaffBench 2 set out to make the benchmark harder, more reproducible, and more diagnostic. The first
+run did all three — and, true to form, the most actionable thing it found was a bug in our own
+templates.
+
+## Appendix: all 15 cells
+
+| Spec | Path | Outcome | Core | Full | Wired | Cmd | Cost | Out tokens | Steps |
+| --- | --- | --- | :---: | :---: | ---: | ---: | ---: | ---: | ---: |
+| `ai-search-workbench` | MCP | success | ✅ | ✅ | 100% | 100% | $1.29 | 7,963 | 9 |
+| `ai-search-workbench` | CLI | success | ✅ | ✅ | 100% | 100% | $1.03 | 14,168 | 10 |
+| `ai-search-workbench` | Prompt | model-failure | ❌ | ❌ | 100% | 100% | — | timeout | 93 |
+| `rust-leptos-axum` | MCP | model-failure | ✅ | ❌ | 100% | 100% | $1.15 | 5,168 | 6 |
+| `rust-leptos-axum` | CLI | model-failure | ✅ | ❌ | 100% | 100% | $1.59 | 22,347 | 19 |
+| `rust-leptos-axum` | Prompt | model-failure | ❌ | ❌ | 92% | 100% | $3.52 | 56,222 | 42 |
+| `python-ingestion-api` | MCP | model-failure | ✅ | ❌ | 100% | 100% | $1.19 | 6,036 | 8 |
+| `python-ingestion-api` | CLI | model-failure | ✅ | ❌ | 100% | 100% | $0.76 | 8,254 | 11 |
+| `python-ingestion-api` | Prompt | model-failure | ✅ | ❌ | 100% | 100% | $2.32 | 31,262 | 47 |
+| `go-realtime-api` | MCP | success | ✅ | ✅ | 100% | 100% | $1.28 | 5,119 | 8 |
+| `go-realtime-api` | CLI | success | ✅ | ✅ | 100% | 100% | $1.13 | 14,881 | 15 |
+| `go-realtime-api` | Prompt | model-failure | ❌ | ❌ | 100% | 100% | $4.24 | 62,537 | 59 |
+| `multi-dotnet-ops` | MCP | infra-inconclusive | — | — | — | — | — | — | 1 |
+| `multi-dotnet-ops` | CLI | infra-inconclusive | — | — | — | — | — | — | 0 |
+| `multi-dotnet-ops` | Prompt | infra-inconclusive | — | — | — | — | — | — | 30 |
+
+*Run: `claude-opus-4-8`, default reasoning, 1 run/cell, harness 2.0.0, generator
+`create-better-fullstack@2.1.1`, 2026-06-26. "Full" pass requires the quality gate (lint/format/test)
+on top of Core; every assisted-path Full miss is a linter gap in the template, not a scaffolding
+failure.*

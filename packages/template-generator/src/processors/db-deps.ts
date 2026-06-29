@@ -265,7 +265,10 @@ function processMikroORMDeps(
   const deps: AvailableDependencies[] = ["@mikro-orm/core"];
 
   if (database === "sqlite") {
-    deps.push("@mikro-orm/better-sqlite");
+    // MikroORM v7 consolidated the better-sqlite3 driver into @mikro-orm/sqlite;
+    // the standalone @mikro-orm/better-sqlite package is v6-only (peer core ^6)
+    // and its driver type is incompatible with @mikro-orm/core ^7.
+    deps.push("@mikro-orm/sqlite");
     addPackageDependency({
       vfs,
       packagePath: dbPkgPath,
@@ -275,7 +278,7 @@ function processMikroORMDeps(
       addPackageDependency({
         vfs,
         packagePath: webPkgPath,
-        dependencies: ["@mikro-orm/better-sqlite"],
+        dependencies: ["@mikro-orm/sqlite"],
       });
     }
   } else if (database === "postgres") {
