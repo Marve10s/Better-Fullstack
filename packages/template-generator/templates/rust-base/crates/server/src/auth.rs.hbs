@@ -1,4 +1,6 @@
 {{#if (eq rustAuth "oauth2")}}
+#![allow(dead_code)]
+
 use oauth2::basic::BasicClient;
 use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, RedirectUrl, TokenUrl};
 
@@ -48,6 +50,8 @@ pub fn authorize_url(client: &BasicClient) -> (url::Url, CsrfToken) {
 //! let torii = auth::init_torii().await?;
 //! let user = torii.password().register("user@example.com", "secure-password").await?;
 //! ```
+
+#![allow(dead_code)]
 
 use std::sync::Arc;
 

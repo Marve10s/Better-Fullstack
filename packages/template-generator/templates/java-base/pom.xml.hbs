@@ -496,7 +496,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<!-- Spring Boot 4 manages Testcontainers 2.x, which renamed the JUnit 5
+			     module from `junit-jupiter` to `testcontainers-junit-jupiter`. Use the
+			     managed version (no explicit <version>) so it tracks the parent BOM. -->
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 {{/if}}
