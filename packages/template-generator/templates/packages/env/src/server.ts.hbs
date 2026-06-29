@@ -65,6 +65,11 @@ export const env = createEnv({
 		PADDLE_WEBHOOK_SECRET: z.string().min(1),
 		PADDLE_ENVIRONMENT: z.enum(["sandbox", "production"]),
 {{/if}}
+{{#if (eq payments "lemon-squeezy")}}
+		LEMONSQUEEZY_API_KEY: z.string().min(1),
+		LEMONSQUEEZY_STORE_ID: z.string().min(1),
+		LEMONSQUEEZY_WEBHOOK_SECRET: z.string().min(1),
+{{/if}}
 {{#if (eq observability "datadog")}}
 		DD_SERVICE: z.string().min(1),
 		DD_ENV: z.string().min(1),

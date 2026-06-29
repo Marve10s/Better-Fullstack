@@ -10,6 +10,7 @@ import {
   getSubscription,
   cancelSubscription,
   type Checkout,
+  type NewCheckout,
   type Product,
   type Variant,
   type Subscription,
@@ -22,51 +23,15 @@ lemonSqueezySetup({
   onError: (error) => console.error("Lemon Squeezy Error:", error),
 });
 
-export async function createCheckoutSession(params: {
-  variantId: number;
-  customData?: Record<string, string | number | boolean>;
-  checkoutOptions?: {
-    embed?: boolean;
-    media?: boolean;
-    logo?: boolean;
-    desc?: boolean;
-    discount?: boolean;
-    dark?: boolean;
-    subscriptionPreview?: boolean;
-    buttonColor?: string;
-  };
-  productOptions?: {
-    name?: string;
-    description?: string;
-    redirectUrl?: string;
-    receiptButtonText?: string;
-    receiptLinkUrl?: string;
-    receiptThankYouNote?: string;
-    enabledVariants?: number[];
-  };
-  checkoutData?: {
-    email?: string;
-    name?: string;
-    billingAddress?: {
-      country: string;
-      zip?: string;
-    };
-    taxNumber?: string;
-    discountCode?: string;
-  };
-  expiresAt?: string;
-  preview?: boolean;
-  testMode?: boolean;
-}) {
-  const { data, error } = await createCheckout(env.LEMONSQUEEZY_STORE_ID, params.variantId, {
-    customData: params.customData,
-    checkoutOptions: params.checkoutOptions,
-    productOptions: params.productOptions,
-    checkoutData: params.checkoutData,
-    expiresAt: params.expiresAt,
-    preview: params.preview,
-    testMode: params.testMode,
-  });
+// `variantId` is a positional arg to createCheckout; everything else is the
+// `NewCheckout` payload (customData, checkoutOptions, productOptions,
+// checkoutData, expiresAt, preview, testMode) — reuse the SDK type so the
+// nested option shapes (e.g. the ISO-3166 billing country) always match.
+export async function createCheckoutSession(
+  params: { variantId: number | string } & NewCheckout,
+) {
+  const { variantId, ...checkout } = params;
+  const { data, error } = await createCheckout(env.LEMONSQUEEZY_STORE_ID, variantId, checkout);
 
   if (error) {
     throw new Error(`Failed to create checkout: ${error.message}`);
@@ -85,7 +50,9 @@ export async function getCheckoutById(checkoutId: string): Promise<Checkout | nu
   return data;
 }
 
-export async function getProducts(): Promise<Product[]> {
+// List endpoints return the SDK's internal `*Data[]` rows (not the single-fetch
+// `Product`/`Variant`/`Subscription` types), so let the return type be inferred.
+export async function getProducts() {
   const { data, error } = await listProducts({
     filter: { storeId: env.LEMONSQUEEZY_STORE_ID },
   });
@@ -107,7 +74,7 @@ export async function getProductById(productId: string): Promise<Product | null>
   return data;
 }
 
-export async function getVariants(productId?: string): Promise<Variant[]> {
+export async function getVariants(productId?: string) {
   const { data, error } = await listVariants({
     filter: productId ? { productId } : undefined,
   });
@@ -129,9 +96,11 @@ export async function getVariantById(variantId: string): Promise<Variant | null>
   return data;
 }
 
-export async function getUserSubscriptions(customerId?: string): Promise<Subscription[]> {
+// Lemon Squeezy subscriptions are filtered by user email (there is no customer-id
+// filter on this endpoint).
+export async function getUserSubscriptions(userEmail?: string) {
   const { data, error } = await listSubscriptions({
-    filter: customerId ? { customerId } : undefined,
+    filter: userEmail ? { userEmail } : undefined,
   });
 
   if (error) {
