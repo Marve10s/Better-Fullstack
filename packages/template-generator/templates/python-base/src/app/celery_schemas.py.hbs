@@ -29,15 +29,9 @@ class TaskStatusResponse(BaseModel):
 
     task_id: str = Field(..., description="The task ID")
     status: str = Field(..., description="Current task status")
-    result: dict[str, Any] | None = Field(
-        default=None, description="Task result if completed"
-    )
-    progress: float | None = Field(
-        default=None, description="Task progress percentage"
-    )
-    error: str | None = Field(
-        default=None, description="Error message if failed"
-    )
+    result: dict[str, Any] | None = Field(default=None, description="Task result if completed")
+    progress: float | None = Field(default=None, description="Task progress percentage")
+    error: str | None = Field(default=None, description="Error message if failed")
 
 
 class EmailTaskRequest(BaseModel):
