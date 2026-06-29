@@ -1,5 +1,5 @@
 ---
-title: "ScaffBench 2: six models, five ecosystems, and whether the project actually builds"
+title: "ScaffBench 2: ten configs, five ecosystems, and whether the project actually builds"
 description: "ScaffBench 2 runs Opus, GPT-5.5, and free models through five hard fullstack specs and three creation paths, scoring whether the project actually builds."
 date: 2026-06-26
 authors:
@@ -30,8 +30,8 @@ told to use, how much it cost, and we fold all of it into a single composite **S
 the way the serious leaderboards (Artificial Analysis, SWE-bench, Aider) do it.
 
 We start with a deep look at one model — **Claude Opus 4.8** — then run the same matrix across
-**four Opus versions and GPT-5.5** (two reasoning efforts), driving the non-Claude model through a
-[Codex agent adapter](#six-models-tooling-is-the-great-equalizer). Here's what it found.
+**four Opus versions and GPT-5.5** (across several reasoning efforts) plus **two free models**, driving the non-Claude models through new
+[Codex and opencode/Kilo agent adapters](#six-models-tooling-is-the-great-equalizer). Here's what it found.
 
 ## What changed since ScaffBench 1
 
@@ -112,6 +112,17 @@ actually buys you:
   build, and type-check (plus native checks like `cargo check` / `go build`)? *Full* adds the
   quality gate: lint, format, and test. We report both, because they answer different questions:
   Core is "did the agent scaffold a working project," Full is "is that project also clean."
+</Callout>
+
+<Callout kind="warn">
+  **Full pass is being re-measured — the live leaderboard shows Core.** A self-audit found the
+  quality gate under-enforced for the TypeScript spec: a missing `lint`/`test` script counted as a
+  pass, and the format step ran `biome check --write` (which auto-fixes and always exits 0) instead
+  of a read-only check. So the *Full* numbers below overstate quality for the TS cells — for those
+  cells Full effectively equaled Core. We've corrected the harness to run read-only checks and to
+  treat a missing check as a non-pass, and we're re-measuring; the homepage leaderboard now shows
+  only the *Core* metric until those numbers are refreshed. The Core results — the headline — are
+  unaffected. (More in [the methodology note on our own errors](#how-scaffbench-2-borrows-from-the-best-leaderboards).)
 </Callout>
 
 Beyond pass/fail, every run is graded on three diagnostic axes:
@@ -268,7 +279,7 @@ Four things fall out of this:
 <Callout kind="info">
   **A note on GPT cost.** Codex reports token usage but not a dollar figure, so GPT-5.5 cost is
   *estimated* from usage × published OpenAI pricing ($5 / $0.50-cached / $30 per 1M
-  input/cached/output tokens). The two GPT runs came to ~$9.65 (low) and ~$12.08 (medium).
+  input/cached/output tokens). The low and medium GPT runs came to ~$9.65 and ~$12.08, respectively.
 </Callout>
 
 ## Does thinking harder help?
@@ -359,10 +370,11 @@ it into v2:
 - **One run per cell.** Enough to read the structure, not enough for confidence intervals. The next
   run does **≥3 repeats** (5 for the flaky prompt lane) so the Wilson interval becomes reportable and
   pass^k consistency becomes meaningful.
-- **One run per cell, and GPT cost is estimated.** The six-model sweep is still 1 run/cell, and the
+- **One run per cell, and GPT cost is estimated.** The full ten-config sweep is still 1 run/cell, and the
   GPT-5.5 dollar figures are derived from token usage rather than metered (Codex reports no cost).
-  Reasoning-effort sweeps (`Opus 4.8 high/xhigh`) and the diminishing-returns curve of "thinking
-  harder" are the obvious next charts now that the harness drives two agents.
+  The diminishing-returns curve of "thinking harder" is now charted above; broader per-effort and
+  cross-agent coverage is the obvious next step now that the harness drives three agents (Claude Code,
+  Codex, and opencode/Kilo).
 - **`multi-dotnet-ops` needs a clean re-run** with a fresh MCP server per cell and a local .NET
   toolchain.
 - **Fix the template lint gaps** so Full pass reflects scaffolding quality, not a linter our own
