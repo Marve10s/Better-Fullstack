@@ -92,9 +92,12 @@ function makeRun(overrides: Partial<RunResult> = {}): RunResult {
 }
 
 describe("ScaffBench 2 harness config", () => {
-  it("defaults to the core multi-spec suite with one repeat", () => {
+  it("defaults to a Mac-friendly core matrix", () => {
     const options = parseArgs([]);
 
+    expect(options.model).toBe("opus");
+    expect(options.efforts).toEqual(["default"]);
+    expect(options.paths).toEqual(["mcp", "cli", "prompt"]);
     expect(options.specs).toEqual([
       "ai-search-workbench",
       "rust-leptos-axum",
@@ -104,6 +107,11 @@ describe("ScaffBench 2 harness config", () => {
     ]);
     expect(options.repeats).toBe(1);
     expect(options.promptStyle).toBe("explicit");
+  });
+
+  it("parses generation and validation phase flags", () => {
+    expect(parseArgs(["--generate-only"]).generateOnly).toBe(true);
+    expect(parseArgs(["--validate-existing"]).validateExisting).toBe(true);
   });
 
   it("emits valid non-interactive Better Fullstack command constraints", () => {
@@ -461,6 +469,16 @@ describe("ScaffBench 2 run outcomes", () => {
     expect(classifyOutcome(makeRun())).toBe("success");
   });
 
+  it("treats deferred validation as inconclusive, not a model failure", () => {
+    const run = makeRun({
+      validation: { projectExists: true, deferred: true, steps: {} },
+    });
+
+    expect(classifyOutcome(run)).toBe("infra-inconclusive");
+    expect(deriveFailureTags(run)).toContain("validation-deferred");
+    expect(deriveFailureTags(run)).not.toContain("validation-failed");
+  });
+
   it("classifies an un-spawnable validator binary as infra-inconclusive, not a build break", () => {
     const run = makeRun({
       validation: {
@@ -495,7 +513,12 @@ describe("ScaffBench 2 run outcomes", () => {
 
   it("classifies an exhausted token budget as infra-inconclusive", () => {
     const run = makeRun({
-      claude: { exitCode: 1, timedOut: false, durationMs: 60_000, terminalReason: "max_budget_exhausted" },
+      claude: {
+        exitCode: 1,
+        timedOut: false,
+        durationMs: 60_000,
+        terminalReason: "max_budget_exhausted",
+      },
       validation: { projectExists: false, steps: {} },
     });
 
@@ -542,13 +565,27 @@ describe("ScaffBench 2 statistical reporting", () => {
   const passing = () => ({
     projectExists: true,
     steps: {
-      install: { command: "bun install", exitCode: 0, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+      install: {
+        command: "bun install",
+        exitCode: 0,
+        timedOut: false,
+        durationMs: 1,
+        stdoutTail: "",
+        stderrTail: "",
+      },
     },
   });
   const failing = () => ({
     projectExists: true,
     steps: {
-      build: { command: "bun run build", exitCode: 1, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+      build: {
+        command: "bun run build",
+        exitCode: 1,
+        timedOut: false,
+        durationMs: 1,
+        stdoutTail: "",
+        stderrTail: "",
+      },
     },
   });
 
@@ -667,7 +704,14 @@ describe("ScaffBench 2 composite index", () => {
   const failingBuild = () => ({
     projectExists: true,
     steps: {
-      build: { command: "bun run build", exitCode: 1, timedOut: false, durationMs: 1, stdoutTail: "", stderrTail: "" },
+      build: {
+        command: "bun run build",
+        exitCode: 1,
+        timedOut: false,
+        durationMs: 1,
+        stdoutTail: "",
+        stderrTail: "",
+      },
     },
   });
   const stack80 = { matched: 8, total: 10, percent: 80, misses: [] };

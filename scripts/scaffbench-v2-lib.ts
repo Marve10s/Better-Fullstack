@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -26,7 +27,8 @@ export type FailureTag =
   | "build-failed"
   | "budget-exhausted"
   | "toolchain-missing"
-  | "stack-unwired";
+  | "stack-unwired"
+  | "validation-deferred";
 
 export type RunOutcome = "success" | "model-failure" | "infra-inconclusive";
 
@@ -112,6 +114,13 @@ type ToolCompliance = {
 
 type ProjectValidation = {
   projectExists: boolean;
+  /** Project generation finished, but validation is intentionally queued for a
+   * later phase. Deferred validation is excluded from the pass-rate denominator
+   * until the runner validates the archived project. */
+  deferred?: boolean;
+  sourceHash?: string;
+  cacheKey?: string;
+  cacheHit?: boolean;
   steps: Record<string, StepResult | undefined>;
   install?: StepResult;
   build?: StepResult;
@@ -173,6 +182,8 @@ export type ScaffbenchOptions = {
   outDir: string;
   maxBudgetUsd: string;
   skipValidation: boolean;
+  generateOnly: boolean;
+  validateExisting: boolean;
   qualityGate: boolean;
   doctorCheck: boolean;
   routeCheck: boolean;
@@ -252,6 +263,7 @@ const MIN_CI_RUNS = 8;
 // command discipline saturate fast on assisted paths so they are weighted down.
 // Weights sum to 1.
 const SCAFFBENCH_INDEX_WEIGHTS = { validation: 0.6, wiredLibs: 0.25, discipline: 0.15 } as const;
+const VALIDATION_CACHE_VERSION = 1;
 
 // Resolved once at the start of a run so every assisted invocation (canonical
 // command, MCP config, doctor, CLI prompt) pins the SAME generator version that
@@ -272,11 +284,13 @@ async function resolveBfVersion() {
   );
   return version && /^\d+\.\d+\.\d+/.test(version) ? version : "latest";
 }
-const DEFAULT_EFFORTS: readonly Effort[] = ["low", "medium", "high"];
+const DEFAULT_EFFORTS: readonly Effort[] = ["default"];
 const DEFAULT_PATHS: readonly CreationPath[] = ["mcp", "cli", "prompt"];
 const CLAUDE_TIMEOUT_MS = 15 * 60_000;
 const VALIDATION_TIMEOUT_MS = 10 * 60_000;
 const FAST_TIMEOUT_MS = 60_000;
+const QUEUE_POLL_MS = 5_000;
+const STALE_LOCK_MS = 6 * 60 * 60_000;
 const CORE_SPEC_IDS = [
   "ai-search-workbench",
   "rust-leptos-axum",
@@ -1128,6 +1142,8 @@ export function parseArgs(argv: string[]): ScaffbenchOptions {
         ),
     maxBudgetUsd: args.get("max-budget-usd") ?? "12",
     skipValidation: args.has("skip-validation"),
+    generateOnly: args.has("generate-only"),
+    validateExisting: args.has("validate-existing"),
     qualityGate: args.has("quality-gate"),
     doctorCheck: args.has("doctor-check"),
     routeCheck: args.has("route-check"),
@@ -1207,6 +1223,16 @@ Do not use the Better-Fullstack CLI for creation.`;
 }
 
 export async function runScaffbench(options: ScaffbenchOptions, log = console.log) {
+  if (options.listSpecs || options.writeMatrixOnly) {
+    return runScaffbenchUnlocked(options, log);
+  }
+  return withScaffbenchQueue(options, log, () => runScaffbenchUnlocked(options, log));
+}
+
+async function runScaffbenchUnlocked(options: ScaffbenchOptions, log = console.log) {
+  if (options.generateOnly && options.validateExisting) {
+    throw new Error("--generate-only and --validate-existing cannot be used together");
+  }
   const specs = selectedSpecs(options.specs);
   if (options.listSpecs) {
     for (const spec of specs.length ? specs : SCAFFBENCH_2_SPECS) {
@@ -1246,46 +1272,37 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
   const workspaceRoot = path.join(os.tmpdir(), "scaffbench21-work", path.basename(options.outDir));
   await mkdir(workspaceRoot, { recursive: true });
 
-  for (const spec of specs) {
-    for (const effort of options.efforts) {
-      for (const pathMode of options.paths) {
-        for (let trial = 1; trial <= options.repeats; trial += 1) {
-          const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
-          const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
-          const runDir = path.join(options.outDir, "runs", id);
-          const workDir = path.join(workspaceRoot, id);
-          await mkdir(runDir, { recursive: true });
+  if (!options.validateExisting) {
+    for (const spec of specs) {
+      for (const effort of options.efforts) {
+        for (const pathMode of options.paths) {
+          for (let trial = 1; trial <= options.repeats; trial += 1) {
+            const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
+            const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
+            const runDir = path.join(options.outDir, "runs", id);
+            const workDir = path.join(workspaceRoot, id);
+            await mkdir(runDir, { recursive: true });
 
-          if (results.some((result) => result.id === id)) {
-            log(`SKIP ${id} already present`);
-            continue;
-          }
+            if (results.some((result) => result.id === id)) {
+              log(`SKIP ${id} already present`);
+              continue;
+            }
 
-          await rm(workDir, { recursive: true, force: true }).catch(() => {});
-          await mkdir(workDir, { recursive: true });
+            await rm(workDir, { recursive: true, force: true }).catch(() => {});
+            await mkdir(workDir, { recursive: true });
 
-          const prompt = promptFor(spec, pathMode, workDir, projectName, options.promptStyle);
-          await writeFile(path.join(runDir, "prompt.txt"), prompt);
-          await writeFile(
-            path.join(runDir, "canonical-command.txt"),
-            `${canonicalCommand(spec, projectName)}\n`,
-          );
+            const prompt = promptFor(spec, pathMode, workDir, projectName, options.promptStyle);
+            await writeFile(path.join(runDir, "prompt.txt"), prompt);
+            await writeFile(
+              path.join(runDir, "canonical-command.txt"),
+              `${canonicalCommand(spec, projectName)}\n`,
+            );
 
-          log(`RUN ${id}`);
-          const started = Date.now();
-          const claude =
-            provider === "codex"
-              ? await runCodex({
-                  cwd: workDir,
-                  prompt,
-                  model: options.model,
-                  effort,
-                  useMcp: pathMode === "mcp",
-                  bunx,
-                })
-              : provider === "opencode" || provider === "kilo"
-                ? await runOpencode({
-                    binary: provider,
+            log(`RUN ${id}`);
+            const started = Date.now();
+            const claude =
+              provider === "codex"
+                ? await runCodex({
                     cwd: workDir,
                     prompt,
                     model: options.model,
@@ -1293,106 +1310,272 @@ export async function runScaffbench(options: ScaffbenchOptions, log = console.lo
                     useMcp: pathMode === "mcp",
                     bunx,
                   })
-                : await runClaude({
-                    cwd: workDir,
-                    prompt,
-                    model: options.model,
-                    effort,
-                    maxBudgetUsd: options.maxBudgetUsd,
-                    mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
-                  });
-          const durationMs = Date.now() - started;
+                : provider === "opencode" || provider === "kilo"
+                  ? await runOpencode({
+                      binary: provider,
+                      cwd: workDir,
+                      prompt,
+                      model: options.model,
+                      effort,
+                      useMcp: pathMode === "mcp",
+                      bunx,
+                    })
+                  : await runClaude({
+                      cwd: workDir,
+                      prompt,
+                      model: options.model,
+                      effort,
+                      maxBudgetUsd: options.maxBudgetUsd,
+                      mcpConfig: pathMode === "mcp" ? bfsMcpPath : emptyMcpPath,
+                    });
+            const durationMs = Date.now() - started;
 
-          await writeFile(path.join(runDir, "claude.stdout.json"), claude.stdout);
-          await writeFile(path.join(runDir, "claude.stderr.log"), claude.stderr);
+            await writeFile(path.join(runDir, "claude.stdout.json"), claude.stdout);
+            await writeFile(path.join(runDir, "claude.stderr.log"), claude.stderr);
 
-          const parsed =
-            provider === "codex"
-              ? parseCodexResult(claude.stdout, options.model)
-              : provider === "opencode" || provider === "kilo"
-                ? parseOpencodeResult(claude.stdout)
-                : parseClaudeResult(claude.stdout);
-          const generatedDir = await findProjectDir(workDir, projectName);
-          const validation = options.skipValidation
-            ? { projectExists: generatedDir !== null, steps: {} }
-            : await validateProject(spec, generatedDir, options);
-          const scored = generatedDir
-            ? await scoreProject(spec, generatedDir, options.promptStyle)
-            : {
-                artifact: emptyArtifactScore(spec),
-                faithfulness: undefined,
-                // A no-project discovery run satisfies zero capabilities — score it
-                // 0 rather than leaving it undefined, or maybeAverage would drop it
-                // and overstate the cell's Acceptance.
-                acceptance:
-                  options.promptStyle === "natural" && spec.acceptanceSets
-                    ? emptyAcceptanceScore(spec)
-                    : undefined,
-              };
-          const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
+            const parsed =
+              provider === "codex"
+                ? parseCodexResult(claude.stdout, options.model)
+                : provider === "opencode" || provider === "kilo"
+                  ? parseOpencodeResult(claude.stdout)
+                  : parseClaudeResult(claude.stdout);
+            const generatedDir = await findProjectDir(workDir, projectName);
+            const validation = options.skipValidation
+              ? { projectExists: generatedDir !== null, steps: {} }
+              : deferredValidation(generatedDir !== null);
+            const scored = generatedDir
+              ? await scoreProject(spec, generatedDir, options.promptStyle)
+              : {
+                  artifact: emptyArtifactScore(spec),
+                  faithfulness: undefined,
+                  // A no-project discovery run satisfies zero capabilities — score it
+                  // 0 rather than leaving it undefined, or maybeAverage would drop it
+                  // and overstate the cell's Acceptance.
+                  acceptance:
+                    options.promptStyle === "natural" && spec.acceptanceSets
+                      ? emptyAcceptanceScore(spec)
+                      : undefined,
+                };
+            const toolCompliance = await scoreToolCompliance(pathMode, generatedDir, claude);
 
-          // Archive the generated source under the grading tree, then drop the
-          // isolated workspace, so run artifacts stay durable without leaving
-          // the answer key reachable from the agent's working directory.
-          let projectDir = generatedDir;
-          if (generatedDir) {
-            const archivedDir = path.join(runDir, projectName);
-            try {
-              await archiveProjectSource(generatedDir, archivedDir);
-              projectDir = archivedDir;
-            } catch (error) {
-              log(
-                `WARN archive failed for ${id}: ${
-                  error instanceof Error ? error.message : String(error)
-                }`,
-              );
+            // Archive the generated source under the grading tree, then drop the
+            // isolated workspace, so run artifacts stay durable without leaving
+            // the answer key reachable from the agent's working directory.
+            let projectDir = generatedDir;
+            if (generatedDir) {
+              const archivedDir = path.join(runDir, projectName);
+              try {
+                await archiveProjectSource(generatedDir, archivedDir);
+                projectDir = archivedDir;
+              } catch (error) {
+                log(
+                  `WARN archive failed for ${id}: ${
+                    error instanceof Error ? error.message : String(error)
+                  }`,
+                );
+              }
             }
-          }
-          if (!generatedDir || projectDir !== generatedDir) {
-            await rm(workDir, { recursive: true, force: true }).catch(() => {});
-          }
-          const result: RunResult = {
-            id,
-            specId: spec.id,
-            specTitle: spec.title,
-            model: options.model,
-            effort,
-            effectiveReasoning: effectiveReasoning(options.model, effort),
-            path: pathMode,
-            trial,
-            promptStyle: options.promptStyle,
-            runDir,
-            projectName,
-            projectDir,
-            claude: {
-              exitCode: claude.exitCode,
-              timedOut: claude.timedOut,
-              durationMs,
-              resultDurationMs: parsed?.duration_ms,
-              outputTokens: parsed?.usage?.output_tokens,
-              totalCostUsd: parsed?.total_cost_usd,
-              sessionId: parsed?.session_id,
-              terminalReason: parsed?.terminal_reason,
-            },
-            validation,
-            stackScore: scored.artifact,
-            generatorFaithfulness: scored.faithfulness,
-            acceptanceScore: scored.acceptance,
-            toolCompliance,
-            failureTags: [],
-          };
-          result.failureTags = deriveFailureTags(result);
+            if (!generatedDir || projectDir !== generatedDir) {
+              await rm(workDir, { recursive: true, force: true }).catch(() => {});
+            }
+            const result: RunResult = {
+              id,
+              specId: spec.id,
+              specTitle: spec.title,
+              model: options.model,
+              effort,
+              effectiveReasoning: effectiveReasoning(options.model, effort),
+              path: pathMode,
+              trial,
+              promptStyle: options.promptStyle,
+              runDir,
+              projectName,
+              projectDir,
+              claude: {
+                exitCode: claude.exitCode,
+                timedOut: claude.timedOut,
+                durationMs,
+                resultDurationMs: parsed?.duration_ms,
+                outputTokens: parsed?.usage?.output_tokens,
+                totalCostUsd: parsed?.total_cost_usd,
+                sessionId: parsed?.session_id,
+                terminalReason: parsed?.terminal_reason,
+              },
+              validation,
+              stackScore: scored.artifact,
+              generatorFaithfulness: scored.faithfulness,
+              acceptanceScore: scored.acceptance,
+              toolCompliance,
+              failureTags: [],
+            };
+            result.failureTags = deriveFailureTags(result);
 
-          results.push(result);
-          await writeSummary(options.outDir, results, options, specs, metadata);
+            results.push(result);
+            await writeSummary(options.outDir, results, options, specs, metadata);
 
-          log(
-            `DONE ${id} exit=${result.claude.exitCode} pass=${validationPassed(result)} stack=${result.stackScore.matched}/${result.stackScore.total}`,
-          );
+            log(
+              `DONE ${id} exit=${result.claude.exitCode} validation=${
+                result.validation.deferred ? "deferred" : validationPassed(result)
+              } stack=${result.stackScore.matched}/${result.stackScore.total}`,
+            );
+          }
         }
       }
     }
   }
+
+  if (!options.skipValidation && !options.generateOnly) {
+    await validatePendingResults(results, options, specs, metadata, log);
+  } else if (options.generateOnly) {
+    log("Generation finished; validation deferred. Re-run the same out-dir to validate.");
+  }
+}
+
+async function withScaffbenchQueue<T>(
+  options: ScaffbenchOptions,
+  log: (message: string) => void,
+  fn: () => Promise<T>,
+) {
+  const lockRoot = path.dirname(options.outDir);
+  const lockDir = path.join(lockRoot, ".scaffbench.lock");
+  await mkdir(lockRoot, { recursive: true });
+
+  let announcedWait = false;
+  while (true) {
+    try {
+      await mkdir(lockDir);
+      await writeFile(
+        path.join(lockDir, "owner.json"),
+        `${JSON.stringify(
+          {
+            pid: process.pid,
+            outDir: options.outDir,
+            startedAt: new Date().toISOString(),
+            command: process.argv.join(" "),
+          },
+          null,
+          2,
+        )}\n`,
+      );
+      break;
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+      if (code !== "EEXIST") throw error;
+      if (await removeStaleLock(lockDir)) continue;
+      if (!announcedWait) {
+        log(`QUEUE waiting for active ScaffBench run (${lockDir})`);
+        announcedWait = true;
+      }
+      await sleep(QUEUE_POLL_MS);
+    }
+  }
+
+  try {
+    return await fn();
+  } finally {
+    await rm(lockDir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+async function removeStaleLock(lockDir: string) {
+  const ownerPath = path.join(lockDir, "owner.json");
+  try {
+    const owner = JSON.parse(await readFile(ownerPath, "utf8"));
+    if (typeof owner.pid === "number" && isProcessAlive(owner.pid)) return false;
+  } catch {
+    try {
+      const info = await stat(lockDir);
+      if (Date.now() - info.mtimeMs < STALE_LOCK_MS) return false;
+    } catch {
+      return true;
+    }
+  }
+  await rm(lockDir, { recursive: true, force: true }).catch(() => {});
+  return true;
+}
+
+function isProcessAlive(pid: number) {
+  if (pid === process.pid) return true;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function deferredValidation(projectExists: boolean): ProjectValidation {
+  return projectExists
+    ? { projectExists: true, deferred: true, steps: {} }
+    : { projectExists: false, steps: {} };
+}
+
+function needsValidation(result: RunResult, options: ScaffbenchOptions) {
+  if (options.skipValidation) return false;
+  if (!result.validation.projectExists || !result.projectDir) return false;
+  if (result.validation.deferred) return true;
+  return (
+    options.validateExisting &&
+    !result.validation.cacheKey &&
+    Object.keys(result.validation.steps).length === 0
+  );
+}
+
+async function validatePendingResults(
+  results: RunResult[],
+  options: ScaffbenchOptions,
+  specs: readonly BenchmarkSpec[],
+  metadata: Record<string, unknown>,
+  log: (message: string) => void,
+) {
+  const specsById = new Map(specs.map((spec) => [spec.id, spec]));
+  const pending = results
+    .filter((result) => needsValidation(result, options))
+    .sort(
+      (a, b) =>
+        validationPriority(specsById.get(a.specId)) - validationPriority(specsById.get(b.specId)),
+    );
+
+  if (pending.length === 0) {
+    if (options.validateExisting) log("No existing generated runs need validation.");
+    return;
+  }
+
+  log(`VALIDATE ${pending.length} generated run${pending.length === 1 ? "" : "s"}`);
+  for (const result of pending) {
+    const spec = specsById.get(result.specId);
+    if (!spec) continue;
+    if (!result.projectDir || !existsSync(result.projectDir)) {
+      result.validation = { projectExists: false, steps: {} };
+      result.failureTags = deriveFailureTags(result);
+      await writeSummary(options.outDir, results, options, specs, metadata);
+      log(`VALIDATE ${result.id} missing archived project`);
+      continue;
+    }
+
+    log(`VALIDATE ${result.id}`);
+    result.validation = await validateProjectCached(spec, result.projectDir, options);
+    result.failureTags = deriveFailureTags(result);
+    await writeSummary(options.outDir, results, options, specs, metadata);
+    log(
+      `DONE ${result.id} validation=${validationPassed(result)} cache=${
+        result.validation.cacheHit ? "hit" : "miss"
+      }`,
+    );
+  }
+}
+
+function validationPriority(spec?: BenchmarkSpec) {
+  if (!spec) return 50;
+  const native = new Set(spec.validationProfile.native ?? []);
+  if (native.has("cargo") || spec.family === "rust") return 100;
+  if (native.has("dotnet") || spec.family === "multi-ecosystem" || spec.family === "dotnet")
+    return 80;
+  return 10;
 }
 
 async function writeHarnessFiles(
@@ -1726,7 +1909,10 @@ const CODEX_PRICING: Record<string, { input: number; cachedInput: number; output
 
 function codexPricingFor(model: string) {
   const key = model.toLowerCase();
-  return CODEX_PRICING[key] ?? CODEX_PRICING[Object.keys(CODEX_PRICING).find((k) => key.startsWith(k)) ?? ""];
+  return (
+    CODEX_PRICING[key] ??
+    CODEX_PRICING[Object.keys(CODEX_PRICING).find((k) => key.startsWith(k)) ?? ""]
+  );
 }
 
 /** Estimated USD cost from codex token usage; undefined if the model isn't priced. */
@@ -1737,7 +1923,9 @@ export function codexCostUsd(model: string, usage: CodexUsage): number | undefin
   const cached = usage.cached_input_tokens ?? 0;
   const output = (usage.output_tokens ?? 0) + (usage.reasoning_output_tokens ?? 0);
   return (
-    (Math.max(0, input - cached) * price.input + cached * price.cachedInput + output * price.output) /
+    (Math.max(0, input - cached) * price.input +
+      cached * price.cachedInput +
+      output * price.output) /
     1_000_000
   );
 }
@@ -1949,6 +2137,123 @@ export async function validateProject(
     route: steps.route,
   };
   return validation;
+}
+
+async function validateProjectCached(
+  spec: BenchmarkSpec,
+  projectDir: string,
+  options: ScaffbenchOptions,
+): Promise<ProjectValidation> {
+  const sourceHash = await hashProjectSource(projectDir);
+  const cacheKey = validationCacheKey(spec, options, sourceHash);
+  const cacheDir = path.join(options.outDir, "validation-cache");
+  const cachePath = path.join(cacheDir, `${cacheKey}.json`);
+
+  if (existsSync(cachePath)) {
+    try {
+      const cached = JSON.parse(await readFile(cachePath, "utf8"));
+      if (cached?.validation?.projectExists) {
+        return {
+          ...cached.validation,
+          sourceHash,
+          cacheKey,
+          cacheHit: true,
+          deferred: false,
+        };
+      }
+    } catch {}
+  }
+
+  const validation = await validateProject(spec, projectDir, options);
+  const withCacheMeta: ProjectValidation = {
+    ...validation,
+    sourceHash,
+    cacheKey,
+    cacheHit: false,
+    deferred: false,
+  };
+  if (cacheableValidation(withCacheMeta)) {
+    await mkdir(cacheDir, { recursive: true });
+    await writeFile(
+      cachePath,
+      `${JSON.stringify(
+        {
+          version: VALIDATION_CACHE_VERSION,
+          createdAt: new Date().toISOString(),
+          specId: spec.id,
+          validation: withCacheMeta,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  }
+  return withCacheMeta;
+}
+
+function cacheableValidation(validation: ProjectValidation) {
+  return !Object.values(validation.steps).some((step) => step?.timedOut || step?.spawnError);
+}
+
+function validationCacheKey(spec: BenchmarkSpec, options: ScaffbenchOptions, sourceHash: string) {
+  const hash = createHash("sha256");
+  hash.update(
+    JSON.stringify({
+      version: VALIDATION_CACHE_VERSION,
+      harnessVersion: HARNESS_VERSION,
+      specId: spec.id,
+      sourceHash,
+      qualityGate: options.qualityGate,
+      doctorCheck: options.doctorCheck,
+      routeCheck: options.routeCheck,
+    }),
+  );
+  return hash.digest("hex");
+}
+
+async function hashProjectSource(projectDir: string) {
+  const hash = createHash("sha256");
+  for (const filePath of await listHashableFiles(projectDir)) {
+    const relative = path.relative(projectDir, filePath).split(path.sep).join("/");
+    hash.update(relative);
+    hash.update("\0");
+    hash.update(await readFile(filePath));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
+async function listHashableFiles(root: string) {
+  const skip = new Set([
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".next",
+    ".turbo",
+    "coverage",
+    "target",
+    ".venv",
+    "bin",
+    "obj",
+  ]);
+  const files: string[] = [];
+
+  async function walk(dir: string) {
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (skip.has(entry.name)) continue;
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(entryPath);
+      } else if (entry.isFile()) {
+        files.push(entryPath);
+      }
+    }
+  }
+
+  await walk(root);
+  return files.sort();
 }
 
 async function validateBunProject(projectDir: string, options: ScaffbenchOptions) {
@@ -2771,6 +3076,7 @@ export async function scoreToolCompliance(
 }
 
 export function validationPassed(result: RunResult) {
+  if (result.validation.deferred) return false;
   if (!result.validation.projectExists) return false;
   const all = Object.values(result.validation.steps).filter((step): step is StepResult =>
     Boolean(step),
@@ -2786,8 +3092,7 @@ export function validationPassed(result: RunResult) {
   // pass — it disqualifies the run. (Pre-fix, skips carried exitCode 0 and passed
   // silently: the Finding-1 inflation.)
   return applicable.every(
-    (step) =>
-      step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
+    (step) => step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
   );
 }
 
@@ -2804,6 +3109,7 @@ function isBudgetExhausted(terminalReason: string | undefined) {
  * excluded from the pass-rate denominator by `aggregateBy`.
  */
 export function classifyOutcome(result: RunResult): RunOutcome {
+  if (result.validation.deferred) return "infra-inconclusive";
   if (isInfraInconclusive(result)) return "infra-inconclusive";
   return validationPassed(result) ? "success" : "model-failure";
 }
@@ -2832,6 +3138,7 @@ function isInfraInconclusive(result: RunResult): boolean {
 
 export function deriveFailureTags(result: RunResult): FailureTag[] {
   const tags = new Set<FailureTag>();
+  if (result.validation.deferred) tags.add("validation-deferred");
   if (result.claude.timedOut) tags.add("claude-timeout");
   if (result.claude.exitCode !== 0) tags.add("claude-error");
   if (isBudgetExhausted(result.claude.terminalReason)) tags.add("budget-exhausted");
@@ -2872,7 +3179,7 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
     if (name.includes("route")) tags.add("route-failed");
   }
 
-  if (!validationPassed(result)) tags.add("validation-failed");
+  if (!result.validation.deferred && !validationPassed(result)) tags.add("validation-failed");
   return [...tags].sort();
 }
 
@@ -2923,7 +3230,9 @@ function aggregateBy(
       const specEntries = [...bySpec.values()];
       // Macro pass rate averages only specs that were actually measured.
       const measuredSpecs = specEntries.filter((entry) => entry.scored > 0);
-      const macroPassRate = average(measuredSpecs.map((entry) => (entry.pass / entry.scored) * 100));
+      const macroPassRate = average(
+        measuredSpecs.map((entry) => (entry.pass / entry.scored) * 100),
+      );
       // pass^k: passed on EVERY repeat (all repeats measured and passing).
       const passAllSpecs = specEntries.filter((entry) => entry.pass === entry.total).length;
       // pass@k: passed on at least one repeat.
@@ -3045,14 +3354,13 @@ export async function writeSummary(
   specs: readonly BenchmarkSpec[],
   metadata: Record<string, unknown>,
 ) {
+  const { listSpecs, writeMatrixOnly, ...summaryOptions } = options;
+  void listSpecs;
+  void writeMatrixOnly;
   const summary: ScaffbenchSummary = {
     harnessVersion: HARNESS_VERSION,
     generatedAt: new Date().toISOString(),
-    options: {
-      ...options,
-      listSpecs: undefined as never,
-      writeMatrixOnly: undefined as never,
-    },
+    options: summaryOptions,
     metadata,
     specs: [...specs],
     aggregates: aggregateResults(results),
@@ -3091,6 +3399,13 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         result.validation.checkTypes?.exitCode ?? "",
         result.validation.lint?.exitCode ?? "",
         result.validation.test?.exitCode ?? "",
+        result.validation.deferred
+          ? "deferred"
+          : result.validation.cacheHit
+            ? "hit"
+            : result.validation.cacheKey
+              ? "miss"
+              : "",
       ].join(" | "),
     )
     .join("\n");
@@ -3157,8 +3472,8 @@ ${aggregateRows}
 
 ## Runs
 
-| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Wired % | Wired | Faithful | Acceptance | Install | Build | Typecheck | Lint | Test |
-| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Spec | Trial | Effort | Effective reasoning | Model | Path | Validation | Failure tags | Claude exit | Time | Output tokens | Cost | Wired % | Wired | Faithful | Acceptance | Install | Build | Typecheck | Lint | Test | Validation cache |
+| --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${rows}
 `;
 }
