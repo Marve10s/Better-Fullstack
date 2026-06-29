@@ -437,7 +437,8 @@ export const dependencyVersionMap = {
   clsx: "^2.1.1",
   "tailwind-merge": "^3.6.0",
   "tw-animate-css": "^1.4.0",
-  "lucide-react": "^1.22.0",
+  // Keep on 1.21 until Yarn hardened mode stops quarantining 1.22.
+  "lucide-react": "^1.21.0",
   "@tabler/icons-react": "^3.44.0",
   "@hugeicons/react": "^1.1.9",
   "@hugeicons/core-free-icons": "^4.2.2",
@@ -566,9 +567,9 @@ export const dependencyVersionMap = {
   // Testing - Vitest
   // Keep the Vitest family on the latest Yarn-allowed patch. 4.1.9 is
   // quarantined for @vitest/coverage-v8 in Yarn's package metadata.
-  vitest: "^4.1.9",
-  "@vitest/ui": "^4.1.9",
-  "@vitest/coverage-v8": "^4.1.9",
+  vitest: "4.1.8",
+  "@vitest/ui": "4.1.8",
+  "@vitest/coverage-v8": "4.1.8",
   jsdom: "^29.1.1",
   "happy-dom": "^20.10.6",
 

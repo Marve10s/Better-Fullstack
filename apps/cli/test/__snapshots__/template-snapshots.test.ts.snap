@@ -1502,7 +1502,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -1512,7 +1512,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -2194,7 +2194,7 @@ export default nextConfig;
     "@tanstack/react-query": "^5.101.2",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.1",
@@ -3004,7 +3004,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "@libsql/client": "catalog:",
     "libsql": "catalog:",
     "tw-animate-css": "^1.4.0",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.1",
@@ -4137,7 +4137,7 @@ app.listen(3000, () => {
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -4147,7 +4147,7 @@ app.listen(3000, () => {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -4931,7 +4931,7 @@ export default app;
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -4941,7 +4941,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -5774,7 +5774,7 @@ export default app;
     "libsql": "catalog:",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -5784,7 +5784,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -6854,7 +6854,7 @@ export default app;
     "@tanstack/react-query": "^5.101.2",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -6864,7 +6864,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -7950,7 +7950,7 @@ export default app;
     "@tanstack/react-query": "^5.101.2",
     "better-auth": "catalog:",
     "@tanstack/react-form": "^1.33.0",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -7960,7 +7960,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -8859,7 +8859,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@snapshot-convex-clerk/backend": "workspace:*",
     "convex": "catalog:",
     "@clerk/clerk-react": "^5.61.3",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -8869,7 +8869,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -9413,7 +9413,7 @@ export default nextConfig;
     "@trpc/tanstack-react-query": "^11.18.0",
     "@tanstack/react-query": "^5.101.2",
     "@clerk/nextjs": "^7.5.9",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.1",
@@ -10005,7 +10005,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/tanstack-query": "^1.14.6",
     "@clerk/tanstack-react-start": "^1.4.9",
     "srvx": "^0.11.17",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -10803,7 +10803,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -10813,7 +10813,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -11535,7 +11535,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -11545,7 +11545,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -12294,7 +12294,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -12304,7 +12304,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -13080,7 +13080,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -13090,7 +13090,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -13775,7 +13775,7 @@ export default nextConfig;
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0",
+    "lucide-react": "^1.21.0",
     "@keystatic/core": "^0.5.50",
     "@keystatic/next": "^5.0.4",
     "@markdoc/markdoc": "^0.5.7"
@@ -14488,7 +14488,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -14498,7 +14498,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -15284,7 +15284,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -15294,7 +15294,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -16071,7 +16071,7 @@ export default app;
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@tanstack/react-query": "^5.101.2",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -16081,7 +16081,7 @@ export default app;
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
@@ -16746,7 +16746,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-frontend-only-no-backend/env": "workspace:*",
-    "lucide-react": "^1.22.0"
+    "lucide-react": "^1.21.0"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.167.0",
@@ -16756,7 +16756,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "vite": "^8.1.0",
     "typescript": "catalog:",
