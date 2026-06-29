@@ -2,41 +2,38 @@
 use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use tower_http::cors::CorsLayer;
-{{#if (ne rustErrorHandling "none")}}
-mod error;
+{{#if (ne rustAuth "none")}}
+mod auth;
 {{/if}}
 {{#if (ne rustCaching "none")}}
 mod cache;
 {{/if}}
-{{#if (ne rustAuth "none")}}
-mod auth;
-{{/if}}
-{{#if (eq rustRealtime "tokio-tungstenite")}}
-mod realtime;
-{{/if}}
-{{#if (eq rustMessageQueue "lapin")}}
-mod messaging;
-{{/if}}
-{{#if (eq rustObservability "opentelemetry")}}
-mod otel;
-{{/if}}
-{{#if (ne rustTemplating "none")}}
-mod templating;
-{{/if}}
 {{#if (eq email "resend")}}
 mod email;
 {{/if}}
-{{#if (eq observability "sentry")}}
-mod observability;
-{{/if}}
-{{#if (eq caching "upstash-redis")}}
-mod upstash_cache;
+{{#if (ne rustErrorHandling "none")}}
+mod error;
 {{/if}}
 {{#if (eq search "meilisearch")}}
 mod meilisearch;
 {{/if}}
-{{#if (eq rustLogging "tracing")}}
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{#if (eq rustMessageQueue "lapin")}}
+mod messaging;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (eq rustObservability "opentelemetry")}}
+mod otel;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
 {{/if}}
 {{#if (eq rustOrm "sea-orm")}}
 use sea_orm::{Database, DatabaseConnection};
@@ -50,6 +47,9 @@ use sqlx::PgPool;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::AsyncPgConnection;
+{{/if}}
+{{#if (eq rustLogging "tracing")}}
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 {{/if}}
 {{#if (eq rustApi "tonic")}}
 
@@ -149,8 +149,8 @@ async fn graphiql() -> impl IntoResponse {
             .finish(),
     )
 }
-{{/if}}
 
+{{/if}}
 #[tokio::main]
 async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
     // Load environment variables
@@ -167,7 +167,10 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 {{else if (eq rustLogging "env-logger")}}
@@ -205,8 +208,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let db = Database::connect(&database_url).await?;
@@ -237,8 +239,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{/if}}
 {{else if (eq rustOrm "sqlx")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let pool = PgPoolOptions::new()
@@ -272,8 +273,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{/if}}
 {{else if (eq rustOrm "diesel")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
@@ -542,7 +542,10 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 {{else if (eq rustLogging "env-logger")}}
@@ -580,8 +583,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let db = Database::connect(&database_url).await?;
@@ -599,8 +601,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{/if}}
 {{#if (eq rustOrm "sqlx")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let pool = PgPoolOptions::new()
@@ -620,8 +621,7 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{/if}}
 {{#if (eq rustOrm "diesel")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
@@ -935,7 +935,10 @@ async fn rocket() -> _ {
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 {{else if (eq rustLogging "env-logger")}}
@@ -979,8 +982,7 @@ async fn rocket() -> _ {
 
 {{#if (eq rustOrm "sea-orm")}}
     // Initialize database connection
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let db = Database::connect(&database_url).await.expect("Failed to connect to database");
@@ -1006,8 +1008,7 @@ async fn rocket() -> _ {
 {{/if}}
 {{else if (eq rustOrm "sqlx")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let pool = PgPoolOptions::new()
@@ -1037,8 +1038,7 @@ async fn rocket() -> _ {
 {{/if}}
 {{else if (eq rustOrm "diesel")}}
     // Initialize database connection pool
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
 {{#if (eq rustLogging "tracing")}}    tracing::info!("Connecting to database...");{{else if (eq rustLogging "env-logger")}}    log::info!("Connecting to database...");{{else}}    println!("Connecting to database...");{{/if}}
     let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
@@ -1126,7 +1126,10 @@ async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Resu
 {{#if (eq rustLogging "tracing")}}
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 {{else if (eq rustLogging "env-logger")}}

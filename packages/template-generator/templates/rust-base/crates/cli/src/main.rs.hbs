@@ -100,7 +100,9 @@ async fn main() -> {{#if (or (eq rustErrorHandling "anyhow-thiserror") (eq rustE
     // Initialize tracing with verbosity level
     let filter = if cli.verbose { "debug" } else { "info" };
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 

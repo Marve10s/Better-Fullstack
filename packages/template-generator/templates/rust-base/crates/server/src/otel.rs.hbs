@@ -5,6 +5,8 @@
 //! call `init_tracing()` once at startup; keep the returned provider alive
 //! and call `shutdown()` on it before exit to flush spans.
 
+#![allow(dead_code)]
+
 use opentelemetry::global;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::SpanExporter;
