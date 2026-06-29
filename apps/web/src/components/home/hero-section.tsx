@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AsciiHeroBackground } from "@/components/ui/ascii-hero-background";
 import { latestChangelogRelease } from "@/lib/changelog";
@@ -20,13 +20,62 @@ const COMMANDS: Record<PM, string> = {
 };
 
 const ACCENT_TEXT = "text-ink dark:text-brand";
-const RELEASE_BADGE = latestChangelogRelease
+
+// The release badge updates itself. We seed it from the curated changelog (so SSR
+// and offline still render something correct), then refresh it live from the
+// latest GitHub release — which the Release workflow cuts on every npm publish —
+// so it never goes stale after a release without anyone hand-editing changelog.ts.
+// (Build-time injection can't help: the publish runs *after* the deploy that
+// triggers it, so any baked-in value always lags a version.)
+const FALLBACK_RELEASE_BADGE = latestChangelogRelease
   ? `${latestChangelogRelease.version} · ${latestChangelogRelease.displayDate}`
   : "";
+const LATEST_RELEASE_API = "https://api.github.com/repos/Marve10s/Better-Fullstack/releases/latest";
+const RELEASE_BADGE_CACHE_KEY = "bfs:latest-release-badge";
+
+function formatReleaseBadge(tagName: string, publishedAt: string): string {
+  const date = new Date(publishedAt);
+  const displayDate = Number.isNaN(date.getTime())
+    ? ""
+    : date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return displayDate ? `${tagName} · ${displayDate}` : tagName;
+}
 
 export default function HeroSection() {
   const [pm, setPm] = useState<PM>("bun");
   const [copied, setCopied] = useState(false);
+  const [releaseBadge, setReleaseBadge] = useState(FALLBACK_RELEASE_BADGE);
+
+  useEffect(() => {
+    const cached = sessionStorage.getItem(RELEASE_BADGE_CACHE_KEY);
+    if (cached) {
+      setReleaseBadge(cached);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(LATEST_RELEASE_API, {
+          headers: { Accept: "application/vnd.github+json" },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { tag_name?: string; published_at?: string };
+        if (cancelled || !data.tag_name) return;
+        const badge = formatReleaseBadge(data.tag_name, data.published_at ?? "");
+        setReleaseBadge(badge);
+        try {
+          sessionStorage.setItem(RELEASE_BADGE_CACHE_KEY, badge);
+        } catch {
+          // sessionStorage can throw in private mode; the live value still renders.
+        }
+      } catch {
+        // Network / rate-limit failure: keep the curated fallback badge.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const copy = () => {
     navigator.clipboard.writeText(COMMANDS[pm]).then(
@@ -52,7 +101,7 @@ export default function HeroSection() {
             ✦ {m.homeInstall()}
           </span>
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-soft">
-            {RELEASE_BADGE}
+            {releaseBadge}
           </span>
         </div>
 
