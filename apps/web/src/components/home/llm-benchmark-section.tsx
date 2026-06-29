@@ -2169,18 +2169,23 @@ function OpenAIMark({ className }: { className?: string }) {
 
 function ScaffbenchLeaderboardCard() {
   const [version, setVersion] = useState<LeaderboardVersion>("v2");
-  const [mode, setMode] = useState<ValidationMode>("core");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
   const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH2_SPECS);
 
+  // We publish a single metric — Core pass (install/build/typecheck). The Full /
+  // quality-gate pass is withheld until a re-run with the corrected gate produces
+  // honest numbers (the old gate skipped lint/test and auto-fixed format, which
+  // overstated Full). computeV2ModelRows still takes a mode so Full can return
+  // with one line once that re-run lands.
+  const MODE = "core" as const;
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   // One row per model, sorted best-first, for the chosen creation path.
   const rows = useMemo(
     () =>
       version === "v2"
-        ? computeV2ModelRows(leaderPath, mode, specsSet)
+        ? computeV2ModelRows(leaderPath, MODE, specsSet)
         : computeV1ModelRows(leaderPath),
-    [version, leaderPath, mode, specsSet],
+    [version, leaderPath, specsSet],
   );
 
   const toggleSpec = useCallback((spec: string) => {
@@ -2221,24 +2226,6 @@ function ScaffbenchLeaderboardCard() {
                 onSelect={setVersion}
               />
             </div>
-            {version === "v2" ? (
-              <div className="flex items-center gap-1" role="tablist" aria-label="Validation mode">
-                <PillButton
-                  value="core"
-                  label="Core"
-                  active={mode === "core"}
-                  onSelect={setMode}
-                  accent="lime"
-                />
-                <PillButton
-                  value="full"
-                  label="Full"
-                  active={mode === "full"}
-                  onSelect={setMode}
-                  accent="lime"
-                />
-              </div>
-            ) : null}
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
               <PillButton
                 value="all"
@@ -2287,7 +2274,7 @@ function ScaffbenchLeaderboardCard() {
               <p className="text-sm font-semibold">Pass 1 by model</p>
               <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
                 {leaderPath === "all" ? "All creation paths" : LEADERBOARD_LABELS[leaderPath]}
-                {version === "v2" ? ` · ${mode === "core" ? "Core" : "Full"} validation` : ""}
+                {version === "v2" ? " · Core validation" : ""}
               </p>
             </div>
 
@@ -2307,7 +2294,7 @@ function ScaffbenchLeaderboardCard() {
 
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={`${version}-${leaderPath}-${mode}`}
+                key={`${version}-${leaderPath}`}
                 initial={leaderFadeHidden}
                 animate={leaderFadeVisible}
                 exit={leaderFadeHidden}
