@@ -238,7 +238,11 @@ export const dependencyVersionMap = {
   // Garph (GraphQL)
   garph: "^0.6.8",
   "graphql-yoga": "^5.21.2",
-  graphql: "^17.0.1",
+  // graphql 16.x: garph (^16.6.0), graphql-yoga (^15||^16), and
+  // @apollo/server@5 (^16.11.0) all cap at v16 — v17 violates their peers
+  // and forces a 2nd graphql copy into packages/api (breaks garph's
+  // cross-package GraphQLSchema typing). Keep on 16.x until they support 17.
+  graphql: "^16.11.0",
   "@garph/gqty": "^0.4.5",
   gqty: "^3.6.0",
 
