@@ -2807,13 +2807,15 @@ export async function validateProject(
   if (nativeProfiles.has("dotnet") || (await hasDotnetProject(projectDir))) {
     Object.assign(steps, await validateDotnetProject(projectDir, options));
   }
-  if (
-    nativeProfiles.has("java") ||
-    (await findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]))
-  ) {
+  // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
+  // A React Native app ships an Android `build.gradle` (apps/native/android), and
+  // a loose gradle autodetect would wrongly run `gradlew compileJava` on a
+  // TS/bun project and clobber its bun validation. Every Java/Elixir spec
+  // declares validationProfile.native, so the explicit gate is sufficient.
+  if (nativeProfiles.has("java")) {
     Object.assign(steps, await validateJavaProject(projectDir, options));
   }
-  if (nativeProfiles.has("elixir") || (await findBuildRoot(projectDir, ["mix.exs"]))) {
+  if (nativeProfiles.has("elixir")) {
     Object.assign(steps, await validateElixirProject(projectDir, options));
   }
 
