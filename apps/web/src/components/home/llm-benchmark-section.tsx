@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 
 import {
@@ -1412,8 +1413,17 @@ function BenchmarkChartCard() {
                 active={version === "v2.1"}
                 onSelect={setVersion}
               />
-              <VersionLegacyTag />
-              <PillButton value="v2" label="v2" active={version === "v2"} onSelect={setVersion} />
+              <PillButton
+                value="v2"
+                label={
+                  <>
+                    v2
+                    <VersionLegacyTag />
+                  </>
+                }
+                active={version === "v2"}
+                onSelect={setVersion}
+              />
               <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
             </div>
             <PathTabs
@@ -2309,8 +2319,17 @@ function ScaffbenchLeaderboardCard() {
                 active={version === "v2.1"}
                 onSelect={setVersion}
               />
-              <VersionLegacyTag />
-              <PillButton value="v2" label="v2" active={version === "v2"} onSelect={setVersion} />
+              <PillButton
+                value="v2"
+                label={
+                  <>
+                    v2
+                    <VersionLegacyTag />
+                  </>
+                }
+                active={version === "v2"}
+                onSelect={setVersion}
+              />
               <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
             </div>
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
@@ -2446,7 +2465,7 @@ function PillButton<T extends string>({
   accent = "ink",
 }: {
   value: T;
-  label: string;
+  label: ReactNode;
   active: boolean;
   onSelect: (value: T) => void;
   accent?: PillAccent;
@@ -2473,11 +2492,12 @@ function PillButton<T extends string>({
   );
 }
 
-// Quiet "legacy" caption between the current (v2.1) pill and the older v2 / v1
-// pills, so the version switch reads as "current · legacy" without shouting.
+// Quiet "legacy" caption that rides inside the v2 pill, just right of the "v2"
+// label, so the version reads "v2 legacy". Uses opacity (not a fixed grey) so it
+// stays legible whether the pill is active (dark fill) or idle.
 function VersionLegacyTag() {
   return (
-    <span className="select-none px-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[#9c9a93] dark:text-[#6c6a61]">
+    <span className="ml-1 select-none font-mono text-[9px] font-medium uppercase tracking-[0.12em] opacity-60">
       legacy
     </span>
   );
