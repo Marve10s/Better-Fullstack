@@ -7205,7 +7205,7 @@ export default defineConfig({
     "@snapshot-hono-apollo-server/auth": "workspace:*",
     "@snapshot-hono-apollo-server/db": "workspace:*",
     "@apollo/server": "^5.5.1",
-    "graphql": "^17.0.1",
+    "graphql": "^16.11.0",
     "better-auth": "catalog:",
     "hono": "catalog:"
   }

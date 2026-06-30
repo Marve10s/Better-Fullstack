@@ -1,6 +1,6 @@
 # Rust Ecosystem Expansion
 
-Current state: 3 web frameworks (axum, actix-web, rocket), 2 WASM frontends (leptos, dioxus), 3 ORMs (sea-orm, sqlx, diesel), 2 API layers (tonic, async-graphql), 2 CLI tools (clap, ratatui), expanded core libraries, 2 logging options, 2 error handling options, 2 caching options, and OAuth2 auth.
+Current state: 3 web frameworks (axum, actix-web, rocket), 2 WASM frontends (leptos, dioxus), 3 ORMs (sea-orm, sqlx, diesel), 2 API layers (tonic, async-graphql), 2 CLI tools (clap, ratatui), expanded core libraries, logging, error handling, caching, auth, realtime, message queue, observability, and templating categories.
 
 Goal: bring Rust to feature parity with TypeScript's depth across all backend categories.
 
@@ -62,7 +62,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 ## Auth (new category)
 
 - [x] Add `oauth2` crate ✅ — complete OAuth 2.0 (RFC 6749), async/sync, PKCE support. The standard for OAuth in Rust.
-- [ ] Add `torii-rs` — modern auth framework: OAuth/OIDC social login, passkeys/WebAuthn, magic links. Multiple storage backends (SQLite, Postgres, MySQL).
+- [x] Add `torii-rs` ✅ — modern auth framework path exposed as `torii`.
 
 ### Implementation
 - New schema: `RustAuthSchema = z.enum(["oauth2", "torii", "none"])`
@@ -84,29 +84,29 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Message Queues (new category)
 
-- [ ] Add `lapin` — RabbitMQ client for Rust. Async, well-maintained. Standard for AMQP.
+- [x] Add `lapin` ✅ — RabbitMQ client for Rust. Async, well-maintained. Standard for AMQP.
 - [ ] Add `rdkafka` — Rust wrapper for librdkafka (Apache Kafka). Production-grade event streaming.
 
 ### Implementation
-- New schema: `RustMessageQueueSchema = z.enum(["rabbitmq", "kafka", "none"])`
+- Current schema: `RustMessageQueueSchema = z.enum(["lapin", "none"])`
 - Generate queue consumer/producer scaffolding
 
 ---
 
 ## Template Engines (new category)
 
-- [ ] Add `askama` — compile-time template engine (Jinja-based). Type-safe, fastest performance.
-- [ ] Add `tera` — runtime template engine (Jinja2/Django-inspired). Dynamic template loading.
+- [x] Add `askama` ✅ — compile-time template engine.
+- [x] Add `tera` ✅ — runtime template engine.
 
 ### Implementation
-- New schema: `RustTemplateEngineSchema = z.enum(["askama", "tera", "none"])`
+- Current schema: `RustTemplatingSchema = z.enum(["askama", "tera", "none"])`
 - Generate template directory and example templates
 
 ---
 
 ## WebSocket / Realtime (new category)
 
-- [ ] Add `tokio-tungstenite` — standard async WebSocket client/server for Rust.
+- [x] Add `tokio-tungstenite` ✅ — standard async WebSocket client/server for Rust.
 
 ### Implementation
 - Add as optional feature in web framework templates
@@ -116,7 +116,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Observability (new category)
 
-- [ ] Add `opentelemetry-rust` — official OpenTelemetry SDK. Traces, metrics, logs. OTLP export.
+- [x] Add `opentelemetry-rust` ✅ — official OpenTelemetry SDK. Traces, metrics, logs. OTLP export.
 
 ### Implementation
 - Integrate with `tracing` via `tracing-opentelemetry`
@@ -126,11 +126,7 @@ Goal: bring Rust to feature parity with TypeScript's depth across all backend ca
 
 ## Priority Order
 
-1. **anyhow + thiserror** — every Rust project needs error handling (quick win)
-2. **tracing** — every Rust project needs logging (quick win)
-3. **diesel** — most requested ORM alternative
-4. **rocket** + **loco** — framework diversity
-5. **oauth2** + **torii-rs** — auth is essential for real apps
-6. **moka** + **redis-rs** — caching
-7. **opentelemetry-rust** — observability
-8. Remaining categories
+1. **Loco or Poem** — decide whether either framework deserves first-class support beside Axum/Actix/Rocket.
+2. **Kafka (`rdkafka`)** — remaining event-streaming candidate after RabbitMQ/Lapin.
+3. **Generated-project checks** — expand `cargo check`/tests over richer Rust option combinations.
+4. **Template depth pass** — verify shipped Torii/Lapin/Askama/Tera/OTel choices include meaningful generated usage and docs.

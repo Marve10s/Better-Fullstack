@@ -46,8 +46,24 @@ export type BenchmarkSpec = {
   id: string;
   title: string;
   lane: "core" | "extended";
-  family: "typescript" | "rust" | "python" | "go" | "dotnet" | "multi-ecosystem";
-  supportedByBetterFullstack: true;
+  family:
+    | "typescript"
+    | "rust"
+    | "python"
+    | "go"
+    | "dotnet"
+    | "java"
+    | "elixir"
+    | "react-native"
+    | "multi-ecosystem";
+  /** Whether Better-Fullstack can scaffold this stack. `false` marks a FRONTIER
+   * spec (beyond BFS's option space): it defaults to prompt-only so the agent is
+   * never scored as an MCP/CLI failure for a stack the tool cannot produce. */
+  supportedByBetterFullstack: boolean;
+  /** Creation paths this spec runs on, intersected with the run's `--paths`.
+   * Defaults to all requested paths for a supported spec, or `["prompt"]` for a
+   * frontier spec. Set explicitly to pin a spec to a subset. */
+  paths?: readonly CreationPath[];
   requirements: readonly string[];
   naturalPrompt: string;
   rightLibraryNotes: readonly string[];
@@ -64,7 +80,7 @@ export type BenchmarkSpec = {
   acceptanceSets?: Record<string, readonly string[]>;
   validationProfile: {
     packageManager?: "bun";
-    native?: readonly ("cargo" | "dotnet" | "go" | "python")[];
+    native?: readonly ("cargo" | "dotnet" | "go" | "python" | "java" | "elixir")[];
     qualityGate?: boolean;
     doctorCheck?: boolean;
     routeCheckCandidate?: boolean;
@@ -203,7 +219,14 @@ type SummaryAggregate = {
   scoredRuns: number;
   inconclusiveCount: number;
   passCount: number;
+  /** Headline pass rate = CORE pass (install/build/typecheck/native compile).
+   * Advisory polish checks do not affect it. */
   passRate: number;
+  /** Stricter advisory tier (core + lint/format/test/doctor/route green).
+   * A separate signal — it never demotes passRate, so a formatting failure is a
+   * quality metric, not a brokenness verdict. */
+  qualityPassCount: number;
+  qualityPassRate: number;
   passCi95: { low: number; high: number };
   /** True when scoredRuns >= MIN_CI_RUNS, so the Wilson interval is worth showing. */
   ciReportable: boolean;
@@ -286,7 +309,33 @@ async function resolveBfVersion() {
 }
 const DEFAULT_EFFORTS: readonly Effort[] = ["default"];
 const DEFAULT_PATHS: readonly CreationPath[] = ["mcp", "cli", "prompt"];
-const CLAUDE_TIMEOUT_MS = 15 * 60_000;
+
+// The creation paths a spec actually runs on, always intersected with the run's
+// requested `--paths`. A supported spec runs on every requested path; a frontier
+// spec (supportedByBetterFullstack === false) defaults to prompt-only so it is
+// never scored as an MCP/CLI failure for a stack BFS cannot produce; an explicit
+// `spec.paths` pins a custom subset.
+function resolveSpecPaths(
+  spec: BenchmarkSpec,
+  requested: readonly CreationPath[],
+): CreationPath[] {
+  const allowed: readonly CreationPath[] =
+    spec.paths ?? (spec.supportedByBetterFullstack === false ? ["prompt"] : requested);
+  return requested.filter((path) => allowed.includes(path));
+}
+
+// Generous generation budget: Opus 4.8 and other long-horizon agents can run
+// many minutes on a hard scaffold task. A tight timeout cuts thorough runs off
+// mid-work AND loses their cost/token accounting (the result JSON only lands on
+// a clean exit) — so a longer-working agent must not be silently penalised.
+// 90 min: at MAX reasoning effort the heaviest specs blow past even 60 min while
+// still actively reasoning — ts-svelte-edge-orpc (a constraint-cascade spec) was
+// SIGTERM'd at exactly 60 min mid-thinking (10/10 wired, not stuck). classifyOutcome
+// scores a gen timeout as a real model-failure, so the ceiling must be generous
+// enough that only a genuinely stuck agent ever hits it. The $25/spec budget cap
+// is the real cost backstop. Note: this only takes effect for NEWLY spawned runs;
+// a run already in flight keeps the value it started with.
+const CLAUDE_TIMEOUT_MS = 90 * 60_000;
 const VALIDATION_TIMEOUT_MS = 10 * 60_000;
 const FAST_TIMEOUT_MS = 60_000;
 const QUEUE_POLL_MS = 5_000;
@@ -297,6 +346,18 @@ const CORE_SPEC_IDS = [
   "python-ingestion-api",
   "go-realtime-api",
   "multi-dotnet-ops",
+  // Expansion batch 1 (supported, all paths).
+  "ts-svelte-edge-orpc",
+  "dotnet-blazor-cqrs",
+  "multi-ts-go-grpc",
+  // Expansion batch 2 (new ecosystems, supported, all paths).
+  "java-spring-jooq-keycloak",
+  "elixir-broadway-absinthe",
+  // Expansion batch 3 (mobile + frontier). Frontier specs run prompt-only via
+  // spec.paths, but still live in the core suite.
+  "react-native-expo",
+  "frontier-polyglot-proto",
+  "frontier-effect-eventsourcing",
 ] as const;
 
 const AI_SEARCH_STACK = {
@@ -1083,6 +1144,570 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
     ],
     validationProfile: { packageManager: "bun" },
   },
+  {
+    id: "ts-svelte-edge-orpc",
+    title: "SvelteKit edge app on Cloudflare Workers with Hono + oRPC and D1",
+    lane: "core",
+    family: "typescript",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create a TypeScript monorepo for an edge-deployed app.",
+      "Use a SvelteKit web frontend styled with Tailwind.",
+      "Use a Hono backend running on the Cloudflare Workers runtime.",
+      "Use oRPC for the app API (tRPC is not compatible with a Svelte frontend).",
+      "Use SQLite via Cloudflare D1 with Drizzle as the ORM.",
+      "Use Better Auth for accounts and Valibot for validation.",
+      "Deploy both the web app and the server to Cloudflare.",
+      "Do not add payments, email, realtime, search, vector DB, jobs, CMS, file storage/upload, analytics, or i18n.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build an edge-first starter that runs on Cloudflare. It needs a Svelte web app, a lightweight server on the Workers runtime, a type-safe app API, an edge SQL database with a typed ORM, account auth, and validation. Pick libraries that actually run on Workers and deploy to Cloudflare.",
+    rightLibraryNotes: [
+      "oRPC is required for the API because tRPC does not support a Svelte frontend.",
+      "The Workers runtime requires the Hono backend.",
+      "Cloudflare D1 is required for the SQLite database, and Cloudflare for deploys.",
+      "Better Auth must use a Workers-compatible ORM (Drizzle).",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "typescript",
+      "--frontend", "svelte",
+      "--backend", "hono",
+      "--runtime", "workers",
+      "--api", "orpc",
+      "--database", "sqlite",
+      "--orm", "drizzle",
+      "--db-setup", "d1",
+      "--auth", "better-auth",
+      "--validation", "valibot",
+      "--css-framework", "tailwind",
+      "--ui-library", "none",
+      "--web-deploy", "cloudflare",
+      "--server-deploy", "cloudflare",
+      "--payments", "none",
+      "--email", "none",
+      "--file-upload", "none",
+      "--file-storage", "none",
+      "--logging", "none",
+      "--observability", "none",
+      "--feature-flags", "none",
+      "--analytics", "none",
+      "--effect", "none",
+      "--state-management", "none",
+      "--forms", "none",
+      "--testing", "none",
+      "--ai", "none",
+      "--realtime", "none",
+      "--job-queue", "none",
+      "--animation", "none",
+      "--cms", "none",
+      "--caching", "none",
+      "--rate-limit", "none",
+      "--i18n", "none",
+      "--search", "none",
+      "--vector-db", "none",
+      "--addons", "turborepo",
+      "--examples", "none",
+      "--ai-docs", "none",
+      "--package-manager", "bun",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "typescript",
+      frontend: ["svelte"],
+      backend: "hono",
+      runtime: "workers",
+      api: "orpc",
+      database: "sqlite",
+      orm: "drizzle",
+      dbSetup: "d1",
+      auth: "better-auth",
+      validation: "valibot",
+      cssFramework: "tailwind",
+      webDeploy: "cloudflare",
+      serverDeploy: "cloudflare",
+    },
+    expectedAddons: ["turborepo"],
+    strictMarkers: [
+      { id: "frontend:svelte", deps: ["@sveltejs/kit"] },
+      { id: "backend:hono", deps: ["hono"] },
+      { id: "api:orpc", deps: ["@orpc/server"], source: ["@orpc/"] },
+      { id: "runtime:workers", deps: ["wrangler"] },
+      { id: "orm:drizzle", deps: ["drizzle-orm"], source: ["drizzle-orm"] },
+      { id: "auth:better-auth", deps: ["better-auth"], source: ["better-auth"] },
+      { id: "validation:valibot", deps: ["valibot"] },
+      { id: "css:tailwind", deps: ["tailwindcss"] },
+      { id: "forbidden:trpc", forbiddenDeps: ["@trpc/server", "@trpc/client"] },
+      { id: "forbidden:next", forbiddenDeps: ["next"] },
+    ],
+    validationProfile: { packageManager: "bun" },
+  },
+  {
+    id: "dotnet-blazor-cqrs",
+    title: ".NET Blazor app with Dapper, Duende IdentityServer, and HotChocolate GraphQL",
+    lane: "core",
+    family: "dotnet",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create a .NET project using ASP.NET Blazor (not Minimal API or MVC).",
+      "Use Dapper for data access (not EF Core).",
+      "Use Duende IdentityServer for auth (not ASP.NET Identity).",
+      "Use HotChocolate for a GraphQL API (not Minimal API or gRPC).",
+      "Use PostgreSQL.",
+      "Use NUnit with Moq and Testcontainers for .NET (not xUnit).",
+      "Use Quartz.NET for background jobs (not Hangfire).",
+      "Use SignalR for realtime.",
+      "Use OpenTelemetry, NLog, and health checks for observability (not Serilog).",
+      "Use FluentValidation, Redis caching, and Docker deploy output.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a .NET starter for an internal operations console. It needs a C# web UI, lightweight data access, a dedicated identity server, a GraphQL API, Postgres, background scheduling, realtime updates, validation, caching, observability, and container output. Choose the right .NET libraries rather than the framework defaults.",
+    rightLibraryNotes: [
+      "Blazor is required for the web framework.",
+      "Dapper is required for data access (not EF Core).",
+      "Duende IdentityServer is required for auth (not ASP.NET Identity).",
+      "HotChocolate GraphQL is required (not Minimal API), with NUnit and Quartz.NET.",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "dotnet",
+      "--database", "postgres",
+      "--dotnet-web-framework", "aspnet-blazor",
+      "--dotnet-orm", "dapper",
+      "--dotnet-auth", "duende-identityserver",
+      "--dotnet-api", "graphql-hotchocolate",
+      "--dotnet-testing", "nunit", "moq", "testcontainers-dotnet",
+      "--dotnet-job-queue", "quartz-net",
+      "--dotnet-realtime", "signalr",
+      "--dotnet-observability", "opentelemetry-dotnet", "nlog", "health-checks",
+      "--dotnet-validation", "fluentvalidation",
+      "--dotnet-caching", "redis",
+      "--dotnet-deploy", "docker",
+      "--auth", "none",
+      "--email", "none",
+      "--observability", "none",
+      "--caching", "none",
+      "--search", "none",
+      "--ai-docs", "claude-md",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "dotnet",
+      database: "postgres",
+      dotnetWebFramework: "aspnet-blazor",
+      dotnetOrm: "dapper",
+      dotnetAuth: "duende-identityserver",
+      dotnetApi: "graphql-hotchocolate",
+      dotnetTesting: ["nunit", "moq", "testcontainers-dotnet"],
+      dotnetJobQueue: "quartz-net",
+      dotnetRealtime: "signalr",
+      dotnetObservability: ["opentelemetry-dotnet", "nlog", "health-checks"],
+      dotnetValidation: "fluentvalidation",
+      dotnetCaching: "redis",
+      dotnetDeploy: "docker",
+    },
+    strictMarkers: [
+      { id: "dotnet:blazor", text: ["RazorComponents"] },
+      { id: "orm:dapper", text: ["Dapper"] },
+      { id: "auth:duende", text: ["Duende"] },
+      { id: "api:hotchocolate", text: ["HotChocolate"] },
+      { id: "testing:nunit", text: ["NUnit"] },
+      { id: "testing:moq", text: ["Moq"] },
+      { id: "testing:testcontainers", text: ["Testcontainers"] },
+      { id: "jobs:quartz", text: ["Quartz"] },
+      { id: "realtime:signalr", text: ["SignalR"] },
+      { id: "validation:fluentvalidation", text: ["FluentValidation"] },
+      { id: "observability:nlog", text: ["NLog"] },
+      { id: "forbidden:hangfire", forbiddenText: ["Hangfire"] },
+      { id: "forbidden:serilog", forbiddenText: ["Serilog"] },
+    ],
+    validationProfile: { native: ["dotnet"] },
+  },
+  {
+    id: "multi-ts-go-grpc",
+    title: "Multi-ecosystem app: Nuxt (Vue) frontend with a Go Chi + gRPC backend",
+    lane: "core",
+    family: "multi-ecosystem",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create one multi-ecosystem project graph.",
+      "Use a Nuxt (Vue) TypeScript frontend with Tailwind.",
+      "Use a Go backend with the Chi router (not Gin/Echo/Fiber).",
+      "Use sqlc for data access (not GORM or Ent).",
+      "Use gRPC-Go for typed service contracts.",
+      "Use goth for auth, Centrifuge for realtime, Watermill for messaging, Ristretto for caching, koanf for config, and zerolog for logging.",
+      "Use OpenTelemetry and Testify + GoMock.",
+      "Use PostgreSQL as the shared database.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a multi-ecosystem starter: a Vue/Nuxt web frontend and a Go backend. The Go side needs a lightweight router, type-safe SQL, typed gRPC contracts, social auth, scalable realtime, a messaging abstraction, an in-process cache, config management, structured logging, tracing, and test doubles. Use the project graph instead of one ecosystem.",
+    rightLibraryNotes: [
+      "The frontend must be TypeScript Nuxt (Vue).",
+      "The Go backend must use Chi, sqlc, and gRPC-Go.",
+      "Centrifuge and Watermill are required for realtime and messaging.",
+      "Ristretto, koanf, and zerolog are required (not Redis, Viper, zap).",
+    ],
+    canonicalFlags: [
+      "--part", "frontend:typescript:nuxt",
+      "--part", "frontend.css:typescript:tailwind",
+      "--part", "backend:go:chi",
+      "--part", "backend.orm:go:sqlc",
+      "--part", "backend.api:go:grpc-go",
+      "--part", "backend.auth:go:goth",
+      "--part", "backend.logging:go:zerolog",
+      "--part", "backend.realtime:go:centrifuge",
+      "--part", "backend.jobQueue:go:watermill",
+      "--part", "backend.caching:go:ristretto",
+      "--part", "backend.config:go:koanf",
+      "--part", "backend.observability:go:opentelemetry",
+      "--part", "backend.testing:go:testify",
+      "--part", "backend.testing:go:gomock",
+      "--part", "database:universal:postgres",
+      "--addons", "turborepo",
+      "--ai-docs", "none",
+      "--package-manager", "bun",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedParts: [
+      "frontend:typescript:nuxt",
+      "frontend.css:typescript:tailwind",
+      "backend:go:chi",
+      "backend.orm:go:sqlc",
+      "backend.api:go:grpc-go",
+      "backend.auth:go:goth",
+      "backend.logging:go:zerolog",
+      "backend.realtime:go:centrifuge",
+      "backend.jobQueue:go:watermill",
+      "backend.caching:go:ristretto",
+      "backend.config:go:koanf",
+      "backend.observability:go:opentelemetry",
+      "backend.testing:go:testify",
+      "backend.testing:go:gomock",
+      "database:universal:postgres",
+    ],
+    expectedAddons: ["turborepo"],
+    strictMarkers: [
+      { id: "frontend:nuxt", deps: ["nuxt"] },
+      { id: "frontend:tailwind", deps: ["tailwindcss"] },
+      { id: "backend:chi", text: ["github.com/go-chi/chi"] },
+      { id: "orm:sqlc", files: ["apps/server/sqlc.yaml"] },
+      { id: "api:grpc-go", text: ["google.golang.org/grpc"] },
+      { id: "auth:goth", text: ["github.com/markbates/goth"] },
+      { id: "realtime:centrifuge", text: ["github.com/centrifugal/centrifuge"] },
+      { id: "queue:watermill", text: ["github.com/ThreeDotsLabs/watermill"] },
+      { id: "caching:ristretto", text: ["github.com/dgraph-io/ristretto"] },
+      { id: "config:koanf", text: ["github.com/knadh/koanf"] },
+      { id: "logging:zerolog", text: ["github.com/rs/zerolog"] },
+      { id: "observability:opentelemetry", text: ["go.opentelemetry.io/otel"] },
+      { id: "testing:testify+gomock", text: ["github.com/stretchr/testify", "go.uber.org/mock"] },
+      { id: "forbidden:gin", forbiddenText: ["github.com/gin-gonic/gin"] },
+      { id: "forbidden:gorm", forbiddenText: ["gorm.io/gorm"] },
+      { id: "forbidden:viper", forbiddenText: ["github.com/spf13/viper"] },
+    ],
+    validationProfile: { packageManager: "bun", native: ["go"] },
+  },
+  {
+    id: "java-spring-jooq-keycloak",
+    title: "Java Spring Boot API with jOOQ, Keycloak, GraphQL, and property/architecture tests",
+    lane: "core",
+    family: "java",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create a Java project using Spring Boot with the Maven build tool.",
+      "Use jOOQ for data access (NOT Spring Data JPA).",
+      "Use Keycloak for auth (NOT Spring Security).",
+      "Use Spring for GraphQL for the API and Logback for logging.",
+      "Use PostgreSQL.",
+      "Include MapStruct, Resilience4j, Spring for Kafka, Spring Batch, Micrometer Prometheus, Caffeine, springdoc-openapi, OpenTelemetry, Spring Validation, and Spring Actuator.",
+      "Include JUnit 5, Mockito, Testcontainers, AssertJ, REST Assured, WireMock, Awaitility, ArchUnit, and jqwik for testing.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a Java Spring Boot starter for an event-driven service. It needs Postgres data access with a type-safe SQL layer, a dedicated identity server for auth, a GraphQL API, fault tolerance, event streaming, batch jobs, metrics, mapping, API docs, and tracing — plus a serious test stack with mocks, containers, HTTP stubs, architecture rules, and property-based tests. Choose the right Java libraries rather than the Spring defaults.",
+    rightLibraryNotes: [
+      "jOOQ is required for data access; Spring Data JPA is not used.",
+      "Keycloak is required for auth; Spring Security is not the chosen provider.",
+      "Spring for GraphQL is required for the API.",
+      "ArchUnit and jqwik are required (architecture + property-based testing).",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "java",
+      "--database", "postgres",
+      "--java-web-framework", "spring-boot",
+      "--java-build-tool", "maven",
+      "--java-orm", "jooq",
+      "--java-auth", "keycloak",
+      "--java-api", "spring-graphql",
+      "--java-logging", "logback",
+      "--java-libraries",
+      "mapstruct", "resilience4j", "spring-kafka", "spring-batch", "micrometer-prometheus",
+      "caffeine", "springdoc-openapi", "opentelemetry-java", "spring-validation", "spring-actuator",
+      "--java-testing-libraries",
+      "junit5", "mockito", "testcontainers", "assertj", "rest-assured", "wiremock", "awaitility",
+      "archunit", "jqwik",
+      "--auth", "none",
+      "--email", "none",
+      "--observability", "none",
+      "--caching", "none",
+      "--search", "none",
+      "--ai-docs", "claude-md",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "java",
+      database: "postgres",
+      javaWebFramework: "spring-boot",
+      javaBuildTool: "maven",
+      javaOrm: "jooq",
+      javaAuth: "keycloak",
+      javaApi: "spring-graphql",
+      javaLogging: "logback",
+      javaLibraries: [
+        "mapstruct", "resilience4j", "spring-kafka", "spring-batch", "micrometer-prometheus",
+        "caffeine", "springdoc-openapi", "opentelemetry-java", "spring-validation", "spring-actuator",
+      ],
+      javaTestingLibraries: [
+        "junit5", "mockito", "testcontainers", "assertj", "rest-assured", "wiremock", "awaitility",
+        "archunit", "jqwik",
+      ],
+    },
+    strictMarkers: [
+      { id: "backend:spring-boot", text: ["spring-boot-starter-parent"] },
+      { id: "build:maven", files: ["pom.xml"] },
+      { id: "orm:jooq", text: ["jooq"] },
+      { id: "auth:keycloak", text: ["keycloak"] },
+      { id: "api:spring-graphql", text: ["spring-boot-starter-graphql"] },
+      { id: "lib:mapstruct", text: ["mapstruct"] },
+      { id: "lib:resilience4j", text: ["resilience4j"] },
+      { id: "lib:spring-kafka", text: ["spring-kafka"] },
+      { id: "lib:spring-batch", text: ["spring-boot-starter-batch"] },
+      { id: "lib:micrometer-prometheus", text: ["micrometer-registry-prometheus"] },
+      { id: "testing:archunit", text: ["archunit"] },
+      { id: "testing:jqwik", text: ["jqwik"] },
+      { id: "testing:testcontainers", text: ["testcontainers"] },
+      { id: "forbidden:jpa", forbiddenText: ["spring-boot-starter-data-jpa"] },
+    ],
+    validationProfile: { native: ["java"] },
+  },
+  {
+    id: "elixir-broadway-absinthe",
+    title: "Elixir Phoenix LiveView app with Absinthe, Broadway, Oban, and Nx",
+    lane: "core",
+    family: "elixir",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create an Elixir project using Phoenix LiveView (not plain Phoenix).",
+      "Use Ecto SQL with PostgreSQL and Ecto changesets for validation.",
+      "Use Guardian for auth (not phx.gen.auth or Ueberauth).",
+      "Use Absinthe for a GraphQL API.",
+      "Include Broadway and Nx as libraries.",
+      "Use Phoenix Presence for realtime, Oban for jobs, Finch as the HTTP client, Jason for JSON, Swoosh for email, Nebulex for caching, and PromEx for observability.",
+      "Use Wallaby for testing, Dialyxir for code quality, and Fly for deploy output.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build an Elixir Phoenix starter for a realtime data-ingestion app. It needs server-rendered live views, Postgres via Ecto, a dedicated JWT auth library, a GraphQL API, data pipelines, numerical/ML support, presence tracking, durable background jobs, a pooled HTTP client, caching, Prometheus metrics, browser-based tests, static analysis, and a deploy target. Pick the right BEAM libraries rather than the framework defaults.",
+    rightLibraryNotes: [
+      "Phoenix LiveView is required (not plain Phoenix).",
+      "Guardian is required for auth; Absinthe is required for the GraphQL API.",
+      "Broadway and Oban are required for pipelines and jobs.",
+      "Presence, Finch, Nebulex, PromEx, Wallaby, and Dialyxir are the required choices.",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "elixir",
+      "--database", "postgres",
+      "--elixir-web-framework", "phoenix-live-view",
+      "--elixir-orm", "ecto-sql",
+      "--elixir-auth", "guardian",
+      "--elixir-api", "absinthe",
+      "--elixir-libraries", "broadway", "nx",
+      "--elixir-realtime", "presence",
+      "--elixir-jobs", "oban",
+      "--elixir-validation", "ecto-changesets",
+      "--elixir-http", "finch",
+      "--elixir-json", "jason",
+      "--elixir-email", "swoosh",
+      "--elixir-caching", "nebulex",
+      "--elixir-observability", "prom_ex",
+      "--elixir-testing", "wallaby",
+      "--elixir-quality", "dialyxir",
+      "--elixir-deploy", "fly",
+      "--auth", "none",
+      "--email", "none",
+      "--observability", "none",
+      "--caching", "none",
+      "--search", "none",
+      "--ai-docs", "claude-md",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "elixir",
+      database: "postgres",
+      elixirWebFramework: "phoenix-live-view",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "guardian",
+      elixirApi: "absinthe",
+      elixirLibraries: ["broadway", "nx"],
+      elixirRealtime: "presence",
+      elixirJobs: "oban",
+      elixirValidation: "ecto-changesets",
+      elixirHttp: "finch",
+      elixirJson: "jason",
+      elixirEmail: "swoosh",
+      elixirCaching: "nebulex",
+      elixirObservability: "prom_ex",
+      elixirTesting: "wallaby",
+      elixirQuality: "dialyxir",
+      elixirDeploy: "fly",
+    },
+    strictMarkers: [
+      { id: "web:phoenix-live-view", text: ["phoenix_live_view"] },
+      { id: "orm:ecto-sql", text: ["ecto_sql"] },
+      { id: "auth:guardian", text: [":guardian"] },
+      { id: "api:absinthe", text: ["absinthe"] },
+      { id: "lib:broadway", text: ["broadway"] },
+      { id: "lib:nx", text: ["{:nx,"] },
+      { id: "jobs:oban", text: [":oban"] },
+      { id: "http:finch", text: [":finch"] },
+      { id: "caching:nebulex", text: ["nebulex"] },
+      { id: "observability:prom_ex", text: ["prom_ex"] },
+      { id: "testing:wallaby", text: ["wallaby"] },
+      { id: "quality:dialyxir", text: ["dialyxir"] },
+      { id: "forbidden:credo", forbiddenText: [":credo"] },
+    ],
+    validationProfile: { native: ["elixir"] },
+  },
+  {
+    id: "react-native-expo",
+    title: "React Native Expo app with Expo Router, Uniwind, MMKV, and Maestro + RNTL",
+    lane: "core",
+    family: "react-native",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create a React Native (Expo) mobile app.",
+      "Use Expo Router for navigation and Uniwind (Tailwind-style) styling.",
+      "Use MMKV for on-device storage.",
+      "Use Maestro plus React Native Testing Library for testing.",
+      "Use Expo Notifications for push, Expo Updates for OTA, and Expo Linking for deep linking.",
+      "This is a mobile-only project: no backend, database, or auth.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a React Native mobile starter on Expo. It needs file-based navigation, Tailwind-style styling, fast on-device key-value storage, push notifications, over-the-air updates, deep linking, and both end-to-end and unit testing. It is a standalone mobile app with no server, database, or accounts.",
+    rightLibraryNotes: [
+      "Expo Router is required for navigation.",
+      "Uniwind is the required styling approach (native-uniwind frontend).",
+      "MMKV is required for storage; Maestro + RNTL for testing.",
+      "Expo Notifications / Updates / Linking are the required push / OTA / deep-linking choices.",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "react-native",
+      "--frontend", "native-uniwind",
+      "--auth", "none",
+      "--mobile-navigation", "expo-router",
+      "--mobile-ui", "uniwind",
+      "--mobile-storage", "mmkv",
+      "--mobile-testing", "maestro-react-native-testing-library",
+      "--mobile-push", "expo-notifications",
+      "--mobile-ota", "expo-updates",
+      "--mobile-deep-linking", "expo-linking",
+      "--ai-docs", "claude-md",
+      "--package-manager", "bun",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "react-native",
+      frontend: ["native-uniwind"],
+      mobileNavigation: "expo-router",
+      mobileUI: "uniwind",
+      mobileStorage: "mmkv",
+      mobileTesting: "maestro-react-native-testing-library",
+      mobilePush: "expo-notifications",
+      mobileOTA: "expo-updates",
+      mobileDeepLinking: "expo-linking",
+    },
+    strictMarkers: [
+      { id: "nav:expo-router", deps: ["expo-router"] },
+      { id: "styling:uniwind", deps: ["uniwind"] },
+      { id: "storage:mmkv", deps: ["react-native-mmkv"] },
+      { id: "push:expo-notifications", deps: ["expo-notifications"] },
+      { id: "ota:expo-updates", deps: ["expo-updates"] },
+      { id: "deep-linking:expo-linking", deps: ["expo-linking"] },
+      { id: "testing:rntl", deps: ["@testing-library/react-native"] },
+      { id: "testing:maestro", files: ["apps/native/.maestro/home.yaml"] },
+    ],
+    validationProfile: { packageManager: "bun" },
+  },
+  {
+    id: "frontier-polyglot-proto",
+    title: "Frontier: polyglot monorepo — shared protobuf across a Rust gRPC service, a Go gateway, and a TS client",
+    lane: "core",
+    family: "multi-ecosystem",
+    // Beyond Better-Fullstack's option space (its graph allows one backend), so
+    // this runs prompt-only — the agent builds it from scratch with no scaffolder.
+    supportedByBetterFullstack: false,
+    paths: ["prompt"],
+    requirements: [
+      "Create one monorepo with a single shared Protocol Buffers (proto3) service contract.",
+      "Implement the core service in Rust using Tonic for gRPC.",
+      "Implement an edge gateway in Go that speaks gRPC to the Rust service and exposes HTTP/JSON.",
+      "Implement a TypeScript web client generated from the same proto contract.",
+      "Wire codegen so all three consume the one .proto definition; provide build scripts per package.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a polyglot monorepo around a single service contract: a Rust gRPC core service, a Go gateway that bridges gRPC to HTTP/JSON, and a TypeScript client — all generated from one shared Protocol Buffers definition. Set up the codegen and per-package builds so the three stay in sync.",
+    rightLibraryNotes: [
+      "A single shared proto3 contract must drive all three languages.",
+      "Rust uses Tonic for the gRPC service; Go uses grpc-go for the gateway.",
+      "The TypeScript client must be generated from the same proto.",
+    ],
+    canonicalFlags: [],
+    strictMarkers: [
+      // Frontier markers are loose, single-token diagnostics (text arrays AND
+      // together, so multi-token would over-constrain a from-scratch project).
+      { id: "proto:proto3", text: ["proto3"] },
+      { id: "rust:tonic", text: ["tonic"] },
+      { id: "go:grpc", text: ["google.golang.org/grpc"] },
+      { id: "ts:protobuf", text: ["protobuf"] },
+    ],
+    validationProfile: { packageManager: "bun", native: ["cargo", "go"] },
+  },
+  {
+    id: "frontier-effect-eventsourcing",
+    title: "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
+    lane: "core",
+    family: "typescript",
+    // BFS offers Effect and tRPC as options but cannot scaffold this architecture,
+    // so it runs prompt-only — a pure test of the model's engineering.
+    supportedByBetterFullstack: false,
+    paths: ["prompt"],
+    requirements: [
+      "Create a TypeScript backend built on the Effect ecosystem (effect runtime, services, layers).",
+      "Implement event-sourcing with CQRS: an append-only event store, write-side command handlers, and read-side projections.",
+      "Expose the API via tRPC, including a subscription over WebSockets for the read model.",
+      "Include an outbox pattern for reliable event publication.",
+      "Provide build and type-check scripts.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a TypeScript backend on the Effect ecosystem that uses event sourcing with CQRS — an append-only event store, command handlers on the write side, projections on the read side, and an outbox for reliable publishing. Expose it through tRPC, including a WebSocket subscription that streams read-model updates.",
+    rightLibraryNotes: [
+      "The service layer must be built on Effect.",
+      "Use event-sourcing + CQRS (event store, projections, outbox), not plain CRUD.",
+      "Expose tRPC with a WebSocket subscription for the read model.",
+    ],
+    canonicalFlags: [],
+    strictMarkers: [
+      // Loose single-token diagnostics (text arrays AND together).
+      { id: "runtime:effect", deps: ["effect"] },
+      { id: "api:trpc", deps: ["@trpc/server"] },
+      { id: "ws:subscription", text: ["subscription"] },
+      { id: "pattern:event-sourcing", text: ["projection"] },
+    ],
+    validationProfile: { packageManager: "bun" },
+  },
 ];
 
 export function parseList<T extends string>(
@@ -1274,8 +1899,15 @@ async function runScaffbenchUnlocked(options: ScaffbenchOptions, log = console.l
 
   if (!options.validateExisting) {
     for (const spec of specs) {
+      const specPaths = resolveSpecPaths(spec, options.paths);
+      const skippedPaths = options.paths.filter((p) => !specPaths.includes(p));
+      if (skippedPaths.length > 0) {
+        log(
+          `PATHS ${spec.id}: runs ${specPaths.join(", ") || "(none)"} — skipping ${skippedPaths.join(", ")} (frontier/prompt-only or pinned spec.paths)`,
+        );
+      }
       for (const effort of options.efforts) {
-        for (const pathMode of options.paths) {
+        for (const pathMode of specPaths) {
           for (let trial = 1; trial <= options.repeats; trial += 1) {
             const projectName = buildProjectName(spec, pathMode, effort, trial, options.repeats);
             const id = buildRunId(spec, options.model, effort, pathMode, trial, options.repeats);
@@ -1397,7 +2029,10 @@ async function runScaffbenchUnlocked(options: ScaffbenchOptions, log = console.l
                 durationMs,
                 resultDurationMs: parsed?.duration_ms,
                 outputTokens: parsed?.usage?.output_tokens,
-                totalCostUsd: parsed?.total_cost_usd,
+                // Price Claude from token usage (the CLI reports $0 on a
+                // subscription / Max plan, which would make Claude look free);
+                // non-Claude providers fall back to their own reported cost.
+                totalCostUsd: claudeCostUsd(options.model, parsed?.usage) ?? parsed?.total_cost_usd,
                 sessionId: parsed?.session_id,
                 terminalReason: parsed?.terminal_reason,
               },
@@ -1930,6 +2565,68 @@ export function codexCostUsd(model: string, usage: CodexUsage): number | undefin
   );
 }
 
+// Published token pricing (USD per 1M tokens) for Claude models. The Claude Code
+// CLI reports total_cost_usd = 0 on subscription / Max-plan usage (no per-token
+// API billing), which makes Claude look like the cheapest, most "reliable" row
+// on the leaderboard purely because it shows as free. So we price Claude from
+// token usage ourselves — exactly as the Codex path does — to get an
+// API-equivalent cost comparable across vendors. Source: Anthropic API pricing,
+// 2026. Cache reads ≈ 0.1× input; cache writes (5-min TTL) ≈ 1.25× input.
+const CLAUDE_PRICING: Record<string, { input: number; output: number }> = {
+  "claude-fable-5": { input: 10, output: 50 },
+  "claude-opus-4-8": { input: 5, output: 25 },
+  "claude-opus-4-7": { input: 5, output: 25 },
+  "claude-opus-4-6": { input: 5, output: 25 },
+  "claude-opus-4-5": { input: 5, output: 25 },
+  "claude-sonnet-5": { input: 3, output: 15 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
+  "claude-haiku-4-5": { input: 1, output: 5 },
+  // Bare aliases the harness/CLI may pass through as the model string.
+  fable: { input: 10, output: 50 },
+  opus: { input: 5, output: 25 },
+  sonnet: { input: 3, output: 15 },
+  haiku: { input: 1, output: 5 },
+};
+
+function claudePricingFor(model: string) {
+  const key = model.toLowerCase();
+  if (CLAUDE_PRICING[key]) return CLAUDE_PRICING[key];
+  // Fall back to the longest matching family key (e.g. "claude-opus-4-8[1m]" or
+  // a dated suffix still prices as opus); prefer the most specific match.
+  const match = Object.keys(CLAUDE_PRICING)
+    .filter((k) => key.includes(k))
+    .sort((a, b) => b.length - a.length)[0];
+  return match ? CLAUDE_PRICING[match] : undefined;
+}
+
+type ClaudeUsage = {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+};
+
+/** Estimated API-equivalent USD cost from Claude token usage × published
+ * pricing. Returns undefined when the model isn't a priced Claude model, so
+ * non-Claude providers (Codex/opencode) keep their own reported cost. Cache
+ * reads are priced at 0.1× input, cache writes at 1.25× input. */
+export function claudeCostUsd(model: string, usage: ClaudeUsage | undefined): number | undefined {
+  if (!usage) return undefined;
+  const price = claudePricingFor(model);
+  if (!price) return undefined;
+  const input = usage.input_tokens ?? 0;
+  const output = usage.output_tokens ?? 0;
+  const cacheRead = usage.cache_read_input_tokens ?? 0;
+  const cacheWrite = usage.cache_creation_input_tokens ?? 0;
+  return (
+    (input * price.input +
+      output * price.output +
+      cacheRead * price.input * 0.1 +
+      cacheWrite * price.input * 1.25) /
+    1_000_000
+  );
+}
+
 // Codex analogue of parseClaudeResult. The JSONL stream carries token usage on
 // the final `turn.completed` event and the session on `thread.started`. Codex
 // reports no USD cost, so we estimate it from token usage × CODEX_PRICING (pass
@@ -2122,6 +2819,17 @@ export async function validateProject(
   }
   if (nativeProfiles.has("dotnet") || (await hasDotnetProject(projectDir))) {
     Object.assign(steps, await validateDotnetProject(projectDir, options));
+  }
+  // Java/Elixir run ONLY on an explicit native profile — NOT file autodetect.
+  // A React Native app ships an Android `build.gradle` (apps/native/android), and
+  // a loose gradle autodetect would wrongly run `gradlew compileJava` on a
+  // TS/bun project and clobber its bun validation. Every Java/Elixir spec
+  // declares validationProfile.native, so the explicit gate is sufficient.
+  if (nativeProfiles.has("java")) {
+    Object.assign(steps, await validateJavaProject(projectDir, options));
+  }
+  if (nativeProfiles.has("elixir")) {
+    Object.assign(steps, await validateElixirProject(projectDir, options));
   }
 
   const validation: ProjectValidation = {
@@ -2552,6 +3260,74 @@ async function validateDotnetProject(projectDir: string, options: ScaffbenchOpti
   return steps;
 }
 
+// Locate the build root for a non-TS ecosystem by its manifest file. Prefers a
+// backend under apps/server (multi-ecosystem graph layout), else the shallowest
+// match. Returns null when no manifest is present (the validator then no-ops).
+async function findBuildRoot(
+  projectDir: string,
+  manifests: readonly string[],
+): Promise<string | null> {
+  const roots = new Set<string>();
+  await walk(projectDir, async (filePath) => {
+    if (manifests.includes(path.basename(filePath))) roots.add(path.dirname(filePath));
+  });
+  if (roots.size === 0) return null;
+  const list = [...roots];
+  return (
+    list.find((root) => root.endsWith(path.join("apps", "server"))) ??
+    list.sort((a, b) => a.length - b.length)[0]
+  );
+}
+
+async function validateJavaProject(projectDir: string, options: ScaffbenchOptions) {
+  const steps: Record<string, StepResult | undefined> = {};
+  const root = await findBuildRoot(projectDir, ["pom.xml", "build.gradle", "build.gradle.kts"]);
+  if (!root) return steps;
+  // Prefer the project's wrapper (pins the build-tool version and works even
+  // when the system binary is absent — e.g. gradle via ./gradlew); else the
+  // system binary. Tests stay an advisory step under the quality gate so the
+  // build verdict reflects compilation, not test outcomes.
+  const hasPom = existsSync(path.join(root, "pom.xml"));
+  const wrapper = hasPom ? "mvnw" : "gradlew";
+  const usesWrapper = existsSync(path.join(root, wrapper));
+  const [bin, buildArgs, testArgs] = hasPom
+    ? ([
+        usesWrapper ? "./mvnw" : "mvn",
+        ["-q", "-B", "-DskipTests", "compile"],
+        ["-q", "-B", "test"],
+      ] as const)
+    : ([
+        usesWrapper ? "./gradlew" : "gradle",
+        ["compileJava", "-x", "test", "--console=plain"],
+        ["test", "--console=plain"],
+      ] as const);
+  steps.build = toStep(await runCommand(bin, [...buildArgs], root, VALIDATION_TIMEOUT_MS));
+  steps.install = steps.install ?? steps.build; // deps resolve during the build
+  if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+  if (options.qualityGate) {
+    steps.test = toStep(await runCommand(bin, [...testArgs], root, VALIDATION_TIMEOUT_MS));
+  }
+  return steps;
+}
+
+async function validateElixirProject(projectDir: string, options: ScaffbenchOptions) {
+  const steps: Record<string, StepResult | undefined> = {};
+  const root = await findBuildRoot(projectDir, ["mix.exs"]);
+  if (!root) return steps;
+  steps.install = toStep(await runCommand("mix", ["deps.get"], root, VALIDATION_TIMEOUT_MS));
+  if (steps.install.exitCode !== 0 || steps.install.timedOut) return steps;
+  steps.build = toStep(await runCommand("mix", ["compile"], root, VALIDATION_TIMEOUT_MS));
+  if (steps.build.exitCode !== 0 || steps.build.timedOut) return steps;
+  if (options.qualityGate) {
+    // Read-only format check, for parity with the other ecosystem gates.
+    steps.format = toStep(
+      await runCommand("mix", ["format", "--check-formatted"], root, VALIDATION_TIMEOUT_MS),
+    );
+    steps.test = toStep(await runCommand("mix", ["test"], root, VALIDATION_TIMEOUT_MS));
+  }
+  return steps;
+}
+
 async function hasDotnetProject(projectDir: string) {
   return (await findDotnetRoots(projectDir)).length > 0;
 }
@@ -2880,7 +3656,7 @@ async function collectProjectIndex(projectDir: string): Promise<ProjectIndex> {
     const relativePath = path.relative(projectDir, filePath);
     index.files.add(relativePath);
     if (
-      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|\.csproj|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.json|\.toml|\.yml|\.yaml)$/.test(
+      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|pom\.xml|mix\.exs|\.csproj|\.gradle|\.kts|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.java|\.kt|\.exs|\.ex|\.heex|\.json|\.toml|\.yml|\.yaml)$/.test(
         filePath,
       )
     ) {
@@ -3075,25 +3851,63 @@ export async function scoreToolCompliance(
   return { score, total: checks.length, checks };
 }
 
+// A step is "advisory" (quality tier) when it measures polish rather than
+// whether the project works: lint/format/test/doctor/route. These mirror the
+// solvability gate's ADVISORY_STEPS. CORE steps (install/build/typecheck/native
+// compile) decide whether a scaffold actually builds and runs — a formatting
+// nit or a style-lint warning must never read as a broken project.
+const ADVISORY_STEP_KEYS = new Set(["lint", "format", "test", "doctor", "route"]);
+function isAdvisoryStep(name: string) {
+  return ADVISORY_STEP_KEYS.has(name);
+}
+
+// Applicable steps (a real check that should be judged) whose key matches the
+// predicate. "na" steps (e.g. a genuinely testless scaffold) are excluded —
+// neither pass nor fail.
+function applicableSteps(result: RunResult, predicate: (name: string) => boolean): StepResult[] {
+  return Object.entries(result.validation.steps)
+    .filter((entry): entry is [string, StepResult] => Boolean(entry[1]))
+    .filter(([name, step]) => step.status !== "na" && predicate(name))
+    .map(([, step]) => step);
+}
+
+// A "skip" (a check that should have run but no tool was configured) is NOT a
+// pass — it disqualifies the tier. (Pre-fix, skips carried exitCode 0 and passed
+// silently: the Finding-1 inflation.)
+function stepsAllGreen(steps: readonly StepResult[]) {
+  return steps.every(
+    (step) => step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
+  );
+}
+
+/**
+ * Core pass — the headline "does it actually build and run?" signal, and the
+ * basis of the reported pass rate / classifyOutcome. Requires every applicable
+ * CORE step (install/build/typecheck/native compile) to be a real green run;
+ * advisory polish checks (lint/format/test/doctor/route) are excluded, so a
+ * project that builds and runs but is mis-formatted is NOT scored as broken.
+ * This matches the solvability gate's contract exactly.
+ */
 export function validationPassed(result: RunResult) {
   if (result.validation.deferred) return false;
   if (!result.validation.projectExists) return false;
-  const all = Object.values(result.validation.steps).filter((step): step is StepResult =>
-    Boolean(step),
-  );
-  // "na" steps (e.g. a genuinely testless scaffold) are excluded — neither pass
-  // nor fail. Everything else must be a real green run.
-  const applicable = all.filter((step) => step.status !== "na");
-  // A run with zero applicable steps must NOT pass vacuously (`[].every(...)` is
-  // true): the agent left a directory but no recognizable manifest, so no
-  // validator fired — an unbuildable project, not a success.
-  if (applicable.length === 0) return false;
-  // A "skip" (a check that should have run but no tool was configured) is NOT a
-  // pass — it disqualifies the run. (Pre-fix, skips carried exitCode 0 and passed
-  // silently: the Finding-1 inflation.)
-  return applicable.every(
-    (step) => step.status !== "skip" && step.exitCode === 0 && !step.timedOut && !step.spawnError,
-  );
+  const core = applicableSteps(result, (name) => !isAdvisoryStep(name));
+  // A run with zero applicable CORE steps must NOT pass vacuously (`[].every(...)`
+  // is true): the agent left a directory but no recognizable manifest, so no
+  // build/typecheck validator fired — an unbuildable project, not a success.
+  if (core.length === 0) return false;
+  return stepsAllGreen(core);
+}
+
+/**
+ * Quality pass — the stricter, advisory tier: core passed AND every applicable
+ * lint/format/test/doctor/route check is green. Reported as a SEPARATE signal
+ * (qualityPassRate); it never demotes the core pass rate, so formatting is a
+ * quality metric rather than a brokenness verdict.
+ */
+export function qualityPassed(result: RunResult) {
+  if (!validationPassed(result)) return false;
+  return stepsAllGreen(applicableSteps(result, isAdvisoryStep));
 }
 
 function isBudgetExhausted(terminalReason: string | undefined) {
@@ -3160,7 +3974,10 @@ export function deriveFailureTags(result: RunResult): FailureTag[] {
 
   for (const [name, step] of Object.entries(result.validation.steps)) {
     if (!step || (step.exitCode === 0 && !step.timedOut)) continue;
-    tags.add("validation-failed");
+    // Each failing step gets its specific tag below (lint-failed/format-failed/…)
+    // for visibility, but the generic "validation-failed" (= broken) is added
+    // ONCE, at the end, keyed strictly to a CORE failure — so a cosmetic
+    // lint/format failure is surfaced without flagging the project as broken.
     if (step.spawnError) {
       // The validator binary itself could not be spawned (e.g. cargo/uv/go/dotnet
       // not on PATH): an environment problem, not a model-authored break. A child
@@ -3209,6 +4026,7 @@ function aggregateBy(
       const scored = group.filter((result) => classifyOutcome(result) !== "infra-inconclusive");
       const inconclusiveCount = group.length - scored.length;
       const passCount = scored.filter(validationPassed).length;
+      const qualityPassCount = scored.filter(qualityPassed).length;
       const ci = wilsonInterval(passCount, scored.length);
 
       // Per-spec macro statistics: treat each spec as a unit rather than pooling
@@ -3265,6 +4083,9 @@ function aggregateBy(
         inconclusiveCount,
         passCount,
         passRate: scored.length > 0 ? Math.round((passCount / scored.length) * 100) : 0,
+        qualityPassCount,
+        qualityPassRate:
+          scored.length > 0 ? Math.round((qualityPassCount / scored.length) * 100) : 0,
         passCi95: ci,
         ciReportable: scored.length >= MIN_CI_RUNS,
         specCount: specEntries.length,
@@ -3419,6 +4240,7 @@ export function renderMarkdown(summary: ScaffbenchSummary) {
         aggregate.path,
         aggregate.index,
         `${aggregate.passCount}/${aggregate.scoredRuns}`,
+        `${aggregate.qualityPassRate}%`,
         aggregate.inconclusiveCount > 0 ? `${aggregate.inconclusiveCount}/${aggregate.runs}` : "0",
         `${aggregate.macroPassRate}%`,
         `${aggregate.passAnySpecs}/${aggregate.specCount}`,
@@ -3451,7 +4273,13 @@ Prompt style: ${summary.options.promptStyle}
 This is an ablation across creation paths and reasoning effort for one agent
 (${agentLabelForModel(summary.options.model)}), not a cross-vendor leaderboard. Pass rate is over *scored* runs:
 infra-inconclusive runs (missing toolchain, validation timeout, exhausted token
-budget, or a crash with no output) are excluded from the denominator. "Wired
+budget, or a crash with no output) are excluded from the denominator.
+
+"Pass@1" is the CORE pass rate — install + build + typecheck + native compile,
+i.e. does the project actually build and run. "Quality" is the stricter advisory
+tier (core + lint/format/test/doctor/route): a project can be Pass@1-green but
+Quality-red because it is mis-formatted or a style-lint warns. Formatting is a
+quality metric, never a brokenness verdict, so it does not move Pass@1. "Wired
 libs" is scored from the generated artifact (deps + imports + files);
 "Faithful" is the assisted-path bts.jsonc-vs-requested diagnostic.
 
@@ -3466,8 +4294,8 @@ ${Math.round(SCAFFBENCH_INDEX_WEIGHTS.validation * 100)}% macro validation + ${M
 weighted toward the least saturated signal. Latency is median / p95 (wall-clock
 moves with provider load, so the mean alone is misleading over small samples).
 
-| Model | Effort | Effective reasoning | Path | Index | Pass@1 | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Model | Effort | Effective reasoning | Path | Index | Pass@1 | Quality | Inconclusive | Macro | pass@k | pass^k | CI95 | Wired libs | Faithful | Acceptance | Command discipline | Median / p95 | Avg output tokens | Avg cost | Failure tags |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${aggregateRows}
 
 ## Runs

@@ -1,16 +1,15 @@
 # TypeScript — New Categories
 
-These are entirely new option categories that don't exist yet in the TypeScript ecosystem.
+These are new TypeScript-facing categories and addon-style surfaces. Status was refreshed on
+2026-06-30 against the schema, template tree, CLI prompts, MCP fields, and web builder metadata.
 
 ---
 
 ## GraphQL (new category)
 
-Currently no GraphQL option. API choices are limited to tRPC, oRPC, ts-rest, garph.
-
 - [x] Add `pothos` ✅ — most type-safe way to build GraphQL schemas in TypeScript. Code-first, zero runtime overhead. Pairs with GraphQL Yoga.
 - [x] Add `graphql-yoga` ✅ — batteries-included GraphQL server by The Guild. Cross-platform, spec-compliant. Works with Pothos, Nexus, TypeGraphQL.
-- [ ] Add `apollo-server` — most well-known GraphQL server. Large ecosystem (Apollo Client, Federation). Enterprise-grade.
+- [x] Add `apollo-server` ✅ — most well-known GraphQL server. Large ecosystem (Apollo Client, Federation). Enterprise-grade.
 
 ### Implementation
 - Option 1: Add to existing `ApiSchema` as new values
@@ -21,13 +20,12 @@ Currently no GraphQL option. API choices are limited to tRPC, oRPC, ts-rest, gar
 
 ---
 
-## Internationalization / i18n (new category)
+## Internationalization / i18n
 
-No i18n support currently. Common requirement for production apps.
-
-- [ ] Add `paraglide` (Inlang) — type-safe, compile-time i18n. Every key is a typed function. Zero runtime overhead. Official support for TanStack Start, SvelteKit, Astro.
+- [x] Add `paraglide` (Inlang) ✅ — type-safe, compile-time i18n.
 - [x] Add `i18next` ✅ — established standard. Largest ecosystem, most plugins. Framework adapters for React, Vue, Svelte.
 - [x] Add `next-intl` ✅ — best choice specifically for Next.js App Router.
+- [ ] Add `intlayer` — still tracked in `community-requested-integrations.md`.
 
 ### Implementation
 - New schema: `I18nSchema = z.enum(["paraglide", "i18next", "next-intl", "none"])`
@@ -37,12 +35,10 @@ No i18n support currently. Common requirement for production apps.
 
 ---
 
-## Rate Limiting (new category)
+## Rate Limiting
 
-No rate limiting support. Essential for production API security.
-
-- [ ] Add `upstash-ratelimit` — serverless Redis-based rate limiting. Perfect for edge/serverless. Used in next-forge. Dynamic runtime limits.
-- [ ] Add `arcjet` — security-focused: rate limiting + bot detection + shield protection. Growing in Next.js ecosystem.
+- [x] Add `upstash-ratelimit` ✅ — serverless Redis-based rate limiting.
+- [x] Add `arcjet` ✅ — security-focused rate limiting + shield protection.
 
 ### Implementation
 - New schema: `RateLimitingSchema = z.enum(["upstash-ratelimit", "arcjet", "none"])`
@@ -54,7 +50,7 @@ No rate limiting support. Essential for production API security.
 
 ## Desktop App (new category)
 
-No desktop app support. better-t-stack has Tauri and Electrobun.
+Desktop support now has Tauri; Electrobun remains the open alternative runtime option.
 
 - [x] Add `tauri` ✅ — Rust-based desktop framework. Small binaries, native performance. Supports all web frontends as shell.
 - [ ] Add `electrobun` — alternative desktop framework. Also supports web frontends.
@@ -108,7 +104,7 @@ Documentation site scaffolding is now exposed through docs-site addons.
 
 ---
 
-## Browser Extension — Plasmo (better-t-stack #575)
+## Browser Extension — Plasmo
 
 WXT is already tracked above. Plasmo is a more batteries-included alternative.
 
@@ -116,11 +112,28 @@ WXT is already tracked above. Plasmo is a more batteries-included alternative.
 
 ---
 
+## Vector Database
+
+Vector DB support is now a first-class category for TypeScript AI/semantic-search stacks.
+
+- [x] Add `pgvector` ✅
+- [x] Add `qdrant` ✅
+- [x] Add `chroma` ✅
+- [x] Add `pinecone` ✅
+
+---
+
+## Generated CI
+
+- [x] Add `github-actions` addon ✅ — generated projects can now opt into GitHub Actions workflow scaffolding.
+- [ ] Expand generated CI presets into a stronger verified-project default: install + typecheck/build/test per ecosystem.
+
+---
+
 ## Priority Order
 
-1. **GraphQL** (pothos + yoga) — most requested missing API pattern
-2. **i18n** (paraglide + i18next + intlayer) — common production requirement
-3. **Rate Limiting** (upstash-ratelimit + arcjet) — security essential
-4. **Tauri** — desktop app support, competitive gap
-5. **Plasmo** — browser extensions
-6. **Electrobun** — desktop app alternative
+1. **Generated CI quality** — make generated GitHub Actions workflows a meaningful install/build/typecheck/test guard.
+2. **Intlayer** — remaining i18n request after Paraglide/i18next/next-intl.
+3. **Plasmo** — richer browser-extension option beyond WXT.
+4. **Electrobun** — optional desktop alternative after Tauri.
+5. **Registry/capability packs** — graduate addon-style surfaces into reusable community/private packs.

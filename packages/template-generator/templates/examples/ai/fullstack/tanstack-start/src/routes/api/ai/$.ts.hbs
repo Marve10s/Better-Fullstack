@@ -210,7 +210,7 @@ export const Route = createFileRoute("/api/ai/$")({
 {{else}}
 import { createFileRoute } from "@tanstack/react-router";
 import { google } from "@ai-sdk/google";
-import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { createUIMessageStreamResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 
 export const Route = createFileRoute("/api/ai/$")({
@@ -229,7 +229,9 @@ export const Route = createFileRoute("/api/ai/$")({
             messages: await convertToModelMessages(messages),
           });
 
-          return result.toUIMessageStreamResponse();
+          return createUIMessageStreamResponse({
+            stream: toUIMessageStream({ stream: result.stream }),
+          });
         } catch (error) {
           console.error("AI API error:", error);
           return new Response(

@@ -3,6 +3,20 @@ import { join } from "node:path";
 
 import { EXAMPLES, expectError, expectSuccess, runTRPCTest, type TestConfig } from "./test-utils";
 
+const LEGACY_AI_RESPONSE_HELPERS = [
+  "result.toUIMessageStreamResponse(",
+  "result.pipeUIMessageStreamToResponse(",
+];
+
+function expectModernAIChatOutput(files: string[]) {
+  const output = files.join("\n");
+
+  expect(output).toContain("toUIMessageStream({ stream: result.stream })");
+  for (const helper of LEGACY_AI_RESPONSE_HELPERS) {
+    expect(output).not.toContain(helper);
+  }
+}
+
 describe("Example Configurations", () => {
   describe("AI Example", () => {
     it("should work with AI example + React frontend", async () => {
@@ -45,6 +59,17 @@ describe("Example Configurations", () => {
       });
 
       expectSuccess(result);
+      expect(result.projectDir).toBeDefined();
+
+      const projectDir = result.projectDir!;
+      const aiPage = await Bun.file(join(projectDir, "apps/web/src/app/ai/page.tsx")).text();
+      const aiRoute = await Bun.file(join(projectDir, "apps/web/src/app/api/ai/route.ts")).text();
+
+      expect(aiPage).toContain("function MessageBubble");
+      expect(aiPage).toContain("max-w-[min(42rem,85%)]");
+      expect(aiPage).toContain("Loader2");
+      expect(aiRoute).toContain("createUIMessageStreamResponse");
+      expectModernAIChatOutput([aiPage, aiRoute]);
     });
 
     it("should work with AI example + Nuxt", async () => {
@@ -142,7 +167,13 @@ describe("Example Configurations", () => {
 
       expect(router).toContain('path: "ai"');
       expect(aiRoute).toContain("export default AI");
+      expect(aiRoute).toContain("function MessageBubble");
+      expect(aiRoute).toContain("disabled={isBusy || !input.trim()}");
       expect(webPackageJson.dependencies?.["@ai-sdk/react"]).toBeDefined();
+
+      const server = await Bun.file(join(projectDir, "apps/server/src/index.ts")).text();
+      expect(server).toContain("createUIMessageStreamResponse");
+      expectModernAIChatOutput([aiRoute, server]);
     });
 
     it("should work with AI example + Convex + React frontend", async () => {

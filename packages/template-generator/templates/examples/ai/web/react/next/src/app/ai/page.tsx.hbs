@@ -543,7 +543,7 @@ export default function AIPage() {
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Send } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 {{#if (eq webDeploy "cloudflare")}}
 import dynamic from "next/dynamic";
 
@@ -567,6 +567,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { env } from "@{{projectName}}/env/web";
 
+type ChatMessage = ReturnType<typeof useChat>["messages"][number];
+
+function MessageBubble({
+  message,
+  isStreaming,
+}: {
+  message: ChatMessage;
+  isStreaming: boolean;
+}) {
+  const isUser = message.role === "user";
+
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[min(42rem,85%)] rounded-lg px-4 py-3 ${
+          isUser ? "bg-primary text-primary-foreground" : "bg-secondary/60"
+        }`}
+      >
+        <p className="mb-1 text-xs font-medium opacity-70">
+          {isUser ? "You" : "AI Assistant"}
+        </p>
+        <div className="space-y-2 text-sm leading-6">
+          {message.parts?.map((part, index) => {
+            if (part.type === "text") {
+              return (
+                <Streamdown
+                  key={index}
+                  isAnimating={isStreaming && !isUser}
+                >
+                  {part.text}
+                </Streamdown>
+              );
+            }
+            return null;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AIPage() {
   const [input, setInput] = useState("");
   const { messages, sendMessage, status } = useChat({
@@ -574,6 +615,7 @@ export default function AIPage() {
       api: {{#if (eq backend "self")}}"/api/ai"{{else}}`${env.NEXT_PUBLIC_SERVER_URL}/ai`{{/if}},
     }),
   });
+  const isBusy = status === "submitted" || status === "streaming";
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -590,39 +632,19 @@ export default function AIPage() {
   };
 
   return (
-    <div className="grid grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
+    <div className="mx-auto grid h-full w-full max-w-3xl grid-rows-[1fr_auto] overflow-hidden p-4">
       <div className="overflow-y-auto space-y-4 pb-4">
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground mt-8">
-            Ask me anything to get started!
+          <div className="flex h-full items-center justify-center text-center text-muted-foreground">
+            <p>Ask me anything to get started.</p>
           </div>
         ) : (
           messages.map((message) => (
-            <div
+            <MessageBubble
               key={message.id}
-              className={`p-3 rounded-lg ${
-                message.role === "user"
-                  ? "bg-primary/10 ml-8"
-                  : "bg-secondary/20 mr-8"
-              }`}
-            >
-              <p className="text-sm font-semibold mb-1">
-                {message.role === "user" ? "You" : "AI Assistant"}
-              </p>
-              {message.parts?.map((part, index) => {
-                if (part.type === "text") {
-                  return (
-                    <Streamdown
-                      key={index}
-                      isAnimating={status === "streaming" && message.role === "assistant"}
-                    >
-                      {part.text}
-                    </Streamdown>
-                  );
-                }
-                return null;
-              })}
-            </div>
+              message={message}
+              isStreaming={status === "streaming" && message.role === "assistant"}
+            />
           ))
         )}
         <div ref={messagesEndRef} />
@@ -640,9 +662,10 @@ export default function AIPage() {
           className="flex-1"
           autoComplete="off"
           autoFocus
+          disabled={isBusy}
         />
-        <Button type="submit" size="icon">
-          <Send size={18} />
+        <Button type="submit" size="icon" disabled={isBusy || !input.trim()} aria-label="Send message">
+          {isBusy ? <Loader2 className="size-4 animate-spin" /> : <Send size={18} />}
         </Button>
       </form>
     </div>

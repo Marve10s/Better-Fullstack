@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Better Fullstack">
+  <rect width="128" height="128" rx="24" fill="#0f172a"/>
+  <path d="M31 35h36c15 0 24 7 24 19 0 8-4 14-12 17 10 3 16 10 16 21 0 13-10 21-27 21H31V35Zm24 31h10c7 0 11-3 11-9s-4-9-11-9H55v18Zm0 34h12c8 0 13-4 13-10 0-7-5-11-13-11H55v21Z" fill="#f8fafc"/>
+  <path d="M24 21h80v13H24V21Zm0 80h80v13H24v-13Z" fill="#38bdf8"/>
+</svg>

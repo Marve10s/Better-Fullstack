@@ -1,6 +1,8 @@
 # Community-Requested Integrations
 
-Smaller feature requests from GitHub issues across both repos that don't warrant individual plan files. Each is a single integration or option addition.
+Smaller feature requests from GitHub issues across both repos that do not warrant individual plan
+files. Status was refreshed on 2026-06-30; shipped items remain here only when the original request
+is useful historical context.
 
 ---
 
@@ -8,7 +10,7 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### Cloudinary (Better-Fullstack #80)
 
-- [ ] Add `cloudinary` — managed media storage, transformation, and CDN. Image/video optimization, AI-based cropping, responsive breakpoints.
+- [x] Add `cloudinary` ✅ — managed media storage, transformation, and CDN. Image/video optimization, AI-based cropping, responsive breakpoints.
   - **SDK:** `cloudinary` (Node.js)
   - **Env vars:** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
   - **Template:** Upload helper, signed/unsigned uploads, URL generation
@@ -22,7 +24,7 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### SWR (Better-Fullstack #79)
 
-- [ ] Add `swr` — Vercel's React data-fetching library. Stale-while-revalidate pattern, smaller bundle than TanStack Query, simpler API.
+- [x] Add `swr` ✅ — Vercel's React data-fetching library. Stale-while-revalidate pattern, smaller bundle than TanStack Query, simpler API.
   - **When:** React-based frontends only (next, react-router, react-vite, tanstack-router, tanstack-start)
   - **Package:** `swr`
   - **Template:** SWR provider setup, example fetcher, typed hooks
@@ -35,7 +37,7 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### shadcn-svelte (better-t-stack #468)
 
-- [ ] Add `shadcn-svelte` — community port of shadcn/ui for SvelteKit. Same component model, Tailwind-based.
+- [x] Add `shadcn-svelte` ✅ — community port of shadcn/ui for SvelteKit. Same component model, Tailwind-based.
   - **When:** Frontend = svelte
   - **Package:** `bits-ui` (underlying primitives)
   - **Template:** Component installation, `components.json` for Svelte variant
@@ -43,10 +45,8 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### Gluestack (better-t-stack #962)
 
-- [ ] Add `gluestack` — cross-platform UI (web + React Native). Tailwind-like styling with NativeWind. Good for universal apps.
-  - **When:** Both web and native frontends selected
-  - **Package:** `@gluestack-ui/themed`
-  - **Category:** UI Library
+- [x] Add `gluestack-ui` for React Native ✅ — mobile UI option backed by `@gluestack-ui/themed`.
+  - **Remaining:** decide whether a separate web/universal Gluestack path is worth adding, or whether mobile-only is enough.
 
 ---
 
@@ -54,7 +54,7 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### REST / OpenAPI (better-t-stack #631)
 
-- [ ] Add `rest` or `openapi` — plain REST API scaffolding with OpenAPI spec generation. No tRPC/oRPC overhead. Swagger UI for documentation.
+- [x] Add `openapi` ✅ — plain REST API scaffolding with OpenAPI spec generation. No tRPC/oRPC overhead.
   - **Packages:** `@asteasolutions/zod-to-openapi` + `swagger-ui-express` (or `@scalar/express-api-reference`)
   - **Template:** Route definitions with Zod schemas, auto-generated OpenAPI spec, Swagger UI endpoint
   - **Category:** API (alongside trpc, orpc, ts-rest, garph)
@@ -100,8 +100,8 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ### Mastra (better-t-stack #633)
 
-- [ ] Add `mastra` — TS AI agent framework. Deploys as Hono server or inside Next.js routes. Has CLI, workflow engine, tool system.
-  - **Already in AI SDK schema** — verify current template quality
+- [x] Add `mastra` ✅ — TS AI agent framework. Deploys as Hono server or inside Next.js routes.
+  - **Remaining:** verify generated template depth and add quality assertions if it is still dependency-light.
   - **Category:** AI SDK (already tracked — ensure template is comprehensive)
 
 ---
@@ -135,12 +135,11 @@ Smaller feature requests from GitHub issues across both repos that don't warrant
 
 ## Priority Order
 
-1. **REST/OpenAPI** — fills the most common API gap
-2. **Cloudinary** — popular file storage, straightforward integration
-3. **SWR** — maintainer-endorsed, simple addition
-4. **shadcn-svelte** — unlocks better Svelte DX
-5. **Creem.io** (see payment-providers-expansion.md)
-6. **DB without ORM** — common request for SQL purists
-7. **Intlayer** — modern i18n option
-8. **Plasmo** — browser extensions
-9. Remaining items
+1. **Creem.io** (see `payment-providers-expansion.md`)
+2. **DB without ORM / raw SQL** — common request for SQL purists
+3. **InstantDB** — realtime/offline database option for React + React Native
+4. **Intlayer** — modern i18n option
+5. **Plasmo** — browser extensions
+6. **Effect HTTP API** — if Effect-heavy stacks keep showing up in benchmarks/issues
+7. **Mastra quality pass** — make sure the generated output is more than dependency wiring
+8. Remaining items

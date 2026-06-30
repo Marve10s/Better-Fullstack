@@ -1,6 +1,6 @@
 # Java Ecosystem Follow-Ups
 
-The Java ecosystem foundation shipped in `v1.6.2`. This plan tracks the remaining Java expansion work after Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, Java libraries, and Java testing libraries landed.
+The Java ecosystem foundation shipped in `v1.6.2`. Status was refreshed on 2026-06-30 after the June parity batches added jOOQ, MyBatis, Keycloak, Spring GraphQL, Spring AMQP, OpenTelemetry Java, explicit Logback config, and related template coverage.
 
 ---
 
@@ -10,34 +10,35 @@ The Java ecosystem foundation shipped in `v1.6.2`. This plan tracks the remainin
 
 ## ORM / Data Access
 
-- [ ] Add `jooq` — type-safe SQL query builder and code generation from database schema.
-- [ ] Add `mybatis` — XML/annotation SQL mapping for complex legacy schemas.
+- [x] Add `jooq` ✅ — type-safe SQL query builder and code generation from database schema.
+- [x] Add `mybatis` ✅ — XML/annotation SQL mapping for complex legacy schemas.
 
 ## Authentication
 
-- [ ] Add `keycloak` integration for open-source IAM, SSO, social login, and enterprise identity setups.
+- [x] Add `keycloak` integration ✅ for open-source IAM, SSO, social login, and enterprise identity setups.
 
 ## API Styles
 
-- [ ] Add `spring-graphql`
+- [x] Add `spring-graphql` ✅
 - [ ] Add `grpc-java`
 - [ ] Add `openapi-generator`
+- [x] Add `springdoc-openapi` ✅ through Java libraries.
 
 ## Task Queues / Messaging
 
 - [x] Add `spring-batch`
 - [x] Add `spring-kafka`
-- [ ] Add `rabbitmq` via Spring AMQP
+- [x] Add `rabbitmq` via Spring AMQP ✅
 
 ## Observability
 
 - [x] Add `micrometer-prometheus`
-- [ ] Add `opentelemetry-java`
+- [x] Add `opentelemetry-java` ✅
 - [ ] Expand Spring Actuator examples beyond dependency wiring
 
 ## Logging
 
-- [ ] Add explicit `logback` configuration templates
+- [x] Add explicit `logback` configuration templates ✅
 - [ ] Add `log4j2` as an alternative logger
 
 ## Runtime Validation
@@ -51,3 +52,11 @@ The Java ecosystem foundation shipped in `v1.6.2`. This plan tracks the remainin
 - Keep Java compatibility logic in `packages/types/src/compatibility.ts` aligned with template-handler support.
 - Keep generated Maven and Gradle dependencies covered by `scripts/check-dep-versions.ts`.
 - Add new Java options as vertical slices: schema, metadata, compatibility, CLI, web, template, docs, snapshots, and smoke coverage together.
+
+## Priority Order
+
+1. **Generated Maven/Gradle runtime validation** — make the shipped Java surface trustworthy under smoke/ScaffBench.
+2. **Micronaut** — only major Java framework candidate still listed.
+3. **gRPC Java** — deferred because protoc/build-plugin work needs a careful vertical slice.
+4. **Actuator example depth** — go beyond dependency wiring.
+5. **Log4j2** — optional logging alternative if user demand appears.

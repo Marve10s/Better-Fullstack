@@ -11,7 +11,7 @@ Candidates for entirely new language ecosystem support beyond TypeScript, React 
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | Java foundation | Done | Shipped in v1.6.2 |
 | [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Java expansion | Medium/Large | Follow-up — Micronaut, jOOQ, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir foundation and follow-ups | Done/Large | Foundation shipped; follow-ups remain for deeper Phoenix/LiveView coverage |
-| [dotnet-ecosystem.md](dotnet-ecosystem.md) | C# (ASP.NET Core, EF Core, SignalR) | Done | Shipped 2026-06-10 — foundation + multi-ecosystem backend |
+| [../completed/dotnet-ecosystem-2026-06-10.md](../completed/dotnet-ecosystem-2026-06-10.md) | C# (ASP.NET Core, EF Core, SignalR) | Done | Shipped 2026-06-10 — foundation + multi-ecosystem backend |
 
 ---
 

@@ -45,6 +45,9 @@ jobs:
         env:
           BTS_TELEMETRY: 0
 
+      - name: Validate plugin bundle
+        run: bun run test:plugin-bundle
+
       - name: Generate Preview Version
         id: version
         run: |
@@ -117,6 +120,14 @@ jobs:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
           BTS_TELEMETRY: 0
 
+      - name: Setup pnpm for published package smoke
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Smoke published preview packages
+        run: bun run test:published-package --specifier ${{ steps.version.outputs.tag }}
+        env:
+          BTS_TELEMETRY: 0
+
       - name: Find existing preview comment
         uses: peter-evans/find-comment@v3
         id: find-comment
@@ -144,6 +155,8 @@ jobs:
             | `@better-fullstack/template-generator` | `${{ steps.version.outputs.version }}` | `pr${{ steps.version.outputs.pr }}` |
 
             **Commit:** `${{ steps.version.outputs.commit }}`
+
+            **Published-package smoke:** Bun, npm, and pnpm scaffold checks passed for this preview tag.
 
             ### Install
 

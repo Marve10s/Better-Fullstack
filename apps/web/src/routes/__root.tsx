@@ -1,7 +1,7 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
@@ -50,6 +50,16 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
+
+const ChangelogWidget = lazy(async () => {
+  const mod = await import("@/components/changelog-widget");
+  return { default: mod.ChangelogWidget };
+});
+
+const PatreonButton = lazy(async () => {
+  const mod = await import("@/components/patreon-button");
+  return { default: mod.PatreonButton };
+});
 
 function NotFoundComponent() {
   return (
@@ -137,7 +147,7 @@ export const Route = createRootRoute({
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Figtree:wght@600;700&display=swap",
         },
       ],
     };
@@ -150,6 +160,10 @@ function RootComponent() {
     <RootDocument>
       <Navbar />
       <Outlet />
+      <Suspense fallback={null}>
+        <ChangelogWidget />
+        <PatreonButton />
+      </Suspense>
     </RootDocument>
   );
 }

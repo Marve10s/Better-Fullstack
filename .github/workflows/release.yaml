@@ -189,6 +189,17 @@ jobs:
           BTS_TELEMETRY: 1
           CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
 
+      - name: Setup pnpm for published package smoke
+        if: steps.check-version.outputs.exists == 'false'
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Smoke published release packages
+        if: steps.check-version.outputs.exists == 'false'
+        run: bun run test:published-package --specifier ${{ steps.version.outputs.version }}
+        env:
+          BTS_TELEMETRY: 1
+          CONVEX_INGEST_URL: ${{ secrets.CONVEX_INGEST_URL }}
+
       - name: Publish packages to GitHub Packages
         if: steps.check-version.outputs.exists == 'false'
         run: |
@@ -214,6 +225,9 @@ jobs:
           echo "- [create-bfs@$VERSION](https://www.npmjs.com/package/create-bfs/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
           echo "- [@better-fullstack/types@$VERSION](https://www.npmjs.com/package/@better-fullstack/types/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
           echo "- [@better-fullstack/template-generator@$VERSION](https://www.npmjs.com/package/@better-fullstack/template-generator/v/$VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Package Smoke" >> $GITHUB_STEP_SUMMARY
+          echo "Bun, npm, and pnpm scaffold checks passed for create-better-fullstack@$VERSION." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### GitHub Release" >> $GITHUB_STEP_SUMMARY
           echo "[v$VERSION](https://github.com/${{ github.repository }}/releases/tag/v$VERSION)" >> $GITHUB_STEP_SUMMARY

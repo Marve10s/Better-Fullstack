@@ -64,4 +64,4 @@ Verified-complete CI/security items were moved to `docs/plans/completed/ci-secur
 - Added `@axe-core/playwright` and serious/critical accessibility checks for the landing page and stack builder in `apps/web/test/e2e/a11y.spec.ts`.
 
 ### 18. No cross-browser testing
-- Tracked in `docs/plans/planned/ci-and-quality.md` (remaining backlog item).
+- Historical note: the old CI/quality backlog has been completed and archived as `docs/plans/completed/ci-and-quality-follow-ups-2026-06-30.md`; active quality follow-ups now live in feature-specific plans and ScaffBench/verification work.

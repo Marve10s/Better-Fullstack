@@ -1,0 +1,157 @@
+---
+title: "ScaffBench 2.1: does maximum reasoning effort help an agent scaffold from a prompt?"
+description: "Claude Sonnet 5 enters ScaffBench 2.1, tested against Opus 4.8 (low + max effort) on 13 hard full-stack specs: can a model scaffold a building project from a prompt?"
+date: 2026-07-01
+authors:
+  - Ibrahim Elkamali
+tags:
+  - benchmark
+  - claude-code
+  - agents
+keywords:
+  - llm benchmark
+  - ai scaffolding
+  - claude code
+  - project generation
+  - scaffbench
+  - claude sonnet 5
+---
+
+[ScaffBench 2](/blog/scaffbench-2) asked the hardest version of one question — *can a coding agent
+hand-write a real fullstack project from a prompt, with no scaffolder, and have it build?* — and the
+answer was "rarely." On the prompt path, the best config got two of four measurable specs to build.
+
+ScaffBench 2.1 pushes on two axes at once:
+
+- **A bigger, harder suite.** Thirteen specs across **eight ecosystems** — adding **Java** (Spring +
+  jOOQ + Keycloak) and **Elixir** (Broadway + Absinthe), an Expo React Native app, and two
+  **prompt-only frontier specs** that are deliberately *beyond* what our own generator can produce.
+- **Maximum reasoning effort.** The obvious hypothesis after ScaffBench 2 was: *the models knew the
+  right libraries; they just ran out of room to assemble them. Give them maximum reasoning budget and
+  the builds should follow.* So we re-ran the prompt path at **`max`** effort — and added the new
+  **Claude Sonnet 5** alongside **Claude Opus 4.8** to see whether a newer model closes the gap.
+
+Opus 4.8 has now finished the **full 13-spec run at both efforts**, so the low-vs-max comparison below
+is complete. The Sonnet 5 max run is still generating its back half, so its cross-model numbers are
+the **nine specs validated so far**; we'll fill in the rest as it lands. Here's what maximum effort
+actually bought.
+
+## Headline: more thinking didn't buy more builds
+
+The tidy hypothesis was wrong. On the same 13 specs, maximum reasoning effort produced the **exact
+same** prompt-path build rate as low effort — at 5–10× the cost.
+
+| Config | CORE pass@1 | Avg cost / spec | Wired libs |
+| --- | :---: | ---: | :---: |
+| Claude Opus 4.8 · **low** (13 specs) | **3 / 11** (27%) | $1.60 | ~95% |
+| Claude Opus 4.8 · **max** (13 specs) | **3 / 11** (27%) | ~$8 | ~96% |
+| Claude Sonnet 5 · **max** (9 specs, in progress) | **1 / 8** | ~$6 | ~96% |
+
+<Callout kind="info">
+  Both Opus rows are the full thirteen specs (eleven measurable; two are
+  [inconclusive](#the-honest-part)). The rate is **identical — 27% — at low and at max.** Maximum
+  reasoning effort did not move the prompt-path build rate at all.
+</Callout>
+
+### Where the effort went: a reshuffle, not a gain
+
+The tie hides the most interesting result. Max effort didn't build the *same* three projects as low —
+it **fixed two and broke two**:
+
+| Spec | Opus 4.8 · low | Opus 4.8 · max | Cost low → max |
+| --- | :---: | :---: | --- |
+| `python-ingestion-api` | ✅ | ✅ | $1.54 → $0.37 |
+| `rust-leptos-axum` | ❌ | **✅ fixed** | $1.03 → $6.45 |
+| `java-spring-jooq-keycloak` | ❌ | **✅ fixed** | $1.41 → $10.91 |
+| `go-realtime-api` | ✅ | **❌ broke** | $1.74 → $6.96 |
+| `multi-dotnet-ops` | ✅ | **❌ broke** | $1.64 → $14.85 |
+
+So the worry that "a better-reasoning run scores *lower*" doesn't hold — it scores the **same**. But
+the deeper point is subtler and more useful: extra deliberation **trades one project's success for
+another's** rather than lifting the total. More thinking changed *which* hard stacks Opus assembled
+correctly, not *how many*.
+
+Three things stand out:
+
+1. **Effort is not the bottleneck.** Same 3/11 at `max` as at `low`, for 5–10× the spend. If a model
+   can't assemble a hard stack with a small reasoning budget, a large one mostly reshuffles the wins
+   rather than adding them.
+2. **The models still pick the right stack.** Wired-libraries stays ~96% across the board, exactly as
+   in ScaffBench 2: the agent knows *which* libraries the spec wants; it just can't assemble them into
+   something that compiles. "Looks right, isn't" remains the dominant failure mode — and `max` effort
+   doesn't fix it.
+3. **Max effort is the worst cost/reliability trade in the suite.** Opus 4.8 burned **$13.19** on the
+   TypeScript AI-search workbench, **$14.85** on the .NET ops graph, and **$18.76** on the Elixir
+   spec — and *none* of the three built. Authoring a hard, multi-library project token-by-token at
+   maximum reasoning is both the most expensive and least reliable way to start one.
+
+## Opus 4.8 vs Sonnet 5, spec by spec (max effort)
+
+| Spec | Ecosystem | Opus 4.8 · max | Sonnet 5 · max |
+| --- | --- | :---: | :---: |
+| `python-ingestion-api` | Python | ✅ builds | ✅ builds |
+| `rust-leptos-axum` | Rust | ✅ builds | ❌ no build |
+| `ai-search-workbench` | TypeScript | ❌ no build | ❌ no build |
+| `go-realtime-api` | Go | ❌ no build | ❌ no build |
+| `multi-dotnet-ops` | Multi (TS + .NET) | ❌ no build | ❌ no build |
+| `ts-svelte-edge-orpc` | TypeScript | ❌ timeout | ❌ no build |
+| `dotnet-blazor-cqrs` | .NET | ❌ no build | ❌ no build |
+| `java-spring-jooq-keycloak` | Java | ✅ builds | ❌ no build |
+| `multi-ts-go-grpc` | Multi (TS + Go) | ⚪ inconclusive | ⚪ inconclusive |
+
+The two models track each other closely on *stack selection* — through the shared nine specs their
+wired-libraries scores match **spec-for-spec**. But Opus pulls ahead on *builds*: it uniquely landed
+**two** specs Sonnet couldn't — `rust-leptos-axum` and `java-spring-jooq-keycloak`. **Python is the one
+spec both reliably build from a prompt** — a small,
+well-trodden stack — while the dense multi-service specs (.NET CQRS, Go realtime, the TS AI workbench)
+defeat both even at maximum effort.
+
+One nuance worth surfacing rather than hiding: Sonnet 5 *finished* the Svelte/edge spec under the time
+budget where Opus 4.8 ran out of it (see below). It still didn't build — but it got there faster.
+
+## The honest part
+
+Two of the results aren't clean build verdicts, and the benchmark is only useful if we say so.
+
+<Callout kind="warn">
+  **`multi-ts-go-grpc` is inconclusive for both models — and it's our bug, not theirs.** Both agents
+  built the project with manifests in subdirectories (`frontend/package.json`, `backend/go.mod`), but
+  our validator only looks for manifests at the **project root**. So it ran zero build steps and we
+  can't score it. The projects may well compile; the harness simply couldn't measure them. It's
+  excluded from the rates above. (Prompt-mode agents invent their own layout — teaching the validator
+  to find manifests in subdirectories is the next fix.)
+</Callout>
+
+The second caveat is `ts-svelte-edge-orpc` for Opus 4.8: at `max` effort it was **still actively
+reasoning** when it hit the per-spec time ceiling and was cut off. Per our SWE-bench-style taxonomy a
+generation timeout counts as a model failure — but it's a softer failure than a clean non-build, and
+worth flagging. (We raised the ceiling for the remaining specs; Sonnet 5 finished the same spec in
+time.)
+
+## What's new in 2.1
+
+- **Eight ecosystems, thirteen specs.** TypeScript, Rust, Python, Go, .NET, **Java**, **Elixir**, and
+  React Native, plus multi-ecosystem graphs — each spec chosen so a confident agent can pick a *near*
+  neighbour and get it subtly wrong.
+- **Frontier, prompt-only specs.** Two specs (`frontier-polyglot-proto`, `frontier-effect-eventsourcing`)
+  are deliberately beyond our own generator's option space, so they only ever run on the prompt path —
+  no scaffolder could "cheat" them.
+- **Real cost accounting at every effort.** Claude Code reports `$0` on a subscription, which made a
+  capable model look free in earlier tables. We now price every run from its token usage, so `max`
+  effort's true cost — the headline of this post — is visible.
+- **Validated for real, end to end.** With the .NET SDK installed on the grading host, the .NET and
+  multi-.NET specs are now genuinely built rather than skipped.
+
+## Takeaways
+
+- **For the prompt path, reasoning effort is not the lever.** If a model can't assemble a hard stack
+  at `low`, `max` mostly won't save it — it'll just cost 5–10× more. The gap is in *assembly*, not
+  *deliberation*.
+- **Stack selection is solved; coherent assembly isn't.** ~96% wired with a ~25% build rate is the
+  whole story in one line.
+- **This is exactly the gap a scaffolder closes.** The same specs that defeat prompt-only generation
+  build reliably through a generator that already knows how the pieces fit together — which is why the
+  MCP and CLI paths in ScaffBench 2 sat near 100% while prompt-only struggled. Starting a hard project
+  is still better done with the right tool than by hand, even by a frontier model at maximum effort.
+
+We'll update this post with the remaining specs and more models as the full runs complete.

@@ -18,6 +18,12 @@ const contributors: Contributor[] = [
     github: "https://github.com/EthanShoeDev",
   },
   {
+    username: "Alisha-21-cloud",
+    name: "Alisha",
+    role: "Vinext framework, Docker Compose, Polar + Convex",
+    github: "https://github.com/Alisha-21-cloud",
+  },
+  {
     username: "Divith123",
     name: "Divith S",
     role: "Version channels, builder parity",
@@ -28,12 +34,6 @@ const contributors: Contributor[] = [
     name: "Kavin B",
     role: "Elasticsearch search engine support",
     github: "https://github.com/Kavin-Bakyaraj",
-  },
-  {
-    username: "Alisha-21-cloud",
-    name: "Alisha",
-    role: "Polar payments + Convex integration",
-    github: "https://github.com/Alisha-21-cloud",
   },
 ];
 
@@ -114,7 +114,7 @@ export default function ContributorsSection() {
             {m.homeContributeGithub()}
           </a>
           <a
-            href="https://www.patreon.com/c/marve10s"
+            href="https://www.patreon.com/cw/marve10s"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"

@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 
 import {
@@ -36,7 +37,14 @@ import {
   SCAFFBENCH2_CELLS,
   SCAFFBENCH2_MODELS,
   SCAFFBENCH2_SPECS,
+  type ScaffbenchCell,
+  type ScaffbenchModel,
 } from "./scaffbench-2-data";
+import {
+  SCAFFBENCH21_CELLS,
+  SCAFFBENCH21_MODELS,
+  SCAFFBENCH21_SPECS,
+} from "./scaffbench-2-1-data";
 
 /**
  * Data sources:
@@ -53,7 +61,7 @@ import {
  * ScaffBench blog post scoring policy.
  */
 
-type BenchmarkVersionId = "v1" | "v2";
+type BenchmarkVersionId = "v1" | "v2" | "v2.1";
 type PathId = "mcp" | "cli" | "prompt";
 
 const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
@@ -170,9 +178,10 @@ const MODEL_GROUPS: readonly {
 const DEFAULT_MODELS_BY_VERSION: Record<BenchmarkVersionId, readonly ModelId[]> = {
   // Curated default: flagship + fastest model per vendor, prompt-only struggles visible.
   v1: ["sonnet", "spark", "gpt55", "gemini31"],
-  // V2 is a single-agent ablation (Opus only) — the model filter is hidden, so
-  // this entry exists only to satisfy the version-keyed record.
+  // V2 / V2.1 are single-agent ablations (Opus only) — the model filter is hidden,
+  // so these entries exist only to satisfy the version-keyed record.
   v2: ["opus"],
+  "v2.1": ["opus"],
 } as const;
 
 interface ChartPalette {
@@ -819,14 +828,40 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-const blogPostParams = { _splat: "scaffbench-2" } as const;
+const blogPostParams = { _splat: "scaffbench-2-1" } as const;
 
 // ── ScaffBench 2 leaderboard ────────────────────────────────────────────────
 // A pass-rate bar chart + data table for the per-path (MCP / CLI / Prompt)
 // ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
 
-type LeaderboardVersion = "v2" | "v1";
+type LeaderboardVersion = "v2.1" | "v2" | "v1";
 type ValidationMode = "core" | "full";
+
+// The "v2-family" views (v2 = original 5-spec ablation, v2.1 = expanded 13-spec
+// suite) share all rendering machinery — they differ only in the underlying run
+// data. A dataset bundles the per-cell records, model list, and spec list for one
+// version so the compute helpers can be pointed at either.
+type ScaffbenchDataset = {
+  cells: readonly ScaffbenchCell[];
+  models: readonly ScaffbenchModel[];
+  specs: readonly string[];
+};
+
+const SCAFFBENCH_V2: ScaffbenchDataset = {
+  cells: SCAFFBENCH2_CELLS,
+  models: SCAFFBENCH2_MODELS,
+  specs: SCAFFBENCH2_SPECS,
+};
+const SCAFFBENCH_V2_1: ScaffbenchDataset = {
+  cells: SCAFFBENCH21_CELLS,
+  models: SCAFFBENCH21_MODELS,
+  specs: SCAFFBENCH21_SPECS,
+};
+
+// v2.1 is the current default; only the literal "v2" maps to the legacy dataset.
+function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): ScaffbenchDataset {
+  return version === "v2" ? SCAFFBENCH_V2 : SCAFFBENCH_V2_1;
+}
 
 const LEADERBOARD_LABELS: Record<PathId, string> = {
   mcp: "MCP",
@@ -903,12 +938,13 @@ function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
 
 // V2: one row per (model, effort), pooled over the chosen path's scored cells.
 function computeV2ModelRows(
+  dataset: ScaffbenchDataset,
   leaderPath: LeaderPath,
   mode: ValidationMode,
   specs: ReadonlySet<string>,
 ): ModelLeaderRow[] {
-  const rows = SCAFFBENCH2_MODELS.map((model) => {
-    const cells = SCAFFBENCH2_CELLS.filter(
+  const rows = dataset.models.map((model) => {
+    const cells = dataset.cells.filter(
       (cell) =>
         cell.modelKey === model.key &&
         (leaderPath === "all" || cell.path === leaderPath) &&
@@ -1033,8 +1069,12 @@ interface PathMetrics {
 }
 
 // Aggregate one model's cells for one path over its scored specs.
-function aggregatePathMetrics(modelKey: string, path: PathId): PathMetrics {
-  const cells = SCAFFBENCH2_CELLS.filter((cell) => cell.modelKey === modelKey && cell.path === path);
+function aggregatePathMetrics(
+  dataset: ScaffbenchDataset,
+  modelKey: string,
+  path: PathId,
+): PathMetrics {
+  const cells = dataset.cells.filter((cell) => cell.modelKey === modelKey && cell.path === path);
   const scored = cells.filter((cell) => cell.scored);
   const tokens = scored
     .map((cell) => cell.outTokens)
@@ -1107,13 +1147,13 @@ interface V2ModelPoint extends PathMetrics {
 // The dots to plot for the selected path: one per MODEL (like v1 plots one dot
 // per model), colored by model. With six models this is a real multi-model
 // scatter — the legend maps colors to models, hover shows the values.
-function computeV2ModelPoints(path: PathId): V2ModelPoint[] {
-  return SCAFFBENCH2_MODELS.map((model, index) => ({
+function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2ModelPoint[] {
+  return dataset.models.map((model, index) => ({
     key: model.key,
     label: model.label,
     reasoning: model.effort,
     color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
-    ...aggregatePathMetrics(model.key, path),
+    ...aggregatePathMetrics(dataset, model.key, path),
   }));
 }
 
@@ -1286,7 +1326,7 @@ function ScaffBenchMark({ className }: { className?: string }) {
 }
 
 function BenchmarkChartCard() {
-  const [version, setVersion] = useState<BenchmarkVersionId>("v2");
+  const [version, setVersion] = useState<BenchmarkVersionId>("v2.1");
   const [activePath, setActivePath] = useState<PathId>("prompt");
   const [tabId, setTabId] = useState<TabId>("speed");
   const [v2Metric, setV2Metric] = useState<V2Metric>("tokens");
@@ -1316,10 +1356,17 @@ function BenchmarkChartCard() {
   // models (like v1's fitAxis) so the dots spread across the plot — on the
   // assisted paths the models cluster, and a fixed all-path axis would crush them
   // into an unreadable corner with no room for labels.
-  // V2 is Prompt-only (see V2_PATH_TABS): force the path so a stale v1 selection
-  // (e.g. mcp) can't leak the wrong data into the v2 chart.
-  const v2Path: PathId = version === "v2" ? "prompt" : activePath;
-  const v2ModelPoints = useMemo(() => computeV2ModelPoints(v2Path), [v2Path]);
+  // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
+  // ablation views; both share this chart's rendering and differ only in dataset.
+  const isV2 = version === "v2" || version === "v2.1";
+  const v2DatasetValue = useMemo(() => v2Dataset(version), [version]);
+  // V2-family is Prompt-only (see V2_PATH_TABS): force the path so a stale v1
+  // selection (e.g. mcp) can't leak the wrong data into the v2 chart.
+  const v2Path: PathId = isV2 ? "prompt" : activePath;
+  const v2ModelPoints = useMemo(
+    () => computeV2ModelPoints(v2DatasetValue, v2Path),
+    [v2DatasetValue, v2Path],
+  );
   const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2ModelPoints), [v2Metric, v2ModelPoints]);
   const v2LabelPlacements = useMemo(
     () => computeV2LabelPlacements(v2ModelPoints, v2Axis, v2Metric),
@@ -1344,7 +1391,6 @@ function BenchmarkChartCard() {
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const reduceMotion = useReducedMotion();
   const palette = CHART_PALETTE;
-  const isV2 = version === "v2";
 
   return (
     <motion.div
@@ -1361,8 +1407,24 @@ function BenchmarkChartCard() {
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-start justify-between gap-4 px-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
-              <PillButton value="v2" label="v2" active={isV2} onSelect={setVersion} />
-              <PillButton value="v1" label="v1" active={!isV2} onSelect={setVersion} />
+              <PillButton
+                value="v2.1"
+                label="v2.1"
+                active={version === "v2.1"}
+                onSelect={setVersion}
+              />
+              <PillButton
+                value="v2"
+                label={
+                  <>
+                    v2
+                    <VersionLegacyTag />
+                  </>
+                }
+                active={version === "v2"}
+                onSelect={setVersion}
+              />
+              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
             </div>
             <PathTabs
               active={isV2 ? "prompt" : activePath}
@@ -2188,9 +2250,21 @@ function OpenAIMark({ className }: { className?: string }) {
 }
 
 function ScaffbenchLeaderboardCard() {
-  const [version, setVersion] = useState<LeaderboardVersion>("v2");
+  const [version, setVersion] = useState<LeaderboardVersion>("v2.1");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
-  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH2_SPECS);
+  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH21_SPECS);
+
+  // "v2-family" = the v2 (legacy 5-spec) and v2.1 (current 13-spec) prompt-only
+  // leaderboards; both share rendering and differ only in dataset.
+  const isV2 = version === "v2" || version === "v2.1";
+  const dataset = useMemo(() => v2Dataset(version), [version]);
+
+  // The two v2-family versions track different spec suites (5 vs 13), so reset the
+  // spec filter to the active version's full spec list whenever the version flips.
+  useEffect(() => {
+    if (version === "v1") return;
+    setSelectedSpecs(version === "v2" ? SCAFFBENCH2_SPECS : SCAFFBENCH21_SPECS);
+  }, [version]);
 
   // We publish a single metric — Core pass (install/build/typecheck). The Full /
   // quality-gate pass is withheld until a re-run with the corrected gate produces
@@ -2198,26 +2272,29 @@ function ScaffbenchLeaderboardCard() {
   // overstated Full). computeV2ModelRows still takes a mode so Full can return
   // with one line once that re-run lands.
   const MODE = "core" as const;
-  // V2 is Prompt-only (see V2_PATH_TABS): the assisted paths measure our generator,
-  // not the model. Force the path so a stale v1 selection can't leak into v2.
-  const effectiveLeaderPath: LeaderPath = version === "v2" ? "prompt" : leaderPath;
+  // V2-family is Prompt-only (see V2_PATH_TABS): the assisted paths measure our
+  // generator, not the model. Force the path so a stale v1 selection can't leak in.
+  const effectiveLeaderPath: LeaderPath = isV2 ? "prompt" : leaderPath;
   const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
   // One row per model, sorted best-first, for the chosen creation path.
   const rows = useMemo(
     () =>
-      version === "v2"
-        ? computeV2ModelRows(effectiveLeaderPath, MODE, specsSet)
+      isV2
+        ? computeV2ModelRows(dataset, effectiveLeaderPath, MODE, specsSet)
         : computeV1ModelRows(effectiveLeaderPath),
-    [version, effectiveLeaderPath, specsSet],
+    [isV2, dataset, effectiveLeaderPath, specsSet],
   );
 
-  const toggleSpec = useCallback((spec: string) => {
-    setSelectedSpecs((prev) =>
-      prev.includes(spec)
-        ? prev.filter((s) => s !== spec)
-        : SCAFFBENCH2_SPECS.filter((s) => s === spec || prev.includes(s)),
-    );
-  }, []);
+  const toggleSpec = useCallback(
+    (spec: string) => {
+      setSelectedSpecs((prev) =>
+        prev.includes(spec)
+          ? prev.filter((s) => s !== spec)
+          : dataset.specs.filter((s) => s === spec || prev.includes(s)),
+      );
+    },
+    [dataset],
+  );
 
   return (
     <motion.div
@@ -2237,22 +2314,28 @@ function ScaffbenchLeaderboardCard() {
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
               <PillButton
-                value="v2"
-                label="v2"
-                active={version === "v2"}
+                value="v2.1"
+                label="v2.1"
+                active={version === "v2.1"}
                 onSelect={setVersion}
               />
               <PillButton
-                value="v1"
-                label="v1"
-                active={version === "v1"}
+                value="v2"
+                label={
+                  <>
+                    v2
+                    <VersionLegacyTag />
+                  </>
+                }
+                active={version === "v2"}
                 onSelect={setVersion}
               />
+              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
             </div>
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
-              {version === "v2" ? (
-                // V2 is Prompt-only (assisted paths measure our generator, not the
-                // model) — show just the Prompt path, no MCP/CLI/All.
+              {isV2 ? (
+                // V2-family is Prompt-only (assisted paths measure our generator,
+                // not the model) — show just the Prompt path, no MCP/CLI/All.
                 <PillButton value="prompt" label="Prompt" active onSelect={setLeaderPath} accent="teal" />
               ) : (
                 <>
@@ -2288,8 +2371,8 @@ function ScaffbenchLeaderboardCard() {
               )}
             </div>
           </div>
-          {version === "v2" ? (
-            <SpecFilter selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
+          {isV2 ? (
+            <SpecFilter specs={dataset.specs} selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
           ) : null}
         </div>
       </div>
@@ -2307,7 +2390,7 @@ function ScaffbenchLeaderboardCard() {
                 {effectiveLeaderPath === "all"
                   ? "All creation paths"
                   : LEADERBOARD_LABELS[effectiveLeaderPath]}
-                {version === "v2" ? " · Core validation" : ""}
+                {isV2 ? " · Core validation" : ""}
               </p>
             </div>
 
@@ -2382,7 +2465,7 @@ function PillButton<T extends string>({
   accent = "ink",
 }: {
   value: T;
-  label: string;
+  label: ReactNode;
   active: boolean;
   onSelect: (value: T) => void;
   accent?: PillAccent;
@@ -2406,6 +2489,17 @@ function PillButton<T extends string>({
     >
       {label}
     </button>
+  );
+}
+
+// Quiet "legacy" caption that rides inside the v2 pill, just right of the "v2"
+// label, so the version reads "v2 legacy". Uses opacity (not a fixed grey) so it
+// stays legible whether the pill is active (dark fill) or idle.
+function VersionLegacyTag() {
+  return (
+    <span className="ml-1 select-none font-mono text-[9px] font-medium uppercase tracking-[0.12em] opacity-60">
+      legacy
+    </span>
   );
 }
 
@@ -2457,9 +2551,11 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
 }
 
 function SpecFilter({
+  specs,
   selectedSpecs,
   onToggle,
 }: {
+  specs: readonly string[];
   selectedSpecs: readonly string[];
   onToggle: (spec: string) => void;
 }) {
@@ -2471,7 +2567,7 @@ function SpecFilter({
       >
         Specs
         <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
-          {selectedSpecs.length}/{SCAFFBENCH2_SPECS.length}
+          {selectedSpecs.length}/{specs.length}
         </span>
         <ChevronDown className="size-3.5" />
       </DropdownMenuTrigger>
@@ -2480,7 +2576,7 @@ function SpecFilter({
           <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
             Specs
           </DropdownMenuLabel>
-          {SCAFFBENCH2_SPECS.map((spec) => (
+          {specs.map((spec) => (
             <SpecMenuItem
               key={spec}
               spec={spec}

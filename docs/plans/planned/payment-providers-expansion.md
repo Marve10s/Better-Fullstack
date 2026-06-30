@@ -1,6 +1,6 @@
 # Payment Providers Expansion
 
-Current: Polar, Stripe, Lemon Squeezy, Paddle, Dodo. Multiple new providers requested on better-t-stack (#974, #820, #716, #676).
+Current: Polar, Stripe, Lemon Squeezy, Paddle, Dodo. Multiple new providers requested on better-t-stack (#974, #820, #716, #676). Status refreshed on 2026-06-30.
 
 ---
 
@@ -47,7 +47,7 @@ Better Auth has first-party plugins for payment providers. We should leverage th
 
 | Provider | Plugin | Status |
 |----------|--------|--------|
-| Stripe | `@better-auth/stripe` | Existing — should be wired up |
+| Stripe | `@better-auth/stripe` | Existing provider; still verify generated plugin depth |
 | Polar | Custom integration | Already implemented |
 | Creem | `@creem/better-auth` | New — community plugin |
 
@@ -60,11 +60,15 @@ Better Auth has first-party plugins for payment providers. We should leverage th
 
 Related but distinct — the organizations plugin enables multi-tenant SaaS billing:
 
-- [ ] Add Better Auth `organizations` plugin support
+- [x] Add Better Auth `organizations` plugin support ✅
   - Team/org creation, member roles, invitations
   - Pairs naturally with payment providers (org-level subscriptions)
   - Schema: add `organization` table to auth schema
-  - Could be a separate addon or tied to payments selection
+  - Shipped as the `better-auth-organizations` auth option with server/client plugin wiring and generated organization/member/invitation schema across supported auth database adapters
+
+### Remaining SaaS Billing Follow-Up
+
+- [ ] Add an opinionated SaaS billing preset that combines Better Auth organizations with a payment provider, org-level subscription tables, entitlement checks, and generated dashboard routes.
 
 ---
 
@@ -85,5 +89,6 @@ Related but distinct — the organizations plugin enables multi-tenant SaaS bill
 
 1. **Creem.io** — Better Auth plugin makes integration clean
 2. **Autumn** — AI/usage billing + Convex support
-3. **Better Auth organizations plugin** — enables SaaS billing patterns
-4. **Commet** — evaluate SDK maturity first
+3. **Better Auth payment plugin wiring** — Stripe/Creem-style plugin integration where it improves generated auth config
+4. **SaaS billing preset** — Better Auth organizations + payments + entitlement checks
+5. **Commet** — evaluate SDK maturity first
