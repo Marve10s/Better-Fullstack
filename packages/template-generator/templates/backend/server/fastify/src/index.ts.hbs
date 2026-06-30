@@ -2,8 +2,8 @@ import { env } from "@{{projectName}}/env/server";
 import Fastify{{#if (eq api "apollo-server")}}, { type FastifyRequest }{{/if}} from "fastify";
 import fastifyCors from "@fastify/cors";
 {{#if (eq api "openapi")}}
-import swagger from "@fastify/swagger";
-import { apiReference } from "@scalar/fastify-api-reference";
+import swagger, { type FastifyDynamicSwaggerOptions } from "@fastify/swagger";
+import apiReference from "@scalar/fastify-api-reference";
 import {
 	jsonSchemaTransform,
 	serializerCompiler,
@@ -132,7 +132,7 @@ const fastify = Fastify({
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 await fastify.register(swagger, {
-	openapi: createOpenApiDocument(),
+	openapi: createOpenApiDocument() as FastifyDynamicSwaggerOptions["openapi"],
 	transform: jsonSchemaTransform,
 });
 await fastify.register(apiReference, {
