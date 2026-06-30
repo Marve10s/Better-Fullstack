@@ -24,7 +24,11 @@ export type BenchmarkRow = {
   path: string;
   scoredRuns: number;
   inconclusiveCount: number;
+  /** CORE pass rate: install/build/typecheck/native compile. The headline. */
   passRate: number;
+  /** Advisory tier (core + lint/format/test). Separate from passRate so a
+   * formatting failure is shown as a quality miss, never as a broken project. */
+  qualityPassRate: number;
   macroPassRate: number;
   passAnySpecs: number;
   passAllSpecs: number;
@@ -64,6 +68,7 @@ function rowFromAggregate(aggregate: Aggregate): BenchmarkRow {
     scoredRuns: aggregate.scoredRuns,
     inconclusiveCount: aggregate.inconclusiveCount,
     passRate: aggregate.passRate,
+    qualityPassRate: aggregate.qualityPassRate,
     macroPassRate: aggregate.macroPassRate,
     passAnySpecs: aggregate.passAnySpecs,
     passAllSpecs: aggregate.passAllSpecs,

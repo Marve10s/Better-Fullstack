@@ -25,6 +25,7 @@ import {
   SCAFFBENCH_2_SPECS,
   typecheckGate,
   validationPassed,
+  qualityPassed,
   type RunResult,
   type StepResult,
 } from "./scaffbench-v2-lib";
@@ -104,6 +105,9 @@ describe("ScaffBench 2 harness config", () => {
       "python-ingestion-api",
       "go-realtime-api",
       "multi-dotnet-ops",
+      "ts-svelte-edge-orpc",
+      "dotnet-blazor-cqrs",
+      "multi-ts-go-grpc",
     ]);
     expect(options.repeats).toBe(1);
     expect(options.promptStyle).toBe("explicit");
@@ -314,9 +318,11 @@ describe("ScaffBench 2 scoring", () => {
     stderrTail: "",
   });
 
-  it("treats a 'skip' gate step as a failure, not a vacuous pass (Finding 1)", () => {
-    // Core is green but the linter could not run (no tool configured) -> 'skip'
-    // (exitCode null). Pre-fix this carried exitCode 0 and passed silently.
+  it("treats a 'skip' advisory step as a quality miss, not a core failure (Finding 1)", () => {
+    // Core (install+build) is green so the project builds and runs -> core pass.
+    // The linter could not run (no tool configured) -> 'skip' (exitCode null):
+    // that is NOT a vacuous quality pass (pre-fix it carried exitCode 0 and
+    // passed silently), but it must not flag the working project as broken.
     const run = makeRun({
       validation: {
         projectExists: true,
@@ -335,7 +341,38 @@ describe("ScaffBench 2 scoring", () => {
         },
       },
     });
-    expect(validationPassed(run)).toBe(false);
+    expect(validationPassed(run)).toBe(true);
+    expect(qualityPassed(run)).toBe(false);
+  });
+
+  it("scores a format-only failure as a core pass but a quality fail (not broken)", () => {
+    // The project installs, builds, and type-checks; only `format` is red. A
+    // mis-formatted project still runs, so this is a quality miss, not a broken
+    // template: Pass@1 (core) holds, Quality drops, outcome stays success.
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: okStep("bun install"),
+          build: okStep("bun run build"),
+          typecheck: okStep("tsc --noEmit"),
+          format: {
+            command: "biome format .",
+            exitCode: 1,
+            timedOut: false,
+            durationMs: 1,
+            stdoutTail: "would reformat 3 files",
+            stderrTail: "",
+          },
+        },
+      },
+    });
+    expect(validationPassed(run)).toBe(true);
+    expect(qualityPassed(run)).toBe(false);
+    expect(classifyOutcome(run)).toBe("success");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("format-failed");
+    expect(tags).not.toContain("validation-failed");
   });
 
   it("excludes an 'na' step (genuinely testless scaffold) from the pass decision", () => {

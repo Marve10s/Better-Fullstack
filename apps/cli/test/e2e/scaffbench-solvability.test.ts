@@ -33,6 +33,10 @@ const SPEC_TOOLCHAINS: Record<string, string[]> = {
   "python-ingestion-api": ["uv"],
   "go-realtime-api": ["go"],
   "multi-dotnet-ops": ["dotnet"],
+  // Expansion batch 1.
+  "ts-svelte-edge-orpc": [],
+  "dotnet-blazor-cqrs": ["dotnet"],
+  "multi-ts-go-grpc": ["go"],
 };
 
 // Steps that must pass for a stack to count as "solvable". Lint/format/test/
@@ -45,13 +49,25 @@ const EXPECTED_FILE_BY_FAMILY: Record<string, string> = {
   rust: "Cargo.toml",
   python: "pyproject.toml",
   go: "go.mod",
+  java: "pom.xml",
+  elixir: "mix.exs",
+  "react-native": "package.json",
+  // dotnet solo nests the .csproj under apps/server; no reliable root manifest,
+  // so it is omitted here and judged by validateProject's dotnet detection.
 };
 
 function selectSpecs(): BenchmarkSpec[] {
   const filter = process.env.SCAFFBENCH_SOLVABILITY_SPECS?.split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  return SCAFFBENCH_2_SPECS.filter((spec) => !filter?.length || filter.includes(spec.id));
+  return (
+    SCAFFBENCH_2_SPECS
+      // Frontier specs (supportedByBetterFullstack === false) are beyond BFS's
+      // option space and have no scaffoldable canonical flags — they are
+      // prompt-only in the benchmark and cannot be exercised by this gate.
+      .filter((spec) => spec.supportedByBetterFullstack)
+      .filter((spec) => !filter?.length || filter.includes(spec.id))
+  );
 }
 
 describe("ScaffBench 2 spec solvability", () => {

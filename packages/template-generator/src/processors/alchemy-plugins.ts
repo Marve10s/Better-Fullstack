@@ -153,6 +153,7 @@ function processSvelteAlchemy(vfs: VirtualFileSystem) {
     imp.getModuleSpecifierValue().includes("@sveltejs/adapter"),
   );
 
+  // Rewrite the default adapter import to the Alchemy Cloudflare adapter.
   if (adapterImport) {
     adapterImport.setModuleSpecifier("alchemy/cloudflare/sveltekit");
     adapterImport.removeDefaultImport();
@@ -164,28 +165,28 @@ function processSvelteAlchemy(vfs: VirtualFileSystem) {
     });
   }
 
-  const configVariable = sourceFile.getVariableDeclaration("config");
-  if (configVariable) {
-    const initializer = configVariable.getInitializer();
-    if (tsMorph.Node.isObjectLiteralExpression(initializer)) {
-      const kitProperty = initializer.getProperty("kit");
-      if (kitProperty && tsMorph.Node.isPropertyAssignment(kitProperty)) {
-        const kitInitializer = kitProperty.getInitializer();
-        if (tsMorph.Node.isObjectLiteralExpression(kitInitializer)) {
-          const adapterProperty = kitInitializer.getProperty("adapter");
-          if (adapterProperty && tsMorph.Node.isPropertyAssignment(adapterProperty)) {
-            const adapterInitializer = adapterProperty.getInitializer();
-            if (tsMorph.Node.isCallExpression(adapterInitializer)) {
-              const expression = adapterInitializer.getExpression();
-              if (tsMorph.Node.isIdentifier(expression) && expression.getText() === "adapter") {
-                expression.replaceWithText("alchemy");
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  // Add the standard Cloudflare adapter as a build-time fallback. The Alchemy
+  // adapter throws at `vite build` when its local wrangler config
+  // (.alchemy/local/wrangler.jsonc) is absent — the case on a fresh scaffold
+  // before `alchemy dev`/`alchemy deploy` has run (e.g. in CI). Selecting the
+  // adapter at config-load time keeps `bun run build` working pre-deploy while
+  // still using Alchemy once the local config exists.
+  sourceFile.addImportDeclaration({
+    moduleSpecifier: "@sveltejs/adapter-cloudflare",
+    defaultImport: "cloudflareAdapter",
+  });
+  sourceFile.addImportDeclaration({
+    moduleSpecifier: "node:fs",
+    namedImports: ["existsSync"],
+  });
+  const importCount = sourceFile.getImportDeclarations().length;
+  sourceFile.insertStatements(
+    importCount,
+    'const adapter = existsSync(".alchemy/local/wrangler.jsonc") ? alchemy : cloudflareAdapter;',
+  );
+
+  // The `kit.adapter: adapter()` call is intentionally left unchanged — `adapter`
+  // now resolves to the guard constant defined above.
 
   vfs.writeFile(svelteConfigPath, sourceFile.getFullText());
 }
