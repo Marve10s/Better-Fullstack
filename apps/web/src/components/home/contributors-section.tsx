@@ -114,7 +114,7 @@ export default function ContributorsSection() {
             {m.homeContributeGithub()}
           </a>
           <a
-            href="https://www.patreon.com/c/marve10s"
+            href="https://www.patreon.com/cw/marve10s"
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"

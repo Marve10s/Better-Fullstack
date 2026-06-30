@@ -56,6 +56,11 @@ const ChangelogWidget = lazy(async () => {
   return { default: mod.ChangelogWidget };
 });
 
+const PatreonButton = lazy(async () => {
+  const mod = await import("@/components/patreon-button");
+  return { default: mod.PatreonButton };
+});
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
@@ -142,7 +147,7 @@ export const Route = createRootRoute({
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Figtree:wght@600;700&display=swap",
         },
       ],
     };
@@ -157,6 +162,7 @@ function RootComponent() {
       <Outlet />
       <Suspense fallback={null}>
         <ChangelogWidget />
+        <PatreonButton />
       </Suspense>
     </RootDocument>
   );
