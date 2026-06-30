@@ -10,30 +10,30 @@ When updating this file, verify shipped status against `packages/types/src/schem
 
 | File | Scope |
 |------|-------|
-| [multi-ecosystem-parity-expansion.md](multi-ecosystem-parity-expansion.md) | **Active master plan**: Tier 1 category parity + Tier 2 depth across Go/Python/Rust/Java/Elixir/.NET + Kotlin |
+| [multi-ecosystem-parity-expansion.md](multi-ecosystem-parity-expansion.md) | Historical/current master plan for June 2026 parity batches; most Tier 1/2 library promotion work has shipped, remaining notes are deferred edge cases |
 | **TypeScript** | |
 | [typescript-category-expansion.md](typescript-category-expansion.md) | Expand existing TS categories: search, CMS, flags, observability, deploy, etc. |
 | [typescript-new-categories.md](typescript-new-categories.md) | New TS categories: GraphQL, i18n, rate limiting, desktop, browser ext, PWA, docs |
 | **Existing Ecosystems** | |
-| [rust-ecosystem-expansion.md](rust-ecosystem-expansion.md) | 10 new categories for Rust (frameworks, ORMs, auth, logging, caching, queues, etc.) |
-| [go-ecosystem-expansion.md](go-ecosystem-expansion.md) | 12 new categories for Go (frameworks, ORMs, auth, GraphQL, config, queues, etc.) |
-| [python-ecosystem-expansion.md](python-ecosystem-expansion.md) | 12 new categories for Python (frameworks, ORMs, auth, GraphQL, CLI, testing, etc.) |
+| [rust-ecosystem-expansion.md](rust-ecosystem-expansion.md) | Remaining Rust depth after shipped auth, caching, queues, templating, realtime, and observability |
+| [go-ecosystem-expansion.md](go-ecosystem-expansion.md) | Remaining Go depth after shipped GraphQL, OAuth, config, queues, caching, realtime, testing, and observability |
+| [python-ecosystem-expansion.md](python-ecosystem-expansion.md) | Remaining Python depth after shipped Starlette, Peewee, FastAPI Users, AI, Taskiq, CLI, testing, caching, realtime, and observability |
 | **New Ecosystems** | |
 | [new-ecosystems.md](new-ecosystems.md) | Index — links to individual ecosystem files below |
 | [../completed/java-ecosystem-foundation-2026-04-29.md](../completed/java-ecosystem-foundation-2026-04-29.md) | ✅ Java foundation: Spring Boot, Maven/Gradle, Spring Data JPA, Spring Security, libraries, testing, docs |
 | [java-ecosystem-follow-ups.md](java-ecosystem-follow-ups.md) | Remaining Java expansion: Micronaut, jOOQ, MyBatis, Keycloak, messaging, observability |
 | [elixir-ecosystem.md](elixir-ecosystem.md) | Elixir foundation shipped; remaining follow-ups for deeper Phoenix/LiveView deployment and advanced library coverage |
-| [dotnet-ecosystem.md](dotnet-ecosystem.md) | ✅ C# foundation shipped 2026-06-10: ASP.NET Core, EF Core, Dapper, SignalR, multi-ecosystem backend |
+| [../completed/dotnet-ecosystem-2026-06-10.md](../completed/dotnet-ecosystem-2026-06-10.md) | ✅ C# foundation shipped 2026-06-10: ASP.NET Core, EF Core, Dapper, Linq2DB, SignalR, multi-ecosystem backend |
 | **Platform & Infra** | |
-| [platform-features.md](platform-features.md) | CLI features: dry-run, cross-ecosystem, template preview (MCP/add/history done) |
-| [mcp-incremental-library-updates.md](mcp-incremental-library-updates.md) | Future MCP stack mutation layer for adding scaffold-time libraries to existing projects |
-| [docker-and-devcontainers.md](docker-and-devcontainers.md) | Remaining Docker follow-ups: DevContainers and non-monorepo mode |
-| [payment-providers-expansion.md](payment-providers-expansion.md) | Creem.io, Autumn, Commet, Better Auth orgs plugin |
-| [community-requested-integrations.md](community-requested-integrations.md) | Cloudinary, SWR, shadcn-svelte, REST API, InstantDB, Intlayer, Plasmo, etc. |
-| [mobile-react-native.md](mobile-react-native.md) | Navigation, mobile UI libs, testing, push, Capacitor, OTA updates |
+| [platform-features.md](platform-features.md) | Next platform/DX features after shipped MCP, add/history, dry-run, graph stacks, and preview |
+| [mcp-incremental-library-updates.md](mcp-incremental-library-updates.md) | Generic MCP stack mutation follow-ups after initial broad tool support landed |
+| [docker-and-devcontainers.md](docker-and-devcontainers.md) | Remaining container follow-up: non-monorepo/single-app mode |
+| [payment-providers-expansion.md](payment-providers-expansion.md) | Creem.io, Autumn, Commet, and deeper Better Auth payment plugin integration |
+| [community-requested-integrations.md](community-requested-integrations.md) | InstantDB, Intlayer, Plasmo, Effect HTTP, raw SQL, and other still-open requests |
+| [mobile-react-native.md](mobile-react-native.md) | Remaining mobile depth after shipped navigation, UI, storage, testing, push, OTA, and deep-linking |
 | [../completed/documentation-site-2026-04-29.md](../completed/documentation-site-2026-04-29.md) | ✅ Initial user-facing `/docs` site |
 | [documentation-follow-ups.md](documentation-follow-ups.md) | Remaining docs: generated flag data, env/provider examples, stack guides |
-| [ci-and-quality.md](ci-and-quality.md) | Remaining quality backlog: cross-browser testing (CI/security foundation + Phase 1 hardening completed) |
+| [../completed/ci-and-quality-follow-ups-2026-06-30.md](../completed/ci-and-quality-follow-ups-2026-06-30.md) | ✅ Historical quality backlog; active quality work now belongs in specific feature plans and ScaffBench/verification work |
 | **Reference** | |
 | [../completed/competitive-analysis-2026-05-21.md](../completed/competitive-analysis-2026-05-21.md) | Historical gap analysis vs better-t-stack |
 | [../completed/codebase-issues-2026-04-04.md](../completed/codebase-issues-2026-04-04.md) | ✅ Bugs and quality issues from April 2026 audit (all resolved) |
@@ -46,13 +46,13 @@ When updating this file, verify shipped status against `packages/types/src/schem
 - [x] Add `netlify` ✅ (web-only v1)
 
 ### Auth
-- [ ] Add `kinde`
-- [ ] Add `workos`
-- [ ] Better Auth `organizations` plugin
+- [x] Add `kinde` ✅
+- [x] Add `workos` ✅
+- [x] Better Auth `organizations` plugin ✅
 
 ### Search
 - [x] Add `algolia` ✅
-- [ ] Add `opensearch`
+- [x] Add `opensearch` ✅
 - [x] Add `elasticsearch` ✅
 
 ### Feature Flags
@@ -61,17 +61,17 @@ When updating this file, verify shipped status against `packages/types/src/schem
 - [x] Add `launchdarkly`
 
 ### Observability
-- [ ] Add `axiom`
-- [ ] Add `betterstack`
-- [ ] Add `datadog`
+- [x] Add `axiom` ✅
+- [x] Add `betterstack` ✅
+- [x] Add `datadog` ✅
 
 ### CMS
-- [ ] Add `directus`
-- [ ] Add `keystatic`
+- [x] Add `directus` ✅
+- [x] Add `keystatic` ✅
 
 ### Storage
 - [ ] Add `supabase-storage`
-- [ ] Add `cloudinary`
+- [x] Add `cloudinary` ✅
 
 ### Payments
 - [ ] Add `creem`
@@ -81,30 +81,36 @@ When updating this file, verify shipped status against `packages/types/src/schem
 ### API / GraphQL
 - [x] Add `pothos` (GraphQL) ✅
 - [x] Add `graphql-yoga` ✅
-- [ ] Add `apollo-server`
-- [ ] Add `rest` / OpenAPI scaffolding
+- [x] Add `apollo-server` ✅
+- [x] Add OpenAPI scaffolding ✅
 - [ ] Add `effect-http`
 
 ### i18n (new category)
-- [ ] Add `paraglide`
+- [x] Add `paraglide` ✅
 - [x] Add `i18next` ✅
 - [x] Add `next-intl` ✅
 - [ ] Add `intlayer`
 
 ### Rate Limiting (new category)
-- [ ] Add `upstash-ratelimit`
-- [ ] Add `arcjet`
+- [x] Add `upstash-ratelimit` ✅
+- [x] Add `arcjet` ✅
+
+### Vector DB (new category)
+- [x] Add `pgvector` ✅
+- [x] Add `qdrant` ✅
+- [x] Add `chroma` ✅
+- [x] Add `pinecone` ✅
 
 ### Data Fetching (new category)
-- [ ] Add `swr`
+- [x] Add `swr` ✅
 
 ### UI Libraries
 - [ ] Add `heroui`
-- [ ] Add `shadcn-svelte`
-- [ ] Add `gluestack`
+- [x] Add `shadcn-svelte` ✅
+- [x] Add mobile `gluestack-ui` ✅
 
 ### Monorepo
-- [ ] Add `nx`
+- [x] Add `nx` ✅
 
 ### Desktop / Extensions / Mobile
 - [x] Add `tauri` ✅
@@ -115,13 +121,14 @@ When updating this file, verify shipped status against `packages/types/src/schem
 ### Infra / DevOps
 - [x] Dockerfile generation for supported deploy/addon stacks ✅
 - [x] `docker-compose.yml` generation for supported addon stacks ✅
-- [ ] DevContainer support
+- [x] DevContainer support ✅
+- [x] GitHub Actions CI addon ✅
 - [ ] Non-monorepo / single-app mode
 
 ### Python Frameworks
 - [x] Add `flask` ✅
 - [x] Add `litestar` ✅
-- [ ] Add `starlette`
+- [x] Add `starlette` ✅
 
 ### Go Frameworks
 - [x] Add `chi` ✅
@@ -144,7 +151,9 @@ When updating this file, verify shipped status against `packages/types/src/schem
 - [x] Navigation (expo-router, react-navigation) ✅
 - [x] Mobile UI libs (tamagui, gluestack, nativewind/unistyles path) ✅
 - [x] Mobile testing foundation (React Native Testing Library / Maestro choice) ✅
-- [ ] Push notifications (expo-notifications)
+- [x] Push notifications (expo-notifications) ✅
+- [x] OTA updates (expo-updates) ✅
+- [x] Deep linking (expo-linking) ✅
 - [ ] Capacitor (web → mobile)
 
 ### Documentation
@@ -164,5 +173,8 @@ When updating this file, verify shipped status against `packages/types/src/schem
 - [x] `history` command ✅
 - [x] Project config (`bts.jsonc`) ✅
 - [x] `--dry-run` flag ✅
-- [ ] MCP stack updates for adding scaffold-time libraries to existing projects
-- [ ] Cross-ecosystem stacks (research)
+- [x] Generic MCP stack updates for adding scaffold-time libraries to existing projects ✅
+- [x] Cross-ecosystem graph stacks ✅
+- [x] Web template preview API ✅
+- [ ] Post-scaffold upgrade engine
+- [ ] Public verified-combinations status/guarantee

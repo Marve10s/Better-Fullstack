@@ -1,0 +1,48 @@
+{
+  "name": "better-fullstack",
+  "version": "2.1.3",
+  "description": "Let your AI assistant scaffold and extend Better Fullstack projects through the official MCP server and focused skills.",
+  "author": {
+    "name": "Better Fullstack",
+    "url": "https://github.com/Marve10s/Better-Fullstack"
+  },
+  "homepage": "https://better-fullstack.dev",
+  "repository": "https://github.com/Marve10s/Better-Fullstack",
+  "license": "MIT",
+  "keywords": [
+    "better-fullstack",
+    "create-better-fullstack",
+    "scaffold",
+    "starter",
+    "fullstack",
+    "typescript",
+    "react-native",
+    "rust",
+    "python",
+    "go",
+    "java",
+    "elixir",
+    "dotnet",
+    "ai-agent",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Better Fullstack",
+    "shortDescription": "Scaffold and extend verified fullstack starters",
+    "longDescription": "Bring Better Fullstack into Codex with skills that plan valid stacks, scaffold projects through the official MCP server, and update existing generated projects with preview-first stack changes. Covers TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET ecosystems.",
+    "developerName": "Better Fullstack",
+    "category": "Coding",
+    "capabilities": ["Interactive", "Write", "MCP"],
+    "websiteURL": "https://better-fullstack.dev",
+    "brandColor": "#2563EB",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "defaultPrompt": [
+      "Create a fullstack app with Next, Hono, Postgres, and Better Auth",
+      "Scaffold a Rust Axum API with SQLx and Sentry",
+      "Add generated CI and observability to this Better Fullstack project"
+    ]
+  }
+}

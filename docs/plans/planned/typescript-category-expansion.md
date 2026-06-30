@@ -1,13 +1,15 @@
 # TypeScript — Expand Existing Categories
 
-These are additions to categories that already exist but need more options.
+These are additions to categories that already exist. Status was refreshed against
+`packages/types/src/schemas.ts`, `packages/template-generator/templates/`, CLI prompts, and web
+builder metadata on 2026-06-30.
 
 ---
 
-## Search (current: meilisearch, typesense)
+## Search
 
 - [x] Add `algolia` ✅ — managed search-as-a-service. Largest in the market. Instant search, faceting, analytics.
-- [ ] Add `opensearch` — AWS-backed open-source fork of Elasticsearch. Good for AWS-heavy stacks.
+- [x] Add `opensearch` ✅ — AWS-backed open-source fork of Elasticsearch. Good for AWS-heavy stacks.
 - [x] Add `elasticsearch` ✅ Merged. Now in `SearchSchema`.
 
 ### Files to touch per addition
@@ -22,30 +24,24 @@ These are additions to categories that already exist but need more options.
 
 ---
 
-## CMS (current: payload, sanity, strapi, tinacms)
+## CMS
 
-- [ ] Add `directus` — 28k+ stars. Database-first headless CMS. No-code admin panel. Works with any SQL database. Multi-tenancy. Real-time WebSocket support.
-- [ ] Add `keystatic` — by Thinkmill (Keystone.js creators). Git-backed CMS for Astro, Next.js, Remix. Markdown/MDX-first.
+- [x] Add `directus` ✅ — database-first headless CMS.
+- [x] Add `keystatic` ✅ — Git-backed CMS for Astro/Next-style content workflows.
 
----
+## Feature Flags
 
-## Feature Flags (current: growthbook, posthog)
+- [x] Add `flagsmith` ✅ — open-source, lightweight, cross-platform.
+- [x] Add `unleash` ✅ — open-source feature flag management.
+- [x] Add `launchdarkly` ✅ — enterprise feature flag provider.
 
-- [ ] Add `flagsmith` — open-source, lightweight, cross-platform. REST API. Self-hostable.
-- [ ] Add `unleash` — open-source feature flag management. Enterprise-ready. Gradual rollouts.
-- [ ] Add `launchdarkly` — enterprise standard. Best governance and compliance. Worth including for enterprise users.
+## Observability
 
----
+- [x] Add `axiom` ✅ — modern log management.
+- [x] Add `betterstack` ✅ — uptime monitoring + logs.
+- [x] Add `datadog` ✅ — enterprise observability platform.
 
-## Observability (current: opentelemetry, sentry, grafana)
-
-- [ ] Add `axiom` — modern log management. Serverless-friendly, pay-per-use. Growing in Vercel/Next.js ecosystem.
-- [ ] Add `betterstack` — uptime monitoring + logs. Developer-friendly. Good default for smaller teams.
-- [ ] Add `datadog` — enterprise observability platform. APM, logs, infrastructure. Industry standard.
-
----
-
-## Analytics (current: plausible, umami)
+## Analytics
 
 - [ ] Add `posthog` (full platform) — all-in-one: analytics, session replay, feature flags, experiments, error tracking, surveys. Replaces multiple tools.
 
@@ -62,43 +58,33 @@ PostHog is already a feature flags option. Consider promoting it to analytics ca
 
 ---
 
-## Auth (current: better-auth, clerk, nextauth, stack-auth, supabase-auth, auth0)
+## Auth
 
-- [ ] Add `kinde` — developer-friendly auth with generous free tier. Growing fast.
-- [ ] Add `workos` — enterprise auth (SSO, SCIM, directory sync). Best for B2B SaaS.
+- [x] Add `kinde` ✅ — developer-friendly auth.
+- [x] Add `workos` ✅ — enterprise auth with SSO/directory-sync positioning.
+- [x] Add `better-auth-organizations` ✅ — Better Auth organization plugin path with generated organization schema/client/server wiring.
 
----
-
-## Deploy — Web (current: cloudflare, fly, railway, docker, sst)
+## Deploy — Web
 
 - [x] Add `vercel` ✅ — most popular for Next.js/React. Zero-config deployments.
-- [ ] Add `render` — simple PaaS. Good for full-stack apps. Auto-deploys from git.
-- [ ] Add `netlify` — strong for static/JAMstack. Edge functions, forms, identity.
+- [x] Add `render` ✅ — simple PaaS.
+- [x] Add `netlify` ✅ — web/server deploy option with compatibility rules.
 
----
-
-## Deploy — Server (current: cloudflare, fly, railway, docker, sst)
+## Deploy — Server
 
 - [x] Add `vercel` ✅ — serverless functions, edge middleware.
-- [ ] Add `render` — managed services, background workers.
+- [x] Add `render` ✅ — managed services/background worker deployment target.
+- [x] Add `netlify` ✅ — server deploy target for supported backend/runtime combinations.
 
----
-
-## File Storage (current: s3, r2)
+## File Storage
 
 - [ ] Add `supabase-storage` — S3-compatible storage with Supabase. Row-level security, CDN, image transformations.
-- [ ] Add `cloudinary` — managed media storage, transformation, and CDN. Image/video optimization, AI-based cropping. (GitHub #80)
+- [x] Add `cloudinary` ✅ — managed media storage, transformation, and CDN. (GitHub #80)
 
----
+## Database Setup
 
-## Database Setup (current: turso, neon, prisma-postgres, planetscale, mongodb-atlas, supabase, upstash, d1, docker)
-
-- [ ] Add `planetscale` — MySQL-compatible serverless (Vitess-based). Branching, non-blocking schema changes.
-- [ ] Add `prisma-postgres` — managed Prisma database. Tightest Prisma integration.
-- [ ] Add `d1` — Cloudflare's managed SQLite. Edge-native.
-
-### Note
-These may already be in the schema — verify current state before implementing.
+- [x] `planetscale`, `prisma-postgres`, and `d1` are already first-class database setup options.
+- [ ] Revisit generated provider setup depth: credentials, branch/database creation hints, and MCP stack-update defaults.
 
 ---
 
@@ -111,7 +97,7 @@ These may already be in the schema — verify current state before implementing.
 
 ## Monorepo (current: turborepo only)
 
-- [ ] Add `nx` — enterprise monorepo tool. Project graph, module boundaries, code generation, distributed caching. Better for large teams (30+). Steeper learning curve but pays off at scale.
+- [x] Add `nx` ✅ — enterprise monorepo tool with `nx.json`, package scripts, and mutual-exclusion compatibility with Turborepo.
 
 ### Implementation
 - Mutually exclusive with turborepo
@@ -120,35 +106,35 @@ These may already be in the schema — verify current state before implementing.
 
 ---
 
-## UI Library (current: 12 options)
+## UI Library
 
 - [ ] Add `heroui` — formerly NextUI, rebranded Jan 2025. Growing beyond Next.js. Beautiful defaults.
+- [x] Add `shadcn-svelte` ✅ — shipped as a Svelte-compatible UI library option.
 
 ---
 
-## Data Fetching (new section)
+## Data Fetching
 
-No dedicated data-fetching category currently. TanStack Query is available as an addon but SWR is not.
-
-- [ ] Add `swr` — Vercel's stale-while-revalidate data fetching. Smaller bundle than TanStack Query, simpler API. React-only. (GitHub #79, maintainer positive)
+- [x] Add `swr` ✅ — shipped as an addon/data-fetching option for compatible web frontends. (GitHub #79)
+- [ ] Decide whether data-fetching should stay addon-shaped or become a dedicated stack graph role alongside TanStack Query.
 
 ---
 
-## API (current: trpc, orpc, ts-rest, garph)
+## API
 
-- [ ] Add `rest` / `openapi` — plain REST scaffolding with auto-generated OpenAPI spec and Swagger UI. No RPC overhead. (better-t-stack #631)
+- [x] Add `openapi` ✅ — REST/OpenAPI scaffolding with generated API reference path. (better-t-stack #631)
+- [x] Add `apollo-server` ✅ — Apollo Server GraphQL API option.
 - [ ] Add `effect-http` — Effect-ts as API layer. Type-safe, composable. For `--effect` users. (better-t-stack #815)
 
 ---
 
 ## Priority Order
 
-1. **Deploy** (vercel, render, netlify) — highest user demand
-2. **Search** (algolia, opensearch) — natural expansion
-3. **REST/OpenAPI** — most common API pattern, currently missing
-4. **CMS** (directus, keystatic) — fills gaps
-5. **Feature Flags** (flagsmith, unleash) — enterprise demand
-6. **Observability** (axiom, betterstack, datadog) — production readiness
-7. **Auth** (kinde, workos) — more choices
-8. **Nx** — enterprise monorepo
-9. Remaining categories
+1. **Payments depth** — Creem, Autumn, Commet, plus Better Auth payment-plugin wiring.
+2. **Generated-project CI quality** — polish the GitHub Actions addon and make generated projects self-checking.
+3. **Analytics depth** — decide whether PostHog should exist in analytics as well as feature flags.
+4. **Caching expansion** — standalone Redis, Dragonfly, or Memcached if demand justifies more than Upstash.
+5. **Supabase Storage** — remaining obvious storage provider gap.
+6. **Effect HTTP** — API layer for Effect-heavy stacks.
+7. **HeroUI** — revisit naming/compatibility now that `nextui` already exists.
+8. **Data-fetching role** — decide whether SWR/TanStack Query should move out of addon semantics.

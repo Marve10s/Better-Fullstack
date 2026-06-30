@@ -6,7 +6,7 @@ Master plan for closing the category-asymmetry gap between ecosystems (Tier 1) a
 existing categories (Tier 2), plus the next new language (Kotlin). Supersedes the per-category
 checklists in `go-ecosystem-expansion.md`, `python-ecosystem-expansion.md`,
 `rust-ecosystem-expansion.md`, `java-ecosystem-follow-ups.md`, and the open items in
-`elixir-ecosystem.md` / `dotnet-ecosystem.md` — those stay as background; ticking happens here.
+`elixir-ecosystem.md` / `../completed/dotnet-ecosystem-2026-06-10.md` — those stay as background; ticking happens here.
 
 Context: TypeScript has ~40 categories / 200+ options. Elixir is the strongest non-TS ecosystem
 (15 categories / 45 options); Go is the weakest (6 categories / 18 options). Every category below
@@ -174,7 +174,7 @@ Zig stays on the watch list (web ecosystem still premature).
 ## Out of scope (tracked elsewhere)
 
 - Multi-ecosystem (`--part`) smoke presets — pre-existing gap for ALL ecosystems, tracked in
-  `ci-and-quality.md`.
+  completed CI/quality notes and current ScaffBench/verification work.
 - TypeScript-exclusive service categories (payments, CMS, file storage, feature flags, i18n) for
   non-TS ecosystems — Tier 3, needs per-provider SDK evaluation first.
 - "else frontend" ownership of validation/effect — see `single-source-of-truth-stack-graph.md`.

@@ -1,6 +1,10 @@
 # CI / Testing / Quality Infrastructure
 
-Tracks the quality backlog that remains after the verified CI/security baseline and Phase 1 hardening work moved into `docs/plans/completed/ci-security-foundation-2026-04-04.md` and `docs/plans/completed/phase-1-quality-hardening-2026-04-04.md`.
+Status: completed / archived on 2026-06-30.
+
+This historical note captures the old quality backlog after the verified CI/security baseline and
+Phase 1 hardening work moved into `docs/plans/completed/ci-security-foundation-2026-04-04.md` and
+`docs/plans/completed/phase-1-quality-hardening-2026-04-04.md`.
 
 ---
 

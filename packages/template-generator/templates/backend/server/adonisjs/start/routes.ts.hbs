@@ -16,7 +16,7 @@ import { createContext } from "@{{projectName}}/api/context";
 {{/if}}
 {{/if}}
 {{#if (includes examples "ai")}}
-import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { pipeUIMessageStreamToResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 {{/if}}
@@ -142,6 +142,9 @@ router.post("/ai", async ({ request, response }) => {
 		model,
 		messages: await convertToModelMessages(messages),
 	});
-	result.pipeUIMessageStreamToResponse(response.response as any);
+	pipeUIMessageStreamToResponse({
+		response: response.response as any,
+		stream: toUIMessageStream({ stream: result.stream }),
+	});
 });
 {{/if}}
