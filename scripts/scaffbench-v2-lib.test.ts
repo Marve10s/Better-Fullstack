@@ -7,6 +7,7 @@ import {
   aggregateResults,
   agentLabelForModel,
   canonicalCommand,
+  claudeCostUsd,
   classifyOutcome,
   deriveFailureTags,
   extractToolUses,
@@ -1125,5 +1126,30 @@ describe("opencode / Kilo Code agent adapter", () => {
     const bash = uses.filter((u) => /(^|_)bash$/i.test(u.name)).map((u) => u.command ?? "");
     expect(bash.some((c) => /create\s+better-fullstack/.test(c))).toBe(true);
     expect(bash.some((c) => c.includes("--dry-run"))).toBe(true);
+  });
+});
+
+describe("ScaffBench 2 Claude cost pricing", () => {
+  it("prices Claude from token usage so a $0 CLI cost is not treated as free", () => {
+    // Opus 4.8: $5/1M input, $25/1M output; cache read 0.1x input, write 1.25x.
+    const usage = {
+      input_tokens: 1_000_000,
+      output_tokens: 1_000_000,
+      cache_read_input_tokens: 1_000_000,
+      cache_creation_input_tokens: 1_000_000,
+    };
+    // 5 + 25 + 0.5 + 6.25 = 36.75
+    expect(claudeCostUsd("claude-opus-4-8", usage)).toBeCloseTo(36.75, 5);
+    // Bare alias resolves to the same pricing.
+    expect(claudeCostUsd("opus", { output_tokens: 1_000_000 })).toBeCloseTo(25, 5);
+    // Sonnet/Haiku tiers differ.
+    expect(claudeCostUsd("claude-sonnet-4-6", { input_tokens: 1_000_000 })).toBeCloseTo(3, 5);
+    expect(claudeCostUsd("claude-haiku-4-5", { output_tokens: 1_000_000 })).toBeCloseTo(5, 5);
+  });
+
+  it("returns undefined for non-Claude models so they keep their own reported cost", () => {
+    expect(claudeCostUsd("gpt-5.5", { output_tokens: 1_000_000 })).toBeUndefined();
+    expect(claudeCostUsd("opencode/north-mini", { output_tokens: 1_000 })).toBeUndefined();
+    expect(claudeCostUsd("claude-opus-4-8", undefined)).toBeUndefined();
   });
 });

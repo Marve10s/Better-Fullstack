@@ -324,7 +324,11 @@ function resolveSpecPaths(
   return requested.filter((path) => allowed.includes(path));
 }
 
-const CLAUDE_TIMEOUT_MS = 15 * 60_000;
+// Generous generation budget: Opus 4.8 and other long-horizon agents can run
+// many minutes on a hard scaffold task. A tight timeout cuts thorough runs off
+// mid-work AND loses their cost/token accounting (the result JSON only lands on
+// a clean exit) — so a longer-working agent must not be silently penalised.
+const CLAUDE_TIMEOUT_MS = 30 * 60_000;
 const VALIDATION_TIMEOUT_MS = 10 * 60_000;
 const FAST_TIMEOUT_MS = 60_000;
 const QUEUE_POLL_MS = 5_000;
@@ -1878,7 +1882,10 @@ async function runScaffbenchUnlocked(options: ScaffbenchOptions, log = console.l
                 durationMs,
                 resultDurationMs: parsed?.duration_ms,
                 outputTokens: parsed?.usage?.output_tokens,
-                totalCostUsd: parsed?.total_cost_usd,
+                // Price Claude from token usage (the CLI reports $0 on a
+                // subscription / Max plan, which would make Claude look free);
+                // non-Claude providers fall back to their own reported cost.
+                totalCostUsd: claudeCostUsd(options.model, parsed?.usage) ?? parsed?.total_cost_usd,
                 sessionId: parsed?.session_id,
                 terminalReason: parsed?.terminal_reason,
               },
@@ -2407,6 +2414,67 @@ export function codexCostUsd(model: string, usage: CodexUsage): number | undefin
     (Math.max(0, input - cached) * price.input +
       cached * price.cachedInput +
       output * price.output) /
+    1_000_000
+  );
+}
+
+// Published token pricing (USD per 1M tokens) for Claude models. The Claude Code
+// CLI reports total_cost_usd = 0 on subscription / Max-plan usage (no per-token
+// API billing), which makes Claude look like the cheapest, most "reliable" row
+// on the leaderboard purely because it shows as free. So we price Claude from
+// token usage ourselves — exactly as the Codex path does — to get an
+// API-equivalent cost comparable across vendors. Source: Anthropic API pricing,
+// 2026. Cache reads ≈ 0.1× input; cache writes (5-min TTL) ≈ 1.25× input.
+const CLAUDE_PRICING: Record<string, { input: number; output: number }> = {
+  "claude-fable-5": { input: 10, output: 50 },
+  "claude-opus-4-8": { input: 5, output: 25 },
+  "claude-opus-4-7": { input: 5, output: 25 },
+  "claude-opus-4-6": { input: 5, output: 25 },
+  "claude-opus-4-5": { input: 5, output: 25 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
+  "claude-haiku-4-5": { input: 1, output: 5 },
+  // Bare aliases the harness/CLI may pass through as the model string.
+  fable: { input: 10, output: 50 },
+  opus: { input: 5, output: 25 },
+  sonnet: { input: 3, output: 15 },
+  haiku: { input: 1, output: 5 },
+};
+
+function claudePricingFor(model: string) {
+  const key = model.toLowerCase();
+  if (CLAUDE_PRICING[key]) return CLAUDE_PRICING[key];
+  // Fall back to the longest matching family key (e.g. "claude-opus-4-8[1m]" or
+  // a dated suffix still prices as opus); prefer the most specific match.
+  const match = Object.keys(CLAUDE_PRICING)
+    .filter((k) => key.includes(k))
+    .sort((a, b) => b.length - a.length)[0];
+  return match ? CLAUDE_PRICING[match] : undefined;
+}
+
+type ClaudeUsage = {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+};
+
+/** Estimated API-equivalent USD cost from Claude token usage × published
+ * pricing. Returns undefined when the model isn't a priced Claude model, so
+ * non-Claude providers (Codex/opencode) keep their own reported cost. Cache
+ * reads are priced at 0.1× input, cache writes at 1.25× input. */
+export function claudeCostUsd(model: string, usage: ClaudeUsage | undefined): number | undefined {
+  if (!usage) return undefined;
+  const price = claudePricingFor(model);
+  if (!price) return undefined;
+  const input = usage.input_tokens ?? 0;
+  const output = usage.output_tokens ?? 0;
+  const cacheRead = usage.cache_read_input_tokens ?? 0;
+  const cacheWrite = usage.cache_creation_input_tokens ?? 0;
+  return (
+    (input * price.input +
+      output * price.output +
+      cacheRead * price.input * 0.1 +
+      cacheWrite * price.input * 1.25) /
     1_000_000
   );
 }
