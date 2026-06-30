@@ -1,6 +1,8 @@
 {{#if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
+{{else if (eq api "ts-rest")}}
+import { tsr } from "@/utils/ts-rest";
 {{else if (or (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga")) (eq api "apollo-server"))}}
 import { useQuery } from "@tanstack/react-query";
   {{#if (eq api "orpc")}}
@@ -44,6 +46,8 @@ export function meta() {
 export default function Home() {
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
+  {{else if (eq api "ts-rest")}}
+  const healthCheck = tsr.healthCheck.useQuery(["healthCheck"]);
   {{else if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
   {{else if (eq api "trpc")}}
@@ -95,7 +99,7 @@ export default function Home() {
             </span>
           </div>
           {{else}}
-            {{#if (or (or (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga")) (eq api "apollo-server")) (eq api "openapi"))}}
+            {{#unless (eq api "none")}}
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${
@@ -110,7 +114,7 @@ export default function Home() {
                   : "Disconnected"}
               </span>
             </div>
-            {{/if}}
+            {{/unless}}
           {{/if}}
         </section>
       </div>
