@@ -111,6 +111,9 @@ describe("ScaffBench 2 harness config", () => {
       "multi-ts-go-grpc",
       "java-spring-jooq-keycloak",
       "elixir-broadway-absinthe",
+      "react-native-expo",
+      "frontier-polyglot-proto",
+      "frontier-effect-eventsourcing",
     ]);
     expect(options.repeats).toBe(1);
     expect(options.promptStyle).toBe("explicit");

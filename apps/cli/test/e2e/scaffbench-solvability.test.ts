@@ -40,6 +40,9 @@ const SPEC_TOOLCHAINS: Record<string, string[]> = {
   // Expansion batch 2 (new ecosystems).
   "java-spring-jooq-keycloak": ["mvn"],
   "elixir-broadway-absinthe": ["mix"],
+  // Expansion batch 3. react-native is bun-validated; the two frontier specs are
+  // supportedByBetterFullstack:false and skipped by selectSpecs (no BFS flags).
+  "react-native-expo": [],
 };
 
 // Steps that must pass for a stack to count as "solvable". Lint/format/test/

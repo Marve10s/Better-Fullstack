@@ -346,6 +346,11 @@ const CORE_SPEC_IDS = [
   // Expansion batch 2 (new ecosystems, supported, all paths).
   "java-spring-jooq-keycloak",
   "elixir-broadway-absinthe",
+  // Expansion batch 3 (mobile + frontier). Frontier specs run prompt-only via
+  // spec.paths, but still live in the core suite.
+  "react-native-expo",
+  "frontier-polyglot-proto",
+  "frontier-effect-eventsourcing",
 ] as const;
 
 const AI_SEARCH_STACK = {
@@ -1560,6 +1565,136 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
       { id: "forbidden:credo", forbiddenText: [":credo"] },
     ],
     validationProfile: { native: ["elixir"] },
+  },
+  {
+    id: "react-native-expo",
+    title: "React Native Expo app with Expo Router, Uniwind, MMKV, and Maestro + RNTL",
+    lane: "core",
+    family: "react-native",
+    supportedByBetterFullstack: true,
+    requirements: [
+      "Create a React Native (Expo) mobile app.",
+      "Use Expo Router for navigation and Uniwind (Tailwind-style) styling.",
+      "Use MMKV for on-device storage.",
+      "Use Maestro plus React Native Testing Library for testing.",
+      "Use Expo Notifications for push, Expo Updates for OTA, and Expo Linking for deep linking.",
+      "This is a mobile-only project: no backend, database, or auth.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a React Native mobile starter on Expo. It needs file-based navigation, Tailwind-style styling, fast on-device key-value storage, push notifications, over-the-air updates, deep linking, and both end-to-end and unit testing. It is a standalone mobile app with no server, database, or accounts.",
+    rightLibraryNotes: [
+      "Expo Router is required for navigation.",
+      "Uniwind is the required styling approach (native-uniwind frontend).",
+      "MMKV is required for storage; Maestro + RNTL for testing.",
+      "Expo Notifications / Updates / Linking are the required push / OTA / deep-linking choices.",
+    ],
+    canonicalFlags: [
+      "--ecosystem", "react-native",
+      "--frontend", "native-uniwind",
+      "--auth", "none",
+      "--mobile-navigation", "expo-router",
+      "--mobile-ui", "uniwind",
+      "--mobile-storage", "mmkv",
+      "--mobile-testing", "maestro-react-native-testing-library",
+      "--mobile-push", "expo-notifications",
+      "--mobile-ota", "expo-updates",
+      "--mobile-deep-linking", "expo-linking",
+      "--ai-docs", "claude-md",
+      "--package-manager", "bun",
+      "--no-install", "--no-git", "--disable-analytics",
+    ],
+    expectedConfig: {
+      ecosystem: "react-native",
+      frontend: ["native-uniwind"],
+      mobileNavigation: "expo-router",
+      mobileUI: "uniwind",
+      mobileStorage: "mmkv",
+      mobileTesting: "maestro-react-native-testing-library",
+      mobilePush: "expo-notifications",
+      mobileOTA: "expo-updates",
+      mobileDeepLinking: "expo-linking",
+    },
+    strictMarkers: [
+      { id: "nav:expo-router", deps: ["expo-router"] },
+      { id: "styling:uniwind", deps: ["uniwind"] },
+      { id: "storage:mmkv", deps: ["react-native-mmkv"] },
+      { id: "push:expo-notifications", deps: ["expo-notifications"] },
+      { id: "ota:expo-updates", deps: ["expo-updates"] },
+      { id: "deep-linking:expo-linking", deps: ["expo-linking"] },
+      { id: "testing:rntl", deps: ["@testing-library/react-native"] },
+      { id: "testing:maestro", files: ["apps/native/.maestro/home.yaml"] },
+    ],
+    validationProfile: { packageManager: "bun" },
+  },
+  {
+    id: "frontier-polyglot-proto",
+    title: "Frontier: polyglot monorepo — shared protobuf across a Rust gRPC service, a Go gateway, and a TS client",
+    lane: "core",
+    family: "multi-ecosystem",
+    // Beyond Better-Fullstack's option space (its graph allows one backend), so
+    // this runs prompt-only — the agent builds it from scratch with no scaffolder.
+    supportedByBetterFullstack: false,
+    paths: ["prompt"],
+    requirements: [
+      "Create one monorepo with a single shared Protocol Buffers (proto3) service contract.",
+      "Implement the core service in Rust using Tonic for gRPC.",
+      "Implement an edge gateway in Go that speaks gRPC to the Rust service and exposes HTTP/JSON.",
+      "Implement a TypeScript web client generated from the same proto contract.",
+      "Wire codegen so all three consume the one .proto definition; provide build scripts per package.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a polyglot monorepo around a single service contract: a Rust gRPC core service, a Go gateway that bridges gRPC to HTTP/JSON, and a TypeScript client — all generated from one shared Protocol Buffers definition. Set up the codegen and per-package builds so the three stay in sync.",
+    rightLibraryNotes: [
+      "A single shared proto3 contract must drive all three languages.",
+      "Rust uses Tonic for the gRPC service; Go uses grpc-go for the gateway.",
+      "The TypeScript client must be generated from the same proto.",
+    ],
+    canonicalFlags: [],
+    strictMarkers: [
+      // Frontier markers are loose, single-token diagnostics (text arrays AND
+      // together, so multi-token would over-constrain a from-scratch project).
+      { id: "proto:proto3", text: ["proto3"] },
+      { id: "rust:tonic", text: ["tonic"] },
+      { id: "go:grpc", text: ["google.golang.org/grpc"] },
+      { id: "ts:protobuf", text: ["protobuf"] },
+    ],
+    validationProfile: { packageManager: "bun", native: ["cargo", "go"] },
+  },
+  {
+    id: "frontier-effect-eventsourcing",
+    title: "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
+    lane: "core",
+    family: "typescript",
+    // BFS offers Effect and tRPC as options but cannot scaffold this architecture,
+    // so it runs prompt-only — a pure test of the model's engineering.
+    supportedByBetterFullstack: false,
+    paths: ["prompt"],
+    requirements: [
+      "Create a TypeScript backend built on the Effect ecosystem (effect runtime, services, layers).",
+      "Implement event-sourcing with CQRS: an append-only event store, write-side command handlers, and read-side projections.",
+      "Expose the API via tRPC, including a subscription over WebSockets for the read model.",
+      "Include an outbox pattern for reliable event publication.",
+      "Provide build and type-check scripts.",
+      "Do not install dependencies, do not initialize git, and do not start a dev server.",
+    ],
+    naturalPrompt:
+      "Build a TypeScript backend on the Effect ecosystem that uses event sourcing with CQRS — an append-only event store, command handlers on the write side, projections on the read side, and an outbox for reliable publishing. Expose it through tRPC, including a WebSocket subscription that streams read-model updates.",
+    rightLibraryNotes: [
+      "The service layer must be built on Effect.",
+      "Use event-sourcing + CQRS (event store, projections, outbox), not plain CRUD.",
+      "Expose tRPC with a WebSocket subscription for the read model.",
+    ],
+    canonicalFlags: [],
+    strictMarkers: [
+      // Loose single-token diagnostics (text arrays AND together).
+      { id: "runtime:effect", deps: ["effect"] },
+      { id: "api:trpc", deps: ["@trpc/server"] },
+      { id: "ws:subscription", text: ["subscription"] },
+      { id: "pattern:event-sourcing", text: ["projection"] },
+    ],
+    validationProfile: { packageManager: "bun" },
   },
 ];
 
