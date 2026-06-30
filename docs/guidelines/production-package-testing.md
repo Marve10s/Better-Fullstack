@@ -10,6 +10,12 @@ The `testing/` folder is the working area for production validation cycles again
 bun create better-fullstack@latest
 ```
 
+For the automated release/preview smoke lane, use:
+
+```bash
+bun run test:published-package -- --specifier latest
+```
+
 This is not the default test path for normal feature work. Open these files only when the task explicitly involves production-package validation, matrix runs, or updating the combo ledger.
 
 ## Files to use
@@ -19,8 +25,18 @@ This is not the default test path for normal feature work. Open these files only
 - `testing/PROMPT_TEMPLATE.md` is the reusable operator prompt.
 - `testing/combos-*.json` files are the historical combo ledger. Avoid duplicate combos in new cycles.
 - `testing/generate-combos.ts` helps produce candidate combinations.
+- `scripts/published-package-smoke.ts` is the automated post-publish smoke check used by preview and release CI.
 
 ## Recommended flow
+
+For the automated smoke lane:
+
+1. Publish the preview tag or release version first.
+2. Run `bun run test:published-package -- --specifier <tag-or-version>`.
+3. Keep `corepack enable && corepack prepare pnpm@latest --activate` in CI before the smoke command so the pnpm leg is available.
+4. Treat missing generated files as a failed publish, even when the CLI exits successfully. Empty output often means a prompt was not pinned with an explicit flag.
+
+For manual production validation cycles:
 
 1. Read recent `testing/combos-*.json` files and avoid already-covered combinations.
 2. Create a fresh batch, usually 10 unique projects unless the task says otherwise.

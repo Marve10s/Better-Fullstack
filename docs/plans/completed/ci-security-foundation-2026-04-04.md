@@ -16,4 +16,4 @@
 
 ## Follow-up Still Planned
 
-- Cross-browser testing is still open (tracked in `ci-and-quality.md`).
+- Cross-browser testing moved out of this historical backlog; see current planned docs and ScaffBench/verification work for active quality follow-ups.

@@ -1,6 +1,6 @@
 # Go Ecosystem Expansion
 
-Current state: 4 web frameworks (gin, echo, fiber, chi), 3 ORMs (gorm, sqlc, ent), 1 API layer (grpc-go), 3 CLI tools (cobra, bubbletea, urfave-cli), 4 logging options (zap, zerolog, slog, logrus), and 2 auth options (casbin, jwt).
+Current state: 4 web frameworks (gin, echo, fiber, chi), 3 ORMs (gorm, sqlc, ent), 2 API layers (grpc-go, gqlgen), 3 CLI tools (cobra, bubbletea, urfave-cli), 4 logging options (zap, zerolog, slog, logrus), 3 auth options (casbin, jwt, goth), testing, realtime, messaging, caching, config, and observability categories.
 
 Goal: bring Go to feature parity with TypeScript's depth across all backend categories.
 
@@ -36,7 +36,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 - [x] Add `casbin` ✅ — 17k+ stars. Authorization standard for Go. Supports ACL, RBAC, ABAC models. Dozens of storage adapters.
 - [x] Add `golang-jwt` (v5) ✅ — standard JWT library for Go. Token-based auth essential.
-- [ ] Add `goth` — OAuth social login. 30+ providers (Google, GitHub, etc.). Clean Go API.
+- [x] Add `goth` ✅ — OAuth social login. 30+ providers (Google, GitHub, etc.). Clean Go API.
 
 ### Implementation
 - New schema: `GoAuthSchema = z.enum(["casbin", "jwt", "goth", "none"])`
@@ -48,7 +48,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## GraphQL (new category)
 
-- [ ] Add `gqlgen` — dominant Go GraphQL library. Schema-first with code generation. Full type safety. Production-proven.
+- [x] Add `gqlgen` ✅ — dominant Go GraphQL library. Schema-first with code generation. Full type safety. Production-proven.
 
 ### Implementation
 - Add to `GoApiSchema` — extend with `gqlgen` alongside `grpc-go`
@@ -70,8 +70,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Config Management (new category)
 
-- [ ] Add `viper` — 27k+ stars, de facto Go config standard. JSON, TOML, YAML, HCL, envfile. Live reloading.
-- [ ] Add `koanf` — lightweight Viper alternative. Better abstractions, fewer dependencies.
+- [x] Add `viper` ✅ — de facto Go config standard.
+- [x] Add `koanf` ✅ — lightweight Viper alternative.
 
 ### Implementation
 - New schema: `GoConfigSchema = z.enum(["viper", "koanf", "none"])`
@@ -81,8 +81,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Message Queues (new category)
 
-- [ ] Add `nats` — most idiomatic Go messaging system. Lightweight, fast. JetStream for persistence.
-- [ ] Add `watermill` — event-driven framework. Supports Kafka, RabbitMQ, HTTP. Excellent for event-driven architectures.
+- [x] Add `nats` ✅ — most idiomatic Go messaging system. Lightweight, fast. JetStream for persistence.
+- [x] Add `watermill` ✅ — event-driven framework. Supports Kafka, RabbitMQ, HTTP.
 
 ### Implementation
 - New schema: `GoMessageQueueSchema = z.enum(["nats", "watermill", "none"])`
@@ -92,11 +92,11 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Caching (new category)
 
-- [ ] Add `go-redis` — standard Redis client for Go. With `go-redis/cache` for high-level caching with TinyLFU.
-- [ ] Add `groupcache` — Google's in-process distributed cache. No external dependencies.
+- [x] Add `go-redis` ✅ — standard Redis client for Go.
+- [x] Add `ristretto` ✅ — high-performance in-process cache selected instead of `groupcache`.
 
 ### Implementation
-- New schema: `GoCachingSchema = z.enum(["redis", "groupcache", "none"])`
+- Current schema: `GoCachingSchema = z.enum(["redis", "ristretto", "none"])`
 - Generate cache helper in `internal/cache/`
 
 ---
@@ -114,7 +114,7 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Observability (new category)
 
-- [ ] Add `opentelemetry-go` — official OpenTelemetry SDK. Traces, metrics, logs. Industry standard.
+- [x] Add `opentelemetry-go` ✅ — official OpenTelemetry SDK. Traces, metrics, logs. Industry standard.
 
 ### Implementation
 - New schema: `GoObservabilitySchema = z.enum(["opentelemetry", "none"])`
@@ -124,8 +124,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## WebSocket / Realtime (new category)
 
-- [ ] Add `gorilla/websocket` — industry standard WebSocket library for Go.
-- [ ] Add `centrifuge` — scalable real-time messaging library. Chat, live updates, notifications.
+- [x] Add `gorilla/websocket` ✅ — industry standard WebSocket library for Go.
+- [x] Add `centrifuge` ✅ — scalable real-time messaging library. Chat, live updates, notifications.
 
 ### Implementation
 - New schema: `GoRealtimeSchema = z.enum(["gorilla-websocket", "centrifuge", "none"])`
@@ -135,8 +135,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Testing (new category)
 
-- [ ] Add `testify` — 23k+ stars. Most popular Go testing toolkit. Assertions, mocking, suites.
-- [ ] Add `gomock` — official mock generation for interfaces.
+- [x] Add `testify` ✅ — most popular Go testing toolkit.
+- [x] Add `gomock` ✅ — official mock generation for interfaces.
 
 ### Implementation
 - New schema: `GoTestingSchema = z.enum(["testify", "gomock", "none"])`
@@ -146,13 +146,8 @@ Goal: bring Go to feature parity with TypeScript's depth across all backend cate
 
 ## Priority Order
 
-1. **fiber** + **chi** — framework diversity is the top request
-2. **zerolog** + **slog** — complete the logging story
-3. **gqlgen** — GraphQL is a major gap
-4. **viper** — config management is essential
-5. **casbin** + **golang-jwt** — auth
-6. **ent** — enterprise ORM alternative
-7. **testify** — testing standard
-8. **opentelemetry-go** — observability
-9. **nats** — messaging
-10. Remaining categories
+1. **stdlib `net/http` framework option** — only web-framework addition still called out here.
+2. **Bun ORM/query builder** — decide if it is worth adding beside GORM, SQLC, and Ent.
+3. **Search category** — Meilisearch/Bleve or a shared search projection for Go.
+4. **Generated-project quality checks** — run `go test` / `go build` coverage for richer option combinations.
+5. **Template depth pass** — make sure shipped categories include meaningful usage, not just deps.

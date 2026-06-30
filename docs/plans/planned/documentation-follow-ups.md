@@ -42,5 +42,11 @@ Canonical user-facing docs live in `apps/web/content/docs`. Planning docs under 
 ## AI / MCP
 
 - [x] Add MCP tools reference from `apps/cli/src/mcp.ts`
-- [ ] Add agent setup examples for Claude Code, Cursor, VS Code, Zed, and related tools
-- [ ] Explain skills addon and MCP addon output in generated projects
+- [x] Add agent setup examples for Claude Code, Cursor, VS Code, Zed, and related tools ✅
+- [x] Explain skills addon and MCP addon output in generated projects ✅
+
+## Next Documentation Updates
+
+- [ ] Add generated-project CI and verified-combinations documentation once that product surface lands
+- [ ] Add stack-update / upgrade-engine docs when the CLI-facing flow is promoted beyond MCP tools
+- [ ] Keep localized option tables synced with generated schema output; several translated pages have historically drifted faster than the canonical English docs

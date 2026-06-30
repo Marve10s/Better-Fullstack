@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"],
+      "note": "Official Better Fullstack MCP server (stdio). Exposes bfs_get_guidance, bfs_get_schema, bfs_check_compatibility, bfs_plan_project, bfs_create_project, bfs_plan_stack_update, bfs_apply_stack_update, bfs_plan_addition, and bfs_add_feature. Runs via npx; no API key required."
+    }
+  }
+}

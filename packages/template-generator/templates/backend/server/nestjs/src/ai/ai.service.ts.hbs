@@ -1,6 +1,6 @@
 {{#if (includes examples "ai")}}
 import { Injectable } from "@nestjs/common";
-import { streamText, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
+import { pipeUIMessageStreamToResponse, streamText, toUIMessageStream, type UIMessage, convertToModelMessages, wrapLanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
 import { devToolsMiddleware } from "@ai-sdk/devtools";
 import type { Request, Response } from "express";
@@ -17,7 +17,10 @@ export class AiService {
 			model,
 			messages: await convertToModelMessages(messages),
 		});
-		result.pipeUIMessageStreamToResponse(res);
+		pipeUIMessageStreamToResponse({
+			response: res,
+			stream: toUIMessageStream({ stream: result.stream }),
+		});
 	}
 }
 {{/if}}

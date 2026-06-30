@@ -19,9 +19,17 @@ bun run test:release
 
 That release lane currently covers:
 
+- installable plugin bundle validation
 - CLI template snapshots
+- AI example generated-output regression checks
 - CLI/web option parity
 - web preview config tests
+
+Additional focused release-facing checks:
+
+- `bun run test:plugin-bundle` validates the local installable agent plugin manifest, marketplace entry, MCP command, icon paths, and bundled skills.
+- `bun run test:ai-examples` runs the CLI AI/chat example suite from the `apps/cli` package context so workspace package resolution matches local package scripts.
+- `bun run test:published-package -- --specifier <npm-tag-or-version>` validates the already-published npm package through Bun, npm, and pnpm scaffold runs. Use this only after a package has been published to npm.
 
 ## Important package-specific notes
 
@@ -36,6 +44,7 @@ That release lane currently covers:
 
 - `.github/workflows/test.yaml` runs a dedicated `Release Guard` job before broader build checks.
 - `.github/workflows/release.yaml` also runs the release verification lane before publishing packages.
+- `.github/workflows/pr-preview.yaml` and `.github/workflows/release.yaml` run the published-package smoke lane after publishing npm packages, because that check needs the real npm tag/version to be visible.
 - Published packages are versioned independently inside the release workflow. Do not hand-edit version bumps casually during unrelated feature work.
 - Keep Bun pinned for deterministic release verification, but prefer the Node/npm publish path for actual package publishing. Treat publish-tooling changes in `.github/workflows/release.yaml` as release-sensitive.
 
@@ -44,6 +53,7 @@ That release lane currently covers:
 - The CI lint job builds `@better-fullstack/types` before running `validate:tech-links`, so workspace alias imports work in `apps/web`. If a new pre-build CI step is added that touches web source, ensure types are built first.
 - Scaffold and smoke harnesses should resolve the CLI binary from `apps/cli/package.json` and self-build needed workspace packages instead of assuming `apps/cli/dist/cli.mjs` already exists.
 - Preserve structured CLI scaffold diagnostics, expected-file checks, and CI artifact uploads in `testing/lib/cli-scaffold.ts`-based harnesses; they are what make web-command round-trip and package-manager failures debuggable.
+- Keep plugin validation in `test:release` dependency-light. The repo-owned validator should not require Python packages or external plugin tooling to catch manifest/path drift in CI.
 
 ## Upstream maintenance
 

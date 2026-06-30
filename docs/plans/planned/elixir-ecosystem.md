@@ -2,7 +2,7 @@
 
 Strong differentiator — no competing scaffolding tool covers Elixir well. Phoenix LiveView is unique: server-rendered reactive UI without JavaScript. The BEAM VM provides unmatched fault tolerance and hot code reloading.
 
-Current status: foundation shipped. The shared schemas, option metadata, CLI prompts, and template surface now include `ecosystem: "elixir"` plus Phoenix/Phoenix LiveView, Ecto, auth, REST/Absinthe, realtime, jobs, validation, HTTP, JSON, email, caching, observability, testing, quality, and deploy choices. This file now tracks the shipped baseline and the deeper follow-ups still worth doing.
+Current status: foundation shipped and the June parity pass filled in the advanced generated-tool gaps. The shared schemas, option metadata, CLI prompts, template surface, and MCP stack-update path now include `ecosystem: "elixir"` plus Phoenix/Phoenix LiveView, Ecto, auth, REST/Absinthe/gRPC, realtime, jobs, validation, HTTP, JSON, email, caching, observability, testing, quality, deploy choices, and Broadway/Nx libraries. This file now tracks the shipped baseline and deeper follow-ups still worth doing.
 
 ---
 
@@ -53,7 +53,7 @@ Built-in — Phoenix Channels and LiveView handle this natively:
 ## API Styles
 
 - [x] Add `absinthe` ✅ — GraphQL toolkit for Elixir. Schema-first, subscriptions, dataloader for N+1 prevention.
-- [ ] Add `grpc` (via `grpc-elixir`) — Protocol Buffers-based RPC.
+- [x] Add `grpc` (via `grpc-elixir`) ✅ — Protocol Buffers-based RPC.
 - [x] REST is default via Phoenix controllers/routers. ✅
 
 ---
@@ -92,8 +92,8 @@ Built-in — Phoenix Channels and LiveView handle this natively:
 - [x] Add `swoosh` ✅ — email delivery library.
 - [x] Add `cachex` / `nebulex` ✅ — caching choices.
 - [x] Add `credo` / `dialyxir` / `sobelow` ✅ — code quality and security analysis choices.
-- [ ] Add `broadway` — data ingestion / stream processing (Kafka, SQS, RabbitMQ).
-- [ ] Add `nx` (Numerical Elixir) — tensors, ML, GPU computing on BEAM.
+- [x] Add `broadway` ✅ — data ingestion / stream processing.
+- [x] Add `nx` (Numerical Elixir) ✅ — tensors, ML, GPU computing on BEAM.
 
 ---
 
@@ -118,8 +118,7 @@ Built-in — Phoenix Channels and LiveView handle this natively:
 
 ## Priority Order
 
-1. **Deepen Phoenix/LiveView generated examples** — richer resources, forms, streams, and auth flows
-2. **Add Broadway** — ingestion/stream processing
-3. **Add gRPC** — protobuf RPC support
-4. **Add Nx** — numerical/ML experiments
-5. **Harden deploy templates** — clustering/runtime config details across Fly, Docker, Gigalixir, and Mix releases
+1. **Deepen Phoenix/LiveView generated examples** — richer resources, forms, streams, and auth flows.
+2. **Generated-project validation** — run `mix compile` / `mix test` smoke lanes over advanced combinations.
+3. **Harden deploy templates** — clustering/runtime config details across Fly, Docker, Gigalixir, and Mix releases.
+4. **Template depth pass** — verify gRPC/Broadway/Nx choices include practical generated usage, not just dependency wiring.
