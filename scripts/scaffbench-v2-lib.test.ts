@@ -108,6 +108,8 @@ describe("ScaffBench 2 harness config", () => {
       "ts-svelte-edge-orpc",
       "dotnet-blazor-cqrs",
       "multi-ts-go-grpc",
+      "java-spring-jooq-keycloak",
+      "elixir-broadway-absinthe",
     ]);
     expect(options.repeats).toBe(1);
     expect(options.promptStyle).toBe("explicit");

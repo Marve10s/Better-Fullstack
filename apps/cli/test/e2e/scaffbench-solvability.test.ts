@@ -37,6 +37,9 @@ const SPEC_TOOLCHAINS: Record<string, string[]> = {
   "ts-svelte-edge-orpc": [],
   "dotnet-blazor-cqrs": ["dotnet"],
   "multi-ts-go-grpc": ["go"],
+  // Expansion batch 2 (new ecosystems).
+  "java-spring-jooq-keycloak": ["mvn"],
+  "elixir-broadway-absinthe": ["mix"],
 };
 
 // Steps that must pass for a stack to count as "solvable". Lint/format/test/
