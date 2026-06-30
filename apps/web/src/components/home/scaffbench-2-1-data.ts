@@ -43,7 +43,7 @@ export const SCAFFBENCH21_MODELS: readonly ScaffbenchModel[] = [
     "effectiveReasoning": "max",
     "provider": "claude",
     "label": "Sonnet 5",
-    "sortIndex": 48
+    "sortIndex": 47
   }
 ];
 
@@ -450,6 +450,19 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "costUsd": 3.4871388,
     "outTokens": 92636,
     "steps": 95
+  },
+  {
+    "modelKey": "claude-sonnet-5|max",
+    "path": "prompt",
+    "spec": "java-spring-jooq-keycloak",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 0.8360802,
+    "outTokens": 11414,
+    "steps": 388
   },
   {
     "modelKey": "claude-sonnet-5|max",

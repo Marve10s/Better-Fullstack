@@ -22,26 +22,14 @@ import path from "node:path";
 import { corePass, fullPass } from "./build-scaffbench-data";
 import { extractToolUses, providerForModel } from "./scaffbench-v2-lib";
 
-// The 8 specs validated for BOTH max runs so far (Sonnet's generated set).
-const COMMON_8 = [
-  "ai-search-workbench",
-  "rust-leptos-axum",
-  "python-ingestion-api",
-  "go-realtime-api",
-  "multi-dotnet-ops",
-  "ts-svelte-edge-orpc",
-  "dotnet-blazor-cqrs",
-  "multi-ts-go-grpc",
-];
-
 // Each source = one (model, effort) leaderboard row. `specs` restricts which
 // cells are emitted (omit = all specs in the summary).
 const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
   { dir: "testing/llm-benchmarks/v2/opus48-low-prompt-2026-06-30" },
   // Opus max is a COMPLETE 13-spec run — publish all of it (full low-vs-max).
   { dir: "testing/llm-benchmarks/v2/opus48-max-prompt-2026-06-30" },
-  // Sonnet max is still generating; publish only the 8 specs validated so far.
-  { dir: "testing/llm-benchmarks/early-sonnet/sonnet5-max-EARLY", specs: COMMON_8 },
+  // Sonnet max is still generating; publish whatever specs are validated so far.
+  { dir: "testing/llm-benchmarks/early-sonnet/sonnet5-max-EARLY" },
 ];
 
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;

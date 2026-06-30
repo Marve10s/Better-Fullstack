@@ -1,6 +1,6 @@
 ---
 title: "ScaffBench 2.1: does maximum reasoning effort help an agent scaffold from a prompt?"
-description: "ScaffBench 2.1 expands to 13 specs across eight ecosystems and runs Claude Opus 4.8 and the new Claude Sonnet 5 at max reasoning effort to test whether more thinking makes prompt-only scaffolds build."
+description: "Claude Sonnet 5 enters ScaffBench 2.1, tested against Opus 4.8 (low + max effort) on 13 hard full-stack specs: can a model scaffold a building project from a prompt?"
 date: 2026-07-01
 authors:
   - Ibrahim Elkamali
@@ -33,7 +33,7 @@ ScaffBench 2.1 pushes on two axes at once:
 
 Opus 4.8 has now finished the **full 13-spec run at both efforts**, so the low-vs-max comparison below
 is complete. The Sonnet 5 max run is still generating its back half, so its cross-model numbers are
-the **eight specs validated so far**; we'll fill in the rest as it lands. Here's what maximum effort
+the **nine specs validated so far**; we'll fill in the rest as it lands. Here's what maximum effort
 actually bought.
 
 ## Headline: more thinking didn't buy more builds
@@ -45,7 +45,7 @@ same** prompt-path build rate as low effort — at 5–10× the cost.
 | --- | :---: | ---: | :---: |
 | Claude Opus 4.8 · **low** (13 specs) | **3 / 11** (27%) | $1.60 | ~95% |
 | Claude Opus 4.8 · **max** (13 specs) | **3 / 11** (27%) | ~$8 | ~96% |
-| Claude Sonnet 5 · **max** (8 specs, in progress) | **1 / 7** | ~$6 | ~96% |
+| Claude Sonnet 5 · **max** (9 specs, in progress) | **1 / 8** | ~$6 | ~96% |
 
 <Callout kind="info">
   Both Opus rows are the full thirteen specs (eleven measurable; two are
@@ -96,11 +96,13 @@ Three things stand out:
 | `multi-dotnet-ops` | Multi (TS + .NET) | ❌ no build | ❌ no build |
 | `ts-svelte-edge-orpc` | TypeScript | ❌ timeout | ❌ no build |
 | `dotnet-blazor-cqrs` | .NET | ❌ no build | ❌ no build |
+| `java-spring-jooq-keycloak` | Java | ✅ builds | ❌ no build |
 | `multi-ts-go-grpc` | Multi (TS + Go) | ⚪ inconclusive | ⚪ inconclusive |
 
-The two models are remarkably close. Through the shared eight specs their wired-libraries scores match
-**spec-for-spec**, and they fail on the same hard stacks. The only build either model uniquely landed
-was Opus on `rust-leptos-axum`. **Python is the one spec both reliably build from a prompt** — a small,
+The two models track each other closely on *stack selection* — through the shared nine specs their
+wired-libraries scores match **spec-for-spec**. But Opus pulls ahead on *builds*: it uniquely landed
+**two** specs Sonnet couldn't — `rust-leptos-axum` and `java-spring-jooq-keycloak`. **Python is the one
+spec both reliably build from a prompt** — a small,
 well-trodden stack — while the dense multi-service specs (.NET CQRS, Go realtime, the TS AI workbench)
 defeat both even at maximum effort.
 
@@ -109,7 +111,7 @@ budget where Opus 4.8 ran out of it (see below). It still didn't build — but i
 
 ## The honest part
 
-Two of the eight results aren't clean build verdicts, and the benchmark is only useful if we say so.
+Two of the results aren't clean build verdicts, and the benchmark is only useful if we say so.
 
 <Callout kind="warn">
   **`multi-ts-go-grpc` is inconclusive for both models — and it's our bug, not theirs.** Both agents
