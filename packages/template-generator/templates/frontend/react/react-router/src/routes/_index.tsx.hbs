@@ -95,7 +95,7 @@ export default function Home() {
             </span>
           </div>
           {{else}}
-            {{#unless (eq api "none")}}
+            {{#if (or (or (or (or (or (eq api "orpc") (eq api "trpc")) (eq api "garph")) (eq api "graphql-yoga")) (eq api "apollo-server")) (eq api "openapi"))}}
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${
@@ -110,7 +110,7 @@ export default function Home() {
                   : "Disconnected"}
               </span>
             </div>
-            {{/unless}}
+            {{/if}}
           {{/if}}
         </section>
       </div>
