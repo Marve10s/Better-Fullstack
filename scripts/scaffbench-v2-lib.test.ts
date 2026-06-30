@@ -7,6 +7,7 @@ import {
   aggregateResults,
   agentLabelForModel,
   canonicalCommand,
+  claudeCostUsd,
   classifyOutcome,
   deriveFailureTags,
   extractToolUses,
@@ -25,6 +26,7 @@ import {
   SCAFFBENCH_2_SPECS,
   typecheckGate,
   validationPassed,
+  qualityPassed,
   type RunResult,
   type StepResult,
 } from "./scaffbench-v2-lib";
@@ -104,6 +106,14 @@ describe("ScaffBench 2 harness config", () => {
       "python-ingestion-api",
       "go-realtime-api",
       "multi-dotnet-ops",
+      "ts-svelte-edge-orpc",
+      "dotnet-blazor-cqrs",
+      "multi-ts-go-grpc",
+      "java-spring-jooq-keycloak",
+      "elixir-broadway-absinthe",
+      "react-native-expo",
+      "frontier-polyglot-proto",
+      "frontier-effect-eventsourcing",
     ]);
     expect(options.repeats).toBe(1);
     expect(options.promptStyle).toBe("explicit");
@@ -314,9 +324,11 @@ describe("ScaffBench 2 scoring", () => {
     stderrTail: "",
   });
 
-  it("treats a 'skip' gate step as a failure, not a vacuous pass (Finding 1)", () => {
-    // Core is green but the linter could not run (no tool configured) -> 'skip'
-    // (exitCode null). Pre-fix this carried exitCode 0 and passed silently.
+  it("treats a 'skip' advisory step as a quality miss, not a core failure (Finding 1)", () => {
+    // Core (install+build) is green so the project builds and runs -> core pass.
+    // The linter could not run (no tool configured) -> 'skip' (exitCode null):
+    // that is NOT a vacuous quality pass (pre-fix it carried exitCode 0 and
+    // passed silently), but it must not flag the working project as broken.
     const run = makeRun({
       validation: {
         projectExists: true,
@@ -335,7 +347,38 @@ describe("ScaffBench 2 scoring", () => {
         },
       },
     });
-    expect(validationPassed(run)).toBe(false);
+    expect(validationPassed(run)).toBe(true);
+    expect(qualityPassed(run)).toBe(false);
+  });
+
+  it("scores a format-only failure as a core pass but a quality fail (not broken)", () => {
+    // The project installs, builds, and type-checks; only `format` is red. A
+    // mis-formatted project still runs, so this is a quality miss, not a broken
+    // template: Pass@1 (core) holds, Quality drops, outcome stays success.
+    const run = makeRun({
+      validation: {
+        projectExists: true,
+        steps: {
+          install: okStep("bun install"),
+          build: okStep("bun run build"),
+          typecheck: okStep("tsc --noEmit"),
+          format: {
+            command: "biome format .",
+            exitCode: 1,
+            timedOut: false,
+            durationMs: 1,
+            stdoutTail: "would reformat 3 files",
+            stderrTail: "",
+          },
+        },
+      },
+    });
+    expect(validationPassed(run)).toBe(true);
+    expect(qualityPassed(run)).toBe(false);
+    expect(classifyOutcome(run)).toBe("success");
+    const tags = deriveFailureTags(run);
+    expect(tags).toContain("format-failed");
+    expect(tags).not.toContain("validation-failed");
   });
 
   it("excludes an 'na' step (genuinely testless scaffold) from the pass decision", () => {
@@ -1086,5 +1129,30 @@ describe("opencode / Kilo Code agent adapter", () => {
     const bash = uses.filter((u) => /(^|_)bash$/i.test(u.name)).map((u) => u.command ?? "");
     expect(bash.some((c) => /create\s+better-fullstack/.test(c))).toBe(true);
     expect(bash.some((c) => c.includes("--dry-run"))).toBe(true);
+  });
+});
+
+describe("ScaffBench 2 Claude cost pricing", () => {
+  it("prices Claude from token usage so a $0 CLI cost is not treated as free", () => {
+    // Opus 4.8: $5/1M input, $25/1M output; cache read 0.1x input, write 1.25x.
+    const usage = {
+      input_tokens: 1_000_000,
+      output_tokens: 1_000_000,
+      cache_read_input_tokens: 1_000_000,
+      cache_creation_input_tokens: 1_000_000,
+    };
+    // 5 + 25 + 0.5 + 6.25 = 36.75
+    expect(claudeCostUsd("claude-opus-4-8", usage)).toBeCloseTo(36.75, 5);
+    // Bare alias resolves to the same pricing.
+    expect(claudeCostUsd("opus", { output_tokens: 1_000_000 })).toBeCloseTo(25, 5);
+    // Sonnet/Haiku tiers differ.
+    expect(claudeCostUsd("claude-sonnet-4-6", { input_tokens: 1_000_000 })).toBeCloseTo(3, 5);
+    expect(claudeCostUsd("claude-haiku-4-5", { output_tokens: 1_000_000 })).toBeCloseTo(5, 5);
+  });
+
+  it("returns undefined for non-Claude models so they keep their own reported cost", () => {
+    expect(claudeCostUsd("gpt-5.5", { output_tokens: 1_000_000 })).toBeUndefined();
+    expect(claudeCostUsd("opencode/north-mini", { output_tokens: 1_000 })).toBeUndefined();
+    expect(claudeCostUsd("claude-opus-4-8", undefined)).toBeUndefined();
   });
 });

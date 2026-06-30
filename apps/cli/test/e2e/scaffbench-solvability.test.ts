@@ -33,6 +33,16 @@ const SPEC_TOOLCHAINS: Record<string, string[]> = {
   "python-ingestion-api": ["uv"],
   "go-realtime-api": ["go"],
   "multi-dotnet-ops": ["dotnet"],
+  // Expansion batch 1.
+  "ts-svelte-edge-orpc": [],
+  "dotnet-blazor-cqrs": ["dotnet"],
+  "multi-ts-go-grpc": ["go"],
+  // Expansion batch 2 (new ecosystems).
+  "java-spring-jooq-keycloak": ["mvn"],
+  "elixir-broadway-absinthe": ["mix"],
+  // Expansion batch 3. react-native is bun-validated; the two frontier specs are
+  // supportedByBetterFullstack:false and skipped by selectSpecs (no BFS flags).
+  "react-native-expo": [],
 };
 
 // Steps that must pass for a stack to count as "solvable". Lint/format/test/
@@ -45,13 +55,25 @@ const EXPECTED_FILE_BY_FAMILY: Record<string, string> = {
   rust: "Cargo.toml",
   python: "pyproject.toml",
   go: "go.mod",
+  java: "pom.xml",
+  elixir: "mix.exs",
+  "react-native": "package.json",
+  // dotnet solo nests the .csproj under apps/server; no reliable root manifest,
+  // so it is omitted here and judged by validateProject's dotnet detection.
 };
 
 function selectSpecs(): BenchmarkSpec[] {
   const filter = process.env.SCAFFBENCH_SOLVABILITY_SPECS?.split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  return SCAFFBENCH_2_SPECS.filter((spec) => !filter?.length || filter.includes(spec.id));
+  return (
+    SCAFFBENCH_2_SPECS
+      // Frontier specs (supportedByBetterFullstack === false) are beyond BFS's
+      // option space and have no scaffoldable canonical flags — they are
+      // prompt-only in the benchmark and cannot be exercised by this gate.
+      .filter((spec) => spec.supportedByBetterFullstack)
+      .filter((spec) => !filter?.length || filter.includes(spec.id))
+  );
 }
 
 describe("ScaffBench 2 spec solvability", () => {
@@ -95,6 +117,18 @@ describe("ScaffBench 2 spec solvability", () => {
         // so validateProject runs only install + build + type-check + native.
         const options = parseArgs([]);
         const validation = await validateProject(spec, projectDir, options);
+
+        // Guard against a VACUOUS pass: if the scaffold produced nothing the
+        // validator recognizes (e.g. a hung prompt that left an empty dir), no
+        // core step runs and `failures` is trivially empty. A solvable spec must
+        // run at least one real CORE step (install/build/typecheck/native).
+        const coreSteps = Object.entries(validation.steps).filter(
+          ([name, step]) => step && !ADVISORY_STEPS.has(name) && step.status !== "na",
+        );
+        expect(
+          coreSteps.length,
+          `no core validation step ran for ${spec.id} — the scaffold produced no recognizable project (likely a missing flag left an interactive prompt)`,
+        ).toBeGreaterThan(0);
 
         const failures = Object.entries(validation.steps)
           .filter(([name, step]) => step && !ADVISORY_STEPS.has(name))

@@ -1,7 +1,11 @@
 {{#if (eq serverDeploy "cloudflare")}}
+/// <reference types="@cloudflare/workers-types" />
 /// <reference path="../env.d.ts" />
-// For Cloudflare Workers, env is accessed via cloudflare:workers module
-// Types are defined in env.d.ts based on your alchemy.run.ts bindings
+// For Cloudflare Workers, env is accessed via cloudflare:workers module.
+// The workers-types reference loads the `cloudflare:workers` module declaration
+// for every consumer's type-checker (incl. svelte-check, which does not honour
+// the env.d.ts path reference the way `tsc -b` does); env.d.ts then augments the
+// Cloudflare.Env shape from the alchemy.run.ts bindings.
 export { env } from "cloudflare:workers";
 {{else}}
 import "dotenv/config";
