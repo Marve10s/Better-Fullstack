@@ -12,9 +12,9 @@
     "lint": "oxlint . && tsc --noEmit"
   },
   "dependencies": {
-    "@convex-dev/crons": "^0.2.1",
-    "convex": "^1.41.0",
-    "convex-helpers": "^0.1.119"
+    "@convex-dev/crons": "^0.2.2",
+    "convex": "^1.42.0",
+    "convex-helpers": "^0.1.120"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

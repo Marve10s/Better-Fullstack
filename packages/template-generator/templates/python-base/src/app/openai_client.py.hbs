@@ -45,9 +45,7 @@ async def chat(
     """
     client = get_client()
 
-    messages: list[ChatCompletionMessageParam] = [
-        {"role": "system", "content": system_prompt}
-    ]
+    messages: list[ChatCompletionMessageParam] = [{"role": "system", "content": system_prompt}]
 
     if history:
         for msg in history:
@@ -85,9 +83,7 @@ async def chat_stream(
     """
     client = get_client()
 
-    messages: list[ChatCompletionMessageParam] = [
-        {"role": "system", "content": system_prompt}
-    ]
+    messages: list[ChatCompletionMessageParam] = [{"role": "system", "content": system_prompt}]
 
     if history:
         for msg in history:

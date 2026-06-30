@@ -40,7 +40,10 @@ impl Greeter for GreeterService {
     ) -> Result<Response<Self::SayHelloStreamStream>, Status> {
         let name = request.into_inner().name;
 {{#if (eq rustLogging "tracing")}}
-        tracing::info!("Received gRPC streaming request: SayHelloStream from '{}'", name);
+        tracing::info!(
+            "Received gRPC streaming request: SayHelloStream from '{}'",
+            name
+        );
 {{else if (eq rustLogging "env-logger")}}
         log::info!("Received gRPC streaming request: SayHelloStream from '{}'", name);
 {{else}}

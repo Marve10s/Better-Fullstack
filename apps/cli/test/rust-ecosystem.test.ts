@@ -2236,7 +2236,10 @@ describe("Rust Ecosystem", () => {
       const mainRsContent = getFileContent(root, "crates/dioxus-client/src/main.rs");
       expect(mainRsContent).toBeDefined();
       expect(mainRsContent).toContain("use dioxus::prelude::*");
-      expect(mainRsContent).toContain("use dioxus_router::prelude::*");
+      // dioxus::prelude re-exports Routable/Router/Link in 0.6, so a separate
+      // `use dioxus_router::prelude::*` is a clippy unused-import error. Routing
+      // still works (see the Router::<Route> assertion below).
+      expect(mainRsContent).not.toContain("use dioxus_router::prelude::*");
       expect(mainRsContent).toContain("#[component]");
       expect(mainRsContent).toContain("fn App()");
       expect(mainRsContent).toContain("fn Home()");

@@ -139,7 +139,9 @@ def create_agent_graph(
     builder = StateGraph(MessagesState)
     builder.add_node("reasoning", reasoning_node)
     builder.set_entry_point("reasoning")
-    builder.add_conditional_edges("reasoning", should_continue, {"reasoning": "reasoning", END: END})
+    builder.add_conditional_edges(
+        "reasoning", should_continue, {"reasoning": "reasoning", END: END}
+    )
 
     return builder.compile()
 

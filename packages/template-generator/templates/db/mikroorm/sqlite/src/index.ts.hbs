@@ -1,21 +1,17 @@
-import { MikroORM, type Options } from "@mikro-orm/core";
-import { BetterSqliteDriver } from "@mikro-orm/better-sqlite";
+import { MikroORM, defineConfig } from "@mikro-orm/sqlite";
 import { env } from "@{{projectName}}/env/server";
 
-const config = {
-	driver: BetterSqliteDriver,
+const config = defineConfig({
 	dbName: env.DATABASE_URL.replace("file:", ""),
 	entities: ["./src/entities"],
 	entitiesTs: ["./src/entities"],
 	debug: process.env.NODE_ENV !== "production",
-} as Options<BetterSqliteDriver>;
+});
 
-let orm: MikroORM<BetterSqliteDriver> | null = null;
+let orm: Awaited<ReturnType<typeof MikroORM.init>> | null = null;
 
 export const initializeDatabase = async () => {
-	if (!orm) {
-		orm = await MikroORM.init(config);
-	}
+	orm ??= await MikroORM.init(config);
 	return orm;
 };
 

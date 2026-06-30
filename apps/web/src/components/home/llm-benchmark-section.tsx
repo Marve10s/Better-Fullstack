@@ -1,7 +1,22 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy } from "lucide-react";
-import { motion, useInView, useReducedMotion } from "motion/react";
-import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+} from "motion/react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import {
   DropdownMenu,
@@ -12,9 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages.js";
+
+import {
+  SCAFFBENCH2_CELLS,
+  SCAFFBENCH2_MODELS,
+  SCAFFBENCH2_SPECS,
+} from "./scaffbench-2-data";
 
 /**
  * Data sources:
@@ -26,13 +48,20 @@ import { m } from "@/paraglide/messages.js";
  *   results/gemini-20260612-172309 (June 12; Gemini CLI, Kilo free tier, and
  *   opencode Go models; light-ts spec only, one run per model+path, so pass is
  *   0/100 and times carry parallel-contention noise)
- * "Builds passing" = real install + build, generator-bug failures and lint-only
- * failures excluded — see the ScaffBench blog post scoring policy.
+ * V1 "validation passing" = the original build-pass policy: real install +
+ * build, generator-bug failures and lint-only failures excluded — see the
+ * ScaffBench blog post scoring policy.
  */
 
+type BenchmarkVersionId = "v1" | "v2";
 type PathId = "mcp" | "cli" | "prompt";
 
-const PATH_ORDER: readonly PathId[] = ["mcp", "cli", "prompt"] as const;
+const PATH_TAB_ORDER: readonly PathId[] = ["prompt", "mcp", "cli"] as const;
+// V2 surfaces only the Prompt path: the MCP/CLI (assisted) paths run our own
+// generator + templates, so their pass/fail reflects our codebase (template
+// hygiene, the quality-gate fixes) more than model capability. Prompt — where the
+// model writes everything itself — is the clean model-capability signal.
+const V2_PATH_TABS: readonly PathId[] = ["prompt"] as const;
 
 const PATHS: Record<PathId, { glyph: string; short: string; detail: string }> = {
   mcp: {
@@ -70,9 +99,9 @@ type ModelId =
   | "nex";
 
 const MODELS: Record<ModelId, { label: string; short: string }> = {
-  fable: { label: "Fable 5", short: "Fable" },
-  opus: { label: "Opus 4.8", short: "Opus" },
-  sonnet: { label: "Sonnet 4.6", short: "Sonnet" },
+  fable: { label: "Claude Fable 5", short: "Fable" },
+  opus: { label: "Claude Opus 4.8", short: "Opus" },
+  sonnet: { label: "Claude Sonnet 4.6", short: "Sonnet" },
   spark: { label: "GPT-5.3 Codex Spark", short: "Spark" },
   gpt54: { label: "GPT-5.4", short: "GPT-5.4" },
   gpt55: { label: "GPT-5.5", short: "GPT-5.5" },
@@ -105,24 +134,46 @@ const MODEL_ORDER: readonly ModelId[] = [
   "nex",
 ] as const;
 
-const MODEL_GROUPS: readonly { label: string; detail: string; models: readonly ModelId[] }[] = [
-  { label: "Claude Code", detail: "Jun 12 sweep", models: ["fable", "opus", "sonnet"] },
-  { label: "Codex CLI", detail: "Jun 10 sweep", models: ["spark", "gpt54", "gpt55"] },
-  { label: "Gemini CLI", detail: "Jun 12 light sweep", models: ["gemini31"] },
+const MODEL_GROUPS: readonly {
+  version: BenchmarkVersionId;
+  label: string;
+  detail: string;
+  models: readonly ModelId[];
+}[] = [
   {
+    version: "v1",
+    label: "Claude Code",
+    detail: "Jun 12 sweep",
+    models: ["fable", "opus", "sonnet"],
+  },
+  {
+    version: "v1",
+    label: "Codex CLI",
+    detail: "Jun 10 sweep",
+    models: ["spark", "gpt54", "gpt55"],
+  },
+  { version: "v1", label: "Gemini CLI", detail: "Jun 12 light sweep", models: ["gemini31"] },
+  {
+    version: "v1",
     label: "opencode · Go",
     detail: "Jun 12 light sweep",
     models: ["kimi", "glm51", "minimax", "qwen", "deepseek"],
   },
   {
+    version: "v1",
     label: "Kilo · free tier",
     detail: "Jun 12 light sweep",
     models: ["step", "laguna", "nex"],
   },
 ];
 
-// Curated default: flagship + fastest model per vendor, prompt-only struggles visible.
-const DEFAULT_MODELS: readonly ModelId[] = ["fable", "sonnet", "spark", "gpt54"] as const;
+const DEFAULT_MODELS_BY_VERSION: Record<BenchmarkVersionId, readonly ModelId[]> = {
+  // Curated default: flagship + fastest model per vendor, prompt-only struggles visible.
+  v1: ["sonnet", "spark", "gpt55", "gemini31"],
+  // V2 is a single-agent ablation (Opus only) — the model filter is hidden, so
+  // this entry exists only to satisfy the version-keyed record.
+  v2: ["opus"],
+} as const;
 
 interface ChartPalette {
   grid: string;
@@ -163,11 +214,14 @@ const CHART_THEME_VARS = cn(
   "[--ch-fable:#7ca111] [--ch-opus:#e85d11] [--ch-sonnet:#55534b]",
   "[--ch-spark:#0d9488] [--ch-gpt54:#4c5fd5] [--ch-gpt55:#c13a6e]",
   "[--ch-gemini31:#2563eb] [--ch-kimi:#9333ea] [--ch-glm51:#b45309] [--ch-minimax:#dc2626] [--ch-qwen:#0e7490]",
+  // Free-tier model dots — kept in step with the leaderboard bars (opencode violet, kilo cyan).
+  "[--ch-northmini:#6d28d9] [--ch-nemotron:#0891b2]",
   "[--ch-deepseek:#4d7c0f] [--ch-step:#db2777] [--ch-laguna:#0369a1] [--ch-nex:#ca8a04]",
   "dark:[--ch-grid:#edebe414] dark:[--ch-tick:#6c6a61] dark:[--ch-label:#8f8d84] dark:[--ch-note:#8f8d84] dark:[--ch-stroke:#161614]",
   "dark:[--ch-fable:#b8d75e] dark:[--ch-opus:#e0894f] dark:[--ch-sonnet:#c9c7bf]",
   "dark:[--ch-spark:#4fd0c0] dark:[--ch-gpt54:#98a6f2] dark:[--ch-gpt55:#e887ad]",
   "dark:[--ch-gemini31:#82aaf2] dark:[--ch-kimi:#c08ef5] dark:[--ch-glm51:#dba05c] dark:[--ch-minimax:#ee8c8c] dark:[--ch-qwen:#5cc3dd]",
+  "dark:[--ch-northmini:#a78bfa] dark:[--ch-nemotron:#22d3ee]",
   "dark:[--ch-deepseek:#97c45c] dark:[--ch-step:#ee8fba] dark:[--ch-laguna:#6db6e3] dark:[--ch-nex:#e3b84e]",
 );
 
@@ -514,7 +568,7 @@ const CHART_TABS: readonly TabSpec[] = [
 ] as const;
 
 function getPathShort(path: PathId): string {
-  if (path === "cli") return m.llmPathCliShort();
+  if (path === "cli") return "CLI";
   if (path === "prompt") return m.llmPathPromptShort();
   return PATHS[path].short;
 }
@@ -532,11 +586,15 @@ function getModelGroupDetail(detail: string): string {
   return detail;
 }
 
+function getModelLabel(model: ModelId): string {
+  return MODELS[model].label;
+}
+
 function getAxisLabel(key: MetricKey): string {
-  if (key === "pass") return m.llmBuildsPassing();
+  if (key === "pass") return "Validation passing";
   if (key === "time") return m.llmAvgScaffoldTime();
   if (key === "tokens") return m.llmOutputTokens();
-  return m.llmFailedBuilds();
+  return "Validation failures";
 }
 
 function getChartTabLabel(id: TabId): string {
@@ -631,8 +689,7 @@ function computeLabelPlacements(
     combo,
     x: plotX(comboValue(combo, tab.x.key), tab.x),
     y: plotY(comboValue(combo, tab.y.key), tab.y, tab.yInverted),
-    width:
-      (MODELS[combo.model].short.length + getPathShort(combo.path).length + 3) * LABEL_CHAR_W,
+    width: (MODELS[combo.model].short.length + getPathShort(combo.path).length + 3) * LABEL_CHAR_W,
   }));
   const obstacles: LabelBox[] = points.map((p) => ({
     x1: p.x - DOT_PAD,
@@ -718,7 +775,8 @@ const AGENT_TABS: readonly AgentTab[] = [
     label: "Cursor",
     iconSlug: "cursor",
     mono: true,
-    command: '"better-fullstack": { "command": "npx", "args": ["-y", "create-better-fullstack@latest", "mcp"] }',
+    command:
+      '"better-fullstack": { "command": "npx", "args": ["-y", "create-better-fullstack@latest", "mcp"] }',
     hint: "paste into ~/.cursor/mcp.json under mcpServers",
     shell: false,
   },
@@ -743,7 +801,7 @@ const AGENT_TABS: readonly AgentTab[] = [
     iconSlug: "githubcopilot",
     mono: true,
     command:
-      "code --add-mcp '{\"name\":\"better-fullstack\",\"command\":\"npx\",\"args\":[\"-y\",\"create-better-fullstack@latest\",\"mcp\"]}'",
+      'code --add-mcp \'{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}\'',
     hint: "run in your terminal",
     shell: true,
   },
@@ -761,7 +819,303 @@ const headingStyle: CSSProperties = {
   lineHeight: 0.98,
 };
 
-const blogPostParams = { _splat: "scaffbench" } as const;
+const blogPostParams = { _splat: "scaffbench-2" } as const;
+
+// ── ScaffBench 2 leaderboard ────────────────────────────────────────────────
+// A pass-rate bar chart + data table for the per-path (MCP / CLI / Prompt)
+// ScaffBench 2 run, with a v1 fallback that reuses the cross-vendor COMBOS sweep.
+
+type LeaderboardVersion = "v2" | "v1";
+type ValidationMode = "core" | "full";
+
+const LEADERBOARD_LABELS: Record<PathId, string> = {
+  mcp: "MCP",
+  cli: "CLI",
+  prompt: "Prompt",
+};
+
+// Per-provider bar colors as theme-aware CSS vars (set on the card wrapper).
+// claude = burnt orange, codex = green, opencode = violet, kilo = cyan
+// (the two free-tier agents get cooler hues so they read as a separate group).
+const LEADERBOARD_THEME_VARS = cn(
+  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-track:#ececec]",
+  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-track:#edebe414]",
+);
+
+const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo", string> = {
+  claude: "var(--bar-claude)",
+  codex: "var(--bar-codex)",
+  opencode: "var(--bar-opencode)",
+  kilo: "var(--bar-kilo)",
+};
+
+const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
+
+// One row per model: Model · bar · Pass 1 · Avg cost · Out tok · Steps.
+const LEADERBOARD_GRID =
+  "grid grid-cols-[minmax(9rem,14rem)_minmax(0,1fr)_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
+
+const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
+
+// The whole row block crossfades when the version / path / mode tab changes.
+const leaderFadeHidden = { opacity: 0 } as const;
+const leaderFadeVisible = { opacity: 1 } as const;
+const leaderFadeTransition = { duration: 0.16, ease: barEase } as const;
+
+/** Which creation path the per-model numbers reflect ("all" = pooled across paths). */
+type LeaderPath = "all" | PathId;
+
+interface ModelLeaderRow {
+  key: string;
+  label: string;
+  /** reasoning-effort tag (e.g. "max"), or "" for the v1 cross-vendor models. */
+  effort: string;
+  /** "free" pins the row below the paid tier, under a divider, in every view. */
+  tier: "paid" | "free";
+  /** bar fill color. */
+  color: string;
+  /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. */
+  pass: number;
+  /** numeric avg cost for sorting (Infinity when unpriced). */
+  costNum: number;
+  cost: string;
+  outTok: string;
+  steps: string;
+}
+
+function formatPercent(passing: number, total: number): number {
+  return total === 0 ? 0 : Math.round((100 * passing) / total);
+}
+
+function mean(values: readonly number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+// Paid tier first, then free tier (free never outranks a paid config, even when
+// the scaffolder hands a weak free model an easy MCP pass). Within a tier: best
+// pass-rate first, cheaper as the tiebreak.
+const TIER_RANK: Record<ModelLeaderRow["tier"], number> = { paid: 0, free: 1 };
+function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
+  return [...rows].sort(
+    (a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.pass - a.pass || a.costNum - b.costNum,
+  );
+}
+
+// V2: one row per (model, effort), pooled over the chosen path's scored cells.
+function computeV2ModelRows(
+  leaderPath: LeaderPath,
+  mode: ValidationMode,
+  specs: ReadonlySet<string>,
+): ModelLeaderRow[] {
+  const rows = SCAFFBENCH2_MODELS.map((model) => {
+    const cells = SCAFFBENCH2_CELLS.filter(
+      (cell) =>
+        cell.modelKey === model.key &&
+        (leaderPath === "all" || cell.path === leaderPath) &&
+        specs.has(cell.spec),
+    );
+    const scored = cells.filter((cell) => cell.scored);
+    const passing = scored.filter((cell) =>
+      mode === "core" ? cell.corePass : cell.fullPass,
+    ).length;
+    const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
+    const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
+    return {
+      key: model.key,
+      label: model.label,
+      effort: model.effort,
+      tier:
+        model.provider === "opencode" || model.provider === "kilo"
+          ? ("free" as const)
+          : ("paid" as const),
+      color: PROVIDER_BAR_COLOR[model.provider],
+      pass: formatPercent(passing, scored.length),
+      costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
+      cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
+      outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
+      steps: scored.length > 0 ? String(Math.round(mean(scored.map((cell) => cell.steps)))) : "—",
+    };
+  });
+  return sortLeaderRows(rows);
+}
+
+// V1: one row per cross-vendor model, pooled over the chosen path's COMBOS.
+function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
+  const modelIds = MODEL_ORDER.filter((m) => COMBOS.some((combo) => combo.model === m));
+  const rows = modelIds.map((m) => {
+    const combos = COMBOS.filter(
+      (combo) => combo.model === m && (leaderPath === "all" || combo.path === leaderPath),
+    );
+    return {
+      key: m,
+      label: getModelLabel(m),
+      effort: "",
+      tier: "paid" as const,
+      color: CHART_PALETTE.models[m],
+      pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
+      costNum: Number.POSITIVE_INFINITY,
+      cost: "—",
+      outTok: combos.length > 0 ? `${mean(combos.map((combo) => combo.tokens)).toFixed(1)}k` : "—",
+      steps: "—",
+    };
+  });
+  return sortLeaderRows(rows);
+}
+
+// ── ScaffBench 2 chart (V2 graph view) ──────────────────────────────────────
+// The V2 run is a single-agent ablation (one model — Claude Opus 4.8), so the
+// cross-vendor scatter collapses to a single color. Instead the V2 graph plots
+// the three creation paths on an efficiency-vs-reliability plane: Core pass-rate
+// (y, higher = better) against an efficiency metric (x, reversed so the cheapest
+// / fewest sits on the right). Aggregated over measured specs, matching the
+// leaderboard table's Core column. There is no per-cell duration in the V2
+// dataset, so "Speed"/time tabs are intentionally absent here.
+
+type V2Metric = "tokens" | "cost" | "steps";
+
+interface V2ChartTabSpec {
+  id: V2Metric;
+  label: string;
+  note: string;
+  /** suffix appended to axis ticks ("k" for tokens; cost/steps carry units in the label) */
+  unit: string;
+  axisLabel: string;
+}
+
+const V2_CHART_TABS: readonly V2ChartTabSpec[] = [
+  {
+    id: "tokens",
+    label: "Tokens",
+    note: "cheap + reliable ↗",
+    unit: "k",
+    axisLabel: "Avg output tokens per scaffold",
+  },
+  {
+    id: "cost",
+    label: "Cost",
+    note: "cheap + reliable ↗",
+    unit: "",
+    axisLabel: "Avg cost per scaffold ($)",
+  },
+  {
+    id: "steps",
+    label: "Steps",
+    note: "cheap + reliable ↗",
+    unit: "",
+    axisLabel: "Avg tool steps per scaffold",
+  },
+] as const;
+
+// V2 dots are colored per MODEL (like v1), one color per model group in order.
+// Reuses the v1 model palette vars.
+const V2_MODEL_COLORS: readonly string[] = [
+  "var(--ch-opus)",
+  "var(--ch-gpt55)",
+  "var(--ch-sonnet)",
+  "var(--ch-spark)",
+  "var(--ch-gpt54)",
+  "var(--ch-gemini31)",
+  "var(--ch-kimi)",
+  "var(--ch-glm51)",
+  "var(--ch-northmini)",
+  "var(--ch-nemotron)",
+];
+
+interface PathMetrics {
+  /** Core pass-rate over scored specs, 0–100. */
+  pass: number;
+  /** avg output tokens, thousands */
+  tokens: number;
+  /** avg cost, USD */
+  cost: number;
+  /** avg tool steps over scored cells */
+  steps: number;
+}
+
+// Aggregate one model's cells for one path over its scored specs.
+function aggregatePathMetrics(modelKey: string, path: PathId): PathMetrics {
+  const cells = SCAFFBENCH2_CELLS.filter((cell) => cell.modelKey === modelKey && cell.path === path);
+  const scored = cells.filter((cell) => cell.scored);
+  const tokens = scored
+    .map((cell) => cell.outTokens)
+    .filter((value): value is number => value !== null);
+  const costs = scored
+    .map((cell) => cell.costUsd)
+    .filter((value): value is number => value !== null);
+  return {
+    pass: formatPercent(scored.filter((cell) => cell.corePass).length, scored.length),
+    tokens: tokens.length > 0 ? mean(tokens) / 1000 : 0,
+    cost: costs.length > 0 ? mean(costs) : 0,
+    steps: scored.length > 0 ? mean(scored.map((cell) => cell.steps)) : 0,
+  };
+}
+
+type MetricBearing = { tokens: number; cost: number; steps: number };
+
+function v2MetricValue(point: MetricBearing, metric: V2Metric): number {
+  if (metric === "cost") return point.cost;
+  if (metric === "steps") return point.steps;
+  return point.tokens;
+}
+
+function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
+  if (metric === "cost") return `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return `${Math.round(point.steps)} steps`;
+  return `${point.tokens.toFixed(1)}k tokens`;
+}
+
+// Compact value for the on-axis hover label ("$3.36" / "50.0k" / "54") — no unit
+// word, since it sits directly on the (already-labeled) x-axis.
+function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
+  if (metric === "cost") return `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return `${Math.round(point.steps)}`;
+  return `${point.tokens.toFixed(1)}k`;
+}
+
+// A "nice" step (1/2/5 × 10ⁿ) so V2 axis ticks land on round numbers.
+function niceStep(maxValue: number): number {
+  if (maxValue <= 0) return 1;
+  const target = maxValue / 3.5;
+  const magnitude = 10 ** Math.floor(Math.log10(target));
+  const normalized = target / magnitude;
+  const niceNormalized = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return niceNormalized * magnitude;
+}
+
+function buildV2Axis(metric: V2Metric, points: readonly MetricBearing[]): AxisSpec {
+  const tab = V2_CHART_TABS.find((entry) => entry.id === metric) ?? V2_CHART_TABS[0];
+  const dataMax = Math.max(0, ...points.map((point) => v2MetricValue(point, metric)));
+  const step = niceStep(dataMax);
+  const max = Math.max(Math.ceil((dataMax * 1.12) / step) * step, step);
+  const ticks: number[] = [];
+  for (let tick = max; tick >= 0; tick -= step) {
+    ticks.push(Math.round(tick * 100) / 100);
+  }
+  // `key` is unused for V2 (we don't route through comboValue); "tokens" is a valid placeholder.
+  return { key: "tokens", max, ticks, unit: tab.unit, label: tab.axisLabel };
+}
+
+interface V2ModelPoint extends PathMetrics {
+  key: string;
+  /** model name shown on hover + in the legend, e.g. "Opus 4.8". */
+  label: string;
+  /** reasoning effort, shown on the dot label/tooltip. */
+  reasoning: string;
+  color: string;
+}
+
+// The dots to plot for the selected path: one per MODEL (like v1 plots one dot
+// per model), colored by model. With six models this is a real multi-model
+// scatter — the legend maps colors to models, hover shows the values.
+function computeV2ModelPoints(path: PathId): V2ModelPoint[] {
+  return SCAFFBENCH2_MODELS.map((model, index) => ({
+    key: model.key,
+    label: model.label,
+    reasoning: model.effort,
+    color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+    ...aggregatePathMetrics(model.key, path),
+  }));
+}
 
 export default function LLMBenchmarkSection() {
   return (
@@ -769,6 +1123,7 @@ export default function LLMBenchmarkSection() {
       <div className="px-4 py-20 sm:px-8 sm:py-24">
         <Masthead />
         <BenchmarkChartCard />
+        <ScaffbenchLeaderboardCard />
         <AgentInstallPanel />
       </div>
     </section>
@@ -818,42 +1173,135 @@ const stairsDraw = { duration: 0.7, ease: barEase, delay: 0.1 } as const;
 const diagonalDraw = { duration: 0.35, ease: barEase, delay: 0.85 } as const;
 const drawNone = { duration: 0 } as const;
 
+// Hammer-strike pose angles (degrees): rest → wind-up → strike-down → settle.
+// After the icon draws in, the hammer slams once and rests (no loop).
+const HAMMER_REST = -6;
+const HAMMER_WIND = -34;
+const HAMMER_STRIKE = 43;
+const HAMMER_SLAM_DELAY = 1.3; // fires after the draw-in finishes (~1.2s)
+const HAMMER_SLAM_DUR = 0.62;
+const SPARK_HIDDEN_STYLE: CSSProperties = { opacity: 0 };
+
 function ScaffBenchMark({ className }: { className?: string }) {
   const ref = useRef<SVGSVGElement>(null);
+  const hammerRef = useRef<SVGGElement>(null);
+  const sparkRef = useRef<SVGGElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const reduceMotion = useReducedMotion() === true;
   const drawn = inView || reduceMotion;
 
+  // Drive the hammer's pivot rotation as a motion value written straight into the
+  // SVG transform string (translate to the pivot, then rotate) — the design's
+  // exact formula, no transform-origin guesswork.
+  const angle = useMotionValue(HAMMER_REST);
+  const sparkOpacity = useMotionValue(0);
+  useEffect(() => {
+    const unsubAngle = angle.on("change", (value) => {
+      hammerRef.current?.setAttribute("transform", `translate(8.5 7) rotate(${value.toFixed(2)})`);
+    });
+    const unsubSpark = sparkOpacity.on("change", (value) => {
+      if (sparkRef.current) sparkRef.current.style.opacity = String(value);
+    });
+    return () => {
+      unsubAngle();
+      unsubSpark();
+    };
+  }, [angle, sparkOpacity]);
+
+  // Slam once, after the icon has fully drawn in.
+  useEffect(() => {
+    if (!inView || reduceMotion) return;
+    const slam = animate(angle, [HAMMER_REST, HAMMER_WIND, HAMMER_STRIKE, HAMMER_REST], {
+      delay: HAMMER_SLAM_DELAY,
+      duration: HAMMER_SLAM_DUR,
+      times: [0, 0.32, 0.5, 1],
+      ease: ["easeOut", "easeIn", "easeOut"],
+    });
+    const spark = animate(sparkOpacity, [0, 1, 0], {
+      delay: HAMMER_SLAM_DELAY + HAMMER_SLAM_DUR * 0.5,
+      duration: 0.28,
+      times: [0, 0.18, 1],
+      ease: "easeOut",
+    });
+    return () => {
+      slam.stop();
+      spark.stop();
+    };
+  }, [inView, reduceMotion, angle, sparkOpacity]);
+
   return (
-    <svg ref={ref} viewBox="0 0 64 64" aria-hidden className={className}>
-      <g fill="none" strokeWidth={4} strokeLinecap="square" strokeLinejoin="miter">
+    <svg
+      ref={ref}
+      viewBox="0 0 32 32"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Anvil. */}
+      <motion.path
+        d="M5 18.5 L19.5 18.5 L24.5 20.4 L19.5 22.3 L5 22.3 Z"
+        initial={pathHidden}
+        animate={drawn ? pathDrawn : pathHidden}
+        transition={reduceMotion ? drawNone : stairsDraw}
+      />
+      <motion.path
+        d="M9.5 22.3 L8 28 L16.5 28 L15 22.3"
+        initial={pathHidden}
+        animate={drawn ? pathDrawn : pathHidden}
+        transition={reduceMotion ? drawNone : stairsDraw}
+      />
+      {/* Hammer — drawn in at rest, then the pivot rotation (ref) slams it down. */}
+      <g ref={hammerRef} transform="translate(8.5 7) rotate(-6)">
         <motion.path
-          d="M8 54 H20 V40 H32 V26 H44 V12 H56"
-          stroke="currentColor"
-          initial={pathHidden}
-          animate={drawn ? pathDrawn : pathHidden}
-          transition={reduceMotion ? drawNone : stairsDraw}
-        />
-        <motion.path
-          d="M8 54 L56 12"
-          stroke="#C6E853"
+          d="M-4.5 0 L11.5 0"
           initial={pathHidden}
           animate={drawn ? pathDrawn : pathHidden}
           transition={reduceMotion ? drawNone : diagonalDraw}
         />
+        <motion.rect
+          x="9.7"
+          y="-4.8"
+          width="4.6"
+          height="9.6"
+          rx="1.3"
+          initial={pathHidden}
+          animate={drawn ? pathDrawn : pathHidden}
+          transition={reduceMotion ? drawNone : diagonalDraw}
+        />
+      </g>
+      {/* Impact spark — a brief lime flash at the strike point on the slam. */}
+      <g ref={sparkRef} stroke="#C6E853" strokeWidth={1.2} style={SPARK_HIDDEN_STYLE} aria-hidden>
+        <circle cx="14" cy="18.2" r="1.5" fill="#C6E853" stroke="none" />
+        <line x1="14" y1="18.2" x2="9.8" y2="15.6" />
+        <line x1="14" y1="18.2" x2="11.2" y2="13.8" />
+        <line x1="14" y1="18.2" x2="16" y2="13.4" />
+        <line x1="14" y1="18.2" x2="18.2" y2="15.4" />
       </g>
     </svg>
   );
 }
 
 function BenchmarkChartCard() {
+  const [version, setVersion] = useState<BenchmarkVersionId>("v2");
+  const [activePath, setActivePath] = useState<PathId>("prompt");
   const [tabId, setTabId] = useState<TabId>("speed");
-  const [selectedModels, setSelectedModels] = useState<readonly ModelId[]>(DEFAULT_MODELS);
+  const [v2Metric, setV2Metric] = useState<V2Metric>("tokens");
+  const [selectedModels, setSelectedModels] = useState<readonly ModelId[]>(
+    DEFAULT_MODELS_BY_VERSION.v1,
+  );
   const [hoveredComboId, setHoveredComboId] = useState<string | null>(null);
+  const [hoveredModel, setHoveredModel] = useState<string | null>(null);
+
+  // V1 (cross-vendor) derived state.
   const baseTab = CHART_TABS.find((t) => t.id === tabId) ?? CHART_TABS[0];
   const combos = useMemo(
-    () => COMBOS.filter((combo) => selectedModels.includes(combo.model)),
-    [selectedModels],
+    () =>
+      COMBOS.filter((combo) => combo.path === activePath && selectedModels.includes(combo.model)),
+    [activePath, selectedModels],
   );
   // Refit value axes to the visible selection so outliers don't crowd the rest.
   const fittedTab = useMemo(
@@ -862,6 +1310,27 @@ function BenchmarkChartCard() {
   );
   const tab = useMemo(() => localizeTab(fittedTab), [fittedTab]);
   const labelPlacements = useMemo(() => computeLabelPlacements(combos, tab), [combos, tab]);
+
+  // V2 derived state. The tabs select the PATH; the dots are the models for that
+  // path (one per model, colored + labeled). The axis is fit to the active path's
+  // models (like v1's fitAxis) so the dots spread across the plot — on the
+  // assisted paths the models cluster, and a fixed all-path axis would crush them
+  // into an unreadable corner with no room for labels.
+  // V2 is Prompt-only (see V2_PATH_TABS): force the path so a stale v1 selection
+  // (e.g. mcp) can't leak the wrong data into the v2 chart.
+  const v2Path: PathId = version === "v2" ? "prompt" : activePath;
+  const v2ModelPoints = useMemo(() => computeV2ModelPoints(v2Path), [v2Path]);
+  const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2ModelPoints), [v2Metric, v2ModelPoints]);
+  const v2LabelPlacements = useMemo(
+    () => computeV2LabelPlacements(v2ModelPoints, v2Axis, v2Metric),
+    [v2ModelPoints, v2Axis, v2Metric],
+  );
+  const v2AxisNote = (V2_CHART_TABS.find((t) => t.id === v2Metric) ?? V2_CHART_TABS[0]).note;
+  const v2AxisTab = useMemo<TabSpec>(
+    () => ({ id: "tokens", label: "", note: v2AxisNote, x: v2Axis, y: PASS_AXIS, yInverted: false }),
+    [v2AxisNote, v2Axis],
+  );
+
   const toggleModel = useCallback((model: ModelId) => {
     setSelectedModels((prev) =>
       prev.includes(model)
@@ -875,6 +1344,7 @@ function BenchmarkChartCard() {
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const reduceMotion = useReducedMotion();
   const palette = CHART_PALETTE;
+  const isV2 = version === "v2";
 
   return (
     <motion.div
@@ -888,56 +1358,111 @@ function BenchmarkChartCard() {
       )}
     >
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-3 px-3">
-          <div
-            className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
-            role="tablist"
-            aria-label={m.llmBenchmarkMetric()}
-          >
-            {CHART_TABS.map((t) => (
-              <ChartTabButton
-                key={t.id}
-                tab={localizeTab(t)}
-                active={tabId === t.id}
-                onSelect={setTabId}
-              />
-            ))}
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-start justify-between gap-4 px-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
+              <PillButton value="v2" label="v2" active={isV2} onSelect={setVersion} />
+              <PillButton value="v1" label="v1" active={!isV2} onSelect={setVersion} />
+            </div>
+            <PathTabs
+              active={isV2 ? "prompt" : activePath}
+              onSelect={setActivePath}
+              paths={isV2 ? V2_PATH_TABS : PATH_TAB_ORDER}
+            />
+            {isV2 ? null : <PathsHelp />}
           </div>
-          <ModelFilter selectedModels={selectedModels} onToggle={toggleModel} />
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <div
+              className="inline-flex overflow-hidden rounded-md border border-[#d9d8d2] dark:border-[rgba(237,235,228,0.14)]"
+              role="tablist"
+              aria-label={m.llmBenchmarkMetric()}
+            >
+              {isV2
+                ? V2_CHART_TABS.map((t) => (
+                    <MetricTabButton
+                      key={t.id}
+                      id={t.id}
+                      label={t.label}
+                      active={v2Metric === t.id}
+                      onSelect={setV2Metric}
+                    />
+                  ))
+                : CHART_TABS.map((t) => (
+                    <ChartTabButton
+                      key={t.id}
+                      tab={localizeTab(t)}
+                      active={tabId === t.id}
+                      onSelect={setTabId}
+                    />
+                  ))}
+            </div>
+            {isV2 ? null : (
+              <ModelFilter
+                benchmarkVersion={version}
+                selectedModels={selectedModels}
+                onToggle={toggleModel}
+              />
+            )}
+          </div>
         </div>
       </div>
 
       <div ref={ref} className="px-3 pb-2 pt-5 sm:px-6">
         {/* Labeled, focusable section: WAI scrollable-region pattern */}
-        <section
-          aria-label={m.llmScatterAria()}
-          className="overflow-x-auto"
-          tabIndex={0}
-        >
+        <section aria-label={m.llmScatterAria()} className="overflow-x-auto" tabIndex={0}>
           <div className="mx-auto w-full min-w-[560px] max-w-[1180px]">
-            <p className="px-3 text-sm font-semibold">{tab.y.label}</p>
+            <p className="px-3 text-sm font-semibold">{isV2 ? getAxisLabel("pass") : tab.y.label}</p>
             <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-2 h-auto w-full">
-              <AxisLayer key={`${tab.id}-${tab.x.max}-${tab.y.max}`} tab={tab} palette={palette} />
-              {combos.map((combo, index) => (
-                <ChartPoint
-                  key={combo.id}
-                  combo={combo}
-                  tab={tab}
-                  palette={palette}
-                  placement={labelPlacements[combo.id]}
-                  index={index}
-                  inView={inView}
-                  reduceMotion={reduceMotion === true}
-                  active={hoveredComboId === combo.id}
-                  onActiveChange={setHoveredComboId}
-                />
-              ))}
+              {isV2 ? (
+                <>
+                  <AxisLayer key={`v2-${v2Metric}-${v2Axis.max}`} tab={v2AxisTab} palette={palette} />
+                  {v2ModelPoints.map((point, index) => (
+                    <V2Dot
+                      key={point.key}
+                      point={point}
+                      x={plotX(v2MetricValue(point, v2Metric), v2Axis)}
+                      y={plotY(point.pass, PASS_AXIS, false)}
+                      cardBg={palette.circleStroke}
+                      metricLabel={formatV2Metric(point, v2Metric)}
+                      xAxisValue={formatV2MetricCompact(point, v2Metric)}
+                      placement={v2LabelPlacements[point.key]}
+                      index={index}
+                      inView={inView}
+                      reduceMotion={reduceMotion === true}
+                      active={hoveredModel === point.key}
+                      onActiveChange={setHoveredModel}
+                    />
+                  ))}
+                </>
+              ) : (
+                <>
+                  <AxisLayer
+                    key={`${tab.id}-${tab.x.max}-${tab.y.max}`}
+                    tab={tab}
+                    palette={palette}
+                  />
+                  {combos.map((combo, index) => (
+                    <ChartPoint
+                      key={combo.id}
+                      combo={combo}
+                      tab={tab}
+                      palette={palette}
+                      placement={labelPlacements[combo.id]}
+                      index={index}
+                      inView={inView}
+                      reduceMotion={reduceMotion === true}
+                      active={hoveredComboId === combo.id}
+                      onActiveChange={setHoveredComboId}
+                    />
+                  ))}
+                </>
+              )}
             </svg>
           </div>
         </section>
       </div>
 
-      <CardLegend models={selectedModels} />
+      {isV2 ? null : <CardLegend models={selectedModels} />}
     </motion.div>
   );
 }
@@ -947,13 +1472,93 @@ const MODEL_SWATCH_STYLES = Object.fromEntries(
   MODEL_ORDER.map((model) => [model, { backgroundColor: CHART_PALETTE.models[model] }]),
 ) as Record<ModelId, CSSProperties>;
 
+function PathTabs({
+  active,
+  onSelect,
+  paths = PATH_TAB_ORDER,
+}: {
+  active: PathId;
+  onSelect: (path: PathId) => void;
+  paths?: readonly PathId[];
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Creation path">
+      {paths.map((path) => (
+        <PathTabButton key={path} path={path} active={active === path} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+// "?" help icon next to the path tabs — hovering explains what each creation
+// path (MCP / CLI / Prompt) actually does, replacing the per-path legend line.
+function PathsHelp() {
+  return (
+    <Tooltip delay={0}>
+      <TooltipTrigger
+        type="button"
+        aria-label="What do the MCP, CLI, and Prompt paths mean?"
+        className="flex size-[18px] shrink-0 cursor-help items-center justify-center rounded-full border border-[#d9d8d2] text-[10px] font-bold leading-none text-[#71706a] transition-colors hover:border-[#1b1a17] hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.2)] dark:text-[#8f8d84] dark:hover:border-[#dad8d0] dark:hover:text-[#dad8d0]"
+      >
+        ?
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[18rem]">
+        <p className="mb-1.5 font-semibold">Creation path — how the agent builds the project:</p>
+        <ul className="space-y-1">
+          {PATH_TAB_ORDER.map((path) => (
+            <li key={path}>
+              <span className="font-mono font-semibold">{getPathShort(path)}</span> —{" "}
+              {getPathDetail(path)}
+            </li>
+          ))}
+        </ul>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function PathTabButton({
+  path,
+  active,
+  onSelect,
+}: {
+  path: PathId;
+  active: boolean;
+  onSelect: (path: PathId) => void;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(path);
+  }, [onSelect, path]);
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+        active
+          ? "bg-[#1b1a17] text-[#faf9f5] dark:bg-[#dad8d0] dark:text-[#100f0e]"
+          : "text-[#71706a] hover:bg-[#edebe4] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:bg-[rgba(237,235,228,0.10)] dark:hover:text-[#dad8d0]",
+      )}
+    >
+      {getPathShort(path)}
+    </button>
+  );
+}
+
 function ModelFilter({
+  benchmarkVersion,
   selectedModels,
   onToggle,
 }: {
+  benchmarkVersion: BenchmarkVersionId;
   selectedModels: readonly ModelId[];
   onToggle: (model: ModelId) => void;
 }) {
+  const groups = MODEL_GROUPS.filter((group) => group.version === benchmarkVersion);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -966,8 +1571,11 @@ function ModelFilter({
         </span>
         <ChevronDown className="size-3.5" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className={cn("w-64", CHART_THEME_VARS)}>
-        {MODEL_GROUPS.map((group, index) => (
+      <DropdownMenuContent
+        align="end"
+        className={cn("w-80 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
+      >
+        {groups.map((group, index) => (
           <DropdownMenuGroup key={group.label}>
             {index > 0 ? <DropdownMenuSeparator /> : null}
             <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
@@ -1004,7 +1612,7 @@ function ModelMenuItem({
   return (
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={MODEL_SWATCH_STYLES[model]} />
-      {MODELS[model].label}
+      <span className="min-w-0 flex-1">{getModelLabel(model)}</span>
     </DropdownMenuCheckboxItem>
   );
 }
@@ -1154,6 +1762,9 @@ function ChartPoint({
       className="outline-none"
       focusable="true"
     >
+      <title>
+        {getModelLabel(combo.model)} · {getPathShort(combo.path)}
+      </title>
       <HoverGuides active={active} hex={hex} x={x} y={y} />
       <ChartMarker hex={hex} cardBg={palette.circleStroke} />
       {placement?.hidden && !active ? null : (
@@ -1189,10 +1800,7 @@ function HoverGuides({
   y: number;
 }) {
   return (
-    <g
-      opacity={active ? 0.85 : 0}
-      className="pointer-events-none transition-opacity duration-150"
-    >
+    <g opacity={active ? 0.85 : 0} className="pointer-events-none transition-opacity duration-150">
       <line
         x1={M_L - x}
         y1={0}
@@ -1229,23 +1837,218 @@ function CardLegend({ models }: { models: readonly ModelId[] }) {
     <div className="border-t border-[#e1e0d8] bg-[#f6f5f1] px-5 py-4 dark:border-[rgba(237,235,228,0.10)] dark:bg-[#100f0e] sm:px-8">
       <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2.5">
         {models.map((model) => (
-          <span key={model} className="flex items-center gap-2 text-xs font-semibold sm:text-sm">
+          <span
+            key={model}
+            className="flex min-w-0 items-center gap-2 text-xs font-semibold sm:text-sm"
+          >
             <span className="size-2.5 rounded-[2px]" style={MODEL_SWATCH_STYLES[model]} />
-            {MODELS[model].label}
-          </span>
-        ))}
-      </div>
-      <div className="mt-2.5 flex flex-wrap items-baseline justify-center gap-x-6 gap-y-1.5">
-        {PATH_ORDER.map((path) => (
-          <span key={path} className="text-xs text-[#71706a] dark:text-[#8a8a8a]">
-            <span className="font-mono font-semibold text-[#1b1a17] dark:text-[#dad8d0]">
-              {PATHS[path].glyph} {getPathShort(path)}
-            </span>{" "}
-            — {getPathDetail(path)}
+            <span>{getModelLabel(model)}</span>
           </span>
         ))}
       </div>
     </div>
+  );
+}
+
+// Generic segmented tab button (used for the V2 metric switch). Mirrors
+// ChartTabButton's styling but is not coupled to the v1 TabId union.
+function MetricTabButton<T extends string>({
+  id,
+  label,
+  active,
+  onSelect,
+}: {
+  id: T;
+  label: string;
+  active: boolean;
+  onSelect: (id: T) => void;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(id);
+  }, [onSelect, id]);
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer border-r border-[#d9d8d2] px-3.5 py-2 text-xs font-medium transition-colors last:border-r-0 dark:border-[rgba(237,235,228,0.14)]",
+        active
+          ? "bg-[#C6E853] text-[#0a0a0a]"
+          : "bg-transparent text-[#71706a] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+// Greedy, collision-avoiding placement for the per-model dot labels (model +
+// reasoning), mirroring the v1 computeLabelPlacements: rightmost dots choose
+// first, each label takes the first candidate slot that clears every dot and
+// already-placed label; if none fits it's hidden and shown on hover instead.
+function computeV2LabelPlacements(
+  points: readonly V2ModelPoint[],
+  axis: AxisSpec,
+  metric: V2Metric,
+): Record<string, LabelPlacement> {
+  const mapped = points.map((point) => ({
+    point,
+    x: plotX(v2MetricValue(point, metric), axis),
+    y: plotY(point.pass, PASS_AXIS, false),
+    width: (`${point.label} · ${point.reasoning}`.length + 1) * LABEL_CHAR_W,
+  }));
+  const obstacles: LabelBox[] = mapped.map((p) => ({
+    x1: p.x - DOT_PAD,
+    y1: p.y - DOT_PAD,
+    x2: p.x + DOT_PAD,
+    y2: p.y + DOT_PAD,
+  }));
+  // Corner note ("cheap + reliable ↗"), end-anchored at the top right.
+  obstacles.push({ x1: M_L + PLOT_W - 8 - 18 * 6.4, y1: M_T + 6, x2: M_L + PLOT_W - 8, y2: M_T + 22 });
+
+  const placements: Record<string, LabelPlacement> = {};
+  const ordered = [...mapped].sort((a, b) => b.x - a.x || a.y - b.y);
+  for (const p of ordered) {
+    let placed: LabelPlacement = { hidden: true };
+    for (const candidate of PLACEMENT_CANDIDATES) {
+      const box = labelBox(p.x, p.y, p.width, candidate);
+      if (box.x1 < 2 || box.x2 > VB_W - 2 || box.y1 < 12 || box.y2 > M_T + PLOT_H + 16) continue;
+      if (obstacles.some((o) => boxesOverlap(box, o))) continue;
+      placed = candidate;
+      obstacles.push(box);
+      break;
+    }
+    placements[p.point.key] = placed;
+  }
+  return placements;
+}
+
+// A single V2 model point for the active path. Reuses the shared marker/hover
+// machinery; the dot is labeled with the MODEL name + reasoning (placed to avoid
+// collisions; a label with no free slot is shown on hover instead).
+function V2Dot({
+  point,
+  x,
+  y,
+  cardBg,
+  metricLabel,
+  xAxisValue,
+  placement,
+  index,
+  inView,
+  reduceMotion,
+  active,
+  onActiveChange,
+}: {
+  point: V2ModelPoint;
+  x: number;
+  y: number;
+  cardBg: string;
+  metricLabel: string;
+  xAxisValue: string;
+  placement: LabelPlacement | undefined;
+  index: number;
+  inView: boolean;
+  reduceMotion: boolean;
+  active: boolean;
+  onActiveChange: (key: string | null) => void;
+}) {
+  const nearRightEdge = x > M_L + PLOT_W - 150;
+  const animate = useMemo(() => ({ x, y, opacity: inView ? 1 : 0 }), [x, y, inView]);
+  const transition = useMemo(
+    () =>
+      reduceMotion
+        ? { duration: 0 }
+        : { x: chartMove, y: chartMove, opacity: { duration: 0.45, delay: 0.1 + index * 0.08 } },
+    [index, reduceMotion],
+  );
+  const activate = useCallback(() => onActiveChange(point.key), [onActiveChange, point.key]);
+  const deactivate = useCallback(() => onActiveChange(null), [onActiveChange]);
+
+  return (
+    <motion.g
+      initial={false}
+      animate={animate}
+      transition={transition}
+      tabIndex={0}
+      onMouseEnter={activate}
+      onMouseLeave={deactivate}
+      onFocus={activate}
+      onBlur={deactivate}
+      className="outline-none"
+      focusable="true"
+      aria-label={`${point.label} · ${point.reasoning} · ${point.pass}% Core pass · ${metricLabel}`}
+    >
+      <HoverGuides active={active} hex={point.color} x={x} y={y} />
+      <ChartMarker hex={point.color} cardBg={cardBg} />
+      {/* Model + reasoning label, placed to avoid collisions. If no slot was
+          found (placement.hidden) the label only appears on hover/focus. */}
+      {placement && !placement.hidden ? (
+        <text
+          x={placement.dx ?? 10}
+          y={placement.dy ?? 4}
+          textAnchor={placement.anchor ?? "start"}
+          fontSize={11}
+          fontWeight={active ? 700 : 600}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+        >
+          {point.label} · {point.reasoning}
+        </text>
+      ) : active ? (
+        <text
+          x={nearRightEdge ? -10 : 10}
+          y={-12}
+          textAnchor={nearRightEdge ? "end" : "start"}
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+        >
+          {point.label} · {point.reasoning}
+        </text>
+      ) : null}
+      {/* On hover, project the dot's value onto each axis in its own color,
+          replacing the native tooltip. Geometry mirrors AxisLayer's tick rows:
+          y-value sits at the y-axis (end-anchored), x-value on the x-axis row. */}
+      <g className="pointer-events-none transition-opacity duration-150" opacity={active ? 1 : 0}>
+        <text
+          x={M_L - x - 10}
+          y={4}
+          textAnchor="end"
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+          className="font-mono"
+        >
+          {point.pass}%
+        </text>
+        <text
+          x={0}
+          y={M_T + PLOT_H - y + 22}
+          textAnchor="middle"
+          fontSize={11}
+          fontWeight={700}
+          fill={point.color}
+          stroke={cardBg}
+          strokeWidth={3}
+          paintOrder="stroke"
+          className="font-mono"
+        >
+          {xAxisValue}
+        </text>
+      </g>
+    </motion.g>
   );
 }
 
@@ -1304,9 +2107,7 @@ function AgentInstallPanel() {
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
             <code className="truncate font-mono text-xs sm:text-sm">
-              {agent.shell ? (
-                <span className="text-ink dark:text-brand">$ </span>
-              ) : null}
+              {agent.shell ? <span className="text-ink dark:text-brand">$ </span> : null}
               {agent.command}
             </code>
             <button
@@ -1315,9 +2116,7 @@ function AgentInstallPanel() {
               aria-label={m.llmCopyAgentSetupCommand({ agent: agent.label })}
               className={cn(
                 "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
-                copied
-                  ? "text-ink dark:text-brand"
-                  : "text-muted-foreground hover:text-foreground",
+                copied ? "text-ink dark:text-brand" : "text-muted-foreground hover:text-foreground",
               )}
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -1385,5 +2184,332 @@ function OpenAIMark({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
       <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.073zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.8956zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997z" />
     </svg>
+  );
+}
+
+function ScaffbenchLeaderboardCard() {
+  const [version, setVersion] = useState<LeaderboardVersion>("v2");
+  const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
+  const [selectedSpecs, setSelectedSpecs] = useState<readonly string[]>(SCAFFBENCH2_SPECS);
+
+  // We publish a single metric — Core pass (install/build/typecheck). The Full /
+  // quality-gate pass is withheld until a re-run with the corrected gate produces
+  // honest numbers (the old gate skipped lint/test and auto-fixed format, which
+  // overstated Full). computeV2ModelRows still takes a mode so Full can return
+  // with one line once that re-run lands.
+  const MODE = "core" as const;
+  // V2 is Prompt-only (see V2_PATH_TABS): the assisted paths measure our generator,
+  // not the model. Force the path so a stale v1 selection can't leak into v2.
+  const effectiveLeaderPath: LeaderPath = version === "v2" ? "prompt" : leaderPath;
+  const specsSet = useMemo(() => new Set<string>(selectedSpecs), [selectedSpecs]);
+  // One row per model, sorted best-first, for the chosen creation path.
+  const rows = useMemo(
+    () =>
+      version === "v2"
+        ? computeV2ModelRows(effectiveLeaderPath, MODE, specsSet)
+        : computeV1ModelRows(effectiveLeaderPath),
+    [version, effectiveLeaderPath, specsSet],
+  );
+
+  const toggleSpec = useCallback((spec: string) => {
+    setSelectedSpecs((prev) =>
+      prev.includes(spec)
+        ? prev.filter((s) => s !== spec)
+        : SCAFFBENCH2_SPECS.filter((s) => s === spec || prev.includes(s)),
+    );
+  }, []);
+
+  return (
+    <motion.div
+      initial={fadeUpInitial}
+      whileInView={fadeUpVisible}
+      viewport={viewportOnceNear}
+      transition={fadeUpTransition}
+      className={cn(
+        "mt-8 overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark]",
+        LEADERBOARD_THEME_VARS,
+        // v1 rows color their bars from the per-model chart palette (--ch-*).
+        CHART_THEME_VARS,
+      )}
+    >
+      <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-3 px-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
+              <PillButton
+                value="v2"
+                label="v2"
+                active={version === "v2"}
+                onSelect={setVersion}
+              />
+              <PillButton
+                value="v1"
+                label="v1"
+                active={version === "v1"}
+                onSelect={setVersion}
+              />
+            </div>
+            <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
+              {version === "v2" ? (
+                // V2 is Prompt-only (assisted paths measure our generator, not the
+                // model) — show just the Prompt path, no MCP/CLI/All.
+                <PillButton value="prompt" label="Prompt" active onSelect={setLeaderPath} accent="teal" />
+              ) : (
+                <>
+                  <PillButton
+                    value="all"
+                    label="All"
+                    active={leaderPath === "all"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="mcp"
+                    label="MCP"
+                    active={leaderPath === "mcp"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="cli"
+                    label="CLI"
+                    active={leaderPath === "cli"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                  <PillButton
+                    value="prompt"
+                    label="Prompt"
+                    active={leaderPath === "prompt"}
+                    onSelect={setLeaderPath}
+                    accent="teal"
+                  />
+                </>
+              )}
+            </div>
+          </div>
+          {version === "v2" ? (
+            <SpecFilter selectedSpecs={selectedSpecs} onToggle={toggleSpec} />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="px-3 pb-4 pt-5 sm:px-6">
+        <section
+          aria-label="ScaffBench 2 pass-rate leaderboard"
+          className="overflow-x-auto"
+          tabIndex={0}
+        >
+          <div className="mx-auto w-full min-w-[680px] max-w-[1180px] px-3">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <p className="text-sm font-semibold">Pass 1 by model</p>
+              <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
+                {effectiveLeaderPath === "all"
+                  ? "All creation paths"
+                  : LEADERBOARD_LABELS[effectiveLeaderPath]}
+                {version === "v2" ? " · Core validation" : ""}
+              </p>
+            </div>
+
+            <div
+              className={cn(
+                LEADERBOARD_GRID,
+                "mb-1 text-[10px] font-medium uppercase tracking-[0.1em] text-[#71706a] dark:text-[#8f8d84]",
+              )}
+            >
+              <span>Model</span>
+              <span aria-hidden />
+              <span className="text-right">Pass 1</span>
+              <span className="text-right">Avg cost</span>
+              <span className="text-right">Out tok</span>
+              <span className="text-right">Steps</span>
+            </div>
+
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={`${version}-${leaderPath}`}
+                initial={leaderFadeHidden}
+                animate={leaderFadeVisible}
+                exit={leaderFadeHidden}
+                transition={leaderFadeTransition}
+              >
+                {rows.map((row, index) => {
+                  const startsFreeTier =
+                    row.tier === "free" && (index === 0 || rows[index - 1]?.tier !== "free");
+                  return (
+                    <Fragment key={row.key}>
+                      {startsFreeTier ? <LeaderTierDivider /> : null}
+                      <ModelLeaderRow row={row} />
+                    </Fragment>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+
+            <div className={cn(LEADERBOARD_GRID, "mt-1.5")}>
+              <span aria-hidden />
+              <div className="flex justify-between font-mono text-[10px] text-[#9c9a93] dark:text-[#6c6a61]">
+                {PASS_AXIS_TICKS.map((tick) => (
+                  <span key={tick}>{tick}%</span>
+                ))}
+              </div>
+              <span aria-hidden />
+              <span aria-hidden />
+              <span aria-hidden />
+              <span aria-hidden />
+            </div>
+          </div>
+        </section>
+      </div>
+    </motion.div>
+  );
+}
+
+// Distinct active background per segmented group, so the three controls
+// (version · validation mode · creation path) read as separate switches.
+type PillAccent = "ink" | "lime" | "teal";
+const PILL_ACTIVE_CLASS: Record<PillAccent, string> = {
+  ink: "bg-[#0a0a0a] text-white dark:bg-[#dad8d0] dark:text-[#100f0e]",
+  lime: "bg-[#C6E853] text-[#0a0a0a] dark:bg-[#C6E853] dark:text-[#0a0a0a]",
+  teal: "bg-[#0f766e] text-white dark:bg-[#5eead4] dark:text-[#06302b]",
+};
+
+function PillButton<T extends string>({
+  value,
+  label,
+  active,
+  onSelect,
+  accent = "ink",
+}: {
+  value: T;
+  label: string;
+  active: boolean;
+  onSelect: (value: T) => void;
+  accent?: PillAccent;
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(value);
+  }, [onSelect, value]);
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={handleClick}
+      className={cn(
+        "cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+        active
+          ? PILL_ACTIVE_CLASS[accent]
+          : "text-[#71706a] hover:bg-[#edebe4] hover:text-[#1b1a17] dark:text-[#8f8d84] dark:hover:bg-[rgba(237,235,228,0.10)] dark:hover:text-[#dad8d0]",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+// Separates the free-tier rows from the paid configs above them. The label sits
+// in the model column; a hairline runs across the bar column.
+function LeaderTierDivider() {
+  return (
+    <div className={cn(LEADERBOARD_GRID, "mt-2.5 mb-1")} aria-hidden>
+      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#9c9a93] dark:text-[#6c6a61]">
+        Free tier
+      </span>
+      <span className="h-px w-full self-center bg-[#e1e0d8] dark:bg-[rgba(237,235,228,0.10)]" />
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
+function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
+  const fillStyle = useMemo<CSSProperties>(
+    () => ({ width: `${row.pass}%`, backgroundColor: row.color }),
+    [row.pass, row.color],
+  );
+
+  return (
+    <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
+      <span className="flex min-w-0 items-baseline gap-1.5">
+        <span className="truncate font-mono text-sm font-bold">{row.label}</span>
+        {row.effort ? (
+          <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">
+            [{row.effort}]
+          </span>
+        ) : null}
+      </span>
+      <div className="h-2.5 w-full overflow-hidden rounded-full" style={BAR_TRACK_STYLE}>
+        <div
+          className="h-full rounded-full transition-[width] duration-500 ease-out"
+          style={fillStyle}
+        />
+      </div>
+      <span className="text-right font-mono text-sm font-bold">{row.pass}%</span>
+      <span className="text-right font-mono text-xs">{row.cost}</span>
+      <span className="text-right font-mono text-xs">{row.outTok}</span>
+      <span className="text-right font-mono text-xs">{row.steps}</span>
+    </div>
+  );
+}
+
+function SpecFilter({
+  selectedSpecs,
+  onToggle,
+}: {
+  selectedSpecs: readonly string[];
+  onToggle: (spec: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Filter specs"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        Specs
+        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
+          {selectedSpecs.length}/{SCAFFBENCH2_SPECS.length}
+        </span>
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
+            Specs
+          </DropdownMenuLabel>
+          {SCAFFBENCH2_SPECS.map((spec) => (
+            <SpecMenuItem
+              key={spec}
+              spec={spec}
+              checked={selectedSpecs.includes(spec)}
+              onToggle={onToggle}
+            />
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function SpecMenuItem({
+  spec,
+  checked,
+  onToggle,
+}: {
+  spec: string;
+  checked: boolean;
+  onToggle: (spec: string) => void;
+}) {
+  const handleChange = useCallback(() => {
+    onToggle(spec);
+  }, [onToggle, spec]);
+
+  return (
+    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
+      <span className="min-w-0 flex-1 font-mono text-xs">{spec}</span>
+    </DropdownMenuCheckboxItem>
   );
 }

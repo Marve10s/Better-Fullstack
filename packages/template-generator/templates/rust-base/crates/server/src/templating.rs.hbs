@@ -4,6 +4,8 @@
 //! Template sources live in `templates/` at the crate root and are checked
 //! at compile time.
 
+#![allow(dead_code)]
+
 use askama::Template;
 
 #[derive(Template)]
@@ -19,6 +21,8 @@ pub fn render_hello(name: &str) -> Result<String, askama::Error> {
 {{/if}}
 {{#if (eq rustTemplating "tera")}}
 //! Runtime HTML templates with Tera.
+
+#![allow(dead_code)]
 
 use tera::{Context, Tera};
 

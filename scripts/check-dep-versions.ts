@@ -691,7 +691,7 @@ async function main() {
     : ["npm", "rust", "go", "python", "java", "elixir", "dotnet"];
 
   // 1. Parse all sources
-  let entries: DepEntry[] = [];
+  const entries: DepEntry[] = [];
   for (const eco of ecosystems) {
     const before = entries.length;
     switch (eco) {

@@ -7,6 +7,8 @@
 //! tokio::spawn(realtime::serve("0.0.0.0:8765"));
 //! ```
 
+#![allow(dead_code)]
+
 use futures_util::{SinkExt, StreamExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::accept_async;
@@ -26,10 +28,8 @@ async fn handle_connection(stream: TcpStream) {
     };
     let (mut write, mut read) = ws_stream.split();
     while let Some(Ok(message)) = read.next().await {
-        if message.is_text() || message.is_binary() {
-            if write.send(message).await.is_err() {
-                break;
-            }
+        if (message.is_text() || message.is_binary()) && write.send(message).await.is_err() {
+            break;
         }
     }
 }

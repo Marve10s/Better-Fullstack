@@ -15,18 +15,18 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-navigation/bottom-tabs": "^7.18.2",
-    "@react-navigation/drawer": "^7.12.2",
-    "@react-navigation/native": "^7.3.3",
-    "@react-navigation/native-stack": "^7.17.5",
+    "@react-navigation/bottom-tabs": "^7.18.3",
+    "@react-navigation/drawer": "^7.12.3",
+    "@react-navigation/native": "^7.3.4",
+    "@react-navigation/native-stack": "^7.17.6",
     {{#if (includes examples "ai")}}
     "@stardazed/streams-text-encoding": "^1.0.2",
-    "@ungap/structured-clone": "^1.3.1",
+    "@ungap/structured-clone": "^1.3.2",
     {{/if}}
     "@tanstack/react-form": "^1.33.0",
     {{#if (eq mobileUI "tamagui")}}
-    "@tamagui/config": "^2.3.2",
-    "tamagui": "^2.3.2",
+    "@tamagui/config": "^2.4.0",
+    "tamagui": "^2.4.0",
     {{/if}}
     {{#if (eq mobileUI "gluestack-ui")}}
     "@gluestack-ui/themed": "^1.1.73",
@@ -58,20 +58,20 @@
     "expo-web-browser": "^56.0.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "@babel/runtime": "^7.29.7",
+    "@babel/runtime": "^8.0.0",
     "react-native": "^0.86.0",
 		"react-native-edge-to-edge": "^1.8.1",
     {{#if (eq mobileStorage "mmkv")}}
     "react-native-mmkv": "^4.3.2",
     {{/if}}
     "react-native-gesture-handler": "^3.0.2",
-		"react-native-nitro-modules": "^0.35.9",
-    "react-native-reanimated": "^4.4.1",
+		"react-native-nitro-modules": "^0.35.10",
+    "react-native-reanimated": "^4.5.0",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
 		"react-native-unistyles": "^3.2.5",
     "react-native-web": "^0.21.2",
-    "react-native-worklets": "^0.9.2"
+    "react-native-worklets": "^0.10.0"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
@@ -79,7 +79,7 @@
     "babel-preset-expo": "^56.0.15",
     "@types/react": "^19.2.17"{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}},
     "@types/jest": "^30.0.0",
-    "@testing-library/react-native": "^14.0.0",
+    "@testing-library/react-native": "^14.0.1",
     "@react-native/jest-preset": "^0.86.0",
     "jest": "^29.7.0",
     "jest-expo": "^56.0.5",

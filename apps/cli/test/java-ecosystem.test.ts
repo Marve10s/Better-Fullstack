@@ -537,10 +537,11 @@ describe("Java Ecosystem", () => {
       expect(pomContent).toContain("spring-boot-starter-validation");
       expect(pomContent).toContain("spring-boot-starter-flyway");
       expect(pomContent).toContain("spring-boot-testcontainers");
-      expect(pomContent).toContain(
-        "<groupId>org.testcontainers</groupId>\n\t\t\t<artifactId>junit-jupiter</artifactId>",
-      );
-      expect(pomContent).not.toContain("testcontainers-junit-jupiter");
+      // Spring Boot 4 manages Testcontainers 2.x, which renamed the JUnit 5
+      // module to `testcontainers-junit-jupiter` (the old `junit-jupiter` is a
+      // 404 at 2.x). Use the managed artifact, no explicit <version>.
+      expect(pomContent).toContain("<artifactId>testcontainers-junit-jupiter</artifactId>");
+      expect(pomContent).not.toContain("<artifactId>junit-jupiter</artifactId>");
       expect(applicationConfig).toContain("jdbc:h2:file:./data/java-full");
       expect(applicationConfig).toContain("ddl-auto: validate");
       expect(applicationConfig).toContain("include: health,info,metrics");
@@ -774,8 +775,13 @@ describe("Java Ecosystem", () => {
         'testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")',
       );
       expect(gradleContent).toContain('testImplementation("net.jqwik:jqwik:1.9.3")');
-      expect(gradleContent).toContain('testImplementation("org.testcontainers:junit-jupiter")');
-      expect(gradleContent).not.toContain("testcontainers-junit-jupiter");
+      // Spring Boot 4 manages Testcontainers 2.x, which renamed the JUnit 5
+      // module to `testcontainers-junit-jupiter` (the old `junit-jupiter` is a
+      // 404 at 2.x). Use the managed artifact, no BOM pin.
+      expect(gradleContent).toContain(
+        'testImplementation("org.testcontainers:testcontainers-junit-jupiter")',
+      );
+      expect(gradleContent).not.toContain('testImplementation("org.testcontainers:junit-jupiter")');
       expect(gradleContent).not.toContain("spring-boot-starter-flyway");
       expect(applicationConfig).toContain(
         "change-log: classpath:db/changelog/db.changelog-master.yaml",
