@@ -118,6 +118,18 @@ describe("ScaffBench 2 spec solvability", () => {
         const options = parseArgs([]);
         const validation = await validateProject(spec, projectDir, options);
 
+        // Guard against a VACUOUS pass: if the scaffold produced nothing the
+        // validator recognizes (e.g. a hung prompt that left an empty dir), no
+        // core step runs and `failures` is trivially empty. A solvable spec must
+        // run at least one real CORE step (install/build/typecheck/native).
+        const coreSteps = Object.entries(validation.steps).filter(
+          ([name, step]) => step && !ADVISORY_STEPS.has(name) && step.status !== "na",
+        );
+        expect(
+          coreSteps.length,
+          `no core validation step ran for ${spec.id} — the scaffold produced no recognizable project (likely a missing flag left an interactive prompt)`,
+        ).toBeGreaterThan(0);
+
         const failures = Object.entries(validation.steps)
           .filter(([name, step]) => step && !ADVISORY_STEPS.has(name))
           .filter(([, step]) => step!.exitCode !== 0 || step!.timedOut)

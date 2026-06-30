@@ -1276,6 +1276,11 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
       "--dotnet-validation", "fluentvalidation",
       "--dotnet-caching", "redis",
       "--dotnet-deploy", "docker",
+      "--auth", "none",
+      "--email", "none",
+      "--observability", "none",
+      "--caching", "none",
+      "--search", "none",
       "--ai-docs", "claude-md",
       "--no-install", "--no-git", "--disable-analytics",
     ],
@@ -1295,11 +1300,11 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
       dotnetDeploy: "docker",
     },
     strictMarkers: [
-      { id: "dotnet:blazor", text: ["Microsoft.AspNetCore.Components"] },
+      { id: "dotnet:blazor", text: ["RazorComponents"] },
       { id: "orm:dapper", text: ["Dapper"] },
       { id: "auth:duende", text: ["Duende"] },
       { id: "api:hotchocolate", text: ["HotChocolate"] },
-      { id: "testing:nunit", text: ["nunit"] },
+      { id: "testing:nunit", text: ["NUnit"] },
       { id: "testing:moq", text: ["Moq"] },
       { id: "testing:testcontainers", text: ["Testcontainers"] },
       { id: "jobs:quartz", text: ["Quartz"] },
@@ -1379,7 +1384,7 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
       { id: "frontend:nuxt", deps: ["nuxt"] },
       { id: "frontend:tailwind", deps: ["tailwindcss"] },
       { id: "backend:chi", text: ["github.com/go-chi/chi"] },
-      { id: "orm:sqlc", text: ["sqlc"] },
+      { id: "orm:sqlc", files: ["apps/server/sqlc.yaml"] },
       { id: "api:grpc-go", text: ["google.golang.org/grpc"] },
       { id: "auth:goth", text: ["github.com/markbates/goth"] },
       { id: "realtime:centrifuge", text: ["github.com/centrifugal/centrifuge"] },
@@ -1461,15 +1466,15 @@ export const SCAFFBENCH_2_SPECS: readonly BenchmarkSpec[] = [
       ],
     },
     strictMarkers: [
-      { id: "backend:spring-boot", text: ["org.springframework.boot"] },
+      { id: "backend:spring-boot", text: ["spring-boot-starter-parent"] },
       { id: "build:maven", files: ["pom.xml"] },
-      { id: "orm:jooq", text: ["org.jooq"] },
+      { id: "orm:jooq", text: ["jooq"] },
       { id: "auth:keycloak", text: ["keycloak"] },
       { id: "api:spring-graphql", text: ["spring-boot-starter-graphql"] },
-      { id: "lib:mapstruct", text: ["org.mapstruct"] },
+      { id: "lib:mapstruct", text: ["mapstruct"] },
       { id: "lib:resilience4j", text: ["resilience4j"] },
       { id: "lib:spring-kafka", text: ["spring-kafka"] },
-      { id: "lib:spring-batch", text: ["spring-batch"] },
+      { id: "lib:spring-batch", text: ["spring-boot-starter-batch"] },
       { id: "lib:micrometer-prometheus", text: ["micrometer-registry-prometheus"] },
       { id: "testing:archunit", text: ["archunit"] },
       { id: "testing:jqwik", text: ["jqwik"] },
@@ -3643,7 +3648,7 @@ async function collectProjectIndex(projectDir: string): Promise<ProjectIndex> {
     const relativePath = path.relative(projectDir, filePath);
     index.files.add(relativePath);
     if (
-      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|\.csproj|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.json|\.toml|\.yml|\.yaml)$/.test(
+      !/(package\.json|Cargo\.toml|go\.mod|pyproject\.toml|pom\.xml|mix\.exs|\.csproj|\.gradle|\.kts|\.ts|\.tsx|\.js|\.jsx|\.mjs|\.cjs|\.rs|\.go|\.py|\.cs|\.java|\.kt|\.exs|\.ex|\.heex|\.json|\.toml|\.yml|\.yaml)$/.test(
         filePath,
       )
     ) {
