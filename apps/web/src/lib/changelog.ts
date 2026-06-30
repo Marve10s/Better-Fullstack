@@ -19,10 +19,34 @@ const RELEASE_BASE_URL = "https://github.com/Marve10s/Better-Fullstack/releases/
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.1.3",
+    publishedAt: "2026-06-29T20:06:24Z",
+    displayDate: "June 29, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.1.3`,
+    title: "ScaffBench 2 agent benchmark, hardened templates, and reliable payments",
+    summary:
+      "This release rebuilds the AI-agent scaffolding benchmark as ScaffBench 2 with honest, reproducible scoring and a live homepage leaderboard. It also makes every generated template pass its own type-check and format gates, fixes all five payment providers, and repairs a wave of stack combinations across the TypeScript, Rust, Go, Python, Java, and Elixir ecosystems.",
+    highlights: [
+      "Rebuilt the AI-agent benchmark as ScaffBench 2: a per-spec solvability gate, reproducibility metadata, pass@k / pass^k scoring, and an honest read-only quality gate, plus opencode/Kilo and GPT/Codex agent adapters and free-tier models on an 8-config homepage leaderboard with Core/Full tabs.",
+      "Made generated templates pass their own type-check and format gates — Biome 2.5 preset, Rust cargo fmt --check + clippy -D warnings, Python ruff, gofmt-clean Go, and the Java Testcontainers 2.x rename — so fresh scaffolds stay green.",
+      "Fixed all five payment providers: added env schema for Dodo, Paddle, and Lemon Squeezy, async Paddle webhook verification, Lemon Squeezy SDK type alignment, and stopped pinning a stale Stripe apiVersion.",
+      "Repaired a batch of stack combos: Nuxt oRPC auth context, Kysely auth schema types, OpenAPI tsconfig base path, Qwik Rolldown chunk names, Solid TanStack Router route tree, and Svelte Better Auth builds.",
+      "The homepage hero release badge now auto-updates from the latest GitHub release, and the benchmark leaderboard ships with real run data.",
+      "Pinned MikroORM SQLite to the v7 driver and Deno to 2.8.x, and expanded MCP stack-update coverage to keep generated installs and CI reliable.",
+    ],
+    image: {
+      src: "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Abstract colorful gradient artwork",
+      credit: "Unsplash",
+      creditHref:
+        "https://images.unsplash.com/photo-1777711391050-7e0cefd4b33b?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+  },
+  {
     version: "v2.1.0",
     publishedAt: "2026-06-23T17:12:32Z",
     displayDate: "June 23, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.1.0`,
     title: "More stack options, stronger CLI workflows, and Astro 7-ready templates",
     summary:

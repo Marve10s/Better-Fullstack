@@ -1,7 +1,7 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
@@ -50,6 +50,11 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
+
+const ChangelogWidget = lazy(async () => {
+  const mod = await import("@/components/changelog-widget");
+  return { default: mod.ChangelogWidget };
+});
 
 function NotFoundComponent() {
   return (
@@ -150,6 +155,9 @@ function RootComponent() {
     <RootDocument>
       <Navbar />
       <Outlet />
+      <Suspense fallback={null}>
+        <ChangelogWidget />
+      </Suspense>
     </RootDocument>
   );
 }
