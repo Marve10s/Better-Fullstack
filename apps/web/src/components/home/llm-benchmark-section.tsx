@@ -863,6 +863,21 @@ function v2Dataset(version: BenchmarkVersionId | LeaderboardVersion): Scaffbench
   return version === "v2" ? SCAFFBENCH_V2 : SCAFFBENCH_V2_1;
 }
 
+// opencode / Kilo runs hit free endpoints — the leaderboard pins them below the
+// paid tier and the graph hides them by default (opt-in via the model picker).
+function isFreeProvider(provider: ScaffbenchModel["provider"]): boolean {
+  return provider === "opencode" || provider === "kilo";
+}
+
+type V2Version = "v2" | "v2.1";
+
+// Default graph selection: paid models only; free-tier dots are opt-in.
+function v2DefaultModelKeys(version: V2Version): string[] {
+  return v2Dataset(version)
+    .models.filter((model) => !isFreeProvider(model.provider))
+    .map((model) => model.key);
+}
+
 const LEADERBOARD_LABELS: Record<PathId, string> = {
   mcp: "MCP",
   cli: "CLI",
@@ -983,10 +998,7 @@ function computeV2ModelRows(
       key: model.key,
       label: model.label,
       effort: model.effort,
-      tier:
-        model.provider === "opencode" || model.provider === "kilo"
-          ? ("free" as const)
-          : ("paid" as const),
+      tier: isFreeProvider(model.provider) ? ("free" as const) : ("paid" as const),
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passing, scored.length),
@@ -1176,6 +1188,8 @@ interface V2ModelPoint extends PathMetrics {
   /** reasoning effort, shown on the dot label/tooltip. */
   reasoning: string;
   color: string;
+  /** free-endpoint run (opencode/Kilo) — grouped under "Free tier" in the picker. */
+  free: boolean;
 }
 
 // The dots to plot for the selected path: one per MODEL (like v1 plots one dot
@@ -1186,10 +1200,11 @@ interface V2ModelPoint extends PathMetrics {
 function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2ModelPoint[] {
   return dataset.models.map((model, index) => {
     const metrics = aggregatePathMetrics(dataset, model.key, path);
+    const free = isFreeProvider(model.provider);
     // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero. A
     // PAID model whose adapter doesn't meter cost stays null and is dropped
     // from the Cost axis instead of masquerading as the cheapest run.
-    if (metrics.cost === null && (model.provider === "opencode" || model.provider === "kilo")) {
+    if (metrics.cost === null && free) {
       metrics.cost = 0;
     }
     return {
@@ -1197,6 +1212,7 @@ function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2Model
       label: model.label,
       reasoning: model.effort,
       color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+      free,
       ...metrics,
     };
   });
@@ -1418,18 +1434,48 @@ function BenchmarkChartCard() {
     () => computeV2ModelPoints(v2DatasetValue, v2Path),
     [v2DatasetValue, v2Path],
   );
-  // A model with no data for the active metric is left OFF the plot (footnoted
-  // below the chart) — plotting it at 0 would fake "cheapest" on this axis.
+  // Per-version graph selection; free-tier models start OFF (opt-in via the
+  // model picker). Kept per version so a v2.1 toggle doesn't leak into v2.
+  const [v2SelectedKeys, setV2SelectedKeys] = useState<Record<V2Version, readonly string[]>>(
+    () => ({ "v2": v2DefaultModelKeys("v2"), "v2.1": v2DefaultModelKeys("v2.1") }),
+  );
+  // On v1 this reads (and ignores) the v2.1 selection — keeps the reference
+  // stable so the derived memos don't recompute every render.
+  const v2ActiveSelection = v2SelectedKeys[version === "v2" ? "v2" : "v2.1"];
+  const toggleV2Model = useCallback(
+    (key: string) => {
+      if (version === "v1") return;
+      const v = version as V2Version;
+      setV2SelectedKeys((prev) => {
+        const current = prev[v];
+        const next = current.includes(key)
+          ? current.length > 1
+            ? current.filter((k) => k !== key)
+            : current // keep at least one model selected
+          : v2Dataset(v)
+              .models.map((model) => model.key)
+              .filter((k) => k === key || current.includes(k));
+        return { ...prev, [v]: next };
+      });
+    },
+    [version],
+  );
+  const v2VisiblePoints = useMemo(
+    () => v2ModelPoints.filter((point) => v2ActiveSelection.includes(point.key)),
+    [v2ModelPoints, v2ActiveSelection],
+  );
+  // A visible model with no data for the active metric is left OFF the plot
+  // (footnoted below the chart) — plotting it at 0 would fake "cheapest".
   const v2PlottedPoints = useMemo(
-    () => v2ModelPoints.filter((point) => v2MetricValue(point, v2Metric) !== null),
-    [v2ModelPoints, v2Metric],
+    () => v2VisiblePoints.filter((point) => v2MetricValue(point, v2Metric) !== null),
+    [v2VisiblePoints, v2Metric],
   );
   const v2UnmeteredLabels = useMemo(
     () =>
-      v2ModelPoints
+      v2VisiblePoints
         .filter((point) => v2MetricValue(point, v2Metric) === null)
         .map((point) => `${point.label} · ${point.reasoning}`),
-    [v2ModelPoints, v2Metric],
+    [v2VisiblePoints, v2Metric],
   );
   const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2PlottedPoints), [v2Metric, v2PlottedPoints]);
   const v2LabelPlacements = useMemo(
@@ -1522,7 +1568,13 @@ function BenchmarkChartCard() {
                     />
                   ))}
             </div>
-            {isV2 ? null : (
+            {isV2 ? (
+              <V2ModelFilter
+                points={v2ModelPoints}
+                selected={v2ActiveSelection}
+                onToggle={toggleV2Model}
+              />
+            ) : (
               <ModelFilter
                 benchmarkVersion={version}
                 selectedModels={selectedModels}
@@ -1746,6 +1798,92 @@ function ModelMenuItem({
     <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
       <span className="size-2.5 shrink-0 rounded-[2px]" style={MODEL_SWATCH_STYLES[model]} />
       <span className="min-w-0 flex-1">{getModelLabel(model)}</span>
+    </DropdownMenuCheckboxItem>
+  );
+}
+
+// V2-family model picker (mirrors the v1 ModelFilter dropdown). Free-tier runs
+// sit in their own group and start unchecked — mirroring the leaderboard's
+// paid/free divider — so weak free dots don't clutter the default scatter.
+function V2ModelFilter({
+  points,
+  selected,
+  onToggle,
+}: {
+  points: readonly V2ModelPoint[];
+  selected: readonly string[];
+  onToggle: (key: string) => void;
+}) {
+  const paid = points.filter((point) => !point.free);
+  const free = points.filter((point) => point.free);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={m.llmFilterModels()}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        {m.llmModels()}
+        <span className="rounded-sm bg-[#C6E853] px-1.5 font-mono text-[10px] font-semibold text-[#0a0a0a]">
+          {selected.length}
+        </span>
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className={cn("w-80 max-w-[calc(100vw-2rem)]", CHART_THEME_VARS)}
+      >
+        <DropdownMenuGroup>
+          {paid.map((point) => (
+            <V2ModelMenuItem
+              key={point.key}
+              point={point}
+              checked={selected.includes(point.key)}
+              onToggle={onToggle}
+            />
+          ))}
+        </DropdownMenuGroup>
+        {free.length > 0 ? (
+          <DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.14em]">
+              Free tier
+            </DropdownMenuLabel>
+            {free.map((point) => (
+              <V2ModelMenuItem
+                key={point.key}
+                point={point}
+                checked={selected.includes(point.key)}
+                onToggle={onToggle}
+              />
+            ))}
+          </DropdownMenuGroup>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function V2ModelMenuItem({
+  point,
+  checked,
+  onToggle,
+}: {
+  point: V2ModelPoint;
+  checked: boolean;
+  onToggle: (key: string) => void;
+}) {
+  const handleChange = useCallback(() => {
+    onToggle(point.key);
+  }, [onToggle, point.key]);
+  const swatchStyle = useMemo(() => ({ background: point.color }), [point.color]);
+
+  return (
+    <DropdownMenuCheckboxItem checked={checked} onCheckedChange={handleChange} closeOnClick={false}>
+      <span className="size-2.5 shrink-0 rounded-[2px]" style={swatchStyle} />
+      <span className="min-w-0 flex-1">
+        {point.label} · {point.reasoning}
+      </span>
     </DropdownMenuCheckboxItem>
   );
 }
