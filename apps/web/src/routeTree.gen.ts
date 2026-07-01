@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StackRouteImport } from './routes/stack'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RunRouteImport } from './routes/run'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -34,6 +35,11 @@ const StackRoute = StackRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunRoute = RunRouteImport.update({
+  id: '/run',
+  path: '/run',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewRoute = NewRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
+  '/run': typeof RunRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stack': typeof StackRoute
   '/api/preview': typeof ApiPreviewRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/run'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/run'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
+    | '/run'
     | '/sitemap.xml'
     | '/stack'
     | '/api/preview'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
+  RunRoute: typeof RunRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StackRoute: typeof StackRoute
   ApiPreviewRoute: typeof ApiPreviewRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/run': {
+      id: '/run'
+      path: '/run'
+      fullPath: '/run'
+      preLoaderRoute: typeof RunRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/new': {
@@ -362,6 +382,7 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
+  RunRoute: RunRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StackRoute: StackRoute,
   ApiPreviewRoute: ApiPreviewRoute,
