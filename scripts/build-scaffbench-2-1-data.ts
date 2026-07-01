@@ -28,9 +28,17 @@ const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
   { dir: "testing/llm-benchmarks/v2/opus48-low-prompt-2026-06-30" },
   // Opus max is a COMPLETE 13-spec run — publish all of it (full low-vs-max).
   { dir: "testing/llm-benchmarks/v2/opus48-max-prompt-2026-06-30" },
-  // Sonnet max is still generating; publish whatever specs are validated so far.
+  // Sonnet 5 max full 13 (clean re-validation snapshot).
   { dir: "testing/llm-benchmarks/early-sonnet/sonnet5-max-EARLY" },
+  // High-effort field: Sonnet 4.6 (Claude) + GPT-5.3 Codex Spark (Codex adapter).
+  { dir: "testing/llm-benchmarks/v2/sonnet46-high-prompt-2026-07-01" },
+  { dir: "testing/llm-benchmarks/v2-codex/spark-high-prompt-2026-07-01" },
 ];
+
+// Long/uppercased model slugs get a clean leaderboard label.
+const MODEL_LABELS: Record<string, string> = {
+  "gpt-5.3-codex-spark": "Codex Spark",
+};
 
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;
 const GATE = /^(lint|format|test|doctor|route)$/i;
@@ -38,6 +46,7 @@ const mean = (a: number[]) => (a.length ? a.reduce((s, v) => s + v, 0) / a.lengt
 const W = { macroPass: 0.6, wired: 0.25, cmd: 0.15 };
 
 function prettyModel(model: string): string {
+  if (MODEL_LABELS[model]) return MODEL_LABELS[model];
   if (/^gpt/i.test(model)) return model.toUpperCase();
   return model
     .replace(/^claude-/, "")

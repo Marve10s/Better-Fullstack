@@ -23,7 +23,8 @@ was "rarely."
 
 ScaffBench 2.1 puts the newest model, **Claude Sonnet 5**, to that test — head-to-head with **Claude
 Opus 4.8** at both low and maximum reasoning effort, on an expanded suite of **13 hard specs across
-eight ecosystems**. The prompt path is the purest measure of raw capability: the agent reads the spec
+eight ecosystems**. We also ran **Sonnet 4.6** and **GPT-5.3 Codex Spark** at high effort, for a
+five-config field. The prompt path is the purest measure of raw capability: the agent reads the spec
 and writes every file itself.
 
 All three configurations have now finished the full 13-spec run. Here's where things stand.
@@ -38,6 +39,8 @@ better; cost and steps are per project.
 | Claude Opus 4.8 · **low** | **3 / 11** (27%) | $1.63 | 21k | 38 | 96% |
 | Claude Opus 4.8 · **max** | **3 / 11** (27%) | $9.21 | 148k | 99 | 97% |
 | Claude Sonnet 5 · **max** | **2 / 10** (20%) | $5.26 | 113k | 215 | 96% |
+| Claude Sonnet 4.6 · **high** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
+| GPT-5.3 Codex Spark · **high** | **1 / 11** (9%) | — | 60k | 12 | 92% |
 
 <BenchBarChart
   title="CORE build pass@1 · prompt-only"
@@ -45,8 +48,10 @@ better; cost and steps are per project.
     { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
     { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
     { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%", highlight: true },
+    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part."
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Codex cost isn't reported on this plan."
 />
 
 <Callout kind="info">
@@ -132,6 +137,22 @@ Extra deliberation **traded one project's success for another's** rather than li
 thinking changed *which* hard stacks Opus assembled correctly, not *how many*. The bottleneck isn't
 reasoning — it's coherent assembly.
 
+## The wider field: Sonnet 4.6 and Codex Spark
+
+Two more configs ran at high effort. Both land at **1/11** — only `python` builds — but they get there
+in opposite ways, and the *how* is the interesting part.
+
+- **GPT-5.3 Codex Spark is astonishingly terse: ~12 tool steps per project**, against Sonnet 5's 215
+  and Opus's 38–99. It never spun — it finished all 13 specs, including both frontier ones, with zero
+  timeouts. But that speed ships looser manifests: Codex fails mostly at **`install`** (its generated
+  `package.json` / lockfiles don't resolve), whereas the Claude models fail at **`build` / `typecheck`**
+  (they install fine, then don't compile). Two different ways to not-build.
+- **Sonnet 4.6 at high** is the lightweight Claude: 46 steps, $1.53/project, 1/11 — the same
+  python-only result as Codex, at a fraction of Sonnet 5's cost and step count.
+
+The pattern holds across the vendor line: every model wires the right libraries (92–97%), and every
+model struggles to assemble them into a build — whether it writes tersely (Codex) or grinds (Sonnet 5).
+
 ## What's new in ScaffBench 2.1
 
 - **Eight ecosystems, 13 specs.** TypeScript, Rust, Python, Go, .NET, and now **Java** (Spring + jOOQ +
@@ -181,8 +202,8 @@ we surface it separately rather than folding it into the headline rate.
   built the Elixir spec.
 - **Reasoning effort isn't the lever.** Opus built the same 3/11 at max as at low, for 5–10× the cost —
   extra deliberation reshuffles which stacks assemble, not how many.
-- **Stack selection is solved; coherent assembly isn't.** ~96% wired at a ~20–27% build rate is the
-  whole story in one line — and it's exactly the gap a scaffolder closes, which is why the MCP and CLI
-  paths in ScaffBench 2 sat near 100% while prompt-only struggled.
+- **Stack selection is solved; coherent assembly isn't.** ~92–97% wired at a 9–27% build rate is the
+  whole story in one line — true for every model in the field, and exactly the gap a scaffolder closes,
+  which is why the MCP and CLI paths in ScaffBench 2 sat near 100% while prompt-only struggled.
 
-More models are on the bench next — we'll keep the leaderboard growing.
+We'll keep the leaderboard growing as more models land.
