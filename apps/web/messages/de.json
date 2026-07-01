@@ -231,6 +231,7 @@
   "llmTryMcp": "Probieren Sie MCP aus",
   "llmBenchmarkMetric": "Benchmark-Metrik",
   "llmScatterAria": "Benchmark-Streudiagramm: Jeder Punkt ist ein Modell und ein Erstellungspfad",
+  "llmScatterUnmetered": "Auf dieser Achse nicht gemessen (nicht im Diagramm): {models}",
   "llmFilterModels": "Modelle filtern",
   "llmModels": "Modelle",
   "llmClaudeSweep": "12. Juni fegen",

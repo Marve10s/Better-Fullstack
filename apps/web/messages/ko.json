@@ -231,6 +231,7 @@
   "llmTryMcp": "MCP을 사용해 보세요.",
   "llmBenchmarkMetric": "벤치마크 지표",
   "llmScatterAria": "벤치마크 분산형 차트: 각 지점은 하나의 모델이자 생성 경로입니다.",
+  "llmScatterUnmetered": "이 축에서는 측정되지 않음(차트에서 제외됨): {models}",
   "llmFilterModels": "모델 필터링",
   "llmModels": "모델",
   "llmClaudeSweep": "6월 12일 스윕",

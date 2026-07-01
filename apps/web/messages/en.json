@@ -232,6 +232,7 @@
   "llmTryMcp": "Try out MCP",
   "llmBenchmarkMetric": "Benchmark metric",
   "llmScatterAria": "Benchmark scatter chart: each point is one model and creation path",
+  "llmScatterUnmetered": "Not metered on this axis (excluded from the plot): {models}",
   "llmFilterModels": "Filter models",
   "llmModels": "Models",
   "llmClaudeSweep": "Jun 12 sweep",

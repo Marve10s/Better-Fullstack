@@ -231,6 +231,7 @@
   "llmTryMcp": "Probar MCP",
   "llmBenchmarkMetric": "Métrica del benchmark",
   "llmScatterAria": "Gráfico de dispersión del benchmark: cada punto es un modelo y una ruta de creación",
+  "llmScatterUnmetered": "Sin medición en este eje (excluido del gráfico): {models}",
   "llmFilterModels": "Filtrar modelos",
   "llmModels": "Modelos",
   "llmClaudeSweep": "Barrido del 12 jun",

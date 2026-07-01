@@ -231,6 +231,7 @@
   "llmTryMcp": "MCP を試してみる",
   "llmBenchmarkMetric": "ベンチマーク指標",
   "llmScatterAria": "ベンチマーク散布図: 各ポイントは 1 つのモデルと作成パスです",
+  "llmScatterUnmetered": "この軸では計測されていません（プロットから除外）：{models}",
   "llmFilterModels": "フィルターモデル",
   "llmModels": "モデル",
   "llmClaudeSweep": "6月12日のスイープ",

@@ -1085,15 +1085,18 @@ const V2_MODEL_COLORS: readonly string[] = [
 interface PathMetrics {
   /** Core pass-rate over scored specs, 0–100. */
   pass: number;
-  /** avg output tokens, thousands */
-  tokens: number;
-  /** avg cost, USD */
-  cost: number;
-  /** avg tool steps over scored cells */
-  steps: number;
+  /** avg output tokens, thousands. null = the adapter didn't report tokens. */
+  tokens: number | null;
+  /** avg cost, USD. null = the harness couldn't meter cost for this run. */
+  cost: number | null;
+  /** avg tool steps over scored cells. null = no readable trajectory. */
+  steps: number | null;
 }
 
-// Aggregate one model's cells for one path over its scored specs.
+// Aggregate one model's cells for one path over its scored specs. A metric with
+// NO underlying data is null (not 0) — plotting an unmetered run at 0 would
+// crown it "cheapest" on the reversed efficiency axis. Steps of 0 on a scored
+// cell means the trajectory wasn't readable (a real scaffold takes ≥1 step).
 function aggregatePathMetrics(
   dataset: ScaffbenchDataset,
   modelKey: string,
@@ -1107,34 +1110,35 @@ function aggregatePathMetrics(
   const costs = scored
     .map((cell) => cell.costUsd)
     .filter((value): value is number => value !== null);
+  const steps = scored.map((cell) => cell.steps).filter((value) => value > 0);
   return {
     pass: formatPercent(scored.filter((cell) => cell.corePass).length, scored.length),
-    tokens: tokens.length > 0 ? mean(tokens) / 1000 : 0,
-    cost: costs.length > 0 ? mean(costs) : 0,
-    steps: scored.length > 0 ? mean(scored.map((cell) => cell.steps)) : 0,
+    tokens: tokens.length > 0 ? mean(tokens) / 1000 : null,
+    cost: costs.length > 0 ? mean(costs) : null,
+    steps: steps.length > 0 ? mean(steps) : null,
   };
 }
 
-type MetricBearing = { tokens: number; cost: number; steps: number };
+type MetricBearing = { tokens: number | null; cost: number | null; steps: number | null };
 
-function v2MetricValue(point: MetricBearing, metric: V2Metric): number {
+function v2MetricValue(point: MetricBearing, metric: V2Metric): number | null {
   if (metric === "cost") return point.cost;
   if (metric === "steps") return point.steps;
   return point.tokens;
 }
 
 function formatV2Metric(point: MetricBearing, metric: V2Metric): string {
-  if (metric === "cost") return `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return `${Math.round(point.steps)} steps`;
-  return `${point.tokens.toFixed(1)}k tokens`;
+  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)} steps`;
+  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k tokens`;
 }
 
 // Compact value for the on-axis hover label ("$3.36" / "50.0k" / "54") — no unit
 // word, since it sits directly on the (already-labeled) x-axis.
 function formatV2MetricCompact(point: MetricBearing, metric: V2Metric): string {
-  if (metric === "cost") return `$${point.cost.toFixed(2)}`;
-  if (metric === "steps") return `${Math.round(point.steps)}`;
-  return `${point.tokens.toFixed(1)}k`;
+  if (metric === "cost") return point.cost === null ? "—" : `$${point.cost.toFixed(2)}`;
+  if (metric === "steps") return point.steps === null ? "—" : `${Math.round(point.steps)}`;
+  return point.tokens === null ? "—" : `${point.tokens.toFixed(1)}k`;
 }
 
 // A "nice" step (1/2/5 × 10ⁿ) so V2 axis ticks land on round numbers.
@@ -1149,7 +1153,12 @@ function niceStep(maxValue: number): number {
 
 function buildV2Axis(metric: V2Metric, points: readonly MetricBearing[]): AxisSpec {
   const tab = V2_CHART_TABS.find((entry) => entry.id === metric) ?? V2_CHART_TABS[0];
-  const dataMax = Math.max(0, ...points.map((point) => v2MetricValue(point, metric)));
+  const dataMax = Math.max(
+    0,
+    ...points
+      .map((point) => v2MetricValue(point, metric))
+      .filter((value): value is number => value !== null),
+  );
   const step = niceStep(dataMax);
   const max = Math.max(Math.ceil((dataMax * 1.12) / step) * step, step);
   const ticks: number[] = [];
@@ -1172,14 +1181,25 @@ interface V2ModelPoint extends PathMetrics {
 // The dots to plot for the selected path: one per MODEL (like v1 plots one dot
 // per model), colored by model. With six models this is a real multi-model
 // scatter — the legend maps colors to models, hover shows the values.
+// Colors are assigned over the FULL model list (before any per-metric filtering)
+// so a model keeps its color across the Tokens/Cost/Steps tabs.
 function computeV2ModelPoints(dataset: ScaffbenchDataset, path: PathId): V2ModelPoint[] {
-  return dataset.models.map((model, index) => ({
-    key: model.key,
-    label: model.label,
-    reasoning: model.effort,
-    color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
-    ...aggregatePathMetrics(dataset, model.key, path),
-  }));
+  return dataset.models.map((model, index) => {
+    const metrics = aggregatePathMetrics(dataset, model.key, path);
+    // Free endpoints (opencode / Kilo) genuinely cost $0 — plot them at zero. A
+    // PAID model whose adapter doesn't meter cost stays null and is dropped
+    // from the Cost axis instead of masquerading as the cheapest run.
+    if (metrics.cost === null && (model.provider === "opencode" || model.provider === "kilo")) {
+      metrics.cost = 0;
+    }
+    return {
+      key: model.key,
+      label: model.label,
+      reasoning: model.effort,
+      color: V2_MODEL_COLORS[index % V2_MODEL_COLORS.length],
+      ...metrics,
+    };
+  });
 }
 
 export default function LLMBenchmarkSection() {
@@ -1398,10 +1418,23 @@ function BenchmarkChartCard() {
     () => computeV2ModelPoints(v2DatasetValue, v2Path),
     [v2DatasetValue, v2Path],
   );
-  const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2ModelPoints), [v2Metric, v2ModelPoints]);
+  // A model with no data for the active metric is left OFF the plot (footnoted
+  // below the chart) — plotting it at 0 would fake "cheapest" on this axis.
+  const v2PlottedPoints = useMemo(
+    () => v2ModelPoints.filter((point) => v2MetricValue(point, v2Metric) !== null),
+    [v2ModelPoints, v2Metric],
+  );
+  const v2UnmeteredLabels = useMemo(
+    () =>
+      v2ModelPoints
+        .filter((point) => v2MetricValue(point, v2Metric) === null)
+        .map((point) => `${point.label} · ${point.reasoning}`),
+    [v2ModelPoints, v2Metric],
+  );
+  const v2Axis = useMemo(() => buildV2Axis(v2Metric, v2PlottedPoints), [v2Metric, v2PlottedPoints]);
   const v2LabelPlacements = useMemo(
-    () => computeV2LabelPlacements(v2ModelPoints, v2Axis, v2Metric),
-    [v2ModelPoints, v2Axis, v2Metric],
+    () => computeV2LabelPlacements(v2PlottedPoints, v2Axis, v2Metric),
+    [v2PlottedPoints, v2Axis, v2Metric],
   );
   const v2AxisNote = (V2_CHART_TABS.find((t) => t.id === v2Metric) ?? V2_CHART_TABS[0]).note;
   const v2AxisTab = useMemo<TabSpec>(
@@ -1509,11 +1542,11 @@ function BenchmarkChartCard() {
               {isV2 ? (
                 <>
                   <AxisLayer key={`v2-${v2Metric}-${v2Axis.max}`} tab={v2AxisTab} palette={palette} />
-                  {v2ModelPoints.map((point, index) => (
+                  {v2PlottedPoints.map((point, index) => (
                     <V2Dot
                       key={point.key}
                       point={point}
-                      x={plotX(v2MetricValue(point, v2Metric), v2Axis)}
+                      x={plotX(v2MetricValue(point, v2Metric) ?? 0, v2Axis)}
                       y={plotY(point.pass, PASS_AXIS, false)}
                       cardBg={palette.circleStroke}
                       metricLabel={formatV2Metric(point, v2Metric)}
@@ -1553,6 +1586,13 @@ function BenchmarkChartCard() {
             </svg>
           </div>
         </section>
+        {/* Models the harness couldn't meter on the active axis are dropped from
+            the plot (not shown at 0, which would fake "cheapest") and listed here. */}
+        {isV2 && v2UnmeteredLabels.length > 0 ? (
+          <p className="mx-auto w-full max-w-[1180px] px-3 pb-1 pt-1 text-xs text-[#71706a] dark:text-[#8f8d84]">
+            {m.llmScatterUnmetered({ models: v2UnmeteredLabels.join(", ") })}
+          </p>
+        ) : null}
       </div>
 
       {isV2 ? null : <CardLegend models={selectedModels} />}
@@ -1989,7 +2029,8 @@ function computeV2LabelPlacements(
 ): Record<string, LabelPlacement> {
   const mapped = points.map((point) => ({
     point,
-    x: plotX(v2MetricValue(point, metric), axis),
+    // Callers pass only plotted points (metric value non-null); `?? 0` narrows.
+    x: plotX(v2MetricValue(point, metric) ?? 0, axis),
     y: plotY(point.pass, PASS_AXIS, false),
     width: (`${point.label} · ${point.reasoning}`.length + 1) * LABEL_CHAR_W,
   }));

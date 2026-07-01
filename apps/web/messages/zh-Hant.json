@@ -231,6 +231,7 @@
   "llmTryMcp": "試試 MCP",
   "llmBenchmarkMetric": "Benchmark 指標",
   "llmScatterAria": "Benchmark 散佈圖：每個點代表一個模型和一種建立路徑",
+  "llmScatterUnmetered": "此座標軸未計量（未繪製在圖中）：{models}",
   "llmFilterModels": "篩選模型",
   "llmModels": "模型",
   "llmClaudeSweep": "6 月 12 日批測",

@@ -231,6 +231,7 @@
   "llmTryMcp": "Essayez MCP",
   "llmBenchmarkMetric": "Métrique de référence",
   "llmScatterAria": "Diagramme de dispersion de référence : chaque point correspond à un modèle et à un chemin de création",
+  "llmScatterUnmetered": "Non mesuré sur cet axe (exclu du graphique) : {models}",
   "llmFilterModels": "Filtrer les modèles",
   "llmModels": "Modèles",
   "llmClaudeSweep": "Balayage du 12 juin",
