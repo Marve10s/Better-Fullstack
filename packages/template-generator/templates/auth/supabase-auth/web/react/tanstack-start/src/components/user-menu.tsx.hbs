@@ -1,0 +1,41 @@
+import { useAuthClient } from "@/lib/auth-client";
+import { useNavigate } from "@tanstack/react-router";
+
+export default function UserMenu() {
+  const { user, signOut, isLoading } = useAuthClient();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
+
+  if (isLoading) {
+    return <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />;
+  }
+
+  if (!user) {
+    return (
+      <button
+        type="button"
+        onClick={() => navigate({ to: "/login" })}
+        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+      >
+        Sign In
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-4">
+      <span className="text-sm text-gray-700">{user.email}</span>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+      >
+        Sign Out
+      </button>
+    </div>
+  );
+}

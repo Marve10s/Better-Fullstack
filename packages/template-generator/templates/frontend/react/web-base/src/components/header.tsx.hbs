@@ -12,6 +12,7 @@ import { ModeToggle } from "./mode-toggle";
 {{#if (or
   (and (not (includes frontend "vinext")) (ne auth "none") (ne auth "clerk") (ne backend "convex") (or (isBetterAuth auth) (includes frontend "next")))
   (and (eq auth "clerk") (eq backend "self") (or (includes frontend "next") (includes frontend "tanstack-start")))
+  (and (eq auth "supabase-auth") (eq backend "self") (includes frontend "tanstack-start"))
 )}}
 import UserMenu from "./user-menu";
 {{/if}}
@@ -70,6 +71,7 @@ export default function Header() {
           {{#if (or
             (and (not (includes frontend "vinext")) (ne auth "none") (ne auth "clerk") (ne backend "convex") (or (isBetterAuth auth) (includes frontend "next")))
             (and (eq auth "clerk") (eq backend "self") (or (includes frontend "next") (includes frontend "tanstack-start")))
+            (and (eq auth "supabase-auth") (eq backend "self") (includes frontend "tanstack-start"))
           )}}
           <UserMenu />
           {{/if}}

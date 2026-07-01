@@ -196,27 +196,27 @@ export async function processAuthTemplates(
     return;
   }
 
-  // Supabase Auth is specifically for Next.js fullstack (self backend)
+  // Supabase Auth is for Next.js or TanStack Start fullstack (self backend)
   if (
     authProvider === "supabase-auth" &&
     config.backend === "self" &&
-    config.frontend.includes("next")
+    (config.frontend.includes("next") || config.frontend.includes("tanstack-start"))
   ) {
-    const nextFramework = "next";
-    // Process fullstack templates (server client and middleware)
+    const supabaseFramework = config.frontend.includes("next") ? "next" : "tanstack-start";
+    // Process fullstack templates (supabase server/client and middleware)
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/supabase-auth/fullstack/${nextFramework}`,
+      `auth/supabase-auth/fullstack/${supabaseFramework}`,
       "apps/web",
       config,
     );
 
-    // Process web templates (components and client utilities)
+    // Process web templates (components, routes, and client utilities)
     processTemplatesFromPrefix(
       vfs,
       templates,
-      `auth/supabase-auth/web/react/${nextFramework}`,
+      `auth/supabase-auth/web/react/${supabaseFramework}`,
       "apps/web",
       config,
     );

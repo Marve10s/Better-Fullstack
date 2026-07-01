@@ -590,10 +590,11 @@ function getAuthSetupInstructions(
   }
 
   if (auth === "supabase-auth") {
+    const supabasePublicPrefix = frontend.includes("tanstack-start") ? "VITE_" : "NEXT_PUBLIC_";
     return (
       `${pc.bold("Supabase Auth Setup:")}\n` +
       `${pc.cyan("•")} Create a project at ${pc.underline("https://supabase.com/dashboard")}\n` +
-      `${pc.cyan("•")} Set ${pc.white("NEXT_PUBLIC_SUPABASE_URL")}, ${pc.white("NEXT_PUBLIC_SUPABASE_ANON_KEY")},\n` +
+      `${pc.cyan("•")} Set ${pc.white(`${supabasePublicPrefix}SUPABASE_URL`)}, ${pc.white(`${supabasePublicPrefix}SUPABASE_ANON_KEY`)},\n` +
       `   and ${pc.white("SUPABASE_SERVICE_ROLE_KEY")} in ${pc.white(envPath)}`
     );
   }

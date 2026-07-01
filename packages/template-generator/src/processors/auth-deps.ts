@@ -241,9 +241,10 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
     }
   } else if (auth === "supabase-auth") {
     const hasNextJs = frontend.includes("next");
+    const hasTanStackStart = frontend.includes("tanstack-start");
 
-    // Supabase Auth only works with Next.js (self backend)
-    if (hasNextJs && webExists) {
+    // Supabase Auth works with Next.js or TanStack Start (self backend)
+    if ((hasNextJs || hasTanStackStart) && webExists) {
       addPackageDependency({
         vfs,
         packagePath: webPath,

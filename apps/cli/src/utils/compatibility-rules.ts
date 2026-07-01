@@ -352,16 +352,26 @@ function validateSupabaseAuthCompatibility(
   if (auth !== "supabase-auth") return;
 
   const hasNextJs = frontends.includes("next");
+  const hasTanStackStart = frontends.includes("tanstack-start");
+  const hasNativeFrontend = frontends.some((f) =>
+    ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
+  );
 
   if (backend !== "self") {
     exitWithError(
-      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js). Please use '--backend self' or choose a different auth provider.",
+      "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js or TanStack Start). Please use '--backend self' or choose a different auth provider.",
     );
   }
 
-  if (!hasNextJs) {
+  if (hasNativeFrontend) {
     exitWithError(
-      "In Better-Fullstack, Supabase Auth currently requires the Next.js frontend. Please use '--frontend next' or choose a different auth provider.",
+      "In Better-Fullstack, Supabase Auth with the 'self' backend is currently supported only for web-only Next.js or TanStack Start projects (no native companion app). Please remove the native frontend or choose a different auth provider.",
+    );
+  }
+
+  if (!hasNextJs && !hasTanStackStart) {
+    exitWithError(
+      "In Better-Fullstack, Supabase Auth currently requires the Next.js or TanStack Start frontend. Please use '--frontend next' or '--frontend tanstack-start', or choose a different auth provider.",
     );
   }
 }

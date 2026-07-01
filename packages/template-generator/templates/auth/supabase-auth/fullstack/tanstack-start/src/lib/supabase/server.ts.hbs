@@ -1,0 +1,24 @@
+import { createServerClient } from "@supabase/ssr";
+import { env } from "@{{projectName}}/env/web";
+import { getCookies, setCookie } from "@tanstack/react-start/server";
+
+export function createClient() {
+  return createServerClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return Object.entries(getCookies()).map(([name, value]) => ({
+          name,
+          value,
+        }));
+      },
+      setAll(cookiesToSet) {
+        // Supabase refreshes the session by writing new auth cookies. In a
+        // TanStack Start server context these are attached to the response
+        // headers of the current request via `setCookie`.
+        cookiesToSet.forEach(({ name, value }) => {
+          setCookie(name, value);
+        });
+      },
+    },
+  });
+}

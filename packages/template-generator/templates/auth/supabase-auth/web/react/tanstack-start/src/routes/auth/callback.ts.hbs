@@ -1,0 +1,34 @@
+import { createClient } from "@/lib/supabase/server";
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/auth/callback")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        const { searchParams, origin } = new URL(request.url);
+        const code = searchParams.get("code");
+        // if "next" is in the query params, use it as the redirect URL
+        const next = searchParams.get("next") ?? "/dashboard";
+
+        if (code) {
+          const supabase = createClient();
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!error) {
+            // The auth cookies set by `exchangeCodeForSession` are merged onto
+            // this redirect response by the TanStack Start server runtime.
+            return new Response(null, {
+              status: 302,
+              headers: { Location: `${origin}${next}` },
+            });
+          }
+        }
+
+        // Return the user to the login page with an error flag.
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `${origin}/login?error=auth-code-error` },
+        });
+      },
+    },
+  },
+});

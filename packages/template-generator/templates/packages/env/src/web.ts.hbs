@@ -5,7 +5,7 @@ import { createEnv } from "@t3-oss/env-nuxt";
 {{else}}
 import { createEnv } from "@t3-oss/env-core";
 {{/if}}
-{{#if (or (or (eq backend "convex") (and (eq backend "self") (or (eq auth "clerk") (eq auth "workos")))) (and (ne backend "self") (ne backend "none")))}}
+{{#if (or (or (eq backend "convex") (and (eq backend "self") (or (eq auth "clerk") (eq auth "workos") (and (eq auth "supabase-auth") (includes frontend "tanstack-start"))))) (and (ne backend "self") (ne backend "none")))}}
 import { z } from "zod";
 {{/if}}
 
@@ -88,6 +88,10 @@ export const env = createEnv({
 	client: {
 {{#if (and (eq auth "clerk") (includes frontend "tanstack-start"))}}
 		VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+{{/if}}
+{{#if (and (eq auth "supabase-auth") (includes frontend "tanstack-start"))}}
+		VITE_SUPABASE_URL: z.url(),
+		VITE_SUPABASE_ANON_KEY: z.string().min(1),
 {{/if}}
 	},
 	runtimeEnv: (import.meta as ImportMeta & { env: ImportMetaEnvRecord }).env,
