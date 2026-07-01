@@ -2056,6 +2056,15 @@ export const getDisabledReason = (
     return "Dodo Payments are not yet supported for React + Vite projects";
   }
 
+  if (category === "payments" && optionId === "revenuecat") {
+    const hasNativeFrontend = currentStack.nativeFrontend.some((f) =>
+      ["native-bare", "native-uniwind", "native-unistyles"].includes(f)
+    );
+    if (!hasNativeFrontend) {
+      return "RevenueCat payments requires a native frontend (native-bare, native-uniwind, or native-unistyles)";
+    }
+  }
+
   // ============================================
   // CMS CONSTRAINTS
   // ============================================

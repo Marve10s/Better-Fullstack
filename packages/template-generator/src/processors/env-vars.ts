@@ -525,6 +525,7 @@ function buildNativeVars(
   frontend: string[],
   backend: ProjectConfig["backend"],
   auth: ProjectConfig["auth"],
+  payments: ProjectConfig["payments"],
   mobilePush: ProjectConfig["mobilePush"],
   mobileDeepLinking: ProjectConfig["mobileDeepLinking"],
 ): EnvVariable[] {
@@ -572,6 +573,26 @@ function buildNativeVars(
       condition: true,
       comment: "Mobile auth callback path used with expo-linking",
     });
+  }
+
+  if (payments === "revenuecat") {
+    vars.push(
+      {
+        key: "EXPO_PUBLIC_REVENUECAT_IOS_KEY",
+        value: "",
+        condition: true,
+      },
+      {
+        key: "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
+        value: "",
+        condition: true,
+      },
+      {
+        key: "EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID",
+        value: "pro",
+        condition: true,
+      },
+    );
   }
 
   if (mobilePush === "expo-notifications") {
@@ -677,6 +698,15 @@ function buildConvexBackendVars(
     );
   }
 
+  if (payments === "revenuecat") {
+    vars.push({
+      key: "REVENUECAT_WEBHOOK_AUTH",
+      value: "",
+      condition: true,
+      comment: "Shared secret for RevenueCat webhook authentication (min 32 characters)",
+    });
+  }
+
   return vars;
 }
 
@@ -719,6 +749,15 @@ ${hasWeb ? "# npx convex env set SITE_URL http://localhost:3001\n" : ""}`;
 # Optional: npx convex env set POLAR_SERVER=sandbox
 # Create a Polar webhook at https://<your-convex-site-url>/polar/events
 # Enable: product.created, product.updated, subscription.created, subscription.updated
+
+`;
+  }
+
+  if (payments === "revenuecat") {
+    commentBlocks += `# Set RevenueCat environment variables
+# npx convex env set REVENUECAT_WEBHOOK_AUTH your_webhook_secret_min_32_chars
+# Create a RevenueCat webhook at https://<your-convex-site-url>/webhooks/revenuecat
+# Set the webhook Authorization header to the same REVENUECAT_WEBHOOK_AUTH value
 
 `;
   }
@@ -1046,6 +1085,12 @@ function buildServerVars(
       condition: payments === "dodo",
       comment:
         "Dodo Payments environment - use 'test_mode' for testing, 'live_mode' for production",
+    },
+    {
+      key: "REVENUECAT_WEBHOOK_AUTH",
+      value: "",
+      condition: payments === "revenuecat",
+      comment: "Shared secret for RevenueCat webhook authentication (min 32 characters)",
     },
     {
       key: "RESEND_API_KEY",
@@ -1912,6 +1957,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
         frontend,
         backend,
         auth,
+        payments,
         config.mobilePush,
         config.mobileDeepLinking,
       );

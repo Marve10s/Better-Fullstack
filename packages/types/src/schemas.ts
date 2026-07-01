@@ -220,7 +220,7 @@ export const AuthSchema = z
   .describe("Authentication provider");
 
 export const PaymentsSchema = z
-  .enum(["polar", "stripe", "lemon-squeezy", "paddle", "dodo", "none"])
+  .enum(["revenuecat","polar", "stripe", "lemon-squeezy", "paddle", "dodo", "none"])
   .describe("Payments provider");
 
 export const WebDeploySchema = z

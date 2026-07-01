@@ -40,6 +40,10 @@ import { useUpdateCheck } from "@/lib/updates";
 {{/if}}
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 
+{{#if (eq payments "revenuecat")}}
+import { RevenueCatProvider } from "@/contexts/revenuecat-context";
+{{/if}}
+
 {{#if (eq api "trpc")}}
   import { queryClient } from "@/utils/trpc";
 {{/if}}
@@ -83,6 +87,9 @@ export default function Layout() {
     {{/if}}
   }, []);
   return (
+  {{#if (eq payments "revenuecat")}}
+    <RevenueCatProvider>
+  {{/if}}
     {{#if (eq backend "convex")}}
       {{#if (eq auth "clerk")}}
         <ClerkProvider tokenCache={tokenCache} publishableKey={env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}>
@@ -148,6 +155,9 @@ export default function Layout() {
         </GestureHandlerRootView>
       {{/unless}}
     {{/if}}
+  {{#if (eq payments "revenuecat")}}
+    </RevenueCatProvider>
+  {{/if}}
   );
 }
 {{/if}}

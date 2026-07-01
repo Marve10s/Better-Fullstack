@@ -23,6 +23,10 @@ import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
 import { SignUp } from "@/components/sign-up";
+{{#if (eq payments "revenuecat")}}
+import { SubscriptionStatusCard } from "@/components/subscription-status-card";
+import { PaywallExample } from "@/components/paywall-example";
+{{/if}}
 {{else if (eq backend "convex")}}
 import { useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
@@ -187,6 +191,11 @@ export default function Home() {
             <SignUp />
           </>
         )}
+
+        {{#if (eq payments "revenuecat")}}
+          <SubscriptionStatusCard />
+          <PaywallExample />
+        {{/if}}
         {{/if}}
       </ScrollView>
     </Container>

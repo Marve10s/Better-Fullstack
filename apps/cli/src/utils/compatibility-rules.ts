@@ -634,6 +634,15 @@ export function validatePaymentsCompatibility(
       );
     }
   }
+
+  if (payments === "revenuecat") {
+    const { native } = splitFrontends(frontends);
+    if (native.length === 0) {
+      exitWithError(
+        "RevenueCat payments requires a native frontend. Please select a native frontend or choose a different payments provider.",
+      );
+    }
+  }
 }
 
 export function validateExamplesCompatibility(

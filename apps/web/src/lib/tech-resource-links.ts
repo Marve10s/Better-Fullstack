@@ -420,6 +420,7 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/PaddleHQ/paddle-node-sdk",
   },
   dodo: { docsUrl: "https://docs.dodopayments.com/" },
+  revenuecat: { docsUrl: "https://www.revenuecat.com/docs" },
   resend: {
     docsUrl: "https://resend.com/docs",
     githubUrl: "https://github.com/resend/resend-node",

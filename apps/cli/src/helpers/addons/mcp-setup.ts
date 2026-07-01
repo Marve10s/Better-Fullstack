@@ -214,6 +214,15 @@ function getRecommendedMcpServers(config: ProjectConfig): McpServerDef[] {
     });
   }
 
+  if (config.payments === "revenuecat") {
+    servers.push({
+      key: "revenuecat",
+      label: "RevenueCat",
+      name: "revenuecat",
+      target: "https://mcp.revenuecat.ai/mcp",
+    });
+  }
+
   return servers;
 }
 
