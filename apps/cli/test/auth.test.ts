@@ -819,9 +819,9 @@ describe("Authentication Configurations", () => {
       expect(result.result?.projectConfig.auth).toBe("none");
     });
 
-    it("should normalize supabase-auth + non-next frontend to no auth", async () => {
+    it("should work with supabase-auth + self backend + tanstack-start", async () => {
       const result = await runTRPCTest({
-        projectName: "supabase-auth-non-next-fail",
+        projectName: "supabase-auth-self-tanstack-start",
         auth: "supabase-auth",
         backend: "self",
         runtime: "none",
@@ -834,10 +834,11 @@ describe("Authentication Configurations", () => {
         dbSetup: "none",
         webDeploy: "none",
         serverDeploy: "none",
+        install: false,
       });
 
       expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expect(result.result?.projectConfig.auth).toBe("supabase-auth");
     });
 
     it("should normalize supabase-auth + tanstack-router frontend to no auth", async () => {

@@ -167,6 +167,24 @@ describe("processAuthDeps", () => {
     });
   }
 
+  it("adds Supabase Auth packages for TanStack Start", () => {
+    const vfs = createSeededVFS(["apps/web/package.json"]);
+
+    processAuthDeps(
+      vfs,
+      makeConfig({
+        auth: "supabase-auth",
+        backend: "self",
+        frontend: ["tanstack-start"],
+      }),
+    );
+
+    expectIncludesAll(getDeps(vfs, "apps/web/package.json").deps, [
+      "@supabase/supabase-js",
+      "@supabase/ssr",
+    ]);
+  });
+
   it("uses the Auth0 v4 SDK expected by the Next templates", () => {
     expect(dependencyVersionMap["@auth0/nextjs-auth0"]).toBe("^4.23.0");
   });

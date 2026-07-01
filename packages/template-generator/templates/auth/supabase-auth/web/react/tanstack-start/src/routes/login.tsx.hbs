@@ -1,0 +1,22 @@
+import SignInForm from "@/components/sign-in-form";
+import SignUpForm from "@/components/sign-up-form";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+
+export const Route = createFileRoute("/login")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      {isSignUp ? (
+        <SignUpForm onSwitchToSignIn={() => setIsSignUp(false)} />
+      ) : (
+        <SignInForm onSwitchToSignUp={() => setIsSignUp(true)} />
+      )}
+    </div>
+  );
+}

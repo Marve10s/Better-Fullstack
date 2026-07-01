@@ -1,0 +1,125 @@
+import { useAuthClient } from "@/lib/auth-client";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+
+export default function SignInForm({
+  onSwitchToSignUp,
+}: {
+  onSwitchToSignUp: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signInWithEmail, signInWithOAuth } = useAuthClient();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const { error } = await signInWithEmail(email, password);
+
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    } else {
+      navigate({ to: "/dashboard" });
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: "google" | "github") => {
+    setIsLoading(true);
+    setError(null);
+    const { error } = await signInWithOAuth(provider);
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto mt-10 w-full max-w-md p-6">
+      <h2 className="mb-6 text-center text-2xl font-bold">Sign In</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          />
+        </div>
+
+        {error && <div className="text-sm text-red-600">{error}</div>}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+        >
+          {isLoading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+
+      <div className="mt-4">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleOAuthSignIn("github")}
+            disabled={isLoading}
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+          >
+            GitHub
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOAuthSignIn("google")}
+            disabled={isLoading}
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+          >
+            Google
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onSwitchToSignUp}
+        className="mt-4 w-full text-sm text-indigo-600 hover:text-indigo-800"
+      >
+        Need an account? Sign Up
+      </button>
+    </div>
+  );
+}

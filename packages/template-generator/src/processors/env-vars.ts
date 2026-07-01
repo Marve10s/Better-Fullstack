@@ -796,6 +796,10 @@ function buildServerVars(
     }
   }
 
+  // Supabase Auth exposes the project URL + anon key to the browser, so the
+  // public prefix depends on the frontend bundler (Next.js vs Vite/TanStack Start).
+  const supabasePublicPrefix = frontend.includes("tanstack-start") ? "VITE_" : "NEXT_PUBLIC_";
+
   return [
     {
       key: "BETTER_AUTH_SECRET",
@@ -862,13 +866,13 @@ function buildServerVars(
       comment: "Stack Auth Secret Server Key - get it at https://app.stack-auth.com",
     },
     {
-      key: "NEXT_PUBLIC_SUPABASE_URL",
+      key: `${supabasePublicPrefix}SUPABASE_URL`,
       value: "",
       condition: auth === "supabase-auth",
       comment: "Supabase Project URL - get it at https://supabase.com/dashboard",
     },
     {
-      key: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      key: `${supabasePublicPrefix}SUPABASE_ANON_KEY`,
       value: "",
       condition: auth === "supabase-auth",
       comment: "Supabase Anon/Public Key - get it at https://supabase.com/dashboard",
