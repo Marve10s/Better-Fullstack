@@ -11,7 +11,7 @@ export type ScaffbenchModel = {
   model: string;
   effort: string;
   effectiveReasoning: string;
-  provider: "claude" | "codex" | "opencode" | "kilo";
+  provider: "claude" | "codex" | "opencode" | "kilo" | "agy";
   label: string;
   /** overall ScaffBench Index across all scored cells — the group sort key. */
   sortIndex: number;

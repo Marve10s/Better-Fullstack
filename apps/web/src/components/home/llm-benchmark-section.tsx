@@ -873,15 +873,16 @@ const LEADERBOARD_LABELS: Record<PathId, string> = {
 // claude = burnt orange, codex = green, opencode = violet, kilo = cyan
 // (the two free-tier agents get cooler hues so they read as a separate group).
 const LEADERBOARD_THEME_VARS = cn(
-  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-track:#ececec]",
-  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-track:#edebe414]",
+  "[--bar-claude:#c2410c] [--bar-codex:#15803d] [--bar-opencode:#6d28d9] [--bar-kilo:#0891b2] [--bar-agy:#1a73e8] [--bar-track:#ececec]",
+  "dark:[--bar-claude:#fb923c] dark:[--bar-codex:#4ade80] dark:[--bar-opencode:#a78bfa] dark:[--bar-kilo:#22d3ee] dark:[--bar-agy:#8ab4f8] dark:[--bar-track:#edebe414]",
 );
 
-const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo", string> = {
+const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy", string> = {
   claude: "var(--bar-claude)",
   codex: "var(--bar-codex)",
   opencode: "var(--bar-opencode)",
   kilo: "var(--bar-kilo)",
+  agy: "var(--bar-agy)",
 };
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
@@ -909,6 +910,8 @@ interface ModelLeaderRow {
   tier: "paid" | "free";
   /** bar fill color. */
   color: string;
+  /** brand logo shown to the left of the model name (undefined = no logo). */
+  logo?: ProviderLogoId;
   /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. */
   pass: number;
   /** numeric avg cost for sorting (Infinity when unpriced). */
@@ -935,6 +938,26 @@ function sortLeaderRows(rows: ModelLeaderRow[]): ModelLeaderRow[] {
     (a, b) => TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.pass - a.pass || a.costNum - b.costNum,
   );
 }
+
+// Brand logos shown left of the model name. Only Anthropic + OpenAI marks are
+// wired (the current v2.1 field); other providers render no logo.
+type ProviderLogoId = "anthropic" | "openai" | "google";
+const PROVIDER_LOGO: Partial<
+  Record<"claude" | "codex" | "opencode" | "kilo" | "agy", ProviderLogoId>
+> = {
+  claude: "anthropic",
+  codex: "openai",
+  agy: "google",
+};
+const V1_MODEL_LOGO: Partial<Record<ModelId, ProviderLogoId>> = {
+  fable: "anthropic",
+  opus: "anthropic",
+  sonnet: "anthropic",
+  spark: "openai",
+  gpt54: "openai",
+  gpt55: "openai",
+  gemini31: "google",
+};
 
 // V2: one row per (model, effort), pooled over the chosen path's scored cells.
 function computeV2ModelRows(
@@ -965,6 +988,7 @@ function computeV2ModelRows(
           ? ("free" as const)
           : ("paid" as const),
       color: PROVIDER_BAR_COLOR[model.provider],
+      logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passing, scored.length),
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
@@ -988,6 +1012,7 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
       effort: "",
       tier: "paid" as const,
       color: CHART_PALETTE.models[m],
+      logo: V1_MODEL_LOGO[m],
       pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
       costNum: Number.POSITIVE_INFINITY,
       cost: "—",
@@ -2249,6 +2274,39 @@ function OpenAIMark({ className }: { className?: string }) {
   );
 }
 
+// Anthropic logomark (from simple-icons; renders in currentColor).
+function AnthropicMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z" />
+    </svg>
+  );
+}
+
+// Google logomark (from simple-icons; renders in currentColor) for Gemini rows.
+function GoogleMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+    </svg>
+  );
+}
+
+// Brand logo shown to the left of a leaderboard model name. Inherits the row's
+// text color via currentColor, so it stays legible in both themes.
+function ProviderLogo({ logo }: { logo?: ProviderLogoId }) {
+  if (logo === "anthropic") {
+    return <AnthropicMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "openai") {
+    return <OpenAIMark className="size-3.5 shrink-0" />;
+  }
+  if (logo === "google") {
+    return <GoogleMark className="size-3.5 shrink-0" />;
+  }
+  return null;
+}
+
 function ScaffbenchLeaderboardCard() {
   const [version, setVersion] = useState<LeaderboardVersion>("v2.1");
   const [leaderPath, setLeaderPath] = useState<LeaderPath>("all");
@@ -2528,7 +2586,8 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
 
   return (
     <div className={cn(LEADERBOARD_GRID, "py-2.5")}>
-      <span className="flex min-w-0 items-baseline gap-1.5">
+      <span className="flex min-w-0 items-center gap-1.5">
+        <ProviderLogo logo={row.logo} />
         <span className="truncate font-mono text-sm font-bold">{row.label}</span>
         {row.effort ? (
           <span className="shrink-0 font-mono text-[11px] text-[#9c9a93] dark:text-[#6c6a61]">

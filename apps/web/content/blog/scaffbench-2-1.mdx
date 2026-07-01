@@ -23,9 +23,9 @@ was "rarely."
 
 ScaffBench 2.1 puts the newest model, **Claude Sonnet 5**, to that test — head-to-head with **Claude
 Opus 4.8** at both low and maximum reasoning effort, on an expanded suite of **13 hard specs across
-eight ecosystems**. We also ran **Sonnet 4.6** and **GPT-5.3 Codex Spark** at high effort, for a
-five-config field. The prompt path is the purest measure of raw capability: the agent reads the spec
-and writes every file itself.
+eight ecosystems**. We also ran **Sonnet 4.6**, **GPT-5.3 Codex Spark**, and — via Google's Antigravity
+CLI — **Gemini 3.5 Flash** at high effort, for a six-config field. The prompt path is the purest
+measure of raw capability: the agent reads the spec and writes every file itself.
 
 All three configurations have now finished the full 13-spec run. Here's where things stand.
 
@@ -38,6 +38,7 @@ better; cost and steps are per project.
 | --- | :---: | ---: | ---: | ---: | :---: |
 | Claude Opus 4.8 · **low** | **3 / 11** (27%) | $1.63 | 21k | 38 | 96% |
 | Claude Opus 4.8 · **max** | **3 / 11** (27%) | $9.21 | 148k | 99 | 97% |
+| Gemini 3.5 Flash · **high** | **3 / 11** (27%) | — | — | — | 94% |
 | Claude Sonnet 5 · **max** | **2 / 10** (20%) | $5.26 | 113k | 215 | 96% |
 | Claude Sonnet 4.6 · **high** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
 | GPT-5.3 Codex Spark · **high** | **1 / 11** (9%) | — | 60k | 12 | 92% |
@@ -47,11 +48,12 @@ better; cost and steps are per project.
   bars={[
     { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
     { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
-    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%", highlight: true },
+    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%", highlight: true },
+    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
     { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
     { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Codex cost isn't reported on this plan."
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Gemini (via Antigravity) and Codex don't report cost on these plans."
 />
 
 <Callout kind="info">
@@ -137,11 +139,16 @@ Extra deliberation **traded one project's success for another's** rather than li
 thinking changed *which* hard stacks Opus assembled correctly, not *how many*. The bottleneck isn't
 reasoning — it's coherent assembly.
 
-## The wider field: Sonnet 4.6 and Codex Spark
+## The wider field: Gemini 3.5 Flash, Sonnet 4.6, and Codex Spark
 
-Two more configs ran at high effort. Both land at **1/11** — only `python` builds — but they get there
-in opposite ways, and the *how* is the interesting part.
+Three more configs ran at high effort — and the newcomer surprises.
 
+- **Gemini 3.5 Flash ties Opus 4.8 for the top of the board at 3/11** — the strongest showing outside
+  the Opus line, and from the field's lightest tier. It's also the **only model that built
+  `dotnet-blazor-cqrs`**, and it cleared `java-spring` and `python`. Reached through **Google's
+  Antigravity CLI** (`agy`) — the standalone Gemini CLI is now sunset for individual tiers — it
+  finished all 13 with zero timeouts. Like Codex, its misses skew toward `install` failures.
+  Antigravity emits plain text, so its cost / tokens / steps aren't measurable here.
 - **GPT-5.3 Codex Spark is astonishingly terse: ~12 tool steps per project**, against Sonnet 5's 215
   and Opus's 38–99. It never spun — it finished all 13 specs, including both frontier ones, with zero
   timeouts. But that speed ships looser manifests: Codex fails mostly at **`install`** (its generated
