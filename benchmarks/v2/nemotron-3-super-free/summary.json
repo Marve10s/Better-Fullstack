@@ -1,0 +1,3570 @@
+{
+  "harnessVersion": "2.0.0",
+  "generatedAt": "2026-06-26T20:45:14.204Z",
+  "options": {
+    "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+    "efforts": [
+      "default"
+    ],
+    "paths": [
+      "mcp",
+      "cli",
+      "prompt"
+    ],
+    "specs": [
+      "ai-search-workbench",
+      "rust-leptos-axum",
+      "python-ingestion-api",
+      "go-realtime-api",
+      "multi-dotnet-ops"
+    ],
+    "repeats": 1,
+    "maxBudgetUsd": "12",
+    "skipValidation": false,
+    "qualityGate": true,
+    "doctorCheck": true,
+    "routeCheck": false,
+    "promptStyle": "explicit"
+  },
+  "metadata": {
+    "cwd": "<repo>",
+    "gitHead": "beceaaabec1d538d83946a5b3746365ca23cf287",
+    "gitBranch": "Development",
+    "bunVersion": "1.3.12",
+    "nodeVersion": "v24.3.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "environmentQualified": true,
+    "toolchains": {
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11) (Homebrew)",
+      "cargo": "cargo 1.93.1 (Homebrew)",
+      "go": "go version go1.26.0 darwin/arm64",
+      "python": "Python 3.14.3",
+      "uv": "uv 0.10.2 (Homebrew 2026-02-10)",
+      "protoc": "libprotoc 33.4",
+      "psql": "psql (PostgreSQL) 18.3"
+    },
+    "bfGeneratorVersion": "2.1.1",
+    "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+    "effectiveReasoning": [
+      {
+        "effort": "default"
+      }
+    ]
+  },
+  "specs": [
+    {
+      "id": "ai-search-workbench",
+      "title": "AI search workbench with separate semantic and full-text search",
+      "lane": "core",
+      "family": "typescript",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a TypeScript monorepo for an AI support/search workbench.",
+        "Use a TanStack Router web app styled with Tailwind and shadcn/ui.",
+        "Use a Hono backend on Bun.",
+        "Use oRPC for the app API.",
+        "Use PostgreSQL with Drizzle for relational app data.",
+        "Use Better Auth for accounts.",
+        "Use the Vercel AI SDK for AI features.",
+        "Use Qdrant specifically for semantic vector search over embeddings.",
+        "Use OpenSearch specifically for full-text document/admin search.",
+        "Use Inngest for background indexing jobs.",
+        "Use Pino logging and OpenTelemetry instrumentation.",
+        "Use TanStack Store, TanStack Form, Valibot, Vitest + Playwright, and Paraglide.",
+        "Include Turborepo, Biome, DevContainer, and GitHub Actions CI output.",
+        "Do not add payments, email, realtime, CMS, file upload, file storage, feature flags, or deploy targets.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a production-grade AI support search starter. It needs account auth, relational app data, background indexing, semantic search for embeddings, full-text/admin search for documents, observability, tests, i18n, and CI. Keep it deploy-target neutral and do not include commerce/email/storage extras.",
+      "rightLibraryNotes": [
+        "Qdrant must be used for semantic vector search.",
+        "OpenSearch must be used for full-text document/admin search.",
+        "Inngest must be used for background indexing jobs.",
+        "oRPC must be used for the app API."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "typescript",
+        "--frontend",
+        "tanstack-router",
+        "--backend",
+        "hono",
+        "--runtime",
+        "bun",
+        "--api",
+        "orpc",
+        "--database",
+        "postgres",
+        "--orm",
+        "drizzle",
+        "--db-setup",
+        "none",
+        "--auth",
+        "better-auth",
+        "--payments",
+        "none",
+        "--email",
+        "none",
+        "--file-upload",
+        "none",
+        "--logging",
+        "pino",
+        "--observability",
+        "opentelemetry",
+        "--feature-flags",
+        "none",
+        "--analytics",
+        "none",
+        "--effect",
+        "none",
+        "--state-management",
+        "tanstack-store",
+        "--forms",
+        "tanstack-form",
+        "--validation",
+        "valibot",
+        "--testing",
+        "vitest-playwright",
+        "--ai",
+        "vercel-ai",
+        "--realtime",
+        "none",
+        "--job-queue",
+        "inngest",
+        "--animation",
+        "none",
+        "--css-framework",
+        "tailwind",
+        "--ui-library",
+        "shadcn-ui",
+        "--cms",
+        "none",
+        "--caching",
+        "none",
+        "--rate-limit",
+        "none",
+        "--i18n",
+        "paraglide",
+        "--search",
+        "opensearch",
+        "--vector-db",
+        "qdrant",
+        "--file-storage",
+        "none",
+        "--web-deploy",
+        "none",
+        "--server-deploy",
+        "none",
+        "--addons",
+        "turborepo",
+        "biome",
+        "devcontainer",
+        "github-actions",
+        "--examples",
+        "none",
+        "--ai-docs",
+        "none",
+        "--package-manager",
+        "bun",
+        "--shadcn-base",
+        "radix",
+        "--shadcn-style",
+        "nova",
+        "--shadcn-icon-library",
+        "lucide",
+        "--shadcn-color-theme",
+        "neutral",
+        "--shadcn-base-color",
+        "neutral",
+        "--shadcn-font",
+        "inter",
+        "--shadcn-radius",
+        "default",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "frontend": "tanstack-router",
+        "backend": "hono",
+        "runtime": "bun",
+        "api": "orpc",
+        "database": "postgres",
+        "orm": "drizzle",
+        "auth": "better-auth",
+        "ai": "vercel-ai",
+        "vectorDb": "qdrant",
+        "search": "opensearch",
+        "jobQueue": "inngest",
+        "logging": "pino",
+        "observability": "opentelemetry",
+        "stateManagement": "tanstack-store",
+        "forms": "tanstack-form",
+        "validation": "valibot",
+        "testing": "vitest-playwright",
+        "i18n": "paraglide",
+        "cssFramework": "tailwind",
+        "uiLibrary": "shadcn-ui"
+      },
+      "expectedAddons": [
+        "turborepo",
+        "biome",
+        "devcontainer",
+        "github-actions"
+      ],
+      "strictMarkers": [
+        {
+          "id": "frontend:tanstack-router",
+          "deps": [
+            "@tanstack/react-router"
+          ]
+        },
+        {
+          "id": "backend:hono",
+          "deps": [
+            "hono"
+          ]
+        },
+        {
+          "id": "api:orpc",
+          "deps": [
+            "@orpc/server"
+          ],
+          "source": [
+            "@orpc/"
+          ]
+        },
+        {
+          "id": "database:postgres+drizzle",
+          "deps": [
+            "drizzle-orm"
+          ],
+          "source": [
+            "drizzle-orm"
+          ]
+        },
+        {
+          "id": "auth:better-auth",
+          "deps": [
+            "better-auth"
+          ],
+          "source": [
+            "better-auth"
+          ]
+        },
+        {
+          "id": "ai:vercel-ai",
+          "deps": [
+            "ai"
+          ]
+        },
+        {
+          "id": "vectorDb:qdrant",
+          "deps": [
+            "@qdrant/js-client-rest"
+          ],
+          "source": [
+            "@qdrant/js-client-rest"
+          ]
+        },
+        {
+          "id": "search:opensearch",
+          "deps": [
+            "@opensearch-project/opensearch"
+          ],
+          "source": [
+            "@opensearch-project/opensearch"
+          ]
+        },
+        {
+          "id": "jobQueue:inngest",
+          "deps": [
+            "inngest"
+          ],
+          "source": [
+            "inngest"
+          ]
+        },
+        {
+          "id": "logging:pino",
+          "deps": [
+            "pino"
+          ],
+          "source": [
+            "pino"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "deps": [
+            "@opentelemetry/api"
+          ]
+        },
+        {
+          "id": "state:tanstack-store",
+          "deps": [
+            "@tanstack/store"
+          ]
+        },
+        {
+          "id": "forms:tanstack-form",
+          "deps": [
+            "@tanstack/react-form"
+          ]
+        },
+        {
+          "id": "validation:valibot",
+          "deps": [
+            "valibot"
+          ]
+        },
+        {
+          "id": "testing:vitest-playwright",
+          "deps": [
+            "vitest",
+            "@playwright/test"
+          ]
+        },
+        {
+          "id": "i18n:paraglide",
+          "deps": [
+            "@inlang/paraglide-js"
+          ],
+          "files": [
+            "apps/web/project.inlang/settings.json"
+          ]
+        },
+        {
+          "id": "addon:biome",
+          "deps": [
+            "@biomejs/biome"
+          ],
+          "files": [
+            "biome.json"
+          ]
+        },
+        {
+          "id": "addon:devcontainer",
+          "files": [
+            ".devcontainer/devcontainer.json"
+          ]
+        },
+        {
+          "id": "addon:github-actions",
+          "files": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "id": "forbidden:payments",
+          "forbiddenDeps": [
+            "stripe",
+            "@stripe/stripe-js",
+            "polar-sh"
+          ]
+        },
+        {
+          "id": "forbidden:email",
+          "forbiddenDeps": [
+            "resend",
+            "nodemailer",
+            "@react-email/components"
+          ]
+        }
+      ],
+      "acceptanceSets": {
+        "web-framework": [
+          "@tanstack/react-router",
+          "next",
+          "react-router",
+          "@remix-run",
+          "vite"
+        ],
+        "backend": [
+          "hono",
+          "express",
+          "fastify",
+          "elysia",
+          "@nestjs/core"
+        ],
+        "relational-db": [
+          "drizzle-orm",
+          "@prisma/client",
+          "kysely",
+          "typeorm",
+          "sequelize"
+        ],
+        "auth": [
+          "better-auth",
+          "lucia",
+          "@clerk",
+          "next-auth",
+          "@auth/",
+          "@workos-inc"
+        ],
+        "ai": [
+          "ai",
+          "@ai-sdk",
+          "openai",
+          "@anthropic-ai",
+          "langchain"
+        ],
+        "semantic-search": [
+          "@qdrant/js-client-rest",
+          "pgvector",
+          "weaviate-ts-client",
+          "@pinecone-database/pinecone",
+          "chromadb",
+          "@zilliz/milvus2-sdk-node"
+        ],
+        "full-text-search": [
+          "@opensearch-project/opensearch",
+          "@elastic/elasticsearch",
+          "meilisearch",
+          "typesense",
+          "algoliasearch"
+        ],
+        "background-jobs": [
+          "inngest",
+          "bullmq",
+          "@trigger.dev",
+          "graphile-worker",
+          "pg-boss",
+          "bee-queue"
+        ],
+        "observability": [
+          "@opentelemetry/api",
+          "pino",
+          "winston",
+          "@sentry",
+          "@logtail"
+        ],
+        "testing": [
+          "vitest",
+          "jest",
+          "@playwright/test",
+          "cypress"
+        ],
+        "i18n": [
+          "@inlang/paraglide-js",
+          "next-intl",
+          "i18next",
+          "react-i18next",
+          "lingui"
+        ],
+        "ci": [
+          ".github/workflows",
+          ".gitlab-ci.yml",
+          ".circleci"
+        ]
+      },
+      "validationProfile": {
+        "packageManager": "bun",
+        "qualityGate": true,
+        "doctorCheck": true,
+        "routeCheckCandidate": true
+      }
+    },
+    {
+      "id": "rust-leptos-axum",
+      "title": "Rust Axum API with a Leptos WASM frontend and typed service libraries",
+      "lane": "core",
+      "family": "rust",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Rust project with Axum as the backend web framework.",
+        "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus or React.",
+        "Use PostgreSQL with SQLx.",
+        "Use Tonic for a typed API boundary.",
+        "Include Clap CLI support, tracing, anyhow/thiserror, Moka caching, OAuth2 auth, Lapin jobs, OpenTelemetry, and Askama templates.",
+        "Include serde, uuid, chrono, reqwest, config, utoipa, validator, and tokio-test libraries.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Rust starter for an internal product console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
+      "rightLibraryNotes": [
+        "Leptos is required for the Rust WASM frontend.",
+        "Axum is required for the server.",
+        "SQLx is required for database access.",
+        "Tonic is required for typed RPC/API contracts."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "rust",
+        "--database",
+        "postgres",
+        "--rust-web-framework",
+        "axum",
+        "--rust-frontend",
+        "leptos",
+        "--rust-orm",
+        "sqlx",
+        "--rust-api",
+        "tonic",
+        "--rust-cli",
+        "clap",
+        "--rust-libraries",
+        "serde",
+        "uuid",
+        "chrono",
+        "reqwest",
+        "config",
+        "utoipa",
+        "validator",
+        "tokio-test",
+        "--rust-logging",
+        "tracing",
+        "--rust-error-handling",
+        "anyhow-thiserror",
+        "--rust-caching",
+        "moka",
+        "--rust-auth",
+        "oauth2",
+        "--rust-realtime",
+        "none",
+        "--rust-message-queue",
+        "lapin",
+        "--rust-observability",
+        "opentelemetry",
+        "--rust-templating",
+        "askama",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "rust",
+        "database": "postgres",
+        "rustWebFramework": "axum",
+        "rustFrontend": "leptos",
+        "rustOrm": "sqlx",
+        "rustApi": "tonic",
+        "rustCli": "clap",
+        "rustLibraries": [
+          "serde",
+          "uuid",
+          "chrono",
+          "reqwest",
+          "config",
+          "utoipa",
+          "validator",
+          "tokio-test"
+        ],
+        "rustLogging": "tracing",
+        "rustErrorHandling": "anyhow-thiserror",
+        "rustCaching": "moka",
+        "rustAuth": "oauth2",
+        "rustMessageQueue": "lapin",
+        "rustObservability": "opentelemetry",
+        "rustTemplating": "askama"
+      },
+      "strictMarkers": [
+        {
+          "id": "rust:axum",
+          "text": [
+            "axum"
+          ]
+        },
+        {
+          "id": "frontend:leptos",
+          "text": [
+            "leptos",
+            "leptos_router"
+          ],
+          "files": [
+            "crates/client/Cargo.toml"
+          ]
+        },
+        {
+          "id": "orm:sqlx",
+          "text": [
+            "sqlx"
+          ]
+        },
+        {
+          "id": "api:tonic",
+          "text": [
+            "tonic"
+          ]
+        },
+        {
+          "id": "cli:clap",
+          "text": [
+            "clap"
+          ]
+        },
+        {
+          "id": "logging:tracing",
+          "text": [
+            "tracing"
+          ]
+        },
+        {
+          "id": "cache:moka",
+          "text": [
+            "moka"
+          ]
+        },
+        {
+          "id": "auth:oauth2",
+          "text": [
+            "oauth2"
+          ]
+        },
+        {
+          "id": "jobs:lapin",
+          "text": [
+            "lapin"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "text": [
+            "opentelemetry"
+          ]
+        },
+        {
+          "id": "templating:askama",
+          "text": [
+            "askama"
+          ]
+        },
+        {
+          "id": "forbidden:dioxus",
+          "forbiddenText": [
+            "dioxus-router",
+            "Dioxus.toml"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "cargo"
+        ]
+      }
+    },
+    {
+      "id": "python-ingestion-api",
+      "title": "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
+      "lane": "core",
+      "family": "python",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Python API project using FastAPI.",
+        "Use SQLModel for database models and Pydantic for validation.",
+        "Use LangGraph and OpenAI SDK for AI workflows.",
+        "Use JWT auth, Celery task queues, WebSockets realtime, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
+        "Do not choose Django REST Framework or Django Ninja because this is not a Django project.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Python ingestion API starter for AI document processing. It needs FastAPI, SQL-backed models, strict validation, AI workflow libraries, queued workers, realtime job updates, Redis cache, tracing, CLI tools, and real test/quality tooling. Avoid Django-only API libraries.",
+      "rightLibraryNotes": [
+        "FastAPI is required; Django-specific API packages are forbidden.",
+        "SQLModel is required for the database layer.",
+        "LangGraph plus OpenAI SDK are required for AI workflow scaffolding.",
+        "Celery is required for background ingestion jobs."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "python",
+        "--database",
+        "postgres",
+        "--python-web-framework",
+        "fastapi",
+        "--python-orm",
+        "sqlmodel",
+        "--python-validation",
+        "pydantic",
+        "--python-ai",
+        "langgraph",
+        "openai-sdk",
+        "--python-auth",
+        "jwt",
+        "--python-api",
+        "none",
+        "--python-task-queue",
+        "celery",
+        "--python-graphql",
+        "none",
+        "--python-quality",
+        "ruff",
+        "--python-testing",
+        "pytest",
+        "hypothesis",
+        "--python-caching",
+        "redis",
+        "--python-realtime",
+        "websockets",
+        "--python-observability",
+        "opentelemetry",
+        "--python-cli",
+        "typer",
+        "rich",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "python",
+        "database": "postgres",
+        "pythonWebFramework": "fastapi",
+        "pythonOrm": "sqlmodel",
+        "pythonValidation": "pydantic",
+        "pythonAi": [
+          "langgraph",
+          "openai-sdk"
+        ],
+        "pythonAuth": "jwt",
+        "pythonApi": "none",
+        "pythonTaskQueue": "celery",
+        "pythonQuality": "ruff",
+        "pythonTesting": [
+          "pytest",
+          "hypothesis"
+        ],
+        "pythonCaching": "redis",
+        "pythonRealtime": "websockets",
+        "pythonObservability": "opentelemetry",
+        "pythonCli": [
+          "typer",
+          "rich"
+        ]
+      },
+      "strictMarkers": [
+        {
+          "id": "backend:fastapi",
+          "text": [
+            "fastapi"
+          ]
+        },
+        {
+          "id": "orm:sqlmodel",
+          "text": [
+            "sqlmodel"
+          ]
+        },
+        {
+          "id": "validation:pydantic",
+          "text": [
+            "pydantic"
+          ]
+        },
+        {
+          "id": "ai:langgraph",
+          "text": [
+            "langgraph"
+          ]
+        },
+        {
+          "id": "ai:openai-sdk",
+          "text": [
+            "openai"
+          ]
+        },
+        {
+          "id": "auth:jwt",
+          "text": [
+            "jwt"
+          ]
+        },
+        {
+          "id": "jobs:celery",
+          "text": [
+            "celery"
+          ]
+        },
+        {
+          "id": "quality:ruff",
+          "text": [
+            "ruff"
+          ]
+        },
+        {
+          "id": "testing:pytest",
+          "text": [
+            "pytest"
+          ]
+        },
+        {
+          "id": "testing:hypothesis",
+          "text": [
+            "hypothesis"
+          ]
+        },
+        {
+          "id": "realtime:websockets",
+          "text": [
+            "websockets"
+          ]
+        },
+        {
+          "id": "cli:typer+rich",
+          "text": [
+            "typer",
+            "rich"
+          ]
+        },
+        {
+          "id": "forbidden:django-api",
+          "forbiddenText": [
+            "django-rest-framework",
+            "django-ninja"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "python"
+        ]
+      }
+    },
+    {
+      "id": "go-realtime-api",
+      "title": "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
+      "lane": "core",
+      "family": "go",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Go API project using Chi, not Gin/Echo/Fiber.",
+        "Use PostgreSQL with Ent.",
+        "Use gRPC for typed service contracts.",
+        "Use Cobra CLI tooling, Zap logging, JWT auth, Testify + GoMock tests, Gorilla WebSocket realtime, NATS messaging, Redis caching, Viper config, and OpenTelemetry.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Go backend starter for a realtime admin API. It needs a lightweight router, Ent/Postgres models, typed gRPC service contracts, CLI/admin commands, structured logging, auth, websocket updates, event messaging, Redis cache, configuration, tracing, and test doubles.",
+      "rightLibraryNotes": [
+        "Chi is required as the web framework.",
+        "Ent is required for the data layer.",
+        "gRPC-Go is required for typed service contracts.",
+        "NATS and Gorilla WebSocket are required for messaging and realtime updates."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "go",
+        "--database",
+        "postgres",
+        "--go-web-framework",
+        "chi",
+        "--go-orm",
+        "ent",
+        "--go-api",
+        "grpc-go",
+        "--go-cli",
+        "cobra",
+        "--go-logging",
+        "zap",
+        "--go-auth",
+        "jwt",
+        "--go-testing",
+        "testify",
+        "gomock",
+        "--go-realtime",
+        "gorilla-websocket",
+        "--go-message-queue",
+        "nats",
+        "--go-caching",
+        "redis",
+        "--go-config",
+        "viper",
+        "--go-observability",
+        "opentelemetry",
+        "--auth",
+        "none",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "go",
+        "database": "postgres",
+        "goWebFramework": "chi",
+        "goOrm": "ent",
+        "goApi": "grpc-go",
+        "goCli": "cobra",
+        "goLogging": "zap",
+        "goAuth": "jwt",
+        "goTesting": [
+          "testify",
+          "gomock"
+        ],
+        "goRealtime": "gorilla-websocket",
+        "goMessageQueue": "nats",
+        "goCaching": "redis",
+        "goConfig": "viper",
+        "goObservability": "opentelemetry"
+      },
+      "strictMarkers": [
+        {
+          "id": "backend:chi",
+          "text": [
+            "github.com/go-chi/chi"
+          ]
+        },
+        {
+          "id": "orm:ent",
+          "text": [
+            "entgo.io/ent"
+          ],
+          "files": [
+            "ent/schema/user.go"
+          ]
+        },
+        {
+          "id": "api:grpc-go",
+          "text": [
+            "google.golang.org/grpc"
+          ]
+        },
+        {
+          "id": "cli:cobra",
+          "text": [
+            "github.com/spf13/cobra"
+          ]
+        },
+        {
+          "id": "logging:zap",
+          "text": [
+            "go.uber.org/zap"
+          ]
+        },
+        {
+          "id": "auth:jwt",
+          "text": [
+            "github.com/golang-jwt/jwt"
+          ]
+        },
+        {
+          "id": "testing:testify+gomock",
+          "text": [
+            "github.com/stretchr/testify",
+            "go.uber.org/mock"
+          ]
+        },
+        {
+          "id": "realtime:gorilla-websocket",
+          "text": [
+            "github.com/gorilla/websocket"
+          ]
+        },
+        {
+          "id": "queue:nats",
+          "text": [
+            "github.com/nats-io/nats.go"
+          ]
+        },
+        {
+          "id": "caching:redis",
+          "text": [
+            "github.com/redis/go-redis"
+          ]
+        },
+        {
+          "id": "config:viper",
+          "text": [
+            "github.com/spf13/viper"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "text": [
+            "go.opentelemetry.io/otel"
+          ]
+        },
+        {
+          "id": "forbidden:gin",
+          "forbiddenText": [
+            "github.com/gin-gonic/gin"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "go"
+        ]
+      }
+    },
+    {
+      "id": "multi-dotnet-ops",
+      "title": "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
+      "lane": "core",
+      "family": "multi-ecosystem",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create one multi-ecosystem project graph.",
+        "Use a Next.js TypeScript frontend with Tailwind and shadcn/ui.",
+        "Use an ASP.NET Minimal API backend.",
+        "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR, FluentValidation, Hangfire, memory cache, and Docker output.",
+        "Use PostgreSQL as the shared database.",
+        "Include Turborepo, Biome, and GitHub Actions.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a multi-ecosystem ops portal starter: a TypeScript web frontend and a .NET backend. It needs Postgres-backed identity, API endpoints, validation, background jobs, realtime notifications, observability/logging, tests, containers, and CI. Use the project graph instead of forcing everything into one ecosystem.",
+      "rightLibraryNotes": [
+        "The frontend must be TypeScript Next.js.",
+        "The backend must be ASP.NET Minimal API.",
+        "EF Core and ASP.NET Identity are required.",
+        "Hangfire and SignalR are required for jobs and realtime updates."
+      ],
+      "canonicalFlags": [
+        "--part",
+        "frontend:typescript:next",
+        "--part",
+        "frontend.css:typescript:tailwind",
+        "--part",
+        "frontend.ui:typescript:shadcn-ui",
+        "--part",
+        "backend:dotnet:aspnet-minimal",
+        "--part",
+        "backend.orm:dotnet:ef-core",
+        "--part",
+        "backend.auth:dotnet:aspnet-identity",
+        "--part",
+        "backend.api:dotnet:minimal-api",
+        "--part",
+        "backend.testing:dotnet:xunit",
+        "--part",
+        "backend.testing:dotnet:testcontainers-dotnet",
+        "--part",
+        "backend.observability:dotnet:serilog",
+        "--part",
+        "backend.realtime:dotnet:signalr",
+        "--part",
+        "backend.validation:dotnet:fluentvalidation",
+        "--part",
+        "backend.jobQueue:dotnet:hangfire",
+        "--part",
+        "backend.caching:dotnet:memory-cache",
+        "--part",
+        "backend.deploy:dotnet:docker",
+        "--part",
+        "database:universal:postgres",
+        "--addons",
+        "turborepo",
+        "biome",
+        "github-actions",
+        "--ai-docs",
+        "none",
+        "--package-manager",
+        "bun",
+        "--shadcn-base",
+        "radix",
+        "--shadcn-style",
+        "nova",
+        "--shadcn-icon-library",
+        "lucide",
+        "--shadcn-color-theme",
+        "neutral",
+        "--shadcn-base-color",
+        "neutral",
+        "--shadcn-font",
+        "inter",
+        "--shadcn-radius",
+        "default",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedParts": [
+        "frontend:typescript:next",
+        "frontend.css:typescript:tailwind",
+        "frontend.ui:typescript:shadcn-ui",
+        "backend:dotnet:aspnet-minimal",
+        "backend.orm:dotnet:ef-core",
+        "backend.auth:dotnet:aspnet-identity",
+        "backend.api:dotnet:minimal-api",
+        "backend.testing:dotnet:xunit",
+        "backend.testing:dotnet:testcontainers-dotnet",
+        "backend.observability:dotnet:serilog",
+        "backend.realtime:dotnet:signalr",
+        "backend.validation:dotnet:fluentvalidation",
+        "backend.jobQueue:dotnet:hangfire",
+        "backend.caching:dotnet:memory-cache",
+        "backend.deploy:dotnet:docker",
+        "database:universal:postgres"
+      ],
+      "expectedAddons": [
+        "turborepo",
+        "biome",
+        "github-actions"
+      ],
+      "strictMarkers": [
+        {
+          "id": "frontend:next",
+          "deps": [
+            "next"
+          ]
+        },
+        {
+          "id": "frontend:tailwind",
+          "deps": [
+            "tailwindcss"
+          ]
+        },
+        {
+          "id": "frontend:shadcn",
+          "files": [
+            "apps/web/components.json"
+          ]
+        },
+        {
+          "id": "backend:aspnet-minimal",
+          "files": [
+            "apps/server/Program.cs"
+          ],
+          "text": [
+            "MapGet"
+          ]
+        },
+        {
+          "id": "orm:ef-core",
+          "text": [
+            "Microsoft.EntityFrameworkCore"
+          ]
+        },
+        {
+          "id": "auth:aspnet-identity",
+          "text": [
+            "Microsoft.AspNetCore.Identity"
+          ]
+        },
+        {
+          "id": "testing:xunit",
+          "text": [
+            "xunit"
+          ]
+        },
+        {
+          "id": "testing:testcontainers",
+          "text": [
+            "Testcontainers"
+          ]
+        },
+        {
+          "id": "logging:serilog",
+          "text": [
+            "Serilog"
+          ]
+        },
+        {
+          "id": "realtime:signalr",
+          "text": [
+            "SignalR"
+          ]
+        },
+        {
+          "id": "validation:fluentvalidation",
+          "text": [
+            "FluentValidation"
+          ]
+        },
+        {
+          "id": "jobs:hangfire",
+          "text": [
+            "Hangfire"
+          ]
+        },
+        {
+          "id": "addon:github-actions",
+          "files": [
+            ".github/workflows/ci.yml"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "packageManager": "bun",
+        "native": [
+          "dotnet"
+        ],
+        "qualityGate": true,
+        "doctorCheck": true
+      }
+    }
+  ],
+  "aggregates": {
+    "bySpecCell": [
+      {
+        "key": "ai-search-workbench|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "specId": "ai-search-workbench",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 1,
+        "passRate": 100,
+        "passCi95": {
+          "low": 21,
+          "high": 100
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 100,
+        "passAnySpecs": 1,
+        "passAllSpecs": 1,
+        "stackPercent": 10,
+        "commandDisciplinePercent": 100,
+        "index": 78,
+        "avgDurationMs": 430156,
+        "medianDurationMs": 430156,
+        "p95DurationMs": 430156,
+        "avgOutputTokens": 32106,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "stack-mismatch": 1
+        }
+      },
+      {
+        "key": "python-ingestion-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "specId": "python-ingestion-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 1,
+        "passRate": 100,
+        "passCi95": {
+          "low": 21,
+          "high": 100
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 100,
+        "passAnySpecs": 1,
+        "passAllSpecs": 1,
+        "stackPercent": 8,
+        "commandDisciplinePercent": 100,
+        "index": 77,
+        "avgDurationMs": 877925,
+        "medianDurationMs": 877925,
+        "p95DurationMs": 877925,
+        "avgOutputTokens": 14656,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "stack-mismatch": 1
+        }
+      },
+      {
+        "key": "multi-dotnet-ops|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "specId": "multi-dotnet-ops",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 1,
+        "passRate": 100,
+        "passCi95": {
+          "low": 21,
+          "high": 100
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 100,
+        "passAnySpecs": 1,
+        "passAllSpecs": 1,
+        "stackPercent": 0,
+        "commandDisciplinePercent": 100,
+        "index": 75,
+        "avgDurationMs": 305683,
+        "medianDurationMs": 305683,
+        "p95DurationMs": 305683,
+        "avgOutputTokens": 15207,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "stack-mismatch": 1
+        }
+      },
+      {
+        "key": "python-ingestion-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "specId": "python-ingestion-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 100,
+        "faithfulnessPercent": 94,
+        "commandDisciplinePercent": 100,
+        "index": 40,
+        "avgDurationMs": 127322,
+        "medianDurationMs": 127322,
+        "p95DurationMs": 127322,
+        "avgOutputTokens": 6291,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "lint-failed": 1,
+          "test-failed": 1,
+          "typecheck-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "ai-search-workbench|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "specId": "ai-search-workbench",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 100,
+        "faithfulnessPercent": 96,
+        "commandDisciplinePercent": 100,
+        "index": 40,
+        "avgDurationMs": 145663,
+        "medianDurationMs": 145663,
+        "p95DurationMs": 145663,
+        "avgOutputTokens": 6868,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "build-failed": 1,
+          "format-failed": 1,
+          "typecheck-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "rust-leptos-axum|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "specId": "rust-leptos-axum",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 100,
+        "faithfulnessPercent": 95,
+        "commandDisciplinePercent": 100,
+        "index": 40,
+        "avgDurationMs": 151529,
+        "medianDurationMs": 151529,
+        "p95DurationMs": 151529,
+        "avgOutputTokens": 13010,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "build-failed": 1,
+          "format-failed": 1,
+          "lint-failed": 1,
+          "test-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "multi-dotnet-ops|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "specId": "multi-dotnet-ops",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 1,
+        "scoredRuns": 0,
+        "inconclusiveCount": 1,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 0
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 92,
+        "faithfulnessPercent": 95,
+        "commandDisciplinePercent": 100,
+        "index": 38,
+        "avgDurationMs": 86501,
+        "medianDurationMs": 86501,
+        "p95DurationMs": 86501,
+        "avgOutputTokens": 5301,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "build-failed": 1,
+          "format-failed": 1,
+          "stack-mismatch": 1,
+          "toolchain-missing": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "python-ingestion-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "specId": "python-ingestion-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 92,
+        "faithfulnessPercent": 89,
+        "commandDisciplinePercent": 100,
+        "index": 38,
+        "avgDurationMs": 324510,
+        "medianDurationMs": 324510,
+        "p95DurationMs": 324510,
+        "avgOutputTokens": 18773,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "lint-failed": 1,
+          "stack-mismatch": 1,
+          "test-failed": 1,
+          "typecheck-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "multi-dotnet-ops|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "specId": "multi-dotnet-ops",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 1,
+        "scoredRuns": 0,
+        "inconclusiveCount": 1,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 0
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 77,
+        "faithfulnessPercent": 63,
+        "commandDisciplinePercent": 100,
+        "index": 34,
+        "avgDurationMs": 213531,
+        "medianDurationMs": 213531,
+        "p95DurationMs": 213531,
+        "avgOutputTokens": 10009,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "stack-mismatch": 1,
+          "toolchain-missing": 1,
+          "typecheck-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "rust-leptos-axum|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "specId": "rust-leptos-axum",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 58,
+        "commandDisciplinePercent": 100,
+        "index": 30,
+        "avgDurationMs": 460347,
+        "medianDurationMs": 460347,
+        "p95DurationMs": 460347,
+        "avgOutputTokens": 24721,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "build-failed": 1,
+          "format-failed": 1,
+          "lint-failed": 1,
+          "stack-mismatch": 1,
+          "test-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "ai-search-workbench|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "specId": "ai-search-workbench",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 29,
+        "commandDisciplinePercent": 100,
+        "index": 22,
+        "avgDurationMs": 900010,
+        "medianDurationMs": 900010,
+        "p95DurationMs": 900010,
+        "avgOutputTokens": 21307,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "claude-error": 1,
+          "claude-timeout": 1,
+          "install-failed": 1,
+          "stack-mismatch": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "go-realtime-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "specId": "go-realtime-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 8,
+        "commandDisciplinePercent": 100,
+        "index": 17,
+        "avgDurationMs": 827526,
+        "medianDurationMs": 827526,
+        "p95DurationMs": 827526,
+        "avgOutputTokens": 9073,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "lint-failed": 1,
+          "stack-mismatch": 1,
+          "test-failed": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "go-realtime-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "specId": "go-realtime-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 0,
+        "commandDisciplinePercent": 67,
+        "index": 10,
+        "avgDurationMs": 19654,
+        "medianDurationMs": 19654,
+        "p95DurationMs": 19654,
+        "avgOutputTokens": 580,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "command-discipline": 1,
+          "project-not-found": 1,
+          "stack-mismatch": 1,
+          "tool-violation": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "go-realtime-api|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "specId": "go-realtime-api",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 0,
+        "commandDisciplinePercent": 50,
+        "index": 8,
+        "avgDurationMs": 27275,
+        "medianDurationMs": 27275,
+        "p95DurationMs": 27275,
+        "avgOutputTokens": 154,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "command-discipline": 1,
+          "project-not-found": 1,
+          "stack-mismatch": 1,
+          "tool-violation": 1,
+          "validation-failed": 1
+        }
+      },
+      {
+        "key": "rust-leptos-axum|kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "specId": "rust-leptos-axum",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 1,
+        "scoredRuns": 1,
+        "inconclusiveCount": 0,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 79
+        },
+        "ciReportable": false,
+        "specCount": 1,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 0,
+        "commandDisciplinePercent": 50,
+        "index": 8,
+        "avgDurationMs": 121096,
+        "medianDurationMs": 121096,
+        "p95DurationMs": 121096,
+        "avgOutputTokens": 3566,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "command-discipline": 1,
+          "project-not-found": 1,
+          "stack-mismatch": 1,
+          "tool-violation": 1,
+          "validation-failed": 1
+        }
+      }
+    ],
+    "leaderboard": [
+      {
+        "key": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default|prompt",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "prompt",
+        "runs": 5,
+        "scoredRuns": 5,
+        "inconclusiveCount": 0,
+        "passCount": 2,
+        "passRate": 40,
+        "passCi95": {
+          "low": 12,
+          "high": 77
+        },
+        "ciReportable": false,
+        "specCount": 5,
+        "macroPassRate": 40,
+        "passAnySpecs": 2,
+        "passAllSpecs": 2,
+        "stackPercent": 21,
+        "commandDisciplinePercent": 100,
+        "index": 44,
+        "avgDurationMs": 674298,
+        "medianDurationMs": 827526,
+        "p95DurationMs": 900010,
+        "avgOutputTokens": 16993,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "claude-error": 1,
+          "claude-timeout": 1,
+          "install-failed": 1,
+          "stack-mismatch": 5,
+          "validation-failed": 3,
+          "build-failed": 1,
+          "format-failed": 1,
+          "lint-failed": 2,
+          "test-failed": 2
+        }
+      },
+      {
+        "key": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default|cli",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "cli",
+        "runs": 5,
+        "scoredRuns": 4,
+        "inconclusiveCount": 1,
+        "passCount": 1,
+        "passRate": 25,
+        "passCi95": {
+          "low": 5,
+          "high": 70
+        },
+        "ciReportable": false,
+        "specCount": 5,
+        "macroPassRate": 25,
+        "passAnySpecs": 1,
+        "passAllSpecs": 1,
+        "stackPercent": 60,
+        "faithfulnessPercent": 95,
+        "commandDisciplinePercent": 93,
+        "index": 44,
+        "avgDurationMs": 163032,
+        "medianDurationMs": 127322,
+        "p95DurationMs": 430156,
+        "avgOutputTokens": 11458,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "stack-mismatch": 3,
+          "build-failed": 2,
+          "format-failed": 2,
+          "lint-failed": 2,
+          "test-failed": 2,
+          "validation-failed": 4,
+          "typecheck-failed": 1,
+          "command-discipline": 1,
+          "project-not-found": 1,
+          "tool-violation": 1,
+          "toolchain-missing": 1
+        }
+      },
+      {
+        "key": "kilo/nvidia/nemotron-3-super-120b-a12b:free|default|mcp",
+        "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+        "effort": "default",
+        "path": "mcp",
+        "runs": 5,
+        "scoredRuns": 4,
+        "inconclusiveCount": 1,
+        "passCount": 0,
+        "passRate": 0,
+        "passCi95": {
+          "low": 0,
+          "high": 49
+        },
+        "ciReportable": false,
+        "specCount": 5,
+        "macroPassRate": 0,
+        "passAnySpecs": 0,
+        "passAllSpecs": 0,
+        "stackPercent": 54,
+        "faithfulnessPercent": 83,
+        "commandDisciplinePercent": 80,
+        "index": 26,
+        "avgDurationMs": 166415,
+        "medianDurationMs": 145663,
+        "p95DurationMs": 324510,
+        "avgOutputTokens": 7874,
+        "avgCostUsd": 0,
+        "failureTags": {
+          "build-failed": 1,
+          "format-failed": 1,
+          "typecheck-failed": 3,
+          "validation-failed": 5,
+          "command-discipline": 2,
+          "project-not-found": 2,
+          "stack-mismatch": 4,
+          "tool-violation": 2,
+          "lint-failed": 1,
+          "test-failed": 1,
+          "toolchain-missing": 1
+        }
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "ai-search-workbench-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-mcp",
+      "specId": "ai-search-workbench",
+      "specTitle": "AI search workbench with separate semantic and full-text search",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "mcp",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 145663,
+        "outputTokens": 6868,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa9ee969ffe2TghxRL2W4q5zd"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "/Users/<user>/.bun/bin/bun install",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 687,
+            "stdoutTail": "bun install v1.3.12 (700fc117)\n\n+ @biomejs/biome@2.5.1\n+ @types/bun@1.3.14\n+ turbo@2.10.0\n+ typescript@6.0.3\n+ dotenv@17.4.2\n+ zod@4.4.3\n\n1222 packages installed [681.00ms]\n",
+            "stderrTail": "Resolving dependencies\nResolved, downloaded and extracted [0]\nSaved lockfile\n"
+          },
+          "build": {
+            "command": "/Users/<user>/.bun/bin/bun run build",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 842,
+            "stdoutTail": "\n   • Packages in scope: @sb21-ai-search-workbench-mcp-default/api, @sb21-ai-search-workbench-mcp-default/auth, @sb21-ai-search-workbench-mcp-default/config, @sb21-ai-search-workbench-mcp-default/db, @sb21-ai-search-workbench-mcp-default/env, server, web\n   • Running build in 7 packages\n   • Remote caching disabled\n\nserver:build: cache miss, executing 32bb25d681d50692\nweb:build: cache miss, executing e5e1e1ef32ae41d6\nserver:build: $ tsdown\nweb:build: $ vite build\nserver:build: /opt/homebrew/bin/bash: line 1: tsdown: command not found\nweb:build: /opt/homebrew/bin/bash: line 1: vite: command not found\nweb:build: error: script \"build\" exited with code 127\nserver:build: error: script \"build\" exited with code 127\n\n Tasks:    0 successful, 2 total\nCached:    0 cached, 2 total\n  Time:    42ms \nFailed:    server#build, web#build\n\n",
+            "stderrTail": "$ turbo build\n• turbo 2.10.0\n ERROR  server#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  web#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"build\" exited with code 127\n"
+          },
+          "typecheck": {
+            "command": "/Users/<user>/.bun/bin/bun run check-types",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 2280,
+            "stdoutTail": "\n   • Packages in scope: @sb21-ai-search-workbench-mcp-default/api, @sb21-ai-search-workbench-mcp-default/auth, @sb21-ai-search-workbench-mcp-default/config, @sb21-ai-search-workbench-mcp-default/db, @sb21-ai-search-workbench-mcp-default/env, server, web\n   • Running check-types in 7 packages\n   • Remote caching disabled\n\n@sb21-ai-search-workbench-mcp-default/db:check-types: cache miss, executing c2b5c53a442cf322\n@sb21-ai-search-workbench-mcp-default/db:check-types: $ tsc --noEmit\n@sb21-ai-search-workbench-mcp-default/auth:check-types: cache miss, executing 19ba84ecf4fe4aeb\n@sb21-ai-search-workbench-mcp-default/auth:check-types: $ tsc --noEmit\n@sb21-ai-search-workbench-mcp-default/api:check-types: cache miss, executing 614f74313648cedc\n@sb21-ai-search-workbench-mcp-default/api:check-types: $ tsc --noEmit\nserver:check-types: cache miss, executing 6237dc9aa713a116\nweb:check-types: cache miss, executing 4c8a5d800493550d\nweb:check-types: $ tsr generate && tsc --noEmit\nserver:check-types: $ tsc -b\nweb:check-types: /opt/homebrew/bin/bash: line 1: tsr: command not found\nweb:check-types: error: script \"check-types\" exited with code 127\n\n Tasks:    3 successful, 5 total\nCached:    0 cached, 5 total\n  Time:    2.238s \nFailed:    web#check-types\n\n",
+            "stderrTail": "$ turbo check-types\n• turbo 2.10.0\n ERROR  web#check-types: command (/private<tmp> /Users/<user>/.bun/bin/bun run check-types exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"check-types\" exited with code 127\n"
+          },
+          "lint": {
+            "command": "bun run lint",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "format": {
+            "command": "/Users/<user>/.bun/bin/bun run check",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 14,
+            "stdoutTail": "",
+            "stderrTail": "$ biome check --write .\n/opt/homebrew/bin/bash: line 1: biome: command not found\nerror: script \"check\" exited with code 127\n"
+          },
+          "test": {
+            "command": "bun run test",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "doctor": {
+            "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 140,
+            "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+            "stderrTail": ""
+          }
+        },
+        "install": {
+          "command": "/Users/<user>/.bun/bin/bun install",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 687,
+          "stdoutTail": "bun install v1.3.12 (700fc117)\n\n+ @biomejs/biome@2.5.1\n+ @types/bun@1.3.14\n+ turbo@2.10.0\n+ typescript@6.0.3\n+ dotenv@17.4.2\n+ zod@4.4.3\n\n1222 packages installed [681.00ms]\n",
+          "stderrTail": "Resolving dependencies\nResolved, downloaded and extracted [0]\nSaved lockfile\n"
+        },
+        "build": {
+          "command": "/Users/<user>/.bun/bin/bun run build",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 842,
+          "stdoutTail": "\n   • Packages in scope: @sb21-ai-search-workbench-mcp-default/api, @sb21-ai-search-workbench-mcp-default/auth, @sb21-ai-search-workbench-mcp-default/config, @sb21-ai-search-workbench-mcp-default/db, @sb21-ai-search-workbench-mcp-default/env, server, web\n   • Running build in 7 packages\n   • Remote caching disabled\n\nserver:build: cache miss, executing 32bb25d681d50692\nweb:build: cache miss, executing e5e1e1ef32ae41d6\nserver:build: $ tsdown\nweb:build: $ vite build\nserver:build: /opt/homebrew/bin/bash: line 1: tsdown: command not found\nweb:build: /opt/homebrew/bin/bash: line 1: vite: command not found\nweb:build: error: script \"build\" exited with code 127\nserver:build: error: script \"build\" exited with code 127\n\n Tasks:    0 successful, 2 total\nCached:    0 cached, 2 total\n  Time:    42ms \nFailed:    server#build, web#build\n\n",
+          "stderrTail": "$ turbo build\n• turbo 2.10.0\n ERROR  server#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  web#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"build\" exited with code 127\n"
+        },
+        "checkTypes": {
+          "command": "/Users/<user>/.bun/bin/bun run check-types",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 2280,
+          "stdoutTail": "\n   • Packages in scope: @sb21-ai-search-workbench-mcp-default/api, @sb21-ai-search-workbench-mcp-default/auth, @sb21-ai-search-workbench-mcp-default/config, @sb21-ai-search-workbench-mcp-default/db, @sb21-ai-search-workbench-mcp-default/env, server, web\n   • Running check-types in 7 packages\n   • Remote caching disabled\n\n@sb21-ai-search-workbench-mcp-default/db:check-types: cache miss, executing c2b5c53a442cf322\n@sb21-ai-search-workbench-mcp-default/db:check-types: $ tsc --noEmit\n@sb21-ai-search-workbench-mcp-default/auth:check-types: cache miss, executing 19ba84ecf4fe4aeb\n@sb21-ai-search-workbench-mcp-default/auth:check-types: $ tsc --noEmit\n@sb21-ai-search-workbench-mcp-default/api:check-types: cache miss, executing 614f74313648cedc\n@sb21-ai-search-workbench-mcp-default/api:check-types: $ tsc --noEmit\nserver:check-types: cache miss, executing 6237dc9aa713a116\nweb:check-types: cache miss, executing 4c8a5d800493550d\nweb:check-types: $ tsr generate && tsc --noEmit\nserver:check-types: $ tsc -b\nweb:check-types: /opt/homebrew/bin/bash: line 1: tsr: command not found\nweb:check-types: error: script \"check-types\" exited with code 127\n\n Tasks:    3 successful, 5 total\nCached:    0 cached, 5 total\n  Time:    2.238s \nFailed:    web#check-types\n\n",
+          "stderrTail": "$ turbo check-types\n• turbo 2.10.0\n ERROR  web#check-types: command (/private<tmp> /Users/<user>/.bun/bin/bun run check-types exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"check-types\" exited with code 127\n"
+        },
+        "lint": {
+          "command": "bun run lint",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "format": {
+          "command": "/Users/<user>/.bun/bin/bun run check",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 14,
+          "stdoutTail": "",
+          "stderrTail": "$ biome check --write .\n/opt/homebrew/bin/bash: line 1: biome: command not found\nerror: script \"check\" exited with code 127\n"
+        },
+        "test": {
+          "command": "bun run test",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "doctor": {
+          "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 140,
+          "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+          "stderrTail": ""
+        }
+      },
+      "stackScore": {
+        "matched": 21,
+        "total": 21,
+        "percent": 100,
+        "misses": []
+      },
+      "generatorFaithfulness": {
+        "matched": 23,
+        "total": 24,
+        "percent": 96,
+        "misses": [
+          "uiLibrary: expected shadcn-ui, got none"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "used-mcp",
+            "status": "pass",
+            "detail": "MCP path must call bfs_create_project"
+          },
+          {
+            "id": "no-cli-create",
+            "status": "pass",
+            "detail": "MCP path must not run bun create better-fullstack"
+          }
+        ]
+      },
+      "failureTags": [
+        "build-failed",
+        "format-failed",
+        "typecheck-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "ai-search-workbench-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli",
+      "specId": "ai-search-workbench",
+      "specTitle": "AI search workbench with separate semantic and full-text search",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "cli",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 430156,
+        "outputTokens": 32106,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa9c98fbffeg02JE7hwYviT5D"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 2,
+        "total": 21,
+        "percent": 10,
+        "misses": [
+          "frontend:tanstack-router",
+          "backend:hono",
+          "api:orpc",
+          "database:postgres+drizzle",
+          "auth:better-auth",
+          "ai:vercel-ai",
+          "vectorDb:qdrant",
+          "search:opensearch",
+          "jobQueue:inngest",
+          "logging:pino",
+          "observability:opentelemetry",
+          "state:tanstack-store",
+          "forms:tanstack-form",
+          "validation:valibot",
+          "testing:vitest-playwright",
+          "i18n:paraglide",
+          "addon:biome",
+          "addon:devcontainer",
+          "addon:github-actions"
+        ]
+      },
+      "toolCompliance": {
+        "score": 3,
+        "total": 3,
+        "checks": [
+          {
+            "id": "used-cli",
+            "status": "pass",
+            "detail": "CLI path must run bun create better-fullstack"
+          },
+          {
+            "id": "dry-run-first",
+            "status": "pass",
+            "detail": "CLI path must dry-run before writing"
+          },
+          {
+            "id": "no-mcp",
+            "status": "pass",
+            "detail": "CLI path must not use MCP creation"
+          }
+        ]
+      },
+      "failureTags": [
+        "stack-mismatch"
+      ]
+    },
+    {
+      "id": "ai-search-workbench-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-prompt",
+      "specId": "ai-search-workbench",
+      "specTitle": "AI search workbench with separate semantic and full-text search",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "prompt",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": null,
+        "timedOut": true,
+        "durationMs": 900010,
+        "outputTokens": 21307,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa96087dffeHI2iVEh0bZY9Ow"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "/Users/<user>/.bun/bin/bun install",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 10,
+            "stdoutTail": "bun install v1.3.12 (700fc117)\n",
+            "stderrTail": "19 |     \"@tanstack/router-devtools\": \"^1.0.0\",\n         ^\nwarn: Duplicate key \"@tanstack/router-devtools\" in object literal\n   at /private<tmp> |     \"@tanstack/router-plugin\": \"^1.0.0\",\n         ^\nwarn: Duplicate key \"@tanstack/router-plugin\" in object literal\n   at /private<tmp> |     \"@tanstack/router-vite-plugin\": \"^1.0.0\"\n         ^\nwarn: Duplicate key \"@tanstack/router-vite-plugin\" in object literal\n   at /private<tmp>"
+          }
+        },
+        "install": {
+          "command": "/Users/<user>/.bun/bin/bun install",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 10,
+          "stdoutTail": "bun install v1.3.12 (700fc117)\n",
+          "stderrTail": "19 |     \"@tanstack/router-devtools\": \"^1.0.0\",\n         ^\nwarn: Duplicate key \"@tanstack/router-devtools\" in object literal\n   at /private<tmp> |     \"@tanstack/router-plugin\": \"^1.0.0\",\n         ^\nwarn: Duplicate key \"@tanstack/router-plugin\" in object literal\n   at /private<tmp> |     \"@tanstack/router-vite-plugin\": \"^1.0.0\"\n         ^\nwarn: Duplicate key \"@tanstack/router-vite-plugin\" in object literal\n   at /private<tmp>"
+        }
+      },
+      "stackScore": {
+        "matched": 6,
+        "total": 21,
+        "percent": 29,
+        "misses": [
+          "backend:hono",
+          "api:orpc",
+          "database:postgres+drizzle",
+          "auth:better-auth",
+          "ai:vercel-ai",
+          "vectorDb:qdrant",
+          "search:opensearch",
+          "jobQueue:inngest",
+          "logging:pino",
+          "observability:opentelemetry",
+          "forms:tanstack-form",
+          "i18n:paraglide",
+          "addon:biome",
+          "addon:devcontainer",
+          "addon:github-actions"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "no-bf-config",
+            "status": "pass",
+            "detail": "prompt-only must not produce bts.jsonc"
+          },
+          {
+            "id": "no-bf-tool",
+            "status": "pass",
+            "detail": "prompt-only must not call a Better-Fullstack MCP tool or CLI"
+          }
+        ]
+      },
+      "failureTags": [
+        "claude-error",
+        "claude-timeout",
+        "install-failed",
+        "stack-mismatch",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "rust-leptos-axum-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-mcp",
+      "specId": "rust-leptos-axum",
+      "specTitle": "Rust Axum API with a Leptos WASM frontend and typed service libraries",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "mcp",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 121096,
+        "outputTokens": 3566,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa8846c9ffeUuUpcy2hNCNXX4"
+      },
+      "validation": {
+        "projectExists": false,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 0,
+        "total": 12,
+        "percent": 0,
+        "misses": [
+          "project not found or unscorable"
+        ]
+      },
+      "toolCompliance": {
+        "score": 1,
+        "total": 2,
+        "checks": [
+          {
+            "id": "used-mcp",
+            "status": "fail",
+            "detail": "MCP path must call bfs_create_project"
+          },
+          {
+            "id": "no-cli-create",
+            "status": "pass",
+            "detail": "MCP path must not run bun create better-fullstack"
+          }
+        ]
+      },
+      "failureTags": [
+        "command-discipline",
+        "project-not-found",
+        "stack-mismatch",
+        "tool-violation",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "rust-leptos-axum-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli",
+      "specId": "rust-leptos-axum",
+      "specTitle": "Rust Axum API with a Leptos WASM frontend and typed service libraries",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "cli",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 151529,
+        "outputTokens": 13010,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa86740cffe1LDl1L40u6HLqd"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "cargoCheck": {
+            "command": "cargo check",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 3731,
+            "stdoutTail": "",
+            "stderrTail": "    Updating crates.io index\n     Locking 567 packages to latest compatible versions\n      Adding generic-array v0.14.7 (available: v0.14.9)\n      Adding leptos v0.7.8 (available: v0.8.20)\n      Adding leptos_meta v0.7.8 (available: v0.8.6)\n      Adding leptos_router v0.7.8 (available: v0.8.14)\n      Adding matchit v0.8.4 (available: v0.8.6)\n      Adding oauth2 v4.4.2 (available: v5.0.0)\n      Adding prost v0.13.5 (available: v0.14.4)\n      Adding sqlx v0.8.6 (available: v0.9.0, requires Rust 1.94.0)\n      Adding tonic v0.12.3 (available: v0.14.6)\n      Adding tonic-build v0.12.3 (available: v0.14.6)\n      Adding tower-http v0.6.11 (available: v0.7.0)\n      Adding validator v0.19.0 (available: v0.20.0)\nerror: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+          },
+          "build": {
+            "command": "cargo check",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 3731,
+            "stdoutTail": "",
+            "stderrTail": "    Updating crates.io index\n     Locking 567 packages to latest compatible versions\n      Adding generic-array v0.14.7 (available: v0.14.9)\n      Adding leptos v0.7.8 (available: v0.8.20)\n      Adding leptos_meta v0.7.8 (available: v0.8.6)\n      Adding leptos_router v0.7.8 (available: v0.8.14)\n      Adding matchit v0.8.4 (available: v0.8.6)\n      Adding oauth2 v4.4.2 (available: v5.0.0)\n      Adding prost v0.13.5 (available: v0.14.4)\n      Adding sqlx v0.8.6 (available: v0.9.0, requires Rust 1.94.0)\n      Adding tonic v0.12.3 (available: v0.14.6)\n      Adding tonic-build v0.12.3 (available: v0.14.6)\n      Adding tower-http v0.6.11 (available: v0.7.0)\n      Adding validator v0.19.0 (available: v0.20.0)\nerror: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+          },
+          "format": {
+            "command": "cargo fmt --check",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 42,
+            "stdoutTail": "kilo-nemotron-2026-06-26/rust-leptos-axum-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli/sb21-rust-leptos-axum-cli-default/crates/server/src/main.rs:40:\n     })\n }\n \n\u001b[31m-\n\u001b(B\u001b[m #[tokio::main]\n async fn main() -> anyhow::Result<()> {\n     // Load environment variables\nDiff in /private<tmp> \n     // Initialize tracing\n     tracing_subscriber::registry()\n\u001b[31m-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| \"debug\".into()))\n\u001b(B\u001b[m\u001b[32m+        .with(\n\u001b(B\u001b[m\u001b[32m+            tracing_subscriber::EnvFilter::try_from_default_env()\n\u001b(B\u001b[m\u001b[32m+                .unwrap_or_else(|_| \"debug\".into()),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .with(tracing_subscriber::fmt::layer())\n         .init();\n \nDiff in /private<tmp>     tracing::info!(\"OAuth2 client initialized\");\n \n     // Initialize database connection pool\n\u001b[31m-    let database_url = std::env::var(\"DATABASE_URL\")\n\u001b(B\u001b[m\u001b[31m-        .expect(\"DATABASE_URL must be set\");\n\u001b(B\u001b[m\u001b[32m+    let database_url = std::env::var(\"DATABASE_URL\").expect(\"DATABASE_URL must be set\");\n\u001b(B\u001b[m \n     tracing::info!(\"Connecting to database...\");\n     let pool = PgPoolOptions::new()\nDiff in /private<tmp> pub async fn publish(conn: &Connection, queue: &str, payload: &[u8]) -> Result<(), lapin::Error> {\n     let channel = conn.create_channel().await?;\n     channel\n\u001b[31m-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())\n\u001b(B\u001b[m\u001b[32m+        .queue_declare(\n\u001b(B\u001b[m\u001b[32m+            queue.into(),\n\u001b(B\u001b[m\u001b[32m+            QueueDeclareOptions::default(),\n\u001b(B\u001b[m\u001b[32m+            FieldTable::default(),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .await?;\n     channel\n         .basic_publish(\nDiff in /private<tmp> pub async fn consumer(conn: &Connection, queue: &str) -> Result<lapin::Consumer, lapin::Error> {\n     let channel = conn.create_channel().await?;\n     channel\n\u001b[31m-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())\n\u001b(B\u001b[m\u001b[32m+        .queue_declare(\n\u001b(B\u001b[m\u001b[32m+            queue.into(),\n\u001b(B\u001b[m\u001b[32m+            QueueDeclareOptions::default(),\n\u001b(B\u001b[m\u001b[32m+            FieldTable::default(),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .await?;\n     channel\n         .basic_consume(\nDiff in /private<tmp> pub fn init_tracing() -> Result<SdkTracerProvider, Box<dyn std::error::Error + Send + Sync>> {\n     let exporter = SpanExporter::builder().with_http().build()?;\n     let resource = Resource::builder()\n\u001b[31m-        .with_attributes([KeyValue::new(\"service.name\", \"sb21-rust-leptos-axum-cli-default\")])\n\u001b(B\u001b[m\u001b[32m+        .with_attributes([KeyValue::new(\n\u001b(B\u001b[m\u001b[32m+            \"service.name\",\n\u001b(B\u001b[m\u001b[32m+            \"sb21-rust-leptos-axum-cli-default\",\n\u001b(B\u001b[m\u001b[32m+        )])\n\u001b(B\u001b[m         .build();\n     let provider = SdkTracerProvider::builder()\n         .with_batch_exporter(exporter)\n",
+            "stderrTail": ""
+          },
+          "lint": {
+            "command": "cargo clippy -- -D warnings",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 193,
+            "stdoutTail": "",
+            "stderrTail": "error: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+          },
+          "test": {
+            "command": "cargo test",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 163,
+            "stdoutTail": "",
+            "stderrTail": "error: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+          }
+        },
+        "build": {
+          "command": "cargo check",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 3731,
+          "stdoutTail": "",
+          "stderrTail": "    Updating crates.io index\n     Locking 567 packages to latest compatible versions\n      Adding generic-array v0.14.7 (available: v0.14.9)\n      Adding leptos v0.7.8 (available: v0.8.20)\n      Adding leptos_meta v0.7.8 (available: v0.8.6)\n      Adding leptos_router v0.7.8 (available: v0.8.14)\n      Adding matchit v0.8.4 (available: v0.8.6)\n      Adding oauth2 v4.4.2 (available: v5.0.0)\n      Adding prost v0.13.5 (available: v0.14.4)\n      Adding sqlx v0.8.6 (available: v0.9.0, requires Rust 1.94.0)\n      Adding tonic v0.12.3 (available: v0.14.6)\n      Adding tonic-build v0.12.3 (available: v0.14.6)\n      Adding tower-http v0.6.11 (available: v0.7.0)\n      Adding validator v0.19.0 (available: v0.20.0)\nerror: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+        },
+        "lint": {
+          "command": "cargo clippy -- -D warnings",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 193,
+          "stdoutTail": "",
+          "stderrTail": "error: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+        },
+        "format": {
+          "command": "cargo fmt --check",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 42,
+          "stdoutTail": "kilo-nemotron-2026-06-26/rust-leptos-axum-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli/sb21-rust-leptos-axum-cli-default/crates/server/src/main.rs:40:\n     })\n }\n \n\u001b[31m-\n\u001b(B\u001b[m #[tokio::main]\n async fn main() -> anyhow::Result<()> {\n     // Load environment variables\nDiff in /private<tmp> \n     // Initialize tracing\n     tracing_subscriber::registry()\n\u001b[31m-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| \"debug\".into()))\n\u001b(B\u001b[m\u001b[32m+        .with(\n\u001b(B\u001b[m\u001b[32m+            tracing_subscriber::EnvFilter::try_from_default_env()\n\u001b(B\u001b[m\u001b[32m+                .unwrap_or_else(|_| \"debug\".into()),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .with(tracing_subscriber::fmt::layer())\n         .init();\n \nDiff in /private<tmp>     tracing::info!(\"OAuth2 client initialized\");\n \n     // Initialize database connection pool\n\u001b[31m-    let database_url = std::env::var(\"DATABASE_URL\")\n\u001b(B\u001b[m\u001b[31m-        .expect(\"DATABASE_URL must be set\");\n\u001b(B\u001b[m\u001b[32m+    let database_url = std::env::var(\"DATABASE_URL\").expect(\"DATABASE_URL must be set\");\n\u001b(B\u001b[m \n     tracing::info!(\"Connecting to database...\");\n     let pool = PgPoolOptions::new()\nDiff in /private<tmp> pub async fn publish(conn: &Connection, queue: &str, payload: &[u8]) -> Result<(), lapin::Error> {\n     let channel = conn.create_channel().await?;\n     channel\n\u001b[31m-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())\n\u001b(B\u001b[m\u001b[32m+        .queue_declare(\n\u001b(B\u001b[m\u001b[32m+            queue.into(),\n\u001b(B\u001b[m\u001b[32m+            QueueDeclareOptions::default(),\n\u001b(B\u001b[m\u001b[32m+            FieldTable::default(),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .await?;\n     channel\n         .basic_publish(\nDiff in /private<tmp> pub async fn consumer(conn: &Connection, queue: &str) -> Result<lapin::Consumer, lapin::Error> {\n     let channel = conn.create_channel().await?;\n     channel\n\u001b[31m-        .queue_declare(queue.into(), QueueDeclareOptions::default(), FieldTable::default())\n\u001b(B\u001b[m\u001b[32m+        .queue_declare(\n\u001b(B\u001b[m\u001b[32m+            queue.into(),\n\u001b(B\u001b[m\u001b[32m+            QueueDeclareOptions::default(),\n\u001b(B\u001b[m\u001b[32m+            FieldTable::default(),\n\u001b(B\u001b[m\u001b[32m+        )\n\u001b(B\u001b[m         .await?;\n     channel\n         .basic_consume(\nDiff in /private<tmp> pub fn init_tracing() -> Result<SdkTracerProvider, Box<dyn std::error::Error + Send + Sync>> {\n     let exporter = SpanExporter::builder().with_http().build()?;\n     let resource = Resource::builder()\n\u001b[31m-        .with_attributes([KeyValue::new(\"service.name\", \"sb21-rust-leptos-axum-cli-default\")])\n\u001b(B\u001b[m\u001b[32m+        .with_attributes([KeyValue::new(\n\u001b(B\u001b[m\u001b[32m+            \"service.name\",\n\u001b(B\u001b[m\u001b[32m+            \"sb21-rust-leptos-axum-cli-default\",\n\u001b(B\u001b[m\u001b[32m+        )])\n\u001b(B\u001b[m         .build();\n     let provider = SdkTracerProvider::builder()\n         .with_batch_exporter(exporter)\n",
+          "stderrTail": ""
+        },
+        "test": {
+          "command": "cargo test",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 163,
+          "stdoutTail": "",
+          "stderrTail": "error: failed to join paths from `$DYLD_FALLBACK_LIBRARY_PATH` together\n\nCheck if any of path segments listed below contain an unterminated quote character or path separator:\n    \"/private<tmp>"\n    \"/Users/<user>/lib\"\n    \"/usr/local/lib\"\n    \"/usr/lib\"\n\nCaused by:\n  path segment contains separator `:`\n"
+        }
+      },
+      "stackScore": {
+        "matched": 12,
+        "total": 12,
+        "percent": 100,
+        "misses": []
+      },
+      "generatorFaithfulness": {
+        "matched": 21,
+        "total": 22,
+        "percent": 95,
+        "misses": [
+          "database: expected postgres, got none"
+        ]
+      },
+      "toolCompliance": {
+        "score": 3,
+        "total": 3,
+        "checks": [
+          {
+            "id": "used-cli",
+            "status": "pass",
+            "detail": "CLI path must run bun create better-fullstack"
+          },
+          {
+            "id": "dry-run-first",
+            "status": "pass",
+            "detail": "CLI path must dry-run before writing"
+          },
+          {
+            "id": "no-mcp",
+            "status": "pass",
+            "detail": "CLI path must not use MCP creation"
+          }
+        ]
+      },
+      "failureTags": [
+        "build-failed",
+        "format-failed",
+        "lint-failed",
+        "test-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "rust-leptos-axum-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-prompt",
+      "specId": "rust-leptos-axum",
+      "specTitle": "Rust Axum API with a Leptos WASM frontend and typed service libraries",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "prompt",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 460347,
+        "outputTokens": 24721,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa8413f9ffeZ9h7z3WPzwdekM"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "cargoCheck": {
+            "command": "cargo check",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 46,
+            "stdoutTail": "",
+            "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+          },
+          "build": {
+            "command": "cargo check",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 46,
+            "stdoutTail": "",
+            "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+          },
+          "format": {
+            "command": "cargo fmt --check",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 31,
+            "stdoutTail": "",
+            "stderrTail": "`cargo metadata` exited with an error: error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n\nThis utility formats all bin and lib files of the current crate using rustfmt.\n\nUsage: cargo fmt [OPTIONS] [-- <rustfmt_options>...]\n\nArguments:\n  [rustfmt_options]...  Options passed to rustfmt\n\nOptions:\n  -q, --quiet\n          No output printed to stdout\n  -v, --verbose\n          Use verbose output\n      --version\n          Print rustfmt version and exit\n  -p, --package <package>...\n          Specify package to format\n      --manifest-path <manifest-path>\n          Specify path to Cargo.toml\n      --message-format <message-format>\n          Specify message-format: short|json|human\n      --all\n          Format all packages, and also their local path-based dependencies\n      --check\n          Run rustfmt in check mode\n  -h, --help\n          Print help\n\n"
+          },
+          "lint": {
+            "command": "cargo clippy -- -D warnings",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 116,
+            "stdoutTail": "",
+            "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+          },
+          "test": {
+            "command": "cargo test",
+            "exitCode": 101,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 8,
+            "stdoutTail": "",
+            "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+          }
+        },
+        "build": {
+          "command": "cargo check",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 46,
+          "stdoutTail": "",
+          "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+        },
+        "lint": {
+          "command": "cargo clippy -- -D warnings",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 116,
+          "stdoutTail": "",
+          "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+        },
+        "format": {
+          "command": "cargo fmt --check",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 31,
+          "stdoutTail": "",
+          "stderrTail": "`cargo metadata` exited with an error: error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n\nThis utility formats all bin and lib files of the current crate using rustfmt.\n\nUsage: cargo fmt [OPTIONS] [-- <rustfmt_options>...]\n\nArguments:\n  [rustfmt_options]...  Options passed to rustfmt\n\nOptions:\n  -q, --quiet\n          No output printed to stdout\n  -v, --verbose\n          Use verbose output\n      --version\n          Print rustfmt version and exit\n  -p, --package <package>...\n          Specify package to format\n      --manifest-path <manifest-path>\n          Specify path to Cargo.toml\n      --message-format <message-format>\n          Specify message-format: short|json|human\n      --all\n          Format all packages, and also their local path-based dependencies\n      --check\n          Run rustfmt in check mode\n  -h, --help\n          Print help\n\n"
+        },
+        "test": {
+          "command": "cargo test",
+          "exitCode": 101,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 8,
+          "stdoutTail": "",
+          "stderrTail": "error: duplicate key\n  --> Cargo.toml:18:1\n   |\n18 | serde_json = \"1.0\"\n   | ^^^^^^^^^^\n"
+        }
+      },
+      "stackScore": {
+        "matched": 7,
+        "total": 12,
+        "percent": 58,
+        "misses": [
+          "frontend:leptos",
+          "auth:oauth2",
+          "jobs:lapin",
+          "observability:opentelemetry",
+          "templating:askama"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "no-bf-config",
+            "status": "pass",
+            "detail": "prompt-only must not produce bts.jsonc"
+          },
+          {
+            "id": "no-bf-tool",
+            "status": "pass",
+            "detail": "prompt-only must not call a Better-Fullstack MCP tool or CLI"
+          }
+        ]
+      },
+      "failureTags": [
+        "build-failed",
+        "format-failed",
+        "lint-failed",
+        "stack-mismatch",
+        "test-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "python-ingestion-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-mcp",
+      "specId": "python-ingestion-api",
+      "specTitle": "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "mcp",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 324510,
+        "outputTokens": 18773,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa7d0ca3ffevcEijFod1x6iXt"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "uv sync --all-extras",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 328,
+            "stdoutTail": "",
+            "stderrTail": "Using CPython 3.12.12\nCreating virtual environment at: .venv\nResolved 86 packages in 18ms\n   Building sb21-python-ingestion-api-mcp-default @ file:///private<tmp>      Built sb21-python-ingestion-api-mcp-default @ file:///private<tmp> 1 package in 153ms\nInstalled 83 packages in 103ms\n + alembic==1.18.5\n + annotated-doc==0.0.4\n + annotated-types==0.7.0\n + anyio==4.14.1\n + bcrypt==5.0.0\n + certifi==2026.6.17\n + cffi==2.0.0\n + charset-normalizer==3.4.7\n + click==8.4.2\n + cryptography==49.0.0\n + distro==1.9.0\n + dnspython==2.8.0\n + ecdsa==0.19.2\n + email-validator==2.3.0\n + fastapi==0.138.1\n + h11==0.16.0\n + httpcore==1.0.9\n + httptools==0.8.0\n + httpx==0.28.1\n + hypothesis==6.155.7\n + idna==3.18\n + iniconfig==2.3.0\n + jiter==0.15.0\n + jsonpatch==1.33\n + jsonpointer==3.1.1\n + langchain-core==1.4.8\n + langchain-openai==1.3.3\n + langchain-protocol==0.0.18\n + langgraph==1.2.6\n + langgraph-checkpoint==4.1.1\n + langgraph-prebuilt==1.1.0\n + langgraph-sdk==0.4.2\n + langsmith==0.9.3\n + mako==1.3.12\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdurl==0.1.2\n + openai==2.44.0\n + orjson==3.11.9\n + ormsgpack==1.12.2\n + packaging==26.2\n + passlib==1.7.4\n + pluggy==1.6.0\n + pyasn1==0.6.3\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.2\n + pygments==2.20.0\n + pytest==9.1.1\n + pytest-asyncio==1.4.0\n + python-dotenv==1.2.2\n + python-jose==3.5.0\n + pyyaml==6.0.3\n + redis==8.0.1\n + regex==2026.5.9\n + requests==2.34.2\n + requests-toolbelt==1.0.0\n + rich==15.0.0\n + rsa==4.9.1\n + ruff==0.15.20\n + sb21-python-ingestion-api-mcp-default==0.1.0 (from file:///private<tmp> + shellingham==1.5.4\n + six==1.17.0\n + sniffio==1.3.1\n + sortedcontainers==2.4.0\n + sqlalchemy==2.0.51\n + sqlmodel==0.0.39\n + starlette==1.3.1\n + tenacity==9.1.4\n + tiktoken==0.13.0\n + tqdm==4.68.3\n + typer==0.26.8\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + urllib3==2.7.0\n + uuid-utils==0.16.2\n + uvicorn==0.49.0\n + uvloop==0.22.1\n + watchfiles==1.2.0\n + websockets==15.0.1\n + xxhash==3.7.1\n + zstandard==0.25.0\n"
+          },
+          "typecheck": {
+            "command": "uv run python -m compileall -q src/",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 50,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          },
+          "lint": {
+            "command": "uv run ruff check .",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 16,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          },
+          "test": {
+            "command": "uv run pytest",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 17,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          }
+        },
+        "install": {
+          "command": "uv sync --all-extras",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 328,
+          "stdoutTail": "",
+          "stderrTail": "Using CPython 3.12.12\nCreating virtual environment at: .venv\nResolved 86 packages in 18ms\n   Building sb21-python-ingestion-api-mcp-default @ file:///private<tmp>      Built sb21-python-ingestion-api-mcp-default @ file:///private<tmp> 1 package in 153ms\nInstalled 83 packages in 103ms\n + alembic==1.18.5\n + annotated-doc==0.0.4\n + annotated-types==0.7.0\n + anyio==4.14.1\n + bcrypt==5.0.0\n + certifi==2026.6.17\n + cffi==2.0.0\n + charset-normalizer==3.4.7\n + click==8.4.2\n + cryptography==49.0.0\n + distro==1.9.0\n + dnspython==2.8.0\n + ecdsa==0.19.2\n + email-validator==2.3.0\n + fastapi==0.138.1\n + h11==0.16.0\n + httpcore==1.0.9\n + httptools==0.8.0\n + httpx==0.28.1\n + hypothesis==6.155.7\n + idna==3.18\n + iniconfig==2.3.0\n + jiter==0.15.0\n + jsonpatch==1.33\n + jsonpointer==3.1.1\n + langchain-core==1.4.8\n + langchain-openai==1.3.3\n + langchain-protocol==0.0.18\n + langgraph==1.2.6\n + langgraph-checkpoint==4.1.1\n + langgraph-prebuilt==1.1.0\n + langgraph-sdk==0.4.2\n + langsmith==0.9.3\n + mako==1.3.12\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdurl==0.1.2\n + openai==2.44.0\n + orjson==3.11.9\n + ormsgpack==1.12.2\n + packaging==26.2\n + passlib==1.7.4\n + pluggy==1.6.0\n + pyasn1==0.6.3\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.2\n + pygments==2.20.0\n + pytest==9.1.1\n + pytest-asyncio==1.4.0\n + python-dotenv==1.2.2\n + python-jose==3.5.0\n + pyyaml==6.0.3\n + redis==8.0.1\n + regex==2026.5.9\n + requests==2.34.2\n + requests-toolbelt==1.0.0\n + rich==15.0.0\n + rsa==4.9.1\n + ruff==0.15.20\n + sb21-python-ingestion-api-mcp-default==0.1.0 (from file:///private<tmp> + shellingham==1.5.4\n + six==1.17.0\n + sniffio==1.3.1\n + sortedcontainers==2.4.0\n + sqlalchemy==2.0.51\n + sqlmodel==0.0.39\n + starlette==1.3.1\n + tenacity==9.1.4\n + tiktoken==0.13.0\n + tqdm==4.68.3\n + typer==0.26.8\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + urllib3==2.7.0\n + uuid-utils==0.16.2\n + uvicorn==0.49.0\n + uvloop==0.22.1\n + watchfiles==1.2.0\n + websockets==15.0.1\n + xxhash==3.7.1\n + zstandard==0.25.0\n"
+        },
+        "checkTypes": {
+          "command": "uv run python -m compileall -q src/",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 50,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        },
+        "lint": {
+          "command": "uv run ruff check .",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 16,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        },
+        "test": {
+          "command": "uv run pytest",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 17,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        }
+      },
+      "stackScore": {
+        "matched": 12,
+        "total": 13,
+        "percent": 92,
+        "misses": [
+          "jobs:celery"
+        ]
+      },
+      "generatorFaithfulness": {
+        "matched": 16,
+        "total": 18,
+        "percent": 89,
+        "misses": [
+          "database: expected postgres, got sqlite",
+          "pythonTaskQueue: expected celery, got none"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "used-mcp",
+            "status": "pass",
+            "detail": "MCP path must call bfs_create_project"
+          },
+          {
+            "id": "no-cli-create",
+            "status": "pass",
+            "detail": "MCP path must not run bun create better-fullstack"
+          }
+        ]
+      },
+      "failureTags": [
+        "lint-failed",
+        "stack-mismatch",
+        "test-failed",
+        "typecheck-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "python-ingestion-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli",
+      "specId": "python-ingestion-api",
+      "specTitle": "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "cli",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 127322,
+        "outputTokens": 6291,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa7816a5fferpcWMqXWyiSeDi"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "uv sync --all-extras",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 349,
+            "stdoutTail": "",
+            "stderrTail": "Using CPython 3.12.12\nCreating virtual environment at: .venv\nResolved 107 packages in 17ms\n   Building sb21-python-ingestion-api-cli-default @ file:///private<tmp>      Built sb21-python-ingestion-api-cli-default @ file:///private<tmp> 1 package in 147ms\nInstalled 104 packages in 128ms\n + alembic==1.18.5\n + amqp==5.3.1\n + annotated-doc==0.0.4\n + annotated-types==0.7.0\n + anyio==4.14.1\n + bcrypt==5.0.0\n + billiard==4.2.4\n + celery==5.6.3\n + certifi==2026.6.17\n + cffi==2.0.0\n + charset-normalizer==3.4.7\n + click==8.4.2\n + click-didyoumean==0.3.1\n + click-plugins==1.1.1.2\n + click-repl==0.3.0\n + cryptography==49.0.0\n + distro==1.9.0\n + dnspython==2.8.0\n + ecdsa==0.19.2\n + email-validator==2.3.0\n + fastapi==0.138.1\n + googleapis-common-protos==1.75.0\n + h11==0.16.0\n + httpcore==1.0.9\n + httptools==0.8.0\n + httpx==0.28.1\n + hypothesis==6.155.7\n + idna==3.18\n + iniconfig==2.3.0\n + jiter==0.15.0\n + jsonpatch==1.33\n + jsonpointer==3.1.1\n + kombu==5.6.2\n + langchain-core==1.4.8\n + langchain-openai==1.3.3\n + langchain-protocol==0.0.18\n + langgraph==1.2.6\n + langgraph-checkpoint==4.1.1\n + langgraph-prebuilt==1.1.0\n + langgraph-sdk==0.4.2\n + langsmith==0.9.3\n + mako==1.3.12\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdurl==0.1.2\n + openai==2.44.0\n + opentelemetry-api==1.43.0\n + opentelemetry-exporter-otlp-proto-common==1.43.0\n + opentelemetry-exporter-otlp-proto-http==1.43.0\n + opentelemetry-proto==1.43.0\n + opentelemetry-sdk==1.43.0\n + opentelemetry-semantic-conventions==0.64b0\n + orjson==3.11.9\n + ormsgpack==1.12.2\n + packaging==26.2\n + passlib==1.7.4\n + pluggy==1.6.0\n + prompt-toolkit==3.0.52\n + protobuf==7.35.1\n + pyasn1==0.6.3\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.2\n + pygments==2.20.0\n + pytest==9.1.1\n + pytest-asyncio==1.4.0\n + python-dateutil==2.9.0.post0\n + python-dotenv==1.2.2\n + python-jose==3.5.0\n + pyyaml==6.0.3\n + redis==6.4.0\n + regex==2026.5.9\n + requests==2.34.2\n + requests-toolbelt==1.0.0\n + rich==15.0.0\n + rsa==4.9.1\n + ruff==0.15.20\n + sb21-python-ingestion-api-cli-default==0.1.0 (from file:///private<tmp> + shellingham==1.5.4\n + six==1.17.0\n + sniffio==1.3.1\n + sortedcontainers==2.4.0\n + sqlalchemy==2.0.51\n + sqlmodel==0.0.39\n + starlette==1.3.1\n + tenacity==9.1.4\n + tiktoken==0.13.0\n + tqdm==4.68.3\n + typer==0.26.8\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + tzdata==2026.2\n + tzlocal==5.4.3\n + urllib3==2.7.0\n + uuid-utils==0.16.2\n + uvicorn==0.49.0\n + uvloop==0.22.1\n + vine==5.1.0\n + watchfiles==1.2.0\n + wcwidth==0.8.1\n + websockets==15.0.1\n + xxhash==3.7.1\n + zstandard==0.25.0\n"
+          },
+          "typecheck": {
+            "command": "uv run python -m compileall -q src/",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 52,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          },
+          "lint": {
+            "command": "uv run ruff check .",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 18,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          },
+          "test": {
+            "command": "uv run pytest",
+            "exitCode": 2,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 17,
+            "stdoutTail": "",
+            "stderrTail": "error: path segment contains separator `:`\n"
+          }
+        },
+        "install": {
+          "command": "uv sync --all-extras",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 349,
+          "stdoutTail": "",
+          "stderrTail": "Using CPython 3.12.12\nCreating virtual environment at: .venv\nResolved 107 packages in 17ms\n   Building sb21-python-ingestion-api-cli-default @ file:///private<tmp>      Built sb21-python-ingestion-api-cli-default @ file:///private<tmp> 1 package in 147ms\nInstalled 104 packages in 128ms\n + alembic==1.18.5\n + amqp==5.3.1\n + annotated-doc==0.0.4\n + annotated-types==0.7.0\n + anyio==4.14.1\n + bcrypt==5.0.0\n + billiard==4.2.4\n + celery==5.6.3\n + certifi==2026.6.17\n + cffi==2.0.0\n + charset-normalizer==3.4.7\n + click==8.4.2\n + click-didyoumean==0.3.1\n + click-plugins==1.1.1.2\n + click-repl==0.3.0\n + cryptography==49.0.0\n + distro==1.9.0\n + dnspython==2.8.0\n + ecdsa==0.19.2\n + email-validator==2.3.0\n + fastapi==0.138.1\n + googleapis-common-protos==1.75.0\n + h11==0.16.0\n + httpcore==1.0.9\n + httptools==0.8.0\n + httpx==0.28.1\n + hypothesis==6.155.7\n + idna==3.18\n + iniconfig==2.3.0\n + jiter==0.15.0\n + jsonpatch==1.33\n + jsonpointer==3.1.1\n + kombu==5.6.2\n + langchain-core==1.4.8\n + langchain-openai==1.3.3\n + langchain-protocol==0.0.18\n + langgraph==1.2.6\n + langgraph-checkpoint==4.1.1\n + langgraph-prebuilt==1.1.0\n + langgraph-sdk==0.4.2\n + langsmith==0.9.3\n + mako==1.3.12\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdurl==0.1.2\n + openai==2.44.0\n + opentelemetry-api==1.43.0\n + opentelemetry-exporter-otlp-proto-common==1.43.0\n + opentelemetry-exporter-otlp-proto-http==1.43.0\n + opentelemetry-proto==1.43.0\n + opentelemetry-sdk==1.43.0\n + opentelemetry-semantic-conventions==0.64b0\n + orjson==3.11.9\n + ormsgpack==1.12.2\n + packaging==26.2\n + passlib==1.7.4\n + pluggy==1.6.0\n + prompt-toolkit==3.0.52\n + protobuf==7.35.1\n + pyasn1==0.6.3\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.2\n + pygments==2.20.0\n + pytest==9.1.1\n + pytest-asyncio==1.4.0\n + python-dateutil==2.9.0.post0\n + python-dotenv==1.2.2\n + python-jose==3.5.0\n + pyyaml==6.0.3\n + redis==6.4.0\n + regex==2026.5.9\n + requests==2.34.2\n + requests-toolbelt==1.0.0\n + rich==15.0.0\n + rsa==4.9.1\n + ruff==0.15.20\n + sb21-python-ingestion-api-cli-default==0.1.0 (from file:///private<tmp> + shellingham==1.5.4\n + six==1.17.0\n + sniffio==1.3.1\n + sortedcontainers==2.4.0\n + sqlalchemy==2.0.51\n + sqlmodel==0.0.39\n + starlette==1.3.1\n + tenacity==9.1.4\n + tiktoken==0.13.0\n + tqdm==4.68.3\n + typer==0.26.8\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + tzdata==2026.2\n + tzlocal==5.4.3\n + urllib3==2.7.0\n + uuid-utils==0.16.2\n + uvicorn==0.49.0\n + uvloop==0.22.1\n + vine==5.1.0\n + watchfiles==1.2.0\n + wcwidth==0.8.1\n + websockets==15.0.1\n + xxhash==3.7.1\n + zstandard==0.25.0\n"
+        },
+        "checkTypes": {
+          "command": "uv run python -m compileall -q src/",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 52,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        },
+        "lint": {
+          "command": "uv run ruff check .",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 18,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        },
+        "test": {
+          "command": "uv run pytest",
+          "exitCode": 2,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 17,
+          "stdoutTail": "",
+          "stderrTail": "error: path segment contains separator `:`\n"
+        }
+      },
+      "stackScore": {
+        "matched": 13,
+        "total": 13,
+        "percent": 100,
+        "misses": []
+      },
+      "generatorFaithfulness": {
+        "matched": 17,
+        "total": 18,
+        "percent": 94,
+        "misses": [
+          "database: expected postgres, got none"
+        ]
+      },
+      "toolCompliance": {
+        "score": 3,
+        "total": 3,
+        "checks": [
+          {
+            "id": "used-cli",
+            "status": "pass",
+            "detail": "CLI path must run bun create better-fullstack"
+          },
+          {
+            "id": "dry-run-first",
+            "status": "pass",
+            "detail": "CLI path must dry-run before writing"
+          },
+          {
+            "id": "no-mcp",
+            "status": "pass",
+            "detail": "CLI path must not use MCP creation"
+          }
+        ]
+      },
+      "failureTags": [
+        "lint-failed",
+        "test-failed",
+        "typecheck-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "python-ingestion-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-prompt",
+      "specId": "python-ingestion-api",
+      "specTitle": "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "prompt",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 877925,
+        "outputTokens": 14656,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa7622c7ffe7dolVhtQvN7JWC"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 1,
+        "total": 13,
+        "percent": 8,
+        "misses": [
+          "backend:fastapi",
+          "orm:sqlmodel",
+          "validation:pydantic",
+          "ai:langgraph",
+          "ai:openai-sdk",
+          "auth:jwt",
+          "jobs:celery",
+          "quality:ruff",
+          "testing:pytest",
+          "testing:hypothesis",
+          "realtime:websockets",
+          "cli:typer+rich"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "no-bf-config",
+            "status": "pass",
+            "detail": "prompt-only must not produce bts.jsonc"
+          },
+          {
+            "id": "no-bf-tool",
+            "status": "pass",
+            "detail": "prompt-only must not call a Better-Fullstack MCP tool or CLI"
+          }
+        ]
+      },
+      "failureTags": [
+        "stack-mismatch"
+      ]
+    },
+    {
+      "id": "go-realtime-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-mcp",
+      "specId": "go-realtime-api",
+      "specTitle": "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "mcp",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 27275,
+        "outputTokens": 154,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa68bcfaffev6W0WBu44LOK39"
+      },
+      "validation": {
+        "projectExists": false,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 0,
+        "total": 13,
+        "percent": 0,
+        "misses": [
+          "project not found or unscorable"
+        ]
+      },
+      "toolCompliance": {
+        "score": 1,
+        "total": 2,
+        "checks": [
+          {
+            "id": "used-mcp",
+            "status": "fail",
+            "detail": "MCP path must call bfs_create_project"
+          },
+          {
+            "id": "no-cli-create",
+            "status": "pass",
+            "detail": "MCP path must not run bun create better-fullstack"
+          }
+        ]
+      },
+      "failureTags": [
+        "command-discipline",
+        "project-not-found",
+        "stack-mismatch",
+        "tool-violation",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "go-realtime-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli",
+      "specId": "go-realtime-api",
+      "specTitle": "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "cli",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 19654,
+        "outputTokens": 580,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa6852ecffezrVjPMv28mDqy0"
+      },
+      "validation": {
+        "projectExists": false,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 0,
+        "total": 13,
+        "percent": 0,
+        "misses": [
+          "project not found or unscorable"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 3,
+        "checks": [
+          {
+            "id": "used-cli",
+            "status": "pass",
+            "detail": "CLI path must run bun create better-fullstack"
+          },
+          {
+            "id": "dry-run-first",
+            "status": "fail",
+            "detail": "CLI path must dry-run before writing"
+          },
+          {
+            "id": "no-mcp",
+            "status": "pass",
+            "detail": "CLI path must not use MCP creation"
+          }
+        ]
+      },
+      "failureTags": [
+        "command-discipline",
+        "project-not-found",
+        "stack-mismatch",
+        "tool-violation",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "go-realtime-api-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-prompt",
+      "specId": "go-realtime-api",
+      "specTitle": "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "prompt",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 827526,
+        "outputTokens": 9073,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa6805ecffeKD8dSTbgb8PIFo"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "go mod tidy",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 31,
+            "stdoutTail": "",
+            "stderrTail": "go: warning: \"all\" matched no packages\n"
+          },
+          "build": {
+            "command": "go build ./...",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 8,
+            "stdoutTail": "",
+            "stderrTail": "go: warning: \"./...\" matched no packages\n"
+          },
+          "lint": {
+            "command": "go vet ./...",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 24,
+            "stdoutTail": "",
+            "stderrTail": "go: warning: \"./...\" matched no packages\nno packages to vet\n"
+          },
+          "test": {
+            "command": "go test ./...",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 6,
+            "stdoutTail": "",
+            "stderrTail": "go: warning: \"./...\" matched no packages\nno packages to test\n"
+          }
+        },
+        "install": {
+          "command": "go mod tidy",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 31,
+          "stdoutTail": "",
+          "stderrTail": "go: warning: \"all\" matched no packages\n"
+        },
+        "build": {
+          "command": "go build ./...",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 8,
+          "stdoutTail": "",
+          "stderrTail": "go: warning: \"./...\" matched no packages\n"
+        },
+        "lint": {
+          "command": "go vet ./...",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 24,
+          "stdoutTail": "",
+          "stderrTail": "go: warning: \"./...\" matched no packages\nno packages to vet\n"
+        },
+        "test": {
+          "command": "go test ./...",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 6,
+          "stdoutTail": "",
+          "stderrTail": "go: warning: \"./...\" matched no packages\nno packages to test\n"
+        }
+      },
+      "stackScore": {
+        "matched": 1,
+        "total": 13,
+        "percent": 8,
+        "misses": [
+          "backend:chi",
+          "orm:ent",
+          "api:grpc-go",
+          "cli:cobra",
+          "logging:zap",
+          "auth:jwt",
+          "testing:testify+gomock",
+          "realtime:gorilla-websocket",
+          "queue:nats",
+          "caching:redis",
+          "config:viper",
+          "observability:opentelemetry"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "no-bf-config",
+            "status": "pass",
+            "detail": "prompt-only must not produce bts.jsonc"
+          },
+          {
+            "id": "no-bf-tool",
+            "status": "pass",
+            "detail": "prompt-only must not call a Better-Fullstack MCP tool or CLI"
+          }
+        ]
+      },
+      "failureTags": [
+        "lint-failed",
+        "stack-mismatch",
+        "test-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "multi-dotnet-ops-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-mcp",
+      "specId": "multi-dotnet-ops",
+      "specTitle": "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "mcp",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 213531,
+        "outputTokens": 10009,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa5b64d7ffeu6SY9sFitjxq8f"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "dotnet restore",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": true,
+            "durationMs": 0,
+            "stdoutTail": "",
+            "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+          },
+          "typecheck": {
+            "command": "/Users/<user>/.bun/bin/bunx tsc --build",
+            "exitCode": 1,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 806,
+            "stdoutTail": " TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(40,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(54,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(65,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(87,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(101,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(113,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(123,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(137,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(159,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(168,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(172,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(173,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(183,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(196,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(204,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(208,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(209,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(222,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(235,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/input.tsx(4,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/input.tsx(8,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/label.tsx(5,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/label.tsx(9,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/skeleton.tsx(1,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/skeleton.tsx(5,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(16,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(20,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(21,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(22,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(23,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(24,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\npackages/env/src/native.ts(1,27): error TS2307: Cannot find module '@t3-oss/env-core' or its corresponding type declarations.\npackages/env/src/server.ts(2,27): error TS2307: Cannot find module '@t3-oss/env-core' or its corresponding type declarations.\n",
+            "stderrTail": ""
+          },
+          "lint": {
+            "command": "bun run lint",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "format": {
+            "command": "format/check",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "test": {
+            "command": "bun run test",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "doctor": {
+            "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 157,
+            "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+            "stderrTail": ""
+          },
+          "dotnetRestore": {
+            "command": "dotnet restore",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": true,
+            "durationMs": 0,
+            "stdoutTail": "",
+            "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+          }
+        },
+        "install": {
+          "command": "dotnet restore",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": true,
+          "durationMs": 0,
+          "stdoutTail": "",
+          "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+        },
+        "checkTypes": {
+          "command": "/Users/<user>/.bun/bin/bunx tsc --build",
+          "exitCode": 1,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 806,
+          "stdoutTail": " TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(40,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(54,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(65,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(87,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(101,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(113,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(123,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(137,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(159,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(168,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(172,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(173,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(183,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(196,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(204,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(208,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(209,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(222,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/dropdown-menu.tsx(235,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/input.tsx(4,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/input.tsx(8,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/label.tsx(5,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/label.tsx(9,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/skeleton.tsx(1,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.\napps/web/src/components/ui/skeleton.tsx(5,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(16,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(20,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(21,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(22,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(23,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\napps/web/src/components/ui/sonner.tsx(24,18): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\npackages/env/src/native.ts(1,27): error TS2307: Cannot find module '@t3-oss/env-core' or its corresponding type declarations.\npackages/env/src/server.ts(2,27): error TS2307: Cannot find module '@t3-oss/env-core' or its corresponding type declarations.\n",
+          "stderrTail": ""
+        },
+        "lint": {
+          "command": "bun run lint",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "format": {
+          "command": "format/check",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "test": {
+          "command": "bun run test",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "doctor": {
+          "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 157,
+          "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+          "stderrTail": ""
+        }
+      },
+      "stackScore": {
+        "matched": 10,
+        "total": 13,
+        "percent": 77,
+        "misses": [
+          "frontend:shadcn",
+          "testing:testcontainers",
+          "addon:github-actions"
+        ]
+      },
+      "generatorFaithfulness": {
+        "matched": 12,
+        "total": 19,
+        "percent": 63,
+        "misses": [
+          "stackParts: missing frontend.ui:typescript:shadcn-ui",
+          "stackParts: missing backend:dotnet:aspnet-minimal",
+          "stackParts: missing backend.api:dotnet:minimal-api",
+          "stackParts: missing backend.testing:dotnet:xunit",
+          "stackParts: missing backend.testing:dotnet:testcontainers-dotnet",
+          "stackParts: missing backend.deploy:dotnet:docker",
+          "addons: missing github-actions"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "used-mcp",
+            "status": "pass",
+            "detail": "MCP path must call bfs_create_project"
+          },
+          {
+            "id": "no-cli-create",
+            "status": "pass",
+            "detail": "MCP path must not run bun create better-fullstack"
+          }
+        ]
+      },
+      "failureTags": [
+        "stack-mismatch",
+        "toolchain-missing",
+        "typecheck-failed",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "multi-dotnet-ops-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-cli",
+      "specId": "multi-dotnet-ops",
+      "specTitle": "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "cli",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 86501,
+        "outputTokens": 5301,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa5816a5ffeOEN975zEA7AAj9"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {
+          "install": {
+            "command": "dotnet restore",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": true,
+            "durationMs": 0,
+            "stdoutTail": "",
+            "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+          },
+          "build": {
+            "command": "/Users/<user>/.bun/bin/bun run build",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 899,
+            "stdoutTail": "\n   • Packages in scope: @sb21-multi-dotnet-ops-cli-default/config, @sb21-multi-dotnet-ops-cli-default/env, web\n   • Running build in 3 packages\n   • Remote caching disabled\n\nweb:build: cache miss, executing 4c5fe12d11f479b6\nweb:build: $ next build\nweb:build: /opt/homebrew/bin/bash: line 1: next: command not found\nweb:build: error: script \"build\" exited with code 127\n\n Tasks:    0 successful, 1 total\nCached:    0 cached, 1 total\n  Time:    40ms \nFailed:    web#build\n\n",
+            "stderrTail": "$ turbo build\n• turbo 2.10.0\n ERROR  web#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"build\" exited with code 127\n"
+          },
+          "typecheck": {
+            "command": "/Users/<user>/.bun/bin/bun run check-types",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 907,
+            "stdoutTail": "\n   • Packages in scope: @sb21-multi-dotnet-ops-cli-default/config, @sb21-multi-dotnet-ops-cli-default/env, web\n   • Running check-types in 3 packages\n   • Remote caching disabled\n\nweb:check-types: cache miss, executing 5574c3259cc829a8\nweb:check-types: $ tsc --noEmit\n\n Tasks:    1 successful, 1 total\nCached:    0 cached, 1 total\n  Time:    865ms \n\n",
+            "stderrTail": "$ turbo check-types\n• turbo 2.10.0\n"
+          },
+          "lint": {
+            "command": "bun run lint",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "format": {
+            "command": "/Users/<user>/.bun/bin/bun run check",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 10,
+            "stdoutTail": "",
+            "stderrTail": "$ biome check --write .\n/opt/homebrew/bin/bash: line 1: biome: command not found\nerror: script \"check\" exited with code 127\n"
+          },
+          "test": {
+            "command": "bun run test",
+            "exitCode": 0,
+            "timedOut": false,
+            "durationMs": 0,
+            "stdoutTail": "skipped",
+            "stderrTail": ""
+          },
+          "doctor": {
+            "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+            "exitCode": 0,
+            "timedOut": false,
+            "spawnError": false,
+            "durationMs": 138,
+            "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+            "stderrTail": ""
+          },
+          "dotnetRestore": {
+            "command": "dotnet restore",
+            "exitCode": 127,
+            "timedOut": false,
+            "spawnError": true,
+            "durationMs": 0,
+            "stdoutTail": "",
+            "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+          }
+        },
+        "install": {
+          "command": "dotnet restore",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": true,
+          "durationMs": 0,
+          "stdoutTail": "",
+          "stderrTail": "Error: Executable not found in $PATH: \"dotnet\""
+        },
+        "build": {
+          "command": "/Users/<user>/.bun/bin/bun run build",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 899,
+          "stdoutTail": "\n   • Packages in scope: @sb21-multi-dotnet-ops-cli-default/config, @sb21-multi-dotnet-ops-cli-default/env, web\n   • Running build in 3 packages\n   • Remote caching disabled\n\nweb:build: cache miss, executing 4c5fe12d11f479b6\nweb:build: $ next build\nweb:build: /opt/homebrew/bin/bash: line 1: next: command not found\nweb:build: error: script \"build\" exited with code 127\n\n Tasks:    0 successful, 1 total\nCached:    0 cached, 1 total\n  Time:    40ms \nFailed:    web#build\n\n",
+          "stderrTail": "$ turbo build\n• turbo 2.10.0\n ERROR  web#build: command (/private<tmp> /Users/<user>/.bun/bin/bun run build exited (127)\n ERROR  run failed: command  exited (127)\nerror: script \"build\" exited with code 127\n"
+        },
+        "checkTypes": {
+          "command": "/Users/<user>/.bun/bin/bun run check-types",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 907,
+          "stdoutTail": "\n   • Packages in scope: @sb21-multi-dotnet-ops-cli-default/config, @sb21-multi-dotnet-ops-cli-default/env, web\n   • Running check-types in 3 packages\n   • Remote caching disabled\n\nweb:check-types: cache miss, executing 5574c3259cc829a8\nweb:check-types: $ tsc --noEmit\n\n Tasks:    1 successful, 1 total\nCached:    0 cached, 1 total\n  Time:    865ms \n\n",
+          "stderrTail": "$ turbo check-types\n• turbo 2.10.0\n"
+        },
+        "lint": {
+          "command": "bun run lint",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "format": {
+          "command": "/Users/<user>/.bun/bin/bun run check",
+          "exitCode": 127,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 10,
+          "stdoutTail": "",
+          "stderrTail": "$ biome check --write .\n/opt/homebrew/bin/bash: line 1: biome: command not found\nerror: script \"check\" exited with code 127\n"
+        },
+        "test": {
+          "command": "bun run test",
+          "exitCode": 0,
+          "timedOut": false,
+          "durationMs": 0,
+          "stdoutTail": "skipped",
+          "stderrTail": ""
+        },
+        "doctor": {
+          "command": "/Users/<user>/.bun/bin/bunx create-better-fullstack@2.1.1 doctor . --skip-checks --json",
+          "exitCode": 0,
+          "timedOut": false,
+          "spawnError": false,
+          "durationMs": 138,
+          "stdoutTail": "{\n  \"projectDir\": \"/private<tmp>",\n  \"ecosystem\": \"typescript\",\n  \"ok\": true,\n  \"summary\": {\n    \"pass\": 3,\n    \"warn\": 0,\n    \"fail\": 0\n  },\n  \"checks\": [\n    {\n      \"label\": \"bts.jsonc\",\n      \"status\": \"pass\",\n      \"detail\": \"version 2.1.1\"\n    },\n    {\n      \"label\": \"Lockfile\",\n      \"status\": \"pass\",\n      \"detail\": \"bun.lock\"\n    },\n    {\n      \"label\": \"node_modules\",\n      \"status\": \"pass\"\n    }\n  ]\n}\n",
+          "stderrTail": ""
+        }
+      },
+      "stackScore": {
+        "matched": 12,
+        "total": 13,
+        "percent": 92,
+        "misses": [
+          "validation:fluentvalidation"
+        ]
+      },
+      "generatorFaithfulness": {
+        "matched": 18,
+        "total": 19,
+        "percent": 95,
+        "misses": [
+          "stackParts: missing backend.validation:dotnet:fluentvalidation"
+        ]
+      },
+      "toolCompliance": {
+        "score": 3,
+        "total": 3,
+        "checks": [
+          {
+            "id": "used-cli",
+            "status": "pass",
+            "detail": "CLI path must run bun create better-fullstack"
+          },
+          {
+            "id": "dry-run-first",
+            "status": "pass",
+            "detail": "CLI path must dry-run before writing"
+          },
+          {
+            "id": "no-mcp",
+            "status": "pass",
+            "detail": "CLI path must not use MCP creation"
+          }
+        ]
+      },
+      "failureTags": [
+        "build-failed",
+        "format-failed",
+        "stack-mismatch",
+        "toolchain-missing",
+        "validation-failed"
+      ]
+    },
+    {
+      "id": "multi-dotnet-ops-kilo/nvidia/nemotron-3-super-120b-a12b:free-default-prompt",
+      "specId": "multi-dotnet-ops",
+      "specTitle": "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
+      "model": "kilo/nvidia/nemotron-3-super-120b-a12b:free",
+      "effort": "default",
+      "path": "prompt",
+      "trial": 1,
+      "promptStyle": "explicit",
+      "claude": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 305683,
+        "outputTokens": 15207,
+        "totalCostUsd": 0,
+        "sessionId": "ses_0fa56b0f8ffeUw04NHntpkPkls"
+      },
+      "validation": {
+        "projectExists": true,
+        "steps": {}
+      },
+      "stackScore": {
+        "matched": 0,
+        "total": 13,
+        "percent": 0,
+        "misses": [
+          "frontend:next",
+          "frontend:tailwind",
+          "frontend:shadcn",
+          "backend:aspnet-minimal",
+          "orm:ef-core",
+          "auth:aspnet-identity",
+          "testing:xunit",
+          "testing:testcontainers",
+          "logging:serilog",
+          "realtime:signalr",
+          "validation:fluentvalidation",
+          "jobs:hangfire",
+          "addon:github-actions"
+        ]
+      },
+      "toolCompliance": {
+        "score": 2,
+        "total": 2,
+        "checks": [
+          {
+            "id": "no-bf-config",
+            "status": "pass",
+            "detail": "prompt-only must not produce bts.jsonc"
+          },
+          {
+            "id": "no-bf-tool",
+            "status": "pass",
+            "detail": "prompt-only must not call a Better-Fullstack MCP tool or CLI"
+          }
+        ]
+      },
+      "failureTags": [
+        "stack-mismatch"
+      ]
+    }
+  ]
+}

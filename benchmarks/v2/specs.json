@@ -1,0 +1,1199 @@
+{
+  "harnessVersion": "2.0.0",
+  "selectedSpecs": [
+    "ai-search-workbench",
+    "rust-leptos-axum",
+    "python-ingestion-api",
+    "go-realtime-api",
+    "multi-dotnet-ops"
+  ],
+  "specs": [
+    {
+      "id": "ai-search-workbench",
+      "title": "AI search workbench with separate semantic and full-text search",
+      "lane": "core",
+      "family": "typescript",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a TypeScript monorepo for an AI support/search workbench.",
+        "Use a TanStack Router web app styled with Tailwind and shadcn/ui.",
+        "Use a Hono backend on Bun.",
+        "Use oRPC for the app API.",
+        "Use PostgreSQL with Drizzle for relational app data.",
+        "Use Better Auth for accounts.",
+        "Use the Vercel AI SDK for AI features.",
+        "Use Qdrant specifically for semantic vector search over embeddings.",
+        "Use OpenSearch specifically for full-text document/admin search.",
+        "Use Inngest for background indexing jobs.",
+        "Use Pino logging and OpenTelemetry instrumentation.",
+        "Use TanStack Store, TanStack Form, Valibot, Vitest + Playwright, and Paraglide.",
+        "Include Turborepo, Biome, DevContainer, and GitHub Actions CI output.",
+        "Do not add payments, email, realtime, CMS, file upload, file storage, feature flags, or deploy targets.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a production-grade AI support search starter. It needs account auth, relational app data, background indexing, semantic search for embeddings, full-text/admin search for documents, observability, tests, i18n, and CI. Keep it deploy-target neutral and do not include commerce/email/storage extras.",
+      "rightLibraryNotes": [
+        "Qdrant must be used for semantic vector search.",
+        "OpenSearch must be used for full-text document/admin search.",
+        "Inngest must be used for background indexing jobs.",
+        "oRPC must be used for the app API."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "typescript",
+        "--frontend",
+        "tanstack-router",
+        "--backend",
+        "hono",
+        "--runtime",
+        "bun",
+        "--api",
+        "orpc",
+        "--database",
+        "postgres",
+        "--orm",
+        "drizzle",
+        "--db-setup",
+        "none",
+        "--auth",
+        "better-auth",
+        "--payments",
+        "none",
+        "--email",
+        "none",
+        "--file-upload",
+        "none",
+        "--logging",
+        "pino",
+        "--observability",
+        "opentelemetry",
+        "--feature-flags",
+        "none",
+        "--analytics",
+        "none",
+        "--effect",
+        "none",
+        "--state-management",
+        "tanstack-store",
+        "--forms",
+        "tanstack-form",
+        "--validation",
+        "valibot",
+        "--testing",
+        "vitest-playwright",
+        "--ai",
+        "vercel-ai",
+        "--realtime",
+        "none",
+        "--job-queue",
+        "inngest",
+        "--animation",
+        "none",
+        "--css-framework",
+        "tailwind",
+        "--ui-library",
+        "shadcn-ui",
+        "--cms",
+        "none",
+        "--caching",
+        "none",
+        "--rate-limit",
+        "none",
+        "--i18n",
+        "paraglide",
+        "--search",
+        "opensearch",
+        "--vector-db",
+        "qdrant",
+        "--file-storage",
+        "none",
+        "--web-deploy",
+        "none",
+        "--server-deploy",
+        "none",
+        "--addons",
+        "turborepo",
+        "biome",
+        "devcontainer",
+        "github-actions",
+        "--examples",
+        "none",
+        "--ai-docs",
+        "none",
+        "--package-manager",
+        "bun",
+        "--shadcn-base",
+        "radix",
+        "--shadcn-style",
+        "nova",
+        "--shadcn-icon-library",
+        "lucide",
+        "--shadcn-color-theme",
+        "neutral",
+        "--shadcn-base-color",
+        "neutral",
+        "--shadcn-font",
+        "inter",
+        "--shadcn-radius",
+        "default",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "frontend": "tanstack-router",
+        "backend": "hono",
+        "runtime": "bun",
+        "api": "orpc",
+        "database": "postgres",
+        "orm": "drizzle",
+        "auth": "better-auth",
+        "ai": "vercel-ai",
+        "vectorDb": "qdrant",
+        "search": "opensearch",
+        "jobQueue": "inngest",
+        "logging": "pino",
+        "observability": "opentelemetry",
+        "stateManagement": "tanstack-store",
+        "forms": "tanstack-form",
+        "validation": "valibot",
+        "testing": "vitest-playwright",
+        "i18n": "paraglide",
+        "cssFramework": "tailwind",
+        "uiLibrary": "shadcn-ui"
+      },
+      "expectedAddons": [
+        "turborepo",
+        "biome",
+        "devcontainer",
+        "github-actions"
+      ],
+      "strictMarkers": [
+        {
+          "id": "frontend:tanstack-router",
+          "deps": [
+            "@tanstack/react-router"
+          ]
+        },
+        {
+          "id": "backend:hono",
+          "deps": [
+            "hono"
+          ]
+        },
+        {
+          "id": "api:orpc",
+          "deps": [
+            "@orpc/server"
+          ],
+          "source": [
+            "@orpc/"
+          ]
+        },
+        {
+          "id": "database:postgres+drizzle",
+          "deps": [
+            "drizzle-orm"
+          ],
+          "source": [
+            "drizzle-orm"
+          ]
+        },
+        {
+          "id": "auth:better-auth",
+          "deps": [
+            "better-auth"
+          ],
+          "source": [
+            "better-auth"
+          ]
+        },
+        {
+          "id": "ai:vercel-ai",
+          "deps": [
+            "ai"
+          ]
+        },
+        {
+          "id": "vectorDb:qdrant",
+          "deps": [
+            "@qdrant/js-client-rest"
+          ],
+          "source": [
+            "@qdrant/js-client-rest"
+          ]
+        },
+        {
+          "id": "search:opensearch",
+          "deps": [
+            "@opensearch-project/opensearch"
+          ],
+          "source": [
+            "@opensearch-project/opensearch"
+          ]
+        },
+        {
+          "id": "jobQueue:inngest",
+          "deps": [
+            "inngest"
+          ],
+          "source": [
+            "inngest"
+          ]
+        },
+        {
+          "id": "logging:pino",
+          "deps": [
+            "pino"
+          ],
+          "source": [
+            "pino"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "deps": [
+            "@opentelemetry/api"
+          ]
+        },
+        {
+          "id": "state:tanstack-store",
+          "deps": [
+            "@tanstack/store"
+          ]
+        },
+        {
+          "id": "forms:tanstack-form",
+          "deps": [
+            "@tanstack/react-form"
+          ]
+        },
+        {
+          "id": "validation:valibot",
+          "deps": [
+            "valibot"
+          ]
+        },
+        {
+          "id": "testing:vitest-playwright",
+          "deps": [
+            "vitest",
+            "@playwright/test"
+          ]
+        },
+        {
+          "id": "i18n:paraglide",
+          "deps": [
+            "@inlang/paraglide-js"
+          ],
+          "files": [
+            "apps/web/project.inlang/settings.json"
+          ]
+        },
+        {
+          "id": "addon:biome",
+          "deps": [
+            "@biomejs/biome"
+          ],
+          "files": [
+            "biome.json"
+          ]
+        },
+        {
+          "id": "addon:devcontainer",
+          "files": [
+            ".devcontainer/devcontainer.json"
+          ]
+        },
+        {
+          "id": "addon:github-actions",
+          "files": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "id": "forbidden:payments",
+          "forbiddenDeps": [
+            "stripe",
+            "@stripe/stripe-js",
+            "polar-sh"
+          ]
+        },
+        {
+          "id": "forbidden:email",
+          "forbiddenDeps": [
+            "resend",
+            "nodemailer",
+            "@react-email/components"
+          ]
+        }
+      ],
+      "acceptanceSets": {
+        "web-framework": [
+          "@tanstack/react-router",
+          "next",
+          "react-router",
+          "@remix-run",
+          "vite"
+        ],
+        "backend": [
+          "hono",
+          "express",
+          "fastify",
+          "elysia",
+          "@nestjs/core"
+        ],
+        "relational-db": [
+          "drizzle-orm",
+          "@prisma/client",
+          "kysely",
+          "typeorm",
+          "sequelize"
+        ],
+        "auth": [
+          "better-auth",
+          "lucia",
+          "@clerk",
+          "next-auth",
+          "@auth/",
+          "@workos-inc"
+        ],
+        "ai": [
+          "ai",
+          "@ai-sdk",
+          "openai",
+          "@anthropic-ai",
+          "langchain"
+        ],
+        "semantic-search": [
+          "@qdrant/js-client-rest",
+          "pgvector",
+          "weaviate-ts-client",
+          "@pinecone-database/pinecone",
+          "chromadb",
+          "@zilliz/milvus2-sdk-node"
+        ],
+        "full-text-search": [
+          "@opensearch-project/opensearch",
+          "@elastic/elasticsearch",
+          "meilisearch",
+          "typesense",
+          "algoliasearch"
+        ],
+        "background-jobs": [
+          "inngest",
+          "bullmq",
+          "@trigger.dev",
+          "graphile-worker",
+          "pg-boss",
+          "bee-queue"
+        ],
+        "observability": [
+          "@opentelemetry/api",
+          "pino",
+          "winston",
+          "@sentry",
+          "@logtail"
+        ],
+        "testing": [
+          "vitest",
+          "jest",
+          "@playwright/test",
+          "cypress"
+        ],
+        "i18n": [
+          "@inlang/paraglide-js",
+          "next-intl",
+          "i18next",
+          "react-i18next",
+          "lingui"
+        ],
+        "ci": [
+          ".github/workflows",
+          ".gitlab-ci.yml",
+          ".circleci"
+        ]
+      },
+      "validationProfile": {
+        "packageManager": "bun",
+        "qualityGate": true,
+        "doctorCheck": true,
+        "routeCheckCandidate": true
+      },
+      "canonicalCommand": "bun create better-fullstack@2.1.1 \"<project-name>\" --ecosystem typescript --frontend tanstack-router --backend hono --runtime bun --api orpc --database postgres --orm drizzle --db-setup none --auth better-auth --payments none --email none --file-upload none --logging pino --observability opentelemetry --feature-flags none --analytics none --effect none --state-management tanstack-store --forms tanstack-form --validation valibot --testing vitest-playwright --ai vercel-ai --realtime none --job-queue inngest --animation none --css-framework tailwind --ui-library shadcn-ui --cms none --caching none --rate-limit none --i18n paraglide --search opensearch --vector-db qdrant --file-storage none --web-deploy none --server-deploy none --addons turborepo biome devcontainer github-actions --examples none --ai-docs none --package-manager bun --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --no-install --no-git --disable-analytics"
+    },
+    {
+      "id": "rust-leptos-axum",
+      "title": "Rust Axum API with a Leptos WASM frontend and typed service libraries",
+      "lane": "core",
+      "family": "rust",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Rust project with Axum as the backend web framework.",
+        "Use Leptos specifically for the WASM frontend; do not replace it with Dioxus or React.",
+        "Use PostgreSQL with SQLx.",
+        "Use Tonic for a typed API boundary.",
+        "Include Clap CLI support, tracing, anyhow/thiserror, Moka caching, OAuth2 auth, Lapin jobs, OpenTelemetry, and Askama templates.",
+        "Include serde, uuid, chrono, reqwest, config, utoipa, validator, and tokio-test libraries.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Rust starter for an internal product console. It should have an Axum server, a Rust WASM frontend, Postgres access, typed service/API boundaries, CLI/admin utilities, tracing, auth, cache, jobs, and template rendering. Choose the right Rust libraries rather than swapping in web defaults.",
+      "rightLibraryNotes": [
+        "Leptos is required for the Rust WASM frontend.",
+        "Axum is required for the server.",
+        "SQLx is required for database access.",
+        "Tonic is required for typed RPC/API contracts."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "rust",
+        "--database",
+        "postgres",
+        "--rust-web-framework",
+        "axum",
+        "--rust-frontend",
+        "leptos",
+        "--rust-orm",
+        "sqlx",
+        "--rust-api",
+        "tonic",
+        "--rust-cli",
+        "clap",
+        "--rust-libraries",
+        "serde",
+        "uuid",
+        "chrono",
+        "reqwest",
+        "config",
+        "utoipa",
+        "validator",
+        "tokio-test",
+        "--rust-logging",
+        "tracing",
+        "--rust-error-handling",
+        "anyhow-thiserror",
+        "--rust-caching",
+        "moka",
+        "--rust-auth",
+        "oauth2",
+        "--rust-realtime",
+        "none",
+        "--rust-message-queue",
+        "lapin",
+        "--rust-observability",
+        "opentelemetry",
+        "--rust-templating",
+        "askama",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "rust",
+        "database": "postgres",
+        "rustWebFramework": "axum",
+        "rustFrontend": "leptos",
+        "rustOrm": "sqlx",
+        "rustApi": "tonic",
+        "rustCli": "clap",
+        "rustLibraries": [
+          "serde",
+          "uuid",
+          "chrono",
+          "reqwest",
+          "config",
+          "utoipa",
+          "validator",
+          "tokio-test"
+        ],
+        "rustLogging": "tracing",
+        "rustErrorHandling": "anyhow-thiserror",
+        "rustCaching": "moka",
+        "rustAuth": "oauth2",
+        "rustMessageQueue": "lapin",
+        "rustObservability": "opentelemetry",
+        "rustTemplating": "askama"
+      },
+      "strictMarkers": [
+        {
+          "id": "rust:axum",
+          "text": [
+            "axum"
+          ]
+        },
+        {
+          "id": "frontend:leptos",
+          "text": [
+            "leptos",
+            "leptos_router"
+          ],
+          "files": [
+            "crates/client/Cargo.toml"
+          ]
+        },
+        {
+          "id": "orm:sqlx",
+          "text": [
+            "sqlx"
+          ]
+        },
+        {
+          "id": "api:tonic",
+          "text": [
+            "tonic"
+          ]
+        },
+        {
+          "id": "cli:clap",
+          "text": [
+            "clap"
+          ]
+        },
+        {
+          "id": "logging:tracing",
+          "text": [
+            "tracing"
+          ]
+        },
+        {
+          "id": "cache:moka",
+          "text": [
+            "moka"
+          ]
+        },
+        {
+          "id": "auth:oauth2",
+          "text": [
+            "oauth2"
+          ]
+        },
+        {
+          "id": "jobs:lapin",
+          "text": [
+            "lapin"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "text": [
+            "opentelemetry"
+          ]
+        },
+        {
+          "id": "templating:askama",
+          "text": [
+            "askama"
+          ]
+        },
+        {
+          "id": "forbidden:dioxus",
+          "forbiddenText": [
+            "dioxus-router",
+            "Dioxus.toml"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "cargo"
+        ]
+      },
+      "canonicalCommand": "bun create better-fullstack@2.1.1 \"<project-name>\" --ecosystem rust --database postgres --rust-web-framework axum --rust-frontend leptos --rust-orm sqlx --rust-api tonic --rust-cli clap --rust-libraries serde uuid chrono reqwest config utoipa validator tokio-test --rust-logging tracing --rust-error-handling anyhow-thiserror --rust-caching moka --rust-auth oauth2 --rust-realtime none --rust-message-queue lapin --rust-observability opentelemetry --rust-templating askama --email none --observability none --caching none --search none --ai-docs none --no-install --no-git --disable-analytics"
+    },
+    {
+      "id": "python-ingestion-api",
+      "title": "Python FastAPI ingestion API with AI, queues, realtime, and quality gates",
+      "lane": "core",
+      "family": "python",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Python API project using FastAPI.",
+        "Use SQLModel for database models and Pydantic for validation.",
+        "Use LangGraph and OpenAI SDK for AI workflows.",
+        "Use JWT auth, Celery task queues, WebSockets realtime, Redis caching, OpenTelemetry, Typer, Rich, Ruff, Pytest, and Hypothesis.",
+        "Do not choose Django REST Framework or Django Ninja because this is not a Django project.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Python ingestion API starter for AI document processing. It needs FastAPI, SQL-backed models, strict validation, AI workflow libraries, queued workers, realtime job updates, Redis cache, tracing, CLI tools, and real test/quality tooling. Avoid Django-only API libraries.",
+      "rightLibraryNotes": [
+        "FastAPI is required; Django-specific API packages are forbidden.",
+        "SQLModel is required for the database layer.",
+        "LangGraph plus OpenAI SDK are required for AI workflow scaffolding.",
+        "Celery is required for background ingestion jobs."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "python",
+        "--database",
+        "postgres",
+        "--python-web-framework",
+        "fastapi",
+        "--python-orm",
+        "sqlmodel",
+        "--python-validation",
+        "pydantic",
+        "--python-ai",
+        "langgraph",
+        "openai-sdk",
+        "--python-auth",
+        "jwt",
+        "--python-api",
+        "none",
+        "--python-task-queue",
+        "celery",
+        "--python-graphql",
+        "none",
+        "--python-quality",
+        "ruff",
+        "--python-testing",
+        "pytest",
+        "hypothesis",
+        "--python-caching",
+        "redis",
+        "--python-realtime",
+        "websockets",
+        "--python-observability",
+        "opentelemetry",
+        "--python-cli",
+        "typer",
+        "rich",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "python",
+        "database": "postgres",
+        "pythonWebFramework": "fastapi",
+        "pythonOrm": "sqlmodel",
+        "pythonValidation": "pydantic",
+        "pythonAi": [
+          "langgraph",
+          "openai-sdk"
+        ],
+        "pythonAuth": "jwt",
+        "pythonApi": "none",
+        "pythonTaskQueue": "celery",
+        "pythonQuality": "ruff",
+        "pythonTesting": [
+          "pytest",
+          "hypothesis"
+        ],
+        "pythonCaching": "redis",
+        "pythonRealtime": "websockets",
+        "pythonObservability": "opentelemetry",
+        "pythonCli": [
+          "typer",
+          "rich"
+        ]
+      },
+      "strictMarkers": [
+        {
+          "id": "backend:fastapi",
+          "text": [
+            "fastapi"
+          ]
+        },
+        {
+          "id": "orm:sqlmodel",
+          "text": [
+            "sqlmodel"
+          ]
+        },
+        {
+          "id": "validation:pydantic",
+          "text": [
+            "pydantic"
+          ]
+        },
+        {
+          "id": "ai:langgraph",
+          "text": [
+            "langgraph"
+          ]
+        },
+        {
+          "id": "ai:openai-sdk",
+          "text": [
+            "openai"
+          ]
+        },
+        {
+          "id": "auth:jwt",
+          "text": [
+            "jwt"
+          ]
+        },
+        {
+          "id": "jobs:celery",
+          "text": [
+            "celery"
+          ]
+        },
+        {
+          "id": "quality:ruff",
+          "text": [
+            "ruff"
+          ]
+        },
+        {
+          "id": "testing:pytest",
+          "text": [
+            "pytest"
+          ]
+        },
+        {
+          "id": "testing:hypothesis",
+          "text": [
+            "hypothesis"
+          ]
+        },
+        {
+          "id": "realtime:websockets",
+          "text": [
+            "websockets"
+          ]
+        },
+        {
+          "id": "cli:typer+rich",
+          "text": [
+            "typer",
+            "rich"
+          ]
+        },
+        {
+          "id": "forbidden:django-api",
+          "forbiddenText": [
+            "django-rest-framework",
+            "django-ninja"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "python"
+        ]
+      },
+      "canonicalCommand": "bun create better-fullstack@2.1.1 \"<project-name>\" --ecosystem python --database postgres --python-web-framework fastapi --python-orm sqlmodel --python-validation pydantic --python-ai langgraph openai-sdk --python-auth jwt --python-api none --python-task-queue celery --python-graphql none --python-quality ruff --python-testing pytest hypothesis --python-caching redis --python-realtime websockets --python-observability opentelemetry --python-cli typer rich --email none --observability none --caching none --search none --ai-docs none --no-install --no-git --disable-analytics"
+    },
+    {
+      "id": "go-realtime-api",
+      "title": "Go realtime API with Chi, Ent, gRPC, NATS, Redis, and OpenTelemetry",
+      "lane": "core",
+      "family": "go",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create a Go API project using Chi, not Gin/Echo/Fiber.",
+        "Use PostgreSQL with Ent.",
+        "Use gRPC for typed service contracts.",
+        "Use Cobra CLI tooling, Zap logging, JWT auth, Testify + GoMock tests, Gorilla WebSocket realtime, NATS messaging, Redis caching, Viper config, and OpenTelemetry.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a Go backend starter for a realtime admin API. It needs a lightweight router, Ent/Postgres models, typed gRPC service contracts, CLI/admin commands, structured logging, auth, websocket updates, event messaging, Redis cache, configuration, tracing, and test doubles.",
+      "rightLibraryNotes": [
+        "Chi is required as the web framework.",
+        "Ent is required for the data layer.",
+        "gRPC-Go is required for typed service contracts.",
+        "NATS and Gorilla WebSocket are required for messaging and realtime updates."
+      ],
+      "canonicalFlags": [
+        "--ecosystem",
+        "go",
+        "--database",
+        "postgres",
+        "--go-web-framework",
+        "chi",
+        "--go-orm",
+        "ent",
+        "--go-api",
+        "grpc-go",
+        "--go-cli",
+        "cobra",
+        "--go-logging",
+        "zap",
+        "--go-auth",
+        "jwt",
+        "--go-testing",
+        "testify",
+        "gomock",
+        "--go-realtime",
+        "gorilla-websocket",
+        "--go-message-queue",
+        "nats",
+        "--go-caching",
+        "redis",
+        "--go-config",
+        "viper",
+        "--go-observability",
+        "opentelemetry",
+        "--auth",
+        "none",
+        "--email",
+        "none",
+        "--observability",
+        "none",
+        "--caching",
+        "none",
+        "--search",
+        "none",
+        "--ai-docs",
+        "none",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedConfig": {
+        "ecosystem": "go",
+        "database": "postgres",
+        "goWebFramework": "chi",
+        "goOrm": "ent",
+        "goApi": "grpc-go",
+        "goCli": "cobra",
+        "goLogging": "zap",
+        "goAuth": "jwt",
+        "goTesting": [
+          "testify",
+          "gomock"
+        ],
+        "goRealtime": "gorilla-websocket",
+        "goMessageQueue": "nats",
+        "goCaching": "redis",
+        "goConfig": "viper",
+        "goObservability": "opentelemetry"
+      },
+      "strictMarkers": [
+        {
+          "id": "backend:chi",
+          "text": [
+            "github.com/go-chi/chi"
+          ]
+        },
+        {
+          "id": "orm:ent",
+          "text": [
+            "entgo.io/ent"
+          ],
+          "files": [
+            "ent/schema/user.go"
+          ]
+        },
+        {
+          "id": "api:grpc-go",
+          "text": [
+            "google.golang.org/grpc"
+          ]
+        },
+        {
+          "id": "cli:cobra",
+          "text": [
+            "github.com/spf13/cobra"
+          ]
+        },
+        {
+          "id": "logging:zap",
+          "text": [
+            "go.uber.org/zap"
+          ]
+        },
+        {
+          "id": "auth:jwt",
+          "text": [
+            "github.com/golang-jwt/jwt"
+          ]
+        },
+        {
+          "id": "testing:testify+gomock",
+          "text": [
+            "github.com/stretchr/testify",
+            "go.uber.org/mock"
+          ]
+        },
+        {
+          "id": "realtime:gorilla-websocket",
+          "text": [
+            "github.com/gorilla/websocket"
+          ]
+        },
+        {
+          "id": "queue:nats",
+          "text": [
+            "github.com/nats-io/nats.go"
+          ]
+        },
+        {
+          "id": "caching:redis",
+          "text": [
+            "github.com/redis/go-redis"
+          ]
+        },
+        {
+          "id": "config:viper",
+          "text": [
+            "github.com/spf13/viper"
+          ]
+        },
+        {
+          "id": "observability:opentelemetry",
+          "text": [
+            "go.opentelemetry.io/otel"
+          ]
+        },
+        {
+          "id": "forbidden:gin",
+          "forbiddenText": [
+            "github.com/gin-gonic/gin"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "native": [
+          "go"
+        ]
+      },
+      "canonicalCommand": "bun create better-fullstack@2.1.1 \"<project-name>\" --ecosystem go --database postgres --go-web-framework chi --go-orm ent --go-api grpc-go --go-cli cobra --go-logging zap --go-auth jwt --go-testing testify gomock --go-realtime gorilla-websocket --go-message-queue nats --go-caching redis --go-config viper --go-observability opentelemetry --auth none --email none --observability none --caching none --search none --ai-docs none --no-install --no-git --disable-analytics"
+    },
+    {
+      "id": "multi-dotnet-ops",
+      "title": "Multi-ecosystem ops portal with TypeScript frontend and .NET Minimal API backend",
+      "lane": "core",
+      "family": "multi-ecosystem",
+      "supportedByBetterFullstack": true,
+      "requirements": [
+        "Create one multi-ecosystem project graph.",
+        "Use a Next.js TypeScript frontend with Tailwind and shadcn/ui.",
+        "Use an ASP.NET Minimal API backend.",
+        "Use EF Core, ASP.NET Identity, Minimal API endpoints, xUnit, Testcontainers for .NET, Serilog, SignalR, FluentValidation, Hangfire, memory cache, and Docker output.",
+        "Use PostgreSQL as the shared database.",
+        "Include Turborepo, Biome, and GitHub Actions.",
+        "Do not install dependencies, do not initialize git, and do not start a dev server."
+      ],
+      "naturalPrompt": "Build a multi-ecosystem ops portal starter: a TypeScript web frontend and a .NET backend. It needs Postgres-backed identity, API endpoints, validation, background jobs, realtime notifications, observability/logging, tests, containers, and CI. Use the project graph instead of forcing everything into one ecosystem.",
+      "rightLibraryNotes": [
+        "The frontend must be TypeScript Next.js.",
+        "The backend must be ASP.NET Minimal API.",
+        "EF Core and ASP.NET Identity are required.",
+        "Hangfire and SignalR are required for jobs and realtime updates."
+      ],
+      "canonicalFlags": [
+        "--part",
+        "frontend:typescript:next",
+        "--part",
+        "frontend.css:typescript:tailwind",
+        "--part",
+        "frontend.ui:typescript:shadcn-ui",
+        "--part",
+        "backend:dotnet:aspnet-minimal",
+        "--part",
+        "backend.orm:dotnet:ef-core",
+        "--part",
+        "backend.auth:dotnet:aspnet-identity",
+        "--part",
+        "backend.api:dotnet:minimal-api",
+        "--part",
+        "backend.testing:dotnet:xunit",
+        "--part",
+        "backend.testing:dotnet:testcontainers-dotnet",
+        "--part",
+        "backend.observability:dotnet:serilog",
+        "--part",
+        "backend.realtime:dotnet:signalr",
+        "--part",
+        "backend.validation:dotnet:fluentvalidation",
+        "--part",
+        "backend.jobQueue:dotnet:hangfire",
+        "--part",
+        "backend.caching:dotnet:memory-cache",
+        "--part",
+        "backend.deploy:dotnet:docker",
+        "--part",
+        "database:universal:postgres",
+        "--addons",
+        "turborepo",
+        "biome",
+        "github-actions",
+        "--ai-docs",
+        "none",
+        "--package-manager",
+        "bun",
+        "--shadcn-base",
+        "radix",
+        "--shadcn-style",
+        "nova",
+        "--shadcn-icon-library",
+        "lucide",
+        "--shadcn-color-theme",
+        "neutral",
+        "--shadcn-base-color",
+        "neutral",
+        "--shadcn-font",
+        "inter",
+        "--shadcn-radius",
+        "default",
+        "--no-install",
+        "--no-git",
+        "--disable-analytics"
+      ],
+      "expectedParts": [
+        "frontend:typescript:next",
+        "frontend.css:typescript:tailwind",
+        "frontend.ui:typescript:shadcn-ui",
+        "backend:dotnet:aspnet-minimal",
+        "backend.orm:dotnet:ef-core",
+        "backend.auth:dotnet:aspnet-identity",
+        "backend.api:dotnet:minimal-api",
+        "backend.testing:dotnet:xunit",
+        "backend.testing:dotnet:testcontainers-dotnet",
+        "backend.observability:dotnet:serilog",
+        "backend.realtime:dotnet:signalr",
+        "backend.validation:dotnet:fluentvalidation",
+        "backend.jobQueue:dotnet:hangfire",
+        "backend.caching:dotnet:memory-cache",
+        "backend.deploy:dotnet:docker",
+        "database:universal:postgres"
+      ],
+      "expectedAddons": [
+        "turborepo",
+        "biome",
+        "github-actions"
+      ],
+      "strictMarkers": [
+        {
+          "id": "frontend:next",
+          "deps": [
+            "next"
+          ]
+        },
+        {
+          "id": "frontend:tailwind",
+          "deps": [
+            "tailwindcss"
+          ]
+        },
+        {
+          "id": "frontend:shadcn",
+          "files": [
+            "apps/web/components.json"
+          ]
+        },
+        {
+          "id": "backend:aspnet-minimal",
+          "files": [
+            "apps/server/Program.cs"
+          ],
+          "text": [
+            "MapGet"
+          ]
+        },
+        {
+          "id": "orm:ef-core",
+          "text": [
+            "Microsoft.EntityFrameworkCore"
+          ]
+        },
+        {
+          "id": "auth:aspnet-identity",
+          "text": [
+            "Microsoft.AspNetCore.Identity"
+          ]
+        },
+        {
+          "id": "testing:xunit",
+          "text": [
+            "xunit"
+          ]
+        },
+        {
+          "id": "testing:testcontainers",
+          "text": [
+            "Testcontainers"
+          ]
+        },
+        {
+          "id": "logging:serilog",
+          "text": [
+            "Serilog"
+          ]
+        },
+        {
+          "id": "realtime:signalr",
+          "text": [
+            "SignalR"
+          ]
+        },
+        {
+          "id": "validation:fluentvalidation",
+          "text": [
+            "FluentValidation"
+          ]
+        },
+        {
+          "id": "jobs:hangfire",
+          "text": [
+            "Hangfire"
+          ]
+        },
+        {
+          "id": "addon:github-actions",
+          "files": [
+            ".github/workflows/ci.yml"
+          ]
+        }
+      ],
+      "validationProfile": {
+        "packageManager": "bun",
+        "native": [
+          "dotnet"
+        ],
+        "qualityGate": true,
+        "doctorCheck": true
+      },
+      "canonicalCommand": "bun create better-fullstack@2.1.1 \"<project-name>\" --part frontend:typescript:next --part frontend.css:typescript:tailwind --part frontend.ui:typescript:shadcn-ui --part backend:dotnet:aspnet-minimal --part backend.orm:dotnet:ef-core --part backend.auth:dotnet:aspnet-identity --part backend.api:dotnet:minimal-api --part backend.testing:dotnet:xunit --part backend.testing:dotnet:testcontainers-dotnet --part backend.observability:dotnet:serilog --part backend.realtime:dotnet:signalr --part backend.validation:dotnet:fluentvalidation --part backend.jobQueue:dotnet:hangfire --part backend.caching:dotnet:memory-cache --part backend.deploy:dotnet:docker --part database:universal:postgres --addons turborepo biome github-actions --ai-docs none --package-manager bun --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --no-install --no-git --disable-analytics"
+    }
+  ],
+  "options": {
+    "model": "claude-opus-4-8",
+    "efforts": [
+      "default"
+    ],
+    "paths": [
+      "prompt",
+      "mcp",
+      "cli"
+    ],
+    "specs": [
+      "ai-search-workbench",
+      "rust-leptos-axum",
+      "python-ingestion-api",
+      "go-realtime-api",
+      "multi-dotnet-ops"
+    ],
+    "repeats": 1,
+    "outDir": "<repo>/testing/llm-benchmarks/v2/opus48-default-2026-06-26",
+    "maxBudgetUsd": "12",
+    "skipValidation": false,
+    "qualityGate": true,
+    "doctorCheck": true,
+    "routeCheck": false,
+    "promptStyle": "explicit"
+  }
+}

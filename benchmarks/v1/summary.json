@@ -1,0 +1,481 @@
+{
+  "version": "v1",
+  "title": "ScaffBench 1 — cross-vendor build-pass sweep",
+  "reconstructed": true,
+  "note": "Reconstructed from the aggregated published results (models x creation paths x build-pass / speed / tokens). ScaffBench 1's raw per-run artifacts are no longer retained; see the ScaffBench blog for the original methodology.",
+  "metric": "buildPassPercent = % of included specs whose generated project installs + builds",
+  "paths": {
+    "prompt": "agent hand-writes every file",
+    "mcp": "scaffolds via the MCP tools",
+    "cli": "agent composes the CLI command"
+  },
+  "models": [
+    {
+      "id": "fable",
+      "label": "Claude Fable 5"
+    },
+    {
+      "id": "opus",
+      "label": "Claude Opus 4.8"
+    },
+    {
+      "id": "sonnet",
+      "label": "Claude Sonnet 4.6"
+    },
+    {
+      "id": "spark",
+      "label": "GPT-5.3 Codex Spark"
+    },
+    {
+      "id": "gpt54",
+      "label": "GPT-5.4"
+    },
+    {
+      "id": "gpt55",
+      "label": "GPT-5.5"
+    },
+    {
+      "id": "gemini31",
+      "label": "Gemini 3.1 Pro"
+    },
+    {
+      "id": "kimi",
+      "label": "Kimi K2.6"
+    },
+    {
+      "id": "glm51",
+      "label": "GLM-5.1"
+    },
+    {
+      "id": "minimax",
+      "label": "MiniMax M3"
+    },
+    {
+      "id": "qwen",
+      "label": "Qwen3.7 Max"
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek-V4 Pro"
+    },
+    {
+      "id": "step",
+      "label": "Step-3.7 Flash"
+    },
+    {
+      "id": "laguna",
+      "label": "Laguna m.1"
+    },
+    {
+      "id": "nex",
+      "label": "Nex N2-Pro"
+    }
+  ],
+  "results": [
+    {
+      "model": "fable",
+      "modelLabel": "Claude Fable 5",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 172.6,
+      "avgOutputTokensK": 7.6
+    },
+    {
+      "model": "fable",
+      "modelLabel": "Claude Fable 5",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 405.7,
+      "avgOutputTokensK": 17.7
+    },
+    {
+      "model": "fable",
+      "modelLabel": "Claude Fable 5",
+      "path": "prompt",
+      "buildPassPercent": 75,
+      "buildErrorPercent": 25,
+      "avgScaffoldSeconds": 572.8,
+      "avgOutputTokensK": 24.9
+    },
+    {
+      "model": "opus",
+      "modelLabel": "Claude Opus 4.8",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 97.1,
+      "avgOutputTokensK": 5.2
+    },
+    {
+      "model": "opus",
+      "modelLabel": "Claude Opus 4.8",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 154.7,
+      "avgOutputTokensK": 10.6
+    },
+    {
+      "model": "opus",
+      "modelLabel": "Claude Opus 4.8",
+      "path": "prompt",
+      "buildPassPercent": 75,
+      "buildErrorPercent": 25,
+      "avgScaffoldSeconds": 510.8,
+      "avgOutputTokensK": 21.5
+    },
+    {
+      "model": "sonnet",
+      "modelLabel": "Claude Sonnet 4.6",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 70.3,
+      "avgOutputTokensK": 3.9
+    },
+    {
+      "model": "sonnet",
+      "modelLabel": "Claude Sonnet 4.6",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 98.3,
+      "avgOutputTokensK": 4.8
+    },
+    {
+      "model": "sonnet",
+      "modelLabel": "Claude Sonnet 4.6",
+      "path": "prompt",
+      "buildPassPercent": 75,
+      "buildErrorPercent": 25,
+      "avgScaffoldSeconds": 464.9,
+      "avgOutputTokensK": 31.2
+    },
+    {
+      "model": "spark",
+      "modelLabel": "GPT-5.3 Codex Spark",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 32.4,
+      "avgOutputTokensK": 5.8
+    },
+    {
+      "model": "spark",
+      "modelLabel": "GPT-5.3 Codex Spark",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 65.6,
+      "avgOutputTokensK": 9.9
+    },
+    {
+      "model": "spark",
+      "modelLabel": "GPT-5.3 Codex Spark",
+      "path": "prompt",
+      "buildPassPercent": 50,
+      "buildErrorPercent": 50,
+      "avgScaffoldSeconds": 44.8,
+      "avgOutputTokensK": 31.4
+    },
+    {
+      "model": "gpt54",
+      "modelLabel": "GPT-5.4",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 92,
+      "avgOutputTokensK": 5.2
+    },
+    {
+      "model": "gpt54",
+      "modelLabel": "GPT-5.4",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 156,
+      "avgOutputTokensK": 7.1
+    },
+    {
+      "model": "gpt54",
+      "modelLabel": "GPT-5.4",
+      "path": "prompt",
+      "buildPassPercent": 75,
+      "buildErrorPercent": 25,
+      "avgScaffoldSeconds": 203.1,
+      "avgOutputTokensK": 13.3
+    },
+    {
+      "model": "gpt55",
+      "modelLabel": "GPT-5.5",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 76.5,
+      "avgOutputTokensK": 3.8
+    },
+    {
+      "model": "gpt55",
+      "modelLabel": "GPT-5.5",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 74.1,
+      "avgOutputTokensK": 4.5
+    },
+    {
+      "model": "gpt55",
+      "modelLabel": "GPT-5.5",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 264.2,
+      "avgOutputTokensK": 15.7
+    },
+    {
+      "model": "gemini31",
+      "modelLabel": "Gemini 3.1 Pro",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 60.2,
+      "avgOutputTokensK": 1.6
+    },
+    {
+      "model": "gemini31",
+      "modelLabel": "Gemini 3.1 Pro",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 26.7,
+      "avgOutputTokensK": 0.9
+    },
+    {
+      "model": "gemini31",
+      "modelLabel": "Gemini 3.1 Pro",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 123.6,
+      "avgOutputTokensK": 13.2
+    },
+    {
+      "model": "kimi",
+      "modelLabel": "Kimi K2.6",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 311.2,
+      "avgOutputTokensK": 2.8
+    },
+    {
+      "model": "kimi",
+      "modelLabel": "Kimi K2.6",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 24.3,
+      "avgOutputTokensK": 1.6
+    },
+    {
+      "model": "kimi",
+      "modelLabel": "Kimi K2.6",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 371.9,
+      "avgOutputTokensK": 13.5
+    },
+    {
+      "model": "glm51",
+      "modelLabel": "GLM-5.1",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 45.9,
+      "avgOutputTokensK": 1.2
+    },
+    {
+      "model": "glm51",
+      "modelLabel": "GLM-5.1",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 67.4,
+      "avgOutputTokensK": 2.2
+    },
+    {
+      "model": "glm51",
+      "modelLabel": "GLM-5.1",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 693.9,
+      "avgOutputTokensK": 29.5
+    },
+    {
+      "model": "minimax",
+      "modelLabel": "MiniMax M3",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 68.7,
+      "avgOutputTokensK": 2.5
+    },
+    {
+      "model": "minimax",
+      "modelLabel": "MiniMax M3",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 31.9,
+      "avgOutputTokensK": 0.8
+    },
+    {
+      "model": "minimax",
+      "modelLabel": "MiniMax M3",
+      "path": "prompt",
+      "buildPassPercent": 0,
+      "buildErrorPercent": 100,
+      "avgScaffoldSeconds": 712.9,
+      "avgOutputTokensK": 36
+    },
+    {
+      "model": "qwen",
+      "modelLabel": "Qwen3.7 Max",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 80.2,
+      "avgOutputTokensK": 2.7
+    },
+    {
+      "model": "qwen",
+      "modelLabel": "Qwen3.7 Max",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 35.2,
+      "avgOutputTokensK": 0.8
+    },
+    {
+      "model": "qwen",
+      "modelLabel": "Qwen3.7 Max",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 378.9,
+      "avgOutputTokensK": 13.3
+    },
+    {
+      "model": "deepseek",
+      "modelLabel": "DeepSeek-V4 Pro",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 42.9,
+      "avgOutputTokensK": 1.4
+    },
+    {
+      "model": "deepseek",
+      "modelLabel": "DeepSeek-V4 Pro",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 40,
+      "avgOutputTokensK": 1.4
+    },
+    {
+      "model": "deepseek",
+      "modelLabel": "DeepSeek-V4 Pro",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 357.4,
+      "avgOutputTokensK": 11.7
+    },
+    {
+      "model": "step",
+      "modelLabel": "Step-3.7 Flash",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 45.5,
+      "avgOutputTokensK": 2
+    },
+    {
+      "model": "step",
+      "modelLabel": "Step-3.7 Flash",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 15.6,
+      "avgOutputTokensK": 0.6
+    },
+    {
+      "model": "step",
+      "modelLabel": "Step-3.7 Flash",
+      "path": "prompt",
+      "buildPassPercent": 0,
+      "buildErrorPercent": 100,
+      "avgScaffoldSeconds": 166,
+      "avgOutputTokensK": 12.7
+    },
+    {
+      "model": "laguna",
+      "modelLabel": "Laguna m.1",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 224.8,
+      "avgOutputTokensK": 1.6
+    },
+    {
+      "model": "laguna",
+      "modelLabel": "Laguna m.1",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 592.5,
+      "avgOutputTokensK": 3.7
+    },
+    {
+      "model": "laguna",
+      "modelLabel": "Laguna m.1",
+      "path": "prompt",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 900,
+      "avgOutputTokensK": 9.4
+    },
+    {
+      "model": "nex",
+      "modelLabel": "Nex N2-Pro",
+      "path": "mcp",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 226.6,
+      "avgOutputTokensK": 2.4
+    },
+    {
+      "model": "nex",
+      "modelLabel": "Nex N2-Pro",
+      "path": "cli",
+      "buildPassPercent": 100,
+      "buildErrorPercent": 0,
+      "avgScaffoldSeconds": 146.2,
+      "avgOutputTokensK": 1.3
+    },
+    {
+      "model": "nex",
+      "modelLabel": "Nex N2-Pro",
+      "path": "prompt",
+      "buildPassPercent": 0,
+      "buildErrorPercent": 100,
+      "avgScaffoldSeconds": 426.4,
+      "avgOutputTokensK": 7.8
+    }
+  ]
+}
