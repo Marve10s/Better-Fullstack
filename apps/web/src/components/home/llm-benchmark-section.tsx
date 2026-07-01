@@ -1216,6 +1216,12 @@ function Masthead() {
           {m.llmReadBlog()}
           <ArrowRight className="size-4" />
         </Link>
+        <a
+          href="/run"
+          className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-brand dark:hover:text-brand"
+        >
+          Run it yourself
+        </a>
         <Link
           to="/mcp"
           className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-brand dark:hover:text-brand"
