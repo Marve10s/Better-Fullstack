@@ -35,11 +35,22 @@ const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
   { dir: "testing/llm-benchmarks/v2/sonnet46-high-prompt-2026-07-01" },
   { dir: "testing/llm-benchmarks/v2-codex/spark-high-prompt-2026-07-01" },
   { dir: "testing/llm-benchmarks/v2-gemini/gemini35flash-high-prompt-2026-07-01" },
+  // Free tier — opencode (DeepSeek, MiMo) and Kilo (Nemotron 30B/550B). Near-zero
+  // build pass; the opencode pair wire ~82% (frontier-level stack selection, can't
+  // assemble), the Kilo nemotrons barely produce measurable projects (7-19% wired).
+  { dir: "testing/llm-benchmarks/v2-f1/deepseek-v4-flash-2026-07-01" },
+  { dir: "testing/llm-benchmarks/v2-f2/mimo-v2.5-2026-07-01" },
+  { dir: "testing/llm-benchmarks/v2-f4/nemotron-nano-30b-2026-07-01" },
+  { dir: "testing/llm-benchmarks/v2-f3/nemotron-ultra-550b-2026-07-01" },
 ];
 
 // Long/uppercased model slugs get a clean leaderboard label.
 const MODEL_LABELS: Record<string, string> = {
   "gpt-5.3-codex-spark": "Codex Spark",
+  "opencode/deepseek-v4-flash-free": "DeepSeek V4 Flash",
+  "opencode/mimo-v2.5-free": "MiMo V2.5",
+  "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": "Nemotron 3 Nano 30B",
+  "kilo/nvidia/nemotron-3-ultra-550b-a55b:free": "Nemotron 3 Ultra 550B",
 };
 
 const PATH_ORDER = ["prompt", "mcp", "cli"] as const;

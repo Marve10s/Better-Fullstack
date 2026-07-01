@@ -160,6 +160,31 @@ Three more configs ran at high effort — and the newcomer surprises.
 The pattern holds across the vendor line: every model wires the right libraries (92–97%), and every
 model struggles to assemble them into a build — whether it writes tersely (Codex) or grinds (Sonnet 5).
 
+## The free tier: wired like the frontier, or barely there
+
+We also ran four free models — two through **opencode** (DeepSeek V4 Flash, MiMo V2.5) and two through
+**Kilo Code** (NVIDIA Nemotron 3 Nano 30B and Ultra 550B). They split into two very different stories.
+
+| Free model | Backend | CORE pass@1 | Wired libs |
+| --- | --- | :---: | :---: |
+| DeepSeek V4 Flash | opencode | **1 / 10** (10%) | 83% |
+| MiMo V2.5 | opencode | 0 / 9 (0%) | 82% |
+| Nemotron 3 Nano 30B | Kilo | 0 / 1 | 7% |
+| Nemotron 3 Ultra 550B | Kilo | 0 / 3 | 19% |
+
+- **The opencode pair wire like the frontier but can't assemble it.** DeepSeek V4 Flash and MiMo V2.5
+  both select ~82–83% of the right libraries — within reach of the paid field's 92–97% — yet land at
+  **1/10 and 0/9 builds**. DeepSeek's single build (`python`, again) makes it the strongest free model on
+  the board. Same failure shape as everyone else, just more of it: the stack is right, the assembly isn't.
+- **The Kilo Nemotrons mostly don't produce a measurable project at all.** Nemotron 3 Nano 30B wired
+  **7%** with 11 of 12 specs inconclusive; Ultra 550B wired **19%**. These read less like build failures
+  than generation failures — the models research, stall, or emit too little to validate. Ultra 550B was
+  slow enough that we stopped it at 10 of 13, and one spec whose build hung the validator is marked
+  inconclusive rather than counted.
+
+So the free floor isn't uniform. A capable open model can match the frontier at *choosing* the stack —
+the whole gap is in *building* it — while a weaker one never gets far enough to have a build to fail.
+
 ## What's new in ScaffBench 2.1
 
 - **Eight ecosystems, 13 specs.** TypeScript, Rust, Python, Go, .NET, and now **Java** (Spring + jOOQ +
