@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 
+import { BenchBarChart } from "./bench-bar-chart";
 import { Callout } from "./callout";
 import { CodeBlock } from "./code-block";
 import { CompatibilityMatrix } from "./compatibility-matrix";
@@ -25,6 +26,7 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   pre: CodeBlock,
 
   // MDX-only components — referenced by name from .mdx files
+  BenchBarChart,
   Callout,
   CategoryCount,
   CompatibilityMatrix,
