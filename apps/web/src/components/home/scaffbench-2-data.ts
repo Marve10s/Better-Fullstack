@@ -31,6 +31,9 @@ export type ScaffbenchCell = {
   costUsd: number | null;
   outTokens: number | null;
   steps: number;
+  /** median wall-clock to scaffold this spec, in ms; null when the run predates
+   *  duration capture. Aggregated into the leaderboard "Time" column. */
+  durationMs?: number | null;
 };
 
 export const SCAFFBENCH2_META = {

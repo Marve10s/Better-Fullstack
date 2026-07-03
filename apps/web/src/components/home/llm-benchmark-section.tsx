@@ -902,9 +902,9 @@ const PROVIDER_BAR_COLOR: Record<"claude" | "codex" | "opencode" | "kilo" | "agy
 
 const BAR_TRACK_STYLE: CSSProperties = { backgroundColor: "var(--bar-track)" };
 
-// One row per model: Model · bar · Pass 1 · Avg cost · Out tok · Steps.
+// One row per model: Model · bar · Core · Full · Wired · Time · Avg cost · Out tok · Steps.
 const LEADERBOARD_GRID =
-  "grid grid-cols-[minmax(9rem,14rem)_minmax(0,1fr)_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
+  "grid grid-cols-[minmax(9rem,13rem)_minmax(0,1fr)_4.25rem_4.25rem_4.5rem_4rem_4.5rem_4rem_3rem] items-center gap-x-3";
 
 const PASS_AXIS_TICKS: readonly number[] = [0, 20, 40, 60, 80, 100] as const;
 
@@ -927,8 +927,14 @@ interface ModelLeaderRow {
   color: string;
   /** brand logo shown to the left of the model name (undefined = no logo). */
   logo?: ProviderLogoId;
-  /** Pass 1 as a 0–100 percentage; doubles as the bar fill width. */
+  /** Core pass 1 as a 0–100 percentage; doubles as the bar fill width. */
   pass: number;
+  /** Full (core + quality gate) pass as a percentage; null when not measured (v1). */
+  full: number | null;
+  /** mean wired-libs percentage across scored cells, preformatted ("93%" / "—"). */
+  wired: string;
+  /** mean scaffold wall-clock, preformatted ("47s" / "4.5m" / "—"). */
+  time: string;
   /** numeric avg cost for sorting (Infinity when unpriced). */
   costNum: number;
   cost: string;
@@ -938,6 +944,13 @@ interface ModelLeaderRow {
 
 function formatPercent(passing: number, total: number): number {
   return total === 0 ? 0 : Math.round((100 * passing) / total);
+}
+
+// Scaffold wall-clock: seconds under 2 min, else minutes (one decimal). Median
+// per spec, averaged across a model's scored cells.
+function formatDuration(ms: number): string {
+  const seconds = ms / 1000;
+  return seconds < 120 ? `${Math.round(seconds)}s` : `${(seconds / 60).toFixed(1)}m`;
 }
 
 function mean(values: readonly number[]): number {
@@ -992,8 +1005,12 @@ function computeV2ModelRows(
     const passing = scored.filter((cell) =>
       mode === "core" ? cell.corePass : cell.fullPass,
     ).length;
+    const fullPassing = scored.filter((cell) => cell.fullPass).length;
     const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
     const tokens = scored.map((cell) => cell.outTokens).filter((v): v is number => v !== null);
+    const durations = scored
+      .map((cell) => cell.durationMs)
+      .filter((v): v is number => v !== null && v !== undefined && v > 0);
     return {
       key: model.key,
       label: model.label,
@@ -1002,6 +1019,9 @@ function computeV2ModelRows(
       color: PROVIDER_BAR_COLOR[model.provider],
       logo: PROVIDER_LOGO[model.provider],
       pass: formatPercent(passing, scored.length),
+      full: scored.length > 0 ? formatPercent(fullPassing, scored.length) : null,
+      wired: scored.length > 0 ? `${Math.round(mean(scored.map((cell) => cell.wiredPct)))}%` : "—",
+      time: durations.length > 0 ? formatDuration(mean(durations)) : "—",
       costNum: costs.length > 0 ? mean(costs) : Number.POSITIVE_INFINITY,
       cost: costs.length > 0 ? `$${mean(costs).toFixed(2)}` : "—",
       outTok: tokens.length > 0 ? `${(mean(tokens) / 1000).toFixed(1)}k` : "—",
@@ -1026,6 +1046,9 @@ function computeV1ModelRows(leaderPath: LeaderPath): ModelLeaderRow[] {
       color: CHART_PALETTE.models[m],
       logo: V1_MODEL_LOGO[m],
       pass: combos.length > 0 ? Math.round(mean(combos.map((combo) => combo.pass))) : 0,
+      full: null,
+      wired: "—",
+      time: "—",
       costNum: Number.POSITIVE_INFINITY,
       cost: "—",
       outTok: combos.length > 0 ? `${mean(combos.map((combo) => combo.tokens)).toFixed(1)}k` : "—",
@@ -1697,6 +1720,26 @@ function PathsHelp() {
             </li>
           ))}
         </ul>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// Compact "?" affix for a leaderboard column header — hover explains the metric.
+// Mirrors PathsHelp, sized down to sit inside the 10px uppercase header labels.
+function MetricHelp({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Tooltip delay={0}>
+      <TooltipTrigger
+        type="button"
+        aria-label={`What does ${label} mean?`}
+        className="flex size-3.5 shrink-0 cursor-default items-center justify-center rounded-full border border-[#d9d8d2] text-[9px] font-bold leading-none text-[#71706a] transition-colors hover:border-[#1b1a17] hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.2)] dark:text-[#8f8d84] dark:hover:border-[#dad8d0] dark:hover:text-[#dad8d0]"
+      >
+        ?
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[17rem] normal-case tracking-normal">
+        <p className="font-semibold">{label}</p>
+        <p className="mt-1 font-normal">{children}</p>
       </TooltipContent>
     </Tooltip>
   );
@@ -2642,14 +2685,14 @@ function ScaffbenchLeaderboardCard() {
           className="overflow-x-auto"
           tabIndex={0}
         >
-          <div className="mx-auto w-full min-w-[680px] max-w-[1180px] px-3">
+          <div className="mx-auto w-full min-w-[920px] max-w-[1180px] px-3">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <p className="text-sm font-semibold">Pass 1 by model</p>
               <p className="text-xs text-[#71706a] dark:text-[#8f8d84]">
                 {effectiveLeaderPath === "all"
                   ? "All creation paths"
                   : LEADERBOARD_LABELS[effectiveLeaderPath]}
-                {isV2 ? " · Core validation" : ""}
+                {isV2 ? " · Core + Full pass, wired libs & time" : ""}
               </p>
             </div>
 
@@ -2661,7 +2704,28 @@ function ScaffbenchLeaderboardCard() {
             >
               <span>Model</span>
               <span aria-hidden />
-              <span className="text-right">Pass 1</span>
+              <span className="flex items-center justify-end gap-1">
+                Core
+                <MetricHelp label="Core pass@1">
+                  The project installs, builds, type-checks, and native-compiles from the prompt — the
+                  real "does it actually run" pass.
+                </MetricHelp>
+              </span>
+              <span className="flex items-center justify-end gap-1">
+                Full
+                <MetricHelp label="Full pass">
+                  Core, plus every applicable quality gate (lint, format, tests). Stricter than Core —
+                  a project can build green yet still fail Full.
+                </MetricHelp>
+              </span>
+              <span className="flex items-center justify-end gap-1">
+                Wired
+                <MetricHelp label="Wired libs">
+                  How many of the spec's required libraries actually show up in the generated
+                  project — dependencies, imports, and files — not just mentioned by name.
+                </MetricHelp>
+              </span>
+              <span className="text-right">Time</span>
               <span className="text-right">Avg cost</span>
               <span className="text-right">Out tok</span>
               <span className="text-right">Steps</span>
@@ -2695,6 +2759,9 @@ function ScaffbenchLeaderboardCard() {
                   <span key={tick}>{tick}%</span>
                 ))}
               </div>
+              <span aria-hidden />
+              <span aria-hidden />
+              <span aria-hidden />
               <span aria-hidden />
               <span aria-hidden />
               <span aria-hidden />
@@ -2803,6 +2870,9 @@ function ModelLeaderRow({ row }: { row: ModelLeaderRow }) {
         />
       </div>
       <span className="text-right font-mono text-sm font-bold">{row.pass}%</span>
+      <span className="text-right font-mono text-xs">{row.full === null ? "—" : `${row.full}%`}</span>
+      <span className="text-right font-mono text-xs">{row.wired}</span>
+      <span className="text-right font-mono text-xs">{row.time}</span>
       <span className="text-right font-mono text-xs">{row.cost}</span>
       <span className="text-right font-mono text-xs">{row.outTok}</span>
       <span className="text-right font-mono text-xs">{row.steps}</span>

@@ -35,6 +35,8 @@ const RUN_SOURCES: { dir: string; specs?: string[] }[] = [
   { dir: "testing/llm-benchmarks/v2/sonnet46-high-prompt-2026-07-01" },
   { dir: "testing/llm-benchmarks/v2-codex/spark-high-prompt-2026-07-01" },
   { dir: "testing/llm-benchmarks/v2-gemini/gemini35flash-high-prompt-2026-07-01" },
+  // GPT-5.5 High (Codex adapter) — full 13-spec prompt-only run.
+  { dir: "testing/llm-benchmarks/v2/gpt-5-5-high-prompt-2026-07-03" },
   // Free tier — opencode (DeepSeek, MiMo) and Kilo (Nemotron 30B/550B). Near-zero
   // build pass; the opencode pair wire ~82% (frontier-level stack selection, can't
   // assemble), the Kilo nemotrons barely produce measurable projects (7-19% wired).
@@ -89,6 +91,7 @@ type Cell = {
   costUsd: number | null;
   outTokens: number | null;
   steps: number;
+  durationMs: number | null;
 };
 
 function main() {
@@ -147,6 +150,7 @@ function main() {
         costUsd: cost,
         outTokens: c.avgOutputTokens && c.avgOutputTokens > 0 ? Math.round(c.avgOutputTokens) : null,
         steps: extractToolUses(stdout).length,
+        durationMs: c.medianDurationMs && c.medianDurationMs > 0 ? Math.round(c.medianDurationMs) : null,
       });
       if (scored) {
         coreFlags.push(core);

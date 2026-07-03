@@ -19,6 +19,15 @@ export const SCAFFBENCH21_SPECS = ["python-ingestion-api","multi-dotnet-ops","go
 
 export const SCAFFBENCH21_MODELS: readonly ScaffbenchModel[] = [
   {
+    "key": "gpt-5.5|high",
+    "model": "gpt-5.5",
+    "effort": "high",
+    "effectiveReasoning": "high",
+    "provider": "codex",
+    "label": "GPT-5.5",
+    "sortIndex": 70
+  },
+  {
     "key": "claude-opus-4-8|max",
     "model": "claude-opus-4-8",
     "effort": "max",
@@ -112,6 +121,188 @@ export const SCAFFBENCH21_MODELS: readonly ScaffbenchModel[] = [
 
 export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
   {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "python-ingestion-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 0.980985,
+    "outTokens": 17030,
+    "steps": 16,
+    "durationMs": 300664
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "multi-dotnet-ops",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": 1.020662,
+    "outTokens": 21298,
+    "steps": 8,
+    "durationMs": 337736
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "go-realtime-api",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": 1.116495,
+    "outTokens": 21115,
+    "steps": 15,
+    "durationMs": 327912
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "frontier-effect-eventsourcing",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 75,
+    "cmdPct": 100,
+    "costUsd": 1.428479,
+    "outTokens": 24454,
+    "steps": 10,
+    "durationMs": 341907
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "dotnet-blazor-cqrs",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 1.444715,
+    "outTokens": 28816,
+    "steps": 9,
+    "durationMs": 412708
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "ts-svelte-edge-orpc",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 2.245436,
+    "outTokens": 34441,
+    "steps": 14,
+    "durationMs": 539921
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "java-spring-jooq-keycloak",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 0.974021,
+    "outTokens": 18854,
+    "steps": 13,
+    "durationMs": 322862
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "elixir-broadway-absinthe",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 100,
+    "cmdPct": 100,
+    "costUsd": 1.422234,
+    "outTokens": 33646,
+    "steps": 16,
+    "durationMs": 491979
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "multi-ts-go-grpc",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 94,
+    "cmdPct": 100,
+    "costUsd": 2.28709,
+    "outTokens": 41899,
+    "steps": 18,
+    "durationMs": 600775
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "rust-leptos-axum",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 92,
+    "cmdPct": 100,
+    "costUsd": 1.243987,
+    "outTokens": 23749,
+    "steps": 17,
+    "durationMs": 385625
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "ai-search-workbench",
+    "scored": true,
+    "corePass": false,
+    "fullPass": false,
+    "wiredPct": 95,
+    "cmdPct": 100,
+    "costUsd": 2.560534,
+    "outTokens": 41001,
+    "steps": 18,
+    "durationMs": 718904
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "react-native-expo",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 88,
+    "cmdPct": 100,
+    "costUsd": 0.858243,
+    "outTokens": 16136,
+    "steps": 14,
+    "durationMs": 251170
+  },
+  {
+    "modelKey": "gpt-5.5|high",
+    "path": "prompt",
+    "spec": "frontier-polyglot-proto",
+    "scored": true,
+    "corePass": true,
+    "fullPass": true,
+    "wiredPct": 75,
+    "cmdPct": 100,
+    "costUsd": 0.80798,
+    "outTokens": 15994,
+    "steps": 19,
+    "durationMs": 258165
+  },
+  {
     "modelKey": "claude-opus-4-8|max",
     "path": "prompt",
     "spec": "python-ingestion-api",
@@ -122,7 +313,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.367595,
     "outTokens": 5821,
-    "steps": 185
+    "steps": 185,
+    "durationMs": 2076949
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -135,7 +327,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 14.84610225,
     "outTokens": 188239,
-    "steps": 118
+    "steps": 118,
+    "durationMs": 2503947
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -148,7 +341,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 6.9638355,
     "outTokens": 124821,
-    "steps": 53
+    "steps": 53,
+    "durationMs": 1443940
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -161,7 +355,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 5.75943525,
     "outTokens": 146791,
-    "steps": 41
+    "steps": 41,
+    "durationMs": 1851381
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -174,7 +369,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 9.9249945,
     "outTokens": 156780,
-    "steps": 83
+    "steps": 83,
+    "durationMs": 1859394
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -187,7 +383,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 161
+    "steps": 161,
+    "durationMs": 3600335
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -200,7 +397,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 10.91312725,
     "outTokens": 215400,
-    "steps": 88
+    "steps": 88,
+    "durationMs": 2572492
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -213,7 +411,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 18.76200325,
     "outTokens": 262128,
-    "steps": 126
+    "steps": 126,
+    "durationMs": 3390316
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -226,7 +425,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 7.48473325,
     "outTokens": 165059,
-    "steps": 65
+    "steps": 65,
+    "durationMs": 1901181
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -239,7 +439,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 6.45492675,
     "outTokens": 112604,
-    "steps": 62
+    "steps": 62,
+    "durationMs": 1401182
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -252,7 +453,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 13.19089525,
     "outTokens": 179187,
-    "steps": 118
+    "steps": 118,
+    "durationMs": 2193876
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -265,7 +467,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 4.96633025,
     "outTokens": 88165,
-    "steps": 49
+    "steps": 49,
+    "durationMs": 1156945
   },
   {
     "modelKey": "claude-opus-4-8|max",
@@ -278,7 +481,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 2.2866665,
     "outTokens": 59707,
-    "steps": 27
+    "steps": 27,
+    "durationMs": 680491
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -291,7 +495,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.542961,
     "outTokens": 18772,
-    "steps": 42
+    "steps": 42,
+    "durationMs": 272824
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -304,7 +509,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.64473,
     "outTokens": 21178,
-    "steps": 42
+    "steps": 42,
+    "durationMs": 355721
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -317,7 +523,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.736254,
     "outTokens": 26363,
-    "steps": 36
+    "steps": 36,
+    "durationMs": 388440
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -330,7 +537,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.802224,
     "outTokens": 13824,
-    "steps": 15
+    "steps": 15,
+    "durationMs": 183501
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -343,7 +551,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.323207,
     "outTokens": 17874,
-    "steps": 33
+    "steps": 33,
+    "durationMs": 259790
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -356,7 +565,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.45217525,
     "outTokens": 18532,
-    "steps": 38
+    "steps": 38,
+    "durationMs": 313965
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -369,7 +579,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.41092675,
     "outTokens": 23301,
-    "steps": 27
+    "steps": 27,
+    "durationMs": 338862
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -382,7 +593,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 3.01265125,
     "outTokens": 36376,
-    "steps": 66
+    "steps": 66,
+    "durationMs": 545905
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -395,7 +607,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 2.031828,
     "outTokens": 28724,
-    "steps": 44
+    "steps": 44,
+    "durationMs": 443817
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -408,7 +621,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.030279,
     "outTokens": 14078,
-    "steps": 26
+    "steps": 26,
+    "durationMs": 258733
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -421,7 +635,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 3.0851255,
     "outTokens": 35195,
-    "steps": 73
+    "steps": 73,
+    "durationMs": 494860
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -434,7 +649,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.86470075,
     "outTokens": 10886,
-    "steps": 24
+    "steps": 24,
+    "durationMs": 188619
   },
   {
     "modelKey": "claude-opus-4-8|low",
@@ -447,7 +663,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.86831175,
     "outTokens": 12045,
-    "steps": 22
+    "steps": 22,
+    "durationMs": 283070
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -460,7 +677,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 74514
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -473,7 +691,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 100324
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -486,7 +705,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 79592
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -499,7 +719,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 58131
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -512,7 +733,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 164470
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -525,7 +747,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 153007
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -538,7 +761,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 131282
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -551,7 +775,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 120225
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -564,7 +789,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 104008
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -577,7 +803,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 94252
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -590,7 +817,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 127703
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -603,7 +831,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 118786
   },
   {
     "modelKey": "gemini-3.5-flash|high",
@@ -616,7 +845,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 42742
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -629,7 +859,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.93944505,
     "outTokens": 5502,
-    "steps": 187
+    "steps": 187,
+    "durationMs": 1858481
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -642,7 +873,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 7.96741305,
     "outTokens": 182012,
-    "steps": 267
+    "steps": 267,
+    "durationMs": 2074892
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -655,7 +887,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 7.35636615,
     "outTokens": 179707,
-    "steps": 97
+    "steps": 97,
+    "durationMs": 1541083
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -668,7 +901,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 3755156
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -681,7 +915,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.3724337000000002,
     "outTokens": 14886,
-    "steps": 320
+    "steps": 320,
+    "durationMs": 2055319
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -694,7 +929,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 3.4871388,
     "outTokens": 92636,
-    "steps": 95
+    "steps": 95,
+    "durationMs": 952575
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -707,7 +943,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.8360802,
     "outTokens": 11414,
-    "steps": 388
+    "steps": 388,
+    "durationMs": 2940820
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -720,7 +957,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 7.38704505,
     "outTokens": 128562,
-    "steps": 104
+    "steps": 104,
+    "durationMs": 1294404
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -733,7 +971,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 11.462255100000002,
     "outTokens": 248104,
-    "steps": 160
+    "steps": 160,
+    "durationMs": 2414089
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -746,7 +985,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 11.99229645,
     "outTokens": 217208,
-    "steps": 295
+    "steps": 295,
+    "durationMs": 3113724
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -759,7 +999,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 5.995577550000001,
     "outTokens": 188079,
-    "steps": 194
+    "steps": 194,
+    "durationMs": 1767987
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -772,7 +1013,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 199
+    "steps": 199,
+    "durationMs": 3690649
   },
   {
     "modelKey": "claude-sonnet-5|max",
@@ -785,7 +1027,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 3887885
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -798,7 +1041,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.7655706000000001,
     "outTokens": 18624,
-    "steps": 33
+    "steps": 33,
+    "durationMs": 266022
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -811,7 +1055,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 2.24886705,
     "outTokens": 56785,
-    "steps": 55
+    "steps": 55,
+    "durationMs": 666310
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -824,7 +1069,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.3129156499999999,
     "outTokens": 39238,
-    "steps": 33
+    "steps": 33,
+    "durationMs": 503561
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -837,7 +1083,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.41737559999999996,
     "outTokens": 8436,
-    "steps": 13
+    "steps": 13,
+    "durationMs": 2002867
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -850,7 +1097,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 2.1347518500000002,
     "outTokens": 53126,
-    "steps": 51
+    "steps": 51,
+    "durationMs": 661968
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -863,7 +1111,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.5069561,
     "outTokens": 39404,
-    "steps": 40
+    "steps": 40,
+    "durationMs": 544582
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -876,7 +1125,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.6346418,
     "outTokens": 59561,
-    "steps": 43
+    "steps": 43,
+    "durationMs": 748069
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -889,7 +1139,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.6606077000000001,
     "outTokens": 34454,
-    "steps": 64
+    "steps": 64,
+    "durationMs": 534721
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -902,7 +1153,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 2.01723615,
     "outTokens": 70758,
-    "steps": 49
+    "steps": 49,
+    "durationMs": 871983
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -915,7 +1167,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 1.20853275,
     "outTokens": 26168,
-    "steps": 48
+    "steps": 48,
+    "durationMs": 402474
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -928,7 +1181,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 3.07950795,
     "outTokens": 61484,
-    "steps": 92
+    "steps": 92,
+    "durationMs": 879077
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -941,7 +1195,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": 0.8667705,
     "outTokens": 21182,
-    "steps": 33
+    "steps": 33,
+    "durationMs": 311341
   },
   {
     "modelKey": "claude-sonnet-4-6|high",
@@ -954,7 +1209,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 6109396
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -967,7 +1223,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 9851,
-    "steps": 28
+    "steps": 28,
+    "durationMs": 130690
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -980,7 +1237,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 17035,
-    "steps": 44
+    "steps": 44,
+    "durationMs": 145298
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -993,7 +1251,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 20415,
-    "steps": 45
+    "steps": 45,
+    "durationMs": 184973
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1006,7 +1265,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 32000,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 251231
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1019,7 +1279,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 45761,
-    "steps": 56
+    "steps": 56,
+    "durationMs": 347394
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1032,7 +1293,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 24631,
-    "steps": 43
+    "steps": 43,
+    "durationMs": 337507
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1045,7 +1307,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 27570,
-    "steps": 28
+    "steps": 28,
+    "durationMs": 227483
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1058,7 +1321,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 21882,
-    "steps": 66
+    "steps": 66,
+    "durationMs": 211545
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1071,7 +1335,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 16143,
-    "steps": 38
+    "steps": 38,
+    "durationMs": 124501
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1084,7 +1349,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 25764,
-    "steps": 41
+    "steps": 41,
+    "durationMs": 232056
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1097,7 +1363,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 27209,
-    "steps": 74
+    "steps": 74,
+    "durationMs": 713315
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1110,7 +1377,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 7793,
-    "steps": 21
+    "steps": 21,
+    "durationMs": 79245
   },
   {
     "modelKey": "opencode/deepseek-v4-flash-free|default",
@@ -1123,7 +1391,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 22939,
-    "steps": 24
+    "steps": 24,
+    "durationMs": 247872
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1136,7 +1405,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 44961,
-    "steps": 4
+    "steps": 4,
+    "durationMs": 46978
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1149,7 +1419,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 50455,
-    "steps": 2
+    "steps": 2,
+    "durationMs": 174241
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1162,7 +1433,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 79836,
-    "steps": 25
+    "steps": 25,
+    "durationMs": 97022
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1175,7 +1447,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 67683,
-    "steps": 10
+    "steps": 10,
+    "durationMs": 63350
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1188,7 +1461,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 53909,
-    "steps": 28
+    "steps": 28,
+    "durationMs": 69703
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1201,7 +1475,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 65703,
-    "steps": 17
+    "steps": 17,
+    "durationMs": 124665
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1214,7 +1489,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 45340,
-    "steps": 6
+    "steps": 6,
+    "durationMs": 39855
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1227,7 +1503,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 74131,
-    "steps": 3
+    "steps": 3,
+    "durationMs": 178037
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1240,7 +1517,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 89949,
-    "steps": 45
+    "steps": 45,
+    "durationMs": 162806
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1253,7 +1531,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 59272,
-    "steps": 8
+    "steps": 8,
+    "durationMs": 329605
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1266,7 +1545,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 81406,
-    "steps": 28
+    "steps": 28,
+    "durationMs": 156196
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1279,7 +1559,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 35901,
-    "steps": 2
+    "steps": 2,
+    "durationMs": 38352
   },
   {
     "modelKey": "gpt-5.3-codex-spark|high",
@@ -1292,7 +1573,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 47729,
-    "steps": 3
+    "steps": 3,
+    "durationMs": 55177
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1305,7 +1587,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 11681,
-    "steps": 34
+    "steps": 34,
+    "durationMs": 187930
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1318,7 +1601,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 16262,
-    "steps": 42
+    "steps": 42,
+    "durationMs": 256681
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1331,7 +1615,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 11591,
-    "steps": 22
+    "steps": 22,
+    "durationMs": 134248
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1344,7 +1629,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 8973,
-    "steps": 18
+    "steps": 18,
+    "durationMs": 100318
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1357,7 +1643,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 31509,
-    "steps": 69
+    "steps": 69,
+    "durationMs": 307765
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1370,7 +1657,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 10426,
-    "steps": 38
+    "steps": 38,
+    "durationMs": 136601
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1383,7 +1671,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 22129,
-    "steps": 51
+    "steps": 51,
+    "durationMs": 243737
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1396,7 +1685,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 35028,
-    "steps": 53
+    "steps": 53,
+    "durationMs": 467851
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1409,7 +1699,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 15420,
-    "steps": 48
+    "steps": 48,
+    "durationMs": 167034
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1422,7 +1713,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 13207,
-    "steps": 29
+    "steps": 29,
+    "durationMs": 193836
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1435,7 +1727,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 30950,
-    "steps": 87
+    "steps": 87,
+    "durationMs": 334040
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1448,7 +1741,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 15624,
-    "steps": 39
+    "steps": 39,
+    "durationMs": 222061
   },
   {
     "modelKey": "opencode/mimo-v2.5-free|default",
@@ -1461,7 +1755,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 8887,
-    "steps": 29
+    "steps": 29,
+    "durationMs": 113651
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1474,7 +1769,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 12679,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 134909
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1487,7 +1783,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 34444,
-    "steps": 22
+    "steps": 22,
+    "durationMs": 321054
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1500,7 +1797,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 15920,
-    "steps": 8
+    "steps": 8,
+    "durationMs": 183478
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1513,7 +1811,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 946,
-    "steps": 1
+    "steps": 1,
+    "durationMs": 12096
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1526,7 +1825,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": null,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 69581
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1539,7 +1839,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 13660,
-    "steps": 16
+    "steps": 16,
+    "durationMs": 186778
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1552,7 +1853,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 14099,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 181643
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1565,7 +1867,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 13386,
-    "steps": 7
+    "steps": 7,
+    "durationMs": 92515
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1578,7 +1881,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 1462,
-    "steps": 2
+    "steps": 2,
+    "durationMs": 19946
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1591,7 +1895,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 6920,
-    "steps": 3
+    "steps": 3,
+    "durationMs": 79085
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1604,7 +1909,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 5261,
-    "steps": 1
+    "steps": 1,
+    "durationMs": 53773
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free|default",
@@ -1617,7 +1923,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 32000,
-    "steps": 0
+    "steps": 0,
+    "durationMs": 194062
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1630,7 +1937,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 370,
-    "steps": 1
+    "steps": 1,
+    "durationMs": 167468
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1643,7 +1951,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 2655,
-    "steps": 5
+    "steps": 5,
+    "durationMs": 165100
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1656,7 +1965,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 197,
-    "steps": 1
+    "steps": 1,
+    "durationMs": 209201
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1669,7 +1979,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 6143,
-    "steps": 9
+    "steps": 9,
+    "durationMs": 484995
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1682,7 +1993,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 311,
-    "steps": 1
+    "steps": 1,
+    "durationMs": 185462
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1695,7 +2007,8 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 1246,
-    "steps": 3
+    "steps": 3,
+    "durationMs": 316349
   },
   {
     "modelKey": "kilo/nvidia/nemotron-3-ultra-550b-a55b:free|default",
@@ -1708,6 +2021,7 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "cmdPct": 100,
     "costUsd": null,
     "outTokens": 16315,
-    "steps": 40
+    "steps": 40,
+    "durationMs": 943737
   }
 ];
