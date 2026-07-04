@@ -25,6 +25,8 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -1559,26 +1561,7 @@ function BenchmarkChartCard() {
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-start justify-between gap-4 px-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
-              <PillButton
-                value="v2.1"
-                label="v2.1"
-                active={version === "v2.1"}
-                onSelect={setVersion}
-              />
-              <PillButton
-                value="v2"
-                label={
-                  <>
-                    v2
-                    <VersionLegacyTag />
-                  </>
-                }
-                active={version === "v2"}
-                onSelect={setVersion}
-              />
-              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
-            </div>
+            <VersionDropdown version={version} onSelect={setVersion} />
             <PathTabs
               active={isV2 ? v2Path : activePath}
               onSelect={setActivePath}
@@ -2640,26 +2623,7 @@ function ScaffbenchLeaderboardCard() {
       <div className="border-b border-[#e1e0d8] px-3 py-4 dark:border-[rgba(237,235,228,0.10)] sm:px-6">
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center justify-between gap-3 px-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1" role="tablist" aria-label="Benchmark version">
-              <PillButton
-                value="v2.1"
-                label="v2.1"
-                active={version === "v2.1"}
-                onSelect={setVersion}
-              />
-              <PillButton
-                value="v2"
-                label={
-                  <>
-                    v2
-                    <VersionLegacyTag />
-                  </>
-                }
-                active={version === "v2"}
-                onSelect={setVersion}
-              />
-              <PillButton value="v1" label="v1" active={version === "v1"} onSelect={setVersion} />
-            </div>
+            <VersionDropdown version={version} onSelect={setVersion} />
             <div className="flex items-center gap-1" role="tablist" aria-label="Creation path">
               {isV2 ? (
                 // V2-family shows the version's restricted tab set (pathTabsFor):
@@ -2861,6 +2825,49 @@ function VersionLegacyTag() {
     <span className="ml-1 select-none font-mono text-[9px] font-medium uppercase tracking-[0.12em] opacity-60">
       legacy
     </span>
+  );
+}
+
+const VERSION_OPTIONS = [
+  { id: "v2.1", label: "v2.1", legacy: false },
+  { id: "v2", label: "v2", legacy: true },
+  { id: "v1", label: "v1", legacy: false },
+] as const;
+
+// Version selector as a single-select dropdown (matches the model picker's look;
+// no count badge — just the current version as the title). Shared by the chart
+// and leaderboard cards; generic over the version string so both `version` state
+// types work.
+function VersionDropdown<T extends string>({
+  version,
+  onSelect,
+}: {
+  version: T;
+  onSelect: (value: T) => void;
+}) {
+  const current = VERSION_OPTIONS.find((option) => option.id === version) ?? VERSION_OPTIONS[0];
+  const handleValueChange = useCallback((value: string) => onSelect(value as T), [onSelect]);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label="Benchmark version"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d8d2] px-3.5 py-2 text-xs font-medium text-[#71706a] transition-colors hover:text-[#1b1a17] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84] dark:hover:text-[#dad8d0]"
+      >
+        {current.label}
+        {current.legacy ? <VersionLegacyTag /> : null}
+        <ChevronDown className="size-3.5" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className={cn("w-36", CHART_THEME_VARS)}>
+        <DropdownMenuRadioGroup value={version} onValueChange={handleValueChange}>
+          {VERSION_OPTIONS.map((option) => (
+            <DropdownMenuRadioItem key={option.id} value={option.id}>
+              {option.label}
+              {option.legacy ? <VersionLegacyTag /> : null}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
