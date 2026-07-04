@@ -254,7 +254,7 @@ export const SCAFFBENCH21_CELLS: readonly ScaffbenchCell[] = [
     "modelKey": "opencode/deepseek-v4-flash-free|default",
     "path": "mcp",
     "spec": "react-native-expo",
-    "scored": true,
+    "scored": false,
     "corePass": false,
     "fullPass": false,
     "wiredPct": 88,
