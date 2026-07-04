@@ -10,7 +10,7 @@
     "ai/mcp.mdx": {
       "frontmatter": {
         "title": "MCP サーバー",
-        "description": "Better Fullstack を Claude Code、カーソル、VS コード、および MCP 互換の AI コーディング エージェントに接続します。"
+        "description": "Better Fullstack を Claude Code、Cursor、VS Code、および MCP 互換の AI コーディング エージェントに接続します。"
       },
       "body": "\nBetter Fullstack MCP サーバーを使用すると、エージェントは CLI フラグを推測する代わりに、構造化されたツール呼び出しを通じてプロジェクトをスキャフォールディングできます。スキーマの検索、互換性の検証、ドライラン プレビュー、プロジェクトの作成、機能の追加を処理します。\n\nこのページでは、Better Fullstack MCP サーバーについて説明します。生成されたプロジェクトの `mcp` アドオンは別のものです。このアドオンは、MCP クライアント/サーバー構成をスキャフォールディングされたアプリに書き込み、外部セットアップ コマンドを実行する場合があります。\n\nより軽量な CLI 主導のエージェント ワークフローの場合は、[Better Fullstack エージェント スキル](/docs/ai/skills/) をインストールします。スキルと MCP サーバーはどちらも同じジェネレーターを使用します。スキルは高速なフラグベースのスキャフォールディング用に最適化されており、MCP は構造化されたツール呼び出し用に最適化されています。\n\n## 設定\n\n使用するパッケージ マネージャーを使用してサーバーを起動します。\n\n<PMTabs\n  npm=\"npx -y create-better-fullstack@latest mcp\"\n  pnpm=\"pnpm dlx create-better-fullstack@latest mcp\"\n  bun=\"bunx create-better-fullstack@latest mcp\"\n  yarn=\"yarn dlx create-better-fullstack@latest mcp\"\n/>\n\n### Claude Code\n\n```bash\nclaude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp\n```\n\npnpm、Bun、または Yarn を使用する場合は、上記と同じランチャー テーブルを使用します。\n\n### カーソル\n\n```json\n{\n  \"mcpServers\": {\n    \"better-fullstack\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"create-better-fullstack@latest\", \"mcp\"]\n    }\n  }\n}\n```\n\n### VSコード\n\n```json\n{\n  \"servers\": {\n    \"better-fullstack\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"create-better-fullstack@latest\", \"mcp\"]\n    }\n  }\n}\n```\n\n### その他の MCP クライアント\n\nClaude Desktop、Zed、Cursor、Codex、OpenCode、Gemini CLI、Goose、またはその他の MCP 互換ツールなどのクライアントで同じ stdio コマンドを使用します。\n\n| パッケージマネージャー | `command` | `args` |\n| --- | --- | --- |\n| npm | `npx` | `[\"-y\", \"create-better-fullstack@latest\", \"mcp\"]` |\n| pnpm | `pnpm` | `[\"dlx\", \"create-better-fullstack@latest\", \"mcp\"]` |\n| Bun | `bunx` | `[\"create-better-fullstack@latest\", \"mcp\"]` |\n| 糸 | `yarn` | `[\"dlx\", \"create-better-fullstack@latest\", \"mcp\"]` |\n\n## ツール\n\n完全な入力、出力、例、安全な書き込み動作については、[MCP ツール リファレンス](/docs/ai/mcp-tools/) を参照してください。\n\n| 道具 | 目的 |\n| --- | --- |\n| `bfs_get_guidance` | ワークフロー ルールとフィールド セマンティクスを返します。まずはこれに電話してください。 |\n| `bfs_get_schema` | 構成カテゴリの有効なオプションを返します。 |\n| `bfs_check_compatibility` | スタックを検証し、警告付きで調整された選択を返します。 |\n| `bfs_plan_project` | メモリ内でプロジェクト生成をドライランします。 |\n| `bfs_create_project` | 新しいプロジェクトをディスクに書き込みます。 |\n| `bfs_plan_addition` | 既存のプロジェクトのアドオンの変更を検証します。 |\n| `bfs_add_feature` | サポートされているアドオンを既存のプロジェクトに追加します。 |\n\n<Callout kind=\"info\" title=\"Install behavior\">\nMCP プロジェクトの作成では、長時間実行されるエージェント呼び出しを回避するために、通常の依存関係のインストールがスキップされます。生成されたプロジェクトに `mcp` アドオンが含まれている場合、そのアドオン セットアップは引き続き MCP クライアント構成の外部セットアップ コマンドを実行する可能性があります。\n</Callout>\n\n## リソース\n\nサーバーは次の MCP リソースを公開します。\n\n| リソース | コンテンツ |\n| --- | --- |\n| `docs://compatibility-rules` | スタックの組み合わせの互換性ルール。 |\n| `docs://stack-options` | カテゴリごとに利用可能なテクノロジー オプション。 |\n| `docs://getting-started` | サポートされているエコシステムのクイックスタート レシピ。 |\n\n## 推奨されるツールの順序\n\n新しいプロジェクトの場合:\n\n1. `bfs_get_guidance`\n2. `bfs_get_schema`\n3. `bfs_check_compatibility`\n4. `bfs_plan_project`\n5. `bfs_create_project`\n\n既存のプロジェクトの場合:\n\n1. `bfs_plan_addition`\n2. `bfs_add_feature`\n\n## エージェント向けの重要なルール\n\n- `frontend` は配列であり、複数のフロントエンド ターゲットを含めることができます。\n- `none` はカテゴリを無効にします。\n- エージェントが正しいフィールド ファミリを使用できるように、最初に `ecosystem` を設定します。\n- 配列フィールドには、`frontend`、`addons`、`examples`、`rustLibraries`、`pythonAi`、`javaLibraries`、および `javaTestingLibraries` が含まれます。\n- プロジェクトの計画、作成、および追加の応答には、グラフに基づくスタック ビューの `graphSummary`、`effectiveStack`、および `stackPartSpecs` が含まれます。\n- 現在の MCP プロジェクト スキーマは、`aiDocs` を作成フィールドとして公開しません。プロジェクトの作成では、サーバーの組み込み AI-doc 動作が使用されます。\n- プロジェクトを作成する前に、必ず `bfs_check_compatibility` を呼び出してください。\n\n## エージェントプロンプト\n\n```text\nUse Better Fullstack MCP. First call bfs_get_guidance to understand\nthe rules, then bfs_get_schema for the relevant categories, then\nbfs_check_compatibility to validate the stack, then bfs_plan_project\nfor a dry-run. Only call bfs_create_project after the dry-run succeeds.\nSkip normal dependency installation and tell me the exact commands to\ninstall, test, and run the project.\n```\n"
     },
@@ -31,7 +31,7 @@
     "cli/add.mdx": {
       "frontmatter": {
         "title": "機能の追加",
-        "description": "サポートされているアドオンを既存の Better Fullstack プロジェクトに追加します。"
+        "description": "サポートされているアドオン、デプロイターゲット、スタック機能を既存の Better Fullstack プロジェクトに追加します。"
       },
       "body": "\n`add` コマンドは、既存の Better Fullstack プロジェクトを更新します。 `bts.jsonc` を読み取り、要求されたアドオンを検証し、サポートされているファイルを書き込み、プロジェクト構成を更新します。\n\n```npm\nnpm create better-fullstack@latest add -- --addons mcp skills\n```\n\n## add とは\n\n- 現在のプロジェクトまたは `--project-dir` から `bts.jsonc` を読み取ります。\n- `--addons` が省略された場合、互換性のあるアドオンを求めるプロンプトが表示されます。\n- すでにインストールされているアドオンをスキップします。\n- 新しいアドオンが選択されたときに、アドオン テンプレートと依存関係の変更を書き込みます。\n- 依存関係のインストールがスキップされる場合に、インストール コマンドを出力します。\n\n<Callout kind=\"warn\" title=\"Addon-first command\">\n`add` は現在、新しいアドオンが選択されていない場合に終了します。可能な場合は、`create` 中にデプロイメント ターゲットを選択してください。デプロイメントのみの `add --web-deploy ...` または `add --server-deploy ...` フローはまだ完了していません。\n</Callout>\n\n## フラグ\n\n| フラグ | 価値観とか行動とか |\n| --- | --- |\n| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `nx` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `devcontainer` `docker-compose` `github-actions` `none` |\n| `--project-dir` | 生成されたプロジェクトへのパス。デフォルトは現在のディレクトリです。 |\n| `--install` | ファイルを追加した後、依存関係をインストールします。 `add` のデフォルトは false です。 |\n| `--package-manager` | `npm` `pnpm` `bun` `yarn` |\n| `--web-deploy` | アドオン処理後の Web デプロイメント ターゲットを記録します。 |\n| `--server-deploy` | アドオン処理後のサーバー展開ターゲットを記録します。 |\n\n## アドオンリファレンス\n\n| アドオン | 目的 |\n| --- | --- |\n| `mcp` | コーディング エージェント用に生成されたプロジェクト MCP サーバー構成。 |\n| `skills` | 厳選されたコーディング エージェント スキル ファイル。 |\n| `turborepo` | モノレポオーケストレーション。 |\n| `docker-compose` | サポートされているスタックのローカル サービス オーケストレーション。 |\n| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | コードの品質とフック。 |\n| `starlight` `fumadocs` | スタックと互換性がある場合のドキュメント サイト。 |\n| `tauri` `pwa` `wxt` | デスクトップ、プログレッシブ Web アプリ、ブラウザ拡張機能のサポート。 |\n| `msw` `storybook` | テストおよびコンポーネント開発ユーティリティ。 |\n| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | データ取得および UI ユーティリティ。 |\n| `backend-utils` | asyncHandler、ApiResponse、および Hono、Express、Fastify、Elysia、feTS、または NestJS サーバーのグローバル エラー ハンドラー。 |\n| `opentui` | ターミナル UI のサポート。 |\n\n## べき等性\n\n`bts.jsonc` は、インストールされているアドオンの信頼できる情報源です。要求されたすべてのアドオンがすでに存在する場合、`add` は新しいアドオンが選択されていないことを報告し、無関係な変更を適用せずに終了します。\n\n## 推奨されるワークフロー\n\n1. 現在の作業をコミットまたは隠します。\n2. 明示的なアドオン フラグを指定して `add` を実行します。\n3. 生成されたファイルの変更を確認します。\n4. コマンドがインストールをスキップした場合は、依存関係をインストールします。\n5. プロジェクトの test、lint、または typecheck コマンドを実行します。\n"
     },
@@ -44,7 +44,7 @@
     },
     "cli/create.mdx": {
       "frontmatter": {
-        "title": "コマンドの作成",
+        "title": "作成コマンド",
         "description": "プロンプト、デフォルト、または明示的なフラグを使用して、新しい Better Fullstack プロジェクトをスキャフォールディングします。"
       },
       "body": "\n`create` コマンドは、型指定されたスタック構成から新しいプロジェクトを書き込みます。探索のためにインタラクティブに使用するか、毎回同じプロジェクト形状が必要な場合にフラグを渡します。\n\n<PMTabs\n  npm=\"npm create better-fullstack@latest [project-name] -- [flags]\"\n  pnpm=\"pnpm create better-fullstack@latest [project-name] [flags]\"\n  bun=\"bun create better-fullstack@latest [project-name] [flags]\"\n  yarn=\"yarn create better-fullstack@latest [project-name] [flags]\"\n/>\n\nnpm の場合、Better Fullstack フラグは `--` の後に続きます。生成された npm コマンドは `npx create-better-fullstack@latest` を使用する場合があります。同じパッケージ エントリポイントを非対話形式で実行します。\n\n## コマンドモード\n\n| モード | コマンド形状 | こんなときに使います |\n| --- | --- | --- |\n| ウィザード | `[launcher] my-app` | プロンプトとデフォルトが必要です。 |\n| デフォルト | `[launcher] my-app [flags] --yes` | プロンプトのないデフォルトのスタックが必要です。 |\n| スクリプト化された | `[launcher] my-app [flags]` | 反復可能な出力が必要です。 |\n| ドライラン | `[launcher] my-app [flags] --dry-run` | 書き込む前にファイルを検査したい。 |\n\n## 素早い行動\n\n- 明示的なフラグは、そのフラグがカバーするカテゴリのみをスキップします。\n- `--yes` はデフォルトを受け入れ、`--frontend`、`--backend`、`--database`、`--orm`、`--auth`、`--api` などのコア スタック フラグと競合します。\n- `none` を使用して、`--ai-docs none` などのオプションのカテゴリを無効にします。\n- 副作用が発生する前に生成されたファイルを検査する場合は、`--no-install` および `--no-git` を使用します。\n- `--verify` は、開発サーバーを起動せずにスキャフォールディング後に生成されたチェックを実行します。\n\n## 共通フラグ\n\n| フラグ | 価値観とか行動とか |\n| --- | --- |\n| `--ecosystem` | `typescript` `react-native` `rust` `python` `go` `java` `elixir`。デフォルトは `typescript` です。 |\n| `--template` | `t3` `mern` `pern` `uniwind` `none`。 |\n| `--part` | `frontend:typescript:next` や `backend.orm:go:gorm` などのマルチエコシステム スタック パーツを追加します。パーツごとに繰り返します。 |\n| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `nx` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `devcontainer` `docker-compose` `github-actions` `none`. |\n| `--examples` | `ai` `chat-sdk` `tanstack-showcase` `none`。 |\n| `--ai-docs` | `claude-md` `agents-md` `cursorrules` `none`。 |\n| `--package-manager` | `npm` `pnpm` `bun` `yarn`。 |\n| `--version-channel` | `stable` `latest` `beta`。 |\n| `--web-deploy` | `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `vercel` `none`。 |\n| `--server-deploy` | `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `vercel` `none`。 |\n| `--directory-conflict` | 既存のターゲット ディレクトリの戦略。 |\n| `--dry-run` | 生成されたファイルを書き込まずにプレビューします。 |\n| `--verify` | サポートされている場合は、スキャフォールディングの後に生成されたチェックを実行します。 |\n| `--yes` | デフォルトを受け入れます。コアスタックフラグと互換性がありません。 |\n| `--yolo` | サポートされている場合は、安全性の確認をスキップします。 |\n| `--install` / `--no-install` | 依存関係のインストールをインストールまたはスキップします。 |\n| `--git` / `--no-git` | Git を初期化するかスキップします。 |\n| `--disable-analytics` | 匿名の CLI 分析をオプトアウトします。 |\n| `--verbose` | 詳細なスキャフォールド出力を出力します。 |\n\n## TypeScript フラグ\n\nこれらは `--ecosystem typescript` とともに使用します。\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--frontend` | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none`。 |\n| `--backend` | `hono` `express` `fastify` `elysia` `fets` `effect` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none`。 |\n| `--runtime` | `bun` `node` `workers` `none`。 |\n| `--database` | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none`。 |\n| `--orm` | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none`。 |\n| `--db-setup` | `turso` `neon` `prisma-postgres` `planetscale` `mongodb-atlas` `supabase` `upstash` `d1` `docker` `none`。 |\n| `--manual-db` | 該当する場合、プロバイダー固有のデータベース設定プロンプトをスキップします。 |\n| `--auth` | `better-auth` `better-auth-organizations` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `workos` `kinde` `none`。 |\n| `--api` | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `apollo-server` `openapi` `none`。 |\n| `--astro-integration` | `react` `vue` `svelte` `solid` `none`。 |\n\n### サービス\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--ai` | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none`。 |\n| `--payments` | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none`。 |\n| `--email` | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none`。 |\n| `--realtime` | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none`。 |\n| `--job-queue` | `bullmq` `trigger-dev` `inngest` `temporal` `none`。 |\n| `--cms` | `payload` `sanity` `strapi` `tinacms` `directus` `keystatic` `none`。 |\n| `--caching` | `upstash-redis` `none`。 |\n| `--search` | `meilisearch` `typesense` `elasticsearch` `opensearch` `algolia` `none`。 |\n| `--file-storage` | `s3` `r2` `cloudinary` `none`。 |\n| `--file-upload` | `uploadthing` `filepond` `uppy` `none`。 |\n| `--analytics` | `plausible` `umami` `none`。 |\n| `--feature-flags` | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none`。 |\n\n### UIとアプリの動作\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--css-framework` | `tailwind` `scss` `less` `postcss-only` `none`。 |\n| `--ui-library` | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none`。 |\n| `--state-management` | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none`。 |\n| `--forms` | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none`。 |\n| `--validation` | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none`。 |\n| `--testing` | `vitest` `playwright` `vitest-playwright` `jest` `cypress` `none`。 |\n| `--logging` | `pino` `winston` `evlog` `none`。 |\n| `--observability` | `opentelemetry` `sentry` `grafana` `datadog` `axiom` `betterstack` `none`。 |\n| `--animation` | `framer-motion` `gsap` `react-spring` `auto-animate` `lottie` `none`。 |\n| `--i18n` | `paraglide` `i18next` `next-intl` `none`。 |\n| `--effect` | `effect` `effect-full` `none`。 |\n\n### shadcn/ui フラグ\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--shadcn-base` | `radix` `base`。 |\n| `--shadcn-style` | `vega` `nova` `maia` `lyra` `mira`。 |\n| `--shadcn-icon-library` | `lucide` `tabler` `hugeicons` `phosphor` `remixicon`。 |\n| `--shadcn-color-theme` | `neutral` `stone` `zinc` `gray` `amber` `blue` `cyan` `emerald` `fuchsia` `green` `indigo` `lime` `orange` `pink` `purple` `red` `rose` `sky` `teal` `violet` `yellow`。 |\n| `--shadcn-base-color` | `neutral` `stone` `zinc` `gray`。 |\n| `--shadcn-font` | `inter` `geist` `noto-sans` `nunito-sans` `figtree` `roboto` `raleway` `dm-sans` `public-sans` `outfit` `jetbrains-mono` `geist-mono`。 |\n| `--shadcn-radius` | `default` `none` `small` `medium` `large`。 |\n\n## React Native フラグ\n\nこれらは `--ecosystem react-native` とともに使用します。\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--frontend` | `native-bare` `native-uniwind` `native-unistyles`。 |\n| `--mobile-navigation` | `expo-router` `react-navigation` `none`。 |\n| `--mobile-ui` | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none`。 |\n| `--mobile-storage` | `mmkv` `none`。 |\n| `--mobile-testing` | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none`。 |\n| `--mobile-push` | `expo-notifications` `none`。 |\n| `--mobile-ota` | `expo-updates` `none`。 |\n| `--mobile-deep-linking` | `expo-linking` `none`。 |\n\n## 言語エコシステムのフラグ\n\n### さび\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--rust-web-framework` | `axum` `actix-web` `rocket` `none`。 |\n| `--rust-frontend` | `leptos` `dioxus` `none`。 |\n| `--rust-orm` | `sea-orm` `sqlx` `diesel` `none`。 |\n| `--rust-api` | `tonic` `async-graphql` `none`。 |\n| `--rust-cli` | `clap` `ratatui` `none`。 |\n| `--rust-libraries` | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none`。 |\n| `--rust-logging` | `tracing` `env-logger` `none`。 |\n| `--rust-error-handling` | `anyhow-thiserror` `eyre` `none`。 |\n| `--rust-caching` | `moka` `redis` `none`。 |\n| `--rust-auth` | `oauth2` `none`。 |\n\n### パイソン\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--python-web-framework` | `fastapi` `django` `flask` `litestar` `none`。 |\n| `--python-orm` | `sqlalchemy` `sqlmodel` `tortoise-orm` `none`。 |\n| `--python-validation` | `pydantic` `none`。 |\n| `--python-ai` | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `none`。 |\n| `--python-auth` | `authlib` `jwt` `none`。 |\n| `--python-api` | `django-rest-framework` `django-ninja` `none`。 |\n| `--python-task-queue` | `celery` `rq` `dramatiq` `huey` `none`。 |\n| `--python-graphql` | `strawberry` `ariadne` `none`。 |\n| `--python-quality` | `ruff` `mypy` `pyright` `none`。 |\n\n### 行く\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--go-web-framework` | `gin` `echo` `fiber` `chi` `none`。 |\n| `--go-orm` | `gorm` `sqlc` `ent` `none`。 |\n| `--go-api` | `grpc-go` `none`。 |\n| `--go-cli` | `cobra` `bubbletea` `urfave-cli` `none`。 |\n| `--go-logging` | `zap` `zerolog` `slog` `logrus` `none`。 |\n| `--go-auth` | `casbin` `jwt` `none`。 |\n\nGoBetterAuth はグローバル `--auth go-better-auth` 値で選択されます。 Go ネイティブ ヘルパーは `--go-auth` を使用します。\n\n### ジャワ\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--java-web-framework` | `spring-boot` `quarkus` `none`。 |\n| `--java-build-tool` | `maven` `gradle` `none`。 |\n| `--java-orm` | `spring-data-jpa` `none`。 |\n| `--java-auth` | `spring-security` `none`。 |\n| `--java-libraries` | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `none`。 |\n| `--java-testing-libraries` | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none`。 |\n\n### エリクサー\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--elixir-web-framework` | `phoenix` `phoenix-live-view` `none`。 |\n| `--elixir-orm` | `ecto` `ecto-sql` `none`。 |\n| `--elixir-auth` | `phx-gen-auth` `ueberauth` `guardian` `none`。 |\n| `--elixir-api` | `rest` `absinthe` `none`。 |\n| `--elixir-realtime` | `channels` `presence` `pubsub` `live-view-streams` `none`。 |\n| `--elixir-jobs` | `oban` `quantum` `none`。 |\n| `--elixir-validation` | `ecto-changesets` `nimble-options` `none`。 |\n| `--elixir-http` | `req` `finch` `none`。 |\n| `--elixir-json` | `jason` `none`。 |\n| `--elixir-email` | `swoosh` `none`。 |\n| `--elixir-caching` | `cachex` `nebulex` `none`。 |\n| `--elixir-observability` | `telemetry` `opentelemetry` `prom_ex` `none`。 |\n| `--elixir-testing` | `ex_unit` `mox` `bypass` `wallaby` `none`。 |\n| `--elixir-quality` | `credo` `dialyxir` `sobelow` `none`。 |\n| `--elixir-deploy` | `docker` `fly` `gigalixir` `mix-release` `none`。 |\n\n## 例\n\n明示的なフラグを使用して TypeScript アプリを作成します。\n\n```npm\nnpm create better-fullstack@latest my-app -- \\\n  --ecosystem typescript \\\n  --frontend tanstack-router \\\n  --backend hono \\\n  --runtime node \\\n  --database postgres \\\n  --orm drizzle \\\n  --db-setup none \\\n  --api orpc \\\n  --auth better-auth \\\n  --css-framework tailwind \\\n  --ui-library shadcn-ui \\\n  --ai none \\\n  --payments none \\\n  --email none \\\n  --examples none \\\n  --addons none \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\nマルチエコシステム プロジェクトを作成します。\n\n```npm\nnpm create better-fullstack@latest my-mixed-app -- \\\n  --part frontend:typescript:next \\\n  --part backend:go:gin \\\n  --part backend.orm:go:gorm \\\n  --part backend.auth:go:jwt \\\n  --part database:universal:postgres \\\n  --part mobile:react-native:native-bare \\\n  --addons turborepo docker-compose\n```\n\n## 互換性\n\n- CLI は、生成前にスタックの互換性を検証します。\n- TypeScript `backend self` はフルスタック フロントエンド用であり、`runtime none` とペアになります。\n- tRPC は React 指向です。\n- ワーカー ランタイムのサポートは、フロントエンドとバックエンドの組み合わせによって異なります。\n- UI ライブラリ、デプロイメント ターゲット、プロバイダー、アドオンはスタックに依存します。\n- 視覚的に確認するには、[互換性マトリックス](/docs/reference/compatibility/) または [Stack Builder](https://better-fullstack.dev/new) を使用してください。\n"
@@ -59,7 +59,7 @@
     "cli/index.mdx": {
       "frontmatter": {
         "title": "CLI リファレンス",
-        "description": "プロジェクトの作成、生成されたアプリの更新、リソースを開いて、AI-agent ワークフローを実行するためのコマンド。"
+        "description": "プロジェクトの作成、生成されたアプリの更新、リソースのオープン、AI エージェント ワークフローの実行を行うためのコマンド。"
       },
       "body": "\nBetter Fullstack には小さなコマンド サーフェスがあります。ほとんどのユーザーは `create`、`add`、および `history` のみを必要とします。 AI エージェント ワークフローは `mcp` を使用します。\n\n## コマンド\n\n| 指示 | 目的 |\n| --- | --- |\n| `create` | スタック構成から新しいプロジェクトをスキャフォールディングします。これはデフォルトのコマンドです。 |\n| `add` | サポートされているアドオンまたはデプロイ設定を既存の Better Fullstack プロジェクトに追加します。 |\n| `history` | ローカルのスキャフォールド履歴と再現可能なコマンドを表示、エクスポート、またはクリアします。 |\n| `mcp` | AI コーディング エージェントの Better Fullstack MCP サーバーを標準入出力経由で起動します。 |\n\n## ユーティリティコマンド\n\n| 指示 | 目的 |\n| --- | --- |\n| `docs` | ブラウザでパブリック Better Fullstack ドキュメント サイトを開きます。 |\n| `builder` | インタラクティブな Stack Builder を開きます。 |\n| `sponsors` | Better Fullstack スポンサーを表示します。 |\n\n## ユーティリティコマンドを実行する\n\nドキュメントを開く:\n\n<PMTabs\n  npm=\"npx -y create-better-fullstack@latest docs\"\n  pnpm=\"pnpm dlx create-better-fullstack@latest docs\"\n  bun=\"bunx create-better-fullstack@latest docs\"\n  yarn=\"yarn dlx create-better-fullstack@latest docs\"\n/>\n\nビルダーを開きます。\n\n<PMTabs\n  npm=\"npx -y create-better-fullstack@latest builder\"\n  pnpm=\"pnpm dlx create-better-fullstack@latest builder\"\n  bun=\"bunx create-better-fullstack@latest builder\"\n  yarn=\"yarn dlx create-better-fullstack@latest builder\"\n/>\n\n番組スポンサー:\n\n<PMTabs\n  npm=\"npx -y create-better-fullstack@latest sponsors\"\n  pnpm=\"pnpm dlx create-better-fullstack@latest sponsors\"\n  bun=\"bunx create-better-fullstack@latest sponsors\"\n  yarn=\"yarn dlx create-better-fullstack@latest sponsors\"\n/>\n\n## メンテナコマンド\n\n`update-deps` は、依存関係のバージョンを確認および更新する管理者用です。通常のユーザー ワークフローからは意図的に省略されています。\n\n## 次\n\n- [作成コマンド](/docs/cli/create/) はすべてのスキャフォールド フラグをカバーします。\n- [コマンドの追加](/docs/cli/add/) は、既存のプロジェクトの更新をカバーします。\n- [履歴コマンド](/docs/cli/history/) は、再現可能なコマンド履歴をカバーします。\n- [MCP コマンド](/docs/cli/mcp/) は、stdio MCP の起動をカバーします。\n"
     },
@@ -72,35 +72,35 @@
     },
     "ecosystems/dotnet.mdx": {
       "frontmatter": {
-        "title": "。ネット",
+        "title": ".NET",
         "description": "EF Core または Dapper、Identity、Minimal APIs または Hot Chocolate、SignalR、バックグラウンド ジョブ、テスト、およびデプロイ ファイルを使用した ASP.NET Core スキャフォールド。"
       },
       "body": "\n.NET プロジェクトは、標準の `dotnet` 規則に従う ASP.NET Core アプリケーションを生成します。 Web フレームワーク、データ アクセス、認証、API スタイル、リアルタイム、バックグラウンド ジョブ、可観測性、キャッシュ、テスト、ファイルのデプロイの .NET オプションを選択します。\n\n## 前提条件\n\n- .NET SDK 10 以降。\n- PostgreSQL `ef-core` を `postgres` データベースとともに使用する場合。 SQLite にはサーバーは必要ありません。\n- `docker` デプロイ ターゲットまたは `testcontainers-dotnet` を使用する場合の Docker。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-dotnet-app -- \\\n  --ecosystem dotnet \\\n  --dotnet-web-framework aspnet-minimal \\\n  --dotnet-orm ef-core \\\n  --dotnet-auth aspnet-identity \\\n  --dotnet-api minimal-api \\\n  --dotnet-testing xunit \\\n  --dotnet-job-queue hangfire \\\n  --dotnet-realtime signalr \\\n  --dotnet-observability serilog \\\n  --dotnet-caching redis \\\n  --dotnet-deploy docker \\\n  --database postgres \\\n  --ai-docs none \\\n  --no-install \\\n  --no-git\n```\n\n## .NETカテゴリ\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |\n| データアクセス | `ef-core` `dapper` `linq2db` `none` |\n| 認証 | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |\n| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |\n| テスト | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |\n| バックグラウンドジョブ | `hangfire` `quartz-net` `hosted-services` `none` |\n| リアルタイム | `signalr` `none` |\n| 可観測性 | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |\n| 検証 | `fluentvalidation` `data-annotations` `none` |\n| キャッシング | `redis` `memory-cache` `none` |\n| 展開する | `docker` `azure` `aws` `none` |\n\n## 互換性に関する注意事項\n\n- .NET オプションは `--ecosystem dotnet` にのみ適用されます。\n- ASP.NET Core はスタンドアロンの .NET Web フレームワークです。 TypeScript フロントエンドおよびバックエンドのオプションは無視されます。\n- `--dotnet-testing` および `--dotnet-observability` は複数の値を受け入れます。\n- `ef-core` は `--database` からプロバイダーを選択します。 `postgres` は Npgsql を使用し、それ以外は SQLite にフォールバックします。\n- `aspnet-identity` は、`ef-core` と組み合わせた場合にのみ ID ストアを登録します。これがないと、スキャフォールドは単純な認証および認可サービスを登録します。\n- `--ecosystem dotnet` が設定されている場合の非対話型デフォルト: `aspnet-minimal`、`ef-core`、`aspnet-identity`、`minimal-api`、`xunit`、`signalr`、`serilog`、および `docker`。\n\n## 生成された動作\n\n- プロジェクトには、`.csproj`、`Program.cs`、`appsettings.json`、`.http` リクエスト ファイル、テスト プロジェクト、`.gitignore`、および README のセットアップ ノートが含まれています。\n- EF Core を選択すると、`DbContext` が Npgsql または SQLite プロバイダーに加え、移行用のデザイン時パッケージに接続されます。\n- オプションの選択により、Identity、Hot Chocolate GraphQL、gRPC サービス、SignalR ハブ、Hangfire または Quartz.NET ジョブ、Serilog/NLog/OpenTelemetry パイプライン、Redis キャッシュ、およびマルチステージ Dockerfile 用の動作する ASP.NET Core コードが追加されます。\n"
     },
     "ecosystems/elixir.mdx": {
       "frontmatter": {
-        "title": "エリクサー",
+        "title": "Elixir",
         "description": "Ecto SQL、PostgreSQL 対応構成、REST または Absinthe、リアルタイム、ジョブ、テスト、およびデプロイメント ファイルを使用した Phoenix スキャフォールド。"
       },
       "body": "\nElixir プロジェクトは、Mix および Phoenix の規則に従った Phoenix アプリケーションを生成します。 LiveView、Ecto SQL、認証、APIs、リアルタイム、ジョブ、テスト、品質、およびデプロイファイルの Elixir オプションを選択します。\n\n## 前提条件\n\n- Elixir および Erlang/OTP は Phoenix 1.7 と互換性があります。\n- PostgreSQL (`ecto-sql`、`phx-gen-auth`、または `oban` を使用する場合)。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-phoenix-app -- \\\n  --ecosystem elixir \\\n  --elixir-web-framework phoenix-live-view \\\n  --elixir-orm ecto-sql \\\n  --elixir-auth phx-gen-auth \\\n  --elixir-api absinthe \\\n  --elixir-realtime presence \\\n  --elixir-jobs oban \\\n  --elixir-http req \\\n  --elixir-json jason \\\n  --elixir-observability telemetry \\\n  --elixir-testing ex_unit \\\n  --elixir-quality credo \\\n  --elixir-deploy docker \\\n  --ai-docs none \\\n  --no-install \\\n  --no-git\n```\n\n## エリクサーのカテゴリ\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `phoenix` `phoenix-live-view` |\n| 持続性 | `ecto-sql` `none` |\n| 認証 | `phx-gen-auth` `ueberauth` `guardian` `none` |\n| API | `rest` `absinthe` `grpc` `none` |\n| ライブラリ (複数選択) | `broadway` `nx` `none` |\n| リアルタイム | `channels` `presence` `pubsub` `live-view-streams` `none` |\n| 求人 | `oban` `quantum` `none` |\n| HTTP | `req` `finch` `none` |\n| JSON | `jason` |\n| 電子メール | `swoosh` `none` |\n| キャッシング | `cachex` `nebulex` `none` |\n| 可観測性 | `telemetry` `opentelemetry` `prom_ex` `none` |\n| テスト | `ex_unit` `mox` `bypass` `wallaby` `none` |\n| 品質 | `credo` `dialyxir` `sobelow` `none` |\n| 展開する | `docker` `fly` `gigalixir` `mix-release` `none` |\n\n## 互換性に関する注意事項\n\n- Elixir オプションは `--ecosystem elixir` にのみ適用されます。\n- Phoenix と Phoenix LiveView はスタンドアロンの Elixir Web フレームワークです。 TypeScript フロントエンドおよびバックエンドのオプションは無視されます。\n- `phx-gen-auth` と Oban では、生成されたコードにはリポジトリと移行が必要なため、Ecto SQL が必要です。\n- Oban は、PostgreSQL が支援する Ecto SQL プロジェクトをターゲットとしています。\n- LiveView ストリームには `phoenix-live-view` が必要です。\n- いくつかのスキーマ レベルの選択は、一致するテンプレートが存在するまで、グラフ バリデーターによって意図的に拒否されます: `ecto`、`ueberauth`、`guardian`、`nimble-options`、`nebulex`、`opentelemetry`、`prom_ex`、`mox`、`bypass`、 `wallaby`、`fly`、および `gigalixir`。 CLI とビルダーは、部分的な Phoenix コードを生成するのではなく、サポートされていないツールのメッセージとしてこれらを表示します。\n\n## 生成された動作\n\n- プロジェクトには、`mix.exs`、Phoenix 構成、ルーター、エンドポイント、コントローラー、テスト、`.env.example`、およびセットアップ ノートが含まれています。\n- Ecto SQL の選択には、リポジトリ、移行、スキーマ/コンテキスト コード、PostgreSQL 構成が含まれます。\n- オプションの選択により、LiveView、Channels/Presence、Oban または Quantum ジョブ、Absinthe スキーマ/リゾルバー、Req/Finch HTTP クライアント、Swoosh メーラー、Cachex、Dockerfile、およびリリース構成用の動作する Phoenix ファイルが追加されます。\n"
     },
     "ecosystems/go.mdx": {
       "frontmatter": {
-        "title": "行く",
-        "description": "API、サービス、gRPC、CLI、ロギング、ORM、および認証ヘルパー スキャフォールドに進みます。"
+        "title": "Go",
+        "description": "Go API、サービス、gRPC、CLI、ロギング、ORM、認証ヘルパーのスキャフォールド。"
       },
       "body": "\nGo プロジェクトは Go モジュールと Go ネイティブ テンプレートを使用します。 HTTP サービス、gRPC、CLIs、ロギング、ORM、および Go 認証ヘルパーの Go オプションを選択します。\n\n## 前提条件\n\n- ツールチェーンに進みます。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-go-api -- \\\n  --ecosystem go \\\n  --go-web-framework gin \\\n  --go-orm gorm \\\n  --go-logging zap \\\n  --go-auth jwt \\\n  --go-api none \\\n  --go-cli none \\\n  --go-testing testify \\\n  --go-realtime gorilla-websocket \\\n  --go-message-queue nats \\\n  --go-caching redis \\\n  --go-config viper \\\n  --go-observability opentelemetry \\\n  --auth none \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n## 囲碁のカテゴリー\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `gin` `echo` `fiber` `chi` `none` |\n| ORM | `gorm` `sqlc` `ent` `none` |\n| API | `grpc-go` `gqlgen` `none` |\n| CLI | `cobra` `bubbletea` `urfave-cli` `none` |\n| ロギング | `zap` `zerolog` `slog` `logrus` `none` |\n| Go 認証ヘルパー | `casbin` `jwt` `goth` `none` |\n| テスト (複数選択) | `testify` `gomock` `none` |\n| リアルタイム | `gorilla-websocket` `centrifuge` `none` |\n| メッセージキュー | `nats` `watermill` `none` |\n| キャッシング | `redis` `ristretto` `none` |\n| 構成 | `viper` `koanf` `none` |\n| 可観測性 | `opentelemetry` `none` |\n\n## 認証分割\n\nGo には 2 つの認証関連フィールドがあります。\n\n- `--go-auth casbin|jwt|none` は Go ネイティブの認証ヘルパーを追加します。\n- `--auth go-better-auth` は、グローバル認証フィールドを通じて GoBetterAuth を選択します。\n\nClerk、NextAuth、Stack Auth、Supabase Auth、Auth0 などの他のグローバル認証プロバイダーは TypeScript 指向であり、一般的な Go スキャフォールド サポートとして提示されるべきではありません。\n\n## 生成された動作\n\n- `go mod tidy` は、インストールが有効な場合のインストール/検証パスです。\n- gRPC、Cobra、および Bubble Tea ファイルは、選択した場合にのみ含まれます。\n- テスト、リアルタイム、メッセージキュー、キャッシュ、構成、可観測性の選択により、\n`internal/` の下のスタンドアロン パッケージ (および `testify`/`gomock` のサンプル テスト)。\n- `gqlgen` スキャフォールド `graph/schema.graphqls` + `gqlgen.yml`; `go generate ./graph` を実行して生成します\nGraphQL サーバー コード (Ent コード生成フローを反映)。\n- `goth` は、`GOOGLE_CLIENT_ID`/`GITHUB_CLIENT_ID` スタイルの環境資格情報から OAuth プロバイダーを登録します。\n- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。\n"
     },
     "ecosystems/index.mdx": {
       "frontmatter": {
-        "title": "生態系",
+        "title": "エコシステム",
         "description": "サポートされている言語エコシステムと、それぞれの Better Fullstack のスキャフォールディング。"
       },
       "body": "\nBetter Fullstack は、複数のエコシステムに対して 1 つの CLI を使用します。各エコシステムには独自の足場サーフェス、ツールチェーン、互換性ルールがあります。\n\n複数の言語にまたがる製品スタックの場合は、[マルチエコシステム モード](/docs/ecosystems/multi-ecosystem/) を使用します。プロジェクトを、`frontend:typescript:next`、`backend:go:gin`、`backend.orm:go:gorm`、`database:universal:postgres` などのスタック パーツとしてモデル化します。\n\n| 生態系 | こんな方に最適 | 注意事項 |\n| --- | --- | --- |\n| [TypeScript](/docs/ecosystems/typescript/) | フルスタック Web、APIs、ワーカー、デスクトップ、および最大の Web 統合マトリックス。 | Web オプションは TypeScript からです。 |\n| [React Native](/docs/ecosystems/react-native/) | Expo ナビゲーション、UI、ストレージ、テスト、プッシュ、OTA、ディープ リンクを備えたモバイル アプリ。 | TypeScript Web フロントエンド カテゴリの代わりに React Native エコシステム サーフェスを使用します。 |\n| [錆](/docs/ecosystems/rust/) | バックエンド サービス、CLI アプリ、GraphQL/gRPC、Rust Web フロントエンド、および厳密に型指定されたライブラリ。 | 貨物を使用します。テンプレートは、選択した Rust オプションによって条件付きになります。 |\n| [Python](/docs/ecosystems/python/) | フレームワーク、ORM、検証、キュー、GraphQL、品質の選択肢を備えた API および AI 指向のサービス。 | `uv` を使用します。 Python AI は別個の複数選択カテゴリです。 |\n| [行く](/docs/ecosystems/go/) | API サービス、gRPC、CLIs、ロギング、ORM、および Go 認証ヘルパー。 | Go モジュールを使用します。 GoBetterAuth はグローバル `--auth go-better-auth` で選択されます。 |\n| [Java](/docs/ecosystems/java/) | Spring Boot、Quarkus、または Maven/Gradle、永続性、認証、ライブラリ、およびテストを備えたプレーン Java プロジェクト。 | Java は、ビルド ツールが選択されている場合、Maven または Gradle ラッパーを使用します。 |\n| [エリクサー](/docs/ecosystems/elixir/) | Ecto、Absinthe、リアルタイム、ジョブ、テスト、品質、展開の選択肢を備えた Phoenix および Phoenix LiveView アプリ。 | ミックスを使用します。いくつかのスキーマレベルのオプションは、テンプレートが追いつくまで無効のままです。 |\n| [.NET](/docs/ecosystems/dotnet/) | EF Core または Dapper、Identity、Minimal APIs または Hot Chocolate を使用した ASP.NET Core サービス、SignalR、ジョブ、およびテスト。 | .NET SDKを使用します。テストと可観測性は複数選択のカテゴリです。 |\n\n## デフォルトの CLI ベースライン\n\nデフォルトを受け入れると、TypeScript Web プロジェクトが作成されます。パッケージ マネージャーは、CLI の起動に使用されるパッケージ マネージャーに従います。\n\n```json\n{\n  \"ecosystem\": \"typescript\",\n  \"frontend\": [\"tanstack-router\"],\n  \"backend\": \"hono\",\n  \"runtime\": \"bun\",\n  \"database\": \"sqlite\",\n  \"orm\": \"drizzle\",\n  \"auth\": \"better-auth\",\n  \"api\": \"trpc\",\n  \"cssFramework\": \"tailwind\",\n  \"uiLibrary\": \"shadcn-ui\",\n  \"testing\": \"vitest\",\n  \"addons\": [\"turborepo\"],\n  \"versionChannel\": \"stable\",\n  \"aiDocs\": [\"claude-md\"]\n}\n```\n\nランタイムとパッケージマネージャーは別の選択肢です。たとえば、生成された TypeScript プロジェクトは、アプリケーション ランタイムとして Bun を選択しながら、インストールに npm、pnpm、Yarn、または Bun を使用できます。\n\n## 共有オプションは普遍的ではありません\n\n一部のフラグは 1 つのプロジェクト構成に保存されるためグローバルですが、すべてのフラグがすべてのエコシステムに適用されるわけではありません。生成される内容については以下のエコシステム ページを使用し、正確な CLI 値については [参照オプション](/docs/reference/options/) を使用してください。\n"
     },
     "ecosystems/java.mdx": {
       "frontmatter": {
-        "title": "ジャワ",
+        "title": "Java",
         "description": "Spring Boot と、Maven または Gradle ラッパー、ORM、認証、ライブラリ、およびテストを備えたプレーン Java スキャフォールド。"
       },
       "body": "\nJava プロジェクトは、Spring Boot、Quarkus、およびプレーン Java テンプレートをサポートします。ビルド ツール、永続性、認証、アプリケーション ライブラリ、およびテスト ライブラリの Java オプションを選択します。\n\n## 前提条件\n\n- ジャワ21。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-java-api -- \\\n  --ecosystem java \\\n  --java-web-framework spring-boot \\\n  --java-build-tool maven \\\n  --java-orm spring-data-jpa \\\n  --java-auth spring-security \\\n  --java-api spring-graphql \\\n  --java-logging logback \\\n  --java-libraries spring-actuator spring-validation flyway \\\n  --java-testing-libraries junit5 mockito testcontainers \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n## Javaのカテゴリ\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `spring-boot` `quarkus` `none` |\n| ビルドツール | `maven` `gradle` `none` |\n| ORM | `spring-data-jpa` `jooq` `mybatis` `none` |\n| 認証 | `spring-security` `keycloak` `none` |\n| API | `spring-graphql` `none` |\n| ロギング | `logback` `none` |\n| 図書館 | `spring-actuator` `spring-validation` `flyway` `liquibase` `springdoc-openapi` `lombok` `mapstruct` `caffeine` `resilience4j` `spring-webflux` `spring-batch` `spring-kafka` `spring-mail` `spring-devtools` `micrometer-prometheus` `thymeleaf` `spring-amqp` `opentelemetry-java` `none` |\n| ライブラリのテスト | `junit5` `mockito` `testcontainers` `assertj` `rest-assured` `wiremock` `awaitility` `archunit` `jqwik` `none` |\n\n## 互換性に関する注意事項\n\n- Spring Boot と Quarkus には Maven または Gradle が必要です。\n- Java ORM、認証、および Spring 固有のライブラリには、Spring Boot に加えて Maven または Gradle が必要です。\n- Flyway には Spring データ JPA が必要です。\n- 一部のライブラリはフレームワーク固有です。たとえば、Spring Batch、Spring Kafka、Spring Mail、Spring WebFlux、Springdoc OpenAPI、Actuator、および Spring Security は、Spring Boot プロジェクトをターゲットとします。\n\n## 生成された動作\n\n- Maven プロジェクトは、インストールが有効になっている場合、検証に `./mvnw test` を使用します。\n- Gradle プロジェクトは、インストールが有効になっている場合、検証に `./gradlew test` を使用します。\n- プレーン Java の動作は、フレームワーク依存のカテゴリの `--java-web-framework none` および互換性のある `none` 値を使用して選択されます。\n- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。\n"
@@ -114,7 +114,7 @@
     },
     "ecosystems/python.mdx": {
       "frontmatter": {
-        "title": "パイソン",
+        "title": "Python",
         "description": "Web フレームワーク、ORM、検証、キュー、GraphQL、品質ツールを備えた Python API および AI 指向のスキャフォールド。"
       },
       "body": "\nPython プロジェクトは `uv` と Python ネイティブ テンプレートを使用します。 API フレームワーク、ORM、検証、AI ライブラリ、認証ヘルパー、タスク キュー、GraphQL、品質ツールの Python オプションを選択します。\n\n## 前提条件\n\n- パイソン。\n- `uv`。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-python-api -- \\\n  --ecosystem python \\\n  --python-web-framework fastapi \\\n  --python-orm sqlalchemy \\\n  --python-validation pydantic \\\n  --python-ai none \\\n  --python-auth jwt \\\n  --python-task-queue none \\\n  --python-graphql none \\\n  --python-quality ruff \\\n  --python-testing pytest hypothesis \\\n  --python-caching redis \\\n  --python-realtime python-socketio \\\n  --python-observability opentelemetry \\\n  --python-cli typer rich \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n## Pythonのカテゴリ\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `fastapi` `django` `flask` `litestar` `starlette` `none` |\n| ORM | `sqlalchemy` `sqlmodel` `tortoise-orm` `peewee` `none` |\n| 検証 | `pydantic` `none` |\n| AI | `langchain` `llamaindex` `openai-sdk` `anthropic-sdk` `langgraph` `crewai` `haystack` `pydantic-ai` `google-adk` `smolagents` `none` |\n| 認証 | `authlib` `jwt` `fastapi-users` `none` |\n| API | `django-rest-framework` `django-ninja` `none` |\n| タスクキュー | `celery` `rq` `dramatiq` `huey` `taskiq` `none` |\n| グラフQL | `strawberry` `ariadne` `none` |\n| 品質 | `ruff` `mypy` `pyright` `none` |\n| テスト (複数選択) | `pytest` `hypothesis` `none` |\n| キャッシング | `redis` `aiocache` `none` |\n| リアルタイム | `python-socketio` `websockets` `none` |\n| 可観測性 | `opentelemetry` `none` |\n| CLI ツール (複数選択) | `typer` `click` `rich` `none` |\n\n## 生成された動作\n\n- `uv sync` は、インストールが有効な場合のインストール パスです。\n- `pythonAi` は複数選択カテゴリであり、TypeScript `--ai` とは別のものです。\n- 選択したオプションに空の条件付き Python テンプレート ファイルが必要ない場合、そのファイルはスキップされます。\n- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。\n"
@@ -122,13 +122,13 @@
     "ecosystems/react-native.mdx": {
       "frontmatter": {
         "title": "React Native",
-        "description": "Expo および React Native は、実稼働志向の統合を備えたモバイル スキャフォールドです。"
+        "description": "実稼働志向の統合を備えた Expo および React Native のモバイル スキャフォールド。"
       },
       "body": "\nReact Native は、専用のモバイル エコシステムです。 Expo プロジェクトを足場にし、モバイルの選択肢を TypeScript Web フロントエンド、バックエンド、データベース、およびデプロイのカテゴリから分離します。\n\n## 前提条件\n\n- Node.js 20 歳以上。\n- npm、pnpm、Yarn、または Bun。\n- シミュレータまたはデバイスの検証が必要な場合は、Expo 互換の iOS/Android ツールを使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest mobile-app -- \\\n  --ecosystem react-native \\\n  --frontend native-bare \\\n  --mobile-navigation expo-router \\\n  --mobile-ui tamagui \\\n  --mobile-storage mmkv \\\n  --mobile-testing maestro-react-native-testing-library \\\n  --mobile-push expo-notifications \\\n  --mobile-ota expo-updates \\\n  --mobile-deep-linking expo-linking \\\n  --ai-docs none \\\n  --no-install\n```\n\n## 移動式足場のカテゴリー\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| ネイティブフロントエンド | `native-bare` `native-uniwind` `native-unistyles` |\n| ナビゲーション | `expo-router` `react-navigation` `none` |\n| UI | `tamagui` `gluestack-ui` `uniwind` `unistyles` `none` |\n| ストレージ | `mmkv` `none` |\n| テスト | `maestro` `react-native-testing-library` `maestro-react-native-testing-library` `none` |\n| 押す | `expo-notifications` `none` |\n| 太田 | `expo-updates` `none` |\n| ディープリンク | `expo-linking` `none` |\n\n## 生成された統合\n\n- ディープ リンクまたは OTA が選択されている場合のスキーム/ランタイム設定を含む Expo 構成。\n- Expo ナビゲーションに応じて、ルーターのルート ファイルまたは React Navigation エントリポイント。\n- Tamagui、Gluestack UI、Uniwind、または Unistyles のモバイル UI プロバイダー/テーマ ファイル。\n- ストレージが選択されている場合の MMKV クライアント ヘルパー。\n- Jest Expo および React Native テスト ライブラリのサンプル、Maestro フロー、またはその両方。\n- Expo 通知のプッシュ通知登録ヘルパー。\n- Expo アップデート用の OTA アップデート ヘルパー。\n- `.env.example` と `EXPO_PUBLIC_` のモバイル クライアント構成規則。\n\n## 互換性に関する注意事項\n\n- React Native は、TypeScript Web フロントエンド、バックエンド、データベース、Web UI、Web デプロイ、またはサーバー デプロイ カテゴリを公開しません。\n- Uniwind および Unistyles UI モードは、対応する Expo フロントエンド バリアントに関連付けられています。\n- Tamagui と Gluestack UI は、スタイル設定の競合を避けるために、裸の Expo バリアントを使用します。\n- モバイル認証フローでリダイレクト URI の例が必要な場合、ディープ リンクは自動的に有効になります。\n"
     },
     "ecosystems/rust.mdx": {
       "frontmatter": {
-        "title": "さび",
+        "title": "Rust",
         "description": "Rust バックエンド、CLI、WebAssembly フロントエンド、GraphQL、gRPC、データベース、ロギング、キャッシュ、および認証スキャフォールド。"
       },
       "body": "\nRust プロジェクトは Cargo と言語ネイティブのテンプレートを使用します。バックエンド サービス、CLIs、GraphQL/gRPC、WebAssembly フロントエンド、ロギング、キャッシュ、および認証ヘルパーの Rust オプションを選択します。\n\n## 前提条件\n\n- Rust ツールチェーンとカーゴ。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-rust-api -- \\\n  --ecosystem rust \\\n  --rust-web-framework axum \\\n  --rust-orm sqlx \\\n  --rust-libraries serde validator \\\n  --rust-logging tracing \\\n  --rust-error-handling anyhow-thiserror \\\n  --rust-api none \\\n  --rust-frontend none \\\n  --rust-cli none \\\n  --rust-caching none \\\n  --rust-auth none \\\n  --rust-realtime tokio-tungstenite \\\n  --rust-message-queue lapin \\\n  --rust-observability opentelemetry \\\n  --rust-templating askama \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n## 錆のカテゴリ\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| Webフレームワーク | `axum` `actix-web` `rocket` `none` |\n| フロントエンド | `leptos` `dioxus` `none` |\n| ORM | `sea-orm` `sqlx` `diesel` `none` |\n| API | `tonic` `async-graphql` `none` |\n| CLI | `clap` `ratatui` `none` |\n| 図書館 | `serde` `uuid` `chrono` `reqwest` `config` `dashmap` `parking-lot` `secrecy` `tokio-util` `utoipa` `validator` `jsonwebtoken` `argon2` `tokio-test` `mockall` `proptest` `insta` `none` |\n| ロギング | `tracing` `env-logger` `none` |\n| エラー処理 | `anyhow-thiserror` `eyre` `none` |\n| キャッシング | `moka` `redis` `none` |\n| 認証 | `oauth2` `torii` `none` |\n| リアルタイム | `tokio-tungstenite` `none` |\n| メッセージキュー | `lapin` `none` |\n| 可観測性 | `opentelemetry` `none` |\n| テンプレート化 | `askama` `tera` `none` |\n\n## 生成された動作\n\n- `cargo build` は、インストールが有効な場合のインストール/検証パスです。\n- Leptos、Dioxus、Tonic、Clap、および Ratatui テンプレート ファイルは、それらの一致するオプションが選択されている場合にのみ含まれます。\n- `rustLibraries` は複数選択です。 `none` を渡すか、不要なライブラリを省略してください。\n- AI 命令ファイルは、`--ai-docs none` を含め、`--ai-docs` を通じて引き続き利用できます。\n"
@@ -136,7 +136,7 @@
     "ecosystems/typescript.mdx": {
       "frontmatter": {
         "title": "TypeScript",
-        "description": "フルスタック Web、デスクトップ、API、ワーカー、および統合足場。"
+        "description": "フルスタック Web、デスクトップ、API、ワーカー、統合のスキャフォールド。"
       },
       "body": "\nTypeScript は、最も広範な Better Fullstack エコシステムです。 Web アプリ、API、ワーカー、デスクトップ シェル、ブラウザ拡張機能、ドキュメント サイト、サービス統合、およびほとんどのアドオン ワークフローに使用します。\n\nReact Native/Expo モバイル足場は、専用の [React Native](/docs/ecosystems/react-native/) エコシステム内に存在します。\n\n## 前提条件\n\n- Node.js 20 歳以上。\n- npm、pnpm、Yarn、または Bun。\n- リポジトリの初期化が必要な場合は Git を使用します。\n\n## スクリプト化された例\n\n```npm\nnpm create better-fullstack@latest my-app -- \\\n  --ecosystem typescript \\\n  --frontend tanstack-router \\\n  --backend hono \\\n  --runtime node \\\n  --database sqlite \\\n  --orm drizzle \\\n  --db-setup none \\\n  --api orpc \\\n  --auth better-auth \\\n  --addons turborepo \\\n  --examples none \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install\n```\n\n## コア足場カテゴリー\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| ウェブフロントエンド | `tanstack-router` `react-router` `react-vite` `tanstack-start` `next` `vinext` `nuxt` `svelte` `solid` `solid-start` `astro` `qwik` `angular` `redwood` `fresh` `none` |\n| バックエンド | `hono` `express` `fastify` `elysia` `fets` `effect` `nestjs` `adonisjs` `nitro` `encore` `convex` `self` `none` |\n| ランタイム | `bun` `node` `workers` `none` |\n| データベース | `sqlite` `postgres` `mysql` `mongodb` `edgedb` `redis` `none` |\n| ORM | `drizzle` `prisma` `mongoose` `typeorm` `kysely` `mikroorm` `sequelize` `none` |\n| API | `trpc` `orpc` `ts-rest` `garph` `graphql-yoga` `apollo-server` `openapi` `none` |\n| 認証 | `better-auth` `better-auth-organizations` `go-better-auth` `clerk` `nextauth` `stack-auth` `supabase-auth` `auth0` `workos` `kinde` `none` |\n\n## UIとアプリの機能\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| CSS | `tailwind` `scss` `less` `postcss-only` `none` |\n| UIライブラリ | `shadcn-ui` `shadcn-svelte` `daisyui` `radix-ui` `headless-ui` `park-ui` `chakra-ui` `nextui` `mantine` `mui` `antd` `base-ui` `ark-ui` `react-aria` `none` |\n| 州 | `zustand` `jotai` `nanostores` `redux-toolkit` `mobx` `xstate` `valtio` `tanstack-store` `legend-state` `none` |\n| フォーム | `tanstack-form` `react-hook-form` `formik` `final-form` `conform` `modular-forms` `none` |\n| 検証 | `zod` `valibot` `arktype` `typebox` `typia` `runtypes` `effect-schema` `none` |\n| 例 | `ai` `chat-sdk` `tanstack-showcase` `none` |\n\n## サービスとツール\n\n| カテゴリ | 価値観 |\n| --- | --- |\n| AI | `vercel-ai` `mastra` `voltagent` `langgraph` `openai-agents` `google-adk` `modelfusion` `langchain` `llamaindex` `tanstack-ai` `ai-cli` `none` |\n| 支払い | `polar` `stripe` `lemon-squeezy` `paddle` `dodo` `none` |\n| 電子メール | `react-email` `resend` `nodemailer` `postmark` `sendgrid` `aws-ses` `mailgun` `plunk` `none` |\n| リアルタイム | `socket-io` `partykit` `ably` `pusher` `liveblocks` `yjs` `none` |\n| 求人 | `bullmq` `trigger-dev` `inngest` `temporal` `none` |\n| CMS | `payload` `sanity` `strapi` `tinacms` `directus` `keystatic` `none` |\n| ストレージ | `s3` `r2` `cloudinary` `none` |\n| 機能フラグ | `growthbook` `posthog` `launchdarkly` `flagsmith` `unleash` `none` |\n| アドオン | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `nx` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `devcontainer` `docker-compose` `github-actions` `none` |\n\n## 互換性に関する注意事項\n\n- tRPC は React ベースのフロントエンド用です。\n- `self` バックエンドはフルスタック フレームワーク用であり、`runtime none` とペアになります。\n- Qwik、Angular、Redwood、および Fresh では、完全なオプション テーブルよりも狭い API/バックエンド サポートが提供されます。\n- ワーカー ランタイムのサポートはバックエンドに依存します。\n- UI ライブラリは多くの場合、フロントエンド ファミリと CSS フレームワークに依存します。たとえば、shadcn/ui は React 指向であり、Tailwind ベースです。\n- 一部のプロバイダーには追加の制約があります (Polar では Better Auth と Web フロントエンドが必要です)。\n- 一部のオプションは、すべてのテンプレート パスが同じ深さになる前に、互換性または依存関係のサポートのために表示されます。大きな組み合わせをスキャフォールディングする前に、互換性チェッカーまたは Stack Builder を実行します。\n"
     },
@@ -170,14 +170,14 @@
     },
     "reference/options/elixir.mdx": {
       "frontmatter": {
-        "title": "エリクサーのオプション",
+        "title": "Elixir オプション",
         "description": "Phoenix、Ecto、auth、API、リアルタイム、ジョブ、サービス、およびワークフロー フラグの Elixir エコシステム オプション値。"
       },
       "body": "\nこれらの値は、CLI コマンド、MCP ペイロード、および Stack Builder リンクの `--ecosystem elixir` で使用します。\n\n<Callout kind=\"info\" title=\"Generated behavior\">\nElixir templates keep Phoenix, Ecto, auth, API, realtime, jobs, services, testing, and workflow flags separate from TypeScript web options.\n</Callout>\n\n## Option table\n\nThe table below is generated from the canonical option metadata so it stays in sync with the CLI and Stack Builder.\n\n<OptionCategoryTable ecosystem=\"elixir\" />\n"
     },
     "reference/options/go.mdx": {
       "frontmatter": {
-        "title": "移動オプション",
+        "title": "Go オプション",
         "description": "フレームワーク、ORM、API、CLI、ロギング、認証、サービス、およびワークフロー フラグの Go エコシステム オプション値。"
       },
       "body": "\nこれらの値は、CLI コマンド、MCP ペイロード、および Stack Builder リンクの `--ecosystem go` で使用します。\n\n<Callout kind=\"info\" title=\"Generated behavior\">\nGo templates keep API, CLI, logging, auth, libraries, services, and workflow flags separate from TypeScript web options. GoBetterAuth targets Go projects and is documented here.\n</Callout>\n\n## Option table\n\nThe table below is generated from the canonical option metadata so it stays in sync with the CLI and Stack Builder.\n\n<OptionCategoryTable ecosystem=\"go\" />\n"
@@ -185,7 +185,7 @@
     "reference/options/index.mdx": {
       "frontmatter": {
         "title": "オプション",
-        "description": "Better Fullstack スタック オプションの参照を生成しました。"
+        "description": "Better Fullstack スタック オプションの自動生成されたリファレンス。"
       },
       "body": "\nこのリファレンスには、Better Fullstack で受け入れられる CLI 値がリストされています。これらの値は、コマンド、Stack Builder URL、および MCP ペイロードで使用します。\n\n一部のビルダー ラベルは同じ CLI 値に正規化されており、すべてのオプションがすべてのフロントエンド、バックエンド、ランタイム、またはエコシステムで有効であるわけではありません。複雑なスタックをスキャフォールディングする前に、互換性チェックを実行します。\n\n<OptionReferenceSummary />\n\n<Callout kind=\"info\" title=\"Compatibility matters\">\n表には、有効なオプション値がリストされています。互換性チェッカーは、フルスタックの組み合わせが有効かどうかを判断し、生成前に組み合わせを拒否または調整する場合があります。\n</Callout>\n"
     },
@@ -198,7 +198,7 @@
     },
     "reference/options/python.mdx": {
       "frontmatter": {
-        "title": "Python のオプション",
+        "title": "Python オプション",
         "description": "Web フレームワーク、ORM、検証、AI、認証、API、キュー、品質の Python エコシステム オプション値。"
       },
       "body": "\nこれらの値は、CLI コマンド、MCP ペイロード、および Stack Builder リンクの `--ecosystem python` で使用します。\n\n<Callout kind=\"info\" title=\"Generated behavior\">\nPython templates use `uv`. Python AI is a Python-specific multi-select and is separate from the TypeScript AI option. Empty conditional files are skipped when selected options do not need them.\n</Callout>\n\n## Option table\n\nThe table below is generated from the canonical option metadata so it stays in sync with the CLI and Stack Builder.\n\n<OptionCategoryTable ecosystem=\"python\" />\n"
@@ -227,7 +227,7 @@
     "reference/verified-combinations.mdx": {
       "frontmatter": {
         "title": "検証済みの組み合わせ",
-        "description": "現在、どの Better Fullstack 足場の組み合わせに通過煙、ScaffBench、リリース ガード、および公開されたパッケージの証拠があるかを確認します。"
+        "description": "現在どの Better Fullstack スキャフォールドの組み合わせが、スモークテスト、ScaffBench、リリースガード、公開パッケージの合格実績を持っているかを確認します。"
       },
       "body": "\nBetter Fullstack は、現在の合格証拠を持つ行のみを検証済みとして扱います。生成された台帳は意図的に保守的です。マトリックスのみで構成された行は表示されたままですが、それらはグリーンクレームとしてカウントされません。\n\n<VerifiedCombinationsSummary />\n\n## 請求の対象となるもの\n\n- インストール、ビルド、タイプチェック、エコシステム固有の検証を備えた PR コアのスモーク プリセット。\n- ScaffBench 2 正規ベンチマーク検証。\n- スキーマ、テンプレート、スナップショット、AI サンプル、CLI/ビルダー パリティ、Web スタック状態、再現可能なコマンド、追加/履歴フロー、およびドキュメント リンク検証のガード ゲートをリリースします。\n- `testing/.published-package/summary.json` が存在する場合、Bun、npm、および pnpm パッケージ マネージャー エントリポイントを介して公開されたパッケージ スキャフォールド。\n\n## 主張していないこと\n\n- すべての理論上のスタックの組み合わせが検証されます。\n- 構成された行または行列のみの行が渡されます。\n- パッケージ マネージャー レジストリは、公開されたパッケージのスモーク アーティファクトに記録されているパッケージ仕様を超えてインストールされます。\n\n## 障害リンク\n\n各証拠カードは、ソース アーティファクト、所有者エリア、および再実行コマンドにリンクしています。セクションが完全に通過していない場合は、次のリンクを順番に使用してください。\n\n1. ソース アーティファクトを開いて、障害のある行またはゲートを見つけます。\n2. 所有者のリンクをたどって、その失敗の原因となっているテンプレート、パッケージ、またはテスト領域にアクセスします。\n3. 修正を行った後、リストされたコマンドを再実行し、検証済みの組み合わせ台帳を再構築します。\n\n## ソースアーティファクト\n\n詳細な台帳は、次のように `docs/verified-combinations.md` で生成されます。\n\n```sh\nbun run build:verified-combinations\n```\n\n台帳を再構築する前にリリースゲートの証拠を更新するには、次のコマンドを実行します。\n\n```sh\nbun run test:release:record\n```\n\n現在公開されているパッケージのパッケージ マネージャー レジストリ インストールの証拠を更新するには、次のコマンドを実行します。\n\n```sh\nbun run test:published-package\n```\n\n## バッジエンドポイント\n\n現在の検証済み数を表示する場合は、Shields 互換エンドポイントを使用します。\n\n```md\n[![Verified combinations](https://img.shields.io/endpoint?url=https%3A%2F%2Fbetter-fullstack.dev%2Fapi%2Fverified-combinations)](https://better-fullstack.dev/docs/reference/verified-combinations)\n```\n\nエンドポイントは、スモーク、ScaffBench、リリース ガード、および公開されたパッケージの証拠全体の総パス数を返します。\n\n<Callout kind=\"info\" title=\"Scope matters\">\n生成された台帳で合格と表示される組み合わせのみが検証済みとして記述される必要があります。より広範な主張については、追加の煙、ScaffBench、リリースガード、または公開されたパッケージの証拠を待つ必要があります。\n</Callout>\n"
     },
@@ -261,7 +261,7 @@
     },
     "sections/deployment.mdx": {
       "frontmatter": {
-        "title": "導入",
+        "title": "デプロイメント",
         "description": "Web およびサーバーのデプロイメント ターゲットを 1 つのスタック セクションとして選択します。"
       },
       "body": "\nデプロイは 1 つのスタック セクションであり、個別のドキュメントの柱ではありません。 `--web-deploy` および `--server-deploy` を使用したプロジェクトの作成中に、Better Fullstack がプラットフォーム ファイルを発行するかどうかを制御します。\n\n生成されたプラットフォーム ファイルを、選択したフロントエンド、バックエンド、ランタイム、およびワークスペースのレイアウトと一致させる必要がある場合は、スキャフォールド時にデプロイメント フラグを使用します。\n\n## 展開フラグ\n\n| フラグ | 価値観 |\n| --- | --- |\n| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |\n| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `docker` `sst` `none` |\n\nデプロイメントの選択は、スタックに対して互換性がチェックされます。一部のフルスタック フレームワークは Web アプリを通じてデプロイされ、一部のバックエンドは別個のサーバー デプロイメントを必要とせず、Convex または Encore は独自のプラットフォーム パスを管理します。\n\n## ターゲット\n\n| ターゲット | ベストフィット | 注意事項 |\n| --- | --- | --- |\n| ドッカー | 自己ホスティング、再現可能な本番イメージ、およびローカル サービス オーケストレーション。 | ローカル サービスに重点を置いた `docker-compose` アドオンとは別のものです。 |\n| ヴェルセル | React、Nuxt、SvelteKit、Solid、およびサーバーレス デプロイメントがサポートされています。 | フルスタック フロントエンドは通常、別のサーバー ターゲットではなく、Web アプリを通じてデプロイされます。 |\n| クラウドフレア | ワーカー ランタイム スタックとエッジファースト Hono サーバー。 | 互換性は、Workers 互換サーバー ランタイムに限定されます。 |\n| Fly.io | 地域的な配置と長期実行サービスを備えた Docker ベースのアプリ ホスティング。 | 永続的なサーバープロセスに適しています。 |\n| 鉄道 | Dockerfile ベースのビルドとマネージド サービスを使用した Git 接続アプリのホスティング。 | デプロイ前に実稼働環境変数を構成します。 |\n| 与える | Dockerfile ベースのビルド (リポジトリ ルートの `render.yaml`) を使用したブループリント主導のアプリのホスティング。 | Web とサーバーは別個の Docker サービスとしてデプロイされます。レンダリング ダッシュボードで環境変数を設定します。 |\n| ネットリファイ | 静的および SSR Web フロントエンド (Next.js、Vite SPA、SvelteKit、Nuxt)。 | Web のみのターゲット。サイトのベース ディレクトリを `apps/web` に設定します。 |\n| SST | TypeScript アプリのワークフロー用のコードとしての AWS 指向のインフラストラクチャ。 | AWS リソースを明示的に所有したい場合に最適です。 |\n\n## 導入前に\n\n- 認証シークレット、データベース URL、プロバイダー キー、およびパブリック アプリ URL の運用環境変数を設定します。\n- トラフィックをルーティングする前に、運用データベースに対してデータベース移行を実行します。\n- 生成されたプラットフォーム構成がリクエストを受信するアプリと一致していることを確認します。\n- ローカル専用のサービス コンテナー、テスト資格情報、生成されたログをソース管理の対象外に保ちます。\n\n## 足場の後に追加\n\n`add` コマンドは展開フラグを記録できますが、現在はアドオンが最初に処理されます。新しいアドオンが選択されていない場合、展開専用の `add` コマンドは早期に終了します。デプロイメントのみの追加フローが拡張されるまでは、`create` 中にデプロイメント ターゲットを選択することを優先します。\n"
@@ -282,7 +282,7 @@
     },
     "sections/quality-and-tooling.mdx": {
       "frontmatter": {
-        "title": "品質と工具",
+        "title": "品質とツール",
         "description": "テスト、ロギング、可観測性、コード品質、ドキュメント アドオン、パッケージ マネージャー、AI ドキュメント、Git、およびインストール動作を選択します。"
       },
       "body": "\n品質とツールの選択によって、生成されたプロジェクトがどのようにチェック、文書化、保守されるかが決まります。\n\n## テスト\n\nTypeScript テストの選択肢には、Vitest、Playwright、Vitest に加えて Playwright、Jest、Cypress、またはなしが含まれます。\n\n他のエコシステムは、Rust テスト ライブラリ、Python 品質ツール、Java テスト ライブラリ、Elixir ExUnit/Mox/Bypass/Wallaby の選択肢、Maestro または React Native テスト ライブラリを使用したモバイル テストなど、ネイティブ テスト パスを公開しています。\n\n## ロギングと可観測性\n\nロギングと可観測性はスタック固有である場合があります。 TypeScript には、Pino、Winston、Evlog、OpenTelemetry、Sentry、および Grafana の選択肢があります。 Go と Rust には専用のロギング カテゴリがあります。 Java と Elixir は、エコシステム オプションを通じて可観測性関連のライブラリを公開します。\n\n## コードの品質とドキュメント\n\nコード品質の選択肢には、Biome、Oxlint、Ultracite、Lefthook、Husky、および Ruler が含まれます。ドキュメント アドオンには、互換性のある Starlight および Fumadocs が含まれます。\n\n## プロジェクトのワークフロー\n\nパッケージ マネージャー、バージョン チャネル、AI ドキュメント、Git の初期化、インストール動作、`--dry-run`、および `--verify` はすべて、生成されたアプリ ランタイムではなくワークフロー レイヤーに属します。\n\n## 参考文献\n\n- [CLI 作成](/docs/cli/create/)\n- [CLI 追加](/docs/cli/add/)\n- [AI ドキュメント](/docs/ai/overview/)\n"
@@ -299,7 +299,7 @@
     "ai/nextjs-ai-cli-agent-workbench.mdx": {
       "frontmatter": {
         "title": "Next.js AI CLI エージェント ワークベンチ",
-        "description": "Better Fullstack を使用して、AI、CLI、MCP、スキル、Better Auth、Drizzle、SQLite、エージェントのドキュメントを含む Next.js アプリを作成します。",
+        "description": "Better Fullstack を使用して、AI CLI、MCP、スキル、Better Auth、Drizzle、SQLite、エージェントのドキュメントを含む Next.js アプリを作成します。",
         "updated": "2026-05-12",
         "category": "AI ツール",
         "tags": [
@@ -320,7 +320,7 @@
     },
     "go/bubbletea-cli.mdx": {
       "frontmatter": {
-        "title": "Bubble Tea で CLI を実行する",
+        "title": "Bubble Tea を使った Go CLI",
         "description": "Better Fullstack の Go CLI プロジェクト スキャフォールディングを使用して、Bubble Tea で Go ターミナル アプリケーションを作成します。",
         "updated": "2026-05-12",
         "category": "行く",
@@ -341,7 +341,7 @@
     },
     "go/echo-sqlc-api.mdx": {
       "frontmatter": {
-        "title": "SQLCによるエコー",
+        "title": "SQLC を使った Echo",
         "description": "Echo、SQLC、Zap ロギング、および Better Fullstack の Go プロジェクト スキャフォールディングを使用して Go API プロジェクトを作成します。",
         "updated": "2026-05-12",
         "category": "行く",
@@ -363,8 +363,8 @@
     },
     "go/gin-postgres-gorm.mdx": {
       "frontmatter": {
-        "title": "PostgreSQL と GORM を使用したジン",
-        "description": "Jin、PostgreSQL、GORM、Zap ロギング、およびクリーンな Better Fullstack プロジェクト構造を使用して Go API プロジェクトを作成します。",
+        "title": "PostgreSQL と GORM を使用した Gin",
+        "description": "Gin、PostgreSQL、GORM、Zap ロギング、およびクリーンな Better Fullstack プロジェクト構造を使用して Go API プロジェクトを作成します。",
         "updated": "2026-05-12",
         "category": "行く",
         "tags": [
@@ -385,7 +385,7 @@
     },
     "go/grpc-go-service.mdx": {
       "frontmatter": {
-        "title": "gRPC サービスに移動",
+        "title": "Go gRPC サービス",
         "description": "Gin、gRPC-Go、GORM、Zap ロギング、および Better Fullstack の Go サービス スキャフォールディングを使用して Go バックエンドを作成します。",
         "updated": "2026-05-12",
         "category": "行く",
@@ -659,7 +659,7 @@
     "python/django-rest-api.mdx": {
       "frontmatter": {
         "title": "Django REST API スターター",
-        "description": "Django、Django REST フレームワーク、SQLAlchemy、Pydantic、Better Fullstack を使用する Ruff を使用して Python バックエンドを作成します。",
+        "description": "Better Fullstack を使用して、Django、Django REST Framework、SQLAlchemy、Pydantic、Ruff を備えた Python バックエンドを作成します。",
         "updated": "2026-05-12",
         "category": "パイソン",
         "tags": [
@@ -680,7 +680,7 @@
     },
     "python/fastapi-langchain-ai-agent.mdx": {
       "frontmatter": {
-        "title": "FastAPI AI LangChain を持つエージェント",
+        "title": "LangChain を使った FastAPI AI エージェント",
         "description": "Better Fullstack を使用して、FastAPI、LangChain、SQLModel、Pydantic、および Ruff を使用して Python AI API を作成します。",
         "updated": "2026-05-12",
         "category": "パイソン",
@@ -790,7 +790,7 @@
     },
     "rust/ratatui-cli.mdx": {
       "frontmatter": {
-        "title": "CLI を Ratatui で錆びる",
+        "title": "Ratatui を使った Rust CLI",
         "description": "Better Fullstack の Rust CLI プロジェクト スキャフォールディングを使用して、Ratatui で Rust ターミナル UI アプリを作成します。",
         "updated": "2026-05-12",
         "category": "さび",
@@ -833,8 +833,8 @@
     },
     "typescript/astro-react-hono.mdx": {
       "frontmatter": {
-        "title": "React を使用した Astro および Hono",
-        "description": "React 統合を備えた Astro アプリ、Hono、tRPC、Drizzle、SQLite、Better Auth、Tailwind CSS、および Better Fullstack を使用する DaisyUI を作成します。",
+        "title": "React と Hono を使用した Astro",
+        "description": "Better Fullstack を使用して、React 統合、Hono、tRPC、Drizzle、SQLite、Better Auth、Tailwind CSS、DaisyUI を備えた Astro アプリを作成します。",
         "updated": "2026-05-12",
         "category": "TypeScript",
         "tags": [
@@ -987,7 +987,7 @@
     "typescript/sveltekit-hono-drizzle.mdx": {
       "frontmatter": {
         "title": "SvelteKit と Hono および Drizzle",
-        "description": "Better Fullstack を使用して、Hono、API、oRPC、Drizzle、PostgreSQL、Tailwind CSS、および Better Auth を備えた SvelteKit アプリを作成します。",
+        "description": "Better Fullstack を使用して、Hono API、oRPC、Drizzle、PostgreSQL、Tailwind CSS、および Better Auth を備えた SvelteKit アプリを作成します。",
         "updated": "2026-05-12",
         "category": "TypeScript",
         "tags": [
@@ -1008,8 +1008,8 @@
     },
     "typescript/tanstack-start-resend.mdx": {
       "frontmatter": {
-        "title": "TanStack Start と再送信",
-        "description": "Better Fullstack を使用して、電子メール再送信サポートを備えた TanStack Start アプリ、Better Auth、Drizzle、SQLite、Tailwind CSS、および shadcn/ui を作成します。",
+        "title": "TanStack Start と Resend",
+        "description": "Better Fullstack を使用して、Resend の電子メールサポート、Better Auth、Drizzle、SQLite、Tailwind CSS、shadcn/ui を備えた TanStack Start アプリを作成します。",
         "updated": "2026-05-12",
         "category": "TypeScript",
         "tags": [
@@ -1032,8 +1032,8 @@
   "blog": {
     "scaffbench-2-1.mdx": {
       "frontmatter": {
-        "title": "「ScaffBench 2.1: プロンプトからのスキャフォールディングにおける Claude Sonnet 5 と Claude Opus 4.8」",
-        "description": "「Claude Sonnet 5 は ScaffBench 2.1 に入り、13 のハード フルスタック仕様で Opus 4.8 (低 + 最大努力) に対してテストされました。モデルはプロンプトから建築プロジェクトを足場にできますか?」",
+        "title": "ScaffBench 2.1: プロンプトからのスキャフォールディングにおける Claude Sonnet 5 と Claude Opus 4.8",
+        "description": "Claude Sonnet 5 が ScaffBench 2.1 に登場し、13 個のハードなフルスタック仕様で Opus 4.8（low + max effort）に対してテストされました。モデルはプロンプトからビルドの通るプロジェクトをスキャフォールディングできるでしょうか?",
         "date": "2026-07-01",
         "authors": [
           "Ibrahim Elkamali"
@@ -1056,8 +1056,8 @@
     },
     "scaffbench-2.mdx": {
       "frontmatter": {
-        "title": "「ScaffBench 2: 10 個の構成、5 つのエコシステム、およびモデルがプロンプトからスキャフォールディングできるかどうか」",
-        "description": "「ScaffBench 2 は、5 つのハード フルスタック仕様を通じて Opus、GPT-5.5、および無料モデルを実行し、プロンプトのみのスキャフォールドが実際に構築されるかどうかをテストします。」",
+        "title": "ScaffBench 2: 10 個の構成、5 つのエコシステム、およびモデルがプロンプトからスキャフォールディングできるかどうか",
+        "description": "ScaffBench 2 は、5 つのハード フルスタック仕様を通じて Opus、GPT-5.5、および無料モデルを実行し、プロンプトのみのスキャフォールドが実際に構築されるかどうかをテストします。",
         "date": "2026-06-26",
         "authors": [
           "Ibrahim Elkamali"
@@ -1080,7 +1080,7 @@
     "scaffbench.mdx": {
       "frontmatter": {
         "title": "ScaffBench: 実際のフルスタック スキャフォールディングでコーディング エージェントを測定する",
-        "description": "102 は、Claude Code、Codex CLI、Gemini CLI、Kilo、およびオープンコードにわたって実行され、速度、コスト、トークン、生成されたプロジェクトがインストールおよびビルドされるかどうかを測定します。",
+        "description": "Claude Code、Codex CLI、Gemini CLI、Kilo、opencode にわたる 102 回の実行で、速度、コスト、トークン、および生成されたプロジェクトがインストールおよびビルドされるかどうかを測定します。",
         "date": "2026-06-12",
         "authors": [
           "Ibrahim Elkamali"

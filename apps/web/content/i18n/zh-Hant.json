@@ -17,28 +17,28 @@
     "ai/overview.mdx": {
       "frontmatter": {
         "title": "AI 代理",
-        "description": "AI 代碼代理程式如何安全可靠地使用 Better Fullstack。"
+        "description": "AI 程式碼代理程式如何安全可靠地使用 Better Fullstack。"
       },
       "body": "\nBetter Fullstack 支援三種面向 AI 代理程式的工作流程：\n\n- 使用 `--ai-docs` 產生專案本地指令檔。\n- 安裝 Better Fullstack agent skill，讓程式碼代理程式使用 CLI，而不是手寫起始檔。\n- 讓 AI 程式碼代理程式使用 Better Fullstack MCP server 完成 schema 查詢、相容性檢查、dry-run 預覽和專案建立。\n\n## 推薦工作流程\n\n1. 選擇目標生態系：`typescript`、`react-native`、`rust`、`python`、`go`、`java` 或 `elixir`。\n2. 使用 Better Fullstack agent skill、MCP server，或一組明確的 CLI 參數。\n3. 在生成專案之前驗證相容性。\n4. 透過 dry-run 檢查文件樹。\n5. 當流程由代理程式驅動時，在停用依賴安裝的情況下產生專案。\n6. 告訴使用者精確的安裝、測試和運行命令。\n\n## 產生的 AI docs\n\n使用 `--ai-docs` 為代碼代理程式產生專案本地上下文檔案：\n\n| 值 | 產生檔案 |\n| --- | --- |\n| `claude-md` | `CLAUDE.md` |\n| `agents-md` | `Agents.md` |\n| `cursorrules` | `.cursorrules` |\n| `none` | 不產生 AI docs |\n\n接受多個值：\n\n```npm\nnpm create better-fullstack@latest my-app -- --ai-docs claude-md agents-md\n```\n\n使用 `--ai-docs none` 停用這些檔案。\n\n## CLI 工作流程\n\n對於沒有 MCP 存取權限的代理，傳入明確參數並避免副作用：\n\n```npm\nnpm create better-fullstack@latest my-app -- \\\n  --ecosystem typescript \\\n  --frontend next \\\n  --backend self \\\n  --runtime none \\\n  --database postgres \\\n  --orm drizzle \\\n  --auth better-auth \\\n  --api trpc \\\n  --db-setup none \\\n  --ai-docs agents-md \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n<Callout kind=\"info\" title=\"面向代理的 CLI 规则\">\n`--yes` 會接受預設值，並且與核心 stack 參數不相容。明確參數只會跳過它們所覆蓋的分類。對你想停用的可選分類傳入 `none`。\n</Callout>\n\n## Agent skill 工作流程\n\nBetter Fullstack agent skill 位於此倉庫中，會教導受支援的代理程式使用 CLI 和經過基準驗證的快速流程：對應 stack、執行 dry-run、在沒有安裝或 Git 副作用的情況下產生項目，然後報告後續命令。\n\n請參閱 [agent skill setup guide](/docs/ai/skills/)，以了解 Codex、Claude Code、Cursor、GitHub Copilot 和 Gemini CLI 的安裝指令。\n\n## AI provider 選項\n\nTypeScript 項目可以透過 `--ai` 選擇一個 AI 選項：`vercel-ai`、`mastra`、`voltagent`、`langgraph`、`openai-agents`、`google-adk`、`modelfusion`、`langchain`、`llamaindex`、`tanstack-ai`、`ai-cli` 或 `none`。\n\nPython 專案使用單獨的多重選擇 `--python-ai` 選項，包含 `langchain`、`llamaindex`、`openai-sdk`、`anthropic-sdk`、`langgraph`、`crewai` 或 `none`。\n\n依賴放置取決於選取的框架和後端。 Server-side packages 會加入到 server package 或 self-backend app；支援的前端整合會獲得對應的 client hooks 或 packages。\n\n## MCP 工作流程\n\nBetter Fullstack MCP server 以結構化工具的形式提供 schema 查詢、相容性檢查、dry-run 預覽、專案建立和功能新增。請參閱 [MCP setup guide](/docs/ai/mcp/)。\n\n這不同於生成專案時選擇的 `mcp` addon。 server 幫助代理程式建立 Better Fullstack 項目；addon 則會在生成項目中寫入 MCP 配置。\n"
     },
     "ai/skills.mdx": {
       "frontmatter": {
         "title": "代理 Skill",
-        "description": "為 Codex、Claude Code、Cursor 和其他代理程式安裝 Better Fullstack agent skill，用於快速透過 CLI 產生項目。"
+        "description": "為 Codex、Claude Code、Cursor 和其他代理程式安裝 Better Fullstack agent skill，用於快速透過 CLI 產生專案。"
       },
       "body": "\nBetter Fullstack agent skill 會教程式碼代理程式使用 CLI，而不是手寫 starter 專案。它會把請求的技術棧映射到 graph parts，先執行 dry-run，然後在禁用依賴安裝的情況下產生項目，並報告精確的後續命令。\n\n當你的代理人支持 skills，並且你希望從一句提示詞快速產生 Better Fullstack 項目時，使用它。當你需要結構化的 schema 查詢和工具呼叫規劃時，請改用 [MCP server](/docs/ai/mcp/)。\n\n## 安裝\n\n該 skill 位於此倉庫的 `.agents/skills/better-fullstack`。因為倉庫也包含其他內部 skills，請只安裝 `better-fullstack`。\n\n為 Codex 安裝：\n\n<PMTabs\n  npm=\"npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes\"\n  pnpm=\"pnpm dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes\"\n  bun=\"bunx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes\"\n  yarn=\"yarn dlx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes\"\n/>\n\n為幾個常見代理安裝：\n\n```bash\nbunx skills@latest add Marve10s/Better-Fullstack \\\n  --skill better-fullstack \\\n  --agent codex claude-code cursor github-copilot gemini-cli \\\n  --global \\\n  --yes\n```\n\n如需專案本機安裝，從相同指令省略 `--global`。當團隊希望把 skill 版本與倉庫一起記錄時，專案安裝就很有用。\n\n## 使用\n\n顯式調用 skill：\n\n```text\nUse $better-fullstack to create a React + Vite app with Hono, SQLite, Drizzle, tRPC, Tailwind, DaisyUI, Pino, Vitest, and Biome.\n```\n\n也可以自然提問。支援隱式 skill 匹配的代理，可以在請求涉及 Better Fullstack 項目的生成、規劃或擴展時選擇該 skill。\n\n## Skill 做什麼\n\n1. 將請求的技術堆疊對應為 Better Fullstack graph parts 和 CLI flags。\n2. 執行非互動式 CLI dry-run。\n3. 當計劃成功時，執行不含 `--dry-run` 的相同指令。\n4. 除非你明確要求這些副作用，否則使用 `--no-install` 和 `--no-git`。\n5. 報告使用的命令、任何相容性調整，以及下一步安裝、測試和執行命令。\n\n## Skill vs MCP\n\n| 路徑 | 最適合 |\n| --- | --- |\n| Agent skill | 當技術堆疊可以表示為 flags 或 graph parts 時，用於快速透過 CLI 產生項目。 |\n| MCP server | 透過工具呼叫進行結構化 schema 查詢、相容性檢查、dry-run 規劃和現有專案修改。 |\n\n兩條路徑使用同一個 Better Fullstack generator。 skill 是更輕的路徑；MCP 是更結構化的路徑。\n"
     },
     "cli/add.mdx": {
       "frontmatter": {
         "title": "新增功能",
-        "description": "在現有 Better Fullstack 項目中新增支援的 addons。"
+        "description": "在現有 Better Fullstack 專案中新增支援的 addons、部署目標與 stack 能力。"
       },
       "body": "\n`add` 指令會更新現有 Better Fullstack 項目。它讀取 `bts.jsonc`，驗證請求的 addons，寫入支援的文件，並更新專案配置。\n\n```npm\nnpm create better-fullstack@latest add -- --addons mcp skills\n```\n\n## add 會做什麼\n\n- 從目前項目或 `--project-dir` 讀取 `bts.jsonc`。\n- 省略 `--addons` 時提示選擇相容 addons。\n- 跳過已經安裝的 addons。\n- 選擇新 addon 時寫入 addon templates 和依賴變更。\n- 跳過依賴安裝時列印安裝指令。\n\n<Callout kind=\"warn\" title=\"Addon-first 命令\">\n`add` 目前在沒有選擇新 addon 時會退出。盡可能在 `create` 階段選擇 deployment targets；僅 deployment 的 `add --web-deploy ...` 或 `add --server-deploy ...` flows 還不完整。\n</Callout>\n\n## Flags\n\n| Flag | 值或行為 |\n| --- | --- |\n| `--addons` | `pwa` `tauri` `starlight` `biome` `lefthook` `husky` `ruler` `mcp` `skills` `turborepo` `nx` `fumadocs` `ultracite` `oxlint` `opentui` `wxt` `msw` `storybook` `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` `backend-utils` `devcontainer` `docker-compose` `github-actions` `none` |\n| `--project-dir` | 生成專案的路徑。預設是當前目錄。 |\n| `--install` | 新增檔案後安裝相依性。對 `add` 預設是 false。 |\n| `--package-manager` | `npm` `pnpm` `bun` `yarn` |\n| `--web-deploy` | addon 處理後記錄 web deployment target。 |\n| `--server-deploy` | addon 處理後記錄 server deployment target。 |\n\n## Addon 參考\n\n| Addon | 用途 |\n| --- | --- |\n| `mcp` | 為代碼代理程式產生專案內 MCP server 配置。 |\n| `skills` | 產生精選 coding-agent skill 檔案。 |\n| `turborepo` | Monorepo 編排。 |\n| `docker-compose` | 為支援的 stacks 提供本地服務編排。 |\n| `biome` `oxlint` `ultracite` `lefthook` `husky` `ruler` | 代碼品質和 hooks。 |\n| `starlight` `fumadocs` | 與 stack 相容時產生文檔網站。 |\n| `tauri` `pwa` `wxt` | Desktop、progressive web app 和瀏覽器擴充功能支援。 |\n| `msw` `storybook` | Testing 和元件開發工具。 |\n| `swr` `tanstack-query` `tanstack-table` `tanstack-virtual` `tanstack-db` `tanstack-pacer` | 資料擷取和 UI 工具。 |\n| `backend-utils` | 為 Hono、Express、Fastify、Elysia、feTS 或 NestJS servers 提供 asyncHandler、ApiResponse 和全域錯誤 handler。 |\n| `opentui` | Terminal UI 支援。 |\n\n## 冪等性\n\n`bts.jsonc` 是已安裝 addons 的 source of truth。如果要求的所有 addons 都已經存在，`add` 會報告沒有選擇新 addon，並且不會套用無關變更。\n\n## 推薦 workflow\n\n1. Commit 或 stash 目前工作。\n2. 使用明確 addon flags 執行 `add`。\n3. 審查產生的文件變更。\n4. 如果命令跳過安裝，則安裝相依性。\n5. 執行專案的 test、lint 或 typecheck 指令。\n"
     },
     "cli/check.mdx": {
       "frontmatter": {
         "title": "檢查項目",
-        "description": "從 CLI 診斷現有 Better Fullstack 項目。"
+        "description": "從 CLI 診斷現有 Better Fullstack 專案。"
       },
       "body": "\n`check` 指令驗證支架式 Better Fullstack 項目。它是現有 `doctor` 指令的面向使用者的別名。\n\n```npm\nnpm create better-fullstack@latest check -- --skip-checks\n```\n\n## 檢查做什麼\n\n- 讀取並驗證 `bts.jsonc`。\n- 檢查是否為偵測到的套件管理器或生態系統安裝了依賴項。\n- 報表 `.env.example` 檔案中缺少所需的環境變數。\n- 執行可用的生成項目類型或建置檢查，除非透過 `--skip-checks`。\n- 支援代理程式和 CI 腳本的 `--json`。\n\n## 旗幟\n\n| 旗幟 | 行為 |\n| --- | --- |\n| 位置項目目錄 | 要診斷的項目目錄。預設為當前目錄。 |\n| `--skip-checks` | 跳過產生的類型/建置檢查，僅檢查配置、依賴項和環境檔案。 |\n| `--json` | 列印結構化 JSON。當出現故障時，該命令以非零值退出。 |\n\n## 別名醫生\n\n`doctor` 仍可用於相容性：\n\n```npm\nnpm create better-fullstack@latest doctor -- --skip-checks\n```\n"
     },
@@ -66,14 +66,14 @@
     "cli/mcp.mdx": {
       "frontmatter": {
         "title": "MCP 指令",
-        "description": "透過 stdio 為 AI 代碼代理程式啟動 Better Fullstack MCP server。"
+        "description": "透過 stdio 為 AI 程式碼代理程式啟動 Better Fullstack MCP server。"
       },
       "body": "\n`mcp` 指令透過 stdio 啟動 Better Fullstack MCP server。代理可以用它檢查 schemas、驗證相容性、預覽生成檔案、建立項目，並向現有項目添加支援的功能。\n\n<PMTabs\n  npm=\"npx -y create-better-fullstack@latest mcp\"\n  pnpm=\"pnpm dlx create-better-fullstack@latest mcp\"\n  bun=\"bunx create-better-fullstack@latest mcp\"\n  yarn=\"yarn dlx create-better-fullstack@latest mcp\"\n/>\n\n伺服器使用 stdio transport。設定你的 MCP client 啟動該指令，並透過 standard input/output 通訊。\n\n## Client 範例\n\n使用 npm 的 Claude Code：\n\n```bash\nclaude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp\n```\n\n如果你偏好 pnpm、Bun 或 Yarn，把 `--` 之後的指令替換成符合的 launcher：\n\n| Package manager | Launcher |\n| --- | --- |\n| npm | `npx -y create-better-fullstack@latest mcp` |\n| pnpm | `pnpm dlx create-better-fullstack@latest mcp` |\n| Bun | `bunx create-better-fullstack@latest mcp` |\n| Yarn | `yarn dlx create-better-fullstack@latest mcp` |\n\n使用 npm 的通用 MCP client config：\n\n```json\n{\n  \"mcpServers\": {\n    \"better-fullstack\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"create-better-fullstack@latest\", \"mcp\"]\n    }\n  }\n}\n```\n\n其他 package managers 的等價 command/args：\n\n| Package manager | `command` | `args` |\n| --- | --- | --- |\n| pnpm | `pnpm` | `[\"dlx\", \"create-better-fullstack@latest\", \"mcp\"]` |\n| Bun | `bunx` | `[\"create-better-fullstack@latest\", \"mcp\"]` |\n| Yarn | `yarn` | `[\"dlx\", \"create-better-fullstack@latest\", \"mcp\"]` |\n\n## 工具表面\n\n| 工具 | 用途 |\n| --- | --- |\n| `bfs_get_guidance` | 傳回 workflow 規則和字段語義。 |\n| `bfs_get_schema` | 傳回一個 category 或所有 categories 的有效選項。 |\n| `bfs_check_compatibility` | 在生成前驗證 stack selections。 |\n| `bfs_plan_project` | 在記憶體中 dry-run 項目產生。 |\n| `bfs_create_project` | 將新項目寫入磁碟。 |\n| `bfs_plan_addition` | 為現有專案規劃 feature additions。 |\n| `bfs_add_feature` | 為現有項目新增支援的功能。 |\n\n專案規劃、建立和新增回應會在 generated file 或 mutation summary 之外，包含 graph metadata（`graphSummary`、`effectiveStack` 和 `stackPartSpecs`）。\n\n查看 [MCP tools reference](/docs/ai/mcp-tools/) 了解 inputs、outputs 和安全 workflows。\n\n## 安全說明\n\n- `bfs_plan_project` 不寫入檔案。\n- `bfs_create_project` 寫入文件，但不安裝依賴。\n- `bfs_add_feature` 會修改現有 Better Fullstack 項目，且不安裝相依性。\n- Agents 應該在建立專案之前呼叫 `bfs_get_guidance` 和 `bfs_check_compatibility`。\n\n## 相關指令\n\n- `docs` 開啟公開文檔網站。\n- `builder` 開啟互動式 Stack Builder。\n- `sponsors` 顯示 Better Fullstack sponsors。\n\n查看 [CLI reference](/docs/cli/) 取得這些工具命令的範例。\n"
     },
     "ecosystems/dotnet.mdx": {
       "frontmatter": {
         "title": ".NET",
-        "description": "ASP.NET Core 鷹架，包含 EF Core 或 Dapper、Identity、Minimal APIs 或 Hot Chocolate、SignalR、後台任務、測試和部署檔案。"
+        "description": "ASP.NET Core 鷹架，包含 EF Core 或 Dapper、Identity、Minimal APIs 或 Hot Chocolate、SignalR、背景任務、測試和部署檔案。"
       },
       "body": "\n.NET 專案會產生遵循標準 `dotnet` 約定的 ASP.NET Core 應用程式。為 Web 框架、資料存取、auth、API 風格、即時能力、後台任務、可觀測性、快取、測試和部署檔案選擇 .NET 選項。\n\n## 前要求\n\n- .NET SDK 10 或更新版本。\n- 使用帶有 `postgres` 資料庫的 `ef-core` 時需要 PostgreSQL；SQLite 不需要伺服器。\n- 使用 `docker` 部署目標或 `testcontainers-dotnet` 時需要 Docker。\n- 如果要初始化倉庫，需要 Git。\n\n## 腳本化範例\n\n```npm\nnpm create better-fullstack@latest my-dotnet-app -- \\\n  --ecosystem dotnet \\\n  --dotnet-web-framework aspnet-minimal \\\n  --dotnet-orm ef-core \\\n  --dotnet-auth aspnet-identity \\\n  --dotnet-api minimal-api \\\n  --dotnet-testing xunit \\\n  --dotnet-job-queue hangfire \\\n  --dotnet-realtime signalr \\\n  --dotnet-observability serilog \\\n  --dotnet-caching redis \\\n  --dotnet-deploy docker \\\n  --database postgres \\\n  --ai-docs none \\\n  --no-install \\\n  --no-git\n```\n\n## .NET 分類\n\n| 分類 | 值 |\n| --- | --- |\n| Web 框架 | `aspnet-minimal` `aspnet-mvc` `aspnet-blazor` `none` |\n| 資料存取 | `ef-core` `dapper` `linq2db` `none` |\n| Auth | `aspnet-identity` `duende-identityserver` `auth0-aspnet` `none` |\n| API | `minimal-api` `graphql-hotchocolate` `grpc-dotnet` `none` |\n| 測試 | `xunit` `nunit` `moq` `testcontainers-dotnet` `none` |\n| 後台任務 | `hangfire` `quartz-net` `hosted-services` `none` |\n| 即時能力 | `signalr` `none` |\n| 可觀測性 | `opentelemetry-dotnet` `serilog` `nlog` `health-checks` `none` |\n| 驗證 | `fluentvalidation` `data-annotations` `none` |\n| 快取 | `redis` `memory-cache` `none` |\n| 部署 | `docker` `azure` `aws` `none` |\n\n## 相容性說明\n\n- .NET 選項只在 `--ecosystem dotnet` 下生效。\n- ASP.NET Core 是獨立的 .NET Web 框架；TypeScript 前端和後端選項會被忽略。\n- `--dotnet-testing` 和 `--dotnet-observability` 接受多個值。\n- `ef-core` 從 `--database` 選擇 provider：`postgres` 使用 Npgsql，其他任何值都會回退到 SQLite。\n- `aspnet-identity` 只有與 `ef-core` 搭配時才註冊 Identity stores；沒有它時，腳手架會註冊普通的認證和授權服務。\n- 設定 `--ecosystem dotnet` 時的非互動預設值：`aspnet-minimal`、`ef-core`、`aspnet-identity`、`minimal-api`、`xunit`、`signalr`、`serilog` 和 `docker`。\n\n## 生成行為\n\n- 項目包含 `.csproj`、`Program.cs`、`appsettings.json`、`.http` 請求檔、測試項目、`.gitignore` 和 README 中的 setup notes。\n- EF Core 選擇會將 `DbContext` 連接到 Npgsql 或 SQLite provider，並加入用於遷移的 design-time 套件。\n- 選用選擇會新增可運作的 ASP.NET Core 程式碼，用於 Identity、Hot Chocolate GraphQL、gRPC 服務、SignalR hubs、Hangfire 或 Quartz.NET 工作、Serilog/NLog/OpenTelemetry pipelines、Redis 快取和多階段 Dockerfile。\n"
     },
@@ -87,14 +87,14 @@
     "ecosystems/go.mdx": {
       "frontmatter": {
         "title": "Go",
-        "description": "Go API、服務、gRPC、CLI、日誌、ORM 和認證輔助代碼腳手架。"
+        "description": "Go API、服務、gRPC、CLI、日誌、ORM 和認證輔助程式碼鷹架。"
       },
       "body": "\nGo 專案使用 Go modules 和 Go 原生範本。為 HTTP 服務、gRPC、CLI、日誌、ORM 和 Go 認證輔助代碼選擇 Go 選項。\n\n## 前要求\n\n- Go 工具鏈。\n- 如果要初始化倉庫，需要 Git。\n\n## 腳本化範例\n\n```npm\nnpm create better-fullstack@latest my-go-api -- \\\n  --ecosystem go \\\n  --go-web-framework gin \\\n  --go-orm gorm \\\n  --go-logging zap \\\n  --go-auth jwt \\\n  --go-api none \\\n  --go-cli none \\\n  --go-testing testify \\\n  --go-realtime gorilla-websocket \\\n  --go-message-queue nats \\\n  --go-caching redis \\\n  --go-config viper \\\n  --go-observability opentelemetry \\\n  --auth none \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n## Go 分類\n\n| 分類 | 值 |\n| --- | --- |\n| Web 框架 | `gin` `echo` `fiber` `chi` `none` |\n| ORM | `gorm` `sqlc` `ent` `none` |\n| API | `grpc-go` `gqlgen` `none` |\n| CLI | `cobra` `bubbletea` `urfave-cli` `none` |\n| 紀錄 | `zap` `zerolog` `slog` `logrus` `none` |\n| Go 認證輔助代碼 | `casbin` `jwt` `goth` `none` |\n| 測試（多選） | `testify` `gomock` `none` |\n| 即時能力 | `gorilla-websocket` `centrifuge` `none` |\n| 訊息佇列 | `nats` `watermill` `none` |\n| 快取 | `redis` `ristretto` `none` |\n| 配置 | `viper` `koanf` `none` |\n| 可觀測性 | `opentelemetry` `none` |\n\n## Auth 拆分\n\nGo 有兩個與認證相關的欄位：\n\n- `--go-auth casbin|jwt|none` 新增 Go 原生認證輔助代碼。\n- `--auth go-better-auth` 透過全域 auth 欄位選擇 GoBetterAuth。\n\nClerk、NextAuth、Stack Auth、Supabase Auth 和 Auth0 等其他全域 auth 提供者偏向 TypeScript，不應作為通用 Go 腳手架支援來展示。\n\n## 生成行為\n\n- 啟用安裝時，`go mod tidy` 是安裝/驗證路徑。\n- gRPC、Cobra 和 Bubble Tea 檔案僅在被選取時包含。\n- 測試、即時能力、訊息佇列、快取、配置和可觀測性選擇會在 `internal/` 下產生獨立套件（並為 `testify`/`gomock` 產生範例測試）。\n- `gqlgen` 會建構 `graph/schema.graphqls` + `gqlgen.yml`；執行 `go generate ./graph` 產生 GraphQL 伺服器程式碼（與 Ent 的程式碼產生流程一致）。\n- `goth` 會從 `GOOGLE_CLIENT_ID`/`GITHUB_CLIENT_ID` 形式的環境憑證註冊 OAuth 提供者。\n- AI 指令檔仍可透過 `--ai-docs` 使用，包括 `--ai-docs none`。\n"
     },
     "ecosystems/index.mdx": {
       "frontmatter": {
         "title": "生態系統",
-        "description": "支持的語言生態，以及 Better Fullstack 為每個生態生成什麼。"
+        "description": "支援的語言生態系，以及 Better Fullstack 為每個生態系產生什麼。"
       },
       "body": "\nBetter Fullstack 用一個 CLI 覆寫多個生態。每個生態都有自己的 scaffold surface、toolchain 和相容性規則。\n\n當產品 stack 跨語言時，使用 [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/)。它把項目建模成 stack parts，例如 `frontend:typescript:next`、`backend:go:gin`、`backend.orm:go:gorm` 和 `database:universal:postgres`。\n\n| 生態系統 | 最適合 | 說明 |\n| --- | --- | --- |\n| [TypeScript](/docs/ecosystems/typescript/) | Fullstack web、APIs、workers、desktop，以及最大的 web integration matrix。 | Web 選項是 TypeScript-first。 |\n| [React Native](/docs/ecosystems/react-native/) | 帶有 navigation、UI、storage、testing、push、OTA 和 deep linking 的 Expo mobile apps。 | 使用 React Native 生態 surface，而不是 TypeScript web frontend categories。 |\n| [Rust](/docs/ecosystems/rust/) | Backend services、CLI apps、GraphQL/gRPC、Rust web frontends 和強型別 libraries。 | 使用 Cargo；templates 會根據所選 Rust options 條件產生。 |\n| [Python](/docs/ecosystems/python/) | API 和 AI-oriented services，包含 framework、ORM、validation、queue、GraphQL 和 quality choices。 | 使用 `uv`；Python AI 是獨立的 multi-select category。 |\n| [Go](/docs/ecosystems/go/) | API services、gRPC、CLIs、logging、ORM 和 Go auth helpers。 | 使用 Go modules；GoBetterAuth 透過全域 `--auth go-better-auth` 選擇。 |\n| [Java](/docs/ecosystems/java/) | Spring Boot、Quarkus 或 plain Java 項目，包含 Maven/Gradle、persistence、auth、libraries 和 tests。 | 選擇 build tool 時 Java 使用 Maven 或 Gradle wrappers。 |\n| [Elixir](/docs/ecosystems/elixir/) | Phoenix 和 Phoenix LiveView apps，包含 Ecto、Absinthe、realtime、jobs、testing、quality 和 deploy choices。 | 使用 Mix；少數 schema-level options 會在 templates 跟上前保持停用。 |\n| [.NET](/docs/ecosystems/dotnet/) | ASP.NET Core services，包含 EF Core 或 Dapper、Identity、Minimal APIs 或 Hot Chocolate、SignalR、jobs 和 tests。 | 使用 .NET SDK；testing 和 observability 是 multi-select categories。 |\n\n## 預設 CLI baseline\n\n接受 defaults 會建立一個 TypeScript web 項目。 package manager 會跟著啟動 CLI 時所使用的 package manager。\n\n```json\n{\n  \"ecosystem\": \"typescript\",\n  \"frontend\": [\"tanstack-router\"],\n  \"backend\": \"hono\",\n  \"runtime\": \"bun\",\n  \"database\": \"sqlite\",\n  \"orm\": \"drizzle\",\n  \"auth\": \"better-auth\",\n  \"api\": \"trpc\",\n  \"cssFramework\": \"tailwind\",\n  \"uiLibrary\": \"shadcn-ui\",\n  \"testing\": \"vitest\",\n  \"addons\": [\"turborepo\"],\n  \"versionChannel\": \"stable\",\n  \"aiDocs\": [\"claude-md\"]\n}\n```\n\nRuntime 和 package manager 是獨立選擇。例如，產生的 TypeScript 項目可以用 npm、pnpm、Yarn 或 Bun 安裝依賴，同時選擇 Bun 作為 application runtime。\n\n## 共享選項並不通用\n\n有些 flags 是全域的，因為它們儲存在同一個專案配置裡，但不是每個 flag 都適用於每個生態。查看下面的生態頁面以了解實際產生內容，使用 [Reference Options](/docs/reference/options/) 查看準確 CLI values。\n"
     },
@@ -108,7 +108,7 @@
     "ecosystems/multi-ecosystem.mdx": {
       "frontmatter": {
         "title": "Multi-Ecosystem",
-        "description": "用跨生態系的前端、後端、資料庫和行動端部分組合一個 Better Fullstack 項目。"
+        "description": "用跨生態系的前端、後端、資料庫和行動端部分組合一個 Better Fullstack 專案。"
       },
       "body": "\nMulti-Ecosystem 模式將專案建模為相互連接的 stack parts，而不是一個扁平的生態系統選擇。當產品跨語言時使用它，例如 TypeScript 前端、Go API、共用 PostgreSQL 資料庫和 React Native 行動應用。\n\n可以在 [Stack Builder](https://better-fullstack.dev/new?mode=multi) 中打開，或向 CLI 傳入重複的 `--part` flags。\n\n## Stack parts\n\n每個 part 使用這種形狀：\n\n```txt\nrole:ecosystem:tool\nowner.role:ecosystem:tool\n```\n\n頂層 roles 描述產生的應用或共享基礎設施。有 owner 的 roles 會把能力掛到父級 part 上。\n\n| 範例 | 意義 |\n| --- | --- |\n| `frontend:typescript:next` | 產生 TypeScript Next.js 前端。 |\n| `backend:go:gin` | 產生 Go Gin 後端。 |\n| `backend.orm:go:gorm` | 把 GORM 附加到選取的後端。 |\n| `backend.api:rust:tonic` | 把 Tonic gRPC 附加到 Rust 後端。 |\n| `database:universal:postgres` | 新增共享 PostgreSQL 資料庫 part。 |\n| `mobile:react-native:native-bare` | 產生 React Native 行動應用程式。 |\n\n## 腳本化範例\n\n```npm\nnpm create better-fullstack@latest my-mixed-app -- \\\n  --part frontend:typescript:next \\\n  --part backend:go:gin \\\n  --part backend.orm:go:gorm \\\n  --part backend.auth:go:jwt \\\n  --part database:universal:postgres \\\n  --part mobile:react-native:native-bare \\\n  --addons turborepo docker-compose\n```\n\n## 真相來源\n\nMulti-ecosystem 專案會把 `stackParts` 寫入 `bts.jsonc`。這些 parts 是產生結構、歷史記錄和可重現命令的真相來源。 `backend`、`orm` 或 `frontend` 等舊欄位仍可能作為從圖派生的相容性 fallback 出現。\n\n產生的指令會把圖保留為重複的 `--part` flags，因此可以在不依賴隱藏 builder 狀態的情況下重建項目。\n\n## Builder 流程\n\nStack Builder 的 Multi-Ecosystem 模式會依序走過：\n\n1. Frontend - TypeScript Web 前端。\n2. Backend - TypeScript、Rust、Python、Go、Java、Elixir 或 .NET 後端，以及 owner 的後端能力。\n3. Database - 共享的通用資料庫選擇。\n4. Mobile - React Native 應用選擇。\n5. Finalize - addons、AI docs、install、Git 和 version 設定。\n\n## 相容性\n\n- 目前圖模型每個 role 只支援一個被選取的 primary part。\n- 帶有 owner 的 capability parts 必須引用 owner，例如 `backend.orm:go:gorm`。\n- capability 的生態系通常需要與 owner 生態系相符。\n- 通用 database parts 可以跨生態系共享。\n- 有些工具會提供隱含 parts。例如，被選取的後端可能提供資料庫或路由假設，這些假設會出現在產生的 `stackParts` 中。\n- compatibility checker 會在產生前驗證圖 parts，並報告 owner、重複和不支援工具的問題。\n"
     },
@@ -142,7 +142,7 @@
     },
     "getting-started/first-project.mdx": {
       "frontmatter": {
-        "title": "第一個項目",
+        "title": "第一個專案",
         "description": "Scaffold、檢查、安裝並執行一個 Better Fullstack 專案。"
       },
       "body": "\n這個 walkthrough 會建立一個項目，預覽 CLI 可以產生什麼，並說明 scaffold 完成後應該檢查哪裡。\n\n## 1. 建立項目\n\n運行嚮導：\n\n```npm\nnpm create better-fullstack@latest my-app\n```\n\n接受 TypeScript starter 的 defaults，或調整 prompts 來符合你想要的 stack。\n\n## 2. 不寫入文件先預覽\n\n想先檢查產生的檔案樹時使用 `--dry-run`：\n\n```npm\nnpm create better-fullstack@latest my-app -- --dry-run\n```\n\n在嘗試新生態、新 deployment target 或 multi-ecosystem stack 之前，dry run 很有用。\n\n## 3. 從命令生成\n\n明確 flags 讓 scaffold 可重複。這個範例建立一個 Next.js self-backend 項目，並跳過 install/Git，方便​​你先檢視文件：\n\n```npm\nnpm create better-fullstack@latest my-app -- \\\n  --ecosystem typescript \\\n  --frontend next \\\n  --backend self \\\n  --runtime none \\\n  --database postgres \\\n  --orm drizzle \\\n  --auth better-auth \\\n  --api trpc \\\n  --db-setup none \\\n  --ai none \\\n  --payments none \\\n  --examples none \\\n  --addons none \\\n  --ai-docs none \\\n  --version-channel stable \\\n  --no-install \\\n  --no-git\n```\n\n<Callout kind=\"info\" title=\"Prompt 行为\">\n顯式 flags 會跳過它們覆蓋的 categories。 `--yes` 接受 defaults，並與 `--frontend`、`--backend`、`--database` 等核心 stack flags 衝突。對想關閉的可選 categories 使用 `none`。\n</Callout>\n\n## 4. 安裝依賴\n\n如果你使用了 `--no-install`，在專案內手動安裝：\n\n```bash\ncd my-app\n```\n\n```npm\nnpm install\n```\n\n語言原生生態使用自己的工具：\n\n```bash\ncargo build\nuv sync\ngo mod tidy\n./mvnw test\n./gradlew test\n```\n\n## 5. 檢查項目\n\n生成項目包含：\n\n- 記錄所選 stack 和 schema reference 的 `bts.jsonc`。\n- 面向所選生態的 framework、package 和 config 檔案。\n- CLI 列印的可複現指令。\n- 可選 AI docs，例如 `CLAUDE.md`、`Agents.md` 或 `.cursorrules`。\n- 當所選模板提供時，會包含 README 和 setup notes。\n\n## 6. 後續新增支援的 features\n\n在生成專案內，使用 `add` 新增支援的 addons：\n\n```npm\nnpm create better-fullstack@latest add -- --addons mcp skills\n```\n\n`add` 指令會讀取 `bts.jsonc`，跳過已經存在的 addons，並在依賴未自動安裝時列印安裝指引。\n\n## 下一步\n\n- [CLI Create](/docs/cli/create/) 列出所有 scaffold flags。\n- [CLI Add](/docs/cli/add/) 解釋 existing-project addon updates。\n- [生態系](/docs/ecosystems/) 比較支持的項目家族。\n"
@@ -157,7 +157,7 @@
     "index.mdx": {
       "frontmatter": {
         "title": "Better Fullstack 文檔",
-        "description": "了解 Better Fullstack 如何為 web、mobile 和語言原生生態產生類型化項目。"
+        "description": "了解 Better Fullstack 如何為 web、mobile 和語言原生生態系產生類型化專案。"
       },
       "body": "\nBetter Fullstack 是針對類型化產品 stack 的專案產生器。選擇 frontend、backend、資料層、服務、tooling 和目標生態；CLI 會寫入符合的文件，並且把 stack 記錄到 `bts.jsonc`。\n\n需要引導式設定時使用互動式 CLI；想視覺化比較選項時使用 [Stack Builder](https://better-fullstack.dev/new)；需要給 CI、文件或其他 developer 留下可重複指令時使用明確 flags。\n\n## 要求\n\nCLI 運行在 Node.js 20 或更高版本。\n\n```bash\nnode --version\n```\n\n產生的專案也可能需要對應生態的 toolchain：React Native 需要 Expo tooling，Rust 需要 Cargo，Python 需要 `uv`，Go 需要 Go，Java 需要 Java 21，Phoenix 專案需要 Elixir/Erlang。\n\n## 創建第一個項目\n\n運行嚮導並回答 prompts：\n\n```npm\nnpm create better-fullstack@latest my-app\n```\n\n使用 npm 時，Better Fullstack flags 要放在 `--` 分隔符號之後。 package-manager tabs 會顯示對應的 pnpm、Bun 和 Yarn 指令，這些指令不需要 npm 專屬的分隔符號。\n\n## 預設配置會創建什麼\n\n接受 defaults 會建立一個 TypeScript 項目，包含：\n\n- TanStack Router frontend 和 Hono backend。\n- Bun runtime、SQLite、Drizzle、Better Auth 和 tRPC。\n- Tailwind CSS、shadcn/ui、Vitest 和 Turborepo。\n- 啟動 CLI 時使用的 package manager、穩定依賴版本、Git、啟用安裝，以及 `CLAUDE.md`。\n\n你可以保留這個 stack，從模板開始，或完全切換到其他生態。\n\n## 選擇 stack 的方式\n\n| 路徑 | 適合場景 |\n| --- | --- |\n| CLI 精靈 | 你想要 prompts 和合理 defaults。 |\n| Stack Builder | 你想在生成前探索兼容組合。 |\n| 顯式 flags | 你想要在 scripts、docs 或 issue reports 中得到可重複 output。 |\n| Agent Skill | 你想讓 coding agent 使用 CLI workflow，而不是手寫 starter 檔案。 |\n| MCP server | 你想讓 AI coding agent 檢查 schema、驗證相容性，並且安全地 dry-run。 |\n\n## 生成項目的上下文\n\n每個生成項目都會包含：\n\n- 記錄所選 stack 的 `bts.jsonc`。\n- CLI 列印的可複現指令。\n- 面向所選生態的 framework、package 和 config 檔案。\n- 可選的 AI 指令文件，例如 `CLAUDE.md`、`Agents.md` 或 `.cursorrules`。\n\n## 下一步\n\n- [安裝](/docs/getting-started/installation/) 解釋 launchers 和 toolchains。\n- [第一個項目](/docs/getting-started/first-project/) 逐步介紹 scaffold、dry-run、安裝和檢查。\n- [CLI Create](/docs/cli/create/) 列出 flags 和腳本化範例。\n- [生態系](/docs/ecosystems/) 比較 TypeScript、React Native、Rust、Python、Go、Java 和 Elixir。\n- [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) 展示如何在一個專案中組合 web、backend、database 和 mobile parts。\n"
     },
@@ -227,7 +227,7 @@
     "reference/verified-combinations.mdx": {
       "frontmatter": {
         "title": "已驗證的組合",
-        "description": "查看哪些 Better Fullstack 鷹架組合目前具有冒煙、ScaffBench、釋放防護和已發布的包裝證據。"
+        "description": "查看哪些 Better Fullstack 鷹架組合目前具備通過 smoke 測試、ScaffBench、release-guard 和已發布套件的驗證證據。"
       },
       "body": "\nBetter Fullstack 僅將具有目前通過證據的行視為已驗證。產生的帳本有意保守：僅矩陣和配置的行保持可見，但它們不計為綠色聲明。\n\n<VerifiedCombinationsSummary />\n\n## 索賠涵蓋的內容\n\n- PR 核心煙霧預設，具有安裝、建置、類型檢查和特定於生態系統的驗證。\n- ScaffBench 2 規範基準驗證。\n- 釋放架構、範本、快照、AI 範例、CLI/builder 奇偶校驗、Web 堆疊狀態、可重現指令、新增/歷史流和文件連結驗證的防護閘。\n- 當 `testing/.published-package/summary.json` 存在時，透過 Bun、npm 和 pnpm 套件管理器入口點發佈包腳手架。\n\n## 它沒有聲稱什麼\n\n- 每個理論堆疊組合都經過驗證。\n- 配置的或僅矩陣的行正在通過。\n- 套件管理器註冊表安裝超出了已發布套件煙霧工件中記錄的套件規格。\n\n## 失敗連結\n\n每個證據卡都連結到來源工件、擁有者區域和重新運行命令。當某個部分未完全通過時，請依序使用這些連結：\n\n1. 開啟來源工件並找到失敗的行或門。\n2. 請按照所有者連結找到導致該故障的範本、套件或測試區域。\n3. 修復後重新執行列出的命令，然後重建已驗證的組合分類帳。\n\n## 原始碼神器\n\n詳細帳本透過以下方式在 `docs/verified-combinations.md` 產生：\n\n```sh\nbun run build:verified-combinations\n```\n\n若要在重建分類帳之前刷新發布門證據，請執行：\n\n```sh\nbun run test:release:record\n```\n\n若要刷新目前發布的套件的套件管理器註冊表安裝證據，請執行：\n\n```sh\nbun run test:published-package\n```\n\n## 徽章端點\n\n當您想要顯示目前已驗證的計數時，請使用 Shields 相容端點：\n\n```md\n[![Verified combinations](https://img.shields.io/endpoint?url=https%3A%2F%2Fbetter-fullstack.dev%2Fapi%2Fverified-combinations)](https://better-fullstack.dev/docs/reference/verified-combinations)\n```\n\n端點返回煙霧、ScaffBench、release-guard 和已發布套件證據的聚合通過計數。\n\n<Callout kind=\"info\" title=\"Scope matters\">\n只有在產生的帳本中顯示為通過的組合才應被描述為已驗證。更廣泛的主張應等待更多煙霧、ScaffBench、釋放防護或已發布的包裝證據。\n</Callout>\n"
     },
@@ -262,7 +262,7 @@
     "sections/deployment.mdx": {
       "frontmatter": {
         "title": "部署",
-        "description": "將 Web 和 server 部署目標作為一個 stack 分割區來選擇。"
+        "description": "將 Web 和 server 部署目標作為一個 stack 區段一起選擇。"
       },
       "body": "\n部署是一個 stack 分區，不是獨立的文檔支柱。它控制 Better Fullstack 是否在專案建立時透過 `--web-deploy` 和 `--server-deploy` 輸出平台檔案。\n\n當你希望產生的平台檔案與選取的前端、後端、runtime 和 workspace layout 相符時，請在 scaffold 階段使用部署 flags。\n\n## 部署 flags\n\n| Flag | 值 |\n| --- | --- |\n| `--web-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `netlify` `docker` `sst` `none` |\n| `--server-deploy` | `vercel` `cloudflare` `fly` `railway` `render` `docker` `sst` `none` |\n\n部署選擇會根據 stack 做相容性檢查。有些 fullstack 框架透過 Web app 部署，有些後端不需要單獨的 server deployment，而 Convex 或 Encore 會管理自己的平台路徑。\n\n## 目標\n\n| 目標 | 最適合 | 說明 |\n| --- | --- | --- |\n| Docker | Self-hosting、可重現的生產鏡像和本地服務編排。 | 與 `docker-compose` addon 分開，後者專注於本地服務。 |\n| Vercel | 支援的 React、Nuxt、SvelteKit、Solid 和 serverless 部署。 | Fullstack 前端通常透過 Web app 部署，而不是單獨的 server target。 |\n| Cloudflare | Workers runtime stack 和 edge-first Hono servers。 | 相容性限定在 Workers-compatible server runtimes。 |\n| Fly.io | Docker-backed app hosting，支援區域放置和 long-running services。 | 適合持久性服務端進程。 |\n| Railway | Git-connected app hosting，基於 Dockerfile 建置並提供 managed services。 | 部署前配置生產環境變數。 |\n| Render | Blueprint-driven app hosting，基於 Dockerfile 建置（repo 根目錄下的 `render.yaml`）。 | Web 和 server 以獨立 Docker services 部署；在 Render dashboard 設定 env vars。 |\n| Netlify | 靜態和 SSR Web 前端（Next.js、Vite SPAs、SvelteKit、Nuxt）。 | 僅 Web 目標；將 site base directory 設定為 `apps/web`。 |\n| SST | 面向 AWS 的 infrastructure as code，用於 TypeScript app workflows。 | 當你想要明確擁有 AWS 資源時最適合。 |\n\n## 部署前\n\n- 為 auth secrets、database URLs、provider keys 和 public app URLs 設定生產環境變數。\n- 在路由流量前，對生產資料庫運行遷移。\n- 確認產生的平台配置與應接收請求的 app 相符。\n- 將僅本機服務容器、測試憑證和產生日誌排除在來源碼控制之外。\n\n## Scaffold 後添加\n\n`add` 指令可以記錄部署 flags，但它目前會先處理 addons。如果沒有選擇新的 addon，僅部署的 `add` 指令會提前退出。在 deployment-only add flows 擴充之前，優先在 `create` 時選擇部署目標。\n"
     },
@@ -408,7 +408,7 @@
     "index.mdx": {
       "frontmatter": {
         "title": "全端應用 Starter 指南",
-        "description": "以 TypeScript、React Native、Rust、Python、Go、Java 和 AI 專案的 Better Fullstack 實用指南。",
+        "description": "涵蓋 TypeScript、React Native、Rust、Python、Go、Java 和 AI 入門專案的 Better Fullstack 實用指南。",
         "updated": "2026-05-12",
         "category": "Guides",
         "tags": [
@@ -431,7 +431,7 @@
     },
     "java/spring-boot-postgres-jpa.mdx": {
       "frontmatter": {
-        "title": "Spring Boot with PostgreSQL 與 JPA",
+        "title": "Spring Boot with PostgreSQL and JPA",
         "description": "使用 Better Fullstack 建立包含 Spring Boot、PostgreSQL、Maven、JPA、JUnit 5 和選用 Spring libraries 的 Java API project。",
         "updated": "2026-05-12",
         "category": "Java",
@@ -476,7 +476,7 @@
     "packs/create-ai-agent-app.mdx": {
       "frontmatter": {
         "title": "建立 AI 代理應用",
-        "description": "使用 Next.js、AI CLI 工作流程文件、MCP、skills、Better Auth、Drizzle、SQLite、Tailwind CSS 和 __BFS_PH_FSSQLite、Tailwind CSS 和 __BFS 建立代理。",
+        "description": "使用 Next.js、AI CLI 工作流程文件、MCP、skills、Better Auth、Drizzle、SQLite、Tailwind CSS 和 shadcn/ui 建立 AI 代理應用程式。",
         "updated": "2026-05-21",
         "category": "Packs",
         "tags": [
@@ -498,7 +498,7 @@
     },
     "packs/create-internal-tool.mdx": {
       "frontmatter": {
-        "title": "創建內部工具",
+        "title": "建立內部工具",
         "description": "使用 TanStack Router、Hono、Drizzle、PostgreSQL、Better Auth、tRPC、Tailwind CSS 和 shadcn/ui 建立內部工具。",
         "updated": "2026-05-21",
         "category": "Packs",
@@ -544,7 +544,7 @@
     },
     "packs/create-mobile-app.mdx": {
       "frontmatter": {
-        "title": "創建行動應用",
+        "title": "建立行動應用",
         "description": "使用 Better Fullstack Mobile App pack，透過 Expo、React Native 和 Uniwind 建立行動應用程式。",
         "updated": "2026-05-21",
         "category": "Packs",
@@ -613,7 +613,7 @@
     },
     "packs/create-saas-app.mdx": {
       "frontmatter": {
-        "title": "創建 SaaS 應用",
+        "title": "建立 SaaS 應用",
         "description": "學習如何以 Next.js、Better Auth、Stripe、PostgreSQL、Drizzle、React Email、Tailwind CSS 和 shadcn/ui 建立 SaaS 應用程式。",
         "updated": "2026-05-21",
         "category": "Packs",
@@ -811,7 +811,7 @@
     },
     "rust/tonic-sqlx-grpc-service.mdx": {
       "frontmatter": {
-        "title": "Rust gRPC Service with Tonic 與 SQLx",
+        "title": "Rust gRPC Service with Tonic and SQLx",
         "description": "使用 Better Fullstack 建立包含 Axum、Tonic、SQLx、tracing 和 structured error handling 的 Rust gRPC service。",
         "updated": "2026-05-12",
         "category": "Rust",
@@ -855,7 +855,7 @@
     },
     "typescript/create-tanstack-start-project.mdx": {
       "frontmatter": {
-        "title": "建立 TanStack Start 項目",
+        "title": "建立 TanStack Start 專案",
         "description": "使用 Better Fullstack 建立包含 routing、API routes、Drizzle、SQLite、Better Auth、Tailwind CSS 和 shadcn/ui 的 TanStack Start fullstack app。",
         "updated": "2026-05-12",
         "category": "TypeScript",
@@ -877,7 +877,7 @@
     },
     "typescript/hono-trpc-drizzle.mdx": {
       "frontmatter": {
-        "title": "Hono with tRPC 和 Drizzle",
+        "title": "Hono with tRPC and Drizzle",
         "description": "建立包含 Hono、tRPC、Drizzle、PostgreSQL、TanStack Router、Tailwind CSS 和 Better Auth 的 TypeScript fullstack app。",
         "updated": "2026-05-12",
         "category": "TypeScript",
@@ -899,7 +899,7 @@
     },
     "typescript/nextjs-drizzle-better-auth.mdx": {
       "frontmatter": {
-        "title": "Next.js with Drizzle 和 Better Auth",
+        "title": "Next.js with Drizzle and Better Auth",
         "description": "使用 Better Fullstack 建立包含 Drizzle、PostgreSQL、Better Auth、Tailwind CSS、shadcn/ui 和 tRPC 的 Next.js fullstack app。",
         "updated": "2026-05-12",
         "category": "TypeScript",
@@ -921,7 +921,7 @@
     },
     "typescript/nuxt-prisma-better-auth.mdx": {
       "frontmatter": {
-        "title": "Nuxt with Prisma 與 Better Auth",
+        "title": "Nuxt with Prisma and Better Auth",
         "description": "建立包含 PostgreSQL、Prisma、Better Auth、oRPC、Tailwind CSS 和 Better Fullstack 專案結構的 Nuxt fullstack app。",
         "updated": "2026-05-12",
         "category": "TypeScript",
@@ -944,7 +944,7 @@
     "typescript/qwik-city-app.mdx": {
       "frontmatter": {
         "title": "Qwik City App Starter",
-        "description": "建立帶有 Tailwind CSS 和最小 Better Fullstack 項目配置的 Qwik City app。",
+        "description": "建立帶有 Tailwind CSS 和最小 Better Fullstack 專案配置的 Qwik City app。",
         "updated": "2026-05-12",
         "category": "TypeScript",
         "tags": [
@@ -1032,8 +1032,8 @@
   "blog": {
     "scaffbench-2-1.mdx": {
       "frontmatter": {
-        "title": "“ScaffBench 2.1：Claude Sonnet 5 vs Claude Opus 4.8 在腳手架上的提示”",
-        "description": "“Claude Sonnet 5 進入 ScaffBench 2.1，在 13 個硬性全端規範上針對 Opus 4.8（低 + 最大工作量）進行測試：模型能否通過提示搭建建築項目？”",
+        "title": "ScaffBench 2.1：Claude Sonnet 5 vs Claude Opus 4.8 從提示搭建專案的對決",
+        "description": "Claude Sonnet 5 加入 ScaffBench 2.1，在 13 個高難度全端規範上與 Opus 4.8（low 與 max effort）進行對比測試：模型能否僅憑一段提示就搭建出可正常建構的專案？",
         "date": "2026-07-01",
         "authors": [
           "Ibrahim Elkamali"
@@ -1056,8 +1056,8 @@
     },
     "scaffbench-2.mdx": {
       "frontmatter": {
-        "title": "“ScaffBench 2：十個配置，五個生態系統，以及模型是否可以透過提示建立腳手架”",
-        "description": "“ScaffBench 2 透過五個硬全端規範運行 Opus、GPT-5.5 和免費模型，以測試僅提示的腳手架是否真正建構。”",
+        "title": "ScaffBench 2：十個配置、五個生態系統，以及模型能否從提示搭建專案",
+        "description": "ScaffBench 2 透過五個高難度全端規範執行 Opus、GPT-5.5 和免費模型，測試僅靠提示產生的腳手架是否真的能成功建構。",
         "date": "2026-06-26",
         "authors": [
           "Ibrahim Elkamali"
