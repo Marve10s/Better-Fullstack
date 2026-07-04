@@ -28,6 +28,11 @@ const RESOLVED_ID = "\0" + VIRTUAL_ID;
 const LOCALIZED_CONTENT_ID = "virtual:localized-content";
 const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
 const LOCALIZED_MDX_PREFIX = "virtual:localized-content-mdx/";
+const LOCALIZED_RAW_PREFIX = "virtual:localized-content-raw/";
+
+function rawImporterName(locale: LocalizedContentLocale): string {
+  return `__raw_${locale.replace(/[^a-zA-Z0-9]/g, "_")}`;
+}
 
 type ContentSubdir = "docs" | "guides" | "blog";
 
@@ -189,6 +194,8 @@ export function contentMetaPlugin(): Plugin {
       blog: { mdxLoaders: [], rawLoaders: [] },
     };
 
+    const rawLocales = new Set<LocalizedContentLocale>();
+
     for (const locale of LOCALIZED_CONTENT_LOCALES) {
       const bundle = bundles[locale];
       if (!bundle) continue;
@@ -201,23 +208,55 @@ export function contentMetaPlugin(): Plugin {
           if (!entry.body) continue;
           const key = localizedLoaderKey(locale, contentSubdir, relativePath);
           const moduleId = localizedMdxModuleId(contentSubdir, locale, relativePath);
-          const source = localizedEntryToMdxSource(entry);
           maps[contentSubdir].mdxLoaders.push(
             `${JSON.stringify(key)}: () => import(${JSON.stringify(moduleId)})`,
           );
+          // Raw MDX source is only consumed by the search index (opened on
+          // demand). Load it lazily from a per-locale bundle so the source text
+          // stays OUT of the initial-load chunk instead of being inlined here.
+          rawLocales.add(locale);
           maps[contentSubdir].rawLoaders.push(
-            `${JSON.stringify(key)}: () => Promise.resolve(${JSON.stringify(source)})`,
+            `${JSON.stringify(key)}: () => ${rawImporterName(locale)}().then((m) => m.default[${JSON.stringify(key)}] ?? "")`,
           );
         }
       }
     }
 
+    const rawImporters = [...rawLocales].map(
+      (locale) =>
+        `const ${rawImporterName(locale)} = () => import(${JSON.stringify(
+          LOCALIZED_RAW_PREFIX + locale,
+        )});`,
+    );
+
     return [
+      ...rawImporters,
       `export const localizedDocsMdxLoaders = {${maps.docs.mdxLoaders.join(",")}};`,
       `export const localizedDocsRawMdxLoaders = {${maps.docs.rawLoaders.join(",")}};`,
       `export const localizedGuideMdxLoaders = {${maps.guides.mdxLoaders.join(",")}};`,
       `export const localizedBlogMdxLoaders = {${maps.blog.mdxLoaders.join(",")}};`,
     ].join("\n");
+  }
+
+  function buildLocalizedRawModule(
+    bundles: LocalizedJsonBundles,
+    locale: LocalizedContentLocale,
+  ): string {
+    const bundle = bundles[locale];
+    const entriesOut: string[] = [];
+    if (bundle) {
+      // Only docs raw source is referenced (localizedDocsRawMdxLoaders); keep the
+      // per-locale bundle to exactly that set.
+      const docs = bundle.docs ?? {};
+      for (const [relativePath, entry] of Object.entries(docs).sort(([a], [b]) =>
+        a.localeCompare(b),
+      )) {
+        if (!entry.body) continue;
+        const key = localizedLoaderKey(locale, "docs", relativePath);
+        entriesOut.push(`${JSON.stringify(key)}: ${JSON.stringify(localizedEntryToMdxSource(entry))}`);
+      }
+    }
+    return `export default {${entriesOut.join(",")}};`;
   }
 
   return {
@@ -231,6 +270,10 @@ export function contentMetaPlugin(): Plugin {
       if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
       if (options.ssr && id.startsWith(LOCALIZED_MDX_PREFIX)) return undefined;
       if (id.startsWith(LOCALIZED_MDX_PREFIX)) {
+        return id;
+      }
+      if (options.ssr && id.startsWith(LOCALIZED_RAW_PREFIX)) return undefined;
+      if (id.startsWith(LOCALIZED_RAW_PREFIX)) {
         return id;
       }
       return undefined;
@@ -251,6 +294,15 @@ export function contentMetaPlugin(): Plugin {
           ];
         if (!entry) return undefined;
         return localizedEntryToMdxSource(entry);
+      }
+
+      if (id.startsWith(LOCALIZED_RAW_PREFIX)) {
+        const locale = id.slice(LOCALIZED_RAW_PREFIX.length);
+        if (!LOCALIZED_CONTENT_LOCALES.includes(locale as LocalizedContentLocale)) {
+          return undefined;
+        }
+        for (const filePath of localizedWatchFiles) this.addWatchFile(filePath);
+        return buildLocalizedRawModule(bundles, locale as LocalizedContentLocale);
       }
 
       if (id !== RESOLVED_ID) return undefined;
