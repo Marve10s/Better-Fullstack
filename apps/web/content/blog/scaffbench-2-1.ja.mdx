@@ -1,6 +1,6 @@
 ---
-title: 「ScaffBench 2.1: プロンプトからのスキャフォールディングにおける Claude Sonnet 5 と Claude Opus 4.8」
-description: 「Claude Sonnet 5 は ScaffBench 2.1 に入り、13 のハード フルスタック仕様で Opus 4.8 (低 + 最大努力) に対してテストされました。モデルはプロンプトから建築プロジェクトを足場にできますか?」
+title: "「ScaffBench 2.1: プロンプトからのスキャフォールディングにおける Claude Sonnet 5 と Claude Opus 4.8」"
+description: "「Claude Sonnet 5 は ScaffBench 2.1 に入り、13 のハード フルスタック仕様で Opus 4.8 (低 + 最大努力) に対してテストされました。モデルはプロンプトから建築プロジェクトを足場にできますか?」"
 date: 2026-07-01
 authors:
   - Ibrahim Elkamali
@@ -43,17 +43,17 @@ CORE pass@1 = プロジェクトはプロンプトからインストール、ビ
 | Claude ソネット 4.6 · **高** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
 | GPT-5.3 Codex スパーク · **高** | **1 / 11** (9%) | — | 60k | 12 | 92% |
 
-<ベンチバーチャート
-  title="CORE ビルド pass@1 · プロンプトのみ"
-  バー={[
-    { ラベル: "Opus 4.8 · 低"、値: 27、表示: "3 / 11 · 27%" },
-    { ラベル: "Opus 4.8 · 最大"、値: 27、表示: "3 / 11 · 27%" },
-    { ラベル: "Gemini 3.5 フラッシュ · 高"、値: 27、表示: "3 / 11 · 27%"、ハイライト: true },
-    { ラベル: "ソネット 5 · 最大"、値: 20、表示: "2 / 10 · 20%" },
-    { ラベル: "ソネット 4.6 · 高"、値: 9、表示: "1 / 11 · 9%" },
-    { ラベル: "Codex スパーク・高"、値: 9、表示: "1 / 11・9%" },
+<BenchBarChart
+  title="CORE build pass@1 · prompt-only"
+  bars={[
+    { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
+    { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
+    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%", highlight: true },
+    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
+    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="決定的ではない仕様 (バリデーターがプロジェクトを測定できなかった) は除外されます。正直な部分を参照してください。Gemini (反重力経由) と Codex は、これらの計画のコストを報告しません。"
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Gemini (via Antigravity) and Codex don't report cost on these plans."
 />
 
 <Callout kind="info">
@@ -93,14 +93,14 @@ Sonnet 5 は、この分野で最も忙しい**実行でもあります。プロ
 最大のオーパスの 2 倍 (99)、低オーパスの約 6 倍 (38) よりもはるかに多くの編集と再試行を経て、
 それでも、ランディングされるビルドの数は少なくなります。
 
-<ベンチバーチャート
-  title="プロジェクトあたりの平均ツール ステップ (多い≠良い)"
-  バー={[
-    { ラベル: "Opus 4.8 · low"、値: 38、表示: "38 ステップ" },
-    { ラベル: "Opus 4.8 · max"、値: 99、表示: "99 ステップ" },
-    { ラベル: "Sonnet 5 · max"、値: 215、表示: "215 ステップ"、ハイライト: true },
+<BenchBarChart
+  title="Avg tool steps per project (more ≠ better)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 38, display: "38 steps" },
+    { label: "Opus 4.8 · max", value: 99, display: "99 steps" },
+    { label: "Sonnet 5 · max", value: 215, display: "215 steps", highlight: true },
   ]}
-  caption="生成されたプロジェクトごとのツール使用コール。スコアリングされたスペックの平均値。Sonnet は両方のフロンティアスペックでもタイムアウトになりました。"
+  caption="Tool-use calls per generated project, averaged over scored specs. Sonnet also timed out on both frontier specs."
 />
 
 ソネット 5 の内容: 「何を」使用するかについては優れたセンスがあるが、高密度のスタックを「組み立て」るのは苦手
@@ -114,14 +114,14 @@ ScaffBench 2 以降の明白な仮説は、モデルが適切なライブラリ�
 同じ 13 スペックで、Opus 4.8 のスコアは **最低と最高で同じで、いずれにしても 3/11** で、**5 ～ 10 倍でした。
 料金**：
 
-<ベンチバーチャート
-  title="プロジェクトあたりの平均コスト ($)"
-  バー={[
-    { ラベル: "Opus 4.8 · low"、値: 1.63、表示: "$1.63" },
-    { ラベル: "Sonnet 5 · max"、値: 5.26、表示: "$5.26"、ハイライト: true },
-    { ラベル: "Opus 4.8 · 最大"、値: 9.21、表示: "$9.21" },
+<BenchBarChart
+  title="Avg cost per project ($)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 1.63, display: "$1.63" },
+    { label: "Sonnet 5 · max", value: 5.26, display: "$5.26", highlight: true },
+    { label: "Opus 4.8 · max", value: 9.21, display: "$9.21" },
   ]}
-  caption="トークンの使用量に応じて計測されます。Opus は最大で最も重いスペックに 13 ～ 19 ドルを費やしましたが、どれも構築されませんでした。"
+  caption="Metered from token usage. Opus at max spent $13–19 on the heaviest specs — none of which built."
 />
 
 そして、同点には最も興味深い結果が隠されています。 Max は、*同じ* 3 つのプロジェクトをそれほど低く構築しませんでした。

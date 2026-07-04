@@ -1,6 +1,6 @@
 ---
-title: FastAPI з PostgreSQL і SQLAlchemy
-description: Створіть проект Python API з FastAPI, PostgreSQL, SQLAlchemy, Pydantic і Ruff за допомогою Better Fullstack.
+title: "FastAPI з PostgreSQL і SQLAlchemy"
+description: "Створіть проект Python API з FastAPI, PostgreSQL, SQLAlchemy, Pydantic і Ruff за допомогою Better Fullstack."
 updated: 2026-05-12
 category: Python
 tags:
@@ -29,13 +29,13 @@ npm create better-fullstack@latest my-fastapi-api -- \
 ```
 
 <GuideStackSnapshot
-  title="Згенерований знімок стека"
-  description="Межа виконання, для якої оптимізовано цей стек."
-  елементи={[
+  title="Generated stack snapshot"
+  description="The runtime boundary this stack is optimized for."
+  items={[
     { label: "HTTP", value: "FastAPI", detail: "Route functions, dependency injection, and OpenAPI output." },
-    { label: "Data", value: "PostgreSQL + SQLAlchemy", detail: "Models SQLAlchemy with a PostgreSQL driver selected by the scaffold." },
-    { label: "Перевірка", значення: "Pydantic", деталь: "Схеми запитів і відповідей близько до краю API." },
-    { label: "Quality", value: "Ruff", detail: "Швидке ліннування та форматування для згенерованого пакета Python." },
+    { label: "Data", value: "PostgreSQL + SQLAlchemy", detail: "SQLAlchemy models with a PostgreSQL driver selected by the scaffold." },
+    { label: "Validation", value: "Pydantic", detail: "Request and response schemas close to the API edge." },
+    { label: "Quality", value: "Ruff", detail: "Fast linting and formatting for the generated Python package." },
   ]}
 />
 
@@ -159,12 +159,12 @@ uv run alembic upgrade head
 ## Примітки щодо сумісності
 
 <GuideCompatibilityNote
-  kind="підтримується"
-  title="Правило сумісності"
-  елементи={[
-    "`--python-web-framework fastapi` природним чином поєднується з `--python-orm sqlalchemy` і `--python-validation pydantic`.",
-    "Параметри Django API, такі як `--python-api django-rest-framework`, дійсні лише з `--python-web-framework django`.",
-    "Вибір `--database postgres` додає підтримку драйвера PostgreSQL, але підключення під час виконання контролюється `DATABASE_URL`.",
+  kind="supported"
+  title="Compatibility rule"
+  items={[
+    "`--python-web-framework fastapi` pairs naturally with `--python-orm sqlalchemy` and `--python-validation pydantic`.",
+    "Django API options such as `--python-api django-rest-framework` are only valid with `--python-web-framework django`.",
+    "The `--database postgres` selection adds PostgreSQL driver support, but the runtime connection is controlled by `DATABASE_URL`.",
   ]}
 />
 

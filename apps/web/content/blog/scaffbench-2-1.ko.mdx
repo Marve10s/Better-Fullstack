@@ -44,16 +44,16 @@ CORE pass@1 = 프로젝트는 프롬프트에서 설치, 빌드, 유형 검사 �
 | GPT-5.3 Codex 스파크 · **높음** | **1 / 11** (9%) | — | 60,000 | 12 | 92% |
 
 <BenchBarChart
-  title="CORE 빌드 pass@1 · 프롬프트 전용"
-  바={[
-    { 라벨: "Opus 4.8 · 낮음", 값: 27, 디스플레이: "3/11 · 27%" },
-    { 라벨: "Opus 4.8 · max", 값: 27, 디스플레이: "3 / 11 · 27%" },
-    { 라벨: "Gemini 3.5 플래시 · 높음", 값: 27, 표시: "3 / 11 · 27%", 강조 표시: true },
-    { 라벨: "Sonnet 5 · max", 값: 20, 디스플레이: "2 / 10 · 20%" },
-    { 라벨: "Sonnet 4.6 · 높음", 값: 9, 표시: "1 / 11 · 9%" },
-    { 라벨: "Codex 스파크 · 높음", 값: 9, 표시: "1 / 11 · 9%" },
+  title="CORE build pass@1 · prompt-only"
+  bars={[
+    { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
+    { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
+    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%", highlight: true },
+    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
+    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="결정적이지 않은 사양(검증기가 프로젝트를 측정할 수 없음)은 제외됩니다. 정직한 부분을 참조하세요. Gemini(Antigravity를 통해) 및 Codex은 이러한 계획에 대한 비용을 보고하지 않습니다."
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Gemini (via Antigravity) and Codex don't report cost on these plans."
 />
 
 <Callout kind="info">
@@ -94,13 +94,13 @@ Sonnet 5는 현장에서 **가장 바쁜** 작업이기도 합니다. 프로젝�
 여전히 더 적은 수의 빌드를 착륙시킵니다.
 
 <BenchBarChart
-  title="프로젝트당 평균 도구 단계(더 많을수록 ≠ 더 좋음)"
-  바={[
-    { 라벨: "Opus 4.8 · 낮음", 값: 38, 디스플레이: "38 단계" },
-    { 라벨: "Opus 4.8 · max", 값: 99, 디스플레이: "99 단계" },
-    { 라벨: "Sonnet 5 · max", 값: 215, 표시: "215 단계", 강조 표시: true },
+  title="Avg tool steps per project (more ≠ better)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 38, display: "38 steps" },
+    { label: "Opus 4.8 · max", value: 99, display: "99 steps" },
+    { label: "Sonnet 5 · max", value: 215, display: "215 steps", highlight: true },
   ]}
-  caption="생성된 프로젝트당 도구 사용 호출은 점수가 매겨진 사양에 대한 평균입니다. Sonnet은 또한 두 최전선 사양 모두에서 시간 초과되었습니다."
+  caption="Tool-use calls per generated project, averaged over scored specs. Sonnet also timed out on both frontier specs."
 />
 
 Sonnet 5에 대한 내용: *무엇을* 사용해야 하는지에 대한 훌륭한 감각, 조밀한 스택을 *조립*하는 데 약한 손
@@ -115,13 +115,13 @@ ScaffBench 2 이후의 명백한 가설은 모델이 올바른 라이브러리�
 비용**:
 
 <BenchBarChart
-  title="프로젝트당 평균 비용($)"
-  바={[
-    { 라벨: "Opus 4.8 · 낮음", 값: 1.63, 디스플레이: "$1.63" },
-    { 라벨: "Sonnet 5 · max", 값: 5.26, 디스플레이: "$5.26", 하이라이트: true },
-    { 라벨: "Opus 4.8 · max", 값: 9.21, 디스플레이: "$9.21" },
+  title="Avg cost per project ($)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 1.63, display: "$1.63" },
+    { label: "Sonnet 5 · max", value: 5.26, display: "$5.26", highlight: true },
+    { label: "Opus 4.8 · max", value: 9.21, display: "$9.21" },
   ]}
-  caption="토큰 사용량으로 계산됩니다. 최대 Opus는 가장 무거운 사양에 13~19달러를 지출했습니다. 그중 아무것도 구축되지 않았습니다."
+  caption="Metered from token usage. Opus at max spent $13–19 on the heaviest specs — none of which built."
 />
 
 그리고 동점은 가장 흥미로운 결과를 숨깁니다. Max는 *동일* 세 개의 프로젝트를 낮은 수준으로 구축하지 않았습니다.

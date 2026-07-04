@@ -1,6 +1,6 @@
 ---
 title: "ScaffBench 2.1 : Claude Sonnet 5 contre Claude Opus 4.8 sur un échafaudage à partir d'une invite"
-description: Claude Sonnet 5 dans ScaffBench 2.1, testé face à Opus 4.8 sur 13 spécifications fullstack exigeantes.
+description: "Claude Sonnet 5 dans ScaffBench 2.1, testé face à Opus 4.8 sur 13 spécifications fullstack exigeantes."
 date: 2026-07-01
 authors:
   - Ibrahim Elkamali
@@ -43,17 +43,17 @@ mieux; le coût et les étapes sont par projet.
 | Claude Sonnet 4.6 · **élevé** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
 | GPT-5.3 Codex Étincelle · **élevé** | **1 / 11** (9%) | — | 60k | 12 | 92% |
 
-<GraphiqueBarBanc
-  title="CORE build pass@1 · invite uniquement"
-  barres={[
-    { étiquette : "Opus 4.8 · faible", valeur : 27, affichage : "3 / 11 · 27%" },
-    { label : "Opus 4.8 · max", valeur : 27, affichage : "3 / 11 · 27%" },
-    { étiquette : "Gemini 3,5 Flash · élevé", valeur : 27, affichage : "3 / 11 · 27 %", surbrillance : vrai },
-    { label : "Sonnet 5 · max", valeur : 20, affichage : "2 / 10 · 20%" },
-    { label : "Sonnet 4.6 · élevé", valeur : 9, affichage : "1 / 11 · 9%" },
-    { label : "Codex Spark · high", valeur : 9, affichage : "1 ​​/ 11 · 9%" },
+<BenchBarChart
+  title="CORE build pass@1 · prompt-only"
+  bars={[
+    { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
+    { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
+    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%", highlight: true },
+    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
+    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  caption="Les spécifications non concluantes (le validateur n'a pas pu mesurer le projet) sont exclues — voir La partie honnête. Gemini (via Antigravity) et Codex ne déclarent pas les coûts de ces plans."
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Gemini (via Antigravity) and Codex don't report cost on these plans."
 />
 
 <Callout kind="info">
@@ -93,14 +93,14 @@ Sonnet 5 est également la course **la plus occupée** dans le domaine. Il s'agi
 que le double d'Opus au maximum (99) et ~ 6 × Opus à faible (38) - en effectuant beaucoup plus de modifications et de tentatives,
 et toujours moins de builds :
 
-<GraphiqueBarBanc
-  title="Moyenne des étapes d'outil par projet (plus ≠ mieux)"
-  barres={[
-    { label : "Opus 4.8 · faible", valeur : 38, affichage : "38 étapes" },
-    { label : "Opus 4.8 · max", valeur : 99, affichage : "99 étapes" },
-    { label : "Sonnet 5 · max", valeur : 215, affichage : "215 pas", surbrillance : true },
+<BenchBarChart
+  title="Avg tool steps per project (more ≠ better)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 38, display: "38 steps" },
+    { label: "Opus 4.8 · max", value: 99, display: "99 steps" },
+    { label: "Sonnet 5 · max", value: 215, display: "215 steps", highlight: true },
   ]}
-  caption="Appels d'utilisation d'outils par projet généré, en moyenne sur les spécifications notées. Sonnet a également expiré sur les deux spécifications frontières."
+  caption="Tool-use calls per generated project, averaged over scored specs. Sonnet also timed out on both frontier specs."
 />
 
 La lecture de Sonnet 5 : une grande idée de *quoi* utiliser, une main plus faible pour *assembler* une pile dense en
@@ -114,14 +114,14 @@ d'espace pour les câbler - donc un raisonnement maximum devrait transformer les
 Sur les mêmes 13 spécifications, l'Opus 4.8 a obtenu un score **identique aux niveaux bas et maximum – 3/11 dans les deux cas** – pour **5 à 10× le
 coût**:
 
-<GraphiqueBarBanc
-  title="Coût moyen par projet ($)"
-  barres={[
-    { label : "Opus 4.8 · faible", valeur : 1,63, affichage : "$1,63" },
-    { label : "Sonnet 5 · max", valeur : 5,26, affichage : "$5,26", surbrillance : true },
-    { label : "Opus 4.8 · max", valeur : 9,21, affichage : "$9,21" },
+<BenchBarChart
+  title="Avg cost per project ($)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 1.63, display: "$1.63" },
+    { label: "Sonnet 5 · max", value: 5.26, display: "$5.26", highlight: true },
+    { label: "Opus 4.8 · max", value: 9.21, display: "$9.21" },
   ]}
-  caption="Mesuré à partir de l'utilisation du jeton. Opus a dépensé au maximum entre 13 et 19 $ pour les spécifications les plus lourdes, dont aucune n'a été construite."
+  caption="Metered from token usage. Opus at max spent $13–19 on the heaviest specs — none of which built."
 />
 
 Et l’égalité cache le résultat le plus intéressant. Max n'a pas construit les *mêmes* trois projets aussi bas — il

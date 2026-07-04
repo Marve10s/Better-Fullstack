@@ -1,6 +1,6 @@
 ---
-title: Створіть проект TanStack Start
-description: Створіть програму повного стеку TanStack Start з Better Fullstack, включаючи маршрутизацію, маршрути API, Drizzle, SQLite, Better Auth, Tailwind CSS та shadcn/ui.
+title: "Створіть проект TanStack Start"
+description: "Створіть програму повного стеку TanStack Start з Better Fullstack, включаючи маршрутизацію, маршрути API, Drizzle, SQLite, Better Auth, Tailwind CSS та shadcn/ui."
 updated: 2026-05-12
 category: TypeScript
 tags:
@@ -32,13 +32,13 @@ npm create better-fullstack@latest my-tanstack-app -- \
 ```
 
 <GuideStackSnapshot
-  title="Згенерований знімок стека"
-  description="Записи ключових варіантів Better Fullstack для цього проекту TanStack Start."
-  елементи={[
-    { label: "Frontend", value: "TanStack Start", detail: "React, маршрути файлів і маршрути серверів в одній програмі, що розгортається." },
-    { label: "Backend", value: "Self-hosted app server", detail: "Використовуйте рівень сервера TanStack Start замість окремого пакета API." },
-    { label: "API", value: "tRPC", detail: "Типові процедури для маршрутів React і мутацій на стороні сервера." },
-    { label: "Data", value: "SQLite + Drizzle", detail: "Локальна реляційна схема з чітким шляхом до PostgreSQL пізніше." },
+  title="Generated stack snapshot"
+  description="The key choices Better Fullstack records for this TanStack Start project."
+  items={[
+    { label: "Frontend", value: "TanStack Start", detail: "React, file routes, and server routes in one deployable app." },
+    { label: "Backend", value: "Self-hosted app server", detail: "Use TanStack Start's server layer instead of a separate API package." },
+    { label: "API", value: "tRPC", detail: "Typed procedures for React routes and server-side mutations." },
+    { label: "Data", value: "SQLite + Drizzle", detail: "Local relational schema with a clear path to PostgreSQL later." },
   ]}
 />
 
@@ -140,13 +140,13 @@ export const project = sqliteTable("project", {
 ## Примітки щодо сумісності
 
 <GuideCompatibilityNote
-  kind="підтримується"
-  title="Правило сумісності"
-  елементи={[
-    "`--backend self` тут є правильним вибором, оскільки TanStack Start забезпечує рівень сервера додатків.",
-    "`--api trpc` сумісний із цим стеком React і забезпечує наскрізні типізовані виклики.",
-    "SQLite — це хороший варіант за замовчуванням для локальної розробки та невеликих розгортань. Перейдіть до PostgreSQL, якщо вам потрібні керовані виробничі бази даних, об’єднання, репліки або потужніший операційний інструментарій.",
-    "shadcn/ui передбачає інтерфейс користувача React на основі Tailwind. Якщо пізніше ви видалите Tailwind, перегляньте згенерований імпорт компонентів і назви класів разом.",
+  kind="supported"
+  title="Compatibility rule"
+  items={[
+    "`--backend self` is the right choice here because TanStack Start provides the app server layer.",
+    "`--api trpc` is compatible with this React stack and gives end-to-end typed calls.",
+    "SQLite is a good default for local development and small deployments. Move to PostgreSQL when you need managed production databases, pooling, replicas, or stronger operational tooling.",
+    "shadcn/ui assumes a Tailwind-based React UI. If you remove Tailwind later, revisit generated component imports and class names together.",
   ]}
 />
 

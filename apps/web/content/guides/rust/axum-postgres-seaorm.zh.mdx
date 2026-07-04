@@ -1,6 +1,6 @@
 ---
-title: Axum with PostgreSQL and SeaORM
-description: 使用 Better Fullstack 创建包含 Axum、PostgreSQL、SeaORM、tracing 和 structured error handling 的 Rust API project。
+title: "Axum with PostgreSQL and SeaORM"
+description: "使用 Better Fullstack 创建包含 Axum、PostgreSQL、SeaORM、tracing 和 structured error handling 的 Rust API project。"
 updated: 2026-05-12
 category: Rust
 tags:
@@ -29,13 +29,13 @@ npm create better-fullstack@latest my-rust-api -- \
 ```
 
 <GuideStackSnapshot
-  title="生成的 stack 快照"
-  description="Rust service 增长时应保留的边界。"
+  title="Generated stack snapshot"
+  description="The boundaries to preserve as the Rust service grows."
   items={[
-    { label: "HTTP", value: "Axum", detail: "Typed extractors、shared router state 和 explicit handlers。" },
-    { label: "数据", value: "PostgreSQL + SeaORM", detail: "Entity-style database access 和 active models。" },
-    { label: "可观测性", value: "tracing", detail: "从 startup 到 request handling 的 structured logs。" },
-    { label: "错误", value: "Anyhow + Thiserror", detail: "Domain errors 在 edge 转换成 HTTP responses。" },
+    { label: "HTTP", value: "Axum", detail: "Typed extractors, shared router state, and explicit handlers." },
+    { label: "Data", value: "PostgreSQL + SeaORM", detail: "Entity-style database access and active models." },
+    { label: "Observability", value: "tracing", detail: "Structured logs from startup through request handling." },
+    { label: "Errors", value: "Anyhow + Thiserror", detail: "Domain errors converted into HTTP responses at the edge." },
   ]}
 />
 

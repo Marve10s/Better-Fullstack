@@ -1,6 +1,6 @@
 ---
-title: Axum з PostgreSQL і SeaORM
-description: Створіть проект Rust API з Axum, PostgreSQL, SeaORM, трасуванням і структурованою обробкою помилок за допомогою Better Fullstack.
+title: "Axum з PostgreSQL і SeaORM"
+description: "Створіть проект Rust API з Axum, PostgreSQL, SeaORM, трасуванням і структурованою обробкою помилок за допомогою Better Fullstack."
 updated: 2026-05-12
 category: Rust
 tags:
@@ -29,13 +29,13 @@ npm create better-fullstack@latest my-rust-api -- \
 ```
 
 <GuideStackSnapshot
-  title="Згенерований знімок стека"
-  description="Межі, які необхідно зберегти в міру зростання служби Rust."
-  елементи={[
-    { мітка: "HTTP", значення: "Axum", деталь: "Типові екстрактори, спільний стан маршрутизатора та явні обробники." },
-    { label: "Data", value: "PostgreSQL + SeaORM", detail: "Доступ до бази даних у стилі сутності та активні моделі." },
-    { label: "Обсервативність", значення: "tracing", detail: "Структуровані журнали від запуску до обробки запитів." },
-    { label: "Errors", value: "Anyhow + Thiserror", detail: "Помилки домену перетворюються на HTTP-відповіді на межі." },
+  title="Generated stack snapshot"
+  description="The boundaries to preserve as the Rust service grows."
+  items={[
+    { label: "HTTP", value: "Axum", detail: "Typed extractors, shared router state, and explicit handlers." },
+    { label: "Data", value: "PostgreSQL + SeaORM", detail: "Entity-style database access and active models." },
+    { label: "Observability", value: "tracing", detail: "Structured logs from startup through request handling." },
+    { label: "Errors", value: "Anyhow + Thiserror", detail: "Domain errors converted into HTTP responses at the edge." },
   ]}
 />
 

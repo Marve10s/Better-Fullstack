@@ -1,6 +1,6 @@
 ---
-title: “ScaffBench 2.1：Claude Sonnet 5 vs Claude Opus 4.8 在腳手架上的提示”
-description: “Claude Sonnet 5 進入 ScaffBench 2.1，在 13 個硬性全端規範上針對 Opus 4.8（低 + 最大工作量）進行測試：模型能否通過提示搭建建築項目？”
+title: "“ScaffBench 2.1：Claude Sonnet 5 vs Claude Opus 4.8 在腳手架上的提示”"
+description: "“Claude Sonnet 5 進入 ScaffBench 2.1，在 13 個硬性全端規範上針對 Opus 4.8（低 + 最大工作量）進行測試：模型能否通過提示搭建建築項目？”"
 date: 2026-07-01
 authors:
   - Ibrahim Elkamali
@@ -43,17 +43,17 @@ CORE pass@1 = 專案根據提示進行安裝、建置、類型檢查和本機編
 | Claude 十四行詩 4.6 · **高** | **1 / 11** (9%) | $1.53 | 38k | 46 | 94% |
 | GPT-5.3 Codex 火花 · **高** | **1 / 11** (9%) | — | 60k | 12 | 92% |
 
-<基準長條圖
-  title="CORE build pass@1 · 僅提示"
-  條={[
-    { 標籤：“Opus 4.8·低”，值：27，顯示：“3 / 11·27%” },
-    { 標籤：“Opus 4.8·max”，值：27，顯示：“3 / 11·27%” },
-    { label: "Gemini 3.5 Flash·高", value: 27, 顯示: "3 / 11 · 27%", 高亮: true },
-    { 標籤：“十四行詩 5·最大”，值：20，顯示：“2 / 10·20%” },
-    { 標籤：“十四行詩 4.6·高”，值：9，顯示：“1 / 11·9%” },
-    { 標籤: "Codex 火花·高", 值: 9, 顯示: "1 / 11 · 9%" },
+<BenchBarChart
+  title="CORE build pass@1 · prompt-only"
+  bars={[
+    { label: "Opus 4.8 · low", value: 27, display: "3 / 11 · 27%" },
+    { label: "Opus 4.8 · max", value: 27, display: "3 / 11 · 27%" },
+    { label: "Gemini 3.5 Flash · high", value: 27, display: "3 / 11 · 27%", highlight: true },
+    { label: "Sonnet 5 · max", value: 20, display: "2 / 10 · 20%" },
+    { label: "Sonnet 4.6 · high", value: 9, display: "1 / 11 · 9%" },
+    { label: "Codex Spark · high", value: 9, display: "1 / 11 · 9%" },
   ]}
-  標題=“不確定的規格（驗證者無法衡量該項目）被排除在外 - 請參閱誠實的部分。Gemini（通過反重力）和Codex不報告這些計劃的成本。”
+  caption="Inconclusive specs (validator couldn't measure the project) are excluded — see The honest part. Gemini (via Antigravity) and Codex don't report cost on these plans."
 />
 
 <Callout kind="info">
@@ -93,14 +93,14 @@ Sonnet 5 也是該領域**最繁忙的**運行。每個項目平均 **215 個工
 比最大 (99) 的兩倍 Opus 和低 (38) 的約 6 倍 Opus — 經過更多的編輯和重試，
 並且仍然減少了構建：
 
-<基準長條圖
-  title="每個項目的平均工具步驟（更多≠更好）"
-  條={[
-    { 標籤：“Opus 4.8·低”，值：38，顯示：“38 步” },
-    { 標籤：“Opus 4.8·max”，值：99，顯示：“99 步” },
-    { 標籤：“十四行詩 5·最大”，值：215，顯示：“215 步”，突出顯示：true },
+<BenchBarChart
+  title="Avg tool steps per project (more ≠ better)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 38, display: "38 steps" },
+    { label: "Opus 4.8 · max", value: 99, display: "99 steps" },
+    { label: "Sonnet 5 · max", value: 215, display: "215 steps", highlight: true },
   ]}
-  標題=“每個生成項目的工具使用調用，根據評分規範進行平均。Sonnet 在兩個前沿規範上也超時了。”
+  caption="Tool-use calls per generated project, averaged over scored specs. Sonnet also timed out on both frontier specs."
 />
 
 Sonnet 5 的閱讀：對使用「什麼」有很強的意識，但在「組裝」密集堆疊方面較弱
@@ -114,14 +114,14 @@ ScaffBench 2 之後的明顯假設是模型知道正確的庫並且剛剛耗盡
 在相同的 13 個規格上，Opus 4.8 的得分**在低值和最高值時相同 — 3/11 無論如何** — **5-10 倍
 成本**：
 
-<基準長條圖
-  title="每個項目的平均成本（美元）"
-  條={[
-    { 標籤：“Opus 4.8·低”，值：1.63，顯示：“$1.63” },
-    { 標籤：“十四行詩 5·最大”，值：5.26，顯示：“$5.26”，突出顯示：true },
-    { 標籤：“Opus 4.8·max”，值：9.21，顯示：“$9.21” },
+<BenchBarChart
+  title="Avg cost per project ($)"
+  bars={[
+    { label: "Opus 4.8 · low", value: 1.63, display: "$1.63" },
+    { label: "Sonnet 5 · max", value: 5.26, display: "$5.26", highlight: true },
+    { label: "Opus 4.8 · max", value: 9.21, display: "$9.21" },
   ]}
-  標題=“根據代幣使用情況進行計量。Opus 在最重的規格上花費高達 13-19 美元——沒有一個是構建的。”
+  caption="Metered from token usage. Opus at max spent $13–19 on the heaviest specs — none of which built."
 />
 
 領帶隱藏了最有趣的結果。 Max 並沒有建造「相同」的三個項目那麼低——它
